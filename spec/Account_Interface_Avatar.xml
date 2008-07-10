@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<node name="/Account_Interface_Avatar"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+<p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Account.Interface.Avatar">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface extends the core Account interface to provide a
+        user-settable avatar image.</p>
+
+      <tp:rationale>
+        <p>The avatar could have been a property on the core Account interface,
+          but was moved to a separate interface because it is likely to be
+          large. This means that clients can safely use GetAll to get
+          properties on the core Account interface without flooding the
+          session bus with large images.</p>
+      </tp:rationale>
+
+    </tp:docstring>
+    <tp:added version="0.17.6"/>
+
+    <property name="Avatar" type="(ays)" access="readwrite">
+      <tp:docstring>
+        The avatar to set on this account for display to other contacts,
+        represented as a structure containing the bytes of the avatar,
+        and the MIME type as a string; may be set to an empty byte-array and
+        an empty string to indicate no avatar. When the account becomes
+        connected, the account manager SHOULD set this avatar using SetAvatar
+        if appropriate.
+
+        <tp:rationale>
+          This corresponds to NMC 4.x mc_account_get_avatar.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <signal name="AvatarChanged">
+      <tp:docstring>
+        Emitted when the Avatar property changes.
+        
+        <tp:rationale>The avatar itself is deliberately not included in this
+          signal, to reduce bus traffic in the (likely common) case where no
+          running application cares about the user's own avatar.</tp:rationale>
+      </tp:docstring>
+    </signal>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

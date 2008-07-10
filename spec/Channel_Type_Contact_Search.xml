@@ -1,0 +1,150 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Type_Contact_Search" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Type.ContactSearch"
+    tp:causes-havoc='not well-tested'>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+ 
+    <tp:struct name="Search_Key_Info">
+      <tp:docstring>A struct representing details on search strings.</tp:docstring>
+      <tp:member type="b" name="Is_Mandatory">
+        <tp:docstring>Booleans indicating if the search key is mandatory.
+          </tp:docstring>
+      </tp:member>
+      <tp:member type="g" name="Type_Signature">
+        <tp:docstring>The type signature of the value for this search key.
+          </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <tp:mapping name="Search_Key_Info_Map">
+      <tp:docstring>A dictionary mapping string search key names to its search details.
+        </tp:docstring>
+      <tp:member type="s" name="Term"/>
+      <tp:member type="(bg)" tp:type="Search_Key_Info" name="Details"/>
+    </tp:mapping>
+
+    <method name="GetSearchKeys">
+      <arg direction="out" type="s">
+        <tp:docstring>
+          A string with any instructions from the server
+        </tp:docstring>
+      </arg>
+      <arg direction="out" type="a{s(bg)}" tp:type="Search_Key_Info_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          A dictionary mapping string search key names to its search details. 
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Returns any instructions from the server along with a dictionary of
+        search key names to their types, and a boolean indicating if the key is
+        mandatory. The following well-known search key names should be used
+        where appropriate:</p>
+        <dl>
+          <dt>s:first</dt><dd>The desired contact's given name</dd>
+          <dt>s:last</dt><dd>The desired contact's family name</dd>
+          <dt>s:nick</dt><dd>The desired contact's nickname</dd>
+          <dt>s:email</dt><dd>The e-mail address of the desired contact</dd>
+        </dl>
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+      </tp:possible-errors>
+    </method>
+    <tp:enum name="Channel_Contact_Search_State" type="u">
+      <tp:enumvalue suffix="Before" value="0">
+        <tp:docstring>The search has not started</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="During" value="1">
+        <tp:docstring>The search is in progress</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="After" value="2">
+        <tp:docstring>The search has been completed</tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+    <method name="GetSearchState">
+      <arg direction="out" type="u" tp:type="Channel_Contact_Search_State">
+        <tp:docstring>The search state represented as one of the values of
+          ChannelContactSearchState</tp:docstring>
+      </arg>
+      <tp:docstring>
+        Returns the current state of this search channel object.
+      </tp:docstring>
+    </method>
+    <method name="Search">
+      <arg direction="in" name="terms" type="a{sv}" tp:type="String_Variant_Map">
+        <tp:docstring>
+          A dictionary mapping search key names to the desired values
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Send a request to start a search for contacts on this connection. A
+        valid search request will cause the SearchStateChanged signal to be
+        emitted with the status CHANNEL_CONTACT_SEARCH_STATE_DURING.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
+      </tp:possible-errors>
+    </method>
+    <signal name="SearchResultReceived">
+      <arg name="contact" type="u" tp:type="Contact_Handle">
+        <tp:docstring>An integer handle for the contact</tp:docstring>
+      </arg>
+      <arg name="values" type="a{sv}" tp:type="String_Variant_Map">
+        <tp:docstring>A dictionary mapping search key names to values for this contact</tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when a search result is received from the server.
+      </tp:docstring>
+    </signal>
+    <signal name="SearchStateChanged">
+      <arg name="state" type="u" tp:type="Channel_Contact_Search_State">
+        <tp:docstring>An integer representing the new search state</tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when the search state (as returned by the GetSearchState
+        method) changes.
+      </tp:docstring>
+    </signal>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+    <p>A channel type for searching server-stored user directories. A new channel
+    should be requested by a client for each search attempt, and it should be
+    closed when the search is completed or the required result has been found
+    in order to free unused handles. The search can be cancelled at any time
+    by calling the channel Close method, although depending upon the protocol
+    the connection manager may not be able to prevent the server from sending
+    further results.</p>
+
+    <p>Before searching, the GetSearchKeys method should be used to discover any
+    instructions sent by the server, and the valid search keys which can be
+    provided to the Search method. A search request is then started by
+    providing some of these terms to the Search method, and the search status
+    will be set to CHANNEL_CONTACT_SEARCH_STATE_DURING. When results are
+    returned by the server, the SearchResultReceived signal is emitted for each
+    contact found, and when the search is complete, the search status will be
+    set to CHANNEL_SEARCH_STATE_AFTER.</p>
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

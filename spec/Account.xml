@@ -1,0 +1,475 @@
+<?xml version="1.0" ?>
+<node name="/Account"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+<p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Account">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>An Account object encapsulates the necessary details to make a
+        Telepathy connection.</p>
+
+      <p>Accounts are uniquely identified by object path. The object path
+        of an Account MUST take the form
+        <code>/org/freedesktop/Telepathy/Account/<em>cm</em>/<em>proto</em>/<em>acct</em></code>, where:</p>
+
+      <ul>
+        <li><em>cm</em> is the same <tp:type>Connection_Manager_Name</tp:type>
+          that appears in the connection manager's well-known bus name and
+          object path</li>
+        <li><em>proto</em> is the <tp:type>Protocol</tp:type> name as seen in
+          ConnectionManager.ListProtocols, but with "-" replaced with "_"
+          (i.e. the same as in the object-path of a Connection)</li>
+        <li><em>acct</em> is an arbitrary string of ASCII letters, digits
+          and underscores, starting with a letter or underscore, which
+          uniquely identifies this account</li>
+        <li>Clients SHOULD parse the object path to discover the
+          connection manager and protocol</li>
+        <li>Clients MUST NOT attempt to parse <em>acct</em></li>
+        <li>Clients MUST NOT assume that <em>acct</em> matches
+          the connection-specific part of a Connection's object-path and
+          bus name</li>
+        <li>The account manager SHOULD choose <em>acct</em> such that if
+          an account is deleted, its object path will be re-used if and only
+          if the new account is in some sense "the same"
+          (incorporating the 'account' parameter in some way is
+          recommended)</li>
+      </ul>
+
+      <tp:rationale>
+        <p>This API avoids specifying the "profiles" used in Mission Control
+          4.x or the "presets" that have been proposed to replace them. An
+          optional interface will be provided for AM implementations
+          that want to provide presets.</p>
+
+        <p>There is deliberately no functionality here for opening channels;
+          we intend to provide that in the channel dispatcher.</p>
+
+        <p>Other missing features which would be better in their own
+          interfaces:</p>
+
+        <ul>
+          <li>dynamic parameter-providing (aka provisioning)</li>
+          <li>saved server capabilities</li>
+          <li>account conditions</li>
+          <li>account grouping</li>
+        </ul>
+      </tp:rationale>
+
+    </tp:docstring>
+    <tp:added version="0.17.2"/>
+    <tp:changed version="0.17.6">moved the Avatar property to a separate
+      interface</tp:changed>
+
+    <!-- Missing functionality compared with NMC 4.x account + profile,
+    apart from as listed above:
+
+    * vCard field, + default profile for each vCard field
+      (vCard field is per protocol and should be chosen by the
+      Telepathy <-> address-book bridge?; default profile is now
+      meaningless)
+
+    * "normalized name" (normalized handle?)
+
+    * branding icon (what's this and how does it differ from the icon?)
+
+    * configuration UI (not our problem - perhaps the UI could special-case
+      by cm,protocol,preset tuples?)
+
+    * default account domain (somewhat meaningless in general; specialized
+      account config UI can hard-code this)
+
+    * SPLIT_ACCOUNT (pseudo-capability - this is a property of the protocol,
+      not the profile, and in any case only the account config UI cares)
+
+    Missing functionality compared with Decibel accounts:
+
+    * we don't really know, they take arbitrary key/value pairs...
+      but display name, protocol, presence/message, current, autoreconnect
+      are the ones given special status by the source, and we have all of them
+    -->
+
+    <property name="Interfaces" type="as" access="read">
+      <tp:docstring>
+        A list of the extra interfaces provided by this account.
+      </tp:docstring>
+    </property>
+
+    <method name="Remove">
+      <tp:docstring>Delete the account.</tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="Removed">
+      <tp:docstring>
+        This account has been removed.
+
+        <tp:rationale>
+          This is redundant with AccountRemoved, but it's still worth having,
+          to avoid having to bind to AccountManager.AccountRemoved to tell
+          you whether your Account is valid - ideally, an account-editing UI
+          should only care about a single Account.
+        </tp:rationale>
+      </tp:docstring>
+    </signal>
+
+    <signal name="AccountPropertyChanged">
+      <tp:docstring>
+        The values of one or more properties on this interface (that do not
+        specify that this signal does not apply to them) may have changed.
+        This does not cover properties of other interfaces, which must
+        provide their own change notification if appropriate.
+      </tp:docstring>
+
+      <arg name="Properties" type="a{sv}">
+        <tp:docstring>
+          A map from property names in this namespace (e.g. Nickname) to
+          values. Properties whose values have not changed SHOULD be
+          omitted, but this need not be done.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="DisplayName" type="s" access="readwrite">
+      <tp:docstring>
+        The user-visible name of this account. This SHOULD be chosen by the
+        user at account creation time. The account creation user interface
+        is responsible for setting a reasonable default value in the user's
+        locale; something like "Jabber (bob@example.com)" would be sensible.
+
+        <tp:rationale>
+          This approximately corresponds to "display name" in NMC 4.x and
+          Decibel.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="Icon" type="s" access="readwrite">
+      <tp:docstring>
+        The name of an icon in the system's icon theme, such as "im-msn",
+        or the empty string to not specify an icon. If the icon is set to
+        an empty string, the account manager or any client MAY derive a
+        default icon, for instance from the protocol.
+
+        <tp:rationale>
+          This approximately corresponds to mc_profile_get_icon_name
+          (or possibly mc_profile_get_branding_icon_name) in NMC 4.x.
+          It's accessed via the account rather than the profile because
+          we no longer have profiles as a core concept.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="Valid" type="b" access="read">
+      <tp:docstring>
+        If true, this account is considered by the account manager to be
+        complete and usable. If false, user action is required to make it
+        usable, and it will never attempt to connect (for instance, this
+        might be caused by the absence of a required parameter).
+
+        <tp:rationale>
+          For connection managers with a plugin architecture, like
+          telepathy-haze, we have little or no control over the parameters
+          offered; for platforms with package management, we have little or
+          no control over the CMs offered. NMC 4.x would just pretend the
+          account didn't exist in these circumstances, but silent data loss
+          is bad, and UIs with CM-specific knowledge (or a user filling in
+          newly-required parameters) might be able to rescue a broken account.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="Enabled" type="b" access="readwrite">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>This property gives the users the possibility to prevent an account
+          from being used. This flag does not change the validity of the
+          account.</p>
+
+        <p>A disabled account can never be put online.</p>
+
+        <tp:rationale>
+          <p>Use cases:</p>
+
+          <ul>
+            <li>user has two or more accounts capable of calling contact X, but
+              he doesn't want the UI to prompt him everytime about which one he
+              wants to use for the call. He can then disable all the equivalent
+              accounts but one.</li>
+
+            <li>There is some temporary server error and the user doesn't want
+              to be be bother by error messages, or change the account
+              configuration: temporarily disabling the account is quicker.</li>
+          </ul>
+
+          <p>The AccountManager SHOULD allow this property to be set on invalid
+            accounts, but MUST NOT attempt to put invalid accounts online
+            even if they become Enabled.</p>
+
+          <tp:rationale>
+            <p>There doesn't seem to be any good reason not to allow this.</p>
+          </tp:rationale>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="Nickname" type="as" access="readwrite">
+      <tp:docstring>
+        The nickname to set on this account for display to other contacts,
+        as set by the user. When the account becomes connected, the
+        account manager SHOULD set this as the user's alias using SetAliases
+        if appropriate.
+
+        <tp:rationale>
+          In a later specification revision, we plan to separate the concepts
+          of a contact's nickname as set by themselves, and the local
+          name for them in our contact list (a "handle" or "pet name" as
+          described in XEP-0165 and its references). The terminology change
+          from alias to nickname here is a step in that direction.
+          This corresponds to NMC 4.x mc_account_get_alias.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="Parameters" type="a{sv}" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A map from connection manager parameter names (as in the
+          ConnectionManager interface) to their values. This property includes
+          only those parameters that are stored for this account, and SHOULD
+          only include those parameters that the user has explicitly set.
+        </p>
+        <p>This property cannot be altered using Set() - use
+          UpdateParameters instead.</p>
+
+        <tp:rationale>
+          This avoids NMC being tied to gconf as a matter of API.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <method name="UpdateParameters">
+      <tp:docstring>
+        Change the value of the Parameters property. Any changes will not
+        take effect until the next time the account is disconnected and
+        reconnected.
+
+        <tp:rationale>
+          Migration tools that twiddle the settings of all accounts shouldn't
+          cause an automatic disconnect and reconnect, probably. I could be
+          persuaded otherwise, though. Or we could add a Reconnect() method.
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Set" type="a{sv}" direction="in">
+        <tp:docstring>
+          A mapping from parameter names to their values. These parameters
+          should be stored for future use.
+        </tp:docstring>
+      </arg>
+      <arg name="Unset" type="as" direction="in">
+        <tp:docstring>
+          A list of the names of parameters to be removed from the set of
+          stored values, allowing the default values to be used.
+          If the given parameters were not, in fact, stored, or even if they
+          do not exist at all, the account manager MUST accept this without
+          error.
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
+      </tp:possible-errors>
+    </method>
+
+    <tp:struct name="Account_Presence">
+      <tp:docstring>
+        A simplified form of the presence statuses seen in the Presence
+        interface.
+      </tp:docstring>
+
+      <tp:member name="Type" type="u" tp:type="Connection_Presence_Type">
+        <tp:docstring>
+          The presence type, e.g. Connection_Presence_Type_Away.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Status" type="s">
+        <tp:docstring>
+          The connection-manager-specific string identifier of the presence
+          status, e.g. "brb".
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Message" type="s">
+        <tp:docstring>
+          The user-defined status message, e.g. "Back soon!". This will be
+          used as the value for the 'message' keyword in the Presence
+          interface's dictionary, if possible.
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <property name="AutomaticPresence" type="(uss)" access="readwrite"
+      tp:type="Account_Presence">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The presence status that this account should have if it is brought
+          online.</p>
+
+        <p>Setting this property MUST NOT actually change the account's
+          status until the next time it is (re)connected for some reason.</p>
+
+        <p>The <tp:type>Connection_Presence_Type</tp:type> in the structure
+          SHOULD NOT be Offline or Unset.</p>
+
+        <tp:rationale>
+          In ITOS2007 and ITOS2008 this is a global preference, not visible
+          on D-Bus (the "default presence"). "Automatic presence" better
+          describes when it is used.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="ConnectAutomatically" type="b" access="readwrite">
+      <tp:docstring>
+        If true, the account manager SHOULD attempt to put this account
+        online with the AutomaticPresence whenever possible (in the base
+        Account interface this is deliberately left vague). If false,
+        it MUST NOT put the account online automatically in response to,
+        for instance, connectivity changes, but SHOULD still put the account
+        online with the AutomaticPresence if requested by the user (for
+        instance, if the user tries to start a conversation using this
+        account).
+
+        <tp:rationale>
+          This approximately corresponds to NMC 4.x "enabled" and Decibel
+          "autoreconnect".
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="Connection" type="s" access="read">
+      <tp:docstring>
+        Either the well-known bus name of the connection to this account,
+        or the empty string if there is no connection.
+      </tp:docstring>
+    </property>
+
+    <property name="ConnectionStatus" type="u" access="read">
+      <tp:docstring>
+        If the Connection property is non-empty, the status of that connection.
+        If the Connection property is the empty string, this property may
+        either be Disconnected (indicating that the account manager is not
+        attempting to bring it online), or Connecting (indicating that the
+        account manager is attempting to connect).
+        The account manager is expected to set this by observing signals
+        from the Connection.
+
+        <tp:rationale>
+          If the AM is doing some sort of backoff/delay on reconnection
+          attempts, the account's status is conceptually "Connecting" even
+          though there is no Connection. This vaguely corresponds to
+          GetCurrentStatus in NMC 4.x.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="ConnectionStatusReason" type="u" access="read">
+      <tp:docstring>
+        The reason for the last change to ConnectionStatus.
+        The account manager is expected to set this by observing signals
+        from the Connection.
+
+        <tp:rationale>
+          If you weren't watching the Connection at the time it failed,
+          you can't tell why - unless the AM can tell you. This is part
+          of GetCurrentStatus in NMC 4.x.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="CurrentPresence" type="(uss)" access="read"
+      tp:type="Account_Presence">
+      <tp:docstring>
+        The actual presence. If the connection is not online, this should be
+        (Connection_Presence_Type_Offline, "", "").
+        If the connection is online but does not support the Presence
+        interface, this should be (Connection_Presence_Type_Unset, "", "").
+        The account manager is expected to set this by observing signals
+        from the Connection.
+
+        <tp:rationale>
+          This corresponds to GetPresenceActual in NMC 4.x.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="RequestedPresence" type="(uss)" access="readwrite"
+      tp:type="Account_Presence">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The requested presence for this account. When this is changed, the
+          account manager should attempt to manipulate the connection manager
+          to make CurrentPresence match RequestedPresence as closely as
+          possible. It should not be saved to any sort of persistent
+          storage.</p>
+
+        <p>When the account manager automatically connects an account,
+          it must signal this by setting the RequestedPresence to the same
+          thing as the AutomaticPresence.</p>
+
+        <tp:rationale>
+          This corresponds to e.g. GetPresence and GetPresenceMessage
+          in NMC 4.x.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="NormalizedName" type="s" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The normalized user ID of the local user on this account (i.e. the
+          string returned when the InspectHandle method is called on the
+          result of GetSelfHandle() for an active connection).</p>
+        
+        <p>It is unspecified whether this user ID is globally unique.</p>
+
+        <tp:rationale>
+          <p>As currently implemented, IRC user IDs are only unique within
+            the same IRCnet. On some saner protocols, the user ID includes a
+            DNS name which provides global uniqueness.</p>
+        </tp:rationale>
+
+        <p>If this value is not known yet (which will always be the case for
+          accounts that have never been online), it will be an empty
+          string.</p>
+
+        <p>It is possible that this value will change if the connection
+          manager's normalization algorithm changes, although this SHOULD
+          be avoided.</p>
+
+        <tp:rationale>
+          <p>It's not always completely clear what normalization algorithm
+            should be used; for instance, in Gabble, we currently use JIDs,
+            but it would also have been reasonable to use xmpp URIs.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

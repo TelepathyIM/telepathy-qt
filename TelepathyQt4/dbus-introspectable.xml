@@ -1,0 +1,16 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:title>D-Bus introspectable object</tp:title>
+
+  <node name="/DBus_Introspectable">
+    <interface name="org.freedesktop.DBus.Introspectable">
+
+      <method name="Introspect">
+        <arg direction="out" type="s" name="XML_Data"/>
+      </method>
+
+    </interface>
+  </node>
+
+</tp:spec>

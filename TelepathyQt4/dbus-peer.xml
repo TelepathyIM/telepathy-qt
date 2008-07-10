@@ -1,0 +1,19 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:title>D-Bus peer</tp:title>
+
+  <node name="/DBus_Peer">
+    <interface name="org.freedesktop.DBus.Peer" tp:implement-service="no">
+
+      <method name="Ping">
+      </method>
+
+      <method name="GetMachineId">
+        <arg direction="out" type="s" name="Machine_UUID"/>
+      </method>
+
+    </interface>
+  </node>
+
+</tp:spec>

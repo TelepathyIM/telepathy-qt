@@ -1,0 +1,19 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Telepathy D-Bus Interface Specification, TelepathyQt4 copy</tp:title>
+<tp:version>0.17.7</tp:version>
+
+<xi:include href="connection-manager.xml"/>
+<xi:include href="connection.xml"/>
+<xi:include href="channel.xml"/>
+<xi:include href="media-session-handler.xml"/>
+<xi:include href="media-stream-handler.xml"/>
+<xi:include href="generic.xml"/>
+<xi:include href="dbus-daemon.xml"/>
+
+<xi:include href="../spec/generic-types.xml"/>
+<xi:include href="../spec/errors.xml"/>
+
+</tp:spec>

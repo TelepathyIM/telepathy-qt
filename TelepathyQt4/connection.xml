@@ -1,0 +1,14 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Connection interfaces</tp:title>
+
+<xi:include href="../spec/Connection.xml"/>
+
+<xi:include href="../spec/Connection_Interface_Aliasing.xml"/>
+<xi:include href="../spec/Connection_Interface_Avatars.xml"/>
+<xi:include href="../spec/Connection_Interface_Capabilities.xml"/>
+<xi:include href="../spec/Connection_Interface_Presence.xml"/>
+
+</tp:spec>

@@ -1,0 +1,137 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_DTMF" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2005, 2006 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2005, 2006 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Interface.DTMF">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+
+    <method name="StartTone">
+      <arg direction="in" name="stream_id" type="u" tp:type="Stream_ID">
+        <tp:docstring>A stream ID as defined in the StreamedMedia channel type.</tp:docstring>
+      </arg>
+      <arg direction="in" name="event" type="y" tp:type="DTMF_Event">
+        <tp:docstring>A numeric event code from the DTMF_Event enum.</tp:docstring>
+      </arg>
+      <tp:docstring>
+        Start sending a DTMF tone on this stream. Where possible, the tone
+        will continue until StopTone is called. On certain protocols, it may
+        only be possible to send events with a predetermined length. In this
+        case, the implementation may emit a fixed-length tone, and the StopTone
+        method call should return NotAvailable.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError" />
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The given stream ID was invalid.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The requested event is not available on this stream.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="StopTone">
+      <arg direction="in" name="stream_id" type="u" tp:type="Stream_ID">
+        <tp:docstring>A stream ID as defined in the StreamedMedia channel type.</tp:docstring>
+      </arg>
+      <tp:docstring>
+        Stop sending any DTMF tone which has been started using the StartTone
+        method. If there is no current tone, this method will do nothing.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError" />
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The given stream ID was invalid.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            Continuous tones are not supported by this stream.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <tp:enum name="DTMF_Event" type="y">
+      <tp:enumvalue suffix="Digit_0" value="0">
+        <tp:docstring>0</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_1" value="1">
+        <tp:docstring>1</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_2" value="2">
+        <tp:docstring>2</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_3" value="3">
+        <tp:docstring>3</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_4" value="4">
+        <tp:docstring>4</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_5" value="5">
+        <tp:docstring>5</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_6" value="6">
+        <tp:docstring>6</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_7" value="7">
+        <tp:docstring>7</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_8" value="8">
+        <tp:docstring>8</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Digit_9" value="9">
+        <tp:docstring>9</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Asterisk" value="10">
+        <tp:docstring>*</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Hash" value="11">
+        <tp:docstring>#</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Letter_A" value="12">
+        <tp:docstring>A</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Letter_B" value="13">
+        <tp:docstring>B</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Letter_C" value="14">
+        <tp:docstring>C</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Letter_D" value="15">
+        <tp:docstring>D</tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      An interface that gives a Channel the ability to send DTMF events over
+      audio streams which have been established using the StreamedMedia channel
+      type. The event codes used are in common with those defined in <a
+      href="http://www.rfc-editor.org/rfc/rfc4733.txt">RFC4733</a>, and are
+      listed in the DTMF_Event enumeration.
+    </tp:docstring>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

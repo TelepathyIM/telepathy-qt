@@ -1,0 +1,467 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Type_Text" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Type.Text">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+
+    <tp:simple-type name="Message_ID" type="u">
+      <tp:docstring>
+        A unique-per-channel identifier for an incoming message. These
+        SHOULD be allocated in a way that minimizes collisions (in particular,
+        message IDs SHOULD NOT be re-used until all of the 32-bit integer
+        space has already been used).
+      </tp:docstring>
+    </tp:simple-type>
+
+    <tp:struct name="Pending_Text_Message" array-name="Pending_Text_Message_List">
+      <tp:docstring>A struct (message ID, timestamp in seconds since
+        1970-01-01 00:00 UTC, sender's handle, message type, flags, text)
+        representing a pending text message, as returned by ListPendingMessages
+        on the Text channel type. The arguments of the Received signal
+        also match this struct's signature.</tp:docstring>
+      <tp:member type="u" tp:type="Message_ID" name="Identifier"/>
+      <tp:member type="u" tp:type="Unix_Timestamp" name="Unix_Timestamp"/>
+      <tp:member type="u" tp:type="Contact_Handle" name="Sender"/>
+      <tp:member type="u" tp:type="Channel_Text_Message_Type"
+                 name="Message_Type"/>
+      <tp:member type="u" tp:type="Channel_Text_Message_Flags" name="Flags"/>
+      <tp:member type="s" name="Text"/>
+    </tp:struct>
+
+    <method name="AcknowledgePendingMessages">
+      <arg direction="in" name="ids" type="au" tp:type="Message_ID[]">
+        <tp:docstring>
+          The IDs of the messages to acknowledge
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Inform the channel that you have handled messages by displaying them to
+        the user (or equivalent), so they can be removed from the pending queue.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            A given message ID was not found, so no action was taken
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetMessageTypes">
+      <arg direction="out" type="au" tp:type="Channel_Text_Message_Type[]">
+        <tp:docstring>
+          An array of integer message types (ChannelTextMessageType)
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Return an array indicating which types of message may be sent on this
+        channel.
+      </tp:docstring>
+    </method>
+
+    <method name="ListPendingMessages">
+      <arg direction="in" name="clear" type="b">
+        <tp:docstring>
+          If true, behave as if AcknowledgePendingMessages had also been
+          called.
+        </tp:docstring>
+        <tp:deprecated since="0.17.3">
+          Setting this to true is NOT RECOMMENDED for clients that
+          have some sort of persistent message storage - clients SHOULD only
+          acknowledge messages after they have actually stored them, which is
+          impossible if this flag is true.</tp:deprecated>
+      </arg>
+      <arg direction="out" type="a(uuuuus)" tp:type="Pending_Text_Message[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          An array of structs representing the pending queue. Each contains:
+          <ul>
+            <li>a numeric identifier</li>
+            <li>a Unix timestamp indicating when the message was received</li>
+            <li>the contact handle for the contact who sent the message</li>
+            <li>the message type, taken from ChannelTextMessageType</li>
+            <li>the bitwise-OR of the message flags from ChannelTextMessageFlags</li>
+            <li>the text of the message</li>
+          </ul>
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        List the messages currently in the pending queue, and optionally
+        remove then all.
+      </tp:docstring>
+    </method>
+
+    <signal name="LostMessage">
+      <tp:docstring>
+        This signal is emitted to indicate that an incoming message was
+        not able to be stored and forwarded by the connection manager
+        due to lack of memory.
+      </tp:docstring>
+    </signal>
+
+    <signal name="Received">
+      <arg name="id" type="u">
+        <tp:docstring>
+          A numeric identifier for acknowledging the message
+        </tp:docstring>
+      </arg>
+      <arg name="timestamp" type="u" tp:type="Unix_Timestamp">
+        <tp:docstring>
+          A Unix timestamp indicating when the message was received
+        </tp:docstring>
+      </arg>
+      <arg name="sender" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          The handle of the contact who sent the message
+        </tp:docstring>
+      </arg>
+      <arg name="type" type="u" tp:type="Channel_Text_Message_Type">
+        <tp:docstring>
+          The type of the message (normal, action, notice, etc.)
+        </tp:docstring>
+      </arg>
+      <arg name="flags" type="u" tp:type="Channel_Text_Message_Flags">
+        <tp:docstring>
+          A bitwise OR of the message flags
+        </tp:docstring>
+      </arg>
+      <arg name="text" type="s">
+        <tp:docstring>
+          The text of the message
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Signals that a message with the given id, timestamp, sender, type
+        and text has been received on this channel. Applications that catch
+        this signal and reliably inform the user of the message should
+        acknowledge that they have dealt with the message with the
+        AcknowledgePendingMessage method.
+      </tp:docstring>
+    </signal>
+
+    <method name="Send">
+      <arg direction="in" name="type" type="u" tp:type="Channel_Text_Message_Type">
+        <tp:docstring>
+          An integer indicating the type of the message
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="text" type="s">
+        <tp:docstring>
+          The message to send
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Request that a message be sent on this channel. When the message has
+        been submitted for delivery, this method will return and the Sent
+        signal will be emitted. If the message cannot be submitted for
+        delivery, the method returns an error and no signal is emitted.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+      </tp:possible-errors>
+    </method>
+
+    <tp:enum name="Channel_Text_Send_Error" type="u">
+      <tp:enumvalue suffix="Unknown" value="0">
+        <tp:docstring>
+        An unknown error occurred
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Offline" value="1">
+        <tp:docstring>
+        The requested contact was offline
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Invalid_Contact" value="2">
+        <tp:docstring>
+        The requested contact is not valid
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Permission_Denied" value="3">
+        <tp:docstring>
+        The user does not have permission to speak on this channel
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Too_Long" value="4">
+        <tp:docstring>
+        The outgoing message was too long and was rejected by the server
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Not_Implemented" value="5">
+        <tp:docstring>
+        The channel doesn't support sending text messages to the requested
+        contact
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <signal name="SendError">
+      <arg name="error" type="u" tp:type="Channel_Text_Send_Error">
+        <tp:docstring>
+          The error that occurred
+        </tp:docstring>
+      </arg>
+      <arg name="timestamp" type="u" tp:type="Unix_Timestamp">
+        <tp:docstring>
+          The Unix timestamp indicating when the message was sent
+        </tp:docstring>
+      </arg>
+      <arg name="type" type="u" tp:type="Channel_Text_Message_Type">
+        <tp:docstring>
+          The message type
+        </tp:docstring>
+      </arg>
+      <arg name="text" type="s">
+        <tp:docstring>
+          The text of the message
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Signals that an outgoing message has failed to send. The error
+          will be one of the values from ChannelTextSendError.</p>
+
+        <p>This signal should only be emitted for messages for which
+          Sent has already been emitted and Send has already returned
+          success.</p>
+      </tp:docstring>
+      <tp:changed version="0.17.3">older spec versions claimed that SendError
+        was emitted <em>instead of</em> Sent, rather than <em>in addition
+        to</em> Sent. However, the 0.17.3+ semantics were what we'd always
+        actually implemented.</tp:changed>
+    </signal>
+
+    <signal name="Sent">
+      <arg name="timestamp" type="u" tp:type="Unix_Timestamp">
+        <tp:docstring>
+          Unix timestamp indicating when the message was sent
+        </tp:docstring>
+      </arg>
+      <arg name="type" type="u" tp:type="Channel_Text_Message_Type">
+        <tp:docstring>
+          The message type (normal, action, notice, etc) from
+          ChannelTextMessageType
+        </tp:docstring>
+      </arg>
+      <arg name="text" type="s">
+        <tp:docstring>
+          The text of the message
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Signals that a message has been submitted for sending.
+      </tp:docstring>
+    </signal>
+
+    <tp:enum name="Channel_Text_Message_Type" type="u">
+      <tp:docstring>
+        The type of message.
+      </tp:docstring>
+
+      <tp:enumvalue suffix="Normal" value="0">
+        <tp:docstring>
+        An ordinary chat message. Unknown types SHOULD be treated like this.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Action" value="1">
+        <tp:docstring>
+        An action which might be presented to the user as
+        "* &lt;sender&gt; &lt;action&gt;", such as an IRC CTCP
+        ACTION (typically selected by the "/me" command). For example, the
+        text of the message might be "drinks more coffee".
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Notice" value="2">
+        <tp:docstring>
+        A one-off or automated message not necessarily expecting a reply
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Auto_Reply" value="3">
+        <tp:docstring>
+        An automatically-generated reply message.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Delivery_Report" value="4">
+        <tp:docstring>
+          This message type MUST NOT appear unless the channel supports the
+          DeliveryReporting interface. The message MUST be as defined by
+          the DeliveryReporting interface.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:flags name="Channel_Text_Message_Flags" value-prefix="Channel_Text_Message_Flag" type="u">
+      <tp:flag suffix="Truncated" value="1">
+        <tp:docstring>
+        The incoming message was truncated to a shorter length by the
+        server or the connection manager.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Non_Text_Content" value="2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The incoming message contained non-text content which cannot be
+            represented by this interface, but has been signalled
+            in the Messages interface.</p>
+
+          <p>Connection managers SHOULD only set this flag if the non-text
+            content appears to be relatively significant (exactly how
+            significant is up to the implementor). The intention is that
+            if this flag is set, clients using this interface SHOULD inform
+            the user that part of the message was not understood.</p>
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+    <tp:property name="anonymous" type="b">
+      <tp:docstring>
+      True if people may join the channel without other members being made
+      aware of their identity.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="invite-only" type="b">
+      <tp:docstring>
+      True if people may not join the channel until they have been invited.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="limit" type="u">
+      <tp:docstring>
+      The limit to the number of members, if limited is true.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="limited" type="b">
+      <tp:docstring>
+      True if there is a limit to the number of channel members.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="moderated" type="b">
+      <tp:docstring>
+      True if channel membership is not sufficient to allow participation.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="name" type="s">
+      <tp:docstring>
+      A human-visible name for the channel, if it differs from the string
+      version of the channel's handle.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="description" type="s">
+      <tp:docstring>
+      A human-readable description of the channel's overall purpose.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="password" type="s">
+      <tp:docstring>
+      The password required to enter the channel if password-required is true.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="password-required" type="b">
+      <tp:docstring>
+      True if a password must be provided to enter the channel.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="persistent" type="b">
+      <tp:docstring>
+      True if the channel will remain in existence on the server after all
+      members have left it.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="private" type="b">
+      <tp:docstring>
+      True if the channel is not visible to non-members.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="subject" type="s">
+      <tp:docstring>
+      A human-readable description of the current subject of conversation in
+      the channel, similar to /topic in IRC.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="subject-contact" type="u" tp:type="Contact_Handle">
+      <tp:docstring>
+      A contact handle representing who last modified the subject, or 0
+      if it isn't known.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="subject-timestamp" type="u" tp:type="Unix_Timestamp">
+      <tp:docstring>
+      A unix timestamp indicating when the subject was last modified.
+      </tp:docstring>
+    </tp:property>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A channel type for sending and receiving messages in plain text,
+        with no formatting. In future specifications, channels for sending
+        and receiving messages that can be reduced to plain text (i.e.
+        formatted text) should also have this type.</p>
+
+      <p>When a message is received, an identifier is assigned and a
+        Received signal emitted, and the message placed in a pending queue
+        which can be inspected with ListPendingMessages. A client which has
+        handled the message by showing it to the user (or equivalent) should
+        acknowledge the receipt using the AcknowledgePendingMessage method,
+        and the message will then be removed from the pending queue. Numeric
+        identifiers for received messages may be reused over the lifetime of
+        the channel.</p>
+
+      <p>Each message has an associated 'type' value, which should be one
+        of the values allowed by ChannelTextMessageType.</p>
+
+      <p>Each message also has a flags value, which is a bitwise OR of the
+        flags given in ChannelTextMessageFlags.</p>
+
+      <p>Sending messages can be requested using the Send method, which will
+        return successfully and emit the Sent signal when the message has
+        been delivered to the server, or return an error with no signal
+        emission if there is a failure. If a message is sent but delivery
+        of the message later fails, this is indicated with the SendError
+        signal.</p>
+
+      <p>On protocols where additional contacts cannot be invited into
+        a one-to-one chat, or where a one-to-one chat is just a series of
+        individual personal messages rather than being represented by some
+        object on the server (i.e. most protocols), one-to-one chats should be
+        represented by a Text channel with handle type CONTACT.</p>
+
+      <p>Named chat rooms whose identity can be saved and used again later
+        (IRC channels, Jabber MUCs) are expected to be represented by Text
+        channels with handle type ROOM and the Group interface; they should
+        usually also have the Properties interface.</p>
+
+      <p>Unnamed, transient chat rooms defined only by their members (e.g. on
+        MSN) are expected to be represented by Text channels with handle type
+        0, handle 0, the Group interface, and optionally the Properties
+        interface.</p>
+
+      <p>On protocols where a conversation with a user is actually just
+        a nameless chat room starting with exactly two members, to which
+        more members can be invited, calling RequestChannel with type Text
+        and handle type CONTACT should continue to succeed, but may return
+        a channel with handle type 0, handle 0, the group interface,
+        and the local and remote contacts in its members.</p>
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

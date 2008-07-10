@@ -1,0 +1,76 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Forwarding" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.Forwarding"
+    tp:causes-havoc='not well-tested'>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+    <signal name="ForwardingChanged">
+      <arg name="forward_to" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          An integer contact handle to forward communication to
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when the forwarding contact handle for this connection has been
+        changed. An zero handle indicates forwarding is disabled.
+      </tp:docstring>
+    </signal>
+    <method name="GetForwardingHandle">
+      <arg direction="out" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          An integer contact handle to whom incoming communication is forwarded
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Returns the current forwarding contact handle, or zero if none is set.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+      </tp:possible-errors>
+    </method>
+    <method name="SetForwardingHandle">
+      <arg direction="in" name="forward_to" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          An integer contact handle to forward incoming communications to
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Set a contact handle to forward incoming communications to. A zero
+        handle disables forwarding.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+      </tp:possible-errors>
+    </method>
+    <tp:docstring>
+      A connection interface for services which can signal to contacts
+    that they should instead contact a different user ID, effectively
+    forwarding all incoming communication channels to another contact on
+    the service.
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

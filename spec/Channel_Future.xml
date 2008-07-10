@@ -1,0 +1,122 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Future"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.FUTURE"
+    tp:causes-havoc="a staging area for future Channel functionality">
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface contains functionality which we intend to incorporate
+        into the Channel interface in future. It should be considered to
+        be conceptually part of the core Channel interface, but without
+        API or ABI guarantees.</p>
+
+      <tp:rationale>
+        <p>If we add new functionality to the Channel interface, libraries
+          that use generated code (notably telepathy-glib) will have it as
+          part of their ABI forever, meaning we can't make incompatible
+          changes. By using this interface as a staging area for future
+          Channel functionality, we can try out new properties, signals
+          and methods as application-specific extensions, then merge them
+          into the core Channel interface when we have enough implementation
+          experience to declare them to be stable.</p>
+
+        <p>The name is by analogy to Python's <code>__future__</code>
+          pseudo-module.</p>
+      </tp:rationale>
+    </tp:docstring>
+
+    <property name="TargetID" type="s" access="read">
+      <tp:added version="0.17.7">(in Channel.FUTURE
+        pseudo-interface)</tp:added>
+      <tp:docstring>
+        The string that would result from inspecting the TargetHandle
+        property (i.e. the identifier in the IM protocol of the contact,
+        room, etc. with which this channel communicates).
+
+        <tp:rationale>
+          See InitiatorID; the rationale is the same.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="InitiatorHandle" type="u" tp:type="Contact_Handle"
+      access="read">
+      <tp:added version="0.17.7">(in Channel.FUTURE
+        pseudo-interface)</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The contact who initiated the channel. For channels requested by the
+          local user, this MUST be the same thing as would be returned
+          by Connection.GetSelfHandle() at the time the channel was
+          created.</p>
+
+        <tp:rationale>
+          <p>The careful wording about the self-handle is because the Renaming
+            interface can cause the return from Connection.GetSelfHandle to
+            change. It's something of a specification bug that we don't signal
+            this in the Connection interface yet.</p>
+        </tp:rationale>
+
+        <p>For channels requested by a remote user, this MUST be their handle.
+          If unavailable or not applicable, this MUST be 0 (for instance,
+          contact lists are not really initiated by anyone in particular, and
+          it's easy to imagine a protocol where chatroom invitations can be
+          anonymous).</p>
+
+        <p>For channels with the Group interface, this SHOULD be the same
+          contact who is signalled as the "Actor" causing the self-handle
+          to be placed in the local-pending set.</p>
+
+        <p>This SHOULD NOT be a channel-specific handle, if possible.</p>
+
+        <p>It does not make sense for this property to be passed to the
+          RequestChannels method on Channel.Interface.Requests.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="InitiatorID" type="s" access="read">
+      <tp:added version="0.17.7">(in Channel.FUTURE
+        pseudo-interface)</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The string that would result from inspecting the InitiatorHandle
+          property (i.e. the initiator's identifier in the IM protocol).</p>
+
+        <tp:rationale>
+          <p>The presence of this property avoids the following race
+            condition:</p>
+
+          <ul>
+            <li>New StreamedMedia channel C is signalled with initiator
+              handle I</li>
+            <li>Client calls InspectHandles(CONTACT, [I])</li>
+            <li>Channel C closes, removing the last reference to handle I</li>
+            <li>InspectHandles(CONTACT, [I]) returns an error</li>
+            <li>Client can indicate that a call was missed, but not who
+              called!</li>
+          </ul>
+        </tp:rationale>
+
+        <p>It does not make sense for this property to be passed to the
+          RequestChannels method on Channel.Interface.Requests.</p>
+      </tp:docstring>
+    </property>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

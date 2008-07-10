@@ -1,0 +1,79 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Telepathy D-Bus Interface Specification</tp:title>
+<tp:version>0.17.7</tp:version>
+
+<tp:copyright>Copyright (C) 2005-2008 Collabora Limited</tp:copyright>
+<tp:copyright>Copyright (C) 2005-2008 Nokia Corporation</tp:copyright>
+<tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
+
+<tp:license xmlns="http://www.w3.org/1999/xhtml">
+<p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+</tp:license>
+
+<xi:include href="Connection_Manager.xml"/>
+<xi:include href="Connection.xml"/>
+<xi:include href="Connection_Interface_Aliasing.xml"/>
+<xi:include href="Connection_Interface_Avatars.xml"/>
+<xi:include href="Connection_Interface_Capabilities.xml"/>
+<!-- Never implemented, is a terrible API
+<xi:include href="Connection_Interface_Contact_Info.xml"/> -->
+<!-- Never implemented, insufficient (needs conditions)
+<xi:include href="Connection_Interface_Forwarding.xml"/> -->
+<xi:include href="Connection_Interface_Presence.xml"/>
+<!-- Never implemented, vague
+<xi:include href="Connection_Interface_Privacy.xml"/> -->
+<xi:include href="Connection_Interface_Renaming.xml"/>
+
+<xi:include href="Channel.xml"/>
+<xi:include href="Channel_Future.xml"/>
+<xi:include href="Channel_Type_Contact_List.xml"/>
+<!-- Never implemented, can't be implemented with current dbus-glib, vague
+<xi:include href="Channel_Type_Contact_Search.xml"/> -->
+<xi:include href="Channel_Type_Streamed_Media.xml"/>
+<xi:include href="Channel_Type_Room_List.xml"/>
+<xi:include href="Channel_Type_Text.xml"/>
+<xi:include href="Channel_Type_Tubes.xml"/>
+
+<xi:include href="Channel_Interface_Call_Merging.xml"/>
+<xi:include href="Channel_Interface_Call_State.xml"/>
+<xi:include href="Channel_Interface_Chat_State.xml"/>
+<xi:include href="Channel_Interface_Delivery_Reporting.xml"/>
+<xi:include href="Channel_Interface_DTMF.xml"/>
+<xi:include href="Channel_Interface_Group.xml"/>
+<xi:include href="Channel_Interface_Hold.xml"/>
+<xi:include href="Channel_Interface_HTML.xml"/>
+<xi:include href="Channel_Interface_Password.xml"/>
+<!-- Causes havoc, never implemented, unclear requirements
+<xi:include href="Channel_Interface_Transfer.xml"/> -->
+<xi:include href="Channel_Interface_Media_Signalling.xml"/>
+<xi:include href="Channel_Interface_Messages.xml"/>
+
+<xi:include href="Media_Session_Handler.xml"/>
+<xi:include href="Media_Stream_Handler.xml"/>
+
+<xi:include href="Properties_Interface.xml"/>
+
+<xi:include href="Account_Manager.xml"/>
+<xi:include href="Account.xml"/>
+
+<xi:include href="Channel_Handler.xml"/>
+
+<xi:include href="errors.xml"/>
+<xi:include href="generic-types.xml"/>
+
+</tp:spec>

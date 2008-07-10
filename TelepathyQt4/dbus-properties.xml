@@ -1,0 +1,29 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:title>D-Bus Properties</tp:title>
+
+  <node name="/DBus_Properties">
+    <interface name="org.freedesktop.DBus.Properties">
+
+      <method name="Get">
+        <arg direction="in" type="s" name="Interface_Name"/>
+        <arg direction="in" type="s" name="Property_Name"/>
+        <arg direction="out" type="v" name="Value"/>
+      </method>
+
+      <method name="Set">
+        <arg direction="in" type="s" name="Interface_Name"/>
+        <arg direction="in" type="s" name="Property_Name"/>
+        <arg direction="in" type="v" name="Value"/>
+      </method>
+
+      <method name="GetAll">
+        <arg direction="in" type="s" name="Interface_Name"/>
+        <arg direction="out" type="a{sv}" name="Properties"/>
+      </method>
+
+    </interface>
+  </node>
+
+</tp:spec>

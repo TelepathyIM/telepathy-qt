@@ -1,0 +1,43 @@
+<tp:generic-types
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:simple-type name="Unix_Timestamp" type="u">
+    <tp:docstring>An unsigned 32-bit integer representing time since 1970</tp:docstring>
+  </tp:simple-type>
+
+  <tp:simple-type name="DBus_Bus_Name" type="s">
+    <tp:docstring>A string representing a D-Bus bus name - either a well-known
+      name like "org.freedesktop.Telepathy.MissionControl" or a unique name
+      like ":1.123"</tp:docstring>
+  </tp:simple-type>
+
+  <tp:simple-type name="DBus_Unique_Name" type="s">
+    <tp:docstring>A string representing a D-Bus unique name, such as
+      ":1.123"</tp:docstring>
+  </tp:simple-type>
+
+  <tp:simple-type name="DBus_Interface" type="s">
+    <tp:docstring>A string representing a D-Bus interface</tp:docstring>
+  </tp:simple-type>
+
+  <tp:simple-type name="DBus_Signature" type="s">
+    <tp:docstring>A string representing a D-Bus signature
+      (the 'g' type isn't used because of poor interoperability, particularly
+      with dbus-glib)</tp:docstring>
+  </tp:simple-type>
+
+  <tp:mapping name="String_Variant_Map">
+    <tp:docstring>A mapping from strings to variants representing extra
+      key-value pairs.</tp:docstring>
+    <tp:member type="s" name="Key"/>
+    <tp:member type="v" name="Value"/>
+  </tp:mapping>
+
+  <tp:mapping name="String_String_Map">
+    <tp:docstring>A mapping from strings to strings representing extra
+      key-value pairs.</tp:docstring>
+    <tp:member type="s" name="Key"/>
+    <tp:member type="s" name="Value"/>
+  </tp:mapping>
+
+</tp:generic-types>

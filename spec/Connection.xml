@@ -1,0 +1,650 @@
+<?xml version="1.0" ?>
+<node name="/Connection"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  >
+  <tp:copyright>Copyright (C) 2005, 2006, 2007 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2005, 2006 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+<p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection">
+
+    <tp:struct name="Channel_Info" array-name="Channel_Info_List">
+      <tp:docstring>A struct representing a channel, as returned by
+        ListChannels on the Connection interface.</tp:docstring>
+      <tp:member type="o" name="Channel">
+        <tp:docstring>The object path of the channel, which is on the
+          same bus name as the connection</tp:docstring>
+      </tp:member>
+      <tp:member type="s" tp:type="DBus_Interface" name="Channel_Type">
+        <tp:docstring>The channel's type</tp:docstring>
+      </tp:member>
+      <tp:member type="u" tp:type="Handle_Type" name="Handle_Type">
+        <tp:docstring>The type of the handle that the channel communicates
+          with, or Handle_Type_None if there is no associated
+          handle</tp:docstring>
+      </tp:member>
+      <tp:member type="u" tp:type="Handle" name="Handle">
+        <tp:docstring>The handle that the channel communicates with,
+          or 0 if there is no associated handle</tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <method name="Connect">
+      <tp:docstring>
+        Request that the connection be established. This will be done
+        asynchronously and errors will be returned by emitting StatusChanged
+        signals.
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          The connection is already connecting or connected
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="Disconnect">
+      <tp:docstring>
+        Request that the connection be closed. This closes the connection if
+        it's not already in DISCONNECTED state, and destroys the connection
+        object.
+      </tp:docstring>
+    </method>
+
+    <method name="GetInterfaces">
+      <arg direction="out" type="as" tp:type="DBus_Interface[]">
+        <tp:docstring>
+          An array of D-Bus interface names
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Get the optional interfaces supported by this connection.
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetProtocol">
+      <arg direction="out" type="s" tp:type="Protocol">
+        <tp:docstring>
+          A string identifier for the protocol
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Get the protocol this connection is using.
+      </tp:docstring>
+    </method>
+
+    <method name="GetSelfHandle">
+      <arg direction="out" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          An integer handle representing the user
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Get the handle which represents the user on this connection, which will
+        remain valid for the lifetime of this connection, or until a change
+        in the user's identifier is signalled by the Renamed signal on the
+        Renaming interface (if present).
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetStatus">
+      <arg direction="out" type="u" tp:type="Connection_Status">
+        <tp:docstring>
+          An integer representing the current status
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Get the current status as defined in the StatusChanged signal.
+      </tp:docstring>
+    </method>
+
+    <method name="HoldHandles">
+      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+        <tp:docstring>
+          The type of handle to be held
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="handles" type="au" tp:type="Handle[]">
+        <tp:docstring>
+          A array of integer handles to hold
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Notify the connection manger that your client is holding a copy
+        of handles which may not be in use in any existing channel or
+        list, and were not obtained by using the RequestHandles method. For
+        example, a handle observed in an emitted signal, or displayed
+        somewhere in the UI that is not associated with a channel. The
+        connection manager must not deallocate a handle where any clients
+        have used this method to indicate it is in use until the ReleaseHandle
+        method is called, or the clients disappear from the bus.</p>
+
+        <p>Note that HoldHandles is idempotent - calling it multiple times
+          is equivalent to calling it once. If a handle is "referenced" by
+          several components which share a D-Bus unique name, the client
+          should perform reference counting internally, and only call
+          ReleaseHandles when none of the cooperating components need the
+          handle any longer.</p>
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          The handle type is invalid
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
+          One of the given handles is not valid
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="InspectHandles">
+      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+        <tp:docstring>
+          The type of handle to be inspected
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="handles" type="au" tp:type="Handle[]">
+        <tp:docstring>
+          An array of integer handles of this type
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="as">
+        <tp:docstring>
+          An array of handle names in the same order as the given numbers
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Return a string representation for a number of handles of a given
+        type.
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          The handle type is invalid
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
+          One of the given handles is not valid
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="ListChannels">
+      <arg direction="out" type="a(osuu)" tp:type="Channel_Info[]">
+        <tp:docstring>
+          An array of structs representing channels.
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        List all the channels which currently exist on this connection.
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="NewChannel">
+      <arg name="object_path" type="o">
+        <tp:docstring>
+          A D-Bus object path for the channel object on this service
+        </tp:docstring>
+      </arg>
+
+      <arg name="channel_type" type="s" tp:type="DBus_Interface">
+        <tp:docstring>
+          A D-Bus interface name representing the channel type
+        </tp:docstring>
+      </arg>
+
+      <arg name="handle_type" type="u" tp:type="Handle_Type">
+        <tp:docstring>
+          An integer representing the type of handle this channel
+          communicates with, or Handle_Type_None if no handle is specified
+        </tp:docstring>
+      </arg>
+
+      <arg name="handle" type="u" tp:type="Handle">
+        <tp:docstring>
+          A handle indicating the specific contact, room or list this
+          channel communicates with, or zero if no handle is specified
+        </tp:docstring>
+      </arg>
+
+      <arg name="suppress_handler" type="b">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>If true, the channel was requested by a client that intends to
+            present it to the user itself (i.e. it passed suppress_handler=TRUE
+            to the RequestChannel method), so no other handler should be
+            launched.</p>
+
+          <p>If false, either the channel was created due to incoming
+            information from the service, or the channel was requested by
+            a local client that does not intend to handle the channel itself
+            (a typical use-case is an address-book viewer that does not itself
+            implement chat or VoIP functionality, starting a channel that
+            will be handled by the same user interface that would handle
+            incoming channels).</p>
+
+          <p>Clients MUST NOT assume that only incoming channels will have
+            this flag set to false.</p>
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Emitted when a new Channel object is created, either through user
+        request or incoming information from the service.
+      </tp:docstring>
+    </signal>
+
+    <method name="ReleaseHandles">
+      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+        <tp:docstring>
+          An integer handle type (as defined in RequestHandle)
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="handles" type="au" tp:type="Handle[]">
+        <tp:docstring>
+          An array of integer handles being held by the client
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Explicitly notify the connection manager that your client is no
+        longer holding any references to the given handles, and that they
+        may be deallocated if they are not held by any other clients or
+        referenced by any existing channels. See HoldHandles for notes.
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          The handle type is invalid
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
+          One of the given handles is not valid
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          One of the given handles is not held by this client
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="RequestChannel">
+      <arg direction="in" name="type" type="s" tp:type="DBus_Interface">
+        <tp:docstring>
+          A D-Bus interface name representing base channel type
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+        <tp:docstring>
+          An integer representing the handle type, or Handle_Type_None if
+          no handle is specified
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="handle" type="u" tp:type="Handle">
+        <tp:docstring>
+          A nonzero integer handle representing a contact, room, list etc.
+          according to handle_type, or zero if the handle_type is
+          Handle_Type_None
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="suppress_handler" type="b">
+        <tp:docstring>
+          If true, the requesting client intends to take responsibility for
+          displaying the channel to the user, so no other handler needs to
+          be launched
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="o">
+        <tp:docstring>
+          The D-Bus object path for the channel created or retrieved
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request a channel satisfying the specified type and communicating
+          with the contact, room, list etc. indicated by the given
+          handle_type and handle. The handle_type and handle may both be
+          zero to request the creation of a new, empty channel, which may
+          or may not be possible, depending on the protocol and channel
+          type.</p>
+
+        <p>On success, the returned channel will always be of the requested
+          type (i.e. implement the requested channel-type interface).</p>
+
+        <p>If a new, empty channel is requested, on success the returned
+          channel will always be an "anonymous" channel for which the type
+          and handle are both zero.</p>
+
+        <p>If a channel to a contact, room etc. is requested, on success, the
+          returned channel may either be a new or existing channel to
+          the requested entity (i.e. its GetHandle() returns the
+          requested handle type and handle), or a newly created "anonymous"
+          channel associated with the requested handle in some
+          implementation-specific way.</p>
+
+        <p>For example, for a contact handle, the returned channel
+          might be "anonymous", but implement the groups interface and have
+          the requested contact already present among the members.</p>
+
+        <p>If the request cannot be satisfied, an error is raised and no
+          channel is created.</p>
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Unknown channel type
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
+          <tp:docstring>
+            The given handle does not exist or cannot be created
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The requested channel type cannot be created with the given handle
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.Channel.Banned"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.Channel.Full"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.Channel.InviteOnly"/>
+      </tp:possible-errors>
+    </method>
+
+    <tp:enum name="Handle_Type" type="u">
+      <tp:enumvalue suffix="None" value="0">
+        <tp:docstring>
+          A "null" handle type used to indicate the absence of a handle.
+          When a handle type and a handle appear as a pair, if the handle
+          type is zero, the handle must also be zero.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Contact" value="1">
+        <tp:docstring>
+          A contact
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Room" value="2">
+        <tp:docstring>
+          A chat room
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="List" value="3">
+        <tp:docstring>
+          A server-generated contact list (see Channel.Interface.Group)
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Group" value="4">
+        <tp:docstring>
+          A user-defined contact list (see Channel.Interface.Group)
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:simple-type name="Handle" type="u">
+      <tp:docstring>An unsigned 32-bit integer representing a
+        handle</tp:docstring>
+    </tp:simple-type>
+
+    <tp:simple-type name="Contact_Handle" type="u">
+      <tp:docstring>An unsigned 32-bit integer representing a handle of type
+        Handle_Type_Contact</tp:docstring>
+    </tp:simple-type>
+
+    <tp:simple-type name="Room_Handle" type="u">
+      <tp:docstring>An unsigned 32-bit integer representing a handle of type
+        Handle_Type_Room</tp:docstring>
+    </tp:simple-type>
+
+    <tp:simple-type name="List_Handle" type="u">
+      <tp:docstring>An unsigned 32-bit integer representing a handle of type
+        Handle_Type_List</tp:docstring>
+    </tp:simple-type>
+
+    <tp:simple-type name="Group_Handle" type="u">
+      <tp:docstring>An unsigned 32-bit integer representing a handle of type
+        Handle_Type_Group</tp:docstring>
+    </tp:simple-type>
+
+    <method name="RequestHandles">
+      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+        <tp:docstring>
+          The type of handle required
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="names" type="as">
+        <tp:docstring>
+          An array of names of entities to request handles for
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="au" tp:type="Handle[]">
+        <tp:docstring>
+          An array of integer handle numbers in the same order as the given strings
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Request several handles from the connection manager which represent a
+        number of contacts, rooms or server-stored lists on the service. The
+        connection manager should record that these handles are in use by the
+        client who invokes this method, and must not deallocate the handles
+        until the client disconnects from the bus or calls the ReleaseHandle
+        method. Where the name refers to an entity that already has a handle
+        in this connection manager, this handle should be returned instead.
+        The handle number 0 must not be returned by the connection manager.
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          The handle type is invalid
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          The given name is not a valid entity of the given type
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <tp:enum name="Connection_Status" plural="Connection_Statuses" type="u">
+      <tp:enumvalue suffix="Connected" value="0">
+        <tp:docstring>
+            The connection is alive and all methods are available.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Connecting" value="1">
+        <tp:docstring>
+            The connection has not yet been established, or has been
+            severed and reconnection is being attempted. Some methods may fail
+            until the connection has been established.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Disconnected" value="2">
+        <tp:docstring>
+            The connection has been severed and no method calls are
+            valid. The object may be removed from the bus at any time.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+    <tp:enum name="Connection_Status_Reason" type="u">
+      <tp:enumvalue suffix="None_Specified" value="0">
+        <tp:docstring>
+            There is no reason set for this state change.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Requested" value="1">
+        <tp:docstring>
+            The change is in response to a user request.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Network_Error" value="2">
+        <tp:docstring>
+            There was an error sending or receiving on the network socket.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Authentication_Failed" value="3">
+        <tp:docstring>
+            The username or password was invalid.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Encryption_Error" value="4">
+        <tp:docstring>
+            There was an error negotiating SSL on this connection, or
+            encryption was unavailable and require-encryption was set when the
+            connection was created.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Name_In_Use" value="5">
+        <tp:docstring>
+            Someone is already connected to the server using the name
+            you are trying to connect with.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Cert_Not_Provided" value="6">
+        <tp:docstring>
+            The server did not provide a SSL certificate.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Cert_Untrusted" value="7">
+        <tp:docstring>
+            The server's SSL certificate could not be trusted.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Cert_Expired" value="8">
+        <tp:docstring>
+            The server's SSL certificate has expired.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Cert_Not_Activated" value="9">
+        <tp:docstring>
+            The server's SSL certificate is not yet valid.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Cert_Hostname_Mismatch" value="10">
+        <tp:docstring>
+            The server's SSL certificate did not match its hostname.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Cert_Fingerprint_Mismatch" value="11">
+        <tp:docstring>
+            The server's SSL certificate does not have the expected
+            fingerprint.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Cert_Self_Signed" value="12">
+        <tp:docstring>
+            The server's SSL certificate is self-signed.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Cert_Other_Error" value="13">
+        <tp:docstring>
+            There was some other error validating the server's SSL certificate.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <signal name="StatusChanged">
+      <arg name="status" type="u" tp:type="Connection_Status">
+        <tp:docstring>
+          An integer indicating the new status, as defined by ConnectionStatus
+        </tp:docstring>
+      </arg>
+
+      <arg name="reason" type="u" tp:type="Connection_Status_Reason">
+        <tp:docstring>
+          An integer indicating the reason for the status change, as defined
+          by ConnectionStatusReason
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        Emitted when the status of the connection changes.  All states and
+        reasons have numerical values, as defined in ConnectionStatus
+        and ConnectionStatusReason.
+      </tp:docstring>
+    </signal>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+    <p>This models a connection to a single user account on a communication
+    service. Its basic capability is to provide the facility to request and
+    receive channels of differing types (such as text channels or streaming
+    media channels) which are used to carry out further communication.</p>
+
+    <p>As well as the methods and signatures below, arbitrary interfaces may be
+    provided by the Connection object to represent extra connection-wide
+    functionality, such as the Connection.Interface.Presence for receiving and
+    reporting presence information, and Connection.Interface.Aliasing for
+    connections where contacts may set and change an alias for themselves.
+    These interfaces can be discovered using GetInterfaces after the
+    connection, has been established and must not change subsequently at
+    runtime.</p>
+
+    <p>Contacts, rooms, and server-stored lists (such as subscribed contacts,
+    block lists, or allow lists) on a service are all represented by
+    immutable <em>handles</em>, which are unsigned non-zero integers which are
+    valid only for the lifetime of the connection object, and are used
+    throughout the protocol where these entities are represented, allowing
+    simple testing of equality within clients.</p>
+
+    <p>Zero as a handle value is sometimes used as a "null" value to mean
+    the absence of a contact, room, etc.</p>
+
+    <p>Handles have per-type uniqueness, meaning that
+    every (handle type, handle number) tuple is guaranteed to be unique within
+    a connection and that a handle alone (without its type) is meaningless or
+    ambiguous. Connection manager implementations should reference count these
+    handles to determine if they are in use either by any active clients or any
+    open channels, and may deallocate them when this ceases to be true. Clients
+    may request handles of a given type and name with the RequestHandles
+    method, inspect the entity name of handles with the InspectHandles method,
+    keep handles from being released with HoldHandles, and notify that they are
+    no longer storing handles with ReleaseHandles.</p>
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

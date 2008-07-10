@@ -1,0 +1,777 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_Group" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2005, 2006 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2005, 2006 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Interface.Group">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+
+    <tp:struct name="Local_Pending_Info" array-name="Local_Pending_Info_List">
+      <tp:docstring>A structure representing a contact whose attempt to
+        join a group is to be confirmed by the local user using
+        AddMembers.</tp:docstring>
+      <tp:member type="u" tp:type="Contact_Handle" name="To_Be_Added">
+        <tp:docstring>
+          The contact to be added to the group
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="u" tp:type="Contact_Handle" name="Actor">
+        <tp:docstring>
+          The contact requesting or causing the change
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="u" tp:type="Channel_Group_Change_Reason" name="Reason">
+        <tp:docstring>
+          The reason for the change
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Message">
+        <tp:docstring>
+          A human-readable message from the Actor, or an empty string
+          if there is no message
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <method name="AddMembers">
+      <arg direction="in" name="contacts" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          An array of contact handles to invite to the channel
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="message" type="s">
+        <tp:docstring>
+          A string message, which can be blank if desired
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Invite all the given contacts into the channel, or accept requests for
+          channel membership for contacts on the pending local list.</p>
+
+        <p>A message may be provided along with the request, which will be sent
+        to the server if supported. See the CHANNEL_GROUP_FLAG_MESSAGE_ADD and
+        CHANNEL_GROUP_FLAG_MESSAGE_ACCEPT flags to see in which cases this
+        message should be provided.</p>
+
+        <p>Attempting to add contacts who are already members is allowed;
+          connection managers must silently accept this, without error.</p>
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.Channel.Full"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.Channel.InviteOnly"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.Channel.Banned"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetAllMembers">
+      <tp:deprecated version="0.17.6">Use GetAll on the D-Bus
+        Properties D-Bus interface to get properties including Members,
+        RemotePendingMembers and LocalPendingMembers instead, falling back to
+        this method and GetLocalPendingMembers if necessary.</tp:deprecated>
+
+      <arg direction="out" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          array of handles of current members
+        </tp:docstring>
+      </arg>
+      <arg direction="out" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          array of handles of local pending members
+        </tp:docstring>
+      </arg>
+      <arg direction="out" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          array of handles of remote pending members
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Returns arrays of all current, local and remote pending channel
+        members.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <tp:flags name="Channel_Group_Flags" value-prefix="Channel_Group_Flag" type="u">
+      <tp:flag suffix="Can_Add" value="1">
+        <tp:docstring>
+            The AddMembers method can be used to add or invite members who are
+            not already in the local pending list (which is always valid).
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Can_Remove" value="2">
+        <tp:docstring>
+            The RemoveMembers method can be used to remove channel members
+            (removing those on the pending local list is always valid).
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Can_Rescind" value="4">
+        <tp:docstring>
+            The RemoveMembers method can be used on people on the remote
+            pending list.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Message_Add" value="8">
+        <tp:docstring>
+            A message may be sent to the server when calling AddMembers on
+            contacts who are not currently pending members.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Message_Remove" value="16">
+        <tp:docstring>
+            A message may be sent to the server when calling RemoveMembers on
+            contacts who are currently channel members.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Message_Accept" value="32">
+        <tp:docstring>
+            A message may be sent to the server when calling AddMembers on
+            contacts who are locally pending.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Message_Reject" value="64">
+        <tp:docstring>
+            A message may be sent to the server when calling RemoveMembers on
+            contacts who are locally pending.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Message_Rescind" value="128">
+        <tp:docstring>
+            A message may be sent to the server when calling RemoveMembers on
+            contacts who are remote pending.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Channel_Specific_Handles" value="256">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>
+            The members of this group have handles which are specific to
+            this channel, and are not valid as general-purpose handles on
+            the connection. Depending on the channel, it may be possible to
+            call GetHandleOwners to find the owners of these handles, which
+            should be done if you wish to eg subscribe to the contact's
+            presence.
+          </p>
+
+          <p>
+            Connection managers must ensure that any given handle is not
+            simultaneously a general-purpose handle and a channel-specific
+            handle.
+          </p>
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Only_One_Group" value="512">
+        <tp:docstring>
+            Placing a contact in multiple groups of this type is not allowed
+            and will raise NotAvailable (on services where contacts may only
+            be in one user-defined group, user-defined groups will have
+            this flag).
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Handle_Owners_Not_Available" value="1024">
+        <tp:docstring>
+          In rooms with channel specific handles (ie Channel_Specific_Handles
+          flag is set), this flag indicates that no handle owners are
+          available, apart from the owner of the SelfHandle.
+
+          <tp:rationale>
+            This used to be an important optimization to avoid repeated
+            GetHandleOwners calls, before we introduced the HandleOwner
+            property and HandleOwnerChanged signal.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Properties" value="2048">
+        <tp:docstring>
+          This flag indicates that all the properties introduced in
+          specification 0.17.6 are fully supported.
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+    <property name="GroupFlags" type="u" tp:type="Channel_Group_Flags"
+      access="read">
+      <tp:docstring>
+        An integer representing the bitwise-OR of flags on this
+        channel. The user interface can use this to present information about
+        which operations are currently valid. Change notification is via
+        the GroupFlagsChanged signal.
+      </tp:docstring>
+      <tp:added version="0.17.6">For backwards compatibility,
+        clients should fall back to calling GetGroupFlags if
+        Channel_Group_Flag_Properties is not present.</tp:added>
+    </property>
+
+    <method name="GetGroupFlags">
+      <arg direction="out" type="u" tp:type="Channel_Group_Flags">
+        <tp:docstring>
+          The value of the GroupFlags property
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Returns the value of the GroupFlags property.
+      </tp:docstring>
+      <tp:deprecated version="0.17.6">Use GetAll on the D-Bus
+        Properties D-Bus interface to get properties including GroupFlags
+        instead, falling back to this method if necessary.</tp:deprecated>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <tp:mapping name="Handle_Owner_Map">
+      <tp:docstring>
+        A map from channel-specific handles to their owners.
+      </tp:docstring>
+      <tp:added version="0.17.6">For backwards compatibility,
+        clients should fall back to calling GetHandleOwners if
+        Channel_Group_Flag_Properties is not present.</tp:added>
+
+      <tp:member type="u" name="Channel_Specific_Handle"
+        tp:type="Contact_Handle">
+        <tp:docstring>
+          A nonzero channel-specific handle
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="u" name="Global_Handle" tp:type="Contact_Handle">
+        <tp:docstring>
+          The global handle that owns the corresponding channel-specific
+          handle, or 0 if this could not be determined
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <property name="HandleOwners" type="a{uu}" tp:type="Handle_Owner_Map"
+      access="read">
+      <tp:docstring>
+        A map from channel-specific handles to their owners, including
+        at least all of the channel-specific handles in this channel's members,
+        local-pending or remote-pending sets as keys. Any handle not in
+        the keys of this mapping is not channel-specific in this channel.
+        Handles which are channel-specific, but for which the owner is
+        unknown, MUST appear in this mapping with 0 as owner. Change
+        notification is via the HandleOwnersChanged signal.
+      </tp:docstring>
+      <tp:added version="0.17.6"/>
+    </property>
+
+    <signal name="HandleOwnersChanged">
+      <tp:docstring>
+        Emitted whenever the HandleOwners property changes.
+      </tp:docstring>
+      <tp:added version="0.17.6">This signal should not be relied on
+        unless Channel_Group_Flag_Properties is present.</tp:added>
+
+      <arg name="Added" type="a{uu}" tp:type="Handle_Owner_Map">
+        <tp:docstring>
+          A map from channel-specific handles to their owners, in which the
+          keys include all the handles that were added to the keys of the
+          HandleOwners property, and all the handles in that property whose
+          owner has changed
+        </tp:docstring>
+      </arg>
+      <arg name="Removed" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          The channel-specific handles that were removed from the keys of the
+          HandleOwners property, as a result of the contact leaving this group
+          in a previous MembersChanged signal
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="GetHandleOwners">
+      <arg direction="in" name="handles" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of integer handles representing members of the channel
+        </tp:docstring>
+      </arg>
+      <arg direction="out" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          An array of integer handles representing the owner handles of
+          the given room members, in the same order, or 0 if the
+          owner is not available
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        If the CHANNEL_GROUP_FLAG_CHANNEL_SPECIFIC_HANDLES flag is set on
+        the channel, then the handles of the group members are specific
+        to this channel, and are not meaningful in a connection-wide
+        context such as contact lists. This method allows you to find
+        the owner of the handle if it can be discovered in this channel,
+        or 0 if the owner is not available.
+      </tp:docstring>
+      <tp:deprecated version="0.17.6">Clients should use the
+        HandleOwners property and HandleOwnersChanged signal if
+        Channel_Group_Flag_Properties is present.</tp:deprecated>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            This channel doesn't have the CHANNEL_SPECIFIC_HANDLES flag,
+            so handles in this channel are globally meaningful and calling
+            this method is not necessary
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            One of the given handles is not a member
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetLocalPendingMembers">
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
+      <tp:docstring>
+        Returns the To_Be_Added handle (only) for each structure in the
+        LocalPendingMembers property.
+      </tp:docstring>
+      <tp:deprecated version="0.17.6">Use the LocalPendingMembers
+        property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetLocalPendingMembersWithInfo">
+      <tp:added version="0.15.0" />
+      <tp:docstring>
+        Returns the LocalPendingMembers property.
+      </tp:docstring>
+      <tp:deprecated version="0.17.6">Use the LocalPendingMembers
+        property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
+      <arg direction="out" type="a(uuus)" tp:type="Local_Pending_Info[]">
+        <tp:docstring>
+          An array of structs containing:
+          <ul>
+            <li>
+              A handle representing the contact requesting channel membership
+            </li>
+            <li>
+              A handle representing the contact making the request, or 0 if
+              unknown
+            </li>
+            <li>
+              The reason for the request: one of the values of
+              ChannelGroupChangeReason
+            </li>
+            <li>
+              A string message containing the reason for the request if any (or
+              blank if none)
+            </li>
+          </ul>
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <property name="LocalPendingMembers" access="read"
+      type="a(uuus)" tp:type="Local_Pending_Info[]">
+      <tp:docstring>
+        An array of structs containing handles representing contacts
+        requesting channel membership and awaiting local approval with
+        AddMembers.
+      </tp:docstring>
+      <tp:added version="0.17.6">If Channel_Group_Flag_Properties is
+        not present, clients should fall back to using the
+        deprecated GetLocalPendingMembersWithInfo method, or fall back
+        from that to the deprecated GetAllMembers method.</tp:added>
+    </property>
+
+    <property name="Members" access="read" type="au" tp:type="Contact_Handle[]">
+      <tp:docstring>
+        The members of this channel.
+      </tp:docstring>
+      <tp:added version="0.17.6">If Channel_Group_Flag_Properties
+        is not set, fall back to calling GetAllMembers.</tp:added>
+    </property>
+
+    <method name="GetMembers">
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
+      <tp:docstring>
+        Returns the Members property.
+      </tp:docstring>
+      <tp:deprecated version="0.17.6">Use the Members
+        property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <property name="RemotePendingMembers" access="read" type="au"
+      tp:type="Contact_Handle[]">
+      <tp:docstring>
+        An array of handles representing contacts who have been
+        invited to the channel and are awaiting remote approval.
+      </tp:docstring>
+      <tp:added version="0.17.6">If Channel_Group_Flag_Properties
+        is not set, fall back to calling GetAllMembers.</tp:added>
+    </property>
+
+    <method name="GetRemotePendingMembers">
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
+      <tp:docstring>
+        Returns an array of handles representing contacts who have been
+        invited to the channel and are awaiting remote approval.
+      </tp:docstring>
+      <tp:deprecated version="0.17.6">Use the RemotePendingMembers
+        property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="SelfHandleChanged">
+      <tp:docstring>
+        Emitted whenever the SelfHandle property changes.
+      </tp:docstring>
+      <tp:added version="0.17.6">This signal should not be relied on
+        unless Channel_Group_Flag_Properties is present.</tp:added>
+
+      <arg type="u" tp:type="Contact_Handle" name="Self_Handle">
+        <tp:docstring>
+          The new value of the SelfHandle property.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="SelfHandle" type="u" tp:type="Contact_Handle"
+      access="read">
+      <tp:docstring>
+        The handle for the user on this channel (which can also be a
+        local or remote pending member), or 0 if the user is not a member at
+        all (which is likely to be the case, for instance, on ContactList
+        channels). Note that this is different from the connection
+        GetSelfHandle on some protocols, so the value of this handle should
+        always be used with the methods of this interface.
+      </tp:docstring>
+      <tp:added version="0.17.6">For backwards compatibility,
+        clients should fall back to calling GetSelfHandle if
+        Channel_Group_Flag_Properties is not present.</tp:added>
+    </property>
+
+    <method name="GetSelfHandle">
+      <arg direction="out" type="u" tp:type="Contact_Handle"/>
+      <tp:docstring>
+        Returns the value of the SelfHandle property.
+      </tp:docstring>
+      <tp:deprecated version="0.17.6">Clients should retrieve the
+        SelfHandle property using GetAll instead,
+        if Channel_Group_Flag_Properties is present.</tp:deprecated>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="GroupFlagsChanged">
+      <arg name="added" type="u" tp:type="Channel_Group_Flags">
+        <tp:docstring>
+          A bitwise OR of the flags which have been set
+        </tp:docstring>
+      </arg>
+      <arg name="removed" type="u" tp:type="Channel_Group_Flags">
+        <tp:docstring>
+          A bitwise OR of the flags which have been cleared
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when the flags as returned by GetGroupFlags are changed.
+        The user interface should be updated as appropriate.
+      </tp:docstring>
+    </signal>
+
+    <tp:enum name="Channel_Group_Change_Reason" type="u">
+      <tp:enumvalue suffix="None" value="0">
+        <tp:docstring>
+            No reason was provided for this change.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Offline" value="1">
+        <tp:docstring>
+            The change is due to a user going offline. Also used when
+            user is already offline, but this wasn't known previously.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Kicked" value="2">
+        <tp:docstring>
+            The change is due to a kick operation.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Busy" value="3">
+        <tp:docstring>
+            The change is due to a busy indication.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Invited" value="4">
+        <tp:docstring>
+            The change is due to an invitation.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Banned" value="5">
+        <tp:docstring>
+            The change is due to a kick+ban operation.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Error" value="6">
+        <tp:docstring>
+            The change is due to an error occurring.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Invalid_Contact" value="7">
+        <tp:docstring>
+            The change is because the requested contact does not exist.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="No_Answer" value="8">
+        <tp:docstring>
+            The change is because the requested contact did not respond.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Renamed" value="9">
+        <tp:docstring>
+          The change is because a contact's unique identifier changed.
+          There must be exactly one handle in the removed set and exactly
+          one handle in one of the added sets. The Renamed signal on the
+          Renaming interface will have been emitted for the same handles,
+          shortly before this MembersChanged signal is emitted.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Permission_Denied" value="10">
+        <tp:docstring>
+            The change is because there was no permission to contact the
+            requested handle.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Separated" value="11">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>If members are removed with this reason code, the change is
+            because the group has split into unconnected parts which can only
+            communicate within themselves (e.g. netsplits on IRC use this
+            reason code).
+          </p>
+          <p>
+            If members are added with this reason code, the change is because
+            unconnected parts of the group have rejoined. If this channel
+            carries messages (e.g. Text or Tubes channels) applications must
+            assume that the contacts being added are likely to have missed some
+            messages as a result of the separation, and that the contacts
+            in the group are likely to have missed some messages from the
+            contacts being added.
+          </p>
+          <p>Note that from the added contacts' perspective, they have been
+            in the group all along, and the contacts we indicate to be in
+            the group (including the local user) have just rejoined
+            the group with reason Separated. Application protocols in Tubes
+            should be prepared to cope with this situation.
+          </p>
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <signal name="MembersChanged">
+      <arg name="message" type="s">
+        <tp:docstring>
+          A string message from the server, or blank if not
+        </tp:docstring>
+      </arg>
+      <arg name="added" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members added to the channel
+        </tp:docstring>
+      </arg>
+      <arg name="removed" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members removed from the channel
+        </tp:docstring>
+      </arg>
+      <arg name="local_pending" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members who are pending local approval
+        </tp:docstring>
+      </arg>
+      <arg name="remote_pending" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members who are pending remote approval
+        </tp:docstring>
+      </arg>
+      <arg name="actor" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          The contact handle of the person who made the change, or 0
+          if not known
+        </tp:docstring>
+      </arg>
+      <arg name="reason" type="u" tp:type="Channel_Group_Change_Reason">
+        <tp:docstring>
+          A reason for the change: one of the values of
+          ChannelGroupChangeReason
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when contacts join any of the three lists (members, local
+          pending or remote pending) or when they leave any of the three lists.
+          There may also be a message from the server regarding this change,
+          which may be displayed to the user if desired.</p>
+
+        <p>All channel-specific handles that are mentioned in this signal
+          MUST be represented in the value of the HandleOwners property.
+          In practice, this will mean that HandleOwnersChanged is
+          emitted <em>before</em> emitting a MembersChanged signal in which
+          channel-specific handles are added, but that it is emitted
+          <em>after</em> emitting a MembersChanged signal in which
+          channel-specific handles are removed.</p>
+      </tp:docstring>
+    </signal>
+
+    <method name="RemoveMembers">
+      <arg direction="in" name="contacts" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          An array of contact handles to remove from the channel
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="message" type="s">
+        <tp:docstring>
+          A string message, which can be blank if desired
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Requests the removal of contacts from a channel, reject their request
+        for channel membership on the pending local list, or rescind their
+        invitation on the pending remote list. A message may be provided along
+        with the request, which will be sent to the server if supported. See
+        the CHANNEL_GROUP_FLAG_MESSAGE_REMOVE,
+        CHANNEL_GROUP_FLAG_MESSAGE_REJECT and
+        CHANNEL_GROUP_FLAG_MESSAGE_RESCIND flags to see in which cases this
+        message should be provided.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="RemoveMembersWithReason">
+      <arg direction="in" name="contacts" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          An array of contact handles to remove from the channel
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="message" type="s">
+        <tp:docstring>
+          A string message, which can be blank if desired
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="reason" type="u"
+           tp:type="Channel_Group_Change_Reason">
+        <tp:docstring>
+          A reason for the change: one of the values of
+          ChannelGroupChangeReason
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        As RemoveMembers, but a reason code may be provided where
+        appropriate. The reason code may be ignored if the underlying
+        protocol is unable to represent the given reason.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The provided reason code was invalid.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Interface for channels which have multiple members, and where the members
+    of the channel can change during its lifetime. Your presence in the channel
+    cannot be presumed by the channel's existence (for example, a channel you
+    may request membership of but your request may not be granted).</p>
+
+  <p>This interface implements three lists: a list of current members, and two
+    lists of local pending and remote pending members. Contacts on the remote
+    pending list have been invited to the channel, but the remote user has not
+    accepted the invitation. Contacts on the local pending list have requested
+    membership of the channel, but the local user of the framework must accept
+    their request before they may join. A single contact should never appear on
+    more than one of the three lists. The lists are empty when the channel is
+    created, and the MembersChanged signal should be emitted when information
+    is retrieved from the server, or changes occur.</p>
+
+  <p>Addition of members to the channel may be requested by using AddMembers. If
+    remote acknowledgement is required, use of the AddMembers method will cause
+    users to appear on the remote pending list. If no acknowledgement is
+    required, AddMembers will add contacts to the member list directly.  If a
+    contact is awaiting authorisation on the local pending list, AddMembers
+    will grant their membership request.</p>
+
+  <p>Removal of contacts from the channel may be requested by using
+    RemoveMembers.  If a contact is awaiting authorisation on the local pending
+    list, RemoveMembers will refuse their membership request. If a contact is
+    on the remote pending list but has not yet accepted the invitation,
+    RemoveMembers will rescind the request if possible.</p>
+
+  <p>It should not be presumed that the requester of a channel implementing this
+    interface is immediately granted membership, or indeed that they are a
+    member at all, unless they appear in the list. They may, for instance,
+    be placed into the remote pending list until a connection has been
+    established or the request acknowledged remotely.</p>
+
+  <p>If the local user joins a Group channel whose members or other state
+    cannot be discovered until the user joins (e.g. many chat room
+    implementations), the connection manager should ensure that the channel
+    is, as far as possible, in a consistent state before adding the local
+    contact to the members set; until this happens, the local contact should
+    be in the remote-pending set. For instance, if the connection manager
+    queries the server to find out the initial members list for the
+    channel, it should leave the local contact in the remote-pending set
+    until it has finished receiving the initial members list.
+  </p>
+
+  <p>If the protocol provides no reliable way to tell whether the complete
+    initial members list has been received yet, the connection manager
+    should make a best-effort attempt to wait for the full list
+    (in the worst case, waiting for a suitable arbitrary timeout)
+    rather than requiring user interfaces to do so on its behalf.</p>
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

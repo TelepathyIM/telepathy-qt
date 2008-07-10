@@ -1,0 +1,634 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_Messages"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+USA.</p>
+  </tp:license>
+  <interface
+    name="org.freedesktop.Telepathy.Channel.Interface.Messages.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Text"/>
+    <tp:added version="0.17.5">(draft version, not API-stable)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface extends the Text interface to support more general
+        messages, including:</p>
+
+      <ul>
+        <li>messages with attachments (like MIME multipart/mixed)</li>
+        <li>groups of alternatives (like MIME multipart/alternative)</li>
+        <li>delivery reports</li>
+        <li>any extra types of message we need in future</li>
+      </ul>
+
+      <p>It also provides a hook for improved sent
+        message status notification, to be used by the DeliveryReporting
+        interface.</p>
+
+      <p>Although this specification supports formatted (rich-text)
+        messages with unformatted alternatives, implementations SHOULD NOT
+        attempt to send formatted messages until the Telepathy specification
+        has also been extended to cover capability discovery for message
+        formatting.</p>
+
+      <tp:rationale>
+        We intend to expose all rich-text messages as XHTML-IM, but on some
+        protocols, formatting is an extremely limited subset of that format
+        (e.g. there are protocols where foreground/background colours, font
+        and size can be set, but only for entire messages).
+        Until we can tell UIs what controls to offer to the user, it's
+        unfriendly to offer the user controls that may have no effect.
+      </tp:rationale>
+
+      <p>If this interface is present, clients that support it SHOULD
+        listen for the MessageSent and MessageReceived signals, and
+        ignore the Sent and Received signal on the Text interface
+        (which are guaranteed to duplicate signals from this interface).</p>
+    </tp:docstring>
+
+    <property name="SupportedContentTypes" type="as" access="read">
+      <tp:docstring>
+        A list of MIME types supported by this channel, with more preferred
+        MIME types appearing earlier in the list. The list MAY include "*/*"
+        to indicate that attachments with arbitrary MIME types can be sent.
+        If the list is empty, this indicates that messages may only include
+        a single "text/plain" part.
+      </tp:docstring>
+    </property>
+
+    <property name="MessagePartSupportFlags" type="u"
+      tp:type="Message_Part_Support_Flags"
+      access="read">
+      <tp:docstring>
+        Flags indicating the level of support for message parts on this
+        channel.
+      </tp:docstring>
+    </property>
+
+    <tp:flags name="Message_Part_Support_Flags"
+      value-prefix="Message_Part_Support_Flag">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Flags indicating the level of support for message parts on this
+          channel. They are designed such that setting more flags always
+          implies that the channel has more capabilities.</p>
+
+        <p>It is assumed that messages containing a textual message body
+          (only), like the messages the Text interface was designed for, are
+          always supported.</p>
+
+        <p>There is no flag indicating support for alternatives. This is
+          because the SendMessage implementation can always accept messages
+          containing alternatives, even if the underlying protocol does not,
+          by deleting all alternatives except the first (most preferred)
+          that is supported.</p>
+
+        <tp:rationale>
+          Each of the flags 1, 2, 4 implies the previous flag, so we could
+          have used a simple enumeration here; however, we've defined
+          the message-part support indicator as a flag set for future
+          expansion.
+        </tp:rationale>
+      </tp:docstring>
+
+      <tp:flag suffix="Data_Only" value="1">
+        <tp:docstring>
+          SendMessage will accept messages containing a single part of any
+          type listed in the SupportedContentTypes property, with no
+          accompanying text.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="One_Attachment" value="2">
+        <tp:docstring>
+          SendMessage will accept messages containing a textual message body,
+          plus a single attachment of any type listed in the
+          SupportedContentTypes property. It does not make sense for this
+          flag to be set if Message_Part_Support_Flag_Data_Only is not also set
+          (because the connection manager can trivially provide an empty text
+          part if necessary).
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Multiple_Attachments" value="4">
+        <tp:docstring>
+          SendMessage will accept messages containing a textual message body,
+          plus an arbitrary number of attachments of any type listed in the
+          SupportedContentTypes property. It does not make sense for this
+          flag to be set if Message_Part_Support_Flag_One_Attachment is not
+          also set.
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+    <tp:mapping name="Message_Part" array-name="Message_Part_List">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Part of a message's content. In practice, this mapping never
+          appears in isolation - messages are represented by a list of
+          <tp:type>Message_Part</tp:type> mappings.</p>
+
+        <p>An example of how a message might
+          look, in a Python-like syntax:</p>
+
+          <pre>
+[
+  {
+    'message-sender': 42,
+    'message-sent': 1210067943,
+    'message-received': 1210067947,
+    'message-type': 0,
+    'pending-message-id': 437,
+  },
+  { 'alternative': 'main',
+    'type': 'text/html',
+    'content': 'Here is a photo of my cat:&lt;br /&gt;' +
+               '&lt;img src="cid:catphoto" alt="lol!" /&gt;' +
+               '&lt;br /&gt;Isn't it cute?',
+  },
+  { 'alternative': 'main',
+    'type': 'text/plain',
+    'content': 'Here is a photo of my cat:\n[IMG: lol!]\nIsn't it cute?',
+  },
+  { 'identifier': 'catphoto',
+    'type': 'image/jpeg',
+    'size': 101000,
+    'needs-retrieval': True,
+  },
+]
+          </pre>
+
+        <div>
+          <p>The first part of the message contains "headers" which refer
+            to the entire message.</p>
+
+          <p>It is an error for a connection manager to put keys referring
+            to the message as a whole in the second or subsequent
+            Message_Part, but clients MUST recover from this error by ignoring
+            these keys in the second and subsequent parts.</p>
+
+          <p>Well-known keys for the message as a whole, and the corresponding
+            value types, include:</p>
+
+          <dl>
+            <!-- FIXME: if needed we could add:
+            <dt>message-identifier (s)</dt>
+            <dd>An opaque, globally-unique identifier for the entire message.
+              This MAY be treated as if it were a MIME Message-ID, e.g. for
+              the mid: and cid: URI schemes. If omitted, there is no suitable
+              identifier.</dd>
+            -->
+
+            <dt>message-sent (u - <tp:type>Unix_Timestamp</tp:type>)</dt>
+            <dd>The time the message was sent (if unavailable, the time
+              it arrived at a central server MAY be used). Omitted if no
+              reasonable approximation is available</dd>
+
+            <dt>message-received (u - <tp:type>Unix_Timestamp</tp:type>)</dt>
+            <dd>The time the message was received locally. SHOULD always
+              be present.</dd>
+
+            <dt>message-sender (u - <tp:type>Contact_Handle</tp:type>)</dt>
+            <dd>The contact who sent the message. If 0 or omitted, the contact
+              who sent the message could not be determined.</dd>
+
+            <dt>message-type (u - <tp:type>Channel_Text_Message_Type</tp:type>)
+            </dt>
+            <dd>The type of message; if omitted,
+              Channel_Text_Message_Type_Normal MUST be assumed. SHOULD
+              be omitted for normal chat messages.</dd>
+
+            <dt>pending-message-id (u - <tp:type>Message_ID</tp:type>)</dt>
+            <dd>The incoming message ID. This MUST NOT be present on outgoing
+              messages. Clients SHOULD NOT store this key - it is only valid
+              for as long as the message remains unacknowledged.</dd>
+
+            <dt>interface (s - <tp:type>DBus_Interface</tp:type>)</dt>
+            <dd>This message is specific to the given interface, which is
+              neither Text nor Messages. It SHOULD be ignored if that
+              interface is not supported. (Note that an 'interface' key
+              can also appear on the second and subsequent parts, where
+              it indicates that that part (only) should be ignored if
+              unsupported.)</dd>
+          </dl>
+        </div>
+
+        <div>
+          <p>The second and subsequent parts contain the message's
+            content, including plain text, formatted text and/or attached
+            files.</p>
+
+          <p>In any group of parts with the same non-empty value for the
+            "alternative" key (which represent alternative versions of the
+            same content), more faithful versions of the intended message MUST
+            come before less faithful versions (note that this order is the
+            opposite of MIME "multipart/alternative" parts). Clients SHOULD
+            display the first alternative that they understand.</p>
+
+          <tp:rationale>
+            Specifying the preference order means that if the underlying
+            protocol doesn't support alternatives, the CM can safely delete
+            everything apart from the first supported alternative when sending
+            messages.
+          </tp:rationale>
+
+          <p>Clients SHOULD present all parts that are not redundant
+            alternatives in the order they appear in this array, possibly
+            excluding parts that are referenced by another displayed part.
+            It is implementation-specific how the parts are presented to the
+            user.</p>
+
+          <tp:rationale>
+            <p>This allows CMs to assume that all parts are actually shown to
+              the user, even if they are not explicitly referenced - we do
+              not yet recommend formatted text, and there is no way for
+              plain text to reference an attachment since it has no concept of
+              markup or references. This also forces clients to do something
+              sensible with messages that consist entirely of "attachments",
+              with no "body" at all.</p>
+
+            <p>For instance, when displaying the above example, a client that
+              understands the HTML part should display the JPEG image once,
+              between the two lines "Here is a photo of my cat:" and
+              "Isn't it cute?"; it may additionally present the image in some
+              way for a second time, after "Isn't it cute?", or may choose
+              not to.</p>
+
+            <p>A client that does not understand HTML, displaying the same
+              message, should display the plain-text part, followed by the JPEG
+              image.</p>
+          </tp:rationale>
+
+          <p>Well-known keys for the second and subsequent parts, and the
+            corresponding value types, include:</p>
+
+          <dl>
+            <dt>identifier (s)</dt>
+            <dd>An opaque identifier for this part.
+              Parts of a message MAY reference other parts by treating
+              this identifier as if it were a MIME Content-ID and using
+              the cid: URI scheme.</dd>
+
+            <dt>alternative (s)</dt>
+            <dd>
+              <p>If present, this part of the message is an alternative for
+                all other parts with the same value for "alternative".
+                Clients SHOULD only display one of them (this is expected to
+                be used for XHTML messages in a future version of this
+                specification).</p>
+
+              <p>If omitted, this part is not an alternative for any other
+                part.</p>
+
+              <p>Parts of a message MAY reference the group of alternatives
+                as a whole (i.e. a reference to whichever of them is chosen)
+                by treating this identifier as if it were the MIME Content-ID
+                of a multipart/alternative part, and using the cid: URI
+                scheme.</p>
+            </dd>
+
+            <dt>type (s)</dt>
+            <dd>
+              <p>The MIME type of this part. See the documentation
+                for ReceivedMessage for notes on the special status of
+                "text/plain" parts.</p>
+
+              <p>Connection managers MUST NOT signal parts without a 'type'
+                key; if a protocol provides no way to determine the MIME type,
+                the connection manager is responsible for guessing it, but
+                MAY fall back to "text/plain" for text and
+                "application/octet-stream" for non-text.</p>
+
+              <p>Clients MUST ignore parts without a 'type' key, which are
+                reserved for future expansion.</p>
+            </dd>
+
+            <dt>lang (s)</dt>
+            <dd>The natural language of this part, identified by a
+              RFC 3066 language tag.
+
+              <tp:rationale>
+                XMPP allows alternative-selection by language as well as
+                by content-type.
+              </tp:rationale>
+            </dd>
+
+            <dt>size (u)</dt>
+            <dd>The size in bytes (if needs-retrieval is true, this MAY be an
+              estimated or approximate size). SHOULD be omitted if 'content'
+              is provided.
+
+              <tp:rationale>
+                There's no point in providing the size if you're already
+                providing all the content.
+              </tp:rationale>
+              </dd>
+
+            <dt>needs-retrieval (b)</dt>
+            <dd>If false or omitted, the connection
+              manager already holds this part in memory. If present and true,
+              this part will be retrieved on demand (like MIME's
+              message/external-body), so clients should expect retrieval to
+              take time; if this specification is later extended to provide a
+              streaming version of GetPendingMessageContent, clients should
+              use it for parts with this flag.</dd>
+
+            <dt>truncated (b)</dt>
+            <dd>The content available via the 'content' key or
+              GetPendingMessageContent has been truncated by the server
+              or connection manager (equivalent to
+              Channel_Text_Message_Flag_Truncated in the Text interface).
+            </dd>
+
+            <dt>content (s or ay)</dt>
+            <dd>The part's content, if it is available and
+              sufficiently small to include here (implies that
+              'needs-retrieval' is false or omitted). Otherwise, omitted.
+              If the part is human-readable text or HTML, the value for this
+              key MUST be a UTF-8 string (D-Bus signature 's').
+              If the part is not text, the value MUST be a byte-array
+              (D-Bus signature 'ay'). If the part is a text-based format
+              that is not the main body of the message (e.g. an iCalendar
+              or an attached XML document), the value SHOULD be a UTF-8 string,
+              transcoding from another charset to UTF-8 if necessary, but
+              MAY be a byte-array (of unspecified character set) if
+              transcoding fails or the source charset is not known.</dd>
+
+              <!-- FIXME: "sufficiently small to include" is not currently
+              defined; we should add some API so clients can tell the
+                CM how large a message it should emit in the signal.-->
+
+            <dt>interface (s - <tp:type>DBus_Interface</tp:type>)</dt>
+            <dd>This part is specific to the given interface, which is
+              neither Text nor Messages. It SHOULD be ignored if that
+              interface is not supported. (Note that an 'interface' key
+              can also appear on the first part, where it indicates that the
+              entire message should be ignored if unsupported.)</dd>
+          </dl>
+
+          <p>It is an error for a connection manager to put these keys
+            in the first <tp:type>Message_Part</tp:type>, but clients MUST be
+            able to recover from this error by ignoring these keys in the
+            first part.</p>
+
+        </div>
+      </tp:docstring>
+
+      <tp:member name="Key" type="s">
+        <tp:docstring>
+          A key, which SHOULD be one of the well-known keys specified, if
+          possible.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Value" type="v">
+        <tp:docstring>
+          The value corresponding to the given key, which must be of one of
+          the types indicated.
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+
+    <tp:simple-type type="s" name="Sent_Message_Token">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>An opaque token used to identify sent messages. As a special case,
+          the empty string indicates that there is no particular
+          identification for a message.</p>
+
+        <p>CM implementations SHOULD use an identifier expected to be unique,
+          such as a UUID, if possible.</p>
+
+        <p>Some protocols can only track a limited number of sent messages
+          in a small message-ID space. As a result, clients MUST NOT assume
+          that message tokens will not be re-used, and SHOULD use some
+          reasonable heuristic to assign delivery reports to messages, such
+          as matching on message content or timestamp (if available), or
+          assuming that the delivery report refers to the most recent message
+          with that ID.</p>
+
+        <tp:rationale>
+          <p>This is a hook for the DeliveryReporting interface,
+            to avoid having to introduce a
+            SendMultiPartMessageAndReturnToken method in that interface.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </tp:simple-type>
+
+    <method name="SendMessage">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Submit a message to the server for sending.
+          If this method returns successfully, the message has been submitted
+          to the server and the MessageSent signal is emitted. A corresponding
+          Sent signal on the Text interface MUST also be emitted.</p>
+
+        <p>If this method fails, message submission to the server has failed
+          and no signal on this interface (or the Text interface) is
+          emitted.</p>
+      </tp:docstring>
+
+      <arg direction="in" type="aa{sv}" tp:type="Message_Part[]"
+        name="Message">
+        <tp:docstring>
+          The message content, including any attachments or alternatives
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="Flags" type="u"
+        tp:type="Message_Sending_Flags">
+        <tp:docstring>
+          Flags affecting how the message is sent.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="s" tp:type="Sent_Message_Token">
+        <tp:docstring>
+          An opaque token used to match any incoming delivery or failure
+          reports against this message, or an empty string if the message
+          is not readily identifiable.
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The requested message is malformed and cannot be sent.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <tp:flags name="Message_Sending_Flags" value-prefix="Message_Sending_Flag">
+      <tp:docstring>
+        Flags altering the way a message is sent. The "most usual" action
+        should always be to have these flags unset.
+      </tp:docstring>
+
+      <tp:flag suffix="Report_Delivery" value="1">
+        <tp:docstring>
+          Provide a delivery report via the DeliveryReporting interface, if
+          possible, even if this is not the default for this protocol.
+          Ignored if delivery reports are not possible on this protocol.
+
+          <tp:rationale>
+            In some protocols, like XMPP, it is not conventional to request
+            or send delivery notifications.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+    <signal name="MessageSent">
+      <tp:docstring>
+        Signals that a message has been submitted for sending. This
+        MUST be emitted exactly once per emission of the Sent signal on the
+        Text interface.
+
+        <tp:rationale>
+          This signal allows a process that is not the caller of
+          SendMessage to log sent messages. The double signal-emission
+          means that clients can safely follow the following rule:
+          if the channel has the Messages interface, listen for
+          Messages.MessageSent only; otherwise, listen for Text.Sent only.
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg type="aa{sv}" tp:type="Message_Part[]" name="Content">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The message content (see <tp:type>Message_Part</tp:type> for full
+          details). If the message that was passed to SendMessage has a
+          formatted text part that the connection manager recognises, but no
+          text/plain alternative, the CM MUST use the formatted text part to
+          generate a text/plain alternative which is also included in this
+          signal argument.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Message_Token" type="s" tp:type="Sent_Message_Token">
+        <tp:docstring>
+          An opaque token used to match any incoming delivery or failure
+          reports against this message, or an empty string if the message
+          is not readily identifiable.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="PendingMessages" type="aaa{sv}" access="read"
+      tp:type="Message_Part[][]">
+      <tp:docstring>
+        A list of incoming messages that have neither been acknowledged nor
+        rejected. This list is a superset of the one returned by
+        ListPendingMessages on the Text interface; its items can be removed
+        using AcknowledgePendingMessages on that interface.
+      </tp:docstring>
+    </property>
+
+    <signal name="PendingMessagesRemoved">
+      <tp:docstring>
+        The messages with the given IDs have been removed from the
+        PendingMessages list. Clients SHOULD NOT attempt to acknowledge
+        those messages.
+
+        <tp:rationale>
+          This completes change notification for the PendingMessages property
+          (previously, there was change notification when pending messages
+          were added, but not when they were removed).
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Message_IDs" type="au" tp:type="Message_ID[]">
+        <tp:docstring>
+          The messages that have been removed from the pending message list.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="GetPendingMessageContent">
+      <tp:docstring>
+        Retrieve the content of one or more parts of a pending message.
+        Note that this function may take a considerable amount of time
+        to return if the part's 'needs-retrieval' flag is true; consider
+        extending the default D-Bus method call timeout. Additional API is
+        likely to be added in future, to stream large message parts.
+      </tp:docstring>
+
+      <arg name="Message_ID" type="u" tp:type="Message_ID" direction="in">
+        <tp:docstring>
+          The ID of a pending message
+        </tp:docstring>
+      </arg>
+
+      <arg name="Parts" type="au" direction="in">
+        <tp:docstring>
+          The desired entries in the array of message parts, identified by
+          their position. The "headers" part (which is not a valid argument
+          to this method) is considered to be part 0, so the valid part
+          numbers start at 1 (for the second Message_Part).
+        </tp:docstring>
+      </arg>
+
+      <arg name="Content" type="a{uv}" direction="out">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The content of the requested parts. The keys in this mapping
+            are positions in the array of message parts; the values are
+            either of type 's' or 'ay' (UTF-8 text string, or byte array),
+            following the same rules as for the value of the 'content' key in
+            the <tp:type>Message_Part</tp:type> mappings.</p>
+
+          <p>If the one of the requested part numbers was greater than zero
+            but referred to a part that had no content (i.e. it had no 'type'
+            key or no 'content' key), it is simply omitted from this mapping;
+            this is not considered to be an error condition.</p>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+            Either there is no pending message with the given message ID,
+            or one of the part numbers given was 0 or too large.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="MessageReceived">
+      <tp:docstring>
+        Signals that a message has been received and added to the pending
+        messages queue. This MUST be emitted exactly once per emission of the
+        Received signal on the Text interface.
+
+        <tp:rationale>
+          The double signal-emission means that clients can safely follow
+          the following rule: if the channel has the Messages interface,
+          listen for Messages.MessageReceived only; otherwise, listen for
+          Text.Received only.
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg type="aa{sv}" tp:type="Message_Part[]" name="Message">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The message content, including any attachments or alternatives
+        </tp:docstring>
+      </arg>
+    </signal>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

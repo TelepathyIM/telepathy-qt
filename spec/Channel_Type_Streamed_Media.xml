@@ -1,0 +1,377 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Type_Streamed_Media" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005-2008 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005-2008 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Type.StreamedMedia">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Interface.Group"/>
+
+    <tp:enum name="Media_Stream_Type" type="u">
+      <tp:enumvalue suffix="Audio" value="0">
+        <tp:docstring>An audio stream</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Video" value="1">
+        <tp:docstring>A video stream</tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:enum name="Media_Stream_State" type="u">
+      <tp:enumvalue suffix="Disconnected" value="0">
+        <tp:docstring>The stream is disconnected.</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Connecting" value="1">
+        <tp:docstring>The stream is trying to connect.</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Connected" value="2">
+        <tp:docstring>The stream is connected.</tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:enum name="Media_Stream_Direction" type="u">
+      <tp:enumvalue suffix="None" value="0">
+        <tp:docstring>Media are not being sent or received</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Send" value="1">
+        <tp:docstring>Media are being sent, but not received</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Receive" value="2">
+        <tp:docstring>Media are being received, but not sent</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Bidirectional" value="3">
+        <tp:docstring>Media are being sent and received</tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:flags name="Media_Stream_Pending_Send" value-prefix="Media_Stream_Pending" type="u">
+      <tp:flag suffix="Local_Send" value="1">
+        <tp:docstring>
+            The local user has been asked to send media by the remote user.
+            Call RequestStreamDirection to indicate whether or not this is
+            acceptable.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Remote_Send" value="2">
+        <tp:docstring>
+            The remote user has been asked to send media by the local user.
+            The StreamDirectionChanged signal will be emitted when the remote
+            user accepts or rejects this change.
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+    <tp:struct name="Media_Stream_Info" array-name="Media_Stream_Info_List">
+      <tp:member type="u" tp:type="Stream_ID" name="Identifier"/>
+      <tp:member type="u" tp:type="Contact_Handle" name="Contact"/>
+      <tp:member type="u" tp:type="Media_Stream_Type" name="Type"/>
+      <tp:member type="u" tp:type="Media_Stream_State" name="State"/>
+      <tp:member type="u" tp:type="Media_Stream_Direction" name="Direction"/>
+      <tp:member type="u" tp:type="Media_Stream_Pending_Send"
+        name="Pending_Send_Flags"/>
+    </tp:struct>
+
+    <tp:simple-type name="Stream_ID" type="u"/>
+
+    <method name="ListStreams">
+      <arg direction="out" type="a(uuuuuu)" tp:type="Media_Stream_Info[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          An array of structs containing:
+          <ul>
+          <li>the stream identifier</li>
+          <li>the contact handle who the stream is with (or 0 if the stream
+            represents more than a single member)</li>
+          <li>the type of the stream</li>
+          <li>the current stream state</li>
+          <li>the current direction of the stream</li>
+          <li>the current pending send flags</li>
+          </ul>
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Returns an array of structs representing the streams currently active
+        within this channel. Each stream is identified by an unsigned integer
+        which is unique for each stream within the channel.
+      </tp:docstring>
+    </method>
+
+    <method name="RemoveStreams">
+      <arg direction="in" name="streams" type="au" tp:type="Stream_ID[]">
+        <tp:docstring>
+          An array of stream identifiers (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Request that the given streams are removed.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          A stream identifier is unknown
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="RequestStreamDirection">
+      <arg direction="in" name="stream_id" type="u">
+        <tp:docstring>
+          The stream identifier (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="stream_direction" type="u" tp:type="Media_Stream_Direction">
+        <tp:docstring>
+          The desired stream direction (a value of MediaStreamDirection)
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request a change in the direction of an existing stream. In particular,
+        this might be useful to stop sending media of a particular type,
+        or inform the peer that you are no longer using media that is being
+        sent to you.</p>
+
+        <p>Depending on the protocol, streams which are no longer sending in
+        either direction should be removed and a StreamRemoved signal emitted.
+        Some direction changes can be enforced locally (for example,
+        BIDIRECTIONAL -&gt; RECEIVE can be achieved by merely stopping sending),
+        others may not be possible on some protocols, and some need agreement
+        from the remote end. In this case, the MEDIA_STREAM_PENDING_REMOTE_SEND
+        flag will be set in the StreamDirectionChanged signal, and the signal
+        emitted again without the flag to indicate the resulting direction when
+        the remote end has accepted or rejected the change.</p>
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          A stream identifier is unknown
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          The requested direction is not available on this stream
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="RequestStreams">
+      <arg direction="in" name="contact_handle" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          A contact handle with whom to establish the streams
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="types" type="au" tp:type="Media_Stream_Type[]">
+        <tp:docstring>
+          An array of stream types (values of MediaStreamType)
+        </tp:docstring>
+      </arg>
+      <arg direction="out" type="a(uuuuuu)" tp:type="Media_Stream_Info[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          An array of structs (in the same order as the given stream types)
+          containing:
+          <ul>
+            <li>the stream identifier</li>
+            <li>the contact handle who the stream is with (or 0 if the stream
+              represents more than a single member)</li>
+            <li>the type of the stream</li>
+            <li>the current stream state</li>
+            <li>the current direction of the stream</li>
+            <li>the current pending send flags</li>
+          </ul>
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request that streams be established to exchange the given types of
+        media with the given member. In general this will try and establish a
+        bidirectional stream, but on some protocols it may not be possible to
+        indicate to the peer that you would like to receive media, so a
+        send-only stream will be created initially. In the cases where the
+        stream requires remote agreement (eg you wish to receive media from
+        them), the StreamDirectionChanged signal will be emitted with the
+        MEDIA_STREAM_PENDING_REMOTE_SEND flag set, and the signal emitted again
+        with the flag cleared when the remote end has replied.</p>
+      </tp:docstring>
+      <tp:changed version="0.17.2">
+        <p>It is valid to use a handle which is neither
+          a current nor pending member in this channel's Group interface. If
+          so, that handle will be added to the remote-pending set only when
+          an attempt has actually been made to contact them. For further
+          call-state notification, use the CallState interface, if
+          supported. This usage was not allowed in spec versions below
+          0.17.2.</p>
+      </tp:changed>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          A stream type given is invalid
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          That contact is not able to do this stream type
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="StreamAdded">
+      <arg name="stream_id" type="u">
+        <tp:docstring>
+          The stream identifier (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <arg name="contact_handle" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          The contact handle who the stream is with (or 0 if it
+          represents more than a single member)
+        </tp:docstring>
+      </arg>
+      <arg name="stream_type" type="u" tp:type="Media_Stream_Type">
+        <tp:docstring>
+          The stream type (a value from MediaStreamType)
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when a new stream has been added to this channel.
+      </tp:docstring>
+    </signal>
+
+    <signal name="StreamDirectionChanged">
+      <arg name="stream_id" type="u">
+        <tp:docstring>
+        The stream identifier (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <arg name="stream_direction" type="u" tp:type="Media_Stream_Direction">
+        <tp:docstring>
+        The new stream direction (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <arg name="pending_flags" type="u" tp:type="Media_Stream_Pending_Send">
+        <tp:docstring>
+        The new pending send flags (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when the direction or pending flags of a stream are changed. If
+        the MEDIA_STREAM_PENDING_LOCAL_SEND flag is set, the remote user has
+        requested that we begin sending on this stream. RequestStreamDirection
+        should be called to indicate whether or not this change is acceptable.
+      </tp:docstring>
+    </signal>
+
+    <signal name="StreamError">
+      <arg name="stream_id" type="u">
+        <tp:docstring>
+        The stream identifier (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <arg name="errno" type="u">
+        <tp:docstring>
+          A stream error number, one of the values of MediaStreamError
+        </tp:docstring>
+      </arg>
+      <arg name="message" type="s">
+        <tp:docstring>
+          A string describing the error (for debugging purposes only)
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when a stream encounters an error.
+      </tp:docstring>
+    </signal>
+
+    <signal name="StreamRemoved">
+      <arg name="stream_id" type="u">
+        <tp:docstring>
+        stream_id - the stream identifier (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when a stream has been removed from this channel.
+      </tp:docstring>
+    </signal>
+
+    <signal name="StreamStateChanged">
+      <arg name="stream_id" type="u">
+        <tp:docstring>
+          The stream identifier (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <arg name="stream_state" type="u" tp:type="Media_Stream_State">
+        <tp:docstring>
+          The new stream state (as defined in ListStreams)
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when a member's stream's state changes.
+      </tp:docstring>
+    </signal>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A channel that can send and receive streamed media such as audio or video.
+    Provides a number of methods for listing and requesting new streams, and
+    signals to indicate when streams have been added, removed and changed
+    status.</p>
+
+      <p>Channels of this type are expected to provide the Group interface
+        and be "anonymous" (have no associated handle). To make a media call
+        to a contact, clients should request a new, empty streamed media
+        channel, then call AddMembers to add the contact to the channel.
+        The local user should be in the group's members, while the contact
+        should be absent from the channel until a call is made, appear in
+        "remote pending" from when the call is attempted until the call is
+        accepted, then move to the group's members.</p>
+
+      <p>Similarly, incoming calls should be signalled as having handle type 0
+        and handle 0. The remote contact should be in the group's members,
+        with the local user in the "local pending" members; to accept the
+        call, AddMembers can be used to move the local user to the
+        group's members.</p>
+
+    <p>In general this should be used in conjunction with the MediaSignalling
+    interface to exchange connection candidates and codec choices with
+    whichever component is responsible for the streams. However, in certain
+    applications where no candidate exchange is necessary (eg the streams are
+    handled by specialised hardware which is controlled directly by the
+    connection manager), the signalling interface can be omitted and this
+    channel type used simply to control the streams.</p>
+    </tp:docstring>
+
+    <tp:flags name="Channel_Media_Capabilities" value-prefix="Channel_Media_Capability" type="u">
+      <tp:docstring>
+        The channel-type-specific capability flags used for
+        Channel.Type.StreamedMedia in the Connection.Interface.Capabilities
+        interface.
+      </tp:docstring>
+      <tp:flag suffix="Audio" value="1">
+        <tp:docstring>
+          The handle is capable of using audio streams within a media channel.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Video" value="2">
+        <tp:docstring>
+          The handle is capable of using video streams within a media channel.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="NAT_Traversal_STUN" value="4">
+        <tp:docstring>
+          The handle is capable of performing STUN to traverse NATs.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="NAT_Traversal_GTalk_P2P" value="8">
+        <tp:docstring>
+          The handle is capable of establishing Google Talk peer-to-peer
+          connections (as implemented in libjingle 0.3) to traverse NATs.
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

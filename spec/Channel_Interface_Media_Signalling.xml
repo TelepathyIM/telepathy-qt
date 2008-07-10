@@ -1,0 +1,117 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_Media_Signalling" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Interface.MediaSignalling">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+
+    <tp:simple-type name="Media_Session_Type" type="s">
+      <tp:docstring>The type of a media session. Currently, the only supported
+        value is "rtp".</tp:docstring>
+    </tp:simple-type>
+
+    <tp:struct name="Media_Session_Handler_Info"
+        array-name="Media_Session_Handler_Info_List">
+      <tp:docstring>A struct representing a active session handler.</tp:docstring>
+      <tp:member type="o" name="Session_Handler">
+        <tp:docstring>The object path of the session handler, which is on the
+          same bus name as the channel.</tp:docstring>
+      </tp:member>
+      <tp:member type="s" tp:type="Media_Session_Type" name="Media_Session_Type">
+        <tp:docstring>The media session's type</tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <method name="GetSessionHandlers">
+      <arg direction="out" type="a(os)" tp:type="Media_Session_Handler_Info[]"/>
+      <tp:docstring>
+        Returns all currently active session handlers on this channel
+        as a list of (session_handler_path, type).
+      </tp:docstring>
+    </method>
+
+    <signal name="NewSessionHandler">
+      <arg name="Session_Handler" type="o">
+        <tp:docstring>
+          Object path of the new MediaSessionHandler object
+        </tp:docstring>
+      </arg>
+      <arg name="Session_Type" tp:type="Media_Session_Type" type="s">
+        <tp:docstring>
+          String indicating type of session, eg &quot;rtp&quot;
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Signal that a session handler object has been created. The client
+        should create a session object and create streams for the streams
+        within.
+      </tp:docstring>
+    </signal>
+    <tp:property name="nat-traversal" type="s">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A string indicating the NAT traversal techniques employed by the
+      streams within this channel. Can be protocol-specific values, but the
+      following values should be used if appropriate:</p>
+
+      <dl>
+        <dt>none</dt>
+        <dd>No attempt should be made at NAT traversal.</dd>
+
+        <dt>stun</dt>
+        <dd>If appropriate, a STUN request should be made to the given server
+        to open a UDP port mapping and determine the external IP.</dd>
+
+        <dt>gtalk-p2p</dt>
+        <dd>Google Talk peer-to-peer connectivity establishment should be used,
+        as implemented in libjingle 0.3.</dd>
+      </dl>
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="stun-server" type="s">
+      <tp:docstring>
+      The IP address or hostname of the STUN server to use for NAT traversal.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="stun-port" type="q">
+      <tp:docstring>
+      The UDP port number to use on the provided STUN server.
+      </tp:docstring>
+    </tp:property>
+    <tp:property name="gtalk-p2p-relay-token" type="s">
+      <tp:docstring>
+      The authentication token for use with the Google Talk peer-to-peer relay
+      server.
+      </tp:docstring>
+    </tp:property>
+
+    <tp:docstring>
+      An interface for signalling a channel containing synchronised media
+    sessions which can contain an arbitrary number of streams. The negotiation
+    interface is based closely around the API of the Farsight library
+    (http://farsight.sourceforge.net/). This in turn is based upon the IETF
+    MMusic ICE drafts where connections are established by signalling potential
+    connection candidates to the peer until a usable connection is found, and
+    codecs are negotiated with an SDP-style offer and answer. However, the
+    principles should be applicable to other media streaming methods and the
+    API re-used without difficulty.
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

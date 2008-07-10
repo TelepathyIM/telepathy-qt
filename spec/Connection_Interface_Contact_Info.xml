@@ -1,0 +1,83 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Contact_Info" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactInfo"
+    tp:causes-havoc='obsolete'>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+    <signal name="GotContactInfo">
+      <arg name="contact" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          An integer handle of the contact ID on the server
+        </tp:docstring>
+      </arg>
+      <arg name="vcard" type="s">
+        <tp:docstring>
+          The XML string containing their vcard information
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when information has been received from the server with
+        the details of a particular contact.
+      </tp:docstring>
+    </signal>
+    <method name="RequestContactInfo">
+      <arg direction="in" name="contact" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          An integer handle for the contact to request info for
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Request information for a given contact. The function will return
+        after a GotContactInfo signal has been emitted for the contact, or
+        an error returned.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+      </tp:possible-errors>
+    </method>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>THIS INTERFACE IS DEPRECATED AND SHOULD NOT BE USED. A new version
+        will be proposed in the 0.13 specification branch.</p>
+
+      <p>An interface for requesting information about a contact on a given
+    connection. Information is returned as a vCard represented as an XML
+    string, in the format defined by JEP-0054: vcard-temp specifiation
+    from the Jabber Software Foundation (this is derived from the
+    aborted IETF draft draft-dawson-vcard-xml-dtd-01).</p>
+
+    <p>Implementations using PHOTO or SOUND elements should use the URI encoding
+    where possible, and not provide base64 encoded data to avoid unnecessary
+    bus traffic. Clients should not implement support for these encoded forms.
+    A separate interface will be provided for transferring user avatars.</p>
+
+    <p>The following extended element names are also added to represent
+      information from other systems which are not based around vCards:</p>
+    <dl>
+      <dt>USERNAME</dt><dd>the username of the contact on their local system (used on IRC for example)</dd>
+      <dt>HOSTNAME</dt><dd>the fully qualified hostname, or IPv4 or IPv6 address of the contact in dotted quad or colon-separated form</dd>
+    </dl>
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

@@ -1,0 +1,166 @@
+<?xml version="1.0" ?>
+<node name="/Account_Manager"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+<p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.AccountManager">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>The account manager is a central service used to store account
+        details.</p>
+
+      <p>The current account manager is defined to be the process that owns
+        the well-known bus name org.freedesktop.Telepathy.AccountManager on
+        the session bus. This process must export an
+        /org/freedesktop/Telepathy/AccountManager object with the
+        AccountManager interface.</p>
+    </tp:docstring>
+    <tp:added version="0.17.2"/>
+
+    <!-- Missing functionality compared with NMC 4.x:
+    * look up accounts by conditions (can be done client-side, less
+      efficiently, so not a blocker)
+    * global presence/... changes (can be done client-side, less efficiently -
+      we should add this)
+    * count used channels (what's this for?)
+    * get "average" status (not well-defined, UIs can do this)
+    * request channels (out of scope: Channel Dispatcher will do this)
+    * register filters (completely out of scope: Channel Dispatcher again)
+    -->
+
+    <property name="Interfaces" type="as" access="read">
+      <tp:docstring>
+        A list of the interfaces provided by the account manager object.
+      </tp:docstring>
+    </property>
+
+    <property name="ValidAccounts" type="ao" access="read">
+      <tp:docstring>
+        A list of the valid (complete, usable) accounts. Change notification
+        is via AccountValidityChanged.
+
+        <tp:rationale>
+          This split between valid and invalid accounts makes it easy to
+          ignore the invalid ones. The only things that should be manipulating
+          invalid accounts are account-editing UIs, which might be able to
+          rescue them.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="InvalidAccounts" type="ao" access="read">
+      <tp:docstring>
+        A list of incomplete or otherwise unusable accounts. Change
+        notification is via AccountValidityChanged.
+      </tp:docstring>
+    </property>
+
+    <signal name="AccountRemoved">
+      <tp:docstring>
+        The given account has been removed.
+
+        <tp:rationale>
+          This is effectively change notification for the valid and invalid
+          accounts lists.
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Account" type="o">
+        <tp:docstring>
+          An Account, which must not be used any more.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="AccountValidityChanged">
+      <tp:docstring>
+        The validity of the given account has changed. New accounts are
+        also indicated by this signal, as an account validity change
+        (usually to True) on an account that did not previously exist.
+
+        <tp:rationale>
+          This is effectively change notification for the valid and invalid
+          accounts lists.
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Account" type="o">
+        <tp:docstring>
+          An Account.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Valid" type="b">
+        <tp:docstring>
+          True if the account is now valid.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="CreateAccount">
+      <tp:docstring>
+        Request the creation of a new account. The account manager SHOULD NOT
+        allow invalid accounts to be created. Accounts created through this
+        API SHOULD have an empty PresetParameters property.
+      </tp:docstring>
+
+      <arg name="Connection_Manager" direction="in" type="s"
+        tp:type="Connection_Manager_Name">
+        <tp:docstring>
+          The name of the connection manager, e.g. "salut".
+        </tp:docstring>
+      </arg>
+
+      <arg name="Protocol" direction="in" type="s"
+        tp:type="Protocol">
+        <tp:docstring>The protocol, e.g. "local-xmpp".</tp:docstring>
+      </arg>
+
+      <arg name="Display_Name" direction="in" type="s">
+        <tp:docstring>The initial value of the new account's DisplayName
+          property. The account manager MAY modify this to make it unique,
+          for instance by appending a number or the 'account'
+          parameter.</tp:docstring>
+      </arg>
+
+      <arg name="Parameters" direction="in" type="a{sv}">
+        <tp:docstring>Initial parameter values, as would be passed to
+          RequestConnection.</tp:docstring>
+      </arg>
+
+      <arg name="Account" direction="out" type="o">
+        <tp:docstring>The new account.</tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>The connection manager is not installed or does not
+            implement that protocol.</tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>The parameters provided omit a required argument
+            or provide unsupported arguments.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->
+

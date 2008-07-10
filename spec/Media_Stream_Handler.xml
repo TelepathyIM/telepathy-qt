@@ -1,0 +1,379 @@
+<?xml version="1.0" ?>
+<node name="/Media_Stream_Handler" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Media.StreamHandler">
+
+    <tp:struct name="Media_Stream_Handler_Candidate"
+      array-name="Media_Stream_Handler_Candidate_List">
+      <tp:member type="s" name="Name"/>
+      <tp:member type="a(usuussduss)" name="Transports"
+        tp:type="Media_Stream_Handler_Transport[]"/>
+    </tp:struct>
+
+    <tp:struct name="Media_Stream_Handler_Transport"
+      array-name="Media_Stream_Handler_Transport_List">
+      <tp:member type="u" name="Component_Number"/>
+      <tp:member type="s" name="IP_Address"/>
+      <tp:member type="u" name="Port"/>
+      <tp:member type="u" tp:type="Media_Stream_Base_Proto" name="Protocol"/>
+      <tp:member type="s" name="Subtype"/>
+      <tp:member type="s" name="Profile"/>
+      <tp:member type="d" name="Preference_Value"/>
+      <tp:member type="u" tp:type="Media_Stream_Transport_Type"
+        name="Transport_Type"/>
+      <tp:member type="s" name="Username"/>
+      <tp:member type="s" name="Password"/>
+    </tp:struct>
+
+    <tp:struct name="Media_Stream_Handler_Codec"
+      array-name="Media_Stream_Handler_Codec_List">
+      <tp:member type="u" name="Codec_ID"/>
+      <tp:member type="s" name="Name"/>
+      <tp:member type="u" tp:type="Media_Stream_Type" name="Media_Type"/>
+      <tp:member type="u" name="Clock_Rate"/>
+      <tp:member type="u" name="Number_Of_Channels"/>
+      <tp:member type="a{ss}" name="Parameters" tp:type="String_String_Map"/>
+    </tp:struct>
+
+    <signal name="AddRemoteCandidate">
+      <arg name="candidate_id" type="s">
+        <tp:docstring>
+          String identifier for this candidate
+        </tp:docstring>
+      </arg>
+      <arg name="transports" type="a(usuussduss)"
+        tp:type="Media_Stream_Handler_Transport[]">
+        <tp:docstring>
+          Array of transports for this candidate with fields,
+          as defined in NewNativeCandidate
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Signal emitted when the connection manager wishes to inform the
+        client of a new remote candidate.
+      </tp:docstring>
+    </signal>
+    <signal name="Close">
+      <tp:docstring>
+        Signal emitted when the connection manager wishes the stream to be
+        closed.
+      </tp:docstring>
+    </signal>
+    <method name="CodecChoice">
+      <arg direction="in" name="codec_id" type="u"/>
+      <tp:docstring>
+        Inform the connection manager of the current codec choice.
+      </tp:docstring>
+    </method>
+    <method name="Error">
+      <arg direction="in" name="errno" type="u" tp:type="Media_Stream_Error">
+        <tp:docstring>
+          ID of error, from the MediaStreamError enumeration
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="message" type="s">
+        <tp:docstring>
+          String describing the error
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Inform the connection manager that an error occured in this stream. The
+        connection manager should emit the StreamError signal for the stream on
+        the relevant channel, and remove the stream from the session.
+      </tp:docstring>
+    </method>
+    <tp:enum name="Media_Stream_Error" type="u">
+      <tp:enumvalue suffix="Unknown" value="0">
+        <tp:docstring>
+        An unknown error occured.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="EOS" value="1">
+        <tp:docstring>
+        The end of the stream was reached.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+    <method name="NativeCandidatesPrepared">
+      <tp:docstring>
+        Informs the connection manager that all possible native candisates
+        have been discovered for the moment.
+      </tp:docstring>
+    </method>
+    <method name="NewActiveCandidatePair">
+      <arg direction="in" name="native_candidate_id" type="s"/>
+      <arg direction="in" name="remote_candidate_id" type="s"/>
+      <tp:docstring>
+        Informs the connection manager that a valid candidate pair
+        has been discovered and streaming is in progress.
+      </tp:docstring>
+    </method>
+    <tp:enum name="Media_Stream_Base_Proto" type="u">
+      <tp:enumvalue suffix="UDP" value="0">
+        <tp:docstring>UDP (User Datagram Protocol)</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="TCP" value="1">
+        <tp:docstring>TCP (Transmission Control Protocol)</tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+    <method name="NewNativeCandidate">
+      <arg direction="in" name="candidate_id" type="s">
+        <tp:docstring>
+          String identifier for this candidate
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="transports" type="a(usuussduss)"
+        tp:type="Media_Stream_Handler_Transport[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Array of transports for this candidate, with fields:
+          <ul>
+            <li>component number</li>
+            <li>IP address (as a string)</li>
+            <li>port</li>
+            <li>base network protocol (one of the values of MediaStreamBaseProto)</li>
+            <li>proto subtype (e.g. RTP)</li>
+            <li>proto profile (e.g. AVP)</li>
+            <li>our preference value of this transport (double in range 0.0-1.0
+              inclusive); 1 signals the most preferred transport</li>
+            <li>transport type, one of the values of MediaStreamTransportType</li>
+            <li>username if authentication is required</li>
+            <li>password if authentication is required</li>
+          </ul>
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Inform this MediaStreamHandler that a new native transport candidate
+        has been ascertained.
+      </tp:docstring>
+    </method>
+    <tp:enum name="Media_Stream_Transport_Type" type="u">
+      <tp:enumvalue suffix="Local" value="0">
+        <tp:docstring>
+          A local address
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Derived" value="1">
+        <tp:docstring>
+          An external address derived by a method such as STUN
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Relay" value="2">
+        <tp:docstring>
+          An external stream relay
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+    <method name="Ready">
+      <arg direction="in" name="codecs" type="a(usuuua{ss})"
+        tp:type="Media_Stream_Handler_Codec[]">
+        <tp:docstring>
+          As for SupportedCodecs.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Inform the connection manager that a client is ready to handle
+        this StreamHandler. Also provide it with info about all supported
+        codecs.
+      </tp:docstring>
+    </method>
+    <method name="SetLocalCodecs">
+      <arg name="codecs" type="a(usuuua{ss})" direction="in"
+        tp:type="Media_Stream_Handler_Codec[]">
+        <tp:docstring>Codecs in the same format as for
+          SupportedCodecs, which have the same semantics as the
+          local codecs passed to Ready</tp:docstring>
+      </arg>
+      <tp:docstring>
+        Used to provide codecs after Ready(), so the media client can go
+        ready for an incoming call and exchange candidates/codecs before
+        knowing what local codecs are available.
+      </tp:docstring>
+    </method>
+    <signal name="RemoveRemoteCandidate">
+      <arg name="candidate_id" type="s">
+        <tp:docstring>
+          String identifier for remote candidate to drop
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Signal emitted when the connection manager wishes to inform the
+        client that the remote end has removed a previously usable
+        candidate.
+      </tp:docstring>
+    </signal>
+    <signal name="SetActiveCandidatePair">
+      <arg name="native_candidate_id" type="s"/>
+      <arg name="remote_candidate_id" type="s"/>
+      <tp:docstring>
+        Emitted by the connection manager to inform the client that a
+        valid candidate pair has been discovered by the remote end
+        and streaming is in progress.
+      </tp:docstring>
+    </signal>
+    <signal name="SetRemoteCandidateList">
+      <arg name="remote_candidates" type="a(sa(usuussduss))"
+        tp:type="Media_Stream_Handler_Candidate[]">
+        <tp:docstring>
+        A list of candidate id and a list of transports
+        as defined in NewNativeCandidate
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Signal emitted when the connection manager wishes to inform the
+        client of all the available remote candidates at once.
+      </tp:docstring>
+    </signal>
+    <signal name="SetRemoteCodecs">
+      <arg name="codecs" type="a(usuuua{ss})"
+        tp:type="Media_Stream_Handler_Codec[]">
+        <tp:docstring>As for SupportedCodecs</tp:docstring>
+      </arg>
+      <tp:docstring>
+        Signal emitted when the connection manager wishes to inform the
+        client of the codecs supported by the remote end.
+      </tp:docstring>
+    </signal>
+    <signal name="SetStreamPlaying">
+      <arg name="playing" type="b"/>
+      <tp:docstring>
+        Signal emitted when the connection manager wishes to set the
+        stream playing or stopped.
+      </tp:docstring>
+    </signal>
+    <signal name="SetStreamSending">
+      <arg name="sending" type="b"/>
+      <tp:docstring>
+        Signal emitted when the connection manager wishes to set whether or not
+        the stream sends to the remote end.
+      </tp:docstring>
+    </signal>
+    <signal name="StartTelephonyEvent">
+      <arg name="event" type="y">
+        <tp:docstring>
+          A telephony event code as defined by RFC 4733.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Request that a telephony event (as defined by RFC 4733) is transmitted
+        over this stream until StopTelephonyEvent is called.
+      </tp:docstring>
+    </signal>
+    <signal name="StopTelephonyEvent">
+      <tp:docstring>
+        Request that any ongoing telephony events (as defined by RFC 4733)
+        being transmitted over this stream are stopped.
+      </tp:docstring>
+    </signal>
+    <method name="StreamState">
+      <arg direction="in" name="state" type="u" tp:type="Media_Stream_State"/>
+      <tp:docstring>
+        Informs the connection manager of the stream's current state, as
+        as specified in Channel.Type.StreamedMedia::ListStreams.
+      </tp:docstring>
+    </method>
+    <method name="SupportedCodecs">
+      <arg direction="in" name="codecs" type="a(usuuua{ss})"
+        tp:type="Media_Stream_Handler_Codec[]">
+        <tp:docstring>
+          List of codec info structures, each containing:
+          <ul>
+            <li>ID of codec</li>
+            <li>Codec name</li>
+            <li>Media type</li>
+            <li>Clock rate of codec</li>
+            <li>Number of supported channels</li>
+            <li>String key-value pairs for supported optional parameters</li>
+          </ul>
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Inform the connection manager of the supported codecs for this session.
+        This is called after the connection manager has emitted SetRemoteCodecs
+        to notify what codecs are supported by the peer, and will thus be an
+        intersection of all locally supported codecs (passed to Ready)
+        and those supported by the peer.
+      </tp:docstring>
+    </method>
+
+    <signal name="SetStreamHeld">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when the connection manager wishes to place the stream on
+          hold (so the streaming client should free hardware or software
+          resources) or take the stream off hold (so the streaming client
+          should reacquire the necessary resources).</p>
+
+        <p>When placing a channel's streams on hold, the connection manager
+          SHOULD notify the remote contact that this will be done (if
+          appropriate in the protocol) before it emits this signal.</p>
+
+        <tp:rationale>
+          <p>It is assumed that relinquishing a resource will not fail.
+            If it does, the call is probably doomed anyway.</p>
+        </tp:rationale>
+
+        <p>When unholding a channel's streams, the connection manager
+          SHOULD emit this signal and wait for success to be indicated
+          via HoldState before it notifies the remote contact that the
+          channel has been taken off hold.</p>
+
+        <tp:rationale>
+          <p>This means that if a resource is unavailable, the remote
+            contact will never even be told that we tried to acquire it.</p>
+        </tp:rationale>
+      </tp:docstring>
+      <tp:added version="0.17.3"/>
+
+      <arg name="Held" type="b">
+        <tp:docstring>
+          If true, the stream is to be placed on hold.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="HoldState">
+      <tp:docstring>
+        Notify the connection manager that the stream's hold state has
+        been changed successfully in response to SetStreamHeld.
+      </tp:docstring>
+      <tp:added version="0.17.3"/>
+      <arg direction="in" name="Held" type="b">
+        <tp:docstring>
+          If true, the stream is now on hold.
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <method name="UnholdFailure">
+      <tp:docstring>
+        Notify the connection manager that an attempt to reacquire the
+        necessary hardware or software resources to unhold the stream,
+        in response to SetStreamHeld, has failed.
+      </tp:docstring>
+      <tp:added version="0.17.3"/>
+    </method>
+
+    <tp:docstring>
+    Handles signalling the information pertaining to a specific media stream.
+    A client should provide information to this handler as and when it is
+    available.
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

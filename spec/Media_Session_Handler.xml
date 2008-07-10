@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<node name="/Media_Session_Handler" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Media.SessionHandler">
+    <method name="Error">
+      <arg direction="in" name="errno" type="u"/>
+      <arg direction="in" name="message" type="s"/>
+      <tp:docstring>
+        THIS METHOD IS DEPRECATED AND SHOULD NOT BE USED. Instead the Error
+        function should be used on the relevant MediaStreamHandler objects.
+        Informs the connection manager that an error occured in this session.
+        If used, the connection manager must terminate the session and all of
+        the streams within it, and may also emit a StreamError signal on the
+        channel for each stream within the session.
+      </tp:docstring>
+    </method>
+    <signal name="NewStreamHandler">
+      <arg name="stream_handler" type="o">
+        <tp:docstring>
+          An object path to a new MediaStreamHandler
+        </tp:docstring>
+      </arg>
+      <arg name="id" type="u">
+        <tp:docstring>
+          The unique ID of the new stream
+        </tp:docstring>
+      </arg>
+      <arg name="media_type" type="u" tp:type="Media_Stream_Type">
+        <tp:docstring>
+          Enum for type of media that this stream should handle
+          (a value from MediaStreamType)
+        </tp:docstring>
+      </arg>
+      <arg name="direction" type="u" tp:type="Media_Stream_Direction">
+        <tp:docstring>
+          Enum for direction of this stream (a value from
+          MediaStreamDirection)
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Emitted when a new stream handler has been created for this
+        session.
+      </tp:docstring>
+    </signal>
+    <method name="Ready">
+      <tp:docstring>
+        Inform the connection manager that a client is ready to handle
+        this session handler (i.e. that it has connected to the
+        NewStreamHandler signal and done any other necessary setup).
+      </tp:docstring>
+    </method>
+    <tp:docstring>
+      An media session handler is an object that handles a number of synchronised
+    media streams.
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->
