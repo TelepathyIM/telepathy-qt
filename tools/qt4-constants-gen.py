@@ -146,7 +146,7 @@ enum %(singular)s
  *
  * 1 higher than the highest valid value of %(singular)s.
  */
-#define NUM_%(upper-plural)s (%(last-val)s+1)
+const int NUM_%(upper-plural)s = (%(last-val)s+1);
 
 """ % {'singular' : singular,
        'upper-plural' : plural.upper(),
