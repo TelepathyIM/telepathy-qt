@@ -25,4 +25,3 @@
 #include <TelepathyQt4/_gen/types.h>
 
 #endif
-
