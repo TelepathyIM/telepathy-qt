@@ -31,19 +31,19 @@ libtelepathy_qt4_la_SOURCES = \
     types.cpp
 
 nodist_libtelepathy_qt4_la_SOURCES = \
-    _gen/types-body.h
+    _gen/types-body.hpp
 
 tpqt4include_HEADERS = \
     Constants \
-		Types \
-		constants.h \
-		types.h
+    Types \
+    constants.h \
+    types.h
 nodist_geninclude_HEADERS = \
     _gen/constants.h \
-		_gen/types.h
+    _gen/types.h
 
 BUILT_SOURCES = \
-    $(nodist_libtelepathy_qt4_internal_la_SOURCES) \
+    $(nodist_libtelepathy_qt4_la_SOURCES) \
     $(nodist_geninclude_HEADERS) \
     _gen/stable-spec.xml \
     _gen/spec-stamp \
@@ -61,7 +61,7 @@ check-local: check-coding-style
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
     @QTCORE_CFLAGS@ \
-		@QTDBUS_CFLAGS@ \
+    @QTDBUS_CFLAGS@ \
     -I$(top_builddir) \
     -I$(top_srcdir)
 
@@ -90,13 +90,19 @@ _gen/stable-spec.xml: stable-interfaces.xml _gen/stable-stamp \
 _gen/constants.h: _gen/stable-spec.xml \
 		../tools/qt4-constants-gen.py
 	$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
-			Telepathy \
-			$< > $@.tmp && mv $@.tmp $@
+		--namespace='Telepathy' \
+		--specxml=$< \
+		> $@.tmp && mv $@.tmp $@
 
-_gen/types.h _gen/types-body.h: _gen/stable-spec.xml \
+_gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		../tools/qt4-types-gen.py
 	$(PYTHON) $(top_srcdir)/tools/qt4-types-gen.py \
-			Telepathy _gen/types.h _gen/types-body.h $<
+		--namespace='Telepathy' \
+		--declfile='_gen/types.h' \
+		--implfile='_gen/types-body.hpp' \
+		--realinclude='TelepathyQt4/types.h' \
+		--prettyinclude='TelepathyQt4/Types' \
+		--specxml=$<
 
 # Things generated per interface
 

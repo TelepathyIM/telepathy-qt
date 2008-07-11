@@ -2,13 +2,19 @@
 
 from sys import argv, stdout, stderr
 import xml.dom.minidom
+from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
 from libqt4codegen import format_docstring
 
 class Generator(object):
-    def __init__(self, namespace, dom):
-        self.namespace = namespace
+    def __init__(self, opts):
+        try:
+            self.namespace = opts['--namespace']
+            dom = xml.dom.minidom.parse(opts['--specxml'])
+        except KeyError, k:
+            assert False, 'Missing required parameter %s' % k.args[0]
+
         self.spec = get_by_path(dom, "spec")[0]
 
     def __call__(self):
@@ -158,5 +164,8 @@ enum %(singular)s
         stdout.write('}\n')
 
 if __name__ == '__main__':
-    argv = argv[1:]
-    Generator(argv[0], xml.dom.minidom.parse(argv[1]))()
+    options, argv = gnu_getopt(argv[1:], '',
+            ['namespace=',
+             'specxml='])
+
+    Generator(dict(options))()

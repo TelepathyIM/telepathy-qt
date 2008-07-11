@@ -37,7 +37,7 @@ m4_define([tp_qt4_version],
           [m4_if(tp_qt4_nano_version, 0, [tp_qt4_base_version],
               [tp_qt4_base_version].[tp_qt4_nano_version])])
 
-AC_INIT([TelepathyQt4], [tp_qt4_version],
+AC_INIT([Telepathy-Qt4], [tp_qt4_version],
         [https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy])
 
 AC_CONFIG_MACRO_DIR([m4])

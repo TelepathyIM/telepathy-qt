@@ -2,12 +2,13 @@
 
 from sys import argv
 import xml.dom.minidom
+from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
 from libqt4codegen import binding_from_usage, binding_from_decl, format_docstring
 
 class DepInfo:
-    def __init__(self, el, externals):
+    def __init__(self, el, externals, custom_lists):
         self.el = el
         name = get_by_path(el, '@name')
         array_name = get_by_path(el, '@array-name')
@@ -24,7 +25,7 @@ class DepInfo:
             if tptype.endswith('[]'):
                 tptype = tptype[:-2]
 
-            binding = binding_from_usage(sig, tptype)
+            binding = binding_from_usage(sig, tptype, custom_lists)
 
             if binding.custom_type:
                 self.deps.append(binding.val)
@@ -32,20 +33,30 @@ class DepInfo:
         self.revdeps = []
 
 class Generator(object):
-    def __init__(self, namespace, declfile, implfile, dom):
-        self.namespace = namespace
-        self.declfile = declfile
+    def __init__(self, opts):
+        try:
+            self.namespace = opts['--namespace']
+            self.declfile = opts['--declfile']
+            self.implfile = opts['--implfile']
+            self.realinclude = opts['--realinclude']
+            self.prettyinclude = opts.get('--prettyinclude' or self.realinclude)
+            dom = xml.dom.minidom.parse(opts['--specxml'])
+        except KeyError, k:
+            assert False, 'Missing required parameter %s' % k.args[0]
+
         self.decls = []
-        self.implfile = implfile
         self.impls = []
         self.spec = get_by_path(dom, "spec")[0]
         self.externals = []
+        self.custom_lists = {}
         self.required_custom = []
         self.required_arrays = []
         self.to_declare = []
         self.depinfos = {}
 
     def __call__(self):
+        # Emit comment header
+
         self.both('/* Generated from ')
         self.both(get_descendant_text(get_by_path(self.spec, 'title')))
         version = get_by_path(self.spec, "version")
@@ -54,8 +65,13 @@ class Generator(object):
             self.both(', version ' + get_descendant_text(version))
 
         self.both(' */\n')
+
+        # Gather info on available and required types
+
         self.gather_externals()
+        self.gather_custom_lists()
         self.gather_required()
+
         self.decl("""
 #include <TelepathyQt4/Types>
 
@@ -103,14 +119,14 @@ class Generator(object):
 
 """)
         self.impl("""
-#include <TelepathyQt4/Types>
-""")
+#include <%s>
+""" % self.prettyinclude)
         self.both("""
 namespace %s
 {
 """ % self.namespace)
 
-        # Emit type definitions
+        # Emit type definitions for types provided in the spec
 
         self.provide_all()
 
@@ -119,6 +135,7 @@ namespace %s
         self.decl("""\
 /**
  * \\ingroup types
+ * \\headerfile %s <%s>
  *
  * Register the types used by the library with the QtDBus type system.
  *
@@ -128,7 +145,7 @@ namespace %s
 void registerTypes();
 }
 
-""")
+""" % (self.realinclude, self.prettyinclude))
         self.impl("""\
 void registerTypes()
 {
@@ -173,6 +190,18 @@ void registerTypes()
             tptype = ext.getAttributeNS(NS_TP, 'type')
             externals.append((sig, tptype))
 
+    def gather_custom_lists(self):
+        structs = self.spec.getElementsByTagNameNS(NS_TP, 'struct')
+        mappings = self.spec.getElementsByTagNameNS(NS_TP, 'mapping')
+        exts = self.spec.getElementsByTagNameNS(NS_TP, 'external-type')
+
+        for provider in structs + mappings + exts:
+            tptype = provider.getAttribute('name').replace('_', '')
+            array_name = provider.getAttribute('array-name')
+
+            if array_name:
+                self.custom_lists[tptype] = array_name.replace('_', '')
+
     def gather_required(self):
         members = self.spec.getElementsByTagNameNS(NS_TP, 'member')
         args = self.spec.getElementsByTagName('arg')
@@ -183,7 +212,7 @@ void registerTypes()
             sig = requirer.getAttribute('type')
             tptype = requirer.getAttributeNS(NS_TP, 'type')
             external = (sig, tptype) in self.externals
-            binding = binding_from_usage(sig, tptype, external)
+            binding = binding_from_usage(sig, tptype, self.custom_lists, external)
 
             if binding.custom_type and binding.val not in self.required_custom:
                 self.required_custom.append(binding.val)
@@ -199,11 +228,12 @@ void registerTypes()
  /**
   * \\struct %s
   * \\ingroup list
+  * \\headerfile %s <%s>
   * 
   * Generic list type with %s elements. Convertible with
   * %s, but needed to have a discrete type in the Qt4 type system.
   */
-""" % (val, array_of, real))
+""" % (val, self.realinclude, self.prettyinclude, array_of, real))
             self.decl(self.faketype(val, real))
             self.to_declare.append(self.namespace + '::' + val)
 
@@ -212,7 +242,7 @@ void registerTypes()
         exts = self.spec.getElementsByTagNameNS(NS_TP, 'external-type')
 
         for deptype in structs + mappings:
-            info = DepInfo(deptype, self.externals)
+            info = DepInfo(deptype, self.externals, self.custom_lists)
             self.depinfos[info.binding.val] = info
 
         leaves = []
@@ -253,7 +283,6 @@ void registerTypes()
             self.provide(binding.val)
 
             if binding.array_val:
-                self.provide(binding.val + '[]')
                 self.provide(binding.array_val)
 
         assert not self.required_custom, 'These required types were not provided by the spec: ' + ', '.join(self.required_custom)
@@ -279,7 +308,7 @@ void registerTypes()
             sig = member.getAttribute('type')
             tptype = member.getAttributeNS(NS_TP, 'type')
             external = (sig, tptype) in self.externals
-            bindings.append(binding_from_usage(sig, tptype, external))
+            bindings.append(binding_from_usage(sig, tptype, self.custom_lists, external))
 
             docstrings.append(format_docstring(member, '     * ', ('    /**', '     */')))
 
@@ -289,13 +318,14 @@ void registerTypes()
 /**
  * \\struct %(name)s
  * \\ingroup struct
+ * \\headerfile %(realinclude)s <%(prettyinclude)s>
  *
  * Structure type generated from the specification.
 %(docstring)s\
  */
 struct %(name)s
 {
-""" % {'name' : depinfo.binding.val, 'docstring' : format_docstring(depinfo.el)})
+""" % {'name' : depinfo.binding.val, 'realinclude' : self.realinclude, 'prettyinclude' : self.prettyinclude, 'docstring' : format_docstring(depinfo.el)})
 
             for i in xrange(members):
                 self.decl("""\
@@ -338,12 +368,13 @@ struct %(name)s
 /**
  * \\struct %s
  * \\ingroup mapping
+ * \\headerfile %s <%s>
  *
  * Mapping type generated from the specification. Convertible with
  * %s, but needed to have a discrete type in the Qt4 type system.
 %s\
  */
-""" % (depinfo.binding.val, realtype, format_docstring(depinfo.el)))
+""" % (depinfo.binding.val, self.realinclude, self.prettyinclude, realtype, format_docstring(depinfo.el)))
             self.decl(self.faketype(depinfo.binding.val, realtype))
         else:
             assert False
@@ -351,16 +382,17 @@ struct %(name)s
         self.to_declare.append(self.namespace + '::' + depinfo.binding.val)
 
         if depinfo.binding.array_val:
-            self.to_declare.append('QList<%s::%s>' % (self.namespace, depinfo.binding.val))
+            self.to_declare.append('%s::%s' % (self.namespace, depinfo.binding.array_val))
             self.decl("""\
 /**
  * \\ingroup list
+ * \\headerfile %s <%s>
  *
  * Array of %s values.
  */
 typedef %s %s;
 
-""" % (depinfo.binding.val, depinfo.binding.array_val, depinfo.binding.array_name))
+""" % (self.realinclude, self.prettyinclude, depinfo.binding.val, 'QList<%s>' % depinfo.binding.val, depinfo.binding.array_val))
 
     def faketype(self, fake, real):
         return """\
@@ -379,6 +411,13 @@ struct %(fake)s : public %(real)s
 """ % {'fake' : fake, 'real' : real}
 
 if __name__ == '__main__':
-    argv = argv[1:]
-    Generator(argv[0], argv[1], argv[2], xml.dom.minidom.parse(argv[3]))()
+    options, argv = gnu_getopt(argv[1:], '',
+            ['declfile=',
+             'implfile=',
+             'realinclude=',
+             'prettyinclude=',
+             'namespace=',
+             'specxml='])
+
+    Generator(dict(options))()
 

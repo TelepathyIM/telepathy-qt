@@ -27,20 +27,15 @@ from libtpcodegen import get_by_path, get_descendant_text, NS_TP, xml_escape
 
 
 class _Qt4TypeBinding:
-    def __init__(self, val, inarg, outarg, array_name, custom_type, array_of):
+    def __init__(self, val, inarg, outarg, array_val, custom_type, array_of):
         self.val = val
         self.inarg = inarg
         self.outarg = outarg
-        self.array_name = array_name
-        self.array_val = None
-
-        if array_name:
-            self.array_val = 'QList<%s>' % val
-
+        self.array_val = array_val
         self.custom_type = custom_type
         self.array_of = array_of
 
-def binding_from_usage(sig, tptype, external=False):
+def binding_from_usage(sig, tptype, custom_lists, external=False):
     # 'signature' : ('qt-type', 'pass-by-reference')
     natives = {
             'y' : ('uchar', False, None),
@@ -83,8 +78,8 @@ def binding_from_usage(sig, tptype, external=False):
 
         if tptype.endswith('[]'):
             tptype = tptype[:-2]
-            val = 'QList<%s>' % tptype
-            array_of = tptype
+            assert custom_lists.has_key(tptype), ('No array version of custom type %s in the spec, but array version used' % tptype) + str(custom_lists)
+            val = custom_lists[tptype]
         else:
             val = tptype
 
