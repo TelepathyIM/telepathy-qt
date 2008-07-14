@@ -22,6 +22,51 @@
 #ifndef _TelepathyQt4_Constants_HEADER_GUARD_
 #define _TelepathyQt4_Constants_HEADER_GUARD_
 
+/**
+ * \addtogroup typesconstants Types and constants
+ *
+ * Enumerated, flag, structure, list and mapping types and utility constants.
+ */
+
+/**
+ * \defgroup utilityconsts Utility string constants
+ * \ingroup typesconstants
+ *
+ * Utility constants which aren't generated from the specification but are
+ * useful for working with the Telepathy protocol.
+ * @{
+ */
+
+/**
+ * The prefix for a connection manager's bus name, to which the CM's name (e.g.
+ * "gabble") should be appended.
+ */
+#define TP_CM_BUS_NAME_BASE "org.freedesktop.Telepathy.ConnectionManager."
+
+/**
+ * The prefix for a connection manager's object path, to which the CM's name
+ * (e.g. "gabble") should be appended.
+ */
+#define TP_CM_OBJECT_PATH_BASE "/org/freedesktop/Telepathy/ConnectionManager/"
+
+/**
+ * The prefix for a connection's bus name, to which the CM's name (e.g.
+ * "gabble"), the protocol (e.g. "jabber") and an element or sequence of
+ * elements representing the account should be appended.
+ */
+#define TP_CONN_BUS_NAME_BASE "org.freedesktop.Telepathy.Connection."
+
+/**
+ * The prefix for a connection's object path, to which the CM's name (e.g.
+ * "gabble"), the protocol (e.g. "jabber") and an element or sequence of
+ * elements representing the account should be appended.
+ */
+#define TP_CONN_OBJECT_PATH_BASE "/org/freedesktop/Telepathy/Connection/"
+
+/**
+ * @}
+ */
+
 #include <TelepathyQt4/_gen/constants.h>
 
 #endif

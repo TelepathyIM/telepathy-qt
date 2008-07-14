@@ -11,6 +11,7 @@ class Generator(object):
     def __init__(self, opts):
         try:
             self.namespace = opts['--namespace']
+            self.prefix = opts['--str-constant-prefix']
             dom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
             assert False, 'Missing required parameter %s' % k.args[0]
@@ -31,45 +32,100 @@ class Generator(object):
         if version:
             stdout.write(', version ' + get_descendant_text(version))
 
-        stdout.write(' */')
         stdout.write("""
+ */
 
 #include <QFlags>
 
 /**
- * \\addtogroup types Types and constants
+ * \\addtogroup typesconstants Types and constants
  *
- * Enumerated, flag, structure, list and mapping types generated from the
- * specification.
+ * Enumerated, flag, structure, list and mapping types and utility constants.
  */
 
 /**
- * \\defgroup flags Flag type constants
- * \\ingroup types
+ * \\defgroup flagtypeconsts Flag type constants
+ * \\ingroup typesconstants
  *
  * Types generated from the specification representing bit flag constants and
  * combinations of them (bitfields).
  */
 
 /**
- * \\defgroup enum Enumerated type constants
- * \\ingroup types
+ * \\defgroup enumtypeconsts Enumerated type constants
+ * \\ingroup typesconstants
  *
  * Types generated from the specification representing enumerated types ie.
- * types the values of which are mutually exclusive.
+ * types the values of which are mutually exclusive integral constants.
  */
 
+/**
+ * \\defgroup ifacestrconsts Interface string constants
+ * \\ingroup typesconstants
+ *
+ * D-Bus interface names of the interfaces in the specification.
+ */
+
+/**
+ * \\defgroup errorstrconsts Error string constants
+ * \\ingroup typesconstants
+ *
+ * Names of the D-Bus errors in the specification.
+ */
+""")
+
+    # Body
+    def do_body(self):
+        # Begin namespace
+        stdout.write("""
 namespace %s
 {
 """ % self.namespace)
 
-    # Body
-    def do_body(self):
+        # Flags
         for flags in self.spec.getElementsByTagNameNS(NS_TP, 'flags'):
             self.do_flags(flags)
 
+        # Enums
         for enum in self.spec.getElementsByTagNameNS(NS_TP, 'enum'):
             self.do_enum(enum)
+
+        # End namespace
+        stdout.write("""\
+}
+
+""")
+
+        # Interface names
+        for iface in self.spec.getElementsByTagName('interface'):
+            stdout.write("""\
+/**
+ * \\ingroup ifacestrconsts
+ *
+ * The interface name "%(name)s".
+ */
+#define %(DEFINE)s "%(name)s"
+
+""" % {'name' : iface.getAttribute('name'),
+       'DEFINE' : self.prefix + 'IFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
+
+        # Error names
+        for error in get_by_path(self.spec, 'errors/error'):
+            name = error.getAttribute('name')
+            fullname = get_by_path(error, '../@namespace') + '.' + name.replace(' ', '')
+            define = self.prefix + 'ERROR_' + name.replace(' ', '_').replace('.', '_').upper()
+            stdout.write("""\
+/**
+ * \\ingroup errorstrconsts
+ *
+ * The error name "%(fullname)s".
+%(docstring)s\
+ */
+#define %(DEFINE)s "%(fullname)s"
+
+""" % {'fullname' : fullname,
+       'docstring': format_docstring(error),
+       'DEFINE' : define})
 
     def do_flags(self, flags):
         singular = flags.getAttribute('singular') or \
@@ -83,7 +139,7 @@ namespace %s
         plural = (flags.getAttribute('plural') or flags.getAttribute('name') or singular + 's').replace('_', '')
         stdout.write("""\
 /**
- * \\ingroup flags
+ * \\ingroup flagtypeconsts
  *
  * Flag type generated from the specification.
  */
@@ -101,7 +157,7 @@ enum %(singular)s
 
 /**
  * \\typedef QFlags<%(singular)s> %(plural)s
- * \\ingroup flags
+ * \\ingroup flagtypeconsts
  *
  * Type representing combinations of #%(singular)s values.
 %(docstring)s\
@@ -126,7 +182,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(%(plural)s)
         stdout.write("""\
 /**
  * \\enum %(singular)s
- * \\ingroup enum
+ * \\ingroup enumtypeconsts
  *
  * Enumerated type generated from the specification.
 %(docstring)s\
@@ -142,7 +198,7 @@ enum %(singular)s
 };
 
 /**
- * \\ingroup enum
+ * \\ingroup enumtypeconsts
  *
  * 1 higher than the highest valid value of %(singular)s.
  */
@@ -166,6 +222,7 @@ const int NUM_%(upper-plural)s = (%(last-val)s+1);
 if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
             ['namespace=',
+             'str-constant-prefix=',
              'specxml='])
 
     Generator(dict(options))()

@@ -90,29 +90,28 @@ class Generator(object):
 #include <QDBusVariant>
 
 /**
- * \\addtogroup types Types and constants
+ * \\addtogroup typesconstants Types and constants
  *
- * Enumerated, flag, structure, list and mapping types generated from the
- * specification.
+ * Enumerated, flag, structure, list and mapping types and utility constants.
  */
 
 /**
  * \\defgroup struct Structure types
- * \\ingroup types
+ * \\ingroup typesconstants
  *
  * Structure types generated from the specification.
  */
 
 /**
  * \\defgroup list List types
- * \\ingroup types
+ * \\ingroup typesconstants
  *
  * List types generated from the specification.
  */
 
 /**
  * \\defgroup mapping Mapping types
- * \\ingroup types
+ * \\ingroup typesconstants
  *
  * Mapping types generated from the specification.
  */
