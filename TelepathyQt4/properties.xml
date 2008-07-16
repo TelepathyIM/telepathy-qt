@@ -2,11 +2,7 @@
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
-<tp:title>Generic interfaces</tp:title>
-
-<xi:include href="dbus-peer.xml"/>
-<xi:include href="dbus-introspectable.xml"/>
-<xi:include href="dbus-properties.xml"/>
+<tp:title>The Telepathy properties interface</tp:title>
 
 <xi:include href="../spec/Properties_Interface.xml"/>
 
