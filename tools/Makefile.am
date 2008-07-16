@@ -3,16 +3,19 @@ EXTRA_DIST = \
     check-misc.sh \
     check-whitespace.sh \
     libtpcodegen.py \
-		libqt4codegen.py \
-		qt4-constants-gen.py \
-		qt4-types-gen.py \
-		xincludator.py
+    libqt4codegen.py \
+    qt4-client-gen.py \
+    qt4-constants-gen.py \
+    qt4-types-gen.py \
+    xincludator.py
 
 CLEANFILES = libtpcodegen.pyc libtpcodegen.pyo libqt4codegen.pyc libqt4codegen.pyo
 
 all: $(EXTRA_DIST)
 
 libqt4codegen.py: libtpcodegen.py
+	touch $@
+qt4-client-gen.py: libtpcodegen.py libqt4codegen.py
 	touch $@
 qt4-constants-gen.py: libtpcodegen.py libqt4codegen.py
 	touch $@

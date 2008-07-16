@@ -39,6 +39,13 @@ tpqt4include_HEADERS = \
     constants.h \
     types.h
 nodist_geninclude_HEADERS = \
+    _gen/cli-channel.h \
+    _gen/cli-connection.h \
+    _gen/cli-connection-manager.h \
+    _gen/cli-dbus.h \
+    _gen/cli-media-session-handler.h \
+    _gen/cli-media-stream-handler.h \
+    _gen/cli-properties.h \
     _gen/constants.h \
     _gen/types.h
 
@@ -107,7 +114,39 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 
 # Things generated per interface
 
-_gen/tp-spec-%.xml: %.xml ../tools/xincludator.py _gen/spec-stamp
+_gen/spec-%.xml: %.xml ../tools/xincludator.py _gen/spec-stamp
 	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
+_gen/cli-%.h: _gen/spec-%.xml \
+		../tools/qt4-client-gen.py
+	set -e; \
+	namespace='Telepathy::Client'; \
+	prettyinclude= ; \
+	case $* in \
+		channel) \
+			prettyinclude='Channel';; \
+		connection) \
+			prettyinclude='Connection';; \
+		connection-manager) \
+			prettyinclude='ConnectionManager';; \
+		dbus) \
+			namespace='Telepathy::Client::DBus'; \
+			prettyinclude='DBus';; \
+		media-session-handler) \
+			prettyinclude='MediaSessionHandler';; \
+		media-stream-handler) \
+			prettyinclude='MediaStreamHandler';; \
+		properties) \
+			prettyinclude='Properties';; \
+	esac; \
+	echo $$prettyinclude; \
+	$(PYTHON) $(srcdir)/../tools/qt4-client-gen.py \
+		--group=$* \
+		--namespace=$$namespace \
+		--outputfile=$@ \
+		--realinclude='TelepathyQt4/cli-$*.h' \
+		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
+		--specxml=_gen/stable-spec.xml \
+		--ifacexml=$< \
+		--typesinclude='TelepathyQt4/Types'
