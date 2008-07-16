@@ -143,7 +143,7 @@ AC_SUBST(QTDBUS_LIBS)
 
 dnl Check for code generation tools
 PYTHON=
-AC_CHECK_PROGS([PYTHON], [python2.3 python2.4 python2.5 python])
+AC_CHECK_PROGS([PYTHON], [python2.5 python])
 if test -z "$PYTHON"; then
   AC_MSG_ERROR([Python is required to compile this package])
 fi
