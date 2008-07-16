@@ -34,8 +34,22 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/types-body.hpp
 
 tpqt4include_HEADERS = \
+    Client/Channel \
+    Client/Connection \
+    Client/ConnectionManager \
+    Client/DBus \
+    Client/MediaSessionHandler \
+    Client/MediaStreamHandler \
+    Client/Properties \
     Constants \
     Types \
+    cli-channel.h \
+    cli-connection.h \
+    cli-connection-manager.h \
+    cli-dbus.h \
+    cli-media-session-handler.h \
+    cli-media-stream-handler.h \
+    cli-properties.h \
     constants.h \
     types.h
 nodist_geninclude_HEADERS = \
