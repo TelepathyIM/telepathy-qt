@@ -8,13 +8,13 @@ EXTRA_DIST = \
     channel.xml \
     connection.xml \
     connection-manager.xml \
-    dbus-daemon.xml \
+    dbus.xml \
     dbus-introspectable.xml \
     dbus-peer.xml \
     dbus-properties.xml \
-    generic.xml \
     media-session-handler.xml \
     media-stream-handler.xml \
+    properties.xml \
     stable-interfaces.xml
 
 lib_LTLIBRARIES = libtelepathy-qt4.la
@@ -140,13 +140,14 @@ _gen/cli-%.h: _gen/spec-%.xml \
 		properties) \
 			prettyinclude='Properties';; \
 	esac; \
-	echo $$prettyinclude; \
+	cp _gen/stable-spec.xml _gen/stable-spec-$*.xml.tmp; \
 	$(PYTHON) $(srcdir)/../tools/qt4-client-gen.py \
 		--group=$* \
 		--namespace=$$namespace \
 		--outputfile=$@ \
 		--realinclude='TelepathyQt4/cli-$*.h' \
 		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
-		--specxml=_gen/stable-spec.xml \
+		--specxml=_gen/stable-spec-$*.xml.tmp \
 		--ifacexml=$< \
 		--typesinclude='TelepathyQt4/Types'
+
