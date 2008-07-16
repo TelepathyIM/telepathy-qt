@@ -133,6 +133,7 @@ _gen/spec-%.xml: %.xml ../tools/xincludator.py _gen/spec-stamp
 		$< > $@
 
 _gen/cli-%.h: _gen/spec-%.xml \
+		_gen/stable-spec.xml \
 		../tools/qt4-client-gen.py
 	set -e; \
 	namespace='Telepathy::Client'; \
@@ -154,14 +155,13 @@ _gen/cli-%.h: _gen/spec-%.xml \
 		properties) \
 			prettyinclude='Properties';; \
 	esac; \
-	cp _gen/stable-spec.xml _gen/stable-spec-$*.xml.tmp; \
 	$(PYTHON) $(srcdir)/../tools/qt4-client-gen.py \
 		--group=$* \
 		--namespace=$$namespace \
 		--outputfile=$@ \
 		--realinclude='TelepathyQt4/cli-$*.h' \
 		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
-		--specxml=_gen/stable-spec-$*.xml.tmp \
+		--specxml=_gen/stable-spec.xml \
 		--ifacexml=$< \
 		--typesinclude='TelepathyQt4/Types'
 
