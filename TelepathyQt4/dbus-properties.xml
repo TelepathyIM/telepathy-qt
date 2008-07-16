@@ -3,7 +3,7 @@
 
   <tp:title>D-Bus Properties</tp:title>
 
-  <node name="/DBus_Properties">
+  <node name="/Properties">
     <interface name="org.freedesktop.DBus.Properties">
 
       <method name="Get">
