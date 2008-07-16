@@ -57,6 +57,7 @@ class Generator(object):
             self.implfile = opts['--implfile']
             self.realinclude = opts['--realinclude']
             self.prettyinclude = opts.get('--prettyinclude' or self.realinclude)
+            self.parentinclude = opts.get('--parentinclude' or None)
             dom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
             assert False, 'Missing required parameter %s' % k.args[0]
@@ -89,9 +90,12 @@ class Generator(object):
         self.gather_custom_lists()
         self.gather_required()
 
-        self.decl("""
-#include <TelepathyQt4/Types>
+        if self.parentinclude:
+            self.decl("""
+#include <%s>
+""" % self.parentinclude)
 
+        self.decl("""
 #include <QtGlobal>
 
 #include <QByteArray>
@@ -432,6 +436,7 @@ if __name__ == '__main__':
              'implfile=',
              'realinclude=',
              'prettyinclude=',
+             'parentinclude=',
              'namespace=',
              'specxml='])
 
