@@ -28,7 +28,8 @@ libtelepathy_qt4_la_LIBADD = $(ALL_LIBS)
 libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
-    types.cpp
+    types.cpp \
+    header-compile-test.cpp
 
 nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/types-body.hpp
