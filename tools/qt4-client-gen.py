@@ -40,7 +40,7 @@ class Generator(object):
 
         self.output = []
         self.ifacenodes = ifacedom.getElementsByTagName('node')
-        self.spec = get_by_path(specdom, "spec")[0]
+        self.spec, = get_by_path(specdom, "spec")
 
     def __call__(self):
         # Output info header and includes
@@ -53,17 +53,24 @@ class Generator(object):
  */
 
 #include <QDBusAbstractInterface>
+#include <QDBusConnection>
+#include <QDBusPendingCall>
+#include <QDBusPendingReply>
+#include <QString>
 
 #include <%s>
-
 """ % self.typesinclude)
 
         # Begin namespace
         for ns in self.namespace.split('::'):
-            self.o("""\
+            self.o("""
 namespace %s
 {
 """ % ns)
+
+        # Output interface proxies
+        for ifacenode in self.ifacenodes:
+            self.do_ifacenode(ifacenode)
 
         # End namespace
         self.o(''.join(['}\n' for ns in self.namespace.split('::')]))
@@ -71,8 +78,41 @@ namespace %s
         # Write output to file
         open(self.outputfile, 'w').write(''.join(self.output))
 
+    def do_ifacenode(self, ifacenode):
+        name = ifacenode.getAttribute('name').replace('/', '').replace('_', '') + 'Interface'
+        iface, = get_by_path(ifacenode, 'interface')
+        dbusname = iface.getAttribute('name')
+
+        self.o("""
+class %(name)s : public QDBusAbstractInterface
+{
+    Q_OBJECT
+
+public:
+    static inline const char *staticInterfaceName()
+    {
+        return "%(dbusname)s";
+    }
+
+    inline %(name)s(const QString& serviceName,
+                    const QString& objectPath,
+                    QObject* parent = 0)
+        : QDBusAbstractInterface(serviceName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent) {}
+    inline %(name)s(const QDBusConnection& connection,
+                    const QString& serviceName,
+                    const QString& objectPath,
+                    QObject* parent = 0)
+        : QDBusAbstractInterface(serviceName, objectPath, staticInterfaceName(), connection, parent) {}
+""" % {'name' : name,
+       'dbusname' : dbusname})
+
+        self.o("""\
+};
+""")
+
     def o(self, str):
         self.output.append(str)
+
 
 if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
