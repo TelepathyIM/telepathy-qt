@@ -36,12 +36,7 @@ class Generator(object):
         self.spec = get_by_path(dom, "spec")[0]
 
     def __call__(self):
-        self.do_header()
-        self.do_body()
-        self.do_footer()
-
-    # Header
-    def do_header(self):
+        # Header
         stdout.write('/* Generated from ')
         stdout.write(get_descendant_text(get_by_path(self.spec, 'title')))
         version = get_by_path(self.spec, "version")
@@ -91,8 +86,6 @@ class Generator(object):
  */
 """)
 
-    # Body
-    def do_body(self):
         # Begin namespace
         stdout.write("""
 namespace %s
@@ -231,10 +224,6 @@ const int NUM_%(upper-plural)s = (%(last-val)s+1);
 %s\
      %s = %s%s
 """ % (format_docstring(val, indent='     * ', brackets=('    /**', '     */')), prefix + name, val.getAttribute('value'), (not last and ',\n') or ''))
-
-    # Footer
-    def do_footer(self):
-        stdout.write('}\n')
 
 if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
