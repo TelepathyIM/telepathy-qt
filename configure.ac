@@ -96,7 +96,6 @@ ifelse(tp_qt4_nano_version, 0,
         fi
     ])
 
-AS_COMPILER_FLAG(-Wshadow, ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wshadow")
 AS_COMPILER_FLAG(-Wmissing-declarations, ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wmissing-declarations")
 
 AC_SUBST(ERROR_CXXFLAGS)
