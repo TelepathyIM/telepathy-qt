@@ -157,3 +157,29 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         output.append('\n')
 
     return ''.join(output)
+
+def gather_externals(spec):
+    externals = []
+
+    for ext in spec.getElementsByTagNameNS(NS_TP, 'external-type'):
+        sig = ext.getAttribute('type')
+        tptype = ext.getAttributeNS(NS_TP, 'type')
+        externals.append((sig, tptype))
+
+    return externals
+
+def gather_custom_lists(spec):
+    custom_lists = {}
+    structs = spec.getElementsByTagNameNS(NS_TP, 'struct')
+    mappings = spec.getElementsByTagNameNS(NS_TP, 'mapping')
+    exts = spec.getElementsByTagNameNS(NS_TP, 'external-type')
+
+    for provider in structs + mappings + exts:
+        tptype = provider.getAttribute('name').replace('_', '')
+        array_name = provider.getAttribute('array-name')
+
+        if array_name:
+            custom_lists[tptype] = array_name.replace('_', '')
+
+    return custom_lists
+
