@@ -33,6 +33,7 @@ class Generator(object):
             self.realinclude = opts['--realinclude']
             self.prettyinclude = opts['--prettyinclude']
             self.typesinclude = opts['--typesinclude']
+            self.mainiface = opts.get('--mainiface', None)
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
@@ -41,6 +42,7 @@ class Generator(object):
         self.output = []
         self.ifacenodes = ifacedom.getElementsByTagName('node')
         self.spec, = get_by_path(specdom, "spec")
+        self.mainifacename = self.mainiface and self.mainiface.replace('/', '').replace('_', '') + 'Interface'
 
     def __call__(self):
         # Output info header and includes
@@ -69,6 +71,17 @@ namespace %s
 """ % ns)
 
         # Output interface proxies
+        def ifacenodecmp(x, y):
+            xname, yname = x.getAttribute('name'), y.getAttribute('name')
+
+            if xname == self.mainiface:
+                return -1
+            elif yname == self.mainiface:
+                return 1
+            else:
+                return cmp(xname, yname)
+
+        self.ifacenodes.sort(cmp=ifacenodecmp)
         for ifacenode in self.ifacenodes:
             self.do_ifacenode(ifacenode)
 
@@ -94,17 +107,32 @@ public:
         return "%(dbusname)s";
     }
 
-    inline %(name)s(const QString& serviceName,
-                    const QString& objectPath,
-                    QObject* parent = 0)
-        : QDBusAbstractInterface(serviceName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent) {}
-    inline %(name)s(const QDBusConnection& connection,
-                    const QString& serviceName,
-                    const QString& objectPath,
-                    QObject* parent = 0)
-        : QDBusAbstractInterface(serviceName, objectPath, staticInterfaceName(), connection, parent) {}
+    inline %(name)s(
+        const QString& serviceName,
+        const QString& objectPath,
+        QObject* parent = 0
+    ) : QDBusAbstractInterface(serviceName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent) {}
+
+    inline %(name)s(
+        const QDBusConnection& connection,
+        const QString& serviceName,
+        const QString& objectPath,
+        QObject* parent = 0
+    ) : QDBusAbstractInterface(serviceName, objectPath, staticInterfaceName(), connection, parent) {}
 """ % {'name' : name,
        'dbusname' : dbusname})
+
+        if self.mainifacename and self.mainifacename != name:
+            self.o("""
+    inline %(name)s(const %(mainifacename)s& mainInterface)
+        : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), mainInterface.parent()) {}
+
+    inline %(name)s(
+        const %(mainifacename)s& mainInterface,
+        QObject* parent
+    ) : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), parent) {}
+""" % {'name' : name,
+       'mainifacename' : self.mainifacename})
 
         self.o("""\
 };
@@ -123,6 +151,7 @@ if __name__ == '__main__':
              'specxml=',
              'realinclude=',
              'prettyinclude=',
-             'typesinclude='])
+             'typesinclude=',
+             'mainiface='])
 
     Generator(dict(options))()

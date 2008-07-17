@@ -139,13 +139,17 @@ _gen/cli-%.h: _gen/spec-%.xml \
 	set -e; \
 	namespace='Telepathy::Client'; \
 	prettyinclude= ; \
+	mainiface= ; \
 	case $* in \
 		channel) \
-			prettyinclude='Channel';; \
+			prettyinclude='Channel'; \
+			mainiface='--mainiface=/Channel';; \
 		connection) \
-			prettyinclude='Connection';; \
+			prettyinclude='Connection'; \
+			mainiface='--mainiface=/Connection';; \
 		connection-manager) \
-			prettyinclude='ConnectionManager';; \
+			prettyinclude='ConnectionManager'; \
+			mainiface='--mainiface=/Connection_Manager';; \
 		dbus) \
 			namespace='Telepathy::Client::DBus'; \
 			prettyinclude='DBus';; \
@@ -164,5 +168,6 @@ _gen/cli-%.h: _gen/spec-%.xml \
 		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
 		--specxml=_gen/stable-spec.xml \
 		--ifacexml=$< \
-		--typesinclude='TelepathyQt4/Types'
+		--typesinclude='TelepathyQt4/Types' \
+		$$mainiface
 
