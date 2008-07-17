@@ -154,9 +154,11 @@ _gen/cli-%.h: _gen/spec-%.xml \
 			namespace='Telepathy::Client::DBus'; \
 			prettyinclude='DBus';; \
 		media-session-handler) \
-			prettyinclude='MediaSessionHandler';; \
+			prettyinclude='MediaSessionHandler'; \
+			mainiface='--mainiface=/Media_Session_Handler';; \
 		media-stream-handler) \
-			prettyinclude='MediaStreamHandler';; \
+		prettyinclude='MediaStreamHandler'; \
+			mainiface='--mainiface=/Media_Stream_Handler';; \
 		properties) \
 			prettyinclude='Properties';; \
 	esac; \

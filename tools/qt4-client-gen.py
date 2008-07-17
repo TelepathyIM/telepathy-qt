@@ -122,7 +122,9 @@ public:
 """ % {'name' : name,
        'dbusname' : dbusname})
 
-        if self.mainifacename and self.mainifacename != name:
+        mainifacename = self.mainifacename or 'QDBusAbstractInterface'
+
+        if self.mainifacename != name:
             self.o("""
     inline %(name)s(const %(mainifacename)s& mainInterface)
         : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), mainInterface.parent()) {}
@@ -132,7 +134,7 @@ public:
         QObject* parent
     ) : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), parent) {}
 """ % {'name' : name,
-       'mainifacename' : self.mainifacename})
+       'mainifacename' : mainifacename})
 
         self.o("""\
 };
