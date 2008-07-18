@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import format_docstring
+from libqt4codegen import binding_from_usage, cxx_identifier_escape, format_docstring, gather_externals, gather_custom_lists
 
 class Generator(object):
     def __init__(self, opts):
@@ -42,6 +42,8 @@ class Generator(object):
         self.output = []
         self.ifacenodes = ifacedom.getElementsByTagName('node')
         self.spec, = get_by_path(specdom, "spec")
+        self.custom_lists = gather_custom_lists(self.spec)
+        self.externals = gather_externals(self.spec)
         self.mainifacename = self.mainiface and self.mainiface.replace('/', '').replace('_', '') + 'Interface'
 
     def __call__(self):
@@ -59,6 +61,7 @@ class Generator(object):
 #include <QDBusPendingCall>
 #include <QDBusPendingReply>
 #include <QString>
+#include <QVariant>
 
 #include <%s>
 """ % self.typesinclude)
@@ -92,10 +95,12 @@ namespace %s
         open(self.outputfile, 'w').write(''.join(self.output))
 
     def do_ifacenode(self, ifacenode):
+        # Extract info
         name = ifacenode.getAttribute('name').replace('/', '').replace('_', '') + 'Interface'
         iface, = get_by_path(ifacenode, 'interface')
         dbusname = iface.getAttribute('name')
 
+        # Begin class, constructors
         self.o("""
 class %(name)s : public QDBusAbstractInterface
 {
@@ -122,6 +127,7 @@ public:
 """ % {'name' : name,
        'dbusname' : dbusname})
 
+        # Main interface
         mainifacename = self.mainifacename or 'QDBusAbstractInterface'
 
         if self.mainifacename != name:
@@ -136,9 +142,51 @@ public:
 """ % {'name' : name,
        'mainifacename' : mainifacename})
 
+        # Properties
+        for prop in get_by_path(iface, 'property'):
+            # Skip tp:properties
+            if not prop.namespaceURI:
+                self.do_prop(prop)
+
+        # Close class
         self.o("""\
 };
 """)
+
+    def do_prop(self, prop):
+        propname = prop.getAttribute('name')
+        access = prop.getAttribute('access')
+        gettername = cxx_identifier_escape(propname[0].lower() + propname[1:])
+        settername = None
+
+        sig = prop.getAttribute('type')
+        tptype = prop.getAttributeNS(NS_TP, 'type')
+        binding = binding_from_usage(sig, tptype, self.custom_lists, (sig, tptype) in self.externals)
+
+        if 'write' in access:
+            settername = cxx_escape('set' + propname[0].upper() + propname[1:])
+
+        self.o("""
+    Q_PROPERTY(%(val)s %(propname-escaped)s READ %(gettername)s%(maybesettername)s)
+
+    inline %(val)s %(gettername)s() const
+    {
+        return %(getter-return)s;
+    }
+""" % {'val' : binding.val,
+       'propname-escaped' : cxx_identifier_escape(propname),
+       'propname' : propname,
+       'gettername' : gettername,
+       'maybesettername' : settername and (' WRITE ' + settername) or '',
+       'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, propname)) or binding.val + '()'})
+
+        if settername:
+            self.o("""
+    inline void %s(%s newValue)
+    {
+        internalPropSet("%s", QVariant::fromValue(newValue));
+    }
+""" % (settername, binding.inarg, propname))
 
     def o(self, str):
         self.output.append(str)
