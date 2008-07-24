@@ -281,3 +281,14 @@ def gather_custom_lists(spec):
 
     return custom_lists
 
+def get_qt4_name(el):
+    name = el.getAttribute('name')
+    bname = el.getAttributeNS(NS_TP, 'name-for-bindings')
+
+    if bname:
+        bname = bname[0].lower() + bname[1:]
+        ret = bname.replace('_', '')
+    else:
+        ret = name[0].lower() + name[1:]
+
+    return cxx_identifier_escape(ret)

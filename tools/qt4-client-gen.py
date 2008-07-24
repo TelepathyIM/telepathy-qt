@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, cxx_identifier_escape, format_docstring, gather_externals, gather_custom_lists
+from libqt4codegen import binding_from_usage, cxx_identifier_escape, format_docstring, gather_externals, gather_custom_lists, get_qt4_name
 
 class Generator(object):
     def __init__(self, opts):
@@ -184,9 +184,10 @@ public:
 """)
 
     def do_prop(self, prop):
-        propname = prop.getAttribute('name')
+        name = prop.getAttribute('name')
+        qt4name = get_qt4_name(prop)
         access = prop.getAttribute('access')
-        gettername = cxx_identifier_escape(propname[0].lower() + propname[1:])
+        gettername = qt4name
         settername = None
 
         sig = prop.getAttribute('type')
@@ -194,21 +195,20 @@ public:
         binding = binding_from_usage(sig, tptype, self.custom_lists, (sig, tptype) in self.externals)
 
         if 'write' in access:
-            settername = cxx_escape('set' + propname[0].upper() + propname[1:])
+            settername = set + gettername[0].upper() + gettername[1:]
 
         self.h("""
-    Q_PROPERTY(%(val)s %(propname-escaped)s READ %(gettername)s%(maybesettername)s)
+    Q_PROPERTY(%(val)s %(qt4name)s READ %(gettername)s%(maybesettername)s)
 
     inline %(val)s %(gettername)s() const
     {
         return %(getter-return)s;
     }
 """ % {'val' : binding.val,
-       'propname-escaped' : cxx_identifier_escape(propname),
-       'propname' : propname,
+       'qt4name' : qt4name,
        'gettername' : gettername,
        'maybesettername' : settername and (' WRITE ' + settername) or '',
-       'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, propname)) or binding.val + '()'})
+       'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, name)) or binding.val + '()'})
 
         if settername:
             self.h("""
