@@ -23,7 +23,7 @@ please make any changes there.
 
 from sys import maxint
 import re
-from libtpcodegen import get_by_path, get_descendant_text, NS_TP, xml_escape
+from libtpcodegen import escape_as_identifier, get_by_path, get_descendant_text, NS_TP, xml_escape
 
 
 class _Qt4TypeBinding:
@@ -96,6 +96,104 @@ def binding_from_decl(name, array_name):
     outarg = '%s&' % val
     return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None)
 
+def cxx_identifier_escape(str):
+    str = escape_as_identifier(str)
+
+    # List of reserved identifiers
+    # Initial list from http://cs.smu.ca/~porter/csc/ref/cpp_keywords.html
+
+    # Keywords inherited from C90
+    reserved = ['auto',
+                'const',
+                'double',
+                'float',
+                'int',
+                'short',
+                'struct',
+                'unsigned',
+                'break',
+                'continue',
+                'else',
+                'for',
+                'long',
+                'signed',
+                'switch',
+                'void',
+                'case',
+                'default',
+                'enum',
+                'goto',
+                'register',
+                'sizeof',
+                'typedef',
+                'volatile',
+                'char',
+                'do',
+                'extern',
+                'if',
+                'return',
+                'static',
+                'union',
+                'while',
+    # C++-only keywords
+                'asm',
+                'dynamic_cast',
+                'namespace',
+                'reinterpret_cast',
+                'try',
+                'bool',
+                'explicit',
+                'new',
+                'static_cast',
+                'typeid',
+                'catch',
+                'false',
+                'operator',
+                'template',
+                'typename',
+                'class',
+                'friend',
+                'private',
+                'this',
+                'using',
+                'const_cast',
+                'inline',
+                'public',
+                'throw',
+                'virtual',
+                'delete',
+                'mutable',
+                'protected',
+                'true',
+                'wchar_t',
+    # Operator replacements
+                'and',
+                'bitand',
+                'compl',
+                'not_eq',
+                'or_eq',
+                'xor_eq',
+                'and_eq',
+                'bitor',
+                'not',
+                'or',
+                'xor',
+    # Predefined identifiers
+                'INT_MIN',
+                'INT_MAX',
+                'MAX_RAND',
+                'NULL',
+    # Qt
+                'SIGNAL',
+                'SLOT',
+                'signals',
+                'slots']
+
+    while str in reserved:
+        str = str + '_'
+
+    return str
+
 def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
     docstring_el = None
 
@@ -157,3 +255,29 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         output.append('\n')
 
     return ''.join(output)
+
+def gather_externals(spec):
+    externals = []
+
+    for ext in spec.getElementsByTagNameNS(NS_TP, 'external-type'):
+        sig = ext.getAttribute('type')
+        tptype = ext.getAttributeNS(NS_TP, 'type')
+        externals.append((sig, tptype))
+
+    return externals
+
+def gather_custom_lists(spec):
+    custom_lists = {}
+    structs = spec.getElementsByTagNameNS(NS_TP, 'struct')
+    mappings = spec.getElementsByTagNameNS(NS_TP, 'mapping')
+    exts = spec.getElementsByTagNameNS(NS_TP, 'external-type')
+
+    for provider in structs + mappings + exts:
+        tptype = provider.getAttribute('name').replace('_', '')
+        array_name = provider.getAttribute('array-name')
+
+        if array_name:
+            custom_lists[tptype] = array_name.replace('_', '')
+
+    return custom_lists
+
