@@ -178,6 +178,17 @@ public:
             if not prop.namespaceURI:
                 self.do_prop(prop)
 
+        # Methods
+        methods = get_by_path(iface, 'method')
+
+        if methods:
+            self.h("""
+public Q_SLOTS:\
+""")
+
+            for method in get_by_path(iface, 'method'):
+                self.do_method(method)
+
         # Close class
         self.h("""\
 };
@@ -217,6 +228,56 @@ public:
         internalPropSet("%s", QVariant::fromValue(newValue));
     }
 """ % (settername, binding.inarg, propname))
+
+    def do_method(self, method):
+        name = method.getAttribute('name')
+        qt4name = get_qt4_name(method)
+        args = get_by_path(method, 'arg')
+
+        inargs = []
+        outargs = []
+        argnames = []
+        argbindings = []
+
+        for i in xrange(len(args)):
+            if args[i].getAttribute('direction') == 'out':
+                outargs.append(i)
+            else:
+                inargs.append(i)
+
+            argname = args[i].getAttribute('name')
+
+            if argname:
+                argname = argname.replace('_', '')
+                argnames.append(cxx_identifier_escape(argname[0].lower() + argname[1:]))
+
+            sig = args[i].getAttribute('type')
+            tptype = args[i].getAttributeNS(NS_TP, 'type')
+            external = (sig, tptype) in self.externals
+            argbindings.append(binding_from_usage(sig, tptype, self.custom_lists, external))
+
+        rettypes = ', '.join([argbindings[i].val for i in outargs])
+        params = ', '.join([argbindings[i].inarg + ' ' + argnames[i] for i in inargs])
+
+        self.h("""
+    inline QDBusPendingReply<%(rettypes)s> %(qt4name)s(%(params)s)
+    {\
+""" % {'rettypes' : rettypes,
+       'qt4name' : qt4name,
+       'params' : params})
+
+        if inargs:
+            self.h("""
+        QList<QVariant> argumentList;
+        argumentList << %s;
+        return asyncCallWithArgumentList(QLatin1String("%s"), argumentList);
+    }
+""" % (' << '.join(['QVariant::fromValue(%s)' % argnames[i] for i in inargs]), name))
+        else:
+            self.h("""
+        return asyncCall(QLatin1String("%s"));
+    }
+""" % name)
 
     def h(self, str):
         self.hs.append(str)
