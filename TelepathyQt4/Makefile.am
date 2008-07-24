@@ -29,10 +29,31 @@ libtelepathy_qt4_la_LIBADD = $(ALL_LIBS)
 libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
+    cli-channel.cpp \
+    cli-connection.cpp \
+    cli-connection-manager.cpp \
+    cli-dbus.cpp \
+    cli-media-session-handler.cpp \
+    cli-media-stream-handler.cpp \
+    cli-properties.cpp \
     types.cpp \
     header-compile-test.cpp
 
 nodist_libtelepathy_qt4_la_SOURCES = \
+    _gen/cli-channel-body.hpp \
+    _gen/cli-channel.moc.hpp \
+    _gen/cli-connection-body.hpp \
+    _gen/cli-connection.moc.hpp \
+    _gen/cli-connection-manager-body.hpp \
+    _gen/cli-connection-manager.moc.hpp \
+    _gen/cli-dbus-body.hpp \
+    _gen/cli-dbus.moc.hpp \
+    _gen/cli-media-session-handler-body.hpp \
+    _gen/cli-media-session-handler.moc.hpp \
+    _gen/cli-media-stream-handler-body.hpp \
+    _gen/cli-media-stream-handler.moc.hpp \
+    _gen/cli-properties-body.hpp \
+    _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp
 
 tpqt4include_HEADERS = \
@@ -137,7 +158,7 @@ _gen/spec-%.xml: %.xml ../tools/xincludator.py _gen/spec-stamp
 	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
-_gen/cli-%.h: _gen/spec-%.xml \
+_gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		_gen/stable-spec.xml \
 		../tools/qt4-client-gen.py
 	set -e; \
@@ -169,7 +190,8 @@ _gen/cli-%.h: _gen/spec-%.xml \
 	$(PYTHON) $(srcdir)/../tools/qt4-client-gen.py \
 		--group=$* \
 		--namespace=$$namespace \
-		--outputfile=$@ \
+		--headerfile=_gen/cli-$*.h \
+		--implfile=_gen/cli-$*-body.hpp \
 		--realinclude='TelepathyQt4/cli-$*.h' \
 		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
 		--specxml=_gen/stable-spec.xml \
@@ -177,3 +199,5 @@ _gen/cli-%.h: _gen/spec-%.xml \
 		--typesinclude='TelepathyQt4/Types' \
 		$$mainiface
 
+_gen/%.moc.hpp: _gen/%.h
+	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
