@@ -1,4 +1,5 @@
 tpqt4includedir=$(includedir)/telepathy-1.0/TelepathyQt4
+tpqt4clientincludedir=$(tpqt4includedir)/Client
 genincludedir=$(tpqt4includedir)/_gen
 
 pkgconfigdir = ${libdir}/pkgconfig
@@ -35,13 +36,6 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/types-body.hpp
 
 tpqt4include_HEADERS = \
-    Client/Channel \
-    Client/Connection \
-    Client/ConnectionManager \
-    Client/DBus \
-    Client/MediaSessionHandler \
-    Client/MediaStreamHandler \
-    Client/Properties \
     Constants \
     Types \
     cli-channel.h \
@@ -53,6 +47,16 @@ tpqt4include_HEADERS = \
     cli-properties.h \
     constants.h \
     types.h
+
+tpqt4clientinclude_HEADERS = \
+    Client/Channel \
+    Client/Connection \
+    Client/ConnectionManager \
+    Client/DBus \
+    Client/MediaSessionHandler \
+    Client/MediaStreamHandler \
+    Client/Properties
+
 nodist_geninclude_HEADERS = \
     _gen/cli-channel.h \
     _gen/cli-connection.h \
