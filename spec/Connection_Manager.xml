@@ -141,7 +141,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:flags>
 
     <method name="GetParameters" tp:name-for-bindings="Get_Parameters">
-      <arg direction="in" name="Proto" type="s" tp:type="Protocol">
+      <arg direction="in" name="Protocol" type="s" tp:type="Protocol">
         <tp:docstring>
           The required protocol name
         </tp:docstring>
@@ -187,7 +187,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The object path of the Connection object on this service
         </tp:docstring>
       </arg>
-      <arg name="Proto" type="s" tp:type="Protocol">
+      <arg name="Protocol" type="s" tp:type="Protocol">
         <tp:docstring>
           The identifier for the protocol this connection uses
         </tp:docstring>
@@ -198,7 +198,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <method name="RequestConnection" tp:name-for-bindings="Request_Connection">
-      <arg direction="in" name="Proto" type="s" tp:type="Protocol">
+      <arg direction="in" name="Protocol" type="s" tp:type="Protocol">
         <tp:docstring>
           The protocol identifier
         </tp:docstring>

@@ -47,7 +47,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="AcknowledgePendingMessages"
       tp:name-for-bindings="Acknowledge_Pending_Messages">
-      <arg direction="in" name="ids" type="au" tp:type="Message_ID[]">
+      <arg direction="in" name="IDs" type="au" tp:type="Message_ID[]">
         <tp:docstring>
           The IDs of the messages to acknowledge
         </tp:docstring>

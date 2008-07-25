@@ -25,8 +25,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         flags) representing a property, as returned by ListProperties on the
         Properties interface.</tp:docstring>
       <tp:member type="u" name="Property_ID"/>
-      <tp:member type="s" name="name"/>
-      <tp:member type="s" tp:type="DBus_Signature" name="signature"/>
+      <tp:member type="s" name="Name"/>
+      <tp:member type="s" tp:type="DBus_Signature" name="Signature"/>
       <tp:member type="u" tp:type="Property_Flags" name="Flags"/>
     </tp:struct>
 

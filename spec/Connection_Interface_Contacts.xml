@@ -127,7 +127,7 @@
     </tp:mapping>
 
     <property name="InspectableInterfaces" access="read" type="as"
-      tp:type="DBus_Interface[]" tp:name-for-bindings="InspectableInterfaces">
+      tp:type="DBus_Interface[]" tp:name-for-bindings="Inspectable_Interfaces">
       <tp:docstring>
         A list of D-Bus interfaces for which
         <tp:member-ref>InspectContacts</tp:member-ref> is expected to work.
