@@ -19,6 +19,7 @@
 
 from sys import argv
 import xml.dom.minidom
+import codecs
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
@@ -100,8 +101,8 @@ namespace %s
         self.hb(''.join(['}\n' for ns in self.namespace.split('::')]))
 
         # Write output to files
-        open(self.headerfile, 'w').write(''.join(self.hs))
-        open(self.implfile, 'w').write(''.join(self.bs))
+        (codecs.getwriter('utf-8')(open(self.headerfile, 'w'))).write(''.join(self.hs))
+        (codecs.getwriter('utf-8')(open(self.implfile, 'w'))).write(''.join(self.bs))
 
     def do_ifacenode(self, ifacenode):
         # Extract info
