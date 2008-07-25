@@ -45,7 +45,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member type="s" name="Text"/>
     </tp:struct>
 
-    <method name="AcknowledgePendingMessages">
+    <method name="AcknowledgePendingMessages"
+      tp:name-for-bindings="Acknowledge_Pending_Messages">
       <arg direction="in" name="ids" type="au" tp:type="Message_ID[]">
         <tp:docstring>
           The IDs of the messages to acknowledge
@@ -64,7 +65,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <method name="GetMessageTypes">
+    <method name="GetMessageTypes" tp:name-for-bindings="Get_Message_Types">
       <arg direction="out" type="au" tp:type="Channel_Text_Message_Type[]">
         <tp:docstring>
           An array of integer message types (ChannelTextMessageType)
@@ -76,8 +77,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
 
-    <method name="ListPendingMessages">
-      <arg direction="in" name="clear" type="b">
+    <method name="ListPendingMessages"
+      tp:name-for-bindings="List_Pending_Messages">
+      <arg direction="in" name="Clear" type="b">
         <tp:docstring>
           If true, behave as if AcknowledgePendingMessages had also been
           called.
@@ -107,7 +109,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
 
-    <signal name="LostMessage">
+    <signal name="LostMessage" tp:name-for-bindings="Lost_Message">
       <tp:docstring>
         This signal is emitted to indicate that an incoming message was
         not able to be stored and forwarded by the connection manager
@@ -116,32 +118,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <signal name="Received">
-      <arg name="id" type="u">
+      <arg name="ID" type="u">
         <tp:docstring>
           A numeric identifier for acknowledging the message
         </tp:docstring>
       </arg>
-      <arg name="timestamp" type="u" tp:type="Unix_Timestamp">
+      <arg name="Timestamp" type="u" tp:type="Unix_Timestamp">
         <tp:docstring>
           A Unix timestamp indicating when the message was received
         </tp:docstring>
       </arg>
-      <arg name="sender" type="u" tp:type="Contact_Handle">
+      <arg name="Sender" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The handle of the contact who sent the message
         </tp:docstring>
       </arg>
-      <arg name="type" type="u" tp:type="Channel_Text_Message_Type">
+      <arg name="Type" type="u" tp:type="Channel_Text_Message_Type">
         <tp:docstring>
           The type of the message (normal, action, notice, etc.)
         </tp:docstring>
       </arg>
-      <arg name="flags" type="u" tp:type="Channel_Text_Message_Flags">
+      <arg name="Flags" type="u" tp:type="Channel_Text_Message_Flags">
         <tp:docstring>
           A bitwise OR of the message flags
         </tp:docstring>
       </arg>
-      <arg name="text" type="s">
+      <arg name="Text" type="s">
         <tp:docstring>
           The text of the message
         </tp:docstring>
@@ -156,12 +158,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <method name="Send">
-      <arg direction="in" name="type" type="u" tp:type="Channel_Text_Message_Type">
+      <arg direction="in" name="Type" type="u" tp:type="Channel_Text_Message_Type">
         <tp:docstring>
           An integer indicating the type of the message
         </tp:docstring>
       </arg>
-      <arg direction="in" name="text" type="s">
+      <arg direction="in" name="Text" type="s">
         <tp:docstring>
           The message to send
         </tp:docstring>
@@ -214,23 +216,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:enumvalue>
     </tp:enum>
 
-    <signal name="SendError">
-      <arg name="error" type="u" tp:type="Channel_Text_Send_Error">
+    <signal name="SendError" tp:name-for-bindings="Send_Error">
+      <arg name="Error" type="u" tp:type="Channel_Text_Send_Error">
         <tp:docstring>
           The error that occurred
         </tp:docstring>
       </arg>
-      <arg name="timestamp" type="u" tp:type="Unix_Timestamp">
+      <arg name="Timestamp" type="u" tp:type="Unix_Timestamp">
         <tp:docstring>
           The Unix timestamp indicating when the message was sent
         </tp:docstring>
       </arg>
-      <arg name="type" type="u" tp:type="Channel_Text_Message_Type">
+      <arg name="Type" type="u" tp:type="Channel_Text_Message_Type">
         <tp:docstring>
           The message type
         </tp:docstring>
       </arg>
-      <arg name="text" type="s">
+      <arg name="Text" type="s">
         <tp:docstring>
           The text of the message
         </tp:docstring>
@@ -250,18 +252,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <signal name="Sent">
-      <arg name="timestamp" type="u" tp:type="Unix_Timestamp">
+      <arg name="Timestamp" type="u" tp:type="Unix_Timestamp">
         <tp:docstring>
           Unix timestamp indicating when the message was sent
         </tp:docstring>
       </arg>
-      <arg name="type" type="u" tp:type="Channel_Text_Message_Type">
+      <arg name="Type" type="u" tp:type="Channel_Text_Message_Type">
         <tp:docstring>
           The message type (normal, action, notice, etc) from
           ChannelTextMessageType
         </tp:docstring>
       </arg>
-      <arg name="text" type="s">
+      <arg name="Text" type="s">
         <tp:docstring>
           The text of the message
         </tp:docstring>
@@ -457,7 +459,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <p>On protocols where a conversation with a user is actually just
         a nameless chat room starting with exactly two members, to which
-        more members can be invited, calling RequestChannel with type Text
+        more members can be invited, calling
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">RequestChannel</tp:dbus-ref>
+        with type Text
         and handle type CONTACT should continue to succeed, but may return
         a channel with handle type 0, handle 0, the group interface,
         and the local and remote contacts in its members.</p>

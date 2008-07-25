@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     tp:causes-havoc='not well-tested'>
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
     <signal name="Renamed">
-      <arg name="original" type="u" tp:type="Contact_Handle">
+      <arg name="Original" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The handle of the original identifier
         </tp:docstring>
       </arg>
-      <arg name="new" type="u" tp:type="Contact_Handle">
+      <arg name="New" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The handle of the new identifier
         </tp:docstring>
@@ -61,8 +61,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </p>
       </tp:docstring>
     </signal>
-    <method name="RequestRename">
-      <arg direction="in" name="name" type="s">
+    <method name="RequestRename" tp:name-for-bindings="Request_Rename">
+      <arg direction="in" name="Name" type="s">
         <tp:docstring>
           The desired identifier
         </tp:docstring>

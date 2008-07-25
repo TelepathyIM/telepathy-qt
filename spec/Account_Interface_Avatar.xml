@@ -50,7 +50,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <signal name="AvatarChanged">
+    <signal name="AvatarChanged" tp:name-for-bindings="Avatar_Changed">
       <tp:docstring>
         Emitted when the Avatar property changes.
         

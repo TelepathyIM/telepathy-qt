@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.17.7</tp:version>
+<tp:version>0.17.8.1</tp:version>
 
 <tp:copyright>Copyright (C) 2005-2008 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright (C) 2005-2008 Nokia Corporation</tp:copyright>
@@ -30,10 +30,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 <xi:include href="Connection_Interface_Aliasing.xml"/>
 <xi:include href="Connection_Interface_Avatars.xml"/>
 <xi:include href="Connection_Interface_Capabilities.xml"/>
+<xi:include href="Connection_Interface_Contacts.xml"/>
 <!-- Never implemented, is a terrible API
 <xi:include href="Connection_Interface_Contact_Info.xml"/> -->
 <!-- Never implemented, insufficient (needs conditions)
 <xi:include href="Connection_Interface_Forwarding.xml"/> -->
+<xi:include href="Connection_Interface_Simple_Presence.xml"/>
 <xi:include href="Connection_Interface_Presence.xml"/>
 <!-- Never implemented, vague
 <xi:include href="Connection_Interface_Privacy.xml"/> -->

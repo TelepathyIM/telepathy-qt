@@ -21,11 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Interface.DTMF">
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
 
-    <method name="StartTone">
-      <arg direction="in" name="stream_id" type="u" tp:type="Stream_ID">
+    <method name="StartTone" tp:name-for-bindings="Start_Tone">
+      <arg direction="in" name="Stream_ID" type="u" tp:type="Stream_ID">
         <tp:docstring>A stream ID as defined in the StreamedMedia channel type.</tp:docstring>
       </arg>
-      <arg direction="in" name="event" type="y" tp:type="DTMF_Event">
+      <arg direction="in" name="Event" type="y" tp:type="DTMF_Event">
         <tp:docstring>A numeric event code from the DTMF_Event enum.</tp:docstring>
       </arg>
       <tp:docstring>
@@ -50,8 +50,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <method name="StopTone">
-      <arg direction="in" name="stream_id" type="u" tp:type="Stream_ID">
+    <method name="StopTone" tp:name-for-bindings="Stop_Tone">
+      <arg direction="in" name="Stream_ID" type="u" tp:type="Stream_ID">
         <tp:docstring>A stream ID as defined in the StreamedMedia channel type.</tp:docstring>
       </arg>
       <tp:docstring>

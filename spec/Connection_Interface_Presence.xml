@@ -63,13 +63,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member type="(ubba{ss})" tp:type="Status_Spec" name="Spec"/>
     </tp:mapping>
 
-    <method name="AddStatus">
-      <arg direction="in" name="status" type="s">
+    <method name="AddStatus" tp:name-for-bindings="Add_Status">
+      <arg direction="in" name="Status" type="s">
         <tp:docstring>
           The string identifier of the desired status
         </tp:docstring>
       </arg>
-      <arg direction="in" name="parms" type="a{sv}" tp:type="String_Variant_Map">
+      <arg direction="in" name="Parms" type="a{sv}" tp:type="String_Variant_Map">
         <tp:docstring>
           A dictionary of optional parameter names mapped to their variant-boxed values
         </tp:docstring>
@@ -87,7 +87,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
-    <method name="ClearStatus">
+    <method name="ClearStatus" tp:name-for-bindings="Clear_Status">
       <tp:docstring>
         Request that all of a user's presence statuses be removed. Be aware
         that this request may simply result in the statuses being replaced by a
@@ -100,13 +100,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
-    <method name="GetPresence">
-      <arg direction="in" name="contacts" type="au" tp:type="Contact_Handle[]">
+    <method name="GetPresence" tp:name-for-bindings="Get_Presence">
+      <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           An array of the contacts whose presence should be obtained
         </tp:docstring>
       </arg>
-      <arg direction="out" name="presence" type="a{u(ua{sa{sv}})}"
+      <arg direction="out" name="Presence" type="a{u(ua{sa{sv}})}"
         tp:type="Contact_Presences">
         <tp:docstring>
           Presence information in the same format as for the PresenceUpdate
@@ -126,7 +126,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
       </tp:possible-errors>
     </method>
-    <method name="GetStatuses">
+    <method name="GetStatuses" tp:name-for-bindings="Get_Statuses">
       <arg direction="out" type="a{s(ubba{ss})}" tp:type="Status_Spec_Map">
         <tp:docstring>
         A dictionary of string identifiers mapped to a struct for each status, containing:
@@ -148,8 +148,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
-    <signal name="PresenceUpdate">
-      <arg name="presence" type="a{u(ua{sa{sv}})}" tp:type="Contact_Presences">
+    <signal name="PresenceUpdate" tp:name-for-bindings="Presence_Update">
+      <arg name="Presence" type="a{u(ua{sa{sv}})}" tp:type="Contact_Presences">
         <tp:docstring>
         A dictionary of contact handles mapped to a struct containing
         a UNIX timestamp of the last activity time (in UTC), and
@@ -165,8 +165,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       </tp:docstring>
     </signal>
-    <method name="RemoveStatus">
-      <arg direction="in" name="status" type="s">
+    <method name="RemoveStatus" tp:name-for-bindings="Remove_Status">
+      <arg direction="in" name="Status" type="s">
         <tp:docstring>
           The string identifier of the status not to publish anymore for the user
         </tp:docstring>
@@ -186,8 +186,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:error>
       </tp:possible-errors>
     </method>
-    <method name="RequestPresence">
-      <arg direction="in" name="contacts" type="au" tp:type="Contact_Handle[]">
+    <method name="RequestPresence" tp:name-for-bindings="Request_Presence">
+      <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           An array of the contacts whose presence should be obtained
         </tp:docstring>
@@ -211,8 +211,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:error>
       </tp:possible-errors>
     </method>
-    <method name="SetLastActivityTime">
-      <arg direction="in" name="time" type="u" tp:type="Unix_Timestamp">
+    <method name="SetLastActivityTime"
+      tp:name-for-bindings="Set_Last_Activity_Time">
+      <arg direction="in" name="Time" type="u" tp:type="Unix_Timestamp">
         <tp:docstring>
           A UNIX timestamp of the user's last activity time (in UTC)
         </tp:docstring>
@@ -231,8 +232,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:error>
       </tp:possible-errors>
     </method>
-    <method name="SetStatus">
-      <arg direction="in" name="statuses" type="a{sa{sv}}" tp:type="Multiple_Status_Map">
+    <method name="SetStatus" tp:name-for-bindings="Set_Status">
+      <arg direction="in" name="Statuses" type="a{sa{sv}}" tp:type="Multiple_Status_Map">
         <tp:docstring>
           A dictionary mapping status identifiers to dictionaries, which
           map optional parameter names to their variant-boxed values
@@ -258,10 +259,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>This interface is for services which have a concept of presence which can
-    be published for yourself and monitored on your contacts. Telepathy's
-    definition of presence is based on that used by the Galago project
-    (see http://www.galago-project.org/).</p>
+      <p>This interface will become deprecated in future versions. New
+        client implementations MAY use
+        org.freedesktop.Telepathy.Connection.Interface.SimplePresence
+        instead; new connection managers SHOULD implement both
+        Presence and SimplePresence.</p>
+
+      <p>This interface is for services which have a concept of presence which
+        can be published for yourself and monitored on your contacts.
+        Telepathy's definition of presence is based on that used by
+        <a href="http://www.galago-project.org/">the Galago
+          project</a>.</p>
 
     <p>Presence on an individual (yourself or one of your contacts) is modelled as
     a last activity time along with a set of zero or more statuses, each of
@@ -276,14 +284,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     choices:</p>
 
     <ul>
-      <li>available</li>
-      <li>away</li>
-      <li>brb (Be Right Back)</li>
-      <li>busy</li>
-      <li>dnd (Do Not Disturb),</li>
-      <li>xa (Extended Away)</li>
-      <li>hidden (aka Invisible)</li>
-      <li>offline</li>
+      <li>available (corresponding to Connection_Presence_Type_Available)</li>
+      <li>away (corresponding to Connection_Presence_Type_Away)</li>
+      <li>brb (Be Right Back) (corresponding to
+        Connection_Presence_Type_Away, but more specific)</li>
+      <li>busy (corresponding to Connection_Presence_Type_Busy)</li>
+      <li>dnd (Do Not Disturb) (corresponding to
+        Connection_Presence_Type_Busy, but more specific)</li>
+      <li>xa (Extended Away) (corresponding to
+        Connection_Presence_Type_Extended_Away)</li>
+      <li>hidden (aka Invisible) (corresponding to
+        Connection_Presence_Type_Hidden)</li>
+      <li>offline (corresponding to Connection_Presence_Type_Offline)</li>
+      <li>unknown (corresponding to Connection_Presence_Type_Unknown)</li>
+      <li>error (corresponding to Connection_Presence_Type_Error)</li>
     </ul>
 
     <p>As well as these well-known status identifiers, every status also has a
@@ -317,7 +331,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:enum name="Connection_Presence_Type" type="u">
       <tp:enumvalue suffix="Unset" value="0">
         <tp:docstring>
-          An invalid presence type used as a null value
+          An invalid presence type used as a null value. This value MUST NOT
+          appear in the result of GetStatuses, or in the Statuses property
+          of the SimplePresence interface.
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Offline" value="1">
@@ -349,6 +365,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:added version="0.17.0"/>
         <tp:docstring>
           Busy, Do Not Disturb.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Unknown" value="7">
+        <tp:added version="0.17.UNRELEASED"/>
+        <tp:docstring>
+          Unknown, unable to determine presence for this contact, for example
+          if the protocol only allows presence of subscribed contacts.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Error" value="8">
+        <tp:added version="0.17.UNRELEASED"/>
+        <tp:docstring>
+          Error, an error occurred while trying to determine presence.  The
+          message, if set, is an error from the server.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>

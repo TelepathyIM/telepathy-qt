@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Connection.Interface.Forwarding"
     tp:causes-havoc='not well-tested'>
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
-    <signal name="ForwardingChanged">
-      <arg name="forward_to" type="u" tp:type="Contact_Handle">
+    <signal name="ForwardingChanged" tp:name-for-bindings="Forwarding_Changed">
+      <arg name="Forward_To" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           An integer contact handle to forward communication to
         </tp:docstring>
@@ -32,7 +32,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         changed. An zero handle indicates forwarding is disabled.
       </tp:docstring>
     </signal>
-    <method name="GetForwardingHandle">
+    <method name="GetForwardingHandle"
+      tp:name-for-bindings="Get_Forwarding_Handle">
       <arg direction="out" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           An integer contact handle to whom incoming communication is forwarded
@@ -47,8 +48,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
       </tp:possible-errors>
     </method>
-    <method name="SetForwardingHandle">
-      <arg direction="in" name="forward_to" type="u" tp:type="Contact_Handle">
+    <method name="SetForwardingHandle"
+      tp:name-for-bindings="Set_Forwarding_Handle">
+      <arg direction="in" name="Forward_To" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           An integer contact handle to forward incoming communications to
         </tp:docstring>

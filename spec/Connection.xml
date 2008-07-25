@@ -66,23 +66,50 @@ USA.</p>
       </tp:docstring>
     </method>
 
-    <method name="GetInterfaces">
+    <method name="GetInterfaces" tp:name-for-bindings="Get_Interfaces">
       <arg direction="out" type="as" tp:type="DBus_Interface[]">
         <tp:docstring>
           An array of D-Bus interface names
         </tp:docstring>
       </arg>
 
-      <tp:docstring>
-        Get the optional interfaces supported by this connection.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Get the optional interfaces supported by this connection.
+          Before the connection status changes to CONNECTED, the return
+          from this method may change at any time, but it is guaranteed that
+          interfaces will only be added, not removed. After the connection
+          status changes to CONNECTED, the return from this method cannot
+          change further.</p>
+
+        <p>There is no explicit change notification; reasonable behaviour
+          for a client would be to retrieve the interfaces list once
+          initially, and once more when it becomes CONNECTED.</p>
+
+        <tp:rationale>
+          <p>In some connection managers, certain capabilities of a connection
+            are known to be implemented for all connections (e.g. support
+            for SimplePresence), and some interfaces (like SimplePresence) can
+            even be used before connecting. Other capabilities may
+            or may not exist, depending on server functionality; by the time
+            the connection goes CONNECTED, the connection manager is expected
+            to have evaluated the server's functionality and enabled any extra
+            interfaces for the remainder of the Connection's lifetime.</p>
+        </tp:rationale>
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected">
+          <tp:docstring>
+             Before version 0.17.UNRELEASED calling GetInterfaces while
+             on a connection that is not yet CONNECTED wasn't allowed. If a
+             CM returns this error, its list of interfaces should be regarded
+             as empty until it becomes CONNECTED.
+          </tp:docstring>
+        </tp:error>
       </tp:possible-errors>
     </method>
 
-    <method name="GetProtocol">
+    <method name="GetProtocol" tp:name-for-bindings="Get_Protocol">
       <arg direction="out" type="s" tp:type="Protocol">
         <tp:docstring>
           A string identifier for the protocol
@@ -94,7 +121,7 @@ USA.</p>
       </tp:docstring>
     </method>
 
-    <method name="GetSelfHandle">
+    <method name="GetSelfHandle" tp:name-for-bindings="Get_Self_Handle">
       <arg direction="out" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           An integer handle representing the user
@@ -113,7 +140,7 @@ USA.</p>
       </tp:possible-errors>
     </method>
 
-    <method name="GetStatus">
+    <method name="GetStatus" tp:name-for-bindings="Get_Status">
       <arg direction="out" type="u" tp:type="Connection_Status">
         <tp:docstring>
           An integer representing the current status
@@ -125,14 +152,14 @@ USA.</p>
       </tp:docstring>
     </method>
 
-    <method name="HoldHandles">
-      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+    <method name="HoldHandles" tp:name-for-bindings="Hold_Handles">
+      <arg direction="in" name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           The type of handle to be held
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="handles" type="au" tp:type="Handle[]">
+      <arg direction="in" name="Handles" type="au" tp:type="Handle[]">
         <tp:docstring>
           A array of integer handles to hold
         </tp:docstring>
@@ -167,14 +194,14 @@ USA.</p>
       </tp:possible-errors>
     </method>
 
-    <method name="InspectHandles">
-      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+    <method name="InspectHandles" tp:name-for-bindings="Inspect_Handles">
+      <arg direction="in" name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           The type of handle to be inspected
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="handles" type="au" tp:type="Handle[]">
+      <arg direction="in" name="Handles" type="au" tp:type="Handle[]">
         <tp:docstring>
           An array of integer handles of this type
         </tp:docstring>
@@ -202,7 +229,7 @@ USA.</p>
       </tp:possible-errors>
     </method>
 
-    <method name="ListChannels">
+    <method name="ListChannels" tp:name-for-bindings="List_Channels">
       <arg direction="out" type="a(osuu)" tp:type="Channel_Info[]">
         <tp:docstring>
           An array of structs representing channels.
@@ -218,34 +245,34 @@ USA.</p>
       </tp:possible-errors>
     </method>
 
-    <signal name="NewChannel">
-      <arg name="object_path" type="o">
+    <signal name="NewChannel" tp:name-for-bindings="New_Channel">
+      <arg name="Object_Path" type="o">
         <tp:docstring>
           A D-Bus object path for the channel object on this service
         </tp:docstring>
       </arg>
 
-      <arg name="channel_type" type="s" tp:type="DBus_Interface">
+      <arg name="Channel_Type" type="s" tp:type="DBus_Interface">
         <tp:docstring>
           A D-Bus interface name representing the channel type
         </tp:docstring>
       </arg>
 
-      <arg name="handle_type" type="u" tp:type="Handle_Type">
+      <arg name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           An integer representing the type of handle this channel
           communicates with, or Handle_Type_None if no handle is specified
         </tp:docstring>
       </arg>
 
-      <arg name="handle" type="u" tp:type="Handle">
+      <arg name="Handle" type="u" tp:type="Handle">
         <tp:docstring>
           A handle indicating the specific contact, room or list this
           channel communicates with, or zero if no handle is specified
         </tp:docstring>
       </arg>
 
-      <arg name="suppress_handler" type="b">
+      <arg name="Suppress_Handler" type="b">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>If true, the channel was requested by a client that intends to
             present it to the user itself (i.e. it passed suppress_handler=TRUE
@@ -271,14 +298,14 @@ USA.</p>
       </tp:docstring>
     </signal>
 
-    <method name="ReleaseHandles">
-      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+    <method name="ReleaseHandles" tp:name-for-bindings="Release_Handles">
+      <arg direction="in" name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           An integer handle type (as defined in RequestHandle)
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="handles" type="au" tp:type="Handle[]">
+      <arg direction="in" name="Handles" type="au" tp:type="Handle[]">
         <tp:docstring>
           An array of integer handles being held by the client
         </tp:docstring>
@@ -294,32 +321,38 @@ USA.</p>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          The handle type is invalid
+          <tp:docstring>
+            The handle type is invalid
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
-          One of the given handles is not valid
+          <tp:docstring>
+            One of the given handles is not valid
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          One of the given handles is not held by this client
+          <tp:docstring>
+            One of the given handles is not held by this client
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
 
-    <method name="RequestChannel">
-      <arg direction="in" name="type" type="s" tp:type="DBus_Interface">
+    <method name="RequestChannel" tp:name-for-bindings="Request_Channel">
+      <arg direction="in" name="Type" type="s" tp:type="DBus_Interface">
         <tp:docstring>
           A D-Bus interface name representing base channel type
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+      <arg direction="in" name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           An integer representing the handle type, or Handle_Type_None if
           no handle is specified
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="handle" type="u" tp:type="Handle">
+      <arg direction="in" name="Handle" type="u" tp:type="Handle">
         <tp:docstring>
           A nonzero integer handle representing a contact, room, list etc.
           according to handle_type, or zero if the handle_type is
@@ -327,7 +360,7 @@ USA.</p>
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="suppress_handler" type="b">
+      <arg direction="in" name="Suppress_Handler" type="b">
         <tp:docstring>
           If true, the requesting client intends to take responsibility for
           displaying the channel to the user, so no other handler needs to
@@ -450,14 +483,14 @@ USA.</p>
         Handle_Type_Group</tp:docstring>
     </tp:simple-type>
 
-    <method name="RequestHandles">
-      <arg direction="in" name="handle_type" type="u" tp:type="Handle_Type">
+    <method name="RequestHandles" tp:name-for-bindings="Request_Handles">
+      <arg direction="in" name="Handle_Type" type="u" tp:type="Handle_Type">
         <tp:docstring>
           The type of handle required
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="names" type="as">
+      <arg direction="in" name="Names" type="as">
         <tp:docstring>
           An array of names of entities to request handles for
         </tp:docstring>
@@ -483,10 +516,14 @@ USA.</p>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          The handle type is invalid
+          <tp:docstring>
+            The handle type is invalid
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          The given name is not a valid entity of the given type
+          <tp:docstring>
+            The given name is not a valid entity of the given type
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
@@ -588,14 +625,14 @@ USA.</p>
       </tp:enumvalue>
     </tp:enum>
 
-    <signal name="StatusChanged">
-      <arg name="status" type="u" tp:type="Connection_Status">
+    <signal name="StatusChanged" tp:name-for-bindings="Status_Changed">
+      <arg name="Status" type="u" tp:type="Connection_Status">
         <tp:docstring>
           An integer indicating the new status, as defined by ConnectionStatus
         </tp:docstring>
       </arg>
 
-      <arg name="reason" type="u" tp:type="Connection_Status_Reason">
+      <arg name="Reason" type="u" tp:type="Connection_Status_Reason">
         <tp:docstring>
           An integer indicating the reason for the status change, as defined
           by ConnectionStatusReason

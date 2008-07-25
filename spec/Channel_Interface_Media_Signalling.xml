@@ -39,7 +39,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:member>
     </tp:struct>
 
-    <method name="GetSessionHandlers">
+    <method name="GetSessionHandlers"
+      tp:name-for-bindings="Get_Session_Handlers">
       <arg direction="out" type="a(os)" tp:type="Media_Session_Handler_Info[]"/>
       <tp:docstring>
         Returns all currently active session handlers on this channel
@@ -47,7 +48,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
 
-    <signal name="NewSessionHandler">
+    <signal name="NewSessionHandler" tp:name-for-bindings="New_Session_Handler">
       <arg name="Session_Handler" type="o">
         <tp:docstring>
           Object path of the new MediaSessionHandler object

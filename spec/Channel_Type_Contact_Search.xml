@@ -41,7 +41,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member type="(bg)" tp:type="Search_Key_Info" name="Details"/>
     </tp:mapping>
 
-    <method name="GetSearchKeys">
+    <method name="GetSearchKeys" tp:name-for-bindings="Get_Search_Keys">
       <arg direction="out" type="s">
         <tp:docstring>
           A string with any instructions from the server
@@ -81,7 +81,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>The search has been completed</tp:docstring>
       </tp:enumvalue>
     </tp:enum>
-    <method name="GetSearchState">
+    <method name="GetSearchState" tp:name-for-bindings="Get_Search_State">
       <arg direction="out" type="u" tp:type="Channel_Contact_Search_State">
         <tp:docstring>The search state represented as one of the values of
           ChannelContactSearchState</tp:docstring>
@@ -91,7 +91,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
     <method name="Search">
-      <arg direction="in" name="terms" type="a{sv}" tp:type="String_Variant_Map">
+      <arg direction="in" name="Terms" type="a{sv}" tp:type="String_Variant_Map">
         <tp:docstring>
           A dictionary mapping search key names to the desired values
         </tp:docstring>
@@ -107,19 +107,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
       </tp:possible-errors>
     </method>
-    <signal name="SearchResultReceived">
-      <arg name="contact" type="u" tp:type="Contact_Handle">
+    <signal name="SearchResultReceived"
+      tp:name-for-bindings="Search_Result_Received">
+      <arg name="Contact" type="u" tp:type="Contact_Handle">
         <tp:docstring>An integer handle for the contact</tp:docstring>
       </arg>
-      <arg name="values" type="a{sv}" tp:type="String_Variant_Map">
+      <arg name="Values" type="a{sv}" tp:type="String_Variant_Map">
         <tp:docstring>A dictionary mapping search key names to values for this contact</tp:docstring>
       </arg>
       <tp:docstring>
         Emitted when a search result is received from the server.
       </tp:docstring>
     </signal>
-    <signal name="SearchStateChanged">
-      <arg name="state" type="u" tp:type="Channel_Contact_Search_State">
+    <signal name="SearchStateChanged"
+      tp:name-for-bindings="Search_State_Changed">
+      <arg name="State" type="u" tp:type="Channel_Contact_Search_State">
         <tp:docstring>An integer representing the new search state</tp:docstring>
       </arg>
       <tp:docstring>

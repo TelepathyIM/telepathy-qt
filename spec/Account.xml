@@ -130,7 +130,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </signal>
 
-    <signal name="AccountPropertyChanged">
+    <signal name="AccountPropertyChanged"
+      tp:name-for-bindings="Account_Property_Changed">
       <tp:docstring>
         The values of one or more properties on this interface (that do not
         specify that this signal does not apply to them) may have changed.
@@ -147,7 +148,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
     </signal>
 
-    <property name="DisplayName" type="s" access="readwrite">
+    <property name="DisplayName" type="s" access="readwrite"
+      tp:name-for-bindings="Display_Name">
       <tp:docstring>
         The user-visible name of this account. This SHOULD be chosen by the
         user at account creation time. The account creation user interface
@@ -263,7 +265,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <method name="UpdateParameters">
+    <method name="UpdateParameters" tp:name-for-bindings="Update_Parameters">
       <tp:docstring>
         Change the value of the Parameters property. Any changes will not
         take effect until the next time the account is disconnected and
@@ -298,36 +300,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <tp:struct name="Account_Presence">
-      <tp:docstring>
-        A simplified form of the presence statuses seen in the Presence
-        interface.
-      </tp:docstring>
-
-      <tp:member name="Type" type="u" tp:type="Connection_Presence_Type">
-        <tp:docstring>
-          The presence type, e.g. Connection_Presence_Type_Away.
-        </tp:docstring>
-      </tp:member>
-
-      <tp:member name="Status" type="s">
-        <tp:docstring>
-          The connection-manager-specific string identifier of the presence
-          status, e.g. "brb".
-        </tp:docstring>
-      </tp:member>
-
-      <tp:member name="Message" type="s">
-        <tp:docstring>
-          The user-defined status message, e.g. "Back soon!". This will be
-          used as the value for the 'message' keyword in the Presence
-          interface's dictionary, if possible.
-        </tp:docstring>
-      </tp:member>
-    </tp:struct>
-
     <property name="AutomaticPresence" type="(uss)" access="readwrite"
-      tp:type="Account_Presence">
+      tp:type="Simple_Presence" tp:name-for-bindings="Automatic_Presence">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The presence status that this account should have if it is brought
           online.</p>
@@ -346,7 +320,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="ConnectAutomatically" type="b" access="readwrite">
+    <property name="ConnectAutomatically" type="b" access="readwrite"
+      tp:name-for-bindings="Connect_Automatically">
       <tp:docstring>
         If true, the account manager SHOULD attempt to put this account
         online with the AutomaticPresence whenever possible (in the base
@@ -371,7 +346,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="ConnectionStatus" type="u" access="read">
+    <property name="ConnectionStatus" type="u" access="read"
+      tp:name-for-bindings="Connection_Status">
       <tp:docstring>
         If the Connection property is non-empty, the status of that connection.
         If the Connection property is the empty string, this property may
@@ -390,7 +366,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="ConnectionStatusReason" type="u" access="read">
+    <property name="ConnectionStatusReason" type="u" access="read"
+      tp:name-for-bindings="Connection_Status_Reason">
       <tp:docstring>
         The reason for the last change to ConnectionStatus.
         The account manager is expected to set this by observing signals
@@ -405,7 +382,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </property>
 
     <property name="CurrentPresence" type="(uss)" access="read"
-      tp:type="Account_Presence">
+      tp:type="Simple_Presence" tp:name-for-bindings="Current_Presence">
       <tp:docstring>
         The actual presence. If the connection is not online, this should be
         (Connection_Presence_Type_Offline, "", "").
@@ -421,7 +398,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </property>
 
     <property name="RequestedPresence" type="(uss)" access="readwrite"
-      tp:type="Account_Presence">
+      tp:type="Simple_Presence" tp:name-for-bindings="Requested_Presence">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The requested presence for this account. When this is changed, the
           account manager should attempt to manipulate the connection manager
@@ -440,7 +417,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="NormalizedName" type="s" access="read">
+    <property name="NormalizedName" type="s" access="read"
+      tp:name-for-bindings="Normalized_Name">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The normalized user ID of the local user on this account (i.e. the
           string returned when the InspectHandle method is called on the

@@ -52,13 +52,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member type="a{ss}" name="Parameters" tp:type="String_String_Map"/>
     </tp:struct>
 
-    <signal name="AddRemoteCandidate">
-      <arg name="candidate_id" type="s">
+    <signal name="AddRemoteCandidate"
+      tp:name-for-bindings="Add_Remote_Candidate">
+      <arg name="Candidate_ID" type="s">
         <tp:docstring>
           String identifier for this candidate
         </tp:docstring>
       </arg>
-      <arg name="transports" type="a(usuussduss)"
+      <arg name="Transports" type="a(usuussduss)"
         tp:type="Media_Stream_Handler_Transport[]">
         <tp:docstring>
           Array of transports for this candidate with fields,
@@ -76,19 +77,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         closed.
       </tp:docstring>
     </signal>
-    <method name="CodecChoice">
-      <arg direction="in" name="codec_id" type="u"/>
+    <method name="CodecChoice" tp:name-for-bindings="Codec_Choice">
+      <arg direction="in" name="Codec_ID" type="u"/>
       <tp:docstring>
         Inform the connection manager of the current codec choice.
       </tp:docstring>
     </method>
     <method name="Error">
-      <arg direction="in" name="errno" type="u" tp:type="Media_Stream_Error">
+      <arg direction="in" name="Errno" type="u" tp:type="Media_Stream_Error">
         <tp:docstring>
           ID of error, from the MediaStreamError enumeration
         </tp:docstring>
       </arg>
-      <arg direction="in" name="message" type="s">
+      <arg direction="in" name="Message" type="s">
         <tp:docstring>
           String describing the error
         </tp:docstring>
@@ -111,15 +112,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
-    <method name="NativeCandidatesPrepared">
+    <method name="NativeCandidatesPrepared"
+      tp:name-for-bindings="Native_Candidates_Prepared">
       <tp:docstring>
         Informs the connection manager that all possible native candisates
         have been discovered for the moment.
       </tp:docstring>
     </method>
-    <method name="NewActiveCandidatePair">
-      <arg direction="in" name="native_candidate_id" type="s"/>
-      <arg direction="in" name="remote_candidate_id" type="s"/>
+    <method name="NewActiveCandidatePair"
+      tp:name-for-bindings="New_Active_Candidate_Pair">
+      <arg direction="in" name="Native_Candidate_ID" type="s"/>
+      <arg direction="in" name="Remote_Candidate_ID" type="s"/>
       <tp:docstring>
         Informs the connection manager that a valid candidate pair
         has been discovered and streaming is in progress.
@@ -133,13 +136,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>TCP (Transmission Control Protocol)</tp:docstring>
       </tp:enumvalue>
     </tp:enum>
-    <method name="NewNativeCandidate">
-      <arg direction="in" name="candidate_id" type="s">
+    <method name="NewNativeCandidate"
+      tp:name-for-bindings="New_Native_Candidate">
+      <arg direction="in" name="Candidate_ID" type="s">
         <tp:docstring>
           String identifier for this candidate
         </tp:docstring>
       </arg>
-      <arg direction="in" name="transports" type="a(usuussduss)"
+      <arg direction="in" name="Transports" type="a(usuussduss)"
         tp:type="Media_Stream_Handler_Transport[]">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           Array of transports for this candidate, with fields:
@@ -181,7 +185,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:enumvalue>
     </tp:enum>
     <method name="Ready">
-      <arg direction="in" name="codecs" type="a(usuuua{ss})"
+      <arg direction="in" name="Codecs" type="a(usuuua{ss})"
         tp:type="Media_Stream_Handler_Codec[]">
         <tp:docstring>
           As for SupportedCodecs.
@@ -193,8 +197,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         codecs.
       </tp:docstring>
     </method>
-    <method name="SetLocalCodecs">
-      <arg name="codecs" type="a(usuuua{ss})" direction="in"
+    <method name="SetLocalCodecs" tp:name-for-bindings="Set_Local_Codecs">
+      <arg name="Codecs" type="a(usuuua{ss})" direction="in"
         tp:type="Media_Stream_Handler_Codec[]">
         <tp:docstring>Codecs in the same format as for
           SupportedCodecs, which have the same semantics as the
@@ -206,8 +210,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         knowing what local codecs are available.
       </tp:docstring>
     </method>
-    <signal name="RemoveRemoteCandidate">
-      <arg name="candidate_id" type="s">
+    <signal name="RemoveRemoteCandidate"
+      tp:name-for-bindings="Remove_Remote_Candidate">
+      <arg name="Candidate_ID" type="s">
         <tp:docstring>
           String identifier for remote candidate to drop
         </tp:docstring>
@@ -218,17 +223,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         candidate.
       </tp:docstring>
     </signal>
-    <signal name="SetActiveCandidatePair">
-      <arg name="native_candidate_id" type="s"/>
-      <arg name="remote_candidate_id" type="s"/>
+    <signal name="SetActiveCandidatePair"
+      tp:name-for-bindings="Set_Active_Candidate_Pair">
+      <arg name="Native_Candidate_ID" type="s"/>
+      <arg name="Remote_Candidate_ID" type="s"/>
       <tp:docstring>
         Emitted by the connection manager to inform the client that a
         valid candidate pair has been discovered by the remote end
         and streaming is in progress.
       </tp:docstring>
     </signal>
-    <signal name="SetRemoteCandidateList">
-      <arg name="remote_candidates" type="a(sa(usuussduss))"
+    <signal name="SetRemoteCandidateList"
+      tp:name-for-bindings="Set_Remote_Candidate_List">
+      <arg name="Remote_Candidates" type="a(sa(usuussduss))"
         tp:type="Media_Stream_Handler_Candidate[]">
         <tp:docstring>
         A list of candidate id and a list of transports
@@ -240,8 +247,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         client of all the available remote candidates at once.
       </tp:docstring>
     </signal>
-    <signal name="SetRemoteCodecs">
-      <arg name="codecs" type="a(usuuua{ss})"
+    <signal name="SetRemoteCodecs" tp:name-for-bindings="Set_Remote_Codecs">
+      <arg name="Codecs" type="a(usuuua{ss})"
         tp:type="Media_Stream_Handler_Codec[]">
         <tp:docstring>As for SupportedCodecs</tp:docstring>
       </arg>
@@ -250,22 +257,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         client of the codecs supported by the remote end.
       </tp:docstring>
     </signal>
-    <signal name="SetStreamPlaying">
-      <arg name="playing" type="b"/>
+    <signal name="SetStreamPlaying" tp:name-for-bindings="Set_Stream_Playing">
+      <arg name="Playing" type="b"/>
       <tp:docstring>
         Signal emitted when the connection manager wishes to set the
         stream playing or stopped.
       </tp:docstring>
     </signal>
-    <signal name="SetStreamSending">
-      <arg name="sending" type="b"/>
+    <signal name="SetStreamSending" tp:name-for-bindings="Set_Stream_Sending">
+      <arg name="Sending" type="b"/>
       <tp:docstring>
         Signal emitted when the connection manager wishes to set whether or not
         the stream sends to the remote end.
       </tp:docstring>
     </signal>
-    <signal name="StartTelephonyEvent">
-      <arg name="event" type="y">
+    <signal name="StartTelephonyEvent"
+      tp:name-for-bindings="Start_Telephony_Event">
+      <arg name="Event" type="y">
         <tp:docstring>
           A telephony event code as defined by RFC 4733.
         </tp:docstring>
@@ -275,21 +283,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         over this stream until StopTelephonyEvent is called.
       </tp:docstring>
     </signal>
-    <signal name="StopTelephonyEvent">
+    <signal name="StopTelephonyEvent"
+      tp:name-for-bindings="Stop_Telepathy_Event">
       <tp:docstring>
         Request that any ongoing telephony events (as defined by RFC 4733)
         being transmitted over this stream are stopped.
       </tp:docstring>
     </signal>
-    <method name="StreamState">
-      <arg direction="in" name="state" type="u" tp:type="Media_Stream_State"/>
+    <method name="StreamState" tp:name-for-bindings="Stream_State">
+      <arg direction="in" name="State" type="u" tp:type="Media_Stream_State"/>
       <tp:docstring>
         Informs the connection manager of the stream's current state, as
         as specified in Channel.Type.StreamedMedia::ListStreams.
       </tp:docstring>
     </method>
-    <method name="SupportedCodecs">
-      <arg direction="in" name="codecs" type="a(usuuua{ss})"
+    <method name="SupportedCodecs" tp:name-for-bindings="Supported_Codecs">
+      <arg direction="in" name="Codecs" type="a(usuuua{ss})"
         tp:type="Media_Stream_Handler_Codec[]">
         <tp:docstring>
           List of codec info structures, each containing:
@@ -312,7 +321,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
 
-    <signal name="SetStreamHeld">
+    <signal name="SetStreamHeld" tp:name-for-bindings="Set_Stream_Held">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Emitted when the connection manager wishes to place the stream on
           hold (so the streaming client should free hardware or software
@@ -347,7 +356,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
     </signal>
 
-    <method name="HoldState">
+    <method name="HoldState" tp:name-for-bindings="Hold_State">
       <tp:docstring>
         Notify the connection manager that the stream's hold state has
         been changed successfully in response to SetStreamHeld.
@@ -360,7 +369,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
     </method>
 
-    <method name="UnholdFailure">
+    <method name="UnholdFailure" tp:name-for-bindings="Unhold_Failure">
       <tp:docstring>
         Notify the connection manager that an attempt to reacquire the
         necessary hardware or software resources to unhold the stream,

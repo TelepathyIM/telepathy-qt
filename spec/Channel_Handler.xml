@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:docstring>
     <tp:added version="0.17.0"/>
 
-    <method name="HandleChannel">
+    <method name="HandleChannel" tp:name-for-bindings="Handle_Channel">
       <tp:docstring>
         Called when a channel handler should handle a new channel.
       </tp:docstring>

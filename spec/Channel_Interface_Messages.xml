@@ -61,7 +61,8 @@ USA.</p>
         (which are guaranteed to duplicate signals from this interface).</p>
     </tp:docstring>
 
-    <property name="SupportedContentTypes" type="as" access="read">
+    <property name="SupportedContentTypes" type="as" access="read"
+      tp:name-for-bindings="Supported_Content_Types">
       <tp:docstring>
         A list of MIME types supported by this channel, with more preferred
         MIME types appearing earlier in the list. The list MAY include "*/*"
@@ -72,8 +73,8 @@ USA.</p>
     </property>
 
     <property name="MessagePartSupportFlags" type="u"
-      tp:type="Message_Part_Support_Flags"
-      access="read">
+      tp:type="Message_Part_Support_Flags" access="read"
+      tp:name-for-bindings="Message_Part_Support_Flags">
       <tp:docstring>
         Flags indicating the level of support for message parts on this
         channel.
@@ -81,7 +82,7 @@ USA.</p>
     </property>
 
     <tp:flags name="Message_Part_Support_Flags"
-      value-prefix="Message_Part_Support_Flag">
+      value-prefix="Message_Part_Support_Flag" type="u">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Flags indicating the level of support for message parts on this
           channel. They are designed such that setting more flags always
@@ -426,7 +427,7 @@ USA.</p>
       </tp:docstring>
     </tp:simple-type>
 
-    <method name="SendMessage">
+    <method name="SendMessage" tp:name-for-bindings="Send_Message">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Submit a message to the server for sending.
           If this method returns successfully, the message has been submitted
@@ -471,7 +472,8 @@ USA.</p>
       </tp:possible-errors>
     </method>
 
-    <tp:flags name="Message_Sending_Flags" value-prefix="Message_Sending_Flag">
+    <tp:flags name="Message_Sending_Flags" value-prefix="Message_Sending_Flag"
+      type="u">
       <tp:docstring>
         Flags altering the way a message is sent. The "most usual" action
         should always be to have these flags unset.
@@ -491,7 +493,7 @@ USA.</p>
       </tp:flag>
     </tp:flags>
 
-    <signal name="MessageSent">
+    <signal name="MessageSent" tp:name-for-bindings="Message_Sent">
       <tp:docstring>
         Signals that a message has been submitted for sending. This
         MUST be emitted exactly once per emission of the Sent signal on the
@@ -527,7 +529,7 @@ USA.</p>
     </signal>
 
     <property name="PendingMessages" type="aaa{sv}" access="read"
-      tp:type="Message_Part[][]">
+      tp:type="Message_Part[][]" tp:name-for-bindings="Pending_Messages">
       <tp:docstring>
         A list of incoming messages that have neither been acknowledged nor
         rejected. This list is a superset of the one returned by
@@ -536,7 +538,8 @@ USA.</p>
       </tp:docstring>
     </property>
 
-    <signal name="PendingMessagesRemoved">
+    <signal name="PendingMessagesRemoved"
+      tp:name-for-bindings="Pending_Messages_Removed">
       <tp:docstring>
         The messages with the given IDs have been removed from the
         PendingMessages list. Clients SHOULD NOT attempt to acknowledge
@@ -556,7 +559,8 @@ USA.</p>
       </arg>
     </signal>
 
-    <method name="GetPendingMessageContent">
+    <method name="GetPendingMessageContent"
+      tp:name-for-bindings="Get_Pending_Message_Content">
       <tp:docstring>
         Retrieve the content of one or more parts of a pending message.
         Note that this function may take a considerable amount of time
@@ -608,7 +612,7 @@ USA.</p>
       </tp:possible-errors>
     </method>
 
-    <signal name="MessageReceived">
+    <signal name="MessageReceived" tp:name-for-bindings="Message_Received">
       <tp:docstring>
         Signals that a message has been received and added to the pending
         messages queue. This MUST be emitted exactly once per emission of the
