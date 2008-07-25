@@ -69,7 +69,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The string identifier of the desired status
         </tp:docstring>
       </arg>
-      <arg direction="in" name="Parms" type="a{sv}" tp:type="String_Variant_Map">
+      <arg direction="in" name="Parameters" type="a{sv}" tp:type="String_Variant_Map">
         <tp:docstring>
           A dictionary of optional parameter names mapped to their variant-boxed values
         </tp:docstring>

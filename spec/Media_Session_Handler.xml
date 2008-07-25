@@ -20,7 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Media.SessionHandler">
     <method name="Error">
-      <arg direction="in" name="Errno" type="u"/>
+      <arg direction="in" name="Error_Code" type="u"
+        tp:type="Media_Stream_Error"/>
       <arg direction="in" name="Message" type="s"/>
       <tp:docstring>
         THIS METHOD IS DEPRECATED AND SHOULD NOT BE USED. Instead the Error

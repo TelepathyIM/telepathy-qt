@@ -273,7 +273,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         The stream identifier (as defined in ListStreams)
         </tp:docstring>
       </arg>
-      <arg name="Errno" type="u">
+      <arg name="Error_Code" type="u" tp:type="Media_Stream_Error">
         <tp:docstring>
           A stream error number, one of the values of MediaStreamError
         </tp:docstring>

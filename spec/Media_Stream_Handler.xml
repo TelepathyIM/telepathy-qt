@@ -84,7 +84,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
     <method name="Error">
-      <arg direction="in" name="Errno" type="u" tp:type="Media_Stream_Error">
+      <arg direction="in" name="Error_Code" type="u" tp:type="Media_Stream_Error">
         <tp:docstring>
           ID of error, from the MediaStreamError enumeration
         </tp:docstring>
@@ -284,7 +284,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
     <signal name="StopTelephonyEvent"
-      tp:name-for-bindings="Stop_Telepathy_Event">
+      tp:name-for-bindings="Stop_Telephony_Event">
       <tp:docstring>
         Request that any ongoing telephony events (as defined by RFC 4733)
         being transmitted over this stream are stopped.
