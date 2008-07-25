@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, cxx_identifier_escape, format_docstring, gather_externals, gather_custom_lists, get_qt4_name
+from libqt4codegen import binding_from_usage, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, qt4_identifier_escape
 
 class Generator(object):
     def __init__(self, opts):
@@ -249,7 +249,7 @@ public Q_SLOTS:\
 
             if argname:
                 argname = argname.replace('_', '')
-                argnames.append(cxx_identifier_escape(argname[0].lower() + argname[1:]))
+                argnames.append(qt4_identifier_escape(argname[0].lower() + argname[1:]))
 
             sig = args[i].getAttribute('type')
             tptype = args[i].getAttributeNS(NS_TP, 'type')

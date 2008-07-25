@@ -96,104 +96,6 @@ def binding_from_decl(name, array_name):
     outarg = '%s&' % val
     return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None)
 
-def cxx_identifier_escape(str):
-    str = escape_as_identifier(str)
-
-    # List of reserved identifiers
-    # Initial list from http://cs.smu.ca/~porter/csc/ref/cpp_keywords.html
-
-    # Keywords inherited from C90
-    reserved = ['auto',
-                'const',
-                'double',
-                'float',
-                'int',
-                'short',
-                'struct',
-                'unsigned',
-                'break',
-                'continue',
-                'else',
-                'for',
-                'long',
-                'signed',
-                'switch',
-                'void',
-                'case',
-                'default',
-                'enum',
-                'goto',
-                'register',
-                'sizeof',
-                'typedef',
-                'volatile',
-                'char',
-                'do',
-                'extern',
-                'if',
-                'return',
-                'static',
-                'union',
-                'while',
-    # C++-only keywords
-                'asm',
-                'dynamic_cast',
-                'namespace',
-                'reinterpret_cast',
-                'try',
-                'bool',
-                'explicit',
-                'new',
-                'static_cast',
-                'typeid',
-                'catch',
-                'false',
-                'operator',
-                'template',
-                'typename',
-                'class',
-                'friend',
-                'private',
-                'this',
-                'using',
-                'const_cast',
-                'inline',
-                'public',
-                'throw',
-                'virtual',
-                'delete',
-                'mutable',
-                'protected',
-                'true',
-                'wchar_t',
-    # Operator replacements
-                'and',
-                'bitand',
-                'compl',
-                'not_eq',
-                'or_eq',
-                'xor_eq',
-                'and_eq',
-                'bitor',
-                'not',
-                'or',
-                'xor',
-    # Predefined identifiers
-                'INT_MIN',
-                'INT_MAX',
-                'MAX_RAND',
-                'NULL',
-    # Qt
-                'SIGNAL',
-                'SLOT',
-                'signals',
-                'slots']
-
-    while str in reserved:
-        str = str + '_'
-
-    return str
-
 def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
     docstring_el = None
 
@@ -291,4 +193,103 @@ def get_qt4_name(el):
     else:
         ret = name[0].lower() + name[1:]
 
-    return cxx_identifier_escape(ret)
+    return qt4_identifier_escape(ret)
+
+def qt4_identifier_escape(str):
+    str = escape_as_identifier(str)
+
+    # List of reserved identifiers
+    # Initial list from http://cs.smu.ca/~porter/csc/ref/cpp_keywords.html
+
+    # Keywords inherited from C90
+    reserved = ['auto',
+                'const',
+                'double',
+                'float',
+                'int',
+                'short',
+                'struct',
+                'unsigned',
+                'break',
+                'continue',
+                'else',
+                'for',
+                'long',
+                'signed',
+                'switch',
+                'void',
+                'case',
+                'default',
+                'enum',
+                'goto',
+                'register',
+                'sizeof',
+                'typedef',
+                'volatile',
+                'char',
+                'do',
+                'extern',
+                'if',
+                'return',
+                'static',
+                'union',
+                'while',
+    # C++-only keywords
+                'asm',
+                'dynamic_cast',
+                'namespace',
+                'reinterpret_cast',
+                'try',
+                'bool',
+                'explicit',
+                'new',
+                'static_cast',
+                'typeid',
+                'catch',
+                'false',
+                'operator',
+                'template',
+                'typename',
+                'class',
+                'friend',
+                'private',
+                'this',
+                'using',
+                'const_cast',
+                'inline',
+                'public',
+                'throw',
+                'virtual',
+                'delete',
+                'mutable',
+                'protected',
+                'true',
+                'wchar_t',
+    # Operator replacements
+                'and',
+                'bitand',
+                'compl',
+                'not_eq',
+                'or_eq',
+                'xor_eq',
+                'and_eq',
+                'bitor',
+                'not',
+                'or',
+                'xor',
+    # Predefined identifiers
+                'INT_MIN',
+                'INT_MAX',
+                'MAX_RAND',
+                'NULL',
+    # Qt
+                'SIGNAL',
+                'SLOT',
+                'signals',
+                'slots']
+
+    while str in reserved:
+        str = str + '_'
+
+    return str
+
