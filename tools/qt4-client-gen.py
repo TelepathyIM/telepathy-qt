@@ -186,8 +186,19 @@ public:
 public Q_SLOTS:\
 """)
 
-            for method in get_by_path(iface, 'method'):
+            for method in methods:
                 self.do_method(method)
+
+        # Signals
+        signals = get_by_path(iface, 'signal')
+
+        if signals:
+            self.h("""
+Q_SIGNALS:\
+""")
+
+            for signal in signals:
+                self.do_signal(signal)
 
         # Close class
         self.h("""\
@@ -277,6 +288,25 @@ public Q_SLOTS:\
         return asyncCall(QLatin1String("%s"));
     }
 """ % name)
+
+    def do_signal(self, signal):
+        name = signal.getAttribute('name')
+        qt4name = get_qt4_name(signal)
+
+        argnames = []
+        argbindings = []
+
+        for arg in get_by_path(signal, 'arg'):
+            argnames.append(get_qt4_name(arg))
+
+            sig = arg.getAttribute('type')
+            tptype = arg.getAttributeNS(NS_TP, 'type')
+            external = (sig, tptype) in self.externals
+            argbindings.append(binding_from_usage(sig, tptype, self.custom_lists, external))
+
+        self.h("""
+    void %s(%s);
+""" % (qt4name, ', '.join(['%s %s' % (binding.inarg, name) for binding, name in zip(argbindings, argnames)])))
 
     def h(self, str):
         self.hs.append(str)
