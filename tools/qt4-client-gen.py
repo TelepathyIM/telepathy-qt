@@ -245,11 +245,10 @@ public Q_SLOTS:\
             else:
                 inargs.append(i)
 
-            argname = args[i].getAttribute('name')
+            argname = get_qt4_name(args[i])
 
             if argname:
-                argname = argname.replace('_', '')
-                argnames.append(qt4_identifier_escape(argname[0].lower() + argname[1:]))
+                argnames.append(argname)
 
             sig = args[i].getAttribute('type')
             tptype = args[i].getAttributeNS(NS_TP, 'type')

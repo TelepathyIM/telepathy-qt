@@ -23,7 +23,7 @@ please make any changes there.
 
 from sys import maxint
 import re
-from libtpcodegen import escape_as_identifier, get_by_path, get_descendant_text, NS_TP, xml_escape
+from libtpcodegen import get_by_path, get_descendant_text, NS_TP, xml_escape
 
 
 class _Qt4TypeBinding:
@@ -185,18 +185,31 @@ def gather_custom_lists(spec):
 
 def get_qt4_name(el):
     name = el.getAttribute('name')
-    bname = el.getAttributeNS(NS_TP, 'name-for-bindings')
 
-    if bname:
-        bname = bname[0].lower() + bname[1:]
-        ret = bname.replace('_', '')
-    else:
-        ret = name[0].lower() + name[1:]
+    if el.localName in ('method', 'signal', 'property'):
+        bname = el.getAttributeNS(NS_TP, 'name-for-bindings')
 
-    return qt4_identifier_escape(ret)
+        if bname:
+            name = bname
+
+    if not name:
+        return None
+
+    if name[0].isupper() and name[1].islower():
+        name = name[0].lower() + name[1:]
+
+    return qt4_identifier_escape(name.replace('_', ''))
 
 def qt4_identifier_escape(str):
-    str = escape_as_identifier(str)
+    built = (str[0].isdigit() and ['_']) or []
+
+    for c in str:
+        if c.isalnum():
+            built.append(c)
+        else:
+            built.append('_')
+
+    str = ''.join(built)
 
     # List of reserved identifiers
     # Initial list from http://cs.smu.ca/~porter/csc/ref/cpp_keywords.html

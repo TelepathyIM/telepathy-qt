@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, binding_from_decl, format_docstring, gather_externals, gather_custom_lists, qt4_identifier_escape
+from libqt4codegen import binding_from_usage, binding_from_decl, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, qt4_identifier_escape
 
 class DepInfo:
     def __init__(self, el, externals, custom_lists):
@@ -300,10 +300,7 @@ void registerTypes()
         for member in get_by_path(depinfo.el, 'member'):
             members = members + 1
 
-            name = member.getAttribute('name')
-            if name[0].isupper():
-                name = name[0].lower() + name[1:]
-            names.append(qt4_identifier_escape(name.replace('_', '')))
+            names.append(get_qt4_name(member))
 
             sig = member.getAttribute('type')
             tptype = member.getAttributeNS(NS_TP, 'type')
