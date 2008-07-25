@@ -22,6 +22,25 @@
 #ifndef _TelepathyQt4_Client_Channel_HEADER_GUARD_
 #define _TelepathyQt4_Client_Channel_HEADER_GUARD_
 
+/**
+ * \addtogroup clientsideproxies Client-side proxies
+ *
+ * Proxy objects representing remote service objects accessed via D-Bus.
+ *
+ * In addition to providing direct access to methods, signals and properties
+ * exported by the remote objects, some of these proxies offer features like
+ * automatic inspection of remote object capabilities, property tracking,
+ * backwards compatibility helpers for older services and other utilities.
+ */
+
+/**
+ * \defgroup clientchannel Channel proxies
+ * \ingroup clientsideproxies
+ *
+ * Proxy objects representing remote Telepathy Channels and their optional
+ * interfaces.
+ */
+
 #include <TelepathyQt4/_gen/cli-channel.h>
 
 #endif

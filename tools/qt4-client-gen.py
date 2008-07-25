@@ -28,7 +28,7 @@ from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format
 class Generator(object):
     def __init__(self, opts):
         try:
-            self.group = opts['--group']
+            self.group = opts.get('--group', 'no-group-defined')
             self.headerfile = opts['--headerfile']
             self.implfile = opts['--implfile']
             self.namespace = opts['--namespace']
@@ -112,22 +112,50 @@ namespace %s
 
         # Begin class, constructors
         self.h("""
+/**
+ * \\class %(name)s
+ * \\headerfile %(realinclude)s <%(prettyinclude)s>
+ * \\ingroup %(group)s
+ *
+ * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
+ */
 class %(name)s : public QDBusAbstractInterface
 {
     Q_OBJECT
 
 public:
+    /**
+     * Returns the name of the interface "%(dbusname)s", which this class
+     * represents.
+     *
+     * \\return The D-Bus interface name.
+     */
     static inline const char *staticInterfaceName()
     {
         return "%(dbusname)s";
     }
 
+    /**
+     * Creates a %(name)s associated with the given object on the session bus.
+     *
+     * \\param serviceName Name of the service the object is on.
+     * \\param objectPath Path to the object on the service.
+     * \\param parent Passed to the parent class constructor.
+     */
     %(name)s(
         const QString& serviceName,
         const QString& objectPath,
         QObject* parent = 0
     );
 
+    /**
+     * Creates a %(name)s associated with the given object on the given bus.
+     *
+     * \\param connection The bus via which the object can be reached.
+     * \\param serviceName Name of the service the object is on.
+     * \\param objectPath Path to the object on the service.
+     * \\param parent Passed to the parent class constructor.
+     */
     %(name)s(
         const QDBusConnection& connection,
         const QString& serviceName,
@@ -135,6 +163,9 @@ public:
         QObject* parent = 0
     );
 """ % {'name' : name,
+       'realinclude' : self.realinclude,
+       'prettyinclude' : self.prettyinclude,
+       'group' : self.group,
        'dbusname' : dbusname})
 
         self.b("""
@@ -152,10 +183,24 @@ public:
         # Main interface
         mainifacename = self.mainifacename or 'QDBusAbstractInterface'
 
-        if self.mainifacename != name:
+        if mainifacename != name:
             self.h("""
+    /**
+     * Creates a %(name)s associated with the same object as the given proxy.
+     * Additionally, the created proxy will have the same parent as the given
+     * proxy.
+     *
+     * \\param mainInterface The proxy to use.
+     */
     %(name)s(const %(mainifacename)s& mainInterface);
 
+    /**
+     * Creates a %(name)s associated with the same object as the given proxy.
+     * However, a different parent object can be specified.
+     *
+     * \\param mainInterface The proxy to use.
+     * \\param parent Passed to the parent class constructor.
+     */
     %(name)s(const %(mainifacename)s& mainInterface, QObject* parent);
 """ % {'name' : name,
        'mainifacename' : mainifacename})
@@ -221,13 +266,25 @@ Q_SIGNALS:\
             settername = set + gettername[0].upper() + gettername[1:]
 
         self.h("""
+    /**
+     * Represents property "%(name)s" on the remote object.
+%(docstring)s\
+     */
     Q_PROPERTY(%(val)s %(qt4name)s READ %(gettername)s%(maybesettername)s)
 
+    /**
+     * Getter for the remote object property "%(name)s".
+     *
+     * \\return The value of the property, or a default-constructed value
+     *          if the property is not readable.
+     */
     inline %(val)s %(gettername)s() const
     {
         return %(getter-return)s;
     }
-""" % {'val' : binding.val,
+""" % {'name' : name,
+       'docstring' : format_docstring(prop, '     * '),
+       'val' : binding.val,
        'qt4name' : qt4name,
        'gettername' : gettername,
        'maybesettername' : settername and (' WRITE ' + settername) or '',
@@ -265,6 +322,29 @@ Q_SIGNALS:\
         params = ', '.join([argbindings[i].inarg + ' ' + argnames[i] for i in inargs])
 
         self.h("""
+    /**
+     * Begins a call to the D-Bus method "%s" on the remote object.
+%s\
+""" % (name, format_docstring(method, '     * ')))
+
+        for i in inargs:
+            if argdocstrings[i]:
+                self.h("""\
+     *
+     * \\param %s
+%s\
+""" % (argnames[i], argdocstrings[i]))
+
+        for i in outargs:
+            if argdocstrings[i]:
+                self.h("""\
+     *
+     * \\return
+%s\
+""" % argdocstrings[i])
+
+        self.h("""\
+     */
     inline QDBusPendingReply<%(rettypes)s> %(qt4name)s(%(params)s)
     {\
 """ % {'rettypes' : rettypes,
@@ -290,6 +370,21 @@ Q_SIGNALS:\
         argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'), self.custom_lists, self.externals, '     * ')
 
         self.h("""
+    /**
+     * Represents the signal "%s" on the remote object.
+%s\
+""" % (name, format_docstring(signal, '     * ')))
+
+        for i in xrange(len(argnames)):
+            if argdocstrings[i]:
+                self.h("""\
+     *
+     * \\param %s
+%s\
+""" % (argnames[i], argdocstrings[i]))
+
+        self.h("""
+     */
     void %s(%s);
 """ % (qt4name, ', '.join(['%s %s' % (binding.inarg, name) for binding, name in zip(argbindings, argnames)])))
 

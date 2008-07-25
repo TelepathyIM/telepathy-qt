@@ -163,32 +163,40 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		../tools/qt4-client-gen.py
 	set -e; \
 	namespace='Telepathy::Client'; \
+	group= ; \
 	prettyinclude= ; \
 	mainiface= ; \
 	case $* in \
 		channel) \
+			group='clientchannel'; \
 			prettyinclude='Channel'; \
 			mainiface='--mainiface=/Channel';; \
 		connection) \
+			group='clientconn'; \
 			prettyinclude='Connection'; \
 			mainiface='--mainiface=/Connection';; \
 		connection-manager) \
+			group='clientcm'; \
 			prettyinclude='ConnectionManager'; \
 			mainiface='--mainiface=/Connection_Manager';; \
 		dbus) \
+			group='clientdbus'; \
 			namespace='Telepathy::Client::DBus'; \
 			prettyinclude='DBus';; \
 		media-session-handler) \
+			group='clientmsesh'; \
 			prettyinclude='MediaSessionHandler'; \
 			mainiface='--mainiface=/Media_Session_Handler';; \
 		media-stream-handler) \
-		prettyinclude='MediaStreamHandler'; \
+			group='clientmstrh'; \
+			prettyinclude='MediaStreamHandler'; \
 			mainiface='--mainiface=/Media_Stream_Handler';; \
 		properties) \
+			group='clientprops'; \
 			prettyinclude='Properties';; \
 	esac; \
 	$(PYTHON) $(srcdir)/../tools/qt4-client-gen.py \
-		--group=$* \
+		--group=$$group \
 		--namespace=$$namespace \
 		--headerfile=_gen/cli-$*.h \
 		--implfile=_gen/cli-$*-body.hpp \

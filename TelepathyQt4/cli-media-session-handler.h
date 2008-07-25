@@ -22,6 +22,24 @@
 #ifndef _TelepathyQt4_Client_MediaSessionHandler_HEADER_GUARD_
 #define _TelepathyQt4_Client_MediaSessionHandler_HEADER_GUARD_
 
+/**
+ * \addtogroup clientsideproxies Client-side proxies
+ *
+ * Proxy objects representing remote service objects accessed via D-Bus.
+ *
+ * In addition to providing direct access to methods, signals and properties
+ * exported by the remote objects, some of these proxies offer features like
+ * automatic inspection of remote object capabilities, property tracking,
+ * backwards compatibility helpers for older services and other utilities.
+ */
+
+/**
+ * \defgroup clientmsesh Media session handler proxies
+ * \ingroup clientsideproxies
+ *
+ * Proxy objects representing remote Telepathy MediaSessionHandler objects.
+ */
+
 #include <TelepathyQt4/_gen/cli-media-session-handler.h>
 
 #endif
