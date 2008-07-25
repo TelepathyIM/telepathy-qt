@@ -17,7 +17,11 @@
   </tp:simple-type>
 
   <tp:simple-type name="DBus_Interface" type="s">
-    <tp:docstring>A string representing a D-Bus interface</tp:docstring>
+    <tp:docstring>An ASCII string representing a D-Bus interface - two or more
+      elements separated by dots, where each element is a non-empty
+      string of ASCII letters, digits and underscores, not starting with
+      a digit. The maximum total length is 255 characters. For example,
+      "org.freedesktop.DBus.Peer".</tp:docstring>
   </tp:simple-type>
 
   <tp:simple-type name="DBus_Signature" type="s">
@@ -25,6 +29,35 @@
       (the 'g' type isn't used because of poor interoperability, particularly
       with dbus-glib)</tp:docstring>
   </tp:simple-type>
+
+  <tp:simple-type name="DBus_Member" type="s">
+    <tp:docstring>An ASCII string representing a D-Bus method, signal
+      or property name - a non-empty string of ASCII letters, digits and
+      underscores, not starting with a digit, with a maximum length of 255
+      characters. For example, "Ping".</tp:docstring>
+  </tp:simple-type>
+
+  <tp:simple-type name="DBus_Qualified_Member" type="s">
+    <tp:docstring>A string representing the full name of a D-Bus method,
+      signal or property, consisting of a DBus_Interface, followed by
+      a dot, followed by a DBus_Member. For example,
+      "org.freedesktop.DBus.Peer.Ping".</tp:docstring>
+  </tp:simple-type>
+
+  <tp:mapping name="Qualified_Property_Value_Map">
+    <tp:docstring>A mapping from strings representing D-Bus
+      properties (by their namespaced names) to their values.</tp:docstring>
+    <tp:member type="s" name="Key" tp:type="DBus_Qualified_Member">
+      <tp:docstring>
+        A D-Bus interface name, followed by a dot and a D-Bus property name.
+      </tp:docstring>
+    </tp:member>
+    <tp:member type="v" name="Value">
+      <tp:docstring>
+        The value of the property.
+      </tp:docstring>
+    </tp:member>
+  </tp:mapping>
 
   <tp:mapping name="String_Variant_Map">
     <tp:docstring>A mapping from strings to variants representing extra

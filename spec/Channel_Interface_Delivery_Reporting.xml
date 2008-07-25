@@ -249,7 +249,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </dl>
     </tp:docstring>
 
-    <tp:enum name="Delivery_Status" value-prefix="Delivery_Status">
+    <tp:enum name="Delivery_Status" value-prefix="Delivery_Status" type="u">
       <tp:docstring>
         <p>The status of a message as indicated by a delivery report.</p>
 
@@ -304,7 +304,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:enum>
 
     <tp:flags name="Delivery_Reporting_Support_Flags"
-      value-prefix="Delivery_Reporting_Support_Flag">
+      value-prefix="Delivery_Reporting_Support_Flag" type="u">
       <tp:docstring>
         Flags indicating the level of support for delivery reporting on this
         channel. Any future flags added to this set will conform to the
@@ -354,13 +354,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:flags>
 
     <property name="DeliveryReportingSupport" access="read"
-      tp:type="Delivery_Reporting_Support_Flags" type="u">
+      tp:type="Delivery_Reporting_Support_Flags" type="u"
+      tp:name-for-bindings="Delivery_Reporting_Support">
       <tp:docstring>
         A bitfield indicating features supported by this channel.
       </tp:docstring>
     </property>
 
-    <method name="SendDeliveryReport">
+    <method name="SendDeliveryReport"
+      tp:name-for-bindings="Send_Delivery_Report">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Request that a delivery report is sent for the specified pending
           incoming message. Delivery reports cannot currently be sent for

@@ -87,7 +87,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <tp:simple-type name="Stream_ID" type="u"/>
 
-    <method name="ListStreams">
+    <method name="ListStreams" tp:name-for-bindings="List_Streams">
       <arg direction="out" type="a(uuuuuu)" tp:type="Media_Stream_Info[]">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structs containing:
@@ -109,8 +109,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
 
-    <method name="RemoveStreams">
-      <arg direction="in" name="streams" type="au" tp:type="Stream_ID[]">
+    <method name="RemoveStreams" tp:name-for-bindings="Remove_Streams">
+      <arg direction="in" name="Streams" type="au" tp:type="Stream_ID[]">
         <tp:docstring>
           An array of stream identifiers (as defined in ListStreams)
         </tp:docstring>
@@ -125,13 +125,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <method name="RequestStreamDirection">
-      <arg direction="in" name="stream_id" type="u">
+    <method name="RequestStreamDirection"
+      tp:name-for-bindings="Request_Stream_Direction">
+      <arg direction="in" name="Stream_ID" type="u">
         <tp:docstring>
           The stream identifier (as defined in ListStreams)
         </tp:docstring>
       </arg>
-      <arg direction="in" name="stream_direction" type="u" tp:type="Media_Stream_Direction">
+      <arg direction="in" name="Stream_Direction" type="u" tp:type="Media_Stream_Direction">
         <tp:docstring>
           The desired stream direction (a value of MediaStreamDirection)
         </tp:docstring>
@@ -162,13 +163,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <method name="RequestStreams">
-      <arg direction="in" name="contact_handle" type="u" tp:type="Contact_Handle">
+    <method name="RequestStreams" tp:name-for-bindings="Request_Streams">
+      <arg direction="in" name="Contact_Handle" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           A contact handle with whom to establish the streams
         </tp:docstring>
       </arg>
-      <arg direction="in" name="types" type="au" tp:type="Media_Stream_Type[]">
+      <arg direction="in" name="Types" type="au" tp:type="Media_Stream_Type[]">
         <tp:docstring>
           An array of stream types (values of MediaStreamType)
         </tp:docstring>
@@ -219,19 +220,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <signal name="StreamAdded">
-      <arg name="stream_id" type="u">
+    <signal name="StreamAdded" tp:name-for-bindings="Stream_Added">
+      <arg name="Stream_ID" type="u">
         <tp:docstring>
           The stream identifier (as defined in ListStreams)
         </tp:docstring>
       </arg>
-      <arg name="contact_handle" type="u" tp:type="Contact_Handle">
+      <arg name="Contact_Handle" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The contact handle who the stream is with (or 0 if it
           represents more than a single member)
         </tp:docstring>
       </arg>
-      <arg name="stream_type" type="u" tp:type="Media_Stream_Type">
+      <arg name="Stream_Type" type="u" tp:type="Media_Stream_Type">
         <tp:docstring>
           The stream type (a value from MediaStreamType)
         </tp:docstring>
@@ -241,18 +242,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <signal name="StreamDirectionChanged">
-      <arg name="stream_id" type="u">
+    <signal name="StreamDirectionChanged"
+      tp:name-for-bindings="Stream_Direction_Changed">
+      <arg name="Stream_ID" type="u">
         <tp:docstring>
         The stream identifier (as defined in ListStreams)
         </tp:docstring>
       </arg>
-      <arg name="stream_direction" type="u" tp:type="Media_Stream_Direction">
+      <arg name="Stream_Direction" type="u" tp:type="Media_Stream_Direction">
         <tp:docstring>
         The new stream direction (as defined in ListStreams)
         </tp:docstring>
       </arg>
-      <arg name="pending_flags" type="u" tp:type="Media_Stream_Pending_Send">
+      <arg name="Pending_Flags" type="u" tp:type="Media_Stream_Pending_Send">
         <tp:docstring>
         The new pending send flags (as defined in ListStreams)
         </tp:docstring>
@@ -265,18 +267,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <signal name="StreamError">
-      <arg name="stream_id" type="u">
+    <signal name="StreamError" tp:name-for-bindings="Stream_Error">
+      <arg name="Stream_ID" type="u">
         <tp:docstring>
         The stream identifier (as defined in ListStreams)
         </tp:docstring>
       </arg>
-      <arg name="errno" type="u">
+      <arg name="Errno" type="u">
         <tp:docstring>
           A stream error number, one of the values of MediaStreamError
         </tp:docstring>
       </arg>
-      <arg name="message" type="s">
+      <arg name="Message" type="s">
         <tp:docstring>
           A string describing the error (for debugging purposes only)
         </tp:docstring>
@@ -286,8 +288,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <signal name="StreamRemoved">
-      <arg name="stream_id" type="u">
+    <signal name="StreamRemoved" tp:name-for-bindings="Stream_Removed">
+      <arg name="Stream_ID" type="u">
         <tp:docstring>
         stream_id - the stream identifier (as defined in ListStreams)
         </tp:docstring>
@@ -297,13 +299,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <signal name="StreamStateChanged">
-      <arg name="stream_id" type="u">
+    <signal name="StreamStateChanged"
+      tp:name-for-bindings="Stream_State_Changed">
+      <arg name="Stream_ID" type="u">
         <tp:docstring>
           The stream identifier (as defined in ListStreams)
         </tp:docstring>
       </arg>
-      <arg name="stream_state" type="u" tp:type="Media_Stream_State">
+      <arg name="Stream_State" type="u" tp:type="Media_Stream_State">
         <tp:docstring>
           The new stream state (as defined in ListStreams)
         </tp:docstring>

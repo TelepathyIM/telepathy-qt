@@ -18,8 +18,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Channel.Interface.ChatState">
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
-    <method name="SetChatState">
-      <arg direction="in" name="state" type="u" tp:type="Channel_Chat_State">
+    <method name="SetChatState" tp:name-for-bindings="Set_Chat_State">
+      <arg direction="in" name="State" type="u" tp:type="Channel_Chat_State">
         <tp:docstring>
           The new state: one of the values of ChannelChatState.
         </tp:docstring>
@@ -34,13 +34,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument"/>
       </tp:possible-errors>
     </method>
-    <signal name="ChatStateChanged">
-      <arg name="contact" type="u" tp:type="Contact_Handle">
+    <signal name="ChatStateChanged" tp:name-for-bindings="Chat_State_Changed">
+      <arg name="Contact" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           An integer handle for the contact.
         </tp:docstring>
       </arg>
-      <arg name="state" type="u" tp:type="Channel_Chat_State">
+      <arg name="State" type="u" tp:type="Channel_Chat_State">
         <tp:docstring>
           The new state of this contact: one of the values of ChannelChatState.
         </tp:docstring>

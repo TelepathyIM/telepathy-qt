@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     tp:causes-havoc='not well-tested'>
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
     <method name="Transfer">
-      <arg direction="in" name="member" type="u" tp:type="Contact_Handle">
+      <arg direction="in" name="Member" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The handle of the member to transfer
         </tp:docstring>
       </arg>
-      <arg direction="in" name="destination" type="u" tp:type="Contact_Handle">
+      <arg direction="in" name="Destination" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The handle of the destination contact
         </tp:docstring>

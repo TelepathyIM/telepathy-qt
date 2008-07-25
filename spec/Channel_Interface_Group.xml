@@ -48,13 +48,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:member>
     </tp:struct>
 
-    <method name="AddMembers">
-      <arg direction="in" name="contacts" type="au" tp:type="Contact_Handle[]">
+    <method name="AddMembers" tp:name-for-bindings="Add_Members">
+      <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           An array of contact handles to invite to the channel
         </tp:docstring>
       </arg>
-      <arg direction="in" name="message" type="s">
+      <arg direction="in" name="Message" type="s">
         <tp:docstring>
           A string message, which can be blank if desired
         </tp:docstring>
@@ -83,7 +83,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <method name="GetAllMembers">
+    <method name="GetAllMembers" tp:name-for-bindings="Get_All_Members">
       <tp:deprecated version="0.17.6">Use GetAll on the D-Bus
         Properties D-Bus interface to get properties including Members,
         RemotePendingMembers and LocalPendingMembers instead, falling back to
@@ -211,7 +211,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:flags>
 
     <property name="GroupFlags" type="u" tp:type="Channel_Group_Flags"
-      access="read">
+      access="read" tp:name-for-bindings="Group_Flags">
       <tp:docstring>
         An integer representing the bitwise-OR of flags on this
         channel. The user interface can use this to present information about
@@ -223,7 +223,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         Channel_Group_Flag_Properties is not present.</tp:added>
     </property>
 
-    <method name="GetGroupFlags">
+    <method name="GetGroupFlags" tp:name-for-bindings="Get_Group_Flags">
       <arg direction="out" type="u" tp:type="Channel_Group_Flags">
         <tp:docstring>
           The value of the GroupFlags property
@@ -264,7 +264,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:mapping>
 
     <property name="HandleOwners" type="a{uu}" tp:type="Handle_Owner_Map"
-      access="read">
+      access="read" tp:name-for-bindings="Handle_Owners">
       <tp:docstring>
         A map from channel-specific handles to their owners, including
         at least all of the channel-specific handles in this channel's members,
@@ -277,7 +277,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:added version="0.17.6"/>
     </property>
 
-    <signal name="HandleOwnersChanged">
+    <signal name="HandleOwnersChanged"
+      tp:name-for-bindings="Handle_Owners_Changed">
       <tp:docstring>
         Emitted whenever the HandleOwners property changes.
       </tp:docstring>
@@ -301,8 +302,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
     </signal>
 
-    <method name="GetHandleOwners">
-      <arg direction="in" name="handles" type="au" tp:type="Contact_Handle[]">
+    <method name="GetHandleOwners" tp:name-for-bindings="Get_Handle_Owners">
+      <arg direction="in" name="Handles" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           A list of integer handles representing members of the channel
         </tp:docstring>
@@ -344,7 +345,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <method name="GetLocalPendingMembers">
+    <method name="GetLocalPendingMembers"
+      tp:name-for-bindings="Get_Local_Pending_Members">
       <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
       <tp:docstring>
         Returns the To_Be_Added handle (only) for each structure in the
@@ -358,7 +360,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <method name="GetLocalPendingMembersWithInfo">
+    <method name="GetLocalPendingMembersWithInfo"
+      tp:name-for-bindings="Get_Local_Pending_Members_With_Info">
       <tp:added version="0.15.0" />
       <tp:docstring>
         Returns the LocalPendingMembers property.
@@ -394,7 +397,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <property name="LocalPendingMembers" access="read"
-      type="a(uuus)" tp:type="Local_Pending_Info[]">
+      type="a(uuus)" tp:type="Local_Pending_Info[]"
+      tp:name-for-bindings="Local_Pending_Members">
       <tp:docstring>
         An array of structs containing handles representing contacts
         requesting channel membership and awaiting local approval with
@@ -414,7 +418,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         is not set, fall back to calling GetAllMembers.</tp:added>
     </property>
 
-    <method name="GetMembers">
+    <method name="GetMembers" tp:name-for-bindings="Get_Members">
       <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
       <tp:docstring>
         Returns the Members property.
@@ -428,7 +432,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <property name="RemotePendingMembers" access="read" type="au"
-      tp:type="Contact_Handle[]">
+      tp:type="Contact_Handle[]" tp:name-for-bindings="Remote_Pending_Members">
       <tp:docstring>
         An array of handles representing contacts who have been
         invited to the channel and are awaiting remote approval.
@@ -437,7 +441,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         is not set, fall back to calling GetAllMembers.</tp:added>
     </property>
 
-    <method name="GetRemotePendingMembers">
+    <method name="GetRemotePendingMembers"
+      tp:name-for-bindings="Get_Remote_Pending_Members">
       <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
       <tp:docstring>
         Returns an array of handles representing contacts who have been
@@ -451,7 +456,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <signal name="SelfHandleChanged">
+    <signal name="SelfHandleChanged" tp:name-for-bindings="Self_Handle_Changed">
       <tp:docstring>
         Emitted whenever the SelfHandle property changes.
       </tp:docstring>
@@ -466,7 +471,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <property name="SelfHandle" type="u" tp:type="Contact_Handle"
-      access="read">
+      access="read" tp:name-for-bindings="Self_Handle">
       <tp:docstring>
         The handle for the user on this channel (which can also be a
         local or remote pending member), or 0 if the user is not a member at
@@ -480,7 +485,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         Channel_Group_Flag_Properties is not present.</tp:added>
     </property>
 
-    <method name="GetSelfHandle">
+    <method name="GetSelfHandle" tp:name-for-bindings="Get_Self_Handle">
       <arg direction="out" type="u" tp:type="Contact_Handle"/>
       <tp:docstring>
         Returns the value of the SelfHandle property.
@@ -494,13 +499,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <signal name="GroupFlagsChanged">
-      <arg name="added" type="u" tp:type="Channel_Group_Flags">
+    <signal name="GroupFlagsChanged" tp:name-for-bindings="Group_Flags_Changed">
+      <arg name="Added" type="u" tp:type="Channel_Group_Flags">
         <tp:docstring>
           A bitwise OR of the flags which have been set
         </tp:docstring>
       </arg>
-      <arg name="removed" type="u" tp:type="Channel_Group_Flags">
+      <arg name="Removed" type="u" tp:type="Channel_Group_Flags">
         <tp:docstring>
           A bitwise OR of the flags which have been cleared
         </tp:docstring>
@@ -599,39 +604,39 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:enumvalue>
     </tp:enum>
 
-    <signal name="MembersChanged">
-      <arg name="message" type="s">
+    <signal name="MembersChanged" tp:name-for-bindings="Members_Changed">
+      <arg name="Message" type="s">
         <tp:docstring>
           A string message from the server, or blank if not
         </tp:docstring>
       </arg>
-      <arg name="added" type="au" tp:type="Contact_Handle[]">
+      <arg name="Added" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           A list of members added to the channel
         </tp:docstring>
       </arg>
-      <arg name="removed" type="au" tp:type="Contact_Handle[]">
+      <arg name="Removed" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           A list of members removed from the channel
         </tp:docstring>
       </arg>
-      <arg name="local_pending" type="au" tp:type="Contact_Handle[]">
+      <arg name="Local_Pending" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           A list of members who are pending local approval
         </tp:docstring>
       </arg>
-      <arg name="remote_pending" type="au" tp:type="Contact_Handle[]">
+      <arg name="Remote_Pending" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           A list of members who are pending remote approval
         </tp:docstring>
       </arg>
-      <arg name="actor" type="u" tp:type="Contact_Handle">
+      <arg name="Actor" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The contact handle of the person who made the change, or 0
           if not known
         </tp:docstring>
       </arg>
-      <arg name="reason" type="u" tp:type="Channel_Group_Change_Reason">
+      <arg name="Reason" type="u" tp:type="Channel_Group_Change_Reason">
         <tp:docstring>
           A reason for the change: one of the values of
           ChannelGroupChangeReason
@@ -653,13 +658,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <method name="RemoveMembers">
-      <arg direction="in" name="contacts" type="au" tp:type="Contact_Handle[]">
+    <method name="RemoveMembers" tp:name-for-bindings="Remove_Members">
+      <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           An array of contact handles to remove from the channel
         </tp:docstring>
       </arg>
-      <arg direction="in" name="message" type="s">
+      <arg direction="in" name="Message" type="s">
         <tp:docstring>
           A string message, which can be blank if desired
         </tp:docstring>
@@ -683,18 +688,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <method name="RemoveMembersWithReason">
-      <arg direction="in" name="contacts" type="au" tp:type="Contact_Handle[]">
+    <method name="RemoveMembersWithReason"
+      tp:name-for-bindings="Remove_Members_With_Reason">
+      <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           An array of contact handles to remove from the channel
         </tp:docstring>
       </arg>
-      <arg direction="in" name="message" type="s">
+      <arg direction="in" name="Message" type="s">
         <tp:docstring>
           A string message, which can be blank if desired
         </tp:docstring>
       </arg>
-      <arg direction="in" name="reason" type="u"
+      <arg direction="in" name="Reason" type="u"
            tp:type="Channel_Group_Change_Reason">
         <tp:docstring>
           A reason for the change: one of the values of

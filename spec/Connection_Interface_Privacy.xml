@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Connection.Interface.Privacy"
     tp:causes-havoc='not well-tested'>
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
-    <method name="GetPrivacyMode">
+    <method name="GetPrivacyMode" tp:name-for-bindings="Get_Privacy_Mode">
       <arg direction="out" type="s">
         <tp:docstring>
           A string representing the current privacy mode
@@ -36,7 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
       </tp:possible-errors>
     </method>
-    <method name="GetPrivacyModes">
+    <method name="GetPrivacyModes" tp:name-for-bindings="Get_Privacy_Modes">
       <arg direction="out" type="as">
         <tp:docstring>
           An array of valid privacy modes for this connection
@@ -52,8 +52,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
          </dl>
        </tp:docstring>
     </method>
-    <signal name="PrivacyModeChanged">
-      <arg name="mode" type="s">
+    <signal name="PrivacyModeChanged"
+      tp:name-for-bindings="Privacy_Mode_Changed">
+      <arg name="Mode" type="s">
         <tp:docstring>
           The current privacy mode
         </tp:docstring>
@@ -63,8 +64,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         initially received from the server.
       </tp:docstring>
     </signal>
-    <method name="SetPrivacyMode">
-      <arg direction="in" name="mode" type="s">
+    <method name="SetPrivacyMode" tp:name-for-bindings="Set_Privacy_Mode">
+      <arg direction="in" name="Mode" type="s">
         <tp:docstring>
           The desired privacy mode
         </tp:docstring>

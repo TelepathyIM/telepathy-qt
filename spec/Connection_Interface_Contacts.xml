@@ -1,0 +1,225 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Contact_Attributes" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005-2008 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or modify it
+      under the terms of the GNU Lesser General Public License as published by
+      the Free Software Foundation; either version 2.1 of the License, or (at
+      your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful, but
+      WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+      General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public License
+      along with this library; if not, write to the Free Software Foundation,
+      Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.Contacts.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface allows many attributes of many contacts to be
+        obtained in a single D-Bus round trip.</p>
+
+      <p>Each contact attribute has an string identifier
+        (<tp:type>Contact_Attribute</tp:type>), which is namespaced
+        by the D-Bus interface which defines it.</p>
+
+      <p>While this interface is a draft, an initial set of contact
+        attributes is defined here. The definitions of these attributes
+        will be moved to the spec for individual interfaces when this interface
+        is finalized.</p>
+
+      <dl>
+        <dt>org.freedesktop.Telepathy.Connection/contact-id
+          (type s)</dt>
+        <dd>The same string that would be returned by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>
+          (always present in the result)
+        </dd>
+        <dt>org.freedesktop.Telepathy.Connection.Interface.Aliasing/alias
+          (type s)</dt>
+        <dd>The contact's alias as defined by the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface">Aliasing</tp:dbus-ref>
+          interface (always present with some value, possibly the
+          same as Connection/contact-id, if information from the
+          Aliasing interface was requested)
+        </dd>
+        <dt>org.freedesktop.Telepathy.Connection.Interface.Avatars/token
+          (type s</dt>
+        <dd>The same string that would be returned by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Avatars">GetAvatarTokens</tp:dbus-ref>
+          (omitted from the result if the contact's avatar token is not known,
+          present as an empty string if the contact is known not to have
+          an avatar)
+        </dd>
+        <dt>org.freedesktop.Telepathy.Connection.Interface.SimplePresence/presence
+          (type (uss), <tp:type>Simple_Presence</tp:type>)</dt>
+        <dd> The same struct that would be returned by
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Connection.Interface.SimplePresence">GetPresences</tp:dbus-ref>
+          (always present with some value if information from the
+          SimplePresence interface was requested)
+          </dd>
+        <dt>org.freedesktop.Telepathy.Connection.Interface.Capabilities/caps
+          (type a(usuu), <tp:type>Contact_Capability</tp:type>)</dt>
+        <dd>The same structs that would be returned by
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.Capabilities">GetCapabilities</tp:dbus-ref>
+          (all of them will redundantly have the contact's handle as the
+          first member). Omitted from the result if the contact's capabilities
+          are not known; present in the result as an empty array if the
+          contact is known to have no capabilities at all.</dd>
+      </dl>
+    </tp:docstring>
+
+    <tp:simple-type name="Contact_Attribute" type="s">
+      <tp:docstring>
+        A <tp:type>DBus_Interface</tp:type>, followed by a slash '/' character
+        and an identifier for an attribute defined by that interface. The
+        attribute identifier SHOULD be in lower case.
+
+        <tp:rationale>
+          These aren't D-Bus core Properties, and we want them to look visibly
+          different.
+        </tp:rationale>
+      </tp:docstring>
+    </tp:simple-type>
+
+    <tp:mapping name="Single_Contact_Attributes_Map">
+      <tp:docstring>
+        Some of the attributes of a single contact.
+      </tp:docstring>
+
+      <tp:member type="s" tp:type="Contact_Attribute" name="Attribute">
+        <tp:docstring>
+          The name of the attribute
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member type="v" name="Value">
+        <tp:docstring>
+          The value of the attribute
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <tp:mapping name="Contact_Attributes_Map">
+      <tp:docstring>Mapping returned by InspectContacts, representing a
+        collection of Contacts and their requested attributes.</tp:docstring>
+
+      <tp:member type="u" tp:type="Contact_Handle" name="Contact">
+        <tp:docstring>
+          A contact
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member type="a{sv}" tp:type="Single_Contact_Attributes_Map"
+        name="Attributes">
+        <tp:docstring>
+          Attributes of that contact
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <property name="InspectableInterfaces" access="read" type="as"
+      tp:type="DBus_Interface[]" tp:name-for-bindings="InspectableInterfaces">
+      <tp:docstring>
+        A list of D-Bus interfaces for which
+        <tp:member-ref>InspectContacts</tp:member-ref> is expected to work.
+        This cannot change during the lifetime of the Connection.
+      </tp:docstring>
+    </property>
+
+    <method name="InspectContacts" tp:name-for-bindings="Inspect_Contacts">
+      <tp:docstring>
+        Return any number of contact attributes for the given handles.
+      </tp:docstring>
+
+      <arg direction="in" name="Handles" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          An array of handles representing contacts.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Interfaces" type="as"
+        tp:type="DBus_Interface[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A list of strings indicating which D-Bus interfaces the calling
+            process is interested in. All supported attributes from these
+            interfaces, whose values can be obtained without additional network
+            activity, will be in the reply.</p>
+
+          <p>It is an error to request interfaces that are not supported by
+            this Connection (i.e. mentioned in the
+            <tp:member-ref>InspectableInterfaces</tp:member-ref> property).</p>
+
+          <tp:rationale>
+            <p>This makes it possible to distinguish between interfaces for
+              which the Connection has nothing to say (e.g. we don't know the
+              avatar tokens of any of the contacts, so we omitted them all),
+              and interfaces for which this API isn't supported.</p>
+          </tp:rationale>
+
+          <p>Attributes from the interface
+            <tp:dbus-ref>org.freedesktop.Telepathy.Connection</tp:dbus-ref>
+            are always returned, and need not be requested explicitly.</p>
+
+          <p>As well as returning cached information immediately, the
+            connection MAY start asynchronous requests to obtain better
+            values for the contact attributes. If better values are later
+            obtained by this process, they will be indicated with the usual
+            signals (such as AliasesChanged).</p>
+
+          <tp:rationale>
+            For instance, an XMPP connection manager could download vCards
+            in response to a request for Aliasing attributes.
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Hold" type="b">
+        <tp:docstring>
+          If true, all handles in the result have been held on behalf of the
+          calling process, as if by a call to
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.HoldHandles</tp:dbus-ref>.
+
+          <tp:rationale>
+            For further round-trip avoidance.
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" type="a{ua{sv}}" name="Attributes"
+        tp:type="Contact_Attributes_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A dictionary mapping the contact handles to contact attributes.
+            If any of the requested handles are in fact invalid, they are
+            simply omitted from this mapping. If contact attributes are not
+            immediately known, the behaviour is defined by the interface;
+            the attribute should either be omitted from the result or
+            replaced with a default value.</p>
+
+          <p>Each contact's attributes will always include at least the
+            identifier that would be obtained by inspecting the handle
+            (<code>org.freedesktop.Telepathy.Connection/contact-id</code>).</p>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            One of the requested interfaces is not supported (mentioned in
+            <tp:member-ref>InspectableInterfaces</tp:member-ref>).
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

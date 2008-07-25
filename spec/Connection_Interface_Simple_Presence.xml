@@ -1,0 +1,382 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Simple_Presence" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005-2008 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or modify it
+      under the terms of the GNU Lesser General Public License as published by
+      the Free Software Foundation; either version 2.1 of the License, or (at
+      your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful, but
+      WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+      General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public License
+      along with this library; if not, write to the Free Software Foundation,
+      Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.SimplePresence">
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+
+    <tp:struct name="Simple_Presence">
+      <tp:docstring>
+        A struct representing the presence of a contact.
+      </tp:docstring>
+      <tp:member type="u" tp:type="Connection_Presence_Type" name="Type">
+        <tp:docstring>
+          The presence type, e.g. Connection_Presence_Type_Away.
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Status">
+        <tp:docstring>
+          The string identifier of the status, e.g. "brb", as defined in the
+          <tp:member-ref>Statuses</tp:member-ref> property.
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Status_Message">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The user-defined status message, e.g. "Back soon!".</p>
+
+          <p>Clients SHOULD set the status message for the local
+            user to the empty string, unless the user has actually provided
+            a specific message (i.e. one that conveys more information than the
+            Status).</p>
+
+          <p>User interfaces SHOULD regard an empty status message as unset,
+            and MAY replace it with a localized string corresponding to the
+            Status or Type.</p>
+
+          <tp:rationale>
+            Use case: Daf sets his status in Empathy by choosing the Welsh
+            translation of "Available" from a menu.
+            It is more informative for his English-speaking colleagues
+            to see the English translation of "Available" (as localized
+            by their own clients) than to see the Welsh version (which they
+            don't understand anyway).
+          </tp:rationale>
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <tp:mapping name="Simple_Contact_Presences">
+      <tp:docstring>
+        Mapping returned by <tp:member-ref>GetPresences</tp:member-ref>
+        and signalled by <tp:member-ref>PresencesChanged</tp:member-ref>,
+        indicating the presence of a number of contacts.
+      </tp:docstring>
+      <tp:member type="u" tp:type="Contact_Handle" name="Contact">
+        <tp:docstring>
+          A contact
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="(uss)" tp:type="Simple_Presence" name="Presence">
+        <tp:docstring>
+          The contact's presence
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <tp:struct name="Simple_Status_Spec">
+      <tp:docstring>
+        A struct containing information about a status.
+      </tp:docstring>
+      <tp:member type="u" tp:type="Connection_Presence_Type" name="Type">
+        <tp:docstring>
+          The type of a presence. This SHOULD NOT be used as a way to set
+          statuses that the client does not recognise (as explained in
+          <tp:member-ref>SetPresence</tp:member-ref>), but MAY be used to check
+          that the client's assumptions about a particular status name
+          match the connection manager's.
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="b" name="May_Set_On_Self">
+        <tp:docstring>
+          If true, the user can set this status on themselves using
+          <tp:member-ref>SetPresence</tp:member-ref>.
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="b" name="Can_Have_Message">
+        <tp:docstring>
+          If true, a non-empty message can be set for this status. Otherwise,
+          the empty string is the only acceptable message.
+
+          <tp:rationale>
+            On IRC you can be Away with a status message, but if you are
+            available you cannot set a status message.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <tp:mapping name="Simple_Status_Spec_Map">
+      <tp:docstring>
+        A mapping describing possible statuses.
+      </tp:docstring>
+
+      <tp:member type="s" name="Identifier">
+        <tp:docstring>
+          The string identifier of this status.
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="(ubb)" tp:type="Simple_Status_Spec" name="Spec">
+        <tp:docstring>
+          Details of this status.
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <method name="SetPresence" tp:name-for-bindings="Set_Presence">
+      <arg direction="in" name="Status" type="s">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The string identifier of the desired status. Possible status
+            identifiers are defined in the
+            <tp:member-ref>Statuses</tp:member-ref> property.</p>
+
+          <p>Clients MUST NOT set a status whose string value they do not
+            recognise, even if its presence type in Statuses
+            matches what the user requested.</p>
+
+          <tp:rationale>
+            <p>Suppose a protocol has statuses that include 'phone' (of type
+              BUSY) and 'in-a-meeting' (of type BUSY), but there is no
+              generic 'busy' status.</p>
+
+            <p>If the user requests "Busy" status from a menu, a
+              client author might be tempted to pick an arbitrary status
+              that has type BUSY. However, on this protocol, neither of
+              the choices would be appropriate, and incorrect information
+              about the user would be conveyed.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="Status_Message" type="s">
+        <tp:docstring>
+          The status message associated with the current status.
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request that the presence status and status message are published for
+          the connection.  Changes will be indicated by
+          <tp:member-ref>PresencesChanged</tp:member-ref>
+          signals being emitted.</p>
+
+        <p>This method may be called on a newly-created connection while it
+          is still in the DISCONNECTED state, to request that when the
+          connection connects, it will do so with the selected status.</p>
+
+        <p>In DISCONNECTED state the
+          <tp:member-ref>Statuses</tp:member-ref>
+          property will indicate which statuses are allowed to be set
+          while DISCONNECTED (none, if the Connection Manager doesn't allow
+          this). This value MUST NOT be cached, as the set of allowed
+          presences might change upon connecting.</p>
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            Either the specified status is not supported, the specified
+            status cannot be set on the user themselves, or a non-empty
+            message was supplied for a status that does not
+            accept a message.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetPresences" tp:name-for-bindings="Get_Presences">
+      <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          An array of the contacts whose presence should be obtained.
+        </tp:docstring>
+      </arg>
+      <arg direction="out" name="Presence" type="a{u(uss)}"
+        tp:type="Simple_Contact_Presences">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Presence information in the same format as for the
+            <tp:member-ref>PresencesChanged</tp:member-ref> signal.
+            The returned mapping MUST include an entry for each contact
+            in the method's argument.</p>
+
+          <p>The definition of the connection presence types Unknown
+            and Offline means that if a connection manager will return
+            Unknown for contacts not on the subscribe list, it MUST delay
+            the reply to this method call until it has found out which
+            contacts are, in fact, on the subscribe list.</p>
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Get presence previously emitted by PresencesChanged for the given
+        contacts. Data is returned in the same structure as the
+        PresencesChanged signal; no additional network requests are made.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError">
+          <tp:docstring>
+            While discovering the subscribe list in order to distinguish
+            between Unknown and Offline statuses, a network error occurred.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+      </tp:possible-errors>
+    </method>
+
+    <property name="Statuses" access="read"
+      type="a{s(ubb)}" tp:type="Simple_Status_Spec_Map">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A dictionary where the keys are the presence statuses that the user
+          can set on themselves for this connection, and the values are the
+          corresponding presence types.</p>
+
+        <p>While the connection is in the DISCONNECTED state, it contains
+          the set of presence statuses allowed to be set before connecting.
+          The connection manager will attempt to set the appropriate status
+          when the connection becomes connected, but cannot necessarily
+          guarantee it. The available statuses cannot change until the
+          connection status changes, so there is no change notification.</p>
+
+        <p>While the connection is in the CONNECTED state, this property
+          contains the set of presence statuses which are actually available
+          on this protocol. This set is constant for the remaining lifetime
+          of the connection, so again, there is no change notification.</p>
+
+        <p>While the connection is in the CONNECTING state, the value of
+          this property is undefined and SHOULD NOT be used. It can change
+          at any time without notification (in particular, any cached values
+          from when the connection was in the DISCONNECTED or CONNECTING
+          state MUST NOT be assumed to still be correct when the state has
+          become CONNECTED).</p>
+
+        <p>This property MUST include the special statuses "unknown" and
+          "error" if and only if the connection manager can emit them
+          as a contact's status.</p>
+
+        <tp:rationale>
+          For instance, connection managers for local-xmpp (XEP-0174) would
+          omit "unknown" since there is no such concept.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <signal name="PresencesChanged" tp:name-for-bindings="Presences_Changed">
+      <arg name="Presence" type="a{u(uss)}" tp:type="Simple_Contact_Presences">
+        <tp:docstring>
+          A dictionary of contact handles mapped to the status,
+          presence type and status message.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        This signal should be emitted when your own presence has been changed,
+        or the presence of the member of any of the connection's channels has
+        been changed.
+      </tp:docstring>
+    </signal>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface is for services which have a concept of presence which
+        can be published for yourself and monitored on your contacts.</p>
+
+      <p>Presence on an individual (yourself or one of your contacts) is
+        modelled as a status and a status message. Valid statuses are defined
+        per connection, and a list of those that can be set on youself
+        can be obtained from the
+        <tp:member-ref>Statuses</tp:member-ref>
+        property.</p>
+
+      <p>Each status has an arbitrary string identifier which should have an
+        agreed meaning between the connection manager and any client which is
+        expected to make use of it. The following well-known values should be
+        used where possible to allow clients to identify common choices:</p>
+
+      <table>
+        <tr>
+          <th>status identifier</th>
+          <th>Connection_Presence_Type</th>
+          <th>comments</th>
+        </tr>
+        <tr>
+          <td>available</td>
+          <td>Connection_Presence_Type_Available</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>away</td>
+          <td>Connection_Presence_Type_Away</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>brb</td>
+          <td>Connection_Presence_Type_Away</td>
+          <td>Be Right Back (a more specific form of Away)</td>
+        </tr>
+        <tr>
+          <td>busy</td>
+          <td>Connection_Presence_Type_Busy</td>
+          <td></td>
+        </tr>
+        <tr><td>dnd</td>
+          <td>Connection_Presence_Type_Busy</td>
+          <td>Do Not Disturb (a more specific form of Busy)</td>
+        </tr>
+        <tr>
+          <td>xa</td>
+          <td>Connection_Presence_Type_Extended_Away</td>
+          <td>Extended Away</td>
+        </tr>
+        <tr>
+          <td>hidden</td>
+          <td>Connection_Presence_Type_Hidden</td>
+          <td>Also known as "Invisible" or "Appear Offline"</td>
+        </tr>
+        <tr>
+          <td>offline</td>
+          <td>Connection_Presence_Type_Offline</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>unknown</td>
+          <td>Connection_Presence_Type_Unknown</td>
+          <td>special, see below</td>
+        </tr>
+        <tr>
+          <td>error</td>
+          <td>Connection_Presence_Type_Error</td>
+          <td>special, see below</td>
+        </tr>
+      </table>
+
+      <p>As well as these well-known status identifiers, every status also has
+        a numerical type value chosen from ConnectionPresenceType which can be
+        used by the client to classify even unknown statuses into different
+        fundamental types.</p>
+
+      <p>These numerical types exist so that even if a client does not
+        understand the string identifier being used, and hence cannot present
+        the presence to the user to set on themselves, it may display an
+        approximation of the presence if it is set on a contact.</p>
+
+      <p>As well as the normal status identifiers, there are two special ones
+        that may be present: 'unknown' with type Unknown and 'error' with type
+        Error. 'unknown' indicates that it is impossible to determine the
+        presence of a contact at this time, for example because it's not on the
+        'subscribe' list and the protocol only allows one to determine the
+        presence of contacts you're subscribed to. 'error' indicates that there
+        was a failure in determining the status of a contact.</p>
+
+      <p>If the connection has a 'subscribe' contact list, PresencesChanged
+        signals should be emitted to indicate changes of contacts on this list,
+        and should also be emitted for changes in your own presence. Depending
+        on the protocol, the signal may also be emitted for others such as
+        people with whom you are communicating, and any user interface should
+        be updated accordingly.</p>
+    </tp:docstring>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

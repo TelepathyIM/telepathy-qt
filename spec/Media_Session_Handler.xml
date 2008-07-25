@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Media.SessionHandler">
     <method name="Error">
-      <arg direction="in" name="errno" type="u"/>
-      <arg direction="in" name="message" type="s"/>
+      <arg direction="in" name="Errno" type="u"/>
+      <arg direction="in" name="Message" type="s"/>
       <tp:docstring>
         THIS METHOD IS DEPRECATED AND SHOULD NOT BE USED. Instead the Error
         function should be used on the relevant MediaStreamHandler objects.
@@ -31,24 +31,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         channel for each stream within the session.
       </tp:docstring>
     </method>
-    <signal name="NewStreamHandler">
-      <arg name="stream_handler" type="o">
+    <signal name="NewStreamHandler" tp:name-for-bindings="New_Stream_Handler">
+      <arg name="Stream_Handler" type="o">
         <tp:docstring>
           An object path to a new MediaStreamHandler
         </tp:docstring>
       </arg>
-      <arg name="id" type="u">
+      <arg name="ID" type="u">
         <tp:docstring>
           The unique ID of the new stream
         </tp:docstring>
       </arg>
-      <arg name="media_type" type="u" tp:type="Media_Stream_Type">
+      <arg name="Media_Type" type="u" tp:type="Media_Stream_Type">
         <tp:docstring>
           Enum for type of media that this stream should handle
           (a value from MediaStreamType)
         </tp:docstring>
       </arg>
-      <arg name="direction" type="u" tp:type="Media_Stream_Direction">
+      <arg name="Direction" type="u" tp:type="Media_Stream_Direction">
         <tp:docstring>
           Enum for direction of this stream (a value from
           MediaStreamDirection)

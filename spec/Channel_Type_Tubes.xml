@@ -273,7 +273,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         tp:type="Socket_Access_Control[]"/>
     </tp:mapping>
 
-    <method name="GetAvailableStreamTubeTypes">
+    <method name="GetAvailableStreamTubeTypes"
+      tp:name-for-bindings="Get_Available_Stream_Tube_Types">
       <tp:docstring>List the available address types and access-control types
         for stream tubes.</tp:docstring>
       <arg direction="out" type="a{uau}" tp:type="Supported_Socket_Map">
@@ -302,7 +303,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
     </method>
 
-    <method name="GetAvailableTubeTypes">
+    <method name="GetAvailableTubeTypes"
+      tp:name-for-bindings="Get_Available_Tube_Types">
       <arg direction="out" type="au" tp:type="Tube_Type[]">
         <tp:docstring>
           An array of the available tube types, as defined by the Tube_Type
@@ -311,7 +313,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
     </method>
 
-    <method name="ListTubes">
+    <method name="ListTubes" tp:name-for-bindings="List_Tubes">
       <arg direction="out" type="a(uuusa{sv}u)" tp:type="Tube_Info[]">
         <tp:docstring>
          Return an array of tuples, each representing a tube, with the
@@ -329,11 +331,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
     </method>
 
-    <method name="OfferDBusTube">
+    <method name="OfferDBusTube" tp:name-for-bindings="Offer_DBus_Tube">
       <tp:docstring>
         Offers a D-Bus tube providing the service specified.
       </tp:docstring>
-      <arg direction="in" name="service" type="s">
+      <arg direction="in" name="Service" type="s">
         <tp:docstring>
           A string representing the service name that will be used over the
           tube.
@@ -341,7 +343,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           com.example.ServiceName.
         </tp:docstring>
       </arg>
-      <arg direction="in" name="parameters" type="a{sv}"
+      <arg direction="in" name="Parameters" type="a{sv}"
         tp:type="String_Variant_Map">
         <tp:docstring>
           A dictionary of properties for the new tube; the allowable keys,
@@ -371,11 +373,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <method name="OfferStreamTube">
+    <method name="OfferStreamTube" tp:name-for-bindings="Offer_Stream_Tube">
       <tp:docstring>
         Offer a stream tube exporting the local socket specified.
       </tp:docstring>
-      <arg direction="in" name="service" type="s">
+      <arg direction="in" name="Service" type="s">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           A string representing the service name that will be used over the
           tube.
@@ -387,7 +389,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           "rsync" or "daap".
         </tp:docstring>
       </arg>
-      <arg direction="in" name="parameters" type="a{sv}"
+      <arg direction="in" name="Parameters" type="a{sv}"
         tp:type="String_Variant_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary of properties for the new tube; the allowable keys,
@@ -398,26 +400,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           use in the DNS-SD TXT record for that service.</p>
         </tp:docstring>
       </arg>
-      <arg direction="in" name="address_type" type="u" tp:type="Socket_Address_Type">
+      <arg direction="in" name="Address_Type" type="u" tp:type="Socket_Address_Type">
         <tp:docstring>
           The type of the listening address of the local service, as a member of
           Socket_Address_Type.
         </tp:docstring>
       </arg>
-      <arg direction="in" name="address" type="v">
+      <arg direction="in" name="Address" type="v">
         <tp:docstring>
           The listening address of the local service, as indicated by the
           address_type.
         </tp:docstring>
       </arg>
-      <arg direction="in" name="access_control" type="u" tp:type="Socket_Access_Control">
+      <arg direction="in" name="Access_Control" type="u" tp:type="Socket_Access_Control">
         <tp:docstring>
           The access control the local service applies to the local socket,
           specified so the connection manager can behave appropriately
           when it connects.
         </tp:docstring>
       </arg>
-      <arg direction="in" name="access_control_param" type="v">
+      <arg direction="in" name="Access_Control_Param" type="v">
         <tp:docstring>
           A parameter for the access control type, to be interpreted as
           specified in the documentation for the Socket_Access_Control enum.
@@ -445,55 +447,55 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <signal name="NewTube">
+    <signal name="NewTube" tp:name-for-bindings="New_Tube">
       <tp:docstring>
         Emitted when a tube is created.
       </tp:docstring>
-      <arg name="id" type="u" tp:type="Tube_ID">
+      <arg name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the new tube.
         </tp:docstring>
       </arg>
-      <arg name="initiator" type="u" tp:type="Contact_Handle">
+      <arg name="Initiator" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The handle of the contact who initiated the tube.
         </tp:docstring>
       </arg>
-      <arg name="type" type="u" tp:type="Tube_Type">
+      <arg name="Type" type="u" tp:type="Tube_Type">
         <tp:docstring>
           The tube type, as defined by the Tube_Type enum.
         </tp:docstring>
       </arg>
-      <arg name="service" type="s">
+      <arg name="Service" type="s">
         <tp:docstring>
           A string representing the service that will be used over the tube.
         </tp:docstring>
       </arg>
-      <arg name="parameters" type="a{sv}" tp:type="String_Variant_Map">
+      <arg name="Parameters" type="a{sv}" tp:type="String_Variant_Map">
         <tp:docstring>
           The new tube's properties.
         </tp:docstring>
       </arg>
-      <arg name="state" type="u" tp:type="Tube_State">
+      <arg name="State" type="u" tp:type="Tube_State">
         <tp:docstring>
           The new tube's state.
         </tp:docstring>
       </arg>
     </signal>
 
-    <method name="AcceptDBusTube">
+    <method name="AcceptDBusTube" tp:name-for-bindings="Accept_DBus_Tube">
       <tp:docstring>
         Accept a D-Bus tube that's in the "local pending" state. The
         connection manager will attempt to open the tube. The tube remains in
         the "local pending" state until the TubeStateChanged signal is
         emitted.
       </tp:docstring>
-      <arg direction="in" name="id" type="u" tp:type="Tube_ID">
+      <arg direction="in" name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube to accept.
         </tp:docstring>
       </arg>
-      <arg direction="out" name="address" type="s">
+      <arg direction="out" name="Address" type="s">
         <tp:docstring>
           The string describing the address of the private bus. The client
           should not attempt to connect to the address until the tube is open.
@@ -509,36 +511,36 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <method name="AcceptStreamTube">
+    <method name="AcceptStreamTube" tp:name-for-bindings="Accept_Stream_Tube">
       <tp:docstring>
         Accept a stream tube that's in the "local pending" state. The
         connection manager will attempt to open the tube. The tube remains in
         the "local pending" state until the TubeStateChanged signal is
         emitted.
       </tp:docstring>
-      <arg direction="in" name="id" type="u" tp:type="Tube_ID">
+      <arg direction="in" name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube to accept.
         </tp:docstring>
       </arg>
-      <arg direction="in" name="address_type" type="u" tp:type="Socket_Address_Type">
+      <arg direction="in" name="Address_Type" type="u" tp:type="Socket_Address_Type">
         <tp:docstring>
           The type of address the connection manager should listen on.
         </tp:docstring>
       </arg>
-      <arg direction="in" name="access_control" type="u" tp:type="Socket_Access_Control">
+      <arg direction="in" name="Access_Control" type="u" tp:type="Socket_Access_Control">
         <tp:docstring>
           The type of access control the connection manager should apply to
           the socket.
         </tp:docstring>
       </arg>
-      <arg direction="in" name="access_control_param" type="v">
+      <arg direction="in" name="Access_Control_Param" type="v">
         <tp:docstring>
           A parameter for the access control type, to be interpreted as
           specified in the documentation for the Socket_Access_Control enum.
         </tp:docstring>
       </arg>
-      <arg direction="out" name="address" type="v">
+      <arg direction="out" name="Address" type="v">
         <tp:docstring>
           The address on which the connection manager will listen for
           connections to this tube. The client should not attempt to connect
@@ -561,27 +563,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <signal name="TubeStateChanged">
+    <signal name="TubeStateChanged" tp:name-for-bindings="Tube_State_Changed">
       <tp:docstring>
         Emitted when the state of a tube changes.
       </tp:docstring>
-      <arg name="id" type="u" tp:type="Tube_ID">
+      <arg name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube that changed state.
         </tp:docstring>
       </arg>
-      <arg name="state" type="u" tp:type="Tube_State">
+      <arg name="State" type="u" tp:type="Tube_State">
         <tp:docstring>
           The new state of the tube; see the Tube_State enumeration.
         </tp:docstring>
       </arg>
     </signal>
 
-    <method name="CloseTube">
+    <method name="CloseTube" tp:name-for-bindings="Close_Tube">
       <tp:docstring>
         Close a tube.
       </tp:docstring>
-      <arg direction="in" name="id" type="u" tp:type="Tube_ID">
+      <arg direction="in" name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube to close.
         </tp:docstring>
@@ -591,24 +593,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <signal name="TubeClosed">
+    <signal name="TubeClosed" tp:name-for-bindings="Tube_Closed">
       <tp:docstring>
        Emitted when a tube has been closed. The ID of a closed tube is no
        longer valid. The ID may later be reused for a new tube.
       </tp:docstring>
-      <arg name="id" type="u" tp:type="Tube_ID">
+      <arg name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube that was closed.
         </tp:docstring>
       </arg>
     </signal>
 
-    <method name="GetDBusTubeAddress">
+    <method name="GetDBusTubeAddress"
+      tp:name-for-bindings="Get_DBus_Tube_Address">
       <tp:docstring>
         For a D-Bus tube, return a string describing the address of the
         private bus.
       </tp:docstring>
-      <arg direction="in" name="id" type="u" tp:type="Tube_ID">
+      <arg direction="in" name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube to get an address for.
         </tp:docstring>
@@ -632,12 +635,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <method name="GetDBusNames">
+    <method name="GetDBusNames" tp:name-for-bindings="Get_DBus_Names">
       <tp:docstring>
         For a multi-user (i.e. Handle_Type_Room) D-Bus tube, obtain a mapping
         between contact handles and their unique bus names on this tube.
       </tp:docstring>
-      <arg direction="in" name="id" type="u" tp:type="Tube_ID">
+      <arg direction="in" name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube to get names for.
         </tp:docstring>
@@ -662,45 +665,46 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <signal name="DBusNamesChanged">
+    <signal name="DBusNamesChanged" tp:name-for-bindings="DBus_Names_Changed">
       <tp:docstring>
         Emitted on a multi-user (i.e. Handle_Type_Room) D-Bus tube when a
         participant opens or closes the tube.
       </tp:docstring>
-      <arg name="id" type="u" tp:type="Tube_ID">
+      <arg name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube whose names have changed.
         </tp:docstring>
       </arg>
-      <arg name="added" type="a(us)" tp:type="DBus_Tube_Member[]">
+      <arg name="Added" type="a(us)" tp:type="DBus_Tube_Member[]">
         <tp:docstring>
           Array of handles and D-Bus names of new participants.
         </tp:docstring>
       </arg>
-      <arg name="removed" type="au" tp:type="Contact_Handle[]">
+      <arg name="Removed" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           Array of handles of former participants.
         </tp:docstring>
       </arg>
     </signal>
 
-    <method name="GetStreamTubeSocketAddress">
+    <method name="GetStreamTubeSocketAddress"
+      tp:name-for-bindings="Get_Stream_Tube_Socket_Address">
       <tp:docstring>
         For a stream tube, obtain the address of the socket used to
         communicate over this tube.
       </tp:docstring>
-      <arg direction="in" name="id" type="u" tp:type="Tube_ID">
+      <arg direction="in" name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the stream tube to get the socket for.
         </tp:docstring>
       </arg>
-      <arg direction="out" name="address_type" type="u" tp:type="Socket_Address_Type">
+      <arg direction="out" name="Address_Type" type="u" tp:type="Socket_Address_Type">
         <tp:docstring>
           The type of the listening address of the socket, as a member of
           Socket_Address_Type.
         </tp:docstring>
       </arg>
-      <arg direction="out" name="address" type="v">
+      <arg direction="out" name="Address" type="v">
         <tp:docstring>
           The listening address of the socket, as indicated by the
           address_type.
@@ -720,17 +724,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <signal name="StreamTubeNewConnection">
+    <signal name="StreamTubeNewConnection"
+      tp:name-for-bindings="Stream_Tube_New_Connection">
       <tp:docstring>
         Emitted on a stream tube when a participant opens a new connection
         to its socket.
       </tp:docstring>
-      <arg name="id" type="u" tp:type="Tube_ID">
+      <arg name="ID" type="u" tp:type="Tube_ID">
         <tp:docstring>
           The ID of the tube
         </tp:docstring>
       </arg>
-      <arg name="handle" type="u" tp:type="Contact_Handle">
+      <arg name="Handle" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The handle of the participant who opened the new connection
         </tp:docstring>

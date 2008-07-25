@@ -54,12 +54,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member type="v" name="Value"/>
     </tp:struct>
 
-    <method name="GetProperties">
+    <method name="GetProperties" tp:name-for-bindings="Get_Properties">
       <tp:docstring>
         Returns an array of (identifier, value) pairs containing the current
         values of the given properties.
       </tp:docstring>
-      <arg direction="in" name="properties" type="au" tp:type="Property_ID[]">
+      <arg direction="in" name="Properties" type="au" tp:type="Property_ID[]">
         <tp:docstring>An array of property identifiers</tp:docstring>
       </arg>
       <arg direction="out" type="a(uv)" tp:type="Property_Value[]">
@@ -86,7 +86,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:error>
       </tp:possible-errors>
     </method>
-    <method name="ListProperties">
+    <method name="ListProperties" tp:name-for-bindings="List_Properties">
       <tp:docstring>
         Returns a dictionary of the properties available on this channel.
       </tp:docstring>
@@ -104,11 +104,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
     </method>
-    <signal name="PropertiesChanged">
+    <signal name="PropertiesChanged" tp:name-for-bindings="Properties_Changed">
       <tp:docstring>
         Emitted when the value of readable properties has changed.
       </tp:docstring>
-      <arg name="properties" type="a(uv)" tp:type="Property_Value[]">
+      <arg name="Properties" type="a(uv)" tp:type="Property_Value[]">
         <!-- XXX: if we're ever breaking API compatibility, make this a{uv} -->
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>An array of structs containing:</p>
@@ -121,11 +121,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
     </signal>
-    <signal name="PropertyFlagsChanged">
+    <signal name="PropertyFlagsChanged"
+      tp:name-for-bindings="Property_Flags_Changed">
       <tp:docstring>
         Emitted when the flags of some room properties have changed.
       </tp:docstring>
-      <arg name="properties" type="a(uu)" tp:type="Property_Flags_Change[]">
+      <arg name="Properties" type="a(uu)" tp:type="Property_Flags_Change[]">
         <!-- XXX: if we're ever breaking API compatibility, make this a{uu} -->
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>An array of structs containing:</p>
@@ -138,7 +139,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
     </signal>
-    <method name="SetProperties">
+    <method name="SetProperties" tp:name-for-bindings="Set_Properties">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Takes an array of (identifier, value) pairs containing desired
           values to set the given properties. In the case of any errors, no
@@ -151,7 +152,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         are invalid, InvalidArgument will be returned.</p>
       </tp:docstring>
 
-      <arg direction="in" name="properties" type="a(uv)"
+      <arg direction="in" name="Properties" type="a(uv)"
         tp:type="Property_Value[]">
         <!-- XXX: if we're ever breaking API compatibility, make this a{uv} -->
       <tp:docstring>

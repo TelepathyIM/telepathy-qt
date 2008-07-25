@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel">
 
     <property name="ChannelType" type="s" tp:type="DBus_Interface"
-      access="read">
+      access="read" tp:name-for-bindings="Channel_Type">
       <tp:added version="0.17.7"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The channel's type. This cannot change once the channel has
@@ -62,7 +62,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </property>
 
-    <property name="TargetHandle" type="u" access="read" tp:type="Handle">
+    <property name="TargetHandle" type="u" access="read" tp:type="Handle"
+      tp:name-for-bindings="Target_Handle">
       <tp:added version="0.17.7"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The handle (a representation for the identifier) of the contact,
@@ -83,7 +84,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </property>
 
     <property name="TargetHandleType" type="u" access="read"
-      tp:type="Handle_Type">
+      tp:type="Handle_Type" tp:name-for-bindings="Target_Handle_Type">
       <tp:added version="0.17.7"/>
       <tp:docstring>
         The type of TargetHandle.
@@ -124,7 +125,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <method name="GetChannelType">
+    <method name="GetChannelType" tp:name-for-bindings="Get_Channel_Type">
       <tp:deprecated version="0.17.7">Use the ChannelType
         property if possible.</tp:deprecated>
       <arg direction="out" type="s" tp:type="DBus_Interface">
@@ -142,7 +143,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
 
-    <method name="GetHandle">
+    <method name="GetHandle" tp:name-for-bindings="Get_Handle">
       <tp:deprecated version="0.17.7">Use the TargetHandleType
         and TargetHandle properties if possible.</tp:deprecated>
       <arg direction="out" type="u" tp:type="Handle_Type">
@@ -169,7 +170,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
 
-    <method name="GetInterfaces">
+    <method name="GetInterfaces" tp:name-for-bindings="Get_Interfaces">
       <tp:deprecated version="0.17.7">Use the Interfaces
         property if possible.</tp:deprecated>
       <arg direction="out" type="as" tp:type="DBus_Interface[]">

@@ -28,16 +28,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         manager that it will ordinarily be able to create a channel when given
         a request with the given type and handle.</p>
 
-      <p>Capabilities can pertain to a certain contact handle, representing
-        activities such as having a text chat or a voice call with the user, or
-        can be on the connection itself (where the handle will be zero), where
-        they represent the ability to create channels for chat rooms or
-        activities such as searching and room listing. The activities are
-        represented by the D-Bus interface name of the channel type for that
-        activity.</p>
+      <p>Capabilities pertain to particular contact handles, and represent
+        activities such as having a text chat or a voice call with the user.
+        The activities are represented by the D-Bus interface name of the
+        channel type for that activity.</p>
 
       <p>The generic capability flags are defined by
-        Connection_Capability_Flags.</p>
+        <tp:type>Connection_Capability_Flags</tp:type>.</p>
 
       <p>In addition, channel types may have type specific capability flags of
         their own, which are described in the documentation for each channel
@@ -49,6 +46,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         interface names of channel types and the type specific flags pertaining
         to them which are implemented by available client processes.</p>
     </tp:docstring>
+
+    <tp:changed version="0.17.UNRELEASED">Previously, this interface
+      also expressed capabilities of the connection itself, indicating what
+      sorts of channels could be requested (for instance, the ability to
+      open chatroom lists or chatrooms). However, this was never very
+      well-defined or consistent, and as far as we know it was never
+      implemented correctly. This usage is now deprecated.</tp:changed>
+
+    <!-- FIXME: are the type-specific flags sufficient, in a world that has
+    the Requests interface? It'd be nice if we could advertise capabilities
+    that are not defined in terms of a channel type but rather in terms of
+    a property or something, e.g. Channel.Interface.TLS.Secure for
+    individually TLS'd channels. -->
 
     <tp:flags name="Connection_Capability_Flags"
       value-prefix="Connection_Capability_Flag" type="u">
@@ -99,8 +109,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member type="u" name="New_Type_Specific_Flags"/>
     </tp:struct>
 
-    <method name="AdvertiseCapabilities">
-      <arg direction="in" name="add" type="a(su)" tp:type="Capability_Pair[]">
+    <method name="AdvertiseCapabilities"
+      tp:name-for-bindings="Advertise_Capabilities">
+      <arg direction="in" name="Add" type="a(su)" tp:type="Capability_Pair[]">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structures containing:
           <ul>
@@ -109,7 +120,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           </ul>
         </tp:docstring>
       </arg>
-      <arg direction="in" name="remove" type="as" tp:type="DBus_Interface[]">
+      <arg direction="in" name="Remove" type="as" tp:type="DBus_Interface[]">
         <tp:docstring>
           An array of D-Bus interface names of channel types to remove
         </tp:docstring>
@@ -136,7 +147,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <p>Upon a successful invocation of this method, the CapabilitiesChanged
         signal will be emitted for the user's own handle (as returned by
-        GetSelfHandle) the by the connection manager to indicate the changes
+        GetSelfHandle) by the connection manager to indicate the changes
         that have been made.  This signal should also be monitored to ensure
         that the set is kept accurate - for example, a client may remove
         capabilities or type specific capability flags when it exits
@@ -148,8 +159,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <signal name="CapabilitiesChanged">
-      <arg name="caps" type="a(usuuuu)" tp:type="Capability_Change[]">
+    <signal name="CapabilitiesChanged"
+      tp:name-for-bindings="Capabilities_Changed">
+      <arg name="Caps" type="a(usuuuu)" tp:type="Capability_Change[]">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structures containing:
           <ul>
@@ -162,20 +174,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           </ul>
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Announce that there has been a change of capabilities on the
-        given handle, or on the connection itself if the handle is zero.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Announce that there has been a change of capabilities on the
+          given handle.</p>
+
+        <p>If the handle is zero, the capabilities refer to the connection
+          itself, in some poorly defined way. This usage is deprecated and
+          clients should ignore it.</p>
       </tp:docstring>
     </signal>
 
-    <method name="GetCapabilities">
-      <arg direction="in" name="handles" type="au" tp:type="Contact_Handle[]">
-        <tp:docstring>
-          An array of contact handles for this connection, or zero to query capabilities available on the connection itself
+    <method name="GetCapabilities" tp:name-for-bindings="Get_Capabilities">
+      <arg direction="in" name="Handles" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>An array of contact handles for this connection.</p>
+
+          <p>This may include zero, which originally meant a query for
+            capabilities available on the connection itself. This usage
+            is deprecated; clients SHOULD NOT do this, and connection managers
+            SHOULD proceed as though zero had not been present in this
+            list.</p>
         </tp:docstring>
       </arg>
       <arg direction="out" type="a(usuu)" tp:type="Contact_Capability[]">
-        <tp:docstring>
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structures containing:
           <ul>
             <li>an integer handle representing the contact</li>
@@ -186,15 +208,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
       <tp:docstring>
-        Returns an array of capabilities for the given contact handles, or
-        the connection itself (where handle is zero).
+        Returns an array of capabilities for the given contact handles.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
           <tp:docstring>
-            The handle does not represent a contact
+            The handle does not represent a contact and is not zero
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
