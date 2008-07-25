@@ -10,5 +10,6 @@
 <xi:include href="../spec/Connection_Interface_Avatars.xml"/>
 <xi:include href="../spec/Connection_Interface_Capabilities.xml"/>
 <xi:include href="../spec/Connection_Interface_Presence.xml"/>
+<xi:include href="../spec/Connection_Interface_Simple_Presence.xml"/>
 
 </tp:spec>
