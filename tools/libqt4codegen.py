@@ -96,6 +96,21 @@ def binding_from_decl(name, array_name):
     outarg = '%s&' % val
     return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None)
 
+def extract_arg_or_member_info(els, custom_lists, externals, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
+    names = []
+    docstrings = []
+    bindings = []
+
+    for el in els:
+        names.append(get_qt4_name(el))
+        docstrings.append(format_docstring(el, docstring_indent, docstring_brackets, docstring_maxwidth))
+
+        sig = el.getAttribute('type')
+        tptype = el.getAttributeNS(NS_TP, 'type')
+        bindings.append(binding_from_usage(sig, tptype, custom_lists, (sig, tptype) in externals))
+
+    return names, docstrings, bindings
+
 def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
     docstring_el = None
 

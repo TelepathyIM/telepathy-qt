@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, binding_from_decl, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, qt4_identifier_escape
+from libqt4codegen import binding_from_usage, binding_from_decl, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name
 
 class DepInfo:
     def __init__(self, el, externals, custom_lists):
@@ -292,22 +292,8 @@ void registerTypes()
             self.required_custom.remove(type)
 
     def output_by_depinfo(self, depinfo):
-        members = 0
-        names = []
-        bindings = []
-        docstrings = []
-
-        for member in get_by_path(depinfo.el, 'member'):
-            members = members + 1
-
-            names.append(get_qt4_name(member))
-
-            sig = member.getAttribute('type')
-            tptype = member.getAttributeNS(NS_TP, 'type')
-            external = (sig, tptype) in self.externals
-            bindings.append(binding_from_usage(sig, tptype, self.custom_lists, external))
-
-            docstrings.append(format_docstring(member, '     * ', ('    /**', '     */')))
+        names, docstrings, bindings = extract_arg_or_member_info(get_by_path(depinfo.el, 'member'), self.custom_lists, self.externals, '     * ', ('    /**', '     */'))
+        members = len(names)
 
         if depinfo.el.localName == 'struct':
             assert members > 0, 'tp:struct %s should have some members' % depinfo.binding.val

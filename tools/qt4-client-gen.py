@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, qt4_identifier_escape
+from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, qt4_identifier_escape
 
 class Generator(object):
     def __init__(self, opts):
@@ -234,37 +234,31 @@ Q_SIGNALS:\
 
         if settername:
             self.h("""
+    /**
+     * Setter for the remote object property "%s".
+     *
+     * \\param newValue The value to set the property to.
+     */
     inline void %s(%s newValue)
     {
         internalPropSet("%s", QVariant::fromValue(newValue));
     }
-""" % (settername, binding.inarg, propname))
+""" % (name, settername, binding.inarg, name))
 
     def do_method(self, method):
         name = method.getAttribute('name')
         qt4name = get_qt4_name(method)
         args = get_by_path(method, 'arg')
+        argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists, self.externals, '     *     ')
 
         inargs = []
         outargs = []
-        argnames = []
-        argbindings = []
 
         for i in xrange(len(args)):
             if args[i].getAttribute('direction') == 'out':
                 outargs.append(i)
             else:
                 inargs.append(i)
-
-            argname = get_qt4_name(args[i])
-
-            if argname:
-                argnames.append(argname)
-
-            sig = args[i].getAttribute('type')
-            tptype = args[i].getAttributeNS(NS_TP, 'type')
-            external = (sig, tptype) in self.externals
-            argbindings.append(binding_from_usage(sig, tptype, self.custom_lists, external))
 
         rettypes = ', '.join([argbindings[i].val for i in outargs])
         params = ', '.join([argbindings[i].inarg + ' ' + argnames[i] for i in inargs])
@@ -292,17 +286,7 @@ Q_SIGNALS:\
     def do_signal(self, signal):
         name = signal.getAttribute('name')
         qt4name = get_qt4_name(signal)
-
-        argnames = []
-        argbindings = []
-
-        for arg in get_by_path(signal, 'arg'):
-            argnames.append(get_qt4_name(arg))
-
-            sig = arg.getAttribute('type')
-            tptype = arg.getAttributeNS(NS_TP, 'type')
-            external = (sig, tptype) in self.externals
-            argbindings.append(binding_from_usage(sig, tptype, self.custom_lists, external))
+        argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'), self.custom_lists, self.externals, '     * ')
 
         self.h("""
     void %s(%s);
