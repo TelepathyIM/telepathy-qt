@@ -143,7 +143,7 @@ public:
      * \\param objectPath Path to the object on the service.
      * \\param parent Passed to the parent class constructor.
      */
-    %(name)s(
+    explicit %(name)s(
         const QString& serviceName,
         const QString& objectPath,
         QObject* parent = 0
@@ -157,7 +157,7 @@ public:
      * \\param objectPath Path to the object on the service.
      * \\param parent Passed to the parent class constructor.
      */
-    %(name)s(
+    explicit %(name)s(
         const QDBusConnection& connection,
         const QString& serviceName,
         const QString& objectPath,
@@ -193,7 +193,7 @@ public:
      *
      * \\param mainInterface The proxy to use.
      */
-    %(name)s(const %(mainifacename)s& mainInterface);
+    explicit %(name)s(const %(mainifacename)s& mainInterface);
 
     /**
      * Creates a %(name)s associated with the same object as the given proxy.
@@ -202,7 +202,7 @@ public:
      * \\param mainInterface The proxy to use.
      * \\param parent Passed to the parent class constructor.
      */
-    %(name)s(const %(mainifacename)s& mainInterface, QObject* parent);
+    explicit %(name)s(const %(mainifacename)s& mainInterface, QObject* parent);
 """ % {'name' : name,
        'mainifacename' : mainifacename})
 
