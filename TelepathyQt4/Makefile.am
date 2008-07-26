@@ -198,6 +198,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 	$(PYTHON) $(srcdir)/../tools/qt4-client-gen.py \
 		--group=$$group \
 		--namespace=$$namespace \
+		--typesnamespace='Telepathy' \
 		--headerfile=_gen/cli-$*.h \
 		--implfile=_gen/cli-$*-body.hpp \
 		--realinclude='TelepathyQt4/cli-$*.h' \

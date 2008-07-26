@@ -32,6 +32,7 @@ class Generator(object):
             self.headerfile = opts['--headerfile']
             self.implfile = opts['--implfile']
             self.namespace = opts['--namespace']
+            self.typesnamespace = opts['--typesnamespace']
             self.realinclude = opts['--realinclude']
             self.prettyinclude = opts['--prettyinclude']
             self.typesinclude = opts['--typesinclude']
@@ -45,7 +46,7 @@ class Generator(object):
         self.bs = []
         self.ifacenodes = ifacedom.getElementsByTagName('node')
         self.spec, = get_by_path(specdom, "spec")
-        self.custom_lists = gather_custom_lists(self.spec)
+        self.custom_lists = gather_custom_lists(self.spec, self.typesnamespace)
         self.externals = gather_externals(self.spec)
         self.mainifacename = self.mainiface and self.mainiface.replace('/', '').replace('_', '') + 'Interface'
 
@@ -261,7 +262,7 @@ Q_SIGNALS:\
 
         sig = prop.getAttribute('type')
         tptype = prop.getAttributeNS(NS_TP, 'type')
-        binding = binding_from_usage(sig, tptype, self.custom_lists, (sig, tptype) in self.externals)
+        binding = binding_from_usage(sig, tptype, self.custom_lists, (sig, tptype) in self.externals, self.typesnamespace)
 
         if 'write' in access:
             settername = 'set' + 'DBus' + qt4name[0].upper() + qt4name[1:]
@@ -308,7 +309,7 @@ Q_SIGNALS:\
         name = method.getAttribute('name')
         qt4name = get_qt4_name(method)
         args = get_by_path(method, 'arg')
-        argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists, self.externals, '     *     ')
+        argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists, self.externals, self.typesnamespace, '     *     ')
 
         inargs = []
         outargs = []
@@ -368,7 +369,7 @@ Q_SIGNALS:\
     def do_signal(self, signal):
         name = signal.getAttribute('name')
         qt4name = get_qt4_name(signal)
-        argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'), self.custom_lists, self.externals, '     * ')
+        argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'), self.custom_lists, self.externals, self.typesnamespace, '     *     ')
 
         self.h("""
     /**
@@ -384,7 +385,7 @@ Q_SIGNALS:\
 %s\
 """ % (argnames[i], argdocstrings[i]))
 
-        self.h("""
+        self.h("""\
      */
     void %s(%s);
 """ % (qt4name, ', '.join(['%s %s' % (binding.inarg, name) for binding, name in zip(argbindings, argnames)])))
@@ -404,6 +405,7 @@ if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
             ['group=',
              'namespace=',
+             'typesnamespace=',
              'headerfile=',
              'implfile=',
              'ifacexml=',

@@ -66,7 +66,7 @@ class Generator(object):
         self.impls = []
         self.spec = get_by_path(dom, "spec")[0]
         self.externals = gather_externals(self.spec)
-        self.custom_lists = gather_custom_lists(self.spec)
+        self.custom_lists = gather_custom_lists(self.spec, self.namespace)
         self.required_custom = []
         self.required_arrays = []
         self.to_declare = []
@@ -292,7 +292,7 @@ void registerTypes()
             self.required_custom.remove(type)
 
     def output_by_depinfo(self, depinfo):
-        names, docstrings, bindings = extract_arg_or_member_info(get_by_path(depinfo.el, 'member'), self.custom_lists, self.externals, '     * ', ('    /**', '     */'))
+        names, docstrings, bindings = extract_arg_or_member_info(get_by_path(depinfo.el, 'member'), self.custom_lists, self.externals, None, '     * ', ('    /**', '     */'))
         members = len(names)
 
         if depinfo.el.localName == 'struct':

@@ -35,7 +35,7 @@ class _Qt4TypeBinding:
         self.custom_type = custom_type
         self.array_of = array_of
 
-def binding_from_usage(sig, tptype, custom_lists, external=False):
+def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_ns=None):
     # 'signature' : ('qt-type', 'pass-by-reference')
     natives = {
             'y' : ('uchar', False, None),
@@ -67,6 +67,8 @@ def binding_from_usage(sig, tptype, custom_lists, external=False):
         inarg = (pass_by_ref and ('const %s&' % val)) or val
     elif sig[0] == 'a' and natives.has_key(sig[1]) and natives[sig[1]][2]:
         val = natives[sig[1]][2]
+        if explicit_own_ns:
+            val = explicit_own_ns + '::' + val
         inarg = 'const %s&' % val
         array_of = natives[sig[1]][0]
     elif tptype:
@@ -75,10 +77,12 @@ def binding_from_usage(sig, tptype, custom_lists, external=False):
 
         if external:
             tptype = 'Telepathy::' + tptype
+        elif explicit_own_ns:
+            tptype = explicit_own_ns + '::' + tptype
 
         if tptype.endswith('[]'):
             tptype = tptype[:-2]
-            assert custom_lists.has_key(tptype), ('No array version of custom type %s in the spec, but array version used' % tptype) + str(custom_lists)
+            assert custom_lists.has_key(tptype), ('No array version of custom type %s in the spec, but array version used' % tptype)
             val = custom_lists[tptype]
         else:
             val = tptype
@@ -96,7 +100,7 @@ def binding_from_decl(name, array_name):
     outarg = '%s&' % val
     return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None)
 
-def extract_arg_or_member_info(els, custom_lists, externals, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
+def extract_arg_or_member_info(els, custom_lists, externals, typesns, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
     names = []
     docstrings = []
     bindings = []
@@ -107,7 +111,7 @@ def extract_arg_or_member_info(els, custom_lists, externals, docstring_indent=' 
 
         sig = el.getAttribute('type')
         tptype = el.getAttributeNS(NS_TP, 'type')
-        bindings.append(binding_from_usage(sig, tptype, custom_lists, (sig, tptype) in externals))
+        bindings.append(binding_from_usage(sig, tptype, custom_lists, (sig, tptype) in externals, typesns))
 
     return names, docstrings, bindings
 
@@ -183,18 +187,19 @@ def gather_externals(spec):
 
     return externals
 
-def gather_custom_lists(spec):
+def gather_custom_lists(spec, typesns):
     custom_lists = {}
-    structs = spec.getElementsByTagNameNS(NS_TP, 'struct')
-    mappings = spec.getElementsByTagNameNS(NS_TP, 'mapping')
-    exts = spec.getElementsByTagNameNS(NS_TP, 'external-type')
+    structs = [(provider, typesns) for provider in spec.getElementsByTagNameNS(NS_TP, 'struct')]
+    mappings = [(provider, typesns) for provider in spec.getElementsByTagNameNS(NS_TP, 'mapping')]
+    exts = [(provider, 'Telepathy') for provider in spec.getElementsByTagNameNS(NS_TP, 'external-type')]
 
-    for provider in structs + mappings + exts:
+    for (provider, ns) in structs + mappings + exts:
         tptype = provider.getAttribute('name').replace('_', '')
-        array_name = provider.getAttribute('array-name')
+        array_val = provider.getAttribute('array-name').replace('_', '')
 
-        if array_name:
-            custom_lists[tptype] = array_name.replace('_', '')
+        if array_val:
+            custom_lists[tptype] = array_val
+            custom_lists[ns + '::' + tptype] = ns + '::' + array_val
 
     return custom_lists
 
