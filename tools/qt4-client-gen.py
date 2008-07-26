@@ -264,7 +264,7 @@ Q_SIGNALS:\
         binding = binding_from_usage(sig, tptype, self.custom_lists, (sig, tptype) in self.externals, self.typesnamespace)
 
         if 'write' in access:
-            settername = set + gettername[0].upper() + gettername[1:]
+            settername = 'set' + qt4name[0].upper() + qt4name[1:]
 
         self.h("""
     /**
