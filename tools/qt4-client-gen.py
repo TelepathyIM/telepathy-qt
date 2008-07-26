@@ -254,8 +254,9 @@ Q_SIGNALS:\
     def do_prop(self, prop):
         name = prop.getAttribute('name')
         qt4name = get_qt4_name(prop)
+        qt4propname = 'dbus' + qt4name[0].upper() + qt4name[1:]
         access = prop.getAttribute('access')
-        gettername = qt4name
+        gettername = qt4propname
         settername = None
 
         sig = prop.getAttribute('type')
@@ -263,14 +264,14 @@ Q_SIGNALS:\
         binding = binding_from_usage(sig, tptype, self.custom_lists, (sig, tptype) in self.externals)
 
         if 'write' in access:
-            settername = set + gettername[0].upper() + gettername[1:]
+            settername = 'set' + 'DBus' + qt4name[0].upper() + qt4name[1:]
 
         self.h("""
     /**
-     * Represents property "%(name)s" on the remote object.
+     * Represents D-Bus property "%(name)s" on the remote object.
 %(docstring)s\
      */
-    Q_PROPERTY(%(val)s %(qt4name)s READ %(gettername)s%(maybesettername)s)
+    Q_PROPERTY(%(val)s %(qt4propname)s READ %(gettername)s%(maybesettername)s)
 
     /**
      * Getter for the remote object property "%(name)s".
@@ -285,7 +286,7 @@ Q_SIGNALS:\
 """ % {'name' : name,
        'docstring' : format_docstring(prop, '     * '),
        'val' : binding.val,
-       'qt4name' : qt4name,
+       'qt4propname' : qt4propname,
        'gettername' : gettername,
        'maybesettername' : settername and (' WRITE ' + settername) or '',
        'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, name)) or binding.val + '()'})
