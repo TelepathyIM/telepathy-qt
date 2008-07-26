@@ -19,5 +19,48 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <TelepathyQt4/Client/Connection>
+
 #include <TelepathyQt4/_gen/cli-connection-body.hpp>
 #include <TelepathyQt4/_gen/cli-connection.moc.hpp>
+
+namespace Telepathy
+{
+namespace Client
+{
+
+struct Connection::Private
+{
+    ConnectionInterface interface;
+
+    Private(const QDBusConnection& connection, const QString& serviceName, const QString& objectPath, QObject* parent)
+        : interface(connection, serviceName, objectPath, parent) {}
+};
+
+Connection::Connection(const QString& serviceName, const QString& objectPath, QObject* parent)
+    : mPriv(new Private(QDBusConnection::sessionBus(), serviceName, objectPath, parent))
+{
+}
+
+Connection::Connection(const QDBusConnection& connection, const QString& serviceName, const QString& objectPath, QObject* parent)
+    : mPriv(new Private(connection, serviceName, objectPath, parent))
+{
+}
+
+Connection::~Connection()
+{
+    delete mPriv;
+}
+
+ConnectionInterface& Connection::interface()
+{
+    return mPriv->interface;
+}
+
+const ConnectionInterface& Connection::interface() const
+{
+    return mPriv->interface;
+}
+
+}
+}
