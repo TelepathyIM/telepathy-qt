@@ -24,6 +24,8 @@
 #include <TelepathyQt4/_gen/cli-connection-body.hpp>
 #include <TelepathyQt4/_gen/cli-connection.moc.hpp>
 
+#include "debug.hpp"
+
 namespace Telepathy
 {
 namespace Client
@@ -144,7 +146,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher* watcher)
         mPriv->status = reply.argumentAt<0>();
         statusChanged(reply.argumentAt<0>(), reply.argumentAt<1>());
     } else {
-        // TODO error reporting
+        warning().nospace() << "GetStatus() failed with " << reply.error().name() << ": " << reply.error().message();
     }
 }
 
@@ -154,7 +156,8 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher* watcher)
 
     if (!reply.isError())
         mPriv->interfaces = reply.value();
-        // TODO error reporting
+    else
+        warning().nospace() << "GetInterfaces() failed with " << reply.error().name() << ": " << reply.error().message() << " - assuming no interfaces";
 
     // TODO introspect interfaces
 
