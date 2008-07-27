@@ -164,7 +164,7 @@ public:
     uint statusReason() const;
 
     /**
-     * List of interfaces implemented by the remote object.
+     * List of interfaces implemented by the connection.
      *
      * The value is undefined until the property #ready is <code>true</code>.
      */
@@ -177,6 +177,61 @@ public:
      */
     QStringList interfaces() const;
 
+    /**
+     * Bitwise OR of flags detailing the behaviour of aliases on the
+     * connection.
+     *
+     * The value is undefined if the value of the property #ready is
+     * <code>false</code> or the connection doesn't support the Aliasing
+     * interface.
+     */
+    Q_PROPERTY(Telepathy::ConnectionAliasFlags aliasFlags READ aliasFlags)
+
+    /**
+     * Getter for the property #aliasFlags.
+     *
+     * \return Bitfield of the alias flags, as specified in
+     * #ConnectionAliasFlag.
+     */
+    ConnectionAliasFlags aliasFlags() const;
+
+    /**
+     * Dictionary of the valid presence statuses for the connection for use with
+     * the legacy Telepathy Presence interface.
+     *
+     * The value is undefined if the value of the property #ready is
+     * <code>false</code> or the connection doesn't support the Presence
+     * interface.
+     */
+    Q_PROPERTY(Telepathy::StatusSpecMap presenceStatuses READ presenceStatuses)
+
+    /**
+     * Getter for the property #presenceStatuses.
+     *
+     * \return Dictionary mapping string identifiers to structs for each status.
+     */
+    StatusSpecMap presenceStatuses() const;
+
+    /**
+     * Dictionary of the valid presence statuses for the connection for use with
+     * the new simplified Telepathy SimplePresence interface.
+     *
+     * Getting the value of this property before the connection is ready (as
+     * signified by the property #ready) may cause a synchronous call to the
+     * remote service to be made.
+     *
+     * The value is undefined if the connection doesn't support the
+     * SimplePresence interface.
+     */
+    Q_PROPERTY(Telepathy::SimpleStatusSpecMap simplePresenceStatuses READ simplePresenceStatuses)
+
+    /**
+     * Getter for the property #simplePresenceStatuses.
+     *
+     * \return Dictionary mapping string identifiers to structs for each status.
+     */
+    SimpleStatusSpecMap simplePresenceStatuses() const;
+
 Q_SIGNALS:
     /**
      * Emitted when the value of the property #ready changes to
@@ -188,6 +243,9 @@ private Q_SLOTS:
     void statusChanged(uint, uint);
     void gotStatus(QDBusPendingCallWatcher* watcher);
     void gotInterfaces(QDBusPendingCallWatcher* watcher);
+    void gotAliasFlags(QDBusPendingCallWatcher* watcher);
+    void gotStatuses(QDBusPendingCallWatcher* watcher);
+    void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
 
 private:
     struct Private;
