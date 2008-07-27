@@ -91,7 +91,7 @@ _gen/constants.h: _gen/stable-spec.xml \
 		../tools/qt4-constants-gen.py
 	$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
 		--namespace='Telepathy' \
-		--str-constant-prefix='TP_' \
+		--str-constant-prefix='TELEPATHY_' \
 		--specxml=$< \
 		> $@.tmp && mv $@.tmp $@
 
