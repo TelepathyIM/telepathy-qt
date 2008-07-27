@@ -117,7 +117,7 @@ namespace %s
 #define %(DEFINE)s "%(name)s"
 
 """ % {'name' : iface.getAttribute('name'),
-       'DEFINE' : self.prefix + 'IFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
+       'DEFINE' : self.prefix + 'INTERFACE_' + get_by_path(iface, '../@name').upper().replace('/', '')})
 
         # Error names
         for error in get_by_path(self.spec, 'errors/error'):
