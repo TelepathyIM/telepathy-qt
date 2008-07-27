@@ -43,6 +43,11 @@
 
 #include <TelepathyQt4/_gen/cli-connection.h>
 
+#include <QDBusPendingCallWatcher>
+#include <QStringList>
+
+#include <TelepathyQt4/Constants>
+
 namespace Telepathy
 {
 namespace Client
@@ -98,16 +103,95 @@ public:
      * easy direct access to the D-Bus properties, methods and signals on the
      * remote object.
      *
-     * Note that this class provides a more convenient interface for some
+     * Note that this class provides a more convenient way to access some
      * functionality than using the interface class directly.
      *
      * \return A reference to the underlying ConnectionInterface instance.
+     *
+     * \{
      */
     ConnectionInterface& interface();
     const ConnectionInterface& interface() const;
 
+    /**
+     * \}
+     */
+
+    /**
+     * Initially <code>false</code>, changes to <code>true</code> when the
+     * connection has gone to the Connected status, introspection is finished
+     * and it's ready for use.
+     *
+     * By the time this property becomes true, the property #interfaces will
+     * have been populated.
+     */
+    Q_PROPERTY(bool ready READ ready)
+
+    /**
+     * Getter for the property #ready.
+     *
+     * \return If the object is ready for use.
+     */
+    bool ready() const;
+
+    /**
+     * The connection's status (one of the values of #ConnectionStatus), or -1
+     * if we don't know it yet.
+     *
+     * Connect to the signal <code>statusChanged</code> on the underlying
+     * #interface to watch for changes.
+     */
+    Q_PROPERTY(long status READ status)
+
+    /**
+     * Getter for the property #status.
+     *
+     * \return The status of the connection.
+     */
+    long status() const;
+
+    /**
+     * The reason why #status changed to its current value, or
+     * #ConnectionStatusReasonNoneSpecified if the status is still unknown.
+     */
+    Q_PROPERTY(uint statusReason READ statusReason)
+
+    /**
+     * Getter for the property #statusReason.
+     *
+     * \return The reason for the current status.
+     */
+    uint statusReason() const;
+
+    /**
+     * List of interfaces implemented by the remote object.
+     *
+     * The value is undefined until the property #ready is <code>true</code>.
+     */
+    Q_PROPERTY(QStringList interfaces READ interfaces)
+
+    /**
+     * Getter for the property #interfaces.
+     *
+     * \return D-Bus interface names of the implemented interfaces.
+     */
+    QStringList interfaces() const;
+
+Q_SIGNALS:
+    /**
+     * Emitted when the value of the property #ready changes to
+     * <code>true</code>.
+     */
+    void ready();
+
+private Q_SLOTS:
+    void statusChanged(uint, uint);
+    void gotStatus(QDBusPendingCallWatcher* watcher);
+    void gotInterfaces(QDBusPendingCallWatcher* watcher);
+
 private:
     struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

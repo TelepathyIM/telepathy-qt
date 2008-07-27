@@ -31,19 +31,51 @@ namespace Client
 
 struct Connection::Private
 {
+    Connection* parent;
     ConnectionInterface interface;
 
-    Private(const QDBusConnection& connection, const QString& serviceName, const QString& objectPath, QObject* parent)
-        : interface(connection, serviceName, objectPath, parent) {}
+    bool ready;
+    long status;
+    uint statusReason;
+    QStringList interfaces;
+
+    Private(Connection *parent,
+            const QDBusConnection& connection,
+            const QString& serviceName,
+            const QString& objectPath)
+        : parent(parent),
+          interface(connection, serviceName, objectPath, parent)
+    {
+        ready = false;
+        status = -1;
+        statusReason = ConnectionStatusReasonNoneSpecified;
+
+        parent->connect(&interface,
+                        SIGNAL(statusChanged(uint, uint)),
+                        SLOT(statusChanged(uint, uint)));
+
+        QDBusPendingCallWatcher* watcher =
+            new QDBusPendingCallWatcher(interface.getStatus(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotStatus(QDBusPendingCallWatcher*)));
+    }
 };
 
-Connection::Connection(const QString& serviceName, const QString& objectPath, QObject* parent)
-    : mPriv(new Private(QDBusConnection::sessionBus(), serviceName, objectPath, parent))
+Connection::Connection(const QString& serviceName,
+                       const QString& objectPath,
+                       QObject* parent)
+    : QObject(parent),
+      mPriv(new Private(this, QDBusConnection::sessionBus(), serviceName, objectPath))
 {
 }
 
-Connection::Connection(const QDBusConnection& connection, const QString& serviceName, const QString& objectPath, QObject* parent)
-    : mPriv(new Private(connection, serviceName, objectPath, parent))
+Connection::Connection(const QDBusConnection& connection,
+                       const QString& serviceName,
+                       const QString& objectPath,
+                       QObject* parent)
+    : QObject(parent),
+      mPriv(new Private(this, connection, serviceName, objectPath))
 {
 }
 
@@ -60,6 +92,74 @@ ConnectionInterface& Connection::interface()
 const ConnectionInterface& Connection::interface() const
 {
     return mPriv->interface;
+}
+
+bool Connection::ready() const
+{
+    return mPriv->ready;
+}
+
+long Connection::status() const
+{
+    return mPriv->status;
+}
+
+uint Connection::statusReason() const
+{
+    return mPriv->statusReason;
+}
+
+QStringList Connection::interfaces() const
+{
+    return mPriv->interfaces;
+}
+
+void Connection::statusChanged(uint status, uint reason)
+{
+    if (mPriv->status == -1) {
+        // We've got a StatusChanged before the initial GetStatus reply, ignore it
+        return;
+    }
+
+    mPriv->status = status;
+    mPriv->statusReason = reason;
+
+    emit statusChanged(status, reason);
+
+    if (status == ConnectionStatusConnected) {
+        QDBusPendingCallWatcher* watcher =
+            new QDBusPendingCallWatcher(interface().getInterfaces(), this);
+        connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
+    }
+}
+
+void Connection::gotStatus(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<uint, uint> reply = *watcher;
+
+    if (!reply.isError()) {
+        // Avoid early return in statusChanged()
+        mPriv->status = reply.argumentAt<0>();
+        statusChanged(reply.argumentAt<0>(), reply.argumentAt<1>());
+    } else {
+        // TODO error reporting
+    }
+}
+
+void Connection::gotInterfaces(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QStringList> reply = *watcher;
+
+    if (!reply.isError())
+        mPriv->interfaces = reply.value();
+        // TODO error reporting
+
+    // TODO introspect interfaces
+
+    mPriv->ready = true;
+    emit ready();
 }
 
 }
