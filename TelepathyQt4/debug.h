@@ -22,8 +22,6 @@
 #ifndef _TelepathyQt4_Debug_HEADER_GUARD_
 #define _TelepathyQt4_Debug_HEADER_GUARD_
 
-#include <config.h>
-
 /**
  * \defgroup debug Common debug support
  *

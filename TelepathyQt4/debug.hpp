@@ -24,6 +24,8 @@
 
 #include <QDebug>
 
+#include <config.h>
+
 namespace Telepathy
 {
 #ifdef ENABLE_DEBUG
