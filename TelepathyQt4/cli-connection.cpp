@@ -19,14 +19,15 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/Client/Connection>
+#include "cli-connection.h"
+
 #include <TelepathyQt4/_gen/cli-connection-body.hpp>
 #include <TelepathyQt4/_gen/cli-connection.moc.hpp>
 
 #include <QQueue>
 #include <QtGlobal>
 
-#include <TelepathyQt4/Client/DBus>
+#include "cli-dbus.h"
 #include "debug.hpp"
 
 namespace Telepathy
