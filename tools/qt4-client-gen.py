@@ -387,7 +387,7 @@ Q_SIGNALS:\
         self.h("""\
      */
     void %s(%s);
-""" % (qt4name, ', '.join(['%s %s' % (binding.inarg, name) for binding, name in zip(argbindings, argnames)])))
+""" % (name, ', '.join(['%s %s' % (binding.inarg, name) for binding, name in zip(argbindings, argnames)])))
 
     def h(self, str):
         self.hs.append(str)
