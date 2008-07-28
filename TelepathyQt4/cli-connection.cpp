@@ -23,6 +23,7 @@
 
 #include <TelepathyQt4/_gen/cli-connection-body.hpp>
 #include <TelepathyQt4/_gen/cli-connection.moc.hpp>
+#include <TelepathyQt4/cli-connection.moc.hpp>
 
 #include <QQueue>
 #include <QtGlobal>
