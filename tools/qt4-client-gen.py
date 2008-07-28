@@ -254,9 +254,8 @@ Q_SIGNALS:\
 
     def do_prop(self, prop):
         name = prop.getAttribute('name')
-        qt4name = get_qt4_name(prop)
         access = prop.getAttribute('access')
-        gettername = qt4name
+        gettername = name
         settername = None
 
         sig = prop.getAttribute('type')
@@ -264,14 +263,14 @@ Q_SIGNALS:\
         binding = binding_from_usage(sig, tptype, self.custom_lists, (sig, tptype) in self.externals, self.typesnamespace)
 
         if 'write' in access:
-            settername = 'set' + qt4name[0].upper() + qt4name[1:]
+            settername = 'set' + name
 
         self.h("""
     /**
      * Represents property "%(name)s" on the remote object.
 %(docstring)s\
      */
-    Q_PROPERTY(%(val)s %(qt4name)s READ %(gettername)s%(maybesettername)s)
+    Q_PROPERTY(%(val)s %(name)s READ %(gettername)s%(maybesettername)s)
 
     /**
      * Getter for the remote object property "%(name)s".
@@ -286,7 +285,7 @@ Q_SIGNALS:\
 """ % {'name' : name,
        'docstring' : format_docstring(prop, '     * '),
        'val' : binding.val,
-       'qt4name' : qt4name,
+       'name' : name,
        'gettername' : gettername,
        'maybesettername' : settername and (' WRITE ' + settername) or '',
        'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, name)) or binding.val + '()'})
@@ -306,7 +305,6 @@ Q_SIGNALS:\
 
     def do_method(self, method):
         name = method.getAttribute('name')
-        qt4name = get_qt4_name(method)
         args = get_by_path(method, 'arg')
         argnames, argdocstrings, argbindings = extract_arg_or_member_info(args, self.custom_lists, self.externals, self.typesnamespace, '     *     ')
 
@@ -346,10 +344,10 @@ Q_SIGNALS:\
 
         self.h("""\
      */
-    inline QDBusPendingReply<%(rettypes)s> %(qt4name)s(%(params)s)
+    inline QDBusPendingReply<%(rettypes)s> %(name)s(%(params)s)
     {\
 """ % {'rettypes' : rettypes,
-       'qt4name' : qt4name,
+       'name' : name,
        'params' : params})
 
         if inargs:
@@ -367,7 +365,6 @@ Q_SIGNALS:\
 
     def do_signal(self, signal):
         name = signal.getAttribute('name')
-        qt4name = get_qt4_name(signal)
         argnames, argdocstrings, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'), self.custom_lists, self.externals, self.typesnamespace, '     *     ')
 
         self.h("""
