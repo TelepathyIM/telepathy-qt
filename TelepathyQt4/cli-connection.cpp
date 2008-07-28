@@ -39,7 +39,6 @@ namespace Client
 struct Connection::Private
 {
     Connection& parent;
-    ConnectionInterface interface;
     ConnectionInterfaceAliasingInterface aliasing;
     ConnectionInterfacePresenceInterface presence;
     ConnectionInterfaceSimplePresenceInterface simplePresence;
@@ -54,29 +53,25 @@ struct Connection::Private
     StatusSpecMap presenceStatuses;
     SimpleStatusSpecMap simplePresenceStatuses;
 
-    Private(Connection &parent,
-            const QDBusConnection& connection,
-            const QString& serviceName,
-            const QString& objectPath)
+    Private(Connection &parent)
         : parent(parent),
-          interface(connection, serviceName, objectPath, &parent),
-          aliasing(interface),
-          presence(interface),
-          simplePresence(interface),
-          properties(interface)
+          aliasing(parent),
+          presence(parent),
+          simplePresence(parent),
+          properties(parent)
     {
         ready = false;
         status = -1;
         statusReason = ConnectionStatusReasonNoneSpecified;
 
-        parent.connect(&interface,
-                       SIGNAL(statusChanged(uint, uint)),
-                       SLOT(statusChanged(uint, uint)));
+        parent.connect(&parent,
+                       SIGNAL(StatusChanged(uint, uint)),
+                       SLOT(onStatusChanged(uint, uint)));
 
         debug() << "Calling GetStatus()";
 
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(interface.getStatus(), &parent);
+            new QDBusPendingCallWatcher(parent.GetStatus(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotStatus(QDBusPendingCallWatcher*)));
@@ -86,7 +81,7 @@ struct Connection::Private
     {
         debug() << "Calling GetAliasFlags()";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(aliasing.getAliasFlags(), &parent);
+            new QDBusPendingCallWatcher(aliasing.GetAliasFlags(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotAliasFlags(QDBusPendingCallWatcher*)));
@@ -96,7 +91,7 @@ struct Connection::Private
     {
         debug() << "Calling GetStatuses() (legacy)";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(presence.getStatuses(), &parent);
+            new QDBusPendingCallWatcher(presence.GetStatuses(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotStatuses(QDBusPendingCallWatcher*)));
@@ -106,7 +101,7 @@ struct Connection::Private
     {
         debug() << "Getting available SimplePresence statuses";
         QDBusPendingCall call =
-            properties.get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
+            properties.Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
                            "Statuses");
         QDBusPendingCallWatcher* watcher =
             new QDBusPendingCallWatcher(call, &parent);
@@ -120,7 +115,7 @@ struct Connection::Private
         if (introspectQueue.isEmpty()) {
             debug() << "Connection ready";
             ready = true;
-            emit parent.ready();
+            emit parent.nowReady();
         } else {
             (this->*introspectQueue.dequeue())();
         }
@@ -130,8 +125,8 @@ struct Connection::Private
 Connection::Connection(const QString& serviceName,
                        const QString& objectPath,
                        QObject* parent)
-    : QObject(parent),
-      mPriv(new Private(*this, QDBusConnection::sessionBus(), serviceName, objectPath))
+    : ConnectionInterface(serviceName, objectPath, parent),
+      mPriv(new Private(*this))
 {
 }
 
@@ -139,24 +134,14 @@ Connection::Connection(const QDBusConnection& connection,
                        const QString& serviceName,
                        const QString& objectPath,
                        QObject* parent)
-    : QObject(parent),
-      mPriv(new Private(*this, connection, serviceName, objectPath))
+    : ConnectionInterface(connection, serviceName, objectPath, parent),
+      mPriv(new Private(*this))
 {
 }
 
 Connection::~Connection()
 {
     delete mPriv;
-}
-
-ConnectionInterface& Connection::interface()
-{
-    return mPriv->interface;
-}
-
-const ConnectionInterface& Connection::interface() const
-{
-    return mPriv->interface;
 }
 
 bool Connection::ready() const
@@ -179,6 +164,8 @@ QStringList Connection::interfaces() const
     return mPriv->interfaces;
 }
 
+#if 0
+
 ConnectionAliasFlags Connection::aliasFlags() const
 {
     return mPriv->aliasFlags;
@@ -189,6 +176,7 @@ StatusSpecMap Connection::presenceStatuses() const
     return mPriv->presenceStatuses;
 }
 
+
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
     if (!ready() && mPriv->simplePresenceStatuses.isEmpty()) {
@@ -198,8 +186,9 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 
     return mPriv->simplePresenceStatuses;
 }
+#endif
 
-void Connection::statusChanged(uint status, uint reason)
+void Connection::onStatusChanged(uint status, uint reason)
 {
     if (mPriv->status == -1) {
         // We've got a StatusChanged before the initial GetStatus reply, ignore it
@@ -211,12 +200,10 @@ void Connection::statusChanged(uint status, uint reason)
     mPriv->status = status;
     mPriv->statusReason = reason;
 
-    emit statusChanged(status, reason);
-
     if (status == ConnectionStatusConnected) {
         debug() << "Calling GetInterfaces()";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(interface().getInterfaces(), this);
+            new QDBusPendingCallWatcher(GetInterfaces(), this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
@@ -225,13 +212,13 @@ void Connection::statusChanged(uint status, uint reason)
 
 void Connection::gotStatus(QDBusPendingCallWatcher* watcher)
 {
-    QDBusPendingReply<uint, uint> reply = *watcher;
+    QDBusPendingReply<uint> reply = *watcher;
 
     if (!reply.isError()) {
         debug() << "Got reply to initial GetStatus()";
-        // Avoid early return in statusChanged()
+        // Avoid early return in onStatusChanged()
         mPriv->status = reply.argumentAt<0>();
-        statusChanged(reply.argumentAt<0>(), reply.argumentAt<1>());
+        onStatusChanged(reply.argumentAt<0>(), ConnectionStatusReasonNoneSpecified);
     } else {
         warning().nospace() << "GetStatus() failed with " << reply.error().name() << ": " << reply.error().message();
     }

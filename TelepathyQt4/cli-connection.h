@@ -59,13 +59,15 @@ namespace Client
  *
  * High-level proxy object for accessing remote %Telepathy %Connection objects.
  *
- * It adds the following features compared to using ConnectionInterface alone:
+ * It adds the following features compared to using ConnectionInterface
+ * directly:
  * <ul>
  *  <li>%Connection status tracking</li>
- *  <li>Calling GetInterfaces automatically</li>
+ *  <li>Calling #GetInterfaces automatically</li>
+ *  <li>Calling #GetAliasFlags automatically</li>
  * </ul>
  */
-class Connection : public QObject
+class Connection : public ConnectionInterface
 {
     Q_OBJECT
 public:
@@ -97,25 +99,6 @@ public:
      * Class destructor.
      */
     ~Connection();
-
-    /**
-     * Returns a reference to the underlying ConnectionInterface instance for
-     * easy direct access to the D-Bus properties, methods and signals on the
-     * remote object.
-     *
-     * Note that this class provides a more convenient way to access some
-     * functionality than using the interface class directly.
-     *
-     * \return A reference to the underlying ConnectionInterface instance.
-     *
-     * \{
-     */
-    ConnectionInterface& interface();
-    const ConnectionInterface& interface() const;
-
-    /**
-     * \}
-     */
 
     /**
      * Initially <code>false</code>, changes to <code>true</code> when the
@@ -177,6 +160,7 @@ public:
      */
     QStringList interfaces() const;
 
+#if 0
     /**
      * Bitwise OR of flags detailing the behaviour of aliases on the
      * connection.
@@ -231,16 +215,16 @@ public:
      * \return Dictionary mapping string identifiers to structs for each status.
      */
     SimpleStatusSpecMap simplePresenceStatuses() const;
-
+#endif
 Q_SIGNALS:
     /**
      * Emitted when the value of the property #ready changes to
      * <code>true</code>.
      */
-    void ready();
+    void nowReady();
 
 private Q_SLOTS:
-    void statusChanged(uint, uint);
+    void onStatusChanged(uint, uint);
     void gotStatus(QDBusPendingCallWatcher* watcher);
     void gotInterfaces(QDBusPendingCallWatcher* watcher);
     void gotAliasFlags(QDBusPendingCallWatcher* watcher);
