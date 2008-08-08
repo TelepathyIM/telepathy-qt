@@ -38,6 +38,8 @@
 namespace Telepathy
 {
 /**
+ * \ingroup debug
+ *
  * Enable or disable normal debug output from the library. If the library is not
  * compiled with debug support enabled, this has no effect; no output is
  * produced in any case.
@@ -49,6 +51,8 @@ namespace Telepathy
 void enableDebug(bool enable);
 
 /**
+ * \ingroup debug
+ *
  * Enable or disable warning output from the library. If the library is not
  * compiled with debug support enabled, this has no effect; no output is
  * produced in any case.
