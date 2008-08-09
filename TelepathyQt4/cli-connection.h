@@ -63,14 +63,76 @@ namespace Client
  * directly:
  * <ul>
  *  <li>%Connection status tracking</li>
- *  <li>Calling #GetInterfaces automatically</li>
- *  <li>Calling #GetAliasFlags automatically</li>
+ *  <li>Calling GetInterfaces() automatically</li>
+ *  <li>Calling GetAliasFlags() automatically</li>
+ *  <li>Calling GetStatuses() automatically</li>
+ *  <li>Getting the SimplePresence Statuses property automatically</li>
  * </ul>
+ *
+ * The remote object state accessor functions on this object (status(),
+ * statusReason(), aliasFlags(), presenceStatuses(), simplePresenceStatuses())
+ * don't make any DBus calls; instead, they return values cached from a previous
+ * introspection run.
  */
 class Connection : public ConnectionInterface
 {
     Q_OBJECT
+    Q_ENUMS(Readiness);
+
 public:
+    /**
+     * Describes readiness of the Connection for usage. The readiness depends
+     * on the state of the remote object. In suitable states, an asynchronous
+     * introspection process is started, and the Connection becomes more ready
+     * when that process is completed.
+     */
+    enum Readiness {
+        /**
+         * The object has just been created and introspection is still in
+         * progress. No functionality is available.
+         *
+         * The readiness can change to any other state depending on the result
+         * of the initial state query to the remote object.
+         */
+        ReadinessJustCreated,
+
+        /**
+         * The remote object is in the Disconnected state and introspection
+         * relevant to that state has been completed.
+         *
+         * This state is useful for being able to set your presence status
+         * (through the SimplePresence interface) before connecting. Most other
+         * functionality is unavailable, though.
+         *
+         * The readiness can change to ReadinessConnecting and ReadinessDead.
+         */
+        ReadinessNotYetConnected,
+
+        /**
+         * The remote object is in the Connecting state. Most functionality is
+         * unavailable.
+         *
+         * The readiness can change to ReadinessFull and ReadinessDead.
+         */
+        ReadinessConnecting,
+
+        /**
+         * The connection is in the Connected state and all introspection
+         * has been completed. Most functionality is available.
+         *
+         * The readiness can change to ReadinessDead.
+         */
+        ReadinessFull,
+
+        /**
+         * The remote object has gone into a state where it can no longer be
+         * used. No functionality is available.
+         *
+         * No further readiness changes are possible.
+         */
+        ReadinessDead
+    };
+
     /**
      * Creates a Connection associated with the given object on the session bus.
      *
@@ -101,127 +163,83 @@ public:
     ~Connection();
 
     /**
-     * Initially <code>false</code>, changes to <code>true</code> when the
-     * connection has gone to the Connected status, introspection is finished
-     * and it's ready for use.
+     * Returns the current readiness of the Connection.
      *
-     * By the time this property becomes true, the property #interfaces will
-     * have been populated.
+     * \return The readiness, as defined in #Readiness.
      */
-    Q_PROPERTY(bool ready READ ready)
+    Readiness readiness() const;
 
     /**
-     * Getter for the property #ready.
+     * Returns the connection's status. The returned status is undefined if the
+     * object has readiness #ReadinessJustCreated.
      *
-     * \return If the object is ready for use.
+     * \return The status, as defined in #ConnectionStatus.
      */
-    bool ready() const;
+    uint status() const;
 
     /**
-     * The connection's status (one of the values of #ConnectionStatus), or -1
-     * if we don't know it yet.
+     * Returns the reason for the connection's status. The returned reason is
+     * undefined if the object has readiness #ReadinessJustCreated.
      *
-     * Connect to the signal <code>statusChanged</code> on the underlying
-     * #interface to watch for changes.
-     */
-    Q_PROPERTY(long status READ status)
-
-    /**
-     * Getter for the property #status.
-     *
-     * \return The status of the connection.
-     */
-    long status() const;
-
-    /**
-     * The reason why #status changed to its current value, or
-     * #ConnectionStatusReasonNoneSpecified if the status is still unknown.
-     */
-    Q_PROPERTY(uint statusReason READ statusReason)
-
-    /**
-     * Getter for the property #statusReason.
-     *
-     * \return The reason for the current status.
+     * \return The reason, as defined in #ConnectionStatusReason.
      */
     uint statusReason() const;
 
     /**
-     * List of interfaces implemented by the connection.
+     * Returns a list of optional interfaces supported by this object. The
+     * contents of the list is undefined unless the Connection has readiness
+     * #ReadinessNotYetConnected or #ReadinessFull. The returned value stays
+     * constant for the entire time the connection spends in each of these
+     * states; however interfaces might be added to the supported set at the
+     * time #ReadinessFull is reached.
      *
-     * The value is undefined until the property #ready is <code>true</code>.
-     */
-    Q_PROPERTY(QStringList interfaces READ interfaces)
-
-    /**
-     * Getter for the property #interfaces.
-     *
-     * \return D-Bus interface names of the implemented interfaces.
+     * \return Names of the supported interfaces.
      */
     QStringList interfaces() const;
 
-#if 0
     /**
-     * Bitwise OR of flags detailing the behaviour of aliases on the
-     * connection.
+     * Returns the bitwise OR of flags detailing the behavior of the Aliasing
+     * interface on the remote object. The value is undefined if the connection
+     * doesn't have readiness #ReadinessFull or if the remote object doesn't
+     * implement the Aliasing interface.
      *
-     * The value is undefined if the value of the property #ready is
-     * <code>false</code> or the connection doesn't support the Aliasing
-     * interface.
+     * \return Bitfield of flags, as specified in #ConnectionAliasFlag.
      */
-    Q_PROPERTY(Telepathy::ConnectionAliasFlags aliasFlags READ aliasFlags)
+    uint aliasFlags() const;
 
     /**
-     * Getter for the property #aliasFlags.
+     * Returns a dictionary of presence statuses valid for use with the legacy
+     * Telepathy Presence interface on the remote object. The value is undefined
+     * unless the Connection has readiness #ReadinessFull or if the remote
+     * object doesn't implement the legacy Presence interface.
      *
-     * \return Bitfield of the alias flags, as specified in
-     * #ConnectionAliasFlag.
-     */
-    ConnectionAliasFlags aliasFlags() const;
-
-    /**
-     * Dictionary of the valid presence statuses for the connection for use with
-     * the legacy Telepathy Presence interface.
-     *
-     * The value is undefined if the value of the property #ready is
-     * <code>false</code> or the connection doesn't support the Presence
-     * interface.
-     */
-    Q_PROPERTY(Telepathy::StatusSpecMap presenceStatuses READ presenceStatuses)
-
-    /**
-     * Getter for the property #presenceStatuses.
-     *
-     * \return Dictionary mapping string identifiers to structs for each status.
+     * \return Dictionary from string identifiers to structs for each valid status.
      */
     StatusSpecMap presenceStatuses() const;
 
     /**
-     * Dictionary of the valid presence statuses for the connection for use with
-     * the new simplified Telepathy SimplePresence interface.
-     *
-     * Getting the value of this property before the connection is ready (as
-     * signified by the property #ready) may cause a synchronous call to the
-     * remote service to be made.
-     *
-     * The value is undefined if the connection doesn't support the
+     * Returns a dictionary of presence statuses valid for use with the new(er)
+     * Telepathy SimplePresence interface on the remote object. The value is
+     * undefined unless the Connection has readiness #ReadinessNotYetConnected
+     * or #ReadinessFull, or if the remote object doesn't implement the
      * SimplePresence interface.
-     */
-    Q_PROPERTY(Telepathy::SimpleStatusSpecMap simplePresenceStatuses READ simplePresenceStatuses)
-
-    /**
-     * Getter for the property #simplePresenceStatuses.
      *
-     * \return Dictionary mapping string identifiers to structs for each status.
+     * The value will stay fixed for the whole time the connection stays with
+     * readiness #ReadinessNotYetConnected, but may change arbitrarily at the
+     * time #ReadinessFull is reached, staying fixed for the remaining lifetime
+     * of the Connection.
+     *
+     * \return Dictionary from string identifiers to structs for each valid status.
      */
     SimpleStatusSpecMap simplePresenceStatuses() const;
-#endif
+
 Q_SIGNALS:
     /**
-     * Emitted when the value of the property #ready changes to
-     * <code>true</code>.
+     * Emitted whenever the readiness of the Connection changes.
+     *
+     * \param newReadiness The new readiness, as defined in #Readiness.
      */
-    void nowReady();
+    void readinessChanged(Telepathy::Client::Connection::Readiness newReadiness);
 
 private Q_SLOTS:
     void onStatusChanged(uint, uint);

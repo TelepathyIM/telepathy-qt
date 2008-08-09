@@ -38,18 +38,25 @@ namespace Client
 
 struct Connection::Private
 {
+    // Public object
     Connection& parent;
+
+    // Optional interface proxies
     ConnectionInterfaceAliasingInterface aliasing;
     ConnectionInterfacePresenceInterface presence;
     ConnectionInterfaceSimplePresenceInterface simplePresence;
     DBus::PropertiesInterface properties;
+
+    // Introspection
+    bool initialIntrospection;
+    Readiness readiness;
+    QStringList interfaces;
     QQueue<void (Private::*)()> introspectQueue;
 
-    bool ready;
-    long status;
+    // Introspected properties
+    uint status;
     uint statusReason;
-    QStringList interfaces;
-    ConnectionAliasFlags aliasFlags;
+    uint aliasFlags;
     StatusSpecMap presenceStatuses;
     SimpleStatusSpecMap simplePresenceStatuses;
 
@@ -60,9 +67,13 @@ struct Connection::Private
           simplePresence(parent),
           properties(parent)
     {
-        ready = false;
-        status = -1;
+        initialIntrospection = false;
+        readiness = ReadinessJustCreated;
+        status = ConnectionStatusDisconnected;
         statusReason = ConnectionStatusReasonNoneSpecified;
+        aliasFlags = 0;
+
+        debug() << "Connecting to StatusChanged()";
 
         parent.connect(&parent,
                        SIGNAL(StatusChanged(uint, uint)),
@@ -79,6 +90,12 @@ struct Connection::Private
 
     void introspectAliasing()
     {
+        // The Aliasing interface is not usable before the connection is established
+        if (initialIntrospection) {
+            continueIntrospection();
+            return;
+        }
+
         debug() << "Calling GetAliasFlags()";
         QDBusPendingCallWatcher* watcher =
             new QDBusPendingCallWatcher(aliasing.GetAliasFlags(), &parent);
@@ -87,8 +104,27 @@ struct Connection::Private
                        SLOT(gotAliasFlags(QDBusPendingCallWatcher*)));
     }
 
+    void introspectMain()
+    {
+        // Introspecting the main interface is currently just calling
+        // GetInterfaces(), but it might include other stuff in the future if we
+        // gain GetAll-able properties on the connection
+        debug() << "Calling GetInterfaces()";
+        QDBusPendingCallWatcher* watcher =
+            new QDBusPendingCallWatcher(parent.GetInterfaces(), &parent);
+        parent.connect(watcher,
+                       SIGNAL(finished(QDBusPendingCallWatcher*)),
+                       SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
+    }
+
     void introspectPresence()
     {
+        // The Presence interface is not usable before the connection is established
+        if (initialIntrospection) {
+            continueIntrospection();
+            return;
+        }
+
         debug() << "Calling GetStatuses() (legacy)";
         QDBusPendingCallWatcher* watcher =
             new QDBusPendingCallWatcher(presence.GetStatuses(), &parent);
@@ -113,12 +149,45 @@ struct Connection::Private
     void continueIntrospection()
     {
         if (introspectQueue.isEmpty()) {
-            debug() << "Connection ready";
-            ready = true;
-            emit parent.nowReady();
+            if (initialIntrospection) {
+                initialIntrospection = false;
+                if (readiness < ReadinessNotYetConnected)
+                    changeReadiness(ReadinessNotYetConnected);
+            } else {
+                if (readiness != ReadinessDead)
+                    changeReadiness(ReadinessFull);
+            }
         } else {
             (this->*introspectQueue.dequeue())();
         }
+    }
+
+    void changeReadiness(Readiness newReadiness)
+    {
+        Q_ASSERT(newReadiness != readiness);
+
+        switch (readiness) {
+            case ReadinessJustCreated:
+                break;
+            case ReadinessNotYetConnected:
+                Q_ASSERT(newReadiness == ReadinessConnecting
+                        || newReadiness == ReadinessDead);
+                break;
+            case ReadinessConnecting:
+                Q_ASSERT(newReadiness == ReadinessFull
+                        || newReadiness == ReadinessDead);
+                break;
+            case ReadinessFull:
+                Q_ASSERT(newReadiness == ReadinessDead);
+                break;
+            case ReadinessDead:
+                Q_ASSERT(false);
+                break;
+        }
+
+        debug() << "Readiness changed from" << readiness << "to" << newReadiness;
+        readiness = newReadiness;
+        emit parent.readinessChanged(newReadiness);
     }
 };
 
@@ -144,12 +213,12 @@ Connection::~Connection()
     delete mPriv;
 }
 
-bool Connection::ready() const
+Connection::Readiness Connection::readiness() const
 {
-    return mPriv->ready;
+    return mPriv->readiness;
 }
 
-long Connection::status() const
+uint Connection::status() const
 {
     return mPriv->status;
 }
@@ -164,9 +233,7 @@ QStringList Connection::interfaces() const
     return mPriv->interfaces;
 }
 
-#if 0
-
-ConnectionAliasFlags Connection::aliasFlags() const
+uint Connection::aliasFlags() const
 {
     return mPriv->aliasFlags;
 }
@@ -176,37 +243,42 @@ StatusSpecMap Connection::presenceStatuses() const
     return mPriv->presenceStatuses;
 }
 
-
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
-    if (!ready() && mPriv->simplePresenceStatuses.isEmpty()) {
-        debug() << "Getting the simple presence statuses available before connecting";
-        mPriv->simplePresenceStatuses = mPriv->simplePresence.statuses();
-    }
-
     return mPriv->simplePresenceStatuses;
 }
-#endif
 
 void Connection::onStatusChanged(uint status, uint reason)
 {
-    if (mPriv->status == -1) {
-        // We've got a StatusChanged before the initial GetStatus reply, ignore it
-        return;
-    }
-
-    debug().nospace() << "New status (" << status << ", " << reason << ')';
+    debug() << "Status changed from" << mPriv->status << "to" << status << "because of" << reason;
 
     mPriv->status = status;
     mPriv->statusReason = reason;
 
-    if (status == ConnectionStatusConnected) {
-        debug() << "Calling GetInterfaces()";
-        QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(GetInterfaces(), this);
-        connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
+    switch (status) {
+        case ConnectionStatusConnected:
+            debug() << "Performing introspection for the Connected status";
+            mPriv->introspectQueue.enqueue(&Private::introspectMain);
+            mPriv->continueIntrospection();
+            break;
+
+        case ConnectionStatusConnecting:
+            if (mPriv->readiness < ReadinessConnecting)
+                mPriv->changeReadiness(ReadinessConnecting);
+            else
+                warning() << "Got unexpected status change to Connecting";
+            break;
+
+        case ConnectionStatusDisconnected:
+            if (mPriv->readiness != ReadinessDead)
+                mPriv->changeReadiness(ReadinessDead);
+            else
+                warning() << "Got unexpected status change to Disconnected";
+            break;
+
+        default:
+            warning() << "Unknown connection status" << status;
+            break;
     }
 }
 
@@ -214,14 +286,40 @@ void Connection::gotStatus(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<uint> reply = *watcher;
 
-    if (!reply.isError()) {
-        debug() << "Got reply to initial GetStatus()";
-        // Avoid early return in onStatusChanged()
-        mPriv->status = reply.argumentAt<0>();
-        onStatusChanged(reply.argumentAt<0>(), ConnectionStatusReasonNoneSpecified);
-    } else {
+    if (reply.isError()) {
         warning().nospace() << "GetStatus() failed with " << reply.error().name() << ": " << reply.error().message();
+        mPriv->changeReadiness(ReadinessDead);
+        return;
     }
+
+    uint status = reply.value();
+
+    debug() << "Got connection status" << status;
+    mPriv->status = status;
+
+    // Don't do any introspection yet if the connection is in the Connecting
+    // state; the StatusChanged handler will take care of doing that, if the
+    // connection ever gets to the Connected state.
+    if (status == ConnectionStatusConnecting) {
+        debug() << "Not introspecting yet because the connection is currently Connecting";
+        mPriv->changeReadiness(ReadinessConnecting);
+        return;
+    }
+
+    if (status == ConnectionStatusDisconnected) {
+        debug() << "Performing introspection for the Disconnected status";
+        mPriv->initialIntrospection = true;
+    } else {
+        if (status != ConnectionStatusConnected) {
+            warning() << "Not performing introspection for unknown status" << status;
+            return;
+        } else {
+            debug() << "Performing introspection for the Connected status";
+        }
+    }
+
+    mPriv->introspectQueue.enqueue(&Private::introspectMain);
+    mPriv->continueIntrospection();
 }
 
 void Connection::gotInterfaces(QDBusPendingCallWatcher* watcher)
@@ -230,10 +328,9 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher* watcher)
 
     if (!reply.isError()) {
         mPriv->interfaces = reply.value();
-        debug() << "Got reply to initial GetInterfaces():";
-        debug() << mPriv->interfaces;
+        debug() << "Got reply to GetInterfaces():" << mPriv->interfaces;
     } else {
-        warning().nospace() << "GetInterfaces() failed with " << reply.error().name() << ": " << reply.error().message() << " - assuming no interfaces";
+        warning().nospace() << "GetInterfaces() failed with " << reply.error().name() << ": " << reply.error().message() << " - assuming no new interfaces";
     }
 
     for (QStringList::const_iterator i  = mPriv->interfaces.constBegin();
@@ -261,7 +358,7 @@ void Connection::gotAliasFlags(QDBusPendingCallWatcher* watcher)
 
     if (!reply.isError()) {
         mPriv->aliasFlags = static_cast<ConnectionAliasFlag>(reply.value());
-        debug().nospace() << "Got initial alias flags 0x" << hex << mPriv->aliasFlags;
+        debug().nospace() << "Got alias flags 0x" << hex << mPriv->aliasFlags;
     } else {
         warning().nospace() << "GetAliasFlags() failed with " << reply.error().name() << ": " << reply.error().message();
     }
@@ -275,7 +372,7 @@ void Connection::gotStatuses(QDBusPendingCallWatcher* watcher)
 
     if (!reply.isError()) {
         mPriv->presenceStatuses = reply.value();
-        debug() << "Got initial legacy presence statuses";
+        debug() << "Got" << mPriv->presenceStatuses.size() << "legacy presence statuses";
     } else {
         warning().nospace() << "GetStatuses() failed with " << reply.error().name() << ": " << reply.error().message();
     }
@@ -289,9 +386,9 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher* watcher)
 
     if (!reply.isError()) {
         mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
-        debug() << "Got initial simple presence statuses";
+        debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
     } else {
-        warning().nospace() << "Getting initial simple presence statuses failed with " << reply.error().name() << ": " << reply.error().message();
+        warning().nospace() << "Getting simple presence statuses failed with " << reply.error().name() << ": " << reply.error().message();
     }
 
     mPriv->continueIntrospection();
