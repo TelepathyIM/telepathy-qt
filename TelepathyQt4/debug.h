@@ -27,7 +27,7 @@
  *
  * TelepathyQt4 has an internal mechanism for displaying debugging output. It
  * uses the Qt4 debugging subsystem, so if you want to redirect the messages,
- * use qInstallMsgHandler() from <QtGlobal>.
+ * use qInstallMsgHandler() from &lt;QtGlobal&gt;.
  *
  * Debugging output is divided into two categories: normal debug output and
  * warning messages. Normal debug output results in the normal operation of the
