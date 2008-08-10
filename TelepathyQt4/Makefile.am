@@ -208,5 +208,5 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--typesinclude='TelepathyQt4/Types' \
 		$$mainiface
 
-%.moc.hpp: %.h
+%.moc.hpp: %.h _gen/constants.h _gen/types.h
 	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
