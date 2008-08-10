@@ -36,6 +36,7 @@ libtelepathy_qt4_la_SOURCES = \
     cli-media-session-handler.cpp \
     cli-media-stream-handler.cpp \
     cli-properties.cpp \
+    debug.cpp \
     debug.hpp \
     types.cpp \
     header-compile-test.cpp
@@ -59,6 +60,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
 
 tpqt4include_HEADERS = \
     Constants \
+    Debug \
     Types \
     cli-channel.h \
     cli-connection.h \
@@ -68,6 +70,7 @@ tpqt4include_HEADERS = \
     cli-media-stream-handler.h \
     cli-properties.h \
     constants.h \
+    debug.h \
     types.h
 
 tpqt4clientinclude_HEADERS = \

@@ -19,70 +19,70 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_debug_HEADER_GUARD_
-#define _TelepathyQt4_debug_HEADER_GUARD_
+#include "debug.h"
+#include "debug.hpp"
 
-#include <QDebug>
+#include <QIODevice>
 
 namespace Telepathy
 {
 #ifdef ENABLE_DEBUG
 
-QDebug enabledDebug();
-QDebug enabledWarning();
-
-inline QDebug debug()
+namespace
 {
-    QDebug debug = enabledDebug();
-    debug.nospace() << PACKAGE_NAME " (version " PACKAGE_VERSION ") DEBUG:";
-    return debug.space();
+struct DiscardDevice : public QIODevice
+{
+    qint64 readData(char* data, qint64 maxSize)
+    {
+        return 0;
+    }
+
+    qint64 writeData(const char* data, qint64 maxsize)
+    {
+        return maxsize;
+    }
+} discard;
+
+bool debugEnabled = false;
+bool warningsEnabled = true;
 }
 
-inline QDebug warning()
+void enableDebug(bool enable)
 {
-    QDebug warning = enabledWarning();
-    warning.nospace() << PACKAGE_NAME " (version " PACKAGE_VERSION ") WARNING:";
-    return warning.space();
+    debugEnabled = enable;
+}
+
+void enableWarnings(bool enable)
+{
+    warningsEnabled = enable;
+}
+
+QDebug enabledDebug()
+{
+    if (debugEnabled)
+        return qDebug();
+    else
+        return QDebug(&discard);
+}
+
+QDebug enabledWarning()
+{
+    if (warningsEnabled)
+        return qWarning();
+    else
+        return QDebug(&discard);
 }
 
 #else /* #ifdef ENABLE_DEBUG */
 
-struct NoDebug
+void enableDebug(bool enable)
 {
-    template <typename T>
-    NoDebug& operator<<(const T&)
-    {
-        return *this;
-    }
-
-    NoDebug& space()
-    {
-        return *this;
-    }
-
-    NoDebug& nospace()
-    {
-        return *this;
-    }
-
-    NoDebug& maybeSpace()
-    {
-        return *this;
-    }
-};
-
-inline NoDebug debug()
-{
-    return NoDebug();
 }
 
-inline NoDebug warning()
+void enableWarnings(bool enable)
 {
-    return NoDebug();
 }
 
 #endif /* #ifdef ENABLE_DEBUG */
 
 } /* namespace Telepathy */
-
-#endif
