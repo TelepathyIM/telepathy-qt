@@ -57,8 +57,42 @@ namespace Client
 class Channel : public ChannelInterface
 {
     Q_OBJECT
+    Q_ENUMS(Readiness)
 
 public:
+    /**
+     * Describes readiness of the Channel for usage. The readiness depends on
+     * the state of the remote object. In suitable states, an asynchronous
+     * introspection process is started, and the Channel becomes more ready when
+     * that process is completed.
+     */
+    enum Readiness {
+        /**
+         * The object has just been created and introspection is still in
+         * progress. No functionality is available.
+         *
+         * The readiness can change to any other state depending on the result
+         * of the initial state query to the remote object.
+         */
+        ReadinessJustCreated,
+
+        /**
+         * The remote object is alive and all introspection has been completed.
+         * Most functionality is available.
+         *
+         * The readiness can change to ReadinessDead.
+         */
+        ReadinessFull,
+
+        /**
+         * The remote object has gone into a state where it can no longer be
+         * used. No functionality is available.
+         *
+         * No further readiness changes are possible.
+         */
+        ReadinessDead
+    };
+
     /**
      * Creates a Channel associated with the given object on the session bus.
      *
@@ -87,6 +121,35 @@ public:
      * Class destructor.
      */
     ~Channel();
+
+    /**
+     * Returns the current readiness of the Channel.
+     *
+     * \return The readiness, as defined in #Readiness.
+     */
+    Readiness readiness() const;
+
+    /**
+     * Returns a list of optional interfaces implemented by the remote object.
+     * The contents of the list are undefined unless the Channel has readiness
+     * #ReadinessFull. The returned value stays constant for the entire lifetime
+     * of the Channel after reaching full readiness.
+     *
+     * \return D-Bus names of the supported interfaces.
+     */
+    QStringList interfaces() const;
+
+Q_SIGNALS:
+    /**
+     * Emitted whenever the readiness of the Channel changes.
+     *
+     * \param newReadiness The new readiness, as defined in #Readiness.
+     */
+    void readinessChanged(Telepathy::Client::Channel::Readiness newReadiness);
+
+private Q_SLOTS:
+    void gotMainProperties(QDBusPendingCallWatcher* watcher);
+    void gotInterfaces(QDBusPendingCallWatcher* watcher);
 
 private:
     struct Private;
