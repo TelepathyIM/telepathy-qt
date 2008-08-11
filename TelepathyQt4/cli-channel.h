@@ -43,4 +43,58 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
+namespace Telepathy
+{
+namespace Client
+{
+
+/**
+ * \class Channel
+ * \ingroup clientchannel
+ *
+ * High-level proxy object for accessing remote %Telepathy %Channel objects.
+ */
+class Channel : public ChannelInterface
+{
+    Q_OBJECT
+
+public:
+    /**
+     * Creates a Channel associated with the given object on the session bus.
+     *
+     * \param serviceName Name of the service the object is on.
+     * \param objectPath  Path to the object on the service.
+     * \param parent      Passed to the parent class constructor.
+     */
+    Channel(const QString& serviceName,
+            const QString& objectPath,
+            QObject* parent = 0);
+
+    /**
+     * Creates a Channel associated with the given object on the given bus.
+     *
+     * \param connection  The bus via which the object can be reached.
+     * \param serviceName Name of the service the object is on.
+     * \param objectPath  Path to the object on the service.
+     * \param parent      Passed to the parent class constructor.
+     */
+    Channel(const QDBusConnection& connection,
+            const QString &serviceName,
+            const QString &objectPath,
+            QObject* parent = 0);
+
+    /**
+     * Class destructor.
+     */
+    ~Channel();
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+}
+}
+
 #endif

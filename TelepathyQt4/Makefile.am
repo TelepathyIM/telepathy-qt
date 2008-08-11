@@ -57,7 +57,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-media-stream-handler.moc.hpp \
     _gen/cli-properties-body.hpp \
     _gen/cli-properties.moc.hpp \
-    _gen/types-body.hpp
+    _gen/types-body.hpp \
+    cli-channel.moc.hpp
 
 tpqt4include_HEADERS = \
     Constants \

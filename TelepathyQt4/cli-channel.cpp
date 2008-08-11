@@ -19,5 +19,49 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/_gen/cli-channel-body.hpp>
-#include <TelepathyQt4/_gen/cli-channel.moc.hpp>
+#include "cli-channel.h"
+
+#include "_gen/cli-channel-body.hpp"
+#include "_gen/cli-channel.moc.hpp"
+#include "cli-channel.moc.hpp"
+
+namespace Telepathy
+{
+namespace Client
+{
+
+struct Channel::Private
+{
+    // Public object
+    Channel& parent;
+
+    Private(Channel& parent)
+        : parent(parent)
+    {
+    }
+};
+
+Channel::Channel(const QString& serviceName,
+                 const QString& objectPath,
+                 QObject* parent)
+    : ChannelInterface(serviceName, objectPath, parent),
+      mPriv(new Private(*this))
+{
+}
+
+Channel::Channel(const QDBusConnection& connection,
+                 const QString& serviceName,
+                 const QString& objectPath,
+                 QObject* parent)
+    : ChannelInterface(connection, serviceName, objectPath, parent),
+      mPriv(new Private(*this))
+{
+}
+
+Channel::~Channel()
+{
+    delete mPriv;
+}
+
+}
+}
