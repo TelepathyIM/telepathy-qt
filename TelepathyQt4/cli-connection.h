@@ -94,7 +94,7 @@ public:
          * The readiness can change to any other state depending on the result
          * of the initial state query to the remote object.
          */
-        ReadinessJustCreated,
+        ReadinessJustCreated = 0,
 
         /**
          * The remote object is in the Disconnected state and introspection
@@ -106,7 +106,7 @@ public:
          *
          * The readiness can change to ReadinessConnecting and ReadinessDead.
          */
-        ReadinessNotYetConnected,
+        ReadinessNotYetConnected = 5,
 
         /**
          * The remote object is in the Connecting state. Most functionality is
@@ -114,7 +114,7 @@ public:
          *
          * The readiness can change to ReadinessFull and ReadinessDead.
          */
-        ReadinessConnecting,
+        ReadinessConnecting = 10,
 
         /**
          * The connection is in the Connected state and all introspection
@@ -122,7 +122,7 @@ public:
          *
          * The readiness can change to ReadinessDead.
          */
-        ReadinessFull,
+        ReadinessFull = 15,
 
         /**
          * The remote object has gone into a state where it can no longer be
@@ -130,7 +130,9 @@ public:
          *
          * No further readiness changes are possible.
          */
-        ReadinessDead
+        ReadinessDead = 20,
+
+        _ReadinessInvalid = 0xffff
     };
 
     /**
