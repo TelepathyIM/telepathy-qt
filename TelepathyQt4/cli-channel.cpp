@@ -193,6 +193,21 @@ QStringList Channel::interfaces() const
     return mPriv->interfaces;
 }
 
+QString Channel::channelType() const
+{
+    return mPriv->channelType;
+}
+
+uint Channel::targetHandleType() const
+{
+    return mPriv->targetHandleType;
+}
+
+uint Channel::targetHandle() const
+{
+    return mPriv->targetHandle;
+}
+
 void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;

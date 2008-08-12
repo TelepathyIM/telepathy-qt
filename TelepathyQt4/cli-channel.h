@@ -51,6 +51,7 @@ namespace Client
 /**
  * \class Channel
  * \ingroup clientchannel
+ * \headerfile TelepathyQt4/cli-channel.h <TelepathyQt4/Client/Channel>
  *
  * High-level proxy object for accessing remote %Telepathy %Channel objects.
  */
@@ -131,13 +132,32 @@ public:
 
     /**
      * Returns a list of optional interfaces implemented by the remote object.
-     * The contents of the list are undefined unless the Channel has readiness
-     * #ReadinessFull. The returned value stays constant for the entire lifetime
-     * of the Channel after reaching full readiness.
      *
-     * \return D-Bus names of the supported interfaces.
+     * \return D-Bus names of the implemented optional interfaces.
      */
     QStringList interfaces() const;
+
+    /**
+     * Returns the type of this channel.
+     *
+     * \return D-Bus interface name for the type of the channel.
+     */
+    QString channelType() const;
+
+    /**
+     * Returns the type of the handle returned by #targetHandle().
+     *
+     * \return The type of the handle, as specified in #HandleType.
+     */
+    uint targetHandleType() const;
+
+    /**
+     * Returns the handle of the remote party with which this channel
+     * communicates.
+     *
+     * \return The handle, which is of the type #targetHandleType() indicates.
+     */
+    uint targetHandle() const;
 
 Q_SIGNALS:
     /**
