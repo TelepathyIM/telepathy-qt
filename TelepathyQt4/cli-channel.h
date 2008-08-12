@@ -87,7 +87,7 @@ public:
          * The readiness can change to any other state depending on the result
          * of the initial state query to the remote object.
          */
-        ReadinessJustCreated,
+        ReadinessJustCreated = 0,
 
         /**
          * The remote object is alive and all introspection has been completed.
@@ -95,7 +95,7 @@ public:
          *
          * The readiness can change to ReadinessDead.
          */
-        ReadinessFull,
+        ReadinessFull = 5,
 
         /**
          * The remote object has gone into a state where it can no longer be
@@ -103,7 +103,9 @@ public:
          *
          * No further readiness changes are possible.
          */
-        ReadinessDead
+        ReadinessDead = 10,
+
+        _ReadinessInvalid = 0xffff
     };
 
     /**

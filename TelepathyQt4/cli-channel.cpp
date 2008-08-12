@@ -146,6 +146,7 @@ struct Channel::Private
                 Q_ASSERT(newReadiness == ReadinessDead);
                 break;
             case ReadinessDead:
+            default:
                 Q_ASSERT(false);
                 break;
         }
