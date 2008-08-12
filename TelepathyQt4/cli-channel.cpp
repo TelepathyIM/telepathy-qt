@@ -49,6 +49,11 @@ struct Channel::Private
     QStringList interfaces;
     QQueue<void (Private::*)()> introspectQueue;
 
+    // Introspected properties
+    QString channelType;
+    uint targetHandleType;
+    uint targetHandle;
+
     Private(Channel& parent)
         : parent(parent),
           properties(parent)
@@ -70,6 +75,26 @@ struct Channel::Private
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    }
+
+    void introspectMainFallbackChannelType()
+    {
+        debug() << "Calling Channel::GetChannelType()";
+        QDBusPendingCallWatcher* watcher =
+            new QDBusPendingCallWatcher(parent.GetChannelType(), &parent);
+        parent.connect(watcher,
+                       SIGNAL(finished(QDBusPendingCallWatcher*)),
+                       SLOT(gotChannelType(QDBusPendingCallWatcher*)));
+    }
+
+    void introspectMainFallbackHandle()
+    {
+        debug() << "Calling Channel::GetHandle()";
+        QDBusPendingCallWatcher* watcher =
+            new QDBusPendingCallWatcher(parent.GetHandle(), &parent);
+        parent.connect(watcher,
+                       SIGNAL(finished(QDBusPendingCallWatcher*)),
+                       SLOT(gotHandle(QDBusPendingCallWatcher*)));
     }
 
     void introspectMainFallbackInterfaces()
@@ -121,6 +146,16 @@ struct Channel::Private
         }
 
         debug() << "Channel readiness changed from" << readiness << "to" << newReadiness;
+
+        if (newReadiness == ReadinessFull) {
+            debug() << "Channel fully ready";
+            debug() << " Channel type" << channelType;
+            debug() << " Target handle" << targetHandle;
+            debug() << " Target handle type" << targetHandleType;
+        } else {
+            debug() << "R.I.P. Channel.";
+        }
+
         readiness = newReadiness;
         emit parent.readinessChanged(newReadiness);
     }
@@ -166,21 +201,69 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
     if (!reply.isError())
         props = reply.value();
 
-    if (props.size() < 4 || !props.contains("Interfaces")) {
+    QList<bool> conditions;
+
+    conditions << (props.size() >= 4);
+    conditions << (props.contains("ChannelType") && !qdbus_cast<QString>(props["ChannelType"]).isEmpty());
+    conditions << props.contains("Interfaces");
+    conditions << props.contains("TargetHandle");
+    conditions << props.contains("TargetHandleType");
+
+    if (conditions.contains(false)) {
         if (reply.isError())
             warning().nospace() << "Properties::GetAll(Channel) failed with " << reply.error().name() << ": " << reply.error().message();
         else
             warning() << "Reply to Properties::GetAll(Channel) didn't contain the expected properties";
+
         warning() << "Assuming a pre-0.17.7-spec service, falling back to serial inspection";
 
+        mPriv->introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
+        mPriv->introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
         mPriv->introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
+
         mPriv->continueIntrospection();
         return;
     }
 
     debug() << "Got reply to Properties::GetAll(Channel)";
-    mPriv->interfaces = qdbus_cast<QStringList>(props.value("Interfaces"));
+    mPriv->channelType = qdbus_cast<QString>(props["ChannelType"]);
+    mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+    mPriv->targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
+    mPriv->targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
     mPriv->nowHaveInterfaces();
+}
+
+void Channel::gotChannelType(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QString> reply = *watcher;
+
+    if (reply.isError()) {
+        warning().nospace() << "Channel::GetChannelType() failed with " << reply.error().name() << ": " << reply.error().message() << ", Channel officially dead";
+        if (mPriv->readiness != ReadinessDead)
+            mPriv->changeReadiness(ReadinessDead);
+        return;
+    }
+
+    debug() << "Got reply to fallback Channel::GetChannelType()";
+    mPriv->channelType = reply.value();
+    mPriv->continueIntrospection();
+}
+
+void Channel::gotHandle(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<uint, uint> reply = *watcher;
+
+    if (reply.isError()) {
+        warning().nospace() << "Channel::GetHandle() failed with " << reply.error().name() << ": " << reply.error().message() << ", Channel officially dead";
+        if (mPriv->readiness != ReadinessDead)
+            mPriv->changeReadiness(ReadinessDead);
+        return;
+    }
+
+    debug() << "Got reply to fallback Channel::GetHandle()";
+    mPriv->targetHandleType = reply.argumentAt<0>();
+    mPriv->targetHandle = reply.argumentAt<1>();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotInterfaces(QDBusPendingCallWatcher* watcher)

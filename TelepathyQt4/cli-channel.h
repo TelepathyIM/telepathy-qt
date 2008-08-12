@@ -149,6 +149,8 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher* watcher);
+    void gotChannelType(QDBusPendingCallWatcher* watcher);
+    void gotHandle(QDBusPendingCallWatcher* watcher);
     void gotInterfaces(QDBusPendingCallWatcher* watcher);
 
 private:
