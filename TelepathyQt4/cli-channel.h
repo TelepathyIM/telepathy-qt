@@ -43,6 +43,10 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
+#include <QSet>
+
+#include <QDBusPendingCallWatcher>
+
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
@@ -436,6 +440,8 @@ private Q_SLOTS:
     void gotHandle(QDBusPendingCallWatcher* watcher);
     void gotInterfaces(QDBusPendingCallWatcher* watcher);
     void onClosed();
+
+    void gotGroupProperties(QDBusPendingCallWatcher* watcher);
 
 private:
     struct Private;

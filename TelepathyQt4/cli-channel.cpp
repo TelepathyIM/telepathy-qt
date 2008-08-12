@@ -53,6 +53,12 @@ struct Channel::Private
     QString channelType;
     uint targetHandleType;
     uint targetHandle;
+    uint groupFlags;
+    HandleOwnerMap groupHandleOwners;
+    QSet<uint> groupMembers;
+    // TODO local pending
+    QSet<uint> groupRemotePendingMembers;
+    uint groupSelfHandle;
 
     Private(Channel& parent)
         : parent(parent)
@@ -61,6 +67,10 @@ struct Channel::Private
 
         properties = 0;
         readiness = ReadinessJustCreated;
+        targetHandleType = 0;
+        targetHandle = 0;
+        groupFlags = 0;
+        groupSelfHandle = 0;
 
         debug() << "Connecting to Channel::Closed()";
         parent.connect(&parent,
@@ -117,6 +127,19 @@ struct Channel::Private
                        SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
     }
 
+    void introspectGroup()
+    {
+        Q_ASSERT(properties != 0);
+
+        debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
+        QDBusPendingCallWatcher* watcher =
+            new QDBusPendingCallWatcher(
+                    properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP), &parent);
+        parent.connect(watcher,
+                       SIGNAL(finished(QDBusPendingCallWatcher*)),
+                       SLOT(gotGroupProperties(QDBusPendingCallWatcher*)));
+    }
+
     void continueIntrospection()
     {
         if (introspectQueue.isEmpty()) {
@@ -134,7 +157,9 @@ struct Channel::Private
         for (QStringList::const_iterator i = interfaces.begin();
                                          i != interfaces.end();
                                          ++i) {
-            // Enqueue introspection of any optional interfaces here
+            if (*i == TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) {
+                introspectQueue.enqueue(&Private::introspectGroup);
+            }
         }
 
         continueIntrospection();
@@ -314,6 +339,46 @@ void Channel::onClosed()
 
     if (mPriv->readiness != ReadinessDead)
         mPriv->changeReadiness(ReadinessDead);
+}
+
+void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    if (!reply.isError())
+        props = reply.value();
+
+    QList<bool> conditions;
+
+    conditions << (props.size() >= 6);
+    conditions << (props.contains("GroupFlags") && (qdbus_cast<uint>(props["GroupFlags"]) & ChannelGroupFlagProperties));
+    conditions << props.contains("HandleOwners");
+    conditions << props.contains("LocalPendingMembers");
+    conditions << props.contains("Members");
+    conditions << props.contains("RemotePendingMembers");
+    conditions << props.contains("SelfHandle");
+
+    if (conditions.contains(false)) {
+        if (reply.isError())
+            warning().nospace() << "Properties::GetAll(Channel.Interface.Group) failed with " << reply.error().name() << ": " << reply.error().message();
+        else
+            warning() << "Reply to Properties::GetAll(Channel.Interface.Group) didn't contain the expected properties";
+
+        warning() << "Assuming a pre-0.17.6-spec service, falling back to serial inspection";
+        // Enqueue group fallbacks here
+        mPriv->continueIntrospection();
+        return;
+    }
+
+    debug() << "Got reply to Properties::GetAll(Channel.Interface.Group)";
+    mPriv->groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
+    mPriv->groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
+    mPriv->groupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
+    // TODO local pending
+    mPriv->groupRemotePendingMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
+    mPriv->groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
+    mPriv->continueIntrospection();
 }
 
 }
