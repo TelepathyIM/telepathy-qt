@@ -54,6 +54,18 @@ namespace Client
  * \headerfile TelepathyQt4/cli-channel.h <TelepathyQt4/Client/Channel>
  *
  * High-level proxy object for accessing remote %Telepathy %Channel objects.
+ *
+ * It adds the following features compared to using ChannelInterface directly:
+ * <ul>
+ *  <li>Life cycle tracking</li>
+ *  <li>Getting the channel type, handle type, handle and interfaces automatically</li>
+ * </ul>
+ *
+ * The remote object state accessor functions on this object (interfaces(),
+ * channelType(), handleType(), handle()) don't make any DBus calls; instead,
+ * they return values cached from a previous introspection run. The introspection
+ * process populates their values in the most efficient way possible based on
+ * what the service implements.
  */
 class Channel : public ChannelInterface
 {
