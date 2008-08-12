@@ -172,6 +172,7 @@ private Q_SLOTS:
     void gotChannelType(QDBusPendingCallWatcher* watcher);
     void gotHandle(QDBusPendingCallWatcher* watcher);
     void gotInterfaces(QDBusPendingCallWatcher* watcher);
+    void onClosed();
 
 private:
     struct Private;

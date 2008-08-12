@@ -58,12 +58,17 @@ struct Channel::Private
         : parent(parent),
           properties(parent)
     {
+        debug() << "Creating new Channel";
+
         readiness = ReadinessJustCreated;
+
+        debug() << "Connecting to Channel::Closed()";
+        parent.connect(&parent,
+                       SIGNAL(Closed()),
+                       SLOT(onClosed()));
 
         introspectQueue.enqueue(&Private::introspectMain);
         continueIntrospection();
-
-        debug() << "Created new Channel";
     }
 
     void introspectMain()
@@ -295,6 +300,14 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher* watcher)
     debug() << "Got reply to fallback Channel::GetInterfaces()";
     mPriv->interfaces = reply.value();
     mPriv->nowHaveInterfaces();
+}
+
+void Channel::onClosed()
+{
+    debug() << "Got Channel::Closed";
+
+    if (mPriv->readiness != ReadinessDead)
+        mPriv->changeReadiness(ReadinessDead);
 }
 
 }
