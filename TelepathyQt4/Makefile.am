@@ -23,7 +23,7 @@ lib_LTLIBRARIES = libtelepathy-qt4.la
 # that vim quickfix mode (:make) doesn't interpret the libtool --mode=link
 # command as an error message in a bizarrely named file
 libtelepathy_qt4_la_LDFLAGS = \
-    -version-info "$(LT_CURRENT)":"$(LT_REVISION)":"$(LT_AGE)"
+    -version-info "$(LT_CURRENT)":"$(LT_REVISION)":"$(LT_AGE)" -static
 libtelepathy_qt4_la_LIBADD = $(ALL_LIBS)
 libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
