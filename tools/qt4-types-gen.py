@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, binding_from_decl, format_docstring
+from libqt4codegen import binding_from_usage, binding_from_decl, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name
 
 class DepInfo:
     def __init__(self, el, externals, custom_lists):
@@ -65,8 +65,8 @@ class Generator(object):
         self.decls = []
         self.impls = []
         self.spec = get_by_path(dom, "spec")[0]
-        self.externals = []
-        self.custom_lists = {}
+        self.externals = gather_externals(self.spec)
+        self.custom_lists = gather_custom_lists(self.spec, self.namespace)
         self.required_custom = []
         self.required_arrays = []
         self.to_declare = []
@@ -86,8 +86,6 @@ class Generator(object):
 
         # Gather info on available and required types
 
-        self.gather_externals()
-        self.gather_custom_lists()
         self.gather_required()
 
         if self.parentinclude:
@@ -204,24 +202,6 @@ void registerTypes()
         self.decl(str)
         self.impl(str)
 
-    def gather_externals(self):
-        for ext in self.spec.getElementsByTagNameNS(NS_TP, 'external-type'):
-            sig = ext.getAttribute('type')
-            tptype = ext.getAttributeNS(NS_TP, 'type')
-            externals.append((sig, tptype))
-
-    def gather_custom_lists(self):
-        structs = self.spec.getElementsByTagNameNS(NS_TP, 'struct')
-        mappings = self.spec.getElementsByTagNameNS(NS_TP, 'mapping')
-        exts = self.spec.getElementsByTagNameNS(NS_TP, 'external-type')
-
-        for provider in structs + mappings + exts:
-            tptype = provider.getAttribute('name').replace('_', '')
-            array_name = provider.getAttribute('array-name')
-
-            if array_name:
-                self.custom_lists[tptype] = array_name.replace('_', '')
-
     def gather_required(self):
         members = self.spec.getElementsByTagNameNS(NS_TP, 'member')
         args = self.spec.getElementsByTagName('arg')
@@ -312,25 +292,8 @@ void registerTypes()
             self.required_custom.remove(type)
 
     def output_by_depinfo(self, depinfo):
-        members = 0
-        names = []
-        bindings = []
-        docstrings = []
-
-        for member in get_by_path(depinfo.el, 'member'):
-            members = members + 1
-
-            name = member.getAttribute('name')
-            if name[0].isupper():
-                name = name[0].lower() + name[1:]
-            names.append(name.replace('_', ''))
-
-            sig = member.getAttribute('type')
-            tptype = member.getAttributeNS(NS_TP, 'type')
-            external = (sig, tptype) in self.externals
-            bindings.append(binding_from_usage(sig, tptype, self.custom_lists, external))
-
-            docstrings.append(format_docstring(member, '     * ', ('    /**', '     */')))
+        names, docstrings, bindings = extract_arg_or_member_info(get_by_path(depinfo.el, 'member'), self.custom_lists, self.externals, None, '     * ', ('    /**', '     */'))
+        members = len(names)
 
         if depinfo.el.localName == 'struct':
             assert members > 0, 'tp:struct %s should have some members' % depinfo.binding.val

@@ -3,7 +3,7 @@
 
   <tp:title>D-Bus peer</tp:title>
 
-  <node name="/DBus_Peer">
+  <node name="/Peer">
     <interface name="org.freedesktop.DBus.Peer" tp:implement-service="no">
 
       <method name="Ping">

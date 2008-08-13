@@ -3,7 +3,7 @@
 
   <tp:title>D-Bus introspectable object</tp:title>
 
-  <node name="/DBus_Introspectable">
+  <node name="/Introspectable">
     <interface name="org.freedesktop.DBus.Introspectable">
 
       <method name="Introspect">

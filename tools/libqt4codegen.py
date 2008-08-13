@@ -35,7 +35,7 @@ class _Qt4TypeBinding:
         self.custom_type = custom_type
         self.array_of = array_of
 
-def binding_from_usage(sig, tptype, custom_lists, external=False):
+def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_ns=None):
     # 'signature' : ('qt-type', 'pass-by-reference')
     natives = {
             'y' : ('uchar', False, None),
@@ -67,6 +67,8 @@ def binding_from_usage(sig, tptype, custom_lists, external=False):
         inarg = (pass_by_ref and ('const %s&' % val)) or val
     elif sig[0] == 'a' and natives.has_key(sig[1]) and natives[sig[1]][2]:
         val = natives[sig[1]][2]
+        if explicit_own_ns:
+            val = explicit_own_ns + '::' + val
         inarg = 'const %s&' % val
         array_of = natives[sig[1]][0]
     elif tptype:
@@ -75,10 +77,12 @@ def binding_from_usage(sig, tptype, custom_lists, external=False):
 
         if external:
             tptype = 'Telepathy::' + tptype
+        elif explicit_own_ns:
+            tptype = explicit_own_ns + '::' + tptype
 
         if tptype.endswith('[]'):
             tptype = tptype[:-2]
-            assert custom_lists.has_key(tptype), ('No array version of custom type %s in the spec, but array version used' % tptype) + str(custom_lists)
+            assert custom_lists.has_key(tptype), ('No array version of custom type %s in the spec, but array version used' % tptype)
             val = custom_lists[tptype]
         else:
             val = tptype
@@ -95,6 +99,21 @@ def binding_from_decl(name, array_name):
     inarg = 'const %s&' % val
     outarg = '%s&' % val
     return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None)
+
+def extract_arg_or_member_info(els, custom_lists, externals, typesns, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
+    names = []
+    docstrings = []
+    bindings = []
+
+    for el in els:
+        names.append(get_qt4_name(el))
+        docstrings.append(format_docstring(el, docstring_indent, docstring_brackets, docstring_maxwidth))
+
+        sig = el.getAttribute('type')
+        tptype = el.getAttributeNS(NS_TP, 'type')
+        bindings.append(binding_from_usage(sig, tptype, custom_lists, (sig, tptype) in externals, typesns))
+
+    return names, docstrings, bindings
 
 def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
     docstring_el = None
@@ -157,3 +176,153 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         output.append('\n')
 
     return ''.join(output)
+
+def gather_externals(spec):
+    externals = []
+
+    for ext in spec.getElementsByTagNameNS(NS_TP, 'external-type'):
+        sig = ext.getAttribute('type')
+        tptype = ext.getAttributeNS(NS_TP, 'type')
+        externals.append((sig, tptype))
+
+    return externals
+
+def gather_custom_lists(spec, typesns):
+    custom_lists = {}
+    structs = [(provider, typesns) for provider in spec.getElementsByTagNameNS(NS_TP, 'struct')]
+    mappings = [(provider, typesns) for provider in spec.getElementsByTagNameNS(NS_TP, 'mapping')]
+    exts = [(provider, 'Telepathy') for provider in spec.getElementsByTagNameNS(NS_TP, 'external-type')]
+
+    for (provider, ns) in structs + mappings + exts:
+        tptype = provider.getAttribute('name').replace('_', '')
+        array_val = provider.getAttribute('array-name').replace('_', '')
+
+        if array_val:
+            custom_lists[tptype] = array_val
+            custom_lists[ns + '::' + tptype] = ns + '::' + array_val
+
+    return custom_lists
+
+def get_qt4_name(el):
+    name = el.getAttribute('name')
+
+    if el.localName in ('method', 'signal', 'property'):
+        bname = el.getAttributeNS(NS_TP, 'name-for-bindings')
+
+        if bname:
+            name = bname
+
+    if not name:
+        return None
+
+    if name[0].isupper() and name[1].islower():
+        name = name[0].lower() + name[1:]
+
+    return qt4_identifier_escape(name.replace('_', ''))
+
+def qt4_identifier_escape(str):
+    built = (str[0].isdigit() and ['_']) or []
+
+    for c in str:
+        if c.isalnum():
+            built.append(c)
+        else:
+            built.append('_')
+
+    str = ''.join(built)
+
+    # List of reserved identifiers
+    # Initial list from http://cs.smu.ca/~porter/csc/ref/cpp_keywords.html
+
+    # Keywords inherited from C90
+    reserved = ['auto',
+                'const',
+                'double',
+                'float',
+                'int',
+                'short',
+                'struct',
+                'unsigned',
+                'break',
+                'continue',
+                'else',
+                'for',
+                'long',
+                'signed',
+                'switch',
+                'void',
+                'case',
+                'default',
+                'enum',
+                'goto',
+                'register',
+                'sizeof',
+                'typedef',
+                'volatile',
+                'char',
+                'do',
+                'extern',
+                'if',
+                'return',
+                'static',
+                'union',
+                'while',
+    # C++-only keywords
+                'asm',
+                'dynamic_cast',
+                'namespace',
+                'reinterpret_cast',
+                'try',
+                'bool',
+                'explicit',
+                'new',
+                'static_cast',
+                'typeid',
+                'catch',
+                'false',
+                'operator',
+                'template',
+                'typename',
+                'class',
+                'friend',
+                'private',
+                'this',
+                'using',
+                'const_cast',
+                'inline',
+                'public',
+                'throw',
+                'virtual',
+                'delete',
+                'mutable',
+                'protected',
+                'true',
+                'wchar_t',
+    # Operator replacements
+                'and',
+                'bitand',
+                'compl',
+                'not_eq',
+                'or_eq',
+                'xor_eq',
+                'and_eq',
+                'bitor',
+                'not',
+                'or',
+                'xor',
+    # Predefined identifiers
+                'INT_MIN',
+                'INT_MAX',
+                'MAX_RAND',
+                'NULL',
+    # Qt
+                'SIGNAL',
+                'SLOT',
+                'signals',
+                'slots']
+
+    while str in reserved:
+        str = str + '_'
+
+    return str
+
