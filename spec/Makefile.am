@@ -32,6 +32,7 @@ EXTRA_DIST = \
     Connection_Interface_Presence.xml \
     Connection_Interface_Privacy.xml \
     Connection_Interface_Renaming.xml \
+    Connection_Interface_Simple_Presence.xml \
     Connection_Manager.xml \
     Connection.xml \
     errors.xml \

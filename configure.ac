@@ -42,7 +42,7 @@ AC_INIT([Telepathy-Qt4], [tp_qt4_version],
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.8 -Wno-portability])
+AM_INIT_AUTOMAKE([1.9 -Wno-portability tar-ustar])
 AM_CONFIG_HEADER(config.h)
 
 dnl check for tools

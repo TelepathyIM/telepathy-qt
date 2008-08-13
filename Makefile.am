@@ -8,8 +8,8 @@ include doxygen.am
 
 EXTRA_DIST = \
     autogen.sh \
-		doc/html \
-		$(DX_CONFIG)
+    doc/html \
+    $(DX_CONFIG)
 
 CLEANFILES = FIXME.out
 MOSTLYCLEANFILES = $(DX_CLEANFILES)
@@ -22,3 +22,4 @@ dist-hook:
 	chmod u+w ${distdir}/ChangeLog
 	if test -d .git; then git log >${distdir}/ChangeLog; fi
 
+doc/html: doxygen-doc
