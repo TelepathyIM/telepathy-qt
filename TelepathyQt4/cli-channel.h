@@ -442,6 +442,9 @@ private Q_SLOTS:
     void onClosed();
 
     void gotGroupProperties(QDBusPendingCallWatcher* watcher);
+    void gotGroupFlags(QDBusPendingCallWatcher* watcher);
+    void gotAllMembers(QDBusPendingCallWatcher* watcher);
+    void gotSelfHandle(QDBusPendingCallWatcher* watcher);
 
 private:
     struct Private;
