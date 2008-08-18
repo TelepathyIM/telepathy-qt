@@ -205,7 +205,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
 		--specxml=_gen/stable-spec.xml \
 		--ifacexml=$< \
-		--typesinclude='TelepathyQt4/Types' \
+		--extraincludes='<TelepathyQt4/Types>' \
 		$$mainiface
 
 %.moc.hpp: %.h _gen/constants.h _gen/types.h

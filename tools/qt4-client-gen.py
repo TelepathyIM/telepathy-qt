@@ -35,7 +35,7 @@ class Generator(object):
             self.typesnamespace = opts['--typesnamespace']
             self.realinclude = opts['--realinclude']
             self.prettyinclude = opts['--prettyinclude']
-            self.typesinclude = opts['--typesinclude']
+            self.extraincludes = opts.get('--extraincludes', None)
             self.mainiface = opts.get('--mainiface', None)
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
@@ -58,17 +58,24 @@ class Generator(object):
  * This file can be distributed under the same terms as the specification from
  * which it was generated.
  */
+""")
+
+        if self.extraincludes:
+            self.h('\n')
+            for include in self.extraincludes.split(','):
+                self.h('#include %s\n' % include)
+
+        self.h("""
+#include <QtGlobal>
 
 #include <QString>
 #include <QObject>
 #include <QVariant>
 
-#include <QtGlobal>
-#include <QtDBus>
+#include <QDBusAbstractInterface>
+#include <QDBusPendingReply>
 
-#include <%s>
-
-""" % self.typesinclude)
+""")
 
         self.b("""\
 #include <%s>
@@ -407,7 +414,7 @@ if __name__ == '__main__':
              'specxml=',
              'realinclude=',
              'prettyinclude=',
-             'typesinclude=',
+             'extraincludes=',
              'mainiface='])
 
     Generator(dict(options))()
