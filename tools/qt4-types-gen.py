@@ -22,7 +22,7 @@ import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, binding_from_decl, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name
+from libqt4codegen import binding_from_usage, binding_from_decl, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, get_headerfile_cmd
 
 class DepInfo:
     def __init__(self, el, externals, custom_lists):
@@ -137,8 +137,8 @@ class Generator(object):
 
 """)
         self.impl("""
-#include <%s>
-""" % self.prettyinclude)
+#include "%s"
+""" % self.realinclude)
         self.both("""
 namespace %s
 {
@@ -153,7 +153,7 @@ namespace %s
         self.decl("""\
 /**
  * \\ingroup types
- * \\headerfile %s <%s>
+%s\
  *
  * Register the types used by the library with the QtDBus type system.
  *
@@ -163,7 +163,8 @@ namespace %s
 void registerTypes();
 }
 
-""" % (self.realinclude, self.prettyinclude))
+""" % get_headerfile_cmd(self.realinclude, self.prettyinclude))
+
         self.impl("""\
 void registerTypes()
 {
@@ -228,12 +229,12 @@ void registerTypes()
  /**
   * \\struct %s
   * \\ingroup list
-  * \\headerfile %s <%s>
+%s\
   * 
   * Generic list type with %s elements. Convertible with
   * %s, but needed to have a discrete type in the Qt4 type system.
   */
-""" % (val, self.realinclude, self.prettyinclude, array_of, real))
+""" % (val, get_headerfile_cmd(self.realinclude, self.prettyinclude), array_of, real))
             self.decl(self.faketype(val, real))
             self.to_declare.append(self.namespace + '::' + val)
 
@@ -301,14 +302,14 @@ void registerTypes()
 /**
  * \\struct %(name)s
  * \\ingroup struct
- * \\headerfile %(realinclude)s <%(prettyinclude)s>
+%(headercmd)s\
  *
  * Structure type generated from the specification.
 %(docstring)s\
  */
 struct %(name)s
 {
-""" % {'name' : depinfo.binding.val, 'realinclude' : self.realinclude, 'prettyinclude' : self.prettyinclude, 'docstring' : format_docstring(depinfo.el)})
+""" % {'name' : depinfo.binding.val, 'headercmd': get_headerfile_cmd(self.realinclude, self.prettyinclude), 'docstring' : format_docstring(depinfo.el)})
 
             for i in xrange(members):
                 self.decl("""\
@@ -351,13 +352,13 @@ struct %(name)s
 /**
  * \\struct %s
  * \\ingroup mapping
- * \\headerfile %s <%s>
+%s\
  *
  * Mapping type generated from the specification. Convertible with
  * %s, but needed to have a discrete type in the Qt4 type system.
 %s\
  */
-""" % (depinfo.binding.val, self.realinclude, self.prettyinclude, realtype, format_docstring(depinfo.el)))
+""" % (depinfo.binding.val, get_headerfile_cmd(self.realinclude, self.prettyinclude), realtype, format_docstring(depinfo.el)))
             self.decl(self.faketype(depinfo.binding.val, realtype))
         else:
             assert False
@@ -369,13 +370,13 @@ struct %(name)s
             self.decl("""\
 /**
  * \\ingroup list
- * \\headerfile %s <%s>
+%s\
  *
  * Array of %s values.
  */
 typedef %s %s;
 
-""" % (self.realinclude, self.prettyinclude, depinfo.binding.val, 'QList<%s>' % depinfo.binding.val, depinfo.binding.array_val))
+""" % (get_headerfile_cmd(self.realinclude, self.prettyinclude), depinfo.binding.val, 'QList<%s>' % depinfo.binding.val, depinfo.binding.array_val))
 
     def faketype(self, fake, real):
         return """\

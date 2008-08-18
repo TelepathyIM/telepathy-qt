@@ -23,7 +23,7 @@ import codecs
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, qt4_identifier_escape
+from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_headerfile_cmd, get_qt4_name, qt4_identifier_escape
 
 class Generator(object):
     def __init__(self, opts):
@@ -34,7 +34,7 @@ class Generator(object):
             self.namespace = opts['--namespace']
             self.typesnamespace = opts['--typesnamespace']
             self.realinclude = opts['--realinclude']
-            self.prettyinclude = opts['--prettyinclude']
+            self.prettyinclude = opts.get('--prettyinclude')
             self.extraincludes = opts.get('--extraincludes', None)
             self.mainiface = opts.get('--mainiface', None)
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
@@ -121,7 +121,7 @@ namespace %s
         self.h("""
 /**
  * \\class %(name)s
- * \\headerfile %(realinclude)s <%(prettyinclude)s>
+%(headercmd)s\
  * \\ingroup %(group)s
  *
  * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
@@ -170,8 +170,7 @@ public:
         QObject* parent = 0
     );
 """ % {'name' : name,
-       'realinclude' : self.realinclude,
-       'prettyinclude' : self.prettyinclude,
+       'headercmd' : get_headerfile_cmd(self.realinclude, self.prettyinclude),
        'group' : self.group,
        'dbusname' : dbusname})
 
