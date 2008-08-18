@@ -48,7 +48,6 @@ class Generator(object):
         self.spec, = get_by_path(specdom, "spec")
         self.custom_lists = gather_custom_lists(self.spec, self.typesnamespace)
         self.externals = gather_externals(self.spec)
-        self.mainifacename = self.mainiface and self.mainiface.replace('/', '').replace('_', '') + 'Interface'
 
     def __call__(self):
         # Output info header and includes
@@ -85,7 +84,7 @@ namespace %s
 
         # Output interface proxies
         def ifacenodecmp(x, y):
-            xname, yname = x.getAttribute('name'), y.getAttribute('name')
+            xname, yname = [self.namespace + '::' + node.getAttribute('name').replace('/', '').replace('_', '') + 'Interface' for node in x, y]
 
             if xname == self.mainiface:
                 return -1
@@ -182,9 +181,9 @@ public:
 """ % {'name' : name})
 
         # Main interface
-        mainifacename = self.mainifacename or 'QDBusAbstractInterface'
+        mainiface = self.mainiface or 'QDBusAbstractInterface'
 
-        if mainifacename != name:
+        if mainiface != self.namespace + '::' + name:
             self.h("""
     /**
      * Creates a %(name)s associated with the same object as the given proxy.
@@ -193,7 +192,7 @@ public:
      *
      * \\param mainInterface The proxy to use.
      */
-    explicit %(name)s(const %(mainifacename)s& mainInterface);
+    explicit %(name)s(const %(mainiface)s& mainInterface);
 
     /**
      * Creates a %(name)s associated with the same object as the given proxy.
@@ -202,22 +201,22 @@ public:
      * \\param mainInterface The proxy to use.
      * \\param parent Passed to the parent class constructor.
      */
-    %(name)s(const %(mainifacename)s& mainInterface, QObject* parent);
+    %(name)s(const %(mainiface)s& mainInterface, QObject* parent);
 """ % {'name' : name,
-       'mainifacename' : mainifacename})
+       'mainiface' : mainiface})
 
             self.b("""
-%(name)s::%(name)s(const %(mainifacename)s& mainInterface)
+%(name)s::%(name)s(const %(mainiface)s& mainInterface)
     : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), mainInterface.parent())
 {
 }
 
-%(name)s::%(name)s(const %(mainifacename)s& mainInterface, QObject *parent)
+%(name)s::%(name)s(const %(mainiface)s& mainInterface, QObject *parent)
     : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), parent)
 {
 }
 """ % {'name' : name,
-       'mainifacename' : mainifacename})
+       'mainiface' : mainiface})
 
         # Properties
         for prop in get_by_path(iface, 'property'):

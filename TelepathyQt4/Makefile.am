@@ -170,15 +170,15 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		channel) \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
-			mainiface='--mainiface=/Channel';; \
+			mainiface='--mainiface=Telepathy::Client::ChannelInterface';; \
 		connection) \
 			group='clientconn'; \
 			prettyinclude='Connection'; \
-			mainiface='--mainiface=/Connection';; \
+			mainiface='--mainiface=Telepathy::Client::ConnectionInterface';; \
 		connection-manager) \
 			group='clientcm'; \
 			prettyinclude='ConnectionManager'; \
-			mainiface='--mainiface=/Connection_Manager';; \
+			mainiface='--mainiface=Telepathy::Client::ConnectionManagerInterface';; \
 		dbus) \
 			group='clientdbus'; \
 			namespace='Telepathy::Client::DBus'; \
@@ -186,11 +186,11 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		media-session-handler) \
 			group='clientmsesh'; \
 			prettyinclude='MediaSessionHandler'; \
-			mainiface='--mainiface=/Media_Session_Handler';; \
+			mainiface='--mainiface=Telepathy::Client::MediaSessionHandlerInterface';; \
 		media-stream-handler) \
 			group='clientmstrh'; \
 			prettyinclude='MediaStreamHandler'; \
-			mainiface='--mainiface=/Media_Stream_Handler';; \
+			mainiface='--mainiface=Telepathy::Client::MediaStreamHandlerInterface';; \
 		properties) \
 			group='clientprops'; \
 			prettyinclude='Properties';; \
