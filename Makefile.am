@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = m4 tools spec TelepathyQt4
+SUBDIRS = m4 tools spec TelepathyQt4 examples
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-debug
 

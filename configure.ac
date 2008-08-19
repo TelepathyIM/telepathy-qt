@@ -140,6 +140,13 @@ PKG_CHECK_MODULES(QTDBUS, [QtDBus >= 4.5])
 AC_SUBST(QTDBUS_CFLAGS)
 AC_SUBST(QTDBUS_LIBS)
 
+dnl We want the examples to be able to use TP_QT4_CXXFLAGS, TP_QT4_LIBS
+dnl as though they were independent programs
+TP_QT4_CXXFLAGS='-I${top_builddir} -I${top_srcdir}'
+TP_QT4_LIBS='${top_builddir}/TelepathyQt4/libtelepathy-qt4.la'
+AC_SUBST(TP_QT4_CFLAGS)
+AC_SUBST(TP_QT4_LIBS)
+
 dnl Check for code generation tools
 PYTHON=
 AC_CHECK_PROGS([PYTHON], [python2.5 python])
@@ -164,5 +171,7 @@ AC_OUTPUT( Makefile \
 	   TelepathyQt4/TelepathyQt4.pc \
 	   tools/Makefile \
 	   m4/Makefile \
+	   examples/Makefile \
+	   examples/extensions/Makefile \
 )
 

@@ -1,0 +1,16 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Extensions for 'extended' examples</tp:title>
+
+<xi:include href="connection.xml"/>
+
+<tp:generic-types>
+  <tp:external-type name="Contact_Handle" type="u"
+    from="Telepathy specification"/>
+  <tp:external-type name="String_Variant_Map" type="a{sv}"
+    from="Telepathy specification"/>
+</tp:generic-types>
+
+</tp:spec>
