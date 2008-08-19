@@ -28,7 +28,7 @@ from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format
 class Generator(object):
     def __init__(self, opts):
         try:
-            self.group = opts.get('--group', 'no-group-defined')
+            self.group = opts.get('--group', '')
             self.headerfile = opts['--headerfile']
             self.implfile = opts['--implfile']
             self.namespace = opts['--namespace']
@@ -122,7 +122,7 @@ namespace %s
 /**
  * \\class %(name)s
 %(headercmd)s\
- * \\ingroup %(group)s
+%(groupcmd)s\
  *
  * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
  */
@@ -171,7 +171,7 @@ public:
     );
 """ % {'name' : name,
        'headercmd' : get_headerfile_cmd(self.realinclude, self.prettyinclude),
-       'group' : self.group,
+       'groupcmd' : self.group and (' * \\ingroup %s\n' % self.group),
        'dbusname' : dbusname})
 
         self.b("""
