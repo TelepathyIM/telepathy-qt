@@ -226,14 +226,14 @@ void registerTypes()
         for (val, array_of) in self.required_arrays:
             real = 'QList<%s>' % array_of
             self.decl("""\
- /**
-  * \\struct %s
-  * \\ingroup list
+/**
+ * \\struct %s
+ * \\ingroup list
 %s\
-  * 
-  * Generic list type with %s elements. Convertible with
-  * %s, but needed to have a discrete type in the Qt4 type system.
-  */
+ *
+ * Generic list type with %s elements. Convertible with
+ * %s, but needed to have a discrete type in the Qt4 type system.
+ */
 """ % (val, get_headerfile_cmd(self.realinclude, self.prettyinclude), array_of, real))
             self.decl(self.faketype(val, real))
             self.to_declare.append(self.namespace + '::' + val)
