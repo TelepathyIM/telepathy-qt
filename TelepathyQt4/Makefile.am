@@ -152,7 +152,7 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		--prettyinclude='TelepathyQt4/Types' \
 		--specxml=$<
 
-# Things generated per interface
+# Things generated per interface group
 
 _gen/spec-%.xml: %.xml ../tools/xincludator.py _gen/spec-stamp
 	$(PYTHON) $(top_srcdir)/tools/xincludator.py \

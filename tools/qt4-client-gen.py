@@ -78,7 +78,7 @@ class Generator(object):
 """)
 
         self.b("""\
-#include <%s>
+#include "%s"
 
 """ % self.realinclude)
 
