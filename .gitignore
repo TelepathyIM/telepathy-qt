@@ -1,0 +1,27 @@
+# For a project mostly in C, the following would be a good set of
+# Lines that start with '#' are comments.
+# exclude patterns (uncomment them if you want to use them):
+# git-ls-files --others --exclude-from=.git/info/exclude
+*.[ao]
+*.l[ao]
+*.moc.hpp
+*.pc
+*.py[co]
+*~
+.*.sw[p,o]
+.deps
+.libs
+Makefile
+Makefile.in
+_gen
+aclocal.m4
+autom4te.cache/
+config.*
+configure
+depcomp
+doc/
+install-sh
+libtool
+ltmain.sh
+missing
+stamp-h1
