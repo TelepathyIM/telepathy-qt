@@ -29,7 +29,7 @@
 
 #include "cli-dbus.h"
 #include "constants.h"
-#include "debug.hpp"
+#include "debug-internal.hpp"
 
 namespace Telepathy
 {
