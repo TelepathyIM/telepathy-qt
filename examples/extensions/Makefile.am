@@ -32,9 +32,6 @@ noinst_LTLIBRARIES = libexample-extensions.la
 libexample_extensions_la_LIBADD = \
     $(TP_QT4_LIBS)
 
-# The client-specific parts are built into a separate .o file, so the linker
-# can discard them when linking services. The service-specific parts are
-# in svc-*.c, so we don't need an extensions-svc.c.
 libexample_extensions_la_SOURCES = \
     cli-connection.cpp \
     cli-connection.h \
