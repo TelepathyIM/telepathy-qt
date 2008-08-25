@@ -29,7 +29,7 @@
 #include <QtGlobal>
 
 #include "cli-dbus.h"
-#include "debug.hpp"
+#include "debug-internal.hpp"
 
 namespace Telepathy
 {
