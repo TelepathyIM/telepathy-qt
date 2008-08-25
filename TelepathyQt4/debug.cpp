@@ -20,7 +20,7 @@
  */
 
 #include "debug.h"
-#include "debug.hpp"
+#include "debug-internal.hpp"
 
 #include <QIODevice>
 

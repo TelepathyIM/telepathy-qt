@@ -37,7 +37,7 @@ libtelepathy_qt4_la_SOURCES = \
     cli-media-stream-handler.cpp \
     cli-properties.cpp \
     debug.cpp \
-    debug.hpp \
+    debug-internal.hpp \
     types.cpp \
     header-compile-test.cpp
 
