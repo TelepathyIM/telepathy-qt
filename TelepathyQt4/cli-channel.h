@@ -445,6 +445,10 @@ private Q_SLOTS:
     void gotGroupFlags(QDBusPendingCallWatcher* watcher);
     void gotAllMembers(QDBusPendingCallWatcher* watcher);
     void gotSelfHandle(QDBusPendingCallWatcher* watcher);
+    void onGroupFlagsChanged(uint, uint);
+    void onMembersChanged(const QString&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint);
+    void onHandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&);
+    void onSelfHandleChanged(uint);
 
 private:
     struct Private;

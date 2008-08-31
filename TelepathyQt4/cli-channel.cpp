@@ -58,8 +58,9 @@ struct Channel::Private
     bool groupAreHandleOwnersAvailable;
     HandleOwnerMap groupHandleOwners;
     QSet<uint> groupMembers;
+    bool groupHaveMembers;
     // TODO local pending
-    QSet<uint> groupRemotePendingMembers;
+    QSet<uint> groupRemotePending;
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
 
@@ -75,7 +76,8 @@ struct Channel::Private
         targetHandle = 0;
 
         groupFlags = 0;
-        groupAreHandleOwnersAvailable = true;
+        groupAreHandleOwnersAvailable = false;
+        groupHaveMembers = false;
         groupIsSelfHandleTracked = true;
         groupSelfHandle = 0;
 
@@ -142,6 +144,26 @@ struct Channel::Private
             group = parent.groupInterface();
             Q_ASSERT(group != 0);
         }
+
+        debug() << "Connecting to Channel.Interface.Group::GroupFlagsChanged";
+        parent.connect(group,
+                       SIGNAL(GroupFlagsChanged(uint, uint)),
+                       SLOT(onGroupFlagsChanged(uint, uint)));
+
+        debug() << "Connecting to Channel.Interface.Group::MembersChanged";
+        parent.connect(group,
+                       SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint)),
+                       SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint)));
+
+        debug() << "Connecting to Channel.Interface.Group::HandleOwnersChanged";
+        parent.connect(group,
+                       SIGNAL(HandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&)),
+                       SLOT(onHandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&)));
+
+        debug() << "Connecting to Channel.Interface.Group::SelfHandleChanged";
+        parent.connect(group,
+                       SIGNAL(SelfHandleChanged(uint)),
+                       SLOT(onSelfHandleChanged(uint)));
 
         debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
         QDBusPendingCallWatcher* watcher =
@@ -244,7 +266,7 @@ struct Channel::Private
                 else
                     debug() << " Group: No handle owners property present";
                 debug() << " Group: Number of current members" << groupMembers.size();
-                debug() << " Group: Number of remote pending members" << groupRemotePendingMembers.size();
+                debug() << " Group: Number of remote pending members" << groupRemotePending.size();
                 debug() << " Group: Self handle" << groupSelfHandle << "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
             }
         } else {
@@ -427,7 +449,6 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
         warning() << "Assuming a pre-0.17.6-spec service, falling back to serial inspection";
 
         warning() << "Handle owners and self handle tracking disabled";
-        mPriv->groupAreHandleOwnersAvailable = false;
         mPriv->groupIsSelfHandleTracked = false;
 
         mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackFlags);
@@ -439,11 +460,15 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
     }
 
     debug() << "Got reply to Properties::GetAll(Channel.Interface.Group)";
+
+    mPriv->groupHaveMembers = true;
+    mPriv->groupAreHandleOwnersAvailable = true;
+
     mPriv->groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
     mPriv->groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
     mPriv->groupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
     // TODO local pending
-    mPriv->groupRemotePendingMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
+    mPriv->groupRemotePending= QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
     mPriv->groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
     mPriv->continueIntrospection();
 }
@@ -471,8 +496,9 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher* watcher)
     } else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetAllMembers()";
         mPriv->groupMembers = QSet<uint>::fromList(reply.argumentAt<0>());
+        mPriv->groupHaveMembers = true;
         // TODO local pending
-        mPriv->groupRemotePendingMembers = QSet<uint>::fromList(reply.argumentAt<2>());
+        mPriv->groupRemotePending= QSet<uint>::fromList(reply.argumentAt<2>());
     }
 
     mPriv->continueIntrospection();
@@ -490,6 +516,79 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher* watcher)
     }
 
     mPriv->continueIntrospection();
+}
+
+void Channel::onGroupFlagsChanged(uint added, uint removed)
+{
+    debug().nospace() << "Got Channel.Interface.Group::GroupFlagsChanged(" << hex << added << ", " << removed << ")";
+
+    added &= ~(mPriv->groupFlags);
+    removed &= mPriv->groupFlags;
+
+    debug().nospace() << "Arguments after filtering (" << hex << added << ", " << removed << ")";
+
+    mPriv->groupFlags |= added;
+    mPriv->groupFlags &= ~removed;
+}
+
+void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, const Telepathy::UIntList& localPending, const Telepathy::UIntList& remotePending, uint actor, uint reason)
+{
+    debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() << "added," << removed.size() << "removed," << localPending.size() << "moved to LP," << remotePending.size() << "moved to RP," << actor << " being the actor," << reason << "the reason and" << message << "the message";
+
+    if (!mPriv->groupHaveMembers) {
+        debug() << "Still waiting for initial group members, so ignoring delta signal...";
+        return;
+    }
+
+    foreach (uint handle, added) {
+        debug() << " +++" << handle;
+        mPriv->groupMembers.insert(handle);
+    }
+
+    // TODO local pending
+
+    foreach (uint handle, remotePending) {
+        debug() << " RP" << handle;
+        mPriv->groupRemotePending.insert(handle);
+    }
+
+    foreach (uint handle, removed) {
+        debug() << " ---" << handle;
+
+        // TODO local pending
+
+        mPriv->groupMembers.remove(handle);
+        mPriv->groupRemotePending.remove(handle);
+
+        if (handle == mPriv->groupSelfHandle) {
+            // TODO expose self remove
+        }
+    }
+}
+
+void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap& added, const Telepathy::UIntList& removed)
+{
+    debug() << "Got Channel.Interface.Group::HandleOwnersChanged with" << added.size() << "added," << removed.size() << "removed";
+
+    if (!mPriv->groupAreHandleOwnersAvailable) {
+        debug() << "Still waiting for initial handle owners, so ignoring delta signal...";
+        return;
+    }
+
+    for (HandleOwnerMap::const_iterator i = added.begin();
+                                        i != added.end();
+                                        ++i)
+        mPriv->groupHandleOwners[i.key()] = i.value();
+
+    foreach (uint handle, removed)
+        mPriv->groupHandleOwners.remove(handle);
+}
+
+void Channel::onSelfHandleChanged(uint newSelfHandle)
+{
+    debug().nospace() << "Got Channel.Interface.Group::SelfHandleChanged(" << newSelfHandle << ")";
+
+    mPriv->groupSelfHandle = newSelfHandle;
 }
 
 }
