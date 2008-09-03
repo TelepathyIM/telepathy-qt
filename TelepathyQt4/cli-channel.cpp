@@ -74,6 +74,12 @@ struct Channel::Private
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
 
+    // Group remove info
+    bool groupRemoved;
+    uint groupRemoveActor;
+    uint groupRemoveReason;
+    QString groupRemoveMessage;
+
     Private(Channel& parent)
         : parent(parent)
     {
@@ -90,6 +96,9 @@ struct Channel::Private
         groupAreHandleOwnersAvailable = false;
         groupIsSelfHandleTracked = false;
         groupSelfHandle = 0;
+        groupRemoved = false;
+        groupRemoveActor = 0;
+        groupRemoveReason = 0;
 
         debug() << "Connecting to Channel::Closed()";
         parent.connect(&parent,
@@ -628,7 +637,12 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
         mPriv->groupRemotePending.remove(handle);
 
         if (handle == mPriv->groupSelfHandle) {
-            // TODO expose self remove
+            debug() << " Self handle removed, saving info...";
+
+            mPriv->groupRemoved = true;
+            mPriv->groupRemoveActor = actor;
+            mPriv->groupRemoveReason = reason;
+            mPriv->groupRemoveMessage = message;
         }
     }
 }
