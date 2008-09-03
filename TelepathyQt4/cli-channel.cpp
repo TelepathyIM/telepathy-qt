@@ -57,9 +57,9 @@ struct Channel::Private
     uint groupFlags;
     bool groupAreHandleOwnersAvailable;
     HandleOwnerMap groupHandleOwners;
-    QSet<uint> groupMembers;
     bool groupHaveMembers;
-    // TODO local pending
+    QSet<uint> groupMembers;
+    QMap<uint, GroupLocalPendingInfo> groupLocalPending;
     QSet<uint> groupRemotePending;
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
@@ -78,7 +78,7 @@ struct Channel::Private
         groupFlags = 0;
         groupAreHandleOwnersAvailable = false;
         groupHaveMembers = false;
-        groupIsSelfHandleTracked = true;
+        groupIsSelfHandleTracked = false;
         groupSelfHandle = 0;
 
         debug() << "Connecting to Channel::Closed()";
@@ -196,6 +196,18 @@ struct Channel::Private
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotAllMembers(QDBusPendingCallWatcher*)));
+    }
+
+    void introspectGroupFallbackLocalPending()
+    {
+        Q_ASSERT(group != 0);
+
+        debug() << "Calling Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
+        QDBusPendingCallWatcher* watcher =
+            new QDBusPendingCallWatcher(group->GetLocalPendingMembersWithInfo(), &parent);
+        parent.connect(watcher,
+                       SIGNAL(finished(QDBusPendingCallWatcher*)),
+                       SLOT(gotLocalPending(QDBusPendingCallWatcher*)));
     }
 
     void introspectGroupFallbackSelfHandle()
@@ -446,14 +458,12 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
         else
             warning() << "Reply to Properties::GetAll(Channel.Interface.Group) didn't contain the expected properties";
 
-        warning() << "Assuming a pre-0.17.6-spec service, falling back to serial inspection";
-
-        warning() << "Handle owners and self handle tracking disabled";
-        mPriv->groupIsSelfHandleTracked = false;
+        warning() << " Assuming a pre-0.17.6-spec service, falling back to serial inspection";
+        warning() << " Handle owners and self handle tracking disabled";
 
         mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackFlags);
         mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
-        // TODO local pending
+        mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPending);
         mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
         mPriv->continueIntrospection();
         return;
@@ -463,13 +473,19 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
 
     mPriv->groupHaveMembers = true;
     mPriv->groupAreHandleOwnersAvailable = true;
+    mPriv->groupIsSelfHandleTracked = true;
 
     mPriv->groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
     mPriv->groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
     mPriv->groupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
-    // TODO local pending
-    mPriv->groupRemotePending= QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
+    mPriv->groupRemotePending = QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
     mPriv->groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
+
+    foreach (LocalPendingInfo info, qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
+        mPriv->groupLocalPending[info.toBeAdded] =
+            GroupLocalPendingInfo(info.actor, info.reason, info.message);
+    }
+
     mPriv->continueIntrospection();
 }
 
@@ -495,10 +511,33 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher* watcher)
         warning().nospace() << "Channel.Interface.Group::GetAllMembers() failed with " << reply.error().name() << ": " << reply.error().message();
     } else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetAllMembers()";
-        mPriv->groupMembers = QSet<uint>::fromList(reply.argumentAt<0>());
+
         mPriv->groupHaveMembers = true;
-        // TODO local pending
+        mPriv->groupMembers = QSet<uint>::fromList(reply.argumentAt<0>());
         mPriv->groupRemotePending= QSet<uint>::fromList(reply.argumentAt<2>());
+
+        foreach (uint handle, QSet<uint>::fromList(reply.argumentAt<1>())) {
+            mPriv->groupLocalPending[handle] = GroupLocalPendingInfo();
+        }
+    }
+
+    mPriv->continueIntrospection();
+}
+
+void Channel::gotLocalPending(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<LocalPendingInfoList> reply = *watcher;
+
+    if (reply.isError()) {
+        warning().nospace() << "Channel.Interface.Group::GetLocalPendingMembersWithInfo() failed with " << reply.error().name() << ": " << reply.error().message();
+        warning() << " Falling back to what GetAllMembers returned with no extended info";
+    } else {
+        debug() << "Got reply to fallback Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
+
+        foreach (LocalPendingInfo info, reply.value()) {
+            mPriv->groupLocalPending[info.toBeAdded] =
+                GroupLocalPendingInfo(info.actor, info.reason, info.message);
+        }
     }
 
     mPriv->continueIntrospection();
@@ -545,7 +584,25 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
         mPriv->groupMembers.insert(handle);
     }
 
-    // TODO local pending
+    foreach (uint handle, localPending) {
+        debug() << " LP" << handle;
+
+        GroupLocalPendingInfo info(actor, reason, message);
+
+        // Special-case renaming a local-pending contact, if the signal is
+        // spec-compliant. Keep the old extended info in this case.
+        if (reason == ChannelGroupChangeReasonRenamed
+                && added.size() == 0
+                && localPending.size() == 1
+                && remotePending.size() == 0
+                && removed.size() == 1
+                && mPriv->groupLocalPending.contains(removed[0])) {
+            debug() << " Special-case local pending rename" << removed[0] << " -> " << handle;
+            info = mPriv->groupLocalPending[removed[0]];
+        }
+
+        mPriv->groupLocalPending[handle] = info;
+    }
 
     foreach (uint handle, remotePending) {
         debug() << " RP" << handle;
@@ -555,9 +612,8 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
     foreach (uint handle, removed) {
         debug() << " ---" << handle;
 
-        // TODO local pending
-
         mPriv->groupMembers.remove(handle);
+        mPriv->groupLocalPending.remove(handle);
         mPriv->groupRemotePending.remove(handle);
 
         if (handle == mPriv->groupSelfHandle) {

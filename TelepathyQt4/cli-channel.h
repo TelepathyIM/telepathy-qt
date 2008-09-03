@@ -182,6 +182,36 @@ public:
     uint targetHandle() const;
 
     /**
+     * \name Group interface helpers
+     */
+    //@{
+
+    class GroupLocalPendingInfo
+    {
+    public:
+
+        GroupLocalPendingInfo()
+            : mActor(-1), mReason(0), mIsValid(false) {}
+
+        GroupLocalPendingInfo(uint actor, uint reason, const QString& message)
+            : mActor(actor), mReason(reason), mMessage(message), mIsValid(true) {}
+
+        bool isValid() const { return mIsValid; }
+
+        uint actor() const { return mActor; }
+        uint reason() const { return mReason; }
+        const QString& message() const { return mMessage; }
+
+    private:
+        uint mActor;
+        uint mReason;
+        QString mMessage;
+        bool mIsValid;
+    };
+
+    //@}
+
+    /**
      * \name Optional interface proxy factory
      *
      * Factory functions fabricating proxies for optional %Channel interfaces and
@@ -444,6 +474,7 @@ private Q_SLOTS:
     void gotGroupProperties(QDBusPendingCallWatcher* watcher);
     void gotGroupFlags(QDBusPendingCallWatcher* watcher);
     void gotAllMembers(QDBusPendingCallWatcher* watcher);
+    void gotLocalPending(QDBusPendingCallWatcher* watcher);
     void gotSelfHandle(QDBusPendingCallWatcher* watcher);
     void onGroupFlagsChanged(uint, uint);
     void onMembersChanged(const QString&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint);
