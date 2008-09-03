@@ -70,10 +70,16 @@ namespace Client
  * </ul>
  *
  * The remote object state accessor functions on this object (interfaces(),
- * channelType(), handleType(), handle()) don't make any DBus calls; instead,
- * they return values cached from a previous introspection run. The introspection
- * process populates their values in the most efficient way possible based on
- * what the service implements.
+ * channelType(), targetHandleType(), targetHandle()) don't make any DBus calls;
+ * instead, they return values cached from a previous introspection run. The
+ * introspection process populates their values in the most efficient way
+ * possible based on what the service implements. However, their value is not
+ * defined unless the object has readiness #ReadinessFull, as returned by
+ * readiness() and indicated by emissions of the readinessChanged() signal.
+ *
+ * Additionally, the state of the Group interface on the remote object (if
+ * present) will be cached in the introspection process, and also tracked for
+ * any changes.
  */
 class Channel : public ChannelInterface, private OptionalInterfaceFactory
 {
@@ -181,10 +187,54 @@ public:
      */
     uint targetHandle() const;
 
+Q_SIGNALS:
     /**
-     * \name Group interface helpers
+     * Emitted whenever the readiness of the Channel changes.
+     *
+     * \param newReadiness The new readiness, as defined in #Readiness.
+     */
+    void readinessChanged(Telepathy::Client::Channel::Readiness newReadiness);
+
+    /**
+     * \name Group interface
+     *
+     * Cached access to state of the group interface on the associated remote
+     * object, if the interface is present. All methods return undefined values
+     * if the list returned by interfaces() doesn't include
+     * #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP or if the object doesn't have
+     * readiness #ReadinessFull.
+     *
+     * As the Group interface state can change freely during the lifetime of the
+     * group due to events like new contacts joining the group, the cached state
+     * is automatically kept in sync with the remote object's state by hooking
+     * to the change notification signals present in the D-Bus interface.
+     *
+     * As the cached value changes, change notification signals are emitted.
+     * However, the value being initially discovered by introspection is still
+     * signaled by a readiness change to #ReadinessFull.
+     *
+     * There is a change notification signal <attribute>Changed corresponding to
+     * each cached attribute. The first parameter for each of these signals is
+     * the new value of the attribute, which is suited for displaying the value
+     * of the attribute in a widget in a model-view fashion. The remaining
+     * arguments depend on the attribute, but in general include at least the
+     * delta from the previous state of the attribute to the new state.
+     *
+     * Check the individual signals' descriptions for details.
      */
     //@{
+
+public:
+
+    /**
+     * Returns a set of flags indicating the capabilities and behaviour of the
+     * group represented by the remote object.
+     *
+     * Change notification is via groupFlagsChanged().
+     *
+     * \return Bitfield combination of flags, as defined in #ChannelGroupFlag.
+     */
+    uint groupFlags() const;
 
     class GroupLocalPendingInfo
     {
@@ -209,6 +259,24 @@ public:
         bool mIsValid;
     };
 
+Q_SIGNALS:
+
+    /**
+     * Emitted when the value returned by groupFlags() changes.
+     *
+     * \param flags The new set of flags.
+     */
+    void groupFlagsHasNewValue(uint flags);
+
+    /**
+     * Emitted when the value returned by groupFlags() changes.
+     *
+     * \param flags New value of the set of flags.
+     * \param added Flags added compared to the previous value.
+     * \param removed Flags removed compared to the previous value.
+     */
+    void groupFlagsChanged(uint flags, uint added, uint removed);
+
     //@}
 
     /**
@@ -218,6 +286,8 @@ public:
      * interfaces for specific channel types.
      */
     //@{
+
+public:
 
     /**
      * Returns a pointer to a valid instance of a given %Channel optional
@@ -455,14 +525,6 @@ public:
     }
 
     //@}
-
-Q_SIGNALS:
-    /**
-     * Emitted whenever the readiness of the Channel changes.
-     *
-     * \param newReadiness The new readiness, as defined in #Readiness.
-     */
-    void readinessChanged(Telepathy::Client::Channel::Readiness newReadiness);
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher* watcher);

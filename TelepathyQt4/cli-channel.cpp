@@ -357,6 +357,11 @@ uint Channel::targetHandle() const
     return mPriv->targetHandle;
 }
 
+uint Channel::groupFlags() const
+{
+    return mPriv->groupFlags;
+}
+
 void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -588,6 +593,11 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
 
     mPriv->groupFlags |= added;
     mPriv->groupFlags &= ~removed;
+
+    if (added || removed) {
+        debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags << "value" << added << "added" << removed << "removed";
+        emit groupFlagsChanged(mPriv->groupFlags, added, removed);
+    }
 }
 
 void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, const Telepathy::UIntList& localPending, const Telepathy::UIntList& remotePending, uint actor, uint reason)
