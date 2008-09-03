@@ -51,16 +51,26 @@ struct Channel::Private
     QQueue<void (Private::*)()> introspectQueue;
 
     // Introspected properties
+
+    // Main interface
     QString channelType;
     uint targetHandleType;
     uint targetHandle;
+
+    // Group flags
     uint groupFlags;
-    bool groupAreHandleOwnersAvailable;
-    HandleOwnerMap groupHandleOwners;
+
+    // Group members
     bool groupHaveMembers;
     QSet<uint> groupMembers;
     QMap<uint, GroupLocalPendingInfo> groupLocalPending;
     QSet<uint> groupRemotePending;
+
+    // Group handle owners
+    bool groupAreHandleOwnersAvailable;
+    HandleOwnerMap groupHandleOwners;
+
+    // Group self handle
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
 
@@ -76,8 +86,8 @@ struct Channel::Private
         targetHandle = 0;
 
         groupFlags = 0;
-        groupAreHandleOwnersAvailable = false;
         groupHaveMembers = false;
+        groupAreHandleOwnersAvailable = false;
         groupIsSelfHandleTracked = false;
         groupSelfHandle = 0;
 
