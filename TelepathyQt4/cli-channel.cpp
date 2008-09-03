@@ -278,6 +278,7 @@ struct Channel::Private
                 else
                     debug() << " Group: No handle owners property present";
                 debug() << " Group: Number of current members" << groupMembers.size();
+                debug() << " Group: Number of local pending members" << groupLocalPending.size();
                 debug() << " Group: Number of remote pending members" << groupRemotePending.size();
                 debug() << " Group: Self handle" << groupSelfHandle << "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
             }
