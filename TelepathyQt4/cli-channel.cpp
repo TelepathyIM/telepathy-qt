@@ -63,7 +63,7 @@ struct Channel::Private
     // Group members
     bool groupHaveMembers;
     QSet<uint> groupMembers;
-    QMap<uint, GroupLocalPendingInfo> groupLocalPending;
+    GroupLocalPendingInfoMap groupLocalPending;
     QSet<uint> groupRemotePending;
 
     // Group handle owners
@@ -362,6 +362,21 @@ uint Channel::groupFlags() const
     return mPriv->groupFlags;
 }
 
+QSet<uint> Channel::groupMembers() const
+{
+    return mPriv->groupMembers;
+}
+
+Channel::GroupLocalPendingInfoMap Channel::groupLocalPending() const
+{
+    return mPriv->groupLocalPending;
+}
+
+QSet<uint> Channel::groupRemotePending() const
+{
+    return mPriv->groupRemotePending;
+}
+
 void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -609,14 +624,22 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
         return;
     }
 
+    UIntList currentAdded;
+    UIntList currentRemoved;
+    UIntList localAdded;
+    UIntList localRemoved;
+    UIntList remoteAdded;
+    UIntList remoteRemoved;
+
     foreach (uint handle, added) {
-        debug() << " +++" << handle;
-        mPriv->groupMembers.insert(handle);
+        if (!mPriv->groupMembers.contains(handle)) {
+            debug() << " +++" << handle;
+            mPriv->groupMembers.insert(handle);
+            currentAdded.append(handle);
+        }
     }
 
     foreach (uint handle, localPending) {
-        debug() << " LP" << handle;
-
         GroupLocalPendingInfo info(actor, reason, message);
 
         // Special-case renaming a local-pending contact, if the signal is
@@ -631,21 +654,35 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
             info = mPriv->groupLocalPending[removed[0]];
         }
 
-        mPriv->groupLocalPending[handle] = info;
+        if (!mPriv->groupLocalPending.contains(handle)) {
+            debug() << " LP" << handle;
+            mPriv->groupLocalPending[handle] = info;
+            localAdded.append(handle);
+        }
     }
 
     foreach (uint handle, remotePending) {
-        debug() << " RP" << handle;
-        mPriv->groupRemotePending.insert(handle);
+        if (!mPriv->groupRemotePending.contains(handle)) {
+            debug() << " RP" << handle;
+            mPriv->groupRemotePending.insert(handle);
+            remoteAdded.append(handle);
+        }
     }
 
     foreach (uint handle, removed) {
         debug() << " ---" << handle;
 
-        mPriv->groupMembers.remove(handle);
-        mPriv->groupLocalPending.remove(handle);
-        mPriv->groupRemotePending.remove(handle);
+        if (mPriv->groupMembers.remove(handle))
+            currentRemoved.append(handle);
 
+        if (mPriv->groupLocalPending.remove(handle))
+            localRemoved.append(handle);
+
+        if (mPriv->groupRemotePending.remove(handle))
+            remoteRemoved.append(handle);
+
+#if 0
+        // TODO self rename before enabling again!
         if (handle == mPriv->groupSelfHandle) {
             debug() << " Self handle removed, saving info...";
 
@@ -654,6 +691,22 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
             mPriv->groupRemoveReason = reason;
             mPriv->groupRemoveMessage = message;
         }
+#endif
+    }
+
+    if (currentAdded.size() || currentRemoved.size()) {
+        debug() << " Emitting groupMembersChanged with" << currentAdded.size() << "contacts added and" << currentRemoved.size() << "contacts removed";
+        emit groupMembersChanged(mPriv->groupMembers, currentAdded, currentRemoved, actor, reason, message);
+    }
+
+    if (localAdded.size() || localRemoved.size()) {
+        debug() << " Emitting groupLocalPendingChanged with" << localAdded.size() << "contacts added and" << localRemoved.size() << "contacts removed";
+        emit groupLocalPendingChanged(mPriv->groupLocalPending, localAdded, localRemoved, actor, reason, message);
+    }
+
+    if (remoteAdded.size() || remoteRemoved.size()) {
+        debug() << " Emitting groupRemotePendingChanged with" << remoteAdded.size() << "contacts added and" << remoteRemoved.size() << "contacts removed";
+        emit groupMembersChanged(mPriv->groupRemotePending, remoteAdded, remoteRemoved, actor, reason, message);
     }
 }
 

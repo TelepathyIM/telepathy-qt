@@ -236,6 +236,20 @@ public:
      */
     uint groupFlags() const;
 
+    /**
+     * Returns the current members of the group.
+     *
+     * \return Set of handles representing the members.
+     */
+    QSet<uint> groupMembers() const;
+
+    /**
+     * Class opaquely storing information on a contact whose attempt to join the
+     * group is to be confirmed by the local user using AddMembers().
+     *
+     * Extended information is not always available; this will be reflected by
+     * the return value of isValid().
+     */
     class GroupLocalPendingInfo
     {
     public:
@@ -246,10 +260,38 @@ public:
         GroupLocalPendingInfo(uint actor, uint reason, const QString& message)
             : mActor(actor), mReason(reason), mMessage(message), mIsValid(true) {}
 
+        /**
+         * Returns whether or not this object actually contains valid
+         * information received from the service. For some, particularly older
+         * services, extended information will not always be available. If the
+         * returned value is false, the values returned by the other methods for
+         * this object are undefined.
+         *
+         * \return Whether the information stored in this object is valid.
+         */
         bool isValid() const { return mIsValid; }
 
+        /**
+         * Returns the contact requesting or causing the change.
+         *
+         * \return The handle of the contact.
+         */
         uint actor() const { return mActor; }
+
+        /**
+         * Returns the reason for the change.
+         *
+         * \return The reason, as specified in #ChannelGroupChangeReason.
+         */
         uint reason() const { return mReason; }
+
+        /**
+         * Returns a human-readable message from the contact represented by
+         * actor() pertaining to the change, or an empty string if there is no
+         * message.
+         *
+         * \return The message as a string.
+         */
         const QString& message() const { return mMessage; }
 
     private:
@@ -259,25 +301,92 @@ public:
         bool mIsValid;
     };
 
+    /**
+     * Mapping from contact handles to local pending contact information.
+     */
+    typedef QMap<uint, GroupLocalPendingInfo> GroupLocalPendingInfoMap;
+
+    /**
+     * Returns the members currently waiting for local approval to join the
+     * group.
+     *
+     * The returned value is a mapping from contact handles to
+     * GroupLocalPendingInfo objects. See the documentation for that class for
+     * more information.
+     *
+     * \returns A mapping from handles to info for the members waiting for local
+     *          approval.
+     */
+    GroupLocalPendingInfoMap groupLocalPending() const;
+
+    /**
+     * Returns the contacts currently waiting for remote approval to join the
+     * group.
+     *
+     * \returns Set of handles representing the contacts.
+     */
+    QSet<uint> groupRemotePending() const;
+
 Q_SIGNALS:
 
     /**
      * Emitted when the value returned by groupFlags() changes.
      *
-     * \param flags The new set of flags.
-     */
-    void groupFlagsHasNewValue(uint flags);
-
-    /**
-     * Emitted when the value returned by groupFlags() changes.
-     *
-     * \param flags New value of the set of flags.
+     * \param flags The value which would now be returned by groupFlags().
      * \param added Flags added compared to the previous value.
      * \param removed Flags removed compared to the previous value.
      */
     void groupFlagsChanged(uint flags, uint added, uint removed);
 
-    //@}
+    /**
+     * Emitted when the value returned by groupMembers() changes.
+     *
+     * \param members The value which would now be returned by groupMembers().
+     * \param added Handles of the contacts which were added to the value.
+     * \param remove Handles of the contacts which were removed from the value.
+     * \param actor Handle of the contact requesting or causing the change.
+     * \param reason Reason of the change, as specified in
+     *        #ChannelGroupChangeReason.
+     * \param message Message specified by the actor related to the change, such
+     *        as the part message in IRC.
+     */
+    void groupMembersChanged(const QSet<uint>& members, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
+
+    /**
+     * Emitted when the value returned by groupLocalPending() changes.
+     *
+     * The added and remove lists only specify the handles of the contacts added
+     * to or removed from the mapping, not the extended information pertaining
+     * to them. Local pending info never changes for a particular contact after
+     * the contact first appears in the mapping, so no change notification is
+     * necessary for the extended information itself.
+     *
+     * \param localPending The value which would now be returned by
+     *        groupLocalPending().
+     * \param added Handles of the contacts which were added to the value.
+     * \param remove Handles of the contacts which were removed from the value.
+     * \param actor Handle of the contact requesting or causing the change.
+     * \param reason Reason of the change, as specified in
+     *        #ChannelGroupChangeReason.
+     * \param message Message specified by the actor related to the change, such
+     *        as the part message in IRC.
+     */
+    void groupLocalPendingChanged(const GroupLocalPendingInfoMap& localPending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
+
+    /**
+     * Emitted when the value returned by groupRemotePending() changes.
+     *
+     * \param members The value which would now be returned by
+     *        groupRemotePending().
+     * \param added Handles of the contacts which were added to the value.
+     * \param remove Handles of the contacts which were removed from the value.
+     * \param actor Handle of the contact requesting or causing the change.
+     * \param reason Reason of the change, as specified in
+     *        #ChannelGroupChangeReason.
+     * \param message Message specified by the actor related to the change, such
+     *        as the part message in IRC.
+     */
+    void groupRemotePendingChanged(const QSet<uint>& remotePending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
 
     /**
      * \name Optional interface proxy factory
@@ -551,5 +660,8 @@ private:
 
 }
 }
+
+Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupLocalPendingInfo);
+Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupLocalPendingInfoMap);
 
 #endif
