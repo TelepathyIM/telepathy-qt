@@ -213,12 +213,13 @@ Q_SIGNALS:
      * However, the value being initially discovered by introspection is still
      * signaled by a readiness change to #ReadinessFull.
      *
-     * There is a change notification signal <attribute>Changed corresponding to
-     * each cached attribute. The first parameter for each of these signals is
-     * the new value of the attribute, which is suited for displaying the value
-     * of the attribute in a widget in a model-view fashion. The remaining
-     * arguments depend on the attribute, but in general include at least the
-     * delta from the previous state of the attribute to the new state.
+     * There is a change notification signal &lt;attribute&gt;Changed
+     * corresponding to each cached attribute. The first parameter for each of
+     * these signals is the new value of the attribute, which is suited for
+     * displaying the value of the attribute in a widget in a model-view
+     * fashion. The remaining arguments depend on the attribute, but in general
+     * include at least the delta from the previous state of the attribute to
+     * the new state.
      *
      * Check the individual signals' descriptions for details.
      */
@@ -382,7 +383,7 @@ Q_SIGNALS:
      *
      * \param members The value which would now be returned by groupMembers().
      * \param added Handles of the contacts which were added to the value.
-     * \param remove Handles of the contacts which were removed from the value.
+     * \param removed Handles of the contacts which were removed from the value.
      * \param actor Handle of the contact requesting or causing the change.
      * \param reason Reason of the change, as specified in
      *        #ChannelGroupChangeReason.
@@ -403,7 +404,7 @@ Q_SIGNALS:
      * \param localPending The value which would now be returned by
      *        groupLocalPending().
      * \param added Handles of the contacts which were added to the value.
-     * \param remove Handles of the contacts which were removed from the value.
+     * \param removed Handles of the contacts which were removed from the value.
      * \param actor Handle of the contact requesting or causing the change.
      * \param reason Reason of the change, as specified in
      *        #ChannelGroupChangeReason.
@@ -415,10 +416,10 @@ Q_SIGNALS:
     /**
      * Emitted when the value returned by groupRemotePending() changes.
      *
-     * \param members The value which would now be returned by
+     * \param remotePending The value which would now be returned by
      *        groupRemotePending().
      * \param added Handles of the contacts which were added to the value.
-     * \param remove Handles of the contacts which were removed from the value.
+     * \param removed Handles of the contacts which were removed from the value.
      * \param actor Handle of the contact requesting or causing the change.
      * \param reason Reason of the change, as specified in
      *        #ChannelGroupChangeReason.
@@ -433,7 +434,7 @@ Q_SIGNALS:
      * \param owners The value which would now be returned by
      *               groupHandleOwners().
      * \param added Handles which have been added to the mapping as keys, or
-     *              existing handle keys for which the value has changed.
+     *              existing handle keys for which the mapped-to value has changed.
      * \param removed Handles which have been removed from the mapping.
      */
     void groupHandleOwnersChanged(const HandleOwnerMap& owners, const Telepathy::UIntList& added, const Telepathy::UIntList& removed);
