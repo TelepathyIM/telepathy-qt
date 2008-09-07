@@ -377,6 +377,16 @@ QSet<uint> Channel::groupRemotePending() const
     return mPriv->groupRemotePending;
 }
 
+bool Channel::groupAreHandleOwnersAvailable() const
+{
+    return mPriv->groupAreHandleOwnersAvailable;
+}
+
+HandleOwnerMap Channel::groupHandleOwners() const
+{
+    return mPriv->groupHandleOwners;
+}
+
 void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -719,13 +729,35 @@ void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap& added, cons
         return;
     }
 
+    UIntList emitAdded;
+    UIntList emitRemoved;
+
     for (HandleOwnerMap::const_iterator i = added.begin();
                                         i != added.end();
-                                        ++i)
-        mPriv->groupHandleOwners[i.key()] = i.value();
+                                        ++i) {
+        uint handle = i.key();
+        uint global = i.value();
 
-    foreach (uint handle, removed)
-        mPriv->groupHandleOwners.remove(handle);
+        if (!mPriv->groupHandleOwners.contains(handle)
+                || mPriv->groupHandleOwners[handle]) {
+            debug() << " +++/changed" << handle << "->" << global;
+            mPriv->groupHandleOwners[global] = global;
+            emitAdded.append(handle);
+        }
+    }
+
+    foreach (uint handle, removed) {
+        if (mPriv->groupHandleOwners.contains(handle)) {
+            debug() << " ---" << handle;
+            mPriv->groupHandleOwners.remove(handle);
+            emitRemoved.append(handle);
+        }
+    }
+
+    if (emitAdded.size() || emitRemoved.size()) {
+        debug() << "Emitting groupHandleOwnersChanged with" << emitAdded.size() << "added" << emitRemoved.size() << "removed";
+        emit groupHandleOwnersChanged(mPriv->groupHandleOwners, emitAdded, emitRemoved);
+    }
 }
 
 void Channel::onSelfHandleChanged(uint newSelfHandle)

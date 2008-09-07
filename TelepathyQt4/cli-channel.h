@@ -327,6 +327,45 @@ public:
      */
     QSet<uint> groupRemotePending() const;
 
+    /**
+     * Returns whether globally valid handles can be looked up using the
+     * channel-specific handle on this channel using this object.
+     *
+     * Handle owner lookup is only available if:
+     * <ul>
+     *  <li>The object has readiness #ReadinessFull
+     *  <li>The list returned by interfaces() contains
+     *        #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP</li>
+     *  <li>The set of flags returned by groupFlags() contains
+     *        GroupFlagProperties and GroupFlagChannelSpecificHandles</li>
+     * </ul>
+     *
+     * If this function returns <code>false</code>, the return value of
+     * groupHandleOwners() is undefined and groupHandleOwnersChanged() will
+     * never be emitted.
+     *
+     * The value returned by this function will stay fixed for the entire time
+     * the object spends having readiness #ReadinessFull, so no change
+     * notification is provided.
+     *
+     * \return If handle owner lookup functionality is available.
+     */
+    bool groupAreHandleOwnersAvailable() const;
+
+    /**
+     * Returns a mapping of handles specific to this channel to globally valid
+     * handles.
+     *
+     * The mapping includes at least all of the channel-specific handles in this
+     * channel's members, local-pending and remote-pending sets as keys. Any
+     * handle not in the keys of this mapping is not channel-specific in this
+     * channel. Handles which are channel-specific, but for which the owner is
+     * unknown, appear in this mapping with 0 as owner.
+     *
+     * \return A mapping from group-specific handles to globally valid handles.
+     */
+    HandleOwnerMap groupHandleOwners() const;
+
 Q_SIGNALS:
 
     /**
@@ -387,6 +426,17 @@ Q_SIGNALS:
      *        as the part message in IRC.
      */
     void groupRemotePendingChanged(const QSet<uint>& remotePending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
+
+    /**
+     * Emitted when the value returned by groupHandleOwners() changes.
+     *
+     * \param owners The value which would now be returned by
+     *               groupHandleOwners().
+     * \param added Handles which have been added to the mapping as keys, or
+     *              existing handle keys for which the value has changed.
+     * \param removed Handles which have been removed from the mapping.
+     */
+    void groupHandleOwnersChanged(const HandleOwnerMap& owners, const Telepathy::UIntList& added, const Telepathy::UIntList& removed);
 
     /**
      * \name Optional interface proxy factory
