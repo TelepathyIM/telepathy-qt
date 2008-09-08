@@ -25,10 +25,11 @@
 #include <TelepathyQt4/_gen/cli-connection.moc.hpp>
 #include <TelepathyQt4/cli-connection.moc.hpp>
 
+#include <QMap>
 #include <QQueue>
+#include <QString>
 #include <QtGlobal>
 
-#include "cli-dbus.h"
 #include "debug-internal.hpp"
 
 namespace Telepathy
@@ -42,10 +43,10 @@ struct Connection::Private
     Connection& parent;
 
     // Optional interface proxies
-    ConnectionInterfaceAliasingInterface aliasing;
-    ConnectionInterfacePresenceInterface presence;
-    ConnectionInterfaceSimplePresenceInterface simplePresence;
-    DBus::PropertiesInterface properties;
+    QMap<QString, QDBusAbstractInterface*> optionalInterfaces;
+    ConnectionInterfaceAliasingInterface* aliasing;
+    ConnectionInterfacePresenceInterface* presence;
+    DBus::PropertiesInterface* properties;
 
     // Introspection
     bool initialIntrospection;
@@ -61,12 +62,12 @@ struct Connection::Private
     SimpleStatusSpecMap simplePresenceStatuses;
 
     Private(Connection &parent)
-        : parent(parent),
-          aliasing(parent),
-          presence(parent),
-          simplePresence(parent),
-          properties(parent)
+        : parent(parent)
     {
+        aliasing = 0;
+        presence = 0;
+        properties = 0;
+
         initialIntrospection = false;
         readiness = ReadinessJustCreated;
         status = ConnectionStatusDisconnected;
@@ -96,9 +97,14 @@ struct Connection::Private
             return;
         }
 
+        if (!aliasing) {
+            aliasing = parent.aliasingInterface();
+            Q_ASSERT(aliasing != 0);
+        }
+
         debug() << "Calling GetAliasFlags()";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(aliasing.GetAliasFlags(), &parent);
+            new QDBusPendingCallWatcher(aliasing->GetAliasFlags(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotAliasFlags(QDBusPendingCallWatcher*)));
@@ -125,9 +131,14 @@ struct Connection::Private
             return;
         }
 
+        if (!presence) {
+            presence = parent.presenceInterface();
+            Q_ASSERT(presence != 0);
+        }
+
         debug() << "Calling GetStatuses() (legacy)";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(presence.GetStatuses(), &parent);
+            new QDBusPendingCallWatcher(presence->GetStatuses(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotStatuses(QDBusPendingCallWatcher*)));
@@ -135,9 +146,14 @@ struct Connection::Private
 
     void introspectSimplePresence()
     {
+        if (!properties) {
+            properties = parent.propertiesInterface();
+            Q_ASSERT(properties != 0);
+        }
+
         debug() << "Getting available SimplePresence statuses";
         QDBusPendingCall call =
-            properties.Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
+            properties->Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
                            "Statuses");
         QDBusPendingCallWatcher* watcher =
             new QDBusPendingCallWatcher(call, &parent);
@@ -246,6 +262,26 @@ StatusSpecMap Connection::presenceStatuses() const
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
     return mPriv->simplePresenceStatuses;
+}
+
+QDBusAbstractInterface* Connection::internalCachedInterface(const QString& name) const
+{
+    if (mPriv->optionalInterfaces.contains(name)) {
+        debug() << "Returning cached interface for" << name;
+        return mPriv->optionalInterfaces.value(name);
+    } else {
+        debug() << "No interface found for" << name;
+        return 0;
+    }
+}
+
+void Connection::internalInterfaceCache(QDBusAbstractInterface* interface) const
+{
+    QString name = interface->interface();
+    Q_ASSERT(!mPriv->optionalInterfaces.contains(name));
+
+    debug() << "Caching interface" << name;
+    mPriv->optionalInterfaces[name] = interface;
 }
 
 void Connection::onStatusChanged(uint status, uint reason)

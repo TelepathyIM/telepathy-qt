@@ -47,6 +47,7 @@
 #include <QStringList>
 
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Client/DBus>
 
 namespace Telepathy
 {
@@ -235,6 +236,55 @@ public:
      */
     SimpleStatusSpecMap simplePresenceStatuses() const;
 
+    template <class Interface>
+    inline Interface* optionalInterface(bool forcePresent = true) const
+    {
+        // Check for the remote object supporting the interface
+        QString name(Interface::staticInterfaceName());
+        if (!forcePresent && !interfaces().contains(name))
+            return 0;
+
+        // If there is a interface cached already, return it
+        QDBusAbstractInterface* cached = internalCachedInterface(name);
+        if (cached)
+            return static_cast<Interface*>(cached);
+
+        // Otherwise, cache and return a newly constructed proxy
+        Interface* interface = new Interface(*this, 0);
+        internalInterfaceCache(interface);
+        return interface;
+    }
+
+    inline ConnectionInterfaceAliasingInterface* aliasingInterface(bool forcePresent = true) const
+    {
+        return optionalInterface<ConnectionInterfaceAliasingInterface>(forcePresent);
+    }
+
+    inline ConnectionInterfaceAvatarsInterface* avatarsInterface(bool forcePresent = true) const
+    {
+        return optionalInterface<ConnectionInterfaceAvatarsInterface>(forcePresent);
+    }
+
+    inline ConnectionInterfaceCapabilitiesInterface* capabilitiesInterface(bool forcePresent = true) const
+    {
+        return optionalInterface<ConnectionInterfaceCapabilitiesInterface>(forcePresent);
+    }
+
+    inline ConnectionInterfacePresenceInterface* presenceInterface(bool forcePresent = true) const
+    {
+        return optionalInterface<ConnectionInterfacePresenceInterface>(forcePresent);
+    }
+
+    inline ConnectionInterfaceSimplePresenceInterface* simplePresenceInterface(bool forcePresent = true) const
+    {
+        return optionalInterface<ConnectionInterfaceSimplePresenceInterface>(forcePresent);
+    }
+
+    inline DBus::PropertiesInterface* propertiesInterface(bool forcePresent = true) const
+    {
+        return optionalInterface<DBus::PropertiesInterface>(forcePresent);
+    }
+
 Q_SIGNALS:
     /**
      * Emitted whenever the readiness of the Connection changes.
@@ -252,6 +302,9 @@ private Q_SLOTS:
     void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
 
 private:
+    QDBusAbstractInterface* internalCachedInterface(const QString& name) const;
+    void internalInterfaceCache(QDBusAbstractInterface* interface) const;
+
     struct Private;
     friend struct Private;
     Private *mPriv;
