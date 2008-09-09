@@ -58,6 +58,7 @@ namespace Client
 /**
  * \class Connection
  * \ingroup clientconn
+ * \headerfile <TelepathyQt4/cli-connection.h> <TelepathyQt4/Client/Connection>
  *
  * High-level proxy object for accessing remote %Telepathy %Connection objects.
  *
@@ -66,14 +67,14 @@ namespace Client
  * <ul>
  *  <li>%Connection status tracking</li>
  *  <li>Calling GetInterfaces() automatically</li>
- *  <li>Calling GetAliasFlags() automatically</li>
- *  <li>Calling GetStatuses() automatically</li>
- *  <li>Getting the SimplePresence Statuses property automatically</li>
+ *  <li>Calling ConnectionInterfaceAliasingInterface::GetAliasFlags() automatically</li>
+ *  <li>Calling ConnectionInterfacePresenceInterface::GetStatuses() automatically</li>
+ *  <li>Getting the ConnectionInterfaceSimplePresenceInterface::Statuses property automatically</li>
  * </ul>
  *
  * The remote object state accessor functions on this object (status(),
  * statusReason(), aliasFlags(), presenceStatuses(), simplePresenceStatuses())
- * don't make any DBus calls; instead, they return values cached from a previous
+ * don't make any %DBus calls; instead, they return values cached from a previous
  * introspection run.
  */
 class Connection : public ConnectionInterface, private OptionalInterfaceFactory
