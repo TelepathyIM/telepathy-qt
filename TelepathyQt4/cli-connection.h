@@ -238,6 +238,27 @@ public:
      */
     SimpleStatusSpecMap simplePresenceStatuses() const;
 
+    /**
+     * Returns a pointer to a valid instance of a given %Connection optional
+     * interface class, associated with the same remote object the Connection is
+     * associated with, and destroyed at the same time the Connection is
+     * destroyed.
+     *
+     * If the list returned by interfaces() doesn't contain the name of the
+     * interface requested, or the connection doesn't have readiness
+     * #ReadinessNotYetConnected or #ReadinessFull, <code>0</code> is returned.
+     * This check can be bypassed by specifying <code>true</code> for
+     * <code>forcePresent</code>, in which case a valid instance is always
+     * returned.
+     *
+     * \see OptionalInterfaceFactory::interface
+     *
+     * \tparam Interface Class of the optional interface to get.
+     * \param forcePresent Should an instance be returned even if it can't be
+     *                     determined that the remote object supports the
+     *                     requested interface.
+     * \return Pointer to an instance of the interface class, or <code>0</code>.
+     */
     template <class Interface>
     inline Interface* optionalInterface(bool forcePresent = false) const
     {
@@ -250,34 +271,90 @@ public:
         return OptionalInterfaceFactory::interface<Interface>(*this);
     }
 
+    /**
+     * Convenience function for getting an Aliasing interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ConnectionInterfaceAliasingInterface>(forcePresent)</code>
+     */
     inline ConnectionInterfaceAliasingInterface* aliasingInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfaceAliasingInterface>(forcePresent);
     }
 
+    /**
+     * Convenience function for getting an Avatars interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ConnectionInterfaceAvatarsInterface>(forcePresent)</code>
+     */
     inline ConnectionInterfaceAvatarsInterface* avatarsInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfaceAvatarsInterface>(forcePresent);
     }
 
+    /**
+     * Convenience function for getting a Capabilities interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ConnectionInterfaceCapabilitiesInterface>(forcePresent)</code>
+     */
     inline ConnectionInterfaceCapabilitiesInterface* capabilitiesInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfaceCapabilitiesInterface>(forcePresent);
     }
 
+    /**
+     * Convenience function for getting a Presence interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ConnectionInterfacePresenceInterface>(forcePresent)</code>
+     */
     inline ConnectionInterfacePresenceInterface* presenceInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfacePresenceInterface>(forcePresent);
     }
 
+    /**
+     * Convenience function for getting a SimplePresence interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return
+     * <code>optionalInterface<ConnectionInterfaceSimplePresenceInterface>(forcePresent)</code>
+     */
     inline ConnectionInterfaceSimplePresenceInterface* simplePresenceInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfaceSimplePresenceInterface>(forcePresent);
     }
 
-    inline DBus::PropertiesInterface* propertiesInterface(bool forcePresent = false) const
+    /**
+     * Convenience function for getting a Properties interface proxy. The
+     * Properties interface is not necessarily reported by the services, so a
+     * <code>forcePresent</code> parameter is not provided, and the interface is
+     * always assumed to be present.
+     *
+     * \see optionalInterface()
+     *
+     * \return <code>optionalInterface<DBus::PropertiesInterface>(forcePresent)</code>
+     */
+    inline DBus::PropertiesInterface* propertiesInterface() const
     {
-        return optionalInterface<DBus::PropertiesInterface>(forcePresent);
+        return optionalInterface<DBus::PropertiesInterface>(true);
     }
 
 Q_SIGNALS:
