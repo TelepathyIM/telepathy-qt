@@ -178,6 +178,14 @@ public:
     uint targetHandle() const;
 
     /**
+     * \name Optional interface proxy factory
+     *
+     * Factory functions fabricating proxies for optional %Channel interfaces and
+     * interfaces for specific channel types.
+     */
+    //@{
+
+    /**
      * Returns a pointer to a valid instance of a given %Channel optional
      * interface class, associated with the same remote object the Channel is
      * associated with, and destroyed together with the Channel.
@@ -209,6 +217,104 @@ public:
     }
 
     /**
+     * Convenience function for getting a CallState interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceCallStateInterface>(forcePresent)</code>
+     */
+    inline ChannelInterfaceCallStateInterface* callStateInterface(bool forcePresent = false) const
+    {
+        return optionalInterface<ChannelInterfaceCallStateInterface>(forcePresent);
+    }
+
+    /**
+     * Convenience function for getting a ChatState interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceChatStateInterface>(forcePresent)</code>
+     */
+    inline ChannelInterfaceChatStateInterface* chatStateInterface(bool forcePresent = false) const
+    {
+        return optionalInterface<ChannelInterfaceChatStateInterface>(forcePresent);
+    }
+
+    /**
+     * Convenience function for getting a DTMF interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceDTMFInterface>(forcePresent)</code>
+     */
+    inline ChannelInterfaceDTMFInterface* DTMFInterface(bool forcePresent = false) const
+    {
+        return optionalInterface<ChannelInterfaceDTMFInterface>(forcePresent);
+    }
+
+    /**
+     * Convenience function for getting a Group interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceGroupInterface>(forcePresent)</code>
+     */
+    inline ChannelInterfaceGroupInterface* groupInterface(bool forcePresent = false) const
+    {
+        return optionalInterface<ChannelInterfaceGroupInterface>(forcePresent);
+    }
+
+    /**
+     * Convenience function for getting a Hold interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceHoldInterface>(forcePresent)</code>
+     */
+    inline ChannelInterfaceHoldInterface* holdInterface(bool forcePresent = false) const
+    {
+        return optionalInterface<ChannelInterfaceHoldInterface>(forcePresent);
+    }
+
+    /**
+     * Convenience function for getting a MediaSignalling interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceMediaSignallingInterface>(forcePresent)</code>
+     */
+    inline ChannelInterfaceMediaSignallingInterface* mediaSignallingInterface(bool forcePresent = false) const
+    {
+        return optionalInterface<ChannelInterfaceMediaSignallingInterface>(forcePresent);
+    }
+
+    /**
+     * Convenience function for getting a Password interface proxy.
+     *
+     * \see optionalInterface()
+     *
+     * \param forcePresent If the interface being present check should be
+     *                     bypassed.
+     * \return <code>optionalInterface<ChannelInterfacePasswordInterface>(forcePresent)</code>
+     */
+    inline ChannelInterfacePasswordInterface* passwordInterface(bool forcePresent = false) const
+    {
+        return optionalInterface<ChannelInterfacePasswordInterface>(forcePresent);
+    }
+
+    /**
      * Convenience function for getting a Properties interface proxy. The
      * Properties interface is not necessarily reported by the services, so a
      * <code>forcePresent</code> parameter is not provided, and the interface is
@@ -222,6 +328,99 @@ public:
     {
         return optionalInterface<DBus::PropertiesInterface>(true);
     }
+
+    /**
+     * Returns a pointer to a valid instance of a given %Channel type interface
+     * class, associated with the same remote object the Channel is
+     * associated with, and destroyed together with the Channel.
+     *
+     * If the interface name returned by channelType() isn't equivalent to the
+     * name of the requested interface, or the Channel doesn't have readiness
+     * #ReadinessFull, <code>0</code> is returned. This check can be bypassed by
+     * specifying <code>true</code> for <code>forceType</code>, in which case a
+     * valid instance is always returned.
+     *
+     * Convenience functions are provided for well-known channel types. However,
+     * there is no convenience getter for TypeContactList because the proxy for
+     * that interface doesn't actually have any functionality.
+     *
+     * \see OptionalInterfaceFactory::interface
+     *
+     * \tparam Interface Class of the optional interface to get.
+     * \param forceType Should an instance be returned even if it can't be
+     *                  determined that the remote object is of the requested
+     *                  channel type.
+     * \return Pointer to an instance of the interface class, or <code>0</code>.
+     */
+    template <class Interface>
+    inline Interface* typeInterface(bool forceType = false) const
+    {
+        // Check for the remote object having the correct channel type
+        QString name(Interface::staticInterfaceName());
+        if (!forceType && channelType() != name)
+            return 0;
+
+        // If correct type or forced, delegate to OptionalInterfaceFactory
+        return OptionalInterfaceFactory::interface<Interface>(*this);
+    }
+
+    /**
+     * Convenience function for getting a TypeRoomList interface proxy.
+     *
+     * \see typeInterface()
+     *
+     * \param forceType If the channel being of the type check should be
+     *                  bypassed.
+     * \return <code>typeInterface<ChannelTypeRoomListInterface>(forceType)</code>
+     */
+    inline ChannelTypeRoomListInterface* roomListInterface(bool forceType) const
+    {
+        return optionalInterface<ChannelTypeRoomListInterface>(forceType);
+    }
+
+    /**
+     * Convenience function for getting a TypeStreamedMedia interface proxy.
+     *
+     * \see typeInterface()
+     *
+     * \param forceType If the channel being of the type check should be
+     *                  bypassed.
+     * \return <code>typeInterface<ChannelTypeStreamedMediaInterface>(forceType)</code>
+     */
+    inline ChannelTypeStreamedMediaInterface* streamedMediaInterface(bool forceType) const
+    {
+        return optionalInterface<ChannelTypeStreamedMediaInterface>(forceType);
+    }
+
+    /**
+     * Convenience function for getting a TypeText interface proxy.
+     *
+     * \see typeInterface()
+     *
+     * \param forceType If the channel being of the type check should be
+     *                  bypassed.
+     * \return <code>typeInterface<ChannelTypeTextInterface>(forceType)</code>
+     */
+    inline ChannelTypeTextInterface* textInterface(bool forceType) const
+    {
+        return optionalInterface<ChannelTypeTextInterface>(forceType);
+    }
+
+    /**
+     * Convenience function for getting a TypeTubes interface proxy.
+     *
+     * \see typeInterface()
+     *
+     * \param forceType If the channel being of the type check should be
+     *                  bypassed.
+     * \return <code>typeInterface<ChannelTypeTubesInterface>(forceType)</code>
+     */
+    inline ChannelTypeTubesInterface* tubesInterface(bool forceType) const
+    {
+        return optionalInterface<ChannelTypeTubesInterface>(forceType);
+    }
+
+    //@}
 
 Q_SIGNALS:
     /**
