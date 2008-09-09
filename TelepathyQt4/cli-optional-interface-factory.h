@@ -42,6 +42,17 @@ namespace Telepathy
 namespace Client
 {
 
+/**
+ * \class OptionalInterfaceFactory
+ * \ingroup clientsideproxies
+ * \headerfile <TelepathyQt4/cli-optional-interface-factory.h> <TelepathyQt4/Client/OptionalInterfaceFactory>
+ *
+ * Implementation helper class for high-level proxy classes willing to offer
+ * access to shared instances of interface proxies for optional interfaces.
+ *
+ * This class is included in the public API for the benefit of high-level
+ * proxies in extensions.
+ */
 class OptionalInterfaceFactory
 {
     public:
@@ -52,9 +63,31 @@ class OptionalInterfaceFactory
 
         /**
          * Class destructor.
+         *
+         * Frees all interface instances constructed by this factory.
          */
         ~OptionalInterfaceFactory();
 
+        /**
+         * Return a pointer to a valid instance of a interface class, associated
+         * with the same remote object as the given main interface instance. The
+         * given main interface must be of the class the optional interface is
+         * generated for (for eg. ChannelInterfaceGroupInterface this means
+         * ChannelInterface) or a subclass.
+         *
+         * First invocation of this method for a particular optional interface
+         * class will construct the instance; subsequent calls will return a
+         * pointer to the same instance.
+         *
+         * The returned instance is freed when the factory is destroyed; using
+         * it after destroying the factory will likely produce a crash. As the
+         * instance is shared, it should not be freed directly.
+         *
+         * \tparam OptionalInterface Class of the interface instance to get.
+         * \tparam MainInterface Class of the main interface.
+         * \param mainInterface Main interface instance to use.
+         * \return A pointer to an optional interface instance.
+         */
         template <typename OptionalInterface, typename MainInterface>
         inline OptionalInterface* interface(const MainInterface& mainInterface) const
         {
