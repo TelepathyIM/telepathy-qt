@@ -43,6 +43,9 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
+#include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/Client/OptionalInterfaceFactory>
+
 namespace Telepathy
 {
 namespace Client
@@ -59,6 +62,7 @@ namespace Client
  * <ul>
  *  <li>Life cycle tracking</li>
  *  <li>Getting the channel type, handle type, handle and interfaces automatically</li>
+ *  <li>Shared optional interface proxy instances</li>
  * </ul>
  *
  * The remote object state accessor functions on this object (interfaces(),
@@ -67,7 +71,7 @@ namespace Client
  * process populates their values in the most efficient way possible based on
  * what the service implements.
  */
-class Channel : public ChannelInterface
+class Channel : public ChannelInterface, private OptionalInterfaceFactory
 {
     Q_OBJECT
     Q_ENUMS(Readiness)
@@ -172,6 +176,52 @@ public:
      * \return The handle, which is of the type #targetHandleType() indicates.
      */
     uint targetHandle() const;
+
+    /**
+     * Returns a pointer to a valid instance of a given %Channel optional
+     * interface class, associated with the same remote object the Channel is
+     * associated with, and destroyed together with the Channel.
+     *
+     * If the list returned by interfaces() doesn't contain the name of the
+     * interface requested, or the Channel doesn't have readiness
+     * #ReadinessFull, <code>0</code> is returned. This check can be bypassed by
+     * specifying <code>true</code> for <code>forcePresent</code>, in which case
+     * a valid instance is always returned.
+     *
+     * \see OptionalInterfaceFactory::interface
+     *
+     * \tparam Interface Class of the optional interface to get.
+     * \param forcePresent Should an instance be returned even if it can't be
+     *                     determined that the remote object supports the
+     *                     requested interface.
+     * \return Pointer to an instance of the interface class, or <code>0</code>.
+     */
+    template <class Interface>
+    inline Interface* optionalInterface(bool forcePresent = false) const
+    {
+        // Check for the remote object supporting the interface
+        QString name(Interface::staticInterfaceName());
+        if (!forcePresent && !interfaces().contains(name))
+            return 0;
+
+        // If present or forced, delegate to OptionalInterfaceFactory
+        return OptionalInterfaceFactory::interface<Interface>(*this);
+    }
+
+    /**
+     * Convenience function for getting a Properties interface proxy. The
+     * Properties interface is not necessarily reported by the services, so a
+     * <code>forcePresent</code> parameter is not provided, and the interface is
+     * always assumed to be present.
+     *
+     * \see optionalInterface()
+     *
+     * \return <code>optionalInterface<DBus::PropertiesInterface>(true)</code>
+     */
+    inline DBus::PropertiesInterface* propertiesInterface() const
+    {
+        return optionalInterface<DBus::PropertiesInterface>(true);
+    }
 
 Q_SIGNALS:
     /**

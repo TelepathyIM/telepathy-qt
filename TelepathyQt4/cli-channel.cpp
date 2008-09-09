@@ -42,7 +42,7 @@ struct Channel::Private
     Channel& parent;
 
     // Optional interface proxies
-    DBus::PropertiesInterface properties;
+    DBus::PropertiesInterface* properties;
 
     // Introspection
     Readiness readiness;
@@ -55,11 +55,11 @@ struct Channel::Private
     uint targetHandle;
 
     Private(Channel& parent)
-        : parent(parent),
-          properties(parent)
+        : parent(parent)
     {
         debug() << "Creating new Channel";
 
+        properties = 0;
         readiness = ReadinessJustCreated;
 
         debug() << "Connecting to Channel::Closed()";
@@ -73,10 +73,15 @@ struct Channel::Private
 
     void introspectMain()
     {
+        if (!properties) {
+            properties = parent.propertiesInterface();
+            Q_ASSERT(properties != 0);
+        }
+
         debug() << "Calling Properties::GetAll(Channel)";
         QDBusPendingCallWatcher* watcher =
             new QDBusPendingCallWatcher(
-                    properties.GetAll(TELEPATHY_INTERFACE_CHANNEL), &parent);
+                    properties->GetAll(TELEPATHY_INTERFACE_CHANNEL), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
