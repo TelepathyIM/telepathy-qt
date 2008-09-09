@@ -56,7 +56,7 @@ class OptionalInterfaceFactory
         ~OptionalInterfaceFactory();
 
         template <typename OptionalInterface, typename MainInterface>
-        inline OptionalInterface* interface(MainInterface* mainInterface) const
+        inline OptionalInterface* interface(const MainInterface& mainInterface) const
         {
             // Check that the types given are both subclasses of QDBusAbstractInterface
             QDBusAbstractInterface* mainInterfaceMustBeASubclassOfQDBusAbstractInterface = static_cast<MainInterface*>(NULL);
@@ -71,7 +71,7 @@ class OptionalInterfaceFactory
                 return static_cast<OptionalInterface*>(cached);
 
             // Otherwise, cache and return a newly constructed proxy
-            OptionalInterface* interface = new OptionalInterface(*mainInterface, mainInterface);
+            OptionalInterface* interface = new OptionalInterface(mainInterface, 0);
             cache(interface);
             return interface;
         }

@@ -39,10 +39,20 @@ struct OptionalInterfaceFactory::Private
 OptionalInterfaceFactory::OptionalInterfaceFactory()
     : mPriv(new Private())
 {
+    debug() << "Constructing OptionalInterfaceFactory";
 }
 
 OptionalInterfaceFactory::~OptionalInterfaceFactory()
 {
+    debug() << "Destroying OptionalInterfaceFactory";
+
+    for (QMap<QString, QDBusAbstractInterface*>::iterator i = mPriv->interfaces.begin();
+                                                          i != mPriv->interfaces.end();
+                                                          ++i) {
+        debug().nospace() << " ~" << i.key();
+        delete i.value();
+    }
+
     delete mPriv;
 }
 
