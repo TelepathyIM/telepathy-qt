@@ -9,6 +9,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/MediaSessionHandler>
 #include <TelepathyQt4/Client/MediaStreamHandler>
+#include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/Properties>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
