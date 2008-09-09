@@ -237,7 +237,7 @@ public:
     SimpleStatusSpecMap simplePresenceStatuses() const;
 
     template <class Interface>
-    inline Interface* optionalInterface(bool forcePresent = true) const
+    inline Interface* optionalInterface(bool forcePresent = false) const
     {
         // Check for the remote object supporting the interface
         QString name(Interface::staticInterfaceName());
@@ -255,32 +255,32 @@ public:
         return interface;
     }
 
-    inline ConnectionInterfaceAliasingInterface* aliasingInterface(bool forcePresent = true) const
+    inline ConnectionInterfaceAliasingInterface* aliasingInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfaceAliasingInterface>(forcePresent);
     }
 
-    inline ConnectionInterfaceAvatarsInterface* avatarsInterface(bool forcePresent = true) const
+    inline ConnectionInterfaceAvatarsInterface* avatarsInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfaceAvatarsInterface>(forcePresent);
     }
 
-    inline ConnectionInterfaceCapabilitiesInterface* capabilitiesInterface(bool forcePresent = true) const
+    inline ConnectionInterfaceCapabilitiesInterface* capabilitiesInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfaceCapabilitiesInterface>(forcePresent);
     }
 
-    inline ConnectionInterfacePresenceInterface* presenceInterface(bool forcePresent = true) const
+    inline ConnectionInterfacePresenceInterface* presenceInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfacePresenceInterface>(forcePresent);
     }
 
-    inline ConnectionInterfaceSimplePresenceInterface* simplePresenceInterface(bool forcePresent = true) const
+    inline ConnectionInterfaceSimplePresenceInterface* simplePresenceInterface(bool forcePresent = false) const
     {
         return optionalInterface<ConnectionInterfaceSimplePresenceInterface>(forcePresent);
     }
 
-    inline DBus::PropertiesInterface* propertiesInterface(bool forcePresent = true) const
+    inline DBus::PropertiesInterface* propertiesInterface(bool forcePresent = false) const
     {
         return optionalInterface<DBus::PropertiesInterface>(forcePresent);
     }
