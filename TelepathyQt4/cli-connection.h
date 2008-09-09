@@ -48,6 +48,7 @@
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
 namespace Telepathy
 {
@@ -75,7 +76,7 @@ namespace Client
  * don't make any DBus calls; instead, they return values cached from a previous
  * introspection run.
  */
-class Connection : public ConnectionInterface
+class Connection : public ConnectionInterface, private OptionalInterfaceFactory
 {
     Q_OBJECT
     Q_ENUMS(Readiness);
@@ -244,15 +245,8 @@ public:
         if (!forcePresent && !interfaces().contains(name))
             return 0;
 
-        // If there is a interface cached already, return it
-        QDBusAbstractInterface* cached = internalCachedInterface(name);
-        if (cached)
-            return static_cast<Interface*>(cached);
-
-        // Otherwise, cache and return a newly constructed proxy
-        Interface* interface = new Interface(*this, 0);
-        internalInterfaceCache(interface);
-        return interface;
+        // If present or forced, delegate to OptionalInterfaceFactory
+        return OptionalInterfaceFactory::interface<Interface>(*this);
     }
 
     inline ConnectionInterfaceAliasingInterface* aliasingInterface(bool forcePresent = false) const
@@ -302,9 +296,6 @@ private Q_SLOTS:
     void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
 
 private:
-    QDBusAbstractInterface* internalCachedInterface(const QString& name) const;
-    void internalInterfaceCache(QDBusAbstractInterface* interface) const;
-
     struct Private;
     friend struct Private;
     Private *mPriv;

@@ -43,7 +43,6 @@ struct Connection::Private
     Connection& parent;
 
     // Optional interface proxies
-    QMap<QString, QDBusAbstractInterface*> optionalInterfaces;
     ConnectionInterfaceAliasingInterface* aliasing;
     ConnectionInterfacePresenceInterface* presence;
     DBus::PropertiesInterface* properties;
@@ -262,26 +261,6 @@ StatusSpecMap Connection::presenceStatuses() const
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
     return mPriv->simplePresenceStatuses;
-}
-
-QDBusAbstractInterface* Connection::internalCachedInterface(const QString& name) const
-{
-    if (mPriv->optionalInterfaces.contains(name)) {
-        debug() << "Returning cached interface for" << name;
-        return mPriv->optionalInterfaces.value(name);
-    } else {
-        debug() << "No interface found for" << name;
-        return 0;
-    }
-}
-
-void Connection::internalInterfaceCache(QDBusAbstractInterface* interface) const
-{
-    QString name = interface->interface();
-    Q_ASSERT(!mPriv->optionalInterfaces.contains(name));
-
-    debug() << "Caching interface" << name;
-    mPriv->optionalInterfaces[name] = interface;
 }
 
 void Connection::onStatusChanged(uint status, uint reason)
