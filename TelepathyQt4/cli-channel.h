@@ -400,6 +400,26 @@ public:
      */
     uint groupSelfHandle() const;
 
+    /**
+     * Returns information on the removal of the local user from the group. If
+     * the user hasn't been removed from the group, an object for which
+     * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
+     *
+     * This method works even when the channel has gone into readiness
+     * #ReadinessDead. This is useful for getting the remove information after
+     * missing the corresponding groupMembersChanged() (or
+     * groupLocalPendingChanged()/groupRemotePendingChanged()) signal, as the
+     * local user being removed usually causes the remote %Channel to be closed,
+     * and consequently the Channel object going into that readiness state.
+     *
+     * The returned information is not guaranteed to be correct if
+     * groupIsSelfHandleTracked() returns false and a self handle change has
+     * occurred on the remote object.
+     *
+     * \return The remove info in a GroupMemberChangeInfo object.
+     */
+    GroupMemberChangeInfo groupSelfRemoveInfo() const;
+
 Q_SIGNALS:
 
     /**

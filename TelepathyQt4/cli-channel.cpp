@@ -75,10 +75,7 @@ struct Channel::Private
     uint groupSelfHandle;
 
     // Group remove info
-    bool groupRemoved;
-    uint groupRemoveActor;
-    uint groupRemoveReason;
-    QString groupRemoveMessage;
+    GroupMemberChangeInfo groupSelfRemoveInfo;
 
     Private(Channel& parent)
         : parent(parent)
@@ -96,9 +93,6 @@ struct Channel::Private
         groupAreHandleOwnersAvailable = false;
         groupIsSelfHandleTracked = false;
         groupSelfHandle = 0;
-        groupRemoved = false;
-        groupRemoveActor = 0;
-        groupRemoveReason = 0;
 
         debug() << "Connecting to Channel::Closed()";
         parent.connect(&parent,
@@ -302,7 +296,15 @@ struct Channel::Private
                 debug() << " Group: Self handle" << groupSelfHandle << "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
             }
         } else {
+            Q_ASSERT(newReadiness == ReadinessDead);
+
             debug() << "R.I.P. Channel.";
+
+            if (groupSelfRemoveInfo.isValid()) {
+                debug() << " Group: removed by  " << groupSelfRemoveInfo.actor();
+                debug() << "        because of  " << groupSelfRemoveInfo.reason();
+                debug() << "        with message" << groupSelfRemoveInfo.message();
+            }
         }
 
         readiness = newReadiness;
@@ -395,6 +397,11 @@ bool Channel::groupIsSelfHandleTracked() const
 uint Channel::groupSelfHandle() const
 {
     return mPriv->groupSelfHandle;
+}
+
+Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
+{
+    return mPriv->groupSelfRemoveInfo;
 }
 
 void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
@@ -701,17 +708,10 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
         if (mPriv->groupRemotePending.remove(handle))
             remoteRemoved.append(handle);
 
-#if 0
-        // TODO self rename before enabling again!
         if (handle == mPriv->groupSelfHandle) {
             debug() << " Self handle removed, saving info...";
-
-            mPriv->groupRemoved = true;
-            mPriv->groupRemoveActor = actor;
-            mPriv->groupRemoveReason = reason;
-            mPriv->groupRemoveMessage = message;
+            mPriv->groupSelfRemoveInfo = GroupMemberChangeInfo(actor, reason, message);
         }
-#endif
     }
 
     if (currentAdded.size() || currentRemoved.size()) {
