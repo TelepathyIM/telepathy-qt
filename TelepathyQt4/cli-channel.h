@@ -186,6 +186,26 @@ public:
     //@{
 
     /**
+     * Specifies if the interface being supported by the remote object should be
+     * checked by optionalInterface(), typeInterface() and the convenience
+     * functions for them.
+     */
+    enum InterfaceSupportedChecking
+    {
+        /**
+         * Don't return an interface instance unless it can be guaranteed that
+         * the remote object actually implements the interface.
+         */
+        CheckInterfaceSupported,
+
+        /**
+         * Return an interface instance even if it can't be verified that the
+         * remote object supports the interface.
+         */
+        BypassInterfaceCheck
+    };
+
+    /**
      * Returns a pointer to a valid instance of a given %Channel optional
      * interface class, associated with the same remote object the Channel is
      * associated with, and destroyed together with the Channel.
@@ -193,23 +213,23 @@ public:
      * If the list returned by interfaces() doesn't contain the name of the
      * interface requested, or the Channel doesn't have readiness
      * #ReadinessFull, <code>0</code> is returned. This check can be bypassed by
-     * specifying <code>true</code> for <code>forcePresent</code>, in which case
-     * a valid instance is always returned.
+     * specifying #BypassInterfaceCheck for <code>check</code>, in which case a
+     * valid instance is always returned.
      *
      * \see OptionalInterfaceFactory::interface
      *
      * \tparam Interface Class of the optional interface to get.
-     * \param forcePresent Should an instance be returned even if it can't be
-     *                     determined that the remote object supports the
-     *                     requested interface.
+     * \param check Should an instance be returned even if it can't be
+     *              determined that the remote object supports the
+     *              requested interface.
      * \return Pointer to an instance of the interface class, or <code>0</code>.
      */
     template <class Interface>
-    inline Interface* optionalInterface(bool forcePresent = false) const
+    inline Interface* optionalInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object supporting the interface
         QString name(Interface::staticInterfaceName());
-        if (!forcePresent && !interfaces().contains(name))
+        if (check == CheckInterfaceSupported && !interfaces().contains(name))
             return 0;
 
         // If present or forced, delegate to OptionalInterfaceFactory
@@ -221,13 +241,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ChannelInterfaceCallStateInterface>(forcePresent)</code>
+     * \param check If the interface being supported check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceCallStateInterface>(check)</code>
      */
-    inline ChannelInterfaceCallStateInterface* callStateInterface(bool forcePresent = false) const
+    inline ChannelInterfaceCallStateInterface* callStateInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceCallStateInterface>(forcePresent);
+        return optionalInterface<ChannelInterfaceCallStateInterface>(check);
     }
 
     /**
@@ -235,13 +255,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ChannelInterfaceChatStateInterface>(forcePresent)</code>
+     * \param check If the interface being supported check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceChatStateInterface>(check)</code>
      */
-    inline ChannelInterfaceChatStateInterface* chatStateInterface(bool forcePresent = false) const
+    inline ChannelInterfaceChatStateInterface* chatStateInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceChatStateInterface>(forcePresent);
+        return optionalInterface<ChannelInterfaceChatStateInterface>(check);
     }
 
     /**
@@ -249,13 +269,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ChannelInterfaceDTMFInterface>(forcePresent)</code>
+     * \param check If the interface being supported check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceDTMFInterface>(check)</code>
      */
-    inline ChannelInterfaceDTMFInterface* DTMFInterface(bool forcePresent = false) const
+    inline ChannelInterfaceDTMFInterface* DTMFInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceDTMFInterface>(forcePresent);
+        return optionalInterface<ChannelInterfaceDTMFInterface>(check);
     }
 
     /**
@@ -263,13 +283,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ChannelInterfaceGroupInterface>(forcePresent)</code>
+     * \param check If the interface being supported check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceGroupInterface>(check)</code>
      */
-    inline ChannelInterfaceGroupInterface* groupInterface(bool forcePresent = false) const
+    inline ChannelInterfaceGroupInterface* groupInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceGroupInterface>(forcePresent);
+        return optionalInterface<ChannelInterfaceGroupInterface>(check);
     }
 
     /**
@@ -277,13 +297,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ChannelInterfaceHoldInterface>(forcePresent)</code>
+     * \param check If the interface being supported check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceHoldInterface>(check)</code>
      */
-    inline ChannelInterfaceHoldInterface* holdInterface(bool forcePresent = false) const
+    inline ChannelInterfaceHoldInterface* holdInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceHoldInterface>(forcePresent);
+        return optionalInterface<ChannelInterfaceHoldInterface>(check);
     }
 
     /**
@@ -291,13 +311,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ChannelInterfaceMediaSignallingInterface>(forcePresent)</code>
+     * \param check If the interface being supported check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ChannelInterfaceMediaSignallingInterface>(check)</code>
      */
-    inline ChannelInterfaceMediaSignallingInterface* mediaSignallingInterface(bool forcePresent = false) const
+    inline ChannelInterfaceMediaSignallingInterface* mediaSignallingInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceMediaSignallingInterface>(forcePresent);
+        return optionalInterface<ChannelInterfaceMediaSignallingInterface>(check);
     }
 
     /**
@@ -305,13 +325,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ChannelInterfacePasswordInterface>(forcePresent)</code>
+     * \param check If the interface being supported check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ChannelInterfacePasswordInterface>(check)</code>
      */
-    inline ChannelInterfacePasswordInterface* passwordInterface(bool forcePresent = false) const
+    inline ChannelInterfacePasswordInterface* passwordInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfacePasswordInterface>(forcePresent);
+        return optionalInterface<ChannelInterfacePasswordInterface>(check);
     }
 
     /**
@@ -322,11 +342,12 @@ public:
      *
      * \see optionalInterface()
      *
-     * \return <code>optionalInterface<DBus::PropertiesInterface>(true)</code>
+     * \return
+     * <code>optionalInterface<DBus::PropertiesInterface>(CheckInterfaceSupported)</code>
      */
     inline DBus::PropertiesInterface* propertiesInterface() const
     {
-        return optionalInterface<DBus::PropertiesInterface>(true);
+        return optionalInterface<DBus::PropertiesInterface>(CheckInterfaceSupported);
     }
 
     /**
@@ -337,7 +358,7 @@ public:
      * If the interface name returned by channelType() isn't equivalent to the
      * name of the requested interface, or the Channel doesn't have readiness
      * #ReadinessFull, <code>0</code> is returned. This check can be bypassed by
-     * specifying <code>true</code> for <code>forceType</code>, in which case a
+     * specifying #BypassInterfaceCheck for <code>check</code>, in which case a
      * valid instance is always returned.
      *
      * Convenience functions are provided for well-known channel types. However,
@@ -347,17 +368,17 @@ public:
      * \see OptionalInterfaceFactory::interface
      *
      * \tparam Interface Class of the optional interface to get.
-     * \param forceType Should an instance be returned even if it can't be
-     *                  determined that the remote object is of the requested
-     *                  channel type.
+     * \param check Should an instance be returned even if it can't be
+     *              determined that the remote object is of the requested
+     *              channel type.
      * \return Pointer to an instance of the interface class, or <code>0</code>.
      */
     template <class Interface>
-    inline Interface* typeInterface(bool forceType = false) const
+    inline Interface* typeInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object having the correct channel type
         QString name(Interface::staticInterfaceName());
-        if (!forceType && channelType() != name)
+        if (check == CheckInterfaceSupported && channelType() != name)
             return 0;
 
         // If correct type or forced, delegate to OptionalInterfaceFactory
@@ -369,13 +390,13 @@ public:
      *
      * \see typeInterface()
      *
-     * \param forceType If the channel being of the type check should be
-     *                  bypassed.
-     * \return <code>typeInterface<ChannelTypeRoomListInterface>(forceType)</code>
+     * \param check If the channel being of the requested type check should be
+     *              bypassed.
+     * \return <code>typeInterface<ChannelTypeRoomListInterface>(check)</code>
      */
-    inline ChannelTypeRoomListInterface* roomListInterface(bool forceType) const
+    inline ChannelTypeRoomListInterface* roomListInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelTypeRoomListInterface>(forceType);
+        return optionalInterface<ChannelTypeRoomListInterface>(check);
     }
 
     /**
@@ -383,13 +404,13 @@ public:
      *
      * \see typeInterface()
      *
-     * \param forceType If the channel being of the type check should be
-     *                  bypassed.
-     * \return <code>typeInterface<ChannelTypeStreamedMediaInterface>(forceType)</code>
+     * \param check If the channel being of the requested type check should be
+     *              bypassed.
+     * \return <code>typeInterface<ChannelTypeStreamedMediaInterface>(check)</code>
      */
-    inline ChannelTypeStreamedMediaInterface* streamedMediaInterface(bool forceType) const
+    inline ChannelTypeStreamedMediaInterface* streamedMediaInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelTypeStreamedMediaInterface>(forceType);
+        return optionalInterface<ChannelTypeStreamedMediaInterface>(check);
     }
 
     /**
@@ -397,13 +418,13 @@ public:
      *
      * \see typeInterface()
      *
-     * \param forceType If the channel being of the type check should be
-     *                  bypassed.
-     * \return <code>typeInterface<ChannelTypeTextInterface>(forceType)</code>
+     * \param check If the channel being of the requested type check should be
+     *              bypassed.
+     * \return <code>typeInterface<ChannelTypeTextInterface>(check)</code>
      */
-    inline ChannelTypeTextInterface* textInterface(bool forceType) const
+    inline ChannelTypeTextInterface* textInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelTypeTextInterface>(forceType);
+        return optionalInterface<ChannelTypeTextInterface>(check);
     }
 
     /**
@@ -411,13 +432,13 @@ public:
      *
      * \see typeInterface()
      *
-     * \param forceType If the channel being of the type check should be
-     *                  bypassed.
-     * \return <code>typeInterface<ChannelTypeTubesInterface>(forceType)</code>
+     * \param check If the channel being of the requested type check should be
+     *              bypassed.
+     * \return <code>typeInterface<ChannelTypeTubesInterface>(check)</code>
      */
-    inline ChannelTypeTubesInterface* tubesInterface(bool forceType) const
+    inline ChannelTypeTubesInterface* tubesInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelTypeTubesInterface>(forceType);
+        return optionalInterface<ChannelTypeTubesInterface>(check);
     }
 
     //@}
