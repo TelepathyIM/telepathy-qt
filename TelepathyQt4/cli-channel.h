@@ -367,6 +367,26 @@ public:
      */
     HandleOwnerMap groupHandleOwners() const;
 
+    /**
+     * Returns whether the value returned by groupSelfHandle() is guaranteed to
+     * stay synchronized with what groupInterface()->GetSelfHandle() would
+     * return. Older services not providing group properties don't necessarily
+     * emit the SelfHandleChanged signal either, so self handle changes can't be
+     * reliably tracked.
+     *
+     * \return Whether or not changes to the self handle are tracked.
+     */
+    bool groupIsSelfHandleTracked() const;
+
+    /**
+     * Returns a handle representing the user in the group if the user is a
+     * member of the group, otherwise either a handle representing the user or
+     * 0.
+     *
+     * \return A contact handle representing the user, if possible.
+     */
+    uint groupSelfHandle() const;
+
 Q_SIGNALS:
 
     /**
@@ -438,6 +458,14 @@ Q_SIGNALS:
      * \param removed Handles which have been removed from the mapping.
      */
     void groupHandleOwnersChanged(const HandleOwnerMap& owners, const Telepathy::UIntList& added, const Telepathy::UIntList& removed);
+
+    /**
+     * Emitted when the value returned by groupSelfHandle() changes.
+     *
+     * \param selfHandle The value which would now be returned by
+     *                   groupSelfHandle().
+     */
+    void groupSelfHandleChanged(uint selfHandle);
 
     /**
      * \name Optional interface proxy factory

@@ -387,6 +387,16 @@ HandleOwnerMap Channel::groupHandleOwners() const
     return mPriv->groupHandleOwners;
 }
 
+bool Channel::groupIsSelfHandleTracked() const
+{
+    return mPriv->groupIsSelfHandleTracked;
+}
+
+uint Channel::groupSelfHandle() const
+{
+    return mPriv->groupSelfHandle;
+}
+
 void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -762,9 +772,13 @@ void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap& added, cons
 
 void Channel::onSelfHandleChanged(uint newSelfHandle)
 {
-    debug().nospace() << "Got Channel.Interface.Group::SelfHandleChanged(" << newSelfHandle << ")";
+    debug().nospace() << "Got Channel.Interface.Group::SelfHandleChanged";
 
-    mPriv->groupSelfHandle = newSelfHandle;
+    if (newSelfHandle != mPriv->groupSelfHandle) {
+        mPriv->groupSelfHandle = newSelfHandle;
+        debug() << " Emitting groupSelfHandleChanged with new self handle" << newSelfHandle;
+        emit groupSelfHandleChanged(newSelfHandle);
+    }
 }
 
 }
