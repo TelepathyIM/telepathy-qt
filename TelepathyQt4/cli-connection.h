@@ -239,6 +239,25 @@ public:
     SimpleStatusSpecMap simplePresenceStatuses() const;
 
     /**
+     * Specifies if the interface being supported by the remote object should be
+     * checked by optionalInterface() and the convenience functions for it.
+     */
+    enum InterfaceSupportedChecking
+    {
+        /**
+         * Don't return an interface instance unless it can be guaranteed that
+         * the remote object actually implements the interface.
+         */
+        CheckInterfaceSupported,
+
+        /**
+         * Return an interface instance even if it can't be verified that the
+         * remote object supports the interface.
+         */
+        BypassInterfaceCheck
+    };
+
+    /**
      * Returns a pointer to a valid instance of a given %Connection optional
      * interface class, associated with the same remote object the Connection is
      * associated with, and destroyed at the same time the Connection is
@@ -247,24 +266,23 @@ public:
      * If the list returned by interfaces() doesn't contain the name of the
      * interface requested, or the connection doesn't have readiness
      * #ReadinessNotYetConnected or #ReadinessFull, <code>0</code> is returned.
-     * This check can be bypassed by specifying <code>true</code> for
-     * <code>forcePresent</code>, in which case a valid instance is always
-     * returned.
+     * This check can be bypassed by specifying #BypassInterfaceCheck for
+     * <code>check</code>, in in which case a valid instance is always returned.
      *
      * \see OptionalInterfaceFactory::interface
      *
      * \tparam Interface Class of the optional interface to get.
-     * \param forcePresent Should an instance be returned even if it can't be
-     *                     determined that the remote object supports the
-     *                     requested interface.
+     * \param check Should an instance be returned even if it can't be
+     *              determined that the remote object supports the
+     *              requested interface.
      * \return Pointer to an instance of the interface class, or <code>0</code>.
      */
     template <class Interface>
-    inline Interface* optionalInterface(bool forcePresent = false) const
+    inline Interface* optionalInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object supporting the interface
         QString name(Interface::staticInterfaceName());
-        if (!forcePresent && !interfaces().contains(name))
+        if (check == CheckInterfaceSupported && !interfaces().contains(name))
             return 0;
 
         // If present or forced, delegate to OptionalInterfaceFactory
@@ -276,13 +294,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ConnectionInterfaceAliasingInterface>(forcePresent)</code>
+     * \param check If the interface being present check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ConnectionInterfaceAliasingInterface>(check)</code>
      */
-    inline ConnectionInterfaceAliasingInterface* aliasingInterface(bool forcePresent = false) const
+    inline ConnectionInterfaceAliasingInterface* aliasingInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceAliasingInterface>(forcePresent);
+        return optionalInterface<ConnectionInterfaceAliasingInterface>(check);
     }
 
     /**
@@ -290,13 +308,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ConnectionInterfaceAvatarsInterface>(forcePresent)</code>
+     * \param check If the interface being present check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ConnectionInterfaceAvatarsInterface>(check)</code>
      */
-    inline ConnectionInterfaceAvatarsInterface* avatarsInterface(bool forcePresent = false) const
+    inline ConnectionInterfaceAvatarsInterface* avatarsInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceAvatarsInterface>(forcePresent);
+        return optionalInterface<ConnectionInterfaceAvatarsInterface>(check);
     }
 
     /**
@@ -304,13 +322,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ConnectionInterfaceCapabilitiesInterface>(forcePresent)</code>
+     * \param check If the interface being present check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ConnectionInterfaceCapabilitiesInterface>(check)</code>
      */
-    inline ConnectionInterfaceCapabilitiesInterface* capabilitiesInterface(bool forcePresent = false) const
+    inline ConnectionInterfaceCapabilitiesInterface* capabilitiesInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceCapabilitiesInterface>(forcePresent);
+        return optionalInterface<ConnectionInterfaceCapabilitiesInterface>(check);
     }
 
     /**
@@ -318,13 +336,13 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
-     * \return <code>optionalInterface<ConnectionInterfacePresenceInterface>(forcePresent)</code>
+     * \param check If the interface being present check should be
+     *              bypassed.
+     * \return <code>optionalInterface<ConnectionInterfacePresenceInterface>(check)</code>
      */
-    inline ConnectionInterfacePresenceInterface* presenceInterface(bool forcePresent = false) const
+    inline ConnectionInterfacePresenceInterface* presenceInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfacePresenceInterface>(forcePresent);
+        return optionalInterface<ConnectionInterfacePresenceInterface>(check);
     }
 
     /**
@@ -332,29 +350,29 @@ public:
      *
      * \see optionalInterface()
      *
-     * \param forcePresent If the interface being present check should be
-     *                     bypassed.
+     * \param check If the interface being present check should be
+     *              bypassed.
      * \return
-     * <code>optionalInterface<ConnectionInterfaceSimplePresenceInterface>(forcePresent)</code>
+     * <code>optionalInterface<ConnectionInterfaceSimplePresenceInterface>(check)</code>
      */
-    inline ConnectionInterfaceSimplePresenceInterface* simplePresenceInterface(bool forcePresent = false) const
+    inline ConnectionInterfaceSimplePresenceInterface* simplePresenceInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceSimplePresenceInterface>(forcePresent);
+        return optionalInterface<ConnectionInterfaceSimplePresenceInterface>(check);
     }
 
     /**
      * Convenience function for getting a Properties interface proxy. The
      * Properties interface is not necessarily reported by the services, so a
-     * <code>forcePresent</code> parameter is not provided, and the interface is
+     * <code>check</code> parameter is not provided, and the interface is
      * always assumed to be present.
      *
      * \see optionalInterface()
      *
-     * \return <code>optionalInterface<DBus::PropertiesInterface>(forcePresent)</code>
+     * \return <code>optionalInterface<DBus::PropertiesInterface>(check)</code>
      */
     inline DBus::PropertiesInterface* propertiesInterface() const
     {
-        return optionalInterface<DBus::PropertiesInterface>(true);
+        return optionalInterface<DBus::PropertiesInterface>(CheckInterfaceSupported);
     }
 
 Q_SIGNALS:
