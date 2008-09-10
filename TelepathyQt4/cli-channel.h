@@ -245,28 +245,33 @@ public:
     QSet<uint> groupMembers() const;
 
     /**
-     * Class opaquely storing information on a contact whose attempt to join the
-     * group is to be confirmed by the local user using AddMembers().
+     * Class opaquely storing information on a group membership change for a
+     * single member.
      *
      * Extended information is not always available; this will be reflected by
      * the return value of isValid().
      */
-    class GroupLocalPendingInfo
+    class GroupMemberChangeInfo
     {
     public:
 
-        GroupLocalPendingInfo()
+        /**
+         * \internal
+         */
+        GroupMemberChangeInfo()
             : mActor(-1), mReason(0), mIsValid(false) {}
 
-        GroupLocalPendingInfo(uint actor, uint reason, const QString& message)
+        /**
+         * \internal
+         */
+        GroupMemberChangeInfo(uint actor, uint reason, const QString& message)
             : mActor(actor), mReason(reason), mMessage(message), mIsValid(true) {}
 
         /**
          * Returns whether or not this object actually contains valid
-         * information received from the service. For some, particularly older
-         * services, extended information will not always be available. If the
-         * returned value is false, the values returned by the other methods for
-         * this object are undefined.
+         * information received from the service. If the returned value is
+         * false, the values returned by the other methods for this object are
+         * undefined.
          *
          * \return Whether the information stored in this object is valid.
          */
@@ -305,20 +310,28 @@ public:
     /**
      * Mapping from contact handles to local pending contact information.
      */
-    typedef QMap<uint, GroupLocalPendingInfo> GroupLocalPendingInfoMap;
+    typedef QMap<uint, GroupMemberChangeInfo> GroupMemberChangeInfoMap;
 
     /**
-     * Returns the members currently waiting for local approval to join the
+     * Returns the contacts currently waiting for local approval to join the
      * group.
      *
      * The returned value is a mapping from contact handles to
-     * GroupLocalPendingInfo objects. See the documentation for that class for
-     * more information.
+     * GroupMemberChangeInfo objects. The key specifies a contact, with the
+     * value potentially including extendend information on the original request
+     * leading to the contact appearing in the local pending members.
+     *
+     * A info object as a value in the mapping, for which
+     * GroupMemberChangeInfo::isValid() returns <code>false</code> indicates a
+     * member for which no extended information has been received from the
+     * service. This will only happen for old services, for which neither the
+     * LocalPending property nor the GetLocalPendingMembersWithInfo method is
+     * usable.
      *
      * \returns A mapping from handles to info for the members waiting for local
      *          approval.
      */
-    GroupLocalPendingInfoMap groupLocalPending() const;
+    GroupMemberChangeInfoMap groupLocalPending() const;
 
     /**
      * Returns the contacts currently waiting for remote approval to join the
@@ -431,7 +444,7 @@ Q_SIGNALS:
      * \param message Message specified by the actor related to the change, such
      *        as the part message in IRC.
      */
-    void groupLocalPendingChanged(const GroupLocalPendingInfoMap& localPending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
+    void groupLocalPendingChanged(const GroupMemberChangeInfoMap& localPending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
 
     /**
      * Emitted when the value returned by groupRemotePending() changes.
@@ -740,7 +753,7 @@ private:
 }
 }
 
-Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupLocalPendingInfo);
-Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupLocalPendingInfoMap);
+Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupMemberChangeInfo);
+Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupMemberChangeInfoMap);
 
 #endif

@@ -63,7 +63,7 @@ struct Channel::Private
     // Group members
     bool groupHaveMembers;
     QSet<uint> groupMembers;
-    GroupLocalPendingInfoMap groupLocalPending;
+    GroupMemberChangeInfoMap groupLocalPending;
     QSet<uint> groupRemotePending;
 
     // Group handle owners
@@ -367,7 +367,7 @@ QSet<uint> Channel::groupMembers() const
     return mPriv->groupMembers;
 }
 
-Channel::GroupLocalPendingInfoMap Channel::groupLocalPending() const
+Channel::GroupMemberChangeInfoMap Channel::groupLocalPending() const
 {
     return mPriv->groupLocalPending;
 }
@@ -543,7 +543,7 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
 
     foreach (LocalPendingInfo info, qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
         mPriv->groupLocalPending[info.toBeAdded] =
-            GroupLocalPendingInfo(info.actor, info.reason, info.message);
+            GroupMemberChangeInfo(info.actor, info.reason, info.message);
     }
 
     mPriv->continueIntrospection();
@@ -577,7 +577,7 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher* watcher)
         mPriv->groupRemotePending= QSet<uint>::fromList(reply.argumentAt<2>());
 
         foreach (uint handle, QSet<uint>::fromList(reply.argumentAt<1>())) {
-            mPriv->groupLocalPending[handle] = GroupLocalPendingInfo();
+            mPriv->groupLocalPending[handle] = GroupMemberChangeInfo();
         }
     }
 
@@ -596,7 +596,7 @@ void Channel::gotLocalPending(QDBusPendingCallWatcher* watcher)
 
         foreach (LocalPendingInfo info, reply.value()) {
             mPriv->groupLocalPending[info.toBeAdded] =
-                GroupLocalPendingInfo(info.actor, info.reason, info.message);
+                GroupMemberChangeInfo(info.actor, info.reason, info.message);
         }
     }
 
@@ -660,7 +660,7 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
     }
 
     foreach (uint handle, localPending) {
-        GroupLocalPendingInfo info(actor, reason, message);
+        GroupMemberChangeInfo info(actor, reason, message);
 
         // Special-case renaming a local-pending contact, if the signal is
         // spec-compliant. Keep the old extended info in this case.
