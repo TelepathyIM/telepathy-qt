@@ -239,10 +239,7 @@ public:
     /**
      * Convenience function for getting a CallState interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being supported check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ChannelInterfaceCallStateInterface>(check)</code>
      */
     inline ChannelInterfaceCallStateInterface* callStateInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -253,10 +250,7 @@ public:
     /**
      * Convenience function for getting a ChatState interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being supported check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ChannelInterfaceChatStateInterface>(check)</code>
      */
     inline ChannelInterfaceChatStateInterface* chatStateInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -267,10 +261,7 @@ public:
     /**
      * Convenience function for getting a DTMF interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being supported check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ChannelInterfaceDTMFInterface>(check)</code>
      */
     inline ChannelInterfaceDTMFInterface* DTMFInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -281,10 +272,7 @@ public:
     /**
      * Convenience function for getting a Group interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being supported check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ChannelInterfaceGroupInterface>(check)</code>
      */
     inline ChannelInterfaceGroupInterface* groupInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -295,10 +283,7 @@ public:
     /**
      * Convenience function for getting a Hold interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being supported check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ChannelInterfaceHoldInterface>(check)</code>
      */
     inline ChannelInterfaceHoldInterface* holdInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -309,10 +294,7 @@ public:
     /**
      * Convenience function for getting a MediaSignalling interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being supported check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ChannelInterfaceMediaSignallingInterface>(check)</code>
      */
     inline ChannelInterfaceMediaSignallingInterface* mediaSignallingInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -323,10 +305,7 @@ public:
     /**
      * Convenience function for getting a Password interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being supported check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ChannelInterfacePasswordInterface>(check)</code>
      */
     inline ChannelInterfacePasswordInterface* passwordInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -337,10 +316,8 @@ public:
     /**
      * Convenience function for getting a Properties interface proxy. The
      * Properties interface is not necessarily reported by the services, so a
-     * <code>forcePresent</code> parameter is not provided, and the interface is
-     * always assumed to be present.
-     *
-     * \see optionalInterface()
+     * <code>check</code> parameter is not provided, and the interface is always
+     * assumed to be present.
      *
      * \return
      * <code>optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck)</code>
@@ -381,17 +358,14 @@ public:
         if (check == CheckInterfaceSupported && channelType() != name)
             return 0;
 
-        // If correct type or forced, delegate to OptionalInterfaceFactory
+        // If correct type or check bypassed, delegate to OIF
         return OptionalInterfaceFactory::interface<Interface>(*this);
     }
 
     /**
      * Convenience function for getting a TypeRoomList interface proxy.
      *
-     * \see typeInterface()
-     *
-     * \param check If the channel being of the requested type check should be
-     *              bypassed.
+     * \param check Passed to typeInterface()
      * \return <code>typeInterface<ChannelTypeRoomListInterface>(check)</code>
      */
     inline ChannelTypeRoomListInterface* roomListInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -402,10 +376,7 @@ public:
     /**
      * Convenience function for getting a TypeStreamedMedia interface proxy.
      *
-     * \see typeInterface()
-     *
-     * \param check If the channel being of the requested type check should be
-     *              bypassed.
+     * \param check Passed to typeInterface()
      * \return <code>typeInterface<ChannelTypeStreamedMediaInterface>(check)</code>
      */
     inline ChannelTypeStreamedMediaInterface* streamedMediaInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -416,10 +387,7 @@ public:
     /**
      * Convenience function for getting a TypeText interface proxy.
      *
-     * \see typeInterface()
-     *
-     * \param check If the channel being of the requested type check should be
-     *              bypassed.
+     * \param check Passed to typeInterface()
      * \return <code>typeInterface<ChannelTypeTextInterface>(check)</code>
      */
     inline ChannelTypeTextInterface* textInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -430,10 +398,7 @@ public:
     /**
      * Convenience function for getting a TypeTubes interface proxy.
      *
-     * \see typeInterface()
-     *
-     * \param check If the channel being of the requested type check should be
-     *              bypassed.
+     * \param check Passed to typeInterface()
      * \return <code>typeInterface<ChannelTypeTubesInterface>(check)</code>
      */
     inline ChannelTypeTubesInterface* tubesInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
