@@ -68,7 +68,6 @@ struct Channel::Private
                        SLOT(onClosed()));
 
         introspectQueue.enqueue(&Private::introspectMain);
-        continueIntrospection();
     }
 
     void introspectMain()
@@ -202,6 +201,7 @@ Channel::Channel(const QString& serviceName,
     : ChannelInterface(serviceName, objectPath, parent),
       mPriv(new Private(*this))
 {
+    mPriv->continueIntrospection();
 }
 
 Channel::Channel(const QDBusConnection& connection,
@@ -211,6 +211,7 @@ Channel::Channel(const QDBusConnection& connection,
     : ChannelInterface(connection, serviceName, objectPath, parent),
       mPriv(new Private(*this))
 {
+    mPriv->continueIntrospection();
 }
 
 Channel::~Channel()
