@@ -69,7 +69,9 @@ namespace Client
  * channelType(), handleType(), handle()) don't make any DBus calls; instead,
  * they return values cached from a previous introspection run. The introspection
  * process populates their values in the most efficient way possible based on
- * what the service implements.
+ * what the service implements. Their return value is undefined until the
+ * introspection process is completed; a readiness change to #ReadinessFull
+ * indicates that the introspection process is finished.
  */
 class Channel : public ChannelInterface, private OptionalInterfaceFactory
 {
@@ -86,7 +88,7 @@ public:
     enum Readiness {
         /**
          * The object has just been created and introspection is still in
-         * progress. No functionality is available.
+         * progress. No functionality dependent on introspection is available.
          *
          * The readiness can change to any other state depending on the result
          * of the initial state query to the remote object.
@@ -211,10 +213,15 @@ public:
      * associated with, and destroyed together with the Channel.
      *
      * If the list returned by interfaces() doesn't contain the name of the
-     * interface requested, or the Channel doesn't have readiness
-     * #ReadinessFull, <code>0</code> is returned. This check can be bypassed by
-     * specifying #BypassInterfaceCheck for <code>check</code>, in which case a
-     * valid instance is always returned.
+     * interface requested <code>0</code> is returned. This check can be
+     * bypassed by specifying #BypassInterfaceCheck for <code>check</code>, in
+     * which case a valid instance is always returned.
+     *
+     * If the object doesn't have readiness #ReadinessFull, the list returned by
+     * interfaces() isn't guaranteed to yet represent the full set of interfaces
+     * supported by the remote object. Hence the check might fail even if the
+     * remote object actually supports the requested interface; using
+     * #BypassInterfaceCheck is suggested when the channel is not fully ready.
      *
      * \see OptionalInterfaceFactory::interface
      *

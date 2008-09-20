@@ -226,21 +226,36 @@ Channel::Readiness Channel::readiness() const
 
 QStringList Channel::interfaces() const
 {
+    // Different check than the others, because the optional interface getters
+    // may be used internally with the knowledge about getting the interfaces
+    // list, so we don't want this to cause warnings.
+    if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty())
+        warning() << "Channel::interfaces() used possibly before the list of interfaces has been received";
+
     return mPriv->interfaces;
 }
 
 QString Channel::channelType() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::channelType() used with readiness" << mPriv->readiness << "!= ReadinessFull;
+
     return mPriv->channelType;
 }
 
 uint Channel::targetHandleType() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::targetHandleType() used with readiness" << mPriv->readiness << "!= ReadinessFull;
+
     return mPriv->targetHandleType;
 }
 
 uint Channel::targetHandle() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::channelType() used with readiness" << mPriv->readiness << "!= ReadinessFull;
+
     return mPriv->targetHandle;
 }
 
