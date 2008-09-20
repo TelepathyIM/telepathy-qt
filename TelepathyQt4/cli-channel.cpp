@@ -100,7 +100,6 @@ struct Channel::Private
                        SLOT(onClosed()));
 
         introspectQueue.enqueue(&Private::introspectMain);
-        continueIntrospection();
     }
 
     void introspectMain()
@@ -245,6 +244,32 @@ struct Channel::Private
         }
     }
 
+    void extract01777MainProps(const QVariantMap& props)
+    {
+        bool haveProps = props.size() >= 4
+                      && props.contains("ChannelType") && !qdbus_cast<QString>(props["ChannelType"]).isEmpty()
+                      && props.contains("Interfaces")
+                      && props.contains("TargetHandle")
+                      && props.contains("TargetHandleType");
+
+        if (!haveProps) {
+            warning() << "No properties expected from a post-0.17.7 spec service in reply to Properties::GetAll(Channel), falling back to serial inspection";
+
+            introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
+            introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
+            introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
+        } else {
+            debug() << " Found properties specified in 0.17.7";
+
+            channelType = qdbus_cast<QString>(props["ChannelType"]);
+            interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+            targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
+            targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
+
+            nowHaveInterfaces();
+        }
+    }
+
     void nowHaveInterfaces()
     {
         debug() << "Channel has" << interfaces.size() << "optional interfaces:" << interfaces;
@@ -256,8 +281,6 @@ struct Channel::Private
                 introspectQueue.enqueue(&Private::introspectGroup);
             }
         }
-
-        continueIntrospection();
     }
 
     void changeReadiness(Readiness newReadiness)
@@ -318,6 +341,7 @@ Channel::Channel(const QString& serviceName,
     : ChannelInterface(serviceName, objectPath, parent),
       mPriv(new Private(*this))
 {
+    mPriv->continueIntrospection();
 }
 
 Channel::Channel(const QDBusConnection& connection,
@@ -327,6 +351,7 @@ Channel::Channel(const QDBusConnection& connection,
     : ChannelInterface(connection, serviceName, objectPath, parent),
       mPriv(new Private(*this))
 {
+    mPriv->continueIntrospection();
 }
 
 Channel::~Channel()
@@ -341,21 +366,42 @@ Channel::Readiness Channel::readiness() const
 
 QStringList Channel::interfaces() const
 {
+    // Different check than the others, because the optional interface getters
+    // may be used internally with the knowledge about getting the interfaces
+    // list, so we don't want this to cause warnings.
+    if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty())
+        warning() << "Channel::interfaces() used possibly before the list of interfaces has been received";
+    else if (mPriv->readiness == ReadinessDead)
+        warning() << "Channel::interfaces() used with readiness ReadinessDead";
+
     return mPriv->interfaces;
 }
 
 QString Channel::channelType() const
 {
+    // Similarly, we don't want warnings triggered when using the type interface
+    // proxies internally.
+    if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty())
+        warning() << "Channel::channelType() used possibly before the list of interfaces has been received";
+    else if (mPriv->readiness == ReadinessDead)
+        warning() << "Channel::channelType() used with readiness ReadinessDead";
+
     return mPriv->channelType;
 }
 
 uint Channel::targetHandleType() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::targetHandleType() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+
     return mPriv->targetHandleType;
 }
 
 uint Channel::targetHandle() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::channelType() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+
     return mPriv->targetHandle;
 }
 
@@ -409,39 +455,17 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
     QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
 
-    if (!reply.isError())
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties::GetAll(Channel)";
         props = reply.value();
-
-    QList<bool> conditions;
-
-    conditions << (props.size() >= 4);
-    conditions << (props.contains("ChannelType") && !qdbus_cast<QString>(props["ChannelType"]).isEmpty());
-    conditions << props.contains("Interfaces");
-    conditions << props.contains("TargetHandle");
-    conditions << props.contains("TargetHandleType");
-
-    if (conditions.contains(false)) {
-        if (reply.isError())
-            warning().nospace() << "Properties::GetAll(Channel) failed with " << reply.error().name() << ": " << reply.error().message();
-        else
-            warning() << "Reply to Properties::GetAll(Channel) didn't contain the expected properties";
-
-        warning() << "Assuming a pre-0.17.7-spec service, falling back to serial inspection";
-
-        mPriv->introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
-        mPriv->introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
-        mPriv->introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
-
-        mPriv->continueIntrospection();
-        return;
+    } else {
+        warning().nospace() << "Properties::GetAll(Channel) failed with " << reply.error().name() << ": " << reply.error().message();
     }
 
-    debug() << "Got reply to Properties::GetAll(Channel)";
-    mPriv->channelType = qdbus_cast<QString>(props["ChannelType"]);
-    mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
-    mPriv->targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
-    mPriv->targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
-    mPriv->nowHaveInterfaces();
+    mPriv->extract01777MainProps(props);
+    // Add extraction (and possible fallbacks) in similar functions, called from here
+
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotChannelType(QDBusPendingCallWatcher* watcher)
@@ -491,6 +515,7 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher* watcher)
     debug() << "Got reply to fallback Channel::GetInterfaces()";
     mPriv->interfaces = reply.value();
     mPriv->nowHaveInterfaces();
+    mPriv->continueIntrospection();
 }
 
 void Channel::onClosed()
