@@ -231,14 +231,20 @@ QStringList Channel::interfaces() const
     // list, so we don't want this to cause warnings.
     if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty())
         warning() << "Channel::interfaces() used possibly before the list of interfaces has been received";
+    else if (mPriv->readiness == ReadinessDead)
+        warning() << "Channel::interfaces() used with readiness ReadinessDead";
 
     return mPriv->interfaces;
 }
 
 QString Channel::channelType() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::channelType() used with readiness" << mPriv->readiness << "!= ReadinessFull;
+    // Similarly, we don't want warnings triggered when using the type interface
+    // proxies internally.
+    if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty())
+        warning() << "Channel::channelType() used possibly before the list of interfaces has been received";
+    else if (mPriv->readiness == ReadinessDead)
+        warning() << "Channel::channelType() used with readiness ReadinessDead";
 
     return mPriv->channelType;
 }
@@ -246,7 +252,7 @@ QString Channel::channelType() const
 uint Channel::targetHandleType() const
 {
     if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::targetHandleType() used with readiness" << mPriv->readiness << "!= ReadinessFull;
+        warning() << "Channel::targetHandleType() used with readiness" << mPriv->readiness << "!= ReadinessFull";
 
     return mPriv->targetHandleType;
 }
@@ -254,7 +260,7 @@ uint Channel::targetHandleType() const
 uint Channel::targetHandle() const
 {
     if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::channelType() used with readiness" << mPriv->readiness << "!= ReadinessFull;
+        warning() << "Channel::channelType() used with readiness" << mPriv->readiness << "!= ReadinessFull";
 
     return mPriv->targetHandle;
 }
