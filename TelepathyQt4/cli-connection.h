@@ -309,10 +309,7 @@ public:
     /**
      * Convenience function for getting an Aliasing interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being present check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ConnectionInterfaceAliasingInterface>(check)</code>
      */
     inline ConnectionInterfaceAliasingInterface* aliasingInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -323,10 +320,7 @@ public:
     /**
      * Convenience function for getting an Avatars interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being present check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ConnectionInterfaceAvatarsInterface>(check)</code>
      */
     inline ConnectionInterfaceAvatarsInterface* avatarsInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -337,10 +331,7 @@ public:
     /**
      * Convenience function for getting a Capabilities interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being present check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ConnectionInterfaceCapabilitiesInterface>(check)</code>
      */
     inline ConnectionInterfaceCapabilitiesInterface* capabilitiesInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -351,10 +342,7 @@ public:
     /**
      * Convenience function for getting a Presence interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being present check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return <code>optionalInterface<ConnectionInterfacePresenceInterface>(check)</code>
      */
     inline ConnectionInterfacePresenceInterface* presenceInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -365,10 +353,7 @@ public:
     /**
      * Convenience function for getting a SimplePresence interface proxy.
      *
-     * \see optionalInterface()
-     *
-     * \param check If the interface being present check should be
-     *              bypassed.
+     * \param check Passed to optionalInterface()
      * \return
      * <code>optionalInterface<ConnectionInterfaceSimplePresenceInterface>(check)</code>
      */
