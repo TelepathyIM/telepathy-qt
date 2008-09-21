@@ -385,11 +385,12 @@ public:
      *
      * \see optionalInterface()
      *
-     * \return <code>optionalInterface<DBus::PropertiesInterface>(check)</code>
+     * \return
+     * <code>optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck)</code>
      */
     inline DBus::PropertiesInterface* propertiesInterface() const
     {
-        return optionalInterface<DBus::PropertiesInterface>(CheckInterfaceSupported);
+        return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
 Q_SIGNALS:
