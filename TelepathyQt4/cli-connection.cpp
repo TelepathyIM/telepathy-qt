@@ -235,31 +235,60 @@ Connection::Readiness Connection::readiness() const
 
 uint Connection::status() const
 {
+    if (mPriv->readiness == ReadinessJustCreated)
+        warning() << "Connection::status() used with readiness ReadinessJustCreated";
+
     return mPriv->status;
 }
 
 uint Connection::statusReason() const
 {
+    if (mPriv->readiness == ReadinessJustCreated)
+        warning() << "Connection::statusReason() used with readiness ReadinessJustCreated";
+
     return mPriv->statusReason;
 }
 
 QStringList Connection::interfaces() const
 {
+    // Different check than the others, because the optional interface getters
+    // may be used internally with the knowledge about getting the interfaces
+    // list, so we don't want this to cause warnings.
+    if (mPriv->readiness != ReadinessNotYetConnected && mPriv->readiness != ReadinessFull && mPriv->interfaces.empty())
+        warning() << "Connection::interfaces() used possibly before the list of interfaces has been received";
+    else if (mPriv->readiness == ReadinessDead)
+        warning() << "Connection::interfaces() used with readiness ReadinessDead";
+
     return mPriv->interfaces;
 }
 
 uint Connection::aliasFlags() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Connection::aliasFlags() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING))
+        warning() << "Connection::aliasFlags() used without the remote object supporting the Aliasing interface";
+
     return mPriv->aliasFlags;
 }
 
 StatusSpecMap Connection::presenceStatuses() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Connection::presenceStatuses() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE))
+        warning() << "Connection::presenceStatuses() used without the remote object supporting the Presence interface";
+
     return mPriv->presenceStatuses;
 }
 
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
+    if (mPriv->readiness != ReadinessNotYetConnected && mPriv->readiness != ReadinessFull)
+        warning() << "Connection::simplePresenceStatuses() used with readiness" << mPriv->readiness << "not in (ReadinessNotYetConnected, ReadinessFull)";
+    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))
+        warning() << "Connection::simplePresenceStatuses() used without the remote object supporting the SimplePresence interface";
+
     return mPriv->simplePresenceStatuses;
 }
 

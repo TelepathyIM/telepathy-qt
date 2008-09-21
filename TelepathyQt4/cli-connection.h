@@ -66,16 +66,21 @@ namespace Client
  * directly:
  * <ul>
  *  <li>%Connection status tracking</li>
- *  <li>Calling GetInterfaces() automatically</li>
- *  <li>Calling ConnectionInterfaceAliasingInterface::GetAliasFlags() automatically</li>
- *  <li>Calling ConnectionInterfacePresenceInterface::GetStatuses() automatically</li>
- *  <li>Getting the ConnectionInterfaceSimplePresenceInterface::Statuses property automatically</li>
+ *  <li>Getting the list of supported interfaces automatically</li>
+ *  <li>Getting the alias flags automatically</li>
+ *  <li>Getting the valid presence statuses automatically</li>
+ *  <li>Shared optional interface proxy instances</li>
  * </ul>
  *
  * The remote object state accessor functions on this object (status(),
- * statusReason(), aliasFlags(), presenceStatuses(), simplePresenceStatuses())
- * don't make any %DBus calls; instead, they return values cached from a previous
- * introspection run.
+ * statusReason(), aliasFlags(), and so on) don't make any %DBus calls; instead,
+ * they return values cached from a previous introspection run. The
+ * introspection process populates their values in the most efficient way
+ * possible based on what the service implements.  Their return value is mostly
+ * undefined until the introspection process is completed; a readiness change to
+ * #ReadinessFull indicates that the introspection process is finished. See the
+ * individual accessor descriptions for details on which functions can be used
+ * in the different states.
  */
 class Connection : public ConnectionInterface, private OptionalInterfaceFactory
 {
@@ -176,15 +181,16 @@ public:
 
     /**
      * Returns the connection's status. The returned status is undefined if the
-     * object has readiness #ReadinessJustCreated.
+     * object has readiness #ReadinessJustCreated, but valid in all the other
+     * states.
      *
      * \return The status, as defined in #ConnectionStatus.
      */
     uint status() const;
 
     /**
-     * Returns the reason for the connection's status. The returned reason is
-     * undefined if the object has readiness #ReadinessJustCreated.
+     * Returns the reason for the connection's status (which is returned by
+     * status()). The validity rules are the same as for status().
      *
      * \return The reason, as defined in #ConnectionStatusReason.
      */
@@ -195,8 +201,8 @@ public:
      * contents of the list is undefined unless the Connection has readiness
      * #ReadinessNotYetConnected or #ReadinessFull. The returned value stays
      * constant for the entire time the connection spends in each of these
-     * states; however interfaces might be added to the supported set at the
-     * time #ReadinessFull is reached.
+     * states; however interfaces might have been added to the supported set by
+     * the time #ReadinessFull is reached.
      *
      * \return Names of the supported interfaces.
      */
@@ -204,9 +210,11 @@ public:
 
     /**
      * Returns the bitwise OR of flags detailing the behavior of the Aliasing
-     * interface on the remote object. The value is undefined if the connection
-     * doesn't have readiness #ReadinessFull or if the remote object doesn't
-     * implement the Aliasing interface.
+     * interface on the remote object.
+     *
+     * The returned value is undefined unless the Connection has readiness
+     * #ReadinessFull and the list returned by interfaces() contains
+     * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING.
      *
      * \return Bitfield of flags, as specified in #ConnectionAliasFlag.
      */
@@ -214,9 +222,11 @@ public:
 
     /**
      * Returns a dictionary of presence statuses valid for use with the legacy
-     * Telepathy Presence interface on the remote object. The value is undefined
-     * unless the Connection has readiness #ReadinessFull or if the remote
-     * object doesn't implement the legacy Presence interface.
+     * Telepathy Presence interface on the remote object.
+     *
+     * The returned value is undefined unless the Connection has readiness
+     * #ReadinessFull and the list returned by interfaces() contains
+     * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE.
      *
      * \return Dictionary from string identifiers to structs for each valid status.
      */
@@ -224,17 +234,18 @@ public:
 
     /**
      * Returns a dictionary of presence statuses valid for use with the new(er)
-     * Telepathy SimplePresence interface on the remote object. The value is
-     * undefined unless the Connection has readiness #ReadinessNotYetConnected
-     * or #ReadinessFull, or if the remote object doesn't implement the
-     * SimplePresence interface.
+     * Telepathy SimplePresence interface on the remote object.
+     *
+     * The value is undefined if the list returned by interfaces() doesn't
+     * contain %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE.
      *
      * The value will stay fixed for the whole time the connection stays with
-     * readiness #ReadinessNotYetConnected, but may change arbitrarily at the
-     * time #ReadinessFull is reached, staying fixed for the remaining lifetime
-     * of the Connection.
+     * readiness #ReadinessNotYetConnected, but may have changed arbitrarily
+     * during the time the Connection spends in readiness #ReadinessConnecting,
+     * again staying fixed for the entire time in #ReadinessFull.
      *
-     * \return Dictionary from string identifiers to structs for each valid status.
+     * \return Dictionary from string identifiers to structs for each valid
+     * status.
      */
     SimpleStatusSpecMap simplePresenceStatuses() const;
 
@@ -264,10 +275,16 @@ public:
      * destroyed.
      *
      * If the list returned by interfaces() doesn't contain the name of the
-     * interface requested, or the connection doesn't have readiness
-     * #ReadinessNotYetConnected or #ReadinessFull, <code>0</code> is returned.
-     * This check can be bypassed by specifying #BypassInterfaceCheck for
-     * <code>check</code>, in in which case a valid instance is always returned.
+     * interface requested <code>0</code> is returned. This check can be
+     * bypassed by specifying #BypassInterfaceCheck for <code>check</code>, in
+     * which case a valid instance is always returned.
+     *
+     * If the object doesn't have readiness #ReadinessNotYetConnected or
+     * #ReadinessFull, the list returned by interfaces() isn't guaranteed to yet
+     * represent the full set of interfaces supported by the remote object.
+     * Hence the check might fail even if the remote object actually supports
+     * the requested interface; using #BypassInterfaceCheck is suggested when
+     * the Connection is not suitably ready.
      *
      * \see OptionalInterfaceFactory::interface
      *
