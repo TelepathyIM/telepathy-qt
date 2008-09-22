@@ -182,11 +182,9 @@ public:
     /**
      * Returns the connection's status.
      *
-     * The readiness states correspond to a particular connection status plus
-     * completing the introspection process for that status. Hence the value
-     * returned might have changed by the time readinessChanged() is emitted.
-     * However, with readiness #ReadinessJustCreated no status queries have yet
-     * been made, so the returned value is undefined in this state.
+     * The returned value may have changed whenever readinessChanged() is
+     * emitted. The value is valid in all states except for
+     * #ReadinessJustCreated.
      *
      * \return The status, as defined in #ConnectionStatus.
      */
@@ -194,10 +192,7 @@ public:
 
     /**
      * Returns the reason for the connection's status (which is returned by
-     * status()). The validity rules are the same as for status(). Because the
-     * returned value signifies the reason for the value returned by status(),
-     * it might also have changed by the time readinessChanged() is
-     * emitted.
+     * status()). The validity and change rules are the same as for status().
      *
      * \return The reason, as defined in #ConnectionStatusReason.
      */
