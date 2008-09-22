@@ -1,6 +1,7 @@
 dnl as-compiler-flag.m4 0.1.0
 
-dnl autostars m4 macro for detection of compiler flags
+dnl autostars m4 macro for detection of compiler flags, ported to C++ by
+dnl Olli Salli <olli.salli@collabora.co.uk>
 
 dnl David Schleef <ds@schleef.org>
 
@@ -13,7 +14,8 @@ dnl and ACTION-IF-NOT-ACCEPTED otherwise.
 
 AC_DEFUN([AS_COMPILER_FLAG],
 [
-  AC_MSG_CHECKING([to see if compiler understands $1])
+  AC_LANG_ASSERT([C++])
+  AC_MSG_CHECKING([to see if the C++ compiler understands $1])
 
   save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS $1"
