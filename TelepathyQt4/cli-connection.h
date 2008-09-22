@@ -180,9 +180,13 @@ public:
     Readiness readiness() const;
 
     /**
-     * Returns the connection's status. The returned status is undefined if the
-     * object has readiness #ReadinessJustCreated, but valid in all the other
-     * states.
+     * Returns the connection's status.
+     *
+     * The readiness states correspond to a particular connection status plus
+     * completing the introspection process for that status. Hence the value
+     * returned might have changed by the time readinessChanged() is emitted.
+     * However, with readiness #ReadinessJustCreated no status queries have yet
+     * been made, so the returned value is undefined in this state.
      *
      * \return The status, as defined in #ConnectionStatus.
      */
@@ -190,7 +194,10 @@ public:
 
     /**
      * Returns the reason for the connection's status (which is returned by
-     * status()). The validity rules are the same as for status().
+     * status()). The validity rules are the same as for status(). Because the
+     * returned value signifies the reason for the value returned by status(),
+     * it might also have changed by the time readinessChanged() is
+     * emitted.
      *
      * \return The reason, as defined in #ConnectionStatusReason.
      */
