@@ -75,13 +75,7 @@ AC_ARG_ENABLE(Werror,
   AC_HELP_STRING([--disable-Werror],[compile without -Werror (normally enabled in development builds)]),
     werror=$enableval, :)
 
-TP_CXX_COMPILER_FLAG(-Wextra, wextra=yes, wextra=no)
-TP_CXX_COMPILER_FLAG(-Wno-missing-field-initializers,
-        wno_missing_field_initializers=yes,
-        wno_missing_field_initializers=no)
-TP_CXX_COMPILER_FLAG(-Wno-unused-parameter,
-        wno_unused_parameter=yes,
-        wno_unused_parameter=no)
+TP_CXX_COMPILER_FLAG([$ERROR_CXXFLAGS -Wextra -Wno-missing-field-initializers -Wno-unused-parameter], wextra=yes, wextra=no)
 
 ifelse(tp_qt4_nano_version, 0,
     [ official_release=yes ],
@@ -90,14 +84,9 @@ ifelse(tp_qt4_nano_version, 0,
         if test x$werror = xyes; then
             ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Werror"
         fi
-        if test x$wextra = xyes -a \
-            x$wno_missing_field_initializers = xyes -a \
-            x$wno_unused_parameter = xyes; then
-            ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wextra -Wno-missing-field-initializers -Wno-unused-parameter"
-        fi
     ])
 
-TP_CXX_COMPILER_FLAG(-Wmissing-declarations, ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wmissing-declarations")
+TP_CXX_COMPILER_FLAG([$ERROR_CXXFLAGS -Wmissing-declarations], ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wmissing-declarations")
 
 AC_SUBST(ERROR_CXXFLAGS)
 AM_CONDITIONAL([OFFICIAL_RELEASE], [test "x$official_release" = xyes])
