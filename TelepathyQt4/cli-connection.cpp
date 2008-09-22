@@ -294,7 +294,7 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 
 void Connection::onStatusChanged(uint status, uint reason)
 {
-    debug() << "Status changed from" << mPriv->status << "to" << status << "because of" << reason;
+    debug() << "Status changed from" << mPriv->status << "to" << status << "for reason" << reason;
 
     mPriv->status = status;
     mPriv->statusReason = reason;
