@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_Constants_HEADER_GUARD_
-#define _TelepathyQt4_Constants_HEADER_GUARD_
+#ifndef _TelepathyQt4_constants_h_HEADER_GUARD_
+#define _TelepathyQt4_constants_h_HEADER_GUARD_
 
 /**
  * \addtogroup typesconstants Types and constants

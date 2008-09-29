@@ -1,1 +1,6 @@
+#ifndef _TelepathyQt4_Debug_HEADER_GUARD_
+#define _TelepathyQt4_Debug_HEADER_GUARD_
+
 #include <TelepathyQt4/debug.h>
+
+#endif

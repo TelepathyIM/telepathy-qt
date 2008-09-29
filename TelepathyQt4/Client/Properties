@@ -1,1 +1,6 @@
+#ifndef _TelepathyQt4_Client_Properties_HEADER_GUARD_
+#define _TelepathyQt4_Client_Properties_HEADER_GUARD_
+
 #include <TelepathyQt4/cli-properties.h>
+
+#endif

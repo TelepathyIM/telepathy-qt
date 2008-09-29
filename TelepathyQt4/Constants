@@ -1,1 +1,6 @@
+#ifndef _TelepathyQt4_Constants_HEADER_GUARD_
+#define _TelepathyQt4_Constants_HEADER_GUARD_
+
 #include <TelepathyQt4/constants.h>
+
+#endif

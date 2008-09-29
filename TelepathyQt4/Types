@@ -1,1 +1,6 @@
+#ifndef _TelepathyQt4_Types_HEADER_GUARD_
+#define _TelepathyQt4_Types_HEADER_GUARD_
+
 #include <TelepathyQt4/types.h>
+
+#endif

@@ -1,1 +1,6 @@
+#ifndef _TelepathyQt4_Client_ConnectionManager_HEADER_GUARD_
+#define _TelepathyQt4_Client_ConnectionManager_HEADER_GUARD_
+
 #include <TelepathyQt4/cli-connection-manager.h>
+
+#endif

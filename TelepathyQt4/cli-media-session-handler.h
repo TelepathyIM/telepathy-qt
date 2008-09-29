@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_Client_MediaSessionHandler_HEADER_GUARD_
-#define _TelepathyQt4_Client_MediaSessionHandler_HEADER_GUARD_
+#ifndef _TelepathyQt4_cli_media_session_handler_h_HEADER_GUARD_
+#define _TelepathyQt4_cli_media_session_handler_h_HEADER_GUARD_
 
 /**
  * \addtogroup clientsideproxies Client-side proxies
