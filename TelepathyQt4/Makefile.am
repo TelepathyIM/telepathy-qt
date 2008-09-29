@@ -161,7 +161,7 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		--prettyinclude='TelepathyQt4/Types' \
 		--specxml=$<
 
-# Things generated per interface
+# Things generated per interface group
 
 _gen/spec-%.xml: %.xml ../tools/xincludator.py _gen/spec-stamp
 	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
@@ -179,15 +179,15 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		channel) \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
-			mainiface='--mainiface=/Channel';; \
+			mainiface='--mainiface=Telepathy::Client::ChannelInterface';; \
 		connection) \
 			group='clientconn'; \
 			prettyinclude='Connection'; \
-			mainiface='--mainiface=/Connection';; \
+			mainiface='--mainiface=Telepathy::Client::ConnectionInterface';; \
 		connection-manager) \
 			group='clientcm'; \
 			prettyinclude='ConnectionManager'; \
-			mainiface='--mainiface=/Connection_Manager';; \
+			mainiface='--mainiface=Telepathy::Client::ConnectionManagerInterface';; \
 		dbus) \
 			group='clientdbus'; \
 			namespace='Telepathy::Client::DBus'; \
@@ -195,11 +195,11 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		media-session-handler) \
 			group='clientmsesh'; \
 			prettyinclude='MediaSessionHandler'; \
-			mainiface='--mainiface=/Media_Session_Handler';; \
+			mainiface='--mainiface=Telepathy::Client::MediaSessionHandlerInterface';; \
 		media-stream-handler) \
 			group='clientmstrh'; \
 			prettyinclude='MediaStreamHandler'; \
-			mainiface='--mainiface=/Media_Stream_Handler';; \
+			mainiface='--mainiface=Telepathy::Client::MediaStreamHandlerInterface';; \
 		properties) \
 			group='clientprops'; \
 			prettyinclude='Properties';; \
@@ -214,7 +214,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
 		--specxml=_gen/stable-spec.xml \
 		--ifacexml=$< \
-		--typesinclude='TelepathyQt4/Types' \
+		--extraincludes='<TelepathyQt4/Types>' \
 		$$mainiface
 
 %.moc.hpp: %.h _gen/constants.h _gen/types.h

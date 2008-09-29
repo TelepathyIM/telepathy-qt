@@ -23,19 +23,19 @@ import codecs
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
-from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, qt4_identifier_escape
+from libqt4codegen import binding_from_usage, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_headerfile_cmd, get_qt4_name, qt4_identifier_escape
 
 class Generator(object):
     def __init__(self, opts):
         try:
-            self.group = opts.get('--group', 'no-group-defined')
+            self.group = opts.get('--group', '')
             self.headerfile = opts['--headerfile']
             self.implfile = opts['--implfile']
             self.namespace = opts['--namespace']
             self.typesnamespace = opts['--typesnamespace']
             self.realinclude = opts['--realinclude']
-            self.prettyinclude = opts['--prettyinclude']
-            self.typesinclude = opts['--typesinclude']
+            self.prettyinclude = opts.get('--prettyinclude')
+            self.extraincludes = opts.get('--extraincludes', None)
             self.mainiface = opts.get('--mainiface', None)
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
@@ -48,7 +48,6 @@ class Generator(object):
         self.spec, = get_by_path(specdom, "spec")
         self.custom_lists = gather_custom_lists(self.spec, self.typesnamespace)
         self.externals = gather_externals(self.spec)
-        self.mainifacename = self.mainiface and self.mainiface.replace('/', '').replace('_', '') + 'Interface'
 
     def __call__(self):
         # Output info header and includes
@@ -59,20 +58,27 @@ class Generator(object):
  * This file can be distributed under the same terms as the specification from
  * which it was generated.
  */
+""")
+
+        if self.extraincludes:
+            self.h('\n')
+            for include in self.extraincludes.split(','):
+                self.h('#include %s\n' % include)
+
+        self.h("""
+#include <QtGlobal>
 
 #include <QString>
 #include <QObject>
 #include <QVariant>
 
-#include <QtGlobal>
-#include <QtDBus>
+#include <QDBusAbstractInterface>
+#include <QDBusPendingReply>
 
-#include <%s>
-
-""" % self.typesinclude)
+""")
 
         self.b("""\
-#include <%s>
+#include "%s"
 
 """ % self.realinclude)
 
@@ -85,7 +91,7 @@ namespace %s
 
         # Output interface proxies
         def ifacenodecmp(x, y):
-            xname, yname = x.getAttribute('name'), y.getAttribute('name')
+            xname, yname = [self.namespace + '::' + node.getAttribute('name').replace('/', '').replace('_', '') + 'Interface' for node in x, y]
 
             if xname == self.mainiface:
                 return -1
@@ -115,8 +121,8 @@ namespace %s
         self.h("""
 /**
  * \\class %(name)s
- * \\headerfile %(realinclude)s <%(prettyinclude)s>
- * \\ingroup %(group)s
+%(headercmd)s\
+%(groupcmd)s\
  *
  * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
  */
@@ -164,9 +170,8 @@ public:
         QObject* parent = 0
     );
 """ % {'name' : name,
-       'realinclude' : self.realinclude,
-       'prettyinclude' : self.prettyinclude,
-       'group' : self.group,
+       'headercmd' : get_headerfile_cmd(self.realinclude, self.prettyinclude),
+       'groupcmd' : self.group and (' * \\ingroup %s\n' % self.group),
        'dbusname' : dbusname})
 
         self.b("""
@@ -182,9 +187,9 @@ public:
 """ % {'name' : name})
 
         # Main interface
-        mainifacename = self.mainifacename or 'QDBusAbstractInterface'
+        mainiface = self.mainiface or 'QDBusAbstractInterface'
 
-        if mainifacename != name:
+        if mainiface != self.namespace + '::' + name:
             self.h("""
     /**
      * Creates a %(name)s associated with the same object as the given proxy.
@@ -193,7 +198,7 @@ public:
      *
      * \\param mainInterface The proxy to use.
      */
-    explicit %(name)s(const %(mainifacename)s& mainInterface);
+    explicit %(name)s(const %(mainiface)s& mainInterface);
 
     /**
      * Creates a %(name)s associated with the same object as the given proxy.
@@ -202,22 +207,22 @@ public:
      * \\param mainInterface The proxy to use.
      * \\param parent Passed to the parent class constructor.
      */
-    %(name)s(const %(mainifacename)s& mainInterface, QObject* parent);
+    %(name)s(const %(mainiface)s& mainInterface, QObject* parent);
 """ % {'name' : name,
-       'mainifacename' : mainifacename})
+       'mainiface' : mainiface})
 
             self.b("""
-%(name)s::%(name)s(const %(mainifacename)s& mainInterface)
+%(name)s::%(name)s(const %(mainiface)s& mainInterface)
     : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), mainInterface.parent())
 {
 }
 
-%(name)s::%(name)s(const %(mainifacename)s& mainInterface, QObject *parent)
+%(name)s::%(name)s(const %(mainiface)s& mainInterface, QObject *parent)
     : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), parent)
 {
 }
 """ % {'name' : name,
-       'mainifacename' : mainifacename})
+       'mainiface' : mainiface})
 
         # Properties
         for prop in get_by_path(iface, 'property'):
@@ -408,7 +413,7 @@ if __name__ == '__main__':
              'specxml=',
              'realinclude=',
              'prettyinclude=',
-             'typesinclude=',
+             'extraincludes=',
              'mainiface='])
 
     Generator(dict(options))()

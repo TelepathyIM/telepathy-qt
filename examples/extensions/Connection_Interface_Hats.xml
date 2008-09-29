@@ -1,0 +1,139 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Hats"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2007 Collabora Ltd.</tp:copyright>
+  <tp:copyright> Copyright (C) 2007 Nokia Corporation</tp:copyright>
+  <tp:license>
+    Copying and distribution of this file, with or without modification,
+    are permitted in any medium without royalty provided the copyright
+    notice and this notice are preserved.
+  </tp:license>
+  <interface name="com.example.Telepathy.Connection.Interface.Hats"
+    tp:causes-havoc='a silly example'>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      This interface is an example of how Telepathy can be extended.
+      For the purposes of this example, we pretend we're an organisation
+      example.com that's adding a proprietary extension to Telepathy,
+      so the extension is not in the main Telepathy namespace.
+    </tp:docstring>
+
+    <tp:struct name="Contact_Hat" array-name="Contact_Hat_List">
+      <tp:docstring>A data structure representing a contact and their
+        hat.</tp:docstring>
+      <tp:member type="u" name="Contact" tp:type="Contact_Handle">
+        <tp:docstring>The contact wearing the hat.</tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Color">
+        <tp:docstring>The color of the hat</tp:docstring>
+      </tp:member>
+      <tp:member type="u" name="Style" tp:type="Hat_Style">
+        <tp:docstring>The style of the hat</tp:docstring>
+      </tp:member>
+      <tp:member type="a{sv}" name="Properties" tp:type="String_Variant_Map">
+        <tp:docstring>Optional key-value pairs describing extended
+          properties of the hat.</tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <tp:enum name="Hat_Style" type="u">
+      <tp:enumvalue suffix="None" value="0">
+        <tp:docstring>There is no hat. color MUST be the empty
+          string and properties MUST be an empty mapping.</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Other" value="1">
+        <tp:docstring>An unspecified type of hat.</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Fedora" value="2">
+        <tp:docstring>A fedora, which MAY be red.</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Knitted" value="3">
+        <tp:docstring>A knitted hat, with or without a bobble.</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Bowler" value="4">
+        <tp:docstring>A bowler hat, as worn by stereotypical English
+          businessmen.</tp:docstring>
+      <tp:enumvalue suffix="Helmet" value="5">
+        <tp:docstring>A hat with protective qualities.</tp:docstring>
+      </tp:enumvalue>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <signal name="HatsChanged">
+      <tp:docstring>
+        Emitted when the contact's hat has changed.
+      </tp:docstring>
+      <arg name="Contact" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          The handle representing the contact's ID on the server
+        </tp:docstring>
+      </arg>
+      <arg name="Color" type="s">
+        <tp:docstring>
+          The color of the contact's hat.
+        </tp:docstring>
+      </arg>
+      <arg name="Style" type="u" tp:type="Hat_Style">
+        <tp:docstring>
+          The style of the contact's hat.
+        </tp:docstring>
+      </arg>
+      <arg name="Properties" type="a{sv}" tp:type="String_Variant_Map">
+        <tp:docstring>
+          There's always an a{sv}. Perhaps there's some special religious
+          reason.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="GetHats">
+      <tp:docstring>
+        Request a list of the hats worn by the given contacts.
+      </tp:docstring>
+      <arg direction="in" name="Contact" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          The handles of the contacts whose hats are requested
+        </tp:docstring>
+      </arg>
+      <arg direction="out" name="Hats" type="a(usua{sv})"
+        tp:type="Contact_Hat[]">
+        <tp:docstring>
+          A list of contacts and their hats.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="SetHat">
+      <tp:docstring>
+        Indicate that the hat currently being worn by the local user
+        has changed.
+      </tp:docstring>
+      <arg name="Color" type="s" direction="in">
+        <tp:docstring>
+          The color of the contact's hat.
+        </tp:docstring>
+      </arg>
+      <arg name="Style" type="u" tp:type="Hat_Style" direction="in">
+        <tp:docstring>
+          The style of the contact's hat.
+        </tp:docstring>
+      </arg>
+      <arg name="Properties" type="a{sv}" tp:type="String_Variant_Map"
+        direction="in">
+        <tp:docstring>
+          There's always an a{sv}...
+        </tp:docstring>
+      </arg>
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

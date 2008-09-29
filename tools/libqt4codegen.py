@@ -203,6 +203,13 @@ def gather_custom_lists(spec, typesns):
 
     return custom_lists
 
+def get_headerfile_cmd(realinclude, prettyinclude, indent=' * '):
+    prettyinclude = prettyinclude or realinclude
+    if realinclude:
+        return indent + ('\\headerfile %s <%s>\n' % (realinclude, prettyinclude))
+    else:
+        return ''
+
 def get_qt4_name(el):
     name = el.getAttribute('name')
 
