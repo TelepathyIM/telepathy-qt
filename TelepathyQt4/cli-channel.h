@@ -377,7 +377,7 @@ public:
      */
     inline ChannelTypeRoomListInterface* roomListInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelTypeRoomListInterface>(check);
+        return typeInterface<ChannelTypeRoomListInterface>(check);
     }
 
     /**
@@ -388,7 +388,7 @@ public:
      */
     inline ChannelTypeStreamedMediaInterface* streamedMediaInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelTypeStreamedMediaInterface>(check);
+        return typeInterface<ChannelTypeStreamedMediaInterface>(check);
     }
 
     /**
@@ -399,7 +399,7 @@ public:
      */
     inline ChannelTypeTextInterface* textInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelTypeTextInterface>(check);
+        return typeInterface<ChannelTypeTextInterface>(check);
     }
 
     /**
@@ -410,7 +410,7 @@ public:
      */
     inline ChannelTypeTubesInterface* tubesInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelTypeTubesInterface>(check);
+        return typeInterface<ChannelTypeTubesInterface>(check);
     }
 
     //@}
