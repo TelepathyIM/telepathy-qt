@@ -47,6 +47,7 @@
 #include <QStringList>
 
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
@@ -54,6 +55,8 @@ namespace Telepathy
 {
 namespace Client
 {
+
+class PendingChannel;
 
 /**
  * \class Connection
@@ -380,6 +383,8 @@ public:
         return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
+    PendingChannel* requestChannel(const QString& type, uint handleType, uint handle);
+
 Q_SIGNALS:
     /**
      * Emitted whenever the readiness of the Connection changes.
@@ -397,6 +402,43 @@ private Q_SLOTS:
     void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
 
 private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class PendingChannel : public QObject
+{
+    Q_OBJECT
+
+public:
+    ~PendingChannel();
+
+    Connection* connection() const;
+
+    const QString& type() const;
+    uint handleType() const;
+    uint handle() const;
+
+    bool isFinished() const;
+
+    bool isError() const;
+    const QDBusError& error() const;
+
+    bool isValid() const;
+    Channel* channel(QObject* parent = 0) const;
+
+Q_SIGNALS:
+    void finished(Telepathy::Client::PendingChannel* channel);
+
+private Q_SLOTS:
+    void onCallFinished(QDBusPendingCallWatcher* watcher);
+
+private:
+    friend class Connection;
+
+    PendingChannel(Connection* connection, const QString& type, uint handleType, uint handle);
+
     struct Private;
     friend struct Private;
     Private *mPriv;
