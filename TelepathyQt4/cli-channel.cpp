@@ -253,7 +253,7 @@ struct Channel::Private
                       && props.contains("TargetHandleType");
 
         if (!haveProps) {
-            warning() << "No properties expected from a post-0.17.7 spec service in reply to Properties::GetAll(Channel), falling back to serial inspection";
+            warning() << " Properties specified in 0.17.7 not found";
 
             introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
             introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
@@ -267,6 +267,44 @@ struct Channel::Private
             targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
 
             nowHaveInterfaces();
+        }
+    }
+
+    void extract0176GroupProps(const QVariantMap& props)
+    {
+        bool haveProps = props.size() >= 6
+                      && (props.contains("GroupFlags") && (qdbus_cast<uint>(props["GroupFlags"]) & ChannelGroupFlagProperties))
+                      && props.contains("HandleOwners")
+                      && props.contains("LocalPendingMembers")
+                      && props.contains("Members")
+                      && props.contains("RemotePendingMembers")
+                      && props.contains("SelfHandle");
+
+        if (!haveProps) {
+            warning() << " Properties specified in 0.17.6 not found";
+            warning() << "  Handle owners and self handle tracking disabled";
+
+            introspectQueue.enqueue(&Private::introspectGroupFallbackFlags);
+            introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
+            introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPending);
+            introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
+        } else {
+            debug() << " Found properties specified in 0.17.6";
+
+            groupHaveMembers = true;
+            groupAreHandleOwnersAvailable = true;
+            groupIsSelfHandleTracked = true;
+
+            groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
+            groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
+            groupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
+            groupRemotePending = QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
+            groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
+
+            foreach (LocalPendingInfo info, qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
+                groupLocalPending[info.toBeAdded] =
+                    GroupMemberChangeInfo(info.actor, info.reason, info.message);
+            }
         }
     }
 
@@ -531,52 +569,15 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
     QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
 
-    if (!reply.isError())
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties::GetAll(Channel.Interface.Group)";
         props = reply.value();
-
-    QList<bool> conditions;
-
-    conditions << (props.size() >= 6);
-    conditions << (props.contains("GroupFlags") && (qdbus_cast<uint>(props["GroupFlags"]) & ChannelGroupFlagProperties));
-    conditions << props.contains("HandleOwners");
-    conditions << props.contains("LocalPendingMembers");
-    conditions << props.contains("Members");
-    conditions << props.contains("RemotePendingMembers");
-    conditions << props.contains("SelfHandle");
-
-    if (conditions.contains(false)) {
-        if (reply.isError())
-            warning().nospace() << "Properties::GetAll(Channel.Interface.Group) failed with " << reply.error().name() << ": " << reply.error().message();
-        else
-            warning() << "Reply to Properties::GetAll(Channel.Interface.Group) didn't contain the expected properties";
-
-        warning() << " Assuming a pre-0.17.6-spec service, falling back to serial inspection";
-        warning() << " Handle owners and self handle tracking disabled";
-
-        mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackFlags);
-        mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
-        mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPending);
-        mPriv->introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
-        mPriv->continueIntrospection();
-        return;
+    } else {
+        warning().nospace() << "Properties::GetAll(Channel.Interface.Group) failed with " << reply.error().name() << ": " << reply.error().message();
     }
 
-    debug() << "Got reply to Properties::GetAll(Channel.Interface.Group)";
-
-    mPriv->groupHaveMembers = true;
-    mPriv->groupAreHandleOwnersAvailable = true;
-    mPriv->groupIsSelfHandleTracked = true;
-
-    mPriv->groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
-    mPriv->groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
-    mPriv->groupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
-    mPriv->groupRemotePending = QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
-    mPriv->groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
-
-    foreach (LocalPendingInfo info, qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
-        mPriv->groupLocalPending[info.toBeAdded] =
-            GroupMemberChangeInfo(info.actor, info.reason, info.message);
-    }
+    mPriv->extract0176GroupProps(props);
+    // Add extraction (and possible fallbacks) in similar functions, called from here
 
     mPriv->continueIntrospection();
 }
