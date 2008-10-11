@@ -419,8 +419,8 @@ QString Channel::channelType() const
 {
     // Similarly, we don't want warnings triggered when using the type interface
     // proxies internally.
-    if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty())
-        warning() << "Channel::channelType() used possibly before the list of interfaces has been received";
+    if (mPriv->readiness < ReadinessFull && mPriv->channelType.empty())
+        warning() << "Channel::channelType() before the channel type has been received";
     else if (mPriv->readiness == ReadinessDead)
         warning() << "Channel::channelType() used with readiness ReadinessDead";
 
@@ -445,46 +445,93 @@ uint Channel::targetHandle() const
 
 uint Channel::groupFlags() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::groupFlags() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupFlags() used with no group interface";
+
     return mPriv->groupFlags;
 }
 
 QSet<uint> Channel::groupMembers() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::groupMembers() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupMembers() used with no group interface";
+
     return mPriv->groupMembers;
 }
 
 Channel::GroupMemberChangeInfoMap Channel::groupLocalPending() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::groupLocalPending() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupLocalPending() used with no group interface";
+
     return mPriv->groupLocalPending;
 }
 
 QSet<uint> Channel::groupRemotePending() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::groupRemotePending() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupRemotePending() used with no group interface";
+
     return mPriv->groupRemotePending;
 }
 
 bool Channel::groupAreHandleOwnersAvailable() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::groupAreHandleOwnersAvailable() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupAreHandleOwnersAvailable() used with no group interface";
+
     return mPriv->groupAreHandleOwnersAvailable;
 }
 
 HandleOwnerMap Channel::groupHandleOwners() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::groupHandleOwners() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupAreHandleOwnersAvailable() used with no group interface";
+    else if (!groupAreHandleOwnersAvailable())
+        warning() << "Channel::areHandleOwnersAvailable() used, but handle owners not available";
+
     return mPriv->groupHandleOwners;
 }
 
 bool Channel::groupIsSelfHandleTracked() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::isSelfHandleTracked() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupIsSelfHandleTracked() used with no group interface";
+
     return mPriv->groupIsSelfHandleTracked;
 }
 
 uint Channel::groupSelfHandle() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::groupSelfHandle() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupSelfHandle() used with no group interface";
+
     return mPriv->groupSelfHandle;
 }
 
 Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
 {
+    if (mPriv->readiness != ReadinessFull)
+        warning() << "Channel::groupSelfRemoveInfo() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+        warning() << "Channel::groupSelfRemoveInfo() used with no group interface";
+
     return mPriv->groupSelfRemoveInfo;
 }
 
