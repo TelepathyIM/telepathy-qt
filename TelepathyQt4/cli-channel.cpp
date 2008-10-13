@@ -419,7 +419,7 @@ QString Channel::channelType() const
 {
     // Similarly, we don't want warnings triggered when using the type interface
     // proxies internally.
-    if (mPriv->readiness < ReadinessFull && mPriv->channelType.empty())
+    if (mPriv->readiness < ReadinessFull && mPriv->channelType.isEmpty())
         warning() << "Channel::channelType() before the channel type has been received";
     else if (mPriv->readiness == ReadinessDead)
         warning() << "Channel::channelType() used with readiness ReadinessDead";
