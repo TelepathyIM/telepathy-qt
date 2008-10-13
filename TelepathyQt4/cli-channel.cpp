@@ -654,7 +654,7 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher* watcher)
 
         mPriv->groupHaveMembers = true;
         mPriv->groupMembers = QSet<uint>::fromList(reply.argumentAt<0>());
-        mPriv->groupRemotePending= QSet<uint>::fromList(reply.argumentAt<2>());
+        mPriv->groupRemotePending = QSet<uint>::fromList(reply.argumentAt<2>());
 
         foreach (uint handle, QSet<uint>::fromList(reply.argumentAt<1>())) {
             mPriv->groupLocalPending[handle] = GroupMemberChangeInfo();
@@ -822,9 +822,9 @@ void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap& added, cons
         uint global = i.value();
 
         if (!mPriv->groupHandleOwners.contains(handle)
-                || mPriv->groupHandleOwners[handle]) {
+                || mPriv->groupHandleOwners[handle] != global) {
             debug() << " +++/changed" << handle << "->" << global;
-            mPriv->groupHandleOwners[global] = global;
+            mPriv->groupHandleOwners[handle] = global;
             emitAdded.append(handle);
         }
     }
