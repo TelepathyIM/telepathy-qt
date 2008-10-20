@@ -638,6 +638,11 @@ void Channel::gotGroupFlags(QDBusPendingCallWatcher* watcher)
     } else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetGroupFlags()";
         mPriv->groupFlags = reply.value();
+
+        if (mPriv->groupFlags & ChannelGroupFlagProperties) {
+            warning() << " Reply included ChannelGroupFlagProperties, even though properties specified in 0.17.7 didn't work! - unsetting";
+            mPriv->groupFlags &= ~ChannelGroupFlagProperties;
+        }
     }
 
     mPriv->continueIntrospection();
