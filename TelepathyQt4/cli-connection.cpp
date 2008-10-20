@@ -478,5 +478,116 @@ PendingOperation* Connection::requestDisconnect()
     return new PendingVoidMethodCall(this, this->Disconnect());
 }
 
+struct PendingHandles::Private
+{
+    Connection* connection;
+    uint handleType;
+    bool isRequest;
+    QStringList namesRequested;
+    UIntList handlesToReference;
+    QDBusError error;
+};
+
+PendingHandles::PendingHandles(Connection* connection, uint handleType, const QStringList& names)
+    : QObject(connection), mPriv(new Private)
+{
+    mPriv->connection = connection;
+    mPriv->handleType = handleType;
+    mPriv->isRequest = true;
+    mPriv->namesRequested = names;
+}
+
+PendingHandles::PendingHandles(Connection* connection, uint handleType, const UIntList& handles)
+    : QObject(connection), mPriv(new Private)
+{
+    mPriv->connection = connection;
+    mPriv->handleType = handleType;
+    mPriv->isRequest = false;
+    mPriv->handlesToReference = handles;
+}
+
+PendingHandles::~PendingHandles()
+{
+    delete mPriv;
+}
+
+Connection* PendingHandles::connection() const
+{
+    return mPriv->connection;
+}
+
+uint PendingHandles::handleType() const
+{
+    return mPriv->handleType;
+}
+
+bool PendingHandles::isRequest() const
+{
+    return mPriv->isRequest;
+}
+
+bool PendingHandles::isReference() const
+{
+    return !isRequest();
+}
+
+const QStringList& PendingHandles::namesRequested() const
+{
+    return mPriv->namesRequested;
+}
+
+const UIntList& PendingHandles::handlesToReference() const
+{
+    return mPriv->handlesToReference;
+}
+
+bool PendingHandles::isFinished() const
+{
+    // TODO
+    return false || !mPriv->error.message().isEmpty();
+}
+
+bool PendingHandles::isError() const
+{
+    return !mPriv->error.message().isEmpty();
+}
+
+const QDBusError& PendingHandles::error() const
+{
+    if (isValid())
+        warning() << "PendingHandles::error() called when valid";
+    else if (!isFinished())
+        warning() << "PendingHandles::error() called before finished";
+
+    return mPriv->error;
+}
+
+bool PendingHandles::isValid() const
+{
+    return isFinished() && !isError();
+}
+
+void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+
+    if (mPriv->isRequest)
+        debug() << "Received reply to RequestHandles";
+    else
+        debug() << "Received reply to HoldHandles";
+
+    if (!reply.isError()) {
+        debug() << " Success";
+    } else {
+        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+        mPriv->error = reply.error();
+    }
+
+    debug() << " Emitting finished()";
+    emit finished(this);
+
+    watcher->deleteLater();
+}
+
 }
 }
