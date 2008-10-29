@@ -187,6 +187,12 @@ public:
      */
     uint targetHandle() const;
 
+public Q_SLOTS:
+    /**
+     * Close the channel.
+     */
+    void close();
+
 Q_SIGNALS:
     /**
      * Emitted whenever the readiness of the Channel changes.

@@ -447,6 +447,15 @@ uint Channel::targetHandle() const
     return mPriv->targetHandle;
 }
 
+void Channel::close()
+{
+    // Closing a channel only makes sense if the readiness is Full.
+    if(mPriv->readiness == ReadinessFull)
+        mPriv->baseInterface->Close();
+    else
+        warning() << "Channel::close() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+}
+
 uint Channel::groupFlags() const
 {
     if (mPriv->readiness != ReadinessFull)
