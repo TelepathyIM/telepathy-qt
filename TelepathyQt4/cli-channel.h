@@ -81,7 +81,7 @@ namespace Client
  * present) will be cached in the introspection process, and also tracked for
  * any changes.
  */
-class Channel : public ChannelInterface, private OptionalInterfaceFactory
+class Channel : public QObject, private OptionalInterfaceFactory
 {
     Q_OBJECT
     Q_ENUMS(Readiness)
@@ -563,7 +563,7 @@ public:
             return 0;
 
         // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory::interface<Interface>(*this);
+        return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
     }
 
     /**
@@ -689,7 +689,7 @@ public:
             return 0;
 
         // If correct type or check bypassed, delegate to OIF
-        return OptionalInterfaceFactory::interface<Interface>(*this);
+        return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
     }
 
     /**
@@ -735,6 +735,17 @@ public:
     {
         return typeInterface<ChannelTypeTubesInterface>(check);
     }
+
+protected:
+    /**
+     * Get the base ChannelInterface for this Channel class. This method is
+     * protected since the convenience methods provided by this class should
+     * always be used instead of the interface directly by consumers of the
+     * class.
+     *
+     * \return <code>channelInterface<ChannelInterface></code>
+     */
+    ChannelInterface* baseInterface() const;
 
     //@}
 

@@ -41,6 +41,9 @@ struct Channel::Private
     // Public object
     Channel& parent;
 
+    // Instance of generated interface class
+    ChannelInterface* baseInterface;
+
     // Optional interface proxies
     ChannelInterfaceGroupInterface* group;
     DBus::PropertiesInterface* properties;
@@ -82,6 +85,7 @@ struct Channel::Private
     {
         debug() << "Creating new Channel";
 
+        baseInterface = 0;
         group = 0;
         properties = 0;
         readiness = ReadinessJustCreated;
@@ -122,7 +126,7 @@ struct Channel::Private
     {
         debug() << "Calling Channel::GetChannelType()";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(parent.GetChannelType(), &parent);
+            new QDBusPendingCallWatcher(baseInterface->GetChannelType(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotChannelType(QDBusPendingCallWatcher*)));
@@ -132,7 +136,7 @@ struct Channel::Private
     {
         debug() << "Calling Channel::GetHandle()";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(parent.GetHandle(), &parent);
+            new QDBusPendingCallWatcher(baseInterface->GetHandle(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotHandle(QDBusPendingCallWatcher*)));
@@ -142,7 +146,7 @@ struct Channel::Private
     {
         debug() << "Calling Channel::GetInterfaces()";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(parent.GetInterfaces(), &parent);
+            new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
@@ -376,9 +380,9 @@ struct Channel::Private
 Channel::Channel(const QString& serviceName,
                  const QString& objectPath,
                  QObject* parent)
-    : ChannelInterface(serviceName, objectPath, parent),
-      mPriv(new Private(*this))
+    : mPriv(new Private(*this))
 {
+    mPriv->baseInterface = new ChannelInterface(serviceName, objectPath, this);
     mPriv->continueIntrospection();
 }
 
@@ -386,9 +390,9 @@ Channel::Channel(const QDBusConnection& connection,
                  const QString& serviceName,
                  const QString& objectPath,
                  QObject* parent)
-    : ChannelInterface(connection, serviceName, objectPath, parent),
-      mPriv(new Private(*this))
+    : mPriv(new Private(*this))
 {
+    mPriv->baseInterface = new ChannelInterface(serviceName, objectPath, this);
     mPriv->continueIntrospection();
 }
 
@@ -533,6 +537,11 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
         warning() << "Channel::groupSelfRemoveInfo() used with no group interface";
 
     return mPriv->groupSelfRemoveInfo;
+}
+
+ChannelInterface* Channel::baseInterface() const
+{
+    return mPriv->baseInterface;
 }
 
 void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
