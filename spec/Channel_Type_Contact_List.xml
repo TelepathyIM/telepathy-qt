@@ -41,11 +41,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     one of the following identifiers:</p>
 
     <ul>
-      <li>subscribe - the group of contacts for whom you wish to receive presence</li>
+      <li>subscribe - the group of contacts for whom you receive presence</li>
       <li>publish - the group of contacts who may receive your presence</li>
       <li>hide - a group of contacts who are on the publish list but are temporarily disallowed from receiving your presence</li>
       <li>allow - a group of contacts who may send you messages</li>
       <li>deny - a group of contacts who may not send you messages</li>
+      <li>stored - on protocols where the user's contacts are stored, this
+      contact list contains all stored contacts regardless of subscription
+      status.</li>
+    </ul>
+
+    <p>A contact can be in several server-defined lists. All lists are optional
+    to implement. If RequestHandles or RequestChannel for a particular contact
+    list raises an error, this indicates that the connection manager makes no
+    particular statement about the list's contents; clients MUST NOT consider
+    this to be fatal.</p>
+
+    <p>If a client wants to list all of a user's contacts, it is appropriate to
+    use the union of the subscribe, publish and stored lists, including the
+    local and remote pending members.</p>
+
+    <p>For example in XMPP, contacts who have the subscription type "none",
+    "from", "to" and "both" can be respectively in the lists:</p>
+
+    <ul>
+      <li>"none": stored</li>
+      <li>"from": stored and publish</li>
+      <li>"to": stored and subscribe</li>
+      <li>"both": stored, publish and subscribe</li>
     </ul>
 
     <p>These contact list channels may not be closed.</p>

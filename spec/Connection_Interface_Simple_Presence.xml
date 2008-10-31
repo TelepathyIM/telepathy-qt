@@ -55,8 +55,8 @@
             translation of "Available" from a menu.
             It is more informative for his English-speaking colleagues
             to see the English translation of "Available" (as localized
-            by their own clients) than to see the Welsh version (which they
-            don't understand anyway).
+            by their own clients) than to see "Ar Gael" (which they don't
+            understand anyway).
           </tp:rationale>
         </tp:docstring>
       </tp:member>
@@ -228,7 +228,7 @@
       </tp:possible-errors>
     </method>
 
-    <property name="Statuses" access="read"
+    <property name="Statuses" tp:name-for-bindings="Statuses" access="read"
       type="a{s(ubb)}" tp:type="Simple_Status_Spec_Map">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A dictionary where the keys are the presence statuses that the user

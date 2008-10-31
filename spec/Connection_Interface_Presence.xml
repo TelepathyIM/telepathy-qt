@@ -368,14 +368,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Unknown" value="7">
-        <tp:added version="0.17.UNRELEASED"/>
+        <tp:added version="0.17.8"/>
         <tp:docstring>
           Unknown, unable to determine presence for this contact, for example
           if the protocol only allows presence of subscribed contacts.
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Error" value="8">
-        <tp:added version="0.17.UNRELEASED"/>
+        <tp:added version="0.17.8"/>
         <tp:docstring>
           Error, an error occurred while trying to determine presence.  The
           message, if set, is an error from the server.

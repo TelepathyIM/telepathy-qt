@@ -156,10 +156,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         Get the unique tokens for the given contacts' avatars. These tokens
         can be persisted across connections, and should be used by the client
-        to check whether the avatars have been updated.  A CM must always have
-        the tokens for the self handle if one is set (even if it is set to no
-        avatar). Otherwise, only tokens that are already known are returned. An
-        empty token means the given contact has no avatar.
+        to check whether the avatars have been updated.  For handles other than
+        the self handle, only tokens that are already known are returned; an
+        empty token means the given contact has no avatar.  However, a CM must
+        always have the tokens for the self handle if one is set (even if it is
+        set to no avatar).  On protocols where the avatar does not persist
+        between connections, a CM should omit the self handle from the returned
+        map until an avatar is explicitly set or cleared.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -284,8 +287,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     the avatar is persistent, but on others it is transferred via a peer to
     peer mechanism, so needs to be set every connection. Hence, on every
     connection, clients should inspect the avatar token of the connection's
-    self handle, and set the avatar if it is an empty string (and may
-    optionally replace it if the token corresponds to a different avatar).</p>
+    self handle using GetKnownAvatarTokens; if the self handle is not in the
+    returned map, the client should re-set the avatar. If the self handle's
+    avatar token is known, but the avatar has been changed locally since the
+    last connection, the client should upload the new avatar; if the avatar has
+    not changed locally, then the client should download the avatar from the
+    server if its token differs from the that of the local avatar.</p>
 
     <p>To remove the published avatar on protocols which have persistent avatars,
     a client should use the ClearAvatar method. This method can safely be used

@@ -87,7 +87,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:deprecated version="0.17.6">Use GetAll on the D-Bus
         Properties D-Bus interface to get properties including Members,
         RemotePendingMembers and LocalPendingMembers instead, falling back to
-        this method and GetLocalPendingMembers if necessary.</tp:deprecated>
+        this method and GetLocalPendingMembersWithInfo if necessary.
+      </tp:deprecated>
 
       <arg direction="out" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
@@ -410,7 +411,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         from that to the deprecated GetAllMembers method.</tp:added>
     </property>
 
-    <property name="Members" access="read" type="au" tp:type="Contact_Handle[]">
+    <property name="Members" tp:name-for-bindings="Members"
+      access="read" type="au" tp:type="Contact_Handle[]">
       <tp:docstring>
         The members of this channel.
       </tp:docstring>

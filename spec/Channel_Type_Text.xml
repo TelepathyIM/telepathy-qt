@@ -117,7 +117,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <signal name="Received">
+    <signal name="Received" tp:name-for-bindings="Received">
       <arg name="ID" type="u">
         <tp:docstring>
           A numeric identifier for acknowledging the message
@@ -157,7 +157,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <method name="Send">
+    <method name="Send" tp:name-for-bindings="Send">
       <arg direction="in" name="Type" type="u" tp:type="Channel_Text_Message_Type">
         <tp:docstring>
           An integer indicating the type of the message
@@ -168,11 +168,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The message to send
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Request that a message be sent on this channel. When the message has
-        been submitted for delivery, this method will return and the Sent
-        signal will be emitted. If the message cannot be submitted for
-        delivery, the method returns an error and no signal is emitted.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request that a message be sent on this channel. When the message has
+          been submitted for delivery, this method will return and the Sent
+          signal will be emitted. If the message cannot be submitted for
+          delivery, the method returns an error and no signal is emitted.</p>
+
+        <p>This method SHOULD return before the Sent signal is
+          emitted.</p>
+
+        <tp:rationale>
+          <p>When a Text channel implements the Messages interface, that
+            "SHOULD" becomes a "MUST".</p>
+        </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -251,7 +259,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         actually implemented.</tp:changed>
     </signal>
 
-    <signal name="Sent">
+    <signal name="Sent" tp:name-for-bindings="Sent">
       <arg name="Timestamp" type="u" tp:type="Unix_Timestamp">
         <tp:docstring>
           Unix timestamp indicating when the message was sent
@@ -265,11 +273,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <arg name="Text" type="s">
         <tp:docstring>
-          The text of the message
+          The text of the message. If the message was, or will be, altered
+          during transmission, this argument SHOULD reflect what other
+          contacts will receive rather than being a copy of the argument
+          to Send.
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Signals that a message has been submitted for sending.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Signals that a message has been submitted for sending.</p>
       </tp:docstring>
     </signal>
 
@@ -333,6 +344,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             significant is up to the implementor). The intention is that
             if this flag is set, clients using this interface SHOULD inform
             the user that part of the message was not understood.</p>
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Scrollback" value="4">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The incoming message was part of a replay of message history.</p>
+
+          <tp:rationale>
+            <p>In XMPP multi-user chat, a few past messages are replayed
+              when you join a chatroom. A sufficiently capable IRC connection
+              manager could also set this flag on historical messages when
+              connected to a proxy like bip or irssi-proxy. The existence
+              of this flag allows loggers and UIs to use better heuristics
+              when eliminating duplicates (a simple implementation made
+              possible by this flag would be to avoid logging scrollback
+              at all).</p>
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Rescued" value="8">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The incoming message has been seen in a previous channel during
+            the lifetime of the Connection, but had not been acknowledged
+            when that channel closed, causing an identical channel (the
+            channel in which the message now appears) to open.</p>
+
+          <tp:rationale>
+            <p>This means that a logger (which should already have seen the
+              message in the previous channel) is able to recognise and ignore
+              these replayed messages.</p>
+          </tp:rationale>
         </tp:docstring>
       </tp:flag>
     </tp:flags>
@@ -465,6 +508,68 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         and handle type CONTACT should continue to succeed, but may return
         a channel with handle type 0, handle 0, the group interface,
         and the local and remote contacts in its members.</p>
+
+      <p>If a channel of type Text is closed while it has pending messages,
+        the connection manager MUST allow this, but SHOULD open a new,
+        identical channel to deliver those messages, signalling it as a new
+        channel with the
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">NewChannel</tp:dbus-ref>
+        signal (with the suppress_handler parameter set to FALSE).</p>
+
+      <p>If messages were sent on the old channel but the
+        <tp:member-ref>Sent</tp:member-ref>signal has not yet been emitted
+        for those messages, the new channel SHOULD emit Sent for those
+        messages when appropriate - it behaves like a continuation of the
+        old channel.</p>
+
+      <tp:rationale>
+        <p>In effect, this turns this situation, in which a client
+          is likely to lose messages:</p>
+
+        <ul>
+          <li>UI window is closed</li>
+          <li>message arrives</li>
+          <li>text channel emits Received</li>
+          <li>UI calls Close on text channel before it has seen the
+            Received signal</li>
+          <li>text channel emits Closed and closes</li>
+        </ul>
+
+        <p>into something nearly equivalent to this situation, which is
+          fine:</p>
+
+        <ul>
+          <li>UI window is closed</li>
+          <li>UI calls Close on text channel</li>
+          <li>text channel emits Closed and closes</li>
+          <li>message arrives</li>
+          <li>new text channel is created, connection emits NewChannel</li>
+          <li>(the same or a different) UI handles it</li>
+        </ul>
+
+        <p>suppress_handler must be set to FALSE so the replacement channel
+          will be handled by something.</p>
+      </tp:rationale>
+
+      <p>As a result, Text channels SHOULD implement <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Channel.Interface.Destroyable</tp:dbus-ref>.</p>
+
+      <tp:rationale>
+        <p>This "respawning" behaviour becomes problematic if there is no
+          suitable handler for Text channels, or if a particular message
+          repeatedly crashes the Text channel handler; a channel dispatcher
+          can't just Close() the channel in these situations, because
+          it will come back.</p>
+
+        <p>In these situations, the channel dispatcher needs a last-resort
+          way to destroy the channel and stop it respawning. It could either
+          acknowledge the messages itself, or use the Destroyable interface;
+          the Destroyable interface has the advantage that it's not
+          channel-type-dependent, so the channel dispatcher only has to
+          understand one extra interface, however many channel types
+          eventually need a distinction between Close and Destroy.</p>
+      </tp:rationale>
+
     </tp:docstring>
   </interface>
 </node>

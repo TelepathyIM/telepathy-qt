@@ -44,7 +44,7 @@ USA.</p>
       </tp:member>
     </tp:struct>
 
-    <method name="Connect">
+    <method name="Connect" tp:name-for-bindings="Connect">
       <tp:docstring>
         Request that the connection be established. This will be done
         asynchronously and errors will be returned by emitting StatusChanged
@@ -58,7 +58,7 @@ USA.</p>
       </tp:possible-errors>
     </method>
 
-    <method name="Disconnect">
+    <method name="Disconnect" tp:name-for-bindings="Disconnect">
       <tp:docstring>
         Request that the connection be closed. This closes the connection if
         it's not already in DISCONNECTED state, and destroys the connection
@@ -100,7 +100,7 @@ USA.</p>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected">
           <tp:docstring>
-             Before version 0.17.UNRELEASED calling GetInterfaces while
+             Before version 0.17.8 calling GetInterfaces while
              on a connection that is not yet CONNECTED wasn't allowed. If a
              CM returns this error, its list of interfaces should be regarded
              as empty until it becomes CONNECTED.
@@ -121,19 +121,52 @@ USA.</p>
       </tp:docstring>
     </method>
 
+    <signal name="SelfHandleChanged"
+        tp:name-for-bindings="Self_Handle_Changed">
+      <tp:docstring>
+        Emitted whenever the SelfHandle property changes. If the connection
+        is not yet in the CONNECTED state, this signal is not guaranteed
+        to be emitted.
+      </tp:docstring>
+      <tp:added version="0.17.10">Clients MAY assume that if the
+        SelfHandle property exists, this signal will be emitted when
+        necessary.</tp:added>
+
+      <arg type="u" tp:type="Contact_Handle" name="Self_Handle">
+        <tp:docstring>
+          The new value of the SelfHandle property.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="SelfHandle" tp:name-for-bindings="Self_Handle"
+      type="u" tp:type="Contact_Handle" access="read">
+      <tp:docstring>
+        The handle which represents the user on this connection, which will
+        remain valid for the lifetime of this connection, or until a change
+        in the user's identifier is signalled by the SelfHandleChanged signal.
+        If the connection is not yet in the CONNECTED state, the value of
+        this property MAY be zero.
+      </tp:docstring>
+      <tp:added version="0.17.10">For compatibility with older
+        versions, clients should fall back to calling the GetSelfHandle
+        method.</tp:added>
+    </property>
+
     <method name="GetSelfHandle" tp:name-for-bindings="Get_Self_Handle">
       <arg direction="out" type="u" tp:type="Contact_Handle">
         <tp:docstring>
-          An integer handle representing the user
+          The value of the SelfHandle property
         </tp:docstring>
       </arg>
 
       <tp:docstring>
-        Get the handle which represents the user on this connection, which will
-        remain valid for the lifetime of this connection, or until a change
-        in the user's identifier is signalled by the Renamed signal on the
-        Renaming interface (if present).
+        Returns the value of the SelfHandle property. Change notification
+        is via the SelfHandleChanged signal.
       </tp:docstring>
+      <tp:deprecated version="0.17.10">Use GetAll to get the
+        SelfHandle property (and all other Connection properties)
+        instead.</tp:deprecated>
 
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -277,15 +310,13 @@ USA.</p>
           <p>If true, the channel was requested by a client that intends to
             present it to the user itself (i.e. it passed suppress_handler=TRUE
             to the RequestChannel method), so no other handler should be
-            launched.</p>
+            launched. Clients MAY assume that channels where this is true
+            were created by a user request.</p>
 
           <p>If false, either the channel was created due to incoming
             information from the service, or the channel was requested by
             a local client that does not intend to handle the channel itself
-            (a typical use-case is an address-book viewer that does not itself
-            implement chat or VoIP functionality, starting a channel that
-            will be handled by the same user interface that would handle
-            incoming channels).</p>
+            (this usage is deprecated).</p>
 
           <p>Clients MUST NOT assume that only incoming channels will have
             this flag set to false.</p>
@@ -362,9 +393,32 @@ USA.</p>
 
       <arg direction="in" name="Suppress_Handler" type="b">
         <tp:docstring>
-          If true, the requesting client intends to take responsibility for
-          displaying the channel to the user, so no other handler needs to
-          be launched
+          <p>Clients SHOULD always set this to true.</p>
+
+          <tp:rationale>
+            <p>The historical meaning was that clients that did not
+              intend to take responsibility for displaying the channel to
+              the user could set this to FALSE, in which case the channel
+              dispatcher would launch an appropriate channel handler.</p>
+
+            <p>However, clients whose functionality relies on having a
+              working channel dispatcher should obtain that functionality by
+              calling methods on the channel dispatcher, so that they will
+              get an appropriate error if the channel dispatcher is missing
+              or not working.</p>
+
+            <p>The channel dispatcher itself should set this to true too,
+              so that it will ignore the
+              <tp:member-ref>NewChannel</tp:member-ref> signal that results
+              from the creation of the channel. It can then dispatch the
+              channel returned from this method to an
+              appropriate handler.</p>
+
+            <p>So, there is no sensible use-case for setting this to false,
+              and setting it to false can result in unhandled channels (in
+              the case where clients assume that a channel dispatcher is
+              present, but it isn't).</p>
+          </tp:rationale>
         </tp:docstring>
       </arg>
 
@@ -647,19 +701,51 @@ USA.</p>
     </signal>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-    <p>This models a connection to a single user account on a communication
-    service. Its basic capability is to provide the facility to request and
-    receive channels of differing types (such as text channels or streaming
-    media channels) which are used to carry out further communication.</p>
+      <p>This models a connection to a single user account on a communication
+        service. Its basic capability is to provide the facility to request and
+        receive channels of differing types (such as text channels or streaming
+        media channels) which are used to carry out further communication.</p>
+
+      <p>In order to allow Connection objects to be discovered by new clients,
+        the object path and well-known bus name MUST be of the form
+        <code>/org/freedesktop/Telepathy/Connection/cmname/proto/account</code>
+        and
+        <code>org.freedesktop.Telepathy.Connection.cmname.proto.account</code>
+        where:</p>
+
+      <ul>
+        <li><em>cmname</em> is the same
+          <tp:type>Connection_Manager_Name</tp:type> that appears
+          in the connection manager's object path and well-known bus name</li>
+        <li><em>proto</em> is the <tp:type>Protocol</tp:type> name as seen in
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.ConnectionManager">ListProtocols</tp:dbus-ref>,
+          but with "-" replaced with "_" to get a valid
+          object path/bus name</li>
+        <li><em>account</em> is some non-empty sequence of ASCII letters,
+          digits and underscores not starting with a digit</li>
+      </ul>
+
+      <p><em>account</em> SHOULD be formed such that any valid distinct
+        connection instance on this protocol has a distinct name. This
+        might be formed by including the server name followed by the user
+        name (escaped via some suitable mechanism like telepathy-glib's
+        tp_escape_as_identifier() function to preserve uniqueness); on
+        protocols where connecting multiple times is permissable, a
+        per-connection identifier might be necessary to ensure
+        uniqueness.</p>
+
+      <p>Clients MAY parse the object path to determine the connection
+        manager name and the protocol, but MUST NOT attempt to parse the
+        <em>account</em> part. Connection managers MAY use any unique string
+        for this part.</p>
 
     <p>As well as the methods and signatures below, arbitrary interfaces may be
     provided by the Connection object to represent extra connection-wide
     functionality, such as the Connection.Interface.Presence for receiving and
     reporting presence information, and Connection.Interface.Aliasing for
     connections where contacts may set and change an alias for themselves.
-    These interfaces can be discovered using GetInterfaces after the
-    connection, has been established and must not change subsequently at
-    runtime.</p>
+    These interfaces can be discovered using the
+    <tp:member-ref>GetInterfaces</tp:member-ref> method.</p>
 
     <p>Contacts, rooms, and server-stored lists (such as subscribed contacts,
     block lists, or allow lists) on a service are all represented by
@@ -682,6 +768,13 @@ USA.</p>
     keep handles from being released with HoldHandles, and notify that they are
     no longer storing handles with ReleaseHandles.</p>
     </tp:docstring>
+
+    <tp:changed version="0.17.10">Previously, the account part of
+      Connection bus names/object paths was allowed to have more than one
+      component (i.e. contain dots or slashes), resulting in Connection
+      bus names and object paths with more than 7 components. We now restrict
+      Connection bus names/object paths to have exactly 7
+      components.</tp:changed>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

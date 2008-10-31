@@ -1,0 +1,137 @@
+<?xml version="1.0" ?>
+<node name="/Client_Approver"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Client.Approver.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:added version="0.17.12">(as a draft)</tp:added>
+
+    <tp:requires interface="org.freedesktop.Telepathy.Client.DRAFT"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Approvers notify the user that new channels have been created,
+        and allow the user to accept or reject those channels.</p>
+
+      <p>They can also select which channel handler will be used for the
+        channel, for instance by offering the user a list of possible
+        handlers rather than just an accept/reject choice.</p>
+
+      <p>However, the Channel Dispatcher must be able to prioritize
+        possible handlers on its own using some reasonable heuristic,
+        probably based on user configuration.</p>
+
+      <p>It is possible (and useful) to have an approver and
+        a channel handler in the same process; this is particularly useful
+        if a channel handler wants to claim responsibility for particular
+        channels itself.</p>
+
+      <p>All approvers are notified simultaneously. For instance, in a
+        desktop system, there might be one approver that displays a
+        notification-area icon, one that is part of a contact list
+        window and highlights contacts there, and one that is part
+        of a full-screen media player.</p>
+
+      <p>Any approver can approve the handling of a channel with a
+        particular channel handler. Approvers can also request that the
+        channel is rejected. The first approver to reply gets its decision
+        acted on; any other approvers that reply at the same time will
+        get a D-Bus error, indicating that the channel has already been
+        dealt with.</p>
+
+      <p>Approvers should usually prompt the user and ask for
+        confirmation, rather than dispatching the channel to a handler
+        straight away.</p>
+    </tp:docstring>
+
+    <property name="ApproverChannelFilter"
+      tp:name-for-bindings="Approver_Channel_Filter"
+      type="aa{sv}" access="read" tp:type="Channel_Class[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A specification of the channels in which this approver is
+          interested. The <tp:member-ref>AddDispatchOperation</tp:member-ref>
+          method should be called by the channel dispatcher whenever the
+          channels in a channel dispatch operation
+          match this description.</p>
+
+        <p>(FIXME: what happens if some but not all of the channels
+          match this?)</p>
+
+        <p>This property works in exactly the same way as the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Observer.DRAFT.ObserverChannelFilter</tp:dbus-ref>
+          property. In the .client file, it is represented in the
+          same way as ObserverChannelFilter, but the group has the same
+          name as this interface and the keys start with
+          ApproverChannelFilter instead of ObserverChannelFilter.</p>
+      </tp:docstring>
+    </property>
+
+    <method name="AddDispatchOperation"
+      tp:name-for-bindings="Add_Dispatch_Operation">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Called by the channel dispatcher when a ChannelDispatchOperation
+          in which the approver has registered an interest is created,
+          or when the approver starts up while such channel dispatch
+          operations already exist.</p>
+
+        <p>The channel dispatcher SHOULD call this method on all approvers
+          at the same time. If no approvers return from this method
+          successfully (including situations where there are no matching
+          approvers at all), the channel dispatcher SHOULD consider this
+          to be an error, and recover by dispatching the channel to the
+          most preferred handler.</p>
+
+        <tp:rationale>
+          Processes that aren't approvers shouldn't be making connections
+          anyway - there should always be at least one approver running.
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="DispatchOperation" type="o" direction="in">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelDispatchOperation</tp:dbus-ref>
+            to be processed.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Properties" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map" direction="in">
+        <tp:docstring>
+          Properties of the channel dispatch operation. This MUST NOT include
+          properties that could change, SHOULD include as many properties as
+          possible given that constraint, and MUST include at least the
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">Account</tp:dbus-ref>,
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">Connection</tp:dbus-ref>,
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">Channels</tp:dbus-ref>
+          and
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">PossibleHandlers</tp:dbus-ref>
+          properties.
+        </tp:docstring>
+      </arg>
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

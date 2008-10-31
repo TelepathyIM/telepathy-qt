@@ -47,7 +47,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         to them which are implemented by available client processes.</p>
     </tp:docstring>
 
-    <tp:changed version="0.17.UNRELEASED">Previously, this interface
+    <tp:changed version="0.17.8">Previously, this interface
       also expressed capabilities of the connection itself, indicating what
       sorts of channels could be requested (for instance, the ability to
       open chatroom lists or chatrooms). However, this was never very

@@ -104,20 +104,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       are the ones given special status by the source, and we have all of them
     -->
 
-    <property name="Interfaces" type="as" access="read">
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      type="as" tp:type="DBus_Interface[]" access="read">
       <tp:docstring>
         A list of the extra interfaces provided by this account.
       </tp:docstring>
     </property>
 
-    <method name="Remove">
+    <method name="Remove" tp:name-for-bindings="Remove">
       <tp:docstring>Delete the account.</tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 
-    <signal name="Removed">
+    <signal name="Removed" tp:name-for-bindings="Removed">
       <tp:docstring>
         This account has been removed.
 
@@ -163,7 +164,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="Icon" type="s" access="readwrite">
+    <property name="Icon" tp:name-for-bindings="Icon"
+      type="s" access="readwrite">
       <tp:docstring>
         The name of an icon in the system's icon theme, such as "im-msn",
         or the empty string to not specify an icon. If the icon is set to
@@ -179,7 +181,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="Valid" type="b" access="read">
+    <property name="Valid" tp:name-for-bindings="Valid"
+      type="b" access="read">
       <tp:docstring>
         If true, this account is considered by the account manager to be
         complete and usable. If false, user action is required to make it
@@ -198,7 +201,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="Enabled" type="b" access="readwrite">
+    <property name="Enabled" tp:name-for-bindings="Enabled"
+      type="b" access="readwrite">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>This property gives the users the possibility to prevent an account
           from being used. This flag does not change the validity of the
@@ -231,7 +235,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="Nickname" type="as" access="readwrite">
+    <property name="Nickname" tp:name-for-bindings="Nickname"
+      type="as" access="readwrite">
       <tp:docstring>
         The nickname to set on this account for display to other contacts,
         as set by the user. When the account becomes connected, the
@@ -249,7 +254,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="Parameters" type="a{sv}" access="read">
+    <property name="Parameters" tp:name-for-bindings="Parameters"
+      type="a{sv}" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A map from connection manager parameter names (as in the
           ConnectionManager interface) to their values. This property includes
@@ -339,10 +345,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="Connection" type="s" access="read">
+    <property name="Connection" tp:name-for-bindings="Connection"
+      type="o" access="read">
       <tp:docstring>
-        Either the well-known bus name of the connection to this account,
-        or the empty string if there is no connection.
+        Either the object path of the connection to this account,
+        or the special value '/' if there is no connection.
+
+        <tp:rationale>
+          Object paths aren't nullable, so we can't use an empty string.
+        </tp:rationale>
       </tp:docstring>
     </property>
 

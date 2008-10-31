@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.17.8.1</tp:version>
+<tp:version>0.17.14.1</tp:version>
 
 <tp:copyright>Copyright (C) 2005-2008 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright (C) 2005-2008 Nokia Corporation</tp:copyright>
@@ -31,21 +31,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 <xi:include href="Connection_Interface_Avatars.xml"/>
 <xi:include href="Connection_Interface_Capabilities.xml"/>
 <xi:include href="Connection_Interface_Contacts.xml"/>
-<!-- Never implemented, is a terrible API
-<xi:include href="Connection_Interface_Contact_Info.xml"/> -->
-<!-- Never implemented, insufficient (needs conditions)
-<xi:include href="Connection_Interface_Forwarding.xml"/> -->
 <xi:include href="Connection_Interface_Simple_Presence.xml"/>
 <xi:include href="Connection_Interface_Presence.xml"/>
-<!-- Never implemented, vague
-<xi:include href="Connection_Interface_Privacy.xml"/> -->
 <xi:include href="Connection_Interface_Renaming.xml"/>
+<xi:include href="Connection_Interface_Requests.xml"/>
+
+<xi:include href="Channel_Bundle.xml"/>
 
 <xi:include href="Channel.xml"/>
 <xi:include href="Channel_Future.xml"/>
 <xi:include href="Channel_Type_Contact_List.xml"/>
-<!-- Never implemented, can't be implemented with current dbus-glib, vague
-<xi:include href="Channel_Type_Contact_Search.xml"/> -->
 <xi:include href="Channel_Type_Streamed_Media.xml"/>
 <xi:include href="Channel_Type_Room_List.xml"/>
 <xi:include href="Channel_Type_Text.xml"/>
@@ -54,14 +49,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 <xi:include href="Channel_Interface_Call_Merging.xml"/>
 <xi:include href="Channel_Interface_Call_State.xml"/>
 <xi:include href="Channel_Interface_Chat_State.xml"/>
-<xi:include href="Channel_Interface_Delivery_Reporting.xml"/>
+<xi:include href="Channel_Interface_Destroyable.xml"/>
 <xi:include href="Channel_Interface_DTMF.xml"/>
 <xi:include href="Channel_Interface_Group.xml"/>
 <xi:include href="Channel_Interface_Hold.xml"/>
 <xi:include href="Channel_Interface_HTML.xml"/>
 <xi:include href="Channel_Interface_Password.xml"/>
-<!-- Causes havoc, never implemented, unclear requirements
-<xi:include href="Channel_Interface_Transfer.xml"/> -->
 <xi:include href="Channel_Interface_Media_Signalling.xml"/>
 <xi:include href="Channel_Interface_Messages.xml"/>
 
@@ -72,10 +65,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
 <xi:include href="Account_Manager.xml"/>
 <xi:include href="Account.xml"/>
+<xi:include href="Account_Interface_Avatar.xml"/>
+
+<xi:include href="Channel_Dispatcher.xml"/>
+<xi:include href="Channel_Dispatcher_Interface_Operation_List.xml"/>
+<xi:include href="Channel_Dispatch_Operation.xml"/>
+<xi:include href="Channel_Request.xml"/>
+
+<xi:include href="Client.xml"/>
+<xi:include href="Client_Observer.xml"/>
+<xi:include href="Client_Approver.xml"/>
+<xi:include href="Client_Handler.xml"/>
 
 <xi:include href="Channel_Handler.xml"/>
 
 <xi:include href="errors.xml"/>
 <xi:include href="generic-types.xml"/>
+
+<!-- Never implemented, is a terrible API
+<xi:include href="Connection_Interface_Contact_Info.xml"/> -->
+<!-- Never implemented, insufficient (needs conditions)
+<xi:include href="Connection_Interface_Forwarding.xml"/> -->
+<!-- Never implemented, vague
+<xi:include href="Connection_Interface_Privacy.xml"/> -->
+<!-- Never implemented, can't be implemented with current dbus-glib, vague
+<xi:include href="Channel_Type_Contact_Search.xml"/> -->
+<!-- Causes havoc, never implemented, unclear requirements
+<xi:include href="Channel_Interface_Transfer.xml"/> -->
 
 </tp:spec>

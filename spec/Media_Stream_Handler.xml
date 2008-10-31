@@ -71,7 +71,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         client of a new remote candidate.
       </tp:docstring>
     </signal>
-    <signal name="Close">
+    <signal name="Close" tp:name-for-bindings="Close">
       <tp:docstring>
         Signal emitted when the connection manager wishes the stream to be
         closed.
@@ -83,7 +83,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         Inform the connection manager of the current codec choice.
       </tp:docstring>
     </method>
-    <method name="Error">
+    <method name="Error" tp:name-for-bindings="Error">
       <arg direction="in" name="Error_Code" type="u" tp:type="Media_Stream_Error">
         <tp:docstring>
           ID of error, from the MediaStreamError enumeration
@@ -184,7 +184,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
-    <method name="Ready">
+    <method name="Ready" tp:name-for-bindings="Ready">
       <arg direction="in" name="Codecs" type="a(usuuua{ss})"
         tp:type="Media_Stream_Handler_Codec[]">
         <tp:docstring>

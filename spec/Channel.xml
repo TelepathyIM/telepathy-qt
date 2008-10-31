@@ -35,11 +35,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The GetAll method lets clients retrieve all properties in one
           round-trip, which is desirable.
         </tp:rationale>
+
+        <p>When requesting a channel, the request MUST specify a channel
+          type, and the request MUST fail if the specified channel type
+          cannot be supplied.</p>
+
+        <tp:rationale>
+          Common sense.
+        </tp:rationale>
       </tp:docstring>
     </property>
 
-    <property name="Interfaces" type="as" tp:type="DBus_Interface[]"
-      access="read">
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      type="as" tp:type="DBus_Interface[]" access="read">
       <tp:added version="0.17.7"/>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Extra interfaces provided by this channel. This SHOULD NOT include
@@ -59,6 +67,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The GetAll method lets clients retrieve all properties in one
           round-trip, which is desirable.
         </tp:rationale>
+
+        <p>When requesting a channel with a particular value for this
+          property, the request must fail without side-effects unless the
+          connection manager expects to be able to provide a channel whose
+          interfaces include at least the interfaces requested.</p>
       </tp:docstring>
     </property>
 
@@ -80,18 +93,89 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           uniqueness guarantee - there can be many channels with the same
           (channel type, handle type, handle) tuple. This is necessary
           to support conversation threads in XMPP and SIP, for example.</p>
+
+        <p>If this is present in a channel request, it must be nonzero,
+          <tp:member-ref>TargetHandleType</tp:member-ref>
+          MUST be present and not Handle_Type_None, and
+          <tp:member-ref>TargetID</tp:member-ref> MUST NOT be
+          present.</p>
+
+        <p>The channel that satisfies the request MUST either:</p>
+
+        <ul>
+          <li>have the specified TargetHandle property; or</li>
+          <li>have <tp:member-ref>TargetHandleType</tp:member-ref> =
+            Handle_Type_None, TargetHandle = 0, and be configured such that
+            it could communicate with the specified handle in some other way
+            (e.g. have the requested contact handle in its Group
+            interface)</li>
+        </ul>
+      </tp:docstring>
+    </property>
+
+    <property name="TargetID" tp:name-for-bindings="Target_ID"
+      type="s" access="read">
+      <tp:added version="0.17.9"/>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The string that would result from inspecting the
+          <tp:member-ref>TargetHandle</tp:member-ref>
+          property (i.e. the identifier in the IM protocol of the contact,
+          room, etc. with which this channel communicates), or the empty
+          string if the TargetHandle is 0.</p>
+
+        <tp:rationale>
+          <p>The presence of this property avoids the following race
+            condition:</p>
+
+          <ul>
+            <li>New channel C is signalled with target handle T</li>
+            <li>Client calls InspectHandles(CONTACT, [T])</li>
+            <li>Channel C closes, removing the last reference to handle T</li>
+            <li>InspectHandles(CONTACT, [T]) returns an error</li>
+          </ul>
+        </tp:rationale>
+
+        <p>If this is present in a channel request,
+          <tp:member-ref>TargetHandleType</tp:member-ref>
+          MUST be present and not Handle_Type_None, and
+          <tp:member-ref>TargetHandle</tp:member-ref> MUST NOT be
+          present. The request MUST fail with error InvalidHandle, without
+          side-effects, if the requested TargetID would not be accepted by
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">RequestHandles</tp:dbus-ref>.</p>
+
+        <p>The returned channel must be related to the handle corresponding
+          to the given identifier, in the same way as if TargetHandle
+          had been part of the request instead.</p>
+
+        <tp:rationale>
+          <p>Requesting channels with a string identifier saves a round-trip
+            (the call to RequestHandles). It also allows the channel
+            dispatcher to accept a channel request for an account that is not
+            yet connected (and thus has no valid handles), bring the account
+            online, and pass on the same parameters to the new connection's
+            CreateChannel method.</p>
+        </tp:rationale>
       </tp:docstring>
     </property>
 
     <property name="TargetHandleType" type="u" access="read"
       tp:type="Handle_Type" tp:name-for-bindings="Target_Handle_Type">
       <tp:added version="0.17.7"/>
-      <tp:docstring>
-        The type of TargetHandle.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The type of TargetHandle.</p>
+
+        <p>If this is omitted from a channel request, connection managers
+          SHOULD treat this as equivalent to Handle_Type_None.</p>
+
+        <p>If this is omitted or is Handle_Type_None,
+          <tp:member-ref>TargetHandle</tp:member-ref> and
+          <tp:member-ref>TargetID</tp:member-ref> MUST be omitted from the
+          request.</p>
       </tp:docstring>
     </property>
 
-    <method name="Close">
+    <method name="Close" tp:name-for-bindings="Close">
       <tp:docstring>
         Request that the channel be closed. This is not the case until
         the Closed signal has been emitted, and depending on the connection
@@ -116,7 +200,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <signal name="Closed">
+    <signal name="Closed" tp:name-for-bindings="Closed">
       <tp:docstring>
         Emitted when the channel has been closed. Method calls on the
         channel are no longer valid after this signal has been emitted,
@@ -190,6 +274,129 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </method>
 
+    <property name="Requested" tp:name-for-bindings="Requested"
+      type="b" access="read">
+      <tp:added version="0.17.13">(as stable API)</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>True if this channel was created in response to a local request,
+          such as a call to
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.RequestChannel</tp:dbus-ref>
+          or
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>.</p>
+
+        <tp:rationale>
+          <p>The idea of this property is to distinguish between "incoming"
+            and "outgoing" channels, in a way that doesn't break down when
+            considering special cases like contact lists that are automatically
+            created on connection to the server, or chatrooms that an
+            IRC proxy/bouncer like irssi-proxy or bip was already in.</p>
+
+          <p>The reason we want to make that distinction is that UIs for
+            things that the user explicitly requested should start up
+            automatically, whereas for incoming messages and VoIP calls we
+            should first ask the user whether they want to open the messaging
+            UI or accept the call.</p>
+        </tp:rationale>
+
+        <p>If the channel was not explicitly requested (even if it was
+          created as a side-effect of a call to one of those functions,
+          e.g. because joining a Tube in a MUC context on XMPP implies
+          joining that MUC), then this property is false.</p>
+
+        <p>For compatibility with older connection managers, clients SHOULD
+          assume that this property is true if they see a channel announced
+          by the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.NewChannel</tp:dbus-ref>
+          signal with the suppress_handler parameter set to true.</p>
+
+        <tp:rationale>
+          <p>In a correct connection manager, the only way to get such a
+            channel is to request it.</p>
+        </tp:rationale>
+
+        <p>Clients MAY additionally assume that this property is false
+          if they see a channel announced by the NewChannel signal with the
+          suppress_handler parameter set to false.</p>
+
+        <tp:rationale>
+          <p>This is more controversial, since it's possible to get that
+            parameter set to false by requesting a channel. However, there's
+            no good reason to do so, and we've deprecated this practice.</p>
+
+          <p>In the particular case of the channel dispatcher, the only
+            side-effect of wrongly thinking a channel is unrequested
+            is likely to be that the user has to confirm that they want to
+            use it, so it seems fairly harmless to assume in the channel
+            dispatcher that channels with suppress_handler false are
+            indeed unrequested.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="InitiatorHandle" type="u" tp:type="Contact_Handle"
+      access="read" tp:name-for-bindings="Initiator_Handle">
+      <tp:added version="0.17.13">(as stable API)</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The contact who initiated the channel. For channels requested by the
+          local user, this MUST be the value of
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.SelfHandle</tp:dbus-ref>
+          at the time the channel was created (i.e. not a channel-specific
+          handle).</p>
+
+        <tp:rationale>
+          <p>The careful wording about the self-handle is because the Renaming
+            interface can cause the return from Connection.GetSelfHandle to
+            change. It's something of a specification bug that we don't signal
+            this in the Connection interface yet.</p>
+        </tp:rationale>
+
+        <p>For channels requested by a remote user, this MUST be their handle.
+          If unavailable or not applicable, this MUST be 0 (for instance,
+          contact lists are not really initiated by anyone in particular, and
+          it's easy to imagine a protocol where chatroom invitations can be
+          anonymous).</p>
+
+        <p>For channels with the Group interface, this SHOULD be the same
+          contact who is signalled as the "Actor" causing the self-handle
+          to be placed in the local-pending set.</p>
+
+        <p>This SHOULD NOT be a channel-specific handle, if possible.</p>
+
+        <p>It does not make sense for this property to be in channel
+          requests - the initiator will always be the local user - so it
+          MUST NOT be accepted.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="InitiatorID" type="s" access="read"
+      tp:name-for-bindings="Initiator_ID">
+      <tp:added version="0.17.13">(as stable API)</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The string that would result from inspecting the
+          <tp:member-ref>InitiatorHandle</tp:member-ref>
+          property (i.e. the initiator's identifier in the IM protocol).</p>
+
+        <tp:rationale>
+          <p>The presence of this property avoids the following race
+            condition:</p>
+
+          <ul>
+            <li>New StreamedMedia channel C is signalled with initiator
+              handle I</li>
+            <li>Client calls InspectHandles(CONTACT, [I])</li>
+            <li>Channel C closes, removing the last reference to handle I</li>
+            <li>InspectHandles(CONTACT, [I]) returns an error</li>
+            <li>Client can indicate that a call was missed, but not who
+              called!</li>
+          </ul>
+        </tp:rationale>
+
+        <p>It does not make sense for this property to be in channel
+          requests - the initiator will always be the local user - so it
+          MUST NOT be accepted.</p>
+      </tp:docstring>
+    </property>
+
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
     <p>All communication in the Telepathy framework is carried out via channel
     objects which are created and managed by connections. This interface must
@@ -197,6 +404,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     such as Channel.Type.ContactList which represents a list of people (such
     as a buddy list) or a Channel.Type.Text which represents a channel over
     which textual messages are sent and received.</p>
+
+    <p>Each Channel's object path MUST start with the object path of
+      its associated Connection, followed by '/'. There MAY be any number
+      of additional object-path components, which clients MUST NOT attempt
+      to parse.</p>
+
+    <tp:rationale>
+      <p>This ensures that Channel object paths are unique, even between
+        Connections and CMs, because Connection object paths are
+        guaranteed-unique via their link to the well-known bus name.</p>
+
+      <p>If all connection managers in use are known to comply with at least
+        spec version 0.17.10, then the Connection's object path can
+        even be determined from the Channel's without any additional
+        information, by taking the first 7 components.</p>
+    </tp:rationale>
 
     <p>Each channel may have an immutable handle associated with it, which
       may be any handle type, such as a contact, room or list handle,
@@ -233,6 +456,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       combination of channel type, handle type and handle. This guarantee
       has now been removed in order to accommodate features like message
       threads.
+    </tp:changed>
+
+    <tp:changed version="0.17.10">Previously we did not explicitly
+      guarantee that Channels' object paths had the Connection's object path
+      as a prefix.
     </tp:changed>
   </interface>
 </node>
