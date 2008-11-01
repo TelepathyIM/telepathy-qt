@@ -190,8 +190,13 @@ public:
 public Q_SLOTS:
     /**
      * Close the channel.
+     *
+     * When this method is used as a slot, it is fire-and-forget. If you want
+     * to know if an error occurs when closing the channel, then you should
+     * use the returned object.
+     *
      */
-    void close();
+    QDBusPendingReply<> close();
 
 Q_SIGNALS:
     /**

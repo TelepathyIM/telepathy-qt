@@ -447,13 +447,19 @@ uint Channel::targetHandle() const
     return mPriv->targetHandle;
 }
 
-void Channel::close()
+QDBusPendingReply<> Channel::close()
 {
+    // REVIEWME: should we just call close anyway, even if it doesn't make sense, like in methods above?
     // Closing a channel only makes sense if the readiness is Full.
-    if(mPriv->readiness == ReadinessFull)
-        mPriv->baseInterface->Close();
-    else
-        warning() << "Channel::close() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    if (mPriv->readiness == ReadinessFull) {
+        return mPriv->baseInterface->Close();
+    } else {
+        // If the channel is in a readiness where it can't be closed, we emit
+        // a warning and return an invalid QDBusPendingReply.
+        warning() << "Channel::close() used with readiness" << mPriv->readiness << "!= ReadinessFull";        
+        return QDBusPendingReply<>();
+    }
+
 }
 
 uint Channel::groupFlags() const
