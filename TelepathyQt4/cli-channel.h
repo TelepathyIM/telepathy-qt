@@ -195,6 +195,8 @@ public Q_SLOTS:
      * to know if an error occurs when closing the channel, then you should
      * use the returned object.
      *
+     * \return QDBusPendingReply object for the call to Close() on the Channel
+     *         interface.
      */
     QDBusPendingReply<> close();
 
