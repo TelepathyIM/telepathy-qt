@@ -633,6 +633,9 @@ void Channel::onClosed()
 
     if (mPriv->readiness != ReadinessDead)
         mPriv->changeReadiness(ReadinessDead);
+
+    // Relay the channel interface's closed() signal.
+    emit closed();
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)

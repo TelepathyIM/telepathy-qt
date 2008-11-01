@@ -209,6 +209,13 @@ Q_SIGNALS:
     void readinessChanged(Telepathy::Client::Channel::Readiness newReadiness);
 
     /**
+     * Emitted when the channel has been closed. Method calls on the channel
+     * are no longer valid after this signal has been emitted, and the
+     * connection manager may then remove the object from the bus at any point.
+     */
+    void closed();
+
+    /**
      * \name Group interface
      *
      * Cached access to state of the group interface on the associated remote
