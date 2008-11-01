@@ -438,7 +438,7 @@ uint Channel::targetHandleType() const
 uint Channel::targetHandle() const
 {
     if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::channelType() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+        warning() << "Channel::targetHandle() used with readiness" << mPriv->readiness << "!= ReadinessFull";
 
     return mPriv->targetHandle;
 }
