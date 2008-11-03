@@ -41,6 +41,9 @@ struct Channel::Private
     // Public object
     Channel& parent;
 
+    // Owning connection
+    Connection* connection;
+
     // Optional interface proxies
     ChannelInterfaceGroupInterface* group;
     DBus::PropertiesInterface* properties;
@@ -77,7 +80,7 @@ struct Channel::Private
     // Group remove info
     GroupMemberChangeInfo groupSelfRemoveInfo;
 
-    Private(Channel& parent)
+    Private(Channel& parent, Connection* connection)
         : parent(parent)
     {
         debug() << "Creating new Channel";
@@ -94,10 +97,24 @@ struct Channel::Private
         groupIsSelfHandleTracked = false;
         groupSelfHandle = 0;
 
-        debug() << "Connecting to Channel::Closed()";
+        debug() << " Connecting to Channel::Closed()";
         parent.connect(&parent,
                        SIGNAL(Closed()),
                        SLOT(onClosed()));
+
+        debug() << " Connection to owning connection's lifetime signals";
+        parent.connect(connection,
+                       SIGNAL(readinessChanged(uint)),
+                       SLOT(onConnectionReadinessChanged(uint)));
+
+        parent.connect(connection,
+                       SIGNAL(destroyed()),
+                       SLOT(onConnectionDestroyed()));
+
+        if (connection->readiness() == Connection::ReadinessDead) {
+            warning() << "Connection given as the owner for a Channel was already dead! Channel will be stillborn.";
+            readiness = ReadinessDead;
+        }
 
         introspectQueue.enqueue(&Private::introspectMain);
     }
@@ -236,11 +253,12 @@ struct Channel::Private
 
     void continueIntrospection()
     {
-        if (introspectQueue.isEmpty()) {
-            if (readiness < ReadinessFull)
+        if (readiness < ReadinessFull) {
+            if (introspectQueue.isEmpty()) {
                 changeReadiness(ReadinessFull);
-        } else {
-            (this->*introspectQueue.dequeue())();
+            } else {
+                (this->*introspectQueue.dequeue())();
+            }
         }
     }
 
@@ -373,22 +391,14 @@ struct Channel::Private
     }
 };
 
-Channel::Channel(const QString& serviceName,
+Channel::Channel(Connection* connection,
                  const QString& objectPath,
                  QObject* parent)
-    : ChannelInterface(serviceName, objectPath, parent),
-      mPriv(new Private(*this))
+    : ChannelInterface(connection->service(), objectPath, parent),
+      mPriv(new Private(*this, connection))
 {
-    mPriv->continueIntrospection();
-}
-
-Channel::Channel(const QDBusConnection& connection,
-                 const QString& serviceName,
-                 const QString& objectPath,
-                 QObject* parent)
-    : ChannelInterface(connection, serviceName, objectPath, parent),
-      mPriv(new Private(*this))
-{
+    // Introspection continued here so mPriv will be initialized (unlike if we
+    // continued it from the Private constructor)
     mPriv->continueIntrospection();
 }
 
@@ -609,6 +619,19 @@ void Channel::onClosed()
 
     if (mPriv->readiness != ReadinessDead)
         mPriv->changeReadiness(ReadinessDead);
+}
+
+void Channel::onConnectionReadinessChanged(uint readiness)
+{
+    if (readiness == Connection::ReadinessDead && mPriv->readiness != ReadinessDead) {
+        debug() << "Owning connection died leaving an orphan Channel, changing to ReadinessDead";
+        mPriv->changeReadiness(ReadinessDead);
+    }
+}
+
+void Channel::onConnectionDestroyed()
+{
+    return onConnectionReadinessChanged(Connection::ReadinessDead);
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)

@@ -533,8 +533,7 @@ Channel* PendingChannel::channel(QObject* parent) const
     }
 
     Channel* channel =
-        new Channel(mPriv->connection->connection(),
-                    mPriv->connection->service(),
+        new Channel(mPriv->connection,
                     mPriv->objectPath.path(),
                     parent);
     return channel;
