@@ -407,6 +407,11 @@ Channel::~Channel()
     delete mPriv;
 }
 
+Connection* Channel::connection() const
+{
+    return mPriv->connection;
+}
+
 Channel::Readiness Channel::readiness() const
 {
     return mPriv->readiness;

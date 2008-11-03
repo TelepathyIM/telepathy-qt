@@ -152,6 +152,13 @@ public:
     ~Channel();
 
     /**
+     * Returns the owning Connection of the Channel.
+     *
+     * \return Pointer to the Connection.
+     */
+    Connection* connection() const;
+
+    /**
      * Returns the current readiness of the Channel.
      *
      * \return The readiness, as defined in #Readiness.
