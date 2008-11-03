@@ -636,6 +636,8 @@ void Channel::onConnectionReadinessChanged(uint readiness)
 
 void Channel::onConnectionDestroyed()
 {
+    debug() << "Owning connection destroyed, cutting off dangling pointer";
+    mPriv->connection = 0;
     return onConnectionReadinessChanged(Connection::ReadinessDead);
 }
 
