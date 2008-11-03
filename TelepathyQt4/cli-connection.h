@@ -47,6 +47,7 @@
 #include <QStringList>
 
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
@@ -54,6 +55,8 @@ namespace Telepathy
 {
 namespace Client
 {
+
+class PendingChannel;
 
 /**
  * \class Connection
@@ -380,6 +383,35 @@ public:
         return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
+    /**
+     * Asynchronously requests a channel satisfying the given channel type and
+     * communicating with the contact, room, list etc. given by the handle type
+     * and handle.
+     *
+     * Upon completion, the reply to the request can be retrieved through the
+     * returned PendingChannel object. The object also provides access to the
+     * parameters with which the call was made and a signal to connect to to get
+     * notification of the request finishing processing. See the documentation
+     * for that class for more info.
+     *
+     * The returned PendingChannel object should be freed using
+     * its QObject::deleteLater() method after it is no longer used. However,
+     * all PendingChannel objects resulting from requests to a particular
+     * Connection will be freed when the Connection itself is freed. Conversely,
+     * this means that the PendingChannel object should not be used after the
+     * Connection is destroyed.
+     *
+     * \sa PendingChannel
+     *
+     * \param channelType D-Bus interface name of the channel type to request,
+     *                    such as TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT.
+     * \param handleType Type of the handle given, as specified in #HandleType.
+     * \param handle Handle specifying the remote entity to communicate with.
+     * \return Pointer to a newly constructed PendingChannel object, tracking
+     *         the progress of the request.
+     */
+    PendingChannel* requestChannel(const QString& channelType, uint handleType, uint handle);
+
 Q_SIGNALS:
     /**
      * Emitted whenever the readiness of the Connection changes.
@@ -397,6 +429,127 @@ private Q_SLOTS:
     void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
 
 private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+/**
+ * \class PendingChannel
+ * \ingroup clientconn
+ * \headerfile <TelepathyQt4/cli-connection.h> <TelepathyQt4/Client/Connection>
+ *
+ * Class containing the parameters of and the reply to an asynchronous channel
+ * request. Instances of this class cannot be constructed directly; the only way
+ * to get one is to use Connection::requestChannel().
+ */
+class PendingChannel : public QObject
+{
+    Q_OBJECT
+
+public:
+    /**
+     * Class destructor.
+     */
+    ~PendingChannel();
+
+    /**
+     * Returns the Connection object through which the channel request was made.
+     *
+     * \return Pointer to the Connection.
+     */
+    Connection* connection() const;
+
+    /**
+     * Returns the channel type specified in the channel request.
+     *
+     * \return The D-Bus interface name of the interface specific to the
+     *         requested channel type.
+     */
+    const QString& channelType() const;
+
+    /**
+     * Returns the handle type specified in the channel request.
+     *
+     * \return The handle type, as specified in #HandleType.
+     */
+    uint handleType() const;
+
+    /**
+     * Returns the handle specified in the channel request.
+     *
+     * \return The handle.
+     */
+    uint handle() const;
+
+    /**
+     * Returns whether or not the request has finished processing.
+     *
+     * \sa finished()
+     *
+     * \return If the request is finished.
+     */
+    bool isFinished() const;
+
+    /**
+     * Returns whether or not the request resulted in an error. If the request
+     * has not yet finished processing (isFinished() returns <code>false</code>),
+     * this cannot yet be known, and <code>false</code> will be returned.
+     *
+     * \return <code>true</code> iff the request has finished processing AND has
+     *         resulted in an error.
+     */
+    bool isError() const;
+
+    /**
+     * Returns the error which the request resulted in, if any. If isError()
+     * returns <code>false</code>, the request has not (at least yet) resulted
+     * in an error, and an undefined value will be returned.
+     *
+     * \return The error as a QDBusError.
+     */
+    const QDBusError& error() const;
+
+    /**
+     * Returns whether or not the request completed successfully. If the request
+     * has not yet finished processing (isFinished() returns <code>false</code>),
+     * this cannot yet be known, and <code>false</code> will be returned.
+     *
+     * \return <code>true</code> iff the request has finished processing AND has
+     *         completed successfully.
+     */
+    bool isValid() const;
+
+    /**
+     * Returns a newly constructed Channel high-level proxy object associated
+     * with the remote channel resulting from the channel request. If isValid()
+     * returns <code>false</code>, the request has not (at least yet) completed
+     * successfully, and 0 will be returned.
+     *
+     * \param parent Passed to the Channel constructor.
+     * \return Pointer to the new Channel object.
+     */
+    Channel* channel(QObject* parent = 0) const;
+
+Q_SIGNALS:
+    /**
+     * Emitted when the request finishes processing. isFinished() will then
+     * start returning <code>true</code> and isError(), error(), isValid() and
+     * channel() will become meaningful to use.
+     *
+     * \param pendingChannel The PendingChannel object for which the request has
+     *                       corresponding to the finished request.
+     */
+    void finished(Telepathy::Client::PendingChannel* pendingChannel);
+
+private Q_SLOTS:
+    void onCallFinished(QDBusPendingCallWatcher* watcher);
+
+private:
+    friend class Connection;
+
+    PendingChannel(Connection* connection, const QString& type, uint handleType, uint handle);
+
     struct Private;
     friend struct Private;
     Private *mPriv;
