@@ -193,7 +193,7 @@ Q_SIGNALS:
      *
      * \param newReadiness The new readiness, as defined in #Readiness.
      */
-    void readinessChanged(Telepathy::Client::Channel::Readiness newReadiness);
+    void readinessChanged(uint newReadiness);
 
     /**
      * \name Group interface

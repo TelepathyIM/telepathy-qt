@@ -418,7 +418,7 @@ Q_SIGNALS:
      *
      * \param newReadiness The new readiness, as defined in #Readiness.
      */
-    void readinessChanged(Telepathy::Client::Connection::Readiness newReadiness);
+    void readinessChanged(uint newReadiness);
 
 private Q_SLOTS:
     void onStatusChanged(uint, uint);
