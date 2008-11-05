@@ -244,7 +244,7 @@ struct Channel::Private
         }
     }
 
-    void extract01777MainProps(const QVariantMap& props)
+    void extract0177MainProps(const QVariantMap& props)
     {
         bool haveProps = props.size() >= 4
                       && props.contains("ChannelType") && !qdbus_cast<QString>(props["ChannelType"]).isEmpty()
@@ -438,7 +438,7 @@ uint Channel::targetHandleType() const
 uint Channel::targetHandle() const
 {
     if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::channelType() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+        warning() << "Channel::targetHandle() used with readiness" << mPriv->readiness << "!= ReadinessFull";
 
     return mPriv->targetHandle;
 }
@@ -547,7 +547,7 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
         warning().nospace() << "Properties::GetAll(Channel) failed with " << reply.error().name() << ": " << reply.error().message();
     }
 
-    mPriv->extract01777MainProps(props);
+    mPriv->extract0177MainProps(props);
     // Add extraction (and possible fallbacks) in similar functions, called from here
 
     mPriv->continueIntrospection();

@@ -3,6 +3,7 @@
 # exclude patterns (uncomment them if you want to use them):
 # git-ls-files --others --exclude-from=.git/info/exclude
 *.[ao]
+*.directory
 *.l[ao]
 *.moc.hpp
 *.pc
@@ -15,7 +16,7 @@ Makefile
 Makefile.in
 _gen
 aclocal.m4
-autom4te.cache/
+autom4te.cache/*
 config.*
 configure
 depcomp
@@ -25,3 +26,4 @@ libtool
 ltmain.sh
 missing
 stamp-h1
+telepathy-qt4.pro*
