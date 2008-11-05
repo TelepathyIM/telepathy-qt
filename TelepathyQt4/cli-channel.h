@@ -195,6 +195,12 @@ public Q_SLOTS:
      * to know if an error occurs when closing the channel, then you should
      * use the returned object.
      *
+     * A channel can be closed if its Readiness is ReadinessJustCreated or
+     * ReadinessFull. It cannot be closed if its Readiness is already
+     * ReadinessDead. If this method is called on a channel which is already
+     * in the ReadinessDead state, a DBus error of type
+     * TELEPATHY_ERROR_NOT_AVAILABLE will be returned.
+     *
      * \return QDBusPendingReply object for the call to Close() on the Channel
      *         interface.
      */
