@@ -99,7 +99,7 @@ struct Channel::Private
         groupSelfHandle = 0;
 
         debug() << "Connecting to Channel::Closed()";
-        parent.connect(&parent,
+        parent.connect(baseInterface,
                        SIGNAL(Closed()),
                        SLOT(onClosed()));
 
