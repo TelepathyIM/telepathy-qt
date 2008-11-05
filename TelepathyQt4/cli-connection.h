@@ -46,6 +46,13 @@
 #include <QDBusPendingCallWatcher>
 #include <QStringList>
 
+namespace Telepathy {
+namespace Client {
+class Connection;
+class PendingChannel;
+}
+}
+
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/DBus>
@@ -55,8 +62,6 @@ namespace Telepathy
 {
 namespace Client
 {
-
-class PendingChannel;
 
 /**
  * \class Connection
@@ -418,7 +423,7 @@ Q_SIGNALS:
      *
      * \param newReadiness The new readiness, as defined in #Readiness.
      */
-    void readinessChanged(Telepathy::Client::Connection::Readiness newReadiness);
+    void readinessChanged(uint newReadiness);
 
 private Q_SLOTS:
     void onStatusChanged(uint, uint);
