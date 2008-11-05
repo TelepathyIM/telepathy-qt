@@ -328,14 +328,15 @@ struct Channel::Private
     void changeReadiness(Readiness newReadiness)
     {
         Q_ASSERT(newReadiness != readiness);
-
+        // REVIEWME: Should we allow ReadinessJustCreated->ReadinessClosed?
         switch (readiness) {
             case ReadinessJustCreated:
                 break;
             case ReadinessFull:
-                Q_ASSERT(newReadiness == ReadinessDead);
+                Q_ASSERT((newReadiness == ReadinessDead) || (newReadiness == ReadinessClosed));
                 break;
             case ReadinessDead:
+            case ReadinessClosed:
             default:
                 Q_ASSERT(false);
                 break;
@@ -361,7 +362,7 @@ struct Channel::Private
                 debug() << " Group: Self handle" << groupSelfHandle << "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
             }
         } else {
-            Q_ASSERT(newReadiness == ReadinessDead);
+            Q_ASSERT((newReadiness == ReadinessDead) || (newReadiness == ReadinessClosed));
 
             debug() << "R.I.P. Channel.";
 
@@ -415,6 +416,8 @@ QStringList Channel::interfaces() const
         warning() << "Channel::interfaces() used possibly before the list of interfaces has been received";
     else if (mPriv->readiness == ReadinessDead)
         warning() << "Channel::interfaces() used with readiness ReadinessDead";
+    else if (mPriv->readiness == ReadinessClosed)
+        warning() << "Channel::interfaces() used with readiness ReadinessClosed";
 
     return mPriv->interfaces;
 }
@@ -427,6 +430,8 @@ QString Channel::channelType() const
         warning() << "Channel::channelType() before the channel type has been received";
     else if (mPriv->readiness == ReadinessDead)
         warning() << "Channel::channelType() used with readiness ReadinessDead";
+    else if (mPriv->readiness == ReadinessClosed)
+        warning() << "Channel::channelType() used with readiness ReadinessClosed";
 
     return mPriv->channelType;
 }
@@ -449,8 +454,8 @@ uint Channel::targetHandle() const
 
 QDBusPendingReply<> Channel::close()
 {
-    // Closing a channel does not make sense if it is already dead.
-    if (mPriv->readiness != ReadinessDead)
+    // Closing a channel does not make sense if it is already dead or closed.
+    if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
         return mPriv->baseInterface->Close();
 
     // If the channel is in a readiness where it doesn't make sense to be
@@ -458,7 +463,7 @@ QDBusPendingReply<> Channel::close()
     warning() << "Channel::close() used with readiness" << mPriv->readiness;
 
     return QDBusPendingReply<>(QDBusMessage::createError(
-            "TELEPATHY_ERROR_NOT_AVAILABLE", "Attempted to close an already dead channel"));
+            "TELEPATHY_ERROR_NOT_AVAILABLE", "Attempted to close an already dead or closed channel"));
 }
 
 uint Channel::groupFlags() const
@@ -582,7 +587,7 @@ void Channel::gotChannelType(QDBusPendingCallWatcher* watcher)
 
     if (reply.isError()) {
         warning().nospace() << "Channel::GetChannelType() failed with " << reply.error().name() << ": " << reply.error().message() << ", Channel officially dead";
-        if (mPriv->readiness != ReadinessDead)
+        if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
             mPriv->changeReadiness(ReadinessDead);
         return;
     }
@@ -598,7 +603,7 @@ void Channel::gotHandle(QDBusPendingCallWatcher* watcher)
 
     if (reply.isError()) {
         warning().nospace() << "Channel::GetHandle() failed with " << reply.error().name() << ": " << reply.error().message() << ", Channel officially dead";
-        if (mPriv->readiness != ReadinessDead)
+        if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
             mPriv->changeReadiness(ReadinessDead);
         return;
     }
@@ -615,7 +620,7 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher* watcher)
 
     if (reply.isError()) {
         warning().nospace() << "Channel::GetInterfaces() failed with " << reply.error().name() << ": " << reply.error().message() << ", Channel officially dead";
-        if (mPriv->readiness != ReadinessDead)
+        if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
             mPriv->changeReadiness(ReadinessDead);
         return;
     }
@@ -630,11 +635,8 @@ void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
 
-    if (mPriv->readiness != ReadinessDead)
-        mPriv->changeReadiness(ReadinessDead);
-
-    // Relay the channel interface's closed() signal.
-    emit closed();
+    if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
+        mPriv->changeReadiness(ReadinessClosed);
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)

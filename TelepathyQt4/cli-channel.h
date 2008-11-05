@@ -98,8 +98,9 @@ public:
          * The object has just been created and introspection is still in
          * progress. No functionality dependent on introspection is available.
          *
-         * The readiness can change to any other state depending on the result
-         * of the initial state query to the remote object.
+         * The readiness can change to any other state except ReadinessClosed
+         * depending on the result of the initial state query to the remote
+         * object.
          */
         ReadinessJustCreated = 0,
 
@@ -107,17 +108,25 @@ public:
          * The remote object is alive and all introspection has been completed.
          * Most functionality is available.
          *
-         * The readiness can change to ReadinessDead.
+         * The readiness can change to ReadinessDead or ReadinessClosed.
          */
         ReadinessFull = 5,
 
         /**
          * The remote object has gone into a state where it can no longer be
-         * used. No functionality is available.
+         * used in an unexpected way. No functionality is available.
          *
          * No further readiness changes are possible.
          */
         ReadinessDead = 10,
+
+        /**
+         * The remote object has been closed and so can no longer be used.
+         * No functionality is available.
+         *
+         * No further readiness changes are possible.
+         */
+        ReadinessClosed = 15,
 
         _ReadinessInvalid = 0xffff
     };
@@ -196,9 +205,9 @@ public Q_SLOTS:
      * use the returned object.
      *
      * A channel can be closed if its Readiness is ReadinessJustCreated or
-     * ReadinessFull. It cannot be closed if its Readiness is already
-     * ReadinessDead. If this method is called on a channel which is already
-     * in the ReadinessDead state, a DBus error of type
+     * ReadinessFull. It cannot be closed if its Readiness is ReadinessDead or
+     * ReadinessClosed. If this method is called on a channel which is already
+     * in either the ReadinessDead or ReadinessClosed state, a DBus error of type
      * TELEPATHY_ERROR_NOT_AVAILABLE will be returned.
      *
      * \return QDBusPendingReply object for the call to Close() on the Channel
@@ -208,18 +217,12 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     /**
-     * Emitted whenever the readiness of the Channel changes.
+     * Emitted whenever the readiness of the Channel changes. When the channel
+     * is closed, this signal will be emitted with readiness #ReadinessClosed.
      *
      * \param newReadiness The new readiness, as defined in #Readiness.
      */
     void readinessChanged(Telepathy::Client::Channel::Readiness newReadiness);
-
-    /**
-     * Emitted when the channel has been closed. Method calls on the channel
-     * are no longer valid after this signal has been emitted, and the
-     * connection manager may then remove the object from the bus at any point.
-     */
-    void closed();
 
     /**
      * \name Group interface
@@ -432,11 +435,12 @@ public:
      * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
      *
      * This method works even when the channel has gone into readiness
-     * #ReadinessDead. This is useful for getting the remove information after
-     * missing the corresponding groupMembersChanged() (or
-     * groupLocalPendingChanged()/groupRemotePendingChanged()) signal, as the
-     * local user being removed usually causes the remote %Channel to be closed,
-     * and consequently the Channel object going into that readiness state.
+     * #ReadinessDead or #ReadinessClosed. This is useful for getting the
+     * remove information after missing the corresponding groupMembersChanged()
+     * (or groupLocalPendingChanged()/groupRemotePendingChanged()) signal, as
+     * the local user being removed usually causes the remote %Channel to be
+     * closed, and consequently the Channel object going into that readiness
+     * state.
      *
      * The returned information is not guaranteed to be correct if
      * groupIsSelfHandleTracked() returns false and a self handle change has
