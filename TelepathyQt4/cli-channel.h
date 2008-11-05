@@ -764,12 +764,11 @@ public:
 
 protected:
     /**
-     * Get the base ChannelInterface for this Channel class. This method is
+     * Get the ChannelInterface for this Channel class. This method is
      * protected since the convenience methods provided by this class should
-     * always be used instead of the interface directly by consumers of the
-     * class.
+     * always be used instead of the interface by users of the class.
      *
-     * \return <code>channelInterface<ChannelInterface></code>
+     * \return A pointer to the existing ChannelInterface for this Channel
      */
     ChannelInterface* baseInterface() const;
 
