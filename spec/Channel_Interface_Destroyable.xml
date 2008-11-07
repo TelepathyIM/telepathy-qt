@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_Destroyable"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+      USA.</p>
+  </tp:license>
+
+  <interface
+    name="org.freedesktop.Telepathy.Channel.Interface.Destroyable">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:added version="0.17.14">(as stable API)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface exists to support channels where
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Channel.Close</tp:dbus-ref>
+        is insufficiently destructive. At the moment this means
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Channel.Type.Text</tp:dbus-ref>,
+        but the existence of this interface means that unsupported channels
+        can be terminated in a non-channel-type-specific way.</p>
+    </tp:docstring>
+
+    <method name="Destroy" tp:name-for-bindings="Destroy">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Close the channel abruptly, possibly with loss of data. The
+          connection manager MUST NOT re-create the channel unless/until
+          more events occur.</p>
+
+        <tp:rationale>
+          <p>The main motivating situation for this method is that when a Text
+            channel with pending messages is closed with Close, it comes back
+            as an incoming channel (to avoid a race between Close and an
+            incoming message). If Destroy is called on a Text channel, the CM
+            should delete all pending messages and close the channel, and
+            the channel shouldn't be re-created until/unless another message
+            arrives.</p>
+        </tp:rationale>
+
+        <p>Most clients SHOULD call
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Channel.Close</tp:dbus-ref>
+          instead. However, if a client explicitly intends to destroy the
+          channel with possible loss of data, it SHOULD call this method
+          if this interface is supported (according to the
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Channel.Interfaces</tp:dbus-ref>
+          property), falling back to Close if not.</p>
+
+        <p>In particular, channel dispatchers SHOULD use this method if
+          available when terminating channels that cannot be handled
+          correctly (for instance, if no handler has been installed for
+          a channel type, or if the handler crashes repeatedly).</p>
+
+        <p>Connection managers do not need to implement this interface on
+          channels where Close and Destroy would be equivalent.</p>
+
+        <tp:rationale>
+          <p>Callers need to be able to fall back to Close in any case.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

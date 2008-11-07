@@ -35,7 +35,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </tp:docstring>
     <tp:added version="0.17.6"/>
 
-    <property name="Avatar" type="(ays)" access="readwrite">
+    <property name="Avatar" tp:name-for-bindings="Avatar"
+      type="(ays)" access="readwrite">
       <tp:docstring>
         The avatar to set on this account for display to other contacts,
         represented as a structure containing the bytes of the avatar,

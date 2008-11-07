@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
 <tp:errors xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0" namespace="org.freedesktop.Telepathy.Error">
+  <!-- Don't re-order these errors until fd.o #17588 is fixed, or you will
+       break telepathy-glib's ABI.
+    -->
   <tp:error name="Network Error">
     <tp:docstring>
     Raised when there is an error reading from or writing to the network.
@@ -60,8 +63,22 @@
     </tp:docstring>
   </tp:error>
 
-  <tp:copyright>Copyright (C) 2005, 2006, 2007 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2005, 2006, 2007 Nokia Corporation</tp:copyright>
+  <tp:error name="Not Yours">
+    <tp:docstring>
+      The requested channel or other resource already exists, and another
+      client is responsible for it
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cancelled">
+    <tp:docstring>
+      Raised by an ongoing request if it is cancelled by user request before
+      it has completed.
+    </tp:docstring>
+  </tp:error>
+
+  <tp:copyright>Copyright (C) 2005-2008 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2005-2008 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
 <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

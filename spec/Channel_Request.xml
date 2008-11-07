@@ -1,0 +1,175 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Request"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+      MA 02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.ChannelRequest.DRAFT"
+    tp:causes-havoc="experimental">
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A channel request is an object in the ChannelDispatcher representing
+        an ongoing request for some channels to be created or found. There
+        can be any number of ChannelRequest objects at the same time.</p>
+
+      <p>Its well-known bus name is the same as that of the ChannelDispatcher,
+        "org.freedesktop.Telepathy.ChannelDispatcher".</p>
+
+      <tp:rationale>
+        <p>See
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelDispatcher.DRAFT.CreateChannel</tp:dbus-ref>
+          for rationale for ChannelRequest being a separate object.</p>
+      </tp:rationale>
+    </tp:docstring>
+
+    <property name="UserActionTime" tp:name-for-bindings="User_Action_Time"
+      type="t" tp:type="Unix_Timestamp64" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The time at which user action occurred, or 0 if this channel
+          request is for some reason not involving user action.</p>
+
+        <p>This corresponds to the _NET_WM_USER_TIME property in
+          <a href="http://standards.freedesktop.org/wm-spec/wm-spec-latest.html">EWMH</a>.</p>
+
+        <p>This property is set when the channel request is created,
+          and can never change.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="Requests" tp:name-for-bindings="Requests" type="aa{sv}"
+      tp:type="Qualified_Property_Value_Map[]"
+      access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>An array of dictionaries containing desirable properties for
+          the channel or channels to be created.</p>
+
+        <tp:rationale>
+          <p>This is an array so that we could add a CreateChannels method in
+            future without redefining the API of ChannelRequest.</p>
+        </tp:rationale>
+
+        <p>This property is set when the channel request is created,
+          and can never change.</p>
+      </tp:docstring>
+    </property>
+
+    <method name="Proceed" tp:name-for-bindings="Proceed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Proceed with the channel request.</p>
+
+        <tp:rationale>
+          <p>The client that created this object calls this method
+            when it has connected signal handlers for
+            <tp:member-ref>Succeeded</tp:member-ref> and
+            <tp:member-ref>Failed</tp:member-ref>.</p>
+        </tp:rationale>
+
+        <p>Clients other than the client which created the ChannelRequest
+          MUST NOT call this method.</p>
+
+        <p>This method SHOULD return immediately; on success, the request
+          might still fail, but this will be indicated asynchronously
+          by the <tp:member-ref>Failed</tp:member-ref> signal.</p>
+
+        <p>Proceed cannot fail, unless clients have got the life-cycle
+          of a ChannelRequest seriously wrong (e.g. a client calls this
+          method twice, or a client that did not create the ChannelRequest
+          calls this method). If it fails, clients SHOULD assume that the
+          whole ChannelRequest has become useless.</p>
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Errors.NotAvailable">
+          <tp:docstring>
+            This method has already been called, so it is no longer
+            available. Stop calling it.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="Cancel" tp:name-for-bindings="Cancel">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Cancel the channel request. The precise effect depends on the
+          current progress of the request.</p>
+
+        <p>If the connection manager has not already been asked to create
+          a channel, then <tp:member-ref>Failed</tp:member-ref> is emitted
+          immediately, and the channel request is removed.</p>
+
+        <p>If the connection manager has already been asked to create a
+          channel but has not produced one yet (e.g. if <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>
+          has been called, but has not yet returned), then the
+          ChannelDispatcher will remember that the request has been cancelled.
+          When the channel appears, it will be closed (if it was newly
+          created and can be closed), and will not be dispatched to a
+          handler.</p>
+
+        <p>If the connection manager has already returned a channel, but the
+          channel has not yet been dispatched to a handler
+          then the channel dispatcher will not dispatch that
+          channel to a handler. If the channel was newly created for this
+          request, the channel dispatcher will close it with Close; otherwise,
+          the channel dispatcher will ignore it. In either case,
+          <tp:member-ref>Failed</tp:member-ref> will be emitted when processing
+          has been completed.</p>
+
+        <p>If Failed is emitted in response to this method, the error SHOULD be
+          <code>org.freedesktop.Telepathy.Errors.Cancelled</code>.</p>
+
+        <p>If the channel has already been dispatched to a handler, then
+          it's too late to call this method, and the channel request will
+          no longer exist.</p>
+      </tp:docstring>
+    </method>
+
+    <signal name="Failed" tp:name-for-bindings="Failed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The channel request has failed. It is no longer present,
+          and further methods must not be called on it.</p>
+      </tp:docstring>
+
+      <arg name="Error" type="s" tp:type="DBus_Error_Name">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The name of a D-Bus error. This can come from various sources,
+            including the error raised by CreateChannel, or an error generated
+            to represent failure to establish the Connection.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Message" type="s">
+        <tp:docstring>
+          If the first argument of the D-Bus error message was a string,
+          that string. Otherwise, an empty string.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="Succeeded" tp:name-for-bindings="Succeeded">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The channel request has succeeded. It is no longer present,
+          and further methods must not be called on it.</p>
+      </tp:docstring>
+    </signal>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

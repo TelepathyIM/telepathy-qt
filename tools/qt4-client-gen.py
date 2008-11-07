@@ -321,6 +321,7 @@ Q_SIGNALS:\
                 outargs.append(i)
             else:
                 inargs.append(i)
+                assert argnames[i] != None, 'No argument name for input argument at index %d for method %s' % (i, name)
 
         rettypes = ', '.join([argbindings[i].val for i in outargs])
         params = ', '.join([argbindings[i].inarg + ' ' + argnames[i] for i in inargs])
@@ -379,6 +380,7 @@ Q_SIGNALS:\
 """ % (name, format_docstring(signal, '     * ')))
 
         for i in xrange(len(argnames)):
+            assert argnames[i] != None, 'Name missing from argument at index %d for signal %s' % (i, name)
             if argdocstrings[i]:
                 self.h("""\
      *

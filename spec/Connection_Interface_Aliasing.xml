@@ -103,6 +103,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
       </tp:possible-errors>
     </method>
+    <method name="GetAliases" tp:name-for-bindings="Get_Aliases">
+      <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          An array of handles representing contacts
+        </tp:docstring>
+      </arg>
+      <arg direction="out" type="a{us}" tp:type="Alias_Map">
+        <tp:docstring>
+          A dictionary mapping contact handles to aliases
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Request the value of several contacts' aliases at once. This SHOULD
+        only return cached aliases, falling back on the handle name if none is
+        present. Also if there was no cached alias, a request SHOULD be started
+        of which the result is later signalled by
+        <tp:member-ref>AliasesChanged</tp:member-ref>.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+      </tp:possible-errors>
+    </method>
     <method name="SetAliases" tp:name-for-bindings="Set_Aliases">
       <arg direction="in" name="Aliases" type="a{us}" tp:type="Alias_Map">
         <tp:docstring>

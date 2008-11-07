@@ -1,0 +1,123 @@
+<?xml version="1.0" ?>
+<node name="/Client"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Client.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:added version="0.17.12">(as a draft)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Telepathy clients use connection managers, the channel dispatcher
+        and optionally the account manager to provide useful
+        functionality.</p>
+
+      <p>User interface processes are the obvious example of Telepathy
+        clients, but they can provide other functionality, such as
+        address-book synchronization.</p>
+
+      <p>Every running or activatable process with a well-known
+        name of the form org.freedesktop.Telepathy.Client.<em>clientname</em>
+        should be probed by the channel dispatcher to discover its
+        capabilities. Each client is either an <em>observer</em>, an
+        <em>approver</em>, a <em>channel handler</em>, or some combination
+        of these.</p>
+
+      <tp:rationale>
+        <p>Activatable services (those with a D-Bus <code>.service</code>
+          file) must be supported so that we can run clients
+          in response to channel creation.</p>
+
+        <p>Non-activatable services (those that do not register a D-Bus
+          <code>.service</code> file for their well-known name, but do
+          request it at runtime) must be supported so that we can have
+          programs that process channels, but only if they are already
+          running - for instance, a full-screen media centre
+          application might do this.</p>
+      </tp:rationale>
+
+      <p>The client name, <em>clientname</em>, MUST be a non-empty string of
+        ASCII digits, letters, dots and/or underscores, starting with a
+        letter, and without sets of two consecutive dots or a dot
+        followed by a digit. For non-activatable services, it MAY contain a
+        part that is generated per instance at runtime.</p>
+
+      <tp:rationale>
+        <p>If each of a client Foo's instances should be able to manipulate
+          channels separately, the instance with unique name
+          <code>:1.25</code> might request a well-known name like
+          <code>org.freedesktop.Telepathy.Client.Foo._1._25</code>.</p>
+
+        <p>(Note that well-known bus-name components may not start with a
+          digit, so o.f.T.Client.Foo.1.25 would not be acceptable.)</p>
+      </tp:rationale>
+
+      <p>Each Client MUST export an object whose object path may be
+        determined by replacing '.' with '/' in the well-known name and
+        prepending '/'. This object represents its API as a Telepathy
+        client; the channel dispatcher will call its methods and read
+        its properties when appropriate.</p>
+
+      <p>As an optimization, activatable clients SHOULD install a file
+        <code><a href="http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html">$XDG_DATA_DIRS</a>/telepathy/clients/<em>clientname</em>.client</code>
+        containing a cached version of its immutable properties,
+        so that for most clients, the channel dispatcher can
+        just read a file to discover capabilities, instead of
+        having to service-activate the client immediately in order to fetch
+        its read-only properties. However, the D-Bus API is canonical, and
+        the channel dispatcher MUST support clients without such a file.</p>
+
+      <p>Non-activatable clients MAY install a <code>.client</code> file,
+        but there's not much point in them doing so.</p>
+
+      <p>The .client files MUST contain UTF-8 text with the same syntax
+        as
+        <a href="http://standards.freedesktop.org/desktop-entry-spec/latest/">Desktop
+          Entry files</a> (although the allowed groups, keys and values differ).
+        Every <code>.client</code> file MUST contain a group whose name is
+        the name of this interface.</p>
+
+      <p>The groups, keys and values in the <code>.client</code> file are
+        defined by individual interfaces. Each interface that can usefully
+        cache information in the <code>.client</code> file SHOULD correspond
+        to a group with the same name.</p>
+    </tp:docstring>
+
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      type="as" access="read" tp:type="DBus_Interface[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of the extra interfaces provided by this client.
+          This SHOULD include at least one of
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Observer</tp:dbus-ref>,
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Approver</tp:dbus-ref> or
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Handler</tp:dbus-ref>.</p>
+
+        <p>In the <code>.client</code> file, this is represented by key
+          "<code>Interfaces</code>" in the group named after this interface.
+          The value of the key is a list of interface names each followed by
+          a semicolon (so it always ends with a semicolon unless it is empty),
+          i.e. a key of type "strings" as described in the Desktop Entry
+          specification.</p>
+      </tp:docstring>
+    </property>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

@@ -39,7 +39,9 @@
  *
  * Proxy objects representing well-known generic D-Bus interfaces on remote
  * objects. Note that QDBus already has QDBusConnectionInterface for accessing
- * the bus daemon, so that functionality is not provided by this library.
+ * the bus daemon, so in the parts where there is an overlap in the
+ * functionality, using the QDBus proxy should be given consideration instead
+ * of blindly using the proxy provided here.
  */
 
 #include <TelepathyQt4/_gen/cli-dbus.h>

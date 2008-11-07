@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         in the same sort of way as in GSM or PBX telephony.</p>
     </tp:docstring>
 
-    <method name="Merge">
+    <method name="Merge" tp:name-for-bindings="Merge">
       <arg direction="in" type="o" name="Other">
         <tp:docstring>
           The other channel to merge into this one
@@ -49,7 +49,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <method name="Split">
+    <method name="Split" tp:name-for-bindings="Split">
       <arg direction="in" name="Contact" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           The handle of the contact to split off a conversation with, who

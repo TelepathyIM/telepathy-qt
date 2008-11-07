@@ -47,6 +47,13 @@
 
 #include <QDBusPendingCallWatcher>
 
+namespace Telepathy {
+namespace Client {
+class Channel;
+}
+}
+
+#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
@@ -80,6 +87,10 @@ namespace Client
  * Additionally, the state of the Group interface on the remote object (if
  * present) will be cached in the introspection process, and also tracked for
  * any changes.
+ *
+ * Each Channel is owned by a Connection. If the Connection becomes dead (as
+ * signaled by Connection::readinessChanged) or is deleted, the Channel object
+ * will transition to ReadinessDead too.
  */
 class Channel : public QObject, private OptionalInterfaceFactory
 {
@@ -132,33 +143,29 @@ public:
     };
 
     /**
-     * Creates a Channel associated with the given object on the session bus.
+     * Creates a Channel associated with the given object on the same service as
+     * the given connection.
      *
-     * \param serviceName Name of the service the object is on.
+     * \param connection  Connection owning this Channel, and specifying the
+     *                    service.
      * \param objectPath  Path to the object on the service.
      * \param parent      Passed to the parent class constructor.
      */
-    Channel(const QString& serviceName,
+    Channel(Connection* connection,
             const QString& objectPath,
-            QObject* parent = 0);
-
-    /**
-     * Creates a Channel associated with the given object on the given bus.
-     *
-     * \param connection  The bus via which the object can be reached.
-     * \param serviceName Name of the service the object is on.
-     * \param objectPath  Path to the object on the service.
-     * \param parent      Passed to the parent class constructor.
-     */
-    Channel(const QDBusConnection& connection,
-            const QString &serviceName,
-            const QString &objectPath,
             QObject* parent = 0);
 
     /**
      * Class destructor.
      */
     ~Channel();
+
+    /**
+     * Returns the owning Connection of the Channel.
+     *
+     * \return Pointer to the Connection.
+     */
+    Connection* connection() const;
 
     /**
      * Returns the current readiness of the Channel.
@@ -227,7 +234,7 @@ Q_SIGNALS:
      *
      * \param newReadiness The new readiness, as defined in #Readiness.
      */
-    void readinessChanged(Telepathy::Client::Channel::Readiness newReadiness);
+    void readinessChanged(uint newReadiness);
 
     /**
      * \name Group interface
@@ -789,6 +796,9 @@ private Q_SLOTS:
     void gotHandle(QDBusPendingCallWatcher* watcher);
     void gotInterfaces(QDBusPendingCallWatcher* watcher);
     void onClosed();
+
+    void onConnectionReadinessChanged(uint readiness);
+    void onConnectionDestroyed();
 
     void gotGroupProperties(QDBusPendingCallWatcher* watcher);
     void gotGroupFlags(QDBusPendingCallWatcher* watcher);

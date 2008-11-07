@@ -1,0 +1,342 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Dispatch_Operation"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+      MA 02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT"
+    tp:causes-havoc="experimental">
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A channel dispatch operation is an object in the ChannelDispatcher
+        representing a bundle of unrequested channels being announced to
+        client
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Client">Approver.DRAFT</tp:dbus-ref>
+        processes.</p>
+
+      <p>These objects can result from new incoming channels or channels
+        which are automatically created for some reason, but cannot result
+        from outgoing requests for channels.</p>
+
+      <p>More specifically, whenever the
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.NewChannels</tp:dbus-ref>
+        signal contains channels whose
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">Requested</tp:dbus-ref>
+        property is false, or whenever the
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.NewChannel</tp:dbus-ref>
+        signal contains a channel with suppress_handler false,
+        one or more ChannelDispatchOperation objects are created for those
+        channels.</p>
+
+      <p>(If some channels in a NewChannels signal are in different bundles,
+        this is an error. The channel dispatcher SHOULD recover by treating
+        the NewChannels signal as if it had been several NewChannels signals
+        each containing one channel.)</p>
+
+      <p>First, the channel dispatcher SHOULD construct a list of all the
+        channel handlers that could handle all the channels, ordered by
+        priority in some implementation-dependent way. If there are handlers
+        which could handle all the channels, one channel dispatch operation
+        SHOULD be created for all the channels. If there are not, one channel
+        dispatch operation SHOULD be created for each channel, each with
+        a list of channel handlers that could handle that channel.</p>
+
+      <p>When listing channel handlers, priority SHOULD be given to
+        channel handlers that are already handling channels from the same
+        bundle.</p>
+
+      <p>Processing of a channel dispatch operation proceeds as follows.
+        If the channels in a channel dispatch operation are in the same
+        bundle as a channel that is already being handled, and the handler
+        could also handle the channels being dispatched, the channel
+        dispatcher SHOULD call the handler's
+        HandleAdditionalChannels
+        method to see whether the handler will accept the new channels too.
+        If the handler takes responsibility for the channels,
+        processing stops, and no approvers are run.</p>
+
+      <p>(FIXME: this is far too subtle and everyone will get it wrong.
+        Open issue: how else do we address this use case?)</p>
+
+      <tp:rationale>
+        <p>Some channel types can be picked up "quietly" by an existing
+          channel handler. If a Text channel is added to an existing
+          bundle containing a StreamedMedia channel, there shouldn't be
+          any approvers, flashing icons or notification bubbles, if the
+          the UI for the StreamedMedia channel can just add a text box
+          and display the message.</p>
+      </tp:rationale>
+
+      <p>If not, the channel dispatcher SHOULD send the channel dispatch
+        operation to all relevant approvers (in parallel) and wait for an
+        approver to claim the channels or request that they are handled.
+        See
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client.Approver.DRAFT">AddDispatchOperation</tp:dbus-ref>
+        for more details on this.</p>
+
+      <p>Finally, if the approver requested it, the channel dispatcher SHOULD
+        send the channels to a handler.</p>
+    </tp:docstring>
+
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      type="as" access="read" tp:type="DBus_Interface[]">
+      <tp:docstring>
+        A list of the extra interfaces provided by this channel dispatch
+        operation. This property cannot change.
+      </tp:docstring>
+    </property>
+
+    <property name="Connection" tp:name-for-bindings="Connection"
+      type="o" access="read">
+      <tp:docstring>
+        The <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>
+        with which the <tp:member-ref>Channels</tp:member-ref> are
+        associated. The well-known bus name to use can be derived from
+        this object path by removing the leading '/' and replacing all
+        subsequent '/' by '.'. This property cannot change.
+      </tp:docstring>
+    </property>
+
+    <property name="Account" tp:name-for-bindings="Account"
+      type="o" access="read">
+      <tp:docstring>
+        The <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>
+        with which the <tp:member-ref>Connection</tp:member-ref>
+        and <tp:member-ref>Channels</tp:member-ref> are
+        associated. This property cannot change.
+      </tp:docstring>
+    </property>
+
+    <property name="Channels" tp:name-for-bindings="Channels"
+      type="a(oa{sv})" access="read" tp:type="Channel_Details[]">
+      <tp:docstring>
+        The <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>s
+        to be dispatched, and their properties. Change notification is via
+        the <tp:member-ref>ChannelLost</tp:member-ref> signal (channels
+        cannot be added to this property, only removed).
+      </tp:docstring>
+    </property>
+
+    <signal name="ChannelLost" tp:name-for-bindings="Channel_Lost">
+      <tp:docstring>
+        A channel has closed before it could be claimed or handled. If this
+        is emitted for the last remaining channel in a channel dispatch
+        operation, it MUST immediately be followed by
+        <tp:member-ref>Finished</tp:member-ref>.
+      </tp:docstring>
+
+      <arg name="Channel" type="o">
+        <tp:docstring>
+          The <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>
+          that closed.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Error" type="s" tp:type="DBus_Error_Name">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The name of a D-Bus error indicating why the channel closed. If
+            no better reason can be found,
+            <code>org.freedesktop.Telepathy.Errors.NotAvailable</code> MAY
+            be used as a fallback; this means that this error SHOULD NOT be
+            given any more specific meaning.</p>
+
+          <p>FIXME: or should we invent a new OtherError for that purpose?</p>
+
+          <p>FIXME: we need to specify errors for these situations:</p>
+
+          <ul>
+            <li>kicked from a chatroom</li>
+            <li>outgoing call rejected</li>
+            <li>outgoing call timed out</li>
+            <li>incoming call terminated</li>
+          </ul>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Message" type="s">
+        <tp:docstring>
+          A string associated with the D-Bus error.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="PossibleHandlers" tp:name-for-bindings="Possible_Handlers"
+      type="as" access="read" tp:type="DBus_Well_Known_Name[]">
+      <tp:docstring>
+        The well known bus names (starting with
+        <code>org.freedesktop.Telepathy.Client.</code>) of the possible
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client">Handler</tp:dbus-ref>s
+        for these channels. The channel dispatcher MUST place the most
+        preferred handlers first, according to some reasonable heuristic.
+        As a result, approvers SHOULD use the first handler by default.
+      </tp:docstring>
+    </property>
+
+    <method name="HandleWith" tp:name-for-bindings="Handle_With">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Called by an approver to accept a channel bundle and request that
+          the given handler be used to handle it.</p>
+
+        <p>If successful, this method will cause the ChannelDispatchOperation
+          object to disappear, emitting
+          <tp:member-ref>Finished</tp:member-ref>.</p>
+
+        <p>However, this method may fail because the dispatch has already been
+          completed and the object has already gone. If this occurs, it
+          indicates that another approver has asked for the bundle to be
+          handled by a particular handler. The approver MUST NOT attempt
+          to interact with the channels further in this case, unless it is
+          separately invoked as the handler.</p>
+
+        <p>Approvers which are also channel handlers SHOULD use Claim instead
+          of HandleWith to request that they can handle a channel bundle
+          themselves.</p>
+
+        <p>(FIXME: list some possible errors)</p>
+
+        <p>If the channel handler raises an error from Handle, this method
+          MAY respond by raising that same error, even if it is not
+          specifically documented here.</p>
+      </tp:docstring>
+
+      <arg direction="in" type="s" tp:type="DBus_Bus_Name" name="Handler">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The well-known bus name (starting with
+            <code>org.freedesktop.Telepathy.Client.</code>) of the channel
+            handler that should handle the channel.</p>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+            The selected handler is not a syntactically correct
+            <tp:type>DBus_Bus_Name</tp:type> or does not start with
+            "<code>org.freedesktop.Telepathy.Client.</code>".
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The selected handler is temporarily unable to handle these
+            channels.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The selected handler is syntactically correct, but will never
+            be able to handle these channels (for instance because the channels
+            do not match its HandlerChannelFilter, or because HandleChannels
+            raised NotImplemented).
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotYours">
+          <tp:docstring>
+            At the time that HandleWith was called, this dispatch operation was
+            processing an earlier call to HandleWith. The earlier call has
+            now succeeded, so some Handler nominated by another approver is
+            now responsible for the channels. In this situation, the second
+            call to HandleWith MUST NOT return until the first one has
+            returned successfully or unsuccessfully, and if the first call
+            to HandleChannels fails, the channel dispatcher SHOULD try to obey
+            the choice of Handler made by the second call to HandleWith.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="Claim" tp:name-for-bindings="Claim">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Called by an approver to claim channels for handling
+          internally. If this method is called successfully, the process
+          calling this method becomes the handler for the channel, but
+          <em>does not</em> have the HandleChannels method called on it.</p>
+        <!-- FIXME: tp:dbus-ref -->
+
+        <p>Clients that call Claim on channels but do not immediately
+          close them SHOULD implement the Handler interface and its
+          CurrentlyHandledChannels property.</p>
+        <!-- FIXME: tp:dbus-ref -->
+
+        <p>Approvers wishing to reject channels MUST call this method to
+          claim ownership of them, and MUST NOT call
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref>
+          on the channels unless/until this method returns successfully.</p>
+
+        <tp:rationale>
+          <p>The channel dispatcher can't know how best to close arbitrary
+            channel types, so it leaves it up to the approver to do so.
+            For instance, for Text channels it is necessary
+            to acknowledge any messages that have already been displayed to
+            the user first - ideally, the approver would display and then
+            acknowledge the messages.</p>
+        </tp:rationale>
+
+        <p>If successful, this method will cause the ChannelDispatchOperation
+          object to disappear, emitting
+          <tp:member-ref>Finished</tp:member-ref>, in the same way as for
+          <tp:member-ref>HandleWith</tp:member-ref>.</p>
+
+        <p>This method may fail because the dispatch operation has already
+          been completed. Again, see HandleWith for more details. The approver
+          MUST NOT attempt to interact with the channels further in this
+          case.</p>
+
+        <p>(FIXME: list some other possible errors)</p>
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotYours">
+          <tp:docstring>
+            At the time that Claim was called, this dispatch operation was
+            processing a call to HandleWith which has now succeeded, so
+            some Handler nominated by another approver is now responsible for
+            the channel.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="Finished" tp:name-for-bindings="Finished">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when this dispatch operation finishes. The dispatch
+          operation is no longer present and further methods must not be
+          called on it.</p>
+
+        <p>Its object path SHOULD NOT be reused for a subsequent dispatch
+          operation; the ChannelDispatcher MUST choose object paths
+          in a way that avoids immediate re-use.</p>
+
+        <tp:rationale>
+          <p>Otherwise, clients might accidentally call HandleWith or Claim
+            on a new dispatch operation instead of the one they
+            intended to handle.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </signal>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

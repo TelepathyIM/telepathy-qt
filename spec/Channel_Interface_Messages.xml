@@ -36,10 +36,6 @@ USA.</p>
         <li>any extra types of message we need in future</li>
       </ul>
 
-      <p>It also provides a hook for improved sent
-        message status notification, to be used by the DeliveryReporting
-        interface.</p>
-
       <p>Although this specification supports formatted (rich-text)
         messages with unformatted alternatives, implementations SHOULD NOT
         attempt to send formatted messages until the Telepathy specification
@@ -55,20 +51,63 @@ USA.</p>
         unfriendly to offer the user controls that may have no effect.
       </tp:rationale>
 
+      <p>This interface also replaces Text.SendError, adding support for
+        protocols where the message content is not echoed back to the sender on
+        failure, adding support for receiving positive acknowledgements,
+        and using the Messages queue for state-recovery
+        (ensuring that incoming delivery reports are not lost if there is not
+        currently a process handling them).</p>
+
       <p>If this interface is present, clients that support it SHOULD
         listen for the MessageSent and MessageReceived signals, and
-        ignore the Sent and Received signal on the Text interface
+        ignore the Sent, SendError and Received signal on the Text interface
         (which are guaranteed to duplicate signals from this interface).</p>
     </tp:docstring>
 
     <property name="SupportedContentTypes" type="as" access="read"
       tp:name-for-bindings="Supported_Content_Types">
-      <tp:docstring>
-        A list of MIME types supported by this channel, with more preferred
-        MIME types appearing earlier in the list. The list MAY include "*/*"
-        to indicate that attachments with arbitrary MIME types can be sent.
-        If the list is empty, this indicates that messages may only include
-        a single "text/plain" part.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of MIME types supported by this channel, with more preferred
+          MIME types appearing earlier in the list. The list MAY include "*/*"
+          to indicate that attachments with arbitrary MIME types can be sent.
+          This list MUST NOT be empty, since all Messages implementations
+          MUST accept messages containing a single "text/plain" part.</p>
+
+        <p>Some examples of how this property interacts with the
+          <tp:member-ref>MessagePartSupportFlags</tp:member-ref>:</p>
+
+        <dl>
+          <dt>A simple IM implementation: only plain text messages are
+            allowed</dt>
+          <dd>SupportedContentTypes = ['text/plain'],
+            MessagePartSupportFlags = 0</dd>
+
+          <dt>Formatted text with a plain text alternative is allowed (see the
+            HTML interface draft)</dt>
+          <dd>SupportedContentTypes = ['text/html', 'text/plain'],
+            MessagePartSupportFlags = 0</dd>
+
+          <dt>JPEG or PNG images may be sent, but without any attached
+            text</dt>
+          <dd>SupportedContentTypes = ['text/plain', 'image/jpeg',
+            'image/png'], MessagePartSupportFlags = 0</dd>
+
+          <dt>Unformatted text to which an optional JPEG or PNG image may be
+            attached</dt>
+          <dd>SupportedContentTypes = ['text/plain', 'image/jpeg',
+            'image/png'], MessagePartSupportFlags = One_Attachment</dd>
+
+          <dt>Formatted text to which arbitrarily many images may be
+            attached</dt>
+          <dd>SupportedContentTypes = ['text/html', 'text/plain', 'image/jpeg',
+            'image/png', 'image/x-ms-bmp'], MessagePartSupportFlags =
+            One_Attachment | Multiple_Attachments</dd>
+
+          <dt>A full SIP implementation: arbitrary MIME messages are
+            allowed</dt>
+          <dd>SupportedContentTypes = ['*/*'], MessagePartSupportFlags =
+            One_Attachment | Multiple_Attachments</dd>
+        </dl>
       </tp:docstring>
     </property>
 
@@ -88,9 +127,9 @@ USA.</p>
           channel. They are designed such that setting more flags always
           implies that the channel has more capabilities.</p>
 
-        <p>It is assumed that messages containing a textual message body
-          (only), like the messages the Text interface was designed for, are
-          always supported.</p>
+        <p>If no flags are set, this indicates that messages may contain
+          a single message part whose content-type is any of the types
+          from SupportedContentTypes, possibly with some alternatives.</p>
 
         <p>There is no flag indicating support for alternatives. This is
           because the SendMessage implementation can always accept messages
@@ -99,21 +138,17 @@ USA.</p>
           that is supported.</p>
 
         <tp:rationale>
-          Each of the flags 1, 2, 4 implies the previous flag, so we could
+          Each of the flags so far implies the previous flag, so we could
           have used a simple enumeration here; however, we've defined
           the message-part support indicator as a flag set for future
           expansion.
         </tp:rationale>
+
+        <p>See <tp:member-ref>SupportedContentTypes</tp:member-ref> for some
+          examples.</p>
       </tp:docstring>
 
-      <tp:flag suffix="Data_Only" value="1">
-        <tp:docstring>
-          SendMessage will accept messages containing a single part of any
-          type listed in the SupportedContentTypes property, with no
-          accompanying text.
-        </tp:docstring>
-      </tp:flag>
-      <tp:flag suffix="One_Attachment" value="2">
+      <tp:flag suffix="One_Attachment" value="1">
         <tp:docstring>
           SendMessage will accept messages containing a textual message body,
           plus a single attachment of any type listed in the
@@ -123,7 +158,7 @@ USA.</p>
           part if necessary).
         </tp:docstring>
       </tp:flag>
-      <tp:flag suffix="Multiple_Attachments" value="4">
+      <tp:flag suffix="Multiple_Attachments" value="2">
         <tp:docstring>
           SendMessage will accept messages containing a textual message body,
           plus an arbitrary number of attachments of any type listed in the
@@ -146,24 +181,25 @@ USA.</p>
           <pre>
 [
   {
+    'message-token': '9de9546a-3400-4419-a505-3ea270cb834c',
     'message-sender': 42,
     'message-sent': 1210067943,
     'message-received': 1210067947,
-    'message-type': 0,
+    'message-type': 0,              # = Channel_Text_Message_Type_Normal
     'pending-message-id': 437,
   },
   { 'alternative': 'main',
-    'type': 'text/html',
+    'content-type': 'text/html',
     'content': 'Here is a photo of my cat:&lt;br /&gt;' +
                '&lt;img src="cid:catphoto" alt="lol!" /&gt;' +
                '&lt;br /&gt;Isn't it cute?',
   },
   { 'alternative': 'main',
-    'type': 'text/plain',
+    'content-type': 'text/plain',
     'content': 'Here is a photo of my cat:\n[IMG: lol!]\nIsn't it cute?',
   },
   { 'identifier': 'catphoto',
-    'type': 'image/jpeg',
+    'content-type': 'image/jpeg',
     'size': 101000,
     'needs-retrieval': True,
   },
@@ -179,24 +215,39 @@ USA.</p>
             Message_Part, but clients MUST recover from this error by ignoring
             these keys in the second and subsequent parts.</p>
 
+          <tp:rationale>
+            <p>Instead of representing messages as aa{sv} where the first
+              dictionary is special (a dictionary of headers), we could have
+              used a signature like (a{sv}aa{sv}) to separate out the headers
+              and the body parts.</p>
+
+            <p>However, this would make access to the messages more awkward.
+              In Python, the syntax for access to a header field would remain
+              <code>message[0]['message-type']</code>, but access to a body
+              field in the second body part would change from
+              message[2]['content'] to message[1][1]['content']. In GLib,
+              the message would change from being a
+              GPtrArray(GHashTable) to being a
+              GValueArray(GHashTable, GPtrArray(GHashTable)) which is rather
+              inconvenient to dereference.</p>
+          </tp:rationale>
+
           <p>Well-known keys for the message as a whole, and the corresponding
             value types, include:</p>
 
           <dl>
-            <!-- FIXME: if needed we could add:
-            <dt>message-identifier (s)</dt>
+            <dt>message-token (s)</dt>
             <dd>An opaque, globally-unique identifier for the entire message.
               This MAY be treated as if it were a MIME Message-ID, e.g. for
               the mid: and cid: URI schemes. If omitted, there is no suitable
-              identifier.</dd>
-            -->
+              token.</dd>
 
-            <dt>message-sent (u - <tp:type>Unix_Timestamp</tp:type>)</dt>
+            <dt>message-sent (t - <tp:type>Unix_Timestamp64</tp:type>)</dt>
             <dd>The time the message was sent (if unavailable, the time
               it arrived at a central server MAY be used). Omitted if no
               reasonable approximation is available</dd>
 
-            <dt>message-received (u - <tp:type>Unix_Timestamp</tp:type>)</dt>
+            <dt>message-received (t - <tp:type>Unix_Timestamp64</tp:type>)</dt>
             <dd>The time the message was received locally. SHOULD always
               be present.</dd>
 
@@ -207,7 +258,7 @@ USA.</p>
             <dt>message-type (u - <tp:type>Channel_Text_Message_Type</tp:type>)
             </dt>
             <dd>The type of message; if omitted,
-              Channel_Text_Message_Type_Normal MUST be assumed. SHOULD
+              Channel_Text_Message_Type_Normal MUST be assumed. MAY
               be omitted for normal chat messages.</dd>
 
             <dt>pending-message-id (u - <tp:type>Message_ID</tp:type>)</dt>
@@ -222,6 +273,23 @@ USA.</p>
               can also appear on the second and subsequent parts, where
               it indicates that that part (only) should be ignored if
               unsupported.)</dd>
+
+            <dt>scrollback (b)</dt>
+            <dd>If present and true, the incoming message was part of a
+              replay of message history (this matches the Scrollback flag in
+              <tp:type>Channel_Text_Message_Flags</tp:type>). This flag
+              does not make sense on outgoing messages and SHOULD NOT
+              appear there.</dd>
+
+            <dt>rescued (b)</dt>
+            <dd>If present and true, the incoming message has been seen in
+              a previous channel during the lifetime of the Connection,
+              but had not been acknowledged when that channel closed, causing
+              an identical channel (in which the message now appears) to open.
+              This matches the Rescued flag in
+              <tp:type>Channel_Text_Message_Flags</tp:type>; it
+              does not make sense on outgoing messages, and SHOULD NOT
+              appear there.</dd>
           </dl>
         </div>
 
@@ -229,6 +297,11 @@ USA.</p>
           <p>The second and subsequent parts contain the message's
             content, including plain text, formatted text and/or attached
             files.</p>
+
+          <p>It is an error for a connection manager to put keys referring
+            to the message body in the first Message_Part;
+            clients MUST recover from this error by ignoring
+            these keys in first part.</p>
 
           <p>In any group of parts with the same non-empty value for the
             "alternative" key (which represent alternative versions of the
@@ -238,10 +311,18 @@ USA.</p>
             display the first alternative that they understand.</p>
 
           <tp:rationale>
-            Specifying the preference order means that if the underlying
-            protocol doesn't support alternatives, the CM can safely delete
-            everything apart from the first supported alternative when sending
-            messages.
+            <p>Specifying the preference order means that if the underlying
+              protocol doesn't support alternatives, the CM can safely delete
+              everything apart from the first supported alternative when
+              sending messages.</p>
+
+            <p>The order is the reverse of MIME because MIME's rationale for
+              placing the "plainest" part first (legibility in pre-MIME UAs)
+              does not apply to us, and placing the most preferred part
+              first simplifies display (a client can iterate the message
+              in order, display the first alternative that it understands,
+              and skip displaying all subsequent parts with the same
+              "alternative" key).</p>
           </tp:rationale>
 
           <p>Clients SHOULD present all parts that are not redundant
@@ -299,20 +380,20 @@ USA.</p>
                 scheme.</p>
             </dd>
 
-            <dt>type (s)</dt>
+            <dt>content-type (s)</dt>
             <dd>
               <p>The MIME type of this part. See the documentation
                 for ReceivedMessage for notes on the special status of
                 "text/plain" parts.</p>
 
-              <p>Connection managers MUST NOT signal parts without a 'type'
-                key; if a protocol provides no way to determine the MIME type,
-                the connection manager is responsible for guessing it, but
-                MAY fall back to "text/plain" for text and
+              <p>Connection managers MUST NOT signal parts without a
+                'content-type' key; if a protocol provides no way to determine
+                the MIME type, the connection manager is responsible for
+                guessing it, but MAY fall back to "text/plain" for text and
                 "application/octet-stream" for non-text.</p>
 
-              <p>Clients MUST ignore parts without a 'type' key, which are
-                reserved for future expansion.</p>
+              <p>Clients MUST ignore parts without a 'content-type' key, which
+                are reserved for future expansion.</p>
             </dd>
 
             <dt>lang (s)</dt>
@@ -378,10 +459,208 @@ USA.</p>
               entire message should be ignored if unsupported.)</dd>
           </dl>
 
-          <p>It is an error for a connection manager to put these keys
-            in the first <tp:type>Message_Part</tp:type>, but clients MUST be
-            able to recover from this error by ignoring these keys in the
-            first part.</p>
+        </div>
+
+
+        <div>
+          <p>Delivery reports are also represented as messages, of type
+            Channel_Text_Message_Type_Delivery_Report, with the
+            Non_Text_Content flag in the Text interface.</p>
+
+          <p>Whenever a message of type
+            Channel_Text_Message_Type_Delivery_Report is signalled for a
+            delivery error report, Channel.Type.Text.SendError SHOULD also
+            be emitted; whenever Channel.Type.Text.SendError is emitted by a
+            channel which supports this interface, a message of type
+            Channel_Text_Message_Type_Delivery_Report MUST also be emitted.</p>
+
+          <p>The corresponding message in the Messages interface MUST contain
+            "headers" for the delivery report, as specified below, in its
+            first Message_Part.</p>
+
+          <dl>
+            <dt>message-sender (u - Contact_Handle as defined above)</dt>
+            <dd>MUST be the intended recipient of the original message, if
+              available (zero or omitted if the intended recipient is
+              unavailable or is not a contact, e.g. a chatroom), even if the
+              delivery report actually came from an intermediate server.</dd>
+
+            <dt>message-type (u - Channel_Text_Message_Type as defined
+              above)</dt>
+            <dd>MUST be Channel_Text_Message_Type_Delivery_Report.</dd>
+
+            <dt>delivery-status (u - Delivery_Status)</dt>
+            <dd>The status of the message. All delivery reports MUST contain
+              this key in the first Message_Part.</dd>
+
+            <dt>delivery-token (s - Sent_Message_Token)</dt>
+
+            <dd>
+              <p>An identifier for the message to which this delivery report
+                refers. MUST NOT be an empty string. Omitted if not
+                available.</p>
+
+              <p>Clients may match this against the token produced by the
+                SendMessage method and MessageSent signal. A status report
+                with no token could match any sent message, and a sent
+                message with an empty token could match any status report.
+                If multiple sent messages match, clients SHOULD use some
+                reasonable heuristic.</p>
+
+              <tp:rationale>
+                In an ideal world, we could unambiguously match reports
+                against messages; however, deployed protocols are not ideal,
+                and not all reports and messages can be matched.
+              </tp:rationale>
+            </dd>
+
+            <dt>delivery-error (u - Channel_Text_Send_Error)</dt>
+            <dd>
+              The reason for the failure. MUST be omitted if this was a
+              successful delivery; SHOULD be omitted if it would be
+              Channel_Text_Send_Error_Unknown.
+            </dd>
+
+            <dt>delivery-echo (aa{sv} - Message_Part[])</dt>
+            <dd>
+              <p>The message content, as defined by the Messages interface.
+                Omitted if no content is available. Content MAY have been
+                truncated, message parts MAY have been removed, and message
+                parts MAY have had their content removed (i.e. the message part
+                metadata is present, but the 'content' key is not).</p>
+
+              <tp:rationale>
+                Some protocols, like XMPP, echo the failing message back to
+                the sender. This is sometimes the only way to match it
+                against the sent message, so we include it here.
+              </tp:rationale>
+
+              <p>Unlike in the Messages interface, content not visible
+                in the value for this key cannot be retrieved by another
+                means, so the connection manager SHOULD be more
+                aggressive about including (possibly truncated) message
+                content in the 'content' key.</p>
+
+              <tp:rationale>
+                The Messages interface needs to allow all content to be
+                retrieved, but in this interface, the content we provide is
+                merely a hint; so some is better than none, and it doesn't
+                seem worth providing an API as complex as Messages'
+                GetPendingMessageContent for the echoed message.
+              </tp:rationale>
+            </dd>
+
+          </dl>
+
+          <p>The second and subsequent Message_Part dictionaries, if present,
+            are a human-readable report from the IM service.</p>
+
+          <p>Clients MUST NOT attempt to send delivery reports using the
+            SendMessage method in the Messages API, and connection managers
+            MUST NOT allow this to be done. If support for sending delivery
+            reports is later added, it will be part of this interface.</p>
+
+          <p>Some example delivery reports in a Python-like syntax (in which
+            arrays are indicated by [a, b] and dictionaries by {k1: v1, k2: v2})
+            follow.</p>
+
+          <dl>
+            <dt>A minimal delivery report indicating permanent failure of the
+              sent message whose token was
+              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code> for an unknown
+              reason</dt>
+            <dd><pre>
+[{
+# header
+'message-sender': 123,
+'message-type': Channel_Text_Message_Type_Delivery_Report,
+'delivery-status': Delivery_Status_Permanently_Failed,
+'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
+}
+# no body
+]
+</pre></dd>
+
+            <dt>A delivery report where the failed message is echoed back to the
+              sender rather than being referenced by ID, and the failure reason
+              is that this protocol cannot send messages to offline contacts
+              such as the contact with handle 123</dt>
+            <dd><pre>
+[{ # header
+'message-sender': 123,
+'message-type': Channel_Text_Message_Type_Delivery_Report,
+'delivery-status': Delivery_Status_Temporarily_Failed,
+'delivery-error': Channel_Text_Send_Error_Offline,
+'delivery-echo':
+    [{ # header of original message
+    'message-sender': 1,
+    'message-sent': 1210067943,
+    },
+    { # body of original message
+    'content-type': 'text/plain',
+    'content': 'Hello, world!',
+    }]
+  ],
+
+# no body
+]
+</pre></dd>
+
+            <dt>A maximally complex delivery report: the server reports a
+              bilingual human-readable failure message because the user sent
+              a message "Hello, world!" with token
+              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code> to a contact
+              with handle 123, but that handle represents a contact who does not
+              actually exist</dt>
+            <dd><pre>
+[{ # header
+'message-sender': 123,
+'message-type': Channel_Text_Message_Type_Delivery_Report,
+'delivery-status': Delivery_Status_Permanently_Failed,
+'delivery-error': Channel_Text_Send_Error_Invalid_Contact,
+'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
+'delivery-echo':
+    [{ # header of original message
+    'message-sender': 1,
+    'message-sent': 1210067943,
+    },
+    { # body of original message
+    'content-type': 'text/plain',
+    'content': 'Hello, world!',
+    }]
+  ],
+},
+{ # message from server (alternative in English)
+'alternative': '404',
+'content-type': 'text/plain',
+'lang': 'en',
+'content': 'I have no contact with that name',
+},
+{ # message from server (alternative in German)
+'alternative': '404'.
+'content-type': 'text/plain',
+'lang': 'de',
+'content', 'Ich habe keinen Kontakt mit diesem Namen',
+}
+]
+</pre></dd>
+
+            <dt>A minimal delivery report indicating successful delivery
+              of the sent message whose token was
+              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code></dt>
+            <dd><pre>
+[{
+# header
+'message-sender': 123,
+'message-type': Channel_Text_Message_Type_Delivery_Report,
+'delivery-status': Delivery_Status_Delivered,
+'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
+}
+# no body
+]
+</pre></dd>
+
+          </dl>
 
         </div>
       </tp:docstring>
@@ -418,12 +697,6 @@ USA.</p>
           as matching on message content or timestamp (if available), or
           assuming that the delivery report refers to the most recent message
           with that ID.</p>
-
-        <tp:rationale>
-          <p>This is a hook for the DeliveryReporting interface,
-            to avoid having to introduce a
-            SendMultiPartMessageAndReturnToken method in that interface.</p>
-        </tp:rationale>
       </tp:docstring>
     </tp:simple-type>
 
@@ -433,6 +706,17 @@ USA.</p>
           If this method returns successfully, the message has been submitted
           to the server and the MessageSent signal is emitted. A corresponding
           Sent signal on the Text interface MUST also be emitted.</p>
+
+        <p>This method MUST return before the MessageSent signal is
+          emitted.</p>
+
+        <tp:rationale>
+          <p>This means that the process sending the message is the first
+            to see the <tp:type>Sent_Message_Token</tp:type>, and can
+            relate the message to the corresponding
+            <tp:member-ref>MessageSent</tp:member-ref> signal by comparing
+            message tokens (if supported by the protocol).</p>
+        </tp:rationale>
 
         <p>If this method fails, message submission to the server has failed
           and no signal on this interface (or the Text interface) is
@@ -480,42 +764,55 @@ USA.</p>
       </tp:docstring>
 
       <tp:flag suffix="Report_Delivery" value="1">
-        <tp:docstring>
-          Provide a delivery report via the DeliveryReporting interface, if
-          possible, even if this is not the default for this protocol.
-          Ignored if delivery reports are not possible on this protocol.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Provide a successful delivery report if possible, even if this is
+            not the default for this protocol. Ignored if delivery reports are
+            not possible on this protocol.</p>
 
           <tp:rationale>
-            In some protocols, like XMPP, it is not conventional to request
-            or send delivery notifications.
+            <p>In some protocols, like XMPP, it is not conventional to request
+              or send positive delivery notifications.</p>
           </tp:rationale>
+
+          <p>Delivery failure reports SHOULD always be sent, but if this flag
+            is present, the connection manager MAY also try harder to obtain
+            failed delivery reports or allow them to be matched to outgoing
+            messages.</p>
         </tp:docstring>
       </tp:flag>
     </tp:flags>
 
     <signal name="MessageSent" tp:name-for-bindings="Message_Sent">
-      <tp:docstring>
-        Signals that a message has been submitted for sending. This
-        MUST be emitted exactly once per emission of the Sent signal on the
-        Text interface.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Signals that a message has been submitted for sending. This
+          MUST be emitted exactly once per emission of the Sent signal on the
+          Text interface.</p>
 
         <tp:rationale>
-          This signal allows a process that is not the caller of
-          SendMessage to log sent messages. The double signal-emission
-          means that clients can safely follow the following rule:
-          if the channel has the Messages interface, listen for
-          Messages.MessageSent only; otherwise, listen for Text.Sent only.
+          <p>This signal allows a process that is not the caller of
+            SendMessage to log sent messages. The double signal-emission
+            provides compatibility with older clients. Clients supporting
+            Messages should listen for Messages.MessageSent only (if the
+            channel has the Messages interface) or Text.Sent only
+            (otherwise).</p>
         </tp:rationale>
       </tp:docstring>
 
       <arg type="aa{sv}" tp:type="Message_Part[]" name="Content">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          The message content (see <tp:type>Message_Part</tp:type> for full
-          details). If the message that was passed to SendMessage has a
-          formatted text part that the connection manager recognises, but no
-          text/plain alternative, the CM MUST use the formatted text part to
-          generate a text/plain alternative which is also included in this
-          signal argument.
+          <p>The message content (see <tp:type>Message_Part</tp:type> for full
+            details). If the message that was passed to SendMessage has a
+            formatted text part that the connection manager recognises, but no
+            text/plain alternative, the CM MUST use the formatted text part to
+            generate a text/plain alternative which is also included in this
+            signal argument.</p>
+
+          <p>If the connection manager can predict that the message will be
+            altered during transmission, this argument SHOULD reflect what
+            other contacts will receive, rather than being a copy of the
+            argument to SendMessage (if the message is truncated,
+            formatting or alternatives are dropped, etc., then the edited
+            version SHOULD appear in this signal).</p>
         </tp:docstring>
       </arg>
 
@@ -593,9 +890,9 @@ USA.</p>
             the <tp:type>Message_Part</tp:type> mappings.</p>
 
           <p>If the one of the requested part numbers was greater than zero
-            but referred to a part that had no content (i.e. it had no 'type'
-            key or no 'content' key), it is simply omitted from this mapping;
-            this is not considered to be an error condition.</p>
+            but referred to a part that had no content (i.e. it had no
+            'content-type' key or no 'content' key), it is simply omitted from
+            this mapping; this is not considered to be an error condition.</p>
         </tp:docstring>
       </arg>
 
@@ -619,10 +916,10 @@ USA.</p>
         Received signal on the Text interface.
 
         <tp:rationale>
-          The double signal-emission means that clients can safely follow
-          the following rule: if the channel has the Messages interface,
-          listen for Messages.MessageReceived only; otherwise, listen for
-          Text.Received only.
+          The double signal-emission provides compatibility with older
+          clients. Clients supporting Messages should listen for
+          Messages.MessageReceived only (if the channel has the Messages
+          interface) or Text.Received only (otherwise).
         </tp:rationale>
       </tp:docstring>
 
@@ -632,6 +929,104 @@ USA.</p>
         </tp:docstring>
       </arg>
     </signal>
+
+    <tp:enum name="Delivery_Status" value-prefix="Delivery_Status" type="u">
+      <tp:docstring>
+        <p>The status of a message as indicated by a delivery report.</p>
+
+        <p>If this enum is extended in future specifications, this should
+          only be to add new, non-overlapping conditions (i.e. all failures
+          should still be signalled as either Temporarily_Failed
+          or Permanently_Failed). If additional detail is required (e.g.
+          distinguishing between the various types of permanent failure) this
+          will be done using additional keys in the Message_Part.</p>
+      </tp:docstring>
+
+      <tp:enumvalue suffix="Unknown" value="0">
+        <tp:docstring>
+          The message's disposition is unknown.
+          Clients SHOULD consider all messages to have status
+          Delivery_Status_Unknown unless otherwise specified; connection
+          managers SHOULD NOT signal this delivery status explicitly.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Delivered" value="1">
+        <tp:docstring>
+          The message has been delivered to the intended recipient.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Temporarily_Failed" value="2">
+        <tp:docstring>
+          Delivery of the message has failed. Clients SHOULD notify the user,
+          but MAY automatically try sending another copy of the message.
+
+          <tp:rationale>
+            Similar to errors with type="wait" in XMPP; analogous to
+            4xx errors in SMTP.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Permanently_Failed" value="3">
+        <tp:docstring>
+          Delivery of the message has failed. Clients SHOULD NOT try again
+          unless by specific user action. If the user does not modify the
+          message or alter configuration before re-sending, this error is
+          likely to happen again.
+
+          <tp:rationale>
+            Similar to errors with type="cancel", type="modify"
+            or type="auth" in XMPP; analogous to 5xx errors in SMTP.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:flags name="Delivery_Reporting_Support_Flags"
+      value-prefix="Delivery_Reporting_Support_Flag" type="u">
+      <tp:docstring>
+        Flags indicating the level of support for delivery reporting on this
+        channel. Any future flags added to this set will conform to the
+        convention that the presence of an extra flag implies that
+        more operations will succeed.
+      </tp:docstring>
+
+      <tp:flag suffix="Receive_Failures" value="1">
+        <tp:docstring>
+          Clients MAY expect to receive negative delivery reports if
+          Message_Sending_Flag_Report_Delivery is specified when sending.
+
+          <tp:rationale>
+            If senders want delivery reports, they should ask for them.
+            If they don't want delivery reports, they can just ignore them,
+            so there's no need to have capability discovery for what will
+            happen if a delivery report isn't requested.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Receive_Successes" value="2">
+        <tp:docstring>
+          Clients MAY expect to receive positive delivery reports if
+          Message_Sending_Flag_Report_Delivery is specified when sending.
+
+          <tp:rationale>
+            Same rationale as Receive_Failures.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+
+    </tp:flags>
+
+    <property name="DeliveryReportingSupport" access="read"
+      tp:type="Delivery_Reporting_Support_Flags" type="u"
+      tp:name-for-bindings="Delivery_Reporting_Support">
+      <tp:docstring>
+        A bitfield indicating features supported by this channel.
+      </tp:docstring>
+    </property>
 
   </interface>
 </node>

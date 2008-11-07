@@ -27,7 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member type="a{sv}" tp:type="String_Variant_Map" name="Info"/>
     </tp:struct>
 
-    <property name="Server" type="s" access="read">
+    <property name="Server" tp:name-for-bindings="Server"
+      type="s" access="read">
       <tp:docstring>
         <p>For protocols with a concept of chatrooms on multiple servers
           with different DNS names (like XMPP), the DNS name of the server

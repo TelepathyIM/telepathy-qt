@@ -1,0 +1,230 @@
+<?xml version="1.0" ?>
+<node name="/Client_Observer"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Client.Observer.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:added version="0.17.12">(as a draft)</tp:added>
+
+    <tp:requires interface="org.freedesktop.Telepathy.Client.DRAFT"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Observers monitor the creation of new channels. This
+        functionality can be used for things like message logging.
+        All observers are notified simultaneously.</p>
+
+      <p>Observers SHOULD NOT modify the state of a channel except
+        via user interaction.</p>
+
+      <tp:rationale>
+        <p>We want Observer UIs for file transfer channels (a progress
+          bar for the transfer) to be able to have a Cancel button.</p>
+      </tp:rationale>
+
+      <p>Observers MUST NOT carry out actions that exactly one process
+        must take responsibility for (e.g. acknowledging Text
+        messages, or carrying out the actual transfer in a file transfer
+        channel).</p>
+
+      <tp:rationale>
+        <p>Since arbitrarily many observers can be activated for
+          each channel, it would not make sense for observers to do things
+          that can only be done by one process (acknowledging
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
+          messages, carrying out streaming for
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+          channels, doing the actual data transfer for file transfers,
+          setting up the out-of-band connection for Tubes). The
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client">Handler</tp:dbus-ref>
+          is responsible for such tasks.</p>
+
+        <p>Handlers MAY, of course, delegate responsibility for these
+          tasks to other processes (including those run as observers),
+          but this MUST be done explicitly via a request from the Handler
+          to the Observer.</p>
+      </tp:rationale>
+
+      <p>Whenever new channels are signalled, the channel dispatcher
+        will notify all running or activatable observers whose
+        <tp:member-ref>ObserverChannelFilter</tp:member-ref> property
+        (possibly as cached in the .client file) indicates that they are
+        interested in the channel.</p>
+
+      <p>Observers are activated for all channels in which they have
+        registered an interest - incoming, outgoing or automatically created -
+        although of course the ObserverChannelFilter property can be set
+        to filter on the
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">Requested</tp:dbus-ref>
+        property.</p>
+    </tp:docstring>
+
+    <property name="ObserverChannelFilter"
+      tp:name-for-bindings="Observer_Channel_Filter"
+      type="aa{sv}" access="read" tp:type="Channel_Class[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A specification of the channels in which this observer is
+          interested. The <tp:member-ref>ObserveChannels</tp:member-ref> method
+          should be called by the channel dispatcher whenever any of the new
+          channels in a NewChannels signal match this description.</p>
+
+        <p>(FIXME: open issue: do we want this, and the corresponding
+          Approver and Handler properties, to be able to change at
+          runtime?)</p>
+
+        <p>Only certain D-Bus types have useful semantics for matching like this,
+          so only certain types are allowed:</p>
+
+        <dl>
+          <dt>Integers of all sizes, including byte (y, n, q, i, u, x, t)</dt>
+          <dd>Matched by numeric value, regardless of type (e.g. 42 as a
+            16-bit signed integer 'n' is considered equal to 42 as a 32-bit
+            unsigned integer 'u')</dd>
+
+          <dt>Booleans (b)</dt>
+          <dd>Matched by equality in the obvious way; not considered equal to any
+            other type</dd>
+
+          <dt>Strings (s)</dt>
+          <dd>Matched by equality in the obvious way; not considered equal to any
+            other type</dd>
+
+          <dt>Object paths (o)</dt>
+          <dd>Matched by equality in the obvious way; not considered equal to any
+            other type</dd>
+
+        </dl>
+
+        <p>This property never changes while the observer process is
+          running. For activatable processes, the filter can change due to an
+          upgrade - the channel dispatcher SHOULD observe changes to .client files
+          using a mechanism like inotify.</p>
+
+        <p>For observers that have a .client file, the channel dispatcher
+          may discover this property from keys of the form
+          <code><em>propertyname</em>/<em>type</em></code>,
+          in groups in the .client file whose name is the name of this
+          interface followed by <code>.ObserverChannelFilter</code>,
+          a space and an ASCII decimal number starting from 0.</p>
+
+        <p>Integers in the .client file are encoded in ASCII decimal, booleans
+          are encoded as "true" or "false", and strings are encoded in the usual
+          way for desktop files (including the C-style backslash escapes
+          documented in the Desktop Entry specification).</p>
+
+        <p>For instance, a .client file for an observer that is only interested
+          in Text channels, with CONTACT or ROOM handles, that were requested by
+          a local client:</p>
+
+<pre>
+[org.freedesktop.Telepathy.Client.DRAFT]
+Interfaces=org.freedesktop.Telepathy.Client.Observer.DRAFT;
+
+[org.freedesktop.Telepathy.Client.Observer.DRAFT.ObserverChannelFilter 0]
+org.freedesktop.Telepathy.Channel.Type s=org.freedesktop.Telepathy.Channel.Type.Text
+org.freedesktop.Telepathy.Channel.TargetHandleType u=1
+org.freedesktop.Telepathy.Channel.Requested b=true
+
+[org.freedesktop.Telepathy.Client.Observer.DRAFT.ObserverChannelFilter 1]
+org.freedesktop.Telepathy.Channel.Type s=org.freedesktop.Telepathy.Channel.Type.Text
+org.freedesktop.Telepathy.Channel.TargetHandleType u=2
+org.freedesktop.Telepathy.Channel.Requested b=true
+</pre>
+
+      </tp:docstring>
+    </property>
+
+    <method name="ObserveChannels" tp:name-for-bindings="Observe_Channels">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Called by the channel dispatcher when channels in which the
+          observer has registered an interest are created.</p>
+
+        <p>The observer MUST NOT return from this method call until it is ready
+          for a handler for the channel to run (which may change the channel's
+          state).</p>
+
+        <tp:rationale>
+          <p>The channel dispatcher must wait for observers to start up,
+            to avoid the following race: text channel logger (observer) gets
+            ObserveChannel, text channel handler gets
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandleChannels</tp:dbus-ref>
+            channel handler starts up faster and acknowledges messages,
+            logger never sees those messages.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Account" type="o" direction="in">
+        <tp:docstring>
+          The
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>
+          with which the channels are associated. The
+          well-known bus name to use is that of the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Connection" type="o" direction="in">
+        <tp:docstring>
+          The
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>
+          with which the channels are associated. The
+          well-known bus name to use can be derived from this object
+          path by removing the leading '/' and replacing all subsequent
+          '/' by '.'.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Channels" type="a(oa{sv})" tp:type="Channel_Details[]"
+        direction="in">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>s
+            and their properties. Their well-known bus names are all the same
+            as that of the Connection.</p>
+
+          <tp:rationale>
+            <p>The ChannelDispatchOperation is <em>not</em> supplied: for
+              requests, there isn't one, and for incoming channels, it hasn't
+              been created yet.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Observer_Info" type="a{sv}" direction="in">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Additional information about these channels. No keys are
+            currently defined.</p>
+
+          <p>If keys are defined for this dictionary, all will be optional;
+            observers MAY safely ignore any entry in this dictionary.</p>
+        </tp:docstring>
+      </arg>
+
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

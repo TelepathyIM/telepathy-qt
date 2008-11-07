@@ -438,5 +438,126 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
+PendingChannel* Connection::requestChannel(const QString& channelType, uint handleType, uint handle)
+{
+    debug() << "Requesting a Channel with type" << channelType << "and handle" << handle << "of type" << handleType;
+
+    PendingChannel* channel =
+        new PendingChannel(this, channelType, handleType, handle);
+    QDBusPendingCallWatcher* watcher =
+        new QDBusPendingCallWatcher(RequestChannel(channelType, handleType, handle, true), channel);
+
+    channel->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                              SLOT(onCallFinished(QDBusPendingCallWatcher*)));
+
+    return channel;
+}
+
+struct PendingChannel::Private
+{
+    Connection* connection;
+    QString channelType;
+    uint handleType;
+    uint handle;
+    QDBusObjectPath objectPath;
+    QDBusError error;
+};
+
+PendingChannel::PendingChannel(Connection* connection, const QString& channelType, uint handleType, uint handle)
+    : QObject(connection), mPriv(new Private)
+{
+    mPriv->connection = connection;
+    mPriv->channelType = channelType;
+    mPriv->handleType = handleType;
+    mPriv->handle = handle;
+}
+
+PendingChannel::~PendingChannel()
+{
+    delete mPriv;
+}
+
+Connection* PendingChannel::connection() const
+{
+    return mPriv->connection;
+}
+
+const QString& PendingChannel::channelType() const
+{
+    return mPriv->channelType;
+}
+
+uint PendingChannel::handleType() const
+{
+    return mPriv->handleType;
+}
+
+uint PendingChannel::handle() const
+{
+    return mPriv->handle;
+}
+
+bool PendingChannel::isFinished() const
+{
+    return !mPriv->objectPath.path().isEmpty() || !mPriv->error.message().isEmpty();
+}
+
+bool PendingChannel::isError() const
+{
+    return !mPriv->error.message().isEmpty();
+}
+
+const QDBusError& PendingChannel::error() const
+{
+    if (isValid())
+        warning() << "PendingChannel::error() called when valid";
+    else if (!isFinished())
+        warning() << "PendingChannel::error() called before finished";
+
+    return mPriv->error;
+}
+
+bool PendingChannel::isValid() const
+{
+    return isFinished() && !isError();
+}
+
+Channel* PendingChannel::channel(QObject* parent) const
+{
+    if (!isFinished()) {
+        warning() << "PendingChannel::channel called before finished, returning 0";
+        return 0;
+    } else if (!isValid()) {
+        warning() << "PendingChannel::channel called when not valid, returning 0";
+        return 0;
+    }
+
+    Channel* channel =
+        new Channel(mPriv->connection,
+                    mPriv->objectPath.path(),
+                    parent);
+    return channel;
+}
+
+void PendingChannel::onCallFinished(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+
+    debug() << "Received reply to RequestChannel";
+
+    if (!reply.isError()) {
+        debug() << " Success: object path" << reply.value().path();
+        mPriv->objectPath = reply.value();
+    } else {
+        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+        mPriv->error = reply.error();
+    }
+
+    debug() << " Emitting finished()";
+    emit finished(this);
+
+    watcher->deleteLater();
+}
+
 }
 }
