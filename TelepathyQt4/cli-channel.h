@@ -210,6 +210,11 @@ public Q_SLOTS:
      * in either the ReadinessDead or ReadinessClosed state, a DBus error of type
      * TELEPATHY_ERROR_NOT_AVAILABLE will be returned.
      *
+     * If the introspection of a channel is not complete when close() is called,
+     * the channel readiness will change to ReadinessDead instead of
+     * ReadinessClosed, which results if the channel is closed after the
+     * introspection is complete.
+     *
      * \return QDBusPendingReply object for the call to Close() on the Channel
      *         interface.
      */
