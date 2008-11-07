@@ -328,9 +328,11 @@ struct Channel::Private
     void changeReadiness(Readiness newReadiness)
     {
         Q_ASSERT(newReadiness != readiness);
-        // REVIEWME: Should we allow ReadinessJustCreated->ReadinessClosed?
         switch (readiness) {
             case ReadinessJustCreated:
+                // We don't allow ReadinessClosed to be reached without ReadinessFull
+                // being reached at some point first.
+                Q_ASSERT((newReadiness == ReadinessFull) || (newReadiness == ReadinessDead));
                 break;
             case ReadinessFull:
                 Q_ASSERT((newReadiness == ReadinessDead) || (newReadiness == ReadinessClosed));
