@@ -210,10 +210,10 @@ public Q_SLOTS:
      * in either the ReadinessDead or ReadinessClosed state, a DBus error of type
      * TELEPATHY_ERROR_NOT_AVAILABLE will be returned.
      *
-     * If the introspection of a channel is not complete when close() is called,
-     * the channel readiness will change to ReadinessDead instead of
-     * ReadinessClosed, which results if the channel is closed after the
-     * introspection is complete.
+     * If the introspection of a channel is not complete (ReadinessJustCreated)
+     * when close() is called, the channel readiness will change to ReadinessDead
+     * instead of ReadinessClosed, which results if the channel is closed after
+     * the introspection is complete (ReadinessFull).
      *
      * \return QDBusPendingReply object for the call to Close() on the Channel
      *         interface.
@@ -439,8 +439,8 @@ public:
      * the user hasn't been removed from the group, an object for which
      * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
      *
-     * This method works even when the channel has gone into readiness
-     * #ReadinessDead or #ReadinessClosed. This is useful for getting the
+     * This method only after the channel has gone into readiness
+     * #ReadinessClosed. This is useful for getting the
      * remove information after missing the corresponding groupMembersChanged()
      * (or groupLocalPendingChanged()/groupRemotePendingChanged()) signal, as
      * the local user being removed usually causes the remote %Channel to be

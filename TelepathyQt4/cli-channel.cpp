@@ -552,8 +552,8 @@ uint Channel::groupSelfHandle() const
 
 Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::groupSelfRemoveInfo() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    if (mPriv->readiness != ReadinessClosed)
+        warning() << "Channel::groupSelfRemoveInfo() used with readiness" << mPriv->readiness << "!= ReadinessClosed;
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
         warning() << "Channel::groupSelfRemoveInfo() used with no group interface";
 
