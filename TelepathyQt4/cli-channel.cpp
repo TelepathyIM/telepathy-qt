@@ -403,7 +403,7 @@ Channel::Channel(Connection* connection,
                  QObject* parent)
   : mPriv(new Private(*this, connection))
 {
-    mPriv->baseInterface = new ChannelInterface(serviceName, objectPath, this);
+    mPriv->baseInterface = new ChannelInterface(connection->service(), objectPath, this);
 
     // Introspection continued here so mPriv will be initialized (unlike if we
     // continued it from the Private constructor)
@@ -569,7 +569,7 @@ uint Channel::groupSelfHandle() const
 Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
 {
     if (mPriv->readiness != ReadinessClosed)
-        warning() << "Channel::groupSelfRemoveInfo() used with readiness" << mPriv->readiness << "!= ReadinessClosed;
+        warning() << "Channel::groupSelfRemoveInfo() used with readiness" << mPriv->readiness << "!= ReadinessClosed";
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
         warning() << "Channel::groupSelfRemoveInfo() used with no group interface";
 
