@@ -637,8 +637,10 @@ void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
 
-    if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
+    if (mPriv->readiness == ReadinessFull)
         mPriv->changeReadiness(ReadinessClosed);
+    else if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
+        mPriv->changeReadiness(ReadinessDead);
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
