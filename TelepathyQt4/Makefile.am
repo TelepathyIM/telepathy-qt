@@ -6,6 +6,8 @@ pkgconfigdir = ${libdir}/pkgconfig
 pkgconfig_DATA = TelepathyQt4.pc
 
 EXTRA_DIST = \
+    account.xml \
+    account-manager.xml \
     channel.xml \
     connection.xml \
     connection-manager.xml \
@@ -43,6 +45,8 @@ libtelepathy_qt4_la_SOURCES = \
     header-compile-test.cpp
 
 nodist_libtelepathy_qt4_la_SOURCES = \
+    _gen/cli-account-body.hpp \
+    _gen/cli-account-manager-body.hpp \
     _gen/cli-channel-body.hpp \
     _gen/cli-channel.moc.hpp \
     _gen/cli-connection-body.hpp \
@@ -88,6 +92,8 @@ tpqt4clientinclude_HEADERS = \
     Client/Properties
 
 nodist_geninclude_HEADERS = \
+    _gen/cli-account.h \
+    _gen/cli-account-manager.h \
     _gen/cli-channel.h \
     _gen/cli-connection.h \
     _gen/cli-connection-manager.h \
@@ -180,6 +186,14 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
 			mainiface='--mainiface=Telepathy::Client::ChannelInterface';; \
+		account) \
+			group='clientaccount'; \
+			prettyinclude='AccountManager'; \
+			mainiface='--mainiface=Telepathy::Client::AccountInterface';; \
+		account-manager) \
+			group='clientam'; \
+			prettyinclude='AccountManager'; \
+			mainiface='--mainiface=Telepathy::Client::AccountManagerInterface';; \
 		connection) \
 			group='clientconn'; \
 			prettyinclude='Connection'; \
