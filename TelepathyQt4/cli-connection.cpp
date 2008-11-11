@@ -473,6 +473,36 @@ PendingOperation* Connection::requestConnect()
 }
 #endif
 
+PendingHandles* Connection::requestHandles(uint handleType, const QStringList& names)
+{
+    debug() << "Request for" << names.length() << "handles of type" << handleType;
+
+    PendingHandles* pending =
+        new PendingHandles(this, handleType, names);
+    QDBusPendingCallWatcher* watcher =
+        new QDBusPendingCallWatcher(RequestHandles(handleType, names), pending);
+
+    pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                              SLOT(onCallFinished(QDBusPendingCallWatcher*)));
+
+    return pending;
+}
+
+PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& handles)
+{
+    debug() << "Reference of" << handles.length() << "handles of type" << handleType;
+
+    PendingHandles* pending =
+        new PendingHandles(this, handleType, handles, false);
+    QDBusPendingCallWatcher* watcher =
+        new QDBusPendingCallWatcher(HoldHandles(handleType, handles), pending);
+
+    pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                              SLOT(onCallFinished(QDBusPendingCallWatcher*)));
+
+    return pending;
+}
+
 PendingOperation* Connection::requestDisconnect()
 {
     return new PendingVoidMethodCall(this, this->Disconnect());
@@ -486,6 +516,8 @@ struct PendingHandles::Private
     QStringList namesRequested;
     UIntList handlesToReference;
     QDBusError error;
+    // Replace with the ReferencedHandles instance
+    bool replyReceived;
 };
 
 PendingHandles::PendingHandles(Connection* connection, uint handleType, const QStringList& names)
@@ -495,15 +527,17 @@ PendingHandles::PendingHandles(Connection* connection, uint handleType, const QS
     mPriv->handleType = handleType;
     mPriv->isRequest = true;
     mPriv->namesRequested = names;
+    mPriv->replyReceived = false;
 }
 
-PendingHandles::PendingHandles(Connection* connection, uint handleType, const UIntList& handles)
+PendingHandles::PendingHandles(Connection* connection, uint handleType, const UIntList& handles, bool allHeld)
     : QObject(connection), mPriv(new Private)
 {
     mPriv->connection = connection;
     mPriv->handleType = handleType;
     mPriv->isRequest = false;
     mPriv->handlesToReference = handles;
+    mPriv->replyReceived = false;
 }
 
 PendingHandles::~PendingHandles()
@@ -543,8 +577,8 @@ const UIntList& PendingHandles::handlesToReference() const
 
 bool PendingHandles::isFinished() const
 {
-    // TODO
-    return false || !mPriv->error.message().isEmpty();
+    // Replace with check for the ReferencedHandles instance
+    return mPriv->replyReceived || !mPriv->error.message().isEmpty();
 }
 
 bool PendingHandles::isError() const
@@ -569,18 +603,33 @@ bool PendingHandles::isValid() const
 
 void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
 {
-    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+    // Thanks QDBus for this the need for this error-handling code duplication
+    if (mPriv->isRequest) {
+        QDBusPendingReply<UIntList> reply;
 
-    if (mPriv->isRequest)
         debug() << "Received reply to RequestHandles";
-    else
+
+        if (reply.isError()) {
+            debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+            mPriv->error = reply.error();
+        } else {
+            // Replace with constructing the ReferencedHandles from
+            // reply.value()
+            mPriv->replyReceived = true;
+        }
+    } else {
+        QDBusPendingReply<void> reply;
+
         debug() << "Received reply to HoldHandles";
 
-    if (!reply.isError()) {
-        debug() << " Success";
-    } else {
-        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
-        mPriv->error = reply.error();
+        if (reply.isError()) {
+            debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+            mPriv->error = reply.error();
+        } else {
+            // Replace with constructing the ReferencedHandles from
+            // handlesToReference()
+            mPriv->replyReceived = true;
+        }
     }
 
     debug() << " Emitting finished()";
