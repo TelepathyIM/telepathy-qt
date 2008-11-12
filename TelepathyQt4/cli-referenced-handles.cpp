@@ -38,6 +38,23 @@ struct ReferencedHandles::Private : public QSharedData
     UIntList handles;
 };
 
+ReferencedHandles::ReferencedHandles()
+{
+    debug() << "ReferencedHandles(default)";
+
+    mPriv->handleType = 0;
+}
+
+ReferencedHandles::ReferencedHandles(const ReferencedHandles& other)
+{
+    debug() << "ReferencedHandles(copy)";
+}
+
+ReferencedHandles::~ReferencedHandles()
+{
+    debug() << "~ReferencedHandles()";
+}
+
 Connection* ReferencedHandles::connection() const
 {
     return mPriv->connection;
@@ -46,6 +63,15 @@ Connection* ReferencedHandles::connection() const
 uint ReferencedHandles::handleType() const
 {
     return mPriv->handleType;
+}
+
+ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, const UIntList& handles)
+{
+    debug() << "ReferencedHandles(prime)";
+
+    mPriv->connection = connection;
+    mPriv->handleType = handleType;
+    mPriv->handles = handles;
 }
 
 }
