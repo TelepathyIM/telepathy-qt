@@ -48,6 +48,7 @@ libtelepathy_qt4_la_SOURCES = \
     cli-pending-channel.cpp \
     cli-pending-operation.cpp \
     cli-properties.cpp \
+    cli-referenced-handles.cpp \
     debug.cpp \
     debug-internal.hpp \
     types.cpp \
@@ -97,6 +98,7 @@ tpqt4include_HEADERS = \
     cli-pending-channel.h \
     cli-pending-operation.h \
     cli-properties.h \
+    cli-referenced-handles.h \
     cli-simple-pending-operations.h \
     constants.h \
     debug.h \
@@ -116,7 +118,9 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingOperation \
     Client/PendingSuccess \
     Client/PendingVoidMethodCall \
-    Client/Properties
+    Client/Properties \
+    Client/ReferencedHandles \
+    Client/ReferencedHandlesIterator
 
 nodist_geninclude_HEADERS = \
     _gen/cli-account.h \

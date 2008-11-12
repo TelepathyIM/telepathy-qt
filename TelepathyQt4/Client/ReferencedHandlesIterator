@@ -1,0 +1,6 @@
+#ifndef _TelepathyQt4_Client_ReferencedHandles_HEADER_GUARD_
+#define _TelepathyQt4_Client_ReferencedHandles_HEADER_GUARD_
+
+#include <TelepathyQt4/cli-referenced-handles.h>
+
+#endif

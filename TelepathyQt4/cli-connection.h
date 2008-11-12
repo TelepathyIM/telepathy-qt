@@ -58,6 +58,7 @@ class PendingHandles;
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/ReferencedHandles>
 
 #include "cli-pending-channel.h"
 
@@ -618,17 +619,19 @@ public:
      */
     bool isValid() const;
 
-    /*
-     * TODO: Add ReferencedHandles and way to get it from here
+    /**
+     * Returns the now-referenced handles resulting from the operation. If the
+     * operation has not (yet) finished successfully (isFinished() returns
+     * <code>false</code>), the return value is undefined.
      *
-     * Probably like this:
+     * For requests of new handles, <code>handles()[i]</code> will be the handle
+     * corresponding to the entity name <code>namesToRequest()[i]</code>. For
+     * references of existing handles, <code>handles()[i] ==
+     * handlesToReference()[i]</code> will be true for any <code>i</code>.
      *
-     * const ReferencedHandles& handles() const;
-     *
-     * So that the first user getting a copy of the handles doesn't have to do
-     * an extra ref. An internal ReferencedHandles can be stored anyway for
-     * unrefing purposes.
+     * \return ReferencedHandles instance containing the handles.
      */
+    ReferencedHandles handles() const;
 
 Q_SIGNALS:
     /**
