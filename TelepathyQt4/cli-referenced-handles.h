@@ -70,6 +70,13 @@ namespace Client
  * ReferencedHandles container is guaranteed to be valid (and stay valid, as
  * long it's in at least one ReferencedHandles container).
  *
+ * The class offers a QList-style API. However, from the mutable operations,
+ * only the operations for which the validity guarantees can be preserved are
+ * provided. This means no functions which can add an arbitrary handle to the
+ * container are included - the only way to add handles to the container is to
+ * reference them using Connection::referenceHandles() and appending the
+ * resulting ReferenceHandles instance.
+ *
  * ReferencedHandles is a implicitly shared class.
  */
 class ReferencedHandles
