@@ -159,6 +159,11 @@ uint ReferencedHandles::takeAt(int i)
 
 ReferencedHandles ReferencedHandles::operator+(const ReferencedHandles& another) const
 {
+    if (connection() != another.connection() || handleType() != another.handleType()) {
+        warning() << "Tried to concatenate ReferencedHandles instances with different connection and/or handle type";
+        return *this;
+    }
+
     return ReferencedHandles(connection(), handleType(), mPriv->handles + another.mPriv->handles);
 }
 
