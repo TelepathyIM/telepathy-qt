@@ -139,7 +139,7 @@ class ReferencedHandles
 
         bool contains(uint handle) const;
 
-        int count(uint value) const;
+        int count(uint handle) const;
 
         inline int count() const
         {
@@ -167,7 +167,7 @@ class ReferencedHandles
             return count();
         }
 
-        ReferencedHandles mid(int pos, int from = -1) const;
+        ReferencedHandles mid(int pos, int length = -1) const;
 
         int size() const;
 
@@ -234,7 +234,7 @@ class ReferencedHandles
             return !(*this == another);
         }
 
-        ReferencedHandles operator+(const ReferencedHandles& another);
+        ReferencedHandles operator+(const ReferencedHandles& another) const;
 
         inline ReferencedHandles& operator+=(const ReferencedHandles& another)
         {
@@ -249,7 +249,7 @@ class ReferencedHandles
         ReferencedHandles& operator=(const ReferencedHandles& another);
 
         bool operator==(const ReferencedHandles& another) const;
-        bool operator==(const UIntList& another) const;
+        bool operator==(const UIntList& list) const;
 
         inline uint operator[](int i) const
         {

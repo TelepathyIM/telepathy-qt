@@ -39,6 +39,7 @@ struct ReferencedHandles::Private : public QSharedData
 };
 
 ReferencedHandles::ReferencedHandles()
+    : mPriv(new Private)
 {
     debug() << "ReferencedHandles(default)";
 
@@ -46,6 +47,7 @@ ReferencedHandles::ReferencedHandles()
 }
 
 ReferencedHandles::ReferencedHandles(const ReferencedHandles& other)
+    : mPriv(other.mPriv)
 {
     debug() << "ReferencedHandles(copy)";
 }
@@ -63,6 +65,119 @@ Connection* ReferencedHandles::connection() const
 uint ReferencedHandles::handleType() const
 {
     return mPriv->handleType;
+}
+
+uint ReferencedHandles::at(int i) const
+{
+    return mPriv->handles[i];
+}
+
+uint ReferencedHandles::value(int i, uint defaultValue) const
+{
+    return mPriv->handles.value(i, defaultValue);
+}
+
+ReferencedHandles::const_iterator ReferencedHandles::begin() const
+{
+    return mPriv->handles.begin();
+}
+
+ReferencedHandles::const_iterator ReferencedHandles::end() const
+{
+    return mPriv->handles.end();
+}
+
+bool ReferencedHandles::contains(uint handle) const
+{
+    return mPriv->handles.contains(handle);
+}
+
+int ReferencedHandles::count(uint handle) const
+{
+    return mPriv->handles.count(handle);
+}
+
+int ReferencedHandles::indexOf(uint handle, int from) const
+{
+    return mPriv->handles.indexOf(handle, from);
+}
+
+bool ReferencedHandles::isEmpty() const
+{
+    return mPriv->handles.isEmpty();
+}
+
+int ReferencedHandles::lastIndexOf(uint handle, int from) const
+{
+    return mPriv->handles.lastIndexOf(handle, from);
+}
+
+ReferencedHandles ReferencedHandles::mid(int pos, int length) const
+{
+    return ReferencedHandles(connection(), handleType(), mPriv->handles.mid(pos, length));
+}
+
+int ReferencedHandles::size() const
+{
+    return mPriv->handles.size();
+}
+
+void ReferencedHandles::clear()
+{
+    mPriv->handles.clear();
+}
+
+void ReferencedHandles::move(int from, int to)
+{
+    mPriv->handles.move(from, to);
+}
+
+int ReferencedHandles::removeAll(uint handle)
+{
+    return mPriv->handles.removeAll(handle);
+}
+
+void ReferencedHandles::removeAt(int i)
+{
+    mPriv->handles.removeAt(i);
+}
+
+bool ReferencedHandles::removeOne(uint handle)
+{
+    return mPriv->handles.removeOne(handle);
+}
+
+void ReferencedHandles::swap(int i, int j)
+{
+    mPriv->handles.swap(i, j);
+}
+
+uint ReferencedHandles::takeAt(int i)
+{
+    return mPriv->handles.takeAt(i);
+}
+
+ReferencedHandles ReferencedHandles::operator+(const ReferencedHandles& another) const
+{
+    return ReferencedHandles(connection(), handleType(), mPriv->handles + another.mPriv->handles);
+}
+
+ReferencedHandles& ReferencedHandles::operator=(const ReferencedHandles& another)
+{
+    mPriv = another.mPriv;
+    return *this;
+}
+
+bool ReferencedHandles::operator==(const ReferencedHandles& another) const
+{
+    return connection() == another.connection()
+        && handleType() == another.handleType()
+        && mPriv->handles == another.mPriv->handles;
+}
+
+bool ReferencedHandles::operator==(const UIntList& list) const
+{
+    return mPriv->handles == list;
 }
 
 ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, const UIntList& handles)
