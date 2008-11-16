@@ -100,56 +100,161 @@ class ReferencedHandles
         uint handleType() const;
 
         uint at(int i) const;
-        uint back() const;
-        uint first() const;
-        uint front() const;
-        uint last() const;
-        uint value(int i) const;
-        uint value(int i, uint defaultValue) const;
+
+        inline uint back() const
+        {
+            return last();
+        }
+
+        inline uint first() const
+        {
+            return at(0);
+        }
+
+        inline uint front() const
+        {
+            return first();
+        }
+
+        inline uint last() const
+        {
+            return at(size() - 1);
+        }
+
+        uint value(int i, uint defaultValue = 0) const;
 
         const_iterator begin() const;
-        const_iterator constBegin() const;
-        const_iterator constEnd() const;
+
+        inline const_iterator constBegin() const
+        {
+            return begin();
+        }
+
+        inline const_iterator constEnd() const
+        {
+            return end();
+        }
+
         const_iterator end() const;
 
         bool contains(uint handle) const;
-        int count(uint value) const;
-        int count() const;
-        bool empty() const;
-        bool endsWith(uint handle) const;
-        int indexOf(uint handle, int from = 0) const;
-        bool isEmpty() const;
-        int lastIndexOf(uint handle, int from = -1) const;
-        int length() const;
-        ReferencedHandles mid(int pos, int from = -1) const;
-        int size() const;
-        bool startsWith(uint handle) const;
 
-        void append(const ReferencedHandles& another);
+        int count(uint value) const;
+
+        inline int count() const
+        {
+            return size();
+        }
+
+        inline bool empty() const
+        {
+            return isEmpty();
+        }
+
+        inline bool endsWith(uint handle) const
+        {
+            return !isEmpty() && last() == handle;
+        }
+
+        int indexOf(uint handle, int from = 0) const;
+
+        bool isEmpty() const;
+
+        int lastIndexOf(uint handle, int from = -1) const;
+
+        inline int length() const
+        {
+            return count();
+        }
+
+        ReferencedHandles mid(int pos, int from = -1) const;
+
+        int size() const;
+
+        inline bool startsWith(uint handle) const
+        {
+            return !isEmpty() && first() == handle;
+        }
+
+        inline void append(const ReferencedHandles& another)
+        {
+            *this = *this + another;
+        }
+
         void clear();
         void move(int from, int to);
-        void pop_back();
-        void pop_front();
-        int removeAll(uint handle);
-        void removeAt(int i);
-        void removeFirst();
-        void removeLast();
-        bool removeOne(uint handle);
-        void replace(int i, uint handle);
-        void swap(int i, int j);
-        uint takeAt(int i);
-        uint takeFirst();
-        uint takeLast();
 
-        bool operator!=(const ReferencedHandles& another) const;
-        bool operator!=(const UIntList& another) const;
+        inline void pop_back()
+        {
+            return removeLast();
+        }
+
+        inline void pop_front()
+        {
+            return removeFirst();
+        }
+
+        int removeAll(uint handle);
+
+        void removeAt(int i);
+
+        inline void removeFirst()
+        {
+            return removeAt(0);
+        }
+
+        inline void removeLast()
+        {
+            return removeAt(size() - 1);
+        }
+
+        bool removeOne(uint handle);
+
+        void swap(int i, int j);
+
+        uint takeAt(int i);
+
+        inline uint takeFirst()
+        {
+            return takeAt(0);
+        }
+
+        inline uint takeLast()
+        {
+            return takeAt(size() - 1);
+        }
+
+        bool operator!=(const ReferencedHandles& another) const
+        {
+            return !(*this == another);
+        }
+
+        bool operator!=(const UIntList& another) const
+        {
+            return !(*this == another);
+        }
+
         ReferencedHandles operator+(const ReferencedHandles& another);
-        ReferencedHandles& operator+=(const ReferencedHandles& another);
-        ReferencedHandles& operator<<(const ReferencedHandles& another);
+
+        inline ReferencedHandles& operator+=(const ReferencedHandles& another)
+        {
+            return *this = (*this + another);
+        }
+
+        ReferencedHandles& operator<<(const ReferencedHandles& another)
+        {
+            return *this += another;
+        }
+
         ReferencedHandles& operator=(const ReferencedHandles& another);
+
         bool operator==(const ReferencedHandles& another) const;
         bool operator==(const UIntList& another) const;
-        uint operator[](int i) const;
+
+        inline uint operator[](int i) const
+        {
+            return at(i);
+        }
 
     private:
         // For access to the "prime" constructor
