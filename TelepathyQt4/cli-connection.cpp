@@ -508,6 +508,16 @@ PendingOperation* Connection::requestDisconnect()
     return new PendingVoidMethodCall(this, this->Disconnect());
 }
 
+void Connection::refHandle(uint handle)
+{
+    // FIXME implement
+}
+
+void Connection::unrefHandle(uint handle)
+{
+    // FIXME implement
+}
+
 struct PendingHandles::Private
 {
     Connection* connection;

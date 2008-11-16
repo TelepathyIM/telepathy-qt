@@ -36,14 +36,59 @@ struct ReferencedHandles::Private : public QSharedData
     QPointer<Connection> connection;
     uint handleType;
     UIntList handles;
+
+    Private()
+    {
+        debug() << "ReferencedHandles::Private(default)";
+
+        handleType = 0;
+    }
+
+    Private(const Private& a)
+        : connection(a.connection),
+          handleType(a.handleType),
+          handles(a.handles)
+    {
+        debug() << "ReferencedHandles::Private(copy)";
+
+        if (!handles.isEmpty()) {
+            if (!connection) {
+                warning() << "ReferencedHandles with" << handles.size() << "handles detached with connection destroyed so can't reference";
+                return;
+            }
+
+            for (const_iterator i = handles.begin();
+                                i != handles.end();
+                                ++i)
+                connection->refHandle(*i);
+        }
+    }
+
+    ~Private()
+    {
+        debug() << "~ReferencedHandles::Private()";
+
+        if (!handles.isEmpty()) {
+            if (!connection) {
+                warning() << "ReferencedHandles with last copy of" << handles.size() << "handles destroyed with connection destroyed so can't unreference";
+                return;
+            }
+
+            for (const_iterator i = handles.begin();
+                                i != handles.end();
+                                ++i)
+                connection->unrefHandle(*i);
+        }
+    }
+
+private:
+    void operator=(const Private&);
 };
 
 ReferencedHandles::ReferencedHandles()
     : mPriv(new Private)
 {
     debug() << "ReferencedHandles(default)";
-
-    mPriv->handleType = 0;
 }
 
 ReferencedHandles::ReferencedHandles(const ReferencedHandles& other)
@@ -189,9 +234,17 @@ ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, co
 {
     debug() << "ReferencedHandles(prime)";
 
+    Q_ASSERT(connection != NULL);
+    Q_ASSERT(handleType != 0);
+
     mPriv->connection = connection;
     mPriv->handleType = handleType;
     mPriv->handles = handles;
+
+    for (const_iterator i = handles.begin();
+                        i != handles.end();
+                        ++i)
+        connection->refHandle(*i);
 }
 
 }
