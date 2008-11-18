@@ -448,8 +448,10 @@ QString Channel::channelType() const
         warning() << "Channel::channelType() before the channel type has been received";
     else if (mPriv->readiness == ReadinessDead)
         warning() << "Channel::channelType() used with readiness ReadinessDead";
-    else if (mPriv->readiness == ReadinessClosed)
-        warning() << "Channel::channelType() used with readiness ReadinessClosed";
+    // Channel type will still be valid if the channel has been closed after
+    // introspection completed successfully.
+    // else if (mPriv->readiness == ReadinessClosed)
+    //    warning() << "Channel::channelType() used with readiness ReadinessClosed";
 
     return mPriv->channelType;
 }
