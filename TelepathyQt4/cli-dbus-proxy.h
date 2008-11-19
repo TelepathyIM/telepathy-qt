@@ -48,27 +48,33 @@ class DBusProxy : public QObject
 
 public:
     /**
-     *
+     * Constructor
      */
     DBusProxy(QDBusAbstractInterface* baseInterface, QObject* parent = 0);
 
     /**
-     *
+     * Destructor
      */
     ~DBusProxy();
 
     /**
+     * Returns the DBus connection the base interface is associated with.
      *
+     * \return The connection the interface is associated with.
      */
     QDBusConnection connection() const;
 
     /**
+     * Returns the DBus object path the base interface is associated with.
      *
+     * \return The object path the interface is associated with.
      */
     QString path() const;
 
     /**
+     * Returns the DBus service name the base interface is associated with.
      *
+     * \return The service name the interface is associated with.
      */
     QString service() const;
 
