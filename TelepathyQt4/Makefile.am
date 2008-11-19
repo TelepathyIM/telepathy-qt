@@ -84,6 +84,7 @@ tpqt4clientinclude_HEADERS = \
     Client/Connection \
     Client/ConnectionManager \
     Client/DBus \
+    Client/DBusProxy \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
     Client/OptionalInterfaceFactory \
