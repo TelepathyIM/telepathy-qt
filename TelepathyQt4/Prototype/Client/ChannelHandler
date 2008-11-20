@@ -1,0 +1,6 @@
+#ifndef _TelepathyQt4_Prototype_Client_ChannelHandler_HEADER_GUARD_
+#define _TelepathyQt4_Prototype_Client_ChannelHandler_HEADER_GUARD_
+
+#include <TelepathyQt4/Prototype/_gen/cli-channel-handler.h>
+
+#endif
