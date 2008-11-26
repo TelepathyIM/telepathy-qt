@@ -27,6 +27,8 @@ libtpqt4_prototype_la_SOURCES = \
     ChatChannel.cpp \
     Connection.cpp \
     ConnectionFacade.cpp \
+    Contact.cpp \
+    ContactManager.cpp \
     DBusInterface.cpp \
     PresenceManager.cpp \
     StreamedMediaChannel.cpp \
@@ -46,6 +48,7 @@ protoinclude_HEADERS = \
     ConnectionFacade.h \
     Constants \
     Contact.h \
+    ContactManager.h \
     DBusInterface.h \
     PresenceManager.h \
     StreamedMediaChannel.h \
