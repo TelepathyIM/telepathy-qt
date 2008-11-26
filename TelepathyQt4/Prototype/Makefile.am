@@ -56,6 +56,9 @@ protoinclude_HEADERS = \
     constants.h \
     types.h
 
+protoclientinclude_HEADERS = \
+    Client/ChannelHandler
+
 nodist_geninclude_HEADERS = \
     _gen/cli-channel-handler.h \
     _gen/constants.h \
