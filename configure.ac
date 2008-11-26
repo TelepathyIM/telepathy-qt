@@ -161,6 +161,7 @@ AC_OUTPUT( Makefile \
 	   TelepathyQt4/TelepathyQt4.pc \
 	   TelepathyQt4/Prototype/Makefile \
 	   TelepathyQt4/Prototype/TpQt4Prototype.pc \
+	   tests/Makefile \
 	   tools/Makefile \
 	   m4/Makefile \
 	   examples/Makefile \
