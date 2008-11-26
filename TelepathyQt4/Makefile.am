@@ -86,6 +86,7 @@ tpqt4include_HEADERS = \
     types.h
 
 tpqt4clientinclude_HEADERS = \
+    Client/AccountManager \
     Client/Channel \
     Client/Connection \
     Client/ConnectionManager \
