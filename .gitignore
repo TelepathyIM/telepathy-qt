@@ -25,6 +25,8 @@
 /missing
 /stamp-h1
 /telepathy-qt4.pro*
+/telepathy-qt4-*.tar.gz
+/telepathy-qt4-*/
 Makefile
 Makefile.in
 _gen
