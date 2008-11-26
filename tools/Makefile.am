@@ -7,6 +7,7 @@ EXTRA_DIST = \
     qt4-client-gen.py \
     qt4-constants-gen.py \
     qt4-types-gen.py \
+    with-session-bus.sh \
     xincludator.py
 
 CLEANFILES = libtpcodegen.pyc libtpcodegen.pyo libqt4codegen.pyc libqt4codegen.pyo
