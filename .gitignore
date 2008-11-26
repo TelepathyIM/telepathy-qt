@@ -5,6 +5,7 @@
 *.[ao]
 *.directory
 *.l[ao]
+*.loT
 *.moc.hpp
 *.pc
 *.py[co]
