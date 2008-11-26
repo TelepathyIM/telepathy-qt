@@ -1,3 +1,6 @@
+# We need to build this directory before the Prototype subdirectory
+SUBDIRS = . Prototype
+
 tpqt4includedir=$(includedir)/telepathy-1.0/TelepathyQt4
 tpqt4clientincludedir=$(tpqt4includedir)/Client
 genincludedir=$(tpqt4includedir)/_gen
@@ -6,6 +9,8 @@ pkgconfigdir = ${libdir}/pkgconfig
 pkgconfig_DATA = TelepathyQt4.pc
 
 EXTRA_DIST = \
+    account.xml \
+    account-manager.xml \
     channel.xml \
     connection.xml \
     connection-manager.xml \
@@ -43,6 +48,8 @@ libtelepathy_qt4_la_SOURCES = \
     header-compile-test.cpp
 
 nodist_libtelepathy_qt4_la_SOURCES = \
+    _gen/cli-account-body.hpp \
+    _gen/cli-account-manager-body.hpp \
     _gen/cli-channel-body.hpp \
     _gen/cli-channel.moc.hpp \
     _gen/cli-connection-body.hpp \
@@ -88,6 +95,8 @@ tpqt4clientinclude_HEADERS = \
     Client/Properties
 
 nodist_geninclude_HEADERS = \
+    _gen/cli-account.h \
+    _gen/cli-account-manager.h \
     _gen/cli-channel.h \
     _gen/cli-connection.h \
     _gen/cli-connection-manager.h \
@@ -136,15 +145,17 @@ _gen/spec-stamp: $(wildcard $(top_srcdir)/spec/*.xml)
 _gen/stable-stamp: $(wildcard *.xml) _gen/spec-stamp
 	touch $@
 
-_gen/stable-spec.xml: stable-interfaces.xml _gen/stable-stamp \
-	../tools/xincludator.py
+_gen/stable-spec.xml: $(srcdir)/stable-interfaces.xml _gen/stable-stamp \
+	$(top_srcdir)/tools/xincludator.py \
+	Makefile.am
 	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
 # Things generated from the whole spec at once
 
 _gen/constants.h: _gen/stable-spec.xml \
-		../tools/qt4-constants-gen.py
+		$(top_srcdir)/tools/qt4-constants-gen.py \
+		Makefile.am
 	$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
 		--namespace='Telepathy' \
 		--str-constant-prefix='TELEPATHY_' \
@@ -152,7 +163,8 @@ _gen/constants.h: _gen/stable-spec.xml \
 		> $@.tmp && mv $@.tmp $@
 
 _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
-		../tools/qt4-types-gen.py
+		$(top_srcdir)/tools/qt4-types-gen.py \
+		Makefile.am
 	$(PYTHON) $(top_srcdir)/tools/qt4-types-gen.py \
 		--namespace='Telepathy' \
 		--declfile='_gen/types.h' \
@@ -163,13 +175,14 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 
 # Things generated per interface group
 
-_gen/spec-%.xml: %.xml ../tools/xincludator.py _gen/spec-stamp
+_gen/spec-%.xml: %.xml $(top_srcdir)/tools/xincludator.py _gen/spec-stamp
 	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
 _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		_gen/stable-spec.xml \
-		../tools/qt4-client-gen.py
+		$(top_srcdir)/tools/qt4-client-gen.py \
+		Makefile.am
 	set -e; \
 	namespace='Telepathy::Client'; \
 	group= ; \
@@ -180,6 +193,14 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
 			mainiface='--mainiface=Telepathy::Client::ChannelInterface';; \
+		account) \
+			group='clientaccount'; \
+			prettyinclude='AccountManager'; \
+			mainiface='--mainiface=Telepathy::Client::AccountInterface';; \
+		account-manager) \
+			group='clientam'; \
+			prettyinclude='AccountManager'; \
+			mainiface='--mainiface=Telepathy::Client::AccountManagerInterface';; \
 		connection) \
 			group='clientconn'; \
 			prettyinclude='Connection'; \
@@ -204,7 +225,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 			group='clientprops'; \
 			prettyinclude='Properties';; \
 	esac; \
-	$(PYTHON) $(srcdir)/../tools/qt4-client-gen.py \
+	$(PYTHON) $(top_srcdir)/tools/qt4-client-gen.py \
 		--group=$$group \
 		--namespace=$$namespace \
 		--typesnamespace='Telepathy' \

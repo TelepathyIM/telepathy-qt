@@ -1,0 +1,16 @@
+#ifndef _TelepathyQt4_Client_AccountManager_HEADER_GUARD_
+#define _TelepathyQt4_Client_AccountManager_HEADER_GUARD_
+
+#include "TelepathyQt4/_gen/cli-account.h"
+
+#include "TelepathyQt4/_gen/cli-account-manager.h"
+
+#if 0
+#include "TelepathyQt4/_gen/cli-account-interface-avatar.h"
+
+#include "TelepathyQt4/_gen/cli-account-manager-interface-creation.h"
+#include "TelepathyQt4/_gen/cli-account-manager-interface-query.h"
+#endif
+
+#endif
+// vim:set ft=cpp:
