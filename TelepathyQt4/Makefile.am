@@ -15,6 +15,7 @@ EXTRA_DIST = \
     connection.xml \
     connection-manager.xml \
     dbus.xml \
+    dbus-daemon.xml \
     dbus-introspectable.xml \
     dbus-peer.xml \
     dbus-properties.xml \
