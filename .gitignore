@@ -20,6 +20,7 @@
 /configure
 /depcomp
 /doc/
+/doxygen.cfg
 /install-sh
 /libtool
 /ltmain.sh
