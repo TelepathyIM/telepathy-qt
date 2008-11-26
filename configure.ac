@@ -155,16 +155,17 @@ DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN(TelepathyQt4, doxygen.cfg, doc)
 
-AC_OUTPUT( Makefile \
-	   spec/Makefile \
-	   TelepathyQt4/Makefile \
-	   TelepathyQt4/TelepathyQt4.pc \
-	   TelepathyQt4/Prototype/Makefile \
-	   TelepathyQt4/Prototype/TpQt4Prototype.pc \
-	   tests/Makefile \
-	   tools/Makefile \
-	   m4/Makefile \
-	   examples/Makefile \
-	   examples/extensions/Makefile \
-)
-
+AC_OUTPUT([
+    Makefile
+    TelepathyQt4/Makefile
+    TelepathyQt4/Prototype/Makefile
+    TelepathyQt4/Prototype/TpQt4Prototype.pc
+    TelepathyQt4/TelepathyQt4.pc
+    doxygen.cfg
+    examples/Makefile
+    examples/extensions/Makefile
+    m4/Makefile
+    spec/Makefile
+    tests/Makefile
+    tools/Makefile
+])
