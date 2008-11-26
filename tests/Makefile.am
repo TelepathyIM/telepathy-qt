@@ -1,1 +1,5 @@
-# Nothing here yet
+SUBDIRS = \
+    dbus \
+    pinocchio
+
+EXTRA_DIST = README

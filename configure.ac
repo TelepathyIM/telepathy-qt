@@ -137,6 +137,10 @@ TP_QT4_LIBS='${top_builddir}/TelepathyQt4/libtelepathy-qt4.la'
 AC_SUBST(TP_QT4_CXXFLAGS)
 AC_SUBST(TP_QT4_LIBS)
 
+AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
+  [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
+AM_CONDITIONAL([HAVE_PINOCCHIO], [! test none = "$PINOCCHIO"])
+
 dnl Check for code generation tools
 PYTHON=
 AC_CHECK_PROGS([PYTHON], [python2.5 python])
@@ -167,5 +171,7 @@ AC_OUTPUT([
     m4/Makefile
     spec/Makefile
     tests/Makefile
+    tests/dbus/Makefile
+    tests/pinocchio/Makefile
     tools/Makefile
 ])

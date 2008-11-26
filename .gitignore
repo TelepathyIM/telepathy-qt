@@ -29,6 +29,8 @@
 /telepathy-qt4.pro*
 /telepathy-qt4-*.tar.gz
 /telepathy-qt4-*/
+/tests/dbus/test-*
+/tests/pinocchio/test-*
 Makefile
 Makefile.in
 _gen
