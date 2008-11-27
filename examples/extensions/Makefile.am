@@ -18,9 +18,9 @@ tools_dir = $(top_srcdir)/tools
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
-    @QTCORE_CFLAGS@ \
-    @QTDBUS_CFLAGS@ \
-    $(TP_QT4_CXXFLAGS)
+    $(QTCORE_CFLAGS) \
+    $(QTDBUS_CFLAGS) \
+    $(TP_QT4_CFLAGS)
 
 EXTRA_DIST = \
     all.xml \

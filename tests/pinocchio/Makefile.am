@@ -14,7 +14,7 @@ AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
-    $(TP_QT4_CXXFLAGS)
+    $(TP_QT4_CFLAGS)
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \
