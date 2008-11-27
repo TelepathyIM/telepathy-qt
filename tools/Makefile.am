@@ -2,11 +2,13 @@ EXTRA_DIST = \
     check-coding-style.mk \
     check-misc.sh \
     check-whitespace.sh \
+    lcov.am \
     libtpcodegen.py \
     libqt4codegen.py \
     qt4-client-gen.py \
     qt4-constants-gen.py \
     qt4-types-gen.py \
+    telepathy.am \
     with-session-bus.sh \
     xincludator.py
 

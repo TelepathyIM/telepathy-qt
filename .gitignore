@@ -4,6 +4,8 @@
 # git-ls-files --others --exclude-from=.git/info/exclude
 *.[ao]
 *.directory
+*.gcno
+*.gcda
 *.l[ao]
 *.loT
 *.moc.hpp
@@ -22,6 +24,9 @@
 /doc/
 /doxygen.cfg
 /install-sh
+/lcov.info
+/lcov.info.tmp
+/lcov.html
 /libtool
 /ltmain.sh
 /missing
