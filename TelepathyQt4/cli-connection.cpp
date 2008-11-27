@@ -294,6 +294,14 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 
 void Connection::onStatusChanged(uint status, uint reason)
 {
+    if (status == ConnectionStatusConnected &&
+        mPriv->status != ConnectionStatusConnecting) {
+        // CMs aren't meant to go straight from Disconnected to
+        // Connected; recover by faking Connecting
+        warning() << "Non-compliant CM - went straight to CONNECTED!";
+        onStatusChanged(ConnectionStatusConnecting, reason);
+    }
+
     debug() << "Status changed from" << mPriv->status << "to" << status << "for reason" << reason;
 
     mPriv->status = status;
