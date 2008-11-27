@@ -130,6 +130,12 @@ PKG_CHECK_MODULES(QTDBUS, [QtDBus >= 4.5])
 AC_SUBST(QTDBUS_CFLAGS)
 AC_SUBST(QTDBUS_LIBS)
 
+dnl Check for QtTest
+PKG_CHECK_MODULES(QTTEST, [QtTest >= 4.5])
+
+AC_SUBST(QTTEST_CFLAGS)
+AC_SUBST(QTTEST_LIBS)
+
 dnl We want the examples to be able to use TP_QT4_CFLAGS, TP_QT4_LIBS
 dnl as though they were independent programs that got them from pkgconfig
 TP_QT4_CFLAGS='-I${top_builddir} -I${top_srcdir}'

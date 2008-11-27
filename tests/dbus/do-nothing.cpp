@@ -4,16 +4,66 @@
 
 #include <QtDBus/QtDBus>
 
-extern "C" int main(int argc, char **argv)
+#include <QtTest/QtTest>
+
+class TestDoNothing : public QObject
 {
-    QCoreApplication app(argc, argv);
+    Q_OBJECT
 
-    if (!QDBusConnection::sessionBus().isConnected()) {
-        qFatal("Session bus not available");
-        return 1;
-    }
+public:
+    TestDoNothing(QObject *parent = 0)
+        : QObject(parent), mLoop(new QEventLoop(this))
+    { }
 
-    QTimer::singleShot(0, &app, SLOT(quit()));
+private:
+    QEventLoop *mLoop;
 
-    return app.exec();
+private slots:
+    void initTestCase();
+    void init();
+
+    void doNothing();
+    void doNothing2();
+
+    void cleanup();
+    void cleanupTestCase();
+};
+
+
+void TestDoNothing::initTestCase()
+{
+  QVERIFY(QDBusConnection::sessionBus().isConnected());
 }
+
+
+void TestDoNothing::init()
+{
+}
+
+
+void TestDoNothing::doNothing()
+{
+  QTimer::singleShot(0, mLoop, SLOT(quit()));
+  QCOMPARE(mLoop->exec(), 0);
+}
+
+
+void TestDoNothing::doNothing2()
+{
+  QTimer::singleShot(0, mLoop, SLOT(quit()));
+  QCOMPARE(mLoop->exec(), 0);
+}
+
+
+void TestDoNothing::cleanup()
+{
+}
+
+
+void TestDoNothing::cleanupTestCase()
+{
+}
+
+
+QTEST_MAIN(TestDoNothing)
+#include "_gen/do-nothing.moc.hpp"

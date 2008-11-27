@@ -8,12 +8,13 @@ TESTS = \
 noinst_PROGRAMS = $(TESTS)
 
 test_do_nothing_SOURCES = do-nothing.cpp
-test_do_nothing_LDADD = $(TP_QT4_LIBS)
+test_do_nothing_LDADD = $(TP_QT4_LIBS) $(QTTEST_LIBS)
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
+    $(QTTEST_CFLAGS) \
     $(TP_QT4_CFLAGS)
 
 TESTS_ENV = \
