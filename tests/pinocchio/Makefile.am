@@ -3,9 +3,11 @@
 if HAVE_PINOCCHIO
 
 TESTS = \
+    test-conn-basics \
     test-do-nothing
 
 BUILT_SOURCES = \
+    _gen/conn-basics.cpp.moc.hpp \
     _gen/do-nothing.cpp.moc.hpp \
     _gen/lib.h.moc.hpp
 
@@ -15,14 +17,22 @@ _gen/%.moc.hpp: %
 
 noinst_PROGRAMS = $(TESTS)
 
+test_conn_basics_SOURCES = conn-basics.cpp
+test_conn_basics_LDADD = $(noinst_LTLIBRARIES) $(ALL_LIBS)
+
 test_do_nothing_SOURCES = do-nothing.cpp
-test_do_nothing_LDADD = $(TP_QT4_LIBS) $(QTTEST_LIBS) $(noinst_LTLIBRARIES)
+test_do_nothing_LDADD = $(noinst_LTLIBRARIES) $(ALL_LIBS)
 
 LIB_CFLAGS = \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(QTTEST_CFLAGS) \
     $(TP_QT4_CFLAGS)
+ALL_LIBS = \
+    $(QTCORE_LIBS) \
+    $(QTDBUS_LIBS) \
+    $(QTTEST_LIBS) \
+    $(TP_QT4_LIBS)
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
