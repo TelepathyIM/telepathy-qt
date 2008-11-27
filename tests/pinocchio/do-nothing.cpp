@@ -7,42 +7,90 @@
 
 #include <QtDBus/QtDBus>
 
-extern "C" int main(int argc, char **argv)
+#include <QtTest/QtTest>
+
+class TestDoNothing : public QObject
 {
-    QCoreApplication app(argc, argv);
-    char *command = ::getenv("PINOCCHIO");
+    Q_OBJECT
 
-    if (!command) {
-        qFatal("Put $PINOCCHIO in your environment");
-        return 1;
-    }
+public:
+    TestDoNothing(QObject *parent = 0)
+        : QObject(parent), mLoop(new QEventLoop(this))
+    { }
 
-    if (!QDBusConnection::sessionBus().isConnected()) {
-        qFatal("Session bus not available");
-        return 1;
-    }
+private:
+    QString mPinocchioPath;
+    QString mPinocchioCtlPath;
+    QProcess mPinocchio;
+    QEventLoop *mLoop;
 
-    QProcess pinocchio;
+private slots:
+    void initTestCase();
+    void init();
 
-    pinocchio.setProcessChannelMode(QProcess::ForwardedChannels);
-    pinocchio.start(command, QStringList());
+    void doNothing();
+    void doNothing2();
 
-    if (!pinocchio.waitForStarted(5000)) {
-        qFatal("Timed out waiting for pinocchio to start");
-        return 1;
-    }
+    void cleanup();
+    void cleanupTestCase();
+};
 
-    pinocchio.closeWriteChannel();
 
-    /* insert test logic here... */
-    QTimer::singleShot(0, &app, SLOT(quit()));
-    int ret = app.exec();
+void TestDoNothing::initTestCase()
+{
+    mPinocchioPath = QString::fromLocal8Bit(::getenv("PINOCCHIO"));
+    mPinocchioCtlPath = QString::fromLocal8Bit(::getenv("PINOCCHIO_CTL"));
 
-    pinocchio.terminate();
+    QVERIFY2(!mPinocchioPath.isEmpty(), "Put $PINOCCHIO in your environment");
+    QVERIFY2(!mPinocchioCtlPath.isEmpty(),
+        "Put $PINOCCHIO_CTL in your environment");
+    QVERIFY(QDBusConnection::sessionBus().isConnected());
 
-    if (!pinocchio.waitForFinished(1000)) {
-        pinocchio.kill();
-    }
+    mPinocchio.setProcessChannelMode(QProcess::ForwardedChannels);
+    mPinocchio.start(mPinocchioPath, QStringList());
 
-    return ret;
+    QVERIFY(mPinocchio.waitForStarted(5000));
+    mPinocchio.closeWriteChannel();
+
+    qDebug() << "Started Pinocchio";
 }
+
+
+void TestDoNothing::init()
+{
+}
+
+
+void TestDoNothing::doNothing()
+{
+    QTimer::singleShot(0, mLoop, SLOT(quit()));
+    QCOMPARE(mLoop->exec(), 0);
+}
+
+
+void TestDoNothing::doNothing2()
+{
+    QTimer::singleShot(0, mLoop, SLOT(quit()));
+    QCOMPARE(mLoop->exec(), 0);
+}
+
+
+void TestDoNothing::cleanup()
+{
+}
+
+
+void TestDoNothing::cleanupTestCase()
+{
+    qDebug() << "Terminating Pinocchio";
+
+    mPinocchio.terminate();
+
+    if (!mPinocchio.waitForFinished(1000)) {
+        mPinocchio.kill();
+    }
+}
+
+
+QTEST_MAIN(TestDoNothing)
+#include "_gen/do-nothing.moc.hpp"
