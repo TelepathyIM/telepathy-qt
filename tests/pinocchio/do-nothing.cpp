@@ -1,28 +1,13 @@
-#include <cstdlib>
-
-#include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
-#include <QtCore/QProcess>
 #include <QtCore/QTimer>
 
 #include <QtDBus/QtDBus>
 
-#include <QtTest/QtTest>
+#include <tests/pinocchio/lib.h>
 
-class TestDoNothing : public QObject
+class TestDoNothing : public PinocchioTest
 {
     Q_OBJECT
-
-public:
-    TestDoNothing(QObject *parent = 0)
-        : QObject(parent), mLoop(new QEventLoop(this))
-    { }
-
-private:
-    QString mPinocchioPath;
-    QString mPinocchioCtlPath;
-    QProcess mPinocchio;
-    QEventLoop *mLoop;
 
 private slots:
     void initTestCase();
@@ -38,26 +23,13 @@ private slots:
 
 void TestDoNothing::initTestCase()
 {
-    mPinocchioPath = QString::fromLocal8Bit(::getenv("PINOCCHIO"));
-    mPinocchioCtlPath = QString::fromLocal8Bit(::getenv("PINOCCHIO_CTL"));
-
-    QVERIFY2(!mPinocchioPath.isEmpty(), "Put $PINOCCHIO in your environment");
-    QVERIFY2(!mPinocchioCtlPath.isEmpty(),
-        "Put $PINOCCHIO_CTL in your environment");
-    QVERIFY(QDBusConnection::sessionBus().isConnected());
-
-    mPinocchio.setProcessChannelMode(QProcess::ForwardedChannels);
-    mPinocchio.start(mPinocchioPath, QStringList());
-
-    QVERIFY(mPinocchio.waitForStarted(5000));
-    mPinocchio.closeWriteChannel();
-
-    qDebug() << "Started Pinocchio";
+    initTestCaseImpl();
 }
 
 
 void TestDoNothing::init()
 {
+    initImpl();
 }
 
 
@@ -77,20 +49,15 @@ void TestDoNothing::doNothing2()
 
 void TestDoNothing::cleanup()
 {
+    cleanupImpl();
 }
 
 
 void TestDoNothing::cleanupTestCase()
 {
-    qDebug() << "Terminating Pinocchio";
-
-    mPinocchio.terminate();
-
-    if (!mPinocchio.waitForFinished(1000)) {
-        mPinocchio.kill();
-    }
+    cleanupTestCaseImpl();
 }
 
 
 QTEST_MAIN(TestDoNothing)
-#include "_gen/do-nothing.moc.hpp"
+#include "_gen/do-nothing.cpp.moc.hpp"
