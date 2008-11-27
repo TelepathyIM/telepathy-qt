@@ -3,6 +3,7 @@
 
 #include <QtDBus/QtDBus>
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
 
@@ -106,6 +107,8 @@ void TestConnBasics::expectNotYetConnected(uint newReadiness)
 void TestConnBasics::testInitialIntrospection()
 {
     QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
 
     // Wait for introspection to run (readiness changes to NYC)
     QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
@@ -184,6 +187,20 @@ void TestConnBasics::testConnect()
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
           this, SLOT(expectReady(uint))));
+
+    QCOMPARE(mConn->readiness(), Connection::ReadinessFull);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+        static_cast<uint>(Telepathy::ConnectionStatusConnected));
+
+    QStringList interfaces = mConn->interfaces();
+    QVERIFY(interfaces.contains(QLatin1String(
+            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)));
+    QVERIFY(interfaces.contains(QLatin1String(
+            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)));
+    QVERIFY(interfaces.contains(QLatin1String(
+            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)));
+    QVERIFY(interfaces.contains(QLatin1String(
+            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)));
 }
 
 
