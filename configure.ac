@@ -139,7 +139,9 @@ AC_SUBST(TP_QT4_LIBS)
 
 AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
   [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
-AM_CONDITIONAL([HAVE_PINOCCHIO], [! test none = "$PINOCCHIO"])
+AC_PATH_PROGS([PINOCCHIO_CTL], [pinocchio-ctl], [none])
+AM_CONDITIONAL([HAVE_PINOCCHIO],
+  [test none != "$PINOCCHIO" && test none != "$PINOCCHIO_CTL"])
 
 dnl Check for code generation tools
 PYTHON=
