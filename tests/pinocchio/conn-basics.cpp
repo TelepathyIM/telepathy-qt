@@ -199,8 +199,13 @@ void TestConnBasics::testConnect()
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)));
     QVERIFY(interfaces.contains(QLatin1String(
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)));
-    QVERIFY(interfaces.contains(QLatin1String(
-            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)));
+
+    watcher = new QDBusPendingCallWatcher(
+            mConn->Disconnect());
+    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QCOMPARE(mLoop->exec(), 0);
+    delete watcher;
 }
 
 
