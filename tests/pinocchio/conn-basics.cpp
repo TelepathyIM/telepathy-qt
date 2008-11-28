@@ -4,6 +4,7 @@
 #include <QtDBus/QtDBus>
 
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
 
@@ -33,10 +34,27 @@ private Q_SLOTS:
     void testInitialIntrospection();
     void testConnect();
     void testSpecifiedBus();
+    void testAlreadyConnected();
+    void testInterfaceFactory();
 
     void cleanup();
     void cleanupTestCase();
 };
+
+
+/*
+ * Missing test coverage on existing Connection code includes:
+ *
+ * - pre-Connected introspection (needs Pinocchio support or another CM)
+ * - introspecting a Connection that's already Connecting (needs Pinocchio
+ *   support or another CM)
+ *
+ * Out of scope for this test, should be in another test:
+ *
+ * - SimplePresence introspection (needs Pinocchio support or another CM)
+ * - aliasFlags(), presenceStatuses(), simplePresenceStatuses() accessors
+ * - requesting a channel
+ */
 
 
 void TestConnBasics::initTestCase()
@@ -117,6 +135,9 @@ void TestConnBasics::testInitialIntrospection()
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
           this, SLOT(expectNotYetConnected(uint))));
+
+    delete mConn;
+    mConn = NULL;
 }
 
 
@@ -168,7 +189,18 @@ void TestConnBasics::expectReady(uint newReadiness)
 
 void TestConnBasics::testConnect()
 {
-    testInitialIntrospection();
+    mConn = new Connection(mConnBusName, mConnObjectPath);
+
+    QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+
+    // Wait for introspection to run (readiness changes to NYC)
+    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectNotYetConnected(uint))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectNotYetConnected(uint))));
 
     // FIXME: should have convenience API
     qDebug() << "calling Connect()";
@@ -192,6 +224,8 @@ void TestConnBasics::testConnect()
     QCOMPARE(mConn->readiness(), Connection::ReadinessFull);
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Telepathy::ConnectionStatusConnected));
+    QCOMPARE(static_cast<uint>(mConn->statusReason()),
+        static_cast<uint>(Telepathy::ConnectionStatusReasonRequested));
 
     QStringList interfaces = mConn->interfaces();
     QVERIFY(interfaces.contains(QLatin1String(
@@ -201,20 +235,115 @@ void TestConnBasics::testConnect()
     QVERIFY(interfaces.contains(QLatin1String(
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)));
 
+    // FIXME: should have convenience API
     watcher = new QDBusPendingCallWatcher(
             mConn->Disconnect());
     QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
             this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
     QCOMPARE(mLoop->exec(), 0);
     delete watcher;
+
+    QCOMPARE(mConn->readiness(), Connection::ReadinessDead);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+    QCOMPARE(static_cast<uint>(mConn->statusReason()),
+        static_cast<uint>(Telepathy::ConnectionStatusReasonRequested));
+
+    delete mConn;
+    mConn = NULL;
+}
+
+
+void TestConnBasics::testAlreadyConnected()
+{
+    mConn = new Connection(mConnBusName, mConnObjectPath);
+
+    // Wait for introspection to run (readiness changes to NYC)
+    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectNotYetConnected(uint))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectNotYetConnected(uint))));
+
+    // FIXME: should have convenience API
+    qDebug() << "calling Connect()";
+
+    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+            mConn->Connect());
+    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QCOMPARE(mLoop->exec(), 0);
+    delete watcher;
+
+    // Wait for readiness to reach Full
+
+    qDebug() << "waiting for Full readiness";
+    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectReady(uint))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectReady(uint))));
+
+    QCOMPARE(mConn->readiness(), Connection::ReadinessFull);
+
+    // delete proxy, make a new one
+    delete mConn;
+    mConn = new Connection(mConnBusName, mConnObjectPath);
+
+    // Wait for introspection to run (readiness changes to Full immediately)
+    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectReady(uint))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectReady(uint))));
+
+    watcher = new QDBusPendingCallWatcher(
+            mConn->Disconnect());
+    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QCOMPARE(mLoop->exec(), 0);
+    delete watcher;
+
+    delete mConn;
+    mConn = NULL;
+}
+
+
+void TestConnBasics::testInterfaceFactory()
+{
+    mConn = new Connection(QDBusConnection::sessionBus(),
+        mConnBusName, mConnObjectPath);
+
+    QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+
+    // Wait for introspection to run (readiness changes to NYC)
+    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectNotYetConnected(uint))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectNotYetConnected(uint))));
+
+    DBus::PropertiesInterface* props = mConn->propertiesInterface();
+    QVERIFY(props != NULL);
+
+    DBus::PropertiesInterface* props2 =
+        mConn->optionalInterface<DBus::PropertiesInterface>(Connection::BypassInterfaceCheck);
+    QVERIFY(props2 == props);
+
+    DBus::PeerInterface* notListed = mConn->optionalInterface<DBus::PeerInterface>();
+    QVERIFY(notListed == NULL);
+    notListed = mConn->optionalInterface<DBus::PeerInterface>(Connection::BypassInterfaceCheck);
+    QVERIFY(notListed != NULL);
+
+    delete mConn;
+    mConn = NULL;
 }
 
 
 void TestConnBasics::cleanup()
 {
-    delete mConn;
-    mConn = NULL;
-
     cleanupImpl();
 }
 
@@ -234,6 +363,9 @@ void TestConnBasics::testSpecifiedBus()
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
           this, SLOT(expectNotYetConnected(uint))));
+
+    delete mConn;
+    mConn = NULL;
 }
 
 
