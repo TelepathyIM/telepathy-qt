@@ -2,6 +2,10 @@
 
 if HAVE_PINOCCHIO
 
+EXTRA_DIST = \
+    accounts/empty/contacts.xml \
+    lib.h
+
 TESTS = \
     test-chan-basics \
     test-conn-basics \
