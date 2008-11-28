@@ -3,10 +3,12 @@
 if HAVE_PINOCCHIO
 
 TESTS = \
+    test-chan-basics \
     test-conn-basics \
     test-do-nothing
 
 BUILT_SOURCES = \
+    _gen/chan-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
     _gen/do-nothing.cpp.moc.hpp \
     _gen/lib.h.moc.hpp
@@ -16,6 +18,9 @@ _gen/%.moc.hpp: %
 	$(MOC) $(LIB_CFLAGS) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
+
+test_chan_basics_SOURCES = chan-basics.cpp lib.cpp
+test_chan_basics_LDADD = $(ALL_LIBS)
 
 test_conn_basics_SOURCES = conn-basics.cpp lib.cpp
 test_conn_basics_LDADD = $(ALL_LIBS)
