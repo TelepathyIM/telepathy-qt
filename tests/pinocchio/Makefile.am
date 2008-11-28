@@ -17,11 +17,11 @@ _gen/%.moc.hpp: %
 
 noinst_PROGRAMS = $(TESTS)
 
-test_conn_basics_SOURCES = conn-basics.cpp
-test_conn_basics_LDADD = $(noinst_LTLIBRARIES) $(ALL_LIBS)
+test_conn_basics_SOURCES = conn-basics.cpp lib.cpp
+test_conn_basics_LDADD = $(ALL_LIBS)
 
-test_do_nothing_SOURCES = do-nothing.cpp
-test_do_nothing_LDADD = $(noinst_LTLIBRARIES) $(ALL_LIBS)
+test_do_nothing_SOURCES = do-nothing.cpp lib.cpp
+test_do_nothing_LDADD = $(ALL_LIBS)
 
 LIB_CFLAGS = \
     $(QTCORE_CFLAGS) \
@@ -57,11 +57,5 @@ CLEANFILES = \
 
 distclean-local:
 	rm -rf _gen
-
-noinst_LTLIBRARIES = libpinocchio-tests.la
-
-libpinocchio_tests_la_SOURCES = \
-    lib.cpp \
-    lib.h
 
 endif
