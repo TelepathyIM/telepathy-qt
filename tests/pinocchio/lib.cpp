@@ -23,10 +23,20 @@ void PinocchioTest::initTestCaseImpl()
 
     mPinocchioPath = QString::fromLocal8Bit(::getenv("PINOCCHIO"));
     mPinocchioCtlPath = QString::fromLocal8Bit(::getenv("PINOCCHIO_CTL"));
+    QString pinocchioSavePath = QString::fromLocal8Bit(
+        ::getenv("PINOCCHIO_SAVE_DIR"));
 
     QVERIFY2(!mPinocchioPath.isEmpty(), "Put $PINOCCHIO in your environment");
     QVERIFY2(!mPinocchioCtlPath.isEmpty(),
         "Put $PINOCCHIO_CTL in your environment");
+    QVERIFY2(!pinocchioSavePath.isEmpty(),
+        "Put $PINOCCHIO_SAVE_DIR in your environment");
+
+    QDir dir;
+    dir.mkpath(pinocchioSavePath);
+    dir.cd(pinocchioSavePath);
+    dir.remove(QLatin1String("empty/contacts.xml"));
+
     QVERIFY(QDBusConnection::sessionBus().isConnected());
 
     mPinocchio.setProcessChannelMode(QProcess::ForwardedChannels);

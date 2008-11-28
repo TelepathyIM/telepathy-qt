@@ -55,7 +55,7 @@ TESTS_ENV = \
     PINOCCHIO=@PINOCCHIO@ \
     PINOCCHIO_CTL=@PINOCCHIO_CTL@ \
     PINOCCHIO_DATA_DIR=@abs_srcdir@ \
-    PINOCCHIO_SAVE_DIR=@abs_builddir@
+    PINOCCHIO_SAVE_DIR=@abs_builddir@/_tmp
 
 TESTS_ENVIRONMENT = \
     $(TESTS_ENV) \
@@ -65,6 +65,6 @@ CLEANFILES = \
     $(BUILT_SOURCES)
 
 distclean-local:
-	rm -rf _gen
+	rm -rf _gen _tmp
 
 endif
