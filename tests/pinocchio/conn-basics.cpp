@@ -32,6 +32,7 @@ private Q_SLOTS:
 
     void testInitialIntrospection();
     void testConnect();
+    void testSpecifiedBus();
 
     void cleanup();
     void cleanupTestCase();
@@ -73,8 +74,6 @@ void TestConnBasics::initTestCase()
 void TestConnBasics::init()
 {
     initImpl();
-
-    mConn = new Connection(mConnBusName, mConnObjectPath);
 }
 
 
@@ -106,6 +105,8 @@ void TestConnBasics::expectNotYetConnected(uint newReadiness)
 
 void TestConnBasics::testInitialIntrospection()
 {
+    mConn = new Connection(mConnBusName, mConnObjectPath);
+
     QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
@@ -215,6 +216,24 @@ void TestConnBasics::cleanup()
     mConn = NULL;
 
     cleanupImpl();
+}
+
+
+void TestConnBasics::testSpecifiedBus()
+{
+    mConn = new Connection(QDBusConnection::sessionBus(),
+        mConnBusName, mConnObjectPath);
+
+    QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+
+    // Wait for introspection to run (readiness changes to NYC)
+    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectNotYetConnected(uint))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectNotYetConnected(uint))));
 }
 
 
