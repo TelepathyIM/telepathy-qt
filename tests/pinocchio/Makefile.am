@@ -52,6 +52,12 @@ TESTS_ENVIRONMENT = \
     $(TESTS_ENV) \
     sh $(top_srcdir)/tools/with-session-bus.sh --session --
 
+CLEANFILES = \
+    $(BUILT_SOURCES)
+
+distclean-local:
+	rm -rf _gen
+
 noinst_LTLIBRARIES = libpinocchio-tests.la
 
 libpinocchio_tests_la_SOURCES = \
