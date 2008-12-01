@@ -461,6 +461,21 @@ PendingChannel* Connection::requestChannel(const QString& channelType, uint hand
     return channel;
 }
 
+#if 0
+// FIXME: this is a 1:1 mapping of the method from TpPrototype, but
+// most likely what we really want as a high-level API is something
+// more analogous to tp_connection_call_when_ready() in telepathy-glib
+PendingOperation* Connection::requestConnect()
+{
+    return new PendingVoidMethodCall(this, this->Connect());
+}
+#endif
+
+PendingOperation* Connection::requestDisconnect()
+{
+    return new PendingVoidMethodCall(this, this->Disconnect());
+}
+
 struct PendingChannel::Private
 {
     Connection* connection;

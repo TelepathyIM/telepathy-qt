@@ -57,6 +57,7 @@ class PendingChannel;
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+#include <TelepathyQt4/Client/PendingOperation>
 
 namespace Telepathy
 {
@@ -416,6 +417,17 @@ public:
      *         the progress of the request.
      */
     PendingChannel* requestChannel(const QString& channelType, uint handleType, uint handle);
+
+    /**
+     * Start an asynchronous request that the connection be disconnected.
+     * The returned PendingOperation object will signal the success or failure
+     * of this request; under normal circumstances, it can be expected to
+     * succeed.
+     *
+     * \return A %PendingOperation, which will emit finished when the
+     *  Disconnect D-Bus method returns.
+     */
+    PendingOperation* requestDisconnect();
 
 Q_SIGNALS:
     /**
