@@ -95,6 +95,12 @@ bool PendingOperation::isValid() const
 }
 
 
+bool PendingOperation::isFinished() const
+{
+    return mPriv->finished;
+}
+
+
 bool PendingOperation::isError() const
 {
     Q_ASSERT(mPriv->finished);
