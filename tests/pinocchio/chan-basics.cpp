@@ -29,15 +29,21 @@ private:
     Channel *mChan;
 
 protected Q_SLOTS:
+    // these ought to be private, but if they were, QTest would think they
+    // were test cases. So, they're protected instead
     void expectConnReady(uint);
     void expectChanReady(uint);
     void expectSuccessfulCall(QDBusPendingCallWatcher*);
+    void expectPendingChannelFinished(Telepathy::Client::PendingChannel*);
+    void expectPendingChannelError(Telepathy::Client::PendingChannel*);
 
 private Q_SLOTS:
     void initTestCase();
     void init();
 
     void testBasics();
+    void testPendingChannel();
+    void testPendingChannelError();
 
     void cleanup();
     void cleanupTestCase();
@@ -210,6 +216,101 @@ void TestChanBasics::testBasics()
     QCOMPARE(mChan->targetHandle(), mSubscribeHandle);
 
     delete mChan;
+}
+
+
+void TestChanBasics::expectPendingChannelFinished(PendingChannel* pc)
+{
+    if (!pc->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (pc->isError()) {
+        qWarning().nospace() << pc->error().name()
+            << ": " << pc->error().message();
+        mLoop->exit(2);
+        return;
+    }
+
+    mLoop->exit(0);
+}
+
+
+void TestChanBasics::testPendingChannel()
+{
+    PendingChannel *pc = mConn->requestChannel(
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST),
+        Telepathy::HandleTypeList,
+        mSubscribeHandle);
+
+    QVERIFY(connect(pc, SIGNAL(finished(Telepathy::Client::PendingChannel*)),
+          this, SLOT(expectPendingChannelFinished(Telepathy::Client::PendingChannel*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(pc, SIGNAL(finished(Telepathy::Client::PendingChannel*)),
+          this, SLOT(expectPendingChannelFinished(Telepathy::Client::PendingChannel*))));
+
+    mChan = pc->channel();
+    QVERIFY(mChan);
+
+    QCOMPARE(mChan->readiness(), Channel::ReadinessJustCreated);
+    QEXPECT_FAIL("", "Doesn't seem to work", Continue);
+    QCOMPARE(mChan->connection(), mConn);
+
+    // Wait for readiness to reach Full
+    // FIXME: eventually, this should be encapsulated in the PendingChannel
+
+    qDebug() << "waiting for Full readiness";
+    QVERIFY(connect(mChan, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectChanReady(uint))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(mChan, SIGNAL(readinessChanged(uint)),
+          this, SLOT(expectChanReady(uint))));
+
+    QCOMPARE(mChan->readiness(), Channel::ReadinessFull);
+
+    QCOMPARE(mChan->channelType(),
+        QString::fromAscii(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
+    QCOMPARE(mChan->targetHandleType(),
+        static_cast<uint>(Telepathy::HandleTypeList));
+    QCOMPARE(mChan->targetHandle(), mSubscribeHandle);
+
+    delete mChan;
+}
+
+void TestChanBasics::expectPendingChannelError(PendingChannel* pc)
+{
+    if (!pc->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (!pc->isError()) {
+        qWarning() << "no error";
+        mLoop->exit(2);
+        return;
+    }
+
+    qDebug().nospace() << pc->error().name()
+        << ": " << pc->error().message();
+    mLoop->exit(0);
+}
+
+
+void TestChanBasics::testPendingChannelError()
+{
+    PendingChannel *pc = mConn->requestChannel(
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST),
+        Telepathy::HandleTypeList,
+        31337);
+
+    QVERIFY(connect(pc, SIGNAL(finished(Telepathy::Client::PendingChannel*)),
+          this, SLOT(expectPendingChannelError(Telepathy::Client::PendingChannel*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(pc, SIGNAL(finished(Telepathy::Client::PendingChannel*)),
+          this, SLOT(expectPendingChannelError(Telepathy::Client::PendingChannel*))));
 }
 
 
