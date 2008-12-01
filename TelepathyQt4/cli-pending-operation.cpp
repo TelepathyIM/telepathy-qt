@@ -88,7 +88,7 @@ DBusProxy* PendingOperation::proxy() const
 }
 
 
-bool PendingOperation::isSuccessful() const
+bool PendingOperation::isValid() const
 {
     Q_ASSERT(mPriv->finished);
     return (mPriv->errorName.isEmpty());
@@ -146,7 +146,7 @@ void PendingVoidMethodCall::watcherFinished(QDBusPendingCallWatcher* watcher)
     }
     else
     {
-        Q_ASSERT(isSuccessful());
+        Q_ASSERT(isValid());
         emit finished(this, true);
     }
 

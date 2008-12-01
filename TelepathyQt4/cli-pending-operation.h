@@ -63,48 +63,63 @@ class PendingOperation : public QObject
 {
     Q_OBJECT
 
-protected:
-    PendingOperation(DBusProxy* proxy);
-    void setFinished();
-    void setError(const QString& name, const QString& message);
-    void setError(const QDBusError& error);
-
 public:
     virtual ~PendingOperation();
 
+    /**
+     * Returns the object through which the pending operation was requested
+     * (a %Connection, %Channel etc.)
+     *
+     * \return A pointer to a D-Bus proxy object
+     */
     DBusProxy* proxy() const;
 
     /**
-     * Returns true if the pending operation has finished successfully.
+     * Returns whether or not the request has finished processing. #finished()
+     * is emitted when this changes from <code>false</code> to
+     * <code>true</code>.
      *
-     * This should only be called from a slot connected to #finished(),
-     * where it is equivalent to to (!isError()).
+     * Equivalent to <code>(isValid() || isError())</code>.
      *
-     * \return true if the pending operation has finished and was successful
+     * \sa finished()
+     *
+     * \return <code>true</code> if the request has finished
      */
-    // FIXME: do we want this or isError() or both? KJob only has error()
-    bool isSuccessful() const;
+    bool isFinished() const;
 
     /**
-     * Returns true if the pending operation has finished unsuccessfully.
+     * Returns whether or not the request completed successfully. If the
+     * request has not yet finished processing (isFinished() returns
+     * <code>false</code>), this cannot yet be known, and <code>false</code>
+     * will be returned.
      *
-     * This should only be called from a slot connected to #finished(),
-     * where it is equivalent to to (!isSuccessful()).
+     * Equivalent to <code>(isFinished() && !isError())</code>.
      *
-     * \return true if the pending operation has finished but was unsuccessful
+     * \return <code>true</code> iff the request has finished processing AND
+     *         has completed successfully.
+     */
+    bool isValid() const;
+
+    /**
+     * Returns whether or not the request resulted in an error. If the
+     * request has not yet finished processing (isFinished() returns
+     * <code>false</code>), this cannot yet be known, and <code>false</code>
+     * will be returned.
+     *
+     * Equivalent to <code>(isFinished() && !isValid())</code>.
+     *
+     * \return <code>true</code> iff the request has finished processing AND
+     *         has resulted in an error.
      */
     bool isError() const;
 
     /**
      * If #isError() would return true, returns the D-Bus error with which
-     * the operation failed. If the operation succeeded, returns an empty
-     * string.
-     *
-     * This should only be called from a slot connected to #finished().
+     * the operation failed. If the operation succeeded or has not yet
+     * finished, returns an empty string.
      *
      * \return a D-Bus error name or an empty string
      */
-    // FIXME: in KJob it is an error to call this if !isError()
     QString errorName() const;
 
     /**
@@ -112,17 +127,14 @@ public:
      * with the error, which may be an empty string. Otherwise, return an
      * empty string.
      *
-     * This should only be called from a slot connected to #finished().
-     *
      * \return a debugging message or an empty string
      */
-    // FIXME: in KJob it is an error to call this if !isError()
     QString errorMessage() const;
 
 Q_SIGNALS:
     /**
      * Emitted when the pending operation finishes, i.e. when #isFinished()
-     * changes from false to true.
+     * changes from <code>false</code> to <code>true</code>.
      *
      * \param operation This operation object, from which further information
      *    may be obtained
@@ -130,14 +142,20 @@ Q_SIGNALS:
      *    operation->isSuccessful())
      */
     // FIXME: would bool error be better? KJob only has error()
-    void finished(PendingOperation* operation, bool successful);
+    void finished(Telepathy::Client::PendingOperation* operation,
+        bool successful);
 
-private slots:
+protected:
+    PendingOperation(DBusProxy* proxy);
+    void setFinished();
+    void setError(const QString& name, const QString& message);
+    void setError(const QDBusError& error);
+
+private Q_SLOTS:
     void selfDestroyed(QObject* self);
 
 private:
     struct Private;
-    friend struct Private;
     Private *mPriv;
 };
 
@@ -155,7 +173,6 @@ private Q_SLOTS:
 private:
     // just ABI padding at the moment
     struct Private;
-    friend struct Private;
     Private *mPriv;
 };
 
