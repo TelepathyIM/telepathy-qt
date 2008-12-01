@@ -460,7 +460,7 @@ private:
  * request. Instances of this class cannot be constructed directly; the only way
  * to get one is to use Connection::requestChannel().
  */
-class PendingChannel : public QObject
+class PendingChannel : public PendingOperation
 {
     Q_OBJECT
 
@@ -500,44 +500,6 @@ public:
     uint handle() const;
 
     /**
-     * Returns whether or not the request has finished processing.
-     *
-     * \sa finished()
-     *
-     * \return If the request is finished.
-     */
-    bool isFinished() const;
-
-    /**
-     * Returns whether or not the request resulted in an error. If the request
-     * has not yet finished processing (isFinished() returns <code>false</code>),
-     * this cannot yet be known, and <code>false</code> will be returned.
-     *
-     * \return <code>true</code> iff the request has finished processing AND has
-     *         resulted in an error.
-     */
-    bool isError() const;
-
-    /**
-     * Returns the error which the request resulted in, if any. If isError()
-     * returns <code>false</code>, the request has not (at least yet) resulted
-     * in an error, and an undefined value will be returned.
-     *
-     * \return The error as a QDBusError.
-     */
-    const QDBusError& error() const;
-
-    /**
-     * Returns whether or not the request completed successfully. If the request
-     * has not yet finished processing (isFinished() returns <code>false</code>),
-     * this cannot yet be known, and <code>false</code> will be returned.
-     *
-     * \return <code>true</code> iff the request has finished processing AND has
-     *         completed successfully.
-     */
-    bool isValid() const;
-
-    /**
      * Returns a newly constructed Channel high-level proxy object associated
      * with the remote channel resulting from the channel request. If isValid()
      * returns <code>false</code>, the request has not (at least yet) completed
@@ -547,17 +509,6 @@ public:
      * \return Pointer to the new Channel object.
      */
     Channel* channel(QObject* parent = 0) const;
-
-Q_SIGNALS:
-    /**
-     * Emitted when the request finishes processing. isFinished() will then
-     * start returning <code>true</code> and isError(), error(), isValid() and
-     * channel() will become meaningful to use.
-     *
-     * \param pendingChannel The PendingChannel object for which the request has
-     *                       corresponding to the finished request.
-     */
-    void finished(Telepathy::Client::PendingChannel* pendingChannel);
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher* watcher);

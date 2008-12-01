@@ -478,18 +478,15 @@ PendingOperation* Connection::requestDisconnect()
 
 struct PendingChannel::Private
 {
-    Connection* connection;
     QString channelType;
     uint handleType;
     uint handle;
     QDBusObjectPath objectPath;
-    QDBusError error;
 };
 
 PendingChannel::PendingChannel(Connection* connection, const QString& channelType, uint handleType, uint handle)
-    : QObject(connection), mPriv(new Private)
+    : PendingOperation(connection), mPriv(new Private)
 {
-    mPriv->connection = connection;
     mPriv->channelType = channelType;
     mPriv->handleType = handleType;
     mPriv->handle = handle;
@@ -502,7 +499,7 @@ PendingChannel::~PendingChannel()
 
 Connection* PendingChannel::connection() const
 {
-    return mPriv->connection;
+    return qobject_cast<Connection*>(proxy());
 }
 
 const QString& PendingChannel::channelType() const
@@ -520,31 +517,6 @@ uint PendingChannel::handle() const
     return mPriv->handle;
 }
 
-bool PendingChannel::isFinished() const
-{
-    return !mPriv->objectPath.path().isEmpty() || !mPriv->error.message().isEmpty();
-}
-
-bool PendingChannel::isError() const
-{
-    return !mPriv->error.message().isEmpty();
-}
-
-const QDBusError& PendingChannel::error() const
-{
-    if (isValid())
-        warning() << "PendingChannel::error() called when valid";
-    else if (!isFinished())
-        warning() << "PendingChannel::error() called before finished";
-
-    return mPriv->error;
-}
-
-bool PendingChannel::isValid() const
-{
-    return isFinished() && !isError();
-}
-
 Channel* PendingChannel::channel(QObject* parent) const
 {
     if (!isFinished()) {
@@ -556,7 +528,7 @@ Channel* PendingChannel::channel(QObject* parent) const
     }
 
     Channel* channel =
-        new Channel(mPriv->connection,
+        new Channel(connection(),
                     mPriv->objectPath.path(),
                     parent);
     return channel;
@@ -567,17 +539,18 @@ void PendingChannel::onCallFinished(QDBusPendingCallWatcher* watcher)
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
 
     debug() << "Received reply to RequestChannel";
+    setFinished();
 
     if (!reply.isError()) {
         debug() << " Success: object path" << reply.value().path();
         mPriv->objectPath = reply.value();
     } else {
         debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
-        mPriv->error = reply.error();
+        setError(reply.error());
     }
 
     debug() << " Emitting finished()";
-    emit finished(this);
+    emit finished(this, isValid());
 
     watcher->deleteLater();
 }
