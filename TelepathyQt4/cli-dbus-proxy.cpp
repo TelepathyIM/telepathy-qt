@@ -73,3 +73,4 @@ QString DBusProxy::service() const
 }
 }
 
+#include "cli-dbus-proxy.moc.hpp"

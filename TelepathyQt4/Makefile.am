@@ -68,7 +68,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp \
     cli-channel.moc.hpp \
-    cli-connection.moc.hpp
+    cli-connection.moc.hpp \
+    cli-dbus-proxy.moc.hpp
 
 tpqt4include_HEADERS = \
     Constants \
