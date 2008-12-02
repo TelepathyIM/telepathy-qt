@@ -316,5 +316,5 @@ void AvatarManager::init( Connection* connection,
              this, SLOT( slotAvatarRetrieved( uint , const QString& , const QByteArray& , const QString& ) ) );
    
 }
-            
 
+#include "_gen/AvatarManager.h.moc"

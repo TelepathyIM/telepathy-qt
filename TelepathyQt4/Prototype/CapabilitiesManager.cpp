@@ -317,5 +317,5 @@ void CapabilitiesManager::init( Connection* connection,
              this, SLOT( slotCapabilitiesChanged( const Telepathy::CapabilityChangeList& ) ) );
    
 }
-            
 
+#include "_gen/CapabilitiesManager.h.moc"

@@ -35,6 +35,18 @@ libtpqt4_prototype_la_SOURCES = \
     types.cpp
 
 nodist_libtpqt4_prototype_la_SOURCES = \
+    _gen/Account.h.moc \
+    _gen/AccountManager.h.moc \
+    _gen/AvatarManager.h.moc \
+    _gen/CapabilitiesManager.h.moc \
+    _gen/ChatChannel.h.moc \
+    _gen/Connection.h.moc \
+    _gen/ConnectionFacade.h.moc \
+    _gen/Contact.h.moc \
+    _gen/ContactManager.h.moc \
+    _gen/DBusInterface.h.moc \
+    _gen/PresenceManager.h.moc \
+    _gen/StreamedMediaChannel.h.moc \
     _gen/cli-channel-handler-body.hpp \
     _gen/types-body.hpp
 
@@ -165,5 +177,5 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--extraincludes='<TelepathyQt4/Types>,<TelepathyQt4/Prototype/Types>' \
 		$$mainiface
 
-%.moc.hpp: %.h _gen/constants.h _gen/types.h
+_gen/%.moc: % _gen/constants.h _gen/types.h
 	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@

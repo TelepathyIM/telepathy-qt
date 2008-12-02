@@ -272,3 +272,5 @@ void Account::init( const QString handle )
     connect( d->m_pInterface, SIGNAL( Removed() ),
              this, SLOT( slotRemoved() ) );
 }
+
+#include "_gen/Account.h.moc"

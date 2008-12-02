@@ -963,3 +963,5 @@ void ContactManager::slotMembersChanged(const QString& message,
                                contactForHandle( actor ),
                                static_cast<Telepathy::ChannelGroupChangeReason>( reason ) );
 }
+
+#include "_gen/ContactManager.h.moc"

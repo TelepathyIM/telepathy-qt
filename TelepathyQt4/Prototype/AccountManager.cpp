@@ -307,4 +307,5 @@ void AccountManager::init()
   
 
 }
-            
+
+#include "_gen/AccountManager.h.moc"

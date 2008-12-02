@@ -187,3 +187,5 @@ Contact::Contact( const uint & handle, const QString & url, ContactTypes type,
 
 Contact::~Contact()
 { delete d; }
+
+#include "_gen/Contact.h.moc"

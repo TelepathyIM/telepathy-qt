@@ -221,3 +221,5 @@ void ChatChannel::slotLostMessage()
 void ChatChannel::slotSendError(uint error, uint timestamp, uint type, const QString& text )
 {
 }
+
+#include "_gen/ChatChannel.h.moc"

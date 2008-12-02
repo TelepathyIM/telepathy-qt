@@ -575,4 +575,4 @@ void StreamedMediaChannel::slotMembersChanged( const QString& message,
     }
 }
 
-
+#include "_gen/StreamedMediaChannel.h.moc"

@@ -432,3 +432,5 @@ void Connection::startupInit()
     connect( d->m_pInterface, SIGNAL( StatusChanged( uint, uint ) ),
              this, SLOT( slotStatusChanged( uint, uint ) ) );
 }
+
+#include "_gen/Connection.h.moc"

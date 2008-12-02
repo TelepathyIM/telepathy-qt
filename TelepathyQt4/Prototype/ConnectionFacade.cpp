@@ -263,3 +263,4 @@ int ConnectionFacade::selfHandleForConnectionInterface( Telepathy::Client::Conne
     return local_handle_reply.value();
 }
 
+#include "_gen/ConnectionFacade.h.moc"

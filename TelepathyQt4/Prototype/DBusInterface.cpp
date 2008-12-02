@@ -45,3 +45,5 @@ QDBusReply<QStringList> DBusInterface::listActivatableNames()
     Q_ASSERT( isValid() );
     return call( QLatin1String("ListActivatableNames")  );
 }
+
+#include "_gen/DBusInterface.h.moc"

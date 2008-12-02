@@ -616,5 +616,5 @@ void PresenceManager::init()
     qWarning( "PresenceManager::init(): Connection Manager neither supports the Interface \"Presence\" nor the Interface \"SimplePresence\". Other interfaces are not supported!" );
     return;
 }
-            
 
+#include "_gen/PresenceManager.h.moc"
