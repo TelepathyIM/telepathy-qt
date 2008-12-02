@@ -33,21 +33,26 @@ struct DBusProxy::Private
     // Public object
     DBusProxy& parent;
 
-    QDBusAbstractInterface* baseInterface;
+    QDBusConnection dbusConnection;
+    QString busName;
+    QString objectPath;
 
-    Private(QDBusAbstractInterface* interface, DBusProxy& p)
-        : parent(p), 
-          baseInterface(interface)
+    Private(const QDBusConnection& dbusConnection, const QString& busName,
+            const QString& objectPath, DBusProxy& p)
+        : parent(p),
+          dbusConnection(dbusConnection),
+          busName(busName),
+          objectPath(objectPath)
     {
         debug() << "Creating new DBusProxy";
     }
 };
 
-DBusProxy::DBusProxy(QDBusAbstractInterface* baseInterface, QObject* parent)
+DBusProxy::DBusProxy(const QDBusConnection& dbusConnection,
+        const QString& busName, const QString& path, QObject* parent)
  : QObject(parent),
-   mPriv(new Private(baseInterface, *this))
+   mPriv(new Private(dbusConnection, busName, path, *this))
 {
-
 }
 
 DBusProxy::~DBusProxy()
@@ -55,19 +60,31 @@ DBusProxy::~DBusProxy()
     delete mPriv;
 }
 
-QDBusConnection DBusProxy::connection() const
+QDBusConnection DBusProxy::dbusConnection() const
 {
-    return mPriv->baseInterface->connection();
+    return mPriv->dbusConnection;
 }
 
-QString DBusProxy::path() const
+QString DBusProxy::objectPath() const
 {
-    return mPriv->baseInterface->path();
+    return mPriv->objectPath;
 }
 
-QString DBusProxy::service() const
+QString DBusProxy::busName() const
 {
-    return mPriv->baseInterface->service();
+    return mPriv->busName;
+}
+
+StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection& dbusConnection,
+        const QString& busName, const QString& objectPath, QObject* parent)
+    : DBusProxy(dbusConnection, busName, objectPath, parent)
+{
+}
+
+StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection& dbusConnection,
+        const QString& busName, const QString& objectPath, QObject* parent)
+    : DBusProxy(dbusConnection, busName, objectPath, parent)
+{
 }
 
 }

@@ -401,10 +401,12 @@ struct Channel::Private
 Channel::Channel(Connection* connection,
                  const QString& objectPath,
                  QObject* parent)
-  : DBusProxy(connection, parent),
+  : StatefulDBusProxy(connection->connection(), connection->service(),
+            objectPath, parent),
     mPriv(new Private(*this, connection))
 {
-    mPriv->baseInterface = new ChannelInterface(connection->service(), objectPath, this);
+    mPriv->baseInterface = new ChannelInterface(this->dbusConnection(),
+            this->busName(), this->objectPath(), this);
 
     // Introspection continued here so mPriv will be initialized (unlike if we
     // continued it from the Private constructor)

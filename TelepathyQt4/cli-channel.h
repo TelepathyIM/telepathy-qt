@@ -93,7 +93,7 @@ namespace Client
  * signaled by Connection::readinessChanged) or is deleted, the Channel object
  * will transition to ReadinessDead too.
  */
-class Channel : public DBusProxy, private OptionalInterfaceFactory
+class Channel : public StatefulDBusProxy, private OptionalInterfaceFactory
 {
     Q_OBJECT
     Q_ENUMS(Readiness)
