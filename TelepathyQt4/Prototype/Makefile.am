@@ -82,14 +82,16 @@ check-local: check-coding-style
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
-    @QTCORE_CFLAGS@ \
-    @QTDBUS_CFLAGS@ \
+    $(QTCORE_CFLAGS) \
+    $(QTDBUS_CFLAGS) \
+    $(TP_QT4_CFLAGS) \
     -I$(top_builddir) \
     -I$(top_srcdir)
 
 ALL_LIBS = \
-    @QTCORE_LIBS@ \
-    @QTDBUS_LIBS@
+    $(QTCORE_LIBS) \
+    $(QTDBUS_LIBS) \
+    $(TP_QT4_LIBS)
 
 # Generated stuff
 
