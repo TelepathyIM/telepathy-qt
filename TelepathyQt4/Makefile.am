@@ -35,6 +35,8 @@ libtelepathy_qt4_la_LIBADD = $(ALL_LIBS)
 libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
+    cli-account.cpp \
+    cli-account-manager.cpp \
     cli-channel.cpp \
     cli-connection.cpp \
     cli-connection-manager.cpp \
@@ -50,7 +52,9 @@ libtelepathy_qt4_la_SOURCES = \
 
 nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-account-body.hpp \
+    _gen/cli-account.moc.hpp \
     _gen/cli-account-manager-body.hpp \
+    _gen/cli-account-manager.moc.hpp \
     _gen/cli-channel-body.hpp \
     _gen/cli-channel.moc.hpp \
     _gen/cli-connection-body.hpp \
@@ -73,6 +77,8 @@ tpqt4include_HEADERS = \
     Constants \
     Debug \
     Types \
+    cli-account.h \
+    cli-account-manager.h \
     cli-channel.h \
     cli-connection.h \
     cli-connection-manager.h \
