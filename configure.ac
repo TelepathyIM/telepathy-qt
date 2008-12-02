@@ -148,6 +148,12 @@ TP_QT4_LIBS='${top_builddir}/TelepathyQt4/libtelepathy-qt4.la'
 AC_SUBST(TP_QT4_CFLAGS)
 AC_SUBST(TP_QT4_LIBS)
 
+dnl Likewise for the prototype library
+PROTO_CFLAGS='-I${top_builddir} -I${top_srcdir}'
+PROTO_LIBS='${top_builddir}/TelepathyQt4/Prototype/libtpqt4-prototype.la'
+AC_SUBST(PROTO_CFLAGS)
+AC_SUBST(PROTO_LIBS)
+
 AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
   [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
 AC_PATH_PROGS([PINOCCHIO_CTL], [pinocchio-ctl], [none])
