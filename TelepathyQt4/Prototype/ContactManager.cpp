@@ -56,6 +56,7 @@ public:
     Telepathy::Client::ChannelInterfaceGroupInterface*  m_groupSubscribedChannel;
     Telepathy::Client::ChannelInterfaceGroupInterface*  m_groupKnownChannel;
     Telepathy::Client::ChannelInterfaceGroupInterface*  m_groupPublishedChannel;
+    Telepathy::Client::ChannelInterfaceGroupInterface*  m_groupDeniedChannel;
     Telepathy::Client::ChannelTypeTextInterface*  m_groupTextChannel;
 
     QHash<uint, QPointer<Contact> > m_members;
@@ -63,6 +64,7 @@ public:
     QHash<uint, QPointer<Contact> > m_localPending;
     QHash<uint, QPointer<Contact> > m_remotePending;
     QHash<uint, QPointer<Contact> > m_known;
+    QHash<uint, QPointer<Contact> > m_denied;
 
     bool m_isValid;
 
@@ -76,59 +78,51 @@ public:
         m_isValid    = false;
     }
 
-    QList<uint> SubscribedHandlesToLookUp(const Telepathy::UIntList& handles)
+    // Returns a list of all <i>handles</i> already <i>contained</i> in <i>list</i>
+    QList<uint> handlesToLookUp( const QHash<uint, QPointer<Contact> >& list, const Telepathy::UIntList& handles, bool contained )
     {
-        QList<uint> subscribed_to_look_up;
+        QList<uint> to_look_up;
         foreach(uint handle, handles)
         {
-            if (!m_subscribed.contains(handle) )
-                subscribed_to_look_up.append(handle);
+            if ( contained == list.contains(handle) )
+            { to_look_up.append(handle); }
         }
-        return subscribed_to_look_up;
-    }
-    
-    QList<uint> KnownHandlesToLookUp(const Telepathy::UIntList& handles)
-    {
-        QList<uint> known_to_look_up;
-        foreach(uint handle, handles)
-        {
-            if (!m_members.contains(handle) )
-                known_to_look_up.append(handle);
-        }
-        return known_to_look_up;
-    }    
-    QList<uint> RemovedHandlesToLookUp(const Telepathy::UIntList& handles)
-    {
-        QList<uint> removed_to_look_up;
-        foreach(uint handle, handles)
-        {
-            if (m_members.contains(handle) )
-                removed_to_look_up.append(handle);
-        }
-        return removed_to_look_up;
+        return to_look_up;
     }
 
-    QList<uint> LocalPendingHandlesToLookUp(const Telepathy::UIntList& handles)
+    QList<uint> subscribedHandlesToLookUp(const Telepathy::UIntList& handles)
     {
-        QList<uint> localpending_to_look_up;
-        foreach(uint handle, handles)
-        {
-            if (!m_localPending.contains(handle))
-                localpending_to_look_up.append(handle);
-        }
-        return localpending_to_look_up;
+        return handlesToLookUp( m_subscribed, handles, false );
     }
-    
-    QList<uint> RemotePendingHandlesToLookUp(const Telepathy::UIntList& handles)
+
+    QList<uint> newKnownHandlesToLookUp(const Telepathy::UIntList& handles)
     {
-        QList<uint> remotepending_to_look_up;
-        foreach(uint handle, handles)
-        {
-            if (!m_remotePending.contains(handle))
-                remotepending_to_look_up.append(handle); 
-            
-        }
-        return remotepending_to_look_up;
+        return handlesToLookUp( m_members, handles, false );
+    }
+
+    QList<uint> removedHandlesToLookUp(const Telepathy::UIntList& handles)
+    {
+        return handlesToLookUp( m_members, handles, true );
+    }
+
+    QList<uint> localPendingHandlesToLookUp(const Telepathy::UIntList& handles)
+    {
+        return handlesToLookUp( m_localPending, handles, false );
+    }
+
+    QList<uint> remotePendingHandlesToLookUp(const Telepathy::UIntList& handles)
+    {
+        return handlesToLookUp( m_remotePending, handles, false );
+    }
+
+    QList<uint> newDeniedHandles( const Telepathy::UIntList& handles )
+    {
+        return handlesToLookUp( m_denied, handles, false );
+    }
+
+    QList<uint> removedDeniedHandles( const Telepathy::UIntList& handles )
+    {
+        return handlesToLookUp( m_denied, handles, true );
     }
 
     QList<QPointer<TpPrototype::Contact> > mapHashToList( QHash<uint, QPointer<Contact> > hash )
@@ -187,6 +181,8 @@ QList<QPointer<Contact> > ContactManager::toAuthorizeList()
 QList<QPointer<Contact> > ContactManager::remoteAuthorizationPendingList()
 { return d->m_remotePending.values();}
 
+QList<QPointer<Contact> > ContactManager::blockedContacts()
+{ return d->m_denied.values(); }
 
 void ContactManager::init( Telepathy::Client::ConnectionInterface* connection )
 {
@@ -257,6 +253,40 @@ bool ContactManager::removeContact( const Contact* contact_toremove )
     return true;
 }
 
+bool ContactManager::blockContact( const Contact* contactToBlock )
+{
+    if ( !contactToBlock || !d->m_groupDeniedChannel )
+    { return false; }
+
+#ifdef ENABLE_DEBUG_OUTPUT_
+    qDebug() << "ContactManager: Try to block a contact";
+#endif
+    QList<uint> handle_list;
+    handle_list.append( contactToBlock->telepathyHandle() );
+
+    d->m_groupDeniedChannel->AddMembers( handle_list, "Block" );
+
+    return true;
+    // The list of blocked users (d->m_denied()) will be updated by a signal after this point
+}
+
+bool ContactManager::unblockContact( const Contact* contactToUnblock )
+{
+    if ( !contactToUnblock || !d->m_groupDeniedChannel )
+    { return false; }
+
+#ifdef ENABLE_DEBUG_OUTPUT_
+    qDebug() << "ContactManager: Try to unblock a contact";
+#endif
+    QList<uint> handle_list;
+    handle_list.append( contactToUnblock->telepathyHandle() );
+
+    d->m_groupDeniedChannel->RemoveMembers( handle_list, "Unblock" );
+
+    return true;
+    // The list of blocked users (d->m_denied()) will be updated by a signal after this point
+}
+
 QPointer<TpPrototype::Contact> ContactManager::contactForHandle( uint handle )
 {
     return d->m_members.value( handle );
@@ -286,13 +316,11 @@ uint ContactManager::localHandle()
 
 void ContactManager::openSubscribedContactsChannel(uint handle, const QDBusObjectPath& channelPath, const QString& channelType)
 {
-    Telepathy::registerTypes();
-
     QString channel_service_name(d->m_pInterface->service());
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "ContactManager Channel Services Name" << channel_service_name;
     qDebug() << "ContactManager Channel Path" << channelPath.path();
-#endif        
+#endif
     // This channel may never be closed!
     d->m_groupSubscribedChannel = new Telepathy::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
             this);
@@ -344,8 +372,6 @@ void ContactManager::openSubscribedContactsChannel(uint handle, const QDBusObjec
 
 void ContactManager::openKnownContactsChannel(uint handle, const QDBusObjectPath& channelPath, const QString& channelType)
 {
-    Telepathy::registerTypes();
-
     QString channel_service_name(d->m_pInterface->service());
 #ifdef ENABLE_DEBUG_OUTPUT_   
     qDebug() << "ContactManager Channel Services Name" << channel_service_name;
@@ -382,11 +408,7 @@ void ContactManager::openKnownContactsChannel(uint handle, const QDBusObjectPath
                         mlist3,
                         mlist4,
                         0, 0);
-    
-   // qDebug() << "Number of current members" << mlist1.size();
-   // qDebug() << "Number of local pending members" << mlist2.size();
-   // qDebug() << "Number of remote pending members" << mlist3.size();
-    
+
     // All lists are empty when the channel is created, so it suffices to connect
     // the MembersChanged signal.
     connect(d->m_groupKnownChannel, SIGNAL(MembersChanged(const QString&,
@@ -401,6 +423,63 @@ void ContactManager::openKnownContactsChannel(uint handle, const QDBusObjectPath
                        const Telepathy::UIntList&,
                        const Telepathy::UIntList&,
                        uint, uint)));
+
+}
+
+void ContactManager::openDenyContactsChannel(uint handle, const QDBusObjectPath& channelPath, const QString& channelType)
+{
+    QString channel_service_name(d->m_pInterface->service());
+#ifdef ENABLE_DEBUG_OUTPUT_
+    qDebug() << "ContactManager Channel Services Name" << channel_service_name;
+    qDebug() << "ContactManager Channel Path" << channelPath.path();
+#endif
+    // This channel may never be closed!
+    d->m_groupDeniedChannel = new Telepathy::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
+                                                                                    this);
+    if (!d->m_groupDeniedChannel->isValid())
+    {
+#ifdef ENABLE_DEBUG_OUTPUT_
+        qDebug() << "Failed to connect Group channel interface class to D-Bus object.";
+#endif
+        delete d->m_groupDeniedChannel;
+        d->m_groupDeniedChannel = NULL;
+        return;
+    }
+
+    QDBusPendingReply<Telepathy::UIntList, Telepathy::UIntList, Telepathy::UIntList> reply2=d->m_groupKnownChannel->GetAllMembers();
+    reply2.waitForFinished();
+
+    const Telepathy::UIntList current        = QList< quint32 > (reply2.argumentAt<0>());
+    const Telepathy::UIntList local_pending  = QList< quint32 > (reply2.argumentAt<1>());
+    const Telepathy::UIntList remote_pending = QList< quint32 > (reply2.argumentAt<2>());
+#ifdef ENABLE_DEBUG_OUTPUT_
+    qDebug() << "Denied-Members: Number of current members" << current.size();
+    qDebug() << "Denied-Members: Number of local pending members" << local_pending.size();
+    qDebug() << "Denied-Members: Number of remote pending members" << remote_pending.size();
+#endif
+    if (( current.size()>0) || ( local_pending.size()>0) || ( remote_pending.size()>0))
+        slotDeniedMembersChanged("",
+                                current,
+                                Telepathy::UIntList(),
+                                local_pending,
+                                remote_pending,
+                                0, 0);
+
+    // All lists are empty when the channel is created, so it suffices to connect
+    // the MembersChanged signal.
+    connect(d->m_groupDeniedChannel, SIGNAL(MembersChanged(const QString&,
+                                                            const Telepathy::UIntList&, // added to members list
+                                                            const Telepathy::UIntList&, // removed from members list
+                                                            const Telepathy::UIntList&, // local pending list
+                                                            const Telepathy::UIntList&, // remote pending list
+                                                            uint,                       // actor
+                                                            uint)),                     // reason
+            this, SLOT(slotDeniedMembersChanged(const QString&,
+                                                const Telepathy::UIntList&,
+                                                const Telepathy::UIntList&,
+                                                const Telepathy::UIntList&,
+                                                const Telepathy::UIntList&,
+                                                uint, uint)));
 
 }
 
@@ -464,8 +543,6 @@ void ContactManager::openStreamedMediaChannel( uint handle, uint handleType, con
 
 void ContactManager::openPublishContactsChannel(uint handle, const QDBusObjectPath& channelPath, const QString& channelType)
 {
-    Telepathy::registerTypes();
-
     QString channel_service_name(d->m_pInterface->service());
 #ifdef ENABLE_DEBUG_OUTPUT_    
     qDebug() << "ContactManager Channel Services Name" << channel_service_name;
@@ -569,7 +646,75 @@ void ContactManager::slotSubscribedMembersChanged(const QString& message,
                        actor, reason);
 }
 
-// TODO: This function is a real beast. It should be split into separate functions. Rething whether it is a good idea
+void ContactManager::slotDeniedMembersChanged(const QString& message,
+                                                const Telepathy::UIntList& members_added,
+                                                const Telepathy::UIntList& members_removed,
+                                                const Telepathy::UIntList& local_pending,
+                                                const Telepathy::UIntList& remote_pending,
+                                                uint actor,
+                                                uint reason)
+{
+    QList<uint> added_members   = d->newDeniedHandles( members_added );        // members added to the list of denied.
+    QList<uint> removed_members = d->removedDeniedHandles( members_removed );  // members removed from the list of denied.
+    QList<uint> new_members     = d->newKnownHandlesToLookUp( members_added ); // new members that are not yet in the list of members
+
+    // Remove all removed members from the denied list
+    foreach( uint member_handle, removed_members )
+    {
+        Contact* contact = d->m_denied.value( member_handle );
+        if ( !contact )
+        { continue; }
+        contact->setType( Contact::CT_Known );
+        d->m_denied.remove( member_handle );
+    }
+
+    // Members that are not already known (in list of members): create new contact.
+    QDBusPendingReply<QStringList> handle_names_reply = d->m_pInterface->InspectHandles( Telepathy::HandleTypeContact, new_members );
+    handle_names_reply.waitForFinished();
+    if ( !handle_names_reply.isValid() )
+    {
+        QDBusError error = handle_names_reply.error();
+
+        qWarning() << "InspectHandles (new denied handles=: error type:" << error.type()
+                   << "error name:" << error.name()
+                   << "error message:" << error.message();
+        return;
+    }
+    Q_ASSERT( handle_names_reply.value().size() == new_members.size() );
+
+    // Create Contacts for the looked up handles:
+    for (int i = 0; i < new_members.size(); ++i)
+    {
+        QPointer<Contact> contact = new Contact( new_members.at(i), handle_names_reply.value().at(i), Contact::CT_Blocked, d->m_pInterface, this );
+#ifdef ENABLE_DEBUG_OUTPUT_
+        qDebug() << "Create contact for known Handle" << handle_names.value().at(i);
+#endif
+        Q_ASSERT(contact->isValid());
+        d->m_members.insert( new_members.at( i ), contact );
+    }
+    // end: create new contact
+
+    // Now update list of blocked members and emit signals.
+    foreach( uint member_handle, added_members )
+    {
+        Contact* contact = d->m_members.value( member_handle );
+        if ( !contact )
+        { continue; }
+        contact->setType( Contact::CT_Blocked );
+        d->m_denied.insert( member_handle, contact );
+
+        emit signalContactBlocked( this, contact );
+    }
+    // Emit signals for the removed members
+    foreach( uint member_handle, removed_members )
+    {
+
+        emit signalContactUnblocked( this, d->m_members.value( member_handle ) );
+    }
+}
+
+
+// TODO: This function is a real beast. It should be split into separate functions. Rethink whether it is a good idea
 //       to map all slots to this functions!?
 void ContactManager::slotMembersChanged(const QString& message,
                                         const Telepathy::UIntList& members_added,
@@ -597,7 +742,7 @@ void ContactManager::slotMembersChanged(const QString& message,
     {
         if (message==QString("Known"))
         {        
-            QList<uint> known_to_look_up(d->KnownHandlesToLookUp(members_added));
+            QList<uint> known_to_look_up(d->newKnownHandlesToLookUp(members_added));
         // look up 'missing' handles:
             QDBusPendingReply<QStringList> handle_names =
                     d->m_pInterface->InspectHandles(Telepathy::HandleTypeContact, known_to_look_up);
@@ -666,7 +811,7 @@ void ContactManager::slotMembersChanged(const QString& message,
         else //message!="Known"
         {
            
-            QList<uint> subscribed_to_look_up(d->SubscribedHandlesToLookUp(members_added));
+            QList<uint> subscribed_to_look_up(d->subscribedHandlesToLookUp(members_added));
     
         // look up 'missing' handles:
             QDBusPendingReply<QStringList> handle_names =
@@ -742,7 +887,7 @@ void ContactManager::slotMembersChanged(const QString& message,
                                     d->m_localPending.remove(handle);
                                   
                             }
-                            delete current_contact;
+                            current_contact->deleteLater();
                         }
 
                         emit signalContactSubscribed( this,  d->m_members[handle] );
@@ -754,7 +899,7 @@ void ContactManager::slotMembersChanged(const QString& message,
     }
     if (local_pending.size()!=0)
     {
-        QList<uint> localPending_to_look_up(d->LocalPendingHandlesToLookUp(local_pending));
+        QList<uint> localPending_to_look_up(d->localPendingHandlesToLookUp(local_pending));
     // look up 'missing' handles:
         QDBusPendingReply<QStringList> handle_names =
                 d->m_pInterface->InspectHandles(Telepathy::HandleTypeContact, localPending_to_look_up);
@@ -822,7 +967,7 @@ void ContactManager::slotMembersChanged(const QString& message,
         
     if (remote_pending.size()!=0)
     {
-        QList<uint> remotePending_to_look_up(d->RemotePendingHandlesToLookUp(remote_pending));
+        QList<uint> remotePending_to_look_up(d->remotePendingHandlesToLookUp(remote_pending));
 
     // look up 'missing' handles:
         QDBusPendingReply<QStringList> handle_names =
@@ -897,7 +1042,7 @@ void ContactManager::slotMembersChanged(const QString& message,
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug() << "SlotMembers Changed Removed Called";
 #endif
-        QList<uint> removed_to_look_up(d->RemovedHandlesToLookUp(members_removed));
+        QList<uint> removed_to_look_up(d->removedHandlesToLookUp(members_removed));
     // look up 'missing' handles:
         QDBusPendingReply<QStringList> handle_names =
                 d->m_pInterface->InspectHandles(Telepathy::HandleTypeContact, removed_to_look_up);

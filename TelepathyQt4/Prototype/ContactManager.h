@@ -110,7 +110,13 @@ public:
       * @todo: Return ContactGroup here, instead of a list of pointer.
       */
      QList<QPointer<TpPrototype ::Contact> > remoteAuthorizationPendingList();
-     
+
+     /**
+      * List of contacts that are blocked.
+      * @todo: Return ContactGroup here, instead of a list of pointer.
+      */
+     QList<QPointer<TpPrototype::Contact> > blockedContacts();
+
      /**
       * Request a contact.
       * A remote contact should be added to the list of known contacts.
@@ -134,6 +140,26 @@ public:
       */
      bool removeContact( const TpPrototype ::Contact* contactToRemove );
 
+      /**
+      * Block a contact.
+      * The contact is moved to the list of blocked contacts. This may not be supported by the protocol/contact manager. In this case false is returned.
+      * A blocked contact will not receive any presence information from the local account. Messages from this contact are ignored.
+      * The signal signalContactBlocked() is emitted if this call was successful.<br>
+      * <b>Hint:</b>Blocking support is currently available with the connection manager Gabble and GoogleTalk.
+      * @return true if blocking is supported.
+      */
+     bool blockContact( const Contact* contactToBlock );
+
+     /**
+      * Block a contact.
+      * The contact is moved to the list of blocked contacts. This may not be supported by the protocol/contact manager. In this case false is returned.
+      * A blocked contact will not receive any presence information from the local account. Messages from this contact are ignored.<br>
+      * The signal signalContactUnblocked() is emitted if this call was successful.<br>
+      * <b>Hint:</b>Blocking support is currently available with the connection manager Gabble and GoogleTalk.
+      * @return true if blocking is supported
+      */
+     bool unblockContact( const Contact* contactToUnblock );
+
      /**
       * Returns a contact pointer for handle id.
       * This function provides a fast lookup of a contact if a valid handle is provided.
@@ -142,7 +168,7 @@ public:
      QPointer<TpPrototype ::Contact> contactForHandle( uint handle );
 
      /**
-      * The local use handle.
+      * The local handle.
       * The local user has a handle that is returned by this function. The local handle cannot be used to get
       * a valid contact with contactForHandle()!
       */
@@ -195,8 +221,9 @@ signals:
     void signalContactSubscribed( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
     
     /**
-     * A Contact was removed.    
-     * This signal is emitted if a new contact was removed.
+     * A Contact was removed.
+     * This signal is emitted if a contact was removed.
+     * @param contact The removed contact. This object will be delted after this call!
      */
     void signalContactRemoved( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
     
@@ -204,12 +231,25 @@ signals:
      * @todo: Add doc! (seil)
      */
     void signalContactKnown( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
-    
+
+    /**
+     * @todo: Add doc!
+     * Contact was blocked.
+     * This signal is emitted after a contact was blocked.
+     */
+    void signalContactBlocked( TpPrototype::ContactManager* contactManager, TpPrototype::Contact* contact );
+
+    /**
+     * Contact was unblocked.
+     * This signal is emitted after a contact was unblocked.
+     */
+    void signalContactUnblocked( TpPrototype::ContactManager* contactManager, TpPrototype::Contact* contact );
+
     /**
      * @todo: Add doc! (seil)
      */
     void signalForModelContactSubscribed( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
-    
+
     /**
      * @todo: Add doc! (seil)
      */
@@ -255,9 +295,9 @@ protected:
       */
     void openKnownContactsChannel(uint handle, const QDBusObjectPath& objectPath, const QString& channelType);
 
-     /**
+    /**
      * ..
-      */
+     */
     void openDenyContactsChannel(uint handle, const QDBusObjectPath& objectPath, const QString& channelType);
 
     void openTextChannel( uint handle, uint handleType, const QString& channelPath, const QString& channelType );
@@ -290,6 +330,12 @@ protected slots:
                                      const Telepathy::UIntList& local_pending,
                                      const Telepathy::UIntList& remote_pending,
                                      uint actor, uint reason);       
+    void slotDeniedMembersChanged(const QString& message,
+                                      const Telepathy::UIntList& members_added,
+                                      const Telepathy::UIntList& members_removed,
+                                      const Telepathy::UIntList& local_pending,
+                                      const Telepathy::UIntList& remote_pending,
+                                      uint actor, uint reason);
 private:
     void init( Telepathy::Client::ConnectionInterface* connection );
 
