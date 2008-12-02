@@ -401,7 +401,8 @@ struct Channel::Private
 Channel::Channel(Connection* connection,
                  const QString& objectPath,
                  QObject* parent)
-  : mPriv(new Private(*this, connection))
+  : DBusProxy(connection, parent),
+    mPriv(new Private(*this, connection))
 {
     mPriv->baseInterface = new ChannelInterface(connection->service(), objectPath, this);
 

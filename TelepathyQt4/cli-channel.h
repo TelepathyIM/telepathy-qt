@@ -55,6 +55,7 @@ class Channel;
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
 namespace Telepathy
@@ -92,7 +93,7 @@ namespace Client
  * signaled by Connection::readinessChanged) or is deleted, the Channel object
  * will transition to ReadinessDead too.
  */
-class Channel : public QObject, private OptionalInterfaceFactory
+class Channel : public DBusProxy, private OptionalInterfaceFactory
 {
     Q_OBJECT
     Q_ENUMS(Readiness)

@@ -39,6 +39,7 @@ libtelepathy_qt4_la_SOURCES = \
     cli-connection.cpp \
     cli-connection-manager.cpp \
     cli-dbus.cpp \
+    cli-dbus-proxy.cpp \
     cli-media-session-handler.cpp \
     cli-media-stream-handler.cpp \
     cli-optional-interface-factory.cpp \
@@ -77,6 +78,7 @@ tpqt4include_HEADERS = \
     cli-connection.h \
     cli-connection-manager.h \
     cli-dbus.h \
+    cli-dbus-proxy.h \
     cli-media-session-handler.h \
     cli-media-stream-handler.h \
     cli-optional-interface-factory.h \
@@ -91,6 +93,7 @@ tpqt4clientinclude_HEADERS = \
     Client/Connection \
     Client/ConnectionManager \
     Client/DBus \
+    Client/DBusProxy \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
     Client/OptionalInterfaceFactory \
