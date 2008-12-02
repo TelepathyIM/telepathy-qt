@@ -118,7 +118,6 @@ AC_SUBST([ENABLE_CODING_STYLE_CHECKS])
 
 dnl Check for QtCore
 PKG_CHECK_MODULES(QTCORE, [QtCore >= 4.5])
-
 AC_SUBST(QTCORE_CFLAGS)
 AC_SUBST(QTCORE_LIBS)
 
@@ -127,13 +126,18 @@ AC_SUBST(MOC)
 
 dnl Check for QtDBus
 PKG_CHECK_MODULES(QTDBUS, [QtDBus >= 4.5])
-
 AC_SUBST(QTDBUS_CFLAGS)
 AC_SUBST(QTDBUS_LIBS)
 
+dnl Check for QtGui
+have_qt_gui=
+PKG_CHECK_MODULES(QTGUI, [QtGui >= 4.5], [have_qt_gui=yes], [have_qt_gui=no])
+AC_SUBST(QTGUI_CFLAGS)
+AC_SUBST(QTGUI_LIBS)
+AM_CONDITIONAL([HAVE_QTGUI], [test yes = "$have_qt_gui"])
+
 dnl Check for QtTest
 PKG_CHECK_MODULES(QTTEST, [QtTest >= 4.5])
-
 AC_SUBST(QTTEST_CFLAGS)
 AC_SUBST(QTTEST_LIBS)
 
