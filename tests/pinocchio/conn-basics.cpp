@@ -26,7 +26,7 @@ protected Q_SLOTS:
     void expectNotYetConnected(uint);
     void expectReady(uint);
     void expectSuccessfulCall(QDBusPendingCallWatcher*);
-    void expectSuccessfulCall(Telepathy::Client::PendingOperation*, bool);
+    void expectSuccessfulCall(Telepathy::Client::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -142,9 +142,9 @@ void TestConnBasics::testInitialIntrospection()
 }
 
 
-void TestConnBasics::expectSuccessfulCall(PendingOperation* op, bool success)
+void TestConnBasics::expectSuccessfulCall(PendingOperation* op)
 {
-    if (!success) {
+    if (op->isError()) {
         qWarning().nospace() << op->errorName()
             << ": " << op->errorMessage();
         mLoop->exit(1);
@@ -248,9 +248,9 @@ void TestConnBasics::testConnect()
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)));
 
     QVERIFY(connect(mConn->requestDisconnect(),
-          SIGNAL(finished(Telepathy::Client::PendingOperation*, bool)),
+          SIGNAL(finished(Telepathy::Client::PendingOperation*)),
           this,
-          SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*, bool))));
+          SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mConn->readiness(), Connection::ReadinessDead);

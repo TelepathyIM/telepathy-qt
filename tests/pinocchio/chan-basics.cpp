@@ -247,10 +247,10 @@ void TestChanBasics::testPendingChannel()
         Telepathy::HandleTypeList,
         mSubscribeHandle);
 
-    QVERIFY(connect(pc, SIGNAL(finished(Telepathy::Client::PendingOperation*, bool)),
+    QVERIFY(connect(pc, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
           this, SLOT(expectPendingChannelFinished(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(pc, SIGNAL(finished(Telepathy::Client::PendingOperation*, bool)),
+    QVERIFY(disconnect(pc, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
           this, SLOT(expectPendingChannelFinished(Telepathy::Client::PendingOperation*))));
 
     QVERIFY(mChan);
@@ -307,10 +307,10 @@ void TestChanBasics::testPendingChannelError()
         Telepathy::HandleTypeList,
         31337);
 
-    QVERIFY(connect(pc, SIGNAL(finished(Telepathy::Client::PendingOperation*, bool)),
+    QVERIFY(connect(pc, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
           this, SLOT(expectPendingChannelError(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(pc, SIGNAL(finished(Telepathy::Client::PendingOperation*, bool)),
+    QVERIFY(disconnect(pc, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
           this, SLOT(expectPendingChannelError(Telepathy::Client::PendingOperation*))));
 }
 

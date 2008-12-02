@@ -125,6 +125,7 @@ QString PendingOperation::errorMessage() const
 void PendingOperation::selfDestroyed(QObject* self)
 {
     // FIXME: signal finished with a synthetic error here?
+    // need to work out exactly what the life-cycle is first
 }
 
 
@@ -148,14 +149,13 @@ void PendingVoidMethodCall::watcherFinished(QDBusPendingCallWatcher* watcher)
     {
         setError(watcher->error());
         Q_ASSERT(isError());
-        emit finished(this, false);
     }
     else
     {
         Q_ASSERT(isValid());
-        emit finished(this, true);
     }
 
+    emit finished(this);
     deleteLater();
 }
 

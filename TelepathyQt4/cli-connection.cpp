@@ -550,7 +550,7 @@ void PendingChannel::onCallFinished(QDBusPendingCallWatcher* watcher)
     }
 
     debug() << " Emitting finished()";
-    emit finished(this, isValid());
+    emit finished(this);
 
     watcher->deleteLater();
 }

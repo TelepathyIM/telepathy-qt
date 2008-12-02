@@ -138,12 +138,8 @@ Q_SIGNALS:
      *
      * \param operation This operation object, from which further information
      *    may be obtained
-     * \param successful true if the operation was successful (the same as
-     *    operation->isSuccessful())
      */
-    // FIXME: would bool error be better? KJob only has error()
-    void finished(Telepathy::Client::PendingOperation* operation,
-        bool successful);
+    void finished(Telepathy::Client::PendingOperation* operation);
 
 protected:
     PendingOperation(DBusProxy* proxy);
