@@ -32,6 +32,7 @@ libtpqt4_prototype_la_SOURCES = \
     DBusInterface.cpp \
     PresenceManager.cpp \
     StreamedMediaChannel.cpp \
+    cli-channel-handler.cpp \
     types.cpp
 
 nodist_libtpqt4_prototype_la_SOURCES = \
@@ -48,6 +49,7 @@ nodist_libtpqt4_prototype_la_SOURCES = \
     _gen/PresenceManager.h.moc \
     _gen/StreamedMediaChannel.h.moc \
     _gen/cli-channel-handler-body.hpp \
+    _gen/cli-channel-handler.moc.hpp \
     _gen/types-body.hpp
 
 protoinclude_HEADERS = \
@@ -66,6 +68,7 @@ protoinclude_HEADERS = \
     StreamedMediaChannel.h \
     Types \
     constants.h \
+    cli-channel-handler.h \
     types.h
 
 protoclientinclude_HEADERS = \
@@ -178,4 +181,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		$$mainiface
 
 _gen/%.moc: % _gen/constants.h _gen/types.h
+	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
+
+_gen/%.moc.hpp: _gen/%.h _gen/constants.h _gen/types.h
 	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
