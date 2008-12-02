@@ -192,5 +192,6 @@ AC_OUTPUT([
     tests/Makefile
     tests/dbus/Makefile
     tests/pinocchio/Makefile
+    tests/prototype/Makefile
     tools/Makefile
 ])

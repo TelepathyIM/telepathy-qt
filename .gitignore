@@ -36,6 +36,7 @@
 /telepathy-qt4-*/
 /tests/dbus/test-*
 /tests/pinocchio/test-*
+/tests/prototype/test-*
 Makefile
 Makefile.in
 _gen

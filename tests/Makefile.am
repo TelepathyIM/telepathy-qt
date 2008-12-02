@@ -1,5 +1,6 @@
 SUBDIRS = \
     dbus \
-    pinocchio
+    pinocchio \
+    prototype
 
 EXTRA_DIST = README
