@@ -549,9 +549,6 @@ void PendingChannel::onCallFinished(QDBusPendingCallWatcher* watcher)
         setFinishedWithError(reply.error());
     }
 
-    debug() << " Emitting finished()";
-    emit finished(this);
-
     watcher->deleteLater();
 }
 
