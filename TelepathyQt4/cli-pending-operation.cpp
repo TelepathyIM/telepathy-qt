@@ -59,7 +59,7 @@ PendingOperation::PendingOperation(QObject* parent)
 PendingOperation::~PendingOperation()
 {
     if (!mPriv->finished) {
-        qWarning() << this
+        warning() << this
                 << "still pending when it was deleted - finished will "
                    "never be emitted";
     }
@@ -80,10 +80,10 @@ void PendingOperation::setFinished()
 {
     if (mPriv->finished) {
         if (mPriv->errorName.isEmpty())
-            qWarning() << this << "trying to finish with success, but already"
+            warning() << this << "trying to finish with success, but already"
               " failed with" << errorName() << ":" << errorMessage();
         else
-            qWarning() << this << "trying to finish with success, but already"
+            warning() << this << "trying to finish with success, but already"
               " succeeded";
         return;
     }
@@ -99,17 +99,17 @@ void PendingOperation::setFinishedWithError(const QString& name,
 {
     if (mPriv->finished) {
         if (mPriv->errorName.isEmpty())
-            qWarning() << this << "trying to fail with" << name <<
+            warning() << this << "trying to fail with" << name <<
               "but already failed with" << errorName() << ":" <<
               errorMessage();
         else
-            qWarning() << this << "trying to fail with" << name <<
+            warning() << this << "trying to fail with" << name <<
               "but already succeeded";
         return;
     }
 
     if (name.isEmpty()) {
-        qWarning() << this << "should be given a non-empty error name";
+        warning() << this << "should be given a non-empty error name";
         mPriv->errorName = "org.freedesktop.Telepathy.Qt4.ErrorHandlingError";
     }
     else {
