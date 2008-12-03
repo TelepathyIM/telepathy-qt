@@ -33,7 +33,6 @@ protected Q_SLOTS:
     // were test cases. So, they're protected instead
     void expectConnReady(uint);
     void expectChanReady(uint);
-    void expectSuccessfulCall(QDBusPendingCallWatcher*);
     void expectPendingChannelFinished(Telepathy::Client::PendingOperation*);
     void expectPendingChannelError(Telepathy::Client::PendingOperation*);
 
@@ -48,21 +47,6 @@ private Q_SLOTS:
     void cleanup();
     void cleanupTestCase();
 };
-
-
-void TestChanBasics::expectSuccessfulCall(QDBusPendingCallWatcher* watcher)
-{
-    QDBusPendingReply<> reply = *watcher;
-
-    if (reply.isError()) {
-        qWarning().nospace() << reply.error().name()
-            << ": " << reply.error().message();
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
-}
 
 
 void TestChanBasics::expectConnReady(uint newReadiness)

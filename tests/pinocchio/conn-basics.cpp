@@ -25,8 +25,6 @@ private:
 protected Q_SLOTS:
     void expectNotYetConnected(uint);
     void expectReady(uint);
-    void expectSuccessfulCall(QDBusPendingCallWatcher*);
-    void expectSuccessfulCall(Telepathy::Client::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -139,32 +137,6 @@ void TestConnBasics::testInitialIntrospection()
 
     delete mConn;
     mConn = NULL;
-}
-
-
-void TestConnBasics::expectSuccessfulCall(PendingOperation* op)
-{
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
-}
-
-
-void TestConnBasics::expectSuccessfulCall(QDBusPendingCallWatcher* watcher)
-{
-    if (watcher->isError()) {
-        qWarning().nospace() << watcher->error().name()
-            << ": " << watcher->error().message();
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
 }
 
 
