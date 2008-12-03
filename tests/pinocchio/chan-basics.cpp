@@ -234,6 +234,12 @@ void TestChanBasics::expectPendingChannelFinished(PendingOperation* op)
         return;
     }
 
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
     PendingChannel *pc = qobject_cast<PendingChannel*>(op);
     mChan = pc->channel();
     mLoop->exit(0);
@@ -296,6 +302,13 @@ void TestChanBasics::expectPendingChannelError(PendingOperation* op)
 
     qDebug().nospace() << op->errorName()
         << ": " << op->errorMessage();
+
+    if (op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
     mLoop->exit(0);
 }
 
