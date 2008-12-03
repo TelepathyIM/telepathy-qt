@@ -60,6 +60,12 @@ PendingOperation::PendingOperation(QObject* parent)
 
 PendingOperation::~PendingOperation()
 {
+    if (!mPriv->finished) {
+        qWarning() << this
+                << "still pending when it was deleted - finished will "
+                   "never be emitted";
+    }
+
     delete mPriv;
 }
 
@@ -152,16 +158,6 @@ QString PendingOperation::errorName() const
 QString PendingOperation::errorMessage() const
 {
     return mPriv->errorMessage;
-}
-
-
-void PendingOperation::parentDestroyed(QObject* parent)
-{
-    if (!mPriv->finished) {
-        qWarning() << parent
-                << "still pending when its parent was deleted - finished will "
-                   "never be emitted";
-    }
 }
 
 

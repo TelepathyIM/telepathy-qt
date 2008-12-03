@@ -162,7 +162,6 @@ protected:
     void setFinishedWithError(const QDBusError& error);
 
 private Q_SLOTS:
-    void parentDestroyed(QObject* parent);
     void emitFinished();
 
 private:
