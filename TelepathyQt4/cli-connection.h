@@ -55,6 +55,7 @@ class Connection;
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/PendingOperation>
 
@@ -92,7 +93,7 @@ namespace Client
  * individual accessor descriptions for details on which functions can be used
  * in the different states.
  */
-class Connection : public ConnectionInterface, private OptionalInterfaceFactory
+class Connection : public StatefulDBusProxy, private OptionalInterfaceFactory
 {
     Q_OBJECT
     Q_ENUMS(Readiness);
@@ -315,7 +316,7 @@ public:
             return 0;
 
         // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory::interface<Interface>(*this);
+        return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
     }
 
     /**
@@ -437,6 +438,19 @@ Q_SIGNALS:
      * \param newReadiness The new readiness, as defined in #Readiness.
      */
     void readinessChanged(uint newReadiness);
+
+public:
+    /**
+     * Get the ConnectionInterface for this Connection.
+     *
+     * FIXME: This method should be protected since the convenience methods
+     * provided by this class should always be used instead. However, they
+     * haven't all been written yet.
+     *
+     * \return A pointer to the existing ConnectionInterface for this
+     *         Connection
+     */
+    ConnectionInterface* baseInterface() const;
 
 private Q_SLOTS:
     void onStatusChanged(uint, uint);

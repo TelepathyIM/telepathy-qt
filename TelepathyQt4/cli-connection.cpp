@@ -44,6 +44,9 @@ struct Connection::Private
     // Public object
     Connection& parent;
 
+    // Instance of generated interface class
+    ConnectionInterface* baseInterface;
+
     // Optional interface proxies
     ConnectionInterfaceAliasingInterface* aliasing;
     ConnectionInterfacePresenceInterface* presence;
@@ -68,23 +71,31 @@ struct Connection::Private
         aliasing = 0;
         presence = 0;
         properties = 0;
+        baseInterface = 0;
 
         initialIntrospection = false;
         readiness = ReadinessJustCreated;
         status = ConnectionStatusDisconnected;
         statusReason = ConnectionStatusReasonNoneSpecified;
         aliasFlags = 0;
+    }
+
+    void startIntrospection()
+    {
+        Q_ASSERT(baseInterface == 0);
+        baseInterface = new ConnectionInterface(parent.dbusConnection(),
+            parent.busName(), parent.objectPath(), &parent);
 
         debug() << "Connecting to StatusChanged()";
 
-        parent.connect(&parent,
+        parent.connect(baseInterface,
                        SIGNAL(StatusChanged(uint, uint)),
                        SLOT(onStatusChanged(uint, uint)));
 
         debug() << "Calling GetStatus()";
 
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(parent.GetStatus(), &parent);
+            new QDBusPendingCallWatcher(baseInterface->GetStatus(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotStatus(QDBusPendingCallWatcher*)));
@@ -118,7 +129,7 @@ struct Connection::Private
         // gain GetAll-able properties on the connection
         debug() << "Calling GetInterfaces()";
         QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(parent.GetInterfaces(), &parent);
+            new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
@@ -211,18 +222,21 @@ struct Connection::Private
 Connection::Connection(const QString& serviceName,
                        const QString& objectPath,
                        QObject* parent)
-    : ConnectionInterface(serviceName, objectPath, parent),
+    : StatefulDBusProxy(QDBusConnection::sessionBus(), serviceName,
+          objectPath, parent),
       mPriv(new Private(*this))
 {
+    mPriv->startIntrospection();
 }
 
 Connection::Connection(const QDBusConnection& connection,
                        const QString& serviceName,
                        const QString& objectPath,
                        QObject* parent)
-    : ConnectionInterface(connection, serviceName, objectPath, parent),
+    : StatefulDBusProxy(connection, serviceName, objectPath, parent),
       mPriv(new Private(*this))
 {
+    mPriv->startIntrospection();
 }
 
 Connection::~Connection()
@@ -448,6 +462,12 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
+ConnectionInterface* Connection::baseInterface() const
+{
+    Q_ASSERT(mPriv->baseInterface != 0);
+    return mPriv->baseInterface;
+}
+
 PendingChannel* Connection::requestChannel(const QString& channelType, uint handleType, uint handle)
 {
     debug() << "Requesting a Channel with type" << channelType << "and handle" << handle << "of type" << handleType;
@@ -455,7 +475,7 @@ PendingChannel* Connection::requestChannel(const QString& channelType, uint hand
     PendingChannel* channel =
         new PendingChannel(this, channelType, handleType, handle);
     QDBusPendingCallWatcher* watcher =
-        new QDBusPendingCallWatcher(RequestChannel(channelType, handleType, handle, true), channel);
+        new QDBusPendingCallWatcher(mPriv->baseInterface->RequestChannel(channelType, handleType, handle, true), channel);
 
     channel->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
@@ -469,13 +489,13 @@ PendingChannel* Connection::requestChannel(const QString& channelType, uint hand
 // more analogous to tp_connection_call_when_ready() in telepathy-glib
 PendingOperation* Connection::requestConnect()
 {
-    return new PendingVoidMethodCall(this, this->Connect());
+    return new PendingVoidMethodCall(this, baseInterface()->Connect());
 }
 #endif
 
 PendingOperation* Connection::requestDisconnect()
 {
-    return new PendingVoidMethodCall(this, this->Disconnect());
+    return new PendingVoidMethodCall(this, baseInterface()->Disconnect());
 }
 
 }
