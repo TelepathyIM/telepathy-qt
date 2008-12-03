@@ -24,24 +24,22 @@ _gen/%.moc.hpp: %
 noinst_PROGRAMS = $(TESTS)
 
 test_chan_basics_SOURCES = chan-basics.cpp lib.cpp
-test_chan_basics_LDADD = $(ALL_LIBS)
 
 test_conn_basics_SOURCES = conn-basics.cpp lib.cpp
-test_conn_basics_LDADD = $(ALL_LIBS)
 
 test_do_nothing_SOURCES = do-nothing.cpp lib.cpp
-test_do_nothing_LDADD = $(ALL_LIBS)
 
 LIB_CFLAGS = \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(QTTEST_CFLAGS) \
     $(TP_QT4_CFLAGS)
-ALL_LIBS = \
+
+LDADD = \
     $(QTCORE_LIBS) \
     $(QTDBUS_LIBS) \
     $(QTTEST_LIBS) \
-    $(TP_QT4_LIBS)
+    ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \

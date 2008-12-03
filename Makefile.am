@@ -18,7 +18,7 @@ check-local::
 
 doc/html: doxygen-doc
 
-BRANCH = misc
+BRANCH = $(shell sh tools/git-which-branch.sh misc | tr -d '\n' | tr -C "[:alnum:]" _)
 UPLOAD_BRANCH_TO = people.freedesktop.org:public_html/telepathy-qt4
 
 upload-branch-docs: doc/html

@@ -18,7 +18,6 @@ BUILT_SOURCES = \
     _gen/prototype.h.moc
 
 test_prototype_SOURCES = prototype.cpp prototype.h _gen/images.hpp
-test_prototype_LDADD = $(DEP_LIBS)
 
 EXTRA_DIST = images.qrc avatar.png
 
@@ -34,13 +33,13 @@ DEP_CFLAGS = \
     $(TP_QT4_CFLAGS) \
     $(PROTO_CFLAGS)
 
-DEP_LIBS = \
+LDADD = \
     $(QTCORE_LIBS) \
     $(QTDBUS_LIBS) \
     $(QTGUI_LIBS) \
-    $(TP_QT4_LIBS) \
     $(QTTEST_LIBS) \
-    $(PROTO_LIBS)
+    $(top_builddir)/TelepathyQt4/libtelepathy-qt4.la \
+    $(top_builddir)/TelepathyQt4/Prototype/libtpqt4-prototype.la
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \

@@ -2,6 +2,7 @@ EXTRA_DIST = \
     check-coding-style.mk \
     check-misc.sh \
     check-whitespace.sh \
+    git-which-branch.sh \
     lcov.am \
     libtpcodegen.py \
     libqt4codegen.py \
