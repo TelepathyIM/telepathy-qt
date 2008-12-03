@@ -25,6 +25,8 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <QtCore/QTimer>
+
 namespace Telepathy
 {
 namespace Client
@@ -119,6 +121,32 @@ QString StatefulDBusProxy::invalidationReason() const
 QString StatefulDBusProxy::invalidationMessage() const
 {
     return mPriv->invalidationMessage;
+}
+
+void StatefulDBusProxy::invalidate(const QString& reason, const QString& message)
+{
+    // FIXME: Which of these should be warnings instead?
+    Q_ASSERT(isValid());
+    Q_ASSERT(mPriv->invalidationReason.isEmpty());
+    Q_ASSERT(mPriv->invalidationMessage.isEmpty());
+    Q_ASSERT(!reason.isEmpty());
+    // FIXME: can message be empty?
+
+    mPriv->invalidationReason = reason;
+    mPriv->invalidationMessage = message;
+
+    Q_ASSERT(!isValid());
+
+    // Defer emitting the invalidated signal until we next
+    // return to the mainloop.
+    QTimer::singleShot(0, this, SLOT(emitInvalidated()));
+}
+
+void StatefulDBusProxy::emitInvalidated()
+{
+    Q_ASSERT(!isValid());
+    Q_ASSERT(!mPriv->invalidationReason.isEmpty());
+    emit invalidated(this, mPriv->invalidationReason, mPriv->invalidationMessage);
 }
 
 }
