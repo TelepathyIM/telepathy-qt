@@ -461,20 +461,32 @@ PendingChannel* Connection::requestChannel(const QString& channelType, uint hand
     return channel;
 }
 
+#if 0
+// FIXME: this is a 1:1 mapping of the method from TpPrototype, but
+// most likely what we really want as a high-level API is something
+// more analogous to tp_connection_call_when_ready() in telepathy-glib
+PendingOperation* Connection::requestConnect()
+{
+    return new PendingVoidMethodCall(this, this->Connect());
+}
+#endif
+
+PendingOperation* Connection::requestDisconnect()
+{
+    return new PendingVoidMethodCall(this, this->Disconnect());
+}
+
 struct PendingChannel::Private
 {
-    Connection* connection;
     QString channelType;
     uint handleType;
     uint handle;
     QDBusObjectPath objectPath;
-    QDBusError error;
 };
 
 PendingChannel::PendingChannel(Connection* connection, const QString& channelType, uint handleType, uint handle)
-    : QObject(connection), mPriv(new Private)
+    : PendingOperation(connection), mPriv(new Private)
 {
-    mPriv->connection = connection;
     mPriv->channelType = channelType;
     mPriv->handleType = handleType;
     mPriv->handle = handle;
@@ -487,7 +499,7 @@ PendingChannel::~PendingChannel()
 
 Connection* PendingChannel::connection() const
 {
-    return mPriv->connection;
+    return qobject_cast<Connection*>(parent());
 }
 
 const QString& PendingChannel::channelType() const
@@ -505,31 +517,6 @@ uint PendingChannel::handle() const
     return mPriv->handle;
 }
 
-bool PendingChannel::isFinished() const
-{
-    return !mPriv->objectPath.path().isEmpty() || !mPriv->error.message().isEmpty();
-}
-
-bool PendingChannel::isError() const
-{
-    return !mPriv->error.message().isEmpty();
-}
-
-const QDBusError& PendingChannel::error() const
-{
-    if (isValid())
-        warning() << "PendingChannel::error() called when valid";
-    else if (!isFinished())
-        warning() << "PendingChannel::error() called before finished";
-
-    return mPriv->error;
-}
-
-bool PendingChannel::isValid() const
-{
-    return isFinished() && !isError();
-}
-
 Channel* PendingChannel::channel(QObject* parent) const
 {
     if (!isFinished()) {
@@ -541,7 +528,7 @@ Channel* PendingChannel::channel(QObject* parent) const
     }
 
     Channel* channel =
-        new Channel(mPriv->connection,
+        new Channel(connection(),
                     mPriv->objectPath.path(),
                     parent);
     return channel;
@@ -556,13 +543,11 @@ void PendingChannel::onCallFinished(QDBusPendingCallWatcher* watcher)
     if (!reply.isError()) {
         debug() << " Success: object path" << reply.value().path();
         mPriv->objectPath = reply.value();
+        setFinished();
     } else {
         debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
-        mPriv->error = reply.error();
+        setFinishedWithError(reply.error());
     }
-
-    debug() << " Emitting finished()";
-    emit finished(this);
 
     watcher->deleteLater();
 }

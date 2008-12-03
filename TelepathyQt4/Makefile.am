@@ -45,6 +45,7 @@ libtelepathy_qt4_la_SOURCES = \
     cli-media-session-handler.cpp \
     cli-media-stream-handler.cpp \
     cli-optional-interface-factory.cpp \
+    cli-pending-operation.cpp \
     cli-properties.cpp \
     debug.cpp \
     debug-internal.hpp \
@@ -73,7 +74,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/types-body.hpp \
     cli-channel.moc.hpp \
     cli-connection.moc.hpp \
-    cli-dbus-proxy.moc.hpp
+    cli-dbus-proxy.moc.hpp \
+    cli-pending-operation.moc.hpp
 
 tpqt4include_HEADERS = \
     Constants \
@@ -89,6 +91,7 @@ tpqt4include_HEADERS = \
     cli-media-session-handler.h \
     cli-media-stream-handler.h \
     cli-optional-interface-factory.h \
+    cli-pending-operation.h \
     cli-properties.h \
     constants.h \
     debug.h \
@@ -104,6 +107,7 @@ tpqt4clientinclude_HEADERS = \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
     Client/OptionalInterfaceFactory \
+    Client/PendingOperation \
     Client/Properties
 
 nodist_geninclude_HEADERS = \

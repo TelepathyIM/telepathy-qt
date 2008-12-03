@@ -26,6 +26,7 @@ protected Q_SLOTS:
     void expectNotYetConnected(uint);
     void expectReady(uint);
     void expectSuccessfulCall(QDBusPendingCallWatcher*);
+    void expectSuccessfulCall(Telepathy::Client::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -141,13 +142,24 @@ void TestConnBasics::testInitialIntrospection()
 }
 
 
+void TestConnBasics::expectSuccessfulCall(PendingOperation* op)
+{
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(1);
+        return;
+    }
+
+    mLoop->exit(0);
+}
+
+
 void TestConnBasics::expectSuccessfulCall(QDBusPendingCallWatcher* watcher)
 {
-    QDBusPendingReply<> reply = *watcher;
-
-    if (reply.isError()) {
-        qWarning().nospace() << reply.error().name()
-            << ": " << reply.error().message();
+    if (watcher->isError()) {
+        qWarning().nospace() << watcher->error().name()
+            << ": " << watcher->error().message();
         mLoop->exit(1);
         return;
     }
@@ -235,13 +247,11 @@ void TestConnBasics::testConnect()
     QVERIFY(interfaces.contains(QLatin1String(
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)));
 
-    // FIXME: should have convenience API
-    watcher = new QDBusPendingCallWatcher(
-            mConn->Disconnect());
-    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QVERIFY(connect(mConn->requestDisconnect(),
+          SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          this,
+          SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
 
     QCOMPARE(mConn->readiness(), Connection::ReadinessDead);
     QCOMPARE(static_cast<uint>(mConn->status()),
