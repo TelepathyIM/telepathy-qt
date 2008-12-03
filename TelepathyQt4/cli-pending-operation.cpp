@@ -53,8 +53,6 @@ PendingOperation::PendingOperation(QObject* parent)
   : QObject(parent),
     mPriv(new Private())
 {
-    connect(parent, SIGNAL(destroyed(QObject*)),
-        this, SLOT(parentDestroyed(QObject*)));
 }
 
 
