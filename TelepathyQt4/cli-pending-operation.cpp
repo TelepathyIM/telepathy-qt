@@ -21,6 +21,8 @@
 
 #include "cli-pending-operation.h"
 
+#include <QTimer>
+
 #include <QDBusPendingCall>
 #include <QDBusPendingCallWatcher>
 
@@ -47,12 +49,12 @@ struct PendingOperation::Private
 };
 
 
-PendingOperation::PendingOperation(DBusProxy* proxy)
-  : QObject(proxy),
+PendingOperation::PendingOperation(QObject* parent)
+  : QObject(parent),
     mPriv(new Private())
 {
-    connect(this, SIGNAL(destroyed(QObject*)),
-        this, SLOT(selfDestroyed(QObject*)));
+    connect(parent, SIGNAL(destroyed(QObject*)),
+        this, SLOT(parentDestroyed(QObject*)));
 }
 
 
@@ -62,36 +64,59 @@ PendingOperation::~PendingOperation()
 }
 
 
+void PendingOperation::emitFinished()
+{
+    Q_ASSERT(mPriv->finished);
+    emit finished(this);
+    deleteLater();
+}
+
+
 void PendingOperation::setFinished()
 {
+    if (mPriv->finished) {
+        qWarning() << this << "already finished";
+        return;
+    }
+
     mPriv->finished = true;
+    Q_ASSERT(isValid());
+    QTimer::singleShot(0, this, SLOT(emitFinished()));
 }
 
 
-void PendingOperation::setError(const QString& name, const QString& message)
+void PendingOperation::setFinishedWithError(const QString& name,
+        const QString& message)
 {
-    Q_ASSERT(!name.isEmpty());
-    mPriv->errorName = name;
+    if (mPriv->finished) {
+        qWarning() << this << "already finished";
+        return;
+    }
+
+    if (name.isEmpty()) {
+        qWarning() << this << "should be given a non-empty error name";
+        mPriv->errorName = "org.freedesktop.Telepathy.Qt4.ErrorHandlingError";
+    }
+    else {
+        mPriv->errorName = name;
+    }
+
     mPriv->errorMessage = message;
+    mPriv->finished = true;
+    Q_ASSERT(isError());
+    QTimer::singleShot(0, this, SLOT(emitFinished()));
 }
 
 
-void PendingOperation::setError(const QDBusError& error)
+void PendingOperation::setFinishedWithError(const QDBusError& error)
 {
-    setError(error.name(), error.message());
-}
-
-
-DBusProxy* PendingOperation::proxy() const
-{
-    return QObject::parent();
+    setFinishedWithError(error.name(), error.message());
 }
 
 
 bool PendingOperation::isValid() const
 {
-    Q_ASSERT(mPriv->finished);
-    return (mPriv->errorName.isEmpty());
+    return (mPriv->finished && mPriv->errorName.isEmpty());
 }
 
 
@@ -103,33 +128,33 @@ bool PendingOperation::isFinished() const
 
 bool PendingOperation::isError() const
 {
-    Q_ASSERT(mPriv->finished);
-    return (!mPriv->errorName.isEmpty());
+    return (mPriv->finished && !mPriv->errorName.isEmpty());
 }
 
 
 QString PendingOperation::errorName() const
 {
-    Q_ASSERT(mPriv->finished);
     return mPriv->errorName;
 }
 
 
 QString PendingOperation::errorMessage() const
 {
-    Q_ASSERT(mPriv->finished);
     return mPriv->errorMessage;
 }
 
 
-void PendingOperation::selfDestroyed(QObject* self)
+void PendingOperation::parentDestroyed(QObject* parent)
 {
-    // FIXME: signal finished with a synthetic error here?
-    // need to work out exactly what the life-cycle is first
+    if (!mPriv->finished) {
+        qWarning() << parent
+                << "still pending when its parent was deleted - finished will "
+                   "never be emitted";
+    }
 }
 
 
-PendingVoidMethodCall::PendingVoidMethodCall(DBusProxy* proxy,
+PendingVoidMethodCall::PendingVoidMethodCall(QObject* proxy,
     QDBusPendingCall call)
   : PendingOperation(proxy),
     mPriv(0)
@@ -143,20 +168,14 @@ PendingVoidMethodCall::PendingVoidMethodCall(DBusProxy* proxy,
 
 void PendingVoidMethodCall::watcherFinished(QDBusPendingCallWatcher* watcher)
 {
-    setFinished();
-
     if (watcher->isError())
     {
-        setError(watcher->error());
-        Q_ASSERT(isError());
+        setFinishedWithError(watcher->error());
     }
     else
     {
-        Q_ASSERT(isValid());
+        setFinished();
     }
-
-    emit finished(this);
-    deleteLater();
 }
 
 

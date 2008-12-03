@@ -499,7 +499,7 @@ PendingChannel::~PendingChannel()
 
 Connection* PendingChannel::connection() const
 {
-    return qobject_cast<Connection*>(proxy());
+    return qobject_cast<Connection*>(parent());
 }
 
 const QString& PendingChannel::channelType() const
@@ -539,14 +539,14 @@ void PendingChannel::onCallFinished(QDBusPendingCallWatcher* watcher)
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
 
     debug() << "Received reply to RequestChannel";
-    setFinished();
 
     if (!reply.isError()) {
         debug() << " Success: object path" << reply.value().path();
         mPriv->objectPath = reply.value();
+        setFinished();
     } else {
         debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
-        setError(reply.error());
+        setFinishedWithError(reply.error());
     }
 
     debug() << " Emitting finished()";

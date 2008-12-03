@@ -33,9 +33,6 @@ namespace Telepathy
 namespace Client
 {
 
-// TODO: remove this when we have the DBusProxy class
-typedef QObject DBusProxy;
-
 /**
  * Abstract base class for pending asynchronous operations.
  *
@@ -65,14 +62,6 @@ class PendingOperation : public QObject
 
 public:
     virtual ~PendingOperation();
-
-    /**
-     * Returns the object through which the pending operation was requested
-     * (a %Connection, %Channel etc.)
-     *
-     * \return A pointer to a D-Bus proxy object
-     */
-    DBusProxy* proxy() const;
 
     /**
      * Returns whether or not the request has finished processing. #finished()
@@ -142,13 +131,39 @@ Q_SIGNALS:
     void finished(Telepathy::Client::PendingOperation* operation);
 
 protected:
-    PendingOperation(DBusProxy* proxy);
+    /**
+     * Protected constructor. Only subclasses of this class may be constructed
+     *
+     * \param parent The object on which this pending operation takes place
+     */
+    PendingOperation(QObject* parent);
+
+    /**
+     * Record that this pending operation has finished successfully, and
+     * emit the #finished() signal next time the event loop runs.
+     */
     void setFinished();
-    void setError(const QString& name, const QString& message);
-    void setError(const QDBusError& error);
+
+    /**
+     * Record that this pending operation has finished with an error, and
+     * emit the #finished() signal next time the event loop runs.
+     *
+     * \param name A D-Bus error name, which must be non-empty
+     * \param message A debugging message
+     */
+    void setFinishedWithError(const QString& name, const QString& message);
+
+    /**
+     * Record that this pending operation has finished with an error, and
+     * emit the #finished() signal next time the event loop runs.
+     *
+     * \param error A QtDBus error
+     */
+    void setFinishedWithError(const QDBusError& error);
 
 private Q_SLOTS:
-    void selfDestroyed(QObject* self);
+    void parentDestroyed(QObject* parent);
+    void emitFinished();
 
 private:
     struct Private;
@@ -156,12 +171,28 @@ private:
 };
 
 
+/**
+ * Generic subclass of %PendingOperation representing a pending D-Bus method
+ * call that does not return anything (or returns a result that is not
+ * interesting).
+ *
+ * Objects of this class indicate the success or failure of the method call,
+ * but if the method call succeeds, no additional information is available.
+ */
 class PendingVoidMethodCall : public PendingOperation
 {
     Q_OBJECT
 
 public:
-    PendingVoidMethodCall(DBusProxy* proxy, QDBusPendingCall call);
+    /**
+     * Constructor.
+     *
+     * \param parent The object on which this pending operation takes place
+     * \param call A pending call as returned by the auto-generated low level
+     *             Telepathy API; if the method returns anything, the return
+     *             value(s) will be ignored
+     */
+    PendingVoidMethodCall(QObject* parent, QDBusPendingCall call);
 
 private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);
