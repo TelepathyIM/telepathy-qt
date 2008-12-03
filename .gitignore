@@ -21,7 +21,7 @@
 /config.*
 /configure
 /depcomp
-/doc/
+/doc/*
 /doxygen.cfg
 /install-sh
 /lcov.info
