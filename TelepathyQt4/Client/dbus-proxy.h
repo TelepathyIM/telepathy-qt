@@ -86,48 +86,6 @@ public:
      */
     QString objectPath() const;
 
-    /**
-     * If this object is usable (has not emitted #invalidated()), returns
-     * <code>true</code>. Otherwise returns <code>false</code>.
-     *
-     * \return <code>true</code> if this object is still fully usable
-     */
-    bool isValid() const;
-
-    /**
-     * If this object is no longer usable (has emitted #invalidated()),
-     * returns the error name indicating the reason it became invalid in a
-     * machine-readable way. Otherwise, returns a null QString.
-     *
-     * \return A D-Bus error name, or QString() if this object is still valid
-     */
-    QString invalidationReason() const;
-
-    /**
-     * If this object is no longer usable (has emitted #invalidated()),
-     * returns a debugging message indicating the reason it became invalid.
-     * Otherwise, returns a null QString.
-     *
-     * \return A debugging message, or QString() if this object is still valid
-     */
-    QString invalidationMessage() const;
-
-Q_SIGNALS:
-    /**
-     * Emitted when this object is no longer usable.
-     *
-     * After this signal is emitted, any D-Bus method calls on the object
-     * will fail, but it may be possible to retrieve information that has
-     * already been retrieved and cached.
-     *
-     * \param proxy This proxy
-     * \param errorName A D-Bus error name (a string in a subset
-     *                  of ASCII, prefixed with a reversed domain name)
-     * \param errorMessage A debugging message associated with the error
-     */
-    void invalidated(DBusProxy* proxy, QString errorName,
-            QString errorMessage);
-
 private:
     struct Private;
     friend struct Private;
@@ -180,6 +138,57 @@ public:
     StatefulDBusProxy(const QDBusConnection& dbusConnection,
         const QString& busName, const QString& objectPath,
         QObject* parent = 0);
+
+    /**
+     * If this object is usable (has not emitted #invalidated()), returns
+     * <code>true</code>. Otherwise returns <code>false</code>.
+     *
+     * \return <code>true</code> if this object is still fully usable
+     */
+    bool isValid() const;
+
+    /**
+     * If this object is no longer usable (has emitted #invalidated()),
+     * returns the error name indicating the reason it became invalid in a
+     * machine-readable way. Otherwise, returns a null QString.
+     *
+     * \return A D-Bus error name, or QString() if this object is still valid
+     */
+    QString invalidationReason() const;
+
+    /**
+     * If this object is no longer usable (has emitted #invalidated()),
+     * returns a debugging message indicating the reason it became invalid.
+     * Otherwise, returns a null QString.
+     *
+     * \return A debugging message, or QString() if this object is still valid
+     */
+    QString invalidationMessage() const;
+
+protected:
+    /**
+     * Called by subclasses when the DBusProxy should become invalid.
+     *
+     * This method takes care of setting the invalidationReason,
+     * invalidationMethod, and emitting the invalidated signal.
+     */
+    void invalidate(const QString& reason, const QString& message);
+
+Q_SIGNALS:
+    /**
+     * Emitted when this object is no longer usable.
+     *
+     * After this signal is emitted, any D-Bus method calls on the object
+     * will fail, but it may be possible to retrieve information that has
+     * already been retrieved and cached.
+     *
+     * \param proxy This proxy
+     * \param errorName A D-Bus error name (a string in a subset
+     *                  of ASCII, prefixed with a reversed domain name)
+     * \param errorMessage A debugging message associated with the error
+     */
+    void invalidated(DBusProxy* proxy, QString errorName,
+            QString errorMessage);
 
 private:
     struct Private;
