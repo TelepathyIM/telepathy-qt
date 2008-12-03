@@ -75,7 +75,12 @@ void PendingOperation::emitFinished()
 void PendingOperation::setFinished()
 {
     if (mPriv->finished) {
-        qWarning() << this << "already finished";
+        if (mPriv->errorName.isEmpty())
+            qWarning() << this << "trying to finish with success, but already"
+              " failed with" << errorName() << ":" << errorMessage();
+        else
+            qWarning() << this << "trying to finish with success, but already"
+              " succeeded";
         return;
     }
 
@@ -89,7 +94,13 @@ void PendingOperation::setFinishedWithError(const QString& name,
         const QString& message)
 {
     if (mPriv->finished) {
-        qWarning() << this << "already finished";
+        if (mPriv->errorName.isEmpty())
+            qWarning() << this << "trying to fail with" << name <<
+              "but already failed with" << errorName() << ":" <<
+              errorMessage();
+        else
+            qWarning() << this << "trying to fail with" << name <<
+              "but already succeeded";
         return;
     }
 
