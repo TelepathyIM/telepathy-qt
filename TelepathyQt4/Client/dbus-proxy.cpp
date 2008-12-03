@@ -83,10 +83,42 @@ StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection& dbusConnection,
 {
 }
 
+struct StatefulDBusProxy::Private
+{
+    // Public object
+    StatefulDBusProxy& parent;
+
+    QString invalidationReason;
+    QString invalidationMessage;
+
+    Private(StatefulDBusProxy& p)
+        : parent(p),
+          invalidationReason(QString()),
+          invalidationMessage(QString())
+    {
+        debug() << "Creating new StatefulDBusProxy";
+    }
+};
+
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection& dbusConnection,
         const QString& busName, const QString& objectPath, QObject* parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent)
 {
+}
+
+bool StatefulDBusProxy::isValid() const
+{
+    return mPriv->invalidationReason.isEmpty();
+}
+
+QString StatefulDBusProxy::invalidationReason() const
+{
+    return mPriv->invalidationReason;
+}
+
+QString StatefulDBusProxy::invalidationMessage() const
+{
+    return mPriv->invalidationMessage;
 }
 
 }
