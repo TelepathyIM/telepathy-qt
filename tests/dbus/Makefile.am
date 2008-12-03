@@ -13,7 +13,12 @@ _gen/%.moc.hpp: %.cpp
 noinst_PROGRAMS = $(TESTS)
 
 test_do_nothing_SOURCES = do-nothing.cpp
-test_do_nothing_LDADD = $(TP_QT4_LIBS) $(QTTEST_LIBS)
+
+LDADD = \
+    $(QTCORE_LIBS) \
+    $(QTDBUS_LIBS) \
+    $(QTTEST_LIBS) \
+    ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
 LIB_CFLAGS = \
     $(QTCORE_CFLAGS) \

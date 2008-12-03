@@ -29,8 +29,12 @@ EXTRA_DIST = \
 
 noinst_LTLIBRARIES = libexample-extensions.la
 
+# In an external project you'd use $(TP_QT4_LIBS) (obtained from pkg-config
+# via autoconf) instead of the path to libtelepathy-qt4.la
 libexample_extensions_la_LIBADD = \
-    $(TP_QT4_LIBS)
+    $(QTCORE_LIBS) \
+    $(QTDBUS_LIBS) \
+    $(top_builddir)/TelepathyQt4/libtelepathy-qt4.la
 
 libexample_extensions_la_SOURCES = \
     cli-connection.cpp \
