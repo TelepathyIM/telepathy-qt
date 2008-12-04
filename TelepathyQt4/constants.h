@@ -68,6 +68,32 @@
 #define TELEPATHY_CONNECTION_OBJECT_PATH_BASE "/org/freedesktop/Telepathy/Connection/"
 
 /**
+ * The well-known bus name of the Account Manager.
+ *
+ * \see Telepathy::Client::AccountManager
+ */
+#define TELEPATHY_ACCOUNT_MANAGER_BUS_NAME \
+    "org.freedesktop.Telepathy.AccountManager"
+
+/**
+ * The object path of the Account Manager object.
+ *
+ * \see Telepathy::Client::AccountManager
+ */
+#define TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH \
+    "/org/freedesktop/Telepathy/AccountManager"
+
+/**
+ * The prefix for an Account's object path, to which the CM's name (e.g.
+ * "gabble"), the protocol (e.g. "jabber") and an element
+ * identifying the particular account should be appended.
+ *
+ * \see Telepathy::Client::Account
+ */
+#define TELEPATHY_ACCOUNT_OBJECT_PATH_BASE \
+    "/org/freedesktop/Telepathy/Account"
+
+/**
  * @}
  */
 
