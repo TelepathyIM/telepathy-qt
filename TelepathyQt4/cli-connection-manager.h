@@ -42,6 +42,7 @@
 
 #include <TelepathyQt4/_gen/cli-connection-manager.h>
 
+#include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
@@ -68,12 +69,35 @@ class ConnectionManager : public StatelessDBusProxy,
 {
     Q_OBJECT
 
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+
 public:
     ConnectionManager(const QString& name, QObject* parent = 0);
     ConnectionManager(const QDBusConnection& bus,
             const QString& name, QObject* parent = 0);
 
     virtual ~ConnectionManager();
+
+    QStringList interfaces() const;
+
+    QStringList supportedProtocols() const;
+
+    // TODO: add some sort of access to protocols' parameters etc.
+
+    /**
+     * Convenience function for getting a Properties interface proxy. The
+     * Properties interface is not necessarily reported by the services, so a
+     * <code>check</code> parameter is not provided, and the interface is
+     * always assumed to be present.
+     */
+    inline DBus::PropertiesInterface* propertiesInterface() const
+    {
+        return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
+                *baseInterface());
+    }
 
 protected:
     /**
@@ -87,10 +111,11 @@ protected:
      */
     ConnectionManagerInterface* baseInterface() const;
 
-private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
+private Q_SLOTS:
+    void onGetParametersReturn(QDBusPendingCallWatcher*);
+    void onListProtocolsReturn(QDBusPendingCallWatcher*);
+    void onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*);
+    void onStartIntrospection();
 };
 
 
