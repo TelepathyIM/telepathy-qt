@@ -19,5 +19,79 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "cli-connection-manager.h"
+
+#include <TelepathyQt4/Constants>
+
+#include "TelepathyQt4/debug-internal.hpp"
+
+namespace Telepathy
+{
+namespace Client
+{
+
+
+struct ConnectionManager::Private
+{
+    ConnectionManager& parent;
+
+    ConnectionManagerInterface* baseInterface;
+
+    static inline QString makeBusName(const QString& name)
+    {
+        return QString::fromAscii(
+                TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE).append(name);
+    }
+
+    static inline QString makeObjectPath(const QString& name)
+    {
+        return QString::fromAscii(
+                TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
+    }
+
+    inline Private(ConnectionManager& parent)
+        : parent(parent),
+          baseInterface(new ConnectionManagerInterface(parent.dbusConnection(),
+                      parent.busName(), parent.objectPath(), &parent))
+    {
+        debug() << "Creating new ConnectionManager:" << parent.busName();
+    }
+};
+
+
+ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
+    : StatelessDBusProxy(QDBusConnection::sessionBus(),
+            Private::makeBusName(name), Private::makeObjectPath(name),
+            parent),
+      mPriv(new Private(*this))
+{
+}
+
+
+ConnectionManager::ConnectionManager(const QDBusConnection& bus,
+        const QString& name, QObject* parent)
+    : StatelessDBusProxy(bus, Private::makeBusName(name),
+            Private::makeObjectPath(name), parent),
+      mPriv(new Private(*this))
+{
+}
+
+
+ConnectionManager::~ConnectionManager()
+{
+    delete mPriv;
+}
+
+
+ConnectionManagerInterface* ConnectionManager::baseInterface() const
+{
+    return mPriv->baseInterface;
+}
+
+
+} // Telepathy::Client
+} // Telepathy
+
 #include <TelepathyQt4/_gen/cli-connection-manager-body.hpp>
 #include <TelepathyQt4/_gen/cli-connection-manager.moc.hpp>
+#include <TelepathyQt4/cli-connection-manager.moc.hpp>

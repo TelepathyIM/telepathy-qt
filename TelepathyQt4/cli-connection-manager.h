@@ -42,4 +42,59 @@
 
 #include <TelepathyQt4/_gen/cli-connection-manager.h>
 
+#include <TelepathyQt4/Client/DBusProxy>
+#include <TelepathyQt4/Client/OptionalInterfaceFactory>
+
+namespace Telepathy
+{
+namespace Client
+{
+
+
+/**
+ * \class ConnectionManager
+ * \ingroup clientcm
+ * \headerfile TelepathyQt4/cli-connection-manager.h <TelepathyQt4/Client/ConnectionManager>
+ *
+ * Object representing a Telepathy connection manager. Connection managers
+ * allow connections to be made on one or more protocols.
+ *
+ * Most client applications should use this functionality via the
+ * %AccountManager, to allow connections to be shared between client
+ * applications.
+ */
+class ConnectionManager : public StatelessDBusProxy,
+        private OptionalInterfaceFactory
+{
+    Q_OBJECT
+
+public:
+    ConnectionManager(const QString& name, QObject* parent = 0);
+    ConnectionManager(const QDBusConnection& bus,
+            const QString& name, QObject* parent = 0);
+
+    virtual ~ConnectionManager();
+
+protected:
+    /**
+     * Get the ConnectionManagerInterface for this ConnectionManager. This
+     * method is protected since the convenience methods provided by this
+     * class should generally be used instead of calling D-Bus methods
+     * directly.
+     *
+     * \return A pointer to the existing ConnectionManagerInterface for this
+     *         ConnectionManager
+     */
+    ConnectionManagerInterface* baseInterface() const;
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+
+}
+}
+
 #endif
