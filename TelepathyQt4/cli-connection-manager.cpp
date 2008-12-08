@@ -60,15 +60,10 @@ struct ConnectionManager::Private
                 TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
     }
 
-    void continueIntrospection()
+    ~Private()
     {
-        if (!ready) {
-            if (introspectQueue.isEmpty()) {
-                // TODO: signal ready
-                debug() << "ConnectionManager is ready";
-            } else {
-                (this->*introspectQueue.dequeue())();
-            }
+        Q_FOREACH (ProtocolInfo* protocol, protocols) {
+            delete protocol;
         }
     }
 
@@ -115,7 +110,7 @@ struct ConnectionManager::Private
 
         introspectQueue.enqueue(&Private::callGetAll);
         introspectQueue.enqueue(&Private::callListProtocols);
-        QTimer::singleShot(0, &parent, SLOT(onStartIntrospection()));
+        QTimer::singleShot(0, &parent, SLOT(continueIntrospection()));
     }
 };
 
@@ -156,6 +151,12 @@ QStringList ConnectionManager::supportedProtocols() const
 }
 
 
+bool ConnectionManager::isReady() const
+{
+    return mPriv->ready;
+}
+
+
 ConnectionManagerInterface* ConnectionManager::baseInterface() const
 {
     return mPriv->baseInterface;
@@ -182,7 +183,7 @@ void ConnectionManager::onGetAllConnectionManagerReturn(
     if (props.contains("Interfaces")) {
         mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
     }
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 
@@ -206,7 +207,7 @@ void ConnectionManager::onListProtocolsReturn(
         mPriv->protocolQueue.enqueue(protocol);
         mPriv->introspectQueue.enqueue(&Private::callGetParameters);
     }
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 
@@ -229,12 +230,20 @@ void ConnectionManager::onGetParametersReturn(
         debug() << "Parameter" << spec.name << "has flags" << spec.flags
             << "and signature" << spec.signature;
     }
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
-void ConnectionManager::onStartIntrospection()
+void ConnectionManager::continueIntrospection()
 {
-    mPriv->continueIntrospection();
+    if (!mPriv->ready) {
+        if (mPriv->introspectQueue.isEmpty()) {
+            debug() << "ConnectionManager is ready";
+            mPriv->ready = true;
+            Q_EMIT ready(this);
+        } else {
+            (mPriv->*(mPriv->introspectQueue.dequeue()))();
+        }
+    }
 }
 
 } // Telepathy::Client

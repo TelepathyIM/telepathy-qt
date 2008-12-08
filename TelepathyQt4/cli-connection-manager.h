@@ -69,11 +69,6 @@ class ConnectionManager : public StatelessDBusProxy,
 {
     Q_OBJECT
 
-private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-
 public:
     ConnectionManager(const QString& name, QObject* parent = 0);
     ConnectionManager(const QDBusConnection& bus,
@@ -99,6 +94,11 @@ public:
                 *baseInterface());
     }
 
+    bool isReady() const;
+
+Q_SIGNALS:
+    void ready(ConnectionManager*);
+
 protected:
     /**
      * Get the ConnectionManagerInterface for this ConnectionManager. This
@@ -115,7 +115,12 @@ private Q_SLOTS:
     void onGetParametersReturn(QDBusPendingCallWatcher*);
     void onListProtocolsReturn(QDBusPendingCallWatcher*);
     void onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*);
-    void onStartIntrospection();
+    void continueIntrospection();
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
 };
 
 
