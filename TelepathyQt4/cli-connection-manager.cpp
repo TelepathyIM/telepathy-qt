@@ -37,16 +37,125 @@ namespace Client
 {
 
 
+struct ProtocolInfo::Private
+{
+    QString cmName;
+    QString protocolName;
+
+    QMap<QString,QDBusSignature> parameters;
+    QMap<QString,QVariant> defaults;
+    QSet<QString> requiredParameters;
+    QSet<QString> registerParameters;
+    QSet<QString> propertyParameters;
+    QSet<QString> secretParameters;
+
+    Private(const QString& cmName, const QString& protocolName)
+        : cmName(cmName), protocolName(protocolName)
+    {
+    }
+};
+
+
+ProtocolInfo::ProtocolInfo(const QString& cmName, const QString& protocol)
+    : mPriv(new Private(cmName, protocol))
+{
+}
+
+
+ProtocolInfo::~ProtocolInfo()
+{
+}
+
+
+QString ProtocolInfo::cmName() const
+{
+    return mPriv->cmName;
+}
+
+
+QString ProtocolInfo::protocolName() const
+{
+    return mPriv->protocolName;
+}
+
+
+QStringList ProtocolInfo::parameters() const
+{
+    return mPriv->parameters.keys();
+}
+
+
+bool ProtocolInfo::hasParameter(const QString& param) const
+{
+    return mPriv->parameters.contains(param);
+}
+
+
+QDBusSignature ProtocolInfo::parameterDBusSignature(const QString& param) const
+{
+    return mPriv->parameters.value(param);
+}
+
+
+QVariant::Type ProtocolInfo::parameterType(const QString& param) const
+{
+    return QVariant::Invalid;
+}
+
+
+bool ProtocolInfo::parameterIsRequired(const QString& param,
+        bool registering) const
+{
+    if (registering)
+        return mPriv->registerParameters.contains(param);
+    else
+        return mPriv->requiredParameters.contains(param);
+}
+
+
+bool ProtocolInfo::parameterIsSecret(const QString& param) const
+{
+    return mPriv->secretParameters.contains(param);
+}
+
+
+bool ProtocolInfo::parameterIsDBusProperty(const QString& param) const
+{
+    return mPriv->propertyParameters.contains(param);
+}
+
+
+bool ProtocolInfo::parameterHasDefault(const QString& param) const
+{
+    return mPriv->defaults.contains(param);
+}
+
+
+QVariant ProtocolInfo::getParameterDefault(const QString& param) const
+{
+    return mPriv->defaults.value(param);
+}
+
+
+bool ProtocolInfo::canRegister() const
+{
+    return hasParameter(QLatin1String("register"));
+}
+
+
 struct ConnectionManager::Private
 {
     ConnectionManager& parent;
+    QString cmName;
     ConnectionManagerInterface* baseInterface;
     bool ready;
     QQueue<void (Private::*)()> introspectQueue;
+    QQueue<QString> getParametersQueue;
     QQueue<QString> protocolQueue;
 
     QStringList interfaces;
-    QStringList protocols;
+
+    QMap<QString,ProtocolInfo*> protocols;
 
     static inline QString makeBusName(const QString& name)
     {
@@ -80,7 +189,8 @@ struct ConnectionManager::Private
 
     void callGetParameters()
     {
-        QString protocol = protocolQueue.dequeue();
+        QString protocol = getParametersQueue.dequeue();
+        protocolQueue.enqueue(protocol);
         debug() << "Calling ConnectionManager::GetParameters(" <<
             protocol << ")";
         QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
@@ -100,8 +210,9 @@ struct ConnectionManager::Private
                 SLOT(onListProtocolsReturn(QDBusPendingCallWatcher*)));
     }
 
-    Private(ConnectionManager& parent)
+    Private(ConnectionManager& parent, QString name)
         : parent(parent),
+          cmName(name),
           baseInterface(new ConnectionManagerInterface(parent.dbusConnection(),
                       parent.busName(), parent.objectPath(), &parent)),
           ready(false)
@@ -119,7 +230,7 @@ ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
             Private::makeBusName(name), Private::makeObjectPath(name),
             parent),
-      mPriv(new Private(*this))
+      mPriv(new Private(*this, name))
 {
 }
 
@@ -128,7 +239,7 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
         const QString& name, QObject* parent)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), parent),
-      mPriv(new Private(*this))
+      mPriv(new Private(*this, name))
 {
 }
 
@@ -136,6 +247,12 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
 ConnectionManager::~ConnectionManager()
 {
     delete mPriv;
+}
+
+
+QString ConnectionManager::cmName() const
+{
+    return mPriv->cmName;
 }
 
 
@@ -147,7 +264,14 @@ QStringList ConnectionManager::interfaces() const
 
 QStringList ConnectionManager::supportedProtocols() const
 {
-    return mPriv->protocols;
+    return mPriv->protocols.keys();
+}
+
+
+const ProtocolInfo* ConnectionManager::protocolInfo(
+        const QString& protocol) const
+{
+    return mPriv->protocols.value(protocol);
 }
 
 
@@ -202,9 +326,11 @@ void ConnectionManager::onListProtocolsReturn(
             reply.error().name() << ": " << reply.error().message();
     }
 
-    mPriv->protocols = protocols;
     Q_FOREACH (const QString& protocol, protocols) {
-        mPriv->protocolQueue.enqueue(protocol);
+        mPriv->protocols.insert(protocol, new ProtocolInfo(mPriv->cmName,
+                    protocol));
+
+        mPriv->getParametersQueue.enqueue(protocol);
         mPriv->introspectQueue.enqueue(&Private::callGetParameters);
     }
     continueIntrospection();
@@ -216,6 +342,8 @@ void ConnectionManager::onGetParametersReturn(
 {
     QDBusPendingReply<ParamSpecList> reply = *watcher;
     ParamSpecList parameters;
+    QString protocol = mPriv->protocolQueue.dequeue();
+    ProtocolInfo* info = mPriv->protocols.value(protocol);
 
     if (!reply.isError()) {
         debug() << "Got reply to ConnectionManager.GetParameters";
@@ -229,6 +357,28 @@ void ConnectionManager::onGetParametersReturn(
     Q_FOREACH (const ParamSpec& spec, parameters) {
         debug() << "Parameter" << spec.name << "has flags" << spec.flags
             << "and signature" << spec.signature;
+        info->mPriv->parameters.insert(spec.name,
+                QDBusSignature(spec.signature));
+
+        if (spec.flags & ConnMgrParamFlagHasDefault)
+            info->mPriv->defaults.insert(spec.name,
+                    spec.defaultValue.variant());
+
+        if (spec.flags & ConnMgrParamFlagRequired)
+            info->mPriv->requiredParameters.insert(spec.name);
+
+        if (spec.flags & ConnMgrParamFlagRegister)
+            info->mPriv->registerParameters.insert(spec.name);
+
+        if ((spec.flags & ConnMgrParamFlagSecret)
+                || spec.name.endsWith("password"))
+            info->mPriv->secretParameters.insert(spec.name);
+
+#if 0
+        // enable when we merge the new telepathy-spec
+        if (spec.flags & ConnMgrParamFlag)
+            info->mPriv->propertyParameters.insert(spec.name);
+#endif
     }
     continueIntrospection();
 }
