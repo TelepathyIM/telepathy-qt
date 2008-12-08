@@ -1,0 +1,11 @@
+[ConnectionManager]
+
+[Protocol normal]
+param-account=s required register
+param-password=s required register secret
+param-register=b
+default-register=true
+
+[Protocol weird]
+param-com.example.Bork.Bork.Bork=u dbus-property
+default-com.example.Bork.Bork.Bork=42
