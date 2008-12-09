@@ -4,6 +4,8 @@
 
 #include <QtTest/QtTest>
 
+#include <TelepathyQt4/Client/PendingOperation>
+
 class PinocchioTest : public QObject
 {
     Q_OBJECT
@@ -37,6 +39,9 @@ protected:
     QEventLoop *mLoop;
 
 protected Q_SLOTS:
+    void expectSuccessfulCall(QDBusPendingCallWatcher*);
+    void expectSuccessfulCall(Telepathy::Client::PendingOperation*);
+
     virtual void initTestCaseImpl();
     virtual void initImpl();
 

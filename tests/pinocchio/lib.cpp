@@ -8,7 +8,8 @@
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Client/DBus>
 
-using namespace Telepathy::Client::DBus;
+using Telepathy::Client::DBus::DBusDaemonInterface;
+using Telepathy::Client::PendingOperation;
 
 PinocchioTest::~PinocchioTest()
 {
@@ -56,6 +57,32 @@ void PinocchioTest::initImpl()
 
 void PinocchioTest::cleanupImpl()
 {
+}
+
+
+void PinocchioTest::expectSuccessfulCall(PendingOperation* op)
+{
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(1);
+        return;
+    }
+
+    mLoop->exit(0);
+}
+
+
+void PinocchioTest::expectSuccessfulCall(QDBusPendingCallWatcher* watcher)
+{
+    if (watcher->isError()) {
+        qWarning().nospace() << watcher->error().name()
+            << ": " << watcher->error().message();
+        mLoop->exit(1);
+        return;
+    }
+
+    mLoop->exit(0);
 }
 
 
