@@ -20,6 +20,7 @@
  */
 
 #include "cli-pending-operation.h"
+#include "cli-simple-pending-operations.h"
 
 #include <QTimer>
 
@@ -27,6 +28,7 @@
 #include <QDBusPendingCallWatcher>
 
 #include "cli-pending-operation.moc.hpp"
+#include "cli-simple-pending-operations.moc.hpp"
 #include "debug-internal.hpp"
 
 namespace Telepathy

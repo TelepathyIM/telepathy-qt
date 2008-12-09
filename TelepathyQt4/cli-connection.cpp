@@ -30,6 +30,8 @@
 #include <QString>
 #include <QtGlobal>
 
+#include <TelepathyQt4/Client/PendingVoidMethodCall>
+
 #include "debug-internal.hpp"
 
 namespace Telepathy

@@ -75,7 +75,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     cli-channel.moc.hpp \
     cli-connection.moc.hpp \
     cli-dbus-proxy.moc.hpp \
-    cli-pending-operation.moc.hpp
+    cli-pending-operation.moc.hpp \
+    cli-simple-pending-operations.moc.hpp
 
 tpqt4include_HEADERS = \
     Constants \
@@ -93,6 +94,7 @@ tpqt4include_HEADERS = \
     cli-optional-interface-factory.h \
     cli-pending-operation.h \
     cli-properties.h \
+    cli-simple-pending-operations.h \
     constants.h \
     debug.h \
     types.h
@@ -107,7 +109,10 @@ tpqt4clientinclude_HEADERS = \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
     Client/OptionalInterfaceFactory \
+    Client/PendingFailure \
     Client/PendingOperation \
+    Client/PendingSuccess \
+    Client/PendingVoidMethodCall \
     Client/Properties
 
 nodist_geninclude_HEADERS = \
