@@ -12,6 +12,11 @@
 
 using namespace Telepathy::Client;
 
+using Telepathy::Client::Connection;
+using Telepathy::Client::ConnectionManagerInterface;
+using Telepathy::Client::DBus::PeerInterface;
+using Telepathy::Client::DBus::PropertiesInterface;
+
 class TestConnBasics : public PinocchioTest
 {
     Q_OBJECT
@@ -66,7 +71,7 @@ void TestConnBasics::initTestCase()
     // Escape to the low-level API to make a Connection; this uses
     // pseudo-blocking calls for simplicity. Do not do this in production code
 
-    mCM = new Telepathy::Client::ConnectionManagerInterface(
+    mCM = new ConnectionManagerInterface(
         pinocchioBusName(), pinocchioObjectPath());
 
     QDBusPendingReply<QString, QDBusObjectPath> reply;
@@ -307,16 +312,16 @@ void TestConnBasics::testInterfaceFactory()
     QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
           this, SLOT(expectNotYetConnected(uint))));
 
-    DBus::PropertiesInterface* props = mConn->propertiesInterface();
+    PropertiesInterface* props = mConn->propertiesInterface();
     QVERIFY(props != NULL);
 
-    DBus::PropertiesInterface* props2 =
-        mConn->optionalInterface<DBus::PropertiesInterface>(Connection::BypassInterfaceCheck);
+    PropertiesInterface* props2 =
+        mConn->optionalInterface<PropertiesInterface>(Connection::BypassInterfaceCheck);
     QVERIFY(props2 == props);
 
-    DBus::PeerInterface* notListed = mConn->optionalInterface<DBus::PeerInterface>();
+    PeerInterface* notListed = mConn->optionalInterface<PeerInterface>();
     QVERIFY(notListed == NULL);
-    notListed = mConn->optionalInterface<DBus::PeerInterface>(Connection::BypassInterfaceCheck);
+    notListed = mConn->optionalInterface<PeerInterface>(Connection::BypassInterfaceCheck);
     QVERIFY(notListed != NULL);
 
     delete mConn;

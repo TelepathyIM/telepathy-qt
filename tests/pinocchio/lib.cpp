@@ -8,8 +8,8 @@
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Client/DBus>
 
-using namespace Telepathy::Client;
-using namespace Telepathy::Client::DBus;
+using Telepathy::Client::DBus::DBusDaemonInterface;
+using Telepathy::Client::PendingOperation;
 
 PinocchioTest::~PinocchioTest()
 {
