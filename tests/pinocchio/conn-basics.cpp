@@ -10,8 +10,6 @@
 
 #include <tests/pinocchio/lib.h>
 
-using namespace Telepathy::Client;
-
 using Telepathy::Client::Connection;
 using Telepathy::Client::ConnectionManagerInterface;
 using Telepathy::Client::DBus::PeerInterface;
