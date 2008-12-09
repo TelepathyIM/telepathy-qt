@@ -14,15 +14,15 @@ noinst_PROGRAMS = \
     $(manual_tests)
 
 BUILT_SOURCES = \
-    _gen/images.hpp \
+    _gen/resources.cpp \
     _gen/prototype.h.moc
 
-test_prototype_SOURCES = prototype.cpp prototype.h _gen/images.hpp
+test_prototype_SOURCES = prototype.cpp prototype.h _gen/resources.cpp
 
 EXTRA_DIST = images.qrc avatar.png
 
-_gen/images.hpp: images.qrc avatar.png
-	( cd @srcdir@ && $(RCC) images.qrc ) > $@.tmp
+_gen/resources.cpp: images.qrc avatar.png
+	( cd @srcdir@ && $(RCC) $< ) > $@.tmp
 	mv -f $@.tmp $@
 
 DEP_CFLAGS = \
@@ -43,7 +43,8 @@ LDADD = \
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
-    $(DEP_CFLAGS)
+    $(DEP_CFLAGS) \
+    -Wno-error=missing-declarations
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \

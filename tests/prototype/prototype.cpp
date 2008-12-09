@@ -27,8 +27,6 @@
 #include <TelepathyQt4/Prototype/PresenceManager.h>
 #include <TelepathyQt4/Prototype/StreamedMediaChannel.h>
 
-#include "_gen/images.hpp"
-
 // #define ENABLE_DEBUG_OUTPUT_
 // #define DO_INTERACTIVE_TESTS_ // Needs user interaction
 
