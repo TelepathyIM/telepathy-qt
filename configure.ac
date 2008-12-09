@@ -175,6 +175,21 @@ if test -z "$PYTHON"; then
   AC_MSG_ERROR([Python is required to compile this package])
 fi
 
+# Check for Python >= 2.5 with dbus, to run the tests
+AC_MSG_CHECKING([for Python >= 2.5 with D-Bus bindings])
+for TEST_PYTHON in python2.5 python; do
+  if $TEST_PYTHON -c "from sys import version_info; raise SystemExit(version_info < (2, 5, 0, 'final', 0))" >/dev/null 2>&1; then
+    if $TEST_PYTHON -c "import dbus.mainloop.glib" >/dev/null 2>&1; then
+      AC_MSG_RESULT([$TEST_PYTHON])
+      break
+    else
+      TEST_PYTHON=false
+    fi
+  fi
+done
+AC_SUBST([TEST_PYTHON])
+AM_CONDITIONAL([HAVE_TEST_PYTHON], test false != "$TEST_PYTHON")
+
 dnl Doxygen
 DX_HTML_FEATURE(ON)
 DX_CHM_FEATURE(OFF)
