@@ -41,23 +41,24 @@
  * interfaces.
  */
 
+namespace Telepathy {
+namespace Client {
+class Connection;
+}
+}
+
 #include <TelepathyQt4/_gen/cli-connection.h>
 
 #include <QDBusPendingCallWatcher>
 #include <QStringList>
-
-namespace Telepathy {
-namespace Client {
-class Connection;
-class PendingChannel;
-}
-}
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/PendingOperation>
+
+#include "cli-pending-channel.h"
 
 namespace Telepathy
 {
@@ -446,78 +447,6 @@ private Q_SLOTS:
     void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
 
 private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-/**
- * \class PendingChannel
- * \ingroup clientconn
- * \headerfile <TelepathyQt4/cli-connection.h> <TelepathyQt4/Client/Connection>
- *
- * Class containing the parameters of and the reply to an asynchronous channel
- * request. Instances of this class cannot be constructed directly; the only way
- * to get one is to use Connection::requestChannel().
- */
-class PendingChannel : public PendingOperation
-{
-    Q_OBJECT
-
-public:
-    /**
-     * Class destructor.
-     */
-    ~PendingChannel();
-
-    /**
-     * Returns the Connection object through which the channel request was made.
-     *
-     * \return Pointer to the Connection.
-     */
-    Connection* connection() const;
-
-    /**
-     * Returns the channel type specified in the channel request.
-     *
-     * \return The D-Bus interface name of the interface specific to the
-     *         requested channel type.
-     */
-    const QString& channelType() const;
-
-    /**
-     * Returns the handle type specified in the channel request.
-     *
-     * \return The handle type, as specified in #HandleType.
-     */
-    uint handleType() const;
-
-    /**
-     * Returns the handle specified in the channel request.
-     *
-     * \return The handle.
-     */
-    uint handle() const;
-
-    /**
-     * Returns a newly constructed Channel high-level proxy object associated
-     * with the remote channel resulting from the channel request. If isValid()
-     * returns <code>false</code>, the request has not (at least yet) completed
-     * successfully, and 0 will be returned.
-     *
-     * \param parent Passed to the Channel constructor.
-     * \return Pointer to the new Channel object.
-     */
-    Channel* channel(QObject* parent = 0) const;
-
-private Q_SLOTS:
-    void onCallFinished(QDBusPendingCallWatcher* watcher);
-
-private:
-    friend class Connection;
-
-    PendingChannel(Connection* connection, const QString& type, uint handleType, uint handle);
-
     struct Private;
     friend struct Private;
     Private *mPriv;
