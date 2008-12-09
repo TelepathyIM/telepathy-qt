@@ -1,0 +1,6 @@
+#ifndef _TelepathyQt4_Client_PendingOperation_HEADER_GUARD_
+#define _TelepathyQt4_Client_PendingOperation_HEADER_GUARD_
+
+#include <TelepathyQt4/cli-pending-operation.h>
+
+#endif
