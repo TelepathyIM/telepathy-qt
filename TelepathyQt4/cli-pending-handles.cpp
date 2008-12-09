@@ -37,12 +37,11 @@ struct PendingHandles::Private
     bool isRequest;
     QStringList namesRequested;
     UIntList handlesToReference;
-    QDBusError error;
     ReferencedHandles handles;
 };
 
 PendingHandles::PendingHandles(Connection* connection, uint handleType, const QStringList& names)
-    : QObject(connection), mPriv(new Private)
+    : PendingOperation(connection), mPriv(new Private)
 {
     mPriv->connection = connection;
     mPriv->handleType = handleType;
@@ -51,15 +50,17 @@ PendingHandles::PendingHandles(Connection* connection, uint handleType, const QS
 }
 
 PendingHandles::PendingHandles(Connection* connection, uint handleType, const UIntList& handles, bool allHeld)
-    : QObject(connection), mPriv(new Private)
+    : PendingOperation(connection), mPriv(new Private)
 {
     mPriv->connection = connection;
     mPriv->handleType = handleType;
     mPriv->isRequest = false;
     mPriv->handlesToReference = handles;
 
-    if (allHeld)
+    if (allHeld) {
         mPriv->handles = ReferencedHandles(connection, handleType, handles);
+        setFinished();
+    }
 }
 
 PendingHandles::~PendingHandles()
@@ -97,31 +98,6 @@ const UIntList& PendingHandles::handlesToReference() const
     return mPriv->handlesToReference;
 }
 
-bool PendingHandles::isFinished() const
-{
-    return mPriv->handles.connection() == connection() || !mPriv->error.message().isEmpty();
-}
-
-bool PendingHandles::isError() const
-{
-    return !mPriv->error.message().isEmpty();
-}
-
-const QDBusError& PendingHandles::error() const
-{
-    if (isValid())
-        warning() << "PendingHandles::error() called when valid";
-    else if (!isFinished())
-        warning() << "PendingHandles::error() called before finished";
-
-    return mPriv->error;
-}
-
-bool PendingHandles::isValid() const
-{
-    return isFinished() && !isError();
-}
-
 ReferencedHandles PendingHandles::handles() const
 {
     return mPriv->handles;
@@ -137,9 +113,10 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
 
         if (reply.isError()) {
             debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
-            mPriv->error = reply.error();
+            setFinishedWithError(reply.error());
         } else {
             mPriv->handles = ReferencedHandles(connection(), handleType(), reply.value());
+            setFinished();
         }
     } else {
         QDBusPendingReply<void> reply;
@@ -148,14 +125,12 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
 
         if (reply.isError()) {
             debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
-            mPriv->error = reply.error();
+            setFinishedWithError(reply.error());
         } else {
             mPriv->handles = ReferencedHandles(connection(), handleType(), handlesToReference());
+            setFinished();
         }
     }
-
-    debug() << " Emitting finished()";
-    emit finished(this);
 
     watcher->deleteLater();
 }
