@@ -44,7 +44,6 @@
 namespace Telepathy {
 namespace Client {
 class Connection;
-class PendingHandles;
 }
 }
 
@@ -61,6 +60,7 @@ class PendingHandles;
 #include <TelepathyQt4/Client/ReferencedHandles>
 
 #include "cli-pending-channel.h"
+#include "cli-pending-handles.h"
 
 namespace Telepathy
 {
@@ -506,156 +506,6 @@ private:
     friend class ReferencedHandles;
     void refHandle(uint handle);
     void unrefHandle(uint handle);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-/**
- * \class PendingHandles
- * \ingroup clientconn
- * \headerfile <TelepathyQt4/cli-connection.h> <TelepathyQt4/Client/Connection>
- *
- * Class containing the parameters of and the reply to an asynchronous handle
- * request/hold. Instances of this class cannot be constructed directly; the
- * only ways to get one are to use Connection::requestHandles() or
- * Connection::referenceHandles().
- */
-class PendingHandles : public QObject
-{
-    Q_OBJECT
-
-public:
-    /**
-     * Class destructor.
-     */
-    ~PendingHandles();
-
-    /**
-     * Returns the Connection object through which the operation was made.
-     *
-     * \return Pointer to the Connection.
-     */
-    Connection* connection() const;
-
-    /**
-     * Returns the handle type specified in the operation.
-     *
-     * \return The handle type, as specified in #HandleType.
-     */
-    uint handleType() const;
-
-    /**
-     * Returns whether the operation was a handle request (as opposed to a
-     * reference of existing handles).
-     *
-     * \sa isReference()
-     *
-     * \return Whether the operation was a request (== !isReference()).
-     */
-    bool isRequest() const;
-
-    /**
-     * Returns whether the operation was a handle reference (as opposed to a
-     * request for new handles).
-     *
-     * \sa isRequest()
-     *
-     * \return Whether the operation was a reference (== !isRequest()).
-     */
-    bool isReference() const;
-
-    /**
-     * If the operation was a request (as returned by isRequest()), returns the
-     * names of the entities for which handles were requested for. Otherwise,
-     * returns an empty list.
-     *
-     * \return Reference to a list of the names of the entities.
-     */
-    const QStringList& namesRequested() const;
-
-    /**
-     * If the operation was a reference (as returned by isReference()), returns
-     * the handles which were to be referenced. Otherwise, returns an empty
-     * list.
-     *
-     * \return Reference to a list of the handles specified to be referenced.
-     */
-    const UIntList& handlesToReference() const;
-
-    /**
-     * Returns whether or not the operation has finished processing.
-     *
-     * \sa finished()
-     *
-     * \return If the operation is finished.
-     */
-    bool isFinished() const;
-
-    /**
-     * Returns whether or not the operation resulted in an error. If the
-     * operation has not yet finished processing (isFinished() returns
-     * <code>false</code>), this cannot yet be known, and <code>false</code>
-     * will be returned.
-     *
-     * \return <code>true</code> iff the operation has finished processing AND
-     *         has resulted in an error.
-     */
-    bool isError() const;
-
-    /**
-     * Returns the error which the operation resulted in, if any. If isError()
-     * returns <code>false</code>, the operation has not (at least yet) resulted
-     * in an error, and an undefined value will be returned.
-     *
-     * \return The error as a QDBusError.
-     */
-    const QDBusError& error() const;
-
-    /**
-     * Returns whether or not the operation completed successfully. If the operation
-     * has not yet finished processing (isFinished() returns <code>false</code>),
-     * this cannot yet be known, and <code>false</code> will be returned.
-     *
-     * \return <code>true</code> iff the operation has finished processing AND has
-     *         completed successfully.
-     */
-    bool isValid() const;
-
-    /**
-     * Returns the now-referenced handles resulting from the operation. If the
-     * operation has not (yet) finished successfully (isFinished() returns
-     * <code>false</code>), the return value is undefined.
-     *
-     * For requests of new handles, <code>handles()[i]</code> will be the handle
-     * corresponding to the entity name <code>namesToRequest()[i]</code>. For
-     * references of existing handles, <code>handles()[i] ==
-     * handlesToReference()[i]</code> will be true for any <code>i</code>.
-     *
-     * \return ReferencedHandles instance containing the handles.
-     */
-    ReferencedHandles handles() const;
-
-Q_SIGNALS:
-    /**
-     * Emitted when the operation finishes processing. isFinished() will then
-     * start returning <code>true</code> and isError(), error(), isValid() and
-     * channel() will become meaningful to use.
-     *
-     * \param pendingHandles The PendingHandles object for which the operation has
-     *                       finished.
-     */
-    void finished(Telepathy::Client::PendingHandles* pendingHandles);
-
-private Q_SLOTS:
-    void onCallFinished(QDBusPendingCallWatcher* watcher);
-
-private:
-    friend class Connection;
-
-    PendingHandles(Connection* connection, uint handleType, const QStringList& names);
-    PendingHandles(Connection* connection, uint handleType, const UIntList& handles, bool allHeld);
 
     struct Private;
     friend struct Private;

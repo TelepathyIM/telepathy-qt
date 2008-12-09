@@ -46,6 +46,7 @@ libtelepathy_qt4_la_SOURCES = \
     cli-media-stream-handler.cpp \
     cli-optional-interface-factory.cpp \
     cli-pending-channel.cpp \
+    cli-pending-handles.cpp \
     cli-pending-operation.cpp \
     cli-properties.cpp \
     cli-referenced-handles.cpp \
@@ -78,6 +79,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     cli-connection.moc.hpp \
     cli-dbus-proxy.moc.hpp \
     cli-pending-channel.moc.hpp \
+    cli-pending-handles.moc.hpp \
     cli-pending-operation.moc.hpp \
     cli-simple-pending-operations.moc.hpp
 
@@ -96,6 +98,7 @@ tpqt4include_HEADERS = \
     cli-media-stream-handler.h \
     cli-optional-interface-factory.h \
     cli-pending-channel.h \
+    cli-pending-handles.h \
     cli-pending-operation.h \
     cli-properties.h \
     cli-referenced-handles.h \
