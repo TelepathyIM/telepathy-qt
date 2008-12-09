@@ -51,7 +51,7 @@ namespace Client
  * result to the library user.
  *
  * After #finished() is emitted, the %PendingOperation is automatically
- * deleted using #deleteLater(), so library users must not explicitly
+ * deleted using deleteLater(), so library users must not explicitly
  * delete this object.
  *
  * The design is loosely based on KDE's KJob.
