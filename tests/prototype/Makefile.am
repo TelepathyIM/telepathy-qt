@@ -22,7 +22,7 @@ test_prototype_SOURCES = prototype.cpp prototype.h _gen/images.hpp
 EXTRA_DIST = images.qrc avatar.png
 
 _gen/images.hpp: images.qrc avatar.png
-	( cd @srcdir@ && rcc images.qrc ) > $@.tmp
+	( cd @srcdir@ && $(RCC) images.qrc ) > $@.tmp
 	mv -f $@.tmp $@
 
 DEP_CFLAGS = \

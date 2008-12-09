@@ -124,6 +124,17 @@ AC_SUBST(QTCORE_LIBS)
 MOC=`$PKG_CONFIG --variable=moc_location QtCore`
 AC_SUBST(MOC)
 
+dnl We shouldn't need RCC at all - this is a *library* - but for the short term, let's at least
+dnl make the RCC-using tests compile even when rcc isn't in $PATH.
+pkgconfig_rcc=`pkg-config --variable=rcc_location QtCore`
+if test -n "$pkgconfig_rcc"; then
+    RCC=$pkgconfig_rcc
+else
+    RCC=`dirname $MOC`/rcc
+fi
+
+AC_SUBST(RCC)
+
 dnl Check for QtDBus
 PKG_CHECK_MODULES(QTDBUS, [QtDBus >= 4.5])
 AC_SUBST(QTDBUS_CFLAGS)
