@@ -68,12 +68,11 @@ class AccountManager(Object):
             raise ValueError('No such interface')
 
     @method(dbus.PROPERTIES_IFACE,
-            in_signature='s',
+            in_signature='ss',
             out_signature='v')
-    def Get(self, iface_and_prop):
-        if iface_and_prop.startswith(AM_IFACE + '.'):
+    def Get(self, iface, prop):
+        if iface == AM_IFACE:
             props = self._am_props()
-            prop = iface_and_prop[(len(AM_IFACE) + 1):]
         else:
             raise ValueError('No such interface')
 
@@ -83,8 +82,8 @@ class AccountManager(Object):
             raise ValueError('No such property')
 
     @method(dbus.PROPERTIES_IFACE,
-            in_signature='sv')
-    def Set(self, iface_and_prop, value):
+            in_signature='ssv')
+    def Set(self, iface, prop, value):
         raise NotImplementedError('No mutable properties')
 
     @signal(AM_IFACE, signature='ob')
