@@ -169,6 +169,15 @@ int ReferencedHandles::size() const
 
 void ReferencedHandles::clear()
 {
+    if (!mPriv->handles.empty()) {
+        if (mPriv->connection) {
+            foreach (uint handle, mPriv->handles)
+                mPriv->connection->unrefHandle(handleType(), handle);
+        } else {
+            warning() << "Connection already destroyed in ReferencedHandles::clear() so can't unref!";
+        }
+    }
+
     mPriv->handles.clear();
 }
 
@@ -179,17 +188,42 @@ void ReferencedHandles::move(int from, int to)
 
 int ReferencedHandles::removeAll(uint handle)
 {
-    return mPriv->handles.removeAll(handle);
+    int count = mPriv->handles.removeAll(handle);
+
+    if (count > 0) {
+        if (mPriv->connection) {
+            for (int i = 0; i < count; i++)
+                mPriv->connection->unrefHandle(handleType(), handle);
+        } else {
+            warning() << "Connection already destroyed in ReferencedHandles::removeAll() with handle ==" << handle << "so can't unref!";
+        }
+    }
+
+    return count;
 }
 
 void ReferencedHandles::removeAt(int i)
 {
+    if (mPriv->connection)
+        mPriv->connection->unrefHandle(handleType(), at(i));
+    else
+        warning() << "Connection already destroyed in ReferencedHandles::removeAt() with i ==" << i << "so can't unref!";
+
     mPriv->handles.removeAt(i);
 }
 
 bool ReferencedHandles::removeOne(uint handle)
 {
-    return mPriv->handles.removeOne(handle);
+    bool wasThere = mPriv->handles.removeOne(handle);
+
+    if (wasThere) {
+        if (mPriv->connection)
+            mPriv->connection->unrefHandle(handleType(), handle);
+        else
+            warning() << "Connection already destroyed in ReferencedHandles::removeOne() with handle ==" << handle << "so can't unref!";
+    }
+
+    return wasThere;
 }
 
 void ReferencedHandles::swap(int i, int j)
@@ -199,6 +233,11 @@ void ReferencedHandles::swap(int i, int j)
 
 uint ReferencedHandles::takeAt(int i)
 {
+    if (mPriv->connection)
+        mPriv->connection->unrefHandle(handleType(), at(i));
+    else
+        warning() << "Connection already destroyed in ReferencedHandles::takeAt() with i ==" << i << "so can't unref!";
+
     return mPriv->handles.takeAt(i);
 }
 
