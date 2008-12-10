@@ -26,6 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <QtCore/QTimer>
+#include <QtDBus/QDBusConnectionInterface>
 
 namespace Telepathy
 {
@@ -106,6 +107,9 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection& dbusConnection,
         const QString& busName, const QString& objectPath, QObject* parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent)
 {
+    // FIXME: Am I on crack?
+    connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
 }
 
 bool StatefulDBusProxy::isValid() const
@@ -147,6 +151,14 @@ void StatefulDBusProxy::emitInvalidated()
     Q_ASSERT(!isValid());
     Q_ASSERT(!mPriv->invalidationReason.isEmpty());
     emit invalidated(this, mPriv->invalidationReason, mPriv->invalidationMessage);
+}
+
+void StatefulDBusProxy::onServiceOwnerChanged(const QString& name, const QString& oldOwner, const QString& newOwner)
+{
+    if (name == busName()) {
+        // FIXME: where do the error texts come from? the spec?
+        invalidate("NAME_OWNER_CHANGED", "NameOwnerChanged() received for this object.");
+    }
 }
 
 }

@@ -192,6 +192,8 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void emitInvalidated();
+    void onServiceOwnerChanged(const QString& name, const QString& oldOwner,
+            const QString& newOwner);
 
 private:
     struct Private;
