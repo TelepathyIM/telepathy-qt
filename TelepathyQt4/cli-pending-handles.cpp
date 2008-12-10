@@ -38,6 +38,7 @@ struct PendingHandles::Private
     QStringList namesRequested;
     UIntList handlesToReference;
     ReferencedHandles handles;
+    ReferencedHandles alreadyHeld;
 };
 
 PendingHandles::PendingHandles(Connection* connection, uint handleType, const QStringList& names)
@@ -49,16 +50,17 @@ PendingHandles::PendingHandles(Connection* connection, uint handleType, const QS
     mPriv->namesRequested = names;
 }
 
-PendingHandles::PendingHandles(Connection* connection, uint handleType, const UIntList& handles, bool allHeld)
+PendingHandles::PendingHandles(Connection* connection, uint handleType, const UIntList& handles, const UIntList& alreadyHeld)
     : PendingOperation(connection), mPriv(new Private)
 {
     mPriv->connection = connection;
     mPriv->handleType = handleType;
     mPriv->isRequest = false;
     mPriv->handlesToReference = handles;
+    mPriv->alreadyHeld = ReferencedHandles(connection, handleType, alreadyHeld);
 
-    if (allHeld) {
-        mPriv->handles = ReferencedHandles(connection, handleType, handles);
+    if (alreadyHeld == handles) {
+        mPriv->handles = mPriv->alreadyHeld;
         setFinished();
     }
 }
@@ -118,6 +120,8 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
             mPriv->handles = ReferencedHandles(connection(), handleType(), reply.value());
             setFinished();
         }
+
+        connection()->handleRequestLanded(handleType());
     } else {
         QDBusPendingReply<void> reply;
 

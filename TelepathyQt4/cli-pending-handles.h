@@ -153,7 +153,7 @@ private:
     friend class Connection;
 
     PendingHandles(Connection* connection, uint handleType, const QStringList& names);
-    PendingHandles(Connection* connection, uint handleType, const UIntList& handles, bool allHeld);
+    PendingHandles(Connection* connection, uint handleType, const UIntList& handles, const UIntList& alreadyHeld);
 
     struct Private;
     friend struct Private;

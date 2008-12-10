@@ -502,10 +502,14 @@ private Q_SLOTS:
     void gotStatuses(QDBusPendingCallWatcher* watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
 
+    void doReleaseSweep(uint type);
+
 private:
+    friend class PendingHandles;
     friend class ReferencedHandles;
     void refHandle(uint type, uint handle);
     void unrefHandle(uint type, uint handle);
+    void handleRequestLanded(uint type);
 
     struct Private;
     friend struct Private;

@@ -26,6 +26,9 @@
 #include <TelepathyQt4/cli-connection.moc.hpp>
 
 #include <QMap>
+#include <QMetaObject>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QQueue>
 #include <QString>
 #include <QtGlobal>
@@ -62,6 +65,36 @@ struct Connection::Private
     StatusSpecMap presenceStatuses;
     SimpleStatusSpecMap simplePresenceStatuses;
 
+    // Handle tracking
+    struct HandleContext
+    {
+        int refcount;
+        QMutex lock;
+
+        struct Type
+        {
+            QMap<uint, uint> refcounts;
+            QSet<uint> toRelease;
+            uint requestsInFlight;
+            bool releaseScheduled;
+
+            Type()
+            {
+                requestsInFlight = 0;
+                releaseScheduled = false;
+            }
+        };
+        QMap<uint, Type> types;
+
+        HandleContext()
+        {
+            refcount = 0;
+        }
+    };
+    static QMap<QString, HandleContext*> handleContexts;
+    static QMutex handleContextsLock;
+    HandleContext* handleContext;
+
     Private(Connection &parent)
         : parent(parent)
     {
@@ -88,6 +121,50 @@ struct Connection::Private
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotStatus(QDBusPendingCallWatcher*)));
+
+        QMutexLocker locker(&handleContextsLock);
+        QString connectionName = parent.connection().name();
+
+        if (handleContexts.contains(connectionName)) {
+            debug() << "Reusing existing HandleContext";
+            handleContext = handleContexts[connectionName];
+        } else {
+            debug() << "Creating new HandleContext";
+            handleContext = new HandleContext;
+            handleContexts[connectionName] = handleContext;
+        }
+
+        // All handle contexts locked, so safe
+        ++handleContext->refcount;
+    }
+
+    ~Private()
+    {
+        QMutexLocker locker(&handleContextsLock);
+
+        // All handle contexts locked, so safe
+        if (!--handleContext->refcount) {
+            debug() << "Destroying HandleContext";
+
+            foreach (uint handleType, handleContext->types.keys()) {
+                HandleContext::Type type = handleContext->types[handleType];
+
+                if (!type.refcounts.empty()) {
+                    debug() << " Still had references to" << type.refcounts.size() << "handles, releasing now";
+                    parent.ReleaseHandles(handleType, type.refcounts.keys());
+                }
+
+                if (!type.toRelease.empty()) {
+                    debug() << " Was going to release" << type.toRelease.size() << "handles, doing that now";
+                    parent.ReleaseHandles(handleType, type.toRelease.toList());
+                }
+            }
+
+            handleContexts.remove(parent.connection().name());
+            delete handleContext;
+        } else {
+            Q_ASSERT(handleContext->refcount > 0);
+        }
     }
 
     void introspectAliasing()
@@ -207,6 +284,9 @@ struct Connection::Private
         emit parent.readinessChanged(newReadiness);
     }
 };
+
+QMap<QString, Connection::Private::HandleContext*> Connection::Private::handleContexts;
+QMutex Connection::Private::handleContextsLock;
 
 Connection::Connection(const QString& serviceName,
                        const QString& objectPath,
@@ -475,6 +555,10 @@ PendingOperation* Connection::requestConnect()
 
 PendingHandles* Connection::requestHandles(uint handleType, const QStringList& names)
 {
+    Private::HandleContext *handleContext = mPriv->handleContext;
+    QMutexLocker locker(&handleContext->lock);
+    handleContext->types[handleType].requestsInFlight++;
+
     debug() << "Request for" << names.length() << "handles of type" << handleType;
 
     PendingHandles* pending =
@@ -490,12 +574,25 @@ PendingHandles* Connection::requestHandles(uint handleType, const QStringList& n
 
 PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& handles)
 {
+    Private::HandleContext *handleContext = mPriv->handleContext;
+    QMutexLocker locker(&handleContext->lock);
+
     debug() << "Reference of" << handles.length() << "handles of type" << handleType;
 
+    UIntList alreadyHeld;
+    UIntList notYetHeld;
+    foreach (uint handle, handles) {
+        if (handleContext->types[handleType].refcounts.contains(handle) || handleContext->types[handleType].toRelease.contains(handle))
+            alreadyHeld.push_back(handle);
+        else
+            notYetHeld.push_back(handle);
+    }
+    debug() << " Already holding" << alreadyHeld.size() << "of the handles -" << notYetHeld.size() << "to go";
+
     PendingHandles* pending =
-        new PendingHandles(this, handleType, handles, false);
+        new PendingHandles(this, handleType, handles, alreadyHeld);
     QDBusPendingCallWatcher* watcher =
-        new QDBusPendingCallWatcher(HoldHandles(handleType, handles), pending);
+        new QDBusPendingCallWatcher(HoldHandles(handleType, notYetHeld), pending);
 
     pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
@@ -510,12 +607,79 @@ PendingOperation* Connection::requestDisconnect()
 
 void Connection::refHandle(uint type, uint handle)
 {
-    // FIXME implement
+    Private::HandleContext *handleContext = mPriv->handleContext;
+    QMutexLocker locker(&handleContext->lock);
+
+    if (handleContext->types[type].toRelease.contains(handle))
+        handleContext->types[type].toRelease.remove(handle);
+
+    handleContext->types[type].refcounts[handle]++;
 }
 
 void Connection::unrefHandle(uint type, uint handle)
 {
-    // FIXME implement
+    Private::HandleContext *handleContext = mPriv->handleContext;
+    QMutexLocker locker(&handleContext->lock);
+
+    Q_ASSERT(handleContext->types.contains(type));
+    Q_ASSERT(handleContext->types[type].refcounts.contains(handle));
+
+    if (!--handleContext->types[type].refcounts[handle]) {
+        handleContext->types[type].refcounts.remove(handle);
+        handleContext->types[type].toRelease.insert(handle);
+
+        if (!handleContext->types[type].releaseScheduled) {
+            if (!handleContext->types[type].requestsInFlight) {
+                debug() << "Lost last reference to at least one handle of type" << type << "and no requests in flight for that type - scheduling a release sweep";
+                QMetaObject::invokeMethod(this, SLOT("doReleaseSweep(uint)"), Qt::QueuedConnection, Q_ARG(uint, type));
+                handleContext->types[type].releaseScheduled = true;
+            } else {
+                debug() << "Deferring handle release sweep for type" << type << "to when there are no requests in flight for that type";
+            }
+        }
+    }
+}
+
+void Connection::doReleaseSweep(uint type)
+{
+    Private::HandleContext *handleContext = mPriv->handleContext;
+    QMutexLocker locker(&handleContext->lock);
+
+    Q_ASSERT(handleContext->types[type].releaseScheduled);
+    Q_ASSERT(handleContext->types.contains(type));
+
+    debug() << "Entering handle release sweep for type" << type;
+    handleContext->types[type].releaseScheduled = false;
+
+    if (handleContext->types[type].requestsInFlight > 0) {
+        debug() << " There are requests in flight, deferring sweep to when they have been completed";
+        return;
+    }
+
+    if (handleContext->types[type].toRelease.isEmpty()) {
+        debug() << " No handles to release - every one has been resurrected";
+        return;
+    }
+
+    debug() << " Releasing" << handleContext->types[type].toRelease.size() << "handles";
+
+    ReleaseHandles(type, handleContext->types[type].toRelease.toList());
+    handleContext->types[type].toRelease.clear();
+}
+
+void Connection::handleRequestLanded(uint type)
+{
+    Private::HandleContext *handleContext = mPriv->handleContext;
+    QMutexLocker locker(&handleContext->lock);
+
+    Q_ASSERT(handleContext->types.contains(type));
+    Q_ASSERT(handleContext->types[type].requestsInFlight > 0);
+
+    if (!--handleContext->types[type].requestsInFlight && !handleContext->types[type].toRelease.isEmpty() && !handleContext->types[type].releaseScheduled) {
+        debug() << "All handle requests for type" << type << "landed and there are handles of that type to release - scheduling a release sweep";
+        QMetaObject::invokeMethod(this, SLOT("doReleaseSweep(uint)"), Qt::QueuedConnection, Q_ARG(uint, type));
+        handleContext->types[type].releaseScheduled = true;
+    }
 }
 
 }
