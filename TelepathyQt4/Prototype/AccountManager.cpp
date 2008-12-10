@@ -30,6 +30,7 @@
 #include <QPointer>
 
 #include <TelepathyQt4/Client/AccountManager>
+#include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Types>
 
 #include <TelepathyQt4/Prototype/Account.h>
@@ -47,11 +48,19 @@ public:
     { init(); }
 
     Telepathy::Client::AccountManagerInterface* m_pInterface;
+    Telepathy::Client::DBus::PropertiesInterface* m_propertiesInterface;
     QMap<QString, QPointer<Account> >  m_validAccountHandles;
 
     void init()
     {
         m_pInterface = NULL;
+    }
+
+    Telepathy::ObjectPathList validAccounts()
+    {
+        Q_ASSERT(m_propertiesInterface);
+
+        return m_pInterface->ValidAccounts();
     }
 
     void removeAccount( const QString& handle )
@@ -285,9 +294,16 @@ void AccountManager::init()
         qWarning() << "Unable to connect to AccountManagerInterface: MissionControl seems to be missing!";
     }
     //Q_ASSERT( d->m_pInterface->isValid() );
-                                                                           
+
+    d->m_propertiesInterface = new Telepathy::Client::DBus::PropertiesInterface(
+            "org.freedesktop.Telepathy.AccountManager",
+            "/org/freedesktop/Telepathy/AccountManager",
+            this);
+    Q_ASSERT( d->m_propertiesInterface );
+
     // It might be better to use layzy initializing here.. (ses)
-    Telepathy::ObjectPathList account_handles = d->m_pInterface->ValidAccounts();
+    Telepathy::ObjectPathList account_handles = d->validAccounts();
+
     foreach( const QDBusObjectPath& account_handle, account_handles )
     {
 
