@@ -19,23 +19,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-#include "ContactManager.h"
-
-#include "ConnectionFacade.h"
-
-#include <TelepathyQt4/Prototype/StreamedMediaChannel.h>
-#include <TelepathyQt4/Prototype/Contact.h>
-#include <TelepathyQt4/Prototype/Constants>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/Channel>
-
-// The following two header files are related to the stream engine which is used as backend.
-// These interfaces do not belong to telepathy!
-#include "_gen/cli-channel-handler.h"
-#include "_gen/cli-stream-engine.h"
+#include "TelepathyQt4/Prototype/StreamedMediaChannel.h"
 
 #include <QDebug>
 #include <QMetaProperty>
+
+#include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/Channel>
+
+// ChannelHandlerInterface and StreamEngineInterface from stream-engine
+// 0.5.x, which is currently used as the only media streaming backend.
+// These interfaces are not really part of the Telepathy spec
+#include <TelepathyQt4/Prototype/Client/ChannelHandler>
+#include <TelepathyQt4/Prototype/Client/StreamEngine>
+
+#include <TelepathyQt4/Prototype/ConnectionFacade.h>
+#include <TelepathyQt4/Prototype/Constants>
+#include <TelepathyQt4/Prototype/Contact.h>
+#include <TelepathyQt4/Prototype/ContactManager.h>
 
 #define ENABLE_DEBUG_OUTPUT_
 
@@ -816,6 +817,4 @@ void StreamedMediaChannel::slotMembersChanged( const QString& message,
     }
 }
 
-#include "_gen/StreamedMediaChannel.h.moc"
-
-
+#include "TelepathyQt4/Prototype/_gen/StreamedMediaChannel.h.moc"
