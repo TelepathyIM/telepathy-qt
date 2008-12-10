@@ -508,12 +508,12 @@ PendingOperation* Connection::requestDisconnect()
     return new PendingVoidMethodCall(this, this->Disconnect());
 }
 
-void Connection::refHandle(uint handle)
+void Connection::refHandle(uint type, uint handle)
 {
     // FIXME implement
 }
 
-void Connection::unrefHandle(uint handle)
+void Connection::unrefHandle(uint type, uint handle)
 {
     // FIXME implement
 }

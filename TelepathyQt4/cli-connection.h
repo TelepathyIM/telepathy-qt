@@ -504,8 +504,8 @@ private Q_SLOTS:
 
 private:
     friend class ReferencedHandles;
-    void refHandle(uint handle);
-    void unrefHandle(uint handle);
+    void refHandle(uint type, uint handle);
+    void unrefHandle(uint type, uint handle);
 
     struct Private;
     friend struct Private;

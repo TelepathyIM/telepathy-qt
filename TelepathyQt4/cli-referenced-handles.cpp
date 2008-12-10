@@ -60,7 +60,7 @@ struct ReferencedHandles::Private : public QSharedData
             for (const_iterator i = handles.begin();
                                 i != handles.end();
                                 ++i)
-                connection->refHandle(*i);
+                connection->refHandle(handleType, *i);
         }
     }
 
@@ -77,7 +77,7 @@ struct ReferencedHandles::Private : public QSharedData
             for (const_iterator i = handles.begin();
                                 i != handles.end();
                                 ++i)
-                connection->unrefHandle(*i);
+                connection->unrefHandle(handleType, *i);
         }
     }
 
@@ -244,7 +244,7 @@ ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, co
     for (const_iterator i = handles.begin();
                         i != handles.end();
                         ++i)
-        connection->refHandle(*i);
+        connection->refHandle(handleType, *i);
 }
 
 }
