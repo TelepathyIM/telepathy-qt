@@ -74,10 +74,12 @@ protoinclude_HEADERS = \
     Types \
     constants.h \
     cli-channel-handler.h \
+    cli-stream-engine.h \
     types.h
 
 protoclientinclude_HEADERS = \
-    Client/ChannelHandler
+    Client/ChannelHandler \
+    Client/StreamEngine
 
 nodist_geninclude_HEADERS = \
     _gen/cli-channel-handler.h \
