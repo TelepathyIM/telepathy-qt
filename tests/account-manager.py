@@ -89,13 +89,13 @@ class AccountManager(Object):
     @signal(AM_IFACE, signature='ob')
     def AccountValidityChanged(self, path, valid):
         if valid:
-            assert path in self._valid_accounts
-            assert path not in self._invalid_accounts
-            self._invalid_accounts[path] = self._valid_accounts.pop(path)
-        else:
             assert path in self._invalid_accounts
             assert path not in self._valid_accounts
             self._valid_accounts[path] = self._invalid_accounts.pop(path)
+        else:
+            assert path in self._valid_accounts
+            assert path not in self._invalid_accounts
+            self._invalid_accounts[path] = self._valid_accounts.pop(path)
 
     @signal(AM_IFACE, signature='o')
     def AccountRemoved(self, path):
