@@ -8,7 +8,8 @@ pkgconfig_DATA = TpQt4Prototype.pc
 EXTRA_DIST = \
     all.xml \
     channel-handler.xml \
-    stream-engine.xml
+    stream-engine.xml \
+    Stream_Engine.xml
 
 lib_LTLIBRARIES = libtpqt4-prototype.la
 

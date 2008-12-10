@@ -4,6 +4,6 @@
 
 <tp:title>Private stream engine interface</tp:title>
 
-<xi:include href="../../spec/Stream_Engine.xml"/>
+<xi:include href="Stream_Engine.xml"/>
 
 </tp:spec>
