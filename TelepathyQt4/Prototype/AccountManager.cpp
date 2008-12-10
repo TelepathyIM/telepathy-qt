@@ -60,7 +60,42 @@ public:
     {
         Q_ASSERT(m_propertiesInterface);
 
-        return m_pInterface->ValidAccounts();
+        QDBusPendingReply<QDBusVariant> get = m_propertiesInterface->Get(
+                "org.freedesktop.Telepathy.AccountManager", "ValidAccounts");
+        get.waitForFinished();
+
+        if (!get.isValid())
+        {
+            qWarning().nospace() << get.error().name() << ": "
+                << get.error().message();
+            return Telepathy::ObjectPathList();
+        }
+
+        Telepathy::ObjectPathList paths = qdbus_cast<Telepathy::ObjectPathList>(
+                get.value().variant());
+
+        if (paths.size() == 0)
+        {
+            // maybe the AccountManager is buggy, like Mission Control
+            // 5.0.beta45, and returns an array of strings rather than
+            // an array of object paths?
+
+            QStringList wronglyTypedPaths = qdbus_cast<QStringList>(
+                    get.value().variant());
+
+            if (wronglyTypedPaths.size() > 0)
+            {
+                qWarning() << "AccountManager returned wrong type "
+                    "(expected 'ao', got 'as'); workaround active";
+
+                Q_FOREACH (QString path, wronglyTypedPaths)
+                {
+                    paths << QDBusObjectPath(path);
+                }
+            }
+        }
+
+        return paths;
     }
 
     void removeAccount( const QString& handle )
