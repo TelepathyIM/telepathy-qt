@@ -122,7 +122,6 @@ bool PinocchioTest::waitForPinocchio(uint timeoutMs)
     connect(&timer, SIGNAL(timeout()), mLoop, SLOT(quit()));
     timer.setSingleShot(true);
     timer.start(timeoutMs);
-    QTimer::singleShot(timeoutMs, mLoop, SLOT(quit()));
 
     DBusDaemonInterface busDaemon("org.freedesktop.DBus", "/org/freedesktop/DBus");
     connect(&busDaemon,
