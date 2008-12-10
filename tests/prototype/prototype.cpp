@@ -1028,7 +1028,10 @@ void UnitTests::testAvatarManager()
     QVERIFY( avatar_requirements.isValid );
 
     // Set own avatar.
-    QPixmap avatar( ":/images/avatar.png" );
+    QString abs_top_srcdir = QString::fromLocal8Bit(::getenv("abs_top_srcdir"));
+    QVERIFY2(!abs_top_srcdir.isEmpty(),
+            "Put $abs_top_srcdir in your environment");
+    QPixmap avatar( abs_top_srcdir + "/tests/prototype/avatar.png" );
     QVERIFY( !avatar.isNull() );
     
     QByteArray bytes;
