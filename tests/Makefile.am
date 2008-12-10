@@ -49,6 +49,7 @@ CLEANFILES = \
 
 EXTRA_DIST = \
     README \
+    account-manager.py \
     dbus-1/services/spurious.service \
     telepathy/managers/spurious.manager \
     telepathy/managers/test-manager-file.manager \
