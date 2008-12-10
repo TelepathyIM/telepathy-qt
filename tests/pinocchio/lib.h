@@ -5,6 +5,7 @@
 #include <QtTest/QtTest>
 
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Constants>
 
 class PinocchioTest : public QObject
 {
@@ -21,13 +22,13 @@ public:
     static inline QLatin1String pinocchioBusName()
     {
         return QLatin1String(
-            "org.freedesktop.Telepathy.ConnectionManager.pinocchio");
+            TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE "pinocchio");
     }
 
     static inline QLatin1String pinocchioObjectPath()
     {
         return QLatin1String(
-            "/org/freedesktop/Telepathy/ConnectionManager/pinocchio");
+            TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE "pinocchio");
     }
 
     bool waitForPinocchio(uint timeoutMs = 5000);
