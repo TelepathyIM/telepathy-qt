@@ -129,12 +129,8 @@ QString StatefulDBusProxy::invalidationMessage() const
 
 void StatefulDBusProxy::invalidate(const QString& reason, const QString& message)
 {
-    // FIXME: Which of these should be warnings instead?
     Q_ASSERT(isValid());
-    Q_ASSERT(mPriv->invalidationReason.isEmpty());
-    Q_ASSERT(mPriv->invalidationMessage.isEmpty());
     Q_ASSERT(!reason.isEmpty());
-    // FIXME: can message be empty?
 
     mPriv->invalidationReason = reason;
     mPriv->invalidationMessage = message;
@@ -149,7 +145,7 @@ void StatefulDBusProxy::invalidate(const QString& reason, const QString& message
 void StatefulDBusProxy::emitInvalidated()
 {
     Q_ASSERT(!isValid());
-    Q_ASSERT(!mPriv->invalidationReason.isEmpty());
+
     emit invalidated(this, mPriv->invalidationReason, mPriv->invalidationMessage);
 }
 
