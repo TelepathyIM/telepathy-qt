@@ -227,8 +227,18 @@ public:
                 *baseInterface());
     }
 
+    /**
+     * Return whether this object has finished its initial setup.
+     *
+     * This is mostly useful as a sanity check, in code that shouldn't be run
+     * until the object is ready. To wait for the object to be ready, call
+     * becomeReady() and connect to the finished signal on the result.
+     *
+     * \return \c true if the object has finished initial setup
+     */
     bool isReady() const;
 
+    // FIXME: a better name for this would be nice
     /**
      * Return a pending operation which will succeed when this object finishes
      * its initial setup, or will fail if a fatal error occurs during this
