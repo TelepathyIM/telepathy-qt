@@ -53,8 +53,10 @@ namespace Client
 {
 
 class ProtocolParameter;
+class ProtocolInfo;
 
 typedef QList<ProtocolParameter*> ProtocolParameterList;
+typedef QList<ProtocolInfo*> ProtocolInfoList;
 
 class ProtocolParameter
 {
@@ -178,7 +180,7 @@ public:
 
     QStringList supportedProtocols() const;
 
-    const ProtocolInfo* protocolInfo(const QString& protocol) const;
+    const ProtocolInfoList &protocols() const;
 
     /**
      * Convenience function for getting a Properties interface proxy. The

@@ -159,8 +159,17 @@ struct ConnectionManager::Private
     QQueue<QString> protocolQueue;
 
     QStringList interfaces;
+    ProtocolInfoList protocols;;
 
-    QMap<QString,ProtocolInfo*> protocols;
+    ProtocolInfo *protocol(const QString &protocolName)
+    {
+        Q_FOREACH (ProtocolInfo *info, protocols) {
+            if (info->protocolName() == protocolName) {
+                return info;
+            }
+        }
+        return NULL;
+    }
 
     static inline QString makeBusName(const QString& name)
     {
@@ -176,8 +185,8 @@ struct ConnectionManager::Private
 
     ~Private()
     {
-        Q_FOREACH (ProtocolInfo* protocol, protocols) {
-            delete protocol;
+        Q_FOREACH (ProtocolInfo* info, protocols) {
+            delete info;
         }
     }
 
@@ -269,14 +278,17 @@ QStringList ConnectionManager::interfaces() const
 
 QStringList ConnectionManager::supportedProtocols() const
 {
-    return mPriv->protocols.keys();
+    QStringList protocols;
+    Q_FOREACH (const ProtocolInfo *info, mPriv->protocols) {
+        protocols.append(info->protocolName());
+    }
+    return protocols;
 }
 
 
-const ProtocolInfo* ConnectionManager::protocolInfo(
-        const QString& protocol) const
+const ProtocolInfoList &ConnectionManager::protocols() const
 {
-    return mPriv->protocols.value(protocol);
+    return mPriv->protocols;
 }
 
 
@@ -331,11 +343,11 @@ void ConnectionManager::onListProtocolsReturn(
             reply.error().name() << ": " << reply.error().message();
     }
 
-    Q_FOREACH (const QString& protocol, protocols) {
-        mPriv->protocols.insert(protocol, new ProtocolInfo(mPriv->cmName,
-                    protocol));
+    Q_FOREACH (const QString &protocolName, protocols) {
+        mPriv->protocols.append(new ProtocolInfo(mPriv->cmName,
+                                                 protocolName));
 
-        mPriv->getParametersQueue.enqueue(protocol);
+        mPriv->getParametersQueue.enqueue(protocolName);
         mPriv->introspectQueue.enqueue(&Private::callGetParameters);
     }
     continueIntrospection();
@@ -347,8 +359,8 @@ void ConnectionManager::onGetParametersReturn(
 {
     QDBusPendingReply<ParamSpecList> reply = *watcher;
     ParamSpecList parameters;
-    QString protocol = mPriv->protocolQueue.dequeue();
-    ProtocolInfo* info = mPriv->protocols.value(protocol);
+    QString protocolName = mPriv->protocolQueue.dequeue();
+    ProtocolInfo *info = mPriv->protocol(protocolName);
 
     if (!reply.isError()) {
         debug() << "Got reply to ConnectionManager.GetParameters";
