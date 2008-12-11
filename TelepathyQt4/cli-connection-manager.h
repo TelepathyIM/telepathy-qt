@@ -106,7 +106,7 @@ public:
      * Get the untranslated name of the protocol as described in the Telepathy
      * D-Bus API Specification (e.g. "jabber").
      */
-    QString protocolName() const { return mProtocolName; }
+    QString name() const { return mName; }
 
     /**
      * Return all supported parameters. The parameters' names
@@ -139,7 +139,7 @@ public:
 private:
     Q_DISABLE_COPY(ProtocolInfo);
 
-    ProtocolInfo(const QString &cmName, const QString &protocolName);
+    ProtocolInfo(const QString &cmName, const QString &name);
 
     void addParameter(const ParamSpec &spec);
 
@@ -148,7 +148,7 @@ private:
     friend class ConnectionManager;
     Private *mPriv;
     QString mCmName;
-    QString mProtocolName;
+    QString mName;
 };
 
 

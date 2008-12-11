@@ -91,10 +91,10 @@ struct ProtocolInfo::Private
 };
 
 
-ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &protocolName)
+ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
     : mPriv(new Private()),
       mCmName(cmName),
-      mProtocolName(protocolName)
+      mName(name)
 {
 }
 
@@ -212,7 +212,7 @@ QString ConnectionManager::Private::makeObjectPath(const QString& name)
 ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
 {
     Q_FOREACH (ProtocolInfo *info, protocols) {
-        if (info->protocolName() == protocolName) {
+        if (info->name() == protocolName) {
             return info;
         }
     }
@@ -293,7 +293,7 @@ QStringList ConnectionManager::supportedProtocols() const
 {
     QStringList protocols;
     Q_FOREACH (const ProtocolInfo *info, mPriv->protocols) {
-        protocols.append(info->protocolName());
+        protocols.append(info->name());
     }
     return protocols;
 }
