@@ -87,19 +87,14 @@ bool ProtocolParameter::operator==(const QString &name) const
 
 struct ProtocolInfo::Private
 {
-    QString cmName;
-    QString protocolName;
     ProtocolParameterList params;
-
-    Private(const QString& cmName, const QString& protocolName)
-        : cmName(cmName), protocolName(protocolName)
-    {
-    }
 };
 
 
-ProtocolInfo::ProtocolInfo(const QString& cmName, const QString& protocol)
-    : mPriv(new Private(cmName, protocol))
+ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &protocolName)
+    : mPriv(new Private()),
+      mCmName(cmName),
+      mProtocolName(protocolName)
 {
 }
 
@@ -109,18 +104,6 @@ ProtocolInfo::~ProtocolInfo()
     Q_FOREACH (ProtocolParameter *param, mPriv->params) {
         delete param;
     }
-}
-
-
-QString ProtocolInfo::cmName() const
-{
-    return mPriv->cmName;
-}
-
-
-QString ProtocolInfo::protocolName() const
-{
-    return mPriv->protocolName;
 }
 
 

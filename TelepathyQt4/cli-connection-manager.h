@@ -98,13 +98,13 @@ public:
      *
      * \return The name of the connection manager
      */
-    QString cmName() const;
+    QString cmName() const { return mCmName; }
 
     /**
      * Get the untranslated name of the protocol as described in the Telepathy
      * D-Bus API Specification (e.g. "jabber").
      */
-    QString protocolName() const;
+    QString protocolName() const { return mProtocolName; }
 
     /**
      * Return all supported parameters. The parameters' names
@@ -135,7 +135,7 @@ public:
     bool canRegister() const;
 
 private:
-    ProtocolInfo(const QString& cmName, const QString& protocol);
+    ProtocolInfo(const QString &cmName, const QString &protocolName);
 
     void addParameter(const ParamSpec &spec);
 
@@ -143,6 +143,8 @@ private:
     friend struct Private;
     friend class ConnectionManager;
     Private *mPriv;
+    QString mCmName;
+    QString mProtocolName;
 };
 
 
