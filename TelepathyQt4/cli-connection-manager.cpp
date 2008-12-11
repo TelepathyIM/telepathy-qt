@@ -151,7 +151,6 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
 struct ConnectionManager::Private
 {
     ConnectionManager& parent;
-    QString cmName;
     ConnectionManagerInterface* baseInterface;
     bool ready;
     QQueue<void (Private::*)()> introspectQueue;
@@ -226,7 +225,6 @@ struct ConnectionManager::Private
 
     Private(ConnectionManager& parent, QString name)
         : parent(parent),
-          cmName(name),
           baseInterface(new ConnectionManagerInterface(parent.dbusConnection(),
                       parent.busName(), parent.objectPath(), &parent)),
           ready(false)
@@ -244,7 +242,8 @@ ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
             Private::makeBusName(name), Private::makeObjectPath(name),
             parent),
-      mPriv(new Private(*this, name))
+      mPriv(new Private(*this, name)),
+      mCmName(name)
 {
 }
 
@@ -253,7 +252,8 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
         const QString& name, QObject* parent)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), parent),
-      mPriv(new Private(*this, name))
+      mPriv(new Private(*this, name)),
+      mCmName(name)
 {
 }
 
@@ -261,12 +261,6 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
 ConnectionManager::~ConnectionManager()
 {
     delete mPriv;
-}
-
-
-QString ConnectionManager::cmName() const
-{
-    return mPriv->cmName;
 }
 
 
@@ -344,7 +338,7 @@ void ConnectionManager::onListProtocolsReturn(
     }
 
     Q_FOREACH (const QString &protocolName, protocols) {
-        mPriv->protocols.append(new ProtocolInfo(mPriv->cmName,
+        mPriv->protocols.append(new ProtocolInfo(mCmName,
                                                  protocolName));
 
         mPriv->getParametersQueue.enqueue(protocolName);
