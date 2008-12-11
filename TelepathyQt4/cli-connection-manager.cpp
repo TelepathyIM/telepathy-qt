@@ -182,7 +182,7 @@ struct ConnectionManager::Private
         }
     };
 
-    QList<PendingReady *> pendingReadyOperations;
+    PendingReady *pendingReady;
 
     ~Private()
     {
@@ -230,7 +230,8 @@ struct ConnectionManager::Private
           cmName(name),
           baseInterface(new ConnectionManagerInterface(parent.dbusConnection(),
                       parent.busName(), parent.objectPath(), &parent)),
-          ready(false)
+          ready(false),
+          pendingReady(0)
     {
         debug() << "Creating new ConnectionManager:" << parent.busName();
 
@@ -300,12 +301,15 @@ bool ConnectionManager::isReady() const
 // fatal, so the documentation isn't completely true.
 PendingOperation *ConnectionManager::becomeReady()
 {
-    if (mPriv->ready)
+    if (mPriv->ready) {
         return new PendingSuccess(this);
+    }
 
-    Private::PendingReady *pendingReady = new Private::PendingReady(this);
-    mPriv->pendingReadyOperations << pendingReady;
-    return pendingReady;
+    if (!mPriv->pendingReady) {
+        mPriv->pendingReady = new Private::PendingReady(this);
+    }
+
+    return mPriv->pendingReady;
 }
 
 
@@ -419,9 +423,10 @@ void ConnectionManager::continueIntrospection()
             mPriv->ready = true;
             Q_EMIT ready(this);
 
-            while (!mPriv->pendingReadyOperations.isEmpty()) {
-                debug() << "Finishing one";
-                mPriv->pendingReadyOperations.takeFirst()->setFinished();
+            if (mPriv->pendingReady) {
+                mPriv->pendingReady->setFinished();
+                // it will delete itself later
+                mPriv->pendingReady = 0;
             }
         } else {
             (mPriv->*(mPriv->introspectQueue.dequeue()))();
