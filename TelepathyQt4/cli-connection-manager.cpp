@@ -156,86 +156,105 @@ struct ConnectionManager::Private
     QQueue<void (Private::*)()> introspectQueue;
     QQueue<QString> getParametersQueue;
     QQueue<QString> protocolQueue;
-
     QStringList interfaces;
     ProtocolInfoList protocols;;
 
-    ProtocolInfo *protocol(const QString &protocolName)
-    {
-        Q_FOREACH (ProtocolInfo *info, protocols) {
-            if (info->protocolName() == protocolName) {
-                return info;
-            }
-        }
-        return NULL;
-    }
+    Private(ConnectionManager& parent, QString name);
+    ~Private();
 
-    static inline QString makeBusName(const QString& name)
-    {
-        return QString::fromAscii(
-                TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE).append(name);
-    }
+    static QString makeBusName(const QString& name);
+    static QString makeObjectPath(const QString& name);
 
-    static inline QString makeObjectPath(const QString& name)
-    {
-        return QString::fromAscii(
-                TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
-    }
+    ProtocolInfo *protocol(const QString &protocolName);
 
-    ~Private()
-    {
-        Q_FOREACH (ProtocolInfo* info, protocols) {
-            delete info;
-        }
-    }
-
-    void callGetAll()
-    {
-        debug() << "Calling Properties::GetAll(ConnectionManager)";
-        QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-                parent.propertiesInterface()->GetAll(
-                    TELEPATHY_INTERFACE_CONNECTION_MANAGER), &parent);
-        parent.connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*)));
-    }
-
-    void callGetParameters()
-    {
-        QString protocol = getParametersQueue.dequeue();
-        protocolQueue.enqueue(protocol);
-        debug() << "Calling ConnectionManager::GetParameters(" <<
-            protocol << ")";
-        QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-                baseInterface->GetParameters(protocol), &parent);
-        parent.connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(onGetParametersReturn(QDBusPendingCallWatcher*)));
-    }
-
-    void callListProtocols()
-    {
-        debug() << "Calling ConnectionManager::ListProtocols";
-        QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-                baseInterface->ListProtocols(), &parent);
-        parent.connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(onListProtocolsReturn(QDBusPendingCallWatcher*)));
-    }
-
-    Private(ConnectionManager& parent, QString name)
-        : parent(parent),
-          baseInterface(new ConnectionManagerInterface(parent.dbusConnection(),
-                      parent.busName(), parent.objectPath(), &parent)),
-          ready(false)
-    {
-        debug() << "Creating new ConnectionManager:" << parent.busName();
-
-        introspectQueue.enqueue(&Private::callGetAll);
-        introspectQueue.enqueue(&Private::callListProtocols);
-        QTimer::singleShot(0, &parent, SLOT(continueIntrospection()));
-    }
+    void callGetAll();
+    void callGetParameters();
+    void callListProtocols();
 };
+
+
+ConnectionManager::Private::Private(ConnectionManager& parent, QString name)
+    : parent(parent),
+      baseInterface(new ConnectionManagerInterface(parent.dbusConnection(),
+                  parent.busName(), parent.objectPath(), &parent)),
+      ready(false)
+{
+    debug() << "Creating new ConnectionManager:" << parent.busName();
+
+    introspectQueue.enqueue(&Private::callGetAll);
+    introspectQueue.enqueue(&Private::callListProtocols);
+    QTimer::singleShot(0, &parent, SLOT(continueIntrospection()));
+}
+
+
+ConnectionManager::Private::~Private()
+{
+    Q_FOREACH (ProtocolInfo* info, protocols) {
+        delete info;
+    }
+}
+
+
+QString ConnectionManager::Private::makeBusName(const QString& name)
+{
+    return QString::fromAscii(
+            TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE).append(name);
+}
+
+
+QString ConnectionManager::Private::makeObjectPath(const QString& name)
+{
+    return QString::fromAscii(
+            TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
+}
+
+
+ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
+{
+    Q_FOREACH (ProtocolInfo *info, protocols) {
+        if (info->protocolName() == protocolName) {
+            return info;
+        }
+    }
+    return NULL;
+}
+
+
+void ConnectionManager::Private::callGetAll()
+{
+    debug() << "Calling Properties::GetAll(ConnectionManager)";
+    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+            parent.propertiesInterface()->GetAll(
+                TELEPATHY_INTERFACE_CONNECTION_MANAGER), &parent);
+    parent.connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*)));
+}
+
+
+void ConnectionManager::Private::callGetParameters()
+{
+    QString protocol = getParametersQueue.dequeue();
+    protocolQueue.enqueue(protocol);
+    debug() << "Calling ConnectionManager::GetParameters(" <<
+        protocol << ")";
+    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+            baseInterface->GetParameters(protocol), &parent);
+    parent.connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onGetParametersReturn(QDBusPendingCallWatcher*)));
+}
+
+
+void ConnectionManager::Private::callListProtocols()
+{
+    debug() << "Calling ConnectionManager::ListProtocols";
+    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+            baseInterface->ListProtocols(), &parent);
+    parent.connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onListProtocolsReturn(QDBusPendingCallWatcher*)));
+}
 
 
 ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
