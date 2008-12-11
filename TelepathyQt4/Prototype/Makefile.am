@@ -7,7 +7,9 @@ pkgconfig_DATA = TpQt4Prototype.pc
 
 EXTRA_DIST = \
     all.xml \
-    channel-handler.xml
+    channel-handler.xml \
+    stream-engine.xml \
+    Stream_Engine.xml
 
 lib_LTLIBRARIES = libtpqt4-prototype.la
 
@@ -33,6 +35,7 @@ libtpqt4_prototype_la_SOURCES = \
     PresenceManager.cpp \
     StreamedMediaChannel.cpp \
     cli-channel-handler.cpp \
+    cli-stream-engine.cpp \
     types.cpp
 
 nodist_libtpqt4_prototype_la_SOURCES = \
@@ -50,6 +53,8 @@ nodist_libtpqt4_prototype_la_SOURCES = \
     _gen/StreamedMediaChannel.h.moc \
     _gen/cli-channel-handler-body.hpp \
     _gen/cli-channel-handler.moc.hpp \
+    _gen/cli-stream-engine-body.hpp \
+    _gen/cli-stream-engine.moc.hpp \
     _gen/types-body.hpp
 
 protoinclude_HEADERS = \
@@ -69,13 +74,16 @@ protoinclude_HEADERS = \
     Types \
     constants.h \
     cli-channel-handler.h \
+    cli-stream-engine.h \
     types.h
 
 protoclientinclude_HEADERS = \
-    Client/ChannelHandler
+    Client/ChannelHandler \
+    Client/StreamEngine
 
 nodist_geninclude_HEADERS = \
     _gen/cli-channel-handler.h \
+    _gen/cli-stream-engine.h \
     _gen/constants.h \
     _gen/types.h
 
@@ -166,6 +174,9 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		channel-handler) \
 			group='clientchannelhandler'; \
 			prettyinclude='ChannelHandler';; \
+		stream-engine) \
+			group='clientstreamengine'; \
+			prettyinclude='StreamEngine';; \
 	esac; \
 	$(PYTHON) $(top_srcdir)/tools/qt4-client-gen.py \
 		--group=$$group \
