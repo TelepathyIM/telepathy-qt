@@ -137,6 +137,8 @@ public:
     bool canRegister() const;
 
 private:
+    Q_DISABLE_COPY(ProtocolInfo);
+
     ProtocolInfo(const QString &cmName, const QString &protocolName);
 
     void addParameter(const ParamSpec &spec);
@@ -218,6 +220,8 @@ private Q_SLOTS:
     void continueIntrospection();
 
 private:
+    Q_DISABLE_COPY(ConnectionManager);
+
     struct Private;
     friend struct Private;
     Private *mPriv;
