@@ -26,6 +26,7 @@
 #include <QtCore/QTimer>
 
 #include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
@@ -169,6 +170,20 @@ struct ConnectionManager::Private
                 TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
     }
 
+    // A PendingOperation on which the ConnectionManager can call
+    // setFinished().
+    class PendingReady : public PendingOperation
+    {
+        friend class ConnectionManager;
+    public:
+        PendingReady(ConnectionManager *parent)
+            : PendingOperation(parent)
+        {
+        }
+    };
+
+    QList<PendingReady *> pendingReadyOperations;
+
     ~Private()
     {
         Q_FOREACH (ProtocolInfo* protocol, protocols) {
@@ -281,6 +296,19 @@ bool ConnectionManager::isReady() const
 }
 
 
+// TODO: We don't actually consider anything during initial setup to be
+// fatal, so the documentation isn't completely true.
+PendingOperation *ConnectionManager::becomeReady()
+{
+    if (mPriv->ready)
+        return new PendingSuccess(this);
+
+    Private::PendingReady *pendingReady = new Private::PendingReady(this);
+    mPriv->pendingReadyOperations << pendingReady;
+    return pendingReady;
+}
+
+
 ConnectionManagerInterface* ConnectionManager::baseInterface() const
 {
     return mPriv->baseInterface;
@@ -390,6 +418,11 @@ void ConnectionManager::continueIntrospection()
             debug() << "ConnectionManager is ready";
             mPriv->ready = true;
             Q_EMIT ready(this);
+
+            while (!mPriv->pendingReadyOperations.isEmpty()) {
+                debug() << "Finishing one";
+                mPriv->pendingReadyOperations.takeFirst()->setFinished();
+            }
         } else {
             (mPriv->*(mPriv->introspectQueue.dequeue()))();
         }

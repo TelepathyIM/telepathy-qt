@@ -45,6 +45,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+#include <TelepathyQt4/Client/PendingOperation>
 
 namespace Telepathy
 {
@@ -228,7 +229,18 @@ public:
 
     bool isReady() const;
 
+    /**
+     * Return a pending operation which will succeed when this object finishes
+     * its initial setup, or will fail if a fatal error occurs during this
+     * initial setup.
+     *
+     * \return A PendingOperation which will emit PendingOperation::finished
+     *         when this object has finished or failed its initial setup
+     */
+    PendingOperation *becomeReady();
+
 Q_SIGNALS:
+    // FIXME: do we need this if we have becomeReady()?
     void ready(ConnectionManager*);
 
 protected:
