@@ -151,7 +151,9 @@ void StatefulDBusProxy::emitInvalidated()
 
 void StatefulDBusProxy::onServiceOwnerChanged(const QString& name, const QString& oldOwner, const QString& newOwner)
 {
-    if (name == busName()) {
+    // We only want to invalidate this object if it is not already invalidated,
+    // and it's (not any other object's) name owner changed signal is emitted.
+    if (isValid() && (name == busName())) {
         // FIXME: where do the error texts come from? the spec?
         invalidate("NAME_OWNER_CHANGED", "NameOwnerChanged() received for this object.");
     }
