@@ -62,12 +62,21 @@ void TestCmBasics::testBasics()
     mCM = new ConnectionManager("pinocchio");
     QCOMPARE(mCM->isReady(), false);
 
-    connect(mCM, SIGNAL(ready(ConnectionManager*)),
-            SLOT(onCmReady(ConnectionManager*)));
+    connect(mCM->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    qDebug() << "enter main loop";
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mCM->isReady(), true);
-    disconnect(mCM, SIGNAL(ready(ConnectionManager*)),
-            this, SLOT(onCmReady(ConnectionManager*)));
+
+    // calling becomeReady() twice is a no-op
+    connect(mCM->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mCM->isReady(), true);
 
     QCOMPARE(mCM->interfaces(), QStringList());
     QCOMPARE(mCM->supportedProtocols(), QStringList() << "dummy");
