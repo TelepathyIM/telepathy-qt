@@ -26,7 +26,6 @@
 #include <QtCore/QTimer>
 
 #include <TelepathyQt4/Client/DBus>
-#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
 #include "TelepathyQt4/debug-internal.hpp"
@@ -37,17 +36,60 @@ namespace Client
 {
 
 
+// FIXME proper map dbusSignature to QVariant on mType
+ProtocolParameter::ProtocolParameter(const QString &name,
+                                     const QDBusSignature &dbusSignature,
+                                     QVariant defaultValue,
+                                     Telepathy::ConnMgrParamFlag flags)
+    : mName(name),
+      mDBusSignature(dbusSignature),
+      mType(QVariant::Invalid),
+      mDefaultValue(defaultValue),
+      mFlags(flags)
+{
+}
+
+
+ProtocolParameter::~ProtocolParameter()
+{
+}
+
+
+bool ProtocolParameter::isRequired() const
+{
+    return mFlags & ConnMgrParamFlagRequired;
+}
+
+
+bool ProtocolParameter::isSecret() const
+{
+    return mFlags & ConnMgrParamFlagSecret;
+}
+
+
+bool ProtocolParameter::requiredForRegistration() const
+{
+    return mFlags & ConnMgrParamFlagRegister;
+}
+
+
+bool ProtocolParameter::operator==(const ProtocolParameter &other) const
+{
+    return (mName == other.name());
+}
+
+
+bool ProtocolParameter::operator==(const QString &name) const
+{
+    return (mName == name);
+}
+
+
 struct ProtocolInfo::Private
 {
     QString cmName;
     QString protocolName;
-
-    QMap<QString,QDBusSignature> parameters;
-    QMap<QString,QVariant> defaults;
-    QSet<QString> requiredParameters;
-    QSet<QString> registerParameters;
-    QSet<QString> propertyParameters;
-    QSet<QString> secretParameters;
+    ProtocolParameterList params;
 
     Private(const QString& cmName, const QString& protocolName)
         : cmName(cmName), protocolName(protocolName)
@@ -64,6 +106,9 @@ ProtocolInfo::ProtocolInfo(const QString& cmName, const QString& protocol)
 
 ProtocolInfo::~ProtocolInfo()
 {
+    Q_FOREACH (ProtocolParameter *param, mPriv->params) {
+        delete param;
+    }
 }
 
 
@@ -79,67 +124,44 @@ QString ProtocolInfo::protocolName() const
 }
 
 
-QStringList ProtocolInfo::parameters() const
+const ProtocolParameterList &ProtocolInfo::parameters() const
 {
-    return mPriv->parameters.keys();
+    return mPriv->params;
 }
 
 
-bool ProtocolInfo::hasParameter(const QString& param) const
+bool ProtocolInfo::hasParameter(const QString &name) const
 {
-    return mPriv->parameters.contains(param);
-}
-
-
-QDBusSignature ProtocolInfo::parameterDBusSignature(const QString& param) const
-{
-    return mPriv->parameters.value(param);
-}
-
-
-QVariant::Type ProtocolInfo::parameterType(const QString& param) const
-{
-    return QVariant::Invalid;
-}
-
-
-bool ProtocolInfo::parameterIsRequired(const QString& param,
-        bool registering) const
-{
-    if (registering)
-        return mPriv->registerParameters.contains(param);
-    else
-        return mPriv->requiredParameters.contains(param);
-}
-
-
-bool ProtocolInfo::parameterIsSecret(const QString& param) const
-{
-    return mPriv->secretParameters.contains(param);
-}
-
-
-bool ProtocolInfo::parameterIsDBusProperty(const QString& param) const
-{
-    return mPriv->propertyParameters.contains(param);
-}
-
-
-bool ProtocolInfo::parameterHasDefault(const QString& param) const
-{
-    return mPriv->defaults.contains(param);
-}
-
-
-QVariant ProtocolInfo::getParameterDefault(const QString& param) const
-{
-    return mPriv->defaults.value(param);
+    Q_FOREACH (ProtocolParameter *param, mPriv->params) {
+        if (param->name() == name) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
 bool ProtocolInfo::canRegister() const
 {
     return hasParameter(QLatin1String("register"));
+}
+
+
+void ProtocolInfo::addParameter(const ParamSpec &spec)
+{
+    QVariant defaultValue;
+    if (spec.flags & ConnMgrParamFlagHasDefault)
+        defaultValue = spec.defaultValue.variant();
+
+    uint flags = spec.flags;
+    if (spec.name.endsWith("password"))
+        flags |= Telepathy::ConnMgrParamFlagSecret;
+
+    ProtocolParameter *param = new ProtocolParameter(spec.name,
+            QDBusSignature(spec.signature),
+            defaultValue,
+            (Telepathy::ConnMgrParamFlag) flags);
+    mPriv->params.append(param);
 }
 
 
@@ -357,28 +379,8 @@ void ConnectionManager::onGetParametersReturn(
     Q_FOREACH (const ParamSpec& spec, parameters) {
         debug() << "Parameter" << spec.name << "has flags" << spec.flags
             << "and signature" << spec.signature;
-        info->mPriv->parameters.insert(spec.name,
-                QDBusSignature(spec.signature));
 
-        if (spec.flags & ConnMgrParamFlagHasDefault)
-            info->mPriv->defaults.insert(spec.name,
-                    spec.defaultValue.variant());
-
-        if (spec.flags & ConnMgrParamFlagRequired)
-            info->mPriv->requiredParameters.insert(spec.name);
-
-        if (spec.flags & ConnMgrParamFlagRegister)
-            info->mPriv->registerParameters.insert(spec.name);
-
-        if ((spec.flags & ConnMgrParamFlagSecret)
-                || spec.name.endsWith("password"))
-            info->mPriv->secretParameters.insert(spec.name);
-
-#if 0
-        // enable when we merge the new telepathy-spec
-        if (spec.flags & ConnMgrParamFlag)
-            info->mPriv->propertyParameters.insert(spec.name);
-#endif
+        info->addParameter(spec);
     }
     continueIntrospection();
 }

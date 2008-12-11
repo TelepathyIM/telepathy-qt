@@ -42,6 +42,7 @@
 
 #include <TelepathyQt4/_gen/cli-connection-manager.h>
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
@@ -50,6 +51,41 @@ namespace Telepathy
 {
 namespace Client
 {
+
+class ProtocolParameter;
+
+typedef QList<ProtocolParameter*> ProtocolParameterList;
+
+class ProtocolParameter
+{
+public:
+    ProtocolParameter(const QString &name,
+                      const QDBusSignature &dbusSignature,
+                      QVariant defaultValue,
+                      Telepathy::ConnMgrParamFlag flags);
+    ~ProtocolParameter();
+
+    QString name() const { return mName; }
+    QDBusSignature dbusSignature() const { return mDBusSignature; }
+    QVariant type() const { return mType; }
+    QVariant defaultValue() const { return mDefaultValue; }
+
+    bool isRequired() const;
+    bool isSecret() const;
+    bool requiredForRegistration() const;
+
+    bool operator==(const ProtocolParameter &other) const;
+    bool operator==(const QString &name) const;
+
+private:
+    Q_DISABLE_COPY(ProtocolParameter);
+
+    QString mName;
+    QDBusSignature mDBusSignature;
+    QVariant mType;
+    QVariant mDefaultValue;
+    Telepathy::ConnMgrParamFlag mFlags;
+};
 
 
 class ProtocolInfo
@@ -71,97 +107,23 @@ public:
     QString protocolName() const;
 
     /**
-     * Return the names of all supported parameters. The parameters' names
+     * Return all supported parameters. The parameters' names
      * may either be the well-known strings specified by the Telepathy D-Bus
      * API Specification (e.g. "account" and "password"), or
      * implementation-specific strings.
      *
-     * \return A list of parameter names
+     * \return A list of parameters
      */
-    QStringList parameters() const;
+    const ProtocolParameterList &parameters() const;
 
     /**
      * Return whether a given parameter can be passed to the connection
      * manager when creating a connection to this protocol.
      *
-     * \param param The name of a parameter
+     * \param name The name of a parameter
      * \return true if the given parameter exists
      */
-    bool hasParameter(const QString& param) const;
-
-    /**
-     * Return the D-Bus signature of the given parameter. Commonly used
-     * signatures include "s" (string) and "u" (32-bit unsigned integer).
-     *
-     * \return A D-Bus signature
-     */
-    QDBusSignature parameterDBusSignature(const QString& param) const;
-
-    /**
-     * Return the QVariant::Type corresponding to the D-Bus signature of
-     * the given parameter, if a suitable type is known. Otherwise return
-     * QVariant::Invalid.
-     *
-     * \param param The name of a parameter
-     * \return A QVariant type, or QVariant::Invalid
-     */
-    QVariant::Type parameterType(const QString& param) const;
-
-    /**
-     * Return whether the given parameter is required.
-     *
-     * The set of required parameters can be different depending on the value
-     * of the special parameter <code>register</code>, which indicates
-     * whether we are registering for a new account, or connecting to an
-     * existing account. Normally, <code>register</code> is false.
-     *
-     * \param param The name of a parameter
-     * \param registering The value that will be given to the special
-     *                    parameter <code>register</code>
-     * \return true if this parameter must always be given
-     */
-    bool parameterIsRequired(const QString& param,
-            bool registering = false) const;
-
-    /**
-     * Return whether this parameter is marked as "secret". Secret parameters
-     * (such as passwords) should be stored in an appropriate password store
-     * (such as KWallet) rather than in normal configuration files, and should
-     * not appear in debugging logs.
-     *
-     * \param param The name of a parameter
-     * \return true if this parameter is a password, key or other secret
-     */
-    bool parameterIsSecret(const QString& param) const;
-
-    /**
-     * Return whether this parameter corresponds to a D-Bus property with
-     * the same name. These parameters should be handled specially by the
-     * AccountManager.
-     *
-     * \param param The name of a parameter
-     * \return true if this parameter is a D-Bus property
-     */
-    bool parameterIsDBusProperty(const QString& param) const;
-
-    /**
-     * Return whether this parameter has a default value.
-     *
-     * \param param The name of a parameter
-     * \return true if omitting this parameter when creating a connection
-     *         is equivalent to using getParameterDefault()
-     */
-    bool parameterHasDefault(const QString& param) const;
-
-    /**
-     * If parameterHasDefault() returns true for the given parameter, return
-     * the default value of the parameter. Otherwise, return an invalid
-     * variant.
-     *
-     * \param param The name of a parameter
-     * \return The default value of the given parameter, if any
-     */
-    QVariant getParameterDefault(const QString& param) const;
+    bool hasParameter(const QString &name) const;
 
     /**
      * Return whether it might be possible to register new accounts on this
@@ -174,6 +136,8 @@ public:
 
 private:
     ProtocolInfo(const QString& cmName, const QString& protocol);
+
+    void addParameter(const ParamSpec &spec);
 
     struct Private;
     friend struct Private;
