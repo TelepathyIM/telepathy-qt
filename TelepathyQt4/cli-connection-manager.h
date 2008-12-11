@@ -176,7 +176,7 @@ public:
 
     virtual ~ConnectionManager();
 
-    QString cmName() const { return mCmName; }
+    QString name() const { return mName; }
 
     QStringList interfaces() const;
 
@@ -225,7 +225,7 @@ private:
     struct Private;
     friend struct Private;
     Private *mPriv;
-    QString mCmName;
+    QString mName;
 };
 
 }

@@ -262,7 +262,7 @@ ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
             Private::makeBusName(name), Private::makeObjectPath(name),
             parent),
       mPriv(new Private(*this, name)),
-      mCmName(name)
+      mName(name)
 {
 }
 
@@ -272,7 +272,7 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), parent),
       mPriv(new Private(*this, name)),
-      mCmName(name)
+      mName(name)
 {
 }
 
@@ -357,7 +357,7 @@ void ConnectionManager::onListProtocolsReturn(
     }
 
     Q_FOREACH (const QString &protocolName, protocols) {
-        mPriv->protocols.append(new ProtocolInfo(mCmName,
+        mPriv->protocols.append(new ProtocolInfo(mName,
                                                  protocolName));
 
         mPriv->getParametersQueue.enqueue(protocolName);
