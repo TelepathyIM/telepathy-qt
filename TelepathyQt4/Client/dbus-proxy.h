@@ -167,10 +167,10 @@ public:
 
 protected:
     /**
-     * Called by subclasses when the DBusProxy should become invalid.
+     * Called by subclasses when the StatefulDBusProxy should become invalid.
      *
      * This method takes care of setting the invalidationReason,
-     * invalidationMethod, and emitting the invalidated signal.
+     * invalidationMessage, and emitting the invalidated signal.
      */
     void invalidate(const QString& reason, const QString& message);
 
