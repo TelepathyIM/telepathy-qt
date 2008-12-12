@@ -177,8 +177,10 @@ class Account(Object):
             self._parameters[key] = value
         for key in unset:
             self._parameters.pop(key, None)
+        print ("%s: UpdateParameters(...) -> success"
+                % self.__dbus_object_path__)
 
-        AccountPropertyChanged({'Parameters': self._parameters})
+        self.AccountPropertyChanged({'Parameters': self._parameters})
 
     @signal(ACCOUNT_IFACE, signature='a{sv}')
     def AccountPropertyChanged(self, delta):
