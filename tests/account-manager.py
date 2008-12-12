@@ -94,12 +94,14 @@ class AccountManager(Object):
             assert path in self._valid_accounts
             assert path not in self._invalid_accounts
             self._invalid_accounts[path] = self._valid_accounts.pop(path)
+        print "Emitting AccountValidityChanged(%s, %s)" % (path, valid)
 
     @signal(AM_IFACE, signature='o')
     def AccountRemoved(self, path):
         assert path in self._valid_accounts or path in self._invalid_accounts
         self._valid_accounts.pop(path, None)
         self._invalid_accounts.pop(path, None)
+        print "Emitting AccountRemoved(%s)" % path
 
     @method(AM_IFACE, in_signature='sssa{sv}', out_signature='o')
     def CreateAccount(self, cm, protocol, display_name, parameters):
@@ -169,6 +171,8 @@ class Account(Object):
 
     @method(ACCOUNT_IFACE, in_signature='a{sv}as', out_signature='')
     def UpdateParameters(self, set_, unset):
+        print ("%s: entering UpdateParameters(\n    %r,\n    %r    \n)"
+            % (self.__dbus_object_path__, set_, unset))
         for (key, value) in set_.iteritems():
             self._parameters[key] = value
         for key in unset:
@@ -178,16 +182,20 @@ class Account(Object):
 
     @signal(ACCOUNT_IFACE, signature='a{sv}')
     def AccountPropertyChanged(self, delta):
-        pass
+        print ("%s: emitting AccountPropertyChanged(\n    %r    \n)"
+                % (self.__dbus_object_path__, delta))
 
     @method(ACCOUNT_IFACE, in_signature='', out_signature='')
     def Remove(self):
+        print "%s: entering Remove()" % self.__dbus_object_path__
         self.Removed()
+        print "%s: Remove() -> success" % self.__dbus_object_path__
 
     @signal(ACCOUNT_IFACE, signature='')
     def Removed(self):
         self._am.AccountRemoved(self.__dbus_object_path__)
         self.remove_from_connection()
+        print "%s: Emitting Removed()" % self.__dbus_object_path__
 
     def _account_props(self):
         return dbus.Dictionary({
@@ -245,5 +253,6 @@ if __name__ == '__main__':
         print >> sys.stderr, 'AccountManager already running'
         sys.exit(1)
 
+    print "AccountManager running..."
     mainloop = MainLoop()
     mainloop.run()
