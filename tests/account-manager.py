@@ -244,7 +244,34 @@ class Account(Object):
     @method(dbus.PROPERTIES_IFACE,
             in_signature='ssv')
     def Set(self, iface, prop, value):
-        raise NotImplementedError('Not implemented')
+        if iface == ACCOUNT_IFACE:
+            if prop == 'DisplayName':
+                self._display_name = unicode(value)
+            elif prop == 'Icon':
+                self._icon = unicode(value)
+            elif prop == 'Enabled':
+                self._enabled = bool(value)
+            elif prop == 'Nickname':
+                self._nickname = unicode(value)
+            elif prop == 'AutomaticPresence':
+                self._automatic_presence = dbus.Struct(
+                        (dbus.UInt32(value[0]), unicode(value[1]),
+                            unicode(value[2])),
+                        signature='uss')
+            elif prop == 'ConnectAutomatically':
+                self._connect_automatically = bool(value)
+            elif prop == 'RequestedPresence':
+                # FIXME: pretend to put the account online, if appropriate?
+                self._requested_presence = dbus.Struct(
+                        (dbus.UInt32(value[0]), unicode(value[1]),
+                            unicode(value[2])),
+                        signature='uss')
+            else:
+                raise ValueError('Read-only or nonexistent property')
+
+            self.AccountPropertyChanged({prop: self._account_props()[prop]})
+        else:
+            raise ValueError('No such interface')
 
 if __name__ == '__main__':
     DBusGMainLoop(set_as_default=True)
