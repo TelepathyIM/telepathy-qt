@@ -47,19 +47,6 @@ class AccountManager(Object):
 
         Object.__init__(self, bus, AM_OBJECT_PATH)
 
-    # overridden from Object, to have the Properties in introspection
-    def Introspect(self, **kwargs):
-        xml = super(AccountManager, self).Introspect(**kwargs)
-
-        before, _ = xml.rsplit('</node>', 1)
-
-        return before + """
-            <property name="Interfaces" type="as" access="read"/>
-            <property name="ValidAccounts" type="o" access="read"/>
-            <property name="InvalidAccounts" type="o" access="read"/>
-        </node>
-        """
-
     def _am_props(self):
         return dbus.Dictionary({
             'Interfaces': dbus.Array([], signature='s'),
