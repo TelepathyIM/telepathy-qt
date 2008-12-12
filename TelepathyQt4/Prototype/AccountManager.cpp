@@ -106,6 +106,17 @@ public:
             m_validAccountHandles.remove( handle );
         }
     }
+
+    void connectAccountToManager( const TpPrototype::Account* account, TpPrototype::AccountManager* dest )
+    {
+        QObject::connect( account, SIGNAL( signalRemoved() ),
+                          dest, SLOT( slotAccountRemoved() ) );
+        QObject::connect( account, SIGNAL( signalPropertiesChanged( const QVariantMap& ) ),
+                          dest, SLOT( slotAccountUpdated() ) );
+        QObject::connect( account, SIGNAL( signalPresenceChanged() ),
+                          dest, SLOT( slotAccountUpdated() ) );
+    }
+
 };
 
 AccountManager::AccountManager( QObject* parent ):
@@ -256,10 +267,7 @@ void AccountManager::slotAccountValidityChanged( const QDBusObjectPath& account,
             qDebug() << "AccountManager::slotAccountValidityChanged: Add new account to list";
 #endif
             TpPrototype::Account* new_account = new Account( account.path(), this );
-            connect( new_account, SIGNAL( signalRemoved() ),
-                    this, SLOT( slotAccountRemoved() ) );
-            connect( new_account, SIGNAL( signalPropertiesChanged( const QVariantMap& ) ),
-                     this, SLOT( slotPropertiesChanged() ) );
+            d->connectAccountToManager( new_account, this );
             d->m_validAccountHandles.insert( account.path(), QPointer<Account>( new_account ) );
             update_occurred = true;
             emit signalNewAccountAvailable( new_account );
@@ -272,6 +280,7 @@ void AccountManager::slotAccountValidityChanged( const QDBusObjectPath& account,
 #ifdef ENABLE_DEBUG_OUTPUT_
             qDebug() << "AccountManager::slotAccountValidityChanged: Remove account from list";
 #endif
+            emit signalAccountRemoved( d->m_validAccountHandles.value( account.path() ) );
             d->removeAccount( account.path() );
             update_occurred = true;
         }
@@ -285,16 +294,32 @@ void AccountManager::slotAccountRemoved( const QDBusObjectPath& account )
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "AccountManager::slotAccountRemoved() <external>";
 #endif
+    Account* account_object = d->m_validAccountHandles.value( account.path() );
+    if ( !account_object )
+    {
+#ifdef ENABLE_DEBUG_OUTPUT_
+        qDebug() << "AccountManager::slotAccountRemoved():Account already removed";
+#endif
+        return;
+    }
+
+    // These signals are emitted if an account was removed extarnally.
+    // The signals were already emitted by slotAccountRemoved() if the account was removed locally
+    emit signalAccountRemoved( account_object );
     d->removeAccount( account.path() );
     emit signalAccountsUpdated();
 }
 
 
-void AccountManager::slotPropertiesChanged()
+void AccountManager::slotAccountUpdated()
 {
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "AccountManager::slotPropertiesChanged()";
 #endif
+    Account* account = qobject_cast<Account*>( sender() );
+    Q_ASSERT( account );
+
+    emit signalAccountUpdated( account );
     emit signalAccountsUpdated();
 }
 
@@ -310,6 +335,7 @@ void AccountManager::slotAccountRemoved()
     {
         QString handle = account->handle();
         d->removeAccount( handle );
+        emit signalAccountRemoved( account );
         emit signalAccountsUpdated();
     }
 }
@@ -343,11 +369,9 @@ void AccountManager::init()
     {
 
         Account* account = new Account( account_handle.path(), this );
-        connect( account, SIGNAL( signalRemoved() ),
-                 this, SLOT( slotAccountRemoved() ) );
-        connect( account, SIGNAL( signalPropertiesChanged( const QVariantMap& ) ),
-                 this, SLOT( slotPropertiesChanged() ) );
+        d->connectAccountToManager( account, this );
         d->m_validAccountHandles.insert( account_handle.path(), QPointer<Account>( account ) );
+        emit signalNewAccountAvailable( account );
         emit signalAccountsUpdated();
     }
 

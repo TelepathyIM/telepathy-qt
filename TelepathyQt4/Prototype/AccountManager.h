@@ -116,6 +116,19 @@ signals:
      * This signal is emitted if a new account was created by a contact manager
      */
     void signalNewAccountAvailable( TpPrototype::Account* account );
+
+    /**
+     * An account was removed.
+     * This signal is emitted after an account was removed. Do not use <i>account</i> after receiving this signal!
+     */
+    void signalAccountRemoved( TpPrototype::Account* account );
+    
+    /**
+     * An account was updated.
+     * This signal is emitted after an account was updated.
+     */
+    void signalAccountUpdated( TpPrototype::Account* account );
+    
 protected:
     /**
      * Constructor. The account manager cannot be instantiated directly. Use instance() for it!
@@ -127,7 +140,7 @@ protected slots:
     void slotAccountValidityChanged( const QDBusObjectPath& account, bool valid );
     void slotAccountRemoved( const QDBusObjectPath& account );
     void slotAccountRemoved();
-    void slotPropertiesChanged();
+    void slotAccountUpdated();
 
 private:
     void init();
