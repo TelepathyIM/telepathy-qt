@@ -112,9 +112,10 @@ void TestChanBasics::initTestCase()
 
     // Get a connected Connection
     mConn = new Connection(mConnBusName, mConnObjectPath);
+    Q_ASSERT(mConn->baseInterface() != 0);
 
     QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            mConn->Connect());
+            mConn->baseInterface()->Connect());
     QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
             this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -129,13 +130,14 @@ void TestChanBasics::initTestCase()
     // Using direct access to low-level stuff here, so we can test the
     // Channel constructor directly
     QDBusPendingReply<Telepathy::UIntList> requestHandlesReply =
-        mConn->RequestHandles(Telepathy::HandleTypeList,
+        mConn->baseInterface()->RequestHandles(Telepathy::HandleTypeList,
             QStringList() << "subscribe");
     requestHandlesReply.waitForFinished();
     mSubscribeHandle = requestHandlesReply.value().at(0);
 
     QDBusPendingReply<QDBusObjectPath> requestChannelReply =
-        mConn->RequestChannel(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST,
+        mConn->baseInterface()->RequestChannel(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST,
             Telepathy::HandleTypeList, mSubscribeHandle, true);
     requestChannelReply.waitForFinished();
     mSubscribeChanObjectPath = requestChannelReply.value().path();
@@ -320,12 +322,11 @@ void TestChanBasics::cleanup()
 
 void TestChanBasics::cleanupTestCase()
 {
-    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            mConn->Disconnect());
-    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QVERIFY(connect(mConn->requestDisconnect(),
+          SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          this,
+          SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
 
     delete mConn;
     mConn = NULL;

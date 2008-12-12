@@ -189,11 +189,11 @@ void TestConnBasics::testConnect()
     QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
           this, SLOT(expectNotYetConnected(uint))));
 
-    // FIXME: should have convenience API
+    // FIXME: should have convenience API so we don't have to use
+    // baseInterface directly
     qDebug() << "calling Connect()";
-
     QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            mConn->Connect());
+            mConn->baseInterface()->Connect());
     QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
             this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -250,11 +250,11 @@ void TestConnBasics::testAlreadyConnected()
     QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
           this, SLOT(expectNotYetConnected(uint))));
 
-    // FIXME: should have convenience API
+    // FIXME: should have convenience API so we don't have to use
+    // baseInterface directly
     qDebug() << "calling Connect()";
-
     QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            mConn->Connect());
+            mConn->baseInterface()->Connect());
     QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
             this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -282,12 +282,11 @@ void TestConnBasics::testAlreadyConnected()
     QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
           this, SLOT(expectReady(uint))));
 
-    watcher = new QDBusPendingCallWatcher(
-            mConn->Disconnect());
-    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QVERIFY(connect(mConn->requestDisconnect(),
+          SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          this,
+          SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
 
     delete mConn;
     mConn = NULL;

@@ -30,6 +30,7 @@
 #include <QPointer>
 
 #include <TelepathyQt4/Client/AccountManager>
+#include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Types>
 
 #include <TelepathyQt4/Prototype/Account.h>
@@ -47,11 +48,54 @@ public:
     { init(); }
 
     Telepathy::Client::AccountManagerInterface* m_pInterface;
+    Telepathy::Client::DBus::PropertiesInterface* m_propertiesInterface;
     QMap<QString, QPointer<Account> >  m_validAccountHandles;
 
     void init()
     {
         m_pInterface = NULL;
+    }
+
+    Telepathy::ObjectPathList validAccounts()
+    {
+        Q_ASSERT(m_propertiesInterface);
+
+        QDBusPendingReply<QDBusVariant> get = m_propertiesInterface->Get(
+                "org.freedesktop.Telepathy.AccountManager", "ValidAccounts");
+        get.waitForFinished();
+
+        if (!get.isValid())
+        {
+            qWarning().nospace() << get.error().name() << ": "
+                << get.error().message();
+            return Telepathy::ObjectPathList();
+        }
+
+        Telepathy::ObjectPathList paths = qdbus_cast<Telepathy::ObjectPathList>(
+                get.value().variant());
+
+        if (paths.size() == 0)
+        {
+            // maybe the AccountManager is buggy, like Mission Control
+            // 5.0.beta45, and returns an array of strings rather than
+            // an array of object paths?
+
+            QStringList wronglyTypedPaths = qdbus_cast<QStringList>(
+                    get.value().variant());
+
+            if (wronglyTypedPaths.size() > 0)
+            {
+                qWarning() << "AccountManager returned wrong type "
+                    "(expected 'ao', got 'as'); workaround active";
+
+                Q_FOREACH (QString path, wronglyTypedPaths)
+                {
+                    paths << QDBusObjectPath(path);
+                }
+            }
+        }
+
+        return paths;
     }
 
     void removeAccount( const QString& handle )
@@ -285,9 +329,16 @@ void AccountManager::init()
         qWarning() << "Unable to connect to AccountManagerInterface: MissionControl seems to be missing!";
     }
     //Q_ASSERT( d->m_pInterface->isValid() );
-                                                                           
+
+    d->m_propertiesInterface = new Telepathy::Client::DBus::PropertiesInterface(
+            "org.freedesktop.Telepathy.AccountManager",
+            "/org/freedesktop/Telepathy/AccountManager",
+            this);
+    Q_ASSERT( d->m_propertiesInterface );
+
     // It might be better to use layzy initializing here.. (ses)
-    Telepathy::ObjectPathList account_handles = d->m_pInterface->ValidAccounts();
+    Telepathy::ObjectPathList account_handles = d->validAccounts();
+
     foreach( const QDBusObjectPath& account_handle, account_handles )
     {
 

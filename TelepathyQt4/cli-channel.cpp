@@ -401,7 +401,7 @@ struct Channel::Private
 Channel::Channel(Connection* connection,
                  const QString& objectPath,
                  QObject* parent)
-  : StatefulDBusProxy(connection->connection(), connection->service(),
+  : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
             objectPath, parent),
     mPriv(new Private(*this, connection))
 {

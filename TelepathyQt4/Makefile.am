@@ -77,6 +77,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/types-body.hpp \
     cli-channel.moc.hpp \
     cli-connection.moc.hpp \
+    cli-connection-manager.moc.hpp \
     cli-dbus-proxy.moc.hpp \
     cli-pending-channel.moc.hpp \
     cli-pending-handles.moc.hpp \
