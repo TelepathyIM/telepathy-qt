@@ -51,9 +51,9 @@ class AccountManager(Object):
         return dbus.Dictionary({
             'Interfaces': dbus.Array([], signature='s'),
             'ValidAccounts': dbus.Array(self._valid_accounts.keys(),
-                signature='s'),
+                signature='o'),
             'InvalidAccounts': dbus.Array(self._invalid_accounts.keys(),
-                signature='s'),
+                signature='o'),
         }, signature='sv')
 
     @method(dbus.PROPERTIES_IFACE,
