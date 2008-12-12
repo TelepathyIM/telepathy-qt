@@ -232,7 +232,7 @@ class Account(Object):
             out_signature='v')
     def Get(self, iface, prop):
         if iface == ACCOUNT_IFACE:
-            props = self._am_props()
+            props = self._account_props()
         else:
             raise ValueError('No such interface')
 
