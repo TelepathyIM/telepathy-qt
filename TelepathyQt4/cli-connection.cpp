@@ -134,7 +134,7 @@ struct Connection::Private
                        SLOT(gotStatus(QDBusPendingCallWatcher*)));
 
         QMutexLocker locker(&handleContextsLock);
-        QString connectionName = parent.connection().name();
+        QString connectionName = baseInterface->connection().name();
 
         if (handleContexts.contains(connectionName)) {
             debug() << "Reusing existing HandleContext";
@@ -162,16 +162,16 @@ struct Connection::Private
 
                 if (!type.refcounts.empty()) {
                     debug() << " Still had references to" << type.refcounts.size() << "handles, releasing now";
-                    parent.ReleaseHandles(handleType, type.refcounts.keys());
+                    baseInterface->ReleaseHandles(handleType, type.refcounts.keys());
                 }
 
                 if (!type.toRelease.empty()) {
                     debug() << " Was going to release" << type.toRelease.size() << "handles, doing that now";
-                    parent.ReleaseHandles(handleType, type.toRelease.toList());
+                    baseInterface->ReleaseHandles(handleType, type.toRelease.toList());
                 }
             }
 
-            handleContexts.remove(parent.connection().name());
+            handleContexts.remove(baseInterface->connection().name());
             delete handleContext;
         } else {
             Q_ASSERT(handleContext->refcount > 0);
@@ -584,7 +584,7 @@ PendingHandles* Connection::requestHandles(uint handleType, const QStringList& n
     PendingHandles* pending =
         new PendingHandles(this, handleType, names);
     QDBusPendingCallWatcher* watcher =
-        new QDBusPendingCallWatcher(RequestHandles(handleType, names), pending);
+        new QDBusPendingCallWatcher(mPriv->baseInterface->RequestHandles(handleType, names), pending);
 
     pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
@@ -612,7 +612,7 @@ PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& ha
     PendingHandles* pending =
         new PendingHandles(this, handleType, handles, alreadyHeld);
     QDBusPendingCallWatcher* watcher =
-        new QDBusPendingCallWatcher(HoldHandles(handleType, notYetHeld), pending);
+        new QDBusPendingCallWatcher(mPriv->baseInterface->HoldHandles(handleType, notYetHeld), pending);
 
     pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
@@ -665,8 +665,8 @@ void Connection::doReleaseSweep(uint type)
     Private::HandleContext *handleContext = mPriv->handleContext;
     QMutexLocker locker(&handleContext->lock);
 
-    Q_ASSERT(handleContext->types[type].releaseScheduled);
     Q_ASSERT(handleContext->types.contains(type));
+    Q_ASSERT(handleContext->types[type].releaseScheduled);
 
     debug() << "Entering handle release sweep for type" << type;
     handleContext->types[type].releaseScheduled = false;
@@ -683,7 +683,7 @@ void Connection::doReleaseSweep(uint type)
 
     debug() << " Releasing" << handleContext->types[type].toRelease.size() << "handles";
 
-    ReleaseHandles(type, handleContext->types[type].toRelease.toList());
+    mPriv->baseInterface->ReleaseHandles(type, handleContext->types[type].toRelease.toList());
     handleContext->types[type].toRelease.clear();
 }
 
