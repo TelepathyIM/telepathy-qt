@@ -273,7 +273,7 @@ ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, co
 {
     debug() << "ReferencedHandles(prime)";
 
-    Q_ASSERT(connection != NULL);
+    Q_ASSERT(connection != 0);
     Q_ASSERT(handleType != 0);
 
     mPriv->connection = connection;
