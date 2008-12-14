@@ -29,6 +29,7 @@
 #include <QMetaObject>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QPair>
 #include <QQueue>
 #include <QString>
 #include <QtGlobal>
@@ -94,7 +95,8 @@ struct Connection::Private
             refcount = 0;
         }
     };
-    static QMap<QString, HandleContext*> handleContexts;
+    // (Bus connection name, service name) -> HandleContext
+    static QMap<QPair<QString, QString>, HandleContext*> handleContexts;
     static QMutex handleContextsLock;
     HandleContext* handleContext;
 
@@ -134,15 +136,16 @@ struct Connection::Private
                        SLOT(gotStatus(QDBusPendingCallWatcher*)));
 
         QMutexLocker locker(&handleContextsLock);
-        QString connectionName = baseInterface->connection().name();
+        QString busConnectionName = baseInterface->connection().name();
+        QString serviceName = baseInterface->service();
 
-        if (handleContexts.contains(connectionName)) {
+        if (handleContexts.contains(qMakePair(busConnectionName, serviceName))) {
             debug() << "Reusing existing HandleContext";
-            handleContext = handleContexts[connectionName];
+            handleContext = handleContexts[qMakePair(busConnectionName, serviceName)];
         } else {
             debug() << "Creating new HandleContext";
             handleContext = new HandleContext;
-            handleContexts[connectionName] = handleContext;
+            handleContexts[qMakePair(busConnectionName, serviceName)] = handleContext;
         }
 
         // All handle contexts locked, so safe
@@ -171,7 +174,7 @@ struct Connection::Private
                 }
             }
 
-            handleContexts.remove(baseInterface->connection().name());
+            handleContexts.remove(qMakePair(baseInterface->connection().name(), baseInterface->service()));
             delete handleContext;
         } else {
             Q_ASSERT(handleContext->refcount > 0);
@@ -296,7 +299,7 @@ struct Connection::Private
     }
 };
 
-QMap<QString, Connection::Private::HandleContext*> Connection::Private::handleContexts;
+QMap<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;
 QMutex Connection::Private::handleContextsLock;
 
 Connection::Connection(const QString& serviceName,
