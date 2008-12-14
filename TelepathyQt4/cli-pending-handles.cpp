@@ -44,6 +44,8 @@ struct PendingHandles::Private
 PendingHandles::PendingHandles(Connection* connection, uint handleType, const QStringList& names)
     : PendingOperation(connection), mPriv(new Private)
 {
+    debug() << "PendingHandles(request)";
+
     mPriv->connection = connection;
     mPriv->handleType = handleType;
     mPriv->isRequest = true;
@@ -53,6 +55,8 @@ PendingHandles::PendingHandles(Connection* connection, uint handleType, const QS
 PendingHandles::PendingHandles(Connection* connection, uint handleType, const UIntList& handles, const UIntList& alreadyHeld)
     : PendingOperation(connection), mPriv(new Private)
 {
+    debug() << "PendingHandles(reference)";
+
     mPriv->connection = connection;
     mPriv->handleType = handleType;
     mPriv->isRequest = false;
@@ -60,6 +64,7 @@ PendingHandles::PendingHandles(Connection* connection, uint handleType, const UI
     mPriv->alreadyHeld = ReferencedHandles(connection, handleType, alreadyHeld);
 
     if (alreadyHeld == handles) {
+        debug() << " All handles already held, finishing up instantly";
         mPriv->handles = mPriv->alreadyHeld;
         setFinished();
     }

@@ -611,11 +611,18 @@ PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& ha
 
     PendingHandles* pending =
         new PendingHandles(this, handleType, handles, alreadyHeld);
-    QDBusPendingCallWatcher* watcher =
-        new QDBusPendingCallWatcher(mPriv->baseInterface->HoldHandles(handleType, notYetHeld), pending);
 
-    pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                              SLOT(onCallFinished(QDBusPendingCallWatcher*)));
+    if (!notYetHeld.isEmpty()) {
+        debug() << " Calling HoldHandles";
+
+        QDBusPendingCallWatcher* watcher =
+            new QDBusPendingCallWatcher(mPriv->baseInterface->HoldHandles(handleType, notYetHeld), pending);
+
+        pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                                  SLOT(onCallFinished(QDBusPendingCallWatcher*)));
+    } else {
+        debug() << " All handles already held, not calling HoldHandles";
+    }
 
     return pending;
 }
