@@ -39,9 +39,21 @@ struct ReferencedHandles::Private : public QSharedData
 
     Private()
     {
-        debug() << "ReferencedHandles::Private(default)";
+        debug() << " ReferencedHandles::Private(default)";
 
         handleType = 0;
+    }
+
+    Private(Connection* connection, uint handleType, const UIntList& handles)
+        : connection(connection), handleType(handleType), handles(handles)
+    {
+        debug() << " ReferencedHandles::Private(prime)";
+
+        Q_ASSERT(connection != 0);
+        Q_ASSERT(handleType != 0);
+
+        foreach (uint handle, handles)
+            connection->refHandle(handleType, handle);
     }
 
     Private(const Private& a)
@@ -49,11 +61,11 @@ struct ReferencedHandles::Private : public QSharedData
           handleType(a.handleType),
           handles(a.handles)
     {
-        debug() << "ReferencedHandles::Private(copy)";
+        debug() << " ReferencedHandles::Private(copy)";
 
         if (!handles.isEmpty()) {
             if (!connection) {
-                warning() << "ReferencedHandles with" << handles.size() << "handles detached with connection destroyed so can't reference";
+                debug() << "  Destroyed after Connection, so the Connection has already released the handles";
                 return;
             }
 
@@ -66,11 +78,11 @@ struct ReferencedHandles::Private : public QSharedData
 
     ~Private()
     {
-        debug() << "~ReferencedHandles::Private()";
+        debug() << " ~ReferencedHandles::Private()";
 
         if (!handles.isEmpty()) {
             if (!connection) {
-                warning() << "ReferencedHandles with last copy of" << handles.size() << "handles destroyed with connection destroyed so can't unreference";
+                debug() << "  Destroyed after Connection, so the Connection has already released the handles";
                 return;
             }
 
@@ -270,20 +282,9 @@ bool ReferencedHandles::operator==(const UIntList& list) const
 }
 
 ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, const UIntList& handles)
+    : mPriv(new Private(connection, handleType, handles))
 {
     debug() << "ReferencedHandles(prime)";
-
-    Q_ASSERT(connection != 0);
-    Q_ASSERT(handleType != 0);
-
-    mPriv->connection = connection;
-    mPriv->handleType = handleType;
-    mPriv->handles = handles;
-
-    for (const_iterator i = handles.begin();
-                        i != handles.end();
-                        ++i)
-        connection->refHandle(handleType, *i);
 }
 
 }
