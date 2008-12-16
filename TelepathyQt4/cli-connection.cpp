@@ -65,6 +65,7 @@ struct Connection::Private
     // Introspected properties
     uint status;
     uint statusReason;
+    bool haveInitialStatus;
     uint aliasFlags;
     StatusSpecMap presenceStatuses;
     SimpleStatusSpecMap simplePresenceStatuses;
@@ -112,6 +113,7 @@ struct Connection::Private
         readiness = ReadinessJustCreated;
         status = ConnectionStatusDisconnected;
         statusReason = ConnectionStatusReasonNoneSpecified;
+        haveInitialStatus = false;
         aliasFlags = 0;
     }
 
@@ -393,22 +395,33 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 
 void Connection::onStatusChanged(uint status, uint reason)
 {
+    debug() << "StatusChanged from" << mPriv->status << "to" << status << "with reason" << reason;
+
+    if (!mPriv->haveInitialStatus) {
+        debug() << " Still haven't got the GetStatus reply, ignoring StatusChanged until we have (but saving reason)";
+        mPriv->statusReason = reason;
+        return;
+    }
+
+    if (mPriv->status == status) {
+        warning() << " New status was the same as the old status! Ignoring redundant StatusChanged";
+        return;
+    }
+
     if (status == ConnectionStatusConnected &&
         mPriv->status != ConnectionStatusConnecting) {
         // CMs aren't meant to go straight from Disconnected to
         // Connected; recover by faking Connecting
-        warning() << "Non-compliant CM - went straight to CONNECTED!";
+        warning() << " Non-compliant CM - went straight to Connected! Faking a transition through Connecting";
         onStatusChanged(ConnectionStatusConnecting, reason);
     }
-
-    debug() << "Status changed from" << mPriv->status << "to" << status << "for reason" << reason;
 
     mPriv->status = status;
     mPriv->statusReason = reason;
 
     switch (status) {
         case ConnectionStatusConnected:
-            debug() << "Performing introspection for the Connected status";
+            debug() << " Performing introspection for the Connected status";
             mPriv->introspectQueue.enqueue(&Private::introspectMain);
             mPriv->continueIntrospection();
             break;
@@ -417,14 +430,14 @@ void Connection::onStatusChanged(uint status, uint reason)
             if (mPriv->readiness < ReadinessConnecting)
                 mPriv->changeReadiness(ReadinessConnecting);
             else
-                warning() << "Got unexpected status change to Connecting";
+                warning() << " Got unexpected status change to Connecting";
             break;
 
         case ConnectionStatusDisconnected:
             if (mPriv->readiness != ReadinessDead)
                 mPriv->changeReadiness(ReadinessDead);
             else
-                warning() << "Got unexpected status change to Disconnected";
+                warning() << " Got unexpected status change to Disconnected";
             break;
 
         default:
@@ -447,6 +460,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher* watcher)
 
     debug() << "Got connection status" << status;
     mPriv->status = status;
+    mPriv->haveInitialStatus = true;
 
     // Don't do any introspection yet if the connection is in the Connecting
     // state; the StatusChanged handler will take care of doing that, if the
