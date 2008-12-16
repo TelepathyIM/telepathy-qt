@@ -114,7 +114,7 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
 {
     // Thanks QDBus for this the need for this error-handling code duplication
     if (mPriv->isRequest) {
-        QDBusPendingReply<UIntList> reply;
+        QDBusPendingReply<UIntList> reply = *watcher;
 
         debug() << "Received reply to RequestHandles";
 
