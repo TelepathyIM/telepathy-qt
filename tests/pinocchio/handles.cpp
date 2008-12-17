@@ -29,7 +29,8 @@ private:
     // Bus connection 2
     Connection *mConn2;
 
-    // Temporary storage to move ReferencedHandles away from their self-destructive parents in the finished() handlers
+    // Temporary storage to move ReferencedHandles away from their self-destructive parents in the
+    // finished() handlers
     ReferencedHandles mHandles;
 
 protected Q_SLOTS:
@@ -176,17 +177,21 @@ void TestHandles::expectPendingHandlesFinished(PendingOperation *op)
 
 void TestHandles::testBasics()
 {
+    // Get a reference to compare against (synchronously, don't do this in real applications)
     QStringList ids = QStringList() << "friend" << "buddy" << "associate" << "dude" << "guy";
     ConnectionInterface iface(mConn1a->busName(), mConn1a->objectPath());
     Telepathy::UIntList shouldBe = iface.RequestHandles(Telepathy::HandleTypeContact, ids);
 
+    // Try and get the same handles asynchronously using the convenience API
     PendingHandles *pending = mConn1a->requestHandles(Telepathy::HandleTypeContact, ids);
 
+    // Check that the closure is consistent with what we asked for
     QVERIFY(pending->isRequest());
     QCOMPARE(pending->namesRequested(), ids);
     QCOMPARE(pending->connection(), mConn1a);
     QCOMPARE(pending->handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
 
+    // Finish the request and extract the resulting ReferencedHandles
     QVERIFY(connect(pending, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
           this, SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -195,12 +200,14 @@ void TestHandles::testBasics()
     ReferencedHandles handles = mHandles;
     mHandles = ReferencedHandles();
 
+    // Check that the ReferencedHandles are what we asked for
     QCOMPARE(handles.connection(), mConn1a);
     QCOMPARE(handles.handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
     QVERIFY(handles == shouldBe);
 
+    // Check that a copy of the received ReferencedHandles is also what we asked for (it's supposed
+    // to be equivalent with one that we already verified as being that)
     ReferencedHandles copy = handles;
-
     QCOMPARE(copy.connection(), mConn1a);
     QCOMPARE(copy.handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
 
