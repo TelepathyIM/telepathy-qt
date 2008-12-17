@@ -39,16 +39,12 @@ struct ReferencedHandles::Private : public QSharedData
 
     Private()
     {
-        debug() << " ReferencedHandles::Private(default)";
-
         handleType = 0;
     }
 
     Private(Connection* connection, uint handleType, const UIntList& handles)
         : connection(connection), handleType(handleType), handles(handles)
     {
-        debug() << " ReferencedHandles::Private(prime)";
-
         Q_ASSERT(connection != 0);
         Q_ASSERT(handleType != 0);
 
@@ -61,8 +57,6 @@ struct ReferencedHandles::Private : public QSharedData
           handleType(a.handleType),
           handles(a.handles)
     {
-        debug() << " ReferencedHandles::Private(copy)";
-
         if (!handles.isEmpty()) {
             if (!connection) {
                 debug() << "  Destroyed after Connection, so the Connection has already released the handles";
@@ -78,8 +72,6 @@ struct ReferencedHandles::Private : public QSharedData
 
     ~Private()
     {
-        debug() << " ~ReferencedHandles::Private()";
-
         if (!handles.isEmpty()) {
             if (!connection) {
                 debug() << "  Destroyed after Connection, so the Connection has already released the handles";
@@ -100,18 +92,15 @@ private:
 ReferencedHandles::ReferencedHandles()
     : mPriv(new Private)
 {
-    debug() << "ReferencedHandles(default)";
 }
 
 ReferencedHandles::ReferencedHandles(const ReferencedHandles& other)
     : mPriv(other.mPriv)
 {
-    debug() << "ReferencedHandles(copy)";
 }
 
 ReferencedHandles::~ReferencedHandles()
 {
-    debug() << "~ReferencedHandles()";
 }
 
 Connection* ReferencedHandles::connection() const
@@ -284,7 +273,6 @@ bool ReferencedHandles::operator==(const UIntList& list) const
 ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, const UIntList& handles)
     : mPriv(new Private(connection, handleType, handles))
 {
-    debug() << "ReferencedHandles(prime)";
 }
 
 }
