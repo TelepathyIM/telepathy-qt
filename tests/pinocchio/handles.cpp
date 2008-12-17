@@ -1,3 +1,5 @@
+#include <list>
+
 #include <QDebug>
 #include <QStringList>
 
@@ -44,6 +46,7 @@ private Q_SLOTS:
     void init();
 
     void testBasics();
+    void testReferences();
 
     void cleanup();
     void cleanupTestCase();
@@ -213,6 +216,96 @@ void TestHandles::testBasics()
 
     QVERIFY(copy == handles);
     QVERIFY(copy == shouldBe);
+}
+
+void TestHandles::testReferences()
+{
+    // Used for verifying the handles we get actually work and continue to do so after various
+    // operations which are supposed to preserve them
+    ConnectionInterface iface(mConn1a->busName(), mConn1a->objectPath());
+
+    // Declare some IDs to use as a test case
+    QStringList ids = QStringList() << "mate" << "contact" << "partner" << "bloke" << "fellow";
+
+    // Get referenced handles for all 5 of the IDs
+    PendingHandles *allPending = mConn1a->requestHandles(Telepathy::HandleTypeContact, ids);
+    QVERIFY(connect(allPending, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(allPending, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
+    ReferencedHandles allHandles = mHandles;
+    mHandles = ReferencedHandles();
+
+    // Check that we actually have 5 handles
+    QCOMPARE(allHandles.size(), 5);
+
+    // ... and that they're valid at this point by inspecting them
+    QDBusReply<QStringList> inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
+            Telepathy::UIntList::fromStdList(std::list<uint>(allHandles.begin(),
+                    allHandles.end())));
+    QVERIFY(inspectReply.isValid());
+    QCOMPARE(inspectReply.value().size(), 5);
+
+    // Get another fresh reference to the middle three using the Connection
+    PendingHandles *middlePending = mConn1a->referenceHandles(Telepathy::HandleTypeContact,
+            Telepathy::UIntList() << allHandles[1] << allHandles[2] << allHandles[3]);
+    QVERIFY(connect(middlePending, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(disconnect(middlePending, SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
+    ReferencedHandles middleHandles = mHandles;
+    mHandles = ReferencedHandles();
+
+    // ... and another reference to the last three using ReferencedHandles RAII magic
+    ReferencedHandles lastHandles = allHandles.mid(2);
+
+    // Check that they actually contain the right handles
+    QCOMPARE(middleHandles.size(), 3);
+    QCOMPARE(lastHandles.size(), 3);
+
+    QCOMPARE(middleHandles[0], allHandles[1]);
+    QCOMPARE(middleHandles[1], allHandles[2]);
+    QCOMPARE(middleHandles[2], allHandles[3]);
+
+    QCOMPARE(lastHandles[0], allHandles[2]);
+    QCOMPARE(lastHandles[1], allHandles[3]);
+    QCOMPARE(lastHandles[2], allHandles[4]);
+
+    // Ok, so at this point they're valid handles, because they're the same we already checked as
+    // being valid - but what if we nuke the original ReferencedHandles containing all of the
+    // handles? Let's save its first one though...
+    uint firstHandle = allHandles.first();
+    allHandles = ReferencedHandles();
+
+    // Let's process the now-queued events first so what's going to be released is released
+    mLoop->processEvents();
+
+    // Now check that our middle and last handles can still be inspected
+    inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
+            Telepathy::UIntList::fromStdList(std::list<uint>(middleHandles.begin(),
+                    middleHandles.end())));
+    QVERIFY(inspectReply.isValid());
+    QCOMPARE(inspectReply.value().size(), 3);
+
+    inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
+            Telepathy::UIntList::fromStdList(std::list<uint>(lastHandles.begin(),
+                    lastHandles.end())));
+    QVERIFY(inspectReply.isValid());
+    QCOMPARE(inspectReply.value().size(), 3);
+
+    // Because we know that in this self-contained test, nobody else can possibly be holding the
+    // first handle, and we have dropped the last ReferencedHandles having it, it should be invalid
+    //
+    // However, the telepathy-python 0.15.0 ReleaseHandles implementation is made of cheese. I know
+    // how to fix it, but until we've released tp-python with the fix, and added a dependency on
+    // that new version of tp-python for the tests, we can't enable this.
+    //inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
+    //        Telepathy::UIntList() << firstHandle);
+    //QEXPECT_FAIL("", "pinocchio's handle machinery fails at releasing", Continue);
+    //QVERIFY(!inspectReply.isValid());
+    Q_UNUSED(firstHandle);
 }
 
 void TestHandles::cleanup()
