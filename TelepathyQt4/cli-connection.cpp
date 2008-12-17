@@ -592,11 +592,13 @@ PendingOperation* Connection::requestConnect()
 
 PendingHandles* Connection::requestHandles(uint handleType, const QStringList& names)
 {
-    Private::HandleContext *handleContext = mPriv->handleContext;
-    QMutexLocker locker(&handleContext->lock);
-    handleContext->types[handleType].requestsInFlight++;
-
     debug() << "Request for" << names.length() << "handles of type" << handleType;
+
+    {
+        Private::HandleContext *handleContext = mPriv->handleContext;
+        QMutexLocker locker(&handleContext->lock);
+        handleContext->types[handleType].requestsInFlight++;
+    }
 
     PendingHandles* pending =
         new PendingHandles(this, handleType, names);
@@ -611,19 +613,24 @@ PendingHandles* Connection::requestHandles(uint handleType, const QStringList& n
 
 PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& handles)
 {
-    Private::HandleContext *handleContext = mPriv->handleContext;
-    QMutexLocker locker(&handleContext->lock);
-
     debug() << "Reference of" << handles.length() << "handles of type" << handleType;
 
     UIntList alreadyHeld;
     UIntList notYetHeld;
-    foreach (uint handle, handles) {
-        if (handleContext->types[handleType].refcounts.contains(handle) || handleContext->types[handleType].toRelease.contains(handle))
-            alreadyHeld.push_back(handle);
-        else
-            notYetHeld.push_back(handle);
+    {
+        Private::HandleContext *handleContext = mPriv->handleContext;
+        QMutexLocker locker(&handleContext->lock);
+
+        foreach (uint handle, handles) {
+            if (handleContext->types[handleType].refcounts.contains(handle)
+                    || handleContext->types[handleType].toRelease.contains(handle)) {
+                alreadyHeld.push_back(handle);
+            } else {
+                notYetHeld.push_back(handle);
+            }
+        }
     }
+
     debug() << " Already holding" << alreadyHeld.size() << "of the handles -" << notYetHeld.size() << "to go";
 
     PendingHandles* pending =
