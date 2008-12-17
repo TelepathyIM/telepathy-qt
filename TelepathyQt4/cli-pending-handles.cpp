@@ -128,7 +128,7 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
 
         connection()->handleRequestLanded(handleType());
     } else {
-        QDBusPendingReply<void> reply;
+        QDBusPendingReply<void> reply = *watcher;
 
         debug() << "Received reply to HoldHandles";
 
