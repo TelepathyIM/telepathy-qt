@@ -677,8 +677,6 @@ void Connection::unrefHandle(uint type, uint handle)
                 debug() << "Lost last reference to at least one handle of type" << type << "and no requests in flight for that type - scheduling a release sweep";
                 QMetaObject::invokeMethod(this, "doReleaseSweep", Qt::QueuedConnection, Q_ARG(uint, type));
                 handleContext->types[type].releaseScheduled = true;
-            } else {
-                debug() << "Deferring handle release sweep for type" << type << "to when there are no requests in flight for that type";
             }
         }
     }
