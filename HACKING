@@ -22,6 +22,9 @@ followed by eg. KDELibs. In short, that amounts to:
  * Prefer static_cast, const_cast etc over C-style casts
  * Wrap long lines to 100 characters at most
 
+The coding style is described in more detail in the KDE TechBase at
+http://techbase.kde.org/Policies/Kdelibs_Coding_Style.
+
 ===============================================================================
 Submitting patches
 ===============================================================================
