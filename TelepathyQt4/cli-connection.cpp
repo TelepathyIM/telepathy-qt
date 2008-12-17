@@ -675,7 +675,7 @@ void Connection::unrefHandle(uint type, uint handle)
         if (!handleContext->types[type].releaseScheduled) {
             if (!handleContext->types[type].requestsInFlight) {
                 debug() << "Lost last reference to at least one handle of type" << type << "and no requests in flight for that type - scheduling a release sweep";
-                QMetaObject::invokeMethod(this, SLOT("doReleaseSweep(uint)"), Qt::QueuedConnection, Q_ARG(uint, type));
+                QMetaObject::invokeMethod(this, "doReleaseSweep", Qt::QueuedConnection, Q_ARG(uint, type));
                 handleContext->types[type].releaseScheduled = true;
             } else {
                 debug() << "Deferring handle release sweep for type" << type << "to when there are no requests in flight for that type";
@@ -721,7 +721,7 @@ void Connection::handleRequestLanded(uint type)
 
     if (!--handleContext->types[type].requestsInFlight && !handleContext->types[type].toRelease.isEmpty() && !handleContext->types[type].releaseScheduled) {
         debug() << "All handle requests for type" << type << "landed and there are handles of that type to release - scheduling a release sweep";
-        QMetaObject::invokeMethod(this, SLOT("doReleaseSweep(uint)"), Qt::QueuedConnection, Q_ARG(uint, type));
+        QMetaObject::invokeMethod(this, "doReleaseSweep", Qt::QueuedConnection, Q_ARG(uint, type));
         handleContext->types[type].releaseScheduled = true;
     }
 }
