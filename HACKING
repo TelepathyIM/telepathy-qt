@@ -1,0 +1,34 @@
+===============================================================================
+Coding style
+===============================================================================
+
+TelepathyQt4 uses the standard Qt4 coding style for the Qt/C++ code, as also
+followed by eg. KDELibs. In short, that amounts to:
+ * 4 spaces for indentation (no tabs, anywhere)
+ * javaCase for variables and functions (incl. members), FullCamelCase for types
+ * No abbreviations, except for 100% standard ones like regex, refcount, etc.
+ * Type &var and Type *var, not Type& var and Type* var for pointers and refs
+ * Use only one empty line to separate both groups of related statements AND
+   function & class bodies
+ * Use a space after each keyword but none after opening parens (if (true))
+ * No spaces between the function name and the parens for the parameter list
+ * Surround binary operators with spaces, but don't put spaces between a unary
+   operator and their operand
+ * For function bodies, put the opening curly brace on its own line. For
+   everything else, put the opening curly brace in the same line as the
+   statement (if, for, etc.) associated with it.
+ * Use curly braces even for single-line bodies of conditional statements and
+   loops
+ * Prefer static_cast, const_cast etc over C-style casts
+ * Wrap long lines to 100 characters at most
+
+===============================================================================
+Submitting patches
+===============================================================================
+
+Patches should be made as (preferably) git branches or (last resort) -uNr diffs
+against upstream git master, as found at
+  git://git.collabora.co.uk/git/telepathy-qt4.git
+. Patches can be announced at the freedesktop.org bugzilla, at
+  http://bugs.freedesktop.org
+. Use the product "Telepathy" and component "telepathy-qt4".
