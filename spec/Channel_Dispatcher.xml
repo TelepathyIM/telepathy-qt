@@ -197,6 +197,17 @@
               on it, and partly so the channel dispatcher
               can recover state if it crashes and is restarted.</p>
           </tp:rationale>
+
+          <p>If this is a well-known bus name, the channel dispatcher SHOULD
+            call <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">AddRequest</tp:dbus-ref>
+            on that Handler after this method has returned.</p>
+
+          <tp:rationale>
+            <p>This ordering allows a Handler which calls CreateChannel with
+              itself as the preferred handler to associate the call to
+              AddRequest with that call.</p>
+          </tp:rationale>
         </tp:docstring>
       </arg>
 
@@ -301,6 +312,17 @@
                 namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandleChannels</tp:dbus-ref>
               on it, and partly so the channel dispatcher
               can recover state if it crashes and is restarted.</p>
+          </tp:rationale>
+
+          <p>If this is a well-known bus name, the channel dispatcher SHOULD
+            call <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">AddRequest</tp:dbus-ref>
+            on that Handler after this method has returned.</p>
+
+          <tp:rationale>
+            <p>This ordering allows a Handler which calls EnsureChannel with
+              itself as the preferred handler to associate the call to
+              AddRequest with that call.</p>
           </tp:rationale>
 
           <p>If any new channels are created in response to this

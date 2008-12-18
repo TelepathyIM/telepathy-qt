@@ -20,7 +20,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface exported by client applications which are able to
-        handle incoming channels.</p>
+        handle incoming channels.  This
+        interface is intended to be deprecated in favour of
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Client.Handler.DRAFT</tp:dbus-ref>
+        when that interface comes out of DRAFT; client authors should consider
+        implementing that interface instead.
+      </p>
     </tp:docstring>
     <tp:added version="0.17.0"/>
 

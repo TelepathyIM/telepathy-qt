@@ -25,7 +25,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type for representing a list of people on the server which is
     not used for communication. This is intended for use with the interface
-    Channel.Interface.Group for managing buddy lists and privacy lists
+    <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy">Channel.Interface.Group</tp:dbus-ref>
+    for managing buddy lists and privacy lists
     on the server. This channel type has no methods because all of the
     functionality it represents is available via the group interface.</p>
 
@@ -37,8 +39,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     of this channel type should be created by the connection manager at
     connection time if the list exists on the server, or may be requested
     by using the appropriate handle.  These handles can be obtained using
-    RequestHandles with a handle type of HANDLE_TYPE_LIST and
-    one of the following identifiers:</p>
+    <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy.Connection">RequestHandles</tp:dbus-ref>
+    with a <tp:type>Handle_Type</tp:type> of HANDLE_TYPE_LIST and one of the
+    following identifiers:</p>
 
     <ul>
       <li>subscribe - the group of contacts for whom you receive presence</li>
@@ -52,10 +56,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </ul>
 
     <p>A contact can be in several server-defined lists. All lists are optional
-    to implement. If RequestHandles or RequestChannel for a particular contact
-    list raises an error, this indicates that the connection manager makes no
-    particular statement about the list's contents; clients MUST NOT consider
-    this to be fatal.</p>
+    to implement. If <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy.Connection">RequestHandles</tp:dbus-ref>
+    or <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy.Connection">RequestChannel</tp:dbus-ref>
+    for a particular contact list raises an error, this indicates that the
+    connection manager makes no particular statement about the list's contents;
+    clients MUST NOT consider this to be fatal.</p>
 
     <p>If a client wants to list all of a user's contacts, it is appropriate to
     use the union of the subscribe, publish and stored lists, including the
@@ -76,11 +83,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <p>For user-defined contact groups, instances of this channel type should
     be created by the connection manager at connection time for each group
     that exists on the server. New, empty groups can be created by calling
-    RequestHandles with a handle type of
-    HANDLE_TYPE_GROUP and with the name set to the
-    human-readable UTF-8 name of the group.</p>
+    <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy.Connection">RequestHandles</tp:dbus-ref>
+    with a <tp:type>Handle_Type</tp:type> of HANDLE_TYPE_GROUP and with the
+    name set to the human-readable UTF-8 name of the group.</p>
 
-    <p>User-defined groups may be deleted by closing the channel, but only if
+    <p>User-defined groups may be deleted by calling <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref> on the
+    channel, but only if
     the group is already empty. Closing a channel to a non-empty group is
     not allowed; its members must be set to the empty set first.</p>
 

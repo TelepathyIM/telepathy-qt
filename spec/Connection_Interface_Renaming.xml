@@ -50,8 +50,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>If the contact's old handle is in any of the member lists of
           a channel which has the groups interface, it will be removed from
           the channel and the new handle will be added. The resulting
-          MembersChanged signal must be emitted <em>after</em> the Renamed
-          signal; the reason should be RENAMED.
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface.Group">MembersChanged</tp:dbus-ref>
+          signal must be emitted <em>after</em> the
+          <tp:member-ref>Renamed</tp:member-ref> signal; the reason should be
+          RENAMED.
         </p>
 
         <p>The handles may be either general-purpose or channel-specific.
@@ -69,8 +72,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Request that the user's own identifier is changed on the server.
-          If successful, a Renamed signal will be emitted for the current
-          "self handle" as returned by GetSelfHandle.</p>
+          If successful, a <tp:member-ref>Renamed</tp:member-ref> signal will
+          be emitted for the current "self handle" as returned by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection">GetSelfHandle</tp:dbus-ref>.</p>
         <p>It is protocol-dependent how the identifier that's actually
           used will be derived from the supplied identifier; some sort of
           normalization might take place.</p>

@@ -1,0 +1,165 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Contact_Capabilities" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2005, 2006, 2008 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005, 2006, 2008 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT">
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+    <tp:added version="0.17.16">(as a draft)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Contact capabilities describe the channel classes which may be
+        created with a given contact in advance of attempting to create a
+        channel. Each capability represents a commitment by the
+        connection manager that it will ordinarily be able to create a channel
+        with a contact when given a request with the properties defined by the
+        channel class.</p>
+
+      <p>Capabilities pertain to particular contact handles, and represent
+        activities such as having a text chat, a voice call with the user or a
+        stream tube of a defined type.</p>
+
+      <p>This interface also enables user interfaces to notify the connection
+        manager what capabilities to advertise for the user to other contacts.
+        This is done by using the
+        <tp:member-ref>SetSelfCapabilities</tp:member-ref> method, and deals
+        with channel property values pertaining to them which are implemented
+        by available client processes.</p>
+
+    </tp:docstring>
+
+    <method name="SetSelfCapabilities"
+            tp:name-for-bindings="Set_Self_Capabilities">
+      <arg direction="in" name="caps" type="aa{sv}"
+           tp:type="String_Variant_Map[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          An array of channel classes to replace to the list of what the
+          connection can handle. If you include optional properties, they
+          may not get advertised. The given properties are matched to the
+          mandatory properties.
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Used by user interfaces to indicate which channel classes they are
+        able to handle on this connection. It replaces the previous advertised
+        channel classes by the set given as parameter.</p>
+
+        <p>If a channel class is unknown by the connection manager, it is just
+        ignored. No error are returned in this case, and other known channel
+        class are added.</p>
+
+        <p>Upon a successful invocation of this method, the
+        <tp:member-ref>ContactCapabilitiesChanged</tp:member-ref> signal
+        will only be emitted for the user's own
+        handle (as returned by GetSelfHandle) by the connection manager if, in
+        the given protocol, the given capabilities are distinct from the
+        previous state.</p>
+
+        <tp:rationale>
+          <p>The connection manager will essentially intersect the provided
+            capabilities and the channel classes it implements. Therefore,
+            certain properties which are never fixed for a channel class
+            (such as the target handle, or the Parameters property of a tube
+            channel) will almost certainly not be advertised.</p>
+        </tp:rationale>
+
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetContactCapabilities"
+            tp:name-for-bindings="Get_Contact_Capabilities">
+      <arg direction="in" name="handles" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>An array of contact handles for this connection.</p>
+
+          <p>The handle zero MUST NOT be included in the request.</p>
+        </tp:docstring>
+      </arg>
+      <!-- There was a bug in dbus-glib that prevent to use the right type:
+           Instead of a{ua(a{sv}as)}, we used a(ua{sv}as) as a workaround.
+           See http://bugs.freedesktop.org/show_bug.cgi?id=17329
+           Now there is a fix, so we don't use the workaround anymore.
+        -->
+      <arg direction="out" type="a{ua(a{sv}as)}"
+           tp:type="Contact_Capabilities_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          An array of structures containing:
+          <ul>
+            <li>a dictionary mapping the channel properties to their values.</li>
+            <li>an array of additional allowed properties</li>
+          </ul>
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Returns an array of enhanced capabilities for the given contact handles.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
+          <tp:docstring>
+            The handle does not represent a contact. Zero is always invalid.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="ContactCapabilitiesChanged"
+            tp:name-for-bindings="Contact_Capabilities_Changed">
+      <arg name="caps" type="a{ua(a{sv}as)}"
+           tp:type="Contact_Capabilities_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          All the capabilities of the contacts
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Announce that there has been a change of capabilities on the
+          given handles. A single signal can be emitted for several
+        contacts.</p>
+
+        <tp:rationale>
+          <p>The underlying protocol can get several contacts' capabilities at
+            the same time.</p>
+        </tp:rationale>
+        
+      </tp:docstring>
+    </signal>
+
+  <tp:mapping name="Contact_Capabilities_Map"
+              array-name="Contact_Capabilities_Map_List">
+    <tp:docstring>A mapping from contact handle to their capabilities.
+    </tp:docstring>
+    <tp:member type="u" name="Key" tp:type="Contact_Handle">
+      <tp:docstring>
+        A contact handle.
+      </tp:docstring>
+    </tp:member>
+    <tp:member type="a(a{sv}as)" name="Value"
+               tp:type="Requestable_Channel_Class[]">
+      <tp:docstring>
+        The contact capabilities.
+      </tp:docstring>
+    </tp:member>
+  </tp:mapping>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

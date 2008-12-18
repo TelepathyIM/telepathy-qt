@@ -138,6 +138,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
         <tp:added version="0.17.2"/>
       </tp:flag>
+      <tp:flag suffix="DBus_Property" value="16">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          This parameter is also a D-Bus property on the resulting <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>; a
+          parameter named <code>com.example.Duck.Macaroni</code> with this flag
+          corresponds to the <code>Macaroni</code> property on the
+          <code>com.example.Duck</code> interface.  Its value can be queried
+          and possibly changed on an existing Connection using methods on the
+          <code>org.freedesktop.DBus.Properties</code> interface.
+        </tp:docstring>
+        <tp:added version="0.17.16"/>
+      </tp:flag>
     </tp:flags>
 
     <method name="GetParameters" tp:name-for-bindings="Get_Parameters">
@@ -153,7 +165,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring>
         Get a list of the parameters which must or may be provided to the
-        RequestConnection method when connecting to the given protocol,
+        <tp:member-ref>RequestConnection</tp:member-ref> method when connecting
+        to the given protocol,
         or registering (the boolean &quot;register&quot; parameter is available,
         and set to true).
       </tp:docstring>
@@ -193,7 +206,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
       <tp:docstring>
-        Emitted when a new Connection object is created.
+        Emitted when a new <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref> object
+        is created.
       </tp:docstring>
     </signal>
 
@@ -206,7 +221,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="in" name="Parameters" type="a{sv}"
         tp:type="String_Variant_Map">
         <tp:docstring>
-          A dictionary mapping parameter name to the variant boxed value
+          A dictionary mapping parameter names to values of the appropriate
+          type, as indicated by <tp:member-ref>GetParameters</tp:member-ref>
+          and the above well-known list.
         </tp:docstring>
       </arg>
       <arg direction="out" type="s" tp:type="DBus_Bus_Name">
@@ -232,7 +249,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           method.</p>
 
         <p>The parameters which must and may be provided in the parameters
-        dictionary can be discovered with the GetParameters method. These
+        dictionary can be discovered with the
+        <tp:member-ref>GetParameters</tp:member-ref> method. These
         parameters, their types, and their default values may be cached
         in files so that all available connection managers do not need to be
         started to discover which protocols are available.</p>
@@ -242,42 +260,53 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         following well-known names and types should be used where appropriate:</p>
 
         <dl>
-          <dt>s:account</dt>
+          <dt>account (s)</dt>
           <dd>The identifier for the user's account on the server</dd>
 
-          <dt>s:server</dt><dd>A fully qualified domain name or numeric IPv4 or IPv6
-        address. Using the fully-qualified domain name form is recommended
-        whenever possible. If this parameter is specified and the account
-        for that protocol also specifies a server, this parameter should
-        override that in the user id.</dd>
+          <dt>server (s)</dt>
+          <dd>A fully qualified domain name or numeric IPv4 or IPv6 address.
+            Using the fully-qualified domain name form is recommended whenever
+            possible. If this parameter is specified and the account for that
+            protocol also specifies a server, this parameter should override
+            that in the user id.</dd>
 
-      <dt>q:port</dt><dd>A TCP or UDP port number. If this parameter is specified
-        and the account for that protocol also specifies a port, this
-        parameter should override that in the account.</dd>
+          <dt>port (q)</dt>
+          <dd>A TCP or UDP port number. If this parameter is specified and the
+            account for that protocol also specifies a port, this parameter
+            should override that in the account.</dd>
 
-      <dt>s:password</dt><dd>A password associated with the account.</dd>
+          <dt>password (s)</dt>
+          <dd>A password associated with the account.</dd>
 
-      <dt>b:require-encryption</dt><dd>Require encryption for this connection. A
-        connection should fail to connect if require-encryption is set
-        and an encrypted connection is not possible.</dd>
+          <dt>require-encryption (b)</dt>
+          <dd>Require encryption for this connection. A connection should fail
+            to connect if require-encryption is set and an encrypted connection
+            is not possible.</dd>
 
-      <dt>b:register</dt><dd>This account should be created on the server if it
-        does not already exist.</dd>
+          <dt>register (b)</dt>
+          <dd>This account should be created on the server if it does not
+            already exist.</dd>
 
-      <dt>s:ident</dt><dd>The local username to report to the server if
-        necessary, such as in IRC.</dd>
+          <dt>ident (s)</dt>
+          <dd>The local username to report to the server if necessary, such as
+            in IRC.</dd>
 
-      <dt>s:fullname</dt><dd>The user's full name if the service requires this
-        when authenticating or registering.</dd>
+          <dt>fullname (s)</dt>
+          <dd>The user's full name if the service requires this when
+            authenticating or registering.</dd>
 
-      <dt>s:stun-server</dt><dd>The IP address or FQDN of a STUN server to use
-        for NAT traversal, without any ":port" suffix.</dd>
-      <dt>q:stun-port</dt><dd>The UDP port number on the stun-server to use for
-        STUN. Only significant if the stun-server is also supplied.</dd>
+          <dt>stun-server (s)</dt>
+          <dd>The IP address or FQDN of a STUN server to use for NAT traversal,
+            without any ":port" suffix.</dd>
+
+          <dt>stun-port (q)</dt>
+          <dd>The UDP port number on the stun-server to use for STUN. Only
+            significant if the stun-server is also supplied.</dd>
         </dl>
 
         <p>Every successful RequestConnection call will cause the emission of a
-        NewConnection signal for the same newly created connection. The
+        <tp:member-ref>NewConnection</tp:member-ref> signal for the same newly
+        created connection. The
         requester can use the returned object path and service name
         independently of the emission of that signal. In that case this signal
         emission is most useful for, e.g. other processes that are monitoring
@@ -350,8 +379,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </p>
 
     <p>Connection managers' capabilities can be determined dynamically by
-      calling their ListProtocols method, then for each protocol of interest,
-      calling GetParameters to discover the required and optional parameters.
+      calling their <tp:member-ref>ListProtocols</tp:member-ref> method, then
+      for each protocol of interest, calling
+      <tp:member-ref>GetParameters</tp:member-ref> to discover the required and
+      optional parameters.
       However, since it is inefficient to activate all possible connection
       managers on the system just to find out what they can do, there
       is a standard mechanism to store static information about CMs in
@@ -392,6 +423,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         to Conn_Mgr_Param_Flag_Register</li>
       <li><code>secret</code>, corresponding
         to Conn_Mgr_Param_Flag_Secret</li>
+      <li><code>dbus-property</code>, corresponding
+        to Conn_Mgr_Param_Flag_DBus_Property</li>
     </ul>
 
     <p>The group may also contain a key <code>default-<em>p</em></code>
@@ -402,7 +435,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <dl>
       <dt>s (string)</dt>
-        <dd>The UTF-8 string</dd>
+        <dd>The UTF-8 string, with the standard backslash escape
+          sequences supported by the Desktop Entry Specification
+          (the "localestring" type from the Desktop Entry Specification)</dd>
       <dt>o (object path)</dt>
         <dd>The object path as an ASCII string</dd>
       <dt>b (boolean)</dt>
@@ -414,6 +449,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <dd>ASCII decimal integer, optionally prefixed with "-"</dd>
       <dt>d (double-precision floating point)</dt>
         <dd>ASCII decimal number</dd>
+      <dt>as (array of string)</dt>
+        <dd>A sequence of UTF-8 strings each followed by a semicolon, with
+          any semicolons they contain escaped with a backslash
+          (the "localestrings" type from the Desktop Entry Specification)</dd>
     </dl>
 
     <p>Currently, no other D-Bus signatures are allowed to have default values,
@@ -431,6 +470,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <tp:changed version="0.17.2">Prior to version 0.17.2, support for
       CMs with no .manager file was not explicitly required.</tp:changed>
+    <tp:changed version="0.17.16">Prior to version 0.17.16 the serialization
+      of string arrays (signature 'as') was not defined</tp:changed>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

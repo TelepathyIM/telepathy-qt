@@ -30,7 +30,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring>
         Start sending a DTMF tone on this stream. Where possible, the tone
-        will continue until StopTone is called. On certain protocols, it may
+        will continue until <tp:member-ref>StopTone</tp:member-ref> is called.
+        On certain protocols, it may
         only be possible to send events with a predetermined length. In this
         case, the implementation may emit a fixed-length tone, and the StopTone
         method call should return NotAvailable.
@@ -55,7 +56,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>A stream ID as defined in the StreamedMedia channel type.</tp:docstring>
       </arg>
       <tp:docstring>
-        Stop sending any DTMF tone which has been started using the StartTone
+        Stop sending any DTMF tone which has been started using the
+        <tp:member-ref>StartTone</tp:member-ref>
         method. If there is no current tone, this method will do nothing.
       </tp:docstring>
       <tp:possible-errors>
@@ -129,7 +131,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       audio streams which have been established using the StreamedMedia channel
       type. The event codes used are in common with those defined in <a
       href="http://www.rfc-editor.org/rfc/rfc4733.txt">RFC4733</a>, and are
-      listed in the DTMF_Event enumeration.
+      listed in the <tp:type>DTMF_Event</tp:type> enumeration.
     </tp:docstring>
 
   </interface>

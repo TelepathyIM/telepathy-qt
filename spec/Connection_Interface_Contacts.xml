@@ -48,7 +48,7 @@
           Aliasing interface was requested)
         </dd>
         <dt>org.freedesktop.Telepathy.Connection.Interface.Avatars/token
-          (type s)</dt>
+          (type s, <tp:type>Avatar_Token</tp:type>)</dt>
         <dd>The same string that would be returned by <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface.Avatars">GetKnownAvatarTokens</tp:dbus-ref>
           (omitted from the result if the contact's avatar token is not known,
@@ -73,6 +73,14 @@
           <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.Capabilities">GetCapabilities</tp:dbus-ref>
           (all of them will redundantly have the contact's handle as the
           first member). Omitted from the result if the contact's capabilities
+          are not known; present in the result as an empty array if the
+          contact is known to have no capabilities at all.</dd>
+        <dt>org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT/caps
+          (type a{ua(a{sv}as)},
+          <tp:type>Contact_Capabilities_Map</tp:type>)</dt>
+        <dd>The same structs that would be returned by
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT">GetContactCapabilities</tp:dbus-ref>
+          Omitted from the result if the contact's capabilities
           are not known; present in the result as an empty array if the
           contact is known to have no capabilities at all.</dd>
       </dl>
@@ -110,7 +118,8 @@
     </tp:mapping>
 
     <tp:mapping name="Contact_Attributes_Map">
-      <tp:docstring>Mapping returned by GetContactAttributes, representing a
+      <tp:docstring>Mapping returned by
+        <tp:member-ref>GetContactAttributes</tp:member-ref>, representing a
         collection of Contacts and their requested attributes.</tp:docstring>
 
       <tp:member type="u" tp:type="Contact_Handle" name="Contact">
@@ -177,11 +186,14 @@
             connection MAY start asynchronous requests to obtain better
             values for the contact attributes. If better values are later
             obtained by this process, they will be indicated with the usual
-            signals (such as AliasesChanged).</p>
+            signals (such as <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Connection.Interface.Aliasing">AliasesChanged</tp:dbus-ref>).</p>
 
           <tp:rationale>
             For instance, an XMPP connection manager could download vCards
-            in response to a request for Aliasing attributes.
+            in response to a request for <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Connection.Interface">Aliasing</tp:dbus-ref>
+            attributes.
           </tp:rationale>
         </tp:docstring>
       </arg>

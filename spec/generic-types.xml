@@ -83,7 +83,7 @@
     </tp:member>
   </tp:mapping>
 
-  <tp:mapping name="String_Variant_Map">
+  <tp:mapping name="String_Variant_Map" array-name="String_Variant_Map_List">
     <tp:docstring>A mapping from strings to variants representing extra
       key-value pairs.</tp:docstring>
     <tp:member type="s" name="Key"/>

@@ -29,9 +29,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <!-- We hope to simplify these eventually -->
     <tp:mapping name="Multiple_Status_Map">
-      <tp:docstring>Mapping used in Last_Activity_And_Statuses and passed to
-        SetStatus, representing a collection of statuses. Use of this mapping
-        with more than one member is deprecated.</tp:docstring>
+      <tp:docstring>Mapping used in
+        <tp:type>Last_Activity_And_Statuses</tp:type> and passed to
+        <tp:member-ref>SetStatus</tp:member-ref>, representing a collection of
+        statuses. Use of this mapping with more than one member is
+        deprecated.</tp:docstring>
       <tp:member type="s" name="Status"/>
       <tp:member type="a{sv}" tp:type="String_Variant_Map" name="Parameters"/>
     </tp:mapping>
@@ -44,9 +46,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         name="Statuses"/>
     </tp:struct>
     <tp:mapping name="Contact_Presences">
-      <tp:docstring>Mapping returned by GetPresence and signalled by
-        PresenceUpdate, where the keys are contacts and the values represent
-        their presences.</tp:docstring>
+      <tp:docstring>Mapping returned by
+        <tp:member-ref>GetPresence</tp:member-ref> and signalled by
+        <tp:member-ref>PresenceUpdate</tp:member-ref>, where the keys are
+        contacts and the values represent their presences.</tp:docstring>
       <tp:member type="u" tp:type="Contact_Handle" name="Contact"/>
       <tp:member type="(ua{sa{sv}})" tp:type="Last_Activity_And_Statuses"
         name="Presence"/>
@@ -76,8 +79,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring>
         Request that a single presence status is published for the user, along
-        with any desired parameters. Changes will be indicated by PresenceUpdate
-        signals being emitted.
+        with any desired parameters. Changes will be indicated by
+        <tp:member-ref>PresenceUpdate</tp:member-ref> signals being emitted.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -91,8 +94,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         Request that all of a user's presence statuses be removed. Be aware
         that this request may simply result in the statuses being replaced by a
-        default available status. Changes will be indicated by PresenceUpdate
-        signals being emitted.
+        default available status. Changes will be indicated by
+        <tp:member-ref>PresenceUpdate</tp:member-ref> signals being emitted.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -109,16 +112,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="out" name="Presence" type="a{u(ua{sa{sv}})}"
         tp:type="Contact_Presences">
         <tp:docstring>
-          Presence information in the same format as for the PresenceUpdate
-          signal
+          Presence information in the same format as for the
+          <tp:member-ref>PresenceUpdate</tp:member-ref> signal
         </tp:docstring>
       </arg>
       <tp:docstring>
-        Get presence previously emitted by PresenceUpdate for the given
-        contacts. Data is returned in the same structure as the PresenceUpdate
-        signal. Using this method in favour of RequestPresence has the
-        advantage that it will not wake up each client connected to the
-        PresenceUpdate signal.
+        Get presence previously emitted by
+        <tp:member-ref>PresenceUpdate</tp:member-ref> for the given contacts.
+        Data is returned in the same structure as the PresenceUpdate signal.
+        Using this method in favour of
+        <tp:member-ref>RequestPresence</tp:member-ref> has the advantage that
+        it will not wake up each client connected to the PresenceUpdate signal.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -133,8 +137,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <ul>
           <li>a type value from one of the values above</li>
           <li>a boolean to indicate if this status may be set on yourself</li>
-          <li>a boolean to indicate if this is an exclusive status which you may not set alongside any other</li>
-          <li>a dictionary of valid optional string argument names mapped to their types</li>
+          <li>a boolean to indicate if this is an exclusive status which you
+            may not set alongside any other</li>
+          <li>a dictionary of valid optional string argument names mapped to
+            their types</li>
         </ul>
         </tp:docstring>
       </arg>
@@ -161,8 +167,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         This signal should be emitted when your own presence has been changed,
         or the presence of the member of any of the connection's channels has
-        been changed, or when the presence requested by RequestPresence is available.
-
+        been changed, or when the presence requested by
+        <tp:member-ref>RequestPresence</tp:member-ref> is available.
       </tp:docstring>
     </signal>
     <method name="RemoveStatus" tp:name-for-bindings="Remove_Status">
@@ -173,9 +179,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring>
         Request that the given presence status is no longer published for the
-        user. Changes will be indicated by PresenceUpdate signals being
-        emitted. As with ClearStatus, removing a status may actually result in
-        it being replaced by a default available status.
+        user. Changes will be indicated by
+        <tp:member-ref>PresenceUpdate</tp:member-ref> signals being emitted. As
+        with <tp:member-ref>ClearStatus</tp:member-ref>, removing a status may
+        actually result in it being replaced by a default available status.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -193,11 +200,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
       <tp:docstring>
-        Request the presence for contacts on this connection. A PresenceUpdate
+        Request the presence for contacts on this connection. A <tp:member-ref>PresenceUpdate</tp:member-ref>
         signal will be emitted when they are received. This is not the same as
         subscribing to the presence of a contact, which must be done using the
-        'subscription' Channel.Type.ContactList, and on some protocols presence
-        information may not be available unless a subscription exists.
+        'subscription' <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Type">ContactList</tp:dbus-ref>,
+        and on some protocols presence information may not be available unless
+        a subscription exists.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -241,7 +250,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring>
         Request that the user's presence be changed to the given statuses and
-        desired parameters. Changes will be reflected by PresenceUpdate
+        desired parameters. Changes will be reflected by
+        <tp:member-ref>PresenceUpdate</tp:member-ref>
         signals being emitted. On certain protocols, this method may be
         called on a newly-created connection which is still in the
         DISCONNECTED state, and will sign on with the requested status.
@@ -260,22 +270,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface will become deprecated in future versions. New
-        client implementations MAY use
-        org.freedesktop.Telepathy.Connection.Interface.SimplePresence
-        instead; new connection managers SHOULD implement both
-        Presence and SimplePresence.</p>
+        client implementations MAY use <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection.Interface">SimplePresence</tp:dbus-ref>
+        instead; new connection managers SHOULD implement both Presence and
+        SimplePresence.</p>
 
       <p>This interface is for services which have a concept of presence which
         can be published for yourself and monitored on your contacts.
         Telepathy's definition of presence is based on that used by
-        <a href="http://www.galago-project.org/">the Galago
-          project</a>.</p>
+        <a href="http://www.galago-project.org/">the Galago project</a>.</p>
 
     <p>Presence on an individual (yourself or one of your contacts) is modelled as
     a last activity time along with a set of zero or more statuses, each of
     which may have arbitrary key/value parameters. Valid statuses are defined
-    per connection, and a list of them can be obtained with the GetStatuses
-    method.</p>
+    per connection, and a list of them can be obtained with the
+    <tp:member-ref>GetStatuses</tp:member-ref> method.</p>
 
     <p>Each status has an arbitrary string identifier which should have an agreed
     meaning between the connection manager and any client which is expected to
@@ -301,9 +310,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </ul>
 
     <p>As well as these well-known status identifiers, every status also has a
-    numerical type value chosen from ConnectionPresenceType which can be
-    used by the client to classify even unknown statuses into different
-    fundamental types.</p>
+    numerical type value chosen from
+    <tp:type>Connection_Presence_Type</tp:type> which can be used by the client
+    to classify even unknown statuses into different fundamental types.</p>
 
     <p>These numerical types exist so that even if a client does not understand
     the string identifier being used, and hence cannot present the presence to
@@ -315,25 +324,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     that the string (s) argument 'message' be interpreted as an optional
     message which can be associated with a presence status.</p>
 
-    <p>If the connection has a 'subscribe' contact list, PresenceUpdate signals
-    should be emitted to indicate changes of contacts on this list, and should
-    also be emitted for changes in your own presence. Depending on the
-    protocol, the signal may also be emitted for others such as people with
-    whom you are communicating, and any user interface should be updated
-    accordingly.</p>
+    <p>If the connection has a 'subscribe' contact list,
+    <tp:member-ref>PresenceUpdate</tp:member-ref> signals should be emitted to
+    indicate changes of contacts on this list, and should also be emitted for
+    changes in your own presence. Depending on the protocol, the signal may
+    also be emitted for others such as people with whom you are communicating,
+    and any user interface should be updated accordingly.</p>
 
-    <p>On some protocols, RequestPresence may only succeed on contacts on your
-    'subscribe' list, and other contacts will cause a PermissionDenied error.
-    On protocols where there is no 'subscribe' list, and RequestPresence
-    succeeds, a client may poll the server intermittently to update any display
-    of presence information.</p>
+    <p>On some protocols, <tp:member-ref>RequestPresence</tp:member-ref> may
+    only succeed on contacts on your 'subscribe' list, and other contacts will
+    cause a PermissionDenied error.  On protocols where there is no 'subscribe'
+    list, and RequestPresence succeeds, a client may poll the server
+    intermittently to update any display of presence information.</p>
     </tp:docstring>
+
     <tp:enum name="Connection_Presence_Type" type="u">
       <tp:enumvalue suffix="Unset" value="0">
         <tp:docstring>
           An invalid presence type used as a null value. This value MUST NOT
-          appear in the result of GetStatuses, or in the Statuses property
-          of the SimplePresence interface.
+          appear in the result of <tp:member-ref>GetStatuses</tp:member-ref>,
+          or in the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.SimplePresence">Statuses</tp:dbus-ref>
+          property of the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface">SimplePresence</tp:dbus-ref>
+          interface.
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Offline" value="1">

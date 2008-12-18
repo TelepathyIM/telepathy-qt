@@ -29,8 +29,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:mapping>
 
     <tp:struct name="Alias_Pair" array-name="Alias_Pair_List">
-      <tp:docstring>A pair (contact handle, alias) as seen in the AliasesChanged
-        signal.</tp:docstring>
+      <tp:docstring>
+        A pair (contact handle, alias) as seen in the
+        <tp:member-ref>AliasesChanged</tp:member-ref> signal.
+      </tp:docstring>
       <tp:member type="u" tp:type="Contact_Handle" name="Handle"/>
       <tp:member type="s" name="Alias"/>
     </tp:struct>
@@ -135,10 +137,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring>
         Request that the alias of the given contact be changed. Success will be
-        indicated by emitting an AliasesChanged signal. On connections where the
-        CONNECTION_ALIAS_FLAG_USER_SET flag is not set, this method will only
-        ever succeed if the contact is the user's own handle (as returned by
-        GetSelfHandle on the Connection interface).
+        indicated by emitting an <tp:member-ref>AliasesChanged</tp:member-ref>
+        signal. On connections where the CONNECTION_ALIAS_FLAG_USER_SET flag is
+        not set, this method will only ever succeed if the contact is the
+        user's own handle (as returned by <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection.GetSelfHandle</tp:dbus-ref>).
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -155,9 +158,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     alias is changed or first discovered.</p>
 
     <p>On connections where the user is allowed to set aliases for contacts and
-    store them on the server, the GetAliasFlags method will have the
-    CONNECTION_ALIAS_FLAG_USER_SET flag set, and the SetAliases method
-    may be called on contact handles other than the user themselves.</p>
+    store them on the server, the <tp:member-ref>GetAliasFlags</tp:member-ref>
+    method will have the CONNECTION_ALIAS_FLAG_USER_SET flag set, and the
+    <tp:member-ref>SetAliases</tp:member-ref> method may be called on contact
+    handles other than the user themselves.</p>
 
     <p>Aliases are intended to be used as the main displayed name for the
     contact, where available.</p>

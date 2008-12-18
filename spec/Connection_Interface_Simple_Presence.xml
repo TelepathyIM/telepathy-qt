@@ -211,7 +211,8 @@
         </tp:docstring>
       </arg>
       <tp:docstring>
-        Get presence previously emitted by PresencesChanged for the given
+        Get presence previously emitted by
+        <tp:member-ref>PresencesChanged</tp:member-ref> for the given
         contacts. Data is returned in the same structure as the
         PresencesChanged signal; no additional network requests are made.
       </tp:docstring>
@@ -353,7 +354,8 @@
       </table>
 
       <p>As well as these well-known status identifiers, every status also has
-        a numerical type value chosen from ConnectionPresenceType which can be
+        a numerical type value chosen from
+        <tp:type>Connection_Presence_Type</tp:type> which can be
         used by the client to classify even unknown statuses into different
         fundamental types.</p>
 
@@ -370,7 +372,8 @@
         presence of contacts you're subscribed to. 'error' indicates that there
         was a failure in determining the status of a contact.</p>
 
-      <p>If the connection has a 'subscribe' contact list, PresencesChanged
+      <p>If the connection has a 'subscribe' contact list,
+        <tp:member-ref>PresencesChanged</tp:member-ref>
         signals should be emitted to indicate changes of contacts on this list,
         and should also be emitted for changes in your own presence. Depending
         on the protocol, the signal may also be emitted for others such as

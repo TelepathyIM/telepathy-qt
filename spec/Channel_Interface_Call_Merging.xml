@@ -64,7 +64,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring>
         Request that the given contact is removed from this channel, and
         a new channel is created to communicate with them privately instead.
-        This is the inverse of Merge.
+        This is the inverse of <tp:member-ref>Merge</tp:member-ref>.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>

@@ -63,7 +63,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Valid_Accounts">
       <tp:docstring>
         A list of the valid (complete, usable) accounts. Change notification
-        is via AccountValidityChanged.
+        is via <tp:member-ref>AccountValidityChanged</tp:member-ref>.
 
         <tp:rationale>
           This split between valid and invalid accounts makes it easy to
@@ -78,7 +78,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Invalid_Accounts">
       <tp:docstring>
         A list of incomplete or otherwise unusable accounts. Change
-        notification is via AccountValidityChanged.
+        notification is via
+        <tp:member-ref>AccountValidityChanged</tp:member-ref>.
       </tp:docstring>
     </property>
 
@@ -127,9 +128,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     <method name="CreateAccount" tp:name-for-bindings="Create_Account">
       <tp:docstring>
-        Request the creation of a new account. The account manager SHOULD NOT
-        allow invalid accounts to be created. Accounts created through this
-        API SHOULD have an empty PresetParameters property.
+        Request the creation of a new <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>. The
+        account manager SHOULD NOT allow invalid accounts to be created.
       </tp:docstring>
 
       <arg name="Connection_Manager" direction="in" type="s"
@@ -145,7 +146,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
 
       <arg name="Display_Name" direction="in" type="s">
-        <tp:docstring>The initial value of the new account's DisplayName
+        <tp:docstring>The initial value of the new account's <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Account">DisplayName</tp:dbus-ref>
           property. The account manager MAY modify this to make it unique,
           for instance by appending a number or the 'account'
           parameter.</tp:docstring>
@@ -153,11 +155,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <arg name="Parameters" direction="in" type="a{sv}">
         <tp:docstring>Initial parameter values, as would be passed to
-          RequestConnection.</tp:docstring>
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ConnectionManager">RequestConnection</tp:dbus-ref>.</tp:docstring>
       </arg>
 
       <arg name="Account" direction="out" type="o">
-        <tp:docstring>The new account.</tp:docstring>
+        <tp:docstring>The new <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>.</tp:docstring>
       </arg>
 
       <tp:possible-errors>

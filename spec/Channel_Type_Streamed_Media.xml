@@ -62,15 +62,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:flag suffix="Local_Send" value="1">
         <tp:docstring>
             The local user has been asked to send media by the remote user.
-            Call RequestStreamDirection to indicate whether or not this is
-            acceptable.
+            Call <tp:member-ref>RequestStreamDirection</tp:member-ref> to
+            indicate whether or not this is acceptable.
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Remote_Send" value="2">
         <tp:docstring>
             The remote user has been asked to send media by the local user.
-            The StreamDirectionChanged signal will be emitted when the remote
-            user accepts or rejects this change.
+            The <tp:member-ref>StreamDirectionChanged</tp:member-ref> signal
+            will be emitted when the remote user accepts or rejects this
+            change.
         </tp:docstring>
       </tp:flag>
     </tp:flags>
@@ -112,7 +113,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="RemoveStreams" tp:name-for-bindings="Remove_Streams">
       <arg direction="in" name="Streams" type="au" tp:type="Stream_ID[]">
         <tp:docstring>
-          An array of stream identifiers (as defined in ListStreams)
+          An array of stream identifiers (as defined in
+          <tp:member-ref>ListStreams</tp:member-ref>)
         </tp:docstring>
       </arg>
       <tp:docstring>
@@ -129,7 +131,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       tp:name-for-bindings="Request_Stream_Direction">
       <arg direction="in" name="Stream_ID" type="u">
         <tp:docstring>
-          The stream identifier (as defined in ListStreams)
+          The stream identifier (as defined in
+          <tp:member-ref>ListStreams</tp:member-ref>)
         </tp:docstring>
       </arg>
       <arg direction="in" name="Stream_Direction" type="u" tp:type="Media_Stream_Direction">
@@ -144,12 +147,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         sent to you.</p>
 
         <p>Depending on the protocol, streams which are no longer sending in
-        either direction should be removed and a StreamRemoved signal emitted.
+        either direction should be removed and a
+        <tp:member-ref>StreamRemoved</tp:member-ref> signal emitted.
         Some direction changes can be enforced locally (for example,
         BIDIRECTIONAL -&gt; RECEIVE can be achieved by merely stopping sending),
         others may not be possible on some protocols, and some need agreement
         from the remote end. In this case, the MEDIA_STREAM_PENDING_REMOTE_SEND
-        flag will be set in the StreamDirectionChanged signal, and the signal
+        flag will be set in the
+        <tp:member-ref>StreamDirectionChanged</tp:member-ref> signal, and the
+        signal
         emitted again without the flag to indicate the resulting direction when
         the remote end has accepted or rejected the change.</p>
       </tp:docstring>
@@ -196,16 +202,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         indicate to the peer that you would like to receive media, so a
         send-only stream will be created initially. In the cases where the
         stream requires remote agreement (eg you wish to receive media from
-        them), the StreamDirectionChanged signal will be emitted with the
+        them), the <tp:member-ref>StreamDirectionChanged</tp:member-ref> signal
+        will be emitted with the
         MEDIA_STREAM_PENDING_REMOTE_SEND flag set, and the signal emitted again
         with the flag cleared when the remote end has replied.</p>
       </tp:docstring>
       <tp:changed version="0.17.2">
         <p>It is valid to use a handle which is neither
-          a current nor pending member in this channel's Group interface. If
+          a current nor pending member in this channel's <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface">Group</tp:dbus-ref>
+          interface. If
           so, that handle will be added to the remote-pending set only when
           an attempt has actually been made to contact them. For further
-          call-state notification, use the CallState interface, if
+          call-state notification, use the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface">CallState</tp:dbus-ref>
+          interface, if
           supported. This usage was not allowed in spec versions below
           0.17.2.</p>
       </tp:changed>
@@ -223,7 +234,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <signal name="StreamAdded" tp:name-for-bindings="Stream_Added">
       <arg name="Stream_ID" type="u">
         <tp:docstring>
-          The stream identifier (as defined in ListStreams)
+          The stream identifier (as defined in
+          <tp:member-ref>ListStreams</tp:member-ref>)
         </tp:docstring>
       </arg>
       <arg name="Contact_Handle" type="u" tp:type="Contact_Handle">
@@ -246,7 +258,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       tp:name-for-bindings="Stream_Direction_Changed">
       <arg name="Stream_ID" type="u">
         <tp:docstring>
-        The stream identifier (as defined in ListStreams)
+        The stream identifier (as defined in <tp:member-ref>ListStreams</tp:member-ref>)
         </tp:docstring>
       </arg>
       <arg name="Stream_Direction" type="u" tp:type="Media_Stream_Direction">
@@ -262,7 +274,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         Emitted when the direction or pending flags of a stream are changed. If
         the MEDIA_STREAM_PENDING_LOCAL_SEND flag is set, the remote user has
-        requested that we begin sending on this stream. RequestStreamDirection
+        requested that we begin sending on this stream.
+        <tp:member-ref>RequestStreamDirection</tp:member-ref>
         should be called to indicate whether or not this change is acceptable.
       </tp:docstring>
     </signal>
@@ -270,7 +283,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <signal name="StreamError" tp:name-for-bindings="Stream_Error">
       <arg name="Stream_ID" type="u">
         <tp:docstring>
-        The stream identifier (as defined in ListStreams)
+        The stream identifier (as defined in
+        <tp:member-ref>ListStreams</tp:member-ref>)
         </tp:docstring>
       </arg>
       <arg name="Error_Code" type="u" tp:type="Media_Stream_Error">
@@ -291,7 +305,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <signal name="StreamRemoved" tp:name-for-bindings="Stream_Removed">
       <arg name="Stream_ID" type="u">
         <tp:docstring>
-        stream_id - the stream identifier (as defined in ListStreams)
+        stream_id - the stream identifier (as defined in
+        <tp:member-ref>ListStreams</tp:member-ref>)
         </tp:docstring>
       </arg>
       <tp:docstring>
@@ -303,7 +318,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       tp:name-for-bindings="Stream_State_Changed">
       <arg name="Stream_ID" type="u">
         <tp:docstring>
-          The stream identifier (as defined in ListStreams)
+          The stream identifier (as defined in
+          <tp:member-ref>ListStreams</tp:member-ref>)
         </tp:docstring>
       </arg>
       <arg name="Stream_State" type="u" tp:type="Media_Stream_State">
@@ -322,22 +338,44 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     signals to indicate when streams have been added, removed and changed
     status.</p>
 
-      <p>Channels of this type are expected to provide the Group interface
-        and be "anonymous" (have no associated handle). To make a media call
-        to a contact, clients should request a new, empty streamed media
-        channel, then call AddMembers to add the contact to the channel.
-        The local user should be in the group's members, while the contact
-        should be absent from the channel until a call is made, appear in
-        "remote pending" from when the call is attempted until the call is
-        accepted, then move to the group's members.</p>
+      <p>To make a media call to a contact, clients should call <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>
+        with <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>
+        = <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>,
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>
+        = Contact, and one of <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref>
+        or <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">TargetID</tp:dbus-ref>
+        (which should yield a channel with the local user in <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">Members</tp:dbus-ref>,
+        and the remote contact as <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref>
+        but not in any group members list), then call
+        <tp:member-ref>RequestStreams</tp:member-ref> to initiate the call (at
+        which point the contact should appear in the channel's <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemotePendingMembers</tp:dbus-ref>).</p>
 
-      <p>Similarly, incoming calls should be signalled as having handle type 0
-        and handle 0. The remote contact should be in the group's members,
-        with the local user in the "local pending" members; to accept the
-        call, AddMembers can be used to move the local user to the
-        group's members.</p>
+      <p>Incoming calls should be signalled as <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>
+        = Contact, <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref>
+        set to the remote contact, with the local user in <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">LocalPendingMembers</tp:dbus-ref>;
+        to accept the call, <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">AddMembers</tp:dbus-ref>
+        can be used to move the local user to the group's members.</p>
 
-    <p>In general this should be used in conjunction with the MediaSignalling
+      <p>In the past, several other patterns have been used to place outgoing
+        calls; see
+        <tt>http://telepathy.freedesktop.org/wiki/Requesting%20StreamedMedia%20channels</tt>
+        for the details.</p>
+
+    <p>In general this should be used in conjunction with the <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy.Channel.Interface">MediaSignalling</tp:dbus-ref>
     interface to exchange connection candidates and codec choices with
     whichever component is responsible for the streams. However, in certain
     applications where no candidate exchange is necessary (eg the streams are
@@ -349,7 +387,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:flags name="Channel_Media_Capabilities" value-prefix="Channel_Media_Capability" type="u">
       <tp:docstring>
         The channel-type-specific capability flags used for
-        Channel.Type.StreamedMedia in the Connection.Interface.Capabilities
+        Channel.Type.StreamedMedia in the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection.Interface.Capabilities</tp:dbus-ref>
         interface.
       </tp:docstring>
       <tp:flag suffix="Audio" value="1">

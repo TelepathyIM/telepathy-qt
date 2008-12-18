@@ -65,28 +65,46 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Emitted when information about rooms on the server becomes available.
         The array contains the room handle (as can be passed to the
-        RequestChannel method with HANDLE_TYPE_ROOM), the channel
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection">RequestChannel</tp:dbus-ref>
+        method with HANDLE_TYPE_ROOM), the channel
         type, and a dictionary containing further information about the
         room as available. The following well-known keys and types are
         recommended for use where appropriate:</p>
 
         <dl>
-          <dt>s:handle-name</dt><dd>The string name of the room handle (as would be returned by InspectHandles)</dd>
-          <dt>s:name</dt><dd>The human-readable name of the room if different from the handle</dd>
-          <dt>s:description</dt><dd>A description of the room's overall purpose</dd>
-          <dt>s:subject</dt><dd>The current subject of conversation in the room</dd>
-          <dt>u:members</dt><dd>The number of members of the room</dd>
-          <dt>b:password</dt><dd>True if the room requires a password to enter</dd>
-          <dt>b:invite-only</dt><dd>True if you cannot join the room, but must be invited</dd>
+          <dt>handle-name (s)</dt>
+          <dd>The string name of the room handle (as would be returned by
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>)</dd>
+
+          <dt>name (s)</dt>
+          <dd>The human-readable name of the room if different from the handle</dd>
+
+          <dt>description (s)</dt>
+          <dd>A description of the room's overall purpose</dd>
+
+          <dt>subject (s)</dt>
+          <dd>The current subject of conversation in the room</dd>
+
+          <dt>members (u)</dt>
+          <dd>The number of members of the room</dd>
+
+          <dt>password (b)</dt>
+          <dd>True if the room requires a password to enter</dd>
+
+          <dt>invite-only (b)</dt>
+          <dd>True if you cannot join the room, but must be invited</dd>
         </dl>
       </tp:docstring>
     </signal>
     <method name="ListRooms" tp:name-for-bindings="List_Rooms">
       <tp:docstring>
-        Request the list of rooms from the server. The ListingRooms signal
-        should be emitted when this request is being processed, GotRooms when
-        any room information is received, and ListingRooms when the request
-        is complete.
+        Request the list of rooms from the server. The
+        <tp:member-ref>ListingRooms</tp:member-ref> (True) signal should be
+        emitted when this request is being processed,
+        <tp:member-ref>GotRooms</tp:member-ref> when any room information is
+        received, and <tp:member-ref>ListingRooms</tp:member-ref> (False) when
+        the request is complete.
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -98,7 +116,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="StopListing" tp:name-for-bindings="Stop_Listing">
       <tp:docstring>
         Stop the room listing if it's in progress, but don't close the channel.
-        The ListingRooms signal should be emitted when the listing stops.
+        The <tp:member-ref>ListingRooms</tp:member-ref> (False) signal should
+        be emitted when the listing stops.
       </tp:docstring>
     </method>
     <signal name="ListingRooms" tp:name-for-bindings="Listing_Rooms">
@@ -112,16 +131,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type for listing named channels available on the server. Once the
-    ListRooms method is called, it emits signals for rooms present on the
-    server, until you Close this channel. In some cases, it may not be possible
+    <tp:member-ref>ListRooms</tp:member-ref> method is called, it emits signals for rooms present on the
+    server, until you <tp:dbus-ref
+    namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref> this
+    channel. In some cases, it may not be possible
     to stop the deluge of information from the server. This channel should be
     closed when the room information is no longer being displayed, so that the
     room handles can be freed.</p>
 
     <p>This channel type may be implemented as a singleton on some protocols, so
     clients should be prepared for the eventuality that they are given a
-    channel that is already in the middle of listing channels. The ListingRooms
-    signal, or GetListingRooms method, can be used to check this.</p>
+    channel that is already in the middle of listing channels. The
+    <tp:member-ref>ListingRooms</tp:member-ref> signal, or
+    <tp:member-ref>GetListingRooms</tp:member-ref> method, can be used to check
+    this.</p>
     </tp:docstring>
   </interface>
 </node>

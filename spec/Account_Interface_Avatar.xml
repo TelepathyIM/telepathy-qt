@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 </p>
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Account.Interface.Avatar">
+    <tp:requires interface="org.freedesktop.Telepathy.Account"/>
+
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface extends the core Account interface to provide a
         user-settable avatar image.</p>
@@ -35,8 +37,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </tp:docstring>
     <tp:added version="0.17.6"/>
 
+    <tp:struct name="Avatar">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A struct containing avatar data marked with its MIME type.</p>
+      </tp:docstring>
+      <tp:member type="ay" name="Avatar_Data"/>
+      <tp:member type="s" name="MIME_Type"/>
+    </tp:struct>
+
     <property name="Avatar" tp:name-for-bindings="Avatar"
-      type="(ays)" access="readwrite">
+      type="(ays)" tp:type="Avatar" access="readwrite">
       <tp:docstring>
         The avatar to set on this account for display to other contacts,
         represented as a structure containing the bytes of the avatar,
@@ -54,7 +64,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <signal name="AvatarChanged" tp:name-for-bindings="Avatar_Changed">
       <tp:docstring>
         Emitted when the Avatar property changes.
-        
+
         <tp:rationale>The avatar itself is deliberately not included in this
           signal, to reduce bus traffic in the (likely common) case where no
           running application cares about the user's own avatar.</tp:rationale>

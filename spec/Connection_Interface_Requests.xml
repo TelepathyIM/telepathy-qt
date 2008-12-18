@@ -117,7 +117,10 @@
       <arg direction="in" name="Request" type="a{sv}"
         tp:type="Qualified_Property_Value_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>A dictionary containing desirable properties. Some properties
+          <p>A dictionary containing desirable properties, which MUST include
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>.
+            Some properties
             are defined such that only an exact match makes sense, and
             connection managers MUST NOT satisfy a request with a channel
             where that property does not match; some properties are defined
@@ -192,7 +195,8 @@
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.TargetHandle</tp:dbus-ref>),
             or a syntactically invalid identifier was requested as the value
             of a property whose value is the string corresponding to a handle
-            (like TargetID).
+            (like <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Channel.TargetID</tp:dbus-ref>).
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
@@ -263,7 +267,8 @@
           <p>If the creation of a channel makes other requests successful,
             the value returned for this argument MUST be such that exactly
             one of the clients making requests ends up responsible for the
-            channel. In particular, if CreateChannel returns a channel
+            channel. In particular, if
+            <tp:member-ref>CreateChannel</tp:member-ref> returns a channel
             <em>C</em>, any EnsureChannel calls that also return <em>C</em>
             MUST return a false value for this argument.</p>
         </tp:docstring>
@@ -313,7 +318,8 @@
             <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.TargetHandle</tp:dbus-ref>),
             or a syntactically invalid identifier was requested as the value
             of a property whose value is the string corresponding to a handle
-            (like TargetID).
+            (like <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Channel.TargetID</tp:dbus-ref>).
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
@@ -348,8 +354,9 @@
 
         <tp:rationale>
           <p>Joining a MUC Tube in XMPP requires joining the corresponding
-            MUC (chatroom), so a Text channel can be created as a
-            side-effect.</p>
+            MUC (chatroom), so a <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
+            channel can be created as a side-effect.</p>
         </tp:rationale>
 
         <p>Every time NewChannels is emitted, it MUST be followed by
@@ -396,11 +403,13 @@
       <tp:added version="0.17.11">(as stable API)</tp:added>
       <tp:docstring>
         Emitted when a channel is closed and hence disappears from the
-        Channels property.
+        <tp:member-ref>Channels</tp:member-ref> property.
 
         <tp:rationale>
-          This is redundant with the Close signal on the channel itself, but
-          it does provide full change notification for the Channels property.
+          This is redundant with the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel">Closed</tp:dbus-ref>
+          signal on the channel itself, but it does provide full change
+          notification for the Channels property.
         </tp:rationale>
       </tp:docstring>
 

@@ -20,10 +20,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 USA.</p>
   </tp:license>
   <interface
-    name="org.freedesktop.Telepathy.Channel.Interface.Messages.DRAFT"
-    tp:causes-havoc="experimental">
+    name="org.freedesktop.Telepathy.Channel.Interface.Messages">
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Text"/>
-    <tp:added version="0.17.5">(draft version, not API-stable)</tp:added>
+    <tp:added version="0.17.16">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface extends the Text interface to support more general
@@ -51,7 +50,9 @@ USA.</p>
         unfriendly to offer the user controls that may have no effect.
       </tp:rationale>
 
-      <p>This interface also replaces Text.SendError, adding support for
+      <p>This interface also replaces <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">Text.SendError</tp:dbus-ref>,
+        adding support for
         protocols where the message content is not echoed back to the sender on
         failure, adding support for receiving positive acknowledgements,
         and using the Messages queue for state-recovery
@@ -59,9 +60,16 @@ USA.</p>
         currently a process handling them).</p>
 
       <p>If this interface is present, clients that support it SHOULD
-        listen for the MessageSent and MessageReceived signals, and
-        ignore the Sent, SendError and Received signal on the Text interface
-        (which are guaranteed to duplicate signals from this interface).</p>
+        listen for the <tp:member-ref>MessageSent</tp:member-ref> and
+        <tp:member-ref>MessageReceived</tp:member-ref> signals, and
+        ignore the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type.Text">Sent</tp:dbus-ref>,
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type.Text">SendError</tp:dbus-ref>
+        and <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type.Text">Received</tp:dbus-ref>
+        signals on the Text interface (which are guaranteed to duplicate
+        signals from this interface).</p>
     </tp:docstring>
 
     <property name="SupportedContentTypes" type="as" access="read"
@@ -150,7 +158,8 @@ USA.</p>
 
       <tp:flag suffix="One_Attachment" value="1">
         <tp:docstring>
-          SendMessage will accept messages containing a textual message body,
+          <tp:member-ref>SendMessage</tp:member-ref> will accept messages
+          containing a textual message body,
           plus a single attachment of any type listed in the
           SupportedContentTypes property. It does not make sense for this
           flag to be set if Message_Part_Support_Flag_Data_Only is not also set
@@ -245,7 +254,8 @@ USA.</p>
             <dt>message-sent (t - <tp:type>Unix_Timestamp64</tp:type>)</dt>
             <dd>The time the message was sent (if unavailable, the time
               it arrived at a central server MAY be used). Omitted if no
-              reasonable approximation is available</dd>
+              reasonable approximation is available; SHOULD always be present
+              on outgoing messages.</dd>
 
             <dt>message-received (t - <tp:type>Unix_Timestamp64</tp:type>)</dt>
             <dd>The time the message was received locally. SHOULD always
@@ -521,6 +531,21 @@ USA.</p>
               Channel_Text_Send_Error_Unknown.
             </dd>
 
+            <dt>delivery-dbus-error (s - DBus_Error_Name)</dt>
+            <dd>
+              The reason for the failure, specified as a (possibly
+              implementation-specific) D-Bus error. MUST be omitted if this was
+              a successful delivery. If set, the 'delivery-error' key SHOULD be
+              set to the closest available value.
+            </dd>
+
+            <dt>delivery-error-message (s)</dt>
+            <dd>
+              Debugging information on why the message could not be delivered.
+              MUST be omitted if this was a successful delivery; MAY always be
+              omitted.
+            </dd>
+
             <dt>delivery-echo (aa{sv} - Message_Part[])</dt>
             <dd>
               <p>The message content, as defined by the Messages interface.
@@ -704,8 +729,11 @@ USA.</p>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Submit a message to the server for sending.
           If this method returns successfully, the message has been submitted
-          to the server and the MessageSent signal is emitted. A corresponding
-          Sent signal on the Text interface MUST also be emitted.</p>
+          to the server and the <tp:member-ref>MessageSent</tp:member-ref>
+          signal is emitted. A corresponding
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type.Text">Sent</tp:dbus-ref>
+          signal on the Text interface MUST also be emitted.</p>
 
         <p>This method MUST return before the MessageSent signal is
           emitted.</p>
@@ -785,7 +813,9 @@ USA.</p>
     <signal name="MessageSent" tp:name-for-bindings="Message_Sent">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Signals that a message has been submitted for sending. This
-          MUST be emitted exactly once per emission of the Sent signal on the
+          MUST be emitted exactly once per emission of the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type.Text">Sent</tp:dbus-ref>
+          signal on the
           Text interface.</p>
 
         <tp:rationale>
@@ -816,6 +846,14 @@ USA.</p>
         </tp:docstring>
       </arg>
 
+      <arg name="Flags" type="u" tp:type="Message_Sending_Flags">
+        <tp:docstring>
+          <p>Flags affecting how the message was sent.  The flags might be a
+            subset of those passed to SendMessage if the caller requested
+            unsupported flags.</p>
+        </tp:docstring>
+      </arg>
+
       <arg name="Message_Token" type="s" tp:type="Sent_Message_Token">
         <tp:docstring>
           An opaque token used to match any incoming delivery or failure
@@ -829,9 +867,13 @@ USA.</p>
       tp:type="Message_Part[][]" tp:name-for-bindings="Pending_Messages">
       <tp:docstring>
         A list of incoming messages that have neither been acknowledged nor
-        rejected. This list is a superset of the one returned by
-        ListPendingMessages on the Text interface; its items can be removed
-        using AcknowledgePendingMessages on that interface.
+        rejected. This list is a more detailed version of the one returned
+        by <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">Text.ListPendingMessages</tp:dbus-ref>,
+        and contains the same messages, uniquely identified by the same
+        pending message IDs. Its items can be removed using
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">Text.AcknowledgePendingMessages</tp:dbus-ref>.
       </tp:docstring>
     </property>
 
@@ -839,8 +881,8 @@ USA.</p>
       tp:name-for-bindings="Pending_Messages_Removed">
       <tp:docstring>
         The messages with the given IDs have been removed from the
-        PendingMessages list. Clients SHOULD NOT attempt to acknowledge
-        those messages.
+        <tp:member-ref>PendingMessages</tp:member-ref> list. Clients SHOULD NOT
+        attempt to acknowledge those messages.
 
         <tp:rationale>
           This completes change notification for the PendingMessages property
@@ -913,7 +955,9 @@ USA.</p>
       <tp:docstring>
         Signals that a message has been received and added to the pending
         messages queue. This MUST be emitted exactly once per emission of the
-        Received signal on the Text interface.
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type.Text">Received</tp:dbus-ref>
+        signal on the Text interface.
 
         <tp:rationale>
           The double signal-emission provides compatibility with older
@@ -930,7 +974,8 @@ USA.</p>
       </arg>
     </signal>
 
-    <tp:enum name="Delivery_Status" value-prefix="Delivery_Status" type="u">
+    <tp:enum name="Delivery_Status" value-prefix="Delivery_Status"
+      plural="Delivery_Statuses" type="u">
       <tp:docstring>
         <p>The status of a message as indicated by a delivery report.</p>
 
@@ -979,6 +1024,20 @@ USA.</p>
           <tp:rationale>
             Similar to errors with type="cancel", type="modify"
             or type="auth" in XMPP; analogous to 5xx errors in SMTP.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Accepted" value="4">
+        <tp:docstring>
+          An intermediate server has accepted the message but the message
+          has not been yet delivered to the ultimate recipient. The
+          connection manager might send a Failed report or Delivered report
+          later.
+
+          <tp:rationale>
+            Similar to "202 Accepted" success code in SIP; analogous to
+            251 and 252 responses in SMTP.
           </tp:rationale>
         </tp:docstring>
       </tp:enumvalue>

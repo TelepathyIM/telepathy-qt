@@ -33,9 +33,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:struct name="Pending_Text_Message" array-name="Pending_Text_Message_List">
       <tp:docstring>A struct (message ID, timestamp in seconds since
         1970-01-01 00:00 UTC, sender's handle, message type, flags, text)
-        representing a pending text message, as returned by ListPendingMessages
-        on the Text channel type. The arguments of the Received signal
-        also match this struct's signature.</tp:docstring>
+        representing a pending text message, as returned by
+        <tp:member-ref>ListPendingMessages</tp:member-ref>.  The arguments of
+        the <tp:member-ref>Received</tp:member-ref> signal also match this
+        struct's signature.</tp:docstring>
       <tp:member type="u" tp:type="Message_ID" name="Identifier"/>
       <tp:member type="u" tp:type="Unix_Timestamp" name="Unix_Timestamp"/>
       <tp:member type="u" tp:type="Contact_Handle" name="Sender"/>
@@ -81,8 +82,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       tp:name-for-bindings="List_Pending_Messages">
       <arg direction="in" name="Clear" type="b">
         <tp:docstring>
-          If true, behave as if AcknowledgePendingMessages had also been
-          called.
+          If true, behave as if
+          <tp:member-ref>AcknowledgePendingMessages</tp:member-ref> had also
+          been called.
         </tp:docstring>
         <tp:deprecated since="0.17.3">
           Setting this to true is NOT RECOMMENDED for clients that
@@ -153,7 +155,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         and text has been received on this channel. Applications that catch
         this signal and reliably inform the user of the message should
         acknowledge that they have dealt with the message with the
-        AcknowledgePendingMessage method.
+        <tp:member-ref>AcknowledgePendingMessages</tp:member-ref> method.
       </tp:docstring>
     </signal>
 
@@ -170,16 +172,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Request that a message be sent on this channel. When the message has
-          been submitted for delivery, this method will return and the Sent
-          signal will be emitted. If the message cannot be submitted for
-          delivery, the method returns an error and no signal is emitted.</p>
+          been submitted for delivery, this method will return and the
+          <tp:member-ref>Sent</tp:member-ref> signal will be emitted. If the
+          message cannot be submitted for delivery, the method returns an error
+          and no signal is emitted.</p>
 
         <p>This method SHOULD return before the Sent signal is
           emitted.</p>
 
         <tp:rationale>
-          <p>When a Text channel implements the Messages interface, that
-            "SHOULD" becomes a "MUST".</p>
+          <p>When a Text channel implements the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Interface">Messages</tp:dbus-ref>
+            interface, that "SHOULD" becomes a "MUST".</p>
         </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
@@ -250,8 +254,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           will be one of the values from ChannelTextSendError.</p>
 
         <p>This signal should only be emitted for messages for which
-          Sent has already been emitted and Send has already returned
-          success.</p>
+          <tp:member-ref>Sent</tp:member-ref> has already been emitted and
+          <tp:member-ref>Send</tp:member-ref> has already returned success.</p>
       </tp:docstring>
       <tp:changed version="0.17.3">older spec versions claimed that SendError
         was emitted <em>instead of</em> Sent, rather than <em>in addition
@@ -276,7 +280,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The text of the message. If the message was, or will be, altered
           during transmission, this argument SHOULD reflect what other
           contacts will receive rather than being a copy of the argument
-          to Send.
+          to <tp:member-ref>Send</tp:member-ref>.
         </tp:docstring>
       </arg>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -337,7 +341,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The incoming message contained non-text content which cannot be
             represented by this interface, but has been signalled
-            in the Messages interface.</p>
+            in the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface">Messages</tp:dbus-ref>
+            interface.</p>
 
           <p>Connection managers SHOULD only set this flag if the non-text
             content appears to be relatively significant (exactly how
@@ -367,7 +373,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:flag suffix="Rescued" value="8">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The incoming message has been seen in a previous channel during
-            the lifetime of the Connection, but had not been acknowledged
+            the lifetime of the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>, but
+            had not been acknowledged
             when that channel closed, causing an identical channel (the
             channel in which the message now appears) to open.</p>
 
@@ -463,42 +471,49 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         formatted text) should also have this type.</p>
 
       <p>When a message is received, an identifier is assigned and a
-        Received signal emitted, and the message placed in a pending queue
-        which can be inspected with ListPendingMessages. A client which has
+        <tp:member-ref>Received</tp:member-ref> signal emitted, and the message
+        placed in a pending queue which can be inspected with
+        <tp:member-ref>ListPendingMessages</tp:member-ref>. A client which has
         handled the message by showing it to the user (or equivalent) should
-        acknowledge the receipt using the AcknowledgePendingMessage method,
+        acknowledge the receipt using the
+        <tp:member-ref>AcknowledgePendingMessages</tp:member-ref> method,
         and the message will then be removed from the pending queue. Numeric
         identifiers for received messages may be reused over the lifetime of
         the channel.</p>
 
       <p>Each message has an associated 'type' value, which should be one
-        of the values allowed by ChannelTextMessageType.</p>
+        of the values allowed by
+        <tp:type>Channel_Text_Message_Type</tp:type>.</p>
 
       <p>Each message also has a flags value, which is a bitwise OR of the
-        flags given in ChannelTextMessageFlags.</p>
+        flags given in <tp:type>Channel_Text_Message_Flags</tp:type>.</p>
 
-      <p>Sending messages can be requested using the Send method, which will
-        return successfully and emit the Sent signal when the message has
-        been delivered to the server, or return an error with no signal
-        emission if there is a failure. If a message is sent but delivery
-        of the message later fails, this is indicated with the SendError
-        signal.</p>
+      <p>Sending messages can be requested using the
+        <tp:member-ref>Send</tp:member-ref> method, which will return
+        successfully and emit the <tp:member-ref>Sent</tp:member-ref> signal
+        when the message has been delivered to the server, or return an error
+        with no signal emission if there is a failure. If a message is sent but
+        delivery of the message later fails, this is indicated with the
+        <tp:member-ref>SendError</tp:member-ref> signal.</p>
 
       <p>On protocols where additional contacts cannot be invited into
         a one-to-one chat, or where a one-to-one chat is just a series of
         individual personal messages rather than being represented by some
         object on the server (i.e. most protocols), one-to-one chats should be
-        represented by a Text channel with handle type CONTACT.</p>
+        represented by a Text channel with <tp:type>Handle_Type</tp:type>
+        CONTACT.</p>
 
       <p>Named chat rooms whose identity can be saved and used again later
         (IRC channels, Jabber MUCs) are expected to be represented by Text
-        channels with handle type ROOM and the Group interface; they should
-        usually also have the Properties interface.</p>
+        channels with <tp:type>Handle_Type</tp:type> ROOM and the <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Interface">Group</tp:dbus-ref>
+        interface; they should usually also have the Properties interface.</p>
 
       <p>Unnamed, transient chat rooms defined only by their members (e.g. on
         MSN) are expected to be represented by Text channels with handle type
-        0, handle 0, the Group interface, and optionally the Properties
-        interface.</p>
+        0, handle 0, the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface">Group</tp:dbus-ref>
+        interface, and optionally the Properties interface.</p>
 
       <p>On protocols where a conversation with a user is actually just
         a nameless chat room starting with exactly two members, to which
