@@ -298,13 +298,12 @@ void TestHandles::testReferences()
     // Because we know that in this self-contained test, nobody else can possibly be holding the
     // first handle, and we have dropped the last ReferencedHandles having it, it should be invalid
     //
-    // However, the telepathy-python 0.15.0 ReleaseHandles implementation is made of cheese. I know
+    // However, the telepathy-python 0.15.3 ReleaseHandles implementation is made of cheese. I know
     // how to fix it, but until we've released tp-python with the fix, and added a dependency on
     // that new version of tp-python for the tests, we can't enable this.
-    //inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
+    // inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
     //        Telepathy::UIntList() << firstHandle);
-    //QEXPECT_FAIL("", "pinocchio's handle machinery fails at releasing", Continue);
-    //QVERIFY(!inspectReply.isValid());
+    // QVERIFY(!inspectReply.isValid());
     Q_UNUSED(firstHandle);
 }
 
