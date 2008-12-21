@@ -30,6 +30,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/PendingChannel>
+#include <TelepathyQt4/Client/PendingContactAttributes>
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
@@ -1401,6 +1402,62 @@ PendingOperation *Connection::requestConnect(Connection::Features features)
 PendingOperation *Connection::requestDisconnect()
 {
     return new PendingVoidMethodCall(this, baseInterface()->Disconnect());
+}
+
+/**
+ * Requests attributes for contacts. Optionally, the handles of the contacts will be referenced
+ * automatically. Essentially, this method wraps
+ * ConnectionInterfaceContactsInterface::GetContactAttributes(), integrating it with the rest of the
+ * handle-referencing machinery.
+ *
+ * Upon completion, the reply to the request can be retrieved through the returned
+ * PendingContactAttributes object. The object also provides access to the parameters with which the
+ * call was made and a signal to connect to to get notification of the request finishing processing.
+ * See the documentation for that class for more info.
+ *
+ * If the remote object doesn't support the Contacts interface (as signified by the list returned by
+ * interfaces() not containing TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS), the returned
+ * PendingContactAttributes instance will fail instantly with the error
+ * TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ *
+ * \sa PendingContactAttributes
+ *
+ * \param contacts Passed to ConnectionInterfaceContactsInterface::GetContactAttributes().
+ * \param interfaces Passed to ConnectionInterfaceContactsInterface::GetContactAttributes().
+ * \param reference Whether the handles should additionally be referenced.
+ * \return Pointer to a newly constructed PendingContactAttributes, tracking the progress of the
+ *         request.
+ */
+PendingContactAttributes *Connection::getContactAttributes(const UIntList &handles,
+        const QStringList &interfaces, bool reference)
+{
+    debug() << "Request for attributes for" << handles.size() << "contacts";
+
+    if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        warning() << "Connection::getContactAttributes() used without the remote object supporting"
+                  << "the Contacts interface";
+        PendingContactAttributes *pending =
+            new PendingContactAttributes(this, handles, interfaces, reference);
+        pending->setUnsupported();
+        return pending;
+    }
+
+    {
+        Private::HandleContext *handleContext = mPriv->handleContext;
+        QMutexLocker locker(&handleContext->lock);
+        handleContext->types[HandleTypeContact].requestsInFlight++;
+    }
+
+    PendingContactAttributes *pending =
+        new PendingContactAttributes(this, handles, interfaces, reference);
+    ConnectionInterfaceContactsInterface *contactsInterface =
+        optionalInterface<ConnectionInterfaceContactsInterface>();
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(contactsInterface->GetContactAttributes(handles, interfaces,
+                    reference));
+    pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                              SLOT(onCallFinished(QDBusPendingCallWatcher*)));
+    return pending;
 }
 
 void Connection::refHandle(uint type, uint handle)

@@ -51,6 +51,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-account.cpp \
     Client/pending-channel.cpp \
     Client/pending-connection.cpp \
+    Client/pending-contact-attributes.cpp \
     Client/pending-handles.cpp \
     Client/pending-operation.cpp \
     Client/pending-string-list.cpp \
@@ -95,6 +96,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/pending-account.moc.hpp \
     Client/_gen/pending-connection.moc.hpp \
     Client/_gen/pending-channel.moc.hpp \
+    Client/_gen/pending-contact-attributes.moc.hpp \
     Client/_gen/pending-handles.moc.hpp \
     Client/_gen/pending-operation.moc.hpp \
     Client/_gen/pending-string-list.moc.hpp \
@@ -127,6 +129,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingAccount \
     Client/PendingChannel \
     Client/PendingConnection \
+    Client/PendingContactAttributes \
     Client/PendingFailure \
     Client/PendingOperation \
     Client/PendingSuccess \
@@ -182,6 +185,7 @@ tpqt4clientinclude_HEADERS = \
     Client/pending-account.h \
     Client/pending-channel.h \
     Client/pending-connection.h \
+    Client/pending-contact-attributes.h \
     Client/pending-handles.h \
     Client/pending-operation.h \
     Client/pending-string-list.h \
