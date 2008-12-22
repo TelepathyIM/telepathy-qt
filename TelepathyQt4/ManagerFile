@@ -1,0 +1,6 @@
+#ifndef _TelepathyQt4_ManagerFile_HEADER_GUARD_
+#define _TelepathyQt4_ManagerFile_HEADER_GUARD_
+
+#include <TelepathyQt4/manager-file.h>
+
+#endif
