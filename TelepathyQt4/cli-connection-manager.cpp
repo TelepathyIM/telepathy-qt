@@ -262,6 +262,8 @@ void ConnectionManager::Private::callReadConfig()
         introspectQueue.enqueue(&Private::callGetAll);
         introspectQueue.enqueue(&Private::callListProtocols);
     }
+
+    parent->continueIntrospection();
 }
 
 
