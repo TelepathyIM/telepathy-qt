@@ -36,7 +36,6 @@ namespace Telepathy
 namespace Client
 {
 
-// FIXME proper map dbusSignature to QVariant on mType
 ProtocolParameter::ProtocolParameter(const QString &name,
                                      const QDBusSignature &dbusSignature,
                                      QVariant defaultValue,
