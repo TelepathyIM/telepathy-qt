@@ -27,7 +27,7 @@
 
 #include <TelepathyQt4/Client/PendingChannel>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
-#include <TelepathyQt4/debug-internal.hpp>
+#include <TelepathyQt4/debug-internal.h>
 
 #include <QMap>
 #include <QQueue>

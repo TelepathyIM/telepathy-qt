@@ -21,7 +21,7 @@
 
 #include "optional-interface-factory.h"
 
-#include <TelepathyQt4/debug-internal.hpp>
+#include <TelepathyQt4/debug-internal.h>
 
 #include <QMap>
 #include <QString>

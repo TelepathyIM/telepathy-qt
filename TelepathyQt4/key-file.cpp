@@ -21,7 +21,7 @@
 
 #include "key-file.h"
 
-#include "debug-internal.hpp"
+#include "debug-internal.h"
 
 #include <QtCore/QByteArray>
 #include <QtCore/QFile>

@@ -28,7 +28,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/debug-internal.hpp>
+#include <TelepathyQt4/debug-internal.h>
 
 #include <QQueue>
 #include <QStringList>

@@ -49,7 +49,6 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-operation.cpp \
     Client/properties.cpp \
     debug.cpp \
-    debug-internal.hpp \
     key-file.cpp \
     manager-file.cpp \
     types.cpp \

@@ -22,7 +22,7 @@
 #include "dbus-proxy.h"
 #include "dbus-proxy.moc.hpp"
 
-#include <TelepathyQt4/debug-internal.hpp>
+#include <TelepathyQt4/debug-internal.h>
 
 namespace Telepathy
 {

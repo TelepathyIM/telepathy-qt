@@ -23,7 +23,7 @@
 #include "pending-channel.moc.hpp"
 
 #include <TelepathyQt4/Client/channel.h>
-#include <TelepathyQt4/debug-internal.hpp>
+#include <TelepathyQt4/debug-internal.h>
 
 namespace Telepathy
 {

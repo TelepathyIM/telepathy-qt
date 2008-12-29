@@ -24,7 +24,7 @@
 #include "pending-operation.moc.hpp"
 #include "simple-pending-operations.moc.hpp"
 
-#include <TelepathyQt4/debug-internal.hpp>
+#include <TelepathyQt4/debug-internal.h>
 
 #include <QDBusPendingCall>
 #include <QDBusPendingCallWatcher>
