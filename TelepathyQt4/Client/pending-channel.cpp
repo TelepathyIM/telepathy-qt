@@ -19,11 +19,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "cli-pending-channel.h"
+#include "pending-channel.h"
+#include "pending-channel.moc.hpp"
 
-#include "cli-pending-channel.moc.hpp"
-
-#include "debug-internal.hpp"
+#include <TelepathyQt4/Client/channel.h>
+#include <TelepathyQt4/debug-internal.hpp>
 
 namespace Telepathy
 {

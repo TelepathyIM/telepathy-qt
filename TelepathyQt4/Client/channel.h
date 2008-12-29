@@ -43,20 +43,13 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
-#include <QSet>
-
-#include <QDBusPendingCallWatcher>
-
-namespace Telepathy {
-namespace Client {
-class Channel;
-}
-}
-
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+
+#include <QSet>
+#include <QDBusPendingCallWatcher>
 
 namespace Telepathy
 {
@@ -66,7 +59,7 @@ namespace Client
 /**
  * \class Channel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/cli-channel.h <TelepathyQt4/Client/Channel>
+ * \headerfile TelepathyQt4/Client/channel.h <TelepathyQt4/Client/Channel>
  *
  * High-level proxy object for accessing remote %Telepathy %Channel objects.
  *

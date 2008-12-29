@@ -41,18 +41,17 @@
  * interfaces.
  */
 
-namespace Telepathy
-{
-namespace Client
-{
-class PendingChannel;
-}
-}
-
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Types>
+#include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Types>
+
+namespace Telepathy {
+namespace Client {
+class Channel;
+}
+}
 
 namespace Telepathy
 {
@@ -62,7 +61,7 @@ namespace Client
 /**
  * \class PendingChannel
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/cli-pending-channel.h> <TelepathyQt4/Client/Connection>
+ * \headerfile <TelepathyQt4/Client/pending-channel.h> <TelepathyQt4/Client/PendingChannel>
  *
  * Class containing the parameters of and the reply to an asynchronous channel
  * request. Instances of this class cannot be constructed directly; the only way

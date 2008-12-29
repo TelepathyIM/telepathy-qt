@@ -19,17 +19,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "cli-channel.h"
+#include "channel.h"
+#include "channel.moc.hpp"
 
-#include "_gen/cli-channel-body.hpp"
-#include "_gen/cli-channel.moc.hpp"
-#include "cli-channel.moc.hpp"
+#include "dbus.h"
+
+#include <TelepathyQt4/_gen/cli-channel-body.hpp>
+#include <TelepathyQt4/_gen/cli-channel.moc.hpp>
+
+#include <TelepathyQt4/Constants>
+#include <TelepathyQt4/debug-internal.hpp>
 
 #include <QQueue>
-
-#include "cli-dbus.h"
-#include "constants.h"
-#include "debug-internal.hpp"
 
 namespace Telepathy
 {

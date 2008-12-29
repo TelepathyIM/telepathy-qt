@@ -1,0 +1,7 @@
+#ifndef _TelepathyQt4_Client_StatelessDBusProxy_HEADER_GUARD_
+#define _TelepathyQt4_Client_StatelessDBusProxy_HEADER_GUARD_
+
+#include <TelepathyQt4/Client/dbus-proxy.h>
+
+#endif
+// vim:set ft=cpp:

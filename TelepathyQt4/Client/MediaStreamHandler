@@ -1,6 +1,7 @@
 #ifndef _TelepathyQt4_Client_MediaStreamHandler_HEADER_GUARD_
 #define _TelepathyQt4_Client_MediaStreamHandler_HEADER_GUARD_
 
-#include <TelepathyQt4/cli-media-stream-handler.h>
+#include <TelepathyQt4/Client/media-stream-handler.h>
 
 #endif
+// vim:set ft=cpp:

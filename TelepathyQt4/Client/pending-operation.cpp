@@ -19,17 +19,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "cli-pending-operation.h"
-#include "cli-simple-pending-operations.h"
+#include "pending-operation.h"
+#include "simple-pending-operations.h"
+#include "pending-operation.moc.hpp"
+#include "simple-pending-operations.moc.hpp"
 
-#include <QTimer>
+#include <TelepathyQt4/debug-internal.hpp>
 
 #include <QDBusPendingCall>
 #include <QDBusPendingCallWatcher>
-
-#include "cli-pending-operation.moc.hpp"
-#include "cli-simple-pending-operations.moc.hpp"
-#include "debug-internal.hpp"
+#include <QTimer>
 
 namespace Telepathy
 {

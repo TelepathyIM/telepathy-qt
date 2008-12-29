@@ -19,20 +19,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "cli-connection.h"
+#include "connection.h"
+#include "connection.moc.hpp"
 
 #include <TelepathyQt4/_gen/cli-connection-body.hpp>
 #include <TelepathyQt4/_gen/cli-connection.moc.hpp>
-#include <TelepathyQt4/cli-connection.moc.hpp>
+
+#include <TelepathyQt4/Client/PendingChannel>
+#include <TelepathyQt4/Client/PendingVoidMethodCall>
+#include <TelepathyQt4/debug-internal.hpp>
 
 #include <QMap>
 #include <QQueue>
 #include <QString>
 #include <QtGlobal>
-
-#include <TelepathyQt4/Client/PendingVoidMethodCall>
-
-#include "debug-internal.hpp"
 
 namespace Telepathy
 {

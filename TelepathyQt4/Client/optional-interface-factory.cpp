@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "cli-optional-interface-factory.h"
+#include "optional-interface-factory.h"
+
+#include <TelepathyQt4/debug-internal.hpp>
 
 #include <QMap>
 #include <QString>
-
-#include "debug-internal.hpp"
 
 namespace Telepathy
 {

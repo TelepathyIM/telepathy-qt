@@ -33,9 +33,8 @@
  * backwards compatibility helpers for older services and other utilities.
  */
 
-#include <QtGlobal>
-
 #include <QDBusAbstractInterface>
+#include <QtGlobal>
 
 namespace Telepathy
 {
@@ -45,7 +44,7 @@ namespace Client
 /**
  * \class OptionalInterfaceFactory
  * \ingroup clientsideproxies
- * \headerfile <TelepathyQt4/cli-optional-interface-factory.h> <TelepathyQt4/Client/OptionalInterfaceFactory>
+ * \headerfile <TelepathyQt4/Client/optional-interface-factory.h> <TelepathyQt4/Client/OptionalInterfaceFactory>
  *
  * Implementation helper class for high-level proxy classes willing to offer
  * access to shared instances of interface proxies for optional interfaces.

@@ -19,7 +19,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "cli-account-manager.h"
+#ifndef _TelepathyQt4_cli_account_h_HEADER_GUARD_
+#define _TelepathyQt4_cli_account_h_HEADER_GUARD_
 
-#include <TelepathyQt4/_gen/cli-account-manager.moc.hpp>
-#include <TelepathyQt4/_gen/cli-account-manager-body.hpp>
+/**
+ * \addtogroup clientsideproxies Client-side proxies
+ *
+ * Proxy objects representing remote service objects accessed via D-Bus.
+ *
+ * In addition to providing direct access to methods, signals and properties
+ * exported by the remote objects, some of these proxies offer features like
+ * automatic inspection of remote object capabilities, property tracking,
+ * backwards compatibility helpers for older services and other utilities.
+ */
+
+/* See account-manager.h for doxygen */
+
+#include <TelepathyQt4/_gen/cli-account.h>
+
+#endif
+

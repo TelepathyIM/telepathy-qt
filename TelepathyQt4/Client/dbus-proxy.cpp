@@ -19,9 +19,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "cli-dbus-proxy.h"
+#include "dbus-proxy.h"
+#include "dbus-proxy.moc.hpp"
 
-#include "debug-internal.hpp"
+#include <TelepathyQt4/debug-internal.hpp>
 
 namespace Telepathy
 {
@@ -89,5 +90,3 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection& dbusConnection,
 
 }
 }
-
-#include "cli-dbus-proxy.moc.hpp"

@@ -1,6 +1,7 @@
 #ifndef _TelepathyQt4_Client_OptionalInterfaceFactory_HEADER_GUARD_
 #define _TelepathyQt4_Client_OptionalInterfaceFactory_HEADER_GUARD_
 
-#include <TelepathyQt4/cli-optional-interface-factory.h>
+#include <TelepathyQt4/Client/optional-interface-factory.h>
 
 #endif
+// vim:set ft=cpp:

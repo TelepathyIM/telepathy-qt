@@ -49,17 +49,21 @@ class Connection;
 
 #include <TelepathyQt4/_gen/cli-connection.h>
 
-#include <QDBusPendingCallWatcher>
-#include <QStringList>
-
-#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Constants>
 
-#include "cli-pending-channel.h"
+#include <QDBusPendingCallWatcher>
+#include <QStringList>
+
+namespace Telepathy {
+namespace Client {
+class PendingChannel;
+}
+};
 
 namespace Telepathy
 {
@@ -69,7 +73,7 @@ namespace Client
 /**
  * \class Connection
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/cli-connection.h> <TelepathyQt4/Client/Connection>
+ * \headerfile <TelepathyQt4/Client/connection.h> <TelepathyQt4/Client/Connection>
  *
  * High-level proxy object for accessing remote %Telepathy %Connection objects.
  *

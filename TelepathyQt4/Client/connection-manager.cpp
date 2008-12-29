@@ -19,17 +19,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "cli-connection-manager.h"
+#include "connection-manager.h"
+#include "connection-manager.moc.hpp"
 
-#include <QtCore/QQueue>
-#include <QtCore/QStringList>
-#include <QtCore/QTimer>
+#include <TelepathyQt4/_gen/cli-connection-manager-body.hpp>
+#include <TelepathyQt4/_gen/cli-connection-manager.moc.hpp>
 
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
+#include <TelepathyQt4/debug-internal.hpp>
 
-#include "TelepathyQt4/debug-internal.hpp"
+#include <QQueue>
+#include <QStringList>
+#include <QTimer>
 
 namespace Telepathy
 {
@@ -454,7 +457,3 @@ void ConnectionManager::continueIntrospection()
 
 } // Telepathy::Client
 } // Telepathy
-
-#include <TelepathyQt4/_gen/cli-connection-manager-body.hpp>
-#include <TelepathyQt4/_gen/cli-connection-manager.moc.hpp>
-#include <TelepathyQt4/cli-connection-manager.moc.hpp>

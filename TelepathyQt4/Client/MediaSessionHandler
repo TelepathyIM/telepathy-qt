@@ -1,6 +1,7 @@
 #ifndef _TelepathyQt4_Client_MediaSessionHandler_HEADER_GUARD_
 #define _TelepathyQt4_Client_MediaSessionHandler_HEADER_GUARD_
 
-#include <TelepathyQt4/cli-media-session-handler.h>
+#include <TelepathyQt4/Client/media-session-handler.h>
 
 #endif
+// vim:set ft=cpp:

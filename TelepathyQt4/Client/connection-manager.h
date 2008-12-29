@@ -42,10 +42,10 @@
 
 #include <TelepathyQt4/_gen/cli-connection-manager.h>
 
-#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+#include <TelepathyQt4/Constants>
 
 namespace Telepathy
 {
@@ -155,7 +155,7 @@ private:
 /**
  * \class ConnectionManager
  * \ingroup clientcm
- * \headerfile TelepathyQt4/cli-connection-manager.h <TelepathyQt4/Client/ConnectionManager>
+ * \headerfile TelepathyQt4/Client/connection-manager.h <TelepathyQt4/Client/ConnectionManager>
  *
  * Object representing a Telepathy connection manager. Connection managers
  * allow connections to be made on one or more protocols.

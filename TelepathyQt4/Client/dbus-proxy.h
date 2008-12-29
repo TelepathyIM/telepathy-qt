@@ -24,8 +24,8 @@
 
 // FIXME: What groups should this be in/define?
 
-#include <QtDBus/QDBusAbstractInterface>
-#include <QtDBus/QDBusConnection>
+#include <QDBusAbstractInterface>
+#include <QDBusConnection>
 
 namespace Telepathy
 {
@@ -35,7 +35,7 @@ namespace Client
 /**
  * \class DBusProxy
  * \ingroup FIXME: what group is it in?
- * \headerfile TelepathyQt4/cli-dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
+ * \headerfile TelepathyQt4/Client/dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
  *
  * Base class representing a remote object available over D-Bus.
  *
@@ -134,7 +134,7 @@ private:
 /**
  * \class StatelessDBusProxy
  * \ingroup FIXME: what group is it in?
- * \headerfile TelepathyQt4/cli-dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
+ * \headerfile TelepathyQt4/Client/dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
  *
  * Base class representing a remote object whose API is basically stateless.
  * These objects can remain valid even if the service providing them exits
@@ -161,7 +161,7 @@ private:
 /**
  * \class StatefulDBusProxy
  * \ingroup FIXME: what group is it in?
- * \headerfile TelepathyQt4/cli-dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
+ * \headerfile TelepathyQt4/Client/dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
  *
  * Base class representing a remote object whose API is stateful. These
  * objects do not remain useful if the service providing them exits or

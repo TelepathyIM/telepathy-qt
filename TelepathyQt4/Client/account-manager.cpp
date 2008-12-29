@@ -19,5 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/_gen/cli-dbus-body.hpp>
-#include <TelepathyQt4/_gen/cli-dbus.moc.hpp>
+#include "account-manager.h"
+
+#include <TelepathyQt4/_gen/cli-account-manager.moc.hpp>
+#include <TelepathyQt4/_gen/cli-account-manager-body.hpp>
