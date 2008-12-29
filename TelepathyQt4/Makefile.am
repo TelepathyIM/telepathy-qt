@@ -113,6 +113,37 @@ tpqt4clientinclude_HEADERS = \
     Client/Properties \
     Client/StatelessDBusProxy \
     Client/StatefulDBusProxy \
+    Client/AccountInterface \
+    Client/AccountManagerInterface \
+    Client/ChannelInterface \
+    Client/ChannelInterfaceCallStateInterface \
+    Client/ChannelInterfaceChatStateInterface \
+    Client/ChannelInterfaceDTMFInterface \
+    Client/ChannelInterfaceGroupInterface \
+    Client/ChannelInterfaceHoldInterface \
+    Client/ChannelInterfaceMediaSignallingInterface \
+    Client/ChannelInterfacePasswordInterface \
+    Client/ChannelTypeContactListInterface \
+    Client/ChannelTypeRoomListInterface \
+    Client/ChannelTypeStreamedMediaInterface \
+    Client/ChannelTypeTextInterface \
+    Client/ChannelTypeTubesInterface \
+    Client/ConnectionInterface \
+    Client/ConnectionInterfaceAliasingInterface \
+    Client/ConnectionInterfaceAvatarsInterface \
+    Client/ConnectionInterfaceCapabilitiesInterface \
+    Client/ConnectionInterfaceContactsInterface \
+    Client/ConnectionInterfacePresenceInterface \
+    Client/ConnectionInterfaceRequestsInterface \
+    Client/ConnectionInterfaceSimplePresenceInterface \
+    Client/ConnectionManagerInterface \
+    Client/DBusDaemonInterface \
+    Client/IntrospectableInterface \
+    Client/MediaSessionHandlerInterface \
+    Client/MediaStreamHandlerInterface \
+    Client/PeerInterface \
+    Client/PropertiesInterface \
+    Client/PropertiesInterfaceInterface \
     Client/account.h \
     Client/account-manager.h \
     Client/channel.h \

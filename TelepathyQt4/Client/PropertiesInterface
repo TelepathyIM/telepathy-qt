@@ -1,0 +1,7 @@
+#ifndef _TelepathyQt4_Client_PropertiesInterface_HEADER_GUARD_
+#define _TelepathyQt4_Client_PropertiesInterface_HEADER_GUARD_
+
+#include <TelepathyQt4/Client/dbus.h>
+
+#endif
+// vim:set ft=cpp:
