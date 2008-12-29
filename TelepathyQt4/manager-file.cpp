@@ -177,7 +177,6 @@ bool ManagerFile::Private::hasParameter(const QString &protocol,
 {
     ParamSpecList paramSpecList = protocolParams[protocol];
     Q_FOREACH (ParamSpec paramSpec, paramSpecList) {
-        qDebug() << "comparing paramSpec.name with paramName" << paramSpec.name << paramName;
         if (paramSpec.name == paramName) {
             return true;
         }
