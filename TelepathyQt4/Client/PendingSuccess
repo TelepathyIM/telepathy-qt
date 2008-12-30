@@ -1,6 +1,10 @@
 #ifndef _TelepathyQt4_Client_PendingSuccess_HEADER_GUARD_
 #define _TelepathyQt4_Client_PendingSuccess_HEADER_GUARD_
 
+#ifndef IN_TELEPATHY_QT4_INTERNALS
+#define IN_TELEPATHY_QT4_INTERNALS
+#endif
+
 #include <TelepathyQt4/Client/simple-pending-operations.h>
 
 #endif

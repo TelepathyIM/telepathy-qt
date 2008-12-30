@@ -22,6 +22,10 @@
 #ifndef _TelepathyQt4_constants_h_HEADER_GUARD_
 #define _TelepathyQt4_constants_h_HEADER_GUARD_
 
+#ifndef IN_TELEPATHY_QT4_INTERNALS
+#error IN_TELEPATHY_QT4_INTERNALS
+#endif
+
 /**
  * \addtogroup typesconstants Types and constants
  *

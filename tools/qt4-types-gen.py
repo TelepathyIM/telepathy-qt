@@ -58,6 +58,7 @@ class Generator(object):
             self.realinclude = opts['--realinclude']
             self.prettyinclude = opts.get('--prettyinclude', self.realinclude)
             self.extraincludes = opts.get('--extraincludes', None)
+            self.must_define = opts.get('--must-define', None)
             dom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
             assert False, 'Missing required parameter %s' % k.args[0]
@@ -88,10 +89,17 @@ class Generator(object):
 
         self.gather_required()
 
-        if self.extraincludes:
+        if self.must_define:
             self.decl('\n')
+            self.decl('#ifndef %s\n' % self.must_define)
+            self.decl('#error %s\n' % self.must_define)
+            self.decl('#endif')
+
+        self.decl('\n')
+
+        if self.extraincludes:
             for include in self.extraincludes.split(','):
-                self.decl('#include %s' % include)
+                self.decl('#include %s\n' % include)
 
         self.decl("""
 #include <QtGlobal>
@@ -136,9 +144,15 @@ class Generator(object):
  */
 
 """)
+
+        if self.must_define:
+            self.impl("""
+#define %s""" % self.must_define)
+
         self.impl("""
 #include "%s"
 """ % self.realinclude)
+
         self.both("""
 namespace %s
 {
@@ -401,6 +415,7 @@ if __name__ == '__main__':
              'realinclude=',
              'prettyinclude=',
              'extraincludes=',
+             'must-define=',
              'namespace=',
              'specxml='])
 

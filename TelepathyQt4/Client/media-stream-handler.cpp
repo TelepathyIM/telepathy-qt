@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#define IN_TELEPATHY_QT4_INTERNALS
 #include "media-stream-handler.h"
 
 #include <TelepathyQt4/_gen/cli-media-stream-handler-body.hpp>

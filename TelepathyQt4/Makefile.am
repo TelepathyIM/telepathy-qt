@@ -224,6 +224,7 @@ _gen/constants.h: _gen/stable-spec.xml \
 	$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
 		--namespace='Telepathy' \
 		--str-constant-prefix='TELEPATHY_' \
+		--must-define='IN_TELEPATHY_QT4_INTERNALS' \
 		--specxml=$< \
 		> $@.tmp && mv $@.tmp $@
 
@@ -236,6 +237,7 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		--implfile='_gen/types-body.hpp' \
 		--realinclude='TelepathyQt4/types.h' \
 		--prettyinclude='TelepathyQt4/Types' \
+		--must-define='IN_TELEPATHY_QT4_INTERNALS' \
 		--specxml=$<
 
 # Things generated per interface group
@@ -301,6 +303,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--specxml=_gen/stable-spec.xml \
 		--ifacexml=$< \
 		--extraincludes='<TelepathyQt4/Types>' \
+		--must-define='IN_TELEPATHY_QT4_INTERNALS' \
 		$$mainiface
 
 %.moc.hpp: %.h _gen/constants.h _gen/types.h

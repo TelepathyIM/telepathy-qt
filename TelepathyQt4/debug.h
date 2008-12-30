@@ -22,6 +22,10 @@
 #ifndef _TelepathyQt4_debug_h_HEADER_GUARD_
 #define _TelepathyQt4_debug_h_HEADER_GUARD_
 
+#ifndef IN_TELEPATHY_QT4_INTERNALS
+#error IN_TELEPATHY_QT4_INTERNALS
+#endif
+
 /**
  * \defgroup debug Common debug support
  *
