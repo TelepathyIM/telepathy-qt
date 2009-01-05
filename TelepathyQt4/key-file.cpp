@@ -44,8 +44,8 @@ struct KeyFile::Private
     void setError(KeyFile::Status status, const QString &reason);
     bool read();
 
-    bool escapedKey(const QByteArray &data, int from, int to, QString &result);
-    bool escapedString(const QByteArray &data, int from, int to, QString &result);
+    bool validateKey(const QByteArray &data, int from, int to, QString &result);
+    bool unescapeString(const QByteArray &data, int from, int to, QString &result);
 
     QStringList allGroups() const;
     QStringList allKeys() const;
@@ -143,7 +143,7 @@ bool KeyFile::Private::read()
             }
 
             currentGroup = "";
-            if (!escapedString(group, 0, group.size(), currentGroup)) {
+            if (!unescapeString(group, 0, group.size(), currentGroup)) {
                 setError(KeyFile::FormatError,
                          QString("invalid group '%1' at line %2")
                                  .arg(currentGroup).arg(line));
@@ -166,7 +166,7 @@ bool KeyFile::Private::read()
             }
 
             QString key;
-            if (!escapedKey(data, 0, idx, key)) {
+            if (!validateKey(data, 0, idx, key)) {
                 setError(KeyFile::FormatError,
                          QString("invalid key '%1' at line %2")
                                  .arg(key).arg(line));
@@ -175,7 +175,7 @@ bool KeyFile::Private::read()
 
             data = data.mid(idx + 1).trimmed();
             QString value;
-            if (!escapedString(data, 0, data.size(), value)) {
+            if (!unescapeString(data, 0, data.size(), value)) {
                 setError(KeyFile::FormatError,
                          QString("invalid key value for key '%2' at line %3")
                                  .arg(key).arg(line));
@@ -200,7 +200,7 @@ bool KeyFile::Private::read()
     return true;
 }
 
-bool KeyFile::Private::escapedKey(const QByteArray &data, int from, int to, QString &result)
+bool KeyFile::Private::validateKey(const QByteArray &data, int from, int to, QString &result)
 {
     int i = from;
     bool ret = true;
@@ -217,7 +217,7 @@ bool KeyFile::Private::escapedKey(const QByteArray &data, int from, int to, QStr
     return ret;
 }
 
-bool KeyFile::Private::escapedString(const QByteArray &data, int from, int to, QString &result)
+bool KeyFile::Private::unescapeString(const QByteArray &data, int from, int to, QString &result)
 {
     int i = from;
     while (i < to) {
