@@ -83,6 +83,9 @@ public:
 private:
     Q_DISABLE_COPY(ProtocolParameter);
 
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
     QString mName;
     QDBusSignature mDBusSignature;
     QVariant mType;
