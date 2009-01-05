@@ -62,8 +62,7 @@ KeyFile::Private::Private()
 
 KeyFile::Private::Private(const QString &fName)
     : fileName(fName),
-      status(KeyFile::NoError),
-      currentGroup("general")
+      status(KeyFile::NoError)
 {
     read();
 }
@@ -72,7 +71,7 @@ void KeyFile::Private::setFileName(const QString &fName)
 {
     fileName = fName;
     status = KeyFile::NoError;
-    currentGroup = "general";
+    currentGroup = QString();
     groups.clear();
     read();
 }
@@ -102,7 +101,7 @@ bool KeyFile::Private::read()
 
     QByteArray data;
     QByteArray group;
-    QString currentGroup("general");
+    QString currentGroup;
     QHash<QString, QString> groupMap;
     int line = 0;
     int idx;
@@ -374,7 +373,7 @@ KeyFile::Status KeyFile::status() const
  * Query functions such as keys(), contains() and value() are based on this
  * group.
  *
- * By default a group named "general" is used as the group for global
+ * By default a empty group is used as the group for global
  * keys and is used as the default group if none is set.
  *
  * \param group Name of the group to be used.
@@ -399,7 +398,7 @@ QString KeyFile::group() const
 /**
  * Returns all groups in the desktop file.
  *
- * Global keys will be added to a group named "general".
+ * Global keys will be added to a empty group.
  *
  * \return List of all groups in the desktop file.
  */
