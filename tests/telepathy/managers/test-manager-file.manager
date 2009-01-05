@@ -1,0 +1,21 @@
+[Protocol foo]
+param-account = s required
+param-password = s required
+param-encryption-key = s secret
+param-port = q
+param-register = b
+param-server-list = as
+default-account = foo@default
+default-port = 1234
+default-server-list = foo;bar;
+
+[Protocol bar]
+param-account = s required
+param-encryption-key = s required secret
+param-password = s required
+param-port = q
+param-register = b
+param-server-list = as
+default-account = bar@default
+default-port = 4321
+default-server-list = bar;foo;
