@@ -161,12 +161,13 @@ bool KeyFile::Private::read()
 
             // remove trailing spaces
             char ch;
-            while ((ch = data.at(idx - 1)) == ' ' || ch == '\t') {
-                --idx;
+            int idxKeyEnd = idx;
+            while ((ch = data.at(idxKeyEnd - 1)) == ' ' || ch == '\t') {
+                --idxKeyEnd;
             }
 
             QString key;
-            if (!validateKey(data, 0, idx, key)) {
+            if (!validateKey(data, 0, idxKeyEnd, key)) {
                 setError(KeyFile::FormatError,
                          QString("invalid key '%1' at line %2")
                                  .arg(key).arg(line));
