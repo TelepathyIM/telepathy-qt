@@ -49,7 +49,6 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
-#include <TelepathyQt4/Client/PendingOperation>
 #include <TelepathyQt4/Constants>
 
 namespace Telepathy
@@ -57,6 +56,7 @@ namespace Telepathy
 namespace Client
 {
 
+class PendingOperation;
 class ProtocolParameter;
 class ProtocolInfo;
 
