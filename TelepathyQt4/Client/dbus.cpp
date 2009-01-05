@@ -19,8 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#define IN_TELEPATHY_QT4_HEADER
-#include "dbus.h"
+#include <TelepathyQt4/Client/DBus>
 
-#include <TelepathyQt4/_gen/cli-dbus-body.hpp>
-#include <TelepathyQt4/_gen/cli-dbus.moc.hpp>
+#include "TelepathyQt4/_gen/cli-dbus-body.hpp"
+#include "TelepathyQt4/_gen/cli-dbus.moc.hpp"

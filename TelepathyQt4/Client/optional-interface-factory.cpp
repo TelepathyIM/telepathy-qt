@@ -19,10 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#define IN_TELEPATHY_QT4_HEADER
-#include "optional-interface-factory.h"
+#include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
-#include <TelepathyQt4/debug-internal.h>
+#include "TelepathyQt4/debug-internal.h"
 
 #include <QMap>
 #include <QString>

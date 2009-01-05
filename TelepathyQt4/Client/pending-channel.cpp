@@ -19,12 +19,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#define IN_TELEPATHY_QT4_HEADER
-#include "pending-channel.h"
+#include <TelepathyQt4/Client/PendingChannel>
+
 #include "pending-channel.moc.hpp"
+#include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/Channel>
-#include <TelepathyQt4/debug-internal.h>
+#include <TelepathyQt4/Client/Connection>
 
 namespace Telepathy
 {
