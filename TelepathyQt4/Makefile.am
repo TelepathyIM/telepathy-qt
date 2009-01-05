@@ -50,6 +50,8 @@ libtelepathy_qt4_la_SOURCES = \
     cli-properties.cpp \
     debug.cpp \
     debug-internal.hpp \
+    key-file.cpp \
+    manager-file.cpp \
     types.cpp \
     header-compile-test.cpp
 
@@ -84,6 +86,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
 tpqt4include_HEADERS = \
     Constants \
     Debug \
+    KeyFile \
+    ManagerFile \
     Types \
     cli-account.h \
     cli-account-manager.h \
@@ -101,6 +105,8 @@ tpqt4include_HEADERS = \
     cli-simple-pending-operations.h \
     constants.h \
     debug.h \
+    key-file.h \
+    manager-file.h \
     types.h
 
 tpqt4clientinclude_HEADERS = \

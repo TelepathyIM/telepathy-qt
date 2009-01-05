@@ -28,6 +28,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
 
 #include "TelepathyQt4/debug-internal.hpp"
@@ -37,104 +38,90 @@ namespace Telepathy
 namespace Client
 {
 
+ProtocolParameter::ProtocolParameter(const QString &name,
+                                     const QDBusSignature &dbusSignature,
+                                     QVariant defaultValue,
+                                     Telepathy::ConnMgrParamFlag flags)
+    : mName(name),
+      mDBusSignature(dbusSignature),
+      mType(ManagerFile::variantFromDBusSignature("", dbusSignature.signature())),
+      mDefaultValue(defaultValue),
+      mFlags(flags)
+{
+}
+
+
+ProtocolParameter::~ProtocolParameter()
+{
+}
+
+
+bool ProtocolParameter::isRequired() const
+{
+    return mFlags & ConnMgrParamFlagRequired;
+}
+
+
+bool ProtocolParameter::isSecret() const
+{
+    return mFlags & ConnMgrParamFlagSecret;
+}
+
+
+bool ProtocolParameter::requiredForRegistration() const
+{
+    return mFlags & ConnMgrParamFlagRegister;
+}
+
+
+bool ProtocolParameter::operator==(const ProtocolParameter &other) const
+{
+    return (mName == other.name());
+}
+
+
+bool ProtocolParameter::operator==(const QString &name) const
+{
+    return (mName == name);
+}
+
 
 struct ProtocolInfo::Private
 {
-    QString cmName;
-    QString protocolName;
-
-    QMap<QString,QDBusSignature> parameters;
-    QMap<QString,QVariant> defaults;
-    QSet<QString> requiredParameters;
-    QSet<QString> registerParameters;
-    QSet<QString> propertyParameters;
-    QSet<QString> secretParameters;
-
-    Private(const QString& cmName, const QString& protocolName)
-        : cmName(cmName), protocolName(protocolName)
-    {
-    }
+    ProtocolParameterList params;
 };
 
 
-ProtocolInfo::ProtocolInfo(const QString& cmName, const QString& protocol)
-    : mPriv(new Private(cmName, protocol))
+ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
+    : mPriv(new Private()),
+      mCmName(cmName),
+      mName(name)
 {
 }
 
 
 ProtocolInfo::~ProtocolInfo()
 {
+    Q_FOREACH (ProtocolParameter *param, mPriv->params) {
+        delete param;
+    }
 }
 
 
-QString ProtocolInfo::cmName() const
+const ProtocolParameterList &ProtocolInfo::parameters() const
 {
-    return mPriv->cmName;
+    return mPriv->params;
 }
 
 
-QString ProtocolInfo::protocolName() const
+bool ProtocolInfo::hasParameter(const QString &name) const
 {
-    return mPriv->protocolName;
-}
-
-
-QStringList ProtocolInfo::parameters() const
-{
-    return mPriv->parameters.keys();
-}
-
-
-bool ProtocolInfo::hasParameter(const QString& param) const
-{
-    return mPriv->parameters.contains(param);
-}
-
-
-QDBusSignature ProtocolInfo::parameterDBusSignature(const QString& param) const
-{
-    return mPriv->parameters.value(param);
-}
-
-
-QVariant::Type ProtocolInfo::parameterType(const QString& param) const
-{
-    return QVariant::Invalid;
-}
-
-
-bool ProtocolInfo::parameterIsRequired(const QString& param,
-        bool registering) const
-{
-    if (registering)
-        return mPriv->registerParameters.contains(param);
-    else
-        return mPriv->requiredParameters.contains(param);
-}
-
-
-bool ProtocolInfo::parameterIsSecret(const QString& param) const
-{
-    return mPriv->secretParameters.contains(param);
-}
-
-
-bool ProtocolInfo::parameterIsDBusProperty(const QString& param) const
-{
-    return mPriv->propertyParameters.contains(param);
-}
-
-
-bool ProtocolInfo::parameterHasDefault(const QString& param) const
-{
-    return mPriv->defaults.contains(param);
-}
-
-
-QVariant ProtocolInfo::getParameterDefault(const QString& param) const
-{
-    return mPriv->defaults.value(param);
+    Q_FOREACH (ProtocolParameter *param, mPriv->params) {
+        if (param->name() == name) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -144,109 +131,202 @@ bool ProtocolInfo::canRegister() const
 }
 
 
+void ProtocolInfo::addParameter(const ParamSpec &spec)
+{
+    QVariant defaultValue;
+    if (spec.flags & ConnMgrParamFlagHasDefault)
+        defaultValue = spec.defaultValue.variant();
+
+    uint flags = spec.flags;
+    if (spec.name.endsWith("password"))
+        flags |= Telepathy::ConnMgrParamFlagSecret;
+
+    ProtocolParameter *param = new ProtocolParameter(spec.name,
+            QDBusSignature(spec.signature),
+            defaultValue,
+            (Telepathy::ConnMgrParamFlag) flags);
+
+    mPriv->params.append(param);
+}
+
+
 struct ConnectionManager::Private
 {
-    ConnectionManager& parent;
-    QString cmName;
+    ConnectionManager *parent;
     ConnectionManagerInterface* baseInterface;
     bool ready;
     QQueue<void (Private::*)()> introspectQueue;
     QQueue<QString> getParametersQueue;
     QQueue<QString> protocolQueue;
-
     QStringList interfaces;
+    ProtocolInfoList protocols;
 
-    QMap<QString,ProtocolInfo*> protocols;
+    Private(ConnectionManager *parent);
+    ~Private();
 
-    static inline QString makeBusName(const QString& name)
-    {
-        return QString::fromAscii(
-                TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE).append(name);
-    }
+    static QString makeBusName(const QString& name);
+    static QString makeObjectPath(const QString& name);
 
-    static inline QString makeObjectPath(const QString& name)
-    {
-        return QString::fromAscii(
-                TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
-    }
+    ProtocolInfo *protocol(const QString &protocolName);
 
-    // A PendingOperation on which the ConnectionManager can call
-    // setFinished().
+    bool checkConfigFile();
+    void callReadConfig();
+    void callGetAll();
+    void callGetParameters();
+    void callListProtocols();
+
     class PendingReady : public PendingOperation
     {
+        // ConnectionManager is a friend so it can call finished() etc.
         friend class ConnectionManager;
     public:
-        PendingReady(ConnectionManager *parent)
-            : PendingOperation(parent)
-        {
-        }
+        PendingReady(ConnectionManager *parent);
     };
 
     PendingReady *pendingReady;
+};
 
-    ~Private()
-    {
-        Q_FOREACH (ProtocolInfo* protocol, protocols) {
-            delete protocol;
+
+ConnectionManager::Private::PendingReady::PendingReady(ConnectionManager *parent)
+    : PendingOperation(parent)
+{
+}
+
+
+ConnectionManager::Private::Private(ConnectionManager *parent)
+    : parent(parent),
+      baseInterface(new ConnectionManagerInterface(parent->dbusConnection(),
+                    parent->busName(), parent->objectPath(), parent)),
+      ready(false),
+      pendingReady(0)
+{
+    debug() << "Creating new ConnectionManager:" << parent->busName();
+
+    introspectQueue.enqueue(&Private::callReadConfig);
+    QTimer::singleShot(0, parent, SLOT(continueIntrospection()));
+}
+
+
+ConnectionManager::Private::~Private()
+{
+    Q_FOREACH (ProtocolInfo* info, protocols) {
+        delete info;
+    }
+}
+
+
+QString ConnectionManager::Private::makeBusName(const QString& name)
+{
+    return QString::fromAscii(
+            TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE).append(name);
+}
+
+
+QString ConnectionManager::Private::makeObjectPath(const QString& name)
+{
+    return QString::fromAscii(
+            TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
+}
+
+
+ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
+{
+    Q_FOREACH (ProtocolInfo *info, protocols) {
+        if (info->name() == protocolName) {
+            return info;
+        }
+    }
+    return NULL;
+}
+
+
+bool ConnectionManager::Private::checkConfigFile()
+{
+    ManagerFile f(parent->name());
+    if (!f.isValid()) {
+        return false;
+    }
+
+    Q_FOREACH (QString protocol, f.protocols()) {
+        ProtocolInfo *info = new ProtocolInfo(parent->name(),
+                                              protocol);
+        protocols.append(info);
+
+        Q_FOREACH (ParamSpec spec, f.parameters(protocol)) {
+            info->addParameter(spec);
         }
     }
 
-    void callGetAll()
-    {
-        debug() << "Calling Properties::GetAll(ConnectionManager)";
-        QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-                parent.propertiesInterface()->GetAll(
-                    TELEPATHY_INTERFACE_CONNECTION_MANAGER), &parent);
-        parent.connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*)));
+#if 0
+    Q_FOREACH (ProtocolInfo *info, protocols) {
+        qDebug() << "protocol name   :" << info->name();
+        qDebug() << "protocol cn name:" << info->cmName();
+        Q_FOREACH (ProtocolParameter *param, info->parameters()) {
+            qDebug() << "\tparam name:       " << param->name();
+            qDebug() << "\tparam is required:" << param->isRequired();
+            qDebug() << "\tparam is secret:  " << param->isSecret();
+            qDebug() << "\tparam value:      " << param->defaultValue();
+        }
     }
+#endif
 
-    void callGetParameters()
-    {
-        QString protocol = getParametersQueue.dequeue();
-        protocolQueue.enqueue(protocol);
-        debug() << "Calling ConnectionManager::GetParameters(" <<
-            protocol << ")";
-        QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-                baseInterface->GetParameters(protocol), &parent);
-        parent.connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(onGetParametersReturn(QDBusPendingCallWatcher*)));
-    }
+    return true;
+}
 
-    void callListProtocols()
-    {
-        debug() << "Calling ConnectionManager::ListProtocols";
-        QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-                baseInterface->ListProtocols(), &parent);
-        parent.connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(onListProtocolsReturn(QDBusPendingCallWatcher*)));
-    }
-
-    Private(ConnectionManager& parent, QString name)
-        : parent(parent),
-          cmName(name),
-          baseInterface(new ConnectionManagerInterface(parent.dbusConnection(),
-                      parent.busName(), parent.objectPath(), &parent)),
-          ready(false),
-          pendingReady(0)
-    {
-        debug() << "Creating new ConnectionManager:" << parent.busName();
-
+void ConnectionManager::Private::callReadConfig()
+{
+    if (!checkConfigFile()) {
         introspectQueue.enqueue(&Private::callGetAll);
         introspectQueue.enqueue(&Private::callListProtocols);
-        QTimer::singleShot(0, &parent, SLOT(continueIntrospection()));
     }
-};
+
+    parent->continueIntrospection();
+}
+
+
+void ConnectionManager::Private::callGetAll()
+{
+    debug() << "Calling Properties::GetAll(ConnectionManager)";
+    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+            parent->propertiesInterface()->GetAll(
+                TELEPATHY_INTERFACE_CONNECTION_MANAGER), parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*)));
+}
+
+
+void ConnectionManager::Private::callGetParameters()
+{
+    QString protocol = getParametersQueue.dequeue();
+    protocolQueue.enqueue(protocol);
+    debug() << "Calling ConnectionManager::GetParameters(" <<
+        protocol << ")";
+    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+            baseInterface->GetParameters(protocol), parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onGetParametersReturn(QDBusPendingCallWatcher*)));
+}
+
+
+void ConnectionManager::Private::callListProtocols()
+{
+    debug() << "Calling ConnectionManager::ListProtocols";
+    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+            baseInterface->ListProtocols(), parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onListProtocolsReturn(QDBusPendingCallWatcher*)));
+}
 
 
 ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
             Private::makeBusName(name), Private::makeObjectPath(name),
             parent),
-      mPriv(new Private(*this, name))
+      mPriv(new Private(this)),
+      mName(name)
 {
 }
 
@@ -255,7 +335,8 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
         const QString& name, QObject* parent)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), parent),
-      mPriv(new Private(*this, name))
+      mPriv(new Private(this)),
+      mName(name)
 {
 }
 
@@ -263,12 +344,6 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
 ConnectionManager::~ConnectionManager()
 {
     delete mPriv;
-}
-
-
-QString ConnectionManager::cmName() const
-{
-    return mPriv->cmName;
 }
 
 
@@ -280,14 +355,17 @@ QStringList ConnectionManager::interfaces() const
 
 QStringList ConnectionManager::supportedProtocols() const
 {
-    return mPriv->protocols.keys();
+    QStringList protocols;
+    Q_FOREACH (const ProtocolInfo *info, mPriv->protocols) {
+        protocols.append(info->name());
+    }
+    return protocols;
 }
 
 
-const ProtocolInfo* ConnectionManager::protocolInfo(
-        const QString& protocol) const
+const ProtocolInfoList &ConnectionManager::protocols() const
 {
-    return mPriv->protocols.value(protocol);
+    return mPriv->protocols;
 }
 
 
@@ -358,11 +436,11 @@ void ConnectionManager::onListProtocolsReturn(
             reply.error().name() << ": " << reply.error().message();
     }
 
-    Q_FOREACH (const QString& protocol, protocols) {
-        mPriv->protocols.insert(protocol, new ProtocolInfo(mPriv->cmName,
-                    protocol));
+    Q_FOREACH (const QString &protocolName, protocols) {
+        mPriv->protocols.append(new ProtocolInfo(mName,
+                                                 protocolName));
 
-        mPriv->getParametersQueue.enqueue(protocol);
+        mPriv->getParametersQueue.enqueue(protocolName);
         mPriv->introspectQueue.enqueue(&Private::callGetParameters);
     }
     continueIntrospection();
@@ -374,8 +452,8 @@ void ConnectionManager::onGetParametersReturn(
 {
     QDBusPendingReply<ParamSpecList> reply = *watcher;
     ParamSpecList parameters;
-    QString protocol = mPriv->protocolQueue.dequeue();
-    ProtocolInfo* info = mPriv->protocols.value(protocol);
+    QString protocolName = mPriv->protocolQueue.dequeue();
+    ProtocolInfo *info = mPriv->protocol(protocolName);
 
     if (!reply.isError()) {
         debug() << "Got reply to ConnectionManager.GetParameters";
@@ -389,28 +467,8 @@ void ConnectionManager::onGetParametersReturn(
     Q_FOREACH (const ParamSpec& spec, parameters) {
         debug() << "Parameter" << spec.name << "has flags" << spec.flags
             << "and signature" << spec.signature;
-        info->mPriv->parameters.insert(spec.name,
-                QDBusSignature(spec.signature));
 
-        if (spec.flags & ConnMgrParamFlagHasDefault)
-            info->mPriv->defaults.insert(spec.name,
-                    spec.defaultValue.variant());
-
-        if (spec.flags & ConnMgrParamFlagRequired)
-            info->mPriv->requiredParameters.insert(spec.name);
-
-        if (spec.flags & ConnMgrParamFlagRegister)
-            info->mPriv->registerParameters.insert(spec.name);
-
-        if ((spec.flags & ConnMgrParamFlagSecret)
-                || spec.name.endsWith("password"))
-            info->mPriv->secretParameters.insert(spec.name);
-
-#if 0
-        // enable when we merge the new telepathy-spec
-        if (spec.flags & ConnMgrParamFlag)
-            info->mPriv->propertyParameters.insert(spec.name);
-#endif
+        info->addParameter(spec);
     }
     continueIntrospection();
 }
