@@ -48,6 +48,7 @@
 namespace Telepathy {
 namespace Client {
 class Connection;
+class PendingChannel;
 }
 }
 
@@ -62,12 +63,6 @@ class Connection;
 
 #include <QDBusPendingCallWatcher>
 #include <QStringList>
-
-namespace Telepathy {
-namespace Client {
-class PendingChannel;
-}
-};
 
 namespace Telepathy
 {

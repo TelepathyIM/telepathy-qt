@@ -45,8 +45,6 @@
  * interfaces.
  */
 
-#include <TelepathyQt4/Client/Channel>
-#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingOperation>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
@@ -54,6 +52,7 @@
 namespace Telepathy {
 namespace Client {
 class Channel;
+class Connection;
 }
 }
 

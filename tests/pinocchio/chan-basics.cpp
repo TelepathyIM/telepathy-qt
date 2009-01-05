@@ -8,6 +8,7 @@
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
+#include <TelepathyQt4/Client/PendingChannel>
 
 #include <tests/pinocchio/lib.h>
 
