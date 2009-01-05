@@ -19,19 +19,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#define IN_TELEPATHY_QT4_HEADER
-#include "connection-manager.h"
+#include <TelepathyQt4/Client/ConnectionManager>
+
 #include "connection-manager.moc.hpp"
 
-#include <TelepathyQt4/_gen/cli-connection-manager-body.hpp>
-#include <TelepathyQt4/_gen/cli-connection-manager.moc.hpp>
+#include "TelepathyQt4/_gen/cli-connection-manager-body.hpp"
+#include "TelepathyQt4/_gen/cli-connection-manager.moc.hpp"
+#include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/debug-internal.h>
 
 #include <QQueue>
 #include <QStringList>

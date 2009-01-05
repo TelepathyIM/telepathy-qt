@@ -23,13 +23,12 @@
 
 #include "channel.moc.hpp"
 
-#include <TelepathyQt4/_gen/cli-channel-body.hpp>
-#include <TelepathyQt4/_gen/cli-channel.moc.hpp>
+#include "TelepathyQt4/_gen/cli-channel-body.hpp"
+#include "TelepathyQt4/_gen/cli-channel.moc.hpp"
+#include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Constants>
-
-#include <TelepathyQt4/debug-internal.h>
 
 #include <QQueue>
 

@@ -19,11 +19,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#define IN_TELEPATHY_QT4_HEADER
-#include "dbus-proxy.h"
+#include <TelepathyQt4/Client/DBusProxy>
+
 #include "dbus-proxy.moc.hpp"
 
-#include <TelepathyQt4/debug-internal.h>
+#include "TelepathyQt4/debug-internal.h"
 
 namespace Telepathy
 {

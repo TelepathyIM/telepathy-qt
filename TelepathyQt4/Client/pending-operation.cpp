@@ -19,13 +19,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <TelepathyQt4/Client/PendingOperation>
+
 #define IN_TELEPATHY_QT4_HEADER
-#include "pending-operation.h"
 #include "simple-pending-operations.h"
+#undef IN_TELEPATHY_QT4_HEADER
+
 #include "pending-operation.moc.hpp"
 #include "simple-pending-operations.moc.hpp"
 
-#include <TelepathyQt4/debug-internal.h>
+#include "TelepathyQt4/debug-internal.h"
 
 #include <QDBusPendingCall>
 #include <QDBusPendingCallWatcher>
