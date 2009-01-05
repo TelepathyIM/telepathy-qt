@@ -7,5 +7,7 @@
 
 #include <TelepathyQt4/Client/media-stream-handler.h>
 
+#undef IN_TELEPATHY_QT4_INTERNALS
+
 #endif
 // vim:set ft=cpp:

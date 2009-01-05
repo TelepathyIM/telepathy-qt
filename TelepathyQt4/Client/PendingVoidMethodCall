@@ -7,5 +7,7 @@
 
 #include <TelepathyQt4/Client/simple-pending-operations.h>
 
+#undef IN_TELEPATHY_QT4_INTERNALS
+
 #endif
 // vim:set ft=cpp:
