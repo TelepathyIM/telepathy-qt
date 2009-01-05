@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#define IN_TELEPATHY_QT4_INTERNALS
+#define IN_TELEPATHY_QT4_HEADER
 #include "pending-operation.h"
 #include "simple-pending-operations.h"
 #include "pending-operation.moc.hpp"

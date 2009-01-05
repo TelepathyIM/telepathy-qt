@@ -22,8 +22,8 @@
 #ifndef _TelepathyQt4_cli_pending_operation_h_HEADER_GUARD_
 #define _TelepathyQt4_cli_pending_operation_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_INTERNALS
-#error IN_TELEPATHY_QT4_INTERNALS
+#ifndef IN_TELEPATHY_QT4_HEADER
+#error IN_TELEPATHY_QT4_HEADER
 #endif
 
 #include <QObject>
