@@ -28,7 +28,6 @@
 
 // FIXME: What groups should this be in/define?
 
-#include <QDBusAbstractInterface>
 #include <QDBusConnection>
 
 namespace Telepathy
