@@ -127,6 +127,9 @@ bool ManagerFile::Private::parse(const QString &fileName)
                     QStringList values = keyFile.value(param).split(QChar(' '));
 
                     spec.signature = values[0];
+                    if (values.contains("secret")) {
+                        spec.flags |= Telepathy::ConnMgrParamFlagSecret;
+                    }
                     if (values.contains("required")) {
                         spec.flags |= Telepathy::ConnMgrParamFlagRequired;
                     }
