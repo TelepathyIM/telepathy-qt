@@ -152,7 +152,7 @@ bool KeyFile::Private::read()
         }
         else {
             idx = data.indexOf('=');
-            if (idx == 0) {
+            if (idx == -1) {
                 setError(KeyFile::FormatError,
                          QString("format error at line %1 - missing '='")
                                  .arg(line));
