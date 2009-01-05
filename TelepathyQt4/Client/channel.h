@@ -47,18 +47,20 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
-#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
 #include <QSet>
-#include <QDBusPendingCallWatcher>
+
+class QDBusPendingCallWatcher;
 
 namespace Telepathy
 {
 namespace Client
 {
+
+class Connection;
 
 /**
  * \class Channel
