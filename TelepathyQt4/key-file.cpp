@@ -76,11 +76,11 @@ void KeyFile::Private::setFileName(const QString &fName)
     read();
 }
 
-void KeyFile::Private::setError(KeyFile::Status status, const QString &reason)
+void KeyFile::Private::setError(KeyFile::Status st, const QString &reason)
 {
     warning() << QString("ERROR: filename(%1) reason(%2)")
                          .arg(fileName).arg(reason);
-    status = status;
+    status = st;
     groups.clear();
 }
 
