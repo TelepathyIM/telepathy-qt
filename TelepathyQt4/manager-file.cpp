@@ -19,9 +19,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#define IN_TELEPATHY_QT4_INTERNALS
 #include "manager-file.h"
 
-#include "debug-internal.hpp"
+#include "debug-internal.h"
 
 #include <TelepathyQt4/KeyFile>
 #include <TelepathyQt4/Constants>

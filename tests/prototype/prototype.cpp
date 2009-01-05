@@ -10,6 +10,7 @@
 
 #include <QtTest/QSignalSpy>
 
+#include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/AccountManager>
 #include <TelepathyQt4/Client/ConnectionManager>
 #include <TelepathyQt4/Client/Connection>

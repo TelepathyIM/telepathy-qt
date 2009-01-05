@@ -37,6 +37,7 @@ class Generator(object):
             self.prettyinclude = opts.get('--prettyinclude')
             self.extraincludes = opts.get('--extraincludes', None)
             self.mainiface = opts.get('--mainiface', None)
+            self.must_define = opts.get('--must-define', None)
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
@@ -60,8 +61,15 @@ class Generator(object):
  */
 """)
 
-        if self.extraincludes:
+        if self.must_define:
             self.h('\n')
+            self.h('#ifndef %s\n' % self.must_define)
+            self.h('#error %s\n' % self.must_define)
+            self.h('#endif\n')
+
+        self.h('\n')
+
+        if self.extraincludes:
             for include in self.extraincludes.split(','):
                 self.h('#include %s\n' % include)
 
@@ -77,8 +85,10 @@ class Generator(object):
 
 """)
 
-        self.b("""\
-#include "%s"
+        if self.must_define:
+            self.b("""#define %s\n""" % (self.must_define))
+
+        self.b("""#include "%s"
 
 """ % self.realinclude)
 
@@ -416,6 +426,7 @@ if __name__ == '__main__':
              'realinclude=',
              'prettyinclude=',
              'extraincludes=',
-             'mainiface='])
+             'mainiface=',
+             'must-define='])
 
     Generator(dict(options))()

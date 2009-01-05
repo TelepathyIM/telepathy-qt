@@ -29,6 +29,7 @@ class Generator(object):
         try:
             self.namespace = opts['--namespace']
             self.prefix = opts['--str-constant-prefix']
+            self.must_define = opts.get('--must-define', None)
             dom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
             assert False, 'Missing required parameter %s' % k.args[0]
@@ -46,7 +47,16 @@ class Generator(object):
 
         stdout.write("""
  */
+ """)
 
+        if self.must_define:
+            stdout.write("""
+#ifndef %s
+#error %s
+#endif
+""" % (self.must_define, self.must_define))
+
+        stdout.write("""
 #include <QFlags>
 
 /**
@@ -229,6 +239,7 @@ if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
             ['namespace=',
              'str-constant-prefix=',
+             'must-define=',
              'specxml='])
 
     Generator(dict(options))()

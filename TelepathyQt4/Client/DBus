@@ -1,6 +1,11 @@
 #ifndef _TelepathyQt4_Client_DBus_HEADER_GUARD_
 #define _TelepathyQt4_Client_DBus_HEADER_GUARD_
 
-#include <TelepathyQt4/cli-dbus.h>
+#ifndef IN_TELEPATHY_QT4_INTERNALS
+#define IN_TELEPATHY_QT4_INTERNALS
+#endif
+
+#include <TelepathyQt4/Client/dbus.h>
 
 #endif
+// vim:set ft=cpp:

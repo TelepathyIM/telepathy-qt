@@ -35,21 +35,20 @@ libtelepathy_qt4_la_LIBADD = $(ALL_LIBS)
 libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
-    cli-account.cpp \
-    cli-account-manager.cpp \
-    cli-channel.cpp \
-    cli-connection.cpp \
-    cli-connection-manager.cpp \
-    cli-dbus.cpp \
-    cli-dbus-proxy.cpp \
-    cli-media-session-handler.cpp \
-    cli-media-stream-handler.cpp \
-    cli-optional-interface-factory.cpp \
-    cli-pending-channel.cpp \
-    cli-pending-operation.cpp \
-    cli-properties.cpp \
+    Client/account.cpp \
+    Client/account-manager.cpp \
+    Client/channel.cpp \
+    Client/connection.cpp \
+    Client/connection-manager.cpp \
+    Client/dbus.cpp \
+    Client/dbus-proxy.cpp \
+    Client/media-session-handler.cpp \
+    Client/media-stream-handler.cpp \
+    Client/optional-interface-factory.cpp \
+    Client/pending-channel.cpp \
+    Client/pending-operation.cpp \
+    Client/properties.cpp \
     debug.cpp \
-    debug-internal.hpp \
     key-file.cpp \
     manager-file.cpp \
     types.cpp \
@@ -75,13 +74,13 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-properties-body.hpp \
     _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp \
-    cli-channel.moc.hpp \
-    cli-connection.moc.hpp \
-    cli-connection-manager.moc.hpp \
-    cli-dbus-proxy.moc.hpp \
-    cli-pending-channel.moc.hpp \
-    cli-pending-operation.moc.hpp \
-    cli-simple-pending-operations.moc.hpp
+    Client/channel.moc.hpp \
+    Client/connection.moc.hpp \
+    Client/connection-manager.moc.hpp \
+    Client/dbus-proxy.moc.hpp \
+    Client/pending-channel.moc.hpp \
+    Client/pending-operation.moc.hpp \
+    Client/simple-pending-operations.moc.hpp
 
 tpqt4include_HEADERS = \
     Constants \
@@ -89,20 +88,6 @@ tpqt4include_HEADERS = \
     KeyFile \
     ManagerFile \
     Types \
-    cli-account.h \
-    cli-account-manager.h \
-    cli-channel.h \
-    cli-connection.h \
-    cli-connection-manager.h \
-    cli-dbus.h \
-    cli-dbus-proxy.h \
-    cli-media-session-handler.h \
-    cli-media-stream-handler.h \
-    cli-optional-interface-factory.h \
-    cli-pending-channel.h \
-    cli-pending-operation.h \
-    cli-properties.h \
-    cli-simple-pending-operations.h \
     constants.h \
     debug.h \
     key-file.h \
@@ -110,6 +95,7 @@ tpqt4include_HEADERS = \
     types.h
 
 tpqt4clientinclude_HEADERS = \
+    Client/Account \
     Client/AccountManager \
     Client/Channel \
     Client/Connection \
@@ -119,11 +105,59 @@ tpqt4clientinclude_HEADERS = \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
     Client/OptionalInterfaceFactory \
+    Client/PendingChannel \
     Client/PendingFailure \
     Client/PendingOperation \
     Client/PendingSuccess \
     Client/PendingVoidMethodCall \
-    Client/Properties
+    Client/Properties \
+    Client/StatelessDBusProxy \
+    Client/StatefulDBusProxy \
+    Client/AccountInterface \
+    Client/AccountManagerInterface \
+    Client/ChannelInterface \
+    Client/ChannelInterfaceCallStateInterface \
+    Client/ChannelInterfaceChatStateInterface \
+    Client/ChannelInterfaceDTMFInterface \
+    Client/ChannelInterfaceGroupInterface \
+    Client/ChannelInterfaceHoldInterface \
+    Client/ChannelInterfaceMediaSignallingInterface \
+    Client/ChannelInterfacePasswordInterface \
+    Client/ChannelTypeContactListInterface \
+    Client/ChannelTypeRoomListInterface \
+    Client/ChannelTypeStreamedMediaInterface \
+    Client/ChannelTypeTextInterface \
+    Client/ChannelTypeTubesInterface \
+    Client/ConnectionInterface \
+    Client/ConnectionInterfaceAliasingInterface \
+    Client/ConnectionInterfaceAvatarsInterface \
+    Client/ConnectionInterfaceCapabilitiesInterface \
+    Client/ConnectionInterfaceContactsInterface \
+    Client/ConnectionInterfacePresenceInterface \
+    Client/ConnectionInterfaceRequestsInterface \
+    Client/ConnectionInterfaceSimplePresenceInterface \
+    Client/ConnectionManagerInterface \
+    Client/DBusDaemonInterface \
+    Client/IntrospectableInterface \
+    Client/MediaSessionHandlerInterface \
+    Client/MediaStreamHandlerInterface \
+    Client/PeerInterface \
+    Client/PropertiesInterface \
+    Client/PropertiesInterfaceInterface \
+    Client/account.h \
+    Client/account-manager.h \
+    Client/channel.h \
+    Client/connection.h \
+    Client/connection-manager.h \
+    Client/dbus.h \
+    Client/dbus-proxy.h \
+    Client/media-session-handler.h \
+    Client/media-stream-handler.h \
+    Client/optional-interface-factory.h \
+    Client/pending-channel.h \
+    Client/pending-operation.h \
+    Client/properties.h \
+    Client/simple-pending-operations.h
 
 nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
@@ -190,6 +224,7 @@ _gen/constants.h: _gen/stable-spec.xml \
 	$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
 		--namespace='Telepathy' \
 		--str-constant-prefix='TELEPATHY_' \
+		--must-define='IN_TELEPATHY_QT4_INTERNALS' \
 		--specxml=$< \
 		> $@.tmp && mv $@.tmp $@
 
@@ -202,6 +237,7 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		--implfile='_gen/types-body.hpp' \
 		--realinclude='TelepathyQt4/types.h' \
 		--prettyinclude='TelepathyQt4/Types' \
+		--must-define='IN_TELEPATHY_QT4_INTERNALS' \
 		--specxml=$<
 
 # Things generated per interface group
@@ -262,11 +298,12 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--typesnamespace='Telepathy' \
 		--headerfile=_gen/cli-$*.h \
 		--implfile=_gen/cli-$*-body.hpp \
-		--realinclude='TelepathyQt4/cli-$*.h' \
+		--realinclude='TelepathyQt4/Client/$*.h' \
 		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
 		--specxml=_gen/stable-spec.xml \
 		--ifacexml=$< \
 		--extraincludes='<TelepathyQt4/Types>' \
+		--must-define='IN_TELEPATHY_QT4_INTERNALS' \
 		$$mainiface
 
 %.moc.hpp: %.h _gen/constants.h _gen/types.h
