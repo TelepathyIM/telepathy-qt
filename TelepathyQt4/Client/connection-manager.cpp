@@ -517,7 +517,6 @@ void ConnectionManager::continueIntrospection()
         if (mPriv->introspectQueue.isEmpty()) {
             debug() << "ConnectionManager is ready";
             mPriv->ready = true;
-            Q_EMIT ready(this);
 
             if (mPriv->pendingReady) {
                 mPriv->pendingReady->setFinished();

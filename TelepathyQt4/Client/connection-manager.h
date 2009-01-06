@@ -229,10 +229,6 @@ public:
 
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
-Q_SIGNALS:
-    // FIXME: do we need this if we have becomeReady()?
-    void ready(ConnectionManager*);
-
 protected:
     /**
      * Get the ConnectionManagerInterface for this ConnectionManager. This
