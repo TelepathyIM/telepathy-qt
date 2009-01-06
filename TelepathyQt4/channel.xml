@@ -18,6 +18,7 @@
 <xi:include href="../spec/Channel_Interface_Group.xml"/>
 <xi:include href="../spec/Channel_Interface_Hold.xml"/>
 <xi:include href="../spec/Channel_Interface_Media_Signalling.xml"/>
+<xi:include href="../spec/Channel_Interface_Messages.xml"/>
 <xi:include href="../spec/Channel_Interface_Password.xml"/>
 
 </tp:spec>

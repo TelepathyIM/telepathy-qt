@@ -178,7 +178,8 @@ USA.</p>
       </tp:flag>
     </tp:flags>
 
-    <tp:mapping name="Message_Part" array-name="Message_Part_List">
+    <tp:mapping name="Message_Part" array-name="Message_Part_List"
+      array-depth="2">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Part of a message's content. In practice, this mapping never
           appears in isolation - messages are represented by a list of
@@ -705,6 +706,36 @@ USA.</p>
       </tp:member>
     </tp:mapping>
 
+    <tp:simple-type type="u" name="Message_Part_Index">
+      <tp:docstring>
+        The index of a message part within a message.
+      </tp:docstring>
+    </tp:simple-type>
+
+    <tp:mapping name="Message_Part_Content_Map">
+      <tp:docstring>
+        A mapping from message part indexes to their content, as returned by
+        <tp:member-ref>GetPendingMessageContent</tp:member-ref>.
+      </tp:docstring>
+
+      <tp:member type="u" tp:type="Message_Part_Index" name="Part">
+        <tp:docstring>
+          Indexes into the array of <tp:type>Message_Part</tp:type>s that
+          represents a message. The "headers" part (which is not a valid
+          argument to GetPendingMessageContent) is considered to be part 0,
+          so the valid part numbers start at 1 (for the second message part).
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member type="v" name="Content">
+        <tp:docstring>
+          The message part's content. The variant MUST contain either type
+          's' or 'ay' (UTF-8 text string, or byte array), following the
+          same rules as for the value of the 'content' key in
+          the <tp:type>Message_Part</tp:type> mappings.
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
 
     <tp:simple-type type="s" name="Sent_Message_Token">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -914,7 +945,8 @@ USA.</p>
         </tp:docstring>
       </arg>
 
-      <arg name="Parts" type="au" direction="in">
+      <arg name="Parts" type="au" direction="in"
+        tp:type="Message_Part_Index[]">
         <tp:docstring>
           The desired entries in the array of message parts, identified by
           their position. The "headers" part (which is not a valid argument
@@ -923,7 +955,8 @@ USA.</p>
         </tp:docstring>
       </arg>
 
-      <arg name="Content" type="a{uv}" direction="out">
+      <arg name="Content" type="a{uv}" direction="out"
+        tp:type="Message_Part_Content_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The content of the requested parts. The keys in this mapping
             are positions in the array of message parts; the values are
