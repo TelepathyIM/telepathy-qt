@@ -78,8 +78,8 @@ private Q_SLOTS:
 
 class ConnectionManager::Private::PendingReady : public PendingOperation
 {
-    // ConnectionManager is a friend so it can call finished() etc.
-    friend class ConnectionManager;
+    // ConnectionManager::Private is a friend so it can call finished() etc.
+    friend class ConnectionManager::Private;
 
 public:
     PendingReady(ConnectionManager *parent);
