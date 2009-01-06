@@ -132,6 +132,9 @@ bool ManagerFile::Private::parse(const QString &fileName)
                     if (values.contains("secret")) {
                         spec.flags |= Telepathy::ConnMgrParamFlagSecret;
                     }
+                    if (values.contains("dbus-property")) {
+                        spec.flags |= Telepathy::ConnMgrParamFlagDBusProperty;
+                    }
                     if (values.contains("required")) {
                         spec.flags |= Telepathy::ConnMgrParamFlagRequired;
                     }
