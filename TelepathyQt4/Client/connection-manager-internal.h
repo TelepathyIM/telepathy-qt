@@ -42,7 +42,7 @@ class ConnectionManager::Private : public QObject
     Q_OBJECT
 
 public:
-    Private(ConnectionManager *parent);
+    Private(const QString &name, ConnectionManager *parent);
     ~Private();
 
     static QString makeBusName(const QString& name);
@@ -61,6 +61,7 @@ public:
 
     ConnectionManager *parent;
     ConnectionManagerInterface* baseInterface;
+    QString name;
     bool ready;
     QQueue<void (Private::*)()> introspectQueue;
     QQueue<QString> getParametersQueue;

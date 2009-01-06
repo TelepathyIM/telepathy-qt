@@ -225,11 +225,12 @@ void ConnectionManager::Private::PendingNames::parseResult(const QStringList &na
 }
 
 
-ConnectionManager::Private::Private(ConnectionManager *parent)
+ConnectionManager::Private::Private(const QString &name, ConnectionManager *parent)
     : QObject(parent),
       parent(parent),
       baseInterface(new ConnectionManagerInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
+      name(name),
       ready(false),
       pendingReady(0)
 {
@@ -275,13 +276,13 @@ ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
 
 bool ConnectionManager::Private::checkConfigFile()
 {
-    ManagerFile f(parent->name());
+    ManagerFile f(name);
     if (!f.isValid()) {
         return false;
     }
 
     Q_FOREACH (QString protocol, f.protocols()) {
-        ProtocolInfo *info = new ProtocolInfo(parent->name(),
+        ProtocolInfo *info = new ProtocolInfo(name,
                                               protocol);
         protocols.append(info);
 
@@ -394,7 +395,7 @@ void ConnectionManager::Private::onListProtocolsReturn(
     }
 
     Q_FOREACH (const QString &protocolName, protocolsNames) {
-        protocols.append(new ProtocolInfo(parent->name(),
+        protocols.append(new ProtocolInfo(name,
                                           protocolName));
 
         getParametersQueue.enqueue(protocolName);
@@ -454,8 +455,7 @@ ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
             Private::makeBusName(name), Private::makeObjectPath(name),
             parent),
-      mPriv(new Private(this)),
-      mName(name)
+      mPriv(new Private(name, this))
 {
 }
 
@@ -464,8 +464,7 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
         const QString& name, QObject* parent)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), parent),
-      mPriv(new Private(this)),
-      mName(name)
+      mPriv(new Private(name, this))
 {
 }
 
@@ -473,6 +472,12 @@ ConnectionManager::ConnectionManager(const QDBusConnection& bus,
 ConnectionManager::~ConnectionManager()
 {
     delete mPriv;
+}
+
+
+QString ConnectionManager::name() const
+{
+    return mPriv->name;
 }
 
 
