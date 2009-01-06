@@ -179,9 +179,9 @@ class ConnectionManager : public StatelessDBusProxy,
     Q_OBJECT
 
 public:
-    ConnectionManager(const QString& name, QObject* parent = 0);
-    ConnectionManager(const QDBusConnection& bus,
-            const QString& name, QObject* parent = 0);
+    ConnectionManager(const QString &name, QObject *parent = 0);
+    ConnectionManager(const QDBusConnection &bus,
+            const QString &name, QObject *parent = 0);
 
     virtual ~ConnectionManager();
 
@@ -199,7 +199,7 @@ public:
      * <code>check</code> parameter is not provided, and the interface is
      * always assumed to be present.
      */
-    inline DBus::PropertiesInterface* propertiesInterface() const
+    inline DBus::PropertiesInterface *propertiesInterface() const
     {
         return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
                 *baseInterface());
@@ -239,7 +239,7 @@ protected:
      * \return A pointer to the existing ConnectionManagerInterface for this
      *         ConnectionManager
      */
-    ConnectionManagerInterface* baseInterface() const;
+    ConnectionManagerInterface *baseInterface() const;
 
 private:
     Q_DISABLE_COPY(ConnectionManager);

@@ -57,35 +57,29 @@ ProtocolParameter::ProtocolParameter(const QString &name,
 {
 }
 
-
 ProtocolParameter::~ProtocolParameter()
 {
 }
-
 
 bool ProtocolParameter::isRequired() const
 {
     return mFlags & ConnMgrParamFlagRequired;
 }
 
-
 bool ProtocolParameter::isSecret() const
 {
     return mFlags & ConnMgrParamFlagSecret;
 }
-
 
 bool ProtocolParameter::requiredForRegistration() const
 {
     return mFlags & ConnMgrParamFlagRegister;
 }
 
-
 bool ProtocolParameter::operator==(const ProtocolParameter &other) const
 {
     return (mName == other.name());
 }
-
 
 bool ProtocolParameter::operator==(const QString &name) const
 {
@@ -98,14 +92,12 @@ struct ProtocolInfo::Private
     ProtocolParameterList params;
 };
 
-
 ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
     : mPriv(new Private()),
       mCmName(cmName),
       mName(name)
 {
 }
-
 
 ProtocolInfo::~ProtocolInfo()
 {
@@ -114,12 +106,10 @@ ProtocolInfo::~ProtocolInfo()
     }
 }
 
-
 const ProtocolParameterList &ProtocolInfo::parameters() const
 {
     return mPriv->params;
 }
-
 
 bool ProtocolInfo::hasParameter(const QString &name) const
 {
@@ -131,22 +121,22 @@ bool ProtocolInfo::hasParameter(const QString &name) const
     return false;
 }
 
-
 bool ProtocolInfo::canRegister() const
 {
     return hasParameter(QLatin1String("register"));
 }
 
-
 void ProtocolInfo::addParameter(const ParamSpec &spec)
 {
     QVariant defaultValue;
-    if (spec.flags & ConnMgrParamFlagHasDefault)
+    if (spec.flags & ConnMgrParamFlagHasDefault) {
         defaultValue = spec.defaultValue.variant();
+    }
 
     uint flags = spec.flags;
-    if (spec.name.endsWith("password"))
+    if (spec.name.endsWith("password")) {
         flags |= Telepathy::ConnMgrParamFlagSecret;
+    }
 
     ProtocolParameter *param = new ProtocolParameter(spec.name,
             QDBusSignature(spec.signature),
@@ -162,7 +152,6 @@ ConnectionManager::Private::PendingReady::PendingReady(ConnectionManager *parent
 {
 }
 
-
 ConnectionManager::Private::PendingNames::PendingNames(const QDBusConnection &bus)
     : PendingStringList(),
       mBus(bus)
@@ -171,7 +160,6 @@ ConnectionManager::Private::PendingNames::PendingNames(const QDBusConnection &bu
     mMethodsQueue.enqueue(QLatin1String("ListActivatableNames"));
     QTimer::singleShot(0, this, SLOT(continueProcessing()));
 }
-
 
 void ConnectionManager::Private::PendingNames::onCallFinished(QDBusPendingCallWatcher *watcher)
 {
@@ -189,7 +177,6 @@ void ConnectionManager::Private::PendingNames::onCallFinished(QDBusPendingCallWa
     watcher->deleteLater();
 }
 
-
 void ConnectionManager::Private::PendingNames::continueProcessing()
 {
     if (!mMethodsQueue.isEmpty()) {
@@ -203,7 +190,6 @@ void ConnectionManager::Private::PendingNames::continueProcessing()
     }
 }
 
-
 void ConnectionManager::Private::PendingNames::invokeMethod(const QLatin1String &method)
 {
     QDBusPendingCall call = mBus.interface()->asyncCallWithArgumentList(
@@ -214,7 +200,6 @@ void ConnectionManager::Private::PendingNames::invokeMethod(const QLatin1String 
             SLOT(onCallFinished(QDBusPendingCallWatcher *)));
 }
 
-
 void ConnectionManager::Private::PendingNames::parseResult(const QStringList &names)
 {
     Q_FOREACH (const QString name, names) {
@@ -224,11 +209,10 @@ void ConnectionManager::Private::PendingNames::parseResult(const QStringList &na
     }
 }
 
-
 ConnectionManager::Private::Private(const QString &name, ConnectionManager *parent)
     : QObject(parent),
       baseInterface(new ConnectionManagerInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent)),
+                            parent->busName(), parent->objectPath(), parent)),
       name(name),
       ready(false),
       pendingReady(0)
@@ -239,28 +223,24 @@ ConnectionManager::Private::Private(const QString &name, ConnectionManager *pare
     QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
-
 ConnectionManager::Private::~Private()
 {
-    Q_FOREACH (ProtocolInfo* info, protocols) {
+    Q_FOREACH (ProtocolInfo *info, protocols) {
         delete info;
     }
 }
 
-
-QString ConnectionManager::Private::makeBusName(const QString& name)
+QString ConnectionManager::Private::makeBusName(const QString &name)
 {
     return QString::fromAscii(
             TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE).append(name);
 }
 
-
-QString ConnectionManager::Private::makeObjectPath(const QString& name)
+QString ConnectionManager::Private::makeObjectPath(const QString &name)
 {
     return QString::fromAscii(
             TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
 }
-
 
 ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
 {
@@ -271,7 +251,6 @@ ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
     }
     return NULL;
 }
-
 
 bool ConnectionManager::Private::checkConfigFile()
 {
@@ -316,47 +295,42 @@ void ConnectionManager::Private::callReadConfig()
     continueIntrospection();
 }
 
-
 void ConnectionManager::Private::callGetAll()
 {
     debug() << "Calling Properties::GetAll(ConnectionManager)";
-    ConnectionManager *cm = static_cast<ConnectionManager*>(parent());
-    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+    ConnectionManager *cm = static_cast<ConnectionManager *>(parent());
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             cm->propertiesInterface()->GetAll(
                 TELEPATHY_INTERFACE_CONNECTION_MANAGER), this);
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*)));
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher *)));
 }
-
 
 void ConnectionManager::Private::callGetParameters()
 {
     QString protocol = getParametersQueue.dequeue();
     protocolQueue.enqueue(protocol);
-    debug() << "Calling ConnectionManager::GetParameters(" <<
-        protocol << ")";
-    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+    debug() << "Calling ConnectionManager::GetParameters(" << protocol << ")";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             baseInterface->GetParameters(protocol), this);
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(onGetParametersReturn(QDBusPendingCallWatcher*)));
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onGetParametersReturn(QDBusPendingCallWatcher *)));
 }
-
 
 void ConnectionManager::Private::callListProtocols()
 {
     debug() << "Calling ConnectionManager::ListProtocols";
-    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             baseInterface->ListProtocols(), this);
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(onListProtocolsReturn(QDBusPendingCallWatcher*)));
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onListProtocolsReturn(QDBusPendingCallWatcher *)));
 }
 
-
 void ConnectionManager::Private::onGetAllConnectionManagerReturn(
-        QDBusPendingCallWatcher* watcher)
+        QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
@@ -378,9 +352,8 @@ void ConnectionManager::Private::onGetAllConnectionManagerReturn(
     continueIntrospection();
 }
 
-
 void ConnectionManager::Private::onListProtocolsReturn(
-        QDBusPendingCallWatcher* watcher)
+        QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QStringList> reply = *watcher;
     QStringList protocolsNames;
@@ -404,9 +377,8 @@ void ConnectionManager::Private::onListProtocolsReturn(
     continueIntrospection();
 }
 
-
 void ConnectionManager::Private::onGetParametersReturn(
-        QDBusPendingCallWatcher* watcher)
+        QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<ParamSpecList> reply = *watcher;
     ParamSpecList parameters;
@@ -422,7 +394,7 @@ void ConnectionManager::Private::onGetParametersReturn(
             reply.error().name() << ": " << reply.error().message();
     }
 
-    Q_FOREACH (const ParamSpec& spec, parameters) {
+    Q_FOREACH (const ParamSpec &spec, parameters) {
         debug() << "Parameter" << spec.name << "has flags" << spec.flags
             << "and signature" << spec.signature;
 
@@ -430,7 +402,6 @@ void ConnectionManager::Private::onGetParametersReturn(
     }
     continueIntrospection();
 }
-
 
 void ConnectionManager::Private::continueIntrospection()
 {
@@ -451,7 +422,7 @@ void ConnectionManager::Private::continueIntrospection()
 }
 
 
-ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
+ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
             Private::makeBusName(name), Private::makeObjectPath(name),
             parent),
@@ -459,33 +430,28 @@ ConnectionManager::ConnectionManager(const QString& name, QObject* parent)
 {
 }
 
-
-ConnectionManager::ConnectionManager(const QDBusConnection& bus,
-        const QString& name, QObject* parent)
+ConnectionManager::ConnectionManager(const QDBusConnection &bus,
+        const QString &name, QObject *parent)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), parent),
       mPriv(new Private(name, this))
 {
 }
 
-
 ConnectionManager::~ConnectionManager()
 {
     delete mPriv;
 }
-
 
 QString ConnectionManager::name() const
 {
     return mPriv->name;
 }
 
-
 QStringList ConnectionManager::interfaces() const
 {
     return mPriv->interfaces;
 }
-
 
 QStringList ConnectionManager::supportedProtocols() const
 {
@@ -496,18 +462,15 @@ QStringList ConnectionManager::supportedProtocols() const
     return protocols;
 }
 
-
 const ProtocolInfoList &ConnectionManager::protocols() const
 {
     return mPriv->protocols;
 }
 
-
 bool ConnectionManager::isReady() const
 {
     return mPriv->ready;
 }
-
 
 // TODO: We don't actually consider anything during initial setup to be
 // fatal, so the documentation isn't completely true.
@@ -524,14 +487,12 @@ PendingOperation *ConnectionManager::becomeReady()
     return mPriv->pendingReady;
 }
 
-
 PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
 {
     return new ConnectionManager::Private::PendingNames(bus);
 }
 
-
-ConnectionManagerInterface* ConnectionManager::baseInterface() const
+ConnectionManagerInterface *ConnectionManager::baseInterface() const
 {
     return mPriv->baseInterface;
 }

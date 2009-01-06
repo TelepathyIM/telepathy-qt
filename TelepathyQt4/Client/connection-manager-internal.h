@@ -45,8 +45,8 @@ public:
     Private(const QString &name, ConnectionManager *parent);
     ~Private();
 
-    static QString makeBusName(const QString& name);
-    static QString makeObjectPath(const QString& name);
+    static QString makeBusName(const QString &name);
+    static QString makeObjectPath(const QString &name);
 
     ProtocolInfo *protocol(const QString &protocolName);
 
@@ -59,7 +59,7 @@ public:
     class PendingReady;
     class PendingNames;
 
-    ConnectionManagerInterface* baseInterface;
+    ConnectionManagerInterface *baseInterface;
     QString name;
     bool ready;
     QQueue<void (Private::*)()> introspectQueue;
@@ -70,11 +70,12 @@ public:
     PendingReady *pendingReady;
 
 private Q_SLOTS:
-    void onGetParametersReturn(QDBusPendingCallWatcher*);
-    void onListProtocolsReturn(QDBusPendingCallWatcher*);
-    void onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*);
+    void onGetParametersReturn(QDBusPendingCallWatcher *);
+    void onListProtocolsReturn(QDBusPendingCallWatcher *);
+    void onGetAllConnectionManagerReturn(QDBusPendingCallWatcher *);
     void continueIntrospection();
 };
+
 
 class ConnectionManager::Private::PendingReady : public PendingOperation
 {
@@ -84,6 +85,7 @@ class ConnectionManager::Private::PendingReady : public PendingOperation
 public:
     PendingReady(ConnectionManager *parent);
 };
+
 
 class ConnectionManager::Private::PendingNames : public PendingStringList
 {
