@@ -60,7 +60,9 @@ public:
     QStringList keys() const;
     bool contains(const QString &key) const;
 
+    QString rawValue(const QString &key) const;
     QString value(const QString &key) const;
+    QStringList valueAsStringList(const QString &key) const;
 
 private:
     Q_DISABLE_COPY(KeyFile);

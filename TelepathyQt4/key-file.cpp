@@ -35,7 +35,7 @@ struct KeyFile::Private
 {
     QString fileName;
     KeyFile::Status status;
-    QHash<QString, QHash<QString, QString> > groups;
+    QHash<QString, QHash<QString, QByteArray> > groups;
     QString currentGroup;
 
     Private();
@@ -46,13 +46,16 @@ struct KeyFile::Private
     bool read();
 
     bool validateKey(const QByteArray &data, int from, int to, QString &result);
-    bool unescapeString(const QByteArray &data, int from, int to, QString &result);
+    bool unescapeString(const QByteArray &data, int from, int to, QString &result) const;
+    bool unescapeStringList(const QByteArray &data, int from, int to, QStringList &result) const;
 
     QStringList allGroups() const;
     QStringList allKeys() const;
     QStringList keys() const;
     bool contains(const QString &key) const;
+    QString rawValue(const QString &key) const;
     QString value(const QString &key) const;
+    QStringList valueAsStringList(const QString &key) const;
 };
 
 KeyFile::Private::Private()
@@ -102,7 +105,8 @@ bool KeyFile::Private::read()
     QByteArray data;
     QByteArray group;
     QString currentGroup;
-    QHash<QString, QString> groupMap;
+    QHash<QString, QByteArray> groupMap;
+    QByteArray rawValue;
     int line = 0;
     int idx;
     while (!file.atEnd()) {
@@ -174,22 +178,16 @@ bool KeyFile::Private::read()
                 return false;
             }
 
-            data = data.mid(idx + 1).trimmed();
-            QString value;
-            if (!unescapeString(data, 0, data.size(), value)) {
-                setError(KeyFile::FormatError,
-                         QString("invalid key value for key '%2' at line %3")
-                                 .arg(key).arg(line));
-                return false;
-            }
-
             if (groupMap.contains(key)) {
                 setError(KeyFile::FormatError,
                          QString("duplicated key '%1' on group '%2' at line %3")
                                  .arg(key).arg(currentGroup).arg(line));
                 return false;
             }
-            groupMap[key] = value;
+
+            data = data.mid(idx + 1).trimmed();
+            rawValue = data.mid(0, data.size());
+            groupMap[key] = rawValue;
         }
     }
 
@@ -218,13 +216,18 @@ bool KeyFile::Private::validateKey(const QByteArray &data, int from, int to, QSt
     return ret;
 }
 
-bool KeyFile::Private::unescapeString(const QByteArray &data, int from, int to, QString &result)
+bool KeyFile::Private::unescapeString(const QByteArray &data, int from, int to, QString &result) const
 {
     int i = from;
     while (i < to) {
         uint ch = data.at(i++);
 
         if (ch == '\\') {
+            if (i == to) {
+                result += '\\';
+                return true;
+            }
+
             char nextCh = data.at(i++);
             switch (nextCh) {
                 case 's':
@@ -240,8 +243,7 @@ bool KeyFile::Private::unescapeString(const QByteArray &data, int from, int to, 
                     result += '\r';
                     break;
                 case ';':
-                    // keep \; there so we can split lists properly
-                    result += "\\;";
+                    result += ";";
                     break;
                 case '\\':
                     result += '\\';
@@ -258,6 +260,46 @@ bool KeyFile::Private::unescapeString(const QByteArray &data, int from, int to, 
     return true;
 }
 
+bool KeyFile::Private::unescapeStringList(const QByteArray &data, int from, int to, QStringList &result) const
+{
+    QByteArray value;
+    QList<QByteArray> valueList;
+    int i = from;
+    QChar ch;
+    while (i < to) {
+        ch = data.at(i++);
+
+        if (ch == '\\') {
+            value += ch;
+            if (i < to) {
+                value += data.at(i++);
+                continue;
+            }
+            else {
+                valueList << value;
+                break;
+            }
+        }
+        else if (ch == ';') {
+            valueList << value;
+            value = "";
+        }
+        else {
+            value += ch;
+        }
+    }
+
+    Q_FOREACH (value, valueList) {
+        QString str;
+        if (!unescapeString(value, 0, value.size(), str)) {
+            return false;
+        }
+        result << str;
+    }
+
+    return true;
+}
+
 QStringList KeyFile::Private::allGroups() const
 {
     return groups.keys();
@@ -266,7 +308,7 @@ QStringList KeyFile::Private::allGroups() const
 QStringList KeyFile::Private::allKeys() const
 {
     QStringList keys;
-    QHash<QString, QHash<QString, QString> >::const_iterator itrGroups = groups.begin();
+    QHash<QString, QHash<QString, QByteArray> >::const_iterator itrGroups = groups.begin();
     while (itrGroups != groups.end()) {
         keys << itrGroups.value().keys();
         ++itrGroups;
@@ -276,22 +318,44 @@ QStringList KeyFile::Private::allKeys() const
 
 QStringList KeyFile::Private::keys() const
 {
-    QHash<QString, QString> groupMap = groups[currentGroup];
+    QHash<QString, QByteArray> groupMap = groups[currentGroup];
     return groupMap.keys();
 }
 
 bool KeyFile::Private::contains(const QString &key) const
 {
-    QHash<QString, QString> groupMap = groups[currentGroup];
+    QHash<QString, QByteArray> groupMap = groups[currentGroup];
     return groupMap.contains(key);
+}
+
+QString KeyFile::Private::rawValue(const QString &key) const
+{
+    QHash<QString, QByteArray> groupMap = groups[currentGroup];
+    QByteArray rawValue = groupMap.value(key);
+    return QString(rawValue);
 }
 
 QString KeyFile::Private::value(const QString &key) const
 {
-    QHash<QString, QString> groupMap = groups[currentGroup];
-    return groupMap.value(key);
+    QHash<QString, QByteArray> groupMap = groups[currentGroup];
+    QString result;
+    QByteArray rawValue = groupMap.value(key);
+    if (unescapeString(rawValue, 0, rawValue.size(), result)) {
+        return result;
+    }
+    return QString();
 }
 
+QStringList KeyFile::Private::valueAsStringList(const QString &key) const
+{
+    QHash<QString, QByteArray> groupMap = groups[currentGroup];
+    QStringList result;
+    QByteArray rawValue = groupMap.value(key);
+    if (unescapeStringList(rawValue, 0, rawValue.size(), result)) {
+        return result;
+    }
+    return QStringList();
+}
 
 /**
  * \class KeyFile
@@ -441,14 +505,45 @@ bool KeyFile::contains(const QString &key) const
 }
 
 /**
- * Get the value for the key in the current group named \a key.
+ * Get the raw value for the key in the current group named \a key.
+ *
+ * The raw value is the value as is in the key file.
  *
  * \return Value of \a key, empty string if not found.
+ * \sa group(), setGroup()
+ */
+QString KeyFile::rawValue(const QString &key) const
+{
+    return mPriv->rawValue(key);
+}
+
+/**
+ * Get the value for the key in the current group named \a key.
+ *
+ * Escape sequences in the value are interpreted as defined in:
+ * http://standards.freedesktop.org/desktop-entry-spec/latest/
+ *
+ * \return Value of \a key, empty string if not found or an error occurred.
  * \sa group(), setGroup()
  */
 QString KeyFile::value(const QString &key) const
 {
     return mPriv->value(key);
+}
+
+/**
+ * Get the value for the key in the current group named \a key as a list.
+ *
+ * Return a list containing all strings on this key separated by ';'.
+ * Escape sequences in the value are interpreted as defined in:
+ * http://standards.freedesktop.org/desktop-entry-spec/latest/
+ *
+ * \return Value of \a key as a list, empty string list if not found or an error occurred.
+ * \sa group(), setGroup()
+ */
+QStringList KeyFile::valueAsStringList(const QString &key) const
+{
+    return mPriv->valueAsStringList(key);
 }
 
 }

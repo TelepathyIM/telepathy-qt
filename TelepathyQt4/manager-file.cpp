@@ -53,7 +53,7 @@ struct ManagerFile::Private
     QStringList protocols() const;
     ParamSpecList parameters(const QString &protocol) const;
 
-    QVariant valueForKey(const QString &value, const QString &signature);
+    QVariant valueForKey(const QString &param, const QString &signature);
 };
 
 ManagerFile::Private::Private(const QString &cmName)
@@ -162,7 +162,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
 
                     /* map based on the param dbus signature, otherwise use
                      * QString */
-                    QVariant value = valueForKey(keyFile.value(param), spec->signature);
+                    QVariant value = valueForKey(param, spec->signature);
                     spec->defaultValue = QDBusVariant(value);
                 }
             }
@@ -212,7 +212,7 @@ ParamSpecList ManagerFile::Private::parameters(const QString &protocol) const
     return protocolParams.value(protocol);
 }
 
-QVariant ManagerFile::Private::valueForKey(const QString &value,
+QVariant ManagerFile::Private::valueForKey(const QString &param,
                                            const QString &signature)
 {
     QVariant::Type type = ManagerFile::variantTypeFromDBusSignature(signature);
@@ -223,58 +223,52 @@ QVariant ManagerFile::Private::valueForKey(const QString &value,
 
     switch (type) {
         case QVariant::Bool:
-            if (value.toLower() == "true" || value == "1") {
-                return QVariant(true);
+            {
+                QString value = keyFile.value(param);
+                if (value.toLower() == "true" || value == "1") {
+                    return QVariant(true);
+                }
+                else {
+                    return QVariant(false);
+                }
+                break;
             }
-            else {
-                return QVariant(false);
-            }
-            break;
         case QVariant::Int:
-            return QVariant(value.toInt());
+            {
+                QString value = keyFile.value(param);
+                return QVariant(value.toInt());
+            }
         case QVariant::UInt:
-            return QVariant(value.toUInt());
+            {
+                QString value = keyFile.value(param);
+                return QVariant(value.toUInt());
+            }
         case QVariant::LongLong:
-            return QVariant(value.toLongLong());
+            {
+                QString value = keyFile.value(param);
+                return QVariant(value.toLongLong());
+            }
         case QVariant::ULongLong:
-            return QVariant(value.toULongLong());
+            {
+                QString value = keyFile.value(param);
+                return QVariant(value.toULongLong());
+            }
         case QVariant::Double:
-            return QVariant(value.toDouble());
+            {
+                QString value = keyFile.value(param);
+                return QVariant(value.toDouble());
+            }
         case QVariant::StringList:
             {
-                // split string in a list of strings escaping \; to ;
-                QStringList result;
-                QString v;
-                int i = 0;
-                int len = value.length();
-                QChar lastch, ch;
-                while (i < len) {
-                    ch = value.at(i++);
-                    if (ch == ';') {
-                        if (lastch == '\\') {
-                            v += ';';
-                        }
-                        else {
-                            result << v;
-                            v = QString();
-                        }
-                    }
-                    else if (ch != '\\') {
-                        v += ch;
-                    }
-                    lastch = ch;
-                }
-
-                if (ch != ';') {
-                    result << v;
-                }
-
-                return QVariant(result);
+                QStringList value = keyFile.valueAsStringList(param);
+                return QVariant(value);
             }
         default:
-            break;
+            {
+                QString value = keyFile.value(param);
+                return QVariant(value);
+            }
     }
-    return QVariant(value);
 }
 
 
