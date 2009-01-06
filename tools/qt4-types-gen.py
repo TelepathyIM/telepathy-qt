@@ -29,7 +29,12 @@ class DepInfo:
         self.el = el
         name = get_by_path(el, '@name')
         array_name = get_by_path(el, '@array-name')
-        self.binding = binding_from_decl(name, array_name)
+        array_depth = get_by_path(el, '@array-depth')
+        if array_depth:
+            array_depth = int(array_depth)
+        else:
+            array_depth = None
+        self.binding = binding_from_decl(name, array_name, array_depth)
         self.deps = []
 
         for member in get_by_path(el, 'member'):
@@ -294,15 +299,27 @@ void registerTypes()
         for provider in structs + mappings + exts:
             name = get_by_path(provider, '@name')
             array_name = get_by_path(provider, '@array-name')
-            binding = binding_from_decl(name, array_name)
+            array_depth = get_by_path(provider, '@array-depth')
+            if array_depth:
+                array_depth = int(array_depth)
+            else:
+                array_depth = None
+            binding = binding_from_decl(name, array_name, array_depth)
             self.provide(binding.val)
 
             if binding.array_val:
                 self.provide(binding.array_val)
 
+            d = binding.array_depth
+            print "%s has max array depth %d" % (binding.val, d)
+            while d > 1:
+                d -= 1
+                self.provide(binding.array_val + ('List' * d))
+
         assert not self.required_custom, 'These required types were not provided by the spec: ' + ', '.join(self.required_custom)
 
     def provide(self, type):
+        print "Have type: %s" % type
         if type in self.required_custom:
             self.required_custom.remove(type)
 
@@ -391,6 +408,22 @@ struct %(name)s
 typedef %s %s;
 
 """ % (get_headerfile_cmd(self.realinclude, self.prettyinclude), depinfo.binding.val, 'QList<%s>' % depinfo.binding.val, depinfo.binding.array_val))
+
+        i = depinfo.binding.array_depth
+        while i > 1:
+            i -= 1
+            self.to_declare.append('%s::%s%s' % (self.namespace, depinfo.binding.array_val, ('List' * i)))
+            list_of = depinfo.binding.array_val + ('List' * (i-1))
+            self.decl("""\
+/**
+ * \\ingroup list
+%s\
+ *
+ * Array of %s values.
+ */
+typedef QList<%s> %sList;
+
+""" % (get_headerfile_cmd(self.realinclude, self.prettyinclude), list_of, list_of, list_of))
 
     def faketype(self, fake, real):
         return """\
