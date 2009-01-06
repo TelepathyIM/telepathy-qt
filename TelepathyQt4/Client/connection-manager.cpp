@@ -163,7 +163,7 @@ ConnectionManager::Private::PendingReady::PendingReady(ConnectionManager *parent
 }
 
 
-ConnectionManagerPendingNames::ConnectionManagerPendingNames(const QDBusConnection &bus)
+ConnectionManager::Private::PendingNames::PendingNames(const QDBusConnection &bus)
     : PendingStringList(),
       mBus(bus)
 {
@@ -173,7 +173,7 @@ ConnectionManagerPendingNames::ConnectionManagerPendingNames(const QDBusConnecti
 }
 
 
-void ConnectionManagerPendingNames::onCallFinished(QDBusPendingCallWatcher *watcher)
+void ConnectionManager::Private::PendingNames::onCallFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QStringList> reply = *watcher;
 
@@ -190,7 +190,7 @@ void ConnectionManagerPendingNames::onCallFinished(QDBusPendingCallWatcher *watc
 }
 
 
-void ConnectionManagerPendingNames::continueProcessing()
+void ConnectionManager::Private::PendingNames::continueProcessing()
 {
     if (!mMethodsQueue.isEmpty()) {
         QLatin1String method = mMethodsQueue.dequeue();
@@ -204,7 +204,7 @@ void ConnectionManagerPendingNames::continueProcessing()
 }
 
 
-void ConnectionManagerPendingNames::invokeMethod(const QLatin1String &method)
+void ConnectionManager::Private::PendingNames::invokeMethod(const QLatin1String &method)
 {
     QDBusPendingCall call = mBus.interface()->asyncCallWithArgumentList(
                 method, QList<QVariant>());
@@ -215,7 +215,7 @@ void ConnectionManagerPendingNames::invokeMethod(const QLatin1String &method)
 }
 
 
-void ConnectionManagerPendingNames::parseResult(const QStringList &names)
+void ConnectionManager::Private::PendingNames::parseResult(const QStringList &names)
 {
     Q_FOREACH (const QString name, names) {
         if (name.startsWith("org.freedesktop.Telepathy.ConnectionManager.")) {
@@ -425,7 +425,7 @@ PendingOperation *ConnectionManager::becomeReady()
 
 PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
 {
-    return new ConnectionManagerPendingNames(bus);
+    return new ConnectionManager::Private::PendingNames(bus);
 }
 
 

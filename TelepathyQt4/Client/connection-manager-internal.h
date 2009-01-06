@@ -64,6 +64,8 @@ struct ConnectionManager::Private
 
     class PendingReady;
     PendingReady *pendingReady;
+
+    class PendingNames;
 };
 
 class ConnectionManager::Private::PendingReady : public PendingOperation
@@ -75,13 +77,13 @@ public:
     PendingReady(ConnectionManager *parent);
 };
 
-class ConnectionManagerPendingNames : public PendingStringList
+class ConnectionManager::Private::PendingNames : public PendingStringList
 {
     Q_OBJECT
 
 public:
-    ConnectionManagerPendingNames(const QDBusConnection &bus);
-    ~ConnectionManagerPendingNames() {};
+    PendingNames(const QDBusConnection &bus);
+    ~PendingNames() {};
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *);
