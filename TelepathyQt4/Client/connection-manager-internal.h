@@ -27,11 +27,51 @@
 #include <QDBusConnection>
 #include <QLatin1String>
 #include <QQueue>
+#include <QString>
 
 namespace Telepathy
 {
 namespace Client
 {
+
+class ConnectionManager;
+class ConnectionManagerInterface;
+
+struct ConnectionManager::Private
+{
+    ConnectionManager *parent;
+    ConnectionManagerInterface* baseInterface;
+    bool ready;
+    QQueue<void (Private::*)()> introspectQueue;
+    QQueue<QString> getParametersQueue;
+    QQueue<QString> protocolQueue;
+    QStringList interfaces;
+    ProtocolInfoList protocols;
+
+    Private(ConnectionManager *parent);
+    ~Private();
+
+    static QString makeBusName(const QString& name);
+    static QString makeObjectPath(const QString& name);
+
+    ProtocolInfo *protocol(const QString &protocolName);
+
+    bool checkConfigFile();
+    void callReadConfig();
+    void callGetAll();
+    void callGetParameters();
+    void callListProtocols();
+
+    class PendingReady : public PendingOperation
+    {
+        // ConnectionManager is a friend so it can call finished() etc.
+        friend class ConnectionManager;
+    public:
+        PendingReady(ConnectionManager *parent);
+    };
+
+    PendingReady *pendingReady;
+};
 
 class ConnectionManagerPendingNames : public PendingStringList
 {
