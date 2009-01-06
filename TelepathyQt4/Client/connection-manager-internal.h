@@ -59,7 +59,6 @@ public:
     class PendingReady;
     class PendingNames;
 
-    ConnectionManager *parent;
     ConnectionManagerInterface* baseInterface;
     QString name;
     bool ready;

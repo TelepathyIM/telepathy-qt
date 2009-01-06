@@ -227,7 +227,6 @@ void ConnectionManager::Private::PendingNames::parseResult(const QStringList &na
 
 ConnectionManager::Private::Private(const QString &name, ConnectionManager *parent)
     : QObject(parent),
-      parent(parent),
       baseInterface(new ConnectionManagerInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       name(name),
@@ -321,9 +320,10 @@ void ConnectionManager::Private::callReadConfig()
 void ConnectionManager::Private::callGetAll()
 {
     debug() << "Calling Properties::GetAll(ConnectionManager)";
+    ConnectionManager *cm = static_cast<ConnectionManager*>(parent());
     QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            parent->propertiesInterface()->GetAll(
-                TELEPATHY_INTERFACE_CONNECTION_MANAGER), parent);
+            cm->propertiesInterface()->GetAll(
+                TELEPATHY_INTERFACE_CONNECTION_MANAGER), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*)));
@@ -337,7 +337,7 @@ void ConnectionManager::Private::callGetParameters()
     debug() << "Calling ConnectionManager::GetParameters(" <<
         protocol << ")";
     QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            baseInterface->GetParameters(protocol), parent);
+            baseInterface->GetParameters(protocol), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onGetParametersReturn(QDBusPendingCallWatcher*)));
@@ -348,7 +348,7 @@ void ConnectionManager::Private::callListProtocols()
 {
     debug() << "Calling ConnectionManager::ListProtocols";
     QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            baseInterface->ListProtocols(), parent);
+            baseInterface->ListProtocols(), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(onListProtocolsReturn(QDBusPendingCallWatcher*)));
