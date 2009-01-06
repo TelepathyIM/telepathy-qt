@@ -47,6 +47,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/optional-interface-factory.cpp \
     Client/pending-channel.cpp \
     Client/pending-operation.cpp \
+    Client/pending-string-list.cpp \
     Client/properties.cpp \
     debug.cpp \
     key-file.cpp \
@@ -80,6 +81,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/dbus-proxy.moc.hpp \
     Client/pending-channel.moc.hpp \
     Client/pending-operation.moc.hpp \
+    Client/pending-string-list.moc.hpp \
     Client/simple-pending-operations.moc.hpp
 
 tpqt4include_HEADERS = \
@@ -109,6 +111,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingFailure \
     Client/PendingOperation \
     Client/PendingSuccess \
+    Client/PendingStringList \
     Client/PendingVoidMethodCall \
     Client/Properties \
     Client/StatelessDBusProxy \
@@ -156,6 +159,7 @@ tpqt4clientinclude_HEADERS = \
     Client/optional-interface-factory.h \
     Client/pending-channel.h \
     Client/pending-operation.h \
+    Client/pending-string-list.h \
     Client/properties.h \
     Client/simple-pending-operations.h
 
