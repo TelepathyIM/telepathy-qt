@@ -37,17 +37,11 @@ namespace Client
 class ConnectionManager;
 class ConnectionManagerInterface;
 
-struct ConnectionManager::Private
+class ConnectionManager::Private : public QObject
 {
-    ConnectionManager *parent;
-    ConnectionManagerInterface* baseInterface;
-    bool ready;
-    QQueue<void (Private::*)()> introspectQueue;
-    QQueue<QString> getParametersQueue;
-    QQueue<QString> protocolQueue;
-    QStringList interfaces;
-    ProtocolInfoList protocols;
+    Q_OBJECT
 
+public:
     Private(ConnectionManager *parent);
     ~Private();
 
@@ -63,9 +57,23 @@ struct ConnectionManager::Private
     void callListProtocols();
 
     class PendingReady;
+    class PendingNames;
+
+    ConnectionManager *parent;
+    ConnectionManagerInterface* baseInterface;
+    bool ready;
+    QQueue<void (Private::*)()> introspectQueue;
+    QQueue<QString> getParametersQueue;
+    QQueue<QString> protocolQueue;
+    QStringList interfaces;
+    ProtocolInfoList protocols;
     PendingReady *pendingReady;
 
-    class PendingNames;
+private Q_SLOTS:
+    void onGetParametersReturn(QDBusPendingCallWatcher*);
+    void onListProtocolsReturn(QDBusPendingCallWatcher*);
+    void onGetAllConnectionManagerReturn(QDBusPendingCallWatcher*);
+    void continueIntrospection();
 };
 
 class ConnectionManager::Private::PendingReady : public PendingOperation
