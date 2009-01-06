@@ -48,7 +48,7 @@ ProtocolParameter::ProtocolParameter(const QString &name,
                                      Telepathy::ConnMgrParamFlag flags)
     : mName(name),
       mDBusSignature(dbusSignature),
-      mType(ManagerFile::variantFromDBusSignature("", dbusSignature.signature())),
+      mType(ManagerFile::variantTypeFromDBusSignature(dbusSignature.signature())),
       mDefaultValue(defaultValue),
       mFlags(flags)
 {

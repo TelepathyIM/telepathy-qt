@@ -74,7 +74,7 @@ public:
 
     QString name() const { return mName; }
     QDBusSignature dbusSignature() const { return mDBusSignature; }
-    QVariant type() const { return mType; }
+    QVariant::Type type() const { return mType; }
     QVariant defaultValue() const { return mDefaultValue; }
 
     bool isRequired() const;
@@ -92,7 +92,7 @@ private:
     Private *mPriv;
     QString mName;
     QDBusSignature mDBusSignature;
-    QVariant mType;
+    QVariant::Type mType;
     QVariant mDefaultValue;
     Telepathy::ConnMgrParamFlag mFlags;
 };

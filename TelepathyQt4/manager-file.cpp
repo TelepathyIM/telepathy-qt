@@ -52,6 +52,8 @@ struct ManagerFile::Private
     ParamSpec *getParameter(const QString &protocol, const QString &paramName);
     QStringList protocols() const;
     ParamSpecList parameters(const QString &protocol) const;
+
+    QVariant valueForKey(const QString &value, const QString &signature);
 };
 
 ManagerFile::Private::Private(const QString &cmName)
@@ -160,8 +162,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
 
                     /* map based on the param dbus signature, otherwise use
                      * QString */
-                    QVariant value = ManagerFile::variantFromDBusSignature(keyFile.value(param),
-                                                                           spec->signature);
+                    QVariant value = valueForKey(keyFile.value(param), spec->signature);
                     spec->defaultValue = QDBusVariant(value);
                 }
             }
@@ -209,6 +210,71 @@ QStringList ManagerFile::Private::protocols() const
 ParamSpecList ManagerFile::Private::parameters(const QString &protocol) const
 {
     return protocolParams.value(protocol);
+}
+
+QVariant ManagerFile::Private::valueForKey(const QString &value,
+                                           const QString &signature)
+{
+    QVariant::Type type = ManagerFile::variantTypeFromDBusSignature(signature);
+
+    if (type == QVariant::Invalid) {
+        return QVariant(type);
+    }
+
+    switch (type) {
+        case QVariant::Bool:
+            if (value.toLower() == "true" || value == "1") {
+                return QVariant(true);
+            }
+            else {
+                return QVariant(false);
+            }
+            break;
+        case QVariant::Int:
+            return QVariant(value.toInt());
+        case QVariant::UInt:
+            return QVariant(value.toUInt());
+        case QVariant::LongLong:
+            return QVariant(value.toLongLong());
+        case QVariant::ULongLong:
+            return QVariant(value.toULongLong());
+        case QVariant::Double:
+            return QVariant(value.toDouble());
+        case QVariant::StringList:
+            {
+                // split string in a list of strings escaping \; to ;
+                QStringList result;
+                QString v;
+                int i = 0;
+                int len = value.length();
+                QChar lastch, ch;
+                while (i < len) {
+                    ch = value.at(i++);
+                    if (ch == ';') {
+                        if (lastch == '\\') {
+                            v += ';';
+                        }
+                        else {
+                            result << v;
+                            v = QString();
+                        }
+                    }
+                    else if (ch != '\\') {
+                        v += ch;
+                    }
+                    lastch = ch;
+                }
+
+                if (ch != ';') {
+                    result << v;
+                }
+
+                return QVariant(result);
+            }
+        default:
+            break;
+    }
+    return QVariant(value);
 }
 
 
@@ -271,8 +337,7 @@ ParamSpecList ManagerFile::parameters(const QString &protocol) const
     return mPriv->parameters(protocol);
 }
 
-QVariant ManagerFile::variantFromDBusSignature(const QString &value,
-                                               const QString &signature)
+QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
 {
     QVariant::Type type;
     if (signature == "b")
@@ -292,66 +357,9 @@ QVariant ManagerFile::variantFromDBusSignature(const QString &value,
     else if (signature == "s" || signature == "o")
         type = QVariant::String;
     else
-        return QVariant(QVariant::Invalid);
+        type = QVariant::Invalid;
 
-    if (value.isEmpty()) {
-        return QVariant(type);
-    }
-
-    switch (type) {
-        case QVariant::Bool:
-            if (value.toLower() == "true" || value == "1") {
-                return QVariant(true);
-            }
-            else {
-                return QVariant(false);
-            }
-            break;
-        case QVariant::Int:
-            return QVariant(value.toInt());
-        case QVariant::UInt:
-            return QVariant(value.toUInt());
-        case QVariant::LongLong:
-            return QVariant(value.toLongLong());
-        case QVariant::ULongLong:
-            return QVariant(value.toULongLong());
-        case QVariant::Double:
-            return QVariant(value.toDouble());
-        case QVariant::StringList:
-            {
-                // split string in a list of strings escaping \; to ;
-                QStringList result;
-                QString v;
-                int i = 0;
-                int len = value.length();
-                QChar lastch, ch;
-                while (i < len) {
-                    ch = value.at(i++);
-                    if (ch == ';') {
-                        if (lastch == '\\') {
-                            v += ';';
-                        }
-                        else {
-                            result << v;
-                            v = QString();
-                        }
-                    }
-                    else if (ch != '\\') {
-                        v += ch;
-                    }
-                    lastch = ch;
-                }
-
-                if (ch != ';') {
-                    result << v;
-                }
-
-                return QVariant(result);
-            }
-        default:
-            break;
-    }
-    return QVariant(value);
+    return type;
 }
 
 }

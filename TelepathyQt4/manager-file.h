@@ -43,8 +43,7 @@ public:
     QStringList protocols() const;
     ParamSpecList parameters(const QString &protocol) const;
 
-    static QVariant variantFromDBusSignature(const QString &value,
-                                             const QString &signature);
+    static QVariant::Type variantTypeFromDBusSignature(const QString &signature);
 
 private:
     Q_DISABLE_COPY(ManagerFile);
