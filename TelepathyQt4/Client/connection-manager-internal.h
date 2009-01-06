@@ -62,15 +62,17 @@ struct ConnectionManager::Private
     void callGetParameters();
     void callListProtocols();
 
-    class PendingReady : public PendingOperation
-    {
-        // ConnectionManager is a friend so it can call finished() etc.
-        friend class ConnectionManager;
-    public:
-        PendingReady(ConnectionManager *parent);
-    };
-
+    class PendingReady;
     PendingReady *pendingReady;
+};
+
+class ConnectionManager::Private::PendingReady : public PendingOperation
+{
+    // ConnectionManager is a friend so it can call finished() etc.
+    friend class ConnectionManager;
+
+public:
+    PendingReady(ConnectionManager *parent);
 };
 
 class ConnectionManagerPendingNames : public PendingStringList
