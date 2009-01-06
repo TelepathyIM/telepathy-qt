@@ -37,6 +37,8 @@
 /tests/dbus/test-*
 /tests/pinocchio/test-*
 /tests/prototype/test-*
+/tests/test-key-file
+/tests/test-manager-file
 Makefile
 Makefile.in
 _gen
