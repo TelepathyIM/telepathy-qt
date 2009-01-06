@@ -26,24 +26,6 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientcm Connection manager proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy ConnectionManager objects.
- */
-
 #include <TelepathyQt4/_gen/cli-connection-manager.h>
 
 #include <TelepathyQt4/Client/DBus>
@@ -104,45 +86,13 @@ class ProtocolInfo
 public:
     ~ProtocolInfo();
 
-    /**
-     * Get the short name of the connection manager (e.g. "gabble").
-     *
-     * \return The name of the connection manager
-     */
     QString cmName() const { return mCmName; }
 
-    /**
-     * Get the untranslated name of the protocol as described in the Telepathy
-     * D-Bus API Specification (e.g. "jabber").
-     */
     QString name() const { return mName; }
 
-    /**
-     * Return all supported parameters. The parameters' names
-     * may either be the well-known strings specified by the Telepathy D-Bus
-     * API Specification (e.g. "account" and "password"), or
-     * implementation-specific strings.
-     *
-     * \return A list of parameters
-     */
     const ProtocolParameterList &parameters() const;
-
-    /**
-     * Return whether a given parameter can be passed to the connection
-     * manager when creating a connection to this protocol.
-     *
-     * \param name The name of a parameter
-     * \return true if the given parameter exists
-     */
     bool hasParameter(const QString &name) const;
 
-    /**
-     * Return whether it might be possible to register new accounts on this
-     * protocol via Telepathy, by setting the special parameter named
-     * <code>register</code> to <code>true</code>.
-     *
-     * \return The same thing as hasParameter("register")
-     */
     bool canRegister() const;
 
 private:
@@ -161,18 +111,6 @@ private:
 };
 
 
-/**
- * \class ConnectionManager
- * \ingroup clientcm
- * \headerfile TelepathyQt4/Client/connection-manager.h <TelepathyQt4/Client/ConnectionManager>
- *
- * Object representing a Telepathy connection manager. Connection managers
- * allow connections to be made on one or more protocols.
- *
- * Most client applications should use this functionality via the
- * %AccountManager, to allow connections to be shared between client
- * applications.
- */
 class ConnectionManager : public StatelessDBusProxy,
         private OptionalInterfaceFactory
 {
@@ -190,55 +128,21 @@ public:
     QStringList interfaces() const;
 
     QStringList supportedProtocols() const;
-
     const ProtocolInfoList &protocols() const;
 
-    /**
-     * Convenience function for getting a Properties interface proxy. The
-     * Properties interface is not necessarily reported by the services, so a
-     * <code>check</code> parameter is not provided, and the interface is
-     * always assumed to be present.
-     */
     inline DBus::PropertiesInterface *propertiesInterface() const
     {
         return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
                 *baseInterface());
     }
 
-    /**
-     * Return whether this object has finished its initial setup.
-     *
-     * This is mostly useful as a sanity check, in code that shouldn't be run
-     * until the object is ready. To wait for the object to be ready, call
-     * becomeReady() and connect to the finished signal on the result.
-     *
-     * \return \c true if the object has finished initial setup
-     */
     bool isReady() const;
 
-    // FIXME: a better name for this would be nice
-    /**
-     * Return a pending operation which will succeed when this object finishes
-     * its initial setup, or will fail if a fatal error occurs during this
-     * initial setup.
-     *
-     * \return A PendingOperation which will emit PendingOperation::finished
-     *         when this object has finished or failed its initial setup
-     */
     PendingOperation *becomeReady();
 
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
 protected:
-    /**
-     * Get the ConnectionManagerInterface for this ConnectionManager. This
-     * method is protected since the convenience methods provided by this
-     * class should generally be used instead of calling D-Bus methods
-     * directly.
-     *
-     * \return A pointer to the existing ConnectionManagerInterface for this
-     *         ConnectionManager
-     */
     ConnectionManagerInterface *baseInterface() const;
 
 private:
