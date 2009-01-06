@@ -4,6 +4,7 @@
 #include <QtDBus/QtDBus>
 
 #include <TelepathyQt4/Client/ConnectionManager>
+#include <TelepathyQt4/Client/PendingStringList>
 
 #include <tests/pinocchio/lib.h>
 
@@ -18,6 +19,7 @@ private:
 
 protected Q_SLOTS:
     void onCmReady(ConnectionManager*);
+    void onListNames(Telepathy::Client::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -57,8 +59,22 @@ void TestCmBasics::onCmReady(ConnectionManager* it)
 }
 
 
+void TestCmBasics::onListNames(Telepathy::Client::PendingOperation *operation)
+{
+    Telepathy::Client::PendingStringList *p = static_cast<Telepathy::Client::PendingStringList*>(operation);
+    QCOMPARE(p->result().contains("pinocchio"), QBool(true));
+    mLoop->exit(0);
+}
+
+
 void TestCmBasics::testBasics()
 {
+    connect(ConnectionManager::listNames(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            this,
+            SLOT(onListNames(Telepathy::Client::PendingOperation *)));
+    QCOMPARE(mLoop->exec(), 0);
+
     mCM = new ConnectionManager("pinocchio");
     QCOMPARE(mCM->isReady(), false);
 
