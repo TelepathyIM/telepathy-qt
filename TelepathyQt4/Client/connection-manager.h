@@ -57,6 +57,7 @@ namespace Client
 {
 
 class PendingOperation;
+class PendingStringList;
 class ProtocolParameter;
 class ProtocolInfo;
 
@@ -225,6 +226,8 @@ public:
      *         when this object has finished or failed its initial setup
      */
     PendingOperation *becomeReady();
+
+    static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
 Q_SIGNALS:
     // FIXME: do we need this if we have becomeReady()?

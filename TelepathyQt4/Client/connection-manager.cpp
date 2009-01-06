@@ -20,8 +20,10 @@
  */
 
 #include <TelepathyQt4/Client/ConnectionManager>
+#include "connection-manager-internal.h"
 
 #include "connection-manager.moc.hpp"
+#include "connection-manager-internal.moc.hpp"
 
 #include "TelepathyQt4/_gen/cli-connection-manager-body.hpp"
 #include "TelepathyQt4/_gen/cli-connection-manager.moc.hpp"
@@ -33,6 +35,7 @@
 #include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
 
+#include <QDBusConnectionInterface>
 #include <QQueue>
 #include <QStringList>
 #include <QTimer>
@@ -194,6 +197,68 @@ struct ConnectionManager::Private
 ConnectionManager::Private::PendingReady::PendingReady(ConnectionManager *parent)
     : PendingOperation(parent)
 {
+}
+
+
+ConnectionManagerPendingNames::ConnectionManagerPendingNames(const QDBusConnection &bus)
+    : PendingStringList(),
+      mBus(bus)
+{
+    mMethodsQueue.enqueue(QLatin1String("ListNames"));
+    mMethodsQueue.enqueue(QLatin1String("ListActivatableNames"));
+    QTimer::singleShot(0, this, SLOT(continueProcessing()));
+}
+
+
+void ConnectionManagerPendingNames::onCallFinished(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QStringList> reply = *watcher;
+
+    if (!reply.isError()) {
+        parseResult(reply.value());
+        continueProcessing();
+    } else {
+        warning() << "Failure: error " << reply.error().name() <<
+            ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+    }
+
+    watcher->deleteLater();
+}
+
+
+void ConnectionManagerPendingNames::continueProcessing()
+{
+    if (!mMethodsQueue.isEmpty()) {
+        QLatin1String method = mMethodsQueue.dequeue();
+        invokeMethod(method);
+    }
+    else {
+        debug() << "Success: list" << mResult;
+        setResult(mResult);
+        setFinished();
+    }
+}
+
+
+void ConnectionManagerPendingNames::invokeMethod(const QLatin1String &method)
+{
+    QDBusPendingCall call = mBus.interface()->asyncCallWithArgumentList(
+                method, QList<QVariant>());
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onCallFinished(QDBusPendingCallWatcher *)));
+}
+
+
+void ConnectionManagerPendingNames::parseResult(const QStringList &names)
+{
+    Q_FOREACH (const QString name, names) {
+        if (name.startsWith("org.freedesktop.Telepathy.ConnectionManager.")) {
+            mResult << name.right(name.length() - 44);
+        }
+    }
 }
 
 
@@ -392,6 +457,12 @@ PendingOperation *ConnectionManager::becomeReady()
     }
 
     return mPriv->pendingReady;
+}
+
+
+PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
+{
+    return new ConnectionManagerPendingNames(bus);
 }
 
 
