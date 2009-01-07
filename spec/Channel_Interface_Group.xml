@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Interface_Group" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2005, 2006 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2005, 2006 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright (C) 2005-2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2005-2009 Nokia Corporation</tp:copyright>
   <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
@@ -226,7 +226,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           Indicates that <tp:member-ref>MembersChangedDetailed</tp:member-ref>
           will be emitted for changes to this group's members in addition to
           <tp:member-ref>MembersChanged</tp:member-ref>.
-          Clients can then connect to the former and ignore emission of the latter.
+          Clients can then connect to the former and ignore emission of the
+          latter. This flag's state MUST NOT change over the lifetime of a
+          channel.
+
+          <tp:rationale>
+            If it were allowed to change, client bindings would have to always
+            connect to MembersChanged just in case the flag ever went away (and
+            generally be unnecessarily complicated), which would mostly negate
+            the point of having this flag in the first place.
+          </tp:rationale>
         </tp:docstring>
       </tp:flag>
     </tp:flags>
@@ -698,6 +707,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
+    <tp:mapping name="Handle_Identifier_Map">
+      <tp:docstring>
+        A map from handles to the corresponding normalized string identifier.
+      </tp:docstring>
+      <tp:added version="0.17.17"/>
+
+      <tp:member type="u" name="Handle" tp:type="Contact_Handle">
+        <tp:docstring>
+          A nonzero handle
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Identifier">
+        <tp:docstring>
+          The same string that would be returned by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>
+          for this handle.
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
     <signal name="MembersChangedDetailed"
       tp:name-for-bindings="Members_Changed_Detailed">
       <arg name="Added" type="au" tp:type="Contact_Handle[]">
@@ -732,6 +761,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
             <dt>change-reason (u — <tp:type>Channel_Group_Change_Reason</tp:type>)</dt>
             <dd>A reason for the change.</dd>
+
+            <dt>contact-ids (a{us} — <tp:type>Handle_Identifier_Map</tp:type>)</dt>
+            <dd>
+              <p>The string identifiers for handles mentioned in this signal, to
+              give clients the minimal information necessary to react to the
+              event without waiting for round-trips.  Connection managers
+              SHOULD include the identifiers for members added to the group and
+              for the actor (if any); they MAY omit the identifiers for handles
+              which have been removed from the group.</p>
+
+              <tp:rationale>
+                <p>On IRC, an event such as a netsplit could cause the vast
+                majority of a channel to leave.  Given that clients should
+                already know the identifiers of a channel's members, including
+                potentially hundreds of strings in the netsplit signal is
+                unnecessary.</p>
+              </tp:rationale>
+
+              <p>Clients MUST NOT assume that the presence or absence of a
+                handle in this mapping is meaningful. This mapping is merely
+                an optimization for round-trip reduction, and connection
+                managers MAY add additional handles, omit some handles, or
+                omit the mapping completely.</p>
+            </dd>
 
             <dt>message (s)</dt>
             <dd>A string message from the server regarding the change</dd>
