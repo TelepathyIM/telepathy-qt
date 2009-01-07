@@ -104,7 +104,6 @@ bool ProtocolParameter::operator==(const QString &name) const
     return (mName == name);
 }
 
-
 struct ProtocolInfo::Private
 {
     ProtocolParameterList params;
@@ -117,8 +116,8 @@ struct ProtocolInfo::Private
  *
  * Object representing a Telepathy protocol info.
  *
- * \param cmName Name of the connection manager
- * \param name Name of the protocol
+ * \param cmName Name of the connection manager.
+ * \param name Name of the protocol.
  */
 ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
     : mPriv(new Private()),
@@ -142,7 +141,7 @@ ProtocolInfo::~ProtocolInfo()
  *
  * Get the short name of the connection manager (e.g. "gabble").
  *
- * \return The name of the connection manager
+ * \return The name of the connection manager.
  */
 
 /**
@@ -154,7 +153,7 @@ ProtocolInfo::~ProtocolInfo()
  * This identifier is not intended to be displayed to users directly; user
  * interfaces are responsible for mapping them to localized strings.
  *
- * \return A string identifying the protocol
+ * \return A string identifying the protocol.
  */
 
 /**
@@ -163,7 +162,7 @@ ProtocolInfo::~ProtocolInfo()
  * API Specification (e.g. "account" and "password"), or
  * implementation-specific strings.
  *
- * \return A list of parameters
+ * \return A list of parameters.
  */
 const ProtocolParameterList &ProtocolInfo::parameters() const
 {
@@ -174,8 +173,8 @@ const ProtocolParameterList &ProtocolInfo::parameters() const
  * Return whether a given parameter can be passed to the connection
  * manager when creating a connection to this protocol.
  *
- * \param name The name of a parameter
- * \return true if the given parameter exists
+ * \param name The name of a parameter.
+ * \return true if the given parameter exists.
  */
 bool ProtocolInfo::hasParameter(const QString &name) const
 {
@@ -192,7 +191,7 @@ bool ProtocolInfo::hasParameter(const QString &name) const
  * protocol via Telepathy, by setting the special parameter named
  * <code>register</code> to <code>true</code>.
  *
- * \return The same thing as hasParameter("register")
+ * \return The same thing as hasParameter("register").
  * \sa hasParameter()
  */
 bool ProtocolInfo::canRegister() const
@@ -219,7 +218,6 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
 
     mPriv->params.append(param);
 }
-
 
 ConnectionManager::Private::PendingReady::PendingReady(ConnectionManager *parent)
     : PendingOperation(parent)
@@ -507,8 +505,8 @@ void ConnectionManager::Private::continueIntrospection()
  * %AccountManager, to allow connections to be shared between client
  * applications.
  *
- * \param name Name of the connection manager
- * \param parent Object parent
+ * \param name Name of the connection manager.
+ * \param parent Object parent.
  */
 ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
@@ -530,9 +528,9 @@ ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
  * %AccountManager, to allow connections to be shared between client
  * applications.
  *
- * \param bus QDBusConnection to use
- * \param name Name of the connection manager
- * \param parent Object parent
+ * \param bus QDBusConnection to use.
+ * \param name Name of the connection manager.
+ * \param parent Object parent.
  */
 ConnectionManager::ConnectionManager(const QDBusConnection &bus,
         const QString &name, QObject *parent)
@@ -553,7 +551,7 @@ ConnectionManager::~ConnectionManager()
 /**
  * Get the short name of the connection manager (e.g. "gabble").
  *
- * \return The name of the connection manager
+ * \return The name of the connection manager.
  */
 QString ConnectionManager::name() const
 {
@@ -573,7 +571,7 @@ QStringList ConnectionManager::interfaces() const
  * These identifiers are not intended to be displayed to users directly; user
  * interfaces are responsible for mapping them to localized strings.
  *
- * \return A list of supported protocols
+ * \return A list of supported protocols.
  */
 QStringList ConnectionManager::supportedProtocols() const
 {
@@ -587,7 +585,7 @@ QStringList ConnectionManager::supportedProtocols() const
 /**
  * Get a list of protocols info for this connection manager.
  *
- * \return A list of ṔrotocolInfo
+ * \return A list of ṔrotocolInfo.
  */
 const ProtocolInfoList &ConnectionManager::protocols() const
 {
@@ -610,7 +608,7 @@ const ProtocolInfoList &ConnectionManager::protocols() const
  * until the object is ready. To wait for the object to be ready, call
  * becomeReady() and connect to the finished signal on the result.
  *
- * \return \c true if the object has finished initial setup
+ * \return \c true if the object has finished initial setup.
  */
 bool ConnectionManager::isReady() const
 {
@@ -623,7 +621,7 @@ bool ConnectionManager::isReady() const
  * initial setup.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
- *         when this object has finished or failed its initial setup
+ *         when this object has finished or failed its initial setup.
  */
 PendingOperation *ConnectionManager::becomeReady()
 {
@@ -639,7 +637,7 @@ PendingOperation *ConnectionManager::becomeReady()
 }
 
 /**
- * Returns a pending operation from which a list of all installed connection
+ * Return a pending operation from which a list of all installed connection
  * manager short names (such as "gabble" or "haze") can be retrieved if it
  * succeeds.
  *
@@ -659,7 +657,7 @@ PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
  * directly.
  *
  * \return A pointer to the existing ConnectionManagerInterface for this
- *         ConnectionManager
+ *         ConnectionManager.
  */
 ConnectionManagerInterface *ConnectionManager::baseInterface() const
 {
