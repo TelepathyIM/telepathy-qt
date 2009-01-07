@@ -2,8 +2,8 @@
 <node name="/Connection"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
   >
-  <tp:copyright>Copyright (C) 2005, 2006, 2007 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2005, 2006 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright (C) 2005-2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2005-2009 Nokia Corporation</tp:copyright>
   <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
 <p>This library is free software; you can redistribute it and/or
@@ -47,8 +47,8 @@ USA.</p>
     <method name="Connect" tp:name-for-bindings="Connect">
       <tp:docstring>
         Request that the connection be established. This will be done
-        asynchronously and errors will be returned by emitting StatusChanged
-        signals.
+        asynchronously and errors will be returned by emitting
+        <tp:member-ref>StatusChanged</tp:member-ref> signals.
       </tp:docstring>
 
       <tp:possible-errors>
@@ -124,7 +124,8 @@ USA.</p>
     <signal name="SelfHandleChanged"
         tp:name-for-bindings="Self_Handle_Changed">
       <tp:docstring>
-        Emitted whenever the SelfHandle property changes. If the connection
+        Emitted whenever the <tp:member-ref>SelfHandle</tp:member-ref> property
+        changes. If the connection
         is not yet in the CONNECTED state, this signal is not guaranteed
         to be emitted.
       </tp:docstring>
@@ -144,19 +145,21 @@ USA.</p>
       <tp:docstring>
         The handle which represents the user on this connection, which will
         remain valid for the lifetime of this connection, or until a change
-        in the user's identifier is signalled by the SelfHandleChanged signal.
+        in the user's identifier is signalled by the
+        <tp:member-ref>SelfHandleChanged</tp:member-ref> signal.
         If the connection is not yet in the CONNECTED state, the value of
         this property MAY be zero.
       </tp:docstring>
       <tp:added version="0.17.10">For compatibility with older
-        versions, clients should fall back to calling the GetSelfHandle
+        versions, clients should fall back to calling the
+        <tp:member-ref>GetSelfHandle</tp:member-ref>
         method.</tp:added>
     </property>
 
     <method name="GetSelfHandle" tp:name-for-bindings="Get_Self_Handle">
       <arg direction="out" type="u" tp:type="Contact_Handle">
         <tp:docstring>
-          The value of the SelfHandle property
+          The value of the <tp:member-ref>SelfHandle</tp:member-ref> property
         </tp:docstring>
       </arg>
 
@@ -181,7 +184,8 @@ USA.</p>
       </arg>
 
       <tp:docstring>
-        Get the current status as defined in the StatusChanged signal.
+        Get the current status as defined in the
+        <tp:member-ref>StatusChanged</tp:member-ref> signal.
       </tp:docstring>
     </method>
 
@@ -201,11 +205,13 @@ USA.</p>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Notify the connection manger that your client is holding a copy
         of handles which may not be in use in any existing channel or
-        list, and were not obtained by using the RequestHandles method. For
+        list, and were not obtained by using the
+        <tp:member-ref>RequestHandles</tp:member-ref> method. For
         example, a handle observed in an emitted signal, or displayed
         somewhere in the UI that is not associated with a channel. The
         connection manager must not deallocate a handle where any clients
-        have used this method to indicate it is in use until the ReleaseHandle
+        have used this method to indicate it is in use until the
+        <tp:member-ref>ReleaseHandles</tp:member-ref>
         method is called, or the clients disappear from the bus.</p>
 
         <p>Note that HoldHandles is idempotent - calling it multiple times
@@ -309,7 +315,8 @@ USA.</p>
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>If true, the channel was requested by a client that intends to
             present it to the user itself (i.e. it passed suppress_handler=TRUE
-            to the RequestChannel method), so no other handler should be
+            to the <tp:member-ref>RequestChannel</tp:member-ref> method), so no
+            other handler should be
             launched. Clients MAY assume that channels where this is true
             were created by a user request.</p>
 
@@ -445,7 +452,12 @@ USA.</p>
 
         <p>If a channel to a contact, room etc. is requested, on success, the
           returned channel may either be a new or existing channel to
-          the requested entity (i.e. its GetHandle() returns the
+          the requested entity (i.e. its
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>
+          and <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref>
+          properties are the
           requested handle type and handle), or a newly created "anonymous"
           channel associated with the requested handle in some
           implementation-specific way.</p>
@@ -561,7 +573,8 @@ USA.</p>
         number of contacts, rooms or server-stored lists on the service. The
         connection manager should record that these handles are in use by the
         client who invokes this method, and must not deallocate the handles
-        until the client disconnects from the bus or calls the ReleaseHandle
+        until the client disconnects from the bus or calls the
+        <tp:member-ref>ReleaseHandles</tp:member-ref>
         method. Where the name refers to an entity that already has a handle
         in this connection manager, this handle should be returned instead.
         The handle number 0 must not be returned by the connection manager.
@@ -577,6 +590,13 @@ USA.</p>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
             The given name is not a valid entity of the given type
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The given handle type is valid, but not implemented on this
+            connection.  For instance, a CM for a protocol that doesn't have
+            chat rooms would not implement room handles.
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>
@@ -763,10 +783,13 @@ USA.</p>
     ambiguous. Connection manager implementations should reference count these
     handles to determine if they are in use either by any active clients or any
     open channels, and may deallocate them when this ceases to be true. Clients
-    may request handles of a given type and name with the RequestHandles
-    method, inspect the entity name of handles with the InspectHandles method,
-    keep handles from being released with HoldHandles, and notify that they are
-    no longer storing handles with ReleaseHandles.</p>
+    may request handles of a given type and name with the
+    <tp:member-ref>RequestHandles</tp:member-ref> method, inspect the entity
+    name of handles with the <tp:member-ref>InspectHandles</tp:member-ref>
+    method, keep handles from being released with
+    <tp:member-ref>HoldHandles</tp:member-ref>, and notify that they are no
+    longer storing handles with
+    <tp:member-ref>ReleaseHandles</tp:member-ref>.</p>
     </tp:docstring>
 
     <tp:changed version="0.17.10">Previously, the account part of

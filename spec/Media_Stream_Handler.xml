@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <node name="/Media_Stream_Handler" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
-  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright (C) 2005-2008 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2005-2008 Nokia Corporation </tp:copyright>
   <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
@@ -44,12 +44,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <tp:struct name="Media_Stream_Handler_Codec"
       array-name="Media_Stream_Handler_Codec_List">
-      <tp:member type="u" name="Codec_ID"/>
-      <tp:member type="s" name="Name"/>
-      <tp:member type="u" tp:type="Media_Stream_Type" name="Media_Type"/>
-      <tp:member type="u" name="Clock_Rate"/>
-      <tp:member type="u" name="Number_Of_Channels"/>
-      <tp:member type="a{ss}" name="Parameters" tp:type="String_String_Map"/>
+      <tp:docstring>
+        Information about a codec supported by a client or a peer's client.
+      </tp:docstring>
+
+      <tp:member type="u" name="Codec_ID">
+        <tp:docstring>
+          The codec's payload identifier, as per RFC 3551 (static or dynamic)
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Name">
+        <tp:docstring>The codec's name</tp:docstring>
+      </tp:member>
+      <tp:member type="u" tp:type="Media_Stream_Type" name="Media_Type">
+        <tp:docstring>Type of stream this codec supports</tp:docstring>
+      </tp:member>
+      <tp:member type="u" name="Clock_Rate">
+        <tp:docstring>Sampling frequency in Hertz</tp:docstring>
+      </tp:member>
+      <tp:member type="u" name="Number_Of_Channels">
+        <tp:docstring>Number of supported channels</tp:docstring>
+      </tp:member>
+      <tp:member type="a{ss}" name="Parameters" tp:type="String_String_Map">
+        <tp:docstring>Codec-specific optional parameters</tp:docstring>
+      </tp:member>
     </tp:struct>
 
     <signal name="AddRemoteCandidate"
@@ -188,7 +206,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="in" name="Codecs" type="a(usuuua{ss})"
         tp:type="Media_Stream_Handler_Codec[]">
         <tp:docstring>
-          As for SupportedCodecs.
+          Locally-supported codecs.
         </tp:docstring>
       </arg>
       <tp:docstring>
@@ -200,9 +218,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="SetLocalCodecs" tp:name-for-bindings="Set_Local_Codecs">
       <arg name="Codecs" type="a(usuuua{ss})" direction="in"
         tp:type="Media_Stream_Handler_Codec[]">
-        <tp:docstring>Codecs in the same format as for
-          SupportedCodecs, which have the same semantics as the
-          local codecs passed to Ready</tp:docstring>
+        <tp:docstring>
+          Locally-supported codecs
+        </tp:docstring>
       </arg>
       <tp:docstring>
         Used to provide codecs after Ready(), so the media client can go
@@ -250,7 +268,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <signal name="SetRemoteCodecs" tp:name-for-bindings="Set_Remote_Codecs">
       <arg name="Codecs" type="a(usuuua{ss})"
         tp:type="Media_Stream_Handler_Codec[]">
-        <tp:docstring>As for SupportedCodecs</tp:docstring>
+        <tp:docstring>
+          Codecs supported by the remote peer.
+        </tp:docstring>
       </arg>
       <tp:docstring>
         Signal emitted when the connection manager wishes to inform the
@@ -301,15 +321,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="in" name="Codecs" type="a(usuuua{ss})"
         tp:type="Media_Stream_Handler_Codec[]">
         <tp:docstring>
-          List of codec info structures, each containing:
-          <ul>
-            <li>ID of codec</li>
-            <li>Codec name</li>
-            <li>Media type</li>
-            <li>Clock rate of codec</li>
-            <li>Number of supported channels</li>
-            <li>String key-value pairs for supported optional parameters</li>
-          </ul>
+          Locally supported codecs.
         </tp:docstring>
       </arg>
       <tp:docstring>
