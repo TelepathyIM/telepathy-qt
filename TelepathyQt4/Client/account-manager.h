@@ -26,24 +26,87 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientaccount Account and Account Manager proxies
- * \ingroup clientsideproxies
- *
- * ...
- */
-
 #include <TelepathyQt4/_gen/cli-account-manager.h>
+
+#include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/Client/DBusProxy>
+#include <TelepathyQt4/Client/OptionalInterfaceFactory>
+
+#include <QString>
+#include <QVariantMap>
+
+namespace Telepathy
+{
+namespace Client
+{
+
+class PendingAccount;
+class PendingAccounts;
+class PendingOperation;
+
+class AccountManager : public StatelessDBusProxy,
+        private OptionalInterfaceFactory
+{
+    Q_OBJECT
+
+public:
+    enum Feature {
+        _Padding = 0xFFFFFFFF
+    };
+    Q_DECLARE_FLAGS(Features, Feature)
+
+    AccountManager(QObject *parent = 0);
+    AccountManager(const QDBusConnection &bus, QObject *parent = 0);
+
+    virtual ~AccountManager();
+
+    QStringList interfaces() const;
+
+    inline DBus::PropertiesInterface *propertiesInterface() const
+    {
+        return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
+                *baseInterface());
+    }
+
+    Telepathy::ObjectPathList validAccountPaths() const;
+    Telepathy::ObjectPathList invalidAccountPaths() const;
+    Telepathy::ObjectPathList allAccountPaths() const;
+
+    PendingAccounts *validAccounts() const;
+    PendingAccounts *invalidAccounts() const;
+    PendingAccounts *allAccounts() const;
+
+    PendingAccount *accountForPath(const QString &path) const;
+
+    PendingAccount *createAccount(const QString &connectionManager,
+            const QString &protocol, const QString &displayName,
+            const QVariantMap &parameters);
+
+    // TODO: enabledAccounts(), accountsByProtocol(), ... ?
+
+    bool isReady(Features features = 0) const;
+
+    PendingOperation *becomeReady(Features features = 0);
+
+Q_SIGNALS:
+    void accountCreated(const QDBusObjectPath &path);
+    void accountRemoved(const QDBusObjectPath &path);
+    void accountValidityChanged(const QDBusObjectPath &path, bool valid);
+
+protected:
+    AccountManagerInterface *baseInterface() const;
+
+private:
+    void init();
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(AccountManager::Features)
+
+} // Telepathy::Client
+} // Telepathy
 
 #endif

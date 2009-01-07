@@ -75,6 +75,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-properties-body.hpp \
     _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp \
+    Client/account-manager.moc.hpp \
+    Client/account-manager-internal.moc.hpp \
     Client/channel.moc.hpp \
     Client/connection.moc.hpp \
     Client/connection-manager.moc.hpp \
