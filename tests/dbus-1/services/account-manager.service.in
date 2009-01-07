@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.freedesktop.Telepathy.AccountManager
+Exec=@abs_top_srcdir@/tests/account-manager.py
