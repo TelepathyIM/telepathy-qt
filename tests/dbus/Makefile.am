@@ -1,9 +1,11 @@
 # Tests each run under their own temporary dbus-daemon.
 
 TESTS = \
+    test-account-basics \
     test-do-nothing
 
 BUILT_SOURCES = \
+    _gen/account-basics.moc.hpp \
     _gen/do-nothing.moc.hpp
 
 _gen/%.moc.hpp: %.cpp
@@ -11,6 +13,8 @@ _gen/%.moc.hpp: %.cpp
 	$(MOC) $(LIB_CFLAGS) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
+
+test_account_basics_SOURCES = account-basics.cpp
 
 test_do_nothing_SOURCES = do-nothing.cpp
 
