@@ -76,7 +76,6 @@ AM_CONDITIONAL([OFFICIAL_RELEASE], [test "x$official_release" = xyes])
 TP_COMPILER_WARNINGS([ERROR_CXXFLAGS], [test "x$official_release" = xno],
   [all \
    extra \
-   missing-declarations \
    sign-compare \
    pointer-arith \
    format-security \
