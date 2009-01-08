@@ -14,6 +14,11 @@ private Q_SLOTS:
 
 void TestKeyFile::testKeyFile()
 {
+    QString top_srcdir = QString::fromLocal8Bit(::getenv("abs_top_srcdir"));
+    if (!top_srcdir.isEmpty()) {
+        QDir::setCurrent(top_srcdir + "/tests");
+    }
+
     KeyFile defaultKeyFile;
     QCOMPARE(defaultKeyFile.status(), KeyFile::None);
 
