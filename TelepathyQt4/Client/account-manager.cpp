@@ -89,6 +89,7 @@ AccountManager::Private::Private(AccountManager *parent)
 
 AccountManager::Private::~Private()
 {
+    delete baseInterface;
 }
 
 void AccountManager::Private::callGetAll()
