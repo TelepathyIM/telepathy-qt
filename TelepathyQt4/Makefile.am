@@ -40,6 +40,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/channel.cpp \
     Client/connection.cpp \
     Client/connection-manager.cpp \
+    Client/connection-manager-internal.h \
     Client/dbus.cpp \
     Client/dbus-proxy.cpp \
     Client/media-session-handler.cpp \
