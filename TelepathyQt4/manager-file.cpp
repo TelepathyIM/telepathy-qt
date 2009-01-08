@@ -91,8 +91,11 @@ void ManagerFile::Private::init()
     Q_FOREACH (const QString configDir, configDirs) {
         QString fileName = configDir + cmName + QLatin1String(".manager");
         if (QFile::exists(fileName)) {
-            if (!parse(fileName))
+            debug() << "parsing manager file" << fileName;
+            if (!parse(fileName)) {
+                warning() << "error parsing manager file" << fileName;
                 continue;
+            }
             return;
         }
     }

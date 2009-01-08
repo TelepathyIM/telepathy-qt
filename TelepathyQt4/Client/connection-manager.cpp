@@ -360,6 +360,7 @@ bool ConnectionManager::Private::checkConfigFile()
 void ConnectionManager::Private::callReadConfig()
 {
     if (!checkConfigFile()) {
+        warning() << "error parsing config file for connection manager" << name;
         introspectQueue.enqueue(&Private::callGetAll);
         introspectQueue.enqueue(&Private::callListProtocols);
     }
