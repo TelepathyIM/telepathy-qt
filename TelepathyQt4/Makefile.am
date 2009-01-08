@@ -313,9 +313,9 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--must-define='IN_TELEPATHY_QT4_HEADER' \
 		$$mainiface
 
-Client/%.moc.hpp: $(srcdir)/%.h _gen/constants.h _gen/types.h
+Client/%.moc.hpp: $(srcdir)/Client/%.h _gen/constants.h _gen/types.h
 	$(mkdir_p) Client
 	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
 
-_gen/%.moc.hpp: %.h _gen/constants.h _gen/types.h
+_gen/%.moc.hpp: _gen/%.h _gen/constants.h _gen/types.h
 	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
