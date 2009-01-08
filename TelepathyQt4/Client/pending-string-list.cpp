@@ -21,7 +21,7 @@
 
 #include <TelepathyQt4/Client/PendingStringList>
 
-#include "pending-string-list.moc.hpp"
+#include "TelepathyQt4/Client/_gen/pending-string-list.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <QDBusPendingReply>
