@@ -20,13 +20,13 @@
  */
 
 #include <TelepathyQt4/Client/AccountManager>
-#include "account-manager-internal.h"
+#include "TelepathyQt4/Client/account-manager-internal.h"
 
-#include "account-manager.moc.hpp"
-#include "account-manager-internal.moc.hpp"
-
+#include "TelepathyQt4/Client/_gen/account-manager.moc.hpp"
+#include "TelepathyQt4/Client/_gen/account-manager-internal.moc.hpp"
 #include "TelepathyQt4/_gen/cli-account-manager.moc.hpp"
 #include "TelepathyQt4/_gen/cli-account-manager-body.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/PendingSuccess>
