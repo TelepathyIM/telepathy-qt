@@ -36,6 +36,7 @@ libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
     Client/account.cpp \
+    Client/account-internal.h \
     Client/account-manager.cpp \
     Client/account-manager-internal.h \
     Client/channel.cpp \
@@ -78,6 +79,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-properties-body.hpp \
     _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp \
+    Client/_gen/account.moc.hpp \
+    Client/_gen/account-internal.moc.hpp \
     Client/_gen/account-manager.moc.hpp \
     Client/_gen/account-manager-internal.moc.hpp \
     Client/_gen/channel.moc.hpp \

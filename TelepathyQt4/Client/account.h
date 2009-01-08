@@ -26,20 +26,146 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/* See account-manager.h for doxygen */
-
 #include <TelepathyQt4/_gen/cli-account.h>
 
-#endif
+#include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/Client/DBusProxy>
+#include <TelepathyQt4/Client/OptionalInterfaceFactory>
+#include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Types>
 
+#include <QDBusObjectPath>
+#include <QString>
+#include <QStringList>
+#include <QVariantMap>
+
+namespace Telepathy
+{
+namespace Client
+{
+
+class AccountManager;
+class PendingConnection;
+class PendingOperation;
+class ProtocolInfo;
+
+class Account : public StatelessDBusProxy,
+        private OptionalInterfaceFactory
+{
+    Q_OBJECT
+
+public:
+    enum Feature {
+        /** Get the avatar data */
+        FeatureAvatar = 1,
+        FeatureProtocolInfo = 2,
+        _Padding = 0xFFFFFFFF
+    };
+    Q_DECLARE_FLAGS(Features, Feature)
+
+    Account(AccountManager *am, const QDBusObjectPath &objectPath,
+            QObject *parent = 0);
+
+    virtual ~Account();
+
+    QStringList interfaces() const;
+
+    inline DBus::PropertiesInterface *propertiesInterface() const
+    {
+        return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
+                *baseInterface());
+    }
+
+    AccountManager *manager() const;
+
+    bool isValid() const;
+
+    bool isEnabled() const;
+    PendingOperation *setEnabled(bool value);
+
+    QString cmName() const;
+
+    QString protocol() const;
+
+    QString displayName() const;
+    PendingOperation *setDisplayName(const QString &value);
+
+    QString icon() const;
+    PendingOperation *setIcon(const QString &value);
+
+    QString nickname() const;
+    PendingOperation *setNickname(const QString &value);
+
+    // requires spec 0.17.16
+    QByteArray avatarData() const;
+    QString avatarMimeType() const;
+    PendingOperation *setAvatar(const QByteArray &data, const QString &mimeType);
+
+    QVariantMap parameters() const;
+    PendingOperation *updateParameters(const QVariantMap &set,
+            const QStringList &unset);
+
+    // comes from the ConnectionManager
+    ProtocolInfo *protocolInfo() const;
+
+    Telepathy::SimplePresence automaticPresence() const;
+    PendingOperation *setAutomaticPresence(
+            const Telepathy::SimplePresence &value);
+
+    bool connectsAutomatically() const;
+    PendingOperation *setConnectsAutomatically(bool value);
+
+    Telepathy::ConnectionStatus connectionStatus() const;
+    Telepathy::ConnectionStatusReason connectionStatusReason() const;
+    // not finished until the Connection is ready
+    // PendingConnection *getConnection(Connection::Features features = 0) const;
+
+    Telepathy::SimplePresence currentPresence() const;
+
+    Telepathy::SimplePresence requestedPresence() const;
+    PendingOperation *setRequestedPresence(
+            const Telepathy::SimplePresence &value);
+
+    // Unique per AccountManager implementation, i.e. at least per
+    // QDBusConnection.
+    //
+    // returns the tail of the object path, i.e.
+    // /org/freedesktop/Account/gabble/jabber/smcv_5eexample_2bcom ->
+    // gabble/jabber/smcv_5eexample_2bcom
+    QString uniqueIdentifier() const;
+
+    // doc as for advanced users
+    QString connectionObjectPath() const;
+
+    QString normalizedName() const;
+
+    PendingOperation *remove();
+
+    bool isReady(Features features = 0) const;
+
+    PendingOperation *becomeReady(Features features = 0);
+
+Q_SIGNALS:
+    void displayNameChanged(const QString &);
+    void presenceChanged(const Telepathy::SimplePresence &) const;
+    void avatarChanged(const QByteArray &data, const QString &mimeType);
+    void connectionStatusChanged(Telepathy::ConnectionStatus,
+            Telepathy::ConnectionStatusReason);
+
+protected:
+    AccountInterface *baseInterface() const;
+
+private:
+    Q_DISABLE_COPY(Account);
+
+    class Private;
+    friend class Private;
+    Private *mPriv;
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Account::Features)
+
+} // Telepathy::Client
+} // Telepathy
+
+#endif
