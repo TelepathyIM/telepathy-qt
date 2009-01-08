@@ -69,14 +69,14 @@ LINKER_OPTIMISATIONS
 LINKER_VERSION_SCRIPT
 
 dnl decide error flags
-TP_CXX_COMPILER_FLAG(-Wall, ERROR_CXXFLAGS="-Wall", ERROR_CXXFLAGS="")
-TP_CXX_COMPILER_FLAG(-Werror, werror=yes, werror=no)
+TP_COMPILER_FLAG(-Wall, ERROR_CXXFLAGS="-Wall", ERROR_CXXFLAGS="")
+TP_COMPILER_FLAG(-Werror, werror=yes, werror=no)
 
 AC_ARG_ENABLE(Werror,
   AC_HELP_STRING([--disable-Werror],[compile without -Werror (normally enabled in development builds)]),
     werror=$enableval, :)
 
-TP_CXX_COMPILER_FLAG([$ERROR_CXXFLAGS -Wextra -Wno-missing-field-initializers -Wno-unused-parameter], wextra=yes, wextra=no)
+TP_COMPILER_FLAG([$ERROR_CXXFLAGS -Wextra -Wno-missing-field-initializers -Wno-unused-parameter], wextra=yes, wextra=no)
 
 ifelse(tp_qt4_nano_version, 0,
     [ official_release=yes ],
@@ -87,7 +87,7 @@ ifelse(tp_qt4_nano_version, 0,
         fi
     ])
 
-TP_CXX_COMPILER_FLAG([$ERROR_CXXFLAGS -Wmissing-declarations], ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wmissing-declarations")
+TP_COMPILER_FLAG([$ERROR_CXXFLAGS -Wmissing-declarations], ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wmissing-declarations")
 
 AC_SUBST(ERROR_CXXFLAGS)
 AM_CONDITIONAL([OFFICIAL_RELEASE], [test "x$official_release" = xyes])
