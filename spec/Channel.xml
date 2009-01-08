@@ -339,6 +339,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             dispatcher that channels with suppress_handler false are
             indeed unrequested.</p>
         </tp:rationale>
+
+        <p>It does not make sense for this property to be in channel
+          requests—it will always be true for channels returned by
+          CreateChannel, and callers of EnsureChannel cannot control whether an
+          existing channel was originally requested locally—so it MUST NOT
+          be accepted.</p>
       </tp:docstring>
     </property>
 

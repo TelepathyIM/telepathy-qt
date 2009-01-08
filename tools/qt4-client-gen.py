@@ -298,7 +298,8 @@ Q_SIGNALS:\
         return %(getter-return)s;
     }
 """ % {'name' : name,
-       'docstring' : format_docstring(prop, '     * '),
+       'docstring' : format_docstring(prop, '     * ').replace('*/',
+           '&#42;&#47;'),
        'val' : binding.val,
        'name' : name,
        'gettername' : gettername,
