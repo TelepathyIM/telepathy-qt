@@ -19,5 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <TelepathyQt4/Types>
+
 #define IN_TELEPATHY_QT4_HEADER
 #include "_gen/types-body.hpp"
