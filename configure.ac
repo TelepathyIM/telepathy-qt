@@ -68,29 +68,18 @@ COMPILER_COVERAGE
 LINKER_OPTIMISATIONS
 LINKER_VERSION_SCRIPT
 
-dnl decide error flags
-TP_COMPILER_FLAG(-Wall, ERROR_CXXFLAGS="-Wall", ERROR_CXXFLAGS="")
-TP_COMPILER_FLAG(-Werror, werror=yes, werror=no)
-
-AC_ARG_ENABLE(Werror,
-  AC_HELP_STRING([--disable-Werror],[compile without -Werror (normally enabled in development builds)]),
-    werror=$enableval, :)
-
-TP_COMPILER_FLAG([$ERROR_CXXFLAGS -Wextra -Wno-missing-field-initializers -Wno-unused-parameter], wextra=yes, wextra=no)
-
-ifelse(tp_qt4_nano_version, 0,
+ifelse(tp_glib_nano_version, 0,
     [ official_release=yes ],
-    [
-        official_release=no
-        if test x$werror = xyes; then
-            ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Werror"
-        fi
-    ])
-
-TP_COMPILER_FLAG([$ERROR_CXXFLAGS -Wmissing-declarations], ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wmissing-declarations")
-
-AC_SUBST(ERROR_CXXFLAGS)
+    [ official_release=no ])
 AM_CONDITIONAL([OFFICIAL_RELEASE], [test "x$official_release" = xyes])
+
+TP_COMPILER_WARNINGS([ERROR_CXXFLAGS], [test "x$official_release" = xno],
+  [all \
+   extra \
+   missing-declarations],
+   [missing-field-initializers \
+    unused-parameter])
+AC_SUBST([ERROR_CXXFLAGS])
 
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--disable-debug],[compile without debug code]),
