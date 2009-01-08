@@ -303,6 +303,7 @@ ConnectionManager::Private::~Private()
     Q_FOREACH (ProtocolInfo *info, protocols) {
         delete info;
     }
+    delete baseInterface;
 }
 
 QString ConnectionManager::Private::makeBusName(const QString &name)
