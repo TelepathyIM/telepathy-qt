@@ -99,8 +99,8 @@ protected:
 private:
     void init();
 
-    struct Private;
-    friend struct Private;
+    class Private;
+    friend class Private;
     Private *mPriv;
 };
 
