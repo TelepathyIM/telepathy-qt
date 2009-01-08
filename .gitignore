@@ -36,6 +36,7 @@
 /telepathy-qt4-*.tar.gz
 /telepathy-qt4-*/
 /tests/dbus/test-*
+/tests/dbus-1/services/account-manager.service
 /tests/pinocchio/test-*
 /tests/prototype/test-*
 /tests/test-key-file
