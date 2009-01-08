@@ -76,17 +76,17 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-properties-body.hpp \
     _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp \
-    Client/account-manager.moc.hpp \
-    Client/account-manager-internal.moc.hpp \
-    Client/channel.moc.hpp \
-    Client/connection.moc.hpp \
-    Client/connection-manager.moc.hpp \
-    Client/connection-manager-internal.moc.hpp \
-    Client/dbus-proxy.moc.hpp \
-    Client/pending-channel.moc.hpp \
-    Client/pending-operation.moc.hpp \
-    Client/pending-string-list.moc.hpp \
-    Client/simple-pending-operations.moc.hpp
+    Client/_gen/account-manager.moc.hpp \
+    Client/_gen/account-manager-internal.moc.hpp \
+    Client/_gen/channel.moc.hpp \
+    Client/_gen/connection.moc.hpp \
+    Client/_gen/connection-manager.moc.hpp \
+    Client/_gen/connection-manager-internal.moc.hpp \
+    Client/_gen/dbus-proxy.moc.hpp \
+    Client/_gen/pending-channel.moc.hpp \
+    Client/_gen/pending-operation.moc.hpp \
+    Client/_gen/pending-string-list.moc.hpp \
+    Client/_gen/simple-pending-operations.moc.hpp
 
 tpqt4include_HEADERS = \
     Constants \
@@ -314,8 +314,8 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--must-define='IN_TELEPATHY_QT4_HEADER' \
 		$$mainiface
 
-Client/%.moc.hpp: $(srcdir)/Client/%.h _gen/constants.h _gen/types.h
-	$(mkdir_p) Client
+Client/_gen/%.moc.hpp: $(srcdir)/Client/%.h _gen/constants.h _gen/types.h
+	$(mkdir_p) Client/_gen
 	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
 
 _gen/%.moc.hpp: _gen/%.h _gen/constants.h _gen/types.h

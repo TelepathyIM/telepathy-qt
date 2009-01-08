@@ -21,7 +21,7 @@
 
 #include <TelepathyQt4/Client/DBusProxy>
 
-#include "dbus-proxy.moc.hpp"
+#include "TelepathyQt4/Client/_gen/dbus-proxy.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 

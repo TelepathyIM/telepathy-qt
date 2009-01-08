@@ -21,10 +21,9 @@
 
 #include <TelepathyQt4/Client/Connection>
 
-#include "connection.moc.hpp"
-
 #include "TelepathyQt4/_gen/cli-connection-body.hpp"
 #include "TelepathyQt4/_gen/cli-connection.moc.hpp"
+#include "TelepathyQt4/Client/_gen/connection.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/PendingChannel>

@@ -25,8 +25,8 @@
 #include "simple-pending-operations.h"
 #undef IN_TELEPATHY_QT4_HEADER
 
-#include "pending-operation.moc.hpp"
-#include "simple-pending-operations.moc.hpp"
+#include "TelepathyQt4/Client/_gen/pending-operation.moc.hpp"
+#include "TelepathyQt4/Client/_gen/simple-pending-operations.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 

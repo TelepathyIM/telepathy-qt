@@ -21,7 +21,7 @@
 
 #include <TelepathyQt4/Client/PendingChannel>
 
-#include "pending-channel.moc.hpp"
+#include "TelepathyQt4/Client/_gen/pending-channel.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/Channel>
