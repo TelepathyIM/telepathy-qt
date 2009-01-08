@@ -87,7 +87,7 @@ public:
     uint localHandle()
     {
         uint self_handle = ConnectionFacade::instance()->selfHandleForConnectionInterface( m_pConnectionInterface );
-        if ( self_handle < 0 )
+        if ( self_handle == 0 )
         { m_isValid = false; }
     
         return self_handle;
