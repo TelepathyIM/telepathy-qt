@@ -368,9 +368,9 @@ QStringList KeyFile::Private::valueAsStringList(const QString &key) const
  */
 
 /**
- * Creates a KeyFile object used to read (key-pair) compliant files.
+ * Create a KeyFile object used to read (key-pair) compliant files.
  *
- * The status will be #KeyFile::None
+ * The status will be KeyFile::None
  * \sa setFileName()
  */
 KeyFile::KeyFile()
@@ -379,7 +379,7 @@ KeyFile::KeyFile()
 }
 
 /**
- * Creates a KeyFile object used to read (key-pair) compliant files.
+ * Create a KeyFile object used to read (key-pair) compliant files.
  *
  * \param fileName Name of the file to be read.
  */
@@ -397,7 +397,7 @@ KeyFile::~KeyFile()
 }
 
 /**
- * Sets the name of the file to be read.
+ * Set the name of the file to be read.
  *
  * \param fileName Name of the file to be read.
  */
@@ -407,7 +407,7 @@ void KeyFile::setFileName(const QString &fileName)
 }
 
 /**
- * Returns the name of the file associated with this object.
+ * Return the name of the file associated with this object.
  *
  * \return Name of the file associated with this object.
  */
@@ -449,7 +449,7 @@ void KeyFile::setGroup(const QString &group)
 }
 
 /**
- * Returns the current group.
+ * Return the current group.
  *
  * \return Name of the current group.
  * \sa setGroup()
@@ -460,7 +460,7 @@ QString KeyFile::group() const
 }
 
 /**
- * Returns all groups in the desktop file.
+ * Return all groups in the desktop file.
  *
  * Global keys will be added to a empty group.
  *
@@ -472,7 +472,7 @@ QStringList KeyFile::allGroups() const
 }
 
 /**
- * Returns all keys described in the desktop file.
+ * Return all keys described in the desktop file.
  *
  * \return List of all keys in the desktop file.
  */
@@ -482,7 +482,7 @@ QStringList KeyFile::allKeys() const
 }
 
 /**
- * Returns a list of keys in the current group.
+ * Return a list of keys in the current group.
  *
  * \return List of all keys in the current group.
  * \sa group(), setGroup()
