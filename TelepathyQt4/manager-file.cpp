@@ -286,9 +286,9 @@ QVariant ManagerFile::Private::valueForKey(const QString &param,
  */
 
 /**
- * Creates a ManagerFile object used to read .manager compliant files.
+ * Create a ManagerFile object used to read .manager compliant files.
  *
- * \param cnName Name of the connection manager to read the file for.
+ * \param cmName Name of the connection manager to read the file for.
  */
 ManagerFile::ManagerFile(const QString &cmName)
     : mPriv(new Private(cmName))
@@ -304,7 +304,7 @@ ManagerFile::~ManagerFile()
 }
 
 /**
- * Checks whether or not a ManagerFile object is valid. If the file for the
+ * Check whether or not a ManagerFile object is valid. If the file for the
  * specified connection manager cannot be found it will be considered invalid.
  *
  * \return true if valid, false otherwise.
@@ -315,7 +315,7 @@ bool ManagerFile::isValid() const
 }
 
 /**
- * Returns a list of all protocols defined in the manager file.
+ * Return a list of all protocols defined in the manager file.
  *
  * \return List of all protocols defined in the file.
  */
@@ -325,10 +325,10 @@ QStringList ManagerFile::protocols() const
 }
 
 /**
- * Returns a list of all protocols defined in the manager file.
+ * Return a list of all protocols defined in the manager file.
  *
  * \param protocol Name of the protocol to look for.
- * \return List of #ParamSpec of a specific protocol defined in the file, or an
+ * \return List of ParamSpec of a specific protocol defined in the file, or an
  *         empty list if the protocol is not defined.
  */
 ParamSpecList ManagerFile::parameters(const QString &protocol) const
