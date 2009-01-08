@@ -71,7 +71,6 @@ AccountManager::Private::Private(AccountManager *parent)
                             parent->busName(), parent->objectPath(), parent)),
       ready(false),
       pendingReady(0),
-      introspectQueue(),
       features(0)
 {
     debug() << "Creating new AccountManager:" << parent->busName();
