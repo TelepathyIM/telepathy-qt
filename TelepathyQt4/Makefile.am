@@ -50,6 +50,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-string-list.cpp \
     Client/properties.cpp \
     debug.cpp \
+    debug-internal.h \
     key-file.cpp \
     manager-file.cpp \
     types.cpp \
