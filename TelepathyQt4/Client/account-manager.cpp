@@ -227,6 +227,10 @@ void AccountManager::Private::continueIntrospection()
  * \headerfile TelepathyQt4/Client/account-manager.h> <TelepathyQt4/Client/AccountManager>
  *
  * Object representing a Telepathy account manager.
+ */
+
+/**
+ * Construct a new AccountManager object.
  *
  * \param parent Object parent.
  */
@@ -240,11 +244,7 @@ AccountManager::AccountManager(QObject* parent)
 }
 
 /**
- * \class AccountManager
- * \ingroup clientaccount
- * \headerfile TelepathyQt4/Client/account-manager.h> <TelepathyQt4/Client/AccountManager>
- *
- * Object representing a Telepathy account manager.
+ * Construct a new AccountManager object.
  *
  * \param bus QDBusConnection to use.
  * \param parent Object parent.
