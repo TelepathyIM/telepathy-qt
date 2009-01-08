@@ -155,6 +155,13 @@ dnl Likewise for the prototype library
 PROTO_CFLAGS='-I${top_builddir} -I${top_srcdir}'
 AC_SUBST(PROTO_CFLAGS)
 
+dnl Check for telepathy-glib (so we can use it for tests)
+PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.7.20], [have_tp_glib=yes],
+                  [have_tp_glib=no])
+AC_SUBST(TP_GLIB_CFLAGS)
+AC_SUBST(TP_GLIB_LIBS)
+AM_CONDITIONAL([HAVE_TP_GLIB], [test yes = "$have_tp_glib"])
+
 AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
   [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
 AC_PATH_PROGS([PINOCCHIO_CTL], [pinocchio-ctl], [none])
