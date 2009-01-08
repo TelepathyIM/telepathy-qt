@@ -113,6 +113,10 @@ struct ProtocolInfo::Private
  * \headerfile TelepathyQt4/Client/connection-manager.h <TelepathyQt4/Client/ConnectionManager>
  *
  * Object representing a Telepathy protocol info.
+ */
+
+/**
+ * Construct a new ProtocolInfo object.
  *
  * \param cmName Name of the connection manager.
  * \param name Name of the protocol.
@@ -503,6 +507,10 @@ void ConnectionManager::Private::continueIntrospection()
  * Most client applications should use this functionality via the
  * %AccountManager, to allow connections to be shared between client
  * applications.
+ */
+
+/**
+ * Construct a new ConnectionManager object.
  *
  * \param name Name of the connection manager.
  * \param parent Object parent.
@@ -516,16 +524,7 @@ ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
 }
 
 /**
- * \class ConnectionManager
- * \ingroup clientcm
- * \headerfile TelepathyQt4/Client/connection-manager.h <TelepathyQt4/Client/ConnectionManager>
- *
- * Object representing a Telepathy connection manager. Connection managers
- * allow connections to be made on one or more protocols.
- *
- * Most client applications should use this functionality via the
- * %AccountManager, to allow connections to be shared between client
- * applications.
+ * Construct a new ConnectionManager object.
  *
  * \param bus QDBusConnection to use.
  * \param name Name of the connection manager.
