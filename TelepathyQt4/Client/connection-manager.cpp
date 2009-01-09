@@ -19,7 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "TelepathyQt4/Client/connection-manager-internal.h"
+#include <TelepathyQt4/Client/ConnectionManager>
+#include "connection-manager-internal.h"
 
 #include "TelepathyQt4/_gen/cli-connection-manager-body.hpp"
 #include "TelepathyQt4/_gen/cli-connection-manager.moc.hpp"

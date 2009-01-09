@@ -22,8 +22,6 @@
 #ifndef _TelepathyQt4_cli_connection_manager_internal_h_HEADER_GUARD_
 #define _TelepathyQt4_cli_connection_manager_internal_h_HEADER_GUARD_
 
-#include <TelepathyQt4/Client/ConnectionManager>
-
 #include <TelepathyQt4/Client/PendingStringList>
 
 #include <QDBusConnection>
@@ -35,6 +33,9 @@ namespace Telepathy
 {
 namespace Client
 {
+
+class ConnectionManager;
+class ConnectionManagerInterface;
 
 class ConnectionManager::Private : public QObject
 {
