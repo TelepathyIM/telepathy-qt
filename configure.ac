@@ -252,6 +252,7 @@ AC_OUTPUT([
     tests/Makefile
     tests/dbus/Makefile
     tests/dbus-1/services/account-manager.service
+    tests/lib/Makefile
     tests/pinocchio/Makefile
     tests/prototype/Makefile
     tools/Makefile

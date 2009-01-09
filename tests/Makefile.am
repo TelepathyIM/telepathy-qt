@@ -1,4 +1,6 @@
+# compile lib/ first, so it can be used by tests in the other directories
 SUBDIRS = \
+    lib \
     dbus \
     pinocchio \
     prototype
