@@ -4,6 +4,9 @@ AM_CFLAGS = \
 
 noinst_LTLIBRARIES =
 
+EXTRA_DIST = \
+    account-manager.py
+
 if ENABLE_TP_GLIB_TESTS
 
 noinst_LTLIBRARIES += libtp-glib-tests.la
