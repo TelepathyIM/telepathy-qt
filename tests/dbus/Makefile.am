@@ -34,6 +34,21 @@ BUILT_SOURCES += \
 test_account_basics_SOURCES = account-basics.cpp
 endif
 
+if ENABLE_TP_GLIB_TESTS
+# Tests which can only be run if we have telepathy-glib, and Qt was compiled
+# to use the GLib main loop
+TESTS += \
+    test-cm-basics
+
+BUILT_SOURCES += \
+    _gen/cm-basics.cpp.moc.hpp
+
+MOC_INCLUDES += $(TP_GLIB_CFLAGS)
+
+test_cm_basics_SOURCES = cm-basics.cpp
+test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+endif
+
 LDADD = \
     $(QTCORE_LIBS) \
     $(QTDBUS_LIBS) \
