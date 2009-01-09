@@ -427,7 +427,10 @@ void ConnectionManager::Private::onGetAllConnectionManagerReturn(
     if (props.contains("Interfaces")) {
         interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
     }
+
     continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void ConnectionManager::Private::onListProtocolsReturn(
@@ -452,7 +455,10 @@ void ConnectionManager::Private::onListProtocolsReturn(
         getParametersQueue.enqueue(protocolName);
         introspectQueue.enqueue(&Private::callGetParameters);
     }
+
     continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void ConnectionManager::Private::onGetParametersReturn(
@@ -478,7 +484,10 @@ void ConnectionManager::Private::onGetParametersReturn(
 
         info->addParameter(spec);
     }
+
     continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void ConnectionManager::Private::continueIntrospection()
