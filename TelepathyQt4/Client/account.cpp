@@ -77,7 +77,7 @@ Account::Private::Private(Account *parent)
     QRegExp rx("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
                "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
                "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
-               "/" // account-specific part
+               "/([_A-Za-z][_A-Za-z0-9]*)"  // account-specific part
                );
 
     if (rx.exactMatch(parent->objectPath())) {
@@ -92,8 +92,8 @@ Account::Private::Private(Account *parent)
             SIGNAL(Removed()),
             SLOT(onRemoved()));
     connect(baseInterface,
-            SIGNAL(AccountPropertyChanged(QVariantMap *)),
-            SLOT(onPropertyChanged(QVariantMap *)));
+            SIGNAL(AccountPropertyChanged(const QVariantMap &)),
+            SLOT(onPropertyChanged(const QVariantMap &)));
 
     introspectQueue.enqueue(&Private::callGetAll);
     QTimer::singleShot(0, this, SLOT(continueIntrospection()));
@@ -208,6 +208,10 @@ void Account::Private::onGetAllAccountReturn(QDBusPendingCallWatcher *watcher)
             "GetAll(Account) failed: " <<
             reply.error().name() << ": " << reply.error().message();
     }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void Account::Private::onPropertyChanged(const QVariantMap &delta)
@@ -258,8 +262,8 @@ void Account::Private::continueIntrospection()
  */
 Account::Account(AccountManager *am, const QDBusObjectPath &objectPath,
         QObject *parent)
-    : StatelessDBusProxy(am->dbusConnection(), am->busName(), objectPath.path(),
-            parent),
+    : StatelessDBusProxy(am->dbusConnection(),
+            am->busName(), objectPath.path(), parent),
       mPriv(new Private(this))
 {
 }
