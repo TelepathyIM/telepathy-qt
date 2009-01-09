@@ -55,6 +55,13 @@ AM_PROG_MKDIR_P
 # pkg-config 0.21 adds CFLAGS from Requires.private, which we need
 PKG_PROG_PKG_CONFIG([0.21])
 
+dnl check for a C compiler too, for code taken from telepathy-glib
+AC_LANG_PUSH([C])
+AC_PROG_CC
+AC_PROG_CC_STDC
+AM_PROG_CC_C_O
+AC_LANG_POP([C])
+
 LT_CURRENT=tp_qt4_lt_current
 LT_REVISION=tp_qt4_lt_revision
 LT_AGE=tp_qt4_lt_age
