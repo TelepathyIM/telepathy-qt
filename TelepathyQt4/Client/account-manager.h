@@ -32,6 +32,7 @@
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
+#include <QDBusObjectPath>
 #include <QString>
 #include <QVariantMap>
 
@@ -40,6 +41,7 @@ namespace Telepathy
 namespace Client
 {
 
+class Account;
 class PendingAccount;
 class PendingAccounts;
 class PendingOperation;
@@ -72,11 +74,12 @@ public:
     Telepathy::ObjectPathList invalidAccountPaths() const;
     Telepathy::ObjectPathList allAccountPaths() const;
 
-    PendingAccounts *validAccounts() const;
-    PendingAccounts *invalidAccounts() const;
-    PendingAccounts *allAccounts() const;
+    QList<Account *> validAccounts();
+    QList<Account *> invalidAccounts();
+    QList<Account *> allAccounts();
 
-    PendingAccount *accountForPath(const QString &path) const;
+    Account *accountForPath(const QDBusObjectPath &path);
+    QList<Account *> accountsForPaths(const QList<QDBusObjectPath> &paths);
 
     PendingAccount *createAccount(const QString &connectionManager,
             const QString &protocol, const QString &displayName,

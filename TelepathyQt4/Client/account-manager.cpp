@@ -29,6 +29,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Constants>
 
@@ -317,64 +318,87 @@ Telepathy::ObjectPathList AccountManager::allAccountPaths() const
     return result;
 }
 
+/**
+ * Return a list of Account objects for all valid accounts.
+ *
+ * Note that the Account objects won't be cached by account manager, and
+ * should be done by the application itself.
+ *
+ * \return A list of Account objects
+ * \sa invalidAccounts(), allAccounts(), accountsForPaths()
+ */
+QList<Account *> AccountManager::validAccounts()
+{
+    return accountsForPaths(validAccountPaths());
+}
+
+/**
+ * Return a list of Account objects for all invalid accounts.
+ *
+ * Note that the Account objects won't be cached by account manager, and
+ * should be done by the application itself.
+ *
+ * \return A list of Account objects
+ * \sa validAccounts(), allAccounts(), accountsForPaths()
+ */
+QList<Account *> AccountManager::invalidAccounts()
+{
+    return accountsForPaths(invalidAccountPaths());
+}
+
+/**
+ * Return a list of Account objects for all accounts.
+ *
+ * Note that the Account objects won't be cached by account manager, and
+ * should be done by the application itself.
+ *
+ * \return A list of Account objects
+ * \sa validAccounts(), invalidAccounts(), accountsForPaths()
+ */
+QList<Account *> AccountManager::allAccounts()
+{
+    return accountsForPaths(allAccountPaths());
+}
+
+/**
+ * Return an Account object for the given \a path.
+ *
+ * Note that the Account object won't be cached by account manager, and
+ * should be done by the application itself.
+ *
+ * \param path A QDBusObjectPath to create account for.
+ * \return A list of Account objects
+ * \sa validAccounts(), invalidAccounts(), accountsForPaths()
+ */
+Account *AccountManager::accountForPath(const QDBusObjectPath &path)
+{
+    return new Account(this, path, this);
+}
+
+/**
+ * Return a list of Account objects for the given \a paths.
+ *
+ * Note that the Account objects won't be cached by account manager, and
+ * should be done by the application itself.
+ *
+ * \param paths List of QDBusObjectPath to create accounts for.
+ * \return A list of Account objects
+ * \sa validAccounts(), invalidAccounts(), allAccounts()
+ */
+QList<Account *> AccountManager::accountsForPaths(const QList<QDBusObjectPath> &paths)
+{
+    QList<Account *> result;
+    Q_FOREACH (const QDBusObjectPath &path, paths) {
+        result << accountForPath(path);
+    }
+    return result;
+}
+
 #if 0
 /**
- * Return a list of pending operations for all valid accounts from which
- * Accounts can be retrieved if it succeeds.
+ * Create an Account with the given parameters.
  *
- * Note that the account objects won't be cached by account manager, and
- * should be done by the application itself.
- *
- * \return A list of PendingAccount which each one will emit
- *         PendingAccount::finished when it has finished or failed creating the
- *         account object.
- */
-PendingAccounts *AccountManager::validAccounts() const
-{
-    return 0;
-}
-
-/**
- * Return a list of pending operations for all invalid accounts from which
- * Accounts can be retrieved if it succeeds.
- *
- * Note that the account objects won't be cached by account manager, and
- * should be done by the application itself.
- *
- * \return A list of PendingAccount which each one will emit
- *         PendingAccount::finished when it has finished or failed creating the
- *         account object.
- */
-PendingAccounts *AccountManager::invalidAccounts() const
-{
-    return 0;
-}
-
-/**
- * Return a list of pending operations for all accounts from which
- * Accounts can be retrieved if it succeeds.
- *
- * Note that the account objects won't be cached by account manager, and
- * should be done by the application itself.
- *
- * \return A list of PendingAccount which each one will emit
- *         PendingAccount::finished when it has finished or failed creating the
- *         account object.
- */
-PendingAccounts *AccountManager::allAccounts() const
-{
-    return 0;
-}
-
-PendingAccount *AccountManager::accountForPath(const QString &path) const
-{
-    return 0;
-}
-
-/**
- * Create an account with the given parameters.
- *
- * Return a pending operation representing the account which will succeed
+ * Return a pending operation representing the Account object which will succeed
  * when the account has been created or fail if an error occurred.
  *
  * \param connectionManager Name of the connection manager to create the account for.
