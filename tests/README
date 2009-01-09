@@ -3,11 +3,14 @@ correctly.
 
 Where to put new tests:
 
-/tests/ if they're simple regression tests in pure C++ that don't access D-Bus
-(these are likely to be rare)
+* /tests/ if they're simple regression tests in pure C++ that don't access
+  D-Bus (these are likely to be rare)
 
-/tests/dbus/ if they touch the session bus (a temporary session bus will be
-used)
+* /tests/dbus/ if they touch the session bus (a temporary session bus will be
+  used)
 
-/tests/pinocchio/ if they touch the session bus, and require
-telepathy-pinocchio to be available
+* /tests/pinocchio/ if they touch the session bus, and also require
+  telepathy-pinocchio to be available
+
+/tests/lib/ contains support code, some of it taken from the telepathy-glib
+examples and regression tests.
