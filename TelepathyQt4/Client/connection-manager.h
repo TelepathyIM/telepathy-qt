@@ -102,8 +102,8 @@ private:
 
     void addParameter(const ParamSpec &spec);
 
-    struct Private;
-    friend struct Private;
+    class Private;
+    friend class Private;
     friend class ConnectionManager;
     Private *mPriv;
     QString mCmName;
