@@ -180,12 +180,24 @@ dnl Likewise for the prototype library
 PROTO_CFLAGS='-I${top_builddir} -I${top_srcdir}'
 AC_SUBST(PROTO_CFLAGS)
 
-dnl Check for telepathy-glib (so we can use it for tests)
+dnl Check for telepathy-glib, and for Qt <-> GLib main loop integration:
+dnl if we have both, we can run more tests
 PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.7.20], [have_tp_glib=yes],
                   [have_tp_glib=no])
 AC_SUBST(TP_GLIB_CFLAGS)
 AC_SUBST(TP_GLIB_LIBS)
-AM_CONDITIONAL([HAVE_TP_GLIB], [test yes = "$have_tp_glib"])
+if test no = "$have_tp_glib"; then
+  AC_MSG_WARN([telepathy-glib not found: not all tests will be run])
+fi
+
+have_qt_glib_main_loop=no
+if ${PKG_CONFIG} --libs --static QtCore | grep ['[-]lglib-2.0'] >/dev/null; then
+  have_qt_glib_main_loop=yes
+else
+  AC_MSG_WARN([Qt does not use the GLib main loop: not all tests will be run])
+fi
+AM_CONDITIONAL([ENABLE_TP_GLIB_TESTS],
+  [test yes = "$have_tp_glib" && test yes = "$have_qt_glib_main_loop"])
 
 AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
   [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
