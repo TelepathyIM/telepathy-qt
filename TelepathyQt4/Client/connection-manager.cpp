@@ -25,6 +25,7 @@
 #include "TelepathyQt4/_gen/cli-connection-manager.moc.hpp"
 #include "TelepathyQt4/Client/_gen/connection-manager.moc.hpp"
 #include "TelepathyQt4/Client/_gen/connection-manager-internal.moc.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/DBus>
