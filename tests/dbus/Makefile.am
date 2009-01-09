@@ -14,6 +14,14 @@ noinst_PROGRAMS = $(TESTS)
 
 test_do_nothing_SOURCES = do-nothing.cpp
 
+# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
+# argument to moc but -Wstuff is not
+MOC_INCLUDES = \
+    $(QTCORE_CFLAGS) \
+    $(QTDBUS_CFLAGS) \
+    $(QTTEST_CFLAGS) \
+    $(TP_QT4_CFLAGS)
+
 if HAVE_TEST_PYTHON
 # Tests which can only be run if we have suitable versions of Python and
 # dbus-python
@@ -31,14 +39,6 @@ LDADD = \
     $(QTDBUS_LIBS) \
     $(QTTEST_LIBS) \
     ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
-
-# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
-# argument to moc but -Wstuff is not
-MOC_INCLUDES = \
-    $(QTCORE_CFLAGS) \
-    $(QTDBUS_CFLAGS) \
-    $(QTTEST_CFLAGS) \
-    $(TP_QT4_CFLAGS)
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
