@@ -75,7 +75,7 @@ COMPILER_COVERAGE
 LINKER_OPTIMISATIONS
 LINKER_VERSION_SCRIPT
 
-ifelse(tp_glib_nano_version, 0,
+ifelse(tp_qt4_nano_version, 0,
     [ official_release=yes ],
     [ official_release=no ])
 AM_CONDITIONAL([OFFICIAL_RELEASE], [test "x$official_release" = xyes])
