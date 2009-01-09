@@ -1,11 +1,9 @@
 # Tests each run under their own temporary dbus-daemon.
 
 TESTS = \
-    test-account-basics \
     test-do-nothing
 
 BUILT_SOURCES = \
-    _gen/account-basics.moc.hpp \
     _gen/do-nothing.moc.hpp
 
 _gen/%.moc.hpp: %.cpp
@@ -14,9 +12,19 @@ _gen/%.moc.hpp: %.cpp
 
 noinst_PROGRAMS = $(TESTS)
 
-test_account_basics_SOURCES = account-basics.cpp
-
 test_do_nothing_SOURCES = do-nothing.cpp
+
+if HAVE_TEST_PYTHON
+# Tests which can only be run if we have suitable versions of Python and
+# dbus-python
+TESTS += \
+    test-account-basics
+
+BUILT_SOURCES += \
+    _gen/account-basics.moc.hpp
+
+test_account_basics_SOURCES = account-basics.cpp
+endif
 
 LDADD = \
     $(QTCORE_LIBS) \
