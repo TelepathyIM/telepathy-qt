@@ -20,7 +20,9 @@ test_prototype_SOURCES = prototype.cpp prototype.h
 
 EXTRA_DIST = avatar.png
 
-DEP_CFLAGS = \
+# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
+# argument to moc but -Wstuff is not
+MOC_INCLUDES = \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(QTGUI_CFLAGS) \
@@ -38,7 +40,7 @@ LDADD = \
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
-    $(DEP_CFLAGS)
+    $(MOC_INCLUDES)
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \
@@ -55,7 +57,7 @@ CLEANFILES = \
 
 _gen/%.moc: %
 	$(mkdir_p) _gen
-	$(MOC) $(DEP_CFLAGS) -i $< -o $@
+	$(MOC) $(MOC_INCLUDES) -i $< -o $@
 
 distclean-local:
 	rm -rf _gen

@@ -8,7 +8,7 @@ BUILT_SOURCES = \
 
 _gen/%.moc.hpp: %.cpp
 	$(mkdir_p) _gen
-	$(MOC) $(LIB_CFLAGS) -i $< -o $@
+	$(MOC) $(MOC_INCLUDES) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
 
@@ -32,7 +32,9 @@ LDADD = \
     $(QTTEST_LIBS) \
     ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
-LIB_CFLAGS = \
+# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
+# argument to moc but -Wstuff is not
+MOC_INCLUDES = \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(QTTEST_CFLAGS) \
@@ -40,7 +42,7 @@ LIB_CFLAGS = \
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
-    $(LIB_CFLAGS)
+    $(MOC_INCLUDES)
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \
