@@ -66,4 +66,5 @@ void TestDoNothing::cleanupTestCase()
 
 
 QTEST_MAIN(TestDoNothing)
-#include "_gen/do-nothing.moc.hpp"
+
+#include "_gen/do-nothing.cpp.moc.hpp"

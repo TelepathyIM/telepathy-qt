@@ -5,6 +5,7 @@ SUBDIRS = \
     pinocchio \
     prototype
 
+# Standalone tests that don't touch D-Bus
 TESTS = \
     test-key-file \
     test-manager-file
@@ -18,8 +19,8 @@ test_manager_file_SOURCES = \
     manager-file.cpp
 
 BUILT_SOURCES = \
-    key-file.moc.hpp \
-    manager-file.moc.hpp
+    _gen/key-file.cpp.moc.hpp \
+    _gen/manager-file.cpp.moc.hpp
 
 LDADD = \
     $(QTCORE_LIBS) \
@@ -61,5 +62,9 @@ EXTRA_DIST = \
     test-key-file.ini \
     test-key-file-format-error.ini
 
-%.moc.hpp: %.cpp
+_gen/%.moc.hpp: %
+	$(mkdir_p) _gen
 	$(MOC) $(MOC_INCLUDES) -i $< -o $@
+
+distclean-local:
+	rm -rf _gen

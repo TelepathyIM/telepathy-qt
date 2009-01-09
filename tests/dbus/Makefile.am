@@ -4,9 +4,9 @@ TESTS = \
     test-do-nothing
 
 BUILT_SOURCES = \
-    _gen/do-nothing.moc.hpp
+    _gen/do-nothing.cpp.moc.hpp
 
-_gen/%.moc.hpp: %.cpp
+_gen/%.moc.hpp: %
 	$(mkdir_p) _gen
 	$(MOC) $(MOC_INCLUDES) -i $< -o $@
 
@@ -21,7 +21,7 @@ TESTS += \
     test-account-basics
 
 BUILT_SOURCES += \
-    _gen/account-basics.moc.hpp
+    _gen/account-basics.cpp.moc.hpp
 
 test_account_basics_SOURCES = account-basics.cpp
 endif
