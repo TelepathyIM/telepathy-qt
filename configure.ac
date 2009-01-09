@@ -91,6 +91,25 @@ TP_COMPILER_WARNINGS([ERROR_CXXFLAGS], [test "x$official_release" = xno],
     unused-parameter])
 AC_SUBST([ERROR_CXXFLAGS])
 
+# For C code taken from telepathy-glib, we want different warnings
+AC_LANG_PUSH([C])
+TP_COMPILER_WARNINGS([ERROR_CFLAGS], [test "x$official_release" = xno],
+  [all \
+   extra \
+   declaration-after-statement \
+   shadow \
+   strict-prototypes \
+   missing-prototypes \
+   sign-compare \
+   nested-externs \
+   pointer-arith \
+   format-security \
+   init-self],
+   [missing-field-initializers \
+    unused-parameter])
+AC_SUBST([ERROR_CFLAGS])
+AC_LANG_POP([C])
+
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--disable-debug],[compile without debug code]),
     enable_debug=$enableval, enable_debug=yes )
