@@ -30,6 +30,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/Account>
+#include <TelepathyQt4/Client/PendingAccount>
 #include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Constants>
 
@@ -159,6 +160,8 @@ void AccountManager::Private::onGetAllAccountManagerReturn(
     }
 
     continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void AccountManager::Private::onAccountValidityChanged(const QDBusObjectPath &path,
@@ -394,7 +397,6 @@ QList<Account *> AccountManager::accountsForPaths(const QList<QDBusObjectPath> &
     return result;
 }
 
-#if 0
 /**
  * Create an Account with the given parameters.
  *
@@ -412,9 +414,9 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
         const QString &protocol, const QString &displayName,
         const QVariantMap &parameters)
 {
-    return 0;
+    return new PendingAccount(this, connectionManager,
+            protocol, displayName, parameters);
 }
-#endif
 
 /**
  * Return whether this object has finished its initial setup.

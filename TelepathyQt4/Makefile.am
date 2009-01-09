@@ -48,6 +48,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/media-session-handler.cpp \
     Client/media-stream-handler.cpp \
     Client/optional-interface-factory.cpp \
+    Client/pending-account.cpp \
     Client/pending-channel.cpp \
     Client/pending-operation.cpp \
     Client/pending-string-list.cpp \
@@ -88,6 +89,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/connection-manager.moc.hpp \
     Client/_gen/connection-manager-internal.moc.hpp \
     Client/_gen/dbus-proxy.moc.hpp \
+    Client/_gen/pending-account.moc.hpp \
     Client/_gen/pending-channel.moc.hpp \
     Client/_gen/pending-operation.moc.hpp \
     Client/_gen/pending-string-list.moc.hpp \
@@ -166,6 +168,7 @@ tpqt4clientinclude_HEADERS = \
     Client/media-session-handler.h \
     Client/media-stream-handler.h \
     Client/optional-interface-factory.h \
+    Client/pending-account.h \
     Client/pending-channel.h \
     Client/pending-operation.h \
     Client/pending-string-list.h \

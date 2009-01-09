@@ -104,6 +104,7 @@ private:
 
     class Private;
     friend class Private;
+    friend class PendingAccount;
     Private *mPriv;
 };
 
