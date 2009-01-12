@@ -33,17 +33,20 @@ namespace Telepathy
 namespace Client
 {
 
-struct DBusProxy::Private
+// ==== DBusProxy ======================================================
+
+class DBusProxy::Private
 {
+public:
     // Public object
-    DBusProxy& parent;
+    DBusProxy &parent;
 
     QDBusConnection dbusConnection;
     QString busName;
     QString objectPath;
 
-    Private(const QDBusConnection& dbusConnection, const QString& busName,
-            const QString& objectPath, DBusProxy& p)
+    Private(const QDBusConnection &dbusConnection, const QString &busName,
+            const QString &objectPath, DBusProxy &p)
         : parent(p),
           dbusConnection(dbusConnection),
           busName(busName),
@@ -53,8 +56,8 @@ struct DBusProxy::Private
     }
 };
 
-DBusProxy::DBusProxy(const QDBusConnection& dbusConnection,
-        const QString& busName, const QString& path, QObject* parent)
+DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
+        const QString &busName, const QString &path, QObject *parent)
  : QObject(parent),
    mPriv(new Private(dbusConnection, busName, path, *this))
 {
@@ -80,21 +83,26 @@ QString DBusProxy::busName() const
     return mPriv->busName;
 }
 
+// ==== StatelessDBusProxy =============================================
+
 StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection& dbusConnection,
-        const QString& busName, const QString& objectPath, QObject* parent)
+        const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent)
 {
 }
 
-struct StatefulDBusProxy::Private
+// ==== StatefulDBusProxy ==============================================
+
+class StatefulDBusProxy::Private
 {
+public:
     // Public object
-    StatefulDBusProxy& parent;
+    StatefulDBusProxy &parent;
 
     QString invalidationReason;
     QString invalidationMessage;
 
-    Private(StatefulDBusProxy& p)
+    Private(StatefulDBusProxy &p)
         : parent(p),
           invalidationReason(QString()),
           invalidationMessage(QString())
@@ -103,8 +111,8 @@ struct StatefulDBusProxy::Private
     }
 };
 
-StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection& dbusConnection,
-        const QString& busName, const QString& objectPath, QObject* parent)
+StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
+        const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent)
 {
     // FIXME: Am I on crack?
@@ -127,7 +135,7 @@ QString StatefulDBusProxy::invalidationMessage() const
     return mPriv->invalidationMessage;
 }
 
-void StatefulDBusProxy::invalidate(const QString& reason, const QString& message)
+void StatefulDBusProxy::invalidate(const QString &reason, const QString &message)
 {
     Q_ASSERT(isValid());
     Q_ASSERT(!reason.isEmpty());
@@ -149,7 +157,7 @@ void StatefulDBusProxy::emitInvalidated()
     emit invalidated(this, mPriv->invalidationReason, mPriv->invalidationMessage);
 }
 
-void StatefulDBusProxy::onServiceOwnerChanged(const QString& name, const QString& oldOwner, const QString& newOwner)
+void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner)
 {
     // We only want to invalidate this object if it is not already invalidated,
     // and it's (not any other object's) name owner changed signal is emitted.

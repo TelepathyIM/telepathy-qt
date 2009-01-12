@@ -55,8 +55,8 @@ public:
     /**
      * Constructor
      */
-    DBusProxy(const QDBusConnection& dbusConnection, const QString& busName,
-            const QString& objectPath, QObject* parent = 0);
+    DBusProxy(const QDBusConnection &dbusConnection, const QString& busName,
+            const QString &objectPath, QObject *parent = 0);
 
     /**
      * Destructor
@@ -87,8 +87,8 @@ public:
     QString objectPath() const;
 
 private:
-    struct Private;
-    friend struct Private;
+    class Private;
+    friend class Private;
     Private *mPriv;
 };
 
@@ -109,13 +109,13 @@ class StatelessDBusProxy : public DBusProxy
     Q_OBJECT
 
 public:
-    StatelessDBusProxy(const QDBusConnection& dbusConnection,
-        const QString& busName, const QString& objectPath,
-        QObject* parent = 0);
+    StatelessDBusProxy(const QDBusConnection &dbusConnection,
+        const QString &busName, const QString &objectPath,
+        QObject *parent = 0);
 
 private:
-    struct Private;
-    friend struct Private;
+    class Private;
+    friend class Private;
     Private *mPriv;
 };
 
@@ -135,9 +135,9 @@ class StatefulDBusProxy : public DBusProxy
     Q_OBJECT
 
 public:
-    StatefulDBusProxy(const QDBusConnection& dbusConnection,
-        const QString& busName, const QString& objectPath,
-        QObject* parent = 0);
+    StatefulDBusProxy(const QDBusConnection &dbusConnection,
+        const QString &busName, const QString &objectPath,
+        QObject *parent = 0);
 
     /**
      * If this object is usable (has not emitted #invalidated()), returns
@@ -172,7 +172,7 @@ protected:
      * This method takes care of setting the invalidationReason,
      * invalidationMessage, and emitting the invalidated signal.
      */
-    void invalidate(const QString& reason, const QString& message);
+    void invalidate(const QString &reason, const QString &message);
 
 Q_SIGNALS:
     /**
@@ -187,17 +187,17 @@ Q_SIGNALS:
      *                  of ASCII, prefixed with a reversed domain name)
      * \param errorMessage A debugging message associated with the error
      */
-    void invalidated(StatefulDBusProxy* proxy, QString errorName,
+    void invalidated(StatefulDBusProxy *proxy, QString errorName,
             QString errorMessage);
 
 private Q_SLOTS:
     void emitInvalidated();
-    void onServiceOwnerChanged(const QString& name, const QString& oldOwner,
-            const QString& newOwner);
+    void onServiceOwnerChanged(const QString &name, const QString &oldOwner,
+            const QString &newOwner);
 
 private:
-    struct Private;
-    friend struct Private;
+    class Private;
+    friend class Private;
     Private *mPriv;
 };
 
