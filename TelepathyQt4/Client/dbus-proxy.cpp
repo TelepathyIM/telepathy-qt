@@ -47,16 +47,19 @@ public:
     QString busName;
     QString objectPath;
 
-    Private(const QDBusConnection &dbusConnection, const QString &busName,
-            const QString &objectPath, DBusProxy &p)
-        : parent(p),
-          dbusConnection(dbusConnection),
-          busName(busName),
-          objectPath(objectPath)
-    {
-        debug() << "Creating new DBusProxy";
-    }
+    Private(const QDBusConnection &, const QString &, const QString &,
+            DBusProxy &);
 };
+
+DBusProxy::Private::Private(const QDBusConnection &dbusConnection,
+            const QString &busName, const QString &objectPath, DBusProxy &p)
+ : parent(p),
+   dbusConnection(dbusConnection),
+   busName(busName),
+   objectPath(objectPath)
+{
+    debug() << "Creating new DBusProxy";
+}
 
 DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &path, QObject *parent)
@@ -104,14 +107,16 @@ public:
     QString invalidationReason;
     QString invalidationMessage;
 
-    Private(StatefulDBusProxy &p)
-        : parent(p),
-          invalidationReason(QString()),
-          invalidationMessage(QString())
-    {
-        debug() << "Creating new StatefulDBusProxy";
-    }
+    Private(StatefulDBusProxy &);
 };
+
+StatefulDBusProxy::Private::Private(StatefulDBusProxy &p)
+ : parent(p),
+   invalidationReason(QString()),
+   invalidationMessage(QString())
+{
+    debug() << "Creating new StatefulDBusProxy";
+}
 
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
