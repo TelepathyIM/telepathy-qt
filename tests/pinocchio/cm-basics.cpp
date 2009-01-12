@@ -4,6 +4,7 @@
 #include <QtDBus/QtDBus>
 
 #include <TelepathyQt4/Client/ConnectionManager>
+#include <TelepathyQt4/Client/PendingStringList>
 
 #include <tests/pinocchio/lib.h>
 
@@ -18,6 +19,7 @@ private:
 
 protected Q_SLOTS:
     void onCmReady(ConnectionManager*);
+    void onListNames(Telepathy::Client::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -57,8 +59,22 @@ void TestCmBasics::onCmReady(ConnectionManager* it)
 }
 
 
+void TestCmBasics::onListNames(Telepathy::Client::PendingOperation *operation)
+{
+    Telepathy::Client::PendingStringList *p = static_cast<Telepathy::Client::PendingStringList*>(operation);
+    QCOMPARE(p->result().contains("pinocchio"), QBool(true));
+    mLoop->exit(0);
+}
+
+
 void TestCmBasics::testBasics()
 {
+    connect(ConnectionManager::listNames(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            this,
+            SLOT(onListNames(Telepathy::Client::PendingOperation *)));
+    QCOMPARE(mLoop->exec(), 0);
+
     mCM = new ConnectionManager("pinocchio");
     QCOMPARE(mCM->isReady(), false);
 
@@ -81,39 +97,28 @@ void TestCmBasics::testBasics()
     QCOMPARE(mCM->interfaces(), QStringList());
     QCOMPARE(mCM->supportedProtocols(), QStringList() << "dummy");
 
-    const ProtocolInfo* info = mCM->protocolInfo("not-there");
-    QVERIFY(info == 0);
-    info = mCM->protocolInfo("dummy");
-    QVERIFY(info != 0);
-    QVERIFY(info->cmName() == "pinocchio");
-    QVERIFY(info->protocolName() == "dummy");
-    QSet<QString> paramSet = QSet<QString>();
-    Q_FOREACH (QString param, info->parameters()) {
-        paramSet << param;
+    Q_FOREACH (ProtocolInfo *info, mCM->protocols()) {
+        QVERIFY(info != 0);
+        QVERIFY(info->cmName() == "pinocchio");
+        QVERIFY(info->name() == "dummy");
+
+        QCOMPARE(info->hasParameter("account"), true);
+        QCOMPARE(info->hasParameter("not-there"), false);
+
+        Q_FOREACH (ProtocolParameter *param, info->parameters()) {
+            if (param->name() == "account") {
+                QCOMPARE(param->dbusSignature().signature(),
+                         QLatin1String("s"));
+                QCOMPARE(param->isRequired(), true);
+                QCOMPARE(param->isSecret(), false);
+            }
+            else if (param->name() == "password") {
+                QCOMPARE(param->isRequired(), false);
+                QCOMPARE(param->isSecret(), true);
+            }
+        }
+        QCOMPARE(info->canRegister(), false);
     }
-    QCOMPARE(paramSet, QSet<QString>() << "account" << "password");
-
-    QCOMPARE(info->hasParameter("account"), true);
-    QCOMPARE(info->hasParameter("not-there"), false);
-
-    QCOMPARE(info->parameterDBusSignature("account").signature(),
-            QLatin1String("s"));
-    QCOMPARE(info->parameterDBusSignature("not-there").signature(), QString());
-
-    QCOMPARE(info->parameterIsRequired("account"), true);
-    QCOMPARE(info->parameterIsRequired("password"), false);
-    QCOMPARE(info->parameterIsRequired("not-there"), false);
-
-    QCOMPARE(info->parameterIsSecret("account"), false);
-    QCOMPARE(info->parameterIsSecret("password"), true);
-    QCOMPARE(info->parameterIsSecret("not-there"), false);
-
-    QCOMPARE(info->parameterIsDBusProperty("account"), false);
-    QCOMPARE(info->parameterIsDBusProperty("not-there"), false);
-
-    QCOMPARE(info->parameterHasDefault("not-there"), false);
-
-    QCOMPARE(info->canRegister(), false);
 
     QCOMPARE(mCM->supportedProtocols(), QStringList() << "dummy");
 }

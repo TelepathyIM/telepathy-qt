@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Account_Manager"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
-  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright (C) 2008-2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright (C) 2008-2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
 <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -63,7 +63,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Valid_Accounts">
       <tp:docstring>
         A list of the valid (complete, usable) accounts. Change notification
-        is via AccountValidityChanged.
+        is via <tp:member-ref>AccountValidityChanged</tp:member-ref>.
 
         <tp:rationale>
           This split between valid and invalid accounts makes it easy to
@@ -78,7 +78,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Invalid_Accounts">
       <tp:docstring>
         A list of incomplete or otherwise unusable accounts. Change
-        notification is via AccountValidityChanged.
+        notification is via
+        <tp:member-ref>AccountValidityChanged</tp:member-ref>.
       </tp:docstring>
     </property>
 
@@ -88,7 +89,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <tp:rationale>
           This is effectively change notification for the valid and invalid
-          accounts lists.
+          accounts lists. On emission of this signal, the Account indicated
+          will no longer be present in either of the lists.
         </tp:rationale>
       </tp:docstring>
 
@@ -127,9 +129,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     <method name="CreateAccount" tp:name-for-bindings="Create_Account">
       <tp:docstring>
-        Request the creation of a new account. The account manager SHOULD NOT
-        allow invalid accounts to be created. Accounts created through this
-        API SHOULD have an empty PresetParameters property.
+        Request the creation of a new <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>. The
+        account manager SHOULD NOT allow invalid accounts to be created.
       </tp:docstring>
 
       <arg name="Connection_Manager" direction="in" type="s"
@@ -145,19 +147,38 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
 
       <arg name="Display_Name" direction="in" type="s">
-        <tp:docstring>The initial value of the new account's DisplayName
-          property. The account manager MAY modify this to make it unique,
-          for instance by appending a number or the 'account'
-          parameter.</tp:docstring>
+        <tp:docstring>The initial value of the new account's <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Account">DisplayName</tp:dbus-ref>
+          property. The account manager SHOULD modify this to make it unique if
+          an Account already exists with the same display name, for instance by
+          appending a number or the 'account' parameter. Account manager
+          implementations SHOULD accept an empty string but account editing user
+          interfaces should avoid passing an empty string for this parameter.
+
+          <tp:rationale>
+            <p>The account creation UI may ask the user for a name for the new
+              account. If the author of the UI chooses not to do this, the
+              account creation UI is better able to suggest a default display
+              name because it has protocol-specific knowledge which the account
+              manager does not.</p>
+
+            <p>The account manager always knows the complete list of accounts so
+              it can easily tell whether it should append something to the
+              display name to avoid presenting two identically-named accounts to
+              the user.</p>
+          </tp:rationale>
+        </tp:docstring>
       </arg>
 
       <arg name="Parameters" direction="in" type="a{sv}">
         <tp:docstring>Initial parameter values, as would be passed to
-          RequestConnection.</tp:docstring>
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ConnectionManager">RequestConnection</tp:dbus-ref>.</tp:docstring>
       </arg>
 
       <arg name="Account" direction="out" type="o">
-        <tp:docstring>The new account.</tp:docstring>
+        <tp:docstring>The new <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>.</tp:docstring>
       </arg>
 
       <tp:possible-errors>

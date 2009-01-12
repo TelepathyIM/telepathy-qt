@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Interface_Group" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2005, 2006 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2005, 2006 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright (C) 2005-2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2005-2009 Nokia Corporation</tp:copyright>
   <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:struct name="Local_Pending_Info" array-name="Local_Pending_Info_List">
       <tp:docstring>A structure representing a contact whose attempt to
         join a group is to be confirmed by the local user using
-        AddMembers.</tp:docstring>
+        <tp:member-ref>AddMembers</tp:member-ref>.</tp:docstring>
       <tp:member type="u" tp:type="Contact_Handle" name="To_Be_Added">
         <tp:docstring>
           The contact to be added to the group
@@ -65,7 +65,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <p>A message may be provided along with the request, which will be sent
         to the server if supported. See the CHANNEL_GROUP_FLAG_MESSAGE_ADD and
-        CHANNEL_GROUP_FLAG_MESSAGE_ACCEPT flags to see in which cases this
+        CHANNEL_GROUP_FLAG_MESSAGE_ACCEPT
+        <tp:member-ref>GroupFlags</tp:member-ref> to see in which cases this
         message should be provided.</p>
 
         <p>Attempting to add contacts who are already members is allowed;
@@ -118,49 +119,57 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:flags name="Channel_Group_Flags" value-prefix="Channel_Group_Flag" type="u">
       <tp:flag suffix="Can_Add" value="1">
         <tp:docstring>
-            The AddMembers method can be used to add or invite members who are
+            The <tp:member-ref>AddMembers</tp:member-ref> method can be used to
+            add or invite members who are
             not already in the local pending list (which is always valid).
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Can_Remove" value="2">
         <tp:docstring>
-            The RemoveMembers method can be used to remove channel members
+            The <tp:member-ref>RemoveMembers</tp:member-ref> method can be used
+            to remove channel members
             (removing those on the pending local list is always valid).
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Can_Rescind" value="4">
         <tp:docstring>
-            The RemoveMembers method can be used on people on the remote
+            The <tp:member-ref>RemoveMembers</tp:member-ref> method can be used
+            on people on the remote
             pending list.
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Message_Add" value="8">
         <tp:docstring>
-            A message may be sent to the server when calling AddMembers on
+            A message may be sent to the server when calling
+            <tp:member-ref>AddMembers</tp:member-ref> on
             contacts who are not currently pending members.
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Message_Remove" value="16">
         <tp:docstring>
-            A message may be sent to the server when calling RemoveMembers on
+            A message may be sent to the server when calling
+            <tp:member-ref>RemoveMembers</tp:member-ref> on
             contacts who are currently channel members.
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Message_Accept" value="32">
         <tp:docstring>
-            A message may be sent to the server when calling AddMembers on
+            A message may be sent to the server when calling
+            <tp:member-ref>AddMembers</tp:member-ref> on
             contacts who are locally pending.
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Message_Reject" value="64">
         <tp:docstring>
-            A message may be sent to the server when calling RemoveMembers on
+            A message may be sent to the server when calling
+            <tp:member-ref>RemoveMembers</tp:member-ref> on
             contacts who are locally pending.
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Message_Rescind" value="128">
         <tp:docstring>
-            A message may be sent to the server when calling RemoveMembers on
+            A message may be sent to the server when calling
+            <tp:member-ref>RemoveMembers</tp:member-ref> on
             contacts who are remote pending.
         </tp:docstring>
       </tp:flag>
@@ -170,9 +179,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             The members of this group have handles which are specific to
             this channel, and are not valid as general-purpose handles on
             the connection. Depending on the channel, it may be possible to
-            call GetHandleOwners to find the owners of these handles, which
-            should be done if you wish to eg subscribe to the contact's
-            presence.
+            check the <tp:member-ref>HandleOwners</tp:member-ref> property or
+            call <tp:member-ref>GetHandleOwners</tp:member-ref> to find the
+            owners of these handles, which should be done if you wish to (e.g.)
+            subscribe to the contact's presence.
           </p>
 
           <p>
@@ -194,12 +204,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>
           In rooms with channel specific handles (ie Channel_Specific_Handles
           flag is set), this flag indicates that no handle owners are
-          available, apart from the owner of the SelfHandle.
+          available, apart from the owner of the
+          <tp:member-ref>SelfHandle</tp:member-ref>.
 
           <tp:rationale>
             This used to be an important optimization to avoid repeated
-            GetHandleOwners calls, before we introduced the HandleOwner
-            property and HandleOwnerChanged signal.
+            GetHandleOwners calls, before we introduced the
+            <tp:member-ref>HandleOwners</tp:member-ref> property and
+            <tp:member-ref>HandleOwnersChanged</tp:member-ref> signal.
           </tp:rationale>
         </tp:docstring>
       </tp:flag>
@@ -207,6 +219,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>
           This flag indicates that all the properties introduced in
           specification 0.17.6 are fully supported.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Members_Changed_Detailed" value="4096">
+        <tp:docstring>
+          Indicates that <tp:member-ref>MembersChangedDetailed</tp:member-ref>
+          will be emitted for changes to this group's members in addition to
+          <tp:member-ref>MembersChanged</tp:member-ref>.
+          Clients can then connect to the former and ignore emission of the
+          latter. This flag's state MUST NOT change over the lifetime of a
+          channel.
+
+          <tp:rationale>
+            If it were allowed to change, client bindings would have to always
+            connect to MembersChanged just in case the flag ever went away (and
+            generally be unnecessarily complicated), which would mostly negate
+            the point of having this flag in the first place.
+          </tp:rationale>
         </tp:docstring>
       </tp:flag>
     </tp:flags>
@@ -217,7 +246,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         An integer representing the bitwise-OR of flags on this
         channel. The user interface can use this to present information about
         which operations are currently valid. Change notification is via
-        the GroupFlagsChanged signal.
+        the <tp:member-ref>GroupFlagsChanged</tp:member-ref> signal.
       </tp:docstring>
       <tp:added version="0.17.6">For backwards compatibility,
         clients should fall back to calling GetGroupFlags if
@@ -231,7 +260,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
       <tp:docstring>
-        Returns the value of the GroupFlags property.
+        Returns the value of the <tp:member-ref>GroupFlags</tp:member-ref> property.
       </tp:docstring>
       <tp:deprecated version="0.17.6">Use GetAll on the D-Bus
         Properties D-Bus interface to get properties including GroupFlags
@@ -273,7 +302,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         the keys of this mapping is not channel-specific in this channel.
         Handles which are channel-specific, but for which the owner is
         unknown, MUST appear in this mapping with 0 as owner. Change
-        notification is via the HandleOwnersChanged signal.
+        notification is via the
+        <tp:member-ref>HandleOwnersChanged</tp:member-ref> signal.
       </tp:docstring>
       <tp:added version="0.17.6"/>
     </property>
@@ -281,7 +311,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <signal name="HandleOwnersChanged"
       tp:name-for-bindings="Handle_Owners_Changed">
       <tp:docstring>
-        Emitted whenever the HandleOwners property changes.
+        Emitted whenever the <tp:member-ref>HandleOwners</tp:member-ref>
+        property changes.
       </tp:docstring>
       <tp:added version="0.17.6">This signal should not be relied on
         unless Channel_Group_Flag_Properties is present.</tp:added>
@@ -298,7 +329,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>
           The channel-specific handles that were removed from the keys of the
           HandleOwners property, as a result of the contact leaving this group
-          in a previous MembersChanged signal
+          in a previous <tp:member-ref>MembersChanged</tp:member-ref> signal
         </tp:docstring>
       </arg>
     </signal>
@@ -351,7 +382,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
       <tp:docstring>
         Returns the To_Be_Added handle (only) for each structure in the
-        LocalPendingMembers property.
+        <tp:member-ref>LocalPendingMembers</tp:member-ref> property.
       </tp:docstring>
       <tp:deprecated version="0.17.6">Use the LocalPendingMembers
         property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
@@ -365,7 +396,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       tp:name-for-bindings="Get_Local_Pending_Members_With_Info">
       <tp:added version="0.15.0" />
       <tp:docstring>
-        Returns the LocalPendingMembers property.
+        Returns the <tp:member-ref>LocalPendingMembers</tp:member-ref> property.
       </tp:docstring>
       <tp:deprecated version="0.17.6">Use the LocalPendingMembers
         property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
@@ -382,7 +413,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             </li>
             <li>
               The reason for the request: one of the values of
-              ChannelGroupChangeReason
+              <tp:type>Channel_Group_Change_Reason</tp:type>
             </li>
             <li>
               A string message containing the reason for the request if any (or
@@ -403,7 +434,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         An array of structs containing handles representing contacts
         requesting channel membership and awaiting local approval with
-        AddMembers.
+        <tp:member-ref>AddMembers</tp:member-ref>.
       </tp:docstring>
       <tp:added version="0.17.6">If Channel_Group_Flag_Properties is
         not present, clients should fall back to using the
@@ -423,7 +454,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="GetMembers" tp:name-for-bindings="Get_Members">
       <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
       <tp:docstring>
-        Returns the Members property.
+        Returns the <tp:member-ref>Members</tp:member-ref> property.
       </tp:docstring>
       <tp:deprecated version="0.17.6">Use the Members
         property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
@@ -450,7 +481,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         Returns an array of handles representing contacts who have been
         invited to the channel and are awaiting remote approval.
       </tp:docstring>
-      <tp:deprecated version="0.17.6">Use the RemotePendingMembers
+      <tp:deprecated version="0.17.6">Use the
+        <tp:member-ref>RemotePendingMembers</tp:member-ref>
         property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
@@ -460,7 +492,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <signal name="SelfHandleChanged" tp:name-for-bindings="Self_Handle_Changed">
       <tp:docstring>
-        Emitted whenever the SelfHandle property changes.
+        Emitted whenever the <tp:member-ref>SelfHandle</tp:member-ref> property
+        changes.
       </tp:docstring>
       <tp:added version="0.17.6">This signal should not be relied on
         unless Channel_Group_Flag_Properties is present.</tp:added>
@@ -477,9 +510,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         The handle for the user on this channel (which can also be a
         local or remote pending member), or 0 if the user is not a member at
-        all (which is likely to be the case, for instance, on ContactList
-        channels). Note that this is different from the connection
-        GetSelfHandle on some protocols, so the value of this handle should
+        all (which is likely to be the case, for instance, on <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Type">ContactList</tp:dbus-ref>
+        channels). Note that this is different from the result of
+        <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy">Connection.GetSelfHandle</tp:dbus-ref>
+        on some protocols, so the value of this handle should
         always be used with the methods of this interface.
       </tp:docstring>
       <tp:added version="0.17.6">For backwards compatibility,
@@ -490,7 +526,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="GetSelfHandle" tp:name-for-bindings="Get_Self_Handle">
       <arg direction="out" type="u" tp:type="Contact_Handle"/>
       <tp:docstring>
-        Returns the value of the SelfHandle property.
+        Returns the value of the <tp:member-ref>SelfHandle</tp:member-ref>
+        property.
       </tp:docstring>
       <tp:deprecated version="0.17.6">Clients should retrieve the
         SelfHandle property using GetAll instead,
@@ -513,7 +550,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </arg>
       <tp:docstring>
-        Emitted when the flags as returned by GetGroupFlags are changed.
+        Emitted when the flags as returned by
+        <tp:member-ref>GetGroupFlags</tp:member-ref> are changed.
         The user interface should be updated as appropriate.
       </tp:docstring>
     </signal>
@@ -569,9 +607,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>
           The change is because a contact's unique identifier changed.
           There must be exactly one handle in the removed set and exactly
-          one handle in one of the added sets. The Renamed signal on the
-          Renaming interface will have been emitted for the same handles,
-          shortly before this MembersChanged signal is emitted.
+          one handle in one of the added sets. The <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Renaming">Renamed</tp:dbus-ref>
+          signal on the
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface">Renaming</tp:dbus-ref>
+          interface will have been emitted for the same handles,
+          shortly before this <tp:member-ref>MembersChanged</tp:member-ref> signal is emitted.
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Permission_Denied" value="10">
@@ -590,7 +632,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <p>
             If members are added with this reason code, the change is because
             unconnected parts of the group have rejoined. If this channel
-            carries messages (e.g. Text or Tubes channels) applications must
+            carries messages (e.g. <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
+            or <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type">Tubes</tp:dbus-ref>
+            channels) applications must
             assume that the contacts being added are likely to have missed some
             messages as a result of the separation, and that the contacts
             in the group are likely to have missed some messages from the
@@ -640,8 +686,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <arg name="Reason" type="u" tp:type="Channel_Group_Change_Reason">
         <tp:docstring>
-          A reason for the change: one of the values of
-          ChannelGroupChangeReason
+          A reason for the change
         </tp:docstring>
       </arg>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -651,13 +696,143 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           which may be displayed to the user if desired.</p>
 
         <p>All channel-specific handles that are mentioned in this signal
-          MUST be represented in the value of the HandleOwners property.
-          In practice, this will mean that HandleOwnersChanged is
+          MUST be represented in the value of the
+          <tp:member-ref>HandleOwners</tp:member-ref> property.
+          In practice, this will mean that
+          <tp:member-ref>HandleOwnersChanged</tp:member-ref> is
           emitted <em>before</em> emitting a MembersChanged signal in which
           channel-specific handles are added, but that it is emitted
           <em>after</em> emitting a MembersChanged signal in which
           channel-specific handles are removed.</p>
       </tp:docstring>
+    </signal>
+
+    <tp:mapping name="Handle_Identifier_Map">
+      <tp:docstring>
+        A map from handles to the corresponding normalized string identifier.
+      </tp:docstring>
+      <tp:added version="0.17.17"/>
+
+      <tp:member type="u" name="Handle" tp:type="Contact_Handle">
+        <tp:docstring>
+          A nonzero handle
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Identifier">
+        <tp:docstring>
+          The same string that would be returned by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>
+          for this handle.
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <signal name="MembersChangedDetailed"
+      tp:name-for-bindings="Members_Changed_Detailed">
+      <arg name="Added" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members added to the channel
+        </tp:docstring>
+      </arg>
+      <arg name="Removed" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members removed from the channel
+        </tp:docstring>
+      </arg>
+      <arg name="Local_Pending" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members who are pending local approval
+        </tp:docstring>
+      </arg>
+      <arg name="Remote_Pending" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members who are pending remote approval
+        </tp:docstring>
+      </arg>
+      <arg name="Details" type="a{sv}" tp:type="String_Variant_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Information about the change, which may include the following
+            well-known keys:</p>
+
+          <dl>
+            <dt>actor (u — <tp:type>Contact_Handle</tp:type>)</dt>
+            <dd>The contact handle of the person who made the change; 0 or
+              omitted if unknown or not applicable.</dd>
+
+            <dt>change-reason (u — <tp:type>Channel_Group_Change_Reason</tp:type>)</dt>
+            <dd>A reason for the change.</dd>
+
+            <dt>contact-ids (a{us} — <tp:type>Handle_Identifier_Map</tp:type>)</dt>
+            <dd>
+              <p>The string identifiers for handles mentioned in this signal, to
+              give clients the minimal information necessary to react to the
+              event without waiting for round-trips.  Connection managers
+              SHOULD include the identifiers for members added to the group and
+              for the actor (if any); they MAY omit the identifiers for handles
+              which have been removed from the group.</p>
+
+              <tp:rationale>
+                <p>On IRC, an event such as a netsplit could cause the vast
+                majority of a channel to leave.  Given that clients should
+                already know the identifiers of a channel's members, including
+                potentially hundreds of strings in the netsplit signal is
+                unnecessary.</p>
+              </tp:rationale>
+
+              <p>Clients MUST NOT assume that the presence or absence of a
+                handle in this mapping is meaningful. This mapping is merely
+                an optimization for round-trip reduction, and connection
+                managers MAY add additional handles, omit some handles, or
+                omit the mapping completely.</p>
+            </dd>
+
+            <dt>message (s)</dt>
+            <dd>A string message from the server regarding the change</dd>
+
+            <dt>error (s — <tp:type>DBus_Error_Name</tp:type>)</dt>
+            <dd>A (possibly implementation-specific) DBus error describing the
+              change, providing more specific information than the
+              <tp:type>Channel_Group_Change_Reason</tp:type> enum allows. This
+              MUST only be present if it is strictly more informative than
+              'change-reason'; if present, 'change-reason' MUST be set to the
+              closest available reason.
+
+              <tp:rationale>
+                A SIP connection manager might want to signal "402 Payment
+                required" as something more specific than Error or
+                Permission_Denied so that a SIP-aware UI could handle it
+                specially; including a namespaced error permits this to be done
+                without <tp:type>Channel_Group_Change_Reason</tp:type> being
+                extended to encompass every error any CM ever wants to report.
+              </tp:rationale>
+            </dd>
+
+            <dt>debug-message (s)</dt>
+            <dd>Debugging information on the change. SHOULD NOT be shown to
+              users in normal circumstances.</dd>
+          </dl>
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when contacts join any of the three lists (members, local
+          pending or remote pending) or when they leave any of the three
+          lists. This signal provides a superset of the information provided by
+          <tp:member-ref>MembersChanged</tp:member-ref>;
+          if the channel's <tp:member-ref>GroupFlags</tp:member-ref>
+          contains Members_Changed_Detailed, then clients may listen exclusively
+          to this signal in preference to that signal.</p>
+
+        <p>All channel-specific handles that are mentioned in this signal
+          MUST be represented in the value of the
+          <tp:member-ref>HandleOwners</tp:member-ref> property.  In practice,
+          this will mean that
+          <tp:member-ref>HandleOwnersChanged</tp:member-ref> is emitted
+          <em>before</em> emitting a MembersChangedDetailed signal in which
+          channel-specific handles are added, but that it is emitted
+          <em>after</em> emitting a MembersChangedDetailed signal in which
+          channel-specific handles are removed.</p>
+      </tp:docstring>
+      <tp:added version="0.17.16"/>
     </signal>
 
     <method name="RemoveMembers" tp:name-for-bindings="Remove_Members">
@@ -678,7 +853,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         with the request, which will be sent to the server if supported. See
         the CHANNEL_GROUP_FLAG_MESSAGE_REMOVE,
         CHANNEL_GROUP_FLAG_MESSAGE_REJECT and
-        CHANNEL_GROUP_FLAG_MESSAGE_RESCIND flags to see in which cases this
+        CHANNEL_GROUP_FLAG_MESSAGE_RESCIND
+        <tp:member-ref>GroupFlags</tp:member-ref> to see in which cases this
         message should be provided.
       </tp:docstring>
       <tp:possible-errors>
@@ -705,12 +881,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="in" name="Reason" type="u"
            tp:type="Channel_Group_Change_Reason">
         <tp:docstring>
-          A reason for the change: one of the values of
-          ChannelGroupChangeReason
+          A reason for the change
         </tp:docstring>
       </arg>
       <tp:docstring>
-        As RemoveMembers, but a reason code may be provided where
+        As <tp:member-ref>RemoveMembers</tp:member-ref>, but a reason code may
+        be provided where
         appropriate. The reason code may be ignored if the underlying
         protocol is unable to represent the given reason.
       </tp:docstring>
@@ -734,17 +910,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     cannot be presumed by the channel's existence (for example, a channel you
     may request membership of but your request may not be granted).</p>
 
-  <p>This interface implements three lists: a list of current members, and two
-    lists of local pending and remote pending members. Contacts on the remote
+  <p>This interface implements three lists: a list of current members
+    (<tp:member-ref>Members</tp:member-ref>), and two lists of local pending
+    and remote pending members
+    (<tp:member-ref>LocalPendingMembers</tp:member-ref> and
+    <tp:member-ref>RemotePendingMembers</tp:member-ref>, respectively).
+    Contacts on the remote
     pending list have been invited to the channel, but the remote user has not
     accepted the invitation. Contacts on the local pending list have requested
     membership of the channel, but the local user of the framework must accept
     their request before they may join. A single contact should never appear on
     more than one of the three lists. The lists are empty when the channel is
-    created, and the MembersChanged signal should be emitted when information
+    created, and the <tp:member-ref>MembersChanged</tp:member-ref> signal
+    (and, if the channel's <tp:member-ref>GroupFlags</tp:member-ref> contains
+    Members_Changed_Detailed, the
+    <tp:member-ref>MembersChangedDetailed</tp:member-ref> signal)
+    should be emitted when information
     is retrieved from the server, or changes occur.</p>
 
-  <p>Addition of members to the channel may be requested by using AddMembers. If
+  <p>Addition of members to the channel may be requested by using
+    <tp:member-ref>AddMembers</tp:member-ref>. If
     remote acknowledgement is required, use of the AddMembers method will cause
     users to appear on the remote pending list. If no acknowledgement is
     required, AddMembers will add contacts to the member list directly.  If a
@@ -752,7 +937,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     will grant their membership request.</p>
 
   <p>Removal of contacts from the channel may be requested by using
-    RemoveMembers.  If a contact is awaiting authorisation on the local pending
+    <tp:member-ref>RemoveMembers</tp:member-ref>.  If a contact is awaiting
+    authorisation on the local pending
     list, RemoveMembers will refuse their membership request. If a contact is
     on the remote pending list but has not yet accepted the invitation,
     RemoveMembers will rescind the request if possible.</p>

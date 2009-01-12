@@ -198,17 +198,27 @@ org.freedesktop.Telepathy.Channel.Requested b=true
 
       <arg name="Channels" type="a(oa{sv})" tp:type="Channel_Details[]"
         direction="in">
-        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The
-            <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>s
-            and their properties. Their well-known bus names are all the same
-            as that of the Connection.</p>
+        <tp:docstring>
+          The <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>s
+          and their properties. Their well-known bus names are all the same as
+          that of the Connection.
+        </tp:docstring>
+      </arg>
+
+      <arg name="DispatchOperation" type="o" direction="in">
+        <tp:docstring>
+          The path to the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.DRAFT</tp:dbus-ref>
+          for these channels, or the special value '/' if there is no
+          ChannelDispatchOperation (because the channels were requested, not incoming).
 
           <tp:rationale>
-            <p>The ChannelDispatchOperation is <em>not</em> supplied: for
-              requests, there isn't one, and for incoming channels, it hasn't
-              been created yet.</p>
+            This allows an Observer to <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">Claim</tp:dbus-ref>
+            a set of channels without having to match up calls to this method
+            with calls to <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Client.Approver.DRAFT">AddDispatchOperation</tp:dbus-ref>.
           </tp:rationale>
         </tp:docstring>
       </arg>

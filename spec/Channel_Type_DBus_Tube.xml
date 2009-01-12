@@ -1,0 +1,183 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Type_DBus_Tube" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license>
+    This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Type.DBusTube.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Interface.Tube.DRAFT"/>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A D-Bus tube is an ordered reliable transport, for transporting D-Bus
+        traffic.</p>
+
+      <p>For each D-Bus tube, the connection manager listens on a D-Bus
+        server address, as detailed in the D-Bus specification. On this
+        address, it emulates a bus upon which each tube participant appears
+        as an endpoint.</p>
+
+      <p>The objects and interfaces which are expected to exist on the
+        emulated bus depend on the well-known name; typically, either the
+        participant who initiated the tube is expected to export the same
+        objects/interfaces that would be exported by a service of that name
+        on a bus, or all participants are expected to export those
+        objects/interfaces.</p>
+
+      <p>In a multi-user context (Handle_Type_Room) the tube behaves
+        like the D-Bus bus daemon, so participants can send each other
+        private messages, or can send broadcast messages which are
+        received by everyone in the tube (including themselves).
+        Each participant has a D-Bus unique name; connection managers
+        MUST prevent participants from sending messages with the wrong
+        sender unique name, and SHOULD attempt to avoid participants
+        receiving messages not intended for them.</p>
+
+      <p>In a 1-1 context (Handle_Type_Contact) the tube behaves like
+        a peer-to-peer D-Bus connection - arbitrary D-Bus messages with
+        any sender and/or destination can be sent by each participant,
+        and each participant receives all messages sent by the other
+        participant.</p>
+
+    </tp:docstring>
+
+    <method name="OfferDBusTube" tp:name-for-bindings="Offer_DBus_Tube">
+      <tp:docstring>
+        Offers a D-Bus tube providing the service specified.
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The contact associated with this channel doesn't have tubes
+            capabilities.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The connection manager doesn't support D-Bus tubes.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="AcceptDBusTube" tp:name-for-bindings="Accept_DBus_Tube">
+      <tp:docstring>
+        Accept a D-Bus tube that's in the "local pending" state. The
+        connection manager will attempt to open the tube. The tube remains in
+        the "local pending" state until the TubeStateChanged signal is
+        emitted.
+      </tp:docstring>
+      <arg direction="out" name="address" type="s">
+        <tp:docstring>
+          The string describing the address of the private bus. The client
+          SHOULD not attempt to connect to the address until the tube is open.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The given tube ID is invalid or does not refer to a D-Bus
+            tube.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetDBusTubeAddress"
+            tp:name-for-bindings="Get_DBus_Tube_Address">
+      <tp:docstring>
+        Return a string describing the address of the private bus.
+      </tp:docstring>
+      <arg direction="out" type="s">
+        <tp:docstring>
+          The bus address.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The tube is not a D-Bus tube.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            This tube is not in the "open" state.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="GetDBusNames" tp:name-for-bindings="Get_DBus_Names">
+      <tp:docstring>
+        For a multi-user (i.e. Handle_Type_Room) D-Bus tube, obtain a mapping
+        between contact handles and their unique bus names on this tube.
+      </tp:docstring>
+      <arg direction="out" type="a(us)" tp:type="DBus_Tube_Member[]">
+        <tp:docstring>
+          An array of structures, each containing a contact handle and a D-Bus
+          bus name.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The tube is not a multi-user D-Bus tube.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            This tube is not in the "open" state.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="DBusNamesChanged" tp:name-for-bindings="DBus_Names_Changed">
+      <tp:docstring>
+        Emitted on a multi-user (i.e. Handle_Type_Room) D-Bus tube when a
+        participant opens or closes the tube.
+      </tp:docstring>
+      <arg name="added" type="a(us)" tp:type="DBus_Tube_Member[]">
+        <tp:docstring>
+          Array of handles and D-Bus names of new participants.
+        </tp:docstring>
+      </arg>
+      <arg name="removed" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          Array of handles of former participants.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="ServiceName" type="s" access="read"
+              tp:name-for-bindings="Service_Name">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A string representing the service name that will be used over the
+          tube. It SHOULD be a well-known D-Bus service name, of the form
+          com.example.ServiceName.</p>
+        <p>When the tube is offered, the service name is transmitted to the
+          other end.</p>
+        <p>When requesting a channel with 
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          this property MUST be included in the request.</p>
+      </tp:docstring>
+    </property>
+
+  </interface>
+
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

@@ -23,7 +23,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface contains functionality which we intend to incorporate
-        into the Channel interface in future. It should be considered to
+        into the <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref> interface
+        in future. It should be considered to
         be conceptually part of the core Channel interface, but without
         API or ABI guarantees.</p>
 

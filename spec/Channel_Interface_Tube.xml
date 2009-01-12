@@ -1,0 +1,127 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_Tube" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license>
+    This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Interface.Tube.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A <i>tube</i> is a mechanism for arbitrary data transfer between
+      two or more IM users, used to allow applications on the users'
+      systems to communicate without having to establish network
+      connections themselves. Currently, two types of tube exist:
+      <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+      >Channel.Type.DBusTube</tp:dbus-ref> and
+      <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+      >Channel.Type.StreamTube</tp:dbus-ref>. This interface contains
+      the properties, signals and methods common to both types of tube;
+      you can only create channels of a specific tube type, not of this
+      type. A tube channel contains exactly one tube; if you need several
+      tubes, you have to create several tube channels.</p>
+
+      <p>Tube channels can be requested for handles of type
+      HANDLE_TYPE_CONTACT (for 1-1 communication) or of type
+      HANDLE_TYPE_ROOM (to communicate with others in the room
+      simultaneously).</p>
+    </tp:docstring>
+
+    <property name="Parameters" type="a{sv}" tp:type="String_Variant_Map"
+              access="readwrite" tp:name-for-bindings="Parameters">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Each tube has a dictionary of arbitrary parameters. Parameters are
+          commonly used to bootstrap legacy protocols where you can't
+          negotiate parameters in-band. The allowable keys,
+          types and values are defined by the service. Connection managers
+          must support the value being a string (D-Bus type 's'), array of bytes
+          (D-Bus type 'ay'), unsigned integer (D-Bus type 'u'), integer (D-Bus
+          type 'i') and boolean (D-Bus type 'b').</p>
+        <p>When the tube is offered, the parameters are transmitted with the
+          offer and appear as a property of the incoming tube for other
+          participants.</p>
+        <p>Example of valid parameters for 'smb' Server Message Block over
+          TCP/IP (from <a href="http://www.dns-sd.org/ServiceTypes.html">DNS
+          SRV (RFC 2782) Service Types
+          http://www.dns-sd.org/ServiceTypes.html</a>):
+          <code>{'u': 'username', 'p': 'password', 'path': 'path'}</code></p>
+        <p>When requesting a channel with 
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          this property MAY be included in the request. If it is not included in
+          the request, the connection manager MUST consider the property to be
+          empty. This property MAY be changed after the channel creation when
+          the tube is in the state Not_Offered. If the tube is in another
+          state, changing this property MUST fail without side effects.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="Status" type="u" tp:type="Tube_Channel_State" access="read"
+              tp:name-for-bindings="Status">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Status of the tube in this channel.</p>
+        <p>When requesting a channel with 
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          this property MUST NOT be included in the request.</p>
+      </tp:docstring>
+    </property>
+
+    <tp:enum name="Tube_Channel_State" type="u">
+      <tp:enumvalue suffix="Local_Pending" value="0">
+        <tp:docstring>
+          The initiator offered the tube. The tube is waiting to be
+          accepted/closed locally. If the client accepts the tube, the tube's
+          state will be Open.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Remote_Pending" value="1">
+        <tp:docstring>
+          The tube is waiting to be accepted/closed remotely. If the
+          recipient accepts the tube, the tube's state will be Open.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Open" value="2">
+        <tp:docstring>
+          The initiator offered the tube and the recipient accepted it. The
+          tube is open for traffic. The tube's state stays in this state until
+          it is closed.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Not_Offered" value="3">
+        <tp:docstring>
+          The tube channel has been requested but the tube is not yet offered.
+          The client should offer the tube to the recipient and the tube's
+          state will be Remote_Pending. The method to offer the tube depend on
+          the tube type.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <signal name="TubeChannelStateChanged"
+            tp:name-for-bindings="Tube_Channel_State_Changed">
+      <tp:docstring>
+        Emitted when the state of the tube channel changes.
+      </tp:docstring>
+      <arg name="state" type="u" tp:type="Tube_Channel_State">
+        <tp:docstring>
+          The new state of the tube; see the Tube_Channel_State enumeration.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+  </interface>
+
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

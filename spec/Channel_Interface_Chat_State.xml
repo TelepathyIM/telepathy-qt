@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="SetChatState" tp:name-for-bindings="Set_Chat_State">
       <arg direction="in" name="State" type="u" tp:type="Channel_Chat_State">
         <tp:docstring>
-          The new state: one of the values of ChannelChatState.
+          The new state.
         </tp:docstring>
       </arg>
       <tp:docstring>
@@ -42,7 +42,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <arg name="State" type="u" tp:type="Channel_Chat_State">
         <tp:docstring>
-          The new state of this contact: one of the values of ChannelChatState.
+          The new state of this contact.
         </tp:docstring>
       </arg>
       <tp:docstring>
@@ -77,7 +77,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
-    <tp:docstring>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for channels for receiving notifications of remote contacts'
       state, and for notifying remote contacts of the local state.</p>
 

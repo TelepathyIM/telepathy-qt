@@ -42,7 +42,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <p>This interface also provides for user interfaces notifying the
         connection manager of what capabilities to advertise for the user. This
-        is done by using the AdvertiseCapabilities method, and deals with the
+        is done by using the
+        <tp:member-ref>AdvertiseCapabilities</tp:member-ref> method, and deals
+        with the
         interface names of channel types and the type specific flags pertaining
         to them which are implemented by available client processes.</p>
     </tp:docstring>
@@ -64,8 +66,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       value-prefix="Connection_Capability_Flag" type="u">
       <tp:flag suffix="Create" value="1">
         <tp:docstring>
-          The given channel type and handle can be given to RequestChannel to
-          create a new channel of this type.
+          The given channel type and handle can be given to <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection">RequestChannel</tp:dbus-ref>
+          to create a new channel of this type.
         </tp:docstring>
       </tp:flag>
       <tp:flag suffix="Invite" value="2">
@@ -77,7 +80,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <tp:struct name="Capability_Pair" array-name="Capability_Pair_List">
       <tp:docstring>A pair (channel type, type-specific flags) as passed to
-        AdvertiseCapabilities on the Capabilities interface.</tp:docstring>
+        <tp:member-ref>AdvertiseCapabilities</tp:member-ref> on the
+        Capabilities interface.</tp:docstring>
       <tp:member type="s" tp:type="DBus_Interface" name="Channel_Type"/>
       <tp:member type="u" name="Type_Specific_Flags"/>
     </tp:struct>
@@ -85,8 +89,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:struct name="Contact_Capability" array-name="Contact_Capability_List">
       <tp:docstring>A struct (contact handle, channel type, generic flags,
         type-specific flags) representing a capability posessed by a contact,
-        as returned by GetCapabilities on the Capabilities
-        interface.</tp:docstring>
+        as returned by <tp:member-ref>GetCapabilities</tp:member-ref> on the
+        Capabilities interface.</tp:docstring>
       <tp:member type="u" tp:type="Contact_Handle" name="Handle"/>
       <tp:member type="s" tp:type="DBus_Interface" name="Channel_Type"/>
       <tp:member type="u" tp:type="Connection_Capability_Flags"
@@ -98,7 +102,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>A struct (contact handle, channel type, old generic flags,
         new generic flags, old type-specific flags, new type-specific flags)
         representing a change to one of a contact's capabilities, as seen in the
-        CapabilitiesChanged signal on the Capabilities interface.</tp:docstring>
+        <tp:member-ref>CapabilitiesChanged</tp:member-ref> signal on the
+        Capabilities interface.</tp:docstring>
       <tp:member type="u" tp:type="Contact_Handle" name="Handle"/>
       <tp:member type="s" tp:type="DBus_Interface" name="Channel_Type"/>
       <tp:member type="u" tp:type="Connection_Capability_Flags"
@@ -145,9 +150,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         specific flags, the connection manager should simply add the new flags
         to the set of advertised capabilities.</p>
 
-        <p>Upon a successful invocation of this method, the CapabilitiesChanged
-        signal will be emitted for the user's own handle (as returned by
-        GetSelfHandle) by the connection manager to indicate the changes
+        <p>Upon a successful invocation of this method, the
+        <tp:member-ref>CapabilitiesChanged</tp:member-ref>
+        signal will be emitted for the user's own handle ( <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection.GetSelfHandle</tp:dbus-ref>)
+        by the connection manager to indicate the changes
         that have been made.  This signal should also be monitored to ensure
         that the set is kept accurate - for example, a client may remove
         capabilities or type specific capability flags when it exits

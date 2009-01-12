@@ -53,11 +53,12 @@ AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
     $(LIB_CFLAGS)
 
+# FIXME: XDG_DATA_DIRS should not depend on external setup
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \
     abs_top_srcdir=@abs_top_srcdir@ \
     XDG_DATA_HOME=@abs_top_builddir@/tests \
-    XDG_DATA_DIRS=@abs_top_srcdir@/tests \
+    XDG_DATA_DIRS=@abs_top_srcdir@/tests:$(XDG_DATA_DIRS) \
     PINOCCHIO=@PINOCCHIO@ \
     PINOCCHIO_CTL=@PINOCCHIO_CTL@ \
     PINOCCHIO_DATA_DIR=@abs_srcdir@ \

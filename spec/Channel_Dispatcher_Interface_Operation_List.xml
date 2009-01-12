@@ -31,8 +31,9 @@
         all the pending dispatch operations, with change notification.</p>
 
       <tp:rationale>
-        <p>The existence of the DispatchOperations property allows a newly
-          started approver to pick up existing dispatch operations.</p>
+        <p>The existence of the
+          <tp:member-ref>DispatchOperations</tp:member-ref> property allows a
+          newly started approver to pick up existing dispatch operations.</p>
 
         <p>This is on a separate interface so clients that aren't interested
           in doing this aren't woken up by its signals.</p>
@@ -85,8 +86,9 @@
       type="a(oa{sv})" tp:type="Dispatch_Operation_Details[]" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The list of ChannelDispatchOperation objects currently being
-          processed. Change notification is via the NewDispatch and
-          DispatchFinished signals.</p>
+          processed. Change notification is via the
+          <tp:member-ref>NewDispatchOperation</tp:member-ref> and
+          <tp:member-ref>DispatchOperationFinished</tp:member-ref> signals.</p>
       </tp:docstring>
     </property>
 
@@ -122,7 +124,8 @@
         <tp:rationale>
           Strictly speaking this is redundant with
           ChannelDispatchOperation.Finished, but it provides full
-          change-notification for the DispatchOperations property.
+          change-notification for the
+          <tp:member-ref>DispatchOperations</tp:member-ref> property.
         </tp:rationale>
       </tp:docstring>
 

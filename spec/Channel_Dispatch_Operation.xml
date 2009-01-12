@@ -51,7 +51,11 @@
         each containing one channel.)</p>
 
       <p>First, the channel dispatcher SHOULD construct a list of all the
-        channel handlers that could handle all the channels, ordered by
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client">Handler.DRAFT</tp:dbus-ref>s
+        that could handle all the channels (based on their <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandlerChannelFilter</tp:dbus-ref>
+        property), ordered by
         priority in some implementation-dependent way. If there are handlers
         which could handle all the channels, one channel dispatch operation
         SHOULD be created for all the channels. If there are not, one channel
@@ -62,29 +66,28 @@
         channel handlers that are already handling channels from the same
         bundle.</p>
 
-      <p>Processing of a channel dispatch operation proceeds as follows.
-        If the channels in a channel dispatch operation are in the same
-        bundle as a channel that is already being handled, and the handler
-        could also handle the channels being dispatched, the channel
-        dispatcher SHOULD call the handler's
-        HandleAdditionalChannels
-        method to see whether the handler will accept the new channels too.
-        If the handler takes responsibility for the channels,
-        processing stops, and no approvers are run.</p>
-
-      <p>(FIXME: this is far too subtle and everyone will get it wrong.
-        Open issue: how else do we address this use case?)</p>
+      <p>If a handler with <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">BypassApproval</tp:dbus-ref>
+        <code>= True</code> could handle the channels in the dispatch
+        operation, then the channel dispatcher SHOULD call <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandleChannels</tp:dbus-ref>
+        on that handler, and (assuming the call succeeds) emit
+        <tp:member-ref>Finished</tp:member-ref> and stop processing those
+        channels without involving any approvers.</p>
 
       <tp:rationale>
         <p>Some channel types can be picked up "quietly" by an existing
-          channel handler. If a Text channel is added to an existing
-          bundle containing a StreamedMedia channel, there shouldn't be
+          channel handler. If a <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
+          channel is added to an existing bundle containing a <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+          channel, there shouldn't be
           any approvers, flashing icons or notification bubbles, if the
           the UI for the StreamedMedia channel can just add a text box
           and display the message.</p>
       </tp:rationale>
 
-      <p>If not, the channel dispatcher SHOULD send the channel dispatch
+      <p>Otherwise, the channel dispatcher SHOULD send the channel dispatch
         operation to all relevant approvers (in parallel) and wait for an
         approver to claim the channels or request that they are handled.
         See
@@ -211,13 +214,16 @@
           to interact with the channels further in this case, unless it is
           separately invoked as the handler.</p>
 
-        <p>Approvers which are also channel handlers SHOULD use Claim instead
+        <p>Approvers which are also channel handlers SHOULD use
+          <tp:member-ref>Claim</tp:member-ref> instead
           of HandleWith to request that they can handle a channel bundle
           themselves.</p>
 
         <p>(FIXME: list some possible errors)</p>
 
-        <p>If the channel handler raises an error from Handle, this method
+        <p>If the channel handler raises an error from <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandleChannels</tp:dbus-ref>,
+          this method
           MAY respond by raising that same error, even if it is not
           specifically documented here.</p>
       </tp:docstring>
@@ -330,9 +336,10 @@
           in a way that avoids immediate re-use.</p>
 
         <tp:rationale>
-          <p>Otherwise, clients might accidentally call HandleWith or Claim
-            on a new dispatch operation instead of the one they
-            intended to handle.</p>
+          <p>Otherwise, clients might accidentally call
+            <tp:member-ref>HandleWith</tp:member-ref> or
+            <tp:member-ref>Claim</tp:member-ref> on a new dispatch operation
+            instead of the one they intended to handle.</p>
         </tp:rationale>
       </tp:docstring>
     </signal>

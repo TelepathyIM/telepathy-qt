@@ -1,0 +1,198 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Type_Stream_Tube" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright (C) 2008 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:license>
+    This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Type.StreamTube.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Interface.Tube.DRAFT"/>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A stream tube is a transport for ordered, reliable data transfer,
+        similar to SOCK_STREAM sockets.</p>
+
+      <p>When offering a stream tube, the initiating client creates a local
+        listening socket and offers it to the recipient client using the
+        <tp:member-ref>OfferStreamTube</tp:member-ref> method.  When a
+        recipient accepts a stream tube using the
+        <tp:member-ref>AcceptStreamTube</tp:member-ref> method, the
+        recipient's connection manager creates a new local listening socket.
+        Each time the recipient's client connects to this socket, the
+        initiator's connection manager proxies this connection to the
+        originally offered socket.</p>
+
+    </tp:docstring>
+
+    <method name="OfferStreamTube" tp:name-for-bindings="Offer_Stream_Tube">
+      <tp:docstring>
+        Offer a stream tube exporting the local socket specified.
+      </tp:docstring>
+      <arg direction="in" name="address_type" type="u" tp:type="Socket_Address_Type">
+        <tp:docstring>
+          The type of the listening address of the local service, as a member of
+          Socket_Address_Type.
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="address" type="v">
+        <tp:docstring>
+          The listening address of the local service, as indicated by the
+          address_type.
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="access_control" type="u" tp:type="Socket_Access_Control">
+        <tp:docstring>
+          The access control the local service applies to the local socket,
+          specified so the connection manager can behave appropriately
+          when it connects.
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="access_control_param" type="v">
+        <tp:docstring>
+          A parameter for the access control type, to be interpreted as
+          specified in the documentation for the Socket_Access_Control enum.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The contact associated with this channel doesn't have tube
+            capabilities.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The connection manager doesn't support the given address type
+            or access-control type.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="AcceptStreamTube" tp:name-for-bindings="Accept_Stream_Tube">
+      <tp:docstring>
+        Accept a stream tube that's in the "local pending" state. The
+        connection manager will attempt to open the tube. The tube remains in
+        the "local pending" state until the TubeStateChanged signal is
+        emitted.
+      </tp:docstring>
+      <arg direction="in" name="address_type" type="u" tp:type="Socket_Address_Type">
+        <tp:docstring>
+          The type of address the connection manager should listen on.
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="access_control" type="u" tp:type="Socket_Access_Control">
+        <tp:docstring>
+          The type of access control the connection manager should apply to
+          the socket.
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="access_control_param" type="v">
+        <tp:docstring>
+          A parameter for the access control type, to be interpreted as
+          specified in the documentation for the Socket_Access_Control enum.
+        </tp:docstring>
+      </arg>
+      <arg direction="out" name="address" type="v">
+        <tp:docstring>
+          The address on which the connection manager will listen for
+          connections to this tube. The client should not attempt to connect
+          to the address until the tube is open.
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The access_control_param is invalid with the given access_control.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The given address type or access-control mechanism is not supported.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="StreamTubeNewConnection"
+            tp:name-for-bindings="Stream_Tube_New_Connection">
+      <tp:docstring>
+        Emitted on a stream tube when a participant opens a new connection
+        to its socket.
+      </tp:docstring>
+      <arg name="handle" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          The handle of the participant who opened the new connection
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="Service" type="s" access="read"
+              tp:name-for-bindings="Service">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p> A string representing the service name that will be used over the
+          tube.  It should be a well-known TCP service name as defined by
+          <a href="http://www.iana.org/assignments/port-numbers">
+            http://www.iana.org/assignments/port-numbers</a> or
+          <a href="http://www.dns-sd.org/ServiceTypes.html">
+            http://www.dns-sd.org/ServiceTypes.html</a>, for instance
+          "rsync" or "daap".</p>
+        <p>When the tube is offered, the service name is transmitted to the
+          other end.</p>
+        <p>When requesting a channel with 
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          this property MUST be included in the request.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="SupportedSocketTypes" type="a{uau}"
+              tp:type="Supported_Socket_Map" access="read"
+              tp:name-for-bindings="Supported_Socket_Types">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A mapping from address types (members of Socket_Address_Type) to
+        arrays of access-control type (members of Socket_Access_Control)
+        that the connection manager supports for stream tubes with that
+        address type. For simplicity, if a CM supports offering a
+        particular type of tube, it is assumed to support accepting it.</p>
+
+        <p>A typical value for a host without IPv6 support:</p>
+
+        <pre>
+          {
+            Socket_Address_Type_IPv4:
+              [Socket_Access_Control_Localhost, Socket_Access_Control_Port,
+               Socket_Access_Control_Netmask],
+            Socket_Address_Type_Unix:
+              [Socket_Access_Control_Localhost, Socket_Access_Control_Credentials]
+          }
+        </pre>
+
+        <p>Connection Managers MUST support at least IPv4 with the localhost
+          access control.</p>
+
+        <p>When requesting a channel with 
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          this property MUST NOT be included in the request.</p>
+
+      </tp:docstring>
+    </property>
+
+  </interface>
+
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

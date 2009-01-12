@@ -1,0 +1,13 @@
+#ifndef _TelepathyQt4_Client_ChannelInterfaceHoldInterface_HEADER_GUARD_
+#define _TelepathyQt4_Client_ChannelInterfaceHoldInterface_HEADER_GUARD_
+
+#ifndef IN_TELEPATHY_QT4_HEADER
+#define IN_TELEPATHY_QT4_HEADER
+#endif
+
+#include <TelepathyQt4/Client/channel.h>
+
+#undef IN_TELEPATHY_QT4_HEADER
+
+#endif
+// vim:set ft=cpp:

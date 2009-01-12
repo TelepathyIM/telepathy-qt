@@ -51,7 +51,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <signal name="NewSessionHandler" tp:name-for-bindings="New_Session_Handler">
       <arg name="Session_Handler" type="o">
         <tp:docstring>
-          Object path of the new MediaSessionHandler object
+          Object path of the new <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Media.SessionHandler</tp:dbus-ref>
+          object
         </tp:docstring>
       </arg>
       <arg name="Session_Type" tp:type="Media_Session_Type" type="s">

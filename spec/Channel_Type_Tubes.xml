@@ -116,48 +116,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <tp:enum name="Tube_Type" type="u">
       <tp:enumvalue suffix="DBus" value="0">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>An ordered reliable transport, for transporting D-Bus
-            traffic.</p>
-
-          <p>For each D-Bus tube, the connection manager listens on a D-Bus
-            server address, as detailed in the D-Bus specification. On this
-            address, it emulates a bus upon which each tube participant appears
-            as an endpoint.</p>
-
-          <p>The objects and interfaces which are expected to exist on the
-            emulated bus depend on the well-known name; typically, either the
-            participant who initiated the tube is expected to export the same
-            objects/interfaces that would be exported by a service of that name
-            on a bus, or all participants are expected to export those
-            objects/interfaces.</p>
-
-          <p>In a multi-user context (Handle_Type_Room) the tube behaves
-            like the D-Bus bus daemon, so participants can send each other
-            private messages, or can send broadcast messages which are
-            received by everyone in the tube (including themselves).
-            Each participant has a D-Bus unique name; connection managers
-            must prevent participants from sending messages with the wrong
-            sender unique name, and should attempt to avoid participants
-            receiving messages not intended for them.</p>
-
-          <p>In a 1-1 context (Handle_Type_Contact) the tube behaves like
-            a peer-to-peer D-Bus connection - arbitrary D-Bus messages with
-            any sender and/or destination can be sent by each participant,
-            and each participant receives all messages sent by the other
-            participant.</p>
+          <p>The tube is D-Bus tube as described by the
+            org.freedesktop.Telepathy.Channel.Type.DBusTube interface.</p>
         </tp:docstring>
       </tp:enumvalue>
 
       <tp:enumvalue suffix="Stream" value="1">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>A transport for ordered, reliable data transfer, similar to
-            SOCK_STREAM sockets.</p>
-
-          <p>When accepting a Stream Unix tube, a new listening local socket is
-            created. Each time the client connects to this socket, the
-            connection manager of the initiator of the tube opens a new
-            connection to its local socket. Both sides can then use this pair
-            of sockets to communicate together.</p>
+          <p>The tube is stream tube as described by the
+            org.freedesktop.Telepathy.Channel.Type.StreamTube interface.</p>
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
@@ -183,14 +150,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <tp:enum name="Socket_Address_Type" type="u">
       <tp:enumvalue suffix="Unix" value="0">
         <tp:docstring>
-          A Unix socket. The variant contains a byte-array, signature 'ay',
+          A Unix socket. The address variant contains a byte-array, signature 'ay',
           containing the path of the socket.
         </tp:docstring>
       </tp:enumvalue>
 
       <tp:enumvalue suffix="Abstract_Unix" value="1">
         <tp:docstring>
-          An abstract Unix socket. The variant contains a byte-array,
+          An abstract Unix socket. The address variant contains a byte-array,
           signature 'ay', containing the path of the socket including the
           leading null byte.
         </tp:docstring>
@@ -198,7 +165,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <tp:enumvalue suffix="IPv4" value="2">
         <tp:docstring>
-          An IPv4 socket. The variant contains a Socket_Address_IPv4,
+          An IPv4 socket. The address variant contains a Socket_Address_IPv4,
           i.e. a structure with signature (sq)
           in which the string is an IPv4 dotted-quad address literal
           (and must not be a DNS name), while the 16-bit unsigned integer is
@@ -208,7 +175,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <tp:enumvalue suffix="IPv6" value="3">
         <tp:docstring>
-          An IPv6 socket. The variant contains a Socket_Address_IPv6,
+          An IPv6 socket. The address variant contains a Socket_Address_IPv6,
           i.e. a structure with signature (sq)
           in which the string is an IPv6 address literal as specified in
           RFC2373 (and must not be a DNS name), while the 16-bit unsigned

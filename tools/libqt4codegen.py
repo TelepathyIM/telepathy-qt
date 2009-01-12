@@ -27,16 +27,25 @@ from libtpcodegen import get_by_path, get_descendant_text, NS_TP, xml_escape
 
 
 class _Qt4TypeBinding:
-    def __init__(self, val, inarg, outarg, array_val, custom_type, array_of):
+    def __init__(self, val, inarg, outarg, array_val, custom_type, array_of,
+            array_depth=None):
         self.val = val
         self.inarg = inarg
         self.outarg = outarg
         self.array_val = array_val
         self.custom_type = custom_type
         self.array_of = array_of
+        self.array_depth = array_depth
+
+        if array_depth is None:
+            self.array_depth = int(bool(array_val))
+        elif array_depth >= 1:
+            assert array_val
+        else:
+            assert not array_val
 
 def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_ns=None):
-    # 'signature' : ('qt-type', 'pass-by-reference')
+    # 'signature' : ('qt-type', 'pass-by-reference', 'array-type')
     natives = {
             'y' : ('uchar', False, None),
             'b' : ('bool', False, 'BoolList'),
@@ -82,8 +91,14 @@ def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_n
 
         if tptype.endswith('[]'):
             tptype = tptype[:-2]
+            extra_list_nesting = 0
+
+            while tptype.endswith('[]'):
+                extra_list_nesting += 1
+                tptype = tptype[:-2]
+
             assert custom_lists.has_key(tptype), ('No array version of custom type %s in the spec, but array version used' % tptype)
-            val = custom_lists[tptype]
+            val = custom_lists[tptype] + 'List' * extra_list_nesting
         else:
             val = tptype
 
@@ -94,11 +109,11 @@ def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_n
     outarg = val + '&'
     return _Qt4TypeBinding(val, inarg, outarg, None, custom_type, array_of)
 
-def binding_from_decl(name, array_name):
+def binding_from_decl(name, array_name, array_depth=None):
     val = name.replace('_', '')
     inarg = 'const %s&' % val
     outarg = '%s&' % val
-    return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None)
+    return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None, array_depth)
 
 def extract_arg_or_member_info(els, custom_lists, externals, typesns, docstring_indent=' * ', docstring_brackets=None, docstring_maxwidth=80):
     names = []
@@ -196,10 +211,21 @@ def gather_custom_lists(spec, typesns):
     for (provider, ns) in structs + mappings + exts:
         tptype = provider.getAttribute('name').replace('_', '')
         array_val = provider.getAttribute('array-name').replace('_', '')
+        array_depth = provider.getAttribute('array-depth')
+        if array_depth:
+            array_depth = int(array_depth)
+        else:
+            array_depth = None
 
         if array_val:
             custom_lists[tptype] = array_val
             custom_lists[ns + '::' + tptype] = ns + '::' + array_val
+            if array_depth >= 2:
+                for i in xrange(array_depth):
+                    custom_lists[tptype + ('[]' * (i+1))] = (
+                            array_val + ('List' * i))
+                    custom_lists[ns + '::' + tptype + ('[]' * (i+1))] = (
+                            ns + '::' + array_val + ('List' * i))
 
     return custom_lists
 

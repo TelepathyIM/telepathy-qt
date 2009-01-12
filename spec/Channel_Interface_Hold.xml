@@ -61,7 +61,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring>
         Emitted to indicate that the hold state has changed for this channel.
         This may occur as a consequence of you requesting a change with
-        RequestHold, or the state changing as a result of a request from
+        <tp:member-ref>RequestHold</tp:member-ref>, or the state changing as a
+        result of a request from
         another process.
       </tp:docstring>
 
@@ -159,7 +160,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <p>Otherwise, this method SHOULD immediately set the hold state to
           Local_Hold_State_Pending_Hold or Local_Hold_State_Pending_Unhold
-          (as appropriate), emitting HoldStateChanged if this is a change,
+          (as appropriate), emitting
+          <tp:member-ref>HoldStateChanged</tp:member-ref> if this is a change,
           and return successfully.</p>
 
         <p>The eventual success or failure of the request is indicated by a

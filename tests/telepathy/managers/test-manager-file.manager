@@ -1,0 +1,82 @@
+[Protocol foo]
+param-account = s required
+param-password = s required
+param-encryption-key = s secret
+param-port = q
+param-register = b
+param-server-list = as
+default-account = foo@default
+default-port = 1234
+default-server-list = foo;bar;
+
+[Protocol bar]
+param-account = s required
+param-encryption-key = s required secret
+param-password = s required
+param-port = q
+param-register = b
+param-server-list = as
+default-account = bar@default
+default-port = 4321
+default-server-list = bar;foo;
+
+[Protocol somewhat-pathological]
+# the value is "hello world"
+param-foo = s required
+default-foo =    hello world
+
+# the value is "list;of;misc;" (it's not parsed as a list)
+param-semicolons=s secret
+default-semicolons=list;of;misc;
+
+# the values is a list ["list", "of", "misc"]
+param-list = as
+default-list = list;of;misc;
+
+# the spec says this is invalid but we should probably be permissive
+param-unterminated-list = as
+default-unterminated-list = list;of;misc
+
+# the value is a list ["list", " of", " misc "] (spaces significant)
+param-spaces-in-list = as
+default-spaces-in-list = list; of; misc ;
+
+# the value is a list ["list;of", "misc"]
+param-escaped-semicolon-in-list = as
+default-escaped-semicolon-in-list = list\;of;misc;
+
+# the value is a list ["list\", "of", "misc"]
+param-doubly-escaped-semicolon-in-list = as
+default-doubly-escaped-semicolon-in-list = list\\;of;misc;
+
+# the value is a list ["list\;of", "misc"]
+param-triply-escaped-semicolon-in-list = as
+default-triply-escaped-semicolon-in-list = list\\\;of;misc;
+
+# the value is an empty list
+param-empty-list = as
+default-empty-list = ;
+
+# this is probably technically a Desktop Entry spec violation?
+# we should be permissive, interpreting this as either "foo\;bar" or "foo;bar"
+# seems reasonable
+param-escaped-semicolon = s
+default-escaped-semicolon = foo\;bar
+
+# all the other types
+param-object = o
+default-object = /misc
+param-q = q
+default-q = 42
+param-u = u
+default-u = 42
+param-t = t
+default-t = 42
+param-n = n
+default-n = -42
+param-i = i
+default-i = -42
+param-x = x
+default-x = -42
+param-d = 42.0
+default-d = 42.0

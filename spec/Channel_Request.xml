@@ -39,6 +39,15 @@
       </tp:rationale>
     </tp:docstring>
 
+    <property name="Account" tp:name-for-bindings="Account"
+      type="o" access="read">
+      <tp:docstring>
+        The <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>
+        on which this request was made. This property cannot change.
+      </tp:docstring>
+    </property>
+
     <property name="UserActionTime" tp:name-for-bindings="User_Action_Time"
       type="t" tp:type="Unix_Timestamp64" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -127,12 +136,14 @@
           channel has not yet been dispatched to a handler
           then the channel dispatcher will not dispatch that
           channel to a handler. If the channel was newly created for this
-          request, the channel dispatcher will close it with Close; otherwise,
-          the channel dispatcher will ignore it. In either case,
+          request, the channel dispatcher will close it with <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref>;
+          otherwise, the channel dispatcher will ignore it. In either case,
           <tp:member-ref>Failed</tp:member-ref> will be emitted when processing
           has been completed.</p>
 
-        <p>If Failed is emitted in response to this method, the error SHOULD be
+        <p>If <tp:member-ref>Failed</tp:member-ref> is emitted in response to
+          this method, the error SHOULD be
           <code>org.freedesktop.Telepathy.Errors.Cancelled</code>.</p>
 
         <p>If the channel has already been dispatched to a handler, then
@@ -150,8 +161,11 @@
       <arg name="Error" type="s" tp:type="DBus_Error_Name">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The name of a D-Bus error. This can come from various sources,
-            including the error raised by CreateChannel, or an error generated
-            to represent failure to establish the Connection.</p>
+            including the error raised by <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
+            or an error generated
+            to represent failure to establish the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>.</p>
         </tp:docstring>
       </arg>
 

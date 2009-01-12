@@ -36,7 +36,7 @@
         = FALSE) is offered to
         <tp:dbus-ref namespace="org.freedesktop.Telepathy.Client">Approver</tp:dbus-ref>s
         by the channel dispatcher, it also offers the Approvers a list of all
-        the running or activatable ChannelHandlers whose
+        the running or activatable handlers whose
         <tp:member-ref>HandlerChannelFilter</tp:member-ref> property
         (possibly as cached in the .client file) indicates that they
         are able to handle the channel. The Approvers can choose one of
@@ -191,7 +191,15 @@
         <tp:docstring>
           The <tp:dbus-ref
             namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
-          object.
+          object, which MUST have been returned by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ChannelDispatcher.DRAFT">CreateChannel</tp:dbus-ref>
+          or <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ChannelDispatcher.DRAFT">EnsureChannel</tp:dbus-ref>
+          before this method is called.
+
+          <tp:rationale>
+            See those methods for the rationale of this ordering.
+          </tp:rationale>
         </tp:docstring>
       </arg>
 
@@ -203,7 +211,10 @@
             values could subsequently change. It SHOULD include as many
             properties as possible, given that constraint.</p>
 
-          <p>In particular, the properties Requests and UserActionTimestamp
+          <p>In particular, the properties <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelRequest.DRAFT">Requests</tp:dbus-ref>
+            and <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelRequest.DRAFT">UserActionTime</tp:dbus-ref>
             MUST be included.</p>
         </tp:docstring>
       </arg>

@@ -33,8 +33,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           that appears in the connection manager's well-known bus name and
           object path</li>
         <li><em>proto</em> is the <tp:type>Protocol</tp:type> name as seen in
-          ConnectionManager.ListProtocols, but with "-" replaced with "_"
-          (i.e. the same as in the object-path of a Connection)</li>
+          <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">ConnectionManager.ListProtocols</tp:dbus-ref>,
+          but with "-" replaced with "_"
+          (i.e. the same as in the object-path of a <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>)</li>
         <li><em>acct</em> is an arbitrary string of ASCII letters, digits
           and underscores, starting with a letter or underscore, which
           uniquely identifies this account</li>
@@ -123,9 +126,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         This account has been removed.
 
         <tp:rationale>
-          This is redundant with AccountRemoved, but it's still worth having,
+          This is redundant with <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.AccountManager">AccountRemoved</tp:dbus-ref>,
+          but it's still worth having,
           to avoid having to bind to AccountManager.AccountRemoved to tell
-          you whether your Account is valid - ideally, an account-editing UI
+          you whether your Account is valid — ideally, an account-editing UI
           should only care about a single Account.
         </tp:rationale>
       </tp:docstring>
@@ -142,7 +147,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <arg name="Properties" type="a{sv}">
         <tp:docstring>
-          A map from property names in this namespace (e.g. Nickname) to
+          A map from property names in this namespace (e.g.
+          <tp:member-ref>Nickname</tp:member-ref>) to
           values. Properties whose values have not changed SHOULD be
           omitted, but this need not be done.
         </tp:docstring>
@@ -223,24 +229,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
               to be be bother by error messages, or change the account
               configuration: temporarily disabling the account is quicker.</li>
           </ul>
+        </tp:rationale>
 
-          <p>The AccountManager SHOULD allow this property to be set on invalid
-            accounts, but MUST NOT attempt to put invalid accounts online
-            even if they become Enabled.</p>
+        <p>The AccountManager SHOULD allow this property to be set on invalid
+          accounts, but MUST NOT attempt to put invalid accounts online
+          even if they become Enabled.</p>
 
-          <tp:rationale>
-            <p>There doesn't seem to be any good reason not to allow this.</p>
-          </tp:rationale>
+        <tp:rationale>
+          <p>There doesn't seem to be any good reason not to allow this.</p>
         </tp:rationale>
       </tp:docstring>
     </property>
 
     <property name="Nickname" tp:name-for-bindings="Nickname"
-      type="as" access="readwrite">
+      type="s" access="readwrite">
       <tp:docstring>
         The nickname to set on this account for display to other contacts,
         as set by the user. When the account becomes connected, the
-        account manager SHOULD set this as the user's alias using SetAliases
+        account manager SHOULD set this as the user's alias using <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Connection.Interface.Aliasing">SetAliases</tp:dbus-ref>
         if appropriate.
 
         <tp:rationale>
@@ -258,12 +265,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       type="a{sv}" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A map from connection manager parameter names (as in the
-          ConnectionManager interface) to their values. This property includes
+          <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">ConnectionManager</tp:dbus-ref>
+          interface) to their values. This property includes
           only those parameters that are stored for this account, and SHOULD
           only include those parameters that the user has explicitly set.
         </p>
         <p>This property cannot be altered using Set() - use
-          UpdateParameters instead.</p>
+          <tp:member-ref>UpdateParameters</tp:member-ref> instead.</p>
 
         <tp:rationale>
           This avoids NMC being tied to gconf as a matter of API.
@@ -272,10 +281,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     </property>
 
     <method name="UpdateParameters" tp:name-for-bindings="Update_Parameters">
-      <tp:docstring>
-        Change the value of the Parameters property. Any changes will not
-        take effect until the next time the account is disconnected and
-        reconnected.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        Change the value of the <tp:member-ref>Parameters</tp:member-ref>
+        property. If any of the changed parameters'
+        <tp:type>Conn_Mgr_Param_Flags</tp:type> include
+        <code>DBus_Property</code>, the change will be applied to the
+        corresponding D-Bus Property on the active
+        <tp:member-ref>Connection</tp:member-ref> if there is one; changes to
+        other parameters will not take effect until the next time the account
+        is disconnected and reconnected.
 
         <tp:rationale>
           Migration tools that twiddle the settings of all accounts shouldn't
@@ -283,6 +297,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           persuaded otherwise, though. Or we could add a Reconnect() method.
         </tp:rationale>
       </tp:docstring>
+
+      <tp:changed version="0.17.16">
+        parameters which are also D-Bus properties can and should be updated on
+        existing Connections
+      </tp:changed>
 
       <arg name="Set" type="a{sv}" direction="in">
         <tp:docstring>
@@ -330,11 +349,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Connect_Automatically">
       <tp:docstring>
         If true, the account manager SHOULD attempt to put this account
-        online with the AutomaticPresence whenever possible (in the base
+        online with the <tp:member-ref>AutomaticPresence</tp:member-ref>
+        whenever possible (in the base
         Account interface this is deliberately left vague). If false,
         it MUST NOT put the account online automatically in response to,
         for instance, connectivity changes, but SHOULD still put the account
-        online with the AutomaticPresence if requested by the user (for
+        online with the <tp:member-ref>AutomaticPresence</tp:member-ref> if
+        requested by the user (for
         instance, if the user tries to start a conversation using this
         account).
 
@@ -347,9 +368,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     <property name="Connection" tp:name-for-bindings="Connection"
       type="o" access="read">
-      <tp:docstring>
-        Either the object path of the connection to this account,
-        or the special value '/' if there is no connection.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        Either the object path of the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref> to
+        this account, or the special value <code>'/'</code> if there is no
+        connection.
 
         <tp:rationale>
           Object paths aren't nullable, so we can't use an empty string.
@@ -360,7 +383,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <property name="ConnectionStatus" type="u" access="read"
       tp:name-for-bindings="Connection_Status">
       <tp:docstring>
-        If the Connection property is non-empty, the status of that connection.
+        If the <tp:member-ref>Connection</tp:member-ref> property is non-empty,
+        the status of that connection.
         If the Connection property is the empty string, this property may
         either be Disconnected (indicating that the account manager is not
         attempting to bring it online), or Connecting (indicating that the
@@ -380,7 +404,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <property name="ConnectionStatusReason" type="u" access="read"
       tp:name-for-bindings="Connection_Status_Reason">
       <tp:docstring>
-        The reason for the last change to ConnectionStatus.
+        The reason for the last change to
+        <tp:member-ref>ConnectionStatus</tp:member-ref>.
         The account manager is expected to set this by observing signals
         from the Connection.
 
@@ -397,7 +422,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring>
         The actual presence. If the connection is not online, this should be
         (Connection_Presence_Type_Offline, "", "").
-        If the connection is online but does not support the Presence
+        If the connection is online but does not support the <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Connection.Interface">Presence</tp:dbus-ref>
         interface, this should be (Connection_Presence_Type_Unset, "", "").
         The account manager is expected to set this by observing signals
         from the Connection.
@@ -412,14 +438,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:type="Simple_Presence" tp:name-for-bindings="Requested_Presence">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The requested presence for this account. When this is changed, the
-          account manager should attempt to manipulate the connection manager
-          to make CurrentPresence match RequestedPresence as closely as
+        account manager should attempt to manipulate the connection manager to
+        make <tp:member-ref>CurrentPresence</tp:member-ref> match
+        <tp:member-ref>RequestedPresence</tp:member-ref> as closely as
           possible. It should not be saved to any sort of persistent
           storage.</p>
 
         <p>When the account manager automatically connects an account,
           it must signal this by setting the RequestedPresence to the same
-          thing as the AutomaticPresence.</p>
+          thing as the <tp:member-ref>AutomaticPresence</tp:member-ref>.</p>
 
         <tp:rationale>
           This corresponds to e.g. GetPresence and GetPresenceMessage
@@ -432,8 +459,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       tp:name-for-bindings="Normalized_Name">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The normalized user ID of the local user on this account (i.e. the
-          string returned when the InspectHandle method is called on the
-          result of GetSelfHandle() for an active connection).</p>
+          string returned when the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>
+          method is called on the
+          result of <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection">GetSelfHandle</tp:dbus-ref>
+          for an active connection).</p>
         
         <p>It is unspecified whether this user ID is globally unique.</p>
 

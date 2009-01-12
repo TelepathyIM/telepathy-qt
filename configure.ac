@@ -68,29 +68,21 @@ COMPILER_COVERAGE
 LINKER_OPTIMISATIONS
 LINKER_VERSION_SCRIPT
 
-dnl decide error flags
-TP_CXX_COMPILER_FLAG(-Wall, ERROR_CXXFLAGS="-Wall", ERROR_CXXFLAGS="")
-TP_CXX_COMPILER_FLAG(-Werror, werror=yes, werror=no)
-
-AC_ARG_ENABLE(Werror,
-  AC_HELP_STRING([--disable-Werror],[compile without -Werror (normally enabled in development builds)]),
-    werror=$enableval, :)
-
-TP_CXX_COMPILER_FLAG([$ERROR_CXXFLAGS -Wextra -Wno-missing-field-initializers -Wno-unused-parameter], wextra=yes, wextra=no)
-
-ifelse(tp_qt4_nano_version, 0,
+ifelse(tp_glib_nano_version, 0,
     [ official_release=yes ],
-    [
-        official_release=no
-        if test x$werror = xyes; then
-            ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Werror"
-        fi
-    ])
-
-TP_CXX_COMPILER_FLAG([$ERROR_CXXFLAGS -Wmissing-declarations], ERROR_CXXFLAGS="$ERROR_CXXFLAGS -Wmissing-declarations")
-
-AC_SUBST(ERROR_CXXFLAGS)
+    [ official_release=no ])
 AM_CONDITIONAL([OFFICIAL_RELEASE], [test "x$official_release" = xyes])
+
+TP_COMPILER_WARNINGS([ERROR_CXXFLAGS], [test "x$official_release" = xno],
+  [all \
+   extra \
+   sign-compare \
+   pointer-arith \
+   format-security \
+   init-self],
+   [missing-field-initializers \
+    unused-parameter])
+AC_SUBST([ERROR_CXXFLAGS])
 
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--disable-debug],[compile without debug code]),
@@ -162,6 +154,13 @@ dnl Likewise for the prototype library
 PROTO_CFLAGS='-I${top_builddir} -I${top_srcdir}'
 AC_SUBST(PROTO_CFLAGS)
 
+dnl Check for telepathy-glib (so we can use it for tests)
+PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.7.20], [have_tp_glib=yes],
+                  [have_tp_glib=no])
+AC_SUBST(TP_GLIB_CFLAGS)
+AC_SUBST(TP_GLIB_LIBS)
+AM_CONDITIONAL([HAVE_TP_GLIB], [test yes = "$have_tp_glib"])
+
 AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
   [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
 AC_PATH_PROGS([PINOCCHIO_CTL], [pinocchio-ctl], [none])
@@ -214,6 +213,7 @@ AC_OUTPUT([
     spec/Makefile
     tests/Makefile
     tests/dbus/Makefile
+    tests/dbus-1/services/account-manager.service
     tests/pinocchio/Makefile
     tests/prototype/Makefile
     tools/Makefile
