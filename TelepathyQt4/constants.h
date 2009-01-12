@@ -99,4 +99,19 @@
 
 #include <TelepathyQt4/_gen/constants.h>
 
+/**
+ * \ingroup errorstrconsts
+ *
+ * The error name "org.freedesktop.DBus.Error.NameHasNoOwner".
+ *
+ * Raised by the D-Bus daemon when looking up the owner of a well-known name,
+ * if no process owns that name.
+ *
+ * Also used by DBusProxy to indicate that the owner of a well-known name
+ * has disappeared (usually indicating that the process owning that name
+ * exited or crashed).
+ */
+#define TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER \
+    "org.freedesktop.DBus.Error.NameHasNoOwner"
+
 #endif
