@@ -87,6 +87,9 @@ public:
      */
     QString objectPath() const;
 
+protected:
+    void setBusName(const QString &busName);
+
 private:
     class Private;
     friend class Private;

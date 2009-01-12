@@ -138,6 +138,9 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
 {
     QString uniqueName = busName;
 
+    connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
+
     if (!busName.startsWith(QChar(':'))) {
         // For a stateful interface, it makes no sense to follow name-owner
         // changes, so we want to bind to the unique name.
@@ -150,9 +153,7 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         }
     }
 
-    // FIXME: Am I on crack?
-    connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-            this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
+    setBusName(uniqueName);
 }
 
 bool StatefulDBusProxy::isValid() const
@@ -205,8 +206,8 @@ void StatefulDBusProxy::emitInvalidated()
 void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner)
 {
     // We only want to invalidate this object if it is not already invalidated,
-    // and it's (not any other object's) name owner changed signal is emitted.
-    if (isValid() && (name == busName())) {
+    // and its (not any other object's) name owner changed signal is emitted.
+    if (isValid() && name == busName() && newOwner == "") {
         invalidate(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER,
             "Name owner lost (service crashed?)");
     }
