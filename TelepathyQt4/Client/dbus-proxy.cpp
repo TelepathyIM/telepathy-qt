@@ -88,6 +88,11 @@ QString DBusProxy::busName() const
     return mPriv->busName;
 }
 
+void DBusProxy::setBusName(const QString &busName)
+{
+    mPriv->busName = busName;
+}
+
 // ==== StatelessDBusProxy =============================================
 
 StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection& dbusConnection,
@@ -131,6 +136,20 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent)
 {
+    QString uniqueName = busName;
+
+    if (!busName.startsWith(QChar(':'))) {
+        // For a stateful interface, it makes no sense to follow name-owner
+        // changes, so we want to bind to the unique name.
+        QDBusReply<QString> reply = dbusConnection.interface()->serviceOwner(
+                busName);
+        if (reply.isValid()) {
+            uniqueName = reply.value();
+        } else {
+            invalidate(reply.error());
+        }
+    }
+
     // FIXME: Am I on crack?
     connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
             this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
