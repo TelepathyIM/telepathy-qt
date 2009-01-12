@@ -118,6 +118,7 @@ tpqt4clientinclude_HEADERS = \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
     Client/OptionalInterfaceFactory \
+    Client/PendingAccount \
     Client/PendingChannel \
     Client/PendingFailure \
     Client/PendingOperation \
