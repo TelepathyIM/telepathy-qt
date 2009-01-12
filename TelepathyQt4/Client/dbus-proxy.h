@@ -29,6 +29,7 @@
 // FIXME: What groups should this be in/define?
 
 #include <QDBusConnection>
+#include <QDBusError>
 
 namespace Telepathy
 {
@@ -176,6 +177,8 @@ protected:
      */
     void invalidate(const QString &reason, const QString &message);
 
+    inline void invalidate(const QDBusError &error);
+
 Q_SIGNALS:
     /**
      * Emitted when this object is no longer usable.
@@ -202,6 +205,11 @@ private:
     friend class Private;
     Private *mPriv;
 };
+
+void StatefulDBusProxy::invalidate(const QDBusError &error)
+{
+    invalidate(error.name(), error.message());
+}
 
 }
 }
