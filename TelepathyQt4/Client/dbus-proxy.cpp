@@ -144,8 +144,18 @@ QString StatefulDBusProxy::invalidationMessage() const
 
 void StatefulDBusProxy::invalidate(const QString &reason, const QString &message)
 {
-    Q_ASSERT(isValid());
+    if (!isValid()) {
+        debug().nospace() << "Already invalidated by "
+            << mPriv->invalidationReason
+            << ", not replacing with " << reason
+            << " \"" << message << "\"";
+        return;
+    }
+
     Q_ASSERT(!reason.isEmpty());
+
+    debug().nospace() << "proxy invalidated: " << reason
+        << ": " << message;
 
     mPriv->invalidationReason = reason;
     mPriv->invalidationMessage = message;
