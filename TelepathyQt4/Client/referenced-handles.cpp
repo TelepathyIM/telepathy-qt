@@ -19,10 +19,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "referenced-handles.h"
+#include <TelepathyQt4/Client/ReferencedHandles>
 
 #include <QPointer>
 #include <QSharedData>
+
+#include <TelepathyQt4/Client/Connection>
 
 #include "../debug-internal.h"
 

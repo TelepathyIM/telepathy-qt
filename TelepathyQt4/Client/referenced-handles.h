@@ -22,6 +22,10 @@
 #ifndef _TelepathyQt4_cli_referenced_handles_h_HEADER_GUARD_
 #define _TelepathyQt4_cli_referenced_handles_h_HEADER_GUARD_
 
+#ifndef IN_TELEPATHY_QT4_HEADER
+#error IN_TELEPATHY_QT4_HEADER
+#endif
+
 /**
  * \addtogroup clientsideproxies Client-side proxies
  *
@@ -51,7 +55,6 @@ class ReferencedHandles;
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Connection>
 
 #include <QSharedDataPointer>
 #include <QList>
@@ -60,6 +63,7 @@ namespace Telepathy
 {
 namespace Client
 {
+class Connection;
 
 /**
  * \class ReferencedHandles

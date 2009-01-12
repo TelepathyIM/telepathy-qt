@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "pending-handles.h"
+#include <TelepathyQt4/Client/PendingHandles>
 #include "_gen/pending-handles.moc.hpp"
 
 #include "../debug-internal.h"
