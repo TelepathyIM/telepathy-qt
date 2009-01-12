@@ -25,6 +25,8 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Constants>
+
 #include <QtCore/QTimer>
 #include <QtDBus/QDBusConnectionInterface>
 
@@ -162,8 +164,8 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
     // We only want to invalidate this object if it is not already invalidated,
     // and it's (not any other object's) name owner changed signal is emitted.
     if (isValid() && (name == busName())) {
-        // FIXME: where do the error texts come from? the spec?
-        invalidate("NAME_OWNER_CHANGED", "NameOwnerChanged() received for this object.");
+        invalidate(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER,
+            "Name owner lost (service crashed?)");
     }
 }
 
