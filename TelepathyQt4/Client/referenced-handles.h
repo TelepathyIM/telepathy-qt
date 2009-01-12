@@ -56,8 +56,12 @@ class ReferencedHandles;
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
-#include <QSharedDataPointer>
+#include <list>
+
 #include <QList>
+#include <QSet>
+#include <QSharedDataPointer>
+#include <QVector>
 
 namespace Telepathy
 {
@@ -258,6 +262,23 @@ class ReferencedHandles
         inline uint operator[](int i) const
         {
             return at(i);
+        }
+
+        UIntList toList() const;
+
+        inline QSet<uint> toSet() const
+        {
+            return toList().toSet();
+        }
+
+        inline std::list<uint> toStdList() const
+        {
+            return toList().toStdList();
+        }
+
+        inline QVector<uint> toVector() const
+        {
+            return toList().toVector();
         }
 
     private:

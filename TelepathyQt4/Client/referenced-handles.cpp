@@ -273,6 +273,11 @@ bool ReferencedHandles::operator==(const UIntList& list) const
     return mPriv->handles == list;
 }
 
+UIntList ReferencedHandles::toList() const
+{
+    return mPriv->handles;
+}
+
 ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, const UIntList& handles)
     : mPriv(new Private(connection, handleType, handles))
 {
