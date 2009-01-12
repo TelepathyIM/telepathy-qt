@@ -63,18 +63,18 @@ public:
     };
     Q_DECLARE_FLAGS(Features, Feature)
 
+    // TODO this is a copy/paste from Connection, move it somewhere else that
+    //      could be shared between classes
+    enum InterfaceSupportedChecking
+    {
+        CheckInterfaceSupported,
+        BypassInterfaceCheck
+    };
+
     Account(AccountManager *am, const QDBusObjectPath &objectPath,
             QObject *parent = 0);
 
     virtual ~Account();
-
-    QStringList interfaces() const;
-
-    inline DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
-                *baseInterface());
-    }
 
     AccountManager *manager() const;
 
@@ -126,12 +126,6 @@ public:
     PendingOperation *setRequestedPresence(
             const Telepathy::SimplePresence &value);
 
-    // Unique per AccountManager implementation, i.e. at least per
-    // QDBusConnection.
-    //
-    // returns the tail of the object path, i.e.
-    // /org/freedesktop/Account/gabble/jabber/smcv_5eexample_2bcom ->
-    // gabble/jabber/smcv_5eexample_2bcom
     QString uniqueIdentifier() const;
 
     // doc as for advanced users
@@ -145,10 +139,42 @@ public:
 
     PendingOperation *becomeReady(Features features = 0);
 
+    QStringList interfaces() const;
+
+    // TODO this is a copy/paste from Connection, move it somewhere else that
+    //      could be shared between classes
+    template <class Interface>
+    inline Interface* optionalInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        // Check for the remote object supporting the interface
+        QString name(Interface::staticInterfaceName());
+        if (check == CheckInterfaceSupported && !interfaces().contains(name))
+            return 0;
+
+        // If present or forced, delegate to OptionalInterfaceFactory
+        return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
+    }
+
+    inline DBus::PropertiesInterface *propertiesInterface() const
+    {
+        return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
+    }
+
+    inline AccountInterfaceAvatarInterface *avatarInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<AccountInterfaceAvatarInterface>(check);
+    }
+
 Q_SIGNALS:
+    void removed();
     void displayNameChanged(const QString &);
+    void iconChanged(const QString &);
+    void nicknameChanged(const QString &);
+    void stateChanged(bool);
+    void validityChanged(bool);
+    void parametersChanged(const QVariantMap &);
     void presenceChanged(const Telepathy::SimplePresence &) const;
-    void avatarChanged(const QByteArray &data, const QString &mimeType);
+    void avatarChanged(const QByteArray &, const QString &);
     void connectionStatusChanged(Telepathy::ConnectionStatus,
             Telepathy::ConnectionStatusReason);
 

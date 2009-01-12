@@ -39,6 +39,8 @@ namespace Client
 
 class Account;
 class AccountInterface;
+class ConnectionManager;
+class ProtocolInfo;
 
 class Account::Private : public QObject
 {
@@ -50,16 +52,20 @@ public:
 
     void callGetAll();
     void callGetAvatar();
+    void callGetProtocolInfo();
     void updateProperties(const QVariantMap &props);
+    PendingOperation *becomeReady(Account::Features requestFeatures);
 
     class PendingReady;
+    class PendingUpdateParameters;
 
     AccountInterface *baseInterface;
     bool ready;
-    PendingReady *pendingReady;
+    QList<PendingReady *> pendingOperations;
     QQueue<void (Private::*)()> introspectQueue;
     QStringList interfaces;
     Account::Features features;
+    Account::Features pendingFeatures;
     QVariantMap parameters;
     bool valid;
     bool enabled;
@@ -73,14 +79,31 @@ public:
     QString normalizedName;
     QString avatarMimeType;
     QByteArray avatarData;
+    ConnectionManager *cm;
+    ProtocolInfo *protocolInfo;
     Telepathy::ConnectionStatus connectionStatus;
     Telepathy::ConnectionStatusReason connectionStatusReason;
     Telepathy::SimplePresence automaticPresence;
     Telepathy::SimplePresence currentPresence;
     Telepathy::SimplePresence requestedPresence;
 
+Q_SIGNALS:
+    void removed();
+    void displayNameChanged(const QString &);
+    void iconChanged(const QString &);
+    void nicknameChanged(const QString &);
+    void stateChanged(bool);
+    void validityChanged(bool);
+    void parametersChanged(const QVariantMap &);
+    void presenceChanged(const Telepathy::SimplePresence &) const;
+    void avatarChanged(const QByteArray &, const QString &);
+    void connectionStatusChanged(Telepathy::ConnectionStatus,
+            Telepathy::ConnectionStatusReason);
+
 private Q_SLOTS:
     void onGetAllAccountReturn(QDBusPendingCallWatcher *);
+    void onGetAvatarReturn(QDBusPendingCallWatcher *);
+    void onConnectionManagerReady(Telepathy::Client::PendingOperation *);
     void onPropertyChanged(const QVariantMap &delta);
     void onRemoved();
     void continueIntrospection();
@@ -92,7 +115,9 @@ class Account::Private::PendingReady : public PendingOperation
     friend class Account::Private;
 
 public:
-    PendingReady(Account *parent);
+    PendingReady(Account::Features features, QObject *parent = 0);
+
+    Account::Features features;
 };
 
 } // Telepathy::Client
