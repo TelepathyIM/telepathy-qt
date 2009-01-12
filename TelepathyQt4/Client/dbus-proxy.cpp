@@ -94,6 +94,10 @@ StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection& dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent)
 {
+    if (busName.startsWith(QChar(':'))) {
+        warning() <<
+            "Using StatelessDBusProxy for a unique name does not make sense";
+    }
 }
 
 // ==== StatefulDBusProxy ==============================================
