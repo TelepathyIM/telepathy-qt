@@ -108,10 +108,6 @@ public:
     // comes from the ConnectionManager
     ProtocolInfo *protocolInfo() const;
 
-    Telepathy::SimplePresence automaticPresence() const;
-    PendingOperation *setAutomaticPresence(
-            const Telepathy::SimplePresence &value);
-
     bool connectsAutomatically() const;
     PendingOperation *setConnectsAutomatically(bool value);
 
@@ -119,6 +115,10 @@ public:
     Telepathy::ConnectionStatusReason connectionStatusReason() const;
     // not finished until the Connection is ready
     // PendingConnection *getConnection(Connection::Features features = 0) const;
+
+    Telepathy::SimplePresence automaticPresence() const;
+    PendingOperation *setAutomaticPresence(
+            const Telepathy::SimplePresence &value);
 
     Telepathy::SimplePresence currentPresence() const;
 

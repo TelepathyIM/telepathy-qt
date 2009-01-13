@@ -406,6 +406,20 @@ PendingOperation *Account::Private::becomeReady(Account::Features requestedFeatu
  * Object representing a Telepathy account.
  */
 
+/*! \enum Account::InterfaceSupportedChecking
+ *
+ * Specifies if the interface being supported by the remote object should be
+ * checked by optionalInterface() and the convenience functions for it.
+ *
+ * \value CheckInterfaceSupported Don't return an interface instance unless it
+ *                                can be guaranteed that the remote object
+ *                                actually implements the interface.
+ * \value BypassInterfaceCheck Return an interface instance even if it can't
+ *                             be verified that the remote object supports the
+ *                             interface.
+ * \sa optionalInterface()
+ */
+
 /**
  * Construct a new Account object.
  *
@@ -472,7 +486,7 @@ AccountManager *Account::manager() const
 }
 
 /**
- * Return whether this is a valid account.
+ * Get whether this is a valid account.
  *
  * \return \c true if the account is valid, \c false otherwise.
  */
@@ -482,7 +496,7 @@ bool Account::isValid() const
 }
 
 /**
- * Return whether this account is enabled.
+ * Get whether this account is enabled.
  *
  * \return \c true if the account is enabled, \c false otherwise.
  */
@@ -491,6 +505,13 @@ bool Account::isEnabled() const
     return mPriv->enabled;
 }
 
+/**
+ * Set whether this account is enabled.
+ *
+ * \param value Whether this account should be enabled or disabled.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Account::setEnabled(bool value)
 {
     return new PendingVoidMethodCall(this,
@@ -498,21 +519,43 @@ PendingOperation *Account::setEnabled(bool value)
                 "Enabled", QDBusVariant(value)));
 }
 
+/**
+ * Get this account connection manager name.
+ *
+ * \return Account connection manager name.
+ */
 QString Account::cmName() const
 {
     return mPriv->cmName;
 }
 
+/**
+ * Get this account protocol name.
+ *
+ * \return Account protocol name.
+ */
 QString Account::protocol() const
 {
     return mPriv->protocol;
 }
 
+/**
+ * Get this account display name.
+ *
+ * \return Account display name.
+ */
 QString Account::displayName() const
 {
     return mPriv->displayName;
 }
 
+/**
+ * Set this account display name.
+ *
+ * \param value Account display name.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Account::setDisplayName(const QString &value)
 {
     return new PendingVoidMethodCall(this,
@@ -520,11 +563,23 @@ PendingOperation *Account::setDisplayName(const QString &value)
                 "DisplayName", QDBusVariant(value)));
 }
 
+/**
+ * Get this account icon name.
+ *
+ * \return Account icon name.
+ */
 QString Account::icon() const
 {
     return mPriv->icon;
 }
 
+/**
+ * Set this account icon.
+ *
+ * \param value Account icon name.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Account::setIcon(const QString &value)
 {
     return new PendingVoidMethodCall(this,
@@ -532,11 +587,23 @@ PendingOperation *Account::setIcon(const QString &value)
                 "Icon", QDBusVariant(value)));
 }
 
+/**
+ * Get this account nickname.
+ *
+ * \return Account nickname.
+ */
 QString Account::nickname() const
 {
     return mPriv->nickname;
 }
 
+/**
+ * Set the account nickname.
+ *
+ * \param value Account nickname.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Account::setNickname(const QString &value)
 {
     return new PendingVoidMethodCall(this,
@@ -544,6 +611,15 @@ PendingOperation *Account::setNickname(const QString &value)
                 "Nickname", QDBusVariant(value)));
 }
 
+/**
+ * Get this account avatar data.
+ *
+ * Note that in order to make this method works you should call
+ * Account::becomeReady(FeatureAvatar) and wait for it to finish
+ * successfully.
+ *
+ * \return Account avatar data.
+ */
 QByteArray Account::avatarData() const
 {
     if (!mPriv->features & FeatureAvatar) {
@@ -553,6 +629,15 @@ QByteArray Account::avatarData() const
     return mPriv->avatarData;
 }
 
+/**
+ * Get this account avatar mimetype.
+ *
+ * Note that in order to make this method works you should call
+ * Account::becomeReady(FeatureAvatar) and wait for it to finish
+ * successfully.
+ *
+ * \return Avatar mimetype.
+ */
 QString Account::avatarMimeType() const
 {
     if (!mPriv->features & FeatureAvatar) {
@@ -562,6 +647,14 @@ QString Account::avatarMimeType() const
     return mPriv->avatarMimeType;
 }
 
+/**
+ * Set this account avatar.
+ *
+ * \param data Avatar data.
+ * \param mimeType Avatar mimetype.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Account::setAvatar(const QByteArray &data,
         const QString &mimeType)
 {
@@ -580,11 +673,24 @@ PendingOperation *Account::setAvatar(const QByteArray &data,
                 "Avatar", QDBusVariant(arg.asVariant())));
 }
 
+/**
+ * Get this account parameters.
+ *
+ * \return Account parameters.
+ */
 QVariantMap Account::parameters() const
 {
     return mPriv->parameters;
 }
 
+/**
+ * Update this account parameters.
+ *
+ * \param set Parameters to set.
+ * \param unset Parameters to unset.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Account::updateParameters(const QVariantMap &set,
         const QStringList &unset)
 {
@@ -592,6 +698,15 @@ PendingOperation *Account::updateParameters(const QVariantMap &set,
             baseInterface()->UpdateParameters(set, unset));
 }
 
+/**
+ * Get the protocol info for this account protocol.
+ *
+ * Note that in order to make this method works you should call
+ * Account::becomeReady(FeatureProtocolInfo) and wait for it to finish
+ * successfully.
+ *
+ * \return ProtocolInfo for this account protocol.
+ */
 ProtocolInfo *Account::protocolInfo() const
 {
     if (!mPriv->features & FeatureProtocolInfo) {
@@ -601,26 +716,24 @@ ProtocolInfo *Account::protocolInfo() const
     return mPriv->protocolInfo;
 }
 
-Telepathy::SimplePresence Account::automaticPresence() const
-{
-    return mPriv->automaticPresence;
-}
-
-PendingOperation *Account::setAutomaticPresence(
-        const Telepathy::SimplePresence &value)
-{
-    QDBusArgument arg;
-    arg << value;
-    return new PendingVoidMethodCall(this,
-            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "AutomaticPresence", QDBusVariant(arg.asVariant())));
-}
-
+/**
+ * Get whether this account should be put online automatically whenever possible.
+ *
+ * \return \c true if it should try to connect automatically, \c false otherwise.
+ */
 bool Account::connectsAutomatically() const
 {
     return mPriv->connectsAutomatically;
 }
 
+/**
+ * Set whether this account should be put online automatically whenever possible.
+ *
+ * \param value Value indicating if this account should be put online whenever
+ *              possible.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Account::setConnectsAutomatically(bool value)
 {
     return new PendingVoidMethodCall(this,
@@ -628,11 +741,21 @@ PendingOperation *Account::setConnectsAutomatically(bool value)
                 "ConnectAutomatically", QDBusVariant(value)));
 }
 
+/**
+ * Get the connection status of this account.
+ *
+ * \return Value indication the status of this account conneciton.
+ */
 Telepathy::ConnectionStatus Account::connectionStatus() const
 {
     return mPriv->connectionStatus;
 }
 
+/**
+ * Get the connection status reason of this account.
+ *
+ * \return Value indication the status reason of this account conneciton.
+ */
 Telepathy::ConnectionStatusReason Account::connectionStatusReason() const
 {
     return mPriv->connectionStatusReason;
@@ -643,16 +766,70 @@ Telepathy::ConnectionStatusReason Account::connectionStatusReason() const
 //     return 0;
 // }
 
+/**
+ * Set the presence status that this account should have if it is brought
+ * online.
+ *
+ * \return Presence status that will be set when this account is put online.
+ */
+Telepathy::SimplePresence Account::automaticPresence() const
+{
+    return mPriv->automaticPresence;
+}
+
+/**
+ * Set the presence status that this account should have if it is brought
+ * online.
+ *
+ * \param value Presence status to set when this account is put online.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa setRequestedPresence()
+ */
+PendingOperation *Account::setAutomaticPresence(
+        const Telepathy::SimplePresence &value)
+{
+    QDBusArgument arg;
+    arg << value;
+    return new PendingVoidMethodCall(this,
+            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
+                "AutomaticPresence", QDBusVariant(arg.asVariant())));
+}
+
+/**
+ * Get the actual presence of this account.
+ *
+ * \return The actual presence of this account.
+ * \sa requestedPresence(), automaticPresence()
+ */
 Telepathy::SimplePresence Account::currentPresence() const
 {
     return mPriv->currentPresence;
 }
 
+/**
+ * Get the requested presence of this account.
+ *
+ * When this is changed, the account manager should attempt to manipulate the
+ * connection manager to make CurrentPresence match RequestedPresence as closely
+ * as possible.
+ *
+ * \return The requested presence of this account.
+ * \sa currentPresence(), automaticPresence()
+ */
 Telepathy::SimplePresence Account::requestedPresence() const
 {
     return mPriv->requestedPresence;
 }
 
+/**
+ * Set the requested presence.
+ *
+ * \param value The requested presence.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa setAutomaticPresence()
+ */
 PendingOperation *Account::setRequestedPresence(
         const Telepathy::SimplePresence &value)
 {
@@ -663,6 +840,14 @@ PendingOperation *Account::setRequestedPresence(
                 "RequestedPresence", QDBusVariant(arg.asVariant())));
 }
 
+/**
+ * Get the unique identifier for this account.
+ *
+ * This identifier should be unique per AccountManager implementation,
+ * i.e. at least per QDBusConnection.
+ *
+ * \return Account unique identifier.
+ */
 QString Account::uniqueIdentifier() const
 {
     QString path = objectPath();
@@ -670,6 +855,11 @@ QString Account::uniqueIdentifier() const
     return path.right(path.length() - 25);
 }
 
+/**
+ * Get the connection object path of this account.
+ *
+ * \return Account connection object path.
+ */
 QString Account::connectionObjectPath() const
 {
     return mPriv->connectionObjectPath;
@@ -680,17 +870,42 @@ QString Account::normalizedName() const
     return mPriv->normalizedName;
 }
 
+/**
+ * Delete this account.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Account::remove()
 {
     return new PendingVoidMethodCall(this, baseInterface()->Remove());
 }
 
+/**
+ * Return whether this object has finished its initial setup.
+ *
+ * This is mostly useful as a sanity check, in code that shouldn't be run
+ * until the object is ready. To wait for the object to be ready, call
+ * becomeReady() and connect to the finished signal on the result.
+ *
+ * \param features Which features should be tested.
+ * \return \c true if the object has finished initial setup.
+ */
 bool Account::isReady(Features features) const
 {
     return mPriv->ready
         && ((mPriv->features & features) == features);
 }
 
+/**
+ * Return a pending operation which will succeed when this object finishes
+ * its initial setup, or will fail if a fatal error occurs during this
+ * initial setup.
+ *
+ * \param features Which features should be tested.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when this object has finished or failed its initial setup.
+ */
 PendingOperation *Account::becomeReady(Features features)
 {
     if (isReady(features)) {
@@ -706,11 +921,46 @@ QStringList Account::interfaces() const
 }
 
 /**
+ * \fn Account::optionalInterface(InterfaceSupportedChecking check) const
+ *
+ * Get a pointer to a valid instance of a given %Account optional
+ * interface class, associated with the same remote object the Account is
+ * associated with, and destroyed at the same time the Account is
+ * destroyed.
+ *
+ * If the list returned by interfaces() doesn't contain the name of the
+ * interface requested <code>0</code> is returned. This check can be
+ * bypassed by specifying #BypassInterfaceCheck for <code>check</code>, in
+ * which case a valid instance is always returned.
+ *
+ * If the object is not ready, the list returned by interfaces() isn't
+ * guaranteed to yet represent the full set of interfaces supported by the
+ * remote object.
+ * Hence the check might fail even if the remote object actually supports
+ * the requested interface; using #BypassInterfaceCheck is suggested when
+ * the Account is not suitably ready.
+ *
+ * \see OptionalInterfaceFactory::interface
+ *
+ * \tparam Interface Class of the optional interface to get.
+ * \param check Should an instance be returned even if it can't be
+ *              determined that the remote object supports the
+ *              requested interface.
+ * \return Pointer to an instance of the interface class, or <code>0</code>.
+ */
+
+/**
  * \fn DBus::propertiesInterface *Account::propertiesInterface() const
  *
  * Convenience function for getting a Properties interface proxy. The
  * Account interface relies on properties, so this interface is
  * always assumed to be present.
+ */
+
+/**
+ * \fn AccountInterfaceAvatarInterface *Account::avatarInterface(InterfaceSupportedChecking check) const
+ *
+ * Convenience function for getting a Avatar interface proxy.
  */
 
 /**
