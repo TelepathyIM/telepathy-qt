@@ -23,7 +23,6 @@
 #include "TelepathyQt4/Client/account-internal.h"
 
 #include "TelepathyQt4/Client/_gen/account.moc.hpp"
-#include "TelepathyQt4/Client/_gen/account-internal.moc.hpp"
 #include "TelepathyQt4/_gen/cli-account.moc.hpp"
 #include "TelepathyQt4/_gen/cli-account-body.hpp"
 
@@ -63,8 +62,7 @@ Account::Private::PendingReady::PendingReady(Account::Features features, QObject
 }
 
 Account::Private::Private(Account *parent)
-    : QObject(parent),
-      baseInterface(new AccountInterface(parent->dbusConnection(),
+    : baseInterface(new AccountInterface(parent->dbusConnection(),
                         parent->busName(), parent->objectPath(), parent)),
       ready(false),
       features(0),
@@ -93,371 +91,12 @@ Account::Private::Private(Account *parent)
         warning() << "Not a valid Account object path:" <<
             parent->objectPath();
     }
-
-    connect(baseInterface,
-            SIGNAL(Removed()),
-            SLOT(onRemoved()));
-    connect(baseInterface,
-            SIGNAL(AccountPropertyChanged(const QVariantMap &)),
-            SLOT(onPropertyChanged(const QVariantMap &)));
-
-    introspectQueue.enqueue(&Private::callGetAll);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 Account::Private::~Private()
 {
     delete baseInterface;
     delete cm;
-}
-
-void Account::Private::checkForAvatarInterface()
-{
-    Account *ac = static_cast<Account *>(parent());
-    AccountInterfaceAvatarInterface *iface = ac->avatarInterface();
-    if (!iface) {
-        debug() << "Avatar interface is not support for account" << ac->objectPath();
-        // add it to missing features so we don't try to retrieve the avatar
-        missingFeatures |= Account::FeatureAvatar;
-    }
-}
-
-void Account::Private::callGetAll()
-{
-    debug() << "Calling Properties::GetAll(Account)";
-    Account *ac = static_cast<Account *>(parent());
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            ac->propertiesInterface()->GetAll(
-                TELEPATHY_INTERFACE_ACCOUNT), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onGetAllAccountReturn(QDBusPendingCallWatcher *)));
-}
-
-void Account::Private::callGetAvatar()
-{
-    debug() << "Calling GetAvatar(Account)";
-    Account *ac = static_cast<Account *>(parent());
-    // we already checked if avatar interface exists, so bypass avatar interface
-    // checking
-    AccountInterfaceAvatarInterface *iface =
-        ac->avatarInterface(BypassInterfaceCheck);
-
-    // If we are here it means the user cares about avatar, so
-    // connect to avatar changed signal, so we update the avatar
-    // when it changes.
-    connect(iface,
-            SIGNAL(AvatarChanged()),
-            SLOT(onAvatarChanged()));
-
-    retrieveAvatar();
-}
-
-void Account::Private::callGetProtocolInfo()
-{
-    Account *ac = static_cast<Account *>(parent());
-    cm = new ConnectionManager(
-            ac->dbusConnection(),
-            cmName, this);
-    connect(cm->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onConnectionManagerReady(Telepathy::Client::PendingOperation *)));
-}
-
-void Account::Private::updateProperties(const QVariantMap &props)
-{
-    if (props.contains("Interfaces")) {
-        interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
-
-        checkForAvatarInterface();
-    }
-
-    if (props.contains("DisplayName")) {
-        displayName = qdbus_cast<QString>(props["DisplayName"]);
-        Q_EMIT displayNameChanged(displayName);
-    }
-
-    if (props.contains("Icon")) {
-        icon = qdbus_cast<QString>(props["Icon"]);
-        Q_EMIT iconChanged(icon);
-    }
-
-    if (props.contains("Nickname")) {
-        nickname = qdbus_cast<QString>(props["Nickname"]);
-        Q_EMIT nicknameChanged(icon);
-    }
-
-    if (props.contains("NormalizedName")) {
-        normalizedName = qdbus_cast<QString>(props["NormalizedName"]);
-        Q_EMIT normalizedNameChanged(normalizedName);
-    }
-
-    if (props.contains("Valid")) {
-        valid = qdbus_cast<bool>(props["Valid"]);
-        Q_EMIT validityChanged(valid);
-    }
-
-    if (props.contains("Enabled")) {
-        enabled = qdbus_cast<bool>(props["Enabled"]);
-        Q_EMIT stateChanged(enabled);
-    }
-
-    if (props.contains("ConnectAutomatically")) {
-        connectsAutomatically =
-                qdbus_cast<bool>(props["ConnectAutomatically"]);
-        Q_EMIT connectsAutomaticallyPropertyChanged(connectsAutomatically);
-    }
-
-    if (props.contains("Parameters")) {
-        parameters = qdbus_cast<QVariantMap>(props["Parameters"]);
-        Q_EMIT parametersChanged(parameters);
-    }
-
-    if (props.contains("AutomaticPresence")) {
-        automaticPresence = qdbus_cast<Telepathy::SimplePresence>(
-                props["AutomaticPresence"]);
-        Q_EMIT automaticPresenceChanged(automaticPresence);
-    }
-
-    if (props.contains("CurrentPresence")) {
-        currentPresence = qdbus_cast<Telepathy::SimplePresence>(
-                props["CurrentPresence"]);
-        Q_EMIT presenceChanged(currentPresence);
-    }
-
-    if (props.contains("RequestedPresence")) {
-        requestedPresence = qdbus_cast<Telepathy::SimplePresence>(
-                props["RequestedPresence"]);
-        Q_EMIT requestedPresenceChanged(requestedPresence);
-    }
-
-    if (props.contains("Connection")) {
-        QString path = qdbus_cast<QDBusObjectPath>(props["Connection"]).path();
-        if (path == QLatin1String("/")) {
-            connectionObjectPath = QString();
-        } else {
-            connectionObjectPath = path;
-        }
-    }
-
-    if (props.contains("ConnectionStatus") || props.contains("ConnectionStatusReason")) {
-        if (props.contains("ConnectionStatus")) {
-            connectionStatus = Telepathy::ConnectionStatus(
-                    qdbus_cast<uint>(props["ConnectionStatus"]));
-        }
-
-        if (props.contains("ConnectionStatusReason")) {
-            connectionStatusReason = Telepathy::ConnectionStatusReason(
-                    qdbus_cast<uint>(props["ConnectionStatusReason"]));
-        }
-        Q_EMIT connectionStatusChanged(connectionStatus, connectionStatusReason);
-    }
-}
-
-void Account::Private::retrieveAvatar()
-{
-    Account *ac = static_cast<Account *>(parent());
-    // we already checked if avatar interface exists, so bypass avatar interface
-    // checking
-    AccountInterfaceAvatarInterface *iface =
-        ac->avatarInterface(BypassInterfaceCheck);
-
-    DBus::PropertiesInterface *propertiesIface =
-        ac->interface<DBus::PropertiesInterface>(*iface);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            propertiesIface->Get(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
-                "Avatar"), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onGetAvatarReturn(QDBusPendingCallWatcher *)));
-}
-
-void Account::Private::onGetAllAccountReturn(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-
-    if (!reply.isError()) {
-        debug() << "Got reply to Properties.GetAll(Account)";
-        updateProperties(reply.value());
-        debug() << "Account basic functionality is ready";
-        ready = true;
-    } else {
-        warning().nospace() <<
-            "GetAll(Account) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
-    }
-
-    continueIntrospection();
-
-    watcher->deleteLater();
-}
-
-void Account::Private::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QVariant> reply = *watcher;
-
-    pendingFeatures ^= Account::FeatureAvatar;
-
-    if (!reply.isError()) {
-        features |= Account::FeatureAvatar;
-
-        debug() << "Got reply to GetAvatar(Account)";
-        avatar = qdbus_cast<Telepathy::Avatar>(reply);
-
-        Q_EMIT avatarChanged(avatar);
-    } else {
-        // add it to missing features so we don't try to retrieve the avatar
-        // again
-        missingFeatures |= Account::FeatureAvatar;
-
-        warning().nospace() <<
-            "GetAvatar(Account) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
-    }
-
-    continueIntrospection();
-
-    watcher->deleteLater();
-}
-
-void Account::Private::onAvatarChanged()
-{
-    debug() << "Avatar changed, retrieving it";
-    retrieveAvatar();
-}
-
-void Account::Private::onConnectionManagerReady(PendingOperation *operation)
-{
-    bool error = operation->isError();
-    if (!error) {
-        Q_FOREACH (ProtocolInfo *info, cm->protocols()) {
-            if (info->name() == protocol) {
-                protocolInfo = info;
-            }
-        }
-
-        error = (protocolInfo == 0);
-    }
-
-    pendingFeatures ^= Account::FeatureProtocolInfo;
-
-    if (!error) {
-        features |= Account::FeatureProtocolInfo;
-    }
-    else {
-        missingFeatures |= Account::FeatureProtocolInfo;
-
-        // signal all pending operations that cares about protocol info that
-        // it failed
-        Q_FOREACH (PendingReady *operation, pendingOperations) {
-            if (operation->features & FeatureProtocolInfo) {
-                operation->setFinishedWithError(operation->errorName(),
-                        operation->errorMessage());
-                pendingOperations.removeOne(operation);
-            }
-        }
-    }
-
-    continueIntrospection();
-}
-
-void Account::Private::onPropertyChanged(const QVariantMap &delta)
-{
-    updateProperties(delta);
-}
-
-void Account::Private::onRemoved()
-{
-    ready = false;
-    valid = false;
-    enabled = false;
-    Q_EMIT removed();
-}
-
-void Account::Private::continueIntrospection()
-{
-    if (introspectQueue.isEmpty()) {
-        Q_FOREACH (PendingReady *operation, pendingOperations) {
-            if (operation->features == 0 && ready) {
-                operation->setFinished();
-            }
-            else if (operation->features == Account::FeatureAvatar &&
-                (features & Account::FeatureAvatar ||
-                 missingFeatures & Account::FeatureAvatar)) {
-                // if we don't have avatar we will just finish silently
-                operation->setFinished();
-            }
-            else if (operation->features == Account::FeatureProtocolInfo &&
-                     features & Account::FeatureProtocolInfo) {
-                operation->setFinished();
-            }
-            else if (operation->features == (Account::FeatureAvatar | Account::FeatureProtocolInfo) &&
-                     ((features == (Account::FeatureAvatar | Account::FeatureProtocolInfo)) ||
-                      (features & Account::FeatureProtocolInfo && missingFeatures & Account::FeatureAvatar))) {
-                // if we don't have avatar we will just finish silently
-                operation->setFinished();
-            }
-            if (operation->isFinished()) {
-                pendingOperations.removeOne(operation);
-            }
-        }
-    }
-    else {
-        (this->*(introspectQueue.dequeue()))();
-    }
-}
-
-PendingOperation *Account::Private::becomeReady(Account::Features requestedFeatures)
-{
-    debug() << "calling becomeReady with requested features:" << requestedFeatures;
-    Q_FOREACH (PendingReady *operation, pendingOperations) {
-        if (operation->features == requestedFeatures) {
-            debug() << "returning cached pending operation";
-            return operation;
-        }
-    }
-
-    if (requestedFeatures & FeatureAvatar) {
-        // if the only feature requested is avatar and avatar is know to not be
-        // supported, just finish silently
-        if (requestedFeatures == FeatureAvatar &&
-            missingFeatures & FeatureAvatar) {
-            return new PendingSuccess(this);
-        }
-
-        // if we know that avatar is not supported, no need to
-        // queue the call to get avatar
-        if (!(missingFeatures & FeatureAvatar) &&
-            !(features & FeatureAvatar) &&
-            !(pendingFeatures & FeatureAvatar)) {
-            introspectQueue.enqueue(&Private::callGetAvatar);
-        }
-    }
-
-    if (requestedFeatures & FeatureProtocolInfo) {
-        // the user asked for protocol info
-        // but we already know that protocol info is not supported, so
-        // fail directly
-        if (missingFeatures & FeatureProtocolInfo) {
-            return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                    QString("ProtocolInfo not found for protocol %1 on CM %2")
-                        .arg(protocol).arg(cmName));
-        }
-
-        if (!(features & FeatureProtocolInfo) &&
-            !(pendingFeatures & FeatureProtocolInfo)) {
-            introspectQueue.enqueue(&Private::callGetProtocolInfo);
-        }
-    }
-
-    pendingFeatures |= features;
-
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
-
-    debug() << "creating new pending operation";
-    PendingReady *operation = new PendingReady(requestedFeatures, this);
-    pendingOperations.append(operation);
-    return operation;
 }
 
 /**
@@ -495,50 +134,15 @@ Account::Account(AccountManager *am, const QString &objectPath,
             am->busName(), objectPath, parent),
       mPriv(new Private(this))
 {
-    connect(mPriv,
-            SIGNAL(removed()),
-            SIGNAL(removed()));
-    connect(mPriv,
-            SIGNAL(displayNameChanged(const QString &)),
-            SIGNAL(displayNameChanged(const QString &)));
-    connect(mPriv,
-            SIGNAL(iconChanged(const QString &)),
-            SIGNAL(iconChanged(const QString &)));
-    connect(mPriv,
-            SIGNAL(nicknameChanged(const QString &)),
-            SIGNAL(nicknameChanged(const QString &)));
-    connect(mPriv,
-            SIGNAL(nornalizedNameChanged(const QString &)),
-            SIGNAL(nornalizedNameChanged(const QString &)));
-    connect(mPriv,
-            SIGNAL(validityChanged(bool)),
-            SIGNAL(validityChanged(bool)));
-    connect(mPriv,
-            SIGNAL(stateChanged(bool)),
-            SIGNAL(stateChanged(bool)));
-    connect(mPriv,
-            SIGNAL(connectsAutomaticallyPropertyChanged(bool)),
-            SIGNAL(connectsAutomaticallyPropertyChanged(bool)));
-    connect(mPriv,
-            SIGNAL(parametersChanged(const QVariantMap &)),
-            SIGNAL(parametersChanged(const QVariantMap &)));
-    connect(mPriv,
-            SIGNAL(automaticPresenceChanged(const Telepathy::SimplePresence &)),
-            SIGNAL(automaticPresenceChanged(const Telepathy::SimplePresence &)));
-    connect(mPriv,
-            SIGNAL(presenceChanged(const Telepathy::SimplePresence &)),
-            SIGNAL(presenceChanged(const Telepathy::SimplePresence &)));
-    connect(mPriv,
-            SIGNAL(requestedPresenceChanged(const Telepathy::SimplePresence &)),
-            SIGNAL(requestedPresenceChanged(const Telepathy::SimplePresence &)));
-    connect(mPriv,
-            SIGNAL(avatarChanged(const Telepathy::Avatar &)),
-            SIGNAL(avatarChanged(const Telepathy::Avatar &)));
-    connect(mPriv,
-            SIGNAL(connectionStatusChanged(Telepathy::ConnectionStatus,
-                                           Telepathy::ConnectionStatusReason)),
-            SIGNAL(connectionStatusChanged(Telepathy::ConnectionStatus,
-                                           Telepathy::ConnectionStatusReason)));
+    connect(mPriv->baseInterface,
+            SIGNAL(Removed()),
+            SLOT(onRemoved()));
+    connect(mPriv->baseInterface,
+            SIGNAL(AccountPropertyChanged(const QVariantMap &)),
+            SLOT(onPropertyChanged(const QVariantMap &)));
+
+    mPriv->introspectQueue.enqueue(&Account::callGetAll);
+    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 /**
@@ -975,13 +579,63 @@ bool Account::isReady(Features features) const
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when this object has finished or failed its initial setup.
  */
-PendingOperation *Account::becomeReady(Features features)
+PendingOperation *Account::becomeReady(Features requestedFeatures)
 {
-    if (isReady(features)) {
+    if (isReady(requestedFeatures)) {
         return new PendingSuccess(this);
     }
 
-    return mPriv->becomeReady(features);
+    debug() << "calling becomeReady with requested features:"
+            << requestedFeatures;
+    Q_FOREACH (Private::PendingReady *operation, mPriv->pendingOperations) {
+        if (operation->features == requestedFeatures) {
+            debug() << "returning cached pending operation";
+            return operation;
+        }
+    }
+
+    if (requestedFeatures & FeatureAvatar) {
+        // if the only feature requested is avatar and avatar is know to not be
+        // supported, just finish silently
+        if (requestedFeatures == FeatureAvatar &&
+            mPriv->missingFeatures & FeatureAvatar) {
+            return new PendingSuccess(this);
+        }
+
+        // if we know that avatar is not supported, no need to
+        // queue the call to get avatar
+        if (!(mPriv->missingFeatures & FeatureAvatar) &&
+            !(mPriv->features & FeatureAvatar) &&
+            !(mPriv->pendingFeatures & FeatureAvatar)) {
+            mPriv->introspectQueue.enqueue(&Account::callGetAvatar);
+        }
+    }
+
+    if (requestedFeatures & FeatureProtocolInfo) {
+        // the user asked for protocol info
+        // but we already know that protocol info is not supported, so
+        // fail directly
+        if (mPriv->missingFeatures & FeatureProtocolInfo) {
+            return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                    QString("ProtocolInfo not found for protocol %1 on CM %2")
+                        .arg(mPriv->protocol).arg(mPriv->cmName));
+        }
+
+        if (!(mPriv->features & FeatureProtocolInfo) &&
+            !(mPriv->pendingFeatures & FeatureProtocolInfo)) {
+            mPriv->introspectQueue.enqueue(&Account::callGetProtocolInfo);
+        }
+    }
+
+    mPriv->pendingFeatures |= requestedFeatures;
+
+    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+
+    debug() << "Creating new pending operation";
+    Private::PendingReady *operation =
+        new Private::PendingReady(requestedFeatures, this);
+    mPriv->pendingOperations.append(operation);
+    return operation;
 }
 
 QStringList Account::interfaces() const
@@ -1044,6 +698,300 @@ QStringList Account::interfaces() const
 AccountInterface *Account::baseInterface() const
 {
     return mPriv->baseInterface;
+}
+
+/**** Private ****/
+void Account::checkForAvatarInterface()
+{
+    AccountInterfaceAvatarInterface *iface = avatarInterface();
+    if (!iface) {
+        debug() << "Avatar interface is not support for account" << objectPath();
+        // add it to missing features so we don't try to retrieve the avatar
+        mPriv->missingFeatures |= Account::FeatureAvatar;
+    }
+}
+
+void Account::callGetAll()
+{
+    debug() << "Calling Properties::GetAll(Account)";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            propertiesInterface()->GetAll(
+                TELEPATHY_INTERFACE_ACCOUNT), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onGetAllAccountReturn(QDBusPendingCallWatcher *)));
+}
+
+void Account::callGetAvatar()
+{
+    debug() << "Calling GetAvatar(Account)";
+    // we already checked if avatar interface exists, so bypass avatar interface
+    // checking
+    AccountInterfaceAvatarInterface *iface =
+        avatarInterface(BypassInterfaceCheck);
+
+    // If we are here it means the user cares about avatar, so
+    // connect to avatar changed signal, so we update the avatar
+    // when it changes.
+    connect(iface,
+            SIGNAL(AvatarChanged()),
+            SLOT(onAvatarChanged()));
+
+    retrieveAvatar();
+}
+
+void Account::callGetProtocolInfo()
+{
+    mPriv->cm = new ConnectionManager(
+            dbusConnection(),
+            mPriv->cmName, this);
+    connect(mPriv->cm->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            SLOT(onConnectionManagerReady(Telepathy::Client::PendingOperation *)));
+}
+
+void Account::updateProperties(const QVariantMap &props)
+{
+    if (props.contains("Interfaces")) {
+        mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+
+        checkForAvatarInterface();
+    }
+
+    if (props.contains("DisplayName")) {
+        mPriv->displayName = qdbus_cast<QString>(props["DisplayName"]);
+        Q_EMIT displayNameChanged(mPriv->displayName);
+    }
+
+    if (props.contains("Icon")) {
+        mPriv->icon = qdbus_cast<QString>(props["Icon"]);
+        Q_EMIT iconChanged(mPriv->icon);
+    }
+
+    if (props.contains("Nickname")) {
+        mPriv->nickname = qdbus_cast<QString>(props["Nickname"]);
+        Q_EMIT nicknameChanged(mPriv->icon);
+    }
+
+    if (props.contains("NormalizedName")) {
+        mPriv->normalizedName = qdbus_cast<QString>(props["NormalizedName"]);
+        Q_EMIT normalizedNameChanged(mPriv->normalizedName);
+    }
+
+    if (props.contains("Valid")) {
+        mPriv->valid = qdbus_cast<bool>(props["Valid"]);
+        Q_EMIT validityChanged(mPriv->valid);
+    }
+
+    if (props.contains("Enabled")) {
+        mPriv->enabled = qdbus_cast<bool>(props["Enabled"]);
+        Q_EMIT stateChanged(mPriv->enabled);
+    }
+
+    if (props.contains("ConnectAutomatically")) {
+        mPriv->connectsAutomatically =
+                qdbus_cast<bool>(props["ConnectAutomatically"]);
+        Q_EMIT connectsAutomaticallyPropertyChanged(mPriv->connectsAutomatically);
+    }
+
+    if (props.contains("Parameters")) {
+        mPriv->parameters = qdbus_cast<QVariantMap>(props["Parameters"]);
+        Q_EMIT parametersChanged(mPriv->parameters);
+    }
+
+    if (props.contains("AutomaticPresence")) {
+        mPriv->automaticPresence = qdbus_cast<Telepathy::SimplePresence>(
+                props["AutomaticPresence"]);
+        Q_EMIT automaticPresenceChanged(mPriv->automaticPresence);
+    }
+
+    if (props.contains("CurrentPresence")) {
+        mPriv->currentPresence = qdbus_cast<Telepathy::SimplePresence>(
+                props["CurrentPresence"]);
+        Q_EMIT presenceChanged(mPriv->currentPresence);
+    }
+
+    if (props.contains("RequestedPresence")) {
+        mPriv->requestedPresence = qdbus_cast<Telepathy::SimplePresence>(
+                props["RequestedPresence"]);
+        Q_EMIT requestedPresenceChanged(mPriv->requestedPresence);
+    }
+
+    if (props.contains("Connection")) {
+        QString path = qdbus_cast<QDBusObjectPath>(props["Connection"]).path();
+        if (path == QLatin1String("/")) {
+            path = QString();
+        }
+        mPriv->connectionObjectPath = path;
+    }
+
+    if (props.contains("ConnectionStatus") || props.contains("ConnectionStatusReason")) {
+        if (props.contains("ConnectionStatus")) {
+            mPriv->connectionStatus = Telepathy::ConnectionStatus(
+                    qdbus_cast<uint>(props["ConnectionStatus"]));
+        }
+
+        if (props.contains("ConnectionStatusReason")) {
+            mPriv->connectionStatusReason = Telepathy::ConnectionStatusReason(
+                    qdbus_cast<uint>(props["ConnectionStatusReason"]));
+        }
+        Q_EMIT connectionStatusChanged(
+                mPriv->connectionStatus, mPriv->connectionStatusReason);
+    }
+}
+
+void Account::retrieveAvatar()
+{
+    // we already checked if avatar interface exists, so bypass avatar interface
+    // checking
+    AccountInterfaceAvatarInterface *iface =
+        avatarInterface(BypassInterfaceCheck);
+
+    DBus::PropertiesInterface *propertiesIface =
+        interface<DBus::PropertiesInterface>(*iface);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            propertiesIface->Get(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
+                "Avatar"), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onGetAvatarReturn(QDBusPendingCallWatcher *)));
+}
+
+void Account::onGetAllAccountReturn(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties.GetAll(Account)";
+        updateProperties(reply.value());
+        debug() << "Account basic functionality is ready";
+        mPriv->ready = true;
+    } else {
+        warning().nospace() <<
+            "GetAll(Account) failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
+}
+
+void Account::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariant> reply = *watcher;
+
+    mPriv->pendingFeatures ^= Account::FeatureAvatar;
+
+    if (!reply.isError()) {
+        mPriv->features |= Account::FeatureAvatar;
+
+        debug() << "Got reply to GetAvatar(Account)";
+        mPriv->avatar = qdbus_cast<Telepathy::Avatar>(reply);
+
+        Q_EMIT avatarChanged(mPriv->avatar);
+    } else {
+        // add it to missing features so we don't try to retrieve the avatar
+        // again
+        mPriv->missingFeatures |= Account::FeatureAvatar;
+
+        warning().nospace() <<
+            "GetAvatar(Account) failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
+}
+
+void Account::onAvatarChanged()
+{
+    debug() << "Avatar changed, retrieving it";
+    retrieveAvatar();
+}
+
+void Account::onConnectionManagerReady(PendingOperation *operation)
+{
+    bool error = operation->isError();
+    if (!error) {
+        Q_FOREACH (ProtocolInfo *info, mPriv->cm->protocols()) {
+            if (info->name() == mPriv->protocol) {
+                mPriv->protocolInfo = info;
+                break;
+            }
+        }
+
+        error = (mPriv->protocolInfo == 0);
+    }
+
+    mPriv->pendingFeatures ^= Account::FeatureProtocolInfo;
+
+    if (!error) {
+        mPriv->features |= Account::FeatureProtocolInfo;
+    }
+    else {
+        mPriv->missingFeatures |= Account::FeatureProtocolInfo;
+
+        // signal all pending operations that cares about protocol info that
+        // it failed
+        Q_FOREACH (Private::PendingReady *operation, mPriv->pendingOperations) {
+            if (operation->features & FeatureProtocolInfo) {
+                operation->setFinishedWithError(operation->errorName(),
+                        operation->errorMessage());
+                mPriv->pendingOperations.removeOne(operation);
+            }
+        }
+    }
+
+    continueIntrospection();
+}
+
+void Account::onPropertyChanged(const QVariantMap &delta)
+{
+    updateProperties(delta);
+}
+
+void Account::onRemoved()
+{
+    mPriv->ready = false;
+    mPriv->valid = false;
+    mPriv->enabled = false;
+    Q_EMIT removed();
+}
+
+void Account::continueIntrospection()
+{
+    if (mPriv->introspectQueue.isEmpty()) {
+        Q_FOREACH (Private::PendingReady *operation, mPriv->pendingOperations) {
+            if (operation->features == 0 && mPriv->ready) {
+                operation->setFinished();
+            }
+            else if (operation->features == Account::FeatureAvatar &&
+                (mPriv->features & Account::FeatureAvatar ||
+                 mPriv->missingFeatures & Account::FeatureAvatar)) {
+                // if we don't have avatar we will just finish silently
+                operation->setFinished();
+            }
+            else if (operation->features == Account::FeatureProtocolInfo &&
+                     mPriv->features & Account::FeatureProtocolInfo) {
+                operation->setFinished();
+            }
+            else if (operation->features == (Account::FeatureAvatar | Account::FeatureProtocolInfo) &&
+                     ((mPriv->features == (Account::FeatureAvatar | Account::FeatureProtocolInfo)) ||
+                      (mPriv->features & Account::FeatureProtocolInfo &&
+                       mPriv->missingFeatures & Account::FeatureAvatar))) {
+                // if we don't have avatar we will just finish silently
+                operation->setFinished();
+            }
+            if (operation->isFinished()) {
+                mPriv->pendingOperations.removeOne(operation);
+            }
+        }
+    }
+    else {
+        (this->*(mPriv->introspectQueue.dequeue()))();
+    }
 }
 
 } // Telepathy::Client

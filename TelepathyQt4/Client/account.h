@@ -183,11 +183,27 @@ Q_SIGNALS:
 protected:
     AccountInterface *baseInterface() const;
 
+private Q_SLOTS:
+    void onGetAllAccountReturn(QDBusPendingCallWatcher *);
+    void onGetAvatarReturn(QDBusPendingCallWatcher *);
+    void onAvatarChanged();
+    void onConnectionManagerReady(Telepathy::Client::PendingOperation *);
+    void onPropertyChanged(const QVariantMap &delta);
+    void onRemoved();
+    void continueIntrospection();
+
 private:
     Q_DISABLE_COPY(Account);
 
-    class Private;
-    friend class Private;
+    void checkForAvatarInterface();
+    void callGetAll();
+    void callGetAvatar();
+    void callGetProtocolInfo();
+    void updateProperties(const QVariantMap &props);
+    void retrieveAvatar();
+
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

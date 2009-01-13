@@ -42,29 +42,18 @@ class AccountInterface;
 class ConnectionManager;
 class ProtocolInfo;
 
-class Account::Private : public QObject
+struct Account::Private
 {
-    Q_OBJECT
-
 public:
     Private(Account *parent);
     ~Private();
 
-    void checkForAvatarInterface();
-    void callGetAll();
-    void callGetAvatar();
-    void callGetProtocolInfo();
-    void updateProperties(const QVariantMap &props);
-    void retrieveAvatar();
-    PendingOperation *becomeReady(Account::Features requestFeatures);
-
     class PendingReady;
-    class PendingUpdateParameters;
 
     AccountInterface *baseInterface;
     bool ready;
     QList<PendingReady *> pendingOperations;
-    QQueue<void (Private::*)()> introspectQueue;
+    QQueue<void (Account::*)()> introspectQueue;
     QStringList interfaces;
     Account::Features features;
     Account::Features pendingFeatures;
@@ -88,38 +77,12 @@ public:
     Telepathy::SimplePresence automaticPresence;
     Telepathy::SimplePresence currentPresence;
     Telepathy::SimplePresence requestedPresence;
-
-Q_SIGNALS:
-    void removed();
-    void displayNameChanged(const QString &);
-    void iconChanged(const QString &);
-    void nicknameChanged(const QString &);
-    void normalizedNameChanged(const QString &);
-    void validityChanged(bool);
-    void stateChanged(bool);
-    void connectsAutomaticallyPropertyChanged(bool);
-    void parametersChanged(const QVariantMap &);
-    void automaticPresenceChanged(const Telepathy::SimplePresence &) const;
-    void presenceChanged(const Telepathy::SimplePresence &) const;
-    void requestedPresenceChanged(const Telepathy::SimplePresence &) const;
-    void avatarChanged(const Telepathy::Avatar &);
-    void connectionStatusChanged(Telepathy::ConnectionStatus,
-            Telepathy::ConnectionStatusReason);
-
-private Q_SLOTS:
-    void onGetAllAccountReturn(QDBusPendingCallWatcher *);
-    void onGetAvatarReturn(QDBusPendingCallWatcher *);
-    void onAvatarChanged();
-    void onConnectionManagerReady(Telepathy::Client::PendingOperation *);
-    void onPropertyChanged(const QVariantMap &delta);
-    void onRemoved();
-    void continueIntrospection();
 };
 
 class Account::Private::PendingReady : public PendingOperation
 {
-    // Account::Private is a friend so it can call finished() etc.
-    friend class Account::Private;
+    // Account is a friend so it can call finished() etc.
+    friend class Account;
 
 public:
     PendingReady(Account::Features features, QObject *parent = 0);
