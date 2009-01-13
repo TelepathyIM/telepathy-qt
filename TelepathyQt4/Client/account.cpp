@@ -289,7 +289,7 @@ void Account::Private::onGetAllAccountReturn(QDBusPendingCallWatcher *watcher)
 
 void Account::Private::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<QByteArray, QString> reply = *watcher;
+    QDBusPendingReply<QVariant> reply = *watcher;
 
     pendingFeatures ^= Account::FeatureAvatar;
 
@@ -297,10 +297,9 @@ void Account::Private::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
         features |= Account::FeatureAvatar;
 
         debug() << "Got reply to GetAvatar(Account)";
-        avatarData = reply.argumentAt<0>();
-        avatarMimeType = reply.argumentAt<1>();
+        avatar = qdbus_cast<Telepathy::Avatar>(reply);
 
-        Q_EMIT avatarChanged(avatarData, avatarMimeType);
+        Q_EMIT avatarChanged(avatar);
     } else {
         // add it to missing features so we don't try to retrieve the avatar
         // again
@@ -318,6 +317,7 @@ void Account::Private::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
 
 void Account::Private::onAvatarChanged()
 {
+    debug() << "Avatar changed, retrieving it";
     retrieveAvatar();
 }
 
@@ -515,8 +515,8 @@ Account::Account(AccountManager *am, const QDBusObjectPath &objectPath,
             SIGNAL(presenceChanged(const Telepathy::SimplePresence &)),
             SIGNAL(presenceChanged(const Telepathy::SimplePresence &)));
     connect(mPriv,
-            SIGNAL(avatarChanged(const QByteArray &, const QString &)),
-            SIGNAL(avatarChanged(const QByteArray &, const QString &)));
+            SIGNAL(avatarChanged(const Telepathy::Avatar &)),
+            SIGNAL(avatarChanged(const Telepathy::Avatar &)));
     connect(mPriv,
             SIGNAL(connectionStatusChanged(Telepathy::ConnectionStatus,
                                            Telepathy::ConnectionStatusReason)),
@@ -669,47 +669,25 @@ PendingOperation *Account::setNickname(const QString &value)
 }
 
 /**
- * Get this account avatar data.
+ * Get this account avatar.
  *
  * Note that in order to make this method works you should call
  * Account::becomeReady(FeatureAvatar) and wait for it to finish
  * successfully.
  *
- * \return Account avatar data.
+ * \return Account avatar.
  */
-QByteArray Account::avatarData() const
+const Telepathy::Avatar &Account::avatar() const
 {
     if (mPriv->missingFeatures & FeatureAvatar) {
-        warning() << "Trying to retrieve avatar data from account, but "
+        warning() << "Trying to retrieve avatar from account, but "
                      "avatar is not supported";
     }
     else if (!(mPriv->features & FeatureAvatar)) {
-        warning() << "Trying to retrieve avatar data from account without "
+        warning() << "Trying to retrieve avatar from account without "
                      "calling Account::becomeReady(FeatureAvatar)";
     }
-    return mPriv->avatarData;
-}
-
-/**
- * Get this account avatar mimetype.
- *
- * Note that in order to make this method works you should call
- * Account::becomeReady(FeatureAvatar) and wait for it to finish
- * successfully.
- *
- * \return Avatar mimetype.
- */
-QString Account::avatarMimeType() const
-{
-    if (mPriv->missingFeatures & FeatureAvatar) {
-        warning() << "Trying to retrieve avatar mimetype from account, but "
-                     "avatar is not supported";
-    }
-    else if (!(mPriv->features & FeatureAvatar)) {
-        warning() << "Trying to retrieve avatar mimetype from account without "
-                     "calling Account::becomeReady(FeatureAvatar)";
-    }
-    return mPriv->avatarMimeType;
+    return mPriv->avatar;
 }
 
 /**
@@ -720,8 +698,7 @@ QString Account::avatarMimeType() const
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
-PendingOperation *Account::setAvatar(const QByteArray &data,
-        const QString &mimeType)
+PendingOperation *Account::setAvatar(const Telepathy::Avatar &avatar)
 {
     AccountInterfaceAvatarInterface *iface = avatarInterface();
     if (!iface) {
@@ -731,11 +708,9 @@ PendingOperation *Account::setAvatar(const QByteArray &data,
 
     DBus::PropertiesInterface *propertiesIface =
         OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(*iface);
-    QDBusArgument arg;
-    arg << data << mimeType;
     return new PendingVoidMethodCall(this,
             propertiesIface->Set(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
-                "Avatar", QDBusVariant(arg.asVariant())));
+                "Avatar", QDBusVariant(QVariant::fromValue(avatar))));
 }
 
 /**
@@ -854,11 +829,9 @@ Telepathy::SimplePresence Account::automaticPresence() const
 PendingOperation *Account::setAutomaticPresence(
         const Telepathy::SimplePresence &value)
 {
-    QDBusArgument arg;
-    arg << value;
     return new PendingVoidMethodCall(this,
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "AutomaticPresence", QDBusVariant(arg.asVariant())));
+                "AutomaticPresence", QDBusVariant(QVariant::fromValue(value))));
 }
 
 /**
@@ -898,11 +871,9 @@ Telepathy::SimplePresence Account::requestedPresence() const
 PendingOperation *Account::setRequestedPresence(
         const Telepathy::SimplePresence &value)
 {
-    QDBusArgument arg;
-    arg << value;
     return new PendingVoidMethodCall(this,
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "RequestedPresence", QDBusVariant(arg.asVariant())));
+                "RequestedPresence", QDBusVariant(QVariant::fromValue(value))));
 }
 
 /**

@@ -80,8 +80,7 @@ public:
     QString icon;
     QString connectionObjectPath;
     QString normalizedName;
-    QString avatarMimeType;
-    QByteArray avatarData;
+    Telepathy::Avatar avatar;
     ConnectionManager *cm;
     ProtocolInfo *protocolInfo;
     Telepathy::ConnectionStatus connectionStatus;
@@ -99,7 +98,7 @@ Q_SIGNALS:
     void validityChanged(bool);
     void parametersChanged(const QVariantMap &);
     void presenceChanged(const Telepathy::SimplePresence &) const;
-    void avatarChanged(const QByteArray &, const QString &);
+    void avatarChanged(const Telepathy::Avatar &);
     void connectionStatusChanged(Telepathy::ConnectionStatus,
             Telepathy::ConnectionStatusReason);
 

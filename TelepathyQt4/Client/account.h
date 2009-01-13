@@ -97,9 +97,8 @@ public:
     PendingOperation *setNickname(const QString &value);
 
     // requires spec 0.17.16
-    QByteArray avatarData() const;
-    QString avatarMimeType() const;
-    PendingOperation *setAvatar(const QByteArray &data, const QString &mimeType);
+    const Telepathy::Avatar &avatar() const;
+    PendingOperation *setAvatar(const Telepathy::Avatar &avatar);
 
     QVariantMap parameters() const;
     PendingOperation *updateParameters(const QVariantMap &set,
@@ -174,7 +173,7 @@ Q_SIGNALS:
     void validityChanged(bool);
     void parametersChanged(const QVariantMap &);
     void presenceChanged(const Telepathy::SimplePresence &) const;
-    void avatarChanged(const QByteArray &, const QString &);
+    void avatarChanged(const Telepathy::Avatar &);
     void connectionStatusChanged(Telepathy::ConnectionStatus,
             Telepathy::ConnectionStatusReason);
 
