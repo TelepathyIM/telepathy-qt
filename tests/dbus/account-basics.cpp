@@ -33,6 +33,7 @@ protected Q_SLOTS:
     void expectSuccessfulCall(Telepathy::Client::PendingOperation *);
     void onAccountCreated(Telepathy::Client::PendingOperation *);
     void onAccountReady(Telepathy::Client::PendingOperation *);
+    void onAvatarChanged(const Telepathy::Avatar &);
 
 private Q_SLOTS:
     void init();
@@ -94,6 +95,14 @@ void TestAccountBasics::onAccountReady(Telepathy::Client::PendingOperation *oper
     mLoop->exit(0);
 }
 
+void TestAccountBasics::onAvatarChanged(const Telepathy::Avatar &avatar)
+{
+    qDebug() << "on avatar changed";
+    QCOMPARE(avatar.avatarData, QByteArray("asdfg"));
+    QCOMPARE(avatar.MIMEType, QString("image/jpeg"));
+    mLoop->exit(0);
+}
+
 void TestAccountBasics::init()
 {
     Telepathy::registerTypes();
@@ -144,6 +153,34 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(acc->displayName(), QString("foobar (account 0)"));
+
+    connect(acc->becomeReady(Account::FeatureAvatar),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
+
+    connect(acc,
+            SIGNAL(avatarChanged(const Telepathy::Avatar &)),
+            SLOT(onAvatarChanged(const Telepathy::Avatar &)));
+
+    Telepathy::Avatar avatar = { QByteArray("asdfg"), "image/jpeg" };
+    connect(acc->setAvatar(avatar),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QCOMPARE(mLoop->exec(), 0);
+
+    connect(acc->becomeReady(Account::FeatureAvatar),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // wait for avatarChanged signal
+    QCOMPARE(mLoop->exec(), 0);
 }
 
 void TestAccountBasics::cleanup()
