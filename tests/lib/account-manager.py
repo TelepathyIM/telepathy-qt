@@ -18,6 +18,7 @@ AM_BUS_NAME = AM_IFACE
 AM_OBJECT_PATH = '/' + AM_IFACE.replace('.', '/')
 
 ACCOUNT_IFACE = TP + '.Account'
+ACCOUNT_IFACE_AVATAR_IFACE = ACCOUNT_IFACE + '.Interface.Avatar'
 ACCOUNT_OBJECT_PATH_BASE = '/' + ACCOUNT_IFACE.replace('.', '/') + '/'
 
 
@@ -165,6 +166,10 @@ class Account(Object):
         self._requested_presence = dbus.Struct(
                 (Connection_Presence_Type_Offline, 'offline', ''),
                 signature='uss')
+        self._avatar = dbus.Struct(
+                (dbus.ByteArray(''), 'image/png'),
+                signature='ays')
+        self._interfaces = [ACCOUNT_IFACE_AVATAR_IFACE,]
 
     def _is_valid(self):
         return True
@@ -187,6 +192,11 @@ class Account(Object):
         print ("%s: emitting AccountPropertyChanged(\n    %r    \n)"
                 % (self.__dbus_object_path__, delta))
 
+    @signal(ACCOUNT_IFACE_AVATAR_IFACE, signature='')
+    def AvatarChanged(self):
+        print ("%s: emitting AvatarChanged"
+                % (self.__dbus_object_path__))
+
     @method(ACCOUNT_IFACE, in_signature='', out_signature='')
     def Remove(self):
         print "%s: entering Remove()" % self.__dbus_object_path__
@@ -201,7 +211,7 @@ class Account(Object):
 
     def _account_props(self):
         return dbus.Dictionary({
-            'Interfaces': dbus.Array([], signature='s'),
+            'Interfaces': dbus.Array(self._interfaces, signature='s'),
             'DisplayName': self._display_name,
             'Icon': self._icon,
             'Valid': self._is_valid(),
@@ -218,12 +228,19 @@ class Account(Object):
             'NormalizedName': self._normalized_name,
         }, signature='sv')
 
+    def _account_avatar_props(self):
+        return dbus.Dictionary({
+            'Avatar': self._avatar
+        }, signature='sv')
+
     @method(dbus.PROPERTIES_IFACE,
             in_signature='s',
             out_signature='a{sv}')
     def GetAll(self, iface):
         if iface == ACCOUNT_IFACE:
             return self._account_props()
+        elif iface == ACCOUNT_IFACE_AVATAR_IFACE:
+            return self._account_avatar_props()
         else:
             raise ValueError('No such interface')
 
@@ -233,6 +250,8 @@ class Account(Object):
     def Get(self, iface, prop):
         if iface == ACCOUNT_IFACE:
             props = self._account_props()
+        elif iface == ACCOUNT_IFACE_AVATAR_IFACE:
+            props = self._account_avatar_props()
         else:
             raise ValueError('No such interface')
 
@@ -242,7 +261,7 @@ class Account(Object):
             raise ValueError('No such property')
 
     @method(dbus.PROPERTIES_IFACE,
-            in_signature='ssv')
+            in_signature='ssv', byte_arrays=True)
     def Set(self, iface, prop, value):
         if iface == ACCOUNT_IFACE:
             if prop == 'DisplayName':
@@ -270,6 +289,14 @@ class Account(Object):
                 raise ValueError('Read-only or nonexistent property')
 
             self.AccountPropertyChanged({prop: self._account_props()[prop]})
+        elif iface == ACCOUNT_IFACE_AVATAR_IFACE:
+            if prop == 'Avatar':
+                self._avatar = dbus.Struct(
+                        (dbus.ByteArray(value[0]), unicode(value[1])),
+                        signature='ays')
+                self.AvatarChanged()
+            else:
+                raise ValueError('Nonexistent property')
         else:
             raise ValueError('No such interface')
 
