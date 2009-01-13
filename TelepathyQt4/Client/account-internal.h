@@ -94,10 +94,14 @@ Q_SIGNALS:
     void displayNameChanged(const QString &);
     void iconChanged(const QString &);
     void nicknameChanged(const QString &);
-    void stateChanged(bool);
+    void normalizedNameChanged(const QString &);
     void validityChanged(bool);
+    void stateChanged(bool);
+    void connectsAutomaticallyPropertyChanged(bool);
     void parametersChanged(const QVariantMap &);
+    void automaticPresenceChanged(const Telepathy::SimplePresence &) const;
     void presenceChanged(const Telepathy::SimplePresence &) const;
+    void requestedPresenceChanged(const Telepathy::SimplePresence &) const;
     void avatarChanged(const Telepathy::Avatar &);
     void connectionStatusChanged(Telepathy::ConnectionStatus,
             Telepathy::ConnectionStatusReason);

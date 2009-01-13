@@ -189,6 +189,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
     if (props.contains("NormalizedName")) {
         normalizedName = qdbus_cast<QString>(props["NormalizedName"]);
+        Q_EMIT normalizedNameChanged(normalizedName);
     }
 
     if (props.contains("Valid")) {
@@ -204,6 +205,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
     if (props.contains("ConnectAutomatically")) {
         connectsAutomatically =
                 qdbus_cast<bool>(props["ConnectAutomatically"]);
+        Q_EMIT connectsAutomaticallyPropertyChanged(connectsAutomatically);
     }
 
     if (props.contains("Parameters")) {
@@ -214,6 +216,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
     if (props.contains("AutomaticPresence")) {
         automaticPresence = qdbus_cast<Telepathy::SimplePresence>(
                 props["AutomaticPresence"]);
+        Q_EMIT automaticPresenceChanged(automaticPresence);
     }
 
     if (props.contains("CurrentPresence")) {
@@ -225,6 +228,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
     if (props.contains("RequestedPresence")) {
         requestedPresence = qdbus_cast<Telepathy::SimplePresence>(
                 props["RequestedPresence"]);
+        Q_EMIT requestedPresenceChanged(requestedPresence);
     }
 
     if (props.contains("Connection")) {
@@ -504,17 +508,29 @@ Account::Account(AccountManager *am, const QString &objectPath,
             SIGNAL(nicknameChanged(const QString &)),
             SIGNAL(nicknameChanged(const QString &)));
     connect(mPriv,
-            SIGNAL(stateChanged(bool)),
-            SIGNAL(stateChanged(bool)));
+            SIGNAL(nornalizedNameChanged(const QString &)),
+            SIGNAL(nornalizedNameChanged(const QString &)));
     connect(mPriv,
             SIGNAL(validityChanged(bool)),
             SIGNAL(validityChanged(bool)));
     connect(mPriv,
+            SIGNAL(stateChanged(bool)),
+            SIGNAL(stateChanged(bool)));
+    connect(mPriv,
+            SIGNAL(connectsAutomaticallyPropertyChanged(bool)),
+            SIGNAL(connectsAutomaticallyPropertyChanged(bool)));
+    connect(mPriv,
             SIGNAL(parametersChanged(const QVariantMap &)),
             SIGNAL(parametersChanged(const QVariantMap &)));
     connect(mPriv,
+            SIGNAL(automaticPresenceChanged(const Telepathy::SimplePresence &)),
+            SIGNAL(automaticPresenceChanged(const Telepathy::SimplePresence &)));
+    connect(mPriv,
             SIGNAL(presenceChanged(const Telepathy::SimplePresence &)),
             SIGNAL(presenceChanged(const Telepathy::SimplePresence &)));
+    connect(mPriv,
+            SIGNAL(requestedPresenceChanged(const Telepathy::SimplePresence &)),
+            SIGNAL(requestedPresenceChanged(const Telepathy::SimplePresence &)));
     connect(mPriv,
             SIGNAL(avatarChanged(const Telepathy::Avatar &)),
             SIGNAL(avatarChanged(const Telepathy::Avatar &)));
