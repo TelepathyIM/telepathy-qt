@@ -36,7 +36,6 @@ libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
     Client/account.cpp \
-    Client/account-internal.h \
     Client/account-manager.cpp \
     Client/account-manager-internal.h \
     Client/channel.cpp \

@@ -20,7 +20,6 @@
  */
 
 #include <TelepathyQt4/Client/Account>
-#include "TelepathyQt4/Client/account-internal.h"
 
 #include "TelepathyQt4/Client/_gen/account.moc.hpp"
 #include "TelepathyQt4/_gen/cli-account.moc.hpp"
@@ -54,6 +53,53 @@ namespace Telepathy
 {
 namespace Client
 {
+
+struct Account::Private
+{
+    Private(Account *parent);
+    ~Private();
+
+    class PendingReady;
+
+    AccountInterface *baseInterface;
+    bool ready;
+    QList<PendingReady *> pendingOperations;
+    QQueue<void (Account::*)()> introspectQueue;
+    QStringList interfaces;
+    Account::Features features;
+    Account::Features pendingFeatures;
+    Account::Features missingFeatures;
+    QVariantMap parameters;
+    bool valid;
+    bool enabled;
+    bool connectsAutomatically;
+    QString cmName;
+    QString protocol;
+    QString displayName;
+    QString nickname;
+    QString icon;
+    QString connectionObjectPath;
+    QString normalizedName;
+    Telepathy::Avatar avatar;
+    ConnectionManager *cm;
+    ProtocolInfo *protocolInfo;
+    Telepathy::ConnectionStatus connectionStatus;
+    Telepathy::ConnectionStatusReason connectionStatusReason;
+    Telepathy::SimplePresence automaticPresence;
+    Telepathy::SimplePresence currentPresence;
+    Telepathy::SimplePresence requestedPresence;
+};
+
+class Account::Private::PendingReady : public PendingOperation
+{
+    // Account is a friend so it can call finished() etc.
+    friend class Account;
+
+public:
+    PendingReady(Account::Features features, QObject *parent = 0);
+
+    Account::Features features;
+};
 
 Account::Private::PendingReady::PendingReady(Account::Features features, QObject *parent)
     : PendingOperation(parent),
