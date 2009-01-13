@@ -212,6 +212,11 @@ AccountManager *Account::manager() const
 /**
  * Get whether this is a valid account.
  *
+ * If true, this account is considered by the account manager to be complete
+ * and usable. If false, user action is required to make it usable, and it will
+ * never attempt to connect (for instance, this might be caused by the absence
+ * of a required parameter).
+ *
  * \return \c true if the account is valid, \c false otherwise.
  */
 bool Account::isValid() const
@@ -221,6 +226,9 @@ bool Account::isValid() const
 
 /**
  * Get whether this account is enabled.
+ *
+ * Gives the users the possibility to prevent an account from
+ * being used. This flag does not change the validity of the account.
  *
  * \return \c true if the account is enabled, \c false otherwise.
  */
