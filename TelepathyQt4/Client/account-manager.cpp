@@ -20,7 +20,6 @@
  */
 
 #include <TelepathyQt4/Client/AccountManager>
-#include "TelepathyQt4/Client/account-manager-internal.h"
 
 #include "TelepathyQt4/Client/_gen/account-manager.moc.hpp"
 #include "TelepathyQt4/_gen/cli-account-manager.moc.hpp"
@@ -60,6 +59,34 @@ namespace Telepathy
 {
 namespace Client
 {
+
+struct AccountManager::Private
+{
+    Private(AccountManager *parent);
+    ~Private();
+
+    void setAccountPaths(QSet<QString> &set, const QVariant &variant);
+
+    class PendingReady;
+
+    AccountManagerInterface *baseInterface;
+    bool ready;
+    PendingReady *pendingReady;
+    QQueue<void (AccountManager::*)()> introspectQueue;
+    QStringList interfaces;
+    AccountManager::Features features;
+    QSet<QString> validAccountPaths;
+    QSet<QString> invalidAccountPaths;
+};
+
+class AccountManager::Private::PendingReady : public PendingOperation
+{
+    // AccountManager is a friend so it can call finished() etc.
+    friend class AccountManager;
+
+public:
+    PendingReady(AccountManager *parent);
+};
 
 AccountManager::Private::PendingReady::PendingReady(AccountManager *parent)
     : PendingOperation(parent)
