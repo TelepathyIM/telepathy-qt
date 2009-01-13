@@ -37,11 +37,8 @@ namespace Client
 class ConnectionManager;
 class ConnectionManagerInterface;
 
-class ConnectionManager::Private : public QObject
+struct ConnectionManager::Private
 {
-    Q_OBJECT
-
-public:
     Private(const QString &name, ConnectionManager *parent);
     ~Private();
 
@@ -50,37 +47,24 @@ public:
 
     ProtocolInfo *protocol(const QString &protocolName);
 
-    bool checkConfigFile();
-    void callReadConfig();
-    void callGetAll();
-    void callGetParameters();
-    void callListProtocols();
-
     class PendingReady;
     class PendingNames;
 
     ConnectionManagerInterface *baseInterface;
     QString name;
     bool ready;
-    QQueue<void (Private::*)()> introspectQueue;
+    QQueue<void (ConnectionManager::*)()> introspectQueue;
     QQueue<QString> getParametersQueue;
     QQueue<QString> protocolQueue;
     QStringList interfaces;
     ProtocolInfoList protocols;
     PendingReady *pendingReady;
-
-private Q_SLOTS:
-    void onGetParametersReturn(QDBusPendingCallWatcher *);
-    void onListProtocolsReturn(QDBusPendingCallWatcher *);
-    void onGetAllConnectionManagerReturn(QDBusPendingCallWatcher *);
-    void continueIntrospection();
 };
-
 
 class ConnectionManager::Private::PendingReady : public PendingOperation
 {
-    // ConnectionManager::Private is a friend so it can call finished() etc.
-    friend class ConnectionManager::Private;
+    // ConnectionManager is a friend so it can call finished() etc.
+    friend class ConnectionManager;
 
 public:
     PendingReady(ConnectionManager *parent);
