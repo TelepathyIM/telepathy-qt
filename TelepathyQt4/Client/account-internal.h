@@ -55,6 +55,7 @@ public:
     void callGetAvatar();
     void callGetProtocolInfo();
     void updateProperties(const QVariantMap &props);
+    void retrieveAvatar();
     PendingOperation *becomeReady(Account::Features requestFeatures);
 
     class PendingReady;
@@ -105,6 +106,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onGetAllAccountReturn(QDBusPendingCallWatcher *);
     void onGetAvatarReturn(QDBusPendingCallWatcher *);
+    void onAvatarChanged();
     void onConnectionManagerReady(Telepathy::Client::PendingOperation *);
     void onPropertyChanged(const QVariantMap &delta);
     void onRemoved();

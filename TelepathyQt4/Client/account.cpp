@@ -39,8 +39,6 @@
 #include <QRegExp>
 #include <QTimer>
 
-// TODO listen to avatarChanged signal
-
 /**
  * \addtogroup clientsideproxies Client-side proxies
  *
@@ -102,8 +100,6 @@ Account::Private::Private(Account *parent)
             SIGNAL(AccountPropertyChanged(const QVariantMap &)),
             SLOT(onPropertyChanged(const QVariantMap &)));
 
-    checkForAvatarInterface();
-
     introspectQueue.enqueue(&Private::callGetAll);
     QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
@@ -119,6 +115,7 @@ void Account::Private::checkForAvatarInterface()
     Account *ac = static_cast<Account *>(parent());
     AccountInterfaceAvatarInterface *iface = ac->avatarInterface();
     if (!iface) {
+        debug() << "Avatar interface is not support for account" << ac->objectPath();
         // add it to missing features so we don't try to retrieve the avatar
         missingFeatures |= Account::FeatureAvatar;
     }
@@ -140,15 +137,19 @@ void Account::Private::callGetAvatar()
 {
     debug() << "Calling GetAvatar(Account)";
     Account *ac = static_cast<Account *>(parent());
-    AccountInterfaceAvatarInterface *iface = ac->avatarInterface();
-    DBus::PropertiesInterface *propertiesIface =
-        ac->interface<DBus::PropertiesInterface>(*iface);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            propertiesIface->Get(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
-                "Avatar"), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onGetAvatarReturn(QDBusPendingCallWatcher *)));
+    // we already checked if avatar interface exists, so bypass avatar interface
+    // checking
+    AccountInterfaceAvatarInterface *iface =
+        ac->avatarInterface(BypassInterfaceCheck);
+
+    // If we are here it means the user cares about avatar, so
+    // connect to avatar changed signal, so we update the avatar
+    // when it changes.
+    connect(iface,
+            SIGNAL(AvatarChanged()),
+            SLOT(onAvatarChanged()));
+
+    retrieveAvatar();
 }
 
 void Account::Private::callGetProtocolInfo()
@@ -166,6 +167,8 @@ void Account::Private::updateProperties(const QVariantMap &props)
 {
     if (props.contains("Interfaces")) {
         interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+
+        checkForAvatarInterface();
     }
 
     if (props.contains("DisplayName")) {
@@ -246,6 +249,24 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 }
 
+void Account::Private::retrieveAvatar()
+{
+    Account *ac = static_cast<Account *>(parent());
+    // we already checked if avatar interface exists, so bypass avatar interface
+    // checking
+    AccountInterfaceAvatarInterface *iface =
+        ac->avatarInterface(BypassInterfaceCheck);
+
+    DBus::PropertiesInterface *propertiesIface =
+        ac->interface<DBus::PropertiesInterface>(*iface);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            propertiesIface->Get(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
+                "Avatar"), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onGetAvatarReturn(QDBusPendingCallWatcher *)));
+}
+
 void Account::Private::onGetAllAccountReturn(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -278,6 +299,8 @@ void Account::Private::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to GetAvatar(Account)";
         avatarData = reply.argumentAt<0>();
         avatarMimeType = reply.argumentAt<1>();
+
+        Q_EMIT avatarChanged(avatarData, avatarMimeType);
     } else {
         // add it to missing features so we don't try to retrieve the avatar
         // again
@@ -291,6 +314,11 @@ void Account::Private::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
     continueIntrospection();
 
     watcher->deleteLater();
+}
+
+void Account::Private::onAvatarChanged()
+{
+    retrieveAvatar();
 }
 
 void Account::Private::onConnectionManagerReady(PendingOperation *operation)
@@ -652,11 +680,11 @@ PendingOperation *Account::setNickname(const QString &value)
 QByteArray Account::avatarData() const
 {
     if (mPriv->missingFeatures & FeatureAvatar) {
-        warning() << "Trying to retrieve avatar data from account, but"
+        warning() << "Trying to retrieve avatar data from account, but "
                      "avatar is not supported";
     }
     else if (!(mPriv->features & FeatureAvatar)) {
-        warning() << "Trying to retrieve avatar data from account without"
+        warning() << "Trying to retrieve avatar data from account without "
                      "calling Account::becomeReady(FeatureAvatar)";
     }
     return mPriv->avatarData;
@@ -674,11 +702,11 @@ QByteArray Account::avatarData() const
 QString Account::avatarMimeType() const
 {
     if (mPriv->missingFeatures & FeatureAvatar) {
-        warning() << "Trying to retrieve avatar mimetype from account, but"
+        warning() << "Trying to retrieve avatar mimetype from account, but "
                      "avatar is not supported";
     }
     else if (!(mPriv->features & FeatureAvatar)) {
-        warning() << "Trying to retrieve avatar mimetype from account without"
+        warning() << "Trying to retrieve avatar mimetype from account without "
                      "calling Account::becomeReady(FeatureAvatar)";
     }
     return mPriv->avatarMimeType;
