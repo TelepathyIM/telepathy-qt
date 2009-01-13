@@ -135,7 +135,8 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to AccountManager.CreateAccount";
         QDBusObjectPath objectPath = reply.value();
         debug() << "Creating account for objectPath: " << objectPath.path();
-        mPriv->account = new Account(mPriv->manager, objectPath, mPriv->manager);
+        mPriv->account = new Account(mPriv->manager,
+                objectPath.path(), mPriv->manager);
         setFinished();
     } else {
         debug().nospace() <<

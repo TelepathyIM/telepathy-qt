@@ -34,7 +34,6 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
-#include <QDBusObjectPath>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -72,7 +71,7 @@ public:
         BypassInterfaceCheck
     };
 
-    Account(AccountManager *am, const QDBusObjectPath &objectPath,
+    Account(AccountManager *am, const QString &objectPath,
             QObject *parent = 0);
 
     virtual ~Account();

@@ -105,7 +105,7 @@ void AccountManager::Private::callGetAll()
             SLOT(onGetAllAccountManagerReturn(QDBusPendingCallWatcher *)));
 }
 
-void AccountManager::Private::setAccountPaths(QSet<QDBusObjectPath> &set,
+void AccountManager::Private::setAccountPaths(QSet<QString> &set,
         const QVariant &variant)
 {
     Telepathy::ObjectPathList paths = qdbus_cast<Telepathy::ObjectPathList>(variant);
@@ -120,13 +120,14 @@ void AccountManager::Private::setAccountPaths(QSet<QDBusObjectPath> &set,
             warning() << "AccountManager returned wrong type "
                 "(expected 'ao', got 'as'); working around it";
             Q_FOREACH (QString path, wronglyTypedPaths) {
-                paths << QDBusObjectPath(path);
+                set << path;
             }
         }
     }
-
-    Q_FOREACH (const QDBusObjectPath &path, paths) {
-        set << path;
+    else {
+        Q_FOREACH (const QDBusObjectPath &path, paths) {
+            set << path.path();
+        }
     }
 }
 
@@ -164,22 +165,24 @@ void AccountManager::Private::onGetAllAccountManagerReturn(
     watcher->deleteLater();
 }
 
-void AccountManager::Private::onAccountValidityChanged(const QDBusObjectPath &path,
+void AccountManager::Private::onAccountValidityChanged(const QDBusObjectPath &objectPath,
         bool nowValid)
 {
+    QString path = objectPath.path();
     bool newAccount = false;
 
-    if (!validAccountPaths.contains(path) && !invalidAccountPaths.contains(path)) {
+    if (!validAccountPaths.contains(path) &&
+        !invalidAccountPaths.contains(path)) {
         newAccount = true;
     }
 
     if (nowValid) {
-        debug() << "Account created or became valid:" << path.path();
+        debug() << "Account created or became valid:" << path;
         invalidAccountPaths.remove(path);
         validAccountPaths.insert(path);
     }
     else {
-        debug() << "Account became invalid:" << path.path();
+        debug() << "Account became invalid:" << path;
         validAccountPaths.remove(path);
         invalidAccountPaths.insert(path);
     }
@@ -197,9 +200,11 @@ void AccountManager::Private::onAccountValidityChanged(const QDBusObjectPath &pa
     }
 }
 
-void AccountManager::Private::onAccountRemoved(const QDBusObjectPath &path)
+void AccountManager::Private::onAccountRemoved(const QDBusObjectPath &objectPath)
 {
-    debug() << "Account removed:" << path.path();
+    QString path = objectPath.path();
+
+    debug() << "Account removed:" << path;
     validAccountPaths.remove(path);
     invalidAccountPaths.remove(path);
 
@@ -285,37 +290,33 @@ QStringList AccountManager::interfaces() const
  */
 
 /**
- * Return a list of QDBusObjectPath for all valid accounts.
+ * Return a list of object paths for all valid accounts.
  *
- * \return A list of QDBusObjectPath.
+ * \return A list of object paths.
  */
-Telepathy::ObjectPathList AccountManager::validAccountPaths() const
+QStringList AccountManager::validAccountPaths() const
 {
-    Telepathy::ObjectPathList result;
-    result.append(mPriv->validAccountPaths.values());
-    return result;
+    return mPriv->validAccountPaths.values();
 }
 
 /**
- * Return a list of QDBusObjectPath for all invalid accounts.
+ * Return a list of object paths for all invalid accounts.
  *
- * \return A list of QDBusObjectPath.
+ * \return A list of object paths.
  */
-Telepathy::ObjectPathList AccountManager::invalidAccountPaths() const
+QStringList AccountManager::invalidAccountPaths() const
 {
-    Telepathy::ObjectPathList result;
-    result.append(mPriv->invalidAccountPaths.values());
-    return result;
+    return mPriv->invalidAccountPaths.values();
 }
 
 /**
- * Return a list of QDBusObjectPath for all accounts.
+ * Return a list of object paths for all accounts.
  *
- * \return A list of QDBusObjectPath.
+ * \return A list of object paths.
  */
-Telepathy::ObjectPathList AccountManager::allAccountPaths() const
+QStringList AccountManager::allAccountPaths() const
 {
-    ObjectPathList result;
+    QStringList result;
     result.append(mPriv->validAccountPaths.values());
     result.append(mPriv->invalidAccountPaths.values());
     return result;
@@ -326,6 +327,9 @@ Telepathy::ObjectPathList AccountManager::allAccountPaths() const
  *
  * Note that the Account objects won't be cached by account manager, and
  * should be done by the application itself.
+ *
+ * Remember to call Account::becomeReady on the new accounts, to
+ * make sure they are ready before using it.
  *
  * \return A list of Account objects
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
@@ -341,6 +345,9 @@ QList<Account *> AccountManager::validAccounts()
  * Note that the Account objects won't be cached by account manager, and
  * should be done by the application itself.
  *
+ * Remember to call Account::becomeReady on the new accounts, to
+ * make sure they are ready before using it.
+ *
  * \return A list of Account objects
  * \sa validAccounts(), allAccounts(), accountsForPaths()
  */
@@ -354,6 +361,9 @@ QList<Account *> AccountManager::invalidAccounts()
  *
  * Note that the Account objects won't be cached by account manager, and
  * should be done by the application itself.
+ *
+ * Remember to call Account::becomeReady on the new accounts, to
+ * make sure they are ready before using it.
  *
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
@@ -369,11 +379,14 @@ QList<Account *> AccountManager::allAccounts()
  * Note that the Account object won't be cached by account manager, and
  * should be done by the application itself.
  *
- * \param path A QDBusObjectPath to create account for.
+ * Remember to call Account::becomeReady on the new account, to
+ * make sure it is ready before using it.
+ *
+ * \param path The object path to create account for.
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
-Account *AccountManager::accountForPath(const QDBusObjectPath &path)
+Account *AccountManager::accountForPath(const QString &path)
 {
     // TODO should we use AM as parent of account,
     //      or receive parent as a param?
@@ -386,14 +399,17 @@ Account *AccountManager::accountForPath(const QDBusObjectPath &path)
  * Note that the Account objects won't be cached by account manager, and
  * should be done by the application itself.
  *
- * \param paths List of QDBusObjectPath to create accounts for.
+ * Remember to call Account::becomeReady on the new accounts, to
+ * make sure they are ready before using it.
+ *
+ * \param paths List of object paths to create accounts for.
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), allAccounts()
  */
-QList<Account *> AccountManager::accountsForPaths(const QList<QDBusObjectPath> &paths)
+QList<Account *> AccountManager::accountsForPaths(const QStringList &paths)
 {
     QList<Account *> result;
-    Q_FOREACH (const QDBusObjectPath &path, paths) {
+    Q_FOREACH (const QString &path, paths) {
         result << accountForPath(path);
     }
     return result;
@@ -479,14 +495,14 @@ AccountManagerInterface *AccountManager::baseInterface() const
 void AccountManager::init()
 {
     connect(mPriv,
-            SIGNAL(accountCreated(const QDBusObjectPath &)),
-            SIGNAL(accountCreated(const QDBusObjectPath &)));
+            SIGNAL(accountCreated(const QString &)),
+            SIGNAL(accountCreated(const QString &)));
     connect(mPriv,
-            SIGNAL(accountRemoved(const QDBusObjectPath &)),
-            SIGNAL(accountRemoved(const QDBusObjectPath &)));
+            SIGNAL(accountRemoved(const QString &)),
+            SIGNAL(accountRemoved(const QString &)));
     connect(mPriv,
-            SIGNAL(accountValidityChanged(const QDBusObjectPath &, bool)),
-            SIGNAL(accountValidityChanged(const QDBusObjectPath &, bool)));
+            SIGNAL(accountValidityChanged(const QString &, bool)),
+            SIGNAL(accountValidityChanged(const QString &, bool)));
 }
 
 } // Telepathy::Client

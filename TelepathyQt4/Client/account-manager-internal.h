@@ -45,7 +45,7 @@ public:
     ~Private();
 
     void callGetAll();
-    void setAccountPaths(QSet<QDBusObjectPath> &set, const QVariant &variant);
+    void setAccountPaths(QSet<QString> &set, const QVariant &variant);
 
     class PendingReady;
 
@@ -55,13 +55,13 @@ public:
     QQueue<void (Private::*)()> introspectQueue;
     QStringList interfaces;
     AccountManager::Features features;
-    QSet<QDBusObjectPath> validAccountPaths;
-    QSet<QDBusObjectPath> invalidAccountPaths;
+    QSet<QString> validAccountPaths;
+    QSet<QString> invalidAccountPaths;
 
 Q_SIGNALS:
-    void accountCreated(const QDBusObjectPath &path);
-    void accountRemoved(const QDBusObjectPath &path);
-    void accountValidityChanged(const QDBusObjectPath &path, bool valid);
+    void accountCreated(const QString &path);
+    void accountRemoved(const QString &path);
+    void accountValidityChanged(const QString &path, bool valid);
 
 private Q_SLOTS:
     void onGetAllAccountManagerReturn(QDBusPendingCallWatcher *);

@@ -1,6 +1,5 @@
 #include <QtCore/QEventLoop>
 #include <QtTest/QtTest>
-#include <QtDBus/QDBusObjectPath>
 
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
@@ -12,15 +11,6 @@
 
 using namespace Telepathy;
 using namespace Telepathy::Client;
-
-static QStringList objectPathListToStringList(const ObjectPathList &paths)
-{
-    QStringList result;
-    Q_FOREACH (const QDBusObjectPath &path, paths) {
-        result << path.path();
-    }
-    return result;
-}
 
 class TestAccountBasics : public QObject
 {
@@ -136,17 +126,17 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(mAM->interfaces(), QStringList());
 
-    QCOMPARE(objectPathListToStringList(mAM->validAccountPaths()),
+    QCOMPARE(mAM->validAccountPaths(),
              QStringList() <<
                "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
-    QCOMPARE(objectPathListToStringList(mAM->invalidAccountPaths()),
+    QCOMPARE(mAM->invalidAccountPaths(),
              QStringList());
-    QCOMPARE(objectPathListToStringList(mAM->allAccountPaths()),
+    QCOMPARE(mAM->allAccountPaths(),
              QStringList() <<
                "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
 
     Account *acc = mAM->accountForPath(
-            QDBusObjectPath("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
+            "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
     connect(acc->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             this,
@@ -192,7 +182,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
 
     acc = mAM->accountForPath(
-            QDBusObjectPath("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
+            "/org/freedesktop/Telepathy/Account/spurious/normal/Account0");
     connect(acc->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             this,
@@ -200,7 +190,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
 
     acc = mAM->accountForPath(
-            QDBusObjectPath("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
+            "/org/freedesktop/Telepathy/Account/spurious/normal/Account0");
     connect(acc->becomeReady(Account::FeatureProtocolInfo),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             this,

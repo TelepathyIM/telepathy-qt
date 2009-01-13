@@ -485,10 +485,10 @@ PendingOperation *Account::Private::becomeReady(Account::Features requestedFeatu
  * \param objectPath Account object path.
  * \param parent Object parent.
  */
-Account::Account(AccountManager *am, const QDBusObjectPath &objectPath,
+Account::Account(AccountManager *am, const QString &objectPath,
         QObject *parent)
     : StatelessDBusProxy(am->dbusConnection(),
-            am->busName(), objectPath.path(), parent),
+            am->busName(), objectPath, parent),
       mPriv(new Private(this))
 {
     connect(mPriv,

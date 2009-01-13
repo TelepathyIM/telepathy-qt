@@ -32,7 +32,6 @@
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
-#include <QDBusObjectPath>
 #include <QString>
 #include <QVariantMap>
 
@@ -70,16 +69,16 @@ public:
                 *baseInterface());
     }
 
-    Telepathy::ObjectPathList validAccountPaths() const;
-    Telepathy::ObjectPathList invalidAccountPaths() const;
-    Telepathy::ObjectPathList allAccountPaths() const;
+    QStringList validAccountPaths() const;
+    QStringList invalidAccountPaths() const;
+    QStringList allAccountPaths() const;
 
     QList<Account *> validAccounts();
     QList<Account *> invalidAccounts();
     QList<Account *> allAccounts();
 
-    Account *accountForPath(const QDBusObjectPath &path);
-    QList<Account *> accountsForPaths(const QList<QDBusObjectPath> &paths);
+    Account *accountForPath(const QString &path);
+    QList<Account *> accountsForPaths(const QStringList &paths);
 
     PendingAccount *createAccount(const QString &connectionManager,
             const QString &protocol, const QString &displayName,
@@ -92,9 +91,9 @@ public:
     PendingOperation *becomeReady(Features features = 0);
 
 Q_SIGNALS:
-    void accountCreated(const QDBusObjectPath &path);
-    void accountRemoved(const QDBusObjectPath &path);
-    void accountValidityChanged(const QDBusObjectPath &path, bool valid);
+    void accountCreated(const QString &path);
+    void accountRemoved(const QString &path);
+    void accountValidityChanged(const QString &path, bool valid);
 
 protected:
     AccountManagerInterface *baseInterface() const;
