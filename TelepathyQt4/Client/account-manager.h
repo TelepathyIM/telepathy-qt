@@ -32,6 +32,7 @@
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
+#include <QDBusObjectPath>
 #include <QString>
 #include <QVariantMap>
 
@@ -98,11 +99,18 @@ Q_SIGNALS:
 protected:
     AccountManagerInterface *baseInterface() const;
 
+private Q_SLOTS:
+    void onGetAllAccountManagerReturn(QDBusPendingCallWatcher *);
+    void onAccountValidityChanged(const QDBusObjectPath &, bool);
+    void onAccountRemoved(const QDBusObjectPath &);
+    void continueIntrospection();
+
 private:
     void init();
+    void callGetAll();
 
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     friend class PendingAccount;
     Private *mPriv;
 };

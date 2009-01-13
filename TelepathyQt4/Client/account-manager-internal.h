@@ -36,15 +36,12 @@ namespace Client
 class AccountManager;
 class AccountManagerInterface;
 
-class AccountManager::Private : public QObject
+struct AccountManager::Private
 {
-    Q_OBJECT
-
 public:
     Private(AccountManager *parent);
     ~Private();
 
-    void callGetAll();
     void setAccountPaths(QSet<QString> &set, const QVariant &variant);
 
     class PendingReady;
@@ -52,28 +49,17 @@ public:
     AccountManagerInterface *baseInterface;
     bool ready;
     PendingReady *pendingReady;
-    QQueue<void (Private::*)()> introspectQueue;
+    QQueue<void (AccountManager::*)()> introspectQueue;
     QStringList interfaces;
     AccountManager::Features features;
     QSet<QString> validAccountPaths;
     QSet<QString> invalidAccountPaths;
-
-Q_SIGNALS:
-    void accountCreated(const QString &path);
-    void accountRemoved(const QString &path);
-    void accountValidityChanged(const QString &path, bool valid);
-
-private Q_SLOTS:
-    void onGetAllAccountManagerReturn(QDBusPendingCallWatcher *);
-    void onAccountValidityChanged(const QDBusObjectPath &, bool);
-    void onAccountRemoved(const QDBusObjectPath &);
-    void continueIntrospection();
 };
 
 class AccountManager::Private::PendingReady : public PendingOperation
 {
-    // AccountManager::Private is a friend so it can call finished() etc.
-    friend class AccountManager::Private;
+    // AccountManager is a friend so it can call finished() etc.
+    friend class AccountManager;
 
 public:
     PendingReady(AccountManager *parent);

@@ -23,7 +23,6 @@
 #include "TelepathyQt4/Client/account-manager-internal.h"
 
 #include "TelepathyQt4/Client/_gen/account-manager.moc.hpp"
-#include "TelepathyQt4/Client/_gen/account-manager-internal.moc.hpp"
 #include "TelepathyQt4/_gen/cli-account-manager.moc.hpp"
 #include "TelepathyQt4/_gen/cli-account-manager-body.hpp"
 
@@ -68,41 +67,18 @@ AccountManager::Private::PendingReady::PendingReady(AccountManager *parent)
 }
 
 AccountManager::Private::Private(AccountManager *parent)
-    : QObject(parent),
-      baseInterface(new AccountManagerInterface(parent->dbusConnection(),
+    : baseInterface(new AccountManagerInterface(parent->dbusConnection(),
                             parent->busName(), parent->objectPath(), parent)),
       ready(false),
       pendingReady(0),
       features(0)
 {
     debug() << "Creating new AccountManager:" << parent->busName();
-
-    connect(baseInterface,
-            SIGNAL(AccountValidityChanged(const QDBusObjectPath &, bool)),
-            SLOT(onAccountValidityChanged(const QDBusObjectPath &, bool)));
-    connect(baseInterface,
-            SIGNAL(AccountRemoved(const QDBusObjectPath &)),
-            SLOT(onAccountRemoved(const QDBusObjectPath &)));
-
-    introspectQueue.enqueue(&Private::callGetAll);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 AccountManager::Private::~Private()
 {
     delete baseInterface;
-}
-
-void AccountManager::Private::callGetAll()
-{
-    debug() << "Calling Properties::GetAll(AccountManager)";
-    AccountManager *am = static_cast<AccountManager *>(parent());
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            am->propertiesInterface()->GetAll(
-                TELEPATHY_INTERFACE_ACCOUNT_MANAGER), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onGetAllAccountManagerReturn(QDBusPendingCallWatcher *)));
 }
 
 void AccountManager::Private::setAccountPaths(QSet<QString> &set,
@@ -127,105 +103,6 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
     else {
         Q_FOREACH (const QDBusObjectPath &path, paths) {
             set << path.path();
-        }
-    }
-}
-
-void AccountManager::Private::onGetAllAccountManagerReturn(
-        QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap props;
-
-    if (!reply.isError()) {
-        debug() << "Got reply to Properties.GetAll(AccountManager)";
-        props = reply.value();
-    } else {
-        warning().nospace() <<
-            "GetAll(AccountManager) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
-    }
-
-    if (props.contains("Interfaces")) {
-        interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
-    }
-
-    if (props.contains("ValidAccounts")) {
-        setAccountPaths(validAccountPaths,
-                props["ValidAccounts"]);
-    }
-
-    if (props.contains("InvalidAccounts")) {
-        setAccountPaths(invalidAccountPaths,
-                props["InvalidAccounts"]);
-    }
-
-    continueIntrospection();
-
-    watcher->deleteLater();
-}
-
-void AccountManager::Private::onAccountValidityChanged(const QDBusObjectPath &objectPath,
-        bool nowValid)
-{
-    QString path = objectPath.path();
-    bool newAccount = false;
-
-    if (!validAccountPaths.contains(path) &&
-        !invalidAccountPaths.contains(path)) {
-        newAccount = true;
-    }
-
-    if (nowValid) {
-        debug() << "Account created or became valid:" << path;
-        invalidAccountPaths.remove(path);
-        validAccountPaths.insert(path);
-    }
-    else {
-        debug() << "Account became invalid:" << path;
-        validAccountPaths.remove(path);
-        invalidAccountPaths.insert(path);
-    }
-
-    if (newAccount) {
-        Q_EMIT accountCreated(path);
-        // if the newly created account is invalid (shouldn't be the case)
-        // emit also accountValidityChanged indicating this
-        if (!nowValid) {
-            Q_EMIT accountValidityChanged(path, nowValid);
-        }
-    }
-    else {
-        Q_EMIT accountValidityChanged(path, nowValid);
-    }
-}
-
-void AccountManager::Private::onAccountRemoved(const QDBusObjectPath &objectPath)
-{
-    QString path = objectPath.path();
-
-    debug() << "Account removed:" << path;
-    validAccountPaths.remove(path);
-    invalidAccountPaths.remove(path);
-
-    Q_EMIT accountRemoved(path);
-}
-
-void AccountManager::Private::continueIntrospection()
-{
-    if (!ready) {
-        if (introspectQueue.isEmpty()) {
-            debug() << "AccountManager is ready";
-            ready = true;
-
-            if (pendingReady) {
-                pendingReady->setFinished();
-                // it will delete itself later
-                pendingReady = 0;
-            }
-        }
-        else {
-            (this->*(introspectQueue.dequeue()))();
         }
     }
 }
@@ -494,15 +371,124 @@ AccountManagerInterface *AccountManager::baseInterface() const
 
 void AccountManager::init()
 {
-    connect(mPriv,
-            SIGNAL(accountCreated(const QString &)),
-            SIGNAL(accountCreated(const QString &)));
-    connect(mPriv,
-            SIGNAL(accountRemoved(const QString &)),
-            SIGNAL(accountRemoved(const QString &)));
-    connect(mPriv,
-            SIGNAL(accountValidityChanged(const QString &, bool)),
-            SIGNAL(accountValidityChanged(const QString &, bool)));
+    connect(mPriv->baseInterface,
+            SIGNAL(AccountValidityChanged(const QDBusObjectPath &, bool)),
+            SLOT(onAccountValidityChanged(const QDBusObjectPath &, bool)));
+    connect(mPriv->baseInterface,
+            SIGNAL(AccountRemoved(const QDBusObjectPath &)),
+            SLOT(onAccountRemoved(const QDBusObjectPath &)));
+
+    mPriv->introspectQueue.enqueue(&AccountManager::callGetAll);
+    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+}
+
+/**** Private ****/
+void AccountManager::callGetAll()
+{
+    debug() << "Calling Properties::GetAll(AccountManager)";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            propertiesInterface()->GetAll(
+                TELEPATHY_INTERFACE_ACCOUNT_MANAGER), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onGetAllAccountManagerReturn(QDBusPendingCallWatcher *)));
+}
+
+void AccountManager::onGetAllAccountManagerReturn(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties.GetAll(AccountManager)";
+        props = reply.value();
+
+        if (props.contains("Interfaces")) {
+            mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+        }
+        if (props.contains("ValidAccounts")) {
+            mPriv->setAccountPaths(mPriv->validAccountPaths,
+                    props["ValidAccounts"]);
+        }
+        if (props.contains("InvalidAccounts")) {
+            mPriv->setAccountPaths(mPriv->invalidAccountPaths,
+                    props["InvalidAccounts"]);
+        }
+    } else {
+        warning().nospace() <<
+            "GetAll(AccountManager) failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
+}
+
+void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
+        bool nowValid)
+{
+    QString path = objectPath.path();
+    bool newAccount = false;
+
+    if (!mPriv->validAccountPaths.contains(path) &&
+        !mPriv->invalidAccountPaths.contains(path)) {
+        newAccount = true;
+    }
+
+    if (nowValid) {
+        debug() << "Account created or became valid:" << path;
+        mPriv->invalidAccountPaths.remove(path);
+        mPriv->validAccountPaths.insert(path);
+    }
+    else {
+        debug() << "Account became invalid:" << path;
+        mPriv->validAccountPaths.remove(path);
+        mPriv->invalidAccountPaths.insert(path);
+    }
+
+    if (newAccount) {
+        Q_EMIT accountCreated(path);
+        // if the newly created account is invalid (shouldn't be the case)
+        // emit also accountValidityChanged indicating this
+        if (!nowValid) {
+            Q_EMIT accountValidityChanged(path, nowValid);
+        }
+    }
+    else {
+        Q_EMIT accountValidityChanged(path, nowValid);
+    }
+}
+
+void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
+{
+    QString path = objectPath.path();
+
+    debug() << "Account removed:" << path;
+    mPriv->validAccountPaths.remove(path);
+    mPriv->invalidAccountPaths.remove(path);
+
+    Q_EMIT accountRemoved(path);
+}
+
+void AccountManager::continueIntrospection()
+{
+    if (!mPriv->ready) {
+        if (mPriv->introspectQueue.isEmpty()) {
+            debug() << "AccountManager is ready";
+            mPriv->ready = true;
+
+            if (mPriv->pendingReady) {
+                mPriv->pendingReady->setFinished();
+                // it will delete itself later
+                mPriv->pendingReady = 0;
+            }
+        }
+        else {
+            (this->*(mPriv->introspectQueue.dequeue()))();
+        }
+    }
 }
 
 } // Telepathy::Client
