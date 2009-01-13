@@ -375,6 +375,8 @@ QList<Account *> AccountManager::allAccounts()
  */
 Account *AccountManager::accountForPath(const QDBusObjectPath &path)
 {
+    // TODO should we use AM as parent of account,
+    //      or receive parent as a param?
     return new Account(this, path, this);
 }
 
