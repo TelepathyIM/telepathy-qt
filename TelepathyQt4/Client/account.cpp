@@ -30,6 +30,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/AccountManager>
+#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
 #include <TelepathyQt4/Constants>
@@ -801,10 +802,26 @@ Telepathy::ConnectionStatusReason Account::connectionStatusReason() const
     return mPriv->connectionStatusReason;
 }
 
-// PendingConnection *Account::getConnection(Connection::Features features = 0) const
-// {
-//     return 0;
-// }
+/**
+ * Get the Connection object for this account.
+ *
+ * Note that the Connection object won't be cached by account, and
+ * should be done by the application itself.
+ *
+ * Remember to call Connection::becomeReady on the new connection, to
+ * make sure it is ready before using it.
+ *
+ * \return Connection object, or 0 if an error occurred.
+ */
+Connection *Account::getConnection() const
+{
+    if (mPriv->connectionObjectPath.isEmpty()) {
+        return 0;
+    }
+    QString objectPath = mPriv->connectionObjectPath;
+    QString serviceName = objectPath.replace('/', '.');
+    return new Connection(dbusConnection(), serviceName, objectPath);
+}
 
 /**
  * Set the presence status that this account should have if it is brought

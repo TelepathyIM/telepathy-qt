@@ -45,6 +45,7 @@ namespace Client
 {
 
 class AccountManager;
+class Connection;
 class PendingConnection;
 class PendingOperation;
 class ProtocolInfo;
@@ -112,8 +113,7 @@ public:
 
     Telepathy::ConnectionStatus connectionStatus() const;
     Telepathy::ConnectionStatusReason connectionStatusReason() const;
-    // not finished until the Connection is ready
-    // PendingConnection *getConnection(Connection::Features features = 0) const;
+    Connection *getConnection() const;
 
     Telepathy::SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(
