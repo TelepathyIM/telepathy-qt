@@ -102,6 +102,8 @@ Account::Private::Private(Account *parent)
             SIGNAL(AccountPropertyChanged(const QVariantMap &)),
             SLOT(onPropertyChanged(const QVariantMap &)));
 
+    checkForAvatarInterface();
+
     introspectQueue.enqueue(&Private::callGetAll);
     QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
@@ -110,6 +112,16 @@ Account::Private::~Private()
 {
     delete baseInterface;
     delete cm;
+}
+
+void Account::Private::checkForAvatarInterface()
+{
+    Account *ac = static_cast<Account *>(parent());
+    AccountInterfaceAvatarInterface *iface = ac->avatarInterface();
+    if (!iface) {
+        // add it to missing features so we don't try to retrieve the avatar
+        missingFeatures |= Account::FeatureAvatar;
+    }
 }
 
 void Account::Private::callGetAll()
@@ -126,20 +138,9 @@ void Account::Private::callGetAll()
 
 void Account::Private::callGetAvatar()
 {
+    debug() << "Calling GetAvatar(Account)";
     Account *ac = static_cast<Account *>(parent());
     AccountInterfaceAvatarInterface *iface = ac->avatarInterface();
-    if (!iface) {
-        pendingFeatures ^= Account::FeatureAvatar;
-
-        // add it to missing features so we don't try to retrieve the avatar
-        // again
-        missingFeatures |= Account::FeatureAvatar;
-
-        continueIntrospection();
-        return;
-    }
-
-    debug() << "Calling GetAvatar(Account)";
     DBus::PropertiesInterface *propertiesIface =
         ac->interface<DBus::PropertiesInterface>(*iface);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
@@ -650,7 +651,11 @@ PendingOperation *Account::setNickname(const QString &value)
  */
 QByteArray Account::avatarData() const
 {
-    if (!mPriv->features & FeatureAvatar) {
+    if (mPriv->missingFeatures & FeatureAvatar) {
+        warning() << "Trying to retrieve avatar data from account, but"
+                     "avatar is not supported";
+    }
+    else if (!(mPriv->features & FeatureAvatar)) {
         warning() << "Trying to retrieve avatar data from account without"
                      "calling Account::becomeReady(FeatureAvatar)";
     }
@@ -668,7 +673,11 @@ QByteArray Account::avatarData() const
  */
 QString Account::avatarMimeType() const
 {
-    if (!mPriv->features & FeatureAvatar) {
+    if (mPriv->missingFeatures & FeatureAvatar) {
+        warning() << "Trying to retrieve avatar mimetype from account, but"
+                     "avatar is not supported";
+    }
+    else if (!(mPriv->features & FeatureAvatar)) {
         warning() << "Trying to retrieve avatar mimetype from account without"
                      "calling Account::becomeReady(FeatureAvatar)";
     }

@@ -50,6 +50,7 @@ public:
     Private(Account *parent);
     ~Private();
 
+    void checkForAvatarInterface();
     void callGetAll();
     void callGetAvatar();
     void callGetProtocolInfo();
