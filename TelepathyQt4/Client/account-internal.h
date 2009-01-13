@@ -66,6 +66,7 @@ public:
     QStringList interfaces;
     Account::Features features;
     Account::Features pendingFeatures;
+    Account::Features missingFeatures;
     QVariantMap parameters;
     bool valid;
     bool enabled;

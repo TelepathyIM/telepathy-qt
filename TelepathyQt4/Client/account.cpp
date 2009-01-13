@@ -70,6 +70,7 @@ Account::Private::Private(Account *parent)
       ready(false),
       features(0),
       pendingFeatures(0),
+      missingFeatures(0),
       valid(false),
       enabled(false),
       connectsAutomatically(false),
@@ -128,13 +129,12 @@ void Account::Private::callGetAvatar()
     Account *ac = static_cast<Account *>(parent());
     AccountInterfaceAvatarInterface *iface = ac->avatarInterface();
     if (!iface) {
-        Q_FOREACH (PendingReady *operation, pendingOperations) {
-            if (operation->features & FeatureAvatar) {
-                operation->setFinishedWithError(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                        "Unimplemented");
-                pendingOperations.removeOne(operation);
-            }
-        }
+        pendingFeatures ^= Account::FeatureAvatar;
+
+        // add it to missing features so we don't try to retrieve the avatar
+        // again
+        missingFeatures |= Account::FeatureAvatar;
+
         continueIntrospection();
         return;
     }
@@ -252,7 +252,7 @@ void Account::Private::onGetAllAccountReturn(QDBusPendingCallWatcher *watcher)
     if (!reply.isError()) {
         debug() << "Got reply to Properties.GetAll(Account)";
         updateProperties(reply.value());
-        debug() << "Account is ready";
+        debug() << "Account basic functionality is ready";
         ready = true;
     } else {
         warning().nospace() <<
@@ -269,22 +269,18 @@ void Account::Private::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QByteArray, QString> reply = *watcher;
 
+    pendingFeatures ^= Account::FeatureAvatar;
+
     if (!reply.isError()) {
+        features |= Account::FeatureAvatar;
+
         debug() << "Got reply to GetAvatar(Account)";
         avatarData = reply.argumentAt<0>();
         avatarMimeType = reply.argumentAt<1>();
-
-        features |= Account::FeatureAvatar;
-        pendingFeatures ^= Account::FeatureAvatar;
     } else {
-        // signal all pending operations that cares about avatar that
-        // it failed
-        Q_FOREACH (PendingReady *operation, pendingOperations) {
-            if (operation->features & FeatureAvatar) {
-                operation->setFinishedWithError(reply.error());
-                pendingOperations.removeOne(operation);
-            }
-        }
+        // add it to missing features so we don't try to retrieve the avatar
+        // again
+        missingFeatures |= Account::FeatureAvatar;
 
         warning().nospace() <<
             "GetAvatar(Account) failed: " <<
@@ -309,7 +305,14 @@ void Account::Private::onConnectionManagerReady(PendingOperation *operation)
         error = (protocolInfo == 0);
     }
 
-    if (error) {
+    pendingFeatures ^= Account::FeatureProtocolInfo;
+
+    if (!error) {
+        features |= Account::FeatureProtocolInfo;
+    }
+    else {
+        missingFeatures |= Account::FeatureProtocolInfo;
+
         // signal all pending operations that cares about protocol info that
         // it failed
         Q_FOREACH (PendingReady *operation, pendingOperations) {
@@ -345,7 +348,9 @@ void Account::Private::continueIntrospection()
                 operation->setFinished();
             }
             else if (operation->features == Account::FeatureAvatar &&
-                features & Account::FeatureAvatar) {
+                (features & Account::FeatureAvatar ||
+                 missingFeatures & Account::FeatureAvatar)) {
+                // if we don't have avatar we will just finish silently
                 operation->setFinished();
             }
             else if (operation->features == Account::FeatureProtocolInfo &&
@@ -353,7 +358,9 @@ void Account::Private::continueIntrospection()
                 operation->setFinished();
             }
             else if (operation->features == (Account::FeatureAvatar | Account::FeatureProtocolInfo) &&
-                     features == (Account::FeatureAvatar | Account::FeatureProtocolInfo)) {
+                     ((features == (Account::FeatureAvatar | Account::FeatureProtocolInfo)) ||
+                      (features & Account::FeatureProtocolInfo && missingFeatures & Account::FeatureAvatar))) {
+                // if we don't have avatar we will just finish silently
                 operation->setFinished();
             }
             if (operation->isFinished()) {
@@ -376,16 +383,37 @@ PendingOperation *Account::Private::becomeReady(Account::Features requestedFeatu
         }
     }
 
-    if ((requestedFeatures & FeatureAvatar) &&
-        !(features & FeatureAvatar) &&
-        !(pendingFeatures & FeatureAvatar)) {
-        introspectQueue.enqueue(&Private::callGetAvatar);
+    if (requestedFeatures & FeatureAvatar) {
+        // if the only feature requested is avatar and avatar is know to not be
+        // supported, just finish silently
+        if (requestedFeatures == FeatureAvatar &&
+            missingFeatures & FeatureAvatar) {
+            return new PendingSuccess(this);
+        }
+
+        // if we know that avatar is not supported, no need to
+        // queue the call to get avatar
+        if (!(missingFeatures & FeatureAvatar) &&
+            !(features & FeatureAvatar) &&
+            !(pendingFeatures & FeatureAvatar)) {
+            introspectQueue.enqueue(&Private::callGetAvatar);
+        }
     }
 
-    if ((requestedFeatures & FeatureProtocolInfo) &&
-        !(features & FeatureProtocolInfo) &&
-        !(pendingFeatures & FeatureProtocolInfo)) {
-        introspectQueue.enqueue(&Private::callGetProtocolInfo);
+    if (requestedFeatures & FeatureProtocolInfo) {
+        // the user asked for protocol info
+        // but we already know that protocol info is not supported, so
+        // fail directly
+        if (missingFeatures & FeatureProtocolInfo) {
+            return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                    QString("ProtocolInfo not found for protocol %1 on CM %2")
+                        .arg(protocol).arg(cmName));
+        }
+
+        if (!(features & FeatureProtocolInfo) &&
+            !(pendingFeatures & FeatureProtocolInfo)) {
+            introspectQueue.enqueue(&Private::callGetProtocolInfo);
+        }
     }
 
     pendingFeatures |= features;
