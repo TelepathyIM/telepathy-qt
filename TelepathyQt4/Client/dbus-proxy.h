@@ -145,6 +145,8 @@ public:
         const QString &busName, const QString &objectPath,
         QObject *parent = 0);
 
+    virtual ~StatefulDBusProxy();
+
     /**
      * If this object is usable (has not emitted #invalidated()), returns
      * <code>true</code>. Otherwise returns <code>false</code>.

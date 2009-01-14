@@ -134,7 +134,8 @@ StatefulDBusProxy::Private::Private(StatefulDBusProxy &p)
 
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
-    : DBusProxy(dbusConnection, busName, objectPath, parent)
+    : DBusProxy(dbusConnection, busName, objectPath, parent),
+      mPriv(new Private(*this))
 {
     QString uniqueName = busName;
 
@@ -154,6 +155,11 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
     }
 
     setBusName(uniqueName);
+}
+
+StatefulDBusProxy::~StatefulDBusProxy()
+{
+    delete mPriv;
 }
 
 bool StatefulDBusProxy::isValid() const
