@@ -351,10 +351,50 @@ void Connection::onStatusChanged(uint status, uint reason)
             break;
 
         case ConnectionStatusDisconnected:
-            if (mPriv->readiness != ReadinessDead)
+            if (mPriv->readiness != ReadinessDead) {
+                const char *errorName;
+
+                // This is the best we can do right now: in an imminent
+                // spec version we should define a different D-Bus error name
+                // for each ConnectionStatusReason
+
+                switch (reason) {
+                    case ConnectionStatusReasonNoneSpecified:
+                    case ConnectionStatusReasonRequested:
+                        errorName = TELEPATHY_ERROR_DISCONNECTED;
+                        break;
+
+                    case ConnectionStatusReasonNetworkError:
+                    case ConnectionStatusReasonAuthenticationFailed:
+                    case ConnectionStatusReasonEncryptionError:
+                        errorName = TELEPATHY_ERROR_NETWORK_ERROR;
+                        break;
+
+                    case ConnectionStatusReasonNameInUse:
+                        errorName = TELEPATHY_ERROR_NOT_YOURS;
+                        break;
+
+                    case ConnectionStatusReasonCertNotProvided:
+                    case ConnectionStatusReasonCertUntrusted:
+                    case ConnectionStatusReasonCertExpired:
+                    case ConnectionStatusReasonCertNotActivated:
+                    case ConnectionStatusReasonCertHostnameMismatch:
+                    case ConnectionStatusReasonCertFingerprintMismatch:
+                    case ConnectionStatusReasonCertSelfSigned:
+                    case ConnectionStatusReasonCertOtherError:
+                        errorName = TELEPATHY_ERROR_NETWORK_ERROR;
+
+                    default:
+                        errorName = TELEPATHY_ERROR_DISCONNECTED;
+                }
+
+                invalidate(QLatin1String(errorName),
+                        QString("ConnectionStatusReason = %1").arg(uint(reason)));
+
                 mPriv->changeReadiness(ReadinessDead);
-            else
+            } else {
                 warning() << " Got unexpected status change to Disconnected";
+            }
             break;
 
         default:
