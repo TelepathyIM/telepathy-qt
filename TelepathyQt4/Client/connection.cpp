@@ -39,6 +39,24 @@
 #include <QString>
 #include <QtGlobal>
 
+/**
+ * \addtogroup clientsideproxies Client-side proxies
+ *
+ * Proxy objects representing remote service objects accessed via D-Bus.
+ *
+ * In addition to providing direct access to methods, signals and properties
+ * exported by the remote objects, some of these proxies offer features like
+ * automatic inspection of remote object capabilities, property tracking,
+ * backwards compatibility helpers for older services and other utilities.
+ */
+
+/**
+ * \defgroup clientconn Connection proxies
+ * \ingroup clientsideproxies
+ *
+ * Proxy objects representing remote Telepathy Connection objects.
+ */
+
 namespace Telepathy
 {
 namespace Client
@@ -305,6 +323,87 @@ struct Connection::Private
 QMap<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;
 QMutex Connection::Private::handleContextsLock;
 
+/**
+ * \class Connection
+ * \ingroup clientconn
+ * \headerfile <TelepathyQt4/Client/connection.h> <TelepathyQt4/Client/Connection>
+ *
+ * Object representing a Telepathy connection.
+ *
+ * It adds the following features compared to using ConnectionInterface
+ * directly:
+ * <ul>
+ *  <li>%Connection status tracking</li>
+ *  <li>Getting the list of supported interfaces automatically</li>
+ *  <li>Getting the alias flags automatically</li>
+ *  <li>Getting the valid presence statuses automatically</li>
+ *  <li>Shared optional interface proxy instances</li>
+ * </ul>
+ *
+ * The remote object state accessor functions on this object (status(),
+ * statusReason(), aliasFlags(), and so on) don't make any DBus calls; instead,
+ * they return values cached from a previous introspection run. The
+ * introspection process populates their values in the most efficient way
+ * possible based on what the service implements. Their return value is mostly
+ * undefined until the introspection process is completed; a readiness change to
+ * #ReadinessFull indicates that the introspection process is finished. See the
+ * individual accessor descriptions for details on which functions can be used
+ * in the different states.
+ */
+
+/**
+ * \enum Connection::Readiness
+ *
+ * Describes readiness of the Connection for usage. The readiness depends
+ * on the state of the remote object. In suitable states, an asynchronous
+ * introspection process is started, and the Connection becomes more ready
+ * when that process is completed.
+ *
+ * \value ReadinessJustCreated, The object has just been created and introspection
+ *                              is still in progress. No functionality is available.
+ *                              The readiness can change to any other state depending
+ *                              on the result of the initial state query to the remote
+ *                              object.
+ * \value ReadinessNotYetConnected The remote object is in the Disconnected state and
+ *                                 introspection relevant to that state has been completed.
+ *                                 This state is useful for being able to set your presence status
+ *                                 (through the SimplePresence interface) before connecting. Most other
+ *                                 functionality is unavailable, though.
+ *                                 The readiness can change to ReadinessConnecting and ReadinessDead.
+ * \value ReadinessConnecting The remote object is in the Connecting state. Most functionality is
+ *                            unavailable.
+ *                            The readiness can change to ReadinessFull and ReadinessDead.
+ * \value ReadinessFull The connection is in the Connected state and all introspection
+ *                      has been completed. Most functionality is available.
+ *                      The readiness can change to ReadinessDead.
+ * \value ReadinessDead The remote object has gone into a state where it can no longer be
+ *                      used. No functionality is available.
+ *                      No further readiness changes are possible.
+ * \value _ReadinessInvalid The remote object has gone into a invalid state.
+ */
+
+/**
+ * \enum Connection::InterfaceSupportedChecking
+ *
+ * Specifies if the interface being supported by the remote object should be
+ * checked by optionalInterface() and the convenience functions for it.
+ *
+ * \value CheckInterfaceSupported Don't return an interface instance unless it
+ *                                can be guaranteed that the remote object
+ *                                actually implements the interface.
+ * \value BypassInterfaceCheck Return an interface instance even if it can't
+ *                             be verified that the remote object supports the
+ *                             interface.
+ * \sa optionalInterface()
+ */
+
+/**
+ * Construct a new Connection object.
+ *
+ * \param serviceName Connection service name.
+ * \param objectPath Connection object path.
+ * \param parent Object parent.
+ */
 Connection::Connection(const QString& serviceName,
                        const QString& objectPath,
                        QObject* parent)
@@ -316,6 +415,14 @@ Connection::Connection(const QString& serviceName,
     mPriv->startIntrospection();
 }
 
+/**
+ * Construct a new Connection object.
+ *
+ * \param connection QDBusConnection to use.
+ * \param serviceName Connection service name.
+ * \param objectPath Connection object path.
+ * \param parent Object parent.
+ */
 Connection::Connection(const QDBusConnection& connection,
                        const QString& serviceName,
                        const QString& objectPath,
@@ -327,16 +434,33 @@ Connection::Connection(const QDBusConnection& connection,
     mPriv->startIntrospection();
 }
 
+/**
+ * Class destructor.
+ */
 Connection::~Connection()
 {
     delete mPriv;
 }
 
+/**
+ * Return the current readiness of the Connection.
+ *
+ * \return The readiness, as defined in #Readiness.
+ */
 Connection::Readiness Connection::readiness() const
 {
     return mPriv->readiness;
 }
 
+/**
+ * Return the connection's status.
+ *
+ * The returned value may have changed whenever readinessChanged() is
+ * emitted. The value is valid in all states except for
+ * #ReadinessJustCreated.
+ *
+ * \return The status, as defined in #ConnectionStatus.
+ */
 uint Connection::status() const
 {
     if (mPriv->readiness == ReadinessJustCreated)
@@ -345,6 +469,12 @@ uint Connection::status() const
     return mPriv->status;
 }
 
+/**
+ * Return the reason for the connection's status (which is returned by
+ * status()). The validity and change rules are the same as for status().
+ *
+ * \return The reason, as defined in #ConnectionStatusReason.
+ */
 uint Connection::statusReason() const
 {
     if (mPriv->readiness == ReadinessJustCreated)
@@ -353,6 +483,16 @@ uint Connection::statusReason() const
     return mPriv->statusReason;
 }
 
+/**
+ * Return a list of optional interfaces supported by this object. The
+ * contents of the list is undefined unless the Connection has readiness
+ * #ReadinessNotYetConnected or #ReadinessFull. The returned value stays
+ * constant for the entire time the connection spends in each of these
+ * states; however interfaces might have been added to the supported set by
+ * the time #ReadinessFull is reached.
+ *
+ * \return Names of the supported interfaces.
+ */
 QStringList Connection::interfaces() const
 {
     // Different check than the others, because the optional interface getters
@@ -366,6 +506,16 @@ QStringList Connection::interfaces() const
     return mPriv->interfaces;
 }
 
+/**
+ * Return the bitwise OR of flags detailing the behavior of the Aliasing
+ * interface on the remote object.
+ *
+ * The returned value is undefined unless the Connection has readiness
+ * #ReadinessFull and the list returned by interfaces() contains
+ * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING.
+ *
+ * \return Bitfield of flags, as specified in #ConnectionAliasFlag.
+ */
 uint Connection::aliasFlags() const
 {
     if (mPriv->readiness != ReadinessFull)
@@ -376,6 +526,16 @@ uint Connection::aliasFlags() const
     return mPriv->aliasFlags;
 }
 
+/**
+ * Return a dictionary of presence statuses valid for use with the legacy
+ * Telepathy Presence interface on the remote object.
+ *
+ * The returned value is undefined unless the Connection has readiness
+ * #ReadinessFull and the list returned by interfaces() contains
+ * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE.
+ *
+ * \return Dictionary from string identifiers to structs for each valid status.
+ */
 StatusSpecMap Connection::presenceStatuses() const
 {
     if (mPriv->readiness != ReadinessFull)
@@ -386,6 +546,21 @@ StatusSpecMap Connection::presenceStatuses() const
     return mPriv->presenceStatuses;
 }
 
+/**
+ * Return a dictionary of presence statuses valid for use with the new(er)
+ * Telepathy SimplePresence interface on the remote object.
+ *
+ * The value is undefined if the list returned by interfaces() doesn't
+ * contain %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE.
+ *
+ * The value will stay fixed for the whole time the connection stays with
+ * readiness #ReadinessNotYetConnected, but may have changed arbitrarily
+ * during the time the Connection spends in readiness #ReadinessConnecting,
+ * again staying fixed for the entire time in #ReadinessFull.
+ *
+ * \return Dictionary from string identifiers to structs for each valid
+ * status.
+ */
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
     if (mPriv->readiness != ReadinessNotYetConnected && mPriv->readiness != ReadinessFull)
@@ -395,6 +570,92 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 
     return mPriv->simplePresenceStatuses;
 }
+
+/**
+ * \fn Connection::optionalInterface(InterfaceSupportedChecking check) const
+ *
+ * Get a pointer to a valid instance of a given %Connection optional
+ * interface class, associated with the same remote object the Connection is
+ * associated with, and destroyed at the same time the Connection is
+ * destroyed.
+ *
+ * If the list returned by interfaces() doesn't contain the name of the
+ * interface requested <code>0</code> is returned. This check can be
+ * bypassed by specifying #BypassInterfaceCheck for <code>check</code>, in
+ * which case a valid instance is always returned.
+ *
+ * If the object is not ready, the list returned by interfaces() isn't
+ * guaranteed to yet represent the full set of interfaces supported by the
+ * remote object.
+ * Hence the check might fail even if the remote object actually supports
+ * the requested interface; using #BypassInterfaceCheck is suggested when
+ * the Connection is not suitably ready.
+ *
+ * \sa OptionalInterfaceFactory::interface
+ *
+ * \tparam Interface Class of the optional interface to get.
+ * \param check Should an instance be returned even if it can't be
+ *              determined that the remote object supports the
+ *              requested interface.
+ * \return Pointer to an instance of the interface class, or <code>0</code>.
+ */
+
+/**
+ * \fn ConnectionInterfaceAliasingInterface *Connection::aliasingInterface(InterfaceSupportedChecking check) const
+ *
+ * Convenience function for getting an Aliasing interface proxy.
+ *
+ * \param check Passed to optionalInterface()
+ * \return <code>optionalInterface<ConnectionInterfaceAliasingInterface>(check)</code>
+ */
+
+/**
+ * \fn ConnectionInterfaceAvatarsInterface *Connection::avatarsInterface(InterfaceSupportedChecking check) const
+ *
+ * Convenience function for getting an Avatars interface proxy.
+ *
+ * \param check Passed to optionalInterface()
+ * \return <code>optionalInterface<ConnectionInterfaceAvatarsInterface>(check)</code>
+ */
+
+/**
+ * \fn ConnectionInterfaceCapabilitiesInterface* Connection::capabilitiesInterface(InterfaceSupportedChecking check) const
+ * Convenience function for getting a Capabilities interface proxy.
+ *
+ * \param check Passed to optionalInterface()
+ * \return <code>optionalInterface<ConnectionInterfaceCapabilitiesInterface>(check)</code>
+ */
+
+/**
+ * \fn ConnectionInterfacePresenceInterface *Connection::presenceInterface(InterfaceSupportedChecking check) const
+ *
+ * Convenience function for getting a Presence interface proxy.
+ *
+ * \param check Passed to optionalInterface()
+ * \return <code>optionalInterface<ConnectionInterfacePresenceInterface>(check)</code>
+ */
+
+/**
+ * \fn ConnectionInterfaceSimplePresenceInterface *Connection::simplePresenceInterface(InterfaceSupportedChecking check) const
+ *
+ * Convenience function for getting a SimplePresence interface proxy.
+ *
+ * \param check Passed to optionalInterface()
+ * \return <code>optionalInterface<ConnectionInterfaceSimplePresenceInterface>(check)</code>
+ */
+
+/**
+ * \fn DBus::PropertiesInterface *Connection::propertiesInterface() const
+ *
+ * Convenience function for getting a Properties interface proxy. The
+ * Properties interface is not necessarily reported by the services, so a
+ * <code>check</code> parameter is not provided, and the interface is
+ * always assumed to be present.
+ *
+ * \sa optionalInterface()
+ *
+ * \return <code>optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck)</code>
+ */
 
 void Connection::onStatusChanged(uint status, uint reason)
 {
@@ -602,12 +863,48 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
+/**
+ * Get the ConnectionInterface for this Connection. This
+ * method is protected since the convenience methods provided by this
+ * class should generally be used instead of calling D-Bus methods
+ * directly.
+ *
+ * \return A pointer to the existing ConnectionInterface for this
+ *         Connection.
+ */
 ConnectionInterface* Connection::baseInterface() const
 {
     Q_ASSERT(mPriv->baseInterface != 0);
     return mPriv->baseInterface;
 }
 
+/**
+ * Asynchronously requests a channel satisfying the given channel type and
+ * communicating with the contact, room, list etc. given by the handle type
+ * and handle.
+ *
+ * Upon completion, the reply to the request can be retrieved through the
+ * returned PendingChannel object. The object also provides access to the
+ * parameters with which the call was made and a signal to connect to to get
+ * notification of the request finishing processing. See the documentation
+ * for that class for more info.
+ *
+ * The returned PendingChannel object should be freed using
+ * its QObject::deleteLater() method after it is no longer used. However,
+ * all PendingChannel objects resulting from requests to a particular
+ * Connection will be freed when the Connection itself is freed. Conversely,
+ * this means that the PendingChannel object should not be used after the
+ * Connection is destroyed.
+ *
+ * \sa PendingChannel
+ *
+ * \param channelType D-Bus interface name of the channel type to request,
+ *                    such as TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT.
+ * \param handleType Type of the handle given, as specified in #HandleType.
+ * \param handle Handle specifying the remote entity to communicate with.
+ * \return Pointer to a newly constructed PendingChannel object, tracking
+ *         the progress of the request.
+ */
 PendingChannel* Connection::requestChannel(const QString& channelType, uint handleType, uint handle)
 {
     debug() << "Requesting a Channel with type" << channelType << "and handle" << handle << "of type" << handleType;
@@ -633,6 +930,31 @@ PendingOperation* Connection::requestConnect()
 }
 #endif
 
+/**
+ * Request handles of the given type for the given entities (contacts,
+ * rooms, lists, etc.).
+ *
+ * Upon completion, the reply to the request can be retrieved through the
+ * returned PendingHandles object. The object also provides access to the
+ * parameters with which the call was made and a signal to connect to to get
+ * notification of the request finishing processing. See the documentation
+ * for that class for more info.
+ *
+ * The returned PendingHandles object should be freed using
+ * its QObject::deleteLater() method after it is no longer used. However,
+ * all PendingHandles objects resulting from requests to a particular
+ * Connection will be freed when the Connection itself is freed. Conversely,
+ * this means that the PendingHandles object should not be used after the
+ * Connection is destroyed.
+ *
+ * \sa PendingHandles
+ *
+ * \param handleType Type for the handles to request, as specified in
+ *                   #HandleType.
+ * \param names Names of the entities to request handles for.
+ * \return Pointer to a newly constructed PendingHandles object, tracking
+ *         the progress of the request.
+ */
 PendingHandles* Connection::requestHandles(uint handleType, const QStringList& names)
 {
     debug() << "Request for" << names.length() << "handles of type" << handleType;
@@ -654,6 +976,31 @@ PendingHandles* Connection::requestHandles(uint handleType, const QStringList& n
     return pending;
 }
 
+/**
+ * Request a reference to the given handles. Handles not explicitly
+ * requested (via requestHandles()) but eg. observed in a signal need to be
+ * referenced to guarantee them staying valid.
+ *
+ * Upon completion, the reply to the operation can be retrieved through the
+ * returned PendingHandles object. The object also provides access to the
+ * parameters with which the call was made and a signal to connect to to get
+ * notification of the request finishing processing. See the documentation
+ * for that class for more info.
+ *
+ * The returned PendingHandles object should be freed using
+ * its QObject::deleteLater() method after it is no longer used. However,
+ * all PendingHandles objects resulting from requests to a particular
+ * Connection will be freed when the Connection itself is freed. Conversely,
+ * this means that the PendingHandles object should not be used after the
+ * Connection is destroyed.
+ *
+ * \sa PendingHandles
+ *
+ * \param handleType Type of the handles given, as specified in #HandleType.
+ * \param handles Handles to request a reference to.
+ * \return Pointer to a newly constructed PendingHandles object, tracking
+ *         the progress of the request.
+ */
 PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& handles)
 {
     debug() << "Reference of" << handles.length() << "handles of type" << handleType;
@@ -694,6 +1041,15 @@ PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& ha
     return pending;
 }
 
+/**
+ * Start an asynchronous request that the connection be disconnected.
+ * The returned PendingOperation object will signal the success or failure
+ * of this request; under normal circumstances, it can be expected to
+ * succeed.
+ *
+ * \return A %PendingOperation, which will emit finished when the
+ *         Disconnect D-Bus method returns.
+ */
 PendingOperation* Connection::requestDisconnect()
 {
     return new PendingVoidMethodCall(this, baseInterface()->Disconnect());
