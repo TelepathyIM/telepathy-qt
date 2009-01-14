@@ -113,6 +113,8 @@ public:
         const QString &busName, const QString &objectPath,
         QObject *parent = 0);
 
+    virtual ~StatelessDBusProxy();
+
 private:
     class Private;
     friend class Private;
