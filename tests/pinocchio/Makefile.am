@@ -21,7 +21,7 @@ BUILT_SOURCES = \
 
 _gen/%.moc.hpp: %
 	$(mkdir_p) _gen
-	$(MOC) $(LIB_CFLAGS) -i $< -o $@
+	$(MOC) $(MOC_INCLUDES) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
 
@@ -33,7 +33,9 @@ test_conn_basics_SOURCES = conn-basics.cpp lib.cpp
 
 test_do_nothing_SOURCES = do-nothing.cpp lib.cpp
 
-LIB_CFLAGS = \
+# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
+# argument to moc but -Wstuff is not
+MOC_INCLUDES = \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(QTTEST_CFLAGS) \
@@ -47,7 +49,7 @@ LDADD = \
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
-    $(LIB_CFLAGS)
+    $(MOC_INCLUDES)
 
 # FIXME: XDG_DATA_DIRS should not depend on external setup
 TESTS_ENV = \

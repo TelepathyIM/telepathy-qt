@@ -92,4 +92,5 @@ void TestAccountBasics::cleanup()
 }
 
 QTEST_MAIN(TestAccountBasics)
-#include "_gen/account-basics.moc.hpp"
+
+#include "_gen/account-basics.cpp.moc.hpp"

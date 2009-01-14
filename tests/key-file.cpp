@@ -51,4 +51,5 @@ void TestKeyFile::testKeyFile()
 }
 
 QTEST_MAIN(TestKeyFile)
-#include "key-file.moc.hpp"
+
+#include "_gen/key-file.cpp.moc.hpp"
