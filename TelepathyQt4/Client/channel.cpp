@@ -486,7 +486,7 @@ QDBusPendingReply<> Channel::close()
     warning() << "Channel::close() used with readiness" << mPriv->readiness;
 
     return QDBusPendingReply<>(QDBusMessage::createError(
-            "TELEPATHY_ERROR_NOT_AVAILABLE", "Attempted to close an already dead or closed channel"));
+            TELEPATHY_ERROR_NOT_AVAILABLE, "Attempted to close an already dead or closed channel"));
 }
 
 uint Channel::groupFlags() const
