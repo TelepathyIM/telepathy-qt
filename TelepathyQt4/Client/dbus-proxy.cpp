@@ -37,6 +37,14 @@ namespace Client
 
 // ==== DBusProxy ======================================================
 
+// Features in TpProxy but not here:
+// * tracking which interfaces we have (in tpqt4, subclasses do that)
+// * being Introspectable, a Peer and a Properties implementation
+// * disconnecting from signals when invalidated (probably has to be in the
+//   generated code)
+// * making methods always raise an error when called after invalidated
+//   (has to be in the generated code)
+
 class DBusProxy::Private
 {
 public:
