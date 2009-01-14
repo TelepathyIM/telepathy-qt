@@ -195,8 +195,8 @@ Q_SIGNALS:
      *                  of ASCII, prefixed with a reversed domain name)
      * \param errorMessage A debugging message associated with the error
      */
-    void invalidated(StatefulDBusProxy *proxy, QString errorName,
-            QString errorMessage);
+    void invalidated(Telepathy::Client::StatefulDBusProxy *proxy,
+            QString errorName, QString errorMessage);
 
 private Q_SLOTS:
     void emitInvalidated();
