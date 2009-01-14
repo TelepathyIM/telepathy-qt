@@ -662,6 +662,9 @@ void Channel::onClosed()
         mPriv->changeReadiness(ReadinessClosed);
     else if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
         mPriv->changeReadiness(ReadinessDead);
+
+    // I think this is the nearest error code we can get at the moment
+    invalidate(TELEPATHY_ERROR_CANCELLED, "Closed");
 }
 
 void Channel::onConnectionReadinessChanged(uint readiness)
