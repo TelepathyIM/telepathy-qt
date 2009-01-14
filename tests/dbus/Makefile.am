@@ -38,15 +38,20 @@ if ENABLE_TP_GLIB_TESTS
 # Tests which can only be run if we have telepathy-glib, and Qt was compiled
 # to use the GLib main loop
 TESTS += \
-    test-cm-basics
+    test-cm-basics \
+    test-stateful-proxy
 
 BUILT_SOURCES += \
-    _gen/cm-basics.cpp.moc.hpp
+    _gen/cm-basics.cpp.moc.hpp \
+    _gen/stateful-proxy.cpp.moc.hpp
 
 MOC_INCLUDES += $(TP_GLIB_CFLAGS)
 
 test_cm_basics_SOURCES = cm-basics.cpp
 test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+
+test_stateful_proxy_SOURCES = stateful-proxy.cpp
+test_stateful_proxy_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 endif
 
 LDADD = \
