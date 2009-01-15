@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <QtCore/QEventLoop>
-#include <QtTest/QtTest>
+#include <QEventLoop>
+#include <QtTest>
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>

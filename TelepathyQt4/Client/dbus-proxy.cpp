@@ -27,8 +27,8 @@
 
 #include <TelepathyQt4/Constants>
 
-#include <QtCore/QTimer>
-#include <QtDBus/QDBusConnectionInterface>
+#include <QTimer>
+#include <QDBusConnectionInterface>
 
 namespace Telepathy
 {
