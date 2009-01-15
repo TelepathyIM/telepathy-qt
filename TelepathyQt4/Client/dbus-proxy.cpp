@@ -103,7 +103,7 @@ void DBusProxy::setBusName(const QString &busName)
 
 // ==== StatelessDBusProxy =============================================
 
-StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection& dbusConnection,
+StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent),
       mPriv(0)

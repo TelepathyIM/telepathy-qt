@@ -56,7 +56,7 @@ public:
     /**
      * Constructor
      */
-    DBusProxy(const QDBusConnection &dbusConnection, const QString& busName,
+    DBusProxy(const QDBusConnection &dbusConnection, const QString &busName,
             const QString &objectPath, QObject *parent = 0);
 
     /**
