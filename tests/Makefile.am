@@ -1,8 +1,11 @@
+# compile lib/ first, so it can be used by tests in the other directories
 SUBDIRS = \
+    lib \
     dbus \
     pinocchio \
     prototype
 
+# Standalone tests that don't touch D-Bus
 TESTS = \
     test-key-file \
     test-manager-file
@@ -16,8 +19,8 @@ test_manager_file_SOURCES = \
     manager-file.cpp
 
 BUILT_SOURCES = \
-    key-file.moc.hpp \
-    manager-file.moc.hpp
+    _gen/key-file.cpp.moc.hpp \
+    _gen/manager-file.cpp.moc.hpp
 
 LDADD = \
     $(QTCORE_LIBS) \
@@ -25,15 +28,17 @@ LDADD = \
     $(QTTEST_LIBS) \
     ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
-LIB_CFLAGS = \
+# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
+# argument to moc but -Wstuff is not
+MOC_INCLUDES = \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(QTTEST_CFLAGS) \
-    -I${top_srcdir}
+    $(TP_QT4_CFLAGS)
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
-    $(LIB_CFLAGS)
+    $(MOC_INCLUDES)
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \
@@ -49,7 +54,6 @@ CLEANFILES = \
 
 EXTRA_DIST = \
     README \
-    account-manager.py \
     dbus-1/services/account-manager.service.in \
     dbus-1/services/spurious.service \
     telepathy/managers/spurious.manager \
@@ -58,5 +62,9 @@ EXTRA_DIST = \
     test-key-file.ini \
     test-key-file-format-error.ini
 
-%.moc.hpp: %.cpp
-	$(MOC) $(LIB_CFLAGS) -i $< -o $@
+_gen/%.moc.hpp: %
+	$(mkdir_p) _gen
+	$(MOC) $(MOC_INCLUDES) -i $< -o $@
+
+distclean-local:
+	rm -rf _gen

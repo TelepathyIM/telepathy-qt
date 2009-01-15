@@ -1,22 +1,53 @@
 # Tests each run under their own temporary dbus-daemon.
 
 TESTS = \
-    test-account-basics \
     test-do-nothing
 
 BUILT_SOURCES = \
-    _gen/account-basics.moc.hpp \
-    _gen/do-nothing.moc.hpp
+    _gen/do-nothing.cpp.moc.hpp
 
-_gen/%.moc.hpp: %.cpp
+_gen/%.moc.hpp: %
 	$(mkdir_p) _gen
-	$(MOC) $(LIB_CFLAGS) -i $< -o $@
+	$(MOC) $(MOC_INCLUDES) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
 
-test_account_basics_SOURCES = account-basics.cpp
-
 test_do_nothing_SOURCES = do-nothing.cpp
+
+# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
+# argument to moc but -Wstuff is not
+MOC_INCLUDES = \
+    $(QTCORE_CFLAGS) \
+    $(QTDBUS_CFLAGS) \
+    $(QTTEST_CFLAGS) \
+    $(TP_QT4_CFLAGS)
+
+if HAVE_TEST_PYTHON
+# Tests which can only be run if we have suitable versions of Python and
+# dbus-python
+TESTS += \
+    test-account-basics
+
+BUILT_SOURCES += \
+    _gen/account-basics.cpp.moc.hpp
+
+test_account_basics_SOURCES = account-basics.cpp
+endif
+
+if ENABLE_TP_GLIB_TESTS
+# Tests which can only be run if we have telepathy-glib, and Qt was compiled
+# to use the GLib main loop
+TESTS += \
+    test-cm-basics
+
+BUILT_SOURCES += \
+    _gen/cm-basics.cpp.moc.hpp
+
+MOC_INCLUDES += $(TP_GLIB_CFLAGS)
+
+test_cm_basics_SOURCES = cm-basics.cpp
+test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+endif
 
 LDADD = \
     $(QTCORE_LIBS) \
@@ -24,15 +55,9 @@ LDADD = \
     $(QTTEST_LIBS) \
     ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
-LIB_CFLAGS = \
-    $(QTCORE_CFLAGS) \
-    $(QTDBUS_CFLAGS) \
-    $(QTTEST_CFLAGS) \
-    $(TP_QT4_CFLAGS)
-
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS) \
-    $(LIB_CFLAGS)
+    $(MOC_INCLUDES)
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \

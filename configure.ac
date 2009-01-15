@@ -55,6 +55,13 @@ AM_PROG_MKDIR_P
 # pkg-config 0.21 adds CFLAGS from Requires.private, which we need
 PKG_PROG_PKG_CONFIG([0.21])
 
+dnl check for a C compiler too, for code taken from telepathy-glib
+AC_LANG_PUSH([C])
+AC_PROG_CC
+AC_PROG_CC_STDC
+AM_PROG_CC_C_O
+AC_LANG_POP([C])
+
 LT_CURRENT=tp_qt4_lt_current
 LT_REVISION=tp_qt4_lt_revision
 LT_AGE=tp_qt4_lt_age
@@ -68,7 +75,7 @@ COMPILER_COVERAGE
 LINKER_OPTIMISATIONS
 LINKER_VERSION_SCRIPT
 
-ifelse(tp_glib_nano_version, 0,
+ifelse(tp_qt4_nano_version, 0,
     [ official_release=yes ],
     [ official_release=no ])
 AM_CONDITIONAL([OFFICIAL_RELEASE], [test "x$official_release" = xyes])
@@ -83,6 +90,25 @@ TP_COMPILER_WARNINGS([ERROR_CXXFLAGS], [test "x$official_release" = xno],
    [missing-field-initializers \
     unused-parameter])
 AC_SUBST([ERROR_CXXFLAGS])
+
+# For C code taken from telepathy-glib, we want different warnings
+AC_LANG_PUSH([C])
+TP_COMPILER_WARNINGS([ERROR_CFLAGS], [test "x$official_release" = xno],
+  [all \
+   extra \
+   declaration-after-statement \
+   shadow \
+   strict-prototypes \
+   missing-prototypes \
+   sign-compare \
+   nested-externs \
+   pointer-arith \
+   format-security \
+   init-self],
+   [missing-field-initializers \
+    unused-parameter])
+AC_SUBST([ERROR_CFLAGS])
+AC_LANG_POP([C])
 
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--disable-debug],[compile without debug code]),
@@ -154,12 +180,24 @@ dnl Likewise for the prototype library
 PROTO_CFLAGS='-I${top_builddir} -I${top_srcdir}'
 AC_SUBST(PROTO_CFLAGS)
 
-dnl Check for telepathy-glib (so we can use it for tests)
+dnl Check for telepathy-glib, and for Qt <-> GLib main loop integration:
+dnl if we have both, we can run more tests
 PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.7.20], [have_tp_glib=yes],
                   [have_tp_glib=no])
 AC_SUBST(TP_GLIB_CFLAGS)
 AC_SUBST(TP_GLIB_LIBS)
-AM_CONDITIONAL([HAVE_TP_GLIB], [test yes = "$have_tp_glib"])
+if test no = "$have_tp_glib"; then
+  AC_MSG_WARN([telepathy-glib not found: not all tests will be run])
+fi
+
+have_qt_glib_main_loop=no
+if ${PKG_CONFIG} --libs --static QtCore | grep ['[-]lglib-2.0'] >/dev/null; then
+  have_qt_glib_main_loop=yes
+else
+  AC_MSG_WARN([Qt does not use the GLib main loop: not all tests will be run])
+fi
+AM_CONDITIONAL([ENABLE_TP_GLIB_TESTS],
+  [test yes = "$have_tp_glib" && test yes = "$have_qt_glib_main_loop"])
 
 AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
   [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
@@ -214,6 +252,7 @@ AC_OUTPUT([
     tests/Makefile
     tests/dbus/Makefile
     tests/dbus-1/services/account-manager.service
+    tests/lib/Makefile
     tests/pinocchio/Makefile
     tests/prototype/Makefile
     tools/Makefile

@@ -111,4 +111,5 @@ const ParamSpec *getParam(const ParamSpecList &params, const QString &name)
 }
 
 QTEST_MAIN(TestManagerFile)
-#include "manager-file.moc.hpp"
+
+#include "_gen/manager-file.cpp.moc.hpp"

@@ -145,11 +145,23 @@ public:
 protected:
     ConnectionManagerInterface *baseInterface() const;
 
+private Q_SLOTS:
+    void onGetParametersReturn(QDBusPendingCallWatcher *);
+    void onListProtocolsReturn(QDBusPendingCallWatcher *);
+    void onGetAllConnectionManagerReturn(QDBusPendingCallWatcher *);
+    void continueIntrospection();
+
 private:
     Q_DISABLE_COPY(ConnectionManager);
 
-    class Private;
-    friend class Private;
+    bool checkConfigFile();
+    void callReadConfig();
+    void callGetAll();
+    void callGetParameters();
+    void callListProtocols();
+
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

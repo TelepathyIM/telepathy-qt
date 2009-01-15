@@ -286,17 +286,13 @@ void ConnectionManager::Private::PendingNames::parseResult(const QStringList &na
 }
 
 ConnectionManager::Private::Private(const QString &name, ConnectionManager *parent)
-    : QObject(parent),
-      baseInterface(new ConnectionManagerInterface(parent->dbusConnection(),
+    : baseInterface(new ConnectionManagerInterface(parent->dbusConnection(),
                             parent->busName(), parent->objectPath(), parent)),
       name(name),
       ready(false),
       pendingReady(0)
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();
-
-    introspectQueue.enqueue(&Private::callReadConfig);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 ConnectionManager::Private::~Private()
@@ -329,176 +325,6 @@ ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
     return NULL;
 }
 
-bool ConnectionManager::Private::checkConfigFile()
-{
-    ManagerFile f(name);
-    if (!f.isValid()) {
-        return false;
-    }
-
-    Q_FOREACH (QString protocol, f.protocols()) {
-        ProtocolInfo *info = new ProtocolInfo(name,
-                                              protocol);
-        protocols.append(info);
-
-        Q_FOREACH (ParamSpec spec, f.parameters(protocol)) {
-            info->addParameter(spec);
-        }
-    }
-
-#if 0
-    Q_FOREACH (ProtocolInfo *info, protocols) {
-        qDebug() << "protocol name   :" << info->name();
-        qDebug() << "protocol cn name:" << info->cmName();
-        Q_FOREACH (ProtocolParameter *param, info->parameters()) {
-            qDebug() << "\tparam name:       " << param->name();
-            qDebug() << "\tparam is required:" << param->isRequired();
-            qDebug() << "\tparam is secret:  " << param->isSecret();
-            qDebug() << "\tparam value:      " << param->defaultValue();
-        }
-    }
-#endif
-
-    return true;
-}
-
-void ConnectionManager::Private::callReadConfig()
-{
-    if (!checkConfigFile()) {
-        warning() << "error parsing config file for connection manager" << name;
-        introspectQueue.enqueue(&Private::callGetAll);
-        introspectQueue.enqueue(&Private::callListProtocols);
-    }
-
-    continueIntrospection();
-}
-
-void ConnectionManager::Private::callGetAll()
-{
-    debug() << "Calling Properties::GetAll(ConnectionManager)";
-    ConnectionManager *cm = static_cast<ConnectionManager *>(parent());
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            cm->propertiesInterface()->GetAll(
-                TELEPATHY_INTERFACE_CONNECTION_MANAGER), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher *)));
-}
-
-void ConnectionManager::Private::callGetParameters()
-{
-    QString protocol = getParametersQueue.dequeue();
-    protocolQueue.enqueue(protocol);
-    debug() << "Calling ConnectionManager::GetParameters(" << protocol << ")";
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            baseInterface->GetParameters(protocol), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onGetParametersReturn(QDBusPendingCallWatcher *)));
-}
-
-void ConnectionManager::Private::callListProtocols()
-{
-    debug() << "Calling ConnectionManager::ListProtocols";
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            baseInterface->ListProtocols(), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onListProtocolsReturn(QDBusPendingCallWatcher *)));
-}
-
-void ConnectionManager::Private::onGetAllConnectionManagerReturn(
-        QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap props;
-
-    if (!reply.isError()) {
-        debug() << "Got reply to Properties.GetAll(ConnectionManager)";
-        props = reply.value();
-    } else {
-        warning().nospace() <<
-            "Properties.GetAll(ConnectionManager) failed: " <<
-            reply.error().name() << ": " << reply.error().message();
-    }
-
-    // If Interfaces is not supported, the spec says to assume it's
-    // empty, so keep the empty list mPriv was initialized with
-    if (props.contains("Interfaces")) {
-        interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
-    }
-    continueIntrospection();
-}
-
-void ConnectionManager::Private::onListProtocolsReturn(
-        QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QStringList> reply = *watcher;
-    QStringList protocolsNames;
-
-    if (!reply.isError()) {
-        debug() << "Got reply to ConnectionManager.ListProtocols";
-        protocolsNames = reply.value();
-    } else {
-        warning().nospace() <<
-            "ConnectionManager.ListProtocols failed: " <<
-            reply.error().name() << ": " << reply.error().message();
-    }
-
-    Q_FOREACH (const QString &protocolName, protocolsNames) {
-        protocols.append(new ProtocolInfo(name,
-                                          protocolName));
-
-        getParametersQueue.enqueue(protocolName);
-        introspectQueue.enqueue(&Private::callGetParameters);
-    }
-    continueIntrospection();
-}
-
-void ConnectionManager::Private::onGetParametersReturn(
-        QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<ParamSpecList> reply = *watcher;
-    ParamSpecList parameters;
-    QString protocolName = protocolQueue.dequeue();
-    ProtocolInfo *info = protocol(protocolName);
-
-    if (!reply.isError()) {
-        debug() << "Got reply to ConnectionManager.GetParameters";
-        parameters = reply.value();
-    } else {
-        warning().nospace() <<
-            "ConnectionManager.GetParameters failed: " <<
-            reply.error().name() << ": " << reply.error().message();
-    }
-
-    Q_FOREACH (const ParamSpec &spec, parameters) {
-        debug() << "Parameter" << spec.name << "has flags" << spec.flags
-            << "and signature" << spec.signature;
-
-        info->addParameter(spec);
-    }
-    continueIntrospection();
-}
-
-void ConnectionManager::Private::continueIntrospection()
-{
-    if (!ready) {
-        if (introspectQueue.isEmpty()) {
-            debug() << "ConnectionManager is ready";
-            ready = true;
-
-            if (pendingReady) {
-                pendingReady->setFinished();
-                // it will delete itself later
-                pendingReady = 0;
-            }
-        } else {
-            (this->*(introspectQueue.dequeue()))();
-        }
-    }
-}
-
 /**
  * \class ConnectionManager
  * \ingroup clientcm
@@ -524,6 +350,8 @@ ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
             parent),
       mPriv(new Private(name, this))
 {
+    mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
+    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 /**
@@ -539,6 +367,8 @@ ConnectionManager::ConnectionManager(const QDBusConnection &bus,
             Private::makeObjectPath(name), parent),
       mPriv(new Private(name, this))
 {
+    mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
+    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 /**
@@ -663,6 +493,186 @@ PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
 ConnectionManagerInterface *ConnectionManager::baseInterface() const
 {
     return mPriv->baseInterface;
+}
+
+/**** Private ****/
+bool ConnectionManager::checkConfigFile()
+{
+    ManagerFile f(mPriv->name);
+    if (!f.isValid()) {
+        return false;
+    }
+
+    Q_FOREACH (QString protocol, f.protocols()) {
+        ProtocolInfo *info = new ProtocolInfo(mPriv->name,
+                                              protocol);
+        mPriv->protocols.append(info);
+
+        Q_FOREACH (ParamSpec spec, f.parameters(protocol)) {
+            info->addParameter(spec);
+        }
+    }
+
+#if 0
+    Q_FOREACH (ProtocolInfo *info, mPriv->protocols) {
+        qDebug() << "protocol name   :" << info->name();
+        qDebug() << "protocol cn name:" << info->cmName();
+        Q_FOREACH (ProtocolParameter *param, info->parameters()) {
+            qDebug() << "\tparam name:       " << param->name();
+            qDebug() << "\tparam is required:" << param->isRequired();
+            qDebug() << "\tparam is secret:  " << param->isSecret();
+            qDebug() << "\tparam value:      " << param->defaultValue();
+        }
+    }
+#endif
+
+    return true;
+}
+
+void ConnectionManager::callReadConfig()
+{
+    if (!checkConfigFile()) {
+        warning() << "error parsing config file for connection manager"
+                  << mPriv->name;
+        mPriv->introspectQueue.enqueue(&ConnectionManager::callGetAll);
+        mPriv->introspectQueue.enqueue(&ConnectionManager::callListProtocols);
+    }
+
+    continueIntrospection();
+}
+
+void ConnectionManager::callGetAll()
+{
+    debug() << "Calling Properties::GetAll(ConnectionManager)";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            propertiesInterface()->GetAll(
+                TELEPATHY_INTERFACE_CONNECTION_MANAGER), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onGetAllConnectionManagerReturn(QDBusPendingCallWatcher *)));
+}
+
+void ConnectionManager::callGetParameters()
+{
+    QString protocol = mPriv->getParametersQueue.dequeue();
+    mPriv->protocolQueue.enqueue(protocol);
+    debug() << "Calling ConnectionManager::GetParameters(" << protocol << ")";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            mPriv->baseInterface->GetParameters(protocol), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onGetParametersReturn(QDBusPendingCallWatcher *)));
+}
+
+void ConnectionManager::callListProtocols()
+{
+    debug() << "Calling ConnectionManager::ListProtocols";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            mPriv->baseInterface->ListProtocols(), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onListProtocolsReturn(QDBusPendingCallWatcher *)));
+}
+
+void ConnectionManager::onGetAllConnectionManagerReturn(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties.GetAll(ConnectionManager)";
+        props = reply.value();
+
+        // If Interfaces is not supported, the spec says to assume it's
+        // empty, so keep the empty list mPriv was initialized with
+        if (props.contains("Interfaces")) {
+            mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+        }
+    } else {
+        warning().nospace() <<
+            "Properties.GetAll(ConnectionManager) failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
+}
+
+void ConnectionManager::onListProtocolsReturn(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QStringList> reply = *watcher;
+    QStringList protocolsNames;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to ConnectionManager.ListProtocols";
+        protocolsNames = reply.value();
+    } else {
+        warning().nospace() <<
+            "ConnectionManager.ListProtocols failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+
+    Q_FOREACH (const QString &protocolName, protocolsNames) {
+        mPriv->protocols.append(new ProtocolInfo(mPriv->name,
+                    protocolName));
+
+        mPriv->getParametersQueue.enqueue(protocolName);
+        mPriv->introspectQueue.enqueue(&ConnectionManager::callGetParameters);
+    }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
+}
+
+void ConnectionManager::onGetParametersReturn(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<ParamSpecList> reply = *watcher;
+    ParamSpecList parameters;
+    QString protocolName = mPriv->protocolQueue.dequeue();
+    ProtocolInfo *info = mPriv->protocol(protocolName);
+
+    if (!reply.isError()) {
+        debug() << "Got reply to ConnectionManager.GetParameters";
+        parameters = reply.value();
+    } else {
+        warning().nospace() <<
+            "ConnectionManager.GetParameters failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+
+    Q_FOREACH (const ParamSpec &spec, parameters) {
+        debug() << "Parameter" << spec.name << "has flags" << spec.flags
+            << "and signature" << spec.signature;
+
+        info->addParameter(spec);
+    }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
+}
+
+void ConnectionManager::continueIntrospection()
+{
+    if (!mPriv->ready) {
+        if (mPriv->introspectQueue.isEmpty()) {
+            debug() << "ConnectionManager is ready";
+            mPriv->ready = true;
+
+            if (mPriv->pendingReady) {
+                mPriv->pendingReady->setFinished();
+                // it will delete itself later
+                mPriv->pendingReady = 0;
+            }
+        } else {
+            (this->*(mPriv->introspectQueue.dequeue()))();
+        }
+    }
 }
 
 } // Telepathy::Client
