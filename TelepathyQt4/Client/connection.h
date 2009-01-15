@@ -26,18 +26,6 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-namespace Telepathy {
-namespace Client {
-class Channel;
-class Connection;
-class PendingChannel;
-class PendingOperation;
-class PendingHandles;
-}
-}
-
-class QDBusPendingCallWatcher;
-
 #include <TelepathyQt4/_gen/cli-connection.h>
 
 #include <TelepathyQt4/Client/DBus>
@@ -45,13 +33,21 @@ class QDBusPendingCallWatcher;
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Types>
 
+#include <QString>
 #include <QStringList>
 
 namespace Telepathy
 {
 namespace Client
 {
+
+class Channel;
+class Connection;
+class PendingChannel;
+class PendingHandles;
+class PendingOperation;
 
 class Connection : public StatefulDBusProxy,
                    private OptionalInterfaceFactory<Connection>
@@ -76,14 +72,14 @@ public:
         BypassInterfaceCheck
     };
 
-    Connection(const QString& serviceName,
-               const QString& objectPath,
-               QObject* parent = 0);
+    Connection(const QString &serviceName,
+               const QString &objectPath,
+               QObject *parent = 0);
 
-    Connection(const QDBusConnection& bus,
+    Connection(const QDBusConnection &bus,
                const QString &serviceName,
                const QString &objectPath,
-               QObject* parent = 0);
+               QObject *parent = 0);
 
     ~Connection();
 
@@ -101,84 +97,92 @@ public:
     SimpleStatusSpecMap simplePresenceStatuses() const;
 
     template <class Interface>
-    inline Interface *optionalInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline Interface *optionalInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object supporting the interface
         QString name(Interface::staticInterfaceName());
-        if (check == CheckInterfaceSupported && !interfaces().contains(name))
+        if (check == CheckInterfaceSupported && !interfaces().contains(name)) {
             return 0;
+        }
 
         // If present or forced, delegate to OptionalInterfaceFactory
         return OptionalInterfaceFactory<Connection>::interface<Interface>();
     }
 
-    inline ConnectionInterfaceAliasingInterface* aliasingInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ConnectionInterfaceAliasingInterface *aliasingInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ConnectionInterfaceAliasingInterface>(check);
     }
 
-    inline ConnectionInterfaceAvatarsInterface* avatarsInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ConnectionInterfaceAvatarsInterface *avatarsInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ConnectionInterfaceAvatarsInterface>(check);
     }
 
-    inline ConnectionInterfaceCapabilitiesInterface* capabilitiesInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ConnectionInterfaceCapabilitiesInterface *capabilitiesInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ConnectionInterfaceCapabilitiesInterface>(check);
     }
 
-    inline ConnectionInterfacePresenceInterface* presenceInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ConnectionInterfacePresenceInterface *presenceInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ConnectionInterfacePresenceInterface>(check);
     }
 
-    inline ConnectionInterfaceSimplePresenceInterface* simplePresenceInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ConnectionInterfaceSimplePresenceInterface>(check);
     }
 
-    inline DBus::PropertiesInterface* propertiesInterface() const
+    inline DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
-    PendingChannel* requestChannel(const QString& channelType, uint handleType, uint handle);
+    PendingChannel *requestChannel(const QString &channelType,
+                                   uint handleType, uint handle);
 
-    PendingOperation* requestDisconnect();
+    PendingOperation *requestDisconnect();
 
-    PendingHandles* requestHandles(uint handleType, const QStringList& names);
+    PendingHandles *requestHandles(uint handleType, const QStringList &names);
 
-    PendingHandles* referenceHandles(uint handleType, const UIntList& handles);
+    PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
 
 Q_SIGNALS:
     void readinessChanged(uint newReadiness);
 
 public:
-    ConnectionInterface* baseInterface() const;
+    ConnectionInterface *baseInterface() const;
 
 private Q_SLOTS:
     void onStatusChanged(uint, uint);
-    void gotStatus(QDBusPendingCallWatcher* watcher);
-    void gotInterfaces(QDBusPendingCallWatcher* watcher);
-    void gotAliasFlags(QDBusPendingCallWatcher* watcher);
-    void gotStatuses(QDBusPendingCallWatcher* watcher);
-    void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
+    void gotStatus(QDBusPendingCallWatcher *watcher);
+    void gotInterfaces(QDBusPendingCallWatcher *watcher);
+    void gotAliasFlags(QDBusPendingCallWatcher *watcher);
+    void gotStatuses(QDBusPendingCallWatcher *watcher);
+    void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
 
     void doReleaseSweep(uint type);
 
 private:
-    friend class PendingHandles;
-    friend class ReferencedHandles;
     void refHandle(uint type, uint handle);
     void unrefHandle(uint type, uint handle);
     void handleRequestLanded(uint type);
 
     struct Private;
     friend struct Private;
+    friend class PendingHandles;
+    friend class ReferencedHandles;
     Private *mPriv;
 };
 
-}
-}
+} // Telepathy::Client
+} // Telepathy
 
 #endif

@@ -21,9 +21,10 @@
 
 #include <TelepathyQt4/Client/Connection>
 
-#include "TelepathyQt4/_gen/cli-connection-body.hpp"
-#include "TelepathyQt4/_gen/cli-connection.moc.hpp"
 #include "TelepathyQt4/Client/_gen/connection.moc.hpp"
+#include "TelepathyQt4/_gen/cli-connection.moc.hpp"
+#include "TelepathyQt4/_gen/cli-connection-body.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/PendingChannel>
@@ -65,15 +66,15 @@ namespace Client
 struct Connection::Private
 {
     // Public object
-    Connection& parent;
+    Connection &parent;
 
     // Instance of generated interface class
-    ConnectionInterface* baseInterface;
+    ConnectionInterface *baseInterface;
 
     // Optional interface proxies
-    ConnectionInterfaceAliasingInterface* aliasing;
-    ConnectionInterfacePresenceInterface* presence;
-    DBus::PropertiesInterface* properties;
+    ConnectionInterfaceAliasingInterface *aliasing;
+    ConnectionInterfacePresenceInterface *presence;
+    DBus::PropertiesInterface *properties;
 
     // Introspection
     bool initialIntrospection;
@@ -116,9 +117,9 @@ struct Connection::Private
         }
     };
     // (Bus connection name, service name) -> HandleContext
-    static QMap<QPair<QString, QString>, HandleContext*> handleContexts;
+    static QMap<QPair<QString, QString>, HandleContext *> handleContexts;
     static QMutex handleContextsLock;
-    HandleContext* handleContext;
+    HandleContext *handleContext;
 
     Private(Connection &parent)
         : parent(parent)
@@ -150,11 +151,11 @@ struct Connection::Private
 
         debug() << "Calling GetStatus()";
 
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(baseInterface->GetStatus(), &parent);
         parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotStatus(QDBusPendingCallWatcher*)));
+                       SIGNAL(finished(QDBusPendingCallWatcher *)),
+                       SLOT(gotStatus(QDBusPendingCallWatcher *)));
 
         QMutexLocker locker(&handleContextsLock);
         QString busConnectionName = baseInterface->connection().name();
@@ -163,7 +164,8 @@ struct Connection::Private
         if (handleContexts.contains(qMakePair(busConnectionName, serviceName))) {
             debug() << "Reusing existing HandleContext";
             handleContext = handleContexts[qMakePair(busConnectionName, serviceName)];
-        } else {
+        }
+        else {
             debug() << "Creating new HandleContext";
             handleContext = new HandleContext;
             handleContexts[qMakePair(busConnectionName, serviceName)] = handleContext;
@@ -181,23 +183,27 @@ struct Connection::Private
         if (!--handleContext->refcount) {
             debug() << "Destroying HandleContext";
 
-            foreach (uint handleType, handleContext->types.keys()) {
+            Q_FOREACH (uint handleType, handleContext->types.keys()) {
                 HandleContext::Type type = handleContext->types[handleType];
 
                 if (!type.refcounts.empty()) {
-                    debug() << " Still had references to" << type.refcounts.size() << "handles, releasing now";
+                    debug() << " Still had references to" <<
+                        type.refcounts.size() << "handles, releasing now";
                     baseInterface->ReleaseHandles(handleType, type.refcounts.keys());
                 }
 
                 if (!type.toRelease.empty()) {
-                    debug() << " Was going to release" << type.toRelease.size() << "handles, doing that now";
+                    debug() << " Was going to release" <<
+                        type.toRelease.size() << "handles, doing that now";
                     baseInterface->ReleaseHandles(handleType, type.toRelease.toList());
                 }
             }
 
-            handleContexts.remove(qMakePair(baseInterface->connection().name(), baseInterface->service()));
+            handleContexts.remove(qMakePair(baseInterface->connection().name(),
+                        baseInterface->service()));
             delete handleContext;
-        } else {
+        }
+        else {
             Q_ASSERT(handleContext->refcount > 0);
         }
     }
@@ -216,7 +222,7 @@ struct Connection::Private
         }
 
         debug() << "Calling GetAliasFlags()";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(aliasing->GetAliasFlags(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -229,11 +235,11 @@ struct Connection::Private
         // GetInterfaces(), but it might include other stuff in the future if we
         // gain GetAll-able properties on the connection
         debug() << "Calling GetInterfaces()";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), &parent);
         parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
+                       SIGNAL(finished(QDBusPendingCallWatcher *)),
+                       SLOT(gotInterfaces(QDBusPendingCallWatcher *)));
     }
 
     void introspectPresence()
@@ -250,11 +256,11 @@ struct Connection::Private
         }
 
         debug() << "Calling GetStatuses() (legacy)";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(presence->GetStatuses(), &parent);
         parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotStatuses(QDBusPendingCallWatcher*)));
+                       SIGNAL(finished(QDBusPendingCallWatcher *)),
+                       SLOT(gotStatuses(QDBusPendingCallWatcher *)));
     }
 
     void introspectSimplePresence()
@@ -268,11 +274,11 @@ struct Connection::Private
         QDBusPendingCall call =
             properties->Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
                            "Statuses");
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(call, &parent);
         parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotSimpleStatuses(QDBusPendingCallWatcher*)));
+                       SIGNAL(finished(QDBusPendingCallWatcher *)),
+                       SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
     }
 
     void continueIntrospection()
@@ -282,11 +288,13 @@ struct Connection::Private
                 initialIntrospection = false;
                 if (readiness < ReadinessNotYetConnected)
                     changeReadiness(ReadinessNotYetConnected);
-            } else {
+            }
+            else {
                 if (readiness != ReadinessDead)
                     changeReadiness(ReadinessFull);
             }
-        } else {
+        }
+        else {
             (this->*introspectQueue.dequeue())();
         }
     }
@@ -404,11 +412,11 @@ QMutex Connection::Private::handleContextsLock;
  * \param objectPath Connection object path.
  * \param parent Object parent.
  */
-Connection::Connection(const QString& serviceName,
-                       const QString& objectPath,
-                       QObject* parent)
-    : StatefulDBusProxy(QDBusConnection::sessionBus(), serviceName,
-          objectPath, parent),
+Connection::Connection(const QString &serviceName,
+                       const QString &objectPath,
+                       QObject *parent)
+    : StatefulDBusProxy(QDBusConnection::sessionBus(),
+            serviceName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(*this))
 {
@@ -423,10 +431,10 @@ Connection::Connection(const QString& serviceName,
  * \param objectPath Connection object path.
  * \param parent Object parent.
  */
-Connection::Connection(const QDBusConnection& bus,
-                       const QString& serviceName,
-                       const QString& objectPath,
-                       QObject* parent)
+Connection::Connection(const QDBusConnection &bus,
+                       const QString &serviceName,
+                       const QString &objectPath,
+                       QObject *parent)
     : StatefulDBusProxy(bus, serviceName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(*this))
@@ -463,8 +471,9 @@ Connection::Readiness Connection::readiness() const
  */
 uint Connection::status() const
 {
-    if (mPriv->readiness == ReadinessJustCreated)
+    if (mPriv->readiness == ReadinessJustCreated) {
         warning() << "Connection::status() used with readiness ReadinessJustCreated";
+    }
 
     return mPriv->status;
 }
@@ -477,8 +486,9 @@ uint Connection::status() const
  */
 uint Connection::statusReason() const
 {
-    if (mPriv->readiness == ReadinessJustCreated)
+    if (mPriv->readiness == ReadinessJustCreated) {
         warning() << "Connection::statusReason() used with readiness ReadinessJustCreated";
+    }
 
     return mPriv->statusReason;
 }
@@ -498,10 +508,14 @@ QStringList Connection::interfaces() const
     // Different check than the others, because the optional interface getters
     // may be used internally with the knowledge about getting the interfaces
     // list, so we don't want this to cause warnings.
-    if (mPriv->readiness != ReadinessNotYetConnected && mPriv->readiness != ReadinessFull && mPriv->interfaces.empty())
+    if (mPriv->readiness != ReadinessNotYetConnected &&
+        mPriv->readiness != ReadinessFull &&
+        mPriv->interfaces.empty()) {
         warning() << "Connection::interfaces() used possibly before the list of interfaces has been received";
-    else if (mPriv->readiness == ReadinessDead)
+    }
+    else if (mPriv->readiness == ReadinessDead) {
         warning() << "Connection::interfaces() used with readiness ReadinessDead";
+    }
 
     return mPriv->interfaces;
 }
@@ -518,10 +532,12 @@ QStringList Connection::interfaces() const
  */
 uint Connection::aliasFlags() const
 {
-    if (mPriv->readiness != ReadinessFull)
+    if (mPriv->readiness != ReadinessFull) {
         warning() << "Connection::aliasFlags() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING))
+    }
+    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)) {
         warning() << "Connection::aliasFlags() used without the remote object supporting the Aliasing interface";
+    }
 
     return mPriv->aliasFlags;
 }
@@ -538,10 +554,13 @@ uint Connection::aliasFlags() const
  */
 StatusSpecMap Connection::presenceStatuses() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Connection::presenceStatuses() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE))
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Connection::presenceStatuses() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)) {
         warning() << "Connection::presenceStatuses() used without the remote object supporting the Presence interface";
+    }
 
     return mPriv->presenceStatuses;
 }
@@ -563,10 +582,14 @@ StatusSpecMap Connection::presenceStatuses() const
  */
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
-    if (mPriv->readiness != ReadinessNotYetConnected && mPriv->readiness != ReadinessFull)
-        warning() << "Connection::simplePresenceStatuses() used with readiness" << mPriv->readiness << "not in (ReadinessNotYetConnected, ReadinessFull)";
-    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE))
+    if (mPriv->readiness != ReadinessNotYetConnected &&
+        mPriv->readiness != ReadinessFull) {
+        warning() << "Connection::simplePresenceStatuses() used with readiness"
+                  << mPriv->readiness << "not in (ReadinessNotYetConnected, ReadinessFull)";
+    }
+    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
         warning() << "Connection::simplePresenceStatuses() used without the remote object supporting the SimplePresence interface";
+    }
 
     return mPriv->simplePresenceStatuses;
 }
@@ -619,7 +642,8 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
  */
 
 /**
- * \fn ConnectionInterfaceCapabilitiesInterface* Connection::capabilitiesInterface(InterfaceSupportedChecking check) const
+ * \fn ConnectionInterfaceCapabilitiesInterface *Connection::capabilitiesInterface(InterfaceSupportedChecking check) const
+ *
  * Convenience function for getting a Capabilities interface proxy.
  *
  * \param check Passed to optionalInterface()
@@ -659,16 +683,17 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 
 void Connection::onStatusChanged(uint status, uint reason)
 {
-    debug() << "StatusChanged from" << mPriv->status << "to" << status << "with reason" << reason;
+    debug() << "StatusChanged from" << mPriv->status
+            << "to" << status << "with reason" << reason;
 
     if (!mPriv->haveInitialStatus) {
-        debug() << " Still haven't got the GetStatus reply, ignoring StatusChanged until we have (but saving reason)";
+        debug() << "Still haven't got the GetStatus reply, ignoring StatusChanged until we have (but saving reason)";
         mPriv->statusReason = reason;
         return;
     }
 
     if (mPriv->status == status) {
-        warning() << " New status was the same as the old status! Ignoring redundant StatusChanged";
+        warning() << "New status was the same as the old status! Ignoring redundant StatusChanged";
         return;
     }
 
@@ -691,10 +716,12 @@ void Connection::onStatusChanged(uint status, uint reason)
             break;
 
         case ConnectionStatusConnecting:
-            if (mPriv->readiness < ReadinessConnecting)
+            if (mPriv->readiness < ReadinessConnecting) {
                 mPriv->changeReadiness(ReadinessConnecting);
-            else
+            }
+            else {
                 warning() << " Got unexpected status change to Connecting";
+            }
             break;
 
         case ConnectionStatusDisconnected:
@@ -739,7 +766,8 @@ void Connection::onStatusChanged(uint status, uint reason)
                         QString("ConnectionStatusReason = %1").arg(uint(reason)));
 
                 mPriv->changeReadiness(ReadinessDead);
-            } else {
+            }
+            else {
                 warning() << " Got unexpected status change to Disconnected";
             }
             break;
@@ -750,12 +778,13 @@ void Connection::onStatusChanged(uint status, uint reason)
     }
 }
 
-void Connection::gotStatus(QDBusPendingCallWatcher* watcher)
+void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "GetStatus() failed with " << reply.error().name() << ": " << reply.error().message();
+        warning().nospace() << "GetStatus() failed with" <<
+            reply.error().name() << ":" << reply.error().message();
         mPriv->changeReadiness(ReadinessDead);
         return;
     }
@@ -778,11 +807,13 @@ void Connection::gotStatus(QDBusPendingCallWatcher* watcher)
     if (status == ConnectionStatusDisconnected) {
         debug() << "Performing introspection for the Disconnected status";
         mPriv->initialIntrospection = true;
-    } else {
+    }
+    else {
         if (status != ConnectionStatusConnected) {
             warning() << "Not performing introspection for unknown status" << status;
             return;
-        } else {
+        }
+        else {
             debug() << "Performing introspection for the Connected status";
         }
     }
@@ -791,73 +822,85 @@ void Connection::gotStatus(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
-void Connection::gotInterfaces(QDBusPendingCallWatcher* watcher)
+void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QStringList> reply = *watcher;
 
     if (!reply.isError()) {
         mPriv->interfaces = reply.value();
         debug() << "Got reply to GetInterfaces():" << mPriv->interfaces;
-    } else {
-        warning().nospace() << "GetInterfaces() failed with " << reply.error().name() << ": " << reply.error().message() << " - assuming no new interfaces";
+    }
+    else {
+        warning().nospace() << "GetInterfaces() failed with" <<
+            reply.error().name() << ":" << reply.error().message() <<
+            "- assuming no new interfaces";
     }
 
-    for (QStringList::const_iterator i  = mPriv->interfaces.constBegin();
-                                     i != mPriv->interfaces.constEnd();
-                                     ++i) {
+    for (QStringList::const_iterator i = mPriv->interfaces.constBegin();
+            i != mPriv->interfaces.constEnd(); ++i) {
         void (Private::*introspectFunc)() = 0;
 
-        if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)
+        if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING) {
             introspectFunc = &Private::introspectAliasing;
-        else if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)
+        }
+        else if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE) {
             introspectFunc = &Private::introspectPresence;
-        else if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)
+        }
+        else if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE) {
             introspectFunc = &Private::introspectSimplePresence;
+        }
 
-        if (introspectFunc)
+        if (introspectFunc) {
             mPriv->introspectQueue.enqueue(introspectFunc);
+        }
     }
 
     mPriv->continueIntrospection();
 }
 
-void Connection::gotAliasFlags(QDBusPendingCallWatcher* watcher)
+void Connection::gotAliasFlags(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint> reply = *watcher;
 
     if (!reply.isError()) {
         mPriv->aliasFlags = static_cast<ConnectionAliasFlag>(reply.value());
         debug().nospace() << "Got alias flags 0x" << hex << mPriv->aliasFlags;
-    } else {
-        warning().nospace() << "GetAliasFlags() failed with " << reply.error().name() << ": " << reply.error().message();
+    }
+    else {
+        warning().nospace() << "GetAliasFlags() failed with" <<
+            reply.error().name() << ":" << reply.error().message();
     }
 
     mPriv->continueIntrospection();
 }
 
-void Connection::gotStatuses(QDBusPendingCallWatcher* watcher)
+void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<StatusSpecMap> reply = *watcher;
 
     if (!reply.isError()) {
         mPriv->presenceStatuses = reply.value();
         debug() << "Got" << mPriv->presenceStatuses.size() << "legacy presence statuses";
-    } else {
-        warning().nospace() << "GetStatuses() failed with " << reply.error().name() << ": " << reply.error().message();
+    }
+    else {
+        warning().nospace() << "GetStatuses() failed with" <<
+            reply.error().name() << ":" << reply.error().message();
     }
 
     mPriv->continueIntrospection();
 }
 
-void Connection::gotSimpleStatuses(QDBusPendingCallWatcher* watcher)
+void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusVariant> reply = *watcher;
 
     if (!reply.isError()) {
         mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
         debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
-    } else {
-        warning().nospace() << "Getting simple presence statuses failed with " << reply.error().name() << ": " << reply.error().message();
+    }
+    else {
+        warning().nospace() << "Getting simple presence statuses failed with" <<
+            reply.error().name() << ":" << reply.error().message();
     }
 
     mPriv->continueIntrospection();
@@ -872,7 +915,7 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher* watcher)
  * \return A pointer to the existing ConnectionInterface for this
  *         Connection.
  */
-ConnectionInterface* Connection::baseInterface() const
+ConnectionInterface *Connection::baseInterface() const
 {
     Q_ASSERT(mPriv->baseInterface != 0);
     return mPriv->baseInterface;
@@ -905,17 +948,20 @@ ConnectionInterface* Connection::baseInterface() const
  * \return Pointer to a newly constructed PendingChannel object, tracking
  *         the progress of the request.
  */
-PendingChannel* Connection::requestChannel(const QString& channelType, uint handleType, uint handle)
+PendingChannel *Connection::requestChannel(const QString &channelType,
+        uint handleType, uint handle)
 {
-    debug() << "Requesting a Channel with type" << channelType << "and handle" << handle << "of type" << handleType;
+    debug() << "Requesting a Channel with type" << channelType
+            << "and handle" << handle << "of type" << handleType;
 
-    PendingChannel* channel =
+    PendingChannel *channel =
         new PendingChannel(this, channelType, handleType, handle);
-    QDBusPendingCallWatcher* watcher =
-        new QDBusPendingCallWatcher(mPriv->baseInterface->RequestChannel(channelType, handleType, handle, true), channel);
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(mPriv->baseInterface->RequestChannel(
+                    channelType, handleType, handle, true), channel);
 
-    channel->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                              SLOT(onCallFinished(QDBusPendingCallWatcher*)));
+    channel->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)),
+                              SLOT(onCallFinished(QDBusPendingCallWatcher *)));
 
     return channel;
 }
@@ -924,7 +970,7 @@ PendingChannel* Connection::requestChannel(const QString& channelType, uint hand
 // FIXME: this is a 1:1 mapping of the method from TpPrototype, but
 // most likely what we really want as a high-level API is something
 // more analogous to tp_connection_call_when_ready() in telepathy-glib
-PendingOperation* Connection::requestConnect()
+PendingOperation *Connection::requestConnect()
 {
     return new PendingVoidMethodCall(this, baseInterface()->Connect());
 }
@@ -955,7 +1001,7 @@ PendingOperation* Connection::requestConnect()
  * \return Pointer to a newly constructed PendingHandles object, tracking
  *         the progress of the request.
  */
-PendingHandles* Connection::requestHandles(uint handleType, const QStringList& names)
+PendingHandles *Connection::requestHandles(uint handleType, const QStringList &names)
 {
     debug() << "Request for" << names.length() << "handles of type" << handleType;
 
@@ -965,13 +1011,16 @@ PendingHandles* Connection::requestHandles(uint handleType, const QStringList& n
         handleContext->types[handleType].requestsInFlight++;
     }
 
-    PendingHandles* pending =
+    PendingHandles *pending =
         new PendingHandles(this, handleType, names);
-    QDBusPendingCallWatcher* watcher =
-        new QDBusPendingCallWatcher(mPriv->baseInterface->RequestHandles(handleType, names), pending);
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                mPriv->baseInterface->RequestHandles(handleType, names),
+                pending);
 
-    pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                              SLOT(onCallFinished(QDBusPendingCallWatcher*)));
+    pending->connect(watcher,
+                     SIGNAL(finished(QDBusPendingCallWatcher *)),
+                     SLOT(onCallFinished(QDBusPendingCallWatcher *)));
 
     return pending;
 }
@@ -1001,7 +1050,7 @@ PendingHandles* Connection::requestHandles(uint handleType, const QStringList& n
  * \return Pointer to a newly constructed PendingHandles object, tracking
  *         the progress of the request.
  */
-PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& handles)
+PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &handles)
 {
     debug() << "Reference of" << handles.length() << "handles of type" << handleType;
 
@@ -1012,29 +1061,35 @@ PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& ha
         QMutexLocker locker(&handleContext->lock);
 
         foreach (uint handle, handles) {
-            if (handleContext->types[handleType].refcounts.contains(handle)
-                    || handleContext->types[handleType].toRelease.contains(handle)) {
+            if (handleContext->types[handleType].refcounts.contains(handle) ||
+                handleContext->types[handleType].toRelease.contains(handle)) {
                 alreadyHeld.push_back(handle);
-            } else {
+            }
+            else {
                 notYetHeld.push_back(handle);
             }
         }
     }
 
-    debug() << " Already holding" << alreadyHeld.size() << "of the handles -" << notYetHeld.size() << "to go";
+    debug() << " Already holding" << alreadyHeld.size() <<
+        "of the handles -" << notYetHeld.size() << "to go";
 
-    PendingHandles* pending =
+    PendingHandles *pending =
         new PendingHandles(this, handleType, handles, alreadyHeld);
 
     if (!notYetHeld.isEmpty()) {
         debug() << " Calling HoldHandles";
 
-        QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(mPriv->baseInterface->HoldHandles(handleType, notYetHeld), pending);
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(
+                    mPriv->baseInterface->HoldHandles(handleType, notYetHeld),
+                    pending);
 
-        pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                                  SLOT(onCallFinished(QDBusPendingCallWatcher*)));
-    } else {
+        pending->connect(watcher,
+                         SIGNAL(finished(QDBusPendingCallWatcher *)),
+                         SLOT(onCallFinished(QDBusPendingCallWatcher *)));
+    }
+    else {
         debug() << " All handles already held, not calling HoldHandles";
     }
 
@@ -1050,7 +1105,7 @@ PendingHandles* Connection::referenceHandles(uint handleType, const UIntList& ha
  * \return A %PendingOperation, which will emit finished when the
  *         Disconnect D-Bus method returns.
  */
-PendingOperation* Connection::requestDisconnect()
+PendingOperation *Connection::requestDisconnect()
 {
     return new PendingVoidMethodCall(this, baseInterface()->Disconnect());
 }
@@ -1060,8 +1115,9 @@ void Connection::refHandle(uint type, uint handle)
     Private::HandleContext *handleContext = mPriv->handleContext;
     QMutexLocker locker(&handleContext->lock);
 
-    if (handleContext->types[type].toRelease.contains(handle))
+    if (handleContext->types[type].toRelease.contains(handle)) {
         handleContext->types[type].toRelease.remove(handle);
+    }
 
     handleContext->types[type].refcounts[handle]++;
 }
@@ -1080,8 +1136,10 @@ void Connection::unrefHandle(uint type, uint handle)
 
         if (!handleContext->types[type].releaseScheduled) {
             if (!handleContext->types[type].requestsInFlight) {
-                debug() << "Lost last reference to at least one handle of type" << type << "and no requests in flight for that type - scheduling a release sweep";
-                QMetaObject::invokeMethod(this, "doReleaseSweep", Qt::QueuedConnection, Q_ARG(uint, type));
+                debug() << "Lost last reference to at least one handle of type" <<
+                    type << "and no requests in flight for that type - scheduling a release sweep";
+                QMetaObject::invokeMethod(this, "doReleaseSweep",
+                        Qt::QueuedConnection, Q_ARG(uint, type));
                 handleContext->types[type].releaseScheduled = true;
             }
         }
@@ -1123,8 +1181,11 @@ void Connection::handleRequestLanded(uint type)
     Q_ASSERT(handleContext->types.contains(type));
     Q_ASSERT(handleContext->types[type].requestsInFlight > 0);
 
-    if (!--handleContext->types[type].requestsInFlight && !handleContext->types[type].toRelease.isEmpty() && !handleContext->types[type].releaseScheduled) {
-        debug() << "All handle requests for type" << type << "landed and there are handles of that type to release - scheduling a release sweep";
+    if (!--handleContext->types[type].requestsInFlight &&
+        !handleContext->types[type].toRelease.isEmpty() &&
+        !handleContext->types[type].releaseScheduled) {
+        debug() << "All handle requests for type" << type <<
+            "landed and there are handles of that type to release - scheduling a release sweep";
         QMetaObject::invokeMethod(this, "doReleaseSweep", Qt::QueuedConnection, Q_ARG(uint, type));
         handleContext->types[type].releaseScheduled = true;
     }
