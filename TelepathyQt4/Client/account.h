@@ -142,12 +142,14 @@ public:
     // TODO this is a copy/paste from Connection, move it somewhere else that
     //      could be shared between classes
     template <class Interface>
-    inline Interface* optionalInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline Interface *optionalInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object supporting the interface
         QString name(Interface::staticInterfaceName());
-        if (check == CheckInterfaceSupported && !interfaces().contains(name))
+        if (check == CheckInterfaceSupported && !interfaces().contains(name)) {
             return 0;
+        }
 
         // If present or forced, delegate to OptionalInterfaceFactory
         return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
@@ -158,7 +160,8 @@ public:
         return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
-    inline AccountInterfaceAvatarInterface *avatarInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline AccountInterfaceAvatarInterface *avatarInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<AccountInterfaceAvatarInterface>(check);
     }

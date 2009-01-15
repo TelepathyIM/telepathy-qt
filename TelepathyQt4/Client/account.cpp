@@ -153,7 +153,8 @@ Account::Private::~Private()
  * Object representing a Telepathy account.
  */
 
-/*! \enum Account::InterfaceSupportedChecking
+/**
+ * \enum Account::InterfaceSupportedChecking
  *
  * Specifies if the interface being supported by the remote object should be
  * checked by optionalInterface() and the convenience functions for it.
