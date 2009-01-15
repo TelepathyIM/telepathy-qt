@@ -48,23 +48,18 @@ namespace Client
 class DBusProxy::Private
 {
 public:
-    // Public object
-    DBusProxy &parent;
-
     QDBusConnection dbusConnection;
     QString busName;
     QString objectPath;
 
-    Private(const QDBusConnection &, const QString &, const QString &,
-            DBusProxy &);
+    Private(const QDBusConnection &, const QString &, const QString &);
 };
 
 DBusProxy::Private::Private(const QDBusConnection &dbusConnection,
-            const QString &busName, const QString &objectPath, DBusProxy &p)
- : parent(p),
-   dbusConnection(dbusConnection),
-   busName(busName),
-   objectPath(objectPath)
+            const QString &busName, const QString &objectPath)
+    : dbusConnection(dbusConnection),
+      busName(busName),
+      objectPath(objectPath)
 {
     debug() << "Creating new DBusProxy";
 }
@@ -72,7 +67,7 @@ DBusProxy::Private::Private(const QDBusConnection &dbusConnection,
 DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &path, QObject *parent)
  : QObject(parent),
-   mPriv(new Private(dbusConnection, busName, path, *this))
+   mPriv(new Private(dbusConnection, busName, path))
 {
 }
 
@@ -123,19 +118,15 @@ StatelessDBusProxy::~StatelessDBusProxy()
 class StatefulDBusProxy::Private
 {
 public:
-    // Public object
-    StatefulDBusProxy &parent;
-
     QString invalidationReason;
     QString invalidationMessage;
 
-    Private(StatefulDBusProxy &);
+    Private();
 };
 
-StatefulDBusProxy::Private::Private(StatefulDBusProxy &p)
- : parent(p),
-   invalidationReason(QString()),
-   invalidationMessage(QString())
+StatefulDBusProxy::Private::Private()
+    : invalidationReason(QString()),
+      invalidationMessage(QString())
 {
     debug() << "Creating new StatefulDBusProxy";
 }
@@ -143,7 +134,7 @@ StatefulDBusProxy::Private::Private(StatefulDBusProxy &p)
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent),
-      mPriv(new Private(*this))
+      mPriv(new Private)
 {
     QString uniqueName = busName;
 
