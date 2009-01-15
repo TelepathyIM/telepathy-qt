@@ -87,7 +87,6 @@ DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
 {
 }
 
-
 /**
  * Destructor
  */
@@ -95,7 +94,6 @@ DBusProxy::~DBusProxy()
 {
     delete mPriv;
 }
-
 
 /**
  * Returns the D-Bus connection through which the remote object is
