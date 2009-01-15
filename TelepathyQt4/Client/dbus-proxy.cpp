@@ -129,6 +129,10 @@ QString DBusProxy::busName() const
     return mPriv->busName;
 }
 
+/**
+ * Sets the D-Bus bus name. This is used by subclasses after converting
+ * well-known names to unique names.
+ */
 void DBusProxy::setBusName(const QString &busName)
 {
     mPriv->busName = busName;
@@ -149,6 +153,9 @@ void DBusProxy::setBusName(const QString &busName)
  * ConnectionManager.
  */
 
+/**
+ * Constructor
+ */
 StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent),
@@ -160,6 +167,9 @@ StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
     }
 }
 
+/**
+ * Destructor
+ */
 StatelessDBusProxy::~StatelessDBusProxy()
 {
 }
