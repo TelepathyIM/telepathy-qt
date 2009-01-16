@@ -935,7 +935,7 @@ void Account::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariant> reply = *watcher;
 
-    mPriv->pendingFeatures ^= Account::FeatureAvatar;
+    mPriv->pendingFeatures &= ~(Account::FeatureAvatar);
 
     if (!reply.isError()) {
         mPriv->features |= Account::FeatureAvatar;
@@ -979,7 +979,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
         error = (mPriv->protocolInfo == 0);
     }
 
-    mPriv->pendingFeatures ^= Account::FeatureProtocolInfo;
+    mPriv->pendingFeatures &= ~(Account::FeatureProtocolInfo);
 
     if (!error) {
         mPriv->features |= Account::FeatureProtocolInfo;
