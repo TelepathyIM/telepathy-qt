@@ -4,6 +4,7 @@
 #include <QtDBus/QtDBus>
 
 #include <TelepathyQt4/Client/ConnectionManager>
+#include <TelepathyQt4/Client/PendingConnection>
 #include <TelepathyQt4/Client/PendingStringList>
 
 #include <tests/pinocchio/lib.h>
@@ -121,6 +122,21 @@ void TestCmBasics::testBasics()
     }
 
     QCOMPARE(mCM->supportedProtocols(), QStringList() << "dummy");
+
+    QVariantMap parameters;
+    parameters.insert(QLatin1String("account"),
+        QVariant::fromValue(QString::fromAscii("empty")));
+    parameters.insert(QLatin1String("password"),
+        QVariant::fromValue(QString::fromAscii("s3kr1t")));
+
+    PendingConnection *pconn = mCM->requestConnection("dummy", parameters);
+    connect(pconn,
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(pconn->connection() != 0);
 }
 
 
