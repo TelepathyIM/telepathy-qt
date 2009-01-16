@@ -988,7 +988,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
         mPriv->missingFeatures |= Account::FeatureProtocolInfo;
 
         // signal all pending operations that cares about protocol info that
-        // it failed
+        // it failed, as FeatureProtocolInfo is mandatory
         Q_FOREACH (Private::PendingReady *operation, mPriv->pendingOperations) {
             if (operation->features & FeatureProtocolInfo) {
                 operation->setFinishedWithError(operation->errorName(),
@@ -1018,24 +1018,9 @@ void Account::continueIntrospection()
 {
     if (mPriv->introspectQueue.isEmpty()) {
         Q_FOREACH (Private::PendingReady *operation, mPriv->pendingOperations) {
-            if (operation->features == 0 && mPriv->ready) {
-                operation->setFinished();
-            }
-            else if (operation->features == Account::FeatureAvatar &&
-                (mPriv->features & Account::FeatureAvatar ||
-                 mPriv->missingFeatures & Account::FeatureAvatar)) {
-                // if we don't have avatar we will just finish silently
-                operation->setFinished();
-            }
-            else if (operation->features == Account::FeatureProtocolInfo &&
-                     mPriv->features & Account::FeatureProtocolInfo) {
-                operation->setFinished();
-            }
-            else if (operation->features == (Account::FeatureAvatar | Account::FeatureProtocolInfo) &&
-                     ((mPriv->features == (Account::FeatureAvatar | Account::FeatureProtocolInfo)) ||
-                      (mPriv->features & Account::FeatureProtocolInfo &&
-                       mPriv->missingFeatures & Account::FeatureAvatar))) {
-                // if we don't have avatar we will just finish silently
+            if (mPriv->ready &&
+                ((operation->features &
+                    (mPriv->features | mPriv->missingFeatures)) == operation->features)) {
                 operation->setFinished();
             }
             if (operation->isFinished()) {
