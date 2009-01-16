@@ -38,6 +38,7 @@ namespace Telepathy
 namespace Client
 {
 
+class PendingConnection;
 class PendingOperation;
 class PendingStringList;
 class ProtocolParameter;
@@ -130,6 +131,9 @@ public:
     QStringList supportedProtocols() const;
     const ProtocolInfoList &protocols() const;
 
+    PendingConnection *requestConnection(const QString &protocol,
+            const QVariantMap &parameters);
+
     inline DBus::PropertiesInterface *propertiesInterface() const
     {
         return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
@@ -162,6 +166,7 @@ private:
 
     struct Private;
     friend struct Private;
+    friend class PendingConnection;
     Private *mPriv;
 };
 
