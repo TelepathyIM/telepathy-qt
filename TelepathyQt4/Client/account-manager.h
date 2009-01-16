@@ -43,7 +43,6 @@ namespace Client
 
 class Account;
 class PendingAccount;
-class PendingAccounts;
 class PendingOperation;
 
 class AccountManager : public StatelessDBusProxy,
