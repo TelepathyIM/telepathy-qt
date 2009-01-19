@@ -206,24 +206,18 @@ AM_CONDITIONAL([HAVE_PINOCCHIO],
   [test none != "$PINOCCHIO" && test none != "$PINOCCHIO_CTL"])
 
 dnl Check for code generation tools
-PYTHON=
-AC_CHECK_PROGS([PYTHON], [python2.5 python])
-if test -z "$PYTHON"; then
-  AC_MSG_ERROR([Python is required to compile this package])
-fi
+AM_PATH_PYTHON([2.5])
 
 # Check for Python >= 2.5 with dbus, to run the tests
-AC_MSG_CHECKING([for Python >= 2.5 with D-Bus bindings])
-for TEST_PYTHON in python2.5 python; do
-  if $TEST_PYTHON -c "from sys import version_info; raise SystemExit(version_info < (2, 5, 0, 'final', 0))" >/dev/null 2>&1; then
-    if $TEST_PYTHON -c "import dbus.mainloop.glib" >/dev/null 2>&1; then
-      AC_MSG_RESULT([$TEST_PYTHON])
-      break
-    else
-      TEST_PYTHON=false
-    fi
-  fi
-done
+AC_MSG_CHECKING([for enough Python libraries to run tests])
+if "$PYTHON" -c "import dbus.mainloop.glib" >/dev/null 2>&1; then
+  AC_MSG_RESULT([yes])
+  TEST_PYTHON="$PYTHON"
+else
+  AC_MSG_RESULT([no])
+  TEST_PYTHON=false
+fi
+
 AC_SUBST([TEST_PYTHON])
 AM_CONDITIONAL([HAVE_TEST_PYTHON], test false != "$TEST_PYTHON")
 
