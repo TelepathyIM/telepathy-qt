@@ -48,6 +48,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/optional-interface-factory.cpp \
     Client/pending-account.cpp \
     Client/pending-channel.cpp \
+    Client/pending-connection.cpp \
     Client/pending-operation.cpp \
     Client/pending-string-list.cpp \
     Client/properties.cpp \
@@ -86,6 +87,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/connection-manager-internal.moc.hpp \
     Client/_gen/dbus-proxy.moc.hpp \
     Client/_gen/pending-account.moc.hpp \
+    Client/_gen/pending-connection.moc.hpp \
     Client/_gen/pending-channel.moc.hpp \
     Client/_gen/pending-operation.moc.hpp \
     Client/_gen/pending-string-list.moc.hpp \
@@ -116,6 +118,7 @@ tpqt4clientinclude_HEADERS = \
     Client/OptionalInterfaceFactory \
     Client/PendingAccount \
     Client/PendingChannel \
+    Client/PendingConnection \
     Client/PendingFailure \
     Client/PendingOperation \
     Client/PendingSuccess \
@@ -167,6 +170,7 @@ tpqt4clientinclude_HEADERS = \
     Client/optional-interface-factory.h \
     Client/pending-account.h \
     Client/pending-channel.h \
+    Client/pending-connection.h \
     Client/pending-operation.h \
     Client/pending-string-list.h \
     Client/properties.h \

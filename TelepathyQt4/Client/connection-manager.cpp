@@ -30,6 +30,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/Client/PendingConnection>
 #include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ManagerFile>
@@ -421,6 +422,24 @@ QStringList ConnectionManager::supportedProtocols() const
 const ProtocolInfoList &ConnectionManager::protocols() const
 {
     return mPriv->protocols;
+}
+
+/**
+ * Request a Connection object representing a given account on a given protocol
+ * with the given parameters.
+ *
+ * Return a pending operation representing the Connection object which will
+ * succeed when the connection has been created or fail if an error occurred.
+ *
+ * \param protocol Name of the protocol to create the account for.
+ * \param parameters Account parameters.
+ * \return A PendingOperation which will emit PendingConnection::finished when
+ *         the account has been created of failed its creation process.
+ */
+PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
+        const QVariantMap &parameters)
+{
+    return new PendingConnection(this, protocol, parameters);
 }
 
 /**
