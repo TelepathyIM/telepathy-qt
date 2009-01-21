@@ -151,6 +151,10 @@ Account::Private::~Private()
  * \headerfile TelepathyQt4/Client/account.h> <TelepathyQt4/Client/Account>
  *
  * Object representing a Telepathy account.
+ *
+ * If the Telepathy account is deleted from the AccountManager, this object
+ * will not be deleted automatically; however, it will emit invalidated()
+ * and will cease to be useful.
  */
 
 /**
@@ -1012,7 +1016,9 @@ void Account::onRemoved()
     mPriv->ready = false;
     mPriv->valid = false;
     mPriv->enabled = false;
-    Q_EMIT removed();
+    // This is the closest error we have at the moment
+    invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+            QLatin1String("Account removed from AccountManager"));
 }
 
 void Account::continueIntrospection()

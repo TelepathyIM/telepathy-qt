@@ -167,7 +167,6 @@ public:
     }
 
 Q_SIGNALS:
-    void removed();
     void displayNameChanged(const QString &);
     void iconChanged(const QString &);
     void nicknameChanged(const QString &);
