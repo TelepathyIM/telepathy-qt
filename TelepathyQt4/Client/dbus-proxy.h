@@ -48,8 +48,21 @@ public:
     QString busName() const;
     QString objectPath() const;
 
+    bool isValid() const;
+    QString invalidationReason() const;
+    QString invalidationMessage() const;
+
 protected:
     void setBusName(const QString &busName);
+    void invalidate(const QString &reason, const QString &message);
+    inline void invalidate(const QDBusError &error);
+
+Q_SIGNALS:
+    void invalidated(Telepathy::Client::DBusProxy *proxy,
+            QString errorName, QString errorMessage);
+
+private Q_SLOTS:
+    void emitInvalidated();
 
 private:
     class Private;
@@ -85,21 +98,7 @@ public:
 
     virtual ~StatefulDBusProxy();
 
-    bool isValid() const;
-    QString invalidationReason() const;
-    QString invalidationMessage() const;
-
-protected:
-    void invalidate(const QString &reason, const QString &message);
-
-    inline void invalidate(const QDBusError &error);
-
-Q_SIGNALS:
-    void invalidated(Telepathy::Client::StatefulDBusProxy *proxy,
-            QString errorName, QString errorMessage);
-
 private Q_SLOTS:
-    void emitInvalidated();
     void onServiceOwnerChanged(const QString &name, const QString &oldOwner,
             const QString &newOwner);
 
@@ -109,7 +108,7 @@ private:
     Private *mPriv;
 };
 
-void StatefulDBusProxy::invalidate(const QDBusError &error)
+void DBusProxy::invalidate(const QDBusError &error)
 {
     invalidate(error.name(), error.message());
 }

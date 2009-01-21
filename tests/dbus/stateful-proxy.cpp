@@ -64,7 +64,7 @@ private Q_SLOTS:
 
 protected Q_SLOTS:
     // these would be public, but then QtTest would think they were tests
-    void expectInvalidated(Telepathy::Client::StatefulDBusProxy *,
+    void expectInvalidated(Telepathy::Client::DBusProxy *,
             QString, QString);
 
 private:
@@ -138,10 +138,10 @@ void TestStatefulProxy::testBasics()
 
 
     QVERIFY(connect(mProxy, SIGNAL(invalidated(
-                        Telepathy::Client::StatefulDBusProxy *,
+                        Telepathy::Client::DBusProxy *,
                         QString, QString)),
                 this, SLOT(expectInvalidated(
-                        Telepathy::Client::StatefulDBusProxy *,
+                        Telepathy::Client::DBusProxy *,
                         QString, QString))));
     mProxy->invalidate("com.example.DomainSpecificError",
             "Because I said so");
@@ -155,10 +155,10 @@ void TestStatefulProxy::testBasics()
     // the signal doesn't arrive instantly
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(mProxy, SIGNAL(invalidated(
-                        Telepathy::Client::StatefulDBusProxy *,
+                        Telepathy::Client::DBusProxy *,
                         QString, QString)),
                 this, SLOT(expectInvalidated(
-                        Telepathy::Client::StatefulDBusProxy *,
+                        Telepathy::Client::DBusProxy *,
                         QString, QString))));
 
     QCOMPARE(mInvalidated, 1);
@@ -173,7 +173,7 @@ void TestStatefulProxy::testBasics()
             QString::fromAscii("Because I said so"));
 }
 
-void TestStatefulProxy::expectInvalidated(StatefulDBusProxy *proxy,
+void TestStatefulProxy::expectInvalidated(DBusProxy *proxy,
         QString reason, QString message)
 {
     mInvalidated++;
@@ -196,18 +196,18 @@ void TestStatefulProxy::testNameOwnerChanged()
     QCOMPARE(mProxy->invalidationMessage(), QString());
 
     QVERIFY(connect(mProxy, SIGNAL(invalidated(
-                        Telepathy::Client::StatefulDBusProxy *,
+                        Telepathy::Client::DBusProxy *,
                         QString, QString)),
                 this, SLOT(expectInvalidated(
-                        Telepathy::Client::StatefulDBusProxy *,
+                        Telepathy::Client::DBusProxy *,
                         QString, QString))));
     QDBusConnection::disconnectFromBus("another unique name");
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(mProxy, SIGNAL(invalidated(
-                        Telepathy::Client::StatefulDBusProxy *,
+                        Telepathy::Client::DBusProxy *,
                         QString, QString)),
                 this, SLOT(expectInvalidated(
-                        Telepathy::Client::StatefulDBusProxy *,
+                        Telepathy::Client::DBusProxy *,
                         QString, QString))));
 
     QCOMPARE(mInvalidated, 1);

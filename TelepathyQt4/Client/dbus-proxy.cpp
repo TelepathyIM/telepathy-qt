@@ -64,6 +64,8 @@ public:
     QDBusConnection dbusConnection;
     QString busName;
     QString objectPath;
+    QString invalidationReason;
+    QString invalidationMessage;
 
     Private(const QDBusConnection &, const QString &, const QString &);
 };
@@ -186,26 +188,10 @@ StatelessDBusProxy::~StatelessDBusProxy()
  * Examples in Telepathy include the Connection and Channel.
  */
 
-class StatefulDBusProxy::Private
-{
-public:
-    QString invalidationReason;
-    QString invalidationMessage;
-
-    Private();
-};
-
-StatefulDBusProxy::Private::Private()
-    : invalidationReason(QString()),
-      invalidationMessage(QString())
-{
-    debug() << "Creating new StatefulDBusProxy";
-}
-
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent),
-      mPriv(new Private)
+      mPriv(0)
 {
     QString uniqueName = busName;
 
@@ -229,7 +215,6 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
 
 StatefulDBusProxy::~StatefulDBusProxy()
 {
-    delete mPriv;
 }
 
 /**
@@ -238,7 +223,7 @@ StatefulDBusProxy::~StatefulDBusProxy()
  *
  * \return <code>true</code> if this object is still fully usable
  */
-bool StatefulDBusProxy::isValid() const
+bool DBusProxy::isValid() const
 {
     return mPriv->invalidationReason.isEmpty();
 }
@@ -250,7 +235,7 @@ bool StatefulDBusProxy::isValid() const
  *
  * \return A D-Bus error name, or QString() if this object is still valid
  */
-QString StatefulDBusProxy::invalidationReason() const
+QString DBusProxy::invalidationReason() const
 {
     return mPriv->invalidationReason;
 }
@@ -262,7 +247,7 @@ QString StatefulDBusProxy::invalidationReason() const
  *
  * \return A debugging message, or QString() if this object is still valid
  */
-QString StatefulDBusProxy::invalidationMessage() const
+QString DBusProxy::invalidationMessage() const
 {
     return mPriv->invalidationMessage;
 }
@@ -283,12 +268,12 @@ QString StatefulDBusProxy::invalidationMessage() const
  */
 
 /**
- * Called by subclasses when the StatefulDBusProxy should become invalid.
+ * Called by subclasses when the DBusProxy should become invalid.
  *
  * This method takes care of setting the invalidationReason,
  * invalidationMessage, and emitting the invalidated signal.
  */
-void StatefulDBusProxy::invalidate(const QString &reason, const QString &message)
+void DBusProxy::invalidate(const QString &reason, const QString &message)
 {
     if (!isValid()) {
         debug().nospace() << "Already invalidated by "
@@ -313,7 +298,7 @@ void StatefulDBusProxy::invalidate(const QString &reason, const QString &message
     QTimer::singleShot(0, this, SLOT(emitInvalidated()));
 }
 
-void StatefulDBusProxy::emitInvalidated()
+void DBusProxy::emitInvalidated()
 {
     Q_ASSERT(!isValid());
 
