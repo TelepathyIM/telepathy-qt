@@ -83,6 +83,14 @@ class Generator(object):
 #include <QDBusAbstractInterface>
 #include <QDBusPendingReply>
 
+// basically the same as GLib's G_GNUC_DEPRECATED
+#ifndef TELEPATHY_GNUC_DEPRECATED
+#   if defined(Q_CC_GNUC) && __GNUC__ >= 4
+#       define TELEPATHY_GNUC_DEPRECATED __attribute__((__deprecated__))
+#   else
+#       define TELEPATHY_GNUC_DEPRECATED
+#   endif
+#endif
 """)
 
         if self.must_define:
@@ -290,10 +298,12 @@ Q_SIGNALS:\
     /**
      * Getter for the remote object property "%(name)s".
      *
+     * Don't use this: it blocks the main loop.
+     *
      * \\return The value of the property, or a default-constructed value
      *          if the property is not readable.
      */
-    inline %(val)s %(gettername)s() const
+    inline %(val)s %(gettername)s() const TELEPATHY_GNUC_DEPRECATED
     {
         return %(getter-return)s;
     }
@@ -311,9 +321,11 @@ Q_SIGNALS:\
     /**
      * Setter for the remote object property "%s".
      *
+     * Don't use this: it blocks the main loop.
+     *
      * \\param newValue The value to set the property to.
      */
-    inline void %s(%s newValue)
+    inline void %s(%s newValue) TELEPATHY_GNUC_DEPRECATED
     {
         internalPropSet("%s", QVariant::fromValue(newValue));
     }
