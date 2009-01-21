@@ -78,7 +78,7 @@ public:
 
     AccountManager *manager() const;
 
-    bool isValid() const;
+    bool isValidAccount() const;
 
     bool isEnabled() const;
     PendingOperation *setEnabled(bool value);

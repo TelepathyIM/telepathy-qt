@@ -220,7 +220,7 @@ AccountManager *Account::manager() const
  *
  * \return \c true if the account is valid, \c false otherwise.
  */
-bool Account::isValid() const
+bool Account::isValidAccount() const
 {
     return mPriv->valid;
 }
