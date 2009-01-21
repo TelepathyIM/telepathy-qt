@@ -49,9 +49,11 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-account.cpp \
     Client/pending-channel.cpp \
     Client/pending-connection.cpp \
+    Client/pending-handles.cpp \
     Client/pending-operation.cpp \
     Client/pending-string-list.cpp \
     Client/properties.cpp \
+    Client/referenced-handles.cpp \
     debug.cpp \
     debug-internal.h \
     key-file.cpp \
@@ -89,6 +91,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/pending-account.moc.hpp \
     Client/_gen/pending-connection.moc.hpp \
     Client/_gen/pending-channel.moc.hpp \
+    Client/_gen/pending-handles.moc.hpp \
     Client/_gen/pending-operation.moc.hpp \
     Client/_gen/pending-string-list.moc.hpp \
     Client/_gen/simple-pending-operations.moc.hpp
@@ -125,6 +128,8 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingStringList \
     Client/PendingVoidMethodCall \
     Client/Properties \
+    Client/ReferencedHandles \
+    Client/ReferencedHandlesIterator \
     Client/StatelessDBusProxy \
     Client/StatefulDBusProxy \
     Client/AccountInterface \
@@ -171,9 +176,11 @@ tpqt4clientinclude_HEADERS = \
     Client/pending-account.h \
     Client/pending-channel.h \
     Client/pending-connection.h \
+    Client/pending-handles.h \
     Client/pending-operation.h \
     Client/pending-string-list.h \
     Client/properties.h \
+    Client/referenced-handles.h \
     Client/simple-pending-operations.h
 
 nodist_geninclude_HEADERS = \

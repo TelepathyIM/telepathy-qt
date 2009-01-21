@@ -10,13 +10,15 @@ TESTS = \
     test-chan-basics \
     test-cm-basics \
     test-conn-basics \
-    test-do-nothing
+    test-do-nothing \
+    test-handles
 
 BUILT_SOURCES = \
     _gen/chan-basics.cpp.moc.hpp \
     _gen/cm-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
     _gen/do-nothing.cpp.moc.hpp \
+    _gen/handles.cpp.moc.hpp \
     _gen/lib.h.moc.hpp
 
 _gen/%.moc.hpp: %
@@ -32,6 +34,8 @@ test_cm_basics_SOURCES = cm-basics.cpp lib.cpp
 test_conn_basics_SOURCES = conn-basics.cpp lib.cpp
 
 test_do_nothing_SOURCES = do-nothing.cpp lib.cpp
+
+test_handles_SOURCES = handles.cpp lib.cpp
 
 # A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
 # argument to moc but -Wstuff is not

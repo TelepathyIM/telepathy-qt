@@ -51,6 +51,7 @@ class Channel;
 class Connection;
 class PendingChannel;
 class PendingOperation;
+class PendingHandles;
 }
 }
 
@@ -61,6 +62,7 @@ class QDBusPendingCallWatcher;
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+
 #include <TelepathyQt4/Constants>
 
 #include <QStringList>
@@ -435,6 +437,60 @@ public:
      */
     PendingOperation* requestDisconnect();
 
+    /*
+     * Requests handles of the given type for the given entities (contacts,
+     * rooms, lists, etc.).
+     *
+     * Upon completion, the reply to the request can be retrieved through the
+     * returned PendingHandles object. The object also provides access to the
+     * parameters with which the call was made and a signal to connect to to get
+     * notification of the request finishing processing. See the documentation
+     * for that class for more info.
+     *
+     * The returned PendingHandles object should be freed using
+     * its QObject::deleteLater() method after it is no longer used. However,
+     * all PendingHandles objects resulting from requests to a particular
+     * Connection will be freed when the Connection itself is freed. Conversely,
+     * this means that the PendingHandles object should not be used after the
+     * Connection is destroyed.
+     *
+     * \sa PendingHandles
+     *
+     * \param handleType Type for the handles to request, as specified in
+     *                   #HandleType.
+     * \param names Names of the entities to request handles for.
+     * \return Pointer to a newly constructed PendingHandles object, tracking
+     *         the progress of the request.
+     */
+    PendingHandles* requestHandles(uint handleType, const QStringList& names);
+
+    /**
+     * Requests a reference to the given handles. Handles not explicitly
+     * requested (via requestHandles()) but eg. observed in a signal need to be
+     * referenced to guarantee them staying valid.
+     *
+     * Upon completion, the reply to the operation can be retrieved through the
+     * returned PendingHandles object. The object also provides access to the
+     * parameters with which the call was made and a signal to connect to to get
+     * notification of the request finishing processing. See the documentation
+     * for that class for more info.
+     *
+     * The returned PendingHandles object should be freed using
+     * its QObject::deleteLater() method after it is no longer used. However,
+     * all PendingHandles objects resulting from requests to a particular
+     * Connection will be freed when the Connection itself is freed. Conversely,
+     * this means that the PendingHandles object should not be used after the
+     * Connection is destroyed.
+     *
+     * \sa PendingHandles
+     *
+     * \param handleType Type of the handles given, as specified in #HandleType.
+     * \param handles Handles to request a reference to.
+     * \return Pointer to a newly constructed PendingHandles object, tracking
+     *         the progress of the request.
+     */
+    PendingHandles* referenceHandles(uint handleType, const UIntList& handles);
+
 Q_SIGNALS:
     /**
      * Emitted whenever the readiness of the Connection changes.
@@ -464,7 +520,15 @@ private Q_SLOTS:
     void gotStatuses(QDBusPendingCallWatcher* watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher* watcher);
 
+    void doReleaseSweep(uint type);
+
 private:
+    friend class PendingHandles;
+    friend class ReferencedHandles;
+    void refHandle(uint type, uint handle);
+    void unrefHandle(uint type, uint handle);
+    void handleRequestLanded(uint type);
+
     struct Private;
     friend struct Private;
     Private *mPriv;
