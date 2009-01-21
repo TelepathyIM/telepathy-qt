@@ -138,85 +138,6 @@ void DBusProxy::setBusName(const QString &busName)
     mPriv->busName = busName;
 }
 
-// ==== StatelessDBusProxy =============================================
-
-/**
- * \class StatelessDBusProxy
- * \ingroup FIXME: what group is it in?
- * \headerfile TelepathyQt4/Client/dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
- *
- * Base class representing a remote object whose API is basically stateless.
- * These objects can remain valid even if the service providing them exits
- * and is restarted.
- *
- * Examples in Telepathy include the AccountManager, Account and
- * ConnectionManager.
- */
-
-/**
- * Constructor
- */
-StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
-        const QString &busName, const QString &objectPath, QObject *parent)
-    : DBusProxy(dbusConnection, busName, objectPath, parent),
-      mPriv(0)
-{
-    if (busName.startsWith(QChar(':'))) {
-        warning() <<
-            "Using StatelessDBusProxy for a unique name does not make sense";
-    }
-}
-
-/**
- * Destructor
- */
-StatelessDBusProxy::~StatelessDBusProxy()
-{
-}
-
-// ==== StatefulDBusProxy ==============================================
-
-/**
- * \class StatefulDBusProxy
- * \ingroup FIXME: what group is it in?
- * \headerfile TelepathyQt4/Client/dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
- *
- * Base class representing a remote object whose API is stateful. These
- * objects do not remain useful if the service providing them exits or
- * crashes, so they emit #invalidated() if this happens.
- *
- * Examples in Telepathy include the Connection and Channel.
- */
-
-StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
-        const QString &busName, const QString &objectPath, QObject *parent)
-    : DBusProxy(dbusConnection, busName, objectPath, parent),
-      mPriv(0)
-{
-    QString uniqueName = busName;
-
-    connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-            this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
-
-    if (!busName.startsWith(QChar(':'))) {
-        // For a stateful interface, it makes no sense to follow name-owner
-        // changes, so we want to bind to the unique name.
-        QDBusReply<QString> reply = dbusConnection.interface()->serviceOwner(
-                busName);
-        if (reply.isValid()) {
-            uniqueName = reply.value();
-        } else {
-            invalidate(reply.error());
-        }
-    }
-
-    setBusName(uniqueName);
-}
-
-StatefulDBusProxy::~StatefulDBusProxy()
-{
-}
-
 /**
  * If this object is usable (has not emitted #invalidated()), returns
  * <code>true</code>. Otherwise returns <code>false</code>.
@@ -313,6 +234,85 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
         invalidate(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER,
             "Name owner lost (service crashed?)");
     }
+}
+
+// ==== StatefulDBusProxy ==============================================
+
+/**
+ * \class StatefulDBusProxy
+ * \ingroup FIXME: what group is it in?
+ * \headerfile TelepathyQt4/Client/dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
+ *
+ * Base class representing a remote object whose API is stateful. These
+ * objects do not remain useful if the service providing them exits or
+ * crashes, so they emit #invalidated() if this happens.
+ *
+ * Examples in Telepathy include the Connection and Channel.
+ */
+
+StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
+        const QString &busName, const QString &objectPath, QObject *parent)
+    : DBusProxy(dbusConnection, busName, objectPath, parent),
+      mPriv(0)
+{
+    QString uniqueName = busName;
+
+    connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
+
+    if (!busName.startsWith(QChar(':'))) {
+        // For a stateful interface, it makes no sense to follow name-owner
+        // changes, so we want to bind to the unique name.
+        QDBusReply<QString> reply = dbusConnection.interface()->serviceOwner(
+                busName);
+        if (reply.isValid()) {
+            uniqueName = reply.value();
+        } else {
+            invalidate(reply.error());
+        }
+    }
+
+    setBusName(uniqueName);
+}
+
+StatefulDBusProxy::~StatefulDBusProxy()
+{
+}
+
+// ==== StatelessDBusProxy =============================================
+
+/**
+ * \class StatelessDBusProxy
+ * \ingroup FIXME: what group is it in?
+ * \headerfile TelepathyQt4/Client/dbus-proxy.h <TelepathyQt4/Client/DBusProxy>
+ *
+ * Base class representing a remote object whose API is basically stateless.
+ * These objects can remain valid even if the service providing them exits
+ * and is restarted.
+ *
+ * Examples in Telepathy include the AccountManager, Account and
+ * ConnectionManager.
+ */
+
+/**
+ * Constructor
+ */
+StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
+        const QString &busName, const QString &objectPath, QObject *parent)
+    : DBusProxy(dbusConnection, busName, objectPath, parent),
+      mPriv(0)
+{
+    if (busName.startsWith(QChar(':'))) {
+        warning() <<
+            "Using StatelessDBusProxy for a unique name does not make sense";
+    }
+}
+
+/**
+ * Destructor
+ */
+StatelessDBusProxy::~StatelessDBusProxy()
+{
 }
 
 }
