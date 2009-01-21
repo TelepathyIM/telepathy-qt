@@ -422,7 +422,14 @@ void %(name)s::invalidate(Telepathy::Client::DBusProxy *proxy,
         self.h("""\
      */
     inline QDBusPendingReply<%(rettypes)s> %(name)s(%(params)s)
-    {\
+    {
+        if (!invalidationReason().isEmpty()) {
+            return QDBusPendingReply<%(rettypes)s>(QDBusMessage::createError(
+                invalidationReason(),
+                invalidationMessage()
+            ));
+        }
+
 """ % {'rettypes' : rettypes,
        'name' : name,
        'params' : params})
