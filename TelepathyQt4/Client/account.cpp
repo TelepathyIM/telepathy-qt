@@ -380,16 +380,14 @@ const Telepathy::Avatar &Account::avatar() const
  */
 PendingOperation *Account::setAvatar(const Telepathy::Avatar &avatar)
 {
-    AccountInterfaceAvatarInterface *iface = avatarInterface();
-    if (!iface) {
+    if (!avatarInterface()) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Unimplemented");
     }
 
-    DBus::PropertiesInterface *propertiesIface =
-        OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(*iface);
     return new PendingVoidMethodCall(this,
-            propertiesIface->Set(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
+            propertiesInterface()->Set(
+                TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
                 "Avatar", QDBusVariant(QVariant::fromValue(avatar))));
 }
 
@@ -901,15 +899,9 @@ void Account::updateProperties(const QVariantMap &props)
 
 void Account::retrieveAvatar()
 {
-    // we already checked if avatar interface exists, so bypass avatar interface
-    // checking
-    AccountInterfaceAvatarInterface *iface =
-        avatarInterface(BypassInterfaceCheck);
-
-    DBus::PropertiesInterface *propertiesIface =
-        interface<DBus::PropertiesInterface>(*iface);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            propertiesIface->Get(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
+            propertiesInterface()->Get(
+                TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
                 "Avatar"), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
