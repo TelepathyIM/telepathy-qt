@@ -66,7 +66,7 @@ namespace Client
 struct Connection::Private
 {
     // Public object
-    Connection &parent;
+    Connection *parent;
 
     // Instance of generated interface class
     ConnectionInterface *baseInterface;
@@ -121,7 +121,7 @@ struct Connection::Private
     static QMutex handleContextsLock;
     HandleContext *handleContext;
 
-    Private(Connection &parent)
+    Private(Connection *parent)
         : parent(parent)
     {
         aliasing = 0;
@@ -140,22 +140,22 @@ struct Connection::Private
     void startIntrospection()
     {
         Q_ASSERT(baseInterface == 0);
-        baseInterface = new ConnectionInterface(parent.dbusConnection(),
-            parent.busName(), parent.objectPath(), &parent);
+        baseInterface = new ConnectionInterface(parent->dbusConnection(),
+            parent->busName(), parent->objectPath(), parent);
 
         debug() << "Connecting to StatusChanged()";
 
-        parent.connect(baseInterface,
-                       SIGNAL(StatusChanged(uint, uint)),
-                       SLOT(onStatusChanged(uint, uint)));
+        parent->connect(baseInterface,
+                        SIGNAL(StatusChanged(uint, uint)),
+                        SLOT(onStatusChanged(uint, uint)));
 
         debug() << "Calling GetStatus()";
 
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(baseInterface->GetStatus(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher *)),
-                       SLOT(gotStatus(QDBusPendingCallWatcher *)));
+            new QDBusPendingCallWatcher(baseInterface->GetStatus(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher *)),
+                        SLOT(gotStatus(QDBusPendingCallWatcher *)));
 
         QMutexLocker locker(&handleContextsLock);
         QString busConnectionName = baseInterface->connection().name();
@@ -217,16 +217,16 @@ struct Connection::Private
         }
 
         if (!aliasing) {
-            aliasing = parent.aliasingInterface();
+            aliasing = parent->aliasingInterface();
             Q_ASSERT(aliasing != 0);
         }
 
         debug() << "Calling GetAliasFlags()";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(aliasing->GetAliasFlags(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotAliasFlags(QDBusPendingCallWatcher*)));
+            new QDBusPendingCallWatcher(aliasing->GetAliasFlags(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotAliasFlags(QDBusPendingCallWatcher*)));
     }
 
     void introspectMain()
@@ -236,10 +236,10 @@ struct Connection::Private
         // gain GetAll-able properties on the connection
         debug() << "Calling GetInterfaces()";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher *)),
-                       SLOT(gotInterfaces(QDBusPendingCallWatcher *)));
+            new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher *)),
+                        SLOT(gotInterfaces(QDBusPendingCallWatcher *)));
     }
 
     void introspectPresence()
@@ -251,22 +251,22 @@ struct Connection::Private
         }
 
         if (!presence) {
-            presence = parent.presenceInterface();
+            presence = parent->presenceInterface();
             Q_ASSERT(presence != 0);
         }
 
         debug() << "Calling GetStatuses() (legacy)";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(presence->GetStatuses(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher *)),
-                       SLOT(gotStatuses(QDBusPendingCallWatcher *)));
+            new QDBusPendingCallWatcher(presence->GetStatuses(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher *)),
+                        SLOT(gotStatuses(QDBusPendingCallWatcher *)));
     }
 
     void introspectSimplePresence()
     {
         if (!properties) {
-            properties = parent.propertiesInterface();
+            properties = parent->propertiesInterface();
             Q_ASSERT(properties != 0);
         }
 
@@ -275,10 +275,10 @@ struct Connection::Private
             properties->Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
                            "Statuses");
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(call, &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher *)),
-                       SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
+            new QDBusPendingCallWatcher(call, parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher *)),
+                        SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
     }
 
     void continueIntrospection()
@@ -324,7 +324,7 @@ struct Connection::Private
 
         debug() << "Readiness changed from" << readiness << "to" << newReadiness;
         readiness = newReadiness;
-        emit parent.readinessChanged(newReadiness);
+        emit parent->readinessChanged(newReadiness);
     }
 };
 
@@ -418,7 +418,7 @@ Connection::Connection(const QString &serviceName,
     : StatefulDBusProxy(QDBusConnection::sessionBus(),
             serviceName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
-      mPriv(new Private(*this))
+      mPriv(new Private(this))
 {
     mPriv->startIntrospection();
 }
@@ -437,7 +437,7 @@ Connection::Connection(const QDBusConnection &bus,
                        QObject *parent)
     : StatefulDBusProxy(bus, serviceName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
-      mPriv(new Private(*this))
+      mPriv(new Private(this))
 {
     mPriv->startIntrospection();
 }
