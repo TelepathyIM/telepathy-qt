@@ -35,6 +35,7 @@ libtelepathy_qt4_la_LIBADD = $(ALL_LIBS)
 libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
+    Client/abstract-interface.cpp \
     Client/account.cpp \
     Client/account-manager.cpp \
     Client/channel.cpp \
@@ -81,6 +82,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-properties-body.hpp \
     _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp \
+    Client/_gen/abstract-interface.moc.hpp \
     Client/_gen/account.moc.hpp \
     Client/_gen/account-manager.moc.hpp \
     Client/_gen/channel.moc.hpp \
@@ -109,6 +111,7 @@ tpqt4include_HEADERS = \
     types.h
 
 tpqt4clientinclude_HEADERS = \
+    Client/AbstractInterface \
     Client/Account \
     Client/AccountManager \
     Client/Channel \
@@ -163,6 +166,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PeerInterface \
     Client/PropertiesInterface \
     Client/PropertiesInterfaceInterface \
+    Client/abstract-interface.h \
     Client/account.h \
     Client/account-manager.h \
     Client/channel.h \
