@@ -80,8 +80,9 @@ class Generator(object):
 #include <QObject>
 #include <QVariant>
 
-#include <QDBusAbstractInterface>
 #include <QDBusPendingReply>
+
+#include <TelepathyQt4/Client/AbstractInterface>
 
 // basically the same as GLib's G_GNUC_DEPRECATED
 #ifndef TELEPATHY_GNUC_DEPRECATED
@@ -144,7 +145,7 @@ namespace %s
  *
  * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
  */
-class %(name)s : public QDBusAbstractInterface
+class %(name)s : public Telepathy::Client::AbstractInterface
 {
     Q_OBJECT
 
@@ -194,18 +195,18 @@ public:
 
         self.b("""
 %(name)s::%(name)s(const QString& serviceName, const QString& objectPath, QObject *parent)
-    : QDBusAbstractInterface(serviceName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent)
+    : Telepathy::Client::AbstractInterface(serviceName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent)
 {
 }
 
 %(name)s::%(name)s(const QDBusConnection& connection, const QString& serviceName, const QString& objectPath, QObject *parent)
-    : QDBusAbstractInterface(serviceName, objectPath, staticInterfaceName(), connection, parent)
+    : Telepathy::Client::AbstractInterface(serviceName, objectPath, staticInterfaceName(), connection, parent)
 {
 }
 """ % {'name' : name})
 
         # Main interface
-        mainiface = self.mainiface or 'QDBusAbstractInterface'
+        mainiface = self.mainiface or 'Telepathy::Client::AbstractInterface'
 
         if mainiface != self.namespace + '::' + name:
             self.h("""
@@ -231,12 +232,12 @@ public:
 
             self.b("""
 %(name)s::%(name)s(const %(mainiface)s& mainInterface)
-    : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), mainInterface.parent())
+    : Telepathy::Client::AbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), mainInterface.parent())
 {
 }
 
 %(name)s::%(name)s(const %(mainiface)s& mainInterface, QObject *parent)
-    : QDBusAbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), parent)
+    : Telepathy::Client::AbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), parent)
 {
 }
 """ % {'name' : name,
