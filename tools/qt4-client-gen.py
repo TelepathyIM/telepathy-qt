@@ -38,6 +38,8 @@ class Generator(object):
             self.extraincludes = opts.get('--extraincludes', None)
             self.mainiface = opts.get('--mainiface', None)
             self.must_define = opts.get('--must-define', None)
+            self.dbus_proxy = opts.get('--dbus-proxy',
+                    'Telepathy::Client::DBusProxy')
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
@@ -83,6 +85,7 @@ class Generator(object):
 #include <QDBusPendingReply>
 
 #include <TelepathyQt4/Client/AbstractInterface>
+#include <TelepathyQt4/Client/DBusProxy>
 
 // basically the same as GLib's G_GNUC_DEPRECATED
 #ifndef TELEPATHY_GNUC_DEPRECATED
@@ -204,6 +207,26 @@ public:
 {
 }
 """ % {'name' : name})
+
+        # Construct from DBusProxy subclass
+        self.h("""
+    /**
+     * Creates a %(name)s associated with the same object as the given proxy.
+     *
+     * \\param proxy The proxy to use.
+     * \\param parent Passed to the parent class constructor.
+     */
+    %(name)s(const %(dbus_proxy)s *proxy, QObject *parent = 0);
+""" % {'name' : name,
+       'dbus_proxy' : self.dbus_proxy})
+
+        self.b("""
+%(name)s::%(name)s(const %(dbus_proxy)s *proxy, QObject *parent)
+    : Telepathy::Client::AbstractInterface(proxy->busName(), proxy->objectPath(), staticInterfaceName(), proxy->dbusConnection(), parent)
+{
+}
+""" % {'name' : name,
+       'dbus_proxy' : self.dbus_proxy})
 
         # Main interface
         mainiface = self.mainiface or 'Telepathy::Client::AbstractInterface'
@@ -441,6 +464,7 @@ if __name__ == '__main__':
              'prettyinclude=',
              'extraincludes=',
              'mainiface=',
-             'must-define='])
+             'must-define=',
+             'dbus-proxy='])
 
     Generator(dict(options))()
