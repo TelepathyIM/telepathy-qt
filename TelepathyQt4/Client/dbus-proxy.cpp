@@ -241,16 +241,6 @@ void DBusProxy::emitInvalidated()
     emit invalidated(this, mPriv->invalidationReason, mPriv->invalidationMessage);
 }
 
-void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner)
-{
-    // We only want to invalidate this object if it is not already invalidated,
-    // and its (not any other object's) name owner changed signal is emitted.
-    if (isValid() && name == busName() && newOwner == "") {
-        invalidate(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER,
-            "Name owner lost (service crashed?)");
-    }
-}
-
 // ==== StatefulDBusProxy ==============================================
 
 /**
@@ -292,6 +282,16 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
 
 StatefulDBusProxy::~StatefulDBusProxy()
 {
+}
+
+void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner)
+{
+    // We only want to invalidate this object if it is not already invalidated,
+    // and its (not any other object's) name owner changed signal is emitted.
+    if (isValid() && name == busName() && newOwner == "") {
+        invalidate(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER,
+            "Name owner lost (service crashed?)");
+    }
 }
 
 // ==== StatelessDBusProxy =============================================
