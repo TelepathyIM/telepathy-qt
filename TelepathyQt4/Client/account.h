@@ -63,14 +63,6 @@ public:
     };
     Q_DECLARE_FLAGS(Features, Feature)
 
-    // TODO this is a copy/paste from Connection, move it somewhere else that
-    //      could be shared between classes
-    enum InterfaceSupportedChecking
-    {
-        CheckInterfaceSupported,
-        BypassInterfaceCheck
-    };
-
     Account(AccountManager *am, const QString &objectPath,
             QObject *parent = 0);
 

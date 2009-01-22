@@ -50,6 +50,21 @@ namespace Client
  *
  */
 
+/**
+ * \enum DBusProxy::InterfaceSupportedChecking
+ *
+ * Specifies if the interface being supported by the remote object should be
+ * checked by optionalInterface() and the convenience functions for it.
+ *
+ * \value CheckInterfaceSupported Don't return an interface instance unless it
+ *                                can be guaranteed that the remote object
+ *                                actually implements the interface.
+ * \value BypassInterfaceCheck Return an interface instance even if it can't
+ *                             be verified that the remote object supports the
+ *                             interface.
+ * \sa optionalInterface()
+ */
+
 // Features in TpProxy but not here:
 // * tracking which interfaces we have (in tpqt4, subclasses do that)
 // * being Introspectable, a Peer and a Properties implementation

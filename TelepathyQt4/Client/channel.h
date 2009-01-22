@@ -553,26 +553,6 @@ Q_SIGNALS:
 public:
 
     /**
-     * Specifies if the interface being supported by the remote object should be
-     * checked by optionalInterface(), typeInterface() and the convenience
-     * functions for them.
-     */
-    enum InterfaceSupportedChecking
-    {
-        /**
-         * Don't return an interface instance unless it can be guaranteed that
-         * the remote object actually implements the interface.
-         */
-        CheckInterfaceSupported,
-
-        /**
-         * Return an interface instance even if it can't be verified that the
-         * remote object supports the interface.
-         */
-        BypassInterfaceCheck
-    };
-
-    /**
      * Returns a pointer to a valid instance of a given %Channel optional
      * interface class, associated with the same remote object the Channel is
      * associated with, and destroyed together with the Channel.

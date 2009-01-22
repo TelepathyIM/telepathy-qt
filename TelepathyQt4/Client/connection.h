@@ -269,25 +269,6 @@ public:
     SimpleStatusSpecMap simplePresenceStatuses() const;
 
     /**
-     * Specifies if the interface being supported by the remote object should be
-     * checked by optionalInterface() and the convenience functions for it.
-     */
-    enum InterfaceSupportedChecking
-    {
-        /**
-         * Don't return an interface instance unless it can be guaranteed that
-         * the remote object actually implements the interface.
-         */
-        CheckInterfaceSupported,
-
-        /**
-         * Return an interface instance even if it can't be verified that the
-         * remote object supports the interface.
-         */
-        BypassInterfaceCheck
-    };
-
-    /**
      * Returns a pointer to a valid instance of a given %Connection optional
      * interface class, associated with the same remote object the Connection is
      * associated with, and destroyed at the same time the Connection is
