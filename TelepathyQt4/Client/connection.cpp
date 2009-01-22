@@ -161,7 +161,7 @@ Connection::Private::~Private()
     if (!--handleContext->refcount) {
         debug() << "Destroying HandleContext";
 
-        Q_FOREACH (uint handleType, handleContext->types.keys()) {
+        foreach (uint handleType, handleContext->types.keys()) {
             HandleContext::Type type = handleContext->types[handleType];
 
             if (!type.refcounts.empty()) {
@@ -851,17 +851,16 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
             "- assuming no new interfaces";
     }
 
-    for (QStringList::const_iterator i = mPriv->interfaces.constBegin();
-            i != mPriv->interfaces.constEnd(); ++i) {
+    foreach (const QString &interface, mPriv->interfaces) {
         void (Private::*introspectFunc)() = 0;
 
-        if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING) {
+        if (interface == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING) {
             introspectFunc = &Private::introspectAliasing;
         }
-        else if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE) {
+        else if (interface == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE) {
             introspectFunc = &Private::introspectPresence;
         }
-        else if (*i == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE) {
+        else if (interface == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE) {
             introspectFunc = &Private::introspectSimplePresence;
         }
 
