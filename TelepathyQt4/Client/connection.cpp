@@ -418,16 +418,16 @@ Connection::Connection(const QString& serviceName,
 /**
  * Construct a new Connection object.
  *
- * \param connection QDBusConnection to use.
+ * \param bus QDBusConnection to use.
  * \param serviceName Connection service name.
  * \param objectPath Connection object path.
  * \param parent Object parent.
  */
-Connection::Connection(const QDBusConnection& connection,
+Connection::Connection(const QDBusConnection& bus,
                        const QString& serviceName,
                        const QString& objectPath,
                        QObject* parent)
-    : StatefulDBusProxy(connection, serviceName, objectPath, parent),
+    : StatefulDBusProxy(bus, serviceName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(*this))
 {

@@ -80,7 +80,7 @@ public:
                const QString& objectPath,
                QObject* parent = 0);
 
-    Connection(const QDBusConnection& connection,
+    Connection(const QDBusConnection& bus,
                const QString &serviceName,
                const QString &objectPath,
                QObject* parent = 0);
