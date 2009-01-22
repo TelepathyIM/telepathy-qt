@@ -37,8 +37,9 @@
  * backwards compatibility helpers for older services and other utilities.
  */
 
-#include <QDBusAbstractInterface>
 #include <QtGlobal>
+
+#include <TelepathyQt4/Client/AbstractInterface>
 
 namespace Telepathy
 {
@@ -94,15 +95,15 @@ class OptionalInterfaceFactory
         template <typename OptionalInterface, typename MainInterface>
         inline OptionalInterface* interface(const MainInterface& mainInterface) const
         {
-            // Check that the types given are both subclasses of QDBusAbstractInterface
-            QDBusAbstractInterface* mainInterfaceMustBeASubclassOfQDBusAbstractInterface = static_cast<MainInterface*>(NULL);
-            QDBusAbstractInterface* optionalInterfaceMustBeASubclassOfQDBusAbstractInterface = static_cast<OptionalInterface*>(NULL);
-            Q_UNUSED(mainInterfaceMustBeASubclassOfQDBusAbstractInterface);
-            Q_UNUSED(optionalInterfaceMustBeASubclassOfQDBusAbstractInterface);
+            // Check that the types given are both subclasses of AbstractInterface
+            AbstractInterface* mainInterfaceMustBeASubclassOfAbstractInterface = static_cast<MainInterface*>(NULL);
+            AbstractInterface* optionalInterfaceMustBeASubclassOfAbstractInterface = static_cast<OptionalInterface*>(NULL);
+            Q_UNUSED(mainInterfaceMustBeASubclassOfAbstractInterface);
+            Q_UNUSED(optionalInterfaceMustBeASubclassOfAbstractInterface);
 
             // If there is a interface cached already, return it
             QString name(OptionalInterface::staticInterfaceName());
-            QDBusAbstractInterface* cached = getCached(name);
+            AbstractInterface* cached = getCached(name);
             if (cached)
                 return static_cast<OptionalInterface*>(cached);
 
@@ -113,8 +114,8 @@ class OptionalInterfaceFactory
         }
 
     private:
-        QDBusAbstractInterface* getCached(const QString& name) const;
-        void cache(QDBusAbstractInterface* interface) const;
+        AbstractInterface *getCached(const QString &name) const;
+        void cache(AbstractInterface *interface) const;
 
         struct Private;
         Private* mPriv;

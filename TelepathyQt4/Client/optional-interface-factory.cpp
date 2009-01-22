@@ -33,7 +33,7 @@ namespace Client
 
 struct OptionalInterfaceFactory::Private
 {
-    QMap<QString, QDBusAbstractInterface*> interfaces;
+    QMap<QString, AbstractInterface*> interfaces;
 };
 
 OptionalInterfaceFactory::OptionalInterfaceFactory()
@@ -46,9 +46,9 @@ OptionalInterfaceFactory::~OptionalInterfaceFactory()
 {
     debug() << "Destroying OptionalInterfaceFactory";
 
-    for (QMap<QString, QDBusAbstractInterface*>::iterator i = mPriv->interfaces.begin();
-                                                          i != mPriv->interfaces.end();
-                                                          ++i) {
+    for (QMap<QString, AbstractInterface *>::iterator i = mPriv->interfaces.begin();
+            i != mPriv->interfaces.end();
+            ++i) {
         debug().nospace() << " ~" << i.key();
         delete i.value();
     }
@@ -56,7 +56,7 @@ OptionalInterfaceFactory::~OptionalInterfaceFactory()
     delete mPriv;
 }
 
-QDBusAbstractInterface* OptionalInterfaceFactory::getCached(const QString& name) const
+AbstractInterface *OptionalInterfaceFactory::getCached(const QString &name) const
 {
     if (mPriv->interfaces.contains(name)) {
         debug() << "Returning cached interface for" << name;
@@ -67,7 +67,7 @@ QDBusAbstractInterface* OptionalInterfaceFactory::getCached(const QString& name)
     }
 }
 
-void OptionalInterfaceFactory::cache(QDBusAbstractInterface* interface) const
+void OptionalInterfaceFactory::cache(AbstractInterface *interface) const
 {
     QString name = interface->interface();
     Q_ASSERT(!mPriv->interfaces.contains(name));
