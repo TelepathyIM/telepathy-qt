@@ -32,12 +32,22 @@ namespace Telepathy
 namespace Client
 {
 
+class DBusProxy;
+
 class AbstractInterface : public QDBusAbstractInterface
 {
     Q_OBJECT
 
 public:
     virtual ~AbstractInterface();
+
+    bool isValid() const;
+    QString invalidationReason() const;
+    QString invalidationMessage() const;
+
+public Q_SLOTS:
+    void invalidate(Telepathy::Client::DBusProxy *proxy, QString error,
+            QString message);
 
 protected:
     AbstractInterface(const QString &busName, const QString &path,

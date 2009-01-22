@@ -28,16 +28,55 @@ namespace Telepathy
 namespace Client
 {
 
+struct AbstractInterface::Private
+{
+    Private();
+    QString mError;
+    QString mMessage;
+};
+
+AbstractInterface::Private::Private()
+    : mError(), mMessage()
+{
+}
+
 AbstractInterface::AbstractInterface(const QString &busName,
         const QString &path, const char *interface,
         const QDBusConnection &dbusConnection, QObject *parent)
     : QDBusAbstractInterface(busName, path, interface, dbusConnection, parent),
-      mPriv(0)
+      mPriv(new Private)
 {
 }
 
 AbstractInterface::~AbstractInterface()
 {
+    delete mPriv;
+}
+
+bool AbstractInterface::isValid() const
+{
+    return QDBusAbstractInterface::isValid() && mPriv->mError.isEmpty();
+}
+
+QString AbstractInterface::invalidationReason() const
+{
+    return mPriv->mError;
+}
+
+QString AbstractInterface::invalidationMessage() const
+{
+    return mPriv->mMessage;
+}
+
+void AbstractInterface::invalidate(Telepathy::Client::DBusProxy *proxy,
+        QString error, QString message)
+{
+    Q_ASSERT(!error.isEmpty());
+
+    if (mPriv->mError.isEmpty()) {
+        mPriv->mError = error;
+        mPriv->mMessage = message;
+    }
 }
 
 } // Client
