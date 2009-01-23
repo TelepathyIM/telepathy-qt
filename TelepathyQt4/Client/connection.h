@@ -66,12 +66,6 @@ public:
         _ReadinessInvalid = 0xffff
     };
 
-    enum InterfaceSupportedChecking
-    {
-        CheckInterfaceSupported,
-        BypassInterfaceCheck
-    };
-
     Connection(const QString &serviceName,
                const QString &objectPath,
                QObject *parent = 0);
