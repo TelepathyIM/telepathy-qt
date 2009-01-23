@@ -136,7 +136,7 @@ public:
 
     inline DBus::PropertiesInterface *propertiesInterface() const
     {
-        return OptionalInterfaceFactory<ConnectionManager>::interface<DBus::PropertiesInterface>(this);
+        return OptionalInterfaceFactory<ConnectionManager>::interface<DBus::PropertiesInterface>();
     }
 
     bool isReady() const;

@@ -213,16 +213,16 @@ public:
     /**
      * Creates a %(name)s associated with the same object as the given proxy.
      *
-     * \\param proxy The proxy to use.
-     * \\param parent Passed to the parent class constructor.
+     * \\param proxy The proxy to use. It will also be the QObject::parent()
+     *               for this object.
      */
-    %(name)s(const %(dbus_proxy)s *proxy, QObject *parent = 0);
+    %(name)s(%(dbus_proxy)s *proxy);
 """ % {'name' : name,
        'dbus_proxy' : self.dbus_proxy})
 
         self.b("""
-%(name)s::%(name)s(const %(dbus_proxy)s *proxy, QObject *parent)
-    : Telepathy::Client::AbstractInterface(proxy->busName(), proxy->objectPath(), staticInterfaceName(), proxy->dbusConnection(), parent)
+%(name)s::%(name)s(%(dbus_proxy)s *proxy)
+    : Telepathy::Client::AbstractInterface(proxy, staticInterfaceName())
 {
 }
 """ % {'name' : name,

@@ -52,7 +52,7 @@ class OptionalInterfaceCache
         /**
          * Class constructor.
          */
-        OptionalInterfaceCache();
+        explicit OptionalInterfaceCache(QObject *proxy);
 
         /**
          * Class destructor.
@@ -64,6 +64,7 @@ class OptionalInterfaceCache
     protected:
         AbstractInterface *getCached(const QString &name) const;
         void cache(AbstractInterface *interface) const;
+        QObject *proxy() const;
 
     private:
         struct Private;
@@ -81,6 +82,11 @@ class OptionalInterfaceCache
  * This class is included in the public API for the benefit of high-level
  * proxies in extensions.
  *
+ * To use this helper in a subclass of DBusProxy (say, ExampleObject),
+ * ExampleObject should inherit privately from
+ * OptionalInterfaceFactory<ExampleObject>, and call
+ * OptionalInterfaceFactory(this) in its constructor's initialization list.
+ *
  * \tparam DBusProxySubclass A subclass of DBusProxy
  */
 template <typename DBusProxySubclass> class OptionalInterfaceFactory
@@ -89,8 +95,12 @@ template <typename DBusProxySubclass> class OptionalInterfaceFactory
     public:
         /**
          * Class constructor.
+         *
+         * \param this_ The class to which this OptionalInterfaceFactory is
+         *              attached
          */
-        inline OptionalInterfaceFactory() : OptionalInterfaceCache()
+        inline OptionalInterfaceFactory(DBusProxySubclass *this_)
+            : OptionalInterfaceCache(this_)
         {
         }
 
@@ -119,11 +129,10 @@ template <typename DBusProxySubclass> class OptionalInterfaceFactory
          * instance is shared, it should not be freed directly.
          *
          * \tparam Interface Class of the interface instance to get.
-         * \param proxy An instance of the appropriate DBusProxy subclass.
          * \return A pointer to an optional interface instance.
          */
         template <typename Interface>
-        inline Interface *interface(const DBusProxySubclass *proxy) const
+        inline Interface *interface() const
         {
             AbstractInterface* interfaceMustBeASubclassOfAbstractInterface = static_cast<Interface *>(NULL);
             Q_UNUSED(interfaceMustBeASubclassOfAbstractInterface);
@@ -135,7 +144,8 @@ template <typename DBusProxySubclass> class OptionalInterfaceFactory
                 return static_cast<Interface *>(cached);
 
             // Otherwise, cache and return a newly constructed proxy
-            Interface *interface = new Interface(proxy, 0);
+            Interface *interface = new Interface(
+                    static_cast<DBusProxySubclass *>(proxy()));
             cache(interface);
             return interface;
         }

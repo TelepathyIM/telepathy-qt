@@ -305,7 +305,7 @@ public:
             return 0;
 
         // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory<Connection>::interface<Interface>(this);
+        return OptionalInterfaceFactory<Connection>::interface<Interface>();
     }
 
     /**

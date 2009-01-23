@@ -66,7 +66,7 @@ public:
 
     inline DBus::PropertiesInterface *propertiesInterface() const
     {
-        return OptionalInterfaceFactory<AccountManager>::interface<DBus::PropertiesInterface>(this);
+        return OptionalInterfaceFactory<AccountManager>::interface<DBus::PropertiesInterface>();
     }
 
     QStringList validAccountPaths() const;

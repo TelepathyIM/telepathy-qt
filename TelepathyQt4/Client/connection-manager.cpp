@@ -349,6 +349,7 @@ ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
             Private::makeBusName(name), Private::makeObjectPath(name),
             parent),
+      OptionalInterfaceFactory<ConnectionManager>(this),
       mPriv(new Private(name, this))
 {
     mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
@@ -366,6 +367,7 @@ ConnectionManager::ConnectionManager(const QDBusConnection &bus,
         const QString &name, QObject *parent)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), parent),
+      OptionalInterfaceFactory<ConnectionManager>(this),
       mPriv(new Private(name, this))
 {
     mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);

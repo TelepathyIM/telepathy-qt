@@ -151,6 +151,7 @@ AccountManager::AccountManager(QObject* parent)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), parent),
+      OptionalInterfaceFactory<AccountManager>(this),
       mPriv(new Private(this))
 {
     init();
@@ -167,6 +168,7 @@ AccountManager::AccountManager(const QDBusConnection& bus,
     : StatelessDBusProxy(bus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), parent),
+      OptionalInterfaceFactory<AccountManager>(this),
       mPriv(new Private(this))
 {
     init();

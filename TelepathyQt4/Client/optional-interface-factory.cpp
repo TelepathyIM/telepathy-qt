@@ -33,27 +33,30 @@ namespace Client
 
 struct OptionalInterfaceCache::Private
 {
+    QObject *proxy;
     QMap<QString, AbstractInterface*> interfaces;
+
+    Private(QObject *proxy);
 };
 
-OptionalInterfaceCache::OptionalInterfaceCache()
-    : mPriv(new Private())
+OptionalInterfaceCache::Private::Private(QObject *proxy)
+    : proxy(proxy)
 {
-    debug() << "Constructing OptionalInterfaceCache";
+}
+
+OptionalInterfaceCache::OptionalInterfaceCache(QObject *proxy)
+    : mPriv(new Private(proxy))
+{
 }
 
 OptionalInterfaceCache::~OptionalInterfaceCache()
 {
-    debug() << "Destroying OptionalInterfaceCache";
-
-    for (QMap<QString, AbstractInterface *>::iterator i = mPriv->interfaces.begin();
-            i != mPriv->interfaces.end();
-            ++i) {
-        debug().nospace() << " ~" << i.key();
-        delete i.value();
-    }
-
     delete mPriv;
+}
+
+QObject *OptionalInterfaceCache::proxy() const
+{
+    return mPriv->proxy;
 }
 
 AbstractInterface *OptionalInterfaceCache::getCached(const QString &name) const

@@ -168,6 +168,7 @@ Account::Account(AccountManager *am, const QString &objectPath,
         QObject *parent)
     : StatelessDBusProxy(am->dbusConnection(),
             am->busName(), objectPath, parent),
+      OptionalInterfaceFactory<Account>(this),
       mPriv(new Private(this))
 {
     connect(mPriv->baseInterface,

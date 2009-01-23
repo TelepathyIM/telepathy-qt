@@ -310,6 +310,7 @@ Connection::Connection(const QString& serviceName,
                        QObject* parent)
     : StatefulDBusProxy(QDBusConnection::sessionBus(), serviceName,
           objectPath, parent),
+      OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(*this))
 {
     mPriv->startIntrospection();
@@ -320,6 +321,7 @@ Connection::Connection(const QDBusConnection& connection,
                        const QString& objectPath,
                        QObject* parent)
     : StatefulDBusProxy(connection, serviceName, objectPath, parent),
+      OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(*this))
 {
     mPriv->startIntrospection();

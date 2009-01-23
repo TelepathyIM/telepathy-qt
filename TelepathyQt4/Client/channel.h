@@ -586,7 +586,7 @@ public:
             return 0;
 
         // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory<Channel>::interface<Interface>(this);
+        return OptionalInterfaceFactory<Channel>::interface<Interface>();
     }
 
     /**
@@ -712,7 +712,7 @@ public:
             return 0;
 
         // If correct type or check bypassed, delegate to OIF
-        return OptionalInterfaceFactory<Channel>::interface<Interface>(this);
+        return OptionalInterfaceFactory<Channel>::interface<Interface>();
     }
 
     /**

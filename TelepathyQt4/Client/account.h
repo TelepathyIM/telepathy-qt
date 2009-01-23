@@ -132,8 +132,6 @@ public:
 
     QStringList interfaces() const;
 
-    // TODO this is a copy/paste from Connection, move it somewhere else that
-    //      could be shared between classes
     template <class Interface>
     inline Interface *optionalInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -145,7 +143,7 @@ public:
         }
 
         // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory<Account>::interface<Interface>(this);
+        return OptionalInterfaceFactory<Account>::interface<Interface>();
     }
 
     inline DBus::PropertiesInterface *propertiesInterface() const
