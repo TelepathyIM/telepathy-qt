@@ -25,10 +25,14 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
+#include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/StatefulDBusProxy>
+
+#include "tests/lib/test.h"
 
 using namespace Telepathy;
 using namespace Telepathy::Client;
+using Telepathy::Client::DBus::IntrospectableInterface;
 
 // expose protected functions for testing
 class MyStatefulDBusProxy : public StatefulDBusProxy
@@ -44,13 +48,24 @@ public:
     using StatefulDBusProxy::invalidate;
 };
 
-class TestStatefulProxy : public QObject
+class ObjectAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "com.example.Foo")
+
+public:
+    ObjectAdaptor(Test *test)
+        : QDBusAbstractAdaptor(test)
+    {
+    }
+};
+
+class TestStatefulProxy : public Test
 {
     Q_OBJECT
 
 public:
     TestStatefulProxy(QObject *parent = 0);
-    ~TestStatefulProxy();
 
 private Q_SLOTS:
     void initTestCase();
@@ -67,9 +82,12 @@ protected Q_SLOTS:
     void expectInvalidated(Telepathy::Client::DBusProxy *,
             QString, QString);
 
+    // anything other than 0 or 1 is OK
+#   define EXPECT_INVALIDATED_SUCCESS 111
+
 private:
-    QEventLoop *mLoop;
     MyStatefulDBusProxy *mProxy;
+    ObjectAdaptor *mAdaptor;
 
     int mInvalidated;
     QString mSignalledInvalidationReason;
@@ -91,15 +109,10 @@ QString TestStatefulProxy::objectPath()
 }
 
 TestStatefulProxy::TestStatefulProxy(QObject *parent)
-    : QObject(parent),
-      mLoop(new QEventLoop(this)),
-      mProxy(0)
+    : Test(parent),
+      mProxy(0),
+      mAdaptor(new ObjectAdaptor(this))
 {
-}
-
-TestStatefulProxy::~TestStatefulProxy()
-{
-    delete mLoop;
 }
 
 QString TestStatefulProxy::uniqueName()
@@ -109,16 +122,16 @@ QString TestStatefulProxy::uniqueName()
 
 void TestStatefulProxy::initTestCase()
 {
-    Telepathy::registerTypes();
-    Telepathy::enableDebug(true);
-    Telepathy::enableWarnings(true);
+    initTestCaseImpl();
 
-    QVERIFY(QDBusConnection::sessionBus().isConnected());
     QVERIFY(QDBusConnection::sessionBus().registerService(wellKnownName()));
+    QDBusConnection::sessionBus().registerObject(objectPath(), this);
 }
 
 void TestStatefulProxy::init()
 {
+    initImpl();
+
     mInvalidated = 0;
 }
 
@@ -126,6 +139,9 @@ void TestStatefulProxy::testBasics()
 {
     mProxy = new MyStatefulDBusProxy(QDBusConnection::sessionBus(),
             wellKnownName(), objectPath());
+    IntrospectableInterface ifaceFromProxy(mProxy);
+    IntrospectableInterface ifaceFromWellKnown(wellKnownName(), objectPath());
+    IntrospectableInterface ifaceFromUnique(uniqueName(), objectPath());
 
     QVERIFY(mProxy);
     QCOMPARE(mProxy->dbusConnection().baseService(), uniqueName());
@@ -136,6 +152,35 @@ void TestStatefulProxy::testBasics()
     QCOMPARE(mProxy->invalidationReason(), QString());
     QCOMPARE(mProxy->invalidationMessage(), QString());
 
+    QDBusPendingReply<QString> reply;
+    QDBusPendingCallWatcher *watcher;
+
+    reply = ifaceFromUnique.Introspect();
+    if (!reply.isValid()) {
+        watcher = new QDBusPendingCallWatcher(reply);
+        QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)),
+                this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+        QCOMPARE(mLoop->exec(), 0);
+        delete watcher;
+    }
+
+    reply = ifaceFromWellKnown.Introspect();
+    if (!reply.isValid()) {
+        watcher = new QDBusPendingCallWatcher(reply);
+        QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)),
+                this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+        QCOMPARE(mLoop->exec(), 0);
+        delete watcher;
+    }
+
+    reply = ifaceFromProxy.Introspect();
+    if (!reply.isValid()) {
+        watcher = new QDBusPendingCallWatcher(reply);
+        QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)),
+                this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+        QCOMPARE(mLoop->exec(), 0);
+        delete watcher;
+    }
 
     QVERIFY(connect(mProxy, SIGNAL(invalidated(
                         Telepathy::Client::DBusProxy *,
@@ -152,8 +197,20 @@ void TestStatefulProxy::testBasics()
     QCOMPARE(mProxy->invalidationMessage(),
             QString::fromAscii("Because I said so"));
 
+    // FIXME: ideally, the method call would already fail synchronously at
+    // this point - after all, the proxy already knows it's dead
+    reply = ifaceFromProxy.Introspect();
+    if (reply.isValid()) {
+        qWarning() << "reply is valid";
+    } else if (reply.isError()) {
+        qDebug() << "reply is error" << reply.error().name()
+            << reply.error().message();
+    } else {
+        qWarning() << "no reply yet";
+    }
+
     // the signal doesn't arrive instantly
-    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLoop->exec(), EXPECT_INVALIDATED_SUCCESS);
     QVERIFY(disconnect(mProxy, SIGNAL(invalidated(
                         Telepathy::Client::DBusProxy *,
                         QString, QString)),
@@ -162,15 +219,36 @@ void TestStatefulProxy::testBasics()
                         QString, QString))));
 
     QCOMPARE(mInvalidated, 1);
-    QVERIFY(!mProxy->isValid());
-    QCOMPARE(mProxy->invalidationReason(),
-            QString::fromAscii("com.example.DomainSpecificError"));
     QCOMPARE(mSignalledInvalidationReason,
             QString::fromAscii("com.example.DomainSpecificError"));
-    QCOMPARE(mProxy->invalidationMessage(),
-            QString::fromAscii("Because I said so"));
     QCOMPARE(mSignalledInvalidationMessage,
             QString::fromAscii("Because I said so"));
+
+    // the low-level proxy made from the high-level proxy now returns an
+    // error, synchronously
+    reply = ifaceFromProxy.Introspect();
+    QVERIFY(reply.isError());
+
+    // low-level proxies with no knowledge of the high-level DBusProxy are
+    // unaffected
+
+    reply = ifaceFromUnique.Introspect();
+    if (!reply.isValid()) {
+        watcher = new QDBusPendingCallWatcher(reply);
+        QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)),
+                this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+        QCOMPARE(mLoop->exec(), 0);
+        delete watcher;
+    }
+
+    reply = ifaceFromWellKnown.Introspect();
+    if (!reply.isValid()) {
+        watcher = new QDBusPendingCallWatcher(reply);
+        QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)),
+                this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+        QCOMPARE(mLoop->exec(), 0);
+        delete watcher;
+    }
 }
 
 void TestStatefulProxy::expectInvalidated(DBusProxy *proxy,
@@ -179,7 +257,7 @@ void TestStatefulProxy::expectInvalidated(DBusProxy *proxy,
     mInvalidated++;
     mSignalledInvalidationReason = reason;
     mSignalledInvalidationMessage = message;
-    mLoop->exit(0);
+    mLoop->exit(EXPECT_INVALIDATED_SUCCESS);
 }
 
 void TestStatefulProxy::testNameOwnerChanged()
@@ -202,7 +280,7 @@ void TestStatefulProxy::testNameOwnerChanged()
                         Telepathy::Client::DBusProxy *,
                         QString, QString))));
     QDBusConnection::disconnectFromBus("another unique name");
-    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mLoop->exec(), EXPECT_INVALIDATED_SUCCESS);
     QVERIFY(disconnect(mProxy, SIGNAL(invalidated(
                         Telepathy::Client::DBusProxy *,
                         QString, QString)),
@@ -226,10 +304,13 @@ void TestStatefulProxy::cleanup()
         delete mProxy;
         mProxy = 0;
     }
+
+    cleanupImpl();
 }
 
 void TestStatefulProxy::cleanupTestCase()
 {
+    cleanupTestCaseImpl();
 }
 
 QTEST_MAIN(TestStatefulProxy)
