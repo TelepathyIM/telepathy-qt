@@ -38,6 +38,7 @@
 #include <QPair>
 #include <QQueue>
 #include <QString>
+#include <QTimer>
 #include <QtGlobal>
 
 /**
@@ -73,7 +74,6 @@ struct Connection::Private
     void introspectMain();
     void introspectPresence();
     void introspectSimplePresence();
-    void continueIntrospection();
 
     void changeReadiness(Readiness newReadiness);
 
@@ -139,7 +139,8 @@ struct Connection::Private::HandleContext
 
 Connection::Private::Private(Connection *parent)
     : parent(parent),
-      baseInterface(0),
+      baseInterface(new ConnectionInterface(parent->dbusConnection(),
+                    parent->busName(), parent->objectPath(), parent)),
       aliasing(0),
       presence(0),
       properties(0),
@@ -188,10 +189,6 @@ Connection::Private::~Private()
 
 void Connection::Private::startIntrospection()
 {
-    Q_ASSERT(baseInterface == 0);
-    baseInterface = new ConnectionInterface(parent->dbusConnection(),
-        parent->busName(), parent->objectPath(), parent);
-
     debug() << "Connecting to StatusChanged()";
 
     parent->connect(baseInterface,
@@ -228,7 +225,7 @@ void Connection::Private::introspectAliasing()
 {
     // The Aliasing interface is not usable before the connection is established
     if (initialIntrospection) {
-        continueIntrospection();
+        parent->continueIntrospection();
         return;
     }
 
@@ -262,7 +259,7 @@ void Connection::Private::introspectPresence()
 {
     // The Presence interface is not usable before the connection is established
     if (initialIntrospection) {
-        continueIntrospection();
+        parent->continueIntrospection();
         return;
     }
 
@@ -295,24 +292,6 @@ void Connection::Private::introspectSimplePresence()
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher *)),
                     SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
-}
-
-void Connection::Private::continueIntrospection()
-{
-    if (introspectQueue.isEmpty()) {
-        if (initialIntrospection) {
-            initialIntrospection = false;
-            if (readiness < ReadinessNotYetConnected)
-                changeReadiness(ReadinessNotYetConnected);
-        }
-        else {
-            if (readiness != ReadinessDead)
-                changeReadiness(ReadinessFull);
-        }
-    }
-    else {
-        (this->*introspectQueue.dequeue())();
-    }
 }
 
 void Connection::Private::changeReadiness(Readiness newReadiness)
@@ -435,7 +414,8 @@ Connection::Connection(const QString &serviceName,
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(this))
 {
-    mPriv->startIntrospection();
+    mPriv->introspectQueue.enqueue(&Private::startIntrospection);
+    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 /**
@@ -454,7 +434,8 @@ Connection::Connection(const QDBusConnection &bus,
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(this))
 {
-    mPriv->startIntrospection();
+    mPriv->introspectQueue.enqueue(&Private::startIntrospection);
+    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 /**
@@ -727,7 +708,7 @@ void Connection::onStatusChanged(uint status, uint reason)
         case ConnectionStatusConnected:
             debug() << " Performing introspection for the Connected status";
             mPriv->introspectQueue.enqueue(&Private::introspectMain);
-            mPriv->continueIntrospection();
+            continueIntrospection();
             break;
 
         case ConnectionStatusConnecting:
@@ -834,7 +815,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
     }
 
     mPriv->introspectQueue.enqueue(&Private::introspectMain);
-    mPriv->continueIntrospection();
+    continueIntrospection();
 
     watcher->deleteLater();
 }
@@ -871,7 +852,7 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         }
     }
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 
     watcher->deleteLater();
 }
@@ -889,7 +870,7 @@ void Connection::gotAliasFlags(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ":" << reply.error().message();
     }
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 
     watcher->deleteLater();
 }
@@ -907,7 +888,7 @@ void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ":" << reply.error().message();
     }
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 
     watcher->deleteLater();
 }
@@ -925,7 +906,7 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ":" << reply.error().message();
     }
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 
     watcher->deleteLater();
 }
@@ -941,7 +922,6 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
  */
 ConnectionInterface *Connection::baseInterface() const
 {
-    Q_ASSERT(mPriv->baseInterface != 0);
     return mPriv->baseInterface;
 }
 
@@ -1212,6 +1192,25 @@ void Connection::handleRequestLanded(uint type)
             "landed and there are handles of that type to release - scheduling a release sweep";
         QMetaObject::invokeMethod(this, "doReleaseSweep", Qt::QueuedConnection, Q_ARG(uint, type));
         handleContext->types[type].releaseScheduled = true;
+    }
+}
+
+void Connection::continueIntrospection()
+{
+    if (mPriv->introspectQueue.isEmpty()) {
+        if (mPriv->initialIntrospection) {
+            mPriv->initialIntrospection = false;
+            if (mPriv->readiness < ReadinessNotYetConnected)
+                mPriv->changeReadiness(ReadinessNotYetConnected);
+        }
+        else {
+            if (mPriv->readiness != ReadinessDead) {
+                mPriv->changeReadiness(ReadinessFull);
+            }
+        }
+    }
+    else {
+        (mPriv->*(mPriv->introspectQueue.dequeue()))();
     }
 }
 

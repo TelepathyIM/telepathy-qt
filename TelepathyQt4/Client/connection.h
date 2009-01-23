@@ -170,6 +170,8 @@ private Q_SLOTS:
 
     void doReleaseSweep(uint type);
 
+    void continueIntrospection();
+
 private:
     void refHandle(uint type, uint handle);
     void unrefHandle(uint type, uint handle);
