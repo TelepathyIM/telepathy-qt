@@ -48,6 +48,8 @@ namespace Client
 
 class OptionalInterfaceCache
 {
+    Q_DISABLE_COPY(OptionalInterfaceCache)
+
     public:
         /**
          * Class constructor.

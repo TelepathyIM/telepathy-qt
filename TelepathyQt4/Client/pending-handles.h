@@ -77,6 +77,7 @@ namespace Client
 class PendingHandles : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingHandles)
 
 public:
     /**

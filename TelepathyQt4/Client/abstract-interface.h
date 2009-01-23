@@ -37,6 +37,7 @@ class DBusProxy;
 class AbstractInterface : public QDBusAbstractInterface
 {
     Q_OBJECT
+    Q_DISABLE_COPY(AbstractInterface)
 
 public:
     virtual ~AbstractInterface();

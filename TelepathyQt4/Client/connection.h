@@ -104,6 +104,7 @@ class Connection : public StatefulDBusProxy,
                    private OptionalInterfaceFactory<Connection>
 {
     Q_OBJECT
+    Q_DISABLE_COPY(Connection)
     Q_ENUMS(Readiness);
 
 public:

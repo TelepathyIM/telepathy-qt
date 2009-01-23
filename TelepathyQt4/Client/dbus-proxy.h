@@ -37,6 +37,7 @@ namespace Client
 class DBusProxy : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(DBusProxy)
 
 public:
     DBusProxy(const QDBusConnection &dbusConnection, const QString &busName,

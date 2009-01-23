@@ -73,6 +73,7 @@ namespace Client
 class PendingChannel : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingChannel)
 
 public:
     /**

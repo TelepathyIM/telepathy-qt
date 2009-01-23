@@ -96,6 +96,7 @@ class Channel : public StatefulDBusProxy,
                 private OptionalInterfaceFactory<Channel>
 {
     Q_OBJECT
+    Q_DISABLE_COPY(Channel)
     Q_ENUMS(Readiness)
 
 public:

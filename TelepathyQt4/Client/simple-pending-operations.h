@@ -42,6 +42,7 @@ namespace Client
 class PendingSuccess : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingSuccess)
 
 public:
     PendingSuccess(QObject* parent)
@@ -59,6 +60,7 @@ public:
 class PendingFailure : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingFailure)
 
 public:
     PendingFailure(QObject* parent, const QString& name,
@@ -87,6 +89,7 @@ public:
 class PendingVoidMethodCall : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingVoidMethodCall)
 
 public:
     /**

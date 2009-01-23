@@ -63,6 +63,7 @@ namespace Client
 class PendingOperation : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingOperation)
 
 public:
     virtual ~PendingOperation();

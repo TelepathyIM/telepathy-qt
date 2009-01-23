@@ -50,6 +50,7 @@ class AccountManager : public StatelessDBusProxy,
                        private OptionalInterfaceFactory<AccountManager>
 {
     Q_OBJECT
+    Q_DISABLE_COPY(AccountManager)
 
 public:
     enum Feature {
