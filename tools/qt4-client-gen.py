@@ -294,6 +294,30 @@ Q_SIGNALS:\
             for signal in signals:
                 self.do_signal(signal)
 
+        # invalidated handler (already a slot in the superclass)
+        # we can't just use disconnect(this, NULL, NULL, NULL) because
+        # (a) that would disconnect QObject::destroyed() and other non-D-Bus
+        # signals, and (b) QtDBus doesn't support that usage anyway (it needs
+        # specific signals in order to remove its signal match rules)
+        self.h("""
+protected:
+    virtual void invalidate(Telepathy::Client::DBusProxy *, QString, QString);
+""")
+
+        self.b("""
+void %(name)s::invalidate(Telepathy::Client::DBusProxy *proxy,
+        QString error, QString message)
+{
+""" % {'name' : name})
+
+        for signal in signals:
+            self.do_signal_disconnect(signal)
+
+        self.b("""
+    Telepathy::Client::AbstractInterface::invalidate(proxy, error, message);
+}
+""")
+
         # Close class
         self.h("""\
 };
@@ -439,6 +463,14 @@ Q_SIGNALS:\
      */
     void %s(%s);
 """ % (name, ', '.join(['%s %s' % (binding.inarg, name) for binding, name in zip(argbindings, argnames)])))
+
+    def do_signal_disconnect(self, signal):
+        name = signal.getAttribute('name')
+        _, _, argbindings = extract_arg_or_member_info(get_by_path(signal, 'arg'), self.custom_lists, self.externals, self.typesnamespace, '     *     ')
+
+        self.b("""\
+    disconnect(this, SIGNAL(%s(%s)), NULL, NULL);
+""" % (name, ', '.join([binding.inarg for binding in argbindings])))
 
     def h(self, str):
         self.hs.append(str)
