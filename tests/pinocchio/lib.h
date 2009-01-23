@@ -37,7 +37,6 @@ protected:
     QString mPinocchioPath;
     QString mPinocchioCtlPath;
     QProcess mPinocchio;
-    QEventLoop *mLoop;
 
     virtual void initTestCaseImpl();
 
