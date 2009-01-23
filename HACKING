@@ -21,7 +21,13 @@ followed by eg. KDELibs. In short, that amounts to:
    loops
  * Prefer static_cast, const_cast etc over C-style casts
  * Wrap long lines to 100 characters at most
-
+ * Use foreach, emit instead of Q_FOREACH/Q_EMIT
+ * Don't write long (> ~5 lines) inline methods unless they are needed because of
+   eg. template
+ * Don't use references to QObjects
+ * Destroy transient objects such as method call watchers as soon as possible
+   rather than accumulating them to long-lived parent objects
+ * Documentation should be in the source file instead of the header file
 The coding style is described in more detail in the KDE TechBase at
 http://techbase.kde.org/Policies/Kdelibs_Coding_Style.
 
