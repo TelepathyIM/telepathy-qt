@@ -20,6 +20,8 @@
 
 #include <TelepathyQt4/Client/AbstractInterface>
 
+#include <TelepathyQt4/Client/DBusProxy>
+
 #include "TelepathyQt4/Client/_gen/abstract-interface.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
@@ -46,6 +48,15 @@ AbstractInterface::AbstractInterface(const QString &busName,
     : QDBusAbstractInterface(busName, path, interface, dbusConnection, parent),
       mPriv(new Private)
 {
+}
+
+AbstractInterface::AbstractInterface(DBusProxy *parent, const char *interface)
+    : QDBusAbstractInterface(parent->busName(), parent->objectPath(),
+            interface, parent->dbusConnection(), parent),
+      mPriv(new Private())
+{
+    connect(parent, SIGNAL(invalidated(Telepathy::Client::DBusProxy *, QString, QString)),
+            this, SLOT(invalidate(Telepathy::Client::DBusProxy *, QString, QString)));
 }
 
 AbstractInterface::~AbstractInterface()

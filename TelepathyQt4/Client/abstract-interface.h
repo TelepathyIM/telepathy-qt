@@ -45,11 +45,12 @@ public:
     QString invalidationReason() const;
     QString invalidationMessage() const;
 
-public Q_SLOTS:
-    void invalidate(Telepathy::Client::DBusProxy *proxy, QString error,
+protected Q_SLOTS:
+    virtual void invalidate(Telepathy::Client::DBusProxy *proxy, QString error,
             QString message);
 
 protected:
+    AbstractInterface(DBusProxy *parent, const char *interface);
     AbstractInterface(const QString &busName, const QString &path,
             const char *interface, const QDBusConnection &connection,
             QObject *parent);
