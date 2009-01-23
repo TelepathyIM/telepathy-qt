@@ -46,6 +46,30 @@ namespace Telepathy
 namespace Client
 {
 
+class OptionalInterfaceCache
+{
+    public:
+        /**
+         * Class constructor.
+         */
+        OptionalInterfaceCache();
+
+        /**
+         * Class destructor.
+         *
+         * Frees all interface instances constructed by this factory.
+         */
+        ~OptionalInterfaceCache();
+
+    protected:
+        AbstractInterface *getCached(const QString &name) const;
+        void cache(AbstractInterface *interface) const;
+
+    private:
+        struct Private;
+        Private *mPriv;
+};
+
 /**
  * \class OptionalInterfaceFactory
  * \ingroup clientsideproxies
@@ -56,21 +80,28 @@ namespace Client
  *
  * This class is included in the public API for the benefit of high-level
  * proxies in extensions.
+ *
+ * \tparam DBusProxySubclass A subclass of DBusProxy
  */
-class OptionalInterfaceFactory
+template <typename DBusProxySubclass> class OptionalInterfaceFactory
+    : private OptionalInterfaceCache
 {
     public:
         /**
          * Class constructor.
          */
-        OptionalInterfaceFactory();
+        inline OptionalInterfaceFactory() : OptionalInterfaceCache()
+        {
+        }
 
         /**
          * Class destructor.
          *
          * Frees all interface instances constructed by this factory.
          */
-        ~OptionalInterfaceFactory();
+        inline ~OptionalInterfaceFactory()
+        {
+        }
 
         /**
          * Return a pointer to a valid instance of a interface class, associated
@@ -87,38 +118,27 @@ class OptionalInterfaceFactory
          * it after destroying the factory will likely produce a crash. As the
          * instance is shared, it should not be freed directly.
          *
-         * \tparam OptionalInterface Class of the interface instance to get.
-         * \tparam MainInterface Class of the main interface.
-         * \param mainInterface Main interface instance to use.
+         * \tparam Interface Class of the interface instance to get.
+         * \param proxy An instance of the appropriate DBusProxy subclass.
          * \return A pointer to an optional interface instance.
          */
-        template <typename OptionalInterface, typename MainInterface>
-        inline OptionalInterface* interface(const MainInterface& mainInterface) const
+        template <typename Interface>
+        inline Interface *interface(const DBusProxySubclass *proxy) const
         {
-            // Check that the types given are both subclasses of AbstractInterface
-            AbstractInterface* mainInterfaceMustBeASubclassOfAbstractInterface = static_cast<MainInterface*>(NULL);
-            AbstractInterface* optionalInterfaceMustBeASubclassOfAbstractInterface = static_cast<OptionalInterface*>(NULL);
-            Q_UNUSED(mainInterfaceMustBeASubclassOfAbstractInterface);
-            Q_UNUSED(optionalInterfaceMustBeASubclassOfAbstractInterface);
+            AbstractInterface* interfaceMustBeASubclassOfAbstractInterface = static_cast<Interface *>(NULL);
+            Q_UNUSED(interfaceMustBeASubclassOfAbstractInterface);
 
             // If there is a interface cached already, return it
-            QString name(OptionalInterface::staticInterfaceName());
-            AbstractInterface* cached = getCached(name);
+            QString name(Interface::staticInterfaceName());
+            AbstractInterface *cached = getCached(name);
             if (cached)
-                return static_cast<OptionalInterface*>(cached);
+                return static_cast<Interface *>(cached);
 
             // Otherwise, cache and return a newly constructed proxy
-            OptionalInterface* interface = new OptionalInterface(mainInterface, 0);
+            Interface *interface = new Interface(proxy, 0);
             cache(interface);
             return interface;
         }
-
-    private:
-        AbstractInterface *getCached(const QString &name) const;
-        void cache(AbstractInterface *interface) const;
-
-        struct Private;
-        Private* mPriv;
 };
 
 }

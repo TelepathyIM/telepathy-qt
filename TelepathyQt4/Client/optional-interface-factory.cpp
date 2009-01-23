@@ -31,20 +31,20 @@ namespace Telepathy
 namespace Client
 {
 
-struct OptionalInterfaceFactory::Private
+struct OptionalInterfaceCache::Private
 {
     QMap<QString, AbstractInterface*> interfaces;
 };
 
-OptionalInterfaceFactory::OptionalInterfaceFactory()
+OptionalInterfaceCache::OptionalInterfaceCache()
     : mPriv(new Private())
 {
-    debug() << "Constructing OptionalInterfaceFactory";
+    debug() << "Constructing OptionalInterfaceCache";
 }
 
-OptionalInterfaceFactory::~OptionalInterfaceFactory()
+OptionalInterfaceCache::~OptionalInterfaceCache()
 {
-    debug() << "Destroying OptionalInterfaceFactory";
+    debug() << "Destroying OptionalInterfaceCache";
 
     for (QMap<QString, AbstractInterface *>::iterator i = mPriv->interfaces.begin();
             i != mPriv->interfaces.end();
@@ -56,7 +56,7 @@ OptionalInterfaceFactory::~OptionalInterfaceFactory()
     delete mPriv;
 }
 
-AbstractInterface *OptionalInterfaceFactory::getCached(const QString &name) const
+AbstractInterface *OptionalInterfaceCache::getCached(const QString &name) const
 {
     if (mPriv->interfaces.contains(name)) {
         debug() << "Returning cached interface for" << name;
@@ -67,7 +67,7 @@ AbstractInterface *OptionalInterfaceFactory::getCached(const QString &name) cons
     }
 }
 
-void OptionalInterfaceFactory::cache(AbstractInterface *interface) const
+void OptionalInterfaceCache::cache(AbstractInterface *interface) const
 {
     QString name = interface->interface();
     Q_ASSERT(!mPriv->interfaces.contains(name));

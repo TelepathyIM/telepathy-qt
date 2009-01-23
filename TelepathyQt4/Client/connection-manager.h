@@ -113,7 +113,7 @@ private:
 
 
 class ConnectionManager : public StatelessDBusProxy,
-        private OptionalInterfaceFactory
+                          private OptionalInterfaceFactory<ConnectionManager>
 {
     Q_OBJECT
 
@@ -136,8 +136,7 @@ public:
 
     inline DBus::PropertiesInterface *propertiesInterface() const
     {
-        return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
-                *baseInterface());
+        return OptionalInterfaceFactory<ConnectionManager>::interface<DBus::PropertiesInterface>(this);
     }
 
     bool isReady() const;

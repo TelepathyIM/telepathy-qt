@@ -98,8 +98,10 @@ namespace Client
  * #ReadinessFull indicates that the introspection process is finished. See the
  * individual accessor descriptions for details on which functions can be used
  * in the different states.
+ *
  */
-class Connection : public StatefulDBusProxy, private OptionalInterfaceFactory
+class Connection : public StatefulDBusProxy,
+                   private OptionalInterfaceFactory<Connection>
 {
     Q_OBJECT
     Q_ENUMS(Readiness);
@@ -295,7 +297,7 @@ public:
      * \return Pointer to an instance of the interface class, or <code>0</code>.
      */
     template <class Interface>
-    inline Interface* optionalInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline Interface *optionalInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object supporting the interface
         QString name(Interface::staticInterfaceName());
@@ -303,7 +305,7 @@ public:
             return 0;
 
         // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
+        return OptionalInterfaceFactory<Connection>::interface<Interface>(this);
     }
 
     /**

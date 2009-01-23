@@ -43,6 +43,7 @@ namespace Telepathy
 namespace Client
 {
 
+class Account;
 class AccountManager;
 class Connection;
 class PendingConnection;
@@ -50,7 +51,7 @@ class PendingOperation;
 class ProtocolInfo;
 
 class Account : public StatelessDBusProxy,
-        private OptionalInterfaceFactory
+                private OptionalInterfaceFactory<Account>
 {
     Q_OBJECT
 
@@ -144,7 +145,7 @@ public:
         }
 
         // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
+        return OptionalInterfaceFactory<Account>::interface<Interface>(this);
     }
 
     inline DBus::PropertiesInterface *propertiesInterface() const

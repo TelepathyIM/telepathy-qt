@@ -42,11 +42,12 @@ namespace Client
 {
 
 class Account;
+class AccountManager;
 class PendingAccount;
 class PendingOperation;
 
 class AccountManager : public StatelessDBusProxy,
-        private OptionalInterfaceFactory
+                       private OptionalInterfaceFactory<AccountManager>
 {
     Q_OBJECT
 
@@ -65,8 +66,7 @@ public:
 
     inline DBus::PropertiesInterface *propertiesInterface() const
     {
-        return OptionalInterfaceFactory::interface<DBus::PropertiesInterface>(
-                *baseInterface());
+        return OptionalInterfaceFactory<AccountManager>::interface<DBus::PropertiesInterface>(this);
     }
 
     QStringList validAccountPaths() const;

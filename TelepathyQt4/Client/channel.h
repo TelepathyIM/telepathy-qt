@@ -92,7 +92,8 @@ class Connection;
  * signaled by Connection::readinessChanged) or is deleted, the Channel object
  * will transition to ReadinessDead too.
  */
-class Channel : public StatefulDBusProxy, private OptionalInterfaceFactory
+class Channel : public StatefulDBusProxy,
+                private OptionalInterfaceFactory<Channel>
 {
     Q_OBJECT
     Q_ENUMS(Readiness)
@@ -585,7 +586,7 @@ public:
             return 0;
 
         // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
+        return OptionalInterfaceFactory<Channel>::interface<Interface>(this);
     }
 
     /**
@@ -711,7 +712,7 @@ public:
             return 0;
 
         // If correct type or check bypassed, delegate to OIF
-        return OptionalInterfaceFactory::interface<Interface>(*baseInterface());
+        return OptionalInterfaceFactory<Channel>::interface<Interface>(this);
     }
 
     /**
