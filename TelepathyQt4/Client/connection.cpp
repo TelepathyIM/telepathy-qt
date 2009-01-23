@@ -835,6 +835,8 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
 
     mPriv->introspectQueue.enqueue(&Private::introspectMain);
     mPriv->continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
@@ -870,6 +872,8 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     }
 
     mPriv->continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void Connection::gotAliasFlags(QDBusPendingCallWatcher *watcher)
@@ -886,6 +890,8 @@ void Connection::gotAliasFlags(QDBusPendingCallWatcher *watcher)
     }
 
     mPriv->continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
@@ -902,6 +908,8 @@ void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
     }
 
     mPriv->continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
@@ -918,6 +926,8 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
     }
 
     mPriv->continueIntrospection();
+
+    watcher->deleteLater();
 }
 
 /**
