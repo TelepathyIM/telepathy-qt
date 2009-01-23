@@ -11,16 +11,18 @@
 using Telepathy::Client::DBus::DBusDaemonInterface;
 using Telepathy::Client::PendingOperation;
 
+PinocchioTest::PinocchioTest(QObject *parent)
+    : Test(parent)
+{
+}
+
 PinocchioTest::~PinocchioTest()
 {
-    delete mLoop;
 }
 
 void PinocchioTest::initTestCaseImpl()
 {
-    Telepathy::registerTypes();
-    Telepathy::enableDebug(true);
-    Telepathy::enableWarnings(true);
+    Test::initTestCaseImpl();
 
     mPinocchioPath = QString::fromLocal8Bit(::getenv("PINOCCHIO"));
     mPinocchioCtlPath = QString::fromLocal8Bit(::getenv("PINOCCHIO_CTL"));
@@ -38,8 +40,6 @@ void PinocchioTest::initTestCaseImpl()
     dir.cd(pinocchioSavePath);
     dir.remove(QLatin1String("empty/contacts.xml"));
 
-    QVERIFY(QDBusConnection::sessionBus().isConnected());
-
     mPinocchio.setProcessChannelMode(QProcess::ForwardedChannels);
     mPinocchio.start(mPinocchioPath, QStringList());
 
@@ -48,43 +48,6 @@ void PinocchioTest::initTestCaseImpl()
 
     qDebug() << "Started Pinocchio";
 }
-
-
-void PinocchioTest::initImpl()
-{
-}
-
-
-void PinocchioTest::cleanupImpl()
-{
-}
-
-
-void PinocchioTest::expectSuccessfulCall(PendingOperation* op)
-{
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
-}
-
-
-void PinocchioTest::expectSuccessfulCall(QDBusPendingCallWatcher* watcher)
-{
-    if (watcher->isError()) {
-        qWarning().nospace() << watcher->error().name()
-            << ": " << watcher->error().message();
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
-}
-
 
 void PinocchioTest::gotNameOwner(QDBusPendingCallWatcher* watcher)
 {
@@ -153,6 +116,8 @@ void PinocchioTest::cleanupTestCaseImpl()
     if (!mPinocchio.waitForFinished(1000)) {
         mPinocchio.kill();
     }
+
+    Test::cleanupTestCaseImpl();
 }
 
 #include "_gen/lib.h.moc.hpp"

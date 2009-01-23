@@ -63,6 +63,7 @@ LDADD = \
     $(QTCORE_LIBS) \
     $(QTDBUS_LIBS) \
     $(QTTEST_LIBS) \
+    ${top_builddir}/tests/lib/libtp-qt4-tests.la \
     ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
 AM_CXXFLAGS = \

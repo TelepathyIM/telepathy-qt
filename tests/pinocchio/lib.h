@@ -7,15 +7,15 @@
 #include <TelepathyQt4/Client/PendingOperation>
 #include <TelepathyQt4/Constants>
 
-class PinocchioTest : public QObject
+#include "tests/lib/test.h"
+
+class PinocchioTest : public Test
 {
     Q_OBJECT
 
 public:
 
-    PinocchioTest(QObject *parent = 0)
-        : QObject(parent), mLoop(new QEventLoop(this))
-    { }
+    PinocchioTest(QObject *parent = 0);
 
     virtual ~PinocchioTest();
 
@@ -39,16 +39,11 @@ protected:
     QProcess mPinocchio;
     QEventLoop *mLoop;
 
-protected Q_SLOTS:
-    void expectSuccessfulCall(QDBusPendingCallWatcher*);
-    void expectSuccessfulCall(Telepathy::Client::PendingOperation*);
-
     virtual void initTestCaseImpl();
-    virtual void initImpl();
 
-    virtual void cleanupImpl();
     virtual void cleanupTestCaseImpl();
 
+protected Q_SLOTS:
     void gotNameOwner(QDBusPendingCallWatcher* watcher);
     void onNameOwnerChanged(const QString&, const QString&, const QString&);
 };
