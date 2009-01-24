@@ -222,6 +222,13 @@ void TestConnBasics::testConnect()
     QVERIFY(interfaces.contains(QLatin1String(
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)));
 
+    QVERIFY(connect(mConn->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->isReady(), true);
+
     QVERIFY(connect(mConn->requestDisconnect(),
           SIGNAL(finished(Telepathy::Client::PendingOperation*)),
           this,
