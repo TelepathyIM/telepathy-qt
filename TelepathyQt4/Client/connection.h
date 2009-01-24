@@ -57,6 +57,11 @@ class Connection : public StatefulDBusProxy,
     Q_ENUMS(Readiness);
 
 public:
+    enum Feature {
+        _Padding = 0xFFFFFFFF
+    };
+    Q_DECLARE_FLAGS(Features, Feature)
+
     enum Readiness {
         ReadinessJustCreated = 0,
         ReadinessNotYetConnected = 5,
@@ -148,6 +153,10 @@ public:
 
     PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
 
+    bool isReady(Features features = 0) const;
+
+    PendingOperation *becomeReady(Features features = 0);
+
 Q_SIGNALS:
     void readinessChanged(uint newReadiness);
 
@@ -177,6 +186,8 @@ private:
     friend class ReferencedHandles;
     Private *mPriv;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Connection::Features)
 
 } // Telepathy::Client
 } // Telepathy

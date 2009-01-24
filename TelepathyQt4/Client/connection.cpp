@@ -78,6 +78,7 @@ struct Connection::Private
     void changeReadiness(Readiness newReadiness);
 
     struct HandleContext;
+    class PendingReady;
 
     // Public object
     Connection *parent;
@@ -89,6 +90,8 @@ struct Connection::Private
     ConnectionInterfaceAliasingInterface *aliasing;
     ConnectionInterfacePresenceInterface *presence;
     DBus::PropertiesInterface *properties;
+
+    PendingReady *pendingReady;
 
     // Introspection
     bool initialIntrospection;
@@ -137,6 +140,20 @@ struct Connection::Private::HandleContext
     QMap<uint, Type> types;
 };
 
+class Connection::Private::PendingReady : public PendingOperation
+{
+    // Connection is a friend so it can call finished() etc.
+    friend class Connection;
+
+public:
+    PendingReady(Connection *parent);
+};
+
+Connection::Private::PendingReady::PendingReady(Connection *parent)
+    : PendingOperation(parent)
+{
+}
+
 Connection::Private::Private(Connection *parent)
     : parent(parent),
       baseInterface(new ConnectionInterface(parent->dbusConnection(),
@@ -144,6 +161,7 @@ Connection::Private::Private(Connection *parent)
       aliasing(0),
       presence(0),
       properties(0),
+      pendingReady(0),
       initialIntrospection(false),
       readiness(ReadinessJustCreated),
       status(ConnectionStatusDisconnected),
@@ -1101,6 +1119,43 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
 }
 
 /**
+ * Return whether this object has finished its initial setup.
+ *
+ * This is mostly useful as a sanity check, in code that shouldn't be run
+ * until the object is ready. To wait for the object to be ready, call
+ * becomeReady() and connect to the finished signal on the result.
+ *
+ * \param features Which features should be tested.
+ * \return \c true if the object has finished initial setup.
+ */
+bool Connection::isReady(Features features) const
+{
+    return mPriv->readiness == ReadinessFull;
+}
+
+/**
+ * Return a pending operation which will succeed when this object finishes
+ * its initial setup, or will fail if a fatal error occurs during this
+ * initial setup.
+ *
+ * \param features Which features should be tested.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when this object has finished or failed its initial setup.
+ */
+PendingOperation *Connection::becomeReady(Features requestedFeatures)
+{
+    if (isReady(requestedFeatures)) {
+        return new PendingSuccess(this);
+    }
+
+    if (!mPriv->pendingReady) {
+        mPriv->pendingReady = new Private::PendingReady(this);
+    }
+
+    return mPriv->pendingReady;
+}
+
+/**
  * Start an asynchronous request that the connection be disconnected.
  * The returned PendingOperation object will signal the success or failure
  * of this request; under normal circumstances, it can be expected to
@@ -1206,6 +1261,12 @@ void Connection::continueIntrospection()
         else {
             if (mPriv->readiness != ReadinessDead) {
                 mPriv->changeReadiness(ReadinessFull);
+
+                if (mPriv->pendingReady) {
+                    mPriv->pendingReady->setFinished();
+                    // it will delete itself later
+                    mPriv->pendingReady = 0;
+                }
             }
         }
     }
