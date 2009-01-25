@@ -189,6 +189,13 @@ void TestConnBasics::testConnect()
     QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
           this, SLOT(expectNotYetConnected(uint))));
 
+    QVERIFY(connect(mConn->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->isReady(), true);
+
     // FIXME: should have convenience API so we don't have to use
     // baseInterface directly
     qDebug() << "calling Connect()";
@@ -209,6 +216,33 @@ void TestConnBasics::testConnect()
           this, SLOT(expectReady(uint))));
 
     QCOMPARE(mConn->readiness(), Connection::ReadinessFull);
+    QVERIFY(connect(mConn->becomeReady(Connection::FeatureAliasing),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mConn->becomeReady(Connection::FeaturePresence),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mConn->becomeReady(Connection::FeatureSimplePresence),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(connect(mConn->becomeReady(Connection::FeatureAliasing | Connection::FeaturePresence | Connection::FeatureSimplePresence),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->isReady(Connection::FeatureAliasing), true);
+    QCOMPARE(mConn->isReady(Connection::FeaturePresence), true);
+    QCOMPARE(mConn->isReady(Connection::FeatureSimplePresence), false);
+
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Telepathy::ConnectionStatusConnected));
     QCOMPARE(static_cast<uint>(mConn->statusReason()),
@@ -221,13 +255,6 @@ void TestConnBasics::testConnect()
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)));
     QVERIFY(interfaces.contains(QLatin1String(
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)));
-
-    QVERIFY(connect(mConn->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
 
     QVERIFY(connect(mConn->requestDisconnect(),
           SIGNAL(finished(Telepathy::Client::PendingOperation*)),
