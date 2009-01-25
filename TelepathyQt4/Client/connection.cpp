@@ -77,6 +77,8 @@ struct Connection::Private
 
     void changeReadiness(Readiness newReadiness);
 
+    void updatePendingOperations();
+
     struct HandleContext;
     class PendingReady;
 
@@ -91,13 +93,18 @@ struct Connection::Private
     ConnectionInterfacePresenceInterface *presence;
     DBus::PropertiesInterface *properties;
 
-    PendingReady *pendingReady;
+    bool ready;
+    QList<PendingReady *> pendingOperations;
 
     // Introspection
     bool initialIntrospection;
     Readiness readiness;
     QStringList interfaces;
     QQueue<void (Private::*)()> introspectQueue;
+
+    Connection::Features features;
+    Connection::Features pendingFeatures;
+    Connection::Features missingFeatures;
 
     // Introspected properties
     uint status;
@@ -146,11 +153,14 @@ class Connection::Private::PendingReady : public PendingOperation
     friend class Connection;
 
 public:
-    PendingReady(Connection *parent);
+    PendingReady(Connection::Features features, QObject *parent);
+
+    Connection::Features features;
 };
 
-Connection::Private::PendingReady::PendingReady(Connection *parent)
-    : PendingOperation(parent)
+Connection::Private::PendingReady::PendingReady(Connection::Features features, QObject *parent)
+    : PendingOperation(parent),
+      features(features)
 {
 }
 
@@ -161,7 +171,6 @@ Connection::Private::Private(Connection *parent)
       aliasing(0),
       presence(0),
       properties(0),
-      pendingReady(0),
       initialIntrospection(false),
       readiness(ReadinessJustCreated),
       status(ConnectionStatusDisconnected),
@@ -338,6 +347,20 @@ void Connection::Private::changeReadiness(Readiness newReadiness)
     debug() << "Readiness changed from" << readiness << "to" << newReadiness;
     readiness = newReadiness;
     emit parent->readinessChanged(newReadiness);
+}
+
+void Connection::Private::updatePendingOperations()
+{
+    foreach (Private::PendingReady *operation, pendingOperations) {
+        if (ready &&
+            ((operation->features &
+                (features | missingFeatures)) == operation->features)) {
+            operation->setFinished();
+        }
+        if (operation->isFinished()) {
+            pendingOperations.removeOne(operation);
+        }
+    }
 }
 
 QMap<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;
@@ -546,11 +569,17 @@ QStringList Connection::interfaces() const
  */
 uint Connection::aliasFlags() const
 {
-    if (mPriv->readiness != ReadinessFull) {
-        warning() << "Connection::aliasFlags() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    if (mPriv->missingFeatures & FeatureAliasing) {
+        warning() << "Trying to retrieve aliasFlags from connection, but "
+                     "aliasing is not supported";
     }
-    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)) {
-        warning() << "Connection::aliasFlags() used without the remote object supporting the Aliasing interface";
+    else if (!(mPriv->features & FeatureAliasing)) {
+        warning() << "Trying to retrieve aliasFlags from connection without "
+                     "calling Connection::becomeReady(FeatureAliasing)";
+    }
+    else if (mPriv->pendingFeatures & FeatureAliasing) {
+        warning() << "Trying to retrieve aliasFlags from connection, but "
+                     "aliasing is still being retrieved";
     }
 
     return mPriv->aliasFlags;
@@ -568,12 +597,17 @@ uint Connection::aliasFlags() const
  */
 StatusSpecMap Connection::presenceStatuses() const
 {
-    if (mPriv->readiness != ReadinessFull) {
-        warning() << "Connection::presenceStatuses() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (mPriv->missingFeatures & FeaturePresence) {
+        warning() << "Trying to retrieve presence from connection, but "
+                     "presence is not supported";
     }
-    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)) {
-        warning() << "Connection::presenceStatuses() used without the remote object supporting the Presence interface";
+    else if (!(mPriv->features & FeaturePresence)) {
+        warning() << "Trying to retrieve presence from connection without "
+                     "calling Connection::becomeReady(FeaturePresence)";
+    }
+    else if (mPriv->pendingFeatures & FeaturePresence) {
+        warning() << "Trying to retrieve presence from connection, but "
+                     "presence is still being retrieved";
     }
 
     return mPriv->presenceStatuses;
@@ -596,13 +630,17 @@ StatusSpecMap Connection::presenceStatuses() const
  */
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
-    if (mPriv->readiness != ReadinessNotYetConnected &&
-        mPriv->readiness != ReadinessFull) {
-        warning() << "Connection::simplePresenceStatuses() used with readiness"
-                  << mPriv->readiness << "not in (ReadinessNotYetConnected, ReadinessFull)";
+    if (mPriv->missingFeatures & FeatureSimplePresence) {
+        warning() << "Trying to retrieve simple presence from connection, but "
+                     "simple presence is not supported";
     }
-    else if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
-        warning() << "Connection::simplePresenceStatuses() used without the remote object supporting the SimplePresence interface";
+    else if (!(mPriv->features & FeatureSimplePresence)) {
+        warning() << "Trying to retrieve simple presence from connection without "
+                     "calling Connection::becomeReady(FeatureSimplePresence)";
+    }
+    else if (mPriv->pendingFeatures & FeatureSimplePresence) {
+        warning() << "Trying to retrieve simple presence from connection, but "
+                     "simple presence is still being retrieved";
     }
 
     return mPriv->simplePresenceStatuses;
@@ -843,31 +881,31 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QStringList> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->interfaces = reply.value();
+        debug() << "Connection basic functionality is ready";
+        mPriv->ready = true;
         debug() << "Got reply to GetInterfaces():" << mPriv->interfaces;
+        mPriv->interfaces = reply.value();
+
+        // queue introspection of all optional features and add the feature to
+        // pendingFeatures so we don't queue up the introspect func for the feature
+        // again on becomeReady.
+        if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)) {
+            mPriv->introspectQueue.enqueue(&Private::introspectAliasing);
+            mPriv->pendingFeatures |= FeatureAliasing;
+        }
+        if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)) {
+            mPriv->introspectQueue.enqueue(&Private::introspectPresence);
+            mPriv->pendingFeatures |= FeaturePresence;
+        }
+        if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+            mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
+            mPriv->pendingFeatures |= FeatureSimplePresence;
+        }
     }
     else {
         warning().nospace() << "GetInterfaces() failed with" <<
             reply.error().name() << ":" << reply.error().message() <<
             "- assuming no new interfaces";
-    }
-
-    foreach (const QString &interface, mPriv->interfaces) {
-        void (Private::*introspectFunc)() = 0;
-
-        if (interface == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING) {
-            introspectFunc = &Private::introspectAliasing;
-        }
-        else if (interface == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE) {
-            introspectFunc = &Private::introspectPresence;
-        }
-        else if (interface == TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE) {
-            introspectFunc = &Private::introspectSimplePresence;
-        }
-
-        if (introspectFunc) {
-            mPriv->introspectQueue.enqueue(introspectFunc);
-        }
     }
 
     continueIntrospection();
@@ -879,11 +917,19 @@ void Connection::gotAliasFlags(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint> reply = *watcher;
 
+    mPriv->pendingFeatures &= ~FeatureAliasing;
+
     if (!reply.isError()) {
+        mPriv->features |= FeatureAliasing;
+        debug() << "Adding FeatureAliasing to features";
+
         mPriv->aliasFlags = static_cast<ConnectionAliasFlag>(reply.value());
         debug().nospace() << "Got alias flags 0x" << hex << mPriv->aliasFlags;
     }
     else {
+        mPriv->missingFeatures |= FeatureAliasing;
+        debug() << "Adding FeatureAliasing to missing features";
+
         warning().nospace() << "GetAliasFlags() failed with" <<
             reply.error().name() << ":" << reply.error().message();
     }
@@ -897,11 +943,20 @@ void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<StatusSpecMap> reply = *watcher;
 
+    mPriv->pendingFeatures &= ~FeaturePresence;
+
     if (!reply.isError()) {
+        mPriv->features |= FeaturePresence;
+        debug() << "Adding FeaturePresence to features";
+
         mPriv->presenceStatuses = reply.value();
         debug() << "Got" << mPriv->presenceStatuses.size() << "legacy presence statuses";
     }
     else {
+        mPriv->missingFeatures |= FeaturePresence;
+        debug() << "Adding FeaturePresence to missing features";
+
+
         warning().nospace() << "GetStatuses() failed with" <<
             reply.error().name() << ":" << reply.error().message();
     }
@@ -915,11 +970,19 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusVariant> reply = *watcher;
 
+    mPriv->pendingFeatures &= ~FeatureSimplePresence;
+
     if (!reply.isError()) {
+        mPriv->features |= FeatureSimplePresence;
+        debug() << "Adding FeatureSimplePresence to features";
+
         mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
         debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
     }
     else {
+        mPriv->missingFeatures |= FeatureSimplePresence;
+        debug() << "Adding FeatureSimplePresence to missing features";
+
         warning().nospace() << "Getting simple presence statuses failed with" <<
             reply.error().name() << ":" << reply.error().message();
     }
@@ -1130,7 +1193,8 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
  */
 bool Connection::isReady(Features features) const
 {
-    return mPriv->readiness == ReadinessFull;
+    return mPriv->ready
+        && ((mPriv->features & features) == features);
 }
 
 /**
@@ -1148,11 +1212,43 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
         return new PendingSuccess(this);
     }
 
-    if (!mPriv->pendingReady) {
-        mPriv->pendingReady = new Private::PendingReady(this);
+    debug() << "Calling becomeReady with requested features:"
+            << requestedFeatures;
+    foreach (Private::PendingReady *operation, mPriv->pendingOperations) {
+        if (operation->features == requestedFeatures) {
+            debug() << "Returning cached pending operation";
+            return operation;
+        }
     }
 
-    return mPriv->pendingReady;
+    Feature optionalFeatures[3] = { FeatureAliasing, FeaturePresence, FeatureSimplePresence };
+    Feature optionalFeature;
+    for (uint i = 0; i < sizeof(optionalFeatures) / sizeof(Feature); ++i) {
+        optionalFeature = optionalFeatures[i];
+
+        if (requestedFeatures & optionalFeature) {
+            // as the feature is optional, if it's know to not be supported,
+            // just finish silently
+            if (requestedFeatures == (int) optionalFeature &&
+                mPriv->missingFeatures & optionalFeature) {
+                return new PendingSuccess(this);
+            }
+
+            // don't enqueue introspect funcs here, as they will be enqueued
+            // when possible, depending on readiness, e.g. introspectMain needs
+            // to be called before introspectAliasing, ...
+        }
+    }
+
+    mPriv->pendingFeatures |= requestedFeatures;
+
+    debug() << "Creating new pending operation";
+    Private::PendingReady *operation =
+        new Private::PendingReady(requestedFeatures, this);
+    mPriv->pendingOperations.append(operation);
+
+    mPriv->updatePendingOperations();
+    return operation;
 }
 
 /**
@@ -1255,17 +1351,27 @@ void Connection::continueIntrospection()
     if (mPriv->introspectQueue.isEmpty()) {
         if (mPriv->initialIntrospection) {
             mPriv->initialIntrospection = false;
-            if (mPriv->readiness < ReadinessNotYetConnected)
+            if (mPriv->readiness < ReadinessNotYetConnected) {
                 mPriv->changeReadiness(ReadinessNotYetConnected);
+            }
         }
         else {
             if (mPriv->readiness != ReadinessDead) {
                 mPriv->changeReadiness(ReadinessFull);
-
-                if (mPriv->pendingReady) {
-                    mPriv->pendingReady->setFinished();
-                    // it will delete itself later
-                    mPriv->pendingReady = 0;
+                // we should have all interfaces now, so if an interface is not
+                // present and we have a feature for it, add the feature to missing
+                // features.
+                if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)) {
+                    debug() << "adding FeatureAliasing to missing features";
+                    mPriv->missingFeatures |= FeatureAliasing;
+                }
+                if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)) {
+                    debug() << "adding FeaturePresence to missing features";
+                    mPriv->missingFeatures |= FeaturePresence;
+                }
+                if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+                    debug() << "adding FeatureSimplePresence to missing features";
+                    mPriv->missingFeatures |= FeatureSimplePresence;
                 }
             }
         }
@@ -1273,6 +1379,8 @@ void Connection::continueIntrospection()
     else {
         (mPriv->*(mPriv->introspectQueue.dequeue()))();
     }
+
+    mPriv->updatePendingOperations();
 }
 
 }
