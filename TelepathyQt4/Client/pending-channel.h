@@ -26,99 +26,34 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientconn Connection proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Connections and their optional
- * interfaces.
- */
-
 #include <TelepathyQt4/Client/PendingOperation>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
-
-namespace Telepathy {
-namespace Client {
-class Channel;
-class Connection;
-}
-}
 
 namespace Telepathy
 {
 namespace Client
 {
 
-/**
- * \class PendingChannel
- * \ingroup clientconn
- * \headerfile <TelepathyQt4/Client/pending-channel.h> <TelepathyQt4/Client/PendingChannel>
- *
- * Class containing the parameters of and the reply to an asynchronous channel
- * request. Instances of this class cannot be constructed directly; the only way
- * to get one is to use Connection::requestChannel().
- */
+class Channel;
+class Connection;
+
 class PendingChannel : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingChannel)
 
 public:
-    /**
-     * Class destructor.
-     */
     ~PendingChannel();
 
-    /**
-     * Returns the Connection object through which the channel request was made.
-     *
-     * \return Pointer to the Connection.
-     */
     Connection* connection() const;
 
-    /**
-     * Returns the channel type specified in the channel request.
-     *
-     * \return The D-Bus interface name of the interface specific to the
-     *         requested channel type.
-     */
     const QString& channelType() const;
 
-    /**
-     * Returns the handle type specified in the channel request.
-     *
-     * \return The handle type, as specified in #HandleType.
-     */
     uint handleType() const;
 
-    /**
-     * Returns the handle specified in the channel request.
-     *
-     * \return The handle.
-     */
     uint handle() const;
 
-    /**
-     * Returns a newly constructed Channel high-level proxy object associated
-     * with the remote channel resulting from the channel request. If isValid()
-     * returns <code>false</code>, the request has not (at least yet) completed
-     * successfully, and 0 will be returned.
-     *
-     * \param parent Passed to the Channel constructor.
-     * \return Pointer to the new Channel object.
-     */
     Channel* channel(QObject* parent = 0) const;
 
 private Q_SLOTS:

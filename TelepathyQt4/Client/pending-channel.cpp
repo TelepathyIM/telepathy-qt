@@ -27,6 +27,17 @@
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/Connection>
 
+/**
+ * \addtogroup clientsideproxies Client-side proxies
+ *
+ * Proxy objects representing remote service objects accessed via D-Bus.
+ *
+ * In addition to providing direct access to methods, signals and properties
+ * exported by the remote objects, some of these proxies offer features like
+ * automatic inspection of remote object capabilities, property tracking,
+ * backwards compatibility helpers for older services and other utilities.
+ */
+
 namespace Telepathy
 {
 namespace Client
@@ -40,6 +51,23 @@ struct PendingChannel::Private
     QDBusObjectPath objectPath;
 };
 
+/**
+ * \class PendingChannel
+ * \ingroup clientconn
+ * \headerfile <TelepathyQt4/Client/pending-channel.h> <TelepathyQt4/Client/PendingChannel>
+ *
+ * Class containing the parameters of and the reply to an asynchronous channel
+ * request. Instances of this class cannot be constructed directly; the only way
+ * to get one is trough Connection.
+ */
+
+/**
+ * Construct a new PendingChannel object that will fail.
+ *
+ * \param connection Connection to use.
+ * \param errorName The error name.
+ * \param errorMessage The error message.
+ */
 PendingChannel::PendingChannel(Connection* connection, const QString& errorName,
         const QString& errorMessage)
     : PendingOperation(connection),
@@ -51,6 +79,14 @@ PendingChannel::PendingChannel(Connection* connection, const QString& errorName,
     setFinishedWithError(errorName, errorMessage);
 }
 
+/**
+ * Construct a new PendingChannel object.
+ *
+ * \param connection Connection to use.
+ * \param channelType The channel type.
+ * \param handleType The handle type.
+ * \param handle The handle.
+ */
 PendingChannel::PendingChannel(Connection* connection, const QString& channelType, uint handleType, uint handle)
     : PendingOperation(connection), mPriv(new Private)
 {
@@ -66,6 +102,13 @@ PendingChannel::PendingChannel(Connection* connection, const QString& channelTyp
             SLOT(onCallRequestChannelFinished(QDBusPendingCallWatcher *)));
 }
 
+/**
+ * Construct a new PendingChannel object.
+ *
+ * \param connection Connection to use.
+ * \param request A dictionary containing the desirable properties.
+ * \param create Whether createChannel or ensureChannel should be called.
+ */
 PendingChannel::PendingChannel(Connection* connection, const QVariantMap& request, bool create)
     : PendingOperation(connection),
       mPriv(new Private)
@@ -90,31 +133,64 @@ PendingChannel::PendingChannel(Connection* connection, const QVariantMap& reques
     }
 }
 
+/**
+ * Class destructor.
+ */
 PendingChannel::~PendingChannel()
 {
     delete mPriv;
 }
 
+/**
+ * Return the Connection object through which the channel request was made.
+ *
+ * \return Pointer to the Connection.
+ */
 Connection* PendingChannel::connection() const
 {
     return qobject_cast<Connection*>(parent());
 }
 
+/**
+ * Return the channel type specified in the channel request.
+ *
+ * \return The D-Bus interface name of the interface specific to the
+ *         requested channel type.
+ */
 const QString& PendingChannel::channelType() const
 {
     return mPriv->channelType;
 }
 
+/**
+ * Return the handle type specified in the channel request.
+ *
+ * \return The handle type, as specified in #HandleType.
+ */
 uint PendingChannel::handleType() const
 {
     return mPriv->handleType;
 }
 
+/**
+ * Return the handle specified in the channel request.
+ *
+ * \return The handle.
+ */
 uint PendingChannel::handle() const
 {
     return mPriv->handle;
 }
 
+/**
+ * Returns a newly constructed Channel high-level proxy object associated
+ * with the remote channel resulting from the channel request. If isValid()
+ * returns <code>false</code>, the request has not (at least yet) completed
+ * successfully, and 0 will be returned.
+ *
+ * \param parent Passed to the Channel constructor.
+ * \return Pointer to the new Channel object, 0 if an error occurred.
+ */
 Channel* PendingChannel::channel(QObject* parent) const
 {
     if (!isFinished()) {
