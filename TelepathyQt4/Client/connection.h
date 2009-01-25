@@ -153,7 +153,7 @@ public:
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
 
-public:
+protected:
     ConnectionInterface *baseInterface() const;
 
 private Q_SLOTS:

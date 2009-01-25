@@ -9,6 +9,7 @@
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
 #include <TelepathyQt4/Client/PendingChannel>
+#include <TelepathyQt4/Client/PendingHandles>
 
 #include <tests/pinocchio/lib.h>
 
@@ -36,6 +37,8 @@ protected Q_SLOTS:
     void expectChanReady(uint);
     void expectPendingChannelFinished(Telepathy::Client::PendingOperation*);
     void expectPendingChannelError(Telepathy::Client::PendingOperation*);
+    void expectRequestHandlesFinished(Telepathy::Client::PendingOperation*);
+    void expectRequestChannelFinished(Telepathy::Client::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -119,20 +122,19 @@ void TestChanBasics::initTestCase()
     QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
           this, SLOT(expectConnReady(uint, uint))));
 
-    // Using direct access to low-level stuff here, so we can test the
-    // Channel constructor directly
-    QDBusPendingReply<Telepathy::UIntList> requestHandlesReply =
-        mConn->baseInterface()->RequestHandles(Telepathy::HandleTypeList,
-            QStringList() << "subscribe");
-    requestHandlesReply.waitForFinished();
-    mSubscribeHandle = requestHandlesReply.value().at(0);
+    QVERIFY(connect(mConn->requestHandles(Telepathy::HandleTypeList,
+                                          QStringList() << "subscribe"),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                    this,
+                    SLOT(expectRequestHandlesFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
 
-    QDBusPendingReply<QDBusObjectPath> requestChannelReply =
-        mConn->baseInterface()->RequestChannel(
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST,
-            Telepathy::HandleTypeList, mSubscribeHandle, true);
-    requestChannelReply.waitForFinished();
-    mSubscribeChanObjectPath = requestChannelReply.value().path();
+    connect(mConn->requestChannel(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST,
+                                  Telepathy::HandleTypeList, mSubscribeHandle),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectRequestChannelFinished(Telepathy::Client::PendingOperation*)));
+    QCOMPARE(mLoop->exec(), 0);
 }
 
 
@@ -223,6 +225,58 @@ void TestChanBasics::expectPendingChannelFinished(PendingOperation* op)
     mLoop->exit(0);
 }
 
+void TestChanBasics::expectRequestHandlesFinished(PendingOperation* op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    PendingHandles *ph = qobject_cast<PendingHandles*>(op);
+    mSubscribeHandle = ph->handles().at(0);
+    mLoop->exit(0);
+}
+
+void TestChanBasics::expectRequestChannelFinished(PendingOperation* op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    PendingChannel *pc = qobject_cast<PendingChannel*>(op);
+    Channel *chan = pc->channel();
+    mSubscribeChanObjectPath = chan->objectPath();
+    mLoop->exit(0);
+}
 
 void TestChanBasics::testPendingChannel()
 {

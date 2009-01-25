@@ -196,12 +196,11 @@ void TestHandles::testRequestAndRelease()
     handles = ReferencedHandles();
     mLoop->processEvents();
 
-    // Make sure the service side has processed the release as well, by calling a getter
-    PendingVoidMethodCall *call =
-        new PendingVoidMethodCall(mConn, mConn->baseInterface()->GetProtocol());
-    QVERIFY(this->connect(call,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    // Make sure the service side has processed the release as well, by calling a method
+    QVERIFY(connect(mConn->requestConnect(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // Check that the handles have been released
