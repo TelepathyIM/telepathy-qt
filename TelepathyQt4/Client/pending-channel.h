@@ -46,27 +46,30 @@ class PendingChannel : public PendingOperation
 public:
     ~PendingChannel();
 
-    Connection* connection() const;
+    Connection *connection() const;
 
-    const QString& channelType() const;
+    const QString &channelType() const;
 
     uint handleType() const;
 
     uint handle() const;
 
-    Channel* channel(QObject* parent = 0) const;
+    Channel *channel(QObject *parent = 0) const;
 
 private Q_SLOTS:
-    void onCallRequestChannelFinished(QDBusPendingCallWatcher* watcher);
-    void onCallCreateChannelFinished(QDBusPendingCallWatcher* watcher);
-    void onCallEnsureChannelFinished(QDBusPendingCallWatcher* watcher);
+    void onCallRequestChannelFinished(QDBusPendingCallWatcher *watcher);
+    void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);
+    void onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class Connection;
 
-    PendingChannel(Connection* connection, const QString& errorName, const QString& errorMessage);
-    PendingChannel(Connection* connection, const QString& type, uint handleType, uint handle);
-    PendingChannel(Connection* connection, const QVariantMap& request, bool create);
+    PendingChannel(Connection *connection,
+            const QString &errorName, const QString &errorMessage);
+    PendingChannel(Connection *connection,
+            const QString &type, uint handleType, uint handle);
+    PendingChannel(Connection *connection,
+            const QVariantMap &request, bool create);
 
     struct Private;
     friend struct Private;

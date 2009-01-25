@@ -22,6 +22,7 @@
 #include <TelepathyQt4/Client/PendingChannel>
 
 #include "TelepathyQt4/Client/_gen/pending-channel.moc.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/Channel>
@@ -68,8 +69,8 @@ struct PendingChannel::Private
  * \param errorName The error name.
  * \param errorMessage The error message.
  */
-PendingChannel::PendingChannel(Connection* connection, const QString& errorName,
-        const QString& errorMessage)
+PendingChannel::PendingChannel(Connection *connection, const QString &errorName,
+        const QString &errorMessage)
     : PendingOperation(connection),
       mPriv(new Private)
 {
@@ -87,8 +88,10 @@ PendingChannel::PendingChannel(Connection* connection, const QString& errorName,
  * \param handleType The handle type.
  * \param handle The handle.
  */
-PendingChannel::PendingChannel(Connection* connection, const QString& channelType, uint handleType, uint handle)
-    : PendingOperation(connection), mPriv(new Private)
+PendingChannel::PendingChannel(Connection *connection,
+        const QString &channelType, uint handleType, uint handle)
+    : PendingOperation(connection),
+      mPriv(new Private)
 {
     mPriv->channelType = channelType;
     mPriv->handleType = handleType;
@@ -109,7 +112,8 @@ PendingChannel::PendingChannel(Connection* connection, const QString& channelTyp
  * \param request A dictionary containing the desirable properties.
  * \param create Whether createChannel or ensureChannel should be called.
  */
-PendingChannel::PendingChannel(Connection* connection, const QVariantMap& request, bool create)
+PendingChannel::PendingChannel(Connection *connection,
+        const QVariantMap &request, bool create)
     : PendingOperation(connection),
       mPriv(new Private)
 {
@@ -146,9 +150,9 @@ PendingChannel::~PendingChannel()
  *
  * \return Pointer to the Connection.
  */
-Connection* PendingChannel::connection() const
+Connection *PendingChannel::connection() const
 {
-    return qobject_cast<Connection*>(parent());
+    return qobject_cast<Connection *>(parent());
 }
 
 /**
@@ -157,7 +161,7 @@ Connection* PendingChannel::connection() const
  * \return The D-Bus interface name of the interface specific to the
  *         requested channel type.
  */
-const QString& PendingChannel::channelType() const
+const QString &PendingChannel::channelType() const
 {
     return mPriv->channelType;
 }
@@ -191,7 +195,7 @@ uint PendingChannel::handle() const
  * \param parent Passed to the Channel constructor.
  * \return Pointer to the new Channel object, 0 if an error occurred.
  */
-Channel* PendingChannel::channel(QObject* parent) const
+Channel *PendingChannel::channel(QObject *parent) const
 {
     if (!isFinished()) {
         warning() << "PendingChannel::channel called before finished, returning 0";
@@ -201,40 +205,39 @@ Channel* PendingChannel::channel(QObject* parent) const
         return 0;
     }
 
-    Channel* channel =
+    Channel *channel =
         new Channel(connection(),
                     mPriv->objectPath.path(),
                     parent);
     return channel;
 }
 
-void PendingChannel::onCallRequestChannelFinished(QDBusPendingCallWatcher* watcher)
+void PendingChannel::onCallRequestChannelFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
 
-    debug() << "Received reply to RequestChannel";
-
     if (!reply.isError()) {
-        debug() << " Success: object path" << reply.value().path();
+        debug() << "Got reply to Connection.RequestChannel - object path:" <<
+            reply.value().path();
         mPriv->objectPath = reply.value();
         setFinished();
     } else {
-        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+        debug().nospace() << "RequestChannel failed:" <<
+            reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
     }
 
     watcher->deleteLater();
 }
 
-void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher* watcher)
+void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusObjectPath, QVariantMap> reply = *watcher;
 
-    debug() << "Received reply to RequestChannel";
-
     if (!reply.isError()) {
         mPriv->objectPath = reply.argumentAt<0>();
-        debug() << " Success: object path" << mPriv->objectPath.path();
+        debug() << "Got reply to Connection.CreateChannel - object path:" <<
+            mPriv->objectPath.path();
 
         QVariantMap map = reply.argumentAt<1>();
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
@@ -243,22 +246,22 @@ void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher* watche
 
         setFinished();
     } else {
-        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+        debug().nospace() << "CreateChannel failed:" <<
+            reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
     }
 
     watcher->deleteLater();
 }
 
-void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher* watcher)
+void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<bool, QDBusObjectPath, QVariantMap> reply = *watcher;
 
-    debug() << "Received reply to RequestChannel";
-
     if (!reply.isError()) {
         mPriv->objectPath = reply.argumentAt<1>();
-        debug() << " Success: object path" << mPriv->objectPath.path();
+        debug() << "Got reply to Connection.EnsureChannel - object path:" <<
+            mPriv->objectPath.path();
 
         QVariantMap map = reply.argumentAt<2>();
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
@@ -267,7 +270,8 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher* watche
 
         setFinished();
     } else {
-        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+        debug().nospace() << "EnsureChannel failed:" <<
+            reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
     }
 
