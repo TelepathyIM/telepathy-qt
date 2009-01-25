@@ -28,6 +28,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/PendingChannel>
+#include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
 
@@ -1058,18 +1059,122 @@ ConnectionInterface *Connection::baseInterface() const
 PendingChannel *Connection::requestChannel(const QString &channelType,
         uint handleType, uint handle)
 {
+    if (mPriv->readiness != Private::ReadinessFull) {
+        warning() << "Calling requestChannel with connection not yet connected";
+        return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Connection not yet connected");
+    }
+
     debug() << "Requesting a Channel with type" << channelType
             << "and handle" << handle << "of type" << handleType;
 
     PendingChannel *channel =
         new PendingChannel(this, channelType, handleType, handle);
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(mPriv->baseInterface->RequestChannel(
-                    channelType, handleType, handle, true), channel);
 
-    channel->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)),
-                              SLOT(onCallFinished(QDBusPendingCallWatcher *)));
+    return channel;
+}
 
+/**
+ * Asynchronously creates a channel satisfying the given request.
+ *
+ * The request MUST contain the following keys:
+ *   org.freedesktop.Telepathy.Account.ChannelType
+ *   org.freedesktop.Telepathy.Account.TargetHandleType
+ *
+ * Upon completion, the reply to the request can be retrieved through the
+ * returned PendingChannel object. The object also provides access to the
+ * parameters with which the call was made and a signal to connect to get
+ * notification of the request finishing processing. See the documentation
+ * for that class for more info.
+ *
+ * The returned PendingChannel object should be freed using
+ * its QObject::deleteLater() method after it is no longer used. However,
+ * all PendingChannel objects resulting from requests to a particular
+ * Connection will be freed when the Connection itself is freed. Conversely,
+ * this means that the PendingChannel object should not be used after the
+ * Connection is destroyed.
+ *
+ * \sa PendingChannel
+ *
+ * \param request A dictionary containing the desirable properties.
+ * \return Pointer to a newly constructed PendingChannel object, tracking
+ *         the progress of the request.
+ */
+PendingChannel *Connection::createChannel(const QVariantMap &request)
+{
+    if (mPriv->readiness != Private::ReadinessFull) {
+        warning() << "Calling createChannel with connection not yet connected";
+        return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Connection not yet connected");
+    }
+
+    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+        warning() << "Requests interface is not support by this connection";
+        return new PendingChannel(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Connection does not support Requests Interface");
+    }
+
+    if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")) ||
+        !request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"))) {
+        return new PendingChannel(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid 'request' argument");
+    }
+
+    debug() << "Creating a Channel";
+    PendingChannel *channel =
+        new PendingChannel(this, request, true);
+    return channel;
+}
+
+/**
+ * Asynchronously ensures a channel exists satisfying the given request.
+ *
+ * The request MUST contain the following keys:
+ *   org.freedesktop.Telepathy.Account.ChannelType
+ *   org.freedesktop.Telepathy.Account.TargetHandleType
+ *
+ * Upon completion, the reply to the request can be retrieved through the
+ * returned PendingChannel object. The object also provides access to the
+ * parameters with which the call was made and a signal to connect to get
+ * notification of the request finishing processing. See the documentation
+ * for that class for more info.
+ *
+ * The returned PendingChannel object should be freed using
+ * its QObject::deleteLater() method after it is no longer used. However,
+ * all PendingChannel objects resulting from requests to a particular
+ * Connection will be freed when the Connection itself is freed. Conversely,
+ * this means that the PendingChannel object should not be used after the
+ * Connection is destroyed.
+ *
+ * \sa PendingChannel
+ *
+ * \param request A dictionary containing the desirable properties.
+ * \return Pointer to a newly constructed PendingChannel object, tracking
+ *         the progress of the request.
+ */
+PendingChannel *Connection::ensureChannel(const QVariantMap &request)
+{
+    if (mPriv->readiness != Private::ReadinessFull) {
+        warning() << "Calling ensureChannel with connection not yet connected";
+        return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Connection not yet connected");
+    }
+
+    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+        warning() << "Requests interface is not support by this connection";
+        return new PendingChannel(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Connection does not support Requests Interface");
+    }
+
+    if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")) ||
+        !request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"))) {
+        return new PendingChannel(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid 'request' argument");
+    }
+
+    debug() << "Creating a Channel";
+    PendingChannel *channel =
+        new PendingChannel(this, request, false);
     return channel;
 }
 

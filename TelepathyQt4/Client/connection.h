@@ -130,6 +130,12 @@ public:
         return optionalInterface<ConnectionInterfaceSimplePresenceInterface>(check);
     }
 
+    inline ConnectionInterfaceRequestsInterface *requestsInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<ConnectionInterfaceRequestsInterface>(check);
+    }
+
     inline DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
@@ -137,6 +143,10 @@ public:
 
     PendingChannel *requestChannel(const QString &channelType,
                                    uint handleType, uint handle);
+
+    PendingChannel *createChannel(const QVariantMap &request);
+
+    PendingChannel *ensureChannel(const QVariantMap &request);
 
     PendingOperation *requestConnect();
 
@@ -175,6 +185,7 @@ private:
 
     struct Private;
     friend struct Private;
+    friend class PendingChannel;
     friend class PendingHandles;
     friend class ReferencedHandles;
     Private *mPriv;

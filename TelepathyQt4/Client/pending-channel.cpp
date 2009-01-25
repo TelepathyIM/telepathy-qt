@@ -40,12 +40,54 @@ struct PendingChannel::Private
     QDBusObjectPath objectPath;
 };
 
+PendingChannel::PendingChannel(Connection* connection, const QString& errorName,
+        const QString& errorMessage)
+    : PendingOperation(connection),
+      mPriv(new Private)
+{
+    mPriv->handleType = 0;
+    mPriv->handle = 0;
+
+    setFinishedWithError(errorName, errorMessage);
+}
+
 PendingChannel::PendingChannel(Connection* connection, const QString& channelType, uint handleType, uint handle)
     : PendingOperation(connection), mPriv(new Private)
 {
     mPriv->channelType = channelType;
     mPriv->handleType = handleType;
     mPriv->handle = handle;
+
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(connection->baseInterface()->RequestChannel(
+                    channelType, handleType, handle, true), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onCallRequestChannelFinished(QDBusPendingCallWatcher *)));
+}
+
+PendingChannel::PendingChannel(Connection* connection, const QVariantMap& request, bool create)
+    : PendingOperation(connection),
+      mPriv(new Private)
+{
+    mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
+    mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
+    mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+
+    if (create) {
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                connection->requestsInterface()->CreateChannel(request), this);
+        connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(onCallCreateChannelFinished(QDBusPendingCallWatcher *)));
+    }
+    else {
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                connection->requestsInterface()->EnsureChannel(request), this);
+        connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(onCallEnsureChannelFinished(QDBusPendingCallWatcher *)));
+    }
 }
 
 PendingChannel::~PendingChannel()
@@ -90,7 +132,7 @@ Channel* PendingChannel::channel(QObject* parent) const
     return channel;
 }
 
-void PendingChannel::onCallFinished(QDBusPendingCallWatcher* watcher)
+void PendingChannel::onCallRequestChannelFinished(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
 
@@ -99,6 +141,54 @@ void PendingChannel::onCallFinished(QDBusPendingCallWatcher* watcher)
     if (!reply.isError()) {
         debug() << " Success: object path" << reply.value().path();
         mPriv->objectPath = reply.value();
+        setFinished();
+    } else {
+        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+    }
+
+    watcher->deleteLater();
+}
+
+void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QDBusObjectPath, QVariantMap> reply = *watcher;
+
+    debug() << "Received reply to RequestChannel";
+
+    if (!reply.isError()) {
+        mPriv->objectPath = reply.argumentAt<0>();
+        debug() << " Success: object path" << mPriv->objectPath.path();
+
+        QVariantMap map = reply.argumentAt<1>();
+        mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
+        mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
+        mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+
+        setFinished();
+    } else {
+        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+    }
+
+    watcher->deleteLater();
+}
+
+void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<bool, QDBusObjectPath, QVariantMap> reply = *watcher;
+
+    debug() << "Received reply to RequestChannel";
+
+    if (!reply.isError()) {
+        mPriv->objectPath = reply.argumentAt<1>();
+        debug() << " Success: object path" << mPriv->objectPath.path();
+
+        QVariantMap map = reply.argumentAt<2>();
+        mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
+        mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
+        mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
+
         setFinished();
     } else {
         debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
