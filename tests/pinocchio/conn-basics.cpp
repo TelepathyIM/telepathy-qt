@@ -26,8 +26,7 @@ private:
     Connection *mConn;
 
 protected Q_SLOTS:
-    void expectNotYetConnected(uint);
-    void expectReady(uint);
+    void expectReady(uint, uint);
 
 private Q_SLOTS:
     void initTestCase();
@@ -97,78 +96,36 @@ void TestConnBasics::init()
 }
 
 
-void TestConnBasics::expectNotYetConnected(uint newReadiness)
-{
-    switch (newReadiness) {
-    case Connection::ReadinessJustCreated:
-        qWarning() << "Changing from JustCreated to JustCreated is silly";
-        mLoop->exit(1);
-        break;
-    case Connection::ReadinessNotYetConnected:
-        qDebug() << "Correctly changed to NotYetConnected";
-        mLoop->exit(0);
-        break;
-    case Connection::ReadinessConnecting:
-    case Connection::ReadinessFull:
-    case Connection::ReadinessDead:
-        qWarning() << "Got too far!";
-        mLoop->exit(2);
-        break;
-    default:
-        qWarning().nospace() << "What sort of readiness is "
-            << newReadiness << "?!";
-        mLoop->exit(3);
-        break;
-    }
-}
-
-
 void TestConnBasics::testInitialIntrospection()
 {
     mConn = new Connection(mConnBusName, mConnObjectPath);
 
-    QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
-
-    // Wait for introspection to run (readiness changes to NYC)
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
 
     delete mConn;
     mConn = NULL;
 }
 
 
-void TestConnBasics::expectReady(uint newReadiness)
+void TestConnBasics::expectReady(uint newStatus, uint newStatusReason)
 {
-    switch (newReadiness) {
-    case Connection::ReadinessJustCreated:
-        qWarning() << "Changing from NYC to JustCreated is silly";
+    switch (newStatus) {
+    case Telepathy::ConnectionStatusDisconnected:
+        qWarning() << "Disconnected";
         mLoop->exit(1);
         break;
-    case Connection::ReadinessNotYetConnected:
-        qWarning() << "Changing from NYC to NYC is silly";
-        mLoop->exit(2);
-        break;
-    case Connection::ReadinessConnecting:
+    case Telepathy::ConnectionStatusConnecting:
         /* do nothing */
         break;
-    case Connection::ReadinessFull:
+    case Telepathy::ConnectionStatusConnected:
         qDebug() << "Ready";
         mLoop->exit(0);
         break;
-    case Connection::ReadinessDead:
-        qWarning() << "Dead!";
-        mLoop->exit(3);
-        break;
     default:
-        qWarning().nospace() << "What sort of readiness is "
-            << newReadiness << "?!";
-        mLoop->exit(4);
+        qWarning().nospace() << "What sort of status is "
+            << newStatus << "?!";
+        mLoop->exit(2);
         break;
     }
 }
@@ -178,16 +135,8 @@ void TestConnBasics::testConnect()
 {
     mConn = new Connection(mConnBusName, mConnObjectPath);
 
-    QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
-
-    // Wait for introspection to run (readiness changes to NYC)
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
 
     QVERIFY(connect(mConn->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -209,13 +158,12 @@ void TestConnBasics::testConnect()
     // Wait for readiness to reach Full
 
     qDebug() << "waiting for Full readiness";
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectReady(uint))));
+    QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
+          this, SLOT(expectReady(uint, uint))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectReady(uint))));
+    QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
+          this, SLOT(expectReady(uint, uint))));
 
-    QCOMPARE(mConn->readiness(), Connection::ReadinessFull);
     QVERIFY(connect(mConn->becomeReady(Connection::FeatureAliasing),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             this,
@@ -262,7 +210,6 @@ void TestConnBasics::testConnect()
           SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(mConn->readiness(), Connection::ReadinessDead);
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
     QCOMPARE(static_cast<uint>(mConn->statusReason()),
@@ -277,13 +224,6 @@ void TestConnBasics::testAlreadyConnected()
 {
     mConn = new Connection(mConnBusName, mConnObjectPath);
 
-    // Wait for introspection to run (readiness changes to NYC)
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
-
     // FIXME: should have convenience API so we don't have to use
     // baseInterface directly
     qDebug() << "calling Connect()";
@@ -297,24 +237,22 @@ void TestConnBasics::testAlreadyConnected()
     // Wait for readiness to reach Full
 
     qDebug() << "waiting for Full readiness";
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectReady(uint))));
+    QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
+          this, SLOT(expectReady(uint, uint))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectReady(uint))));
-
-    QCOMPARE(mConn->readiness(), Connection::ReadinessFull);
+    QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
+          this, SLOT(expectReady(uint, uint))));
 
     // delete proxy, make a new one
     delete mConn;
     mConn = new Connection(mConnBusName, mConnObjectPath);
 
     // Wait for introspection to run (readiness changes to Full immediately)
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectReady(uint))));
+    QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
+          this, SLOT(expectReady(uint, uint))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectReady(uint))));
+    QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
+          this, SLOT(expectReady(uint, uint))));
 
     QVERIFY(connect(mConn->requestDisconnect(),
           SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -332,16 +270,8 @@ void TestConnBasics::testInterfaceFactory()
     mConn = new Connection(QDBusConnection::sessionBus(),
         mConnBusName, mConnObjectPath);
 
-    QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
-
-    // Wait for introspection to run (readiness changes to NYC)
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
 
     PropertiesInterface* props = mConn->propertiesInterface();
     QVERIFY(props != NULL);
@@ -371,16 +301,8 @@ void TestConnBasics::testSpecifiedBus()
     mConn = new Connection(QDBusConnection::sessionBus(),
         mConnBusName, mConnObjectPath);
 
-    QCOMPARE(mConn->readiness(), Connection::ReadinessJustCreated);
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
-
-    // Wait for introspection to run (readiness changes to NYC)
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectNotYetConnected(uint))));
 
     delete mConn;
     mConn = NULL;

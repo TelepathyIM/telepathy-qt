@@ -39,7 +39,7 @@ private:
 protected Q_SLOTS:
     // these ought to be private, but if they were, QTest would think they
     // were test cases. So, they're protected instead
-    void expectConnReady(uint);
+    void expectConnReady(uint, uint);
     void expectPendingHandlesFinished(Telepathy::Client::PendingOperation*);
 
 private Q_SLOTS:
@@ -53,32 +53,24 @@ private Q_SLOTS:
     void cleanupTestCase();
 };
 
-void TestHandles::expectConnReady(uint newReadiness)
+void TestHandles::expectConnReady(uint newStatus, uint newStatusReason)
 {
-    switch (newReadiness) {
-    case Connection::ReadinessJustCreated:
-        qWarning() << "Changing from NYC to JustCreated is silly";
+    switch (newStatus) {
+    case Telepathy::ConnectionStatusDisconnected:
+        qWarning() << "Disconnected";
         mLoop->exit(1);
         break;
-    case Connection::ReadinessNotYetConnected:
-        qWarning() << "Changing from NYC to NYC is silly";
-        mLoop->exit(2);
-        break;
-    case Connection::ReadinessConnecting:
+    case Telepathy::ConnectionStatusConnecting:
         /* do nothing */
         break;
-    case Connection::ReadinessFull:
+    case Telepathy::ConnectionStatusConnected:
         qDebug() << "Ready";
         mLoop->exit(0);
         break;
-    case Connection::ReadinessDead:
-        qWarning() << "Dead!";
-        mLoop->exit(3);
-        break;
     default:
         qWarning().nospace() << "What sort of readiness is "
-            << newReadiness << "?!";
-        mLoop->exit(4);
+            << newStatus << "?!";
+        mLoop->exit(2);
         break;
     }
 }
@@ -134,16 +126,16 @@ void TestHandles::initTestCase()
     for (int i = 0; i < 3; ++i) {
         Connection *conn = connections[i];
 
-        if (conn->readiness() == Connection::ReadinessFull) {
+        if (conn->status() == Telepathy::ConnectionStatusConnected) {
             qDebug() << conn << "Already ready";
             continue;
         }
 
-        QVERIFY(connect(conn, SIGNAL(readinessChanged(uint)),
-                    this, SLOT(expectConnReady(uint))));
+        QVERIFY(connect(conn, SIGNAL(statusChanged(uint, uint)),
+                    this, SLOT(expectConnReady(uint, uint))));
         QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(conn, SIGNAL(readinessChanged(uint)),
-                    this, SLOT(expectConnReady(uint))));
+        QVERIFY(disconnect(conn, SIGNAL(statusChanged(uint, uint)),
+                    this, SLOT(expectConnReady(uint, uint))));
     }
 }
 

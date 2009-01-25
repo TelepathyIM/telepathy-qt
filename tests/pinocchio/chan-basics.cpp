@@ -32,7 +32,7 @@ private:
 protected Q_SLOTS:
     // these ought to be private, but if they were, QTest would think they
     // were test cases. So, they're protected instead
-    void expectConnReady(uint);
+    void expectConnReady(uint, uint);
     void expectChanReady(uint);
     void expectPendingChannelFinished(Telepathy::Client::PendingOperation*);
     void expectPendingChannelError(Telepathy::Client::PendingOperation*);
@@ -50,32 +50,24 @@ private Q_SLOTS:
 };
 
 
-void TestChanBasics::expectConnReady(uint newReadiness)
+void TestChanBasics::expectConnReady(uint newStatus, uint newStatusReason)
 {
-    switch (newReadiness) {
-    case Connection::ReadinessJustCreated:
-        qWarning() << "Changing from NYC to JustCreated is silly";
+    switch (newStatus) {
+    case Telepathy::ConnectionStatusDisconnected:
+        qWarning() << "Disconnected";
         mLoop->exit(1);
         break;
-    case Connection::ReadinessNotYetConnected:
-        qWarning() << "Changing from NYC to NYC is silly";
-        mLoop->exit(2);
-        break;
-    case Connection::ReadinessConnecting:
+    case Telepathy::ConnectionStatusConnecting:
         /* do nothing */
         break;
-    case Connection::ReadinessFull:
+    case Telepathy::ConnectionStatusConnected:
         qDebug() << "Ready";
         mLoop->exit(0);
         break;
-    case Connection::ReadinessDead:
-        qWarning() << "Dead!";
-        mLoop->exit(3);
-        break;
     default:
-        qWarning().nospace() << "What sort of readiness is "
-            << newReadiness << "?!";
-        mLoop->exit(4);
+        qWarning().nospace() << "What sort of status is "
+            << newStatus << "?!";
+        mLoop->exit(2);
         break;
     }
 }
@@ -122,11 +114,11 @@ void TestChanBasics::initTestCase()
     QCOMPARE(mLoop->exec(), 0);
     delete watcher;
 
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectConnReady(uint))));
+    QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
+          this, SLOT(expectConnReady(uint, uint))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-          this, SLOT(expectConnReady(uint))));
+    QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
+          this, SLOT(expectConnReady(uint, uint))));
 
     // Using direct access to low-level stuff here, so we can test the
     // Channel constructor directly

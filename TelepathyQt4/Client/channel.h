@@ -779,7 +779,7 @@ private Q_SLOTS:
     void gotInterfaces(QDBusPendingCallWatcher* watcher);
     void onClosed();
 
-    void onConnectionReadinessChanged(uint readiness);
+    void onConnectionInvalidated();
     void onConnectionDestroyed();
 
     void gotGroupProperties(QDBusPendingCallWatcher* watcher);

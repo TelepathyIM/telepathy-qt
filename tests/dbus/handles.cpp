@@ -29,8 +29,8 @@ public:
     ReferencedHandles mHandles;
 
 protected Q_SLOTS:
-    void expectConnReady(uint newReadiness);
-    void expectConnDead(uint newReadiness);
+    void expectConnReady(uint newStatus, uint newStatusReason);
+    void expectConnInvalidated();
     void expectSuccessfulCall(Telepathy::Client::PendingOperation*);
     void expectPendingHandlesFinished(Telepathy::Client::PendingOperation*);
 
@@ -44,65 +44,31 @@ private Q_SLOTS:
     void cleanupTestCase();
 };
 
-void TestHandles::expectConnReady(uint newReadiness)
+void TestHandles::expectConnReady(uint newStatus, uint newStatusReason)
 {
-    switch (newReadiness) {
-    case Connection::ReadinessJustCreated:
-        qWarning() << "Changing from JustCreated to JustCreated is silly";
+    switch (newStatus) {
+    case Telepathy::ConnectionStatusDisconnected:
+        qWarning() << "Disconnected";
         mLoop->exit(1);
         break;
-    case Connection::ReadinessNotYetConnected:
-        // Connect (for now, using the 1:1 API)
-        mConn->baseInterface()->Connect();
-        break;
-    case Connection::ReadinessConnecting:
+    case Telepathy::ConnectionStatusConnecting:
         /* do nothing */
         break;
-    case Connection::ReadinessFull:
+    case Telepathy::ConnectionStatusConnected:
         qDebug() << "Ready";
         mLoop->exit(0);
         break;
-    case Connection::ReadinessDead:
-        qWarning() << "Dead!";
-        mLoop->exit(3);
-        break;
     default:
-        qWarning().nospace() << "What sort of readiness is "
-            << newReadiness << "?!";
-        mLoop->exit(4);
+        qWarning().nospace() << "What sort of status is "
+            << newStatus << "?!";
+        mLoop->exit(2);
         break;
     }
 }
 
-void TestHandles::expectConnDead(uint newReadiness)
+void TestHandles::expectConnInvalidated()
 {
-    switch (newReadiness) {
-    case Connection::ReadinessJustCreated:
-        qWarning() << "Changing from Full to JustCreated is silly";
-        mLoop->exit(1);
-        break;
-    case Connection::ReadinessNotYetConnected:
-        qWarning() << "Changing from Full to NYC is silly";
-        mLoop->exit(2);
-        break;
-    case Connection::ReadinessConnecting:
-        qWarning() << "Changing from Full to Connecting is silly";
-        mLoop->exit(3);
-        break;
-    case Connection::ReadinessFull:
-        qWarning() << "Changing from Full to Full is silly";
-        mLoop->exit(4);
-        break;
-    case Connection::ReadinessDead:
-        qWarning() << "Dead!";
-        mLoop->exit(0);
-        break;
-    default:
-        qWarning().nospace() << "What sort of readiness is "
-            << newReadiness << "?!";
-        mLoop->exit(5);
-        break;
-    }
+    mLoop->exit(0);
 }
 
 void TestHandles::expectSuccessfulCall(PendingOperation *op)
@@ -188,11 +154,12 @@ void TestHandles::init()
 
     mConn = new Connection(mConnName, mConnPath);
 
-    QVERIFY(connect(mConn, SIGNAL(readinessChanged(uint)),
-                this, SLOT(expectConnReady(uint))));
+    mConn->baseInterface()->Connect();
+    QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
+                this, SLOT(expectConnReady(uint, uint))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(readinessChanged(uint)),
-                this, SLOT(expectConnReady(uint))));
+    QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
+                this, SLOT(expectConnReady(uint, uint))));
 }
 
 void TestHandles::testRequestAndRelease()
@@ -253,10 +220,11 @@ void TestHandles::cleanup()
                         SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
             QCOMPARE(mLoop->exec(), 0);
 
-            if (mConn->readiness() != Connection::ReadinessDead) {
-                QVERIFY(this->connect(mConn,
-                            SIGNAL(readinessChanged(uint)),
-                            SLOT(expectConnDead(uint))));
+            if (mConn->isValid()) {
+                QVERIFY(connect(mConn,
+                                SIGNAL(invalidated(Telepathy::Client::DBusProxy *proxy,
+                                                   QString errorName, QString errorMessage)),
+                                SLOT(expectConnInvalidated())));
                 QCOMPARE(mLoop->exec(), 0);
             }
         }

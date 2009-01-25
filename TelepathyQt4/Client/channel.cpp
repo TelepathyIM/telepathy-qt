@@ -108,15 +108,16 @@ struct Channel::Private
 
         debug() << " Connection to owning connection's lifetime signals";
         parent.connect(connection,
-                       SIGNAL(readinessChanged(uint)),
-                       SLOT(onConnectionReadinessChanged(uint)));
+                       SIGNAL(invalidated(Telepathy::Client::DBusProxy *proxy,
+                                          QString errorName, QString errorMessage)),
+                       SLOT(onConnectionInvalidated()));
 
         parent.connect(connection,
                        SIGNAL(destroyed()),
                        SLOT(onConnectionDestroyed()));
 
-        if (connection->readiness() == Connection::ReadinessDead) {
-            warning() << "Connection given as the owner for a Channel was already dead! Channel will be stillborn.";
+        if (!connection->isValid()) {
+            warning() << "Connection given as the owner for a Channel was invalid! Channel will be stillborn.";
             readiness = ReadinessDead;
         }
 
@@ -668,9 +669,9 @@ void Channel::onClosed()
     invalidate(TELEPATHY_ERROR_CANCELLED, "Closed");
 }
 
-void Channel::onConnectionReadinessChanged(uint readiness)
+void Channel::onConnectionInvalidated()
 {
-    if (readiness == Connection::ReadinessDead && mPriv->readiness != ReadinessDead) {
+    if (mPriv->readiness != ReadinessDead) {
         debug() << "Owning connection died leaving an orphan Channel, changing to ReadinessDead";
         mPriv->changeReadiness(ReadinessDead);
     }
@@ -680,7 +681,7 @@ void Channel::onConnectionDestroyed()
 {
     debug() << "Owning connection destroyed, cutting off dangling pointer";
     mPriv->connection = 0;
-    return onConnectionReadinessChanged(Connection::ReadinessDead);
+    onConnectionInvalidated();
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)

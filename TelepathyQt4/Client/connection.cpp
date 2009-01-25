@@ -66,6 +66,45 @@ namespace Client
 
 struct Connection::Private
 {
+    /*
+     * \enum Connection::Private::Readiness
+     *
+     * Describes readiness of the Connection for usage. The readiness depends
+     * on the state of the remote object. In suitable states, an asynchronous
+     * introspection process is started, and the Connection becomes more ready
+     * when that process is completed.
+     *
+     * \value ReadinessJustCreated, The object has just been created and introspection
+     *                              is still in progress. No functionality is available.
+     *                              The readiness can change to any other state depending
+     *                              on the result of the initial state query to the remote
+     *                              object.
+     * \value ReadinessNotYetConnected The remote object is in the Disconnected state and
+     *                                 introspection relevant to that state has been completed.
+     *                                 This state is useful for being able to set your presence status
+     *                                 (through the SimplePresence interface) before connecting. Most other
+     *                                 functionality is unavailable, though.
+     *                                 The readiness can change to ReadinessConnecting and ReadinessDead.
+     * \value ReadinessConnecting The remote object is in the Connecting state. Most functionality is
+     *                            unavailable.
+     *                            The readiness can change to ReadinessFull and ReadinessDead.
+     * \value ReadinessFull The connection is in the Connected state and all introspection
+     *                      has been completed. Most functionality is available.
+     *                      The readiness can change to ReadinessDead.
+     * \value ReadinessDead The remote object has gone into a state where it can no longer be
+     *                      used. No functionality is available.
+     *                      No further readiness changes are possible.
+     * \value _ReadinessInvalid The remote object has gone into a invalid state.
+     */
+    enum Readiness {
+        ReadinessJustCreated = 0,
+        ReadinessNotYetConnected = 5,
+        ReadinessConnecting = 10,
+        ReadinessFull = 15,
+        ReadinessDead = 20,
+        _ReadinessInvalid = 0xffff
+    };
+
     Private(Connection *parent);
     ~Private();
 
@@ -107,6 +146,10 @@ struct Connection::Private
     Connection::Features missingFeatures;
 
     // Introspected properties
+    // keep pendingStatus and pendingStatusReason until we emit statusChanged
+    // so Connection::status() and Connection::statusReason() are consistent
+    uint pendingStatus;
+    uint pendingStatusReason;
     uint status;
     uint statusReason;
     bool haveInitialStatus;
@@ -173,6 +216,8 @@ Connection::Private::Private(Connection *parent)
       properties(0),
       initialIntrospection(false),
       readiness(ReadinessJustCreated),
+      pendingStatus(ConnectionStatusDisconnected),
+      pendingStatusReason(ConnectionStatusReasonNoneSpecified),
       status(ConnectionStatusDisconnected),
       statusReason(ConnectionStatusReasonNoneSpecified),
       haveInitialStatus(false),
@@ -184,6 +229,11 @@ Connection::Private::Private(Connection *parent)
 Connection::Private::~Private()
 {
     QMutexLocker locker(&handleContextsLock);
+
+    if (!handleContext) {
+        // initial introspection is not done
+        return;
+    }
 
     // All handle contexts locked, so safe
     if (!--handleContext->refcount) {
@@ -323,6 +373,8 @@ void Connection::Private::introspectSimplePresence()
 
 void Connection::Private::changeReadiness(Readiness newReadiness)
 {
+    debug() << "changing readiness from" << readiness <<
+        "to" << newReadiness;
     Q_ASSERT(newReadiness != readiness);
 
     switch (readiness) {
@@ -346,7 +398,16 @@ void Connection::Private::changeReadiness(Readiness newReadiness)
 
     debug() << "Readiness changed from" << readiness << "to" << newReadiness;
     readiness = newReadiness;
-    emit parent->readinessChanged(newReadiness);
+
+    // emit statusChanged only here as we are now in the correct readiness
+    // e.g: status was already Connected but readiness != ReadinessFull so the user was
+    // not able to call Connection::aliasFlags() for example.
+    if (status != pendingStatus ||
+        statusReason != pendingStatusReason) {
+        status = pendingStatus;
+        statusReason = pendingStatusReason;
+        emit parent->statusChanged(status, statusReason);
+    }
 }
 
 void Connection::Private::updatePendingOperations()
@@ -392,37 +453,6 @@ QMutex Connection::Private::handleContextsLock;
  * #ReadinessFull indicates that the introspection process is finished. See the
  * individual accessor descriptions for details on which functions can be used
  * in the different states.
- */
-
-/**
- * \enum Connection::Readiness
- *
- * Describes readiness of the Connection for usage. The readiness depends
- * on the state of the remote object. In suitable states, an asynchronous
- * introspection process is started, and the Connection becomes more ready
- * when that process is completed.
- *
- * \value ReadinessJustCreated, The object has just been created and introspection
- *                              is still in progress. No functionality is available.
- *                              The readiness can change to any other state depending
- *                              on the result of the initial state query to the remote
- *                              object.
- * \value ReadinessNotYetConnected The remote object is in the Disconnected state and
- *                                 introspection relevant to that state has been completed.
- *                                 This state is useful for being able to set your presence status
- *                                 (through the SimplePresence interface) before connecting. Most other
- *                                 functionality is unavailable, though.
- *                                 The readiness can change to ReadinessConnecting and ReadinessDead.
- * \value ReadinessConnecting The remote object is in the Connecting state. Most functionality is
- *                            unavailable.
- *                            The readiness can change to ReadinessFull and ReadinessDead.
- * \value ReadinessFull The connection is in the Connected state and all introspection
- *                      has been completed. Most functionality is available.
- *                      The readiness can change to ReadinessDead.
- * \value ReadinessDead The remote object has gone into a state where it can no longer be
- *                      used. No functionality is available.
- *                      No further readiness changes are possible.
- * \value _ReadinessInvalid The remote object has gone into a invalid state.
  */
 
 /**
@@ -488,16 +518,6 @@ Connection::~Connection()
 }
 
 /**
- * Return the current readiness of the Connection.
- *
- * \return The readiness, as defined in #Readiness.
- */
-Connection::Readiness Connection::readiness() const
-{
-    return mPriv->readiness;
-}
-
-/**
  * Return the connection's status.
  *
  * The returned value may have changed whenever readinessChanged() is
@@ -508,7 +528,7 @@ Connection::Readiness Connection::readiness() const
  */
 uint Connection::status() const
 {
-    if (mPriv->readiness == ReadinessJustCreated) {
+    if (mPriv->readiness == Private::ReadinessJustCreated) {
         warning() << "Connection::status() used with readiness ReadinessJustCreated";
     }
 
@@ -523,7 +543,7 @@ uint Connection::status() const
  */
 uint Connection::statusReason() const
 {
-    if (mPriv->readiness == ReadinessJustCreated) {
+    if (mPriv->readiness == Private::ReadinessJustCreated) {
         warning() << "Connection::statusReason() used with readiness ReadinessJustCreated";
     }
 
@@ -545,12 +565,12 @@ QStringList Connection::interfaces() const
     // Different check than the others, because the optional interface getters
     // may be used internally with the knowledge about getting the interfaces
     // list, so we don't want this to cause warnings.
-    if (mPriv->readiness != ReadinessNotYetConnected &&
-        mPriv->readiness != ReadinessFull &&
+    if (mPriv->readiness != Private::ReadinessNotYetConnected &&
+        mPriv->readiness != Private::ReadinessFull &&
         mPriv->interfaces.empty()) {
         warning() << "Connection::interfaces() used possibly before the list of interfaces has been received";
     }
-    else if (mPriv->readiness == ReadinessDead) {
+    else if (mPriv->readiness == Private::ReadinessDead) {
         warning() << "Connection::interfaces() used with readiness ReadinessDead";
     }
 
@@ -740,25 +760,25 @@ void Connection::onStatusChanged(uint status, uint reason)
 
     if (!mPriv->haveInitialStatus) {
         debug() << "Still haven't got the GetStatus reply, ignoring StatusChanged until we have (but saving reason)";
-        mPriv->statusReason = reason;
+        mPriv->pendingStatusReason = reason;
         return;
     }
 
-    if (mPriv->status == status) {
+    if (mPriv->pendingStatus == status) {
         warning() << "New status was the same as the old status! Ignoring redundant StatusChanged";
         return;
     }
 
     if (status == ConnectionStatusConnected &&
-        mPriv->status != ConnectionStatusConnecting) {
+        mPriv->pendingStatus != ConnectionStatusConnecting) {
         // CMs aren't meant to go straight from Disconnected to
         // Connected; recover by faking Connecting
         warning() << " Non-compliant CM - went straight to Connected! Faking a transition through Connecting";
         onStatusChanged(ConnectionStatusConnecting, reason);
     }
 
-    mPriv->status = status;
-    mPriv->statusReason = reason;
+    mPriv->pendingStatus = status;
+    mPriv->pendingStatusReason = reason;
 
     switch (status) {
         case ConnectionStatusConnected:
@@ -768,8 +788,8 @@ void Connection::onStatusChanged(uint status, uint reason)
             break;
 
         case ConnectionStatusConnecting:
-            if (mPriv->readiness < ReadinessConnecting) {
-                mPriv->changeReadiness(ReadinessConnecting);
+            if (mPriv->readiness < Private::ReadinessConnecting) {
+                mPriv->changeReadiness(Private::ReadinessConnecting);
             }
             else {
                 warning() << " Got unexpected status change to Connecting";
@@ -777,7 +797,7 @@ void Connection::onStatusChanged(uint status, uint reason)
             break;
 
         case ConnectionStatusDisconnected:
-            if (mPriv->readiness != ReadinessDead) {
+            if (mPriv->readiness != Private::ReadinessDead) {
                 const char *errorName;
 
                 // This is the best we can do right now: in an imminent
@@ -817,7 +837,7 @@ void Connection::onStatusChanged(uint status, uint reason)
                 invalidate(QLatin1String(errorName),
                         QString("ConnectionStatusReason = %1").arg(uint(reason)));
 
-                mPriv->changeReadiness(ReadinessDead);
+                mPriv->changeReadiness(Private::ReadinessDead);
             }
             else {
                 warning() << " Got unexpected status change to Disconnected";
@@ -837,14 +857,16 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
     if (reply.isError()) {
         warning().nospace() << "GetStatus() failed with" <<
             reply.error().name() << ":" << reply.error().message();
-        mPriv->changeReadiness(ReadinessDead);
+        invalidate(QLatin1String(TELEPATHY_ERROR_DISCONNECTED),
+                QString("ConnectionStatusReason = %1").arg(uint(mPriv->pendingStatusReason)));
+        mPriv->changeReadiness(Private::ReadinessDead);
         return;
     }
 
     uint status = reply.value();
 
     debug() << "Got connection status" << status;
-    mPriv->status = status;
+    mPriv->pendingStatus = status;
     mPriv->haveInitialStatus = true;
 
     // Don't do any introspection yet if the connection is in the Connecting
@@ -852,7 +874,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
     // connection ever gets to the Connected state.
     if (status == ConnectionStatusConnecting) {
         debug() << "Not introspecting yet because the connection is currently Connecting";
-        mPriv->changeReadiness(ReadinessConnecting);
+        mPriv->changeReadiness(Private::ReadinessConnecting);
         return;
     }
 
@@ -1351,13 +1373,13 @@ void Connection::continueIntrospection()
     if (mPriv->introspectQueue.isEmpty()) {
         if (mPriv->initialIntrospection) {
             mPriv->initialIntrospection = false;
-            if (mPriv->readiness < ReadinessNotYetConnected) {
-                mPriv->changeReadiness(ReadinessNotYetConnected);
+            if (mPriv->readiness < Private::ReadinessNotYetConnected) {
+                mPriv->changeReadiness(Private::ReadinessNotYetConnected);
             }
         }
         else {
-            if (mPriv->readiness != ReadinessDead) {
-                mPriv->changeReadiness(ReadinessFull);
+            if (mPriv->readiness != Private::ReadinessDead) {
+                mPriv->changeReadiness(Private::ReadinessFull);
                 // we should have all interfaces now, so if an interface is not
                 // present and we have a feature for it, add the feature to missing
                 // features.

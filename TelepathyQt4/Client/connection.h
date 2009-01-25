@@ -54,7 +54,6 @@ class Connection : public StatefulDBusProxy,
 {
     Q_OBJECT
     Q_DISABLE_COPY(Connection)
-    Q_ENUMS(Readiness);
 
 public:
     enum Feature {
@@ -64,15 +63,6 @@ public:
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
-
-    enum Readiness {
-        ReadinessJustCreated = 0,
-        ReadinessNotYetConnected = 5,
-        ReadinessConnecting = 10,
-        ReadinessFull = 15,
-        ReadinessDead = 20,
-        _ReadinessInvalid = 0xffff
-    };
 
     Connection(const QString &serviceName,
                const QString &objectPath,
@@ -84,8 +74,6 @@ public:
                QObject *parent = 0);
 
     ~Connection();
-
-    Readiness readiness() const;
 
     uint status() const;
     uint statusReason() const;
@@ -161,7 +149,7 @@ public:
     PendingOperation *becomeReady(Features features = 0);
 
 Q_SIGNALS:
-    void readinessChanged(uint newReadiness);
+    void statusChanged(uint newStatus, uint newStatusReason);
 
 public:
     ConnectionInterface *baseInterface() const;
