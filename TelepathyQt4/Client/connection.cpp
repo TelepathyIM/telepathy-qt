@@ -1073,16 +1073,6 @@ PendingChannel *Connection::requestChannel(const QString &channelType,
     return channel;
 }
 
-#if 0
-// FIXME: this is a 1:1 mapping of the method from TpPrototype, but
-// most likely what we really want as a high-level API is something
-// more analogous to tp_connection_call_when_ready() in telepathy-glib
-PendingOperation *Connection::requestConnect()
-{
-    return new PendingVoidMethodCall(this, baseInterface()->Connect());
-}
-#endif
-
 /**
  * Request handles of the given type for the given entities (contacts,
  * rooms, lists, etc.).
@@ -1271,6 +1261,20 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
 
     mPriv->updatePendingOperations();
     return operation;
+}
+
+/**
+ * Start an asynchronous request that the connection be connected.
+ * The returned PendingOperation object will signal the success or failure
+ * of this request; under normal circumstances, it can be expected to
+ * succeed.
+ *
+ * \return A %PendingOperation, which will emit finished when the
+ *         Disconnect D-Bus method returns.
+ */
+PendingOperation *Connection::requestConnect()
+{
+    return new PendingVoidMethodCall(this, baseInterface()->Connect());
 }
 
 /**

@@ -138,6 +138,8 @@ public:
     PendingChannel *requestChannel(const QString &channelType,
                                    uint handleType, uint handle);
 
+    PendingOperation *requestConnect();
+
     PendingOperation *requestDisconnect();
 
     PendingHandles *requestHandles(uint handleType, const QStringList &names);
