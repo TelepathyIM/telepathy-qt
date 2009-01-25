@@ -105,14 +105,13 @@ void TestChanBasics::initTestCase()
 
     // Get a connected Connection
     mConn = new Connection(mConnBusName, mConnObjectPath);
-    Q_ASSERT(mConn->baseInterface() != 0);
 
-    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            mConn->baseInterface()->Connect());
-    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    qDebug() << "calling Connect()";
+    QVERIFY(connect(mConn->requestConnect(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
 
     QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
           this, SLOT(expectConnReady(uint, uint))));

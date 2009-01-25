@@ -154,7 +154,8 @@ void TestHandles::init()
 
     mConn = new Connection(mConnName, mConnPath);
 
-    mConn->baseInterface()->Connect();
+    mConn->requestConnect();
+
     QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
                 this, SLOT(expectConnReady(uint, uint))));
     QCOMPARE(mLoop->exec(), 0);

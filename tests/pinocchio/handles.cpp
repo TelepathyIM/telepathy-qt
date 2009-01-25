@@ -114,13 +114,11 @@ void TestHandles::initTestCase()
     mConn2 = new Connection(privateBus, busName, objectPath);
 
     // Connecting one connects them all
-    Q_ASSERT(mConn1a->baseInterface() != 0);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            mConn1a->baseInterface()->Connect());
-    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QVERIFY(connect(mConn1a->requestConnect(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
 
     Connection *connections[3] = {mConn1a, mConn1b, mConn2};
     for (int i = 0; i < 3; ++i) {

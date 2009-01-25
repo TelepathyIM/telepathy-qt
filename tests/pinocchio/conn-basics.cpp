@@ -145,15 +145,12 @@ void TestConnBasics::testConnect()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
 
-    // FIXME: should have convenience API so we don't have to use
-    // baseInterface directly
     qDebug() << "calling Connect()";
-    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            mConn->baseInterface()->Connect());
-    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QVERIFY(connect(mConn->requestConnect(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
 
     // Wait for readiness to reach Full
 
@@ -224,15 +221,19 @@ void TestConnBasics::testAlreadyConnected()
 {
     mConn = new Connection(mConnBusName, mConnObjectPath);
 
-    // FIXME: should have convenience API so we don't have to use
-    // baseInterface directly
-    qDebug() << "calling Connect()";
-    QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(
-            mConn->baseInterface()->Connect());
-    QVERIFY(connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-            this, SLOT(expectSuccessfulCall(QDBusPendingCallWatcher*))));
+    QVERIFY(connect(mConn->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
+    QCOMPARE(mConn->isReady(), true);
+
+    qDebug() << "calling Connect()";
+    QVERIFY(connect(mConn->requestConnect(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
 
     // Wait for readiness to reach Full
 
