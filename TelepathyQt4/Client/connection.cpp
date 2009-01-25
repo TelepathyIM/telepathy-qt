@@ -450,25 +450,10 @@ QMutex Connection::Private::handleContextsLock;
  * they return values cached from a previous introspection run. The
  * introspection process populates their values in the most efficient way
  * possible based on what the service implements. Their return value is mostly
- * undefined until the introspection process is completed; a readiness change to
- * #ReadinessFull indicates that the introspection process is finished. See the
+ * undefined until the introspection process is completed; a status change to
+ * ConnectionStatusConnected indicates that the introspection process is finished. See the
  * individual accessor descriptions for details on which functions can be used
  * in the different states.
- */
-
-/**
- * \enum Connection::InterfaceSupportedChecking
- *
- * Specifies if the interface being supported by the remote object should be
- * checked by optionalInterface() and the convenience functions for it.
- *
- * \value CheckInterfaceSupported Don't return an interface instance unless it
- *                                can be guaranteed that the remote object
- *                                actually implements the interface.
- * \value BypassInterfaceCheck Return an interface instance even if it can't
- *                             be verified that the remote object supports the
- *                             interface.
- * \sa optionalInterface()
  */
 
 /**
@@ -521,9 +506,8 @@ Connection::~Connection()
 /**
  * Return the connection's status.
  *
- * The returned value may have changed whenever readinessChanged() is
- * emitted. The value is valid in all states except for
- * #ReadinessJustCreated.
+ * The returned value may have changed whenever statusChaned() is
+ * emitted.
  *
  * \return The status, as defined in #ConnectionStatus.
  */
@@ -553,11 +537,11 @@ uint Connection::statusReason() const
 
 /**
  * Return a list of optional interfaces supported by this object. The
- * contents of the list is undefined unless the Connection has readiness
- * #ReadinessNotYetConnected or #ReadinessFull. The returned value stays
+ * contents of the list is undefined unless the Connection has status
+ * ConnectionStatusConnecting or ConnectionStatusConnected. The returned value stays
  * constant for the entire time the connection spends in each of these
  * states; however interfaces might have been added to the supported set by
- * the time #ReadinessFull is reached.
+ * the time ConnectionStatusConnected is reached.
  *
  * \return Names of the supported interfaces.
  */
@@ -582,8 +566,8 @@ QStringList Connection::interfaces() const
  * Return the bitwise OR of flags detailing the behavior of the Aliasing
  * interface on the remote object.
  *
- * The returned value is undefined unless the Connection has readiness
- * #ReadinessFull and the list returned by interfaces() contains
+ * The returned value is undefined unless the Connection has status
+ * ConnectionStatusConnected and the list returned by interfaces() contains
  * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING.
  *
  * \return Bitfield of flags, as specified in #ConnectionAliasFlag.
@@ -610,8 +594,8 @@ uint Connection::aliasFlags() const
  * Return a dictionary of presence statuses valid for use with the legacy
  * Telepathy Presence interface on the remote object.
  *
- * The returned value is undefined unless the Connection has readiness
- * #ReadinessFull and the list returned by interfaces() contains
+ * The returned value is undefined unless the Connection has status
+ * ConnectionStatusConnected and the list returned by interfaces() contains
  * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE.
  *
  * \return Dictionary from string identifiers to structs for each valid status.
@@ -641,10 +625,9 @@ StatusSpecMap Connection::presenceStatuses() const
  * The value is undefined if the list returned by interfaces() doesn't
  * contain %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE.
  *
- * The value will stay fixed for the whole time the connection stays with
- * readiness #ReadinessNotYetConnected, but may have changed arbitrarily
- * during the time the Connection spends in readiness #ReadinessConnecting,
- * again staying fixed for the entire time in #ReadinessFull.
+ * The value may have changed arbitrarily during the time the
+ * Connection spends in status ConnectionStatusConnecting,
+ * again staying fixed for the entire time in ConnectionStatusConnected.
  *
  * \return Dictionary from string identifiers to structs for each valid
  * status.
