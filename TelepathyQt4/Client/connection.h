@@ -85,6 +85,7 @@ public:
     StatusSpecMap presenceStatuses() const;
 
     SimpleStatusSpecMap simplePresenceStatuses() const;
+    PendingOperation *setSimplePresenceStatus(const QString &status, const QString &statusMessage);
 
     template <class Interface>
     inline Interface *optionalInterface(

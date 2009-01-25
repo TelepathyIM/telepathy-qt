@@ -668,6 +668,25 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 }
 
 /**
+ * Set the self presence status.
+ *
+ * \param status The desired status.
+ * \param statusMessage The desired status message.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *Connection::setSimplePresenceStatus(const QString &status,
+        const QString &statusMessage)
+{
+    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Connection does not support SimplePresence");
+    }
+    return new PendingVoidMethodCall(this,
+            simplePresenceInterface()->SetPresence(status, statusMessage));
+}
+
+/**
  * \fn Connection::optionalInterface(InterfaceSupportedChecking check) const
  *
  * Get a pointer to a valid instance of a given %Connection optional
