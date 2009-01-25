@@ -135,6 +135,21 @@ void TestChanBasics::initTestCase()
             this,
             SLOT(expectRequestChannelFinished(Telepathy::Client::PendingOperation*)));
     QCOMPARE(mLoop->exec(), 0);
+
+    if (mConn->requestsInterface()) {
+        QVariantMap map;
+        map.insert(QLatin1String(TELEPATHY_INTERFACE_ACCOUNT ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
+        map.insert(QLatin1String(TELEPATHY_INTERFACE_ACCOUNT ".TargetHandleType"),
+                   Telepathy::HandleTypeList);
+        map.insert(QLatin1String(TELEPATHY_INTERFACE_ACCOUNT ".TargetHandle"),
+                   mSubscribeHandle);
+        connect(mConn->ensureChannel(map),
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                this,
+                SLOT(expectRequestChannelFinished(Telepathy::Client::PendingOperation*)));
+        QCOMPARE(mLoop->exec(), 0);
+    }
 }
 
 
