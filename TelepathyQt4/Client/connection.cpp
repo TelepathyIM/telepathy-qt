@@ -955,7 +955,7 @@ void Connection::gotSelfPresence(QDBusPendingCallWatcher *watcher)
 
     if (!reply.isError()) {
         mPriv->changeSelfPresence(reply.value()[mPriv->selfHandle]);
-        debug() << "Got self presence";
+        debug() << "Got self presence:" << mPriv->selfPresence.type;
     }
     else {
         warning().nospace() << "Getting self presence status failed with" <<
@@ -973,7 +973,7 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
 
     if (!reply.isError()) {
         mPriv->selfHandle = reply.value();
-        debug() << "Got self handle";
+        debug() << "Got self handle" << mPriv->selfHandle;
     }
     else {
         warning().nospace() << "Getting self handle failed with" <<
