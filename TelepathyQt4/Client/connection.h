@@ -57,8 +57,7 @@ class Connection : public StatefulDBusProxy,
 
 public:
     enum Feature {
-        FeaturePresence = 1,
-        FeatureSimplePresence = 2,
+        FeatureSimplePresence = 1,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -78,8 +77,6 @@ public:
     uint statusReason() const;
 
     QStringList interfaces() const;
-
-    StatusSpecMap presenceStatuses() const;
 
     SimpleStatusSpecMap simplePresenceStatuses() const;
     PendingOperation *setSimplePresenceStatus(const QString &status, const QString &statusMessage);
@@ -168,7 +165,6 @@ private Q_SLOTS:
     void onStatusChanged(uint, uint);
     void gotStatus(QDBusPendingCallWatcher *watcher);
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
-    void gotStatuses(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
 
     void doReleaseSweep(uint type);

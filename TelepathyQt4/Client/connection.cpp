@@ -111,7 +111,6 @@ struct Connection::Private
 
     void startIntrospection();
     void introspectMain();
-    void introspectPresence();
     void introspectSimplePresence();
 
     void changeReadiness(Readiness newReadiness);
@@ -128,7 +127,6 @@ struct Connection::Private
     ConnectionInterface *baseInterface;
 
     // Optional interface proxies
-    ConnectionInterfacePresenceInterface *presence;
     DBus::PropertiesInterface *properties;
 
     bool ready;
@@ -152,7 +150,6 @@ struct Connection::Private
     uint status;
     uint statusReason;
     bool haveInitialStatus;
-    StatusSpecMap presenceStatuses;
     SimpleStatusSpecMap simplePresenceStatuses;
 
     // (Bus connection name, service name) -> HandleContext
@@ -209,7 +206,6 @@ Connection::Private::Private(Connection *parent)
     : parent(parent),
       baseInterface(new ConnectionInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
-      presence(0),
       properties(0),
       initialIntrospection(false),
       readiness(ReadinessJustCreated),
@@ -305,27 +301,6 @@ void Connection::Private::introspectMain()
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher *)),
                     SLOT(gotInterfaces(QDBusPendingCallWatcher *)));
-}
-
-void Connection::Private::introspectPresence()
-{
-    // The Presence interface is not usable before the connection is established
-    if (initialIntrospection) {
-        parent->continueIntrospection();
-        return;
-    }
-
-    if (!presence) {
-        presence = parent->presenceInterface();
-        Q_ASSERT(presence != 0);
-    }
-
-    debug() << "Calling GetStatuses() (legacy)";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(presence->GetStatuses(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotStatuses(QDBusPendingCallWatcher *)));
 }
 
 void Connection::Private::introspectSimplePresence()
@@ -530,34 +505,6 @@ QStringList Connection::interfaces() const
     }
 
     return mPriv->interfaces;
-}
-
-/**
- * Return a dictionary of presence statuses valid for use with the legacy
- * Telepathy Presence interface on the remote object.
- *
- * The returned value is undefined unless the Connection has status
- * ConnectionStatusConnected and the list returned by interfaces() contains
- * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE.
- *
- * \return Dictionary from string identifiers to structs for each valid status.
- */
-StatusSpecMap Connection::presenceStatuses() const
-{
-    if (mPriv->missingFeatures & FeaturePresence) {
-        warning() << "Trying to retrieve presence from connection, but "
-                     "presence is not supported";
-    }
-    else if (!(mPriv->features & FeaturePresence)) {
-        warning() << "Trying to retrieve presence from connection without "
-                     "calling Connection::becomeReady(FeaturePresence)";
-    }
-    else if (mPriv->pendingFeatures & FeaturePresence) {
-        warning() << "Trying to retrieve presence from connection, but "
-                     "presence is still being retrieved";
-    }
-
-    return mPriv->presenceStatuses;
 }
 
 /**
@@ -856,10 +803,6 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         // queue introspection of all optional features and add the feature to
         // pendingFeatures so we don't queue up the introspect func for the feature
         // again on becomeReady.
-        if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)) {
-            mPriv->introspectQueue.enqueue(&Private::introspectPresence);
-            mPriv->pendingFeatures |= FeaturePresence;
-        }
         if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
             mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
             mPriv->pendingFeatures |= FeatureSimplePresence;
@@ -869,33 +812,6 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "GetInterfaces() failed with" <<
             reply.error().name() << ":" << reply.error().message() <<
             "- assuming no new interfaces";
-    }
-
-    continueIntrospection();
-
-    watcher->deleteLater();
-}
-
-void Connection::gotStatuses(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<StatusSpecMap> reply = *watcher;
-
-    mPriv->pendingFeatures &= ~FeaturePresence;
-
-    if (!reply.isError()) {
-        mPriv->features |= FeaturePresence;
-        debug() << "Adding FeaturePresence to features";
-
-        mPriv->presenceStatuses = reply.value();
-        debug() << "Got" << mPriv->presenceStatuses.size() << "legacy presence statuses";
-    }
-    else {
-        mPriv->missingFeatures |= FeaturePresence;
-        debug() << "Adding FeaturePresence to missing features";
-
-
-        warning().nospace() << "GetStatuses() failed with" <<
-            reply.error().name() << ":" << reply.error().message();
     }
 
     continueIntrospection();
@@ -1252,7 +1168,7 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
         }
     }
 
-    Feature optionalFeatures[3] = { FeaturePresence, FeatureSimplePresence };
+    Feature optionalFeatures[1] = { FeatureSimplePresence };
     Feature optionalFeature;
     for (uint i = 0; i < sizeof(optionalFeatures) / sizeof(Feature); ++i) {
         optionalFeature = optionalFeatures[i];
@@ -1405,10 +1321,6 @@ void Connection::continueIntrospection()
                 // we should have all interfaces now, so if an interface is not
                 // present and we have a feature for it, add the feature to missing
                 // features.
-                if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)) {
-                    debug() << "adding FeaturePresence to missing features";
-                    mPriv->missingFeatures |= FeaturePresence;
-                }
                 if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
                     debug() << "adding FeatureSimplePresence to missing features";
                     mPriv->missingFeatures |= FeatureSimplePresence;
