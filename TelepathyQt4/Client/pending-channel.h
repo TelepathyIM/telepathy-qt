@@ -48,6 +48,8 @@ public:
 
     Connection *connection() const;
 
+    bool yours() const;
+
     const QString &channelType() const;
 
     uint handleType() const;

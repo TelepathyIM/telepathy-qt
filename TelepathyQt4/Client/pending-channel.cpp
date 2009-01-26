@@ -46,6 +46,7 @@ namespace Client
 
 struct PendingChannel::Private
 {
+    bool yours;
     QString channelType;
     uint handleType;
     uint handle;
@@ -74,6 +75,7 @@ PendingChannel::PendingChannel(Connection *connection, const QString &errorName,
     : PendingOperation(connection),
       mPriv(new Private)
 {
+    mPriv->yours = false;
     mPriv->handleType = 0;
     mPriv->handle = 0;
 
@@ -92,6 +94,7 @@ PendingChannel::PendingChannel(Connection *connection,
     : PendingOperation(connection),
       mPriv(new Private)
 {
+    mPriv->yours = create;
     mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
     mPriv->handleType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
     mPriv->handle = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
@@ -128,6 +131,22 @@ PendingChannel::~PendingChannel()
 Connection *PendingChannel::connection() const
 {
     return qobject_cast<Connection *>(parent());
+}
+
+/**
+ * Return whether this channel belongs to this process.
+ *
+ * If false, the caller MUST assume that some other process is
+ * handling this channel; if true, the caller SHOULD handle it
+ * themselves or delegate it to another client.
+ *
+ * Note that the value may change when the operation finishes.
+ *
+ * \return Boolean indicating whether this channel belongs to this process.
+ */
+bool PendingChannel::yours() const
+{
+    return mPriv->yours;
 }
 
 /**
@@ -216,6 +235,8 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watche
     QDBusPendingReply<bool, QDBusObjectPath, QVariantMap> reply = *watcher;
 
     if (!reply.isError()) {
+        mPriv->yours = reply.argumentAt<0>();
+
         mPriv->objectPath = reply.argumentAt<1>();
         debug() << "Got reply to Connection.EnsureChannel - object path:" <<
             mPriv->objectPath.path();
