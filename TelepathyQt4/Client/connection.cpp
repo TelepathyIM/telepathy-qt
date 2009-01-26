@@ -389,6 +389,9 @@ void Connection::Private::changeReadiness(Readiness newReadiness)
             Q_ASSERT(newReadiness == ReadinessDead);
             break;
         case ReadinessDead:
+            // clear up introspection queue, no need for that as the connection
+            // is dead
+            introspectQueue.clear();
         default:
             Q_ASSERT(false);
     }
