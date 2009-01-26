@@ -521,7 +521,7 @@ QStringList Connection::interfaces() const
  * \return Dictionary from string identifiers to structs for each valid
  * status.
  */
-SimpleStatusSpecMap Connection::simplePresenceStatuses() const
+SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
 {
     if (mPriv->missingFeatures & FeatureSelfPresence) {
         warning() << "Trying to retrieve simple presence from connection, but "
@@ -547,7 +547,7 @@ SimpleStatusSpecMap Connection::simplePresenceStatuses() const
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
-PendingOperation *Connection::setSimplePresenceStatus(const QString &status,
+PendingOperation *Connection::setSelfPresence(const QString &status,
         const QString &statusMessage)
 {
     if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {

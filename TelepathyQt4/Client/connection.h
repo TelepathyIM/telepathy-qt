@@ -78,8 +78,8 @@ public:
 
     QStringList interfaces() const;
 
-    SimpleStatusSpecMap simplePresenceStatuses() const;
-    PendingOperation *setSimplePresenceStatus(const QString &status, const QString &statusMessage);
+    SimpleStatusSpecMap allowedPresenceStatuses() const;
+    PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 
     template <class Interface>
     inline Interface *optionalInterface(
