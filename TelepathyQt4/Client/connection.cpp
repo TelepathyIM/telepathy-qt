@@ -799,12 +799,12 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to GetInterfaces():" << mPriv->interfaces;
         mPriv->interfaces = reply.value();
 
-        // queue introspection of all optional features and add the feature to
-        // pendingFeatures so we don't queue up the introspect func for the feature
-        // again on becomeReady.
-        if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+        // if FeatureSelfPresence was requested and the interface exists and
+        // the introspect func is not already enqueued, enqueue it.
+        if (mPriv->pendingFeatures & FeatureSelfPresence &&
+            mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE) &&
+            !mPriv->introspectQueue.contains(&Private::introspectSimplePresence)) {
             mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
-            mPriv->pendingFeatures |= FeatureSelfPresence;
         }
     }
     else {
@@ -1167,21 +1167,30 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
         }
     }
 
-    Feature optionalFeatures[1] = { FeatureSelfPresence };
-    Feature optionalFeature;
-    for (uint i = 0; i < sizeof(optionalFeatures) / sizeof(Feature); ++i) {
-        optionalFeature = optionalFeatures[i];
+    if (requestedFeatures & FeatureSelfPresence) {
+        // as the feature is optional, if it's know to not be supported,
+        // just finish silently
+        if (requestedFeatures == FeatureSelfPresence &&
+            mPriv->missingFeatures & FeatureSelfPresence) {
+            return new PendingSuccess(this);
+        }
 
-        if (requestedFeatures & optionalFeature) {
-            // as the feature is optional, if it's know to not be supported,
-            // just finish silently
-            if (requestedFeatures == (int) optionalFeature &&
-                mPriv->missingFeatures & optionalFeature) {
-                return new PendingSuccess(this);
+        // if we already have the interface simple presence enqueue the call to
+        // introspect simple presence, otherwise it will be enqueued when/if the
+        // interface is available
+        if (!(mPriv->features & FeatureSelfPresence) &&
+            !(mPriv->pendingFeatures & FeatureSelfPresence) &&
+            !(mPriv->missingFeatures & FeatureSelfPresence) &&
+            mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+            mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
+            QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+        }
+        else {
+            if (mPriv->readiness == Private::ReadinessFull) {
+                // we should have all interfaces now, so if simple presence is not
+                // present, add it to missing features.
+                mPriv->missingFeatures |= FeatureSelfPresence;
             }
-
-            // don't enqueue introspect funcs here, as they will be enqueued
-            // when possible, depending on readiness
         }
     }
 
