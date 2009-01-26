@@ -80,6 +80,7 @@ public:
 
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
+    Telepathy::SimplePresence selfPresence() const;
 
     template <class Interface>
     inline Interface *optionalInterface(
@@ -157,6 +158,7 @@ public:
 
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
+    void selfPresenceChanged(const Telepathy::SimplePresence &newPresence);
 
 protected:
     ConnectionInterface *baseInterface() const;
@@ -166,10 +168,16 @@ private Q_SLOTS:
     void gotStatus(QDBusPendingCallWatcher *watcher);
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
+    void gotSelfPresence(QDBusPendingCallWatcher *watcher);
+    void gotSelfHandle(QDBusPendingCallWatcher *watcher);
 
     void doReleaseSweep(uint type);
 
     void continueIntrospection();
+
+    void onPresenceChanged(const Telepathy::SimpleContactPresences &);
+
+    void onSelfHandleChanged(uint);
 
 private:
     void refHandle(uint type, uint handle);
