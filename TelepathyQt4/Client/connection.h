@@ -78,6 +78,8 @@ public:
 
     QStringList interfaces() const;
 
+    uint selfHandle() const;
+
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
     Telepathy::SimplePresence selfPresence() const;
@@ -158,6 +160,7 @@ public:
 
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
+    void selfHandleChanged(uint newHandle);
     void selfPresenceChanged(const Telepathy::SimplePresence &newPresence);
 
 protected:

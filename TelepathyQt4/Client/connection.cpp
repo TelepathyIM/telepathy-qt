@@ -566,6 +566,19 @@ QStringList Connection::interfaces() const
 }
 
 /**
+ * Return the handle which represents the user on this connection, which will remain
+ * valid for the lifetime of this connection, or until a change in the user's
+ * identifier is signalled by the selfHandleChanged signal. If the connection is
+ * not yet in the ConnectionStatusConnected state, the value of this property MAY be zero.
+ *
+ * \return Self handle.
+ */
+uint Connection::selfHandle() const
+{
+    return mPriv->selfHandle;
+}
+
+/**
  * Return a dictionary of presence statuses valid for use with the new(er)
  * Telepathy SimplePresence interface on the remote object.
  *
@@ -1511,6 +1524,7 @@ void Connection::onPresenceChanged(const Telepathy::SimpleContactPresences &pres
 void Connection::onSelfHandleChanged(uint handle)
 {
     mPriv->selfHandle = handle;
+    emit selfHandleChanged(handle);
 }
 
 }
