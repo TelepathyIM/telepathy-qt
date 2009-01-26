@@ -147,9 +147,6 @@ public:
         return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
-    PendingChannel *requestChannel(const QString &channelType,
-                                   uint handleType, uint handle);
-
     PendingChannel *createChannel(const QVariantMap &request);
 
     PendingChannel *ensureChannel(const QVariantMap &request);

@@ -84,31 +84,6 @@ PendingChannel::PendingChannel(Connection *connection, const QString &errorName,
  * Construct a new PendingChannel object.
  *
  * \param connection Connection to use.
- * \param channelType The channel type.
- * \param handleType The handle type.
- * \param handle The handle.
- */
-PendingChannel::PendingChannel(Connection *connection,
-        const QString &channelType, uint handleType, uint handle)
-    : PendingOperation(connection),
-      mPriv(new Private)
-{
-    mPriv->channelType = channelType;
-    mPriv->handleType = handleType;
-    mPriv->handle = handle;
-
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(connection->baseInterface()->RequestChannel(
-                    channelType, handleType, handle, true), this);
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onCallRequestChannelFinished(QDBusPendingCallWatcher *)));
-}
-
-/**
- * Construct a new PendingChannel object.
- *
- * \param connection Connection to use.
  * \param request A dictionary containing the desirable properties.
  * \param create Whether createChannel or ensureChannel should be called.
  */
@@ -210,24 +185,6 @@ Channel *PendingChannel::channel(QObject *parent) const
                     mPriv->objectPath.path(),
                     parent);
     return channel;
-}
-
-void PendingChannel::onCallRequestChannelFinished(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
-
-    if (!reply.isError()) {
-        debug() << "Got reply to Connection.RequestChannel - object path:" <<
-            reply.value().path();
-        mPriv->objectPath = reply.value();
-        setFinished();
-    } else {
-        debug().nospace() << "RequestChannel failed:" <<
-            reply.error().name() << ": " << reply.error().message();
-        setFinishedWithError(reply.error());
-    }
-
-    watcher->deleteLater();
 }
 
 void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher)

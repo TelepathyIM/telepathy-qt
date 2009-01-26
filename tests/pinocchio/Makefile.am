@@ -7,14 +7,12 @@ EXTRA_DIST = \
     lib.h
 
 TESTS = \
-    test-chan-basics \
     test-cm-basics \
     test-conn-basics \
     test-do-nothing \
     test-handles
 
 BUILT_SOURCES = \
-    _gen/chan-basics.cpp.moc.hpp \
     _gen/cm-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
     _gen/do-nothing.cpp.moc.hpp \
@@ -26,8 +24,6 @@ _gen/%.moc.hpp: %
 	$(MOC) $(MOC_INCLUDES) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
-
-test_chan_basics_SOURCES = chan-basics.cpp lib.cpp
 
 test_cm_basics_SOURCES = cm-basics.cpp lib.cpp
 

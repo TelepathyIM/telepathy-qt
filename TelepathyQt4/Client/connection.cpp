@@ -1000,51 +1000,6 @@ ConnectionInterface *Connection::baseInterface() const
 }
 
 /**
- * Asynchronously requests a channel satisfying the given channel type and
- * communicating with the contact, room, list etc. given by the handle type
- * and handle.
- *
- * Upon completion, the reply to the request can be retrieved through the
- * returned PendingChannel object. The object also provides access to the
- * parameters with which the call was made and a signal to connect to to get
- * notification of the request finishing processing. See the documentation
- * for that class for more info.
- *
- * The returned PendingChannel object should be freed using
- * its QObject::deleteLater() method after it is no longer used. However,
- * all PendingChannel objects resulting from requests to a particular
- * Connection will be freed when the Connection itself is freed. Conversely,
- * this means that the PendingChannel object should not be used after the
- * Connection is destroyed.
- *
- * \sa PendingChannel
- *
- * \param channelType D-Bus interface name of the channel type to request,
- *                    such as TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT.
- * \param handleType Type of the handle given, as specified in #HandleType.
- * \param handle Handle specifying the remote entity to communicate with.
- * \return Pointer to a newly constructed PendingChannel object, tracking
- *         the progress of the request.
- */
-PendingChannel *Connection::requestChannel(const QString &channelType,
-        uint handleType, uint handle)
-{
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Calling requestChannel with connection not yet connected";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Connection not yet connected");
-    }
-
-    debug() << "Requesting a Channel with type" << channelType
-            << "and handle" << handle << "of type" << handleType;
-
-    PendingChannel *channel =
-        new PendingChannel(this, channelType, handleType, handle);
-
-    return channel;
-}
-
-/**
  * Asynchronously creates a channel satisfying the given request.
  *
  * The request MUST contain the following keys:

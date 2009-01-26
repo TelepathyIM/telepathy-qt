@@ -57,7 +57,6 @@ public:
     Channel *channel(QObject *parent = 0) const;
 
 private Q_SLOTS:
-    void onCallRequestChannelFinished(QDBusPendingCallWatcher *watcher);
     void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);
     void onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher);
 
@@ -66,8 +65,6 @@ private:
 
     PendingChannel(Connection *connection,
             const QString &errorName, const QString &errorMessage);
-    PendingChannel(Connection *connection,
-            const QString &type, uint handleType, uint handle);
     PendingChannel(Connection *connection,
             const QVariantMap &request, bool create);
 
