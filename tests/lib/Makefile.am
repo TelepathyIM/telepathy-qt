@@ -29,6 +29,9 @@ AM_CXXFLAGS += $(TP_GLIB_CFLAGS)
 noinst_LTLIBRARIES += libtp-glib-tests.la
 
 libtp_glib_tests_la_SOURCES = \
+    contacts-conn.c \
+    contacts-conn.h \
+    debug.h \
     simple-conn.c \
     simple-conn.h \
     simple-manager.c \
