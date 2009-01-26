@@ -110,7 +110,6 @@ struct Connection::Private
     ~Private();
 
     void startIntrospection();
-    void introspectAliasing();
     void introspectMain();
     void introspectPresence();
     void introspectSimplePresence();
@@ -129,7 +128,6 @@ struct Connection::Private
     ConnectionInterface *baseInterface;
 
     // Optional interface proxies
-    ConnectionInterfaceAliasingInterface *aliasing;
     ConnectionInterfacePresenceInterface *presence;
     DBus::PropertiesInterface *properties;
 
@@ -154,7 +152,6 @@ struct Connection::Private
     uint status;
     uint statusReason;
     bool haveInitialStatus;
-    uint aliasFlags;
     StatusSpecMap presenceStatuses;
     SimpleStatusSpecMap simplePresenceStatuses;
 
@@ -212,7 +209,6 @@ Connection::Private::Private(Connection *parent)
     : parent(parent),
       baseInterface(new ConnectionInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
-      aliasing(0),
       presence(0),
       properties(0),
       initialIntrospection(false),
@@ -222,7 +218,6 @@ Connection::Private::Private(Connection *parent)
       status(ConnectionStatusDisconnected),
       statusReason(ConnectionStatusReasonNoneSpecified),
       haveInitialStatus(false),
-      aliasFlags(0),
       handleContext(0)
 {
 }
@@ -297,27 +292,6 @@ void Connection::Private::startIntrospection()
 
     // All handle contexts locked, so safe
     ++handleContext->refcount;
-}
-
-void Connection::Private::introspectAliasing()
-{
-    // The Aliasing interface is not usable before the connection is established
-    if (initialIntrospection) {
-        parent->continueIntrospection();
-        return;
-    }
-
-    if (!aliasing) {
-        aliasing = parent->aliasingInterface();
-        Q_ASSERT(aliasing != 0);
-    }
-
-    debug() << "Calling GetAliasFlags()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(aliasing->GetAliasFlags(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotAliasFlags(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectMain()
@@ -400,9 +374,6 @@ void Connection::Private::changeReadiness(Readiness newReadiness)
     debug() << "Readiness changed from" << readiness << "to" << newReadiness;
     readiness = newReadiness;
 
-    // emit statusChanged only here as we are now in the correct readiness
-    // e.g: status was already Connected but readiness != ReadinessFull so the user was
-    // not able to call Connection::aliasFlags() for example.
     if (status != pendingStatus ||
         statusReason != pendingStatusReason) {
         status = pendingStatus;
@@ -440,13 +411,12 @@ QMutex Connection::Private::handleContextsLock;
  * <ul>
  *  <li>%Connection status tracking</li>
  *  <li>Getting the list of supported interfaces automatically</li>
- *  <li>Getting the alias flags automatically</li>
  *  <li>Getting the valid presence statuses automatically</li>
  *  <li>Shared optional interface proxy instances</li>
  * </ul>
  *
  * The remote object state accessor functions on this object (status(),
- * statusReason(), aliasFlags(), and so on) don't make any DBus calls; instead,
+ * statusReason(), and so on) don't make any DBus calls; instead,
  * they return values cached from a previous introspection run. The
  * introspection process populates their values in the most efficient way
  * possible based on what the service implements. Their return value is mostly
@@ -560,34 +530,6 @@ QStringList Connection::interfaces() const
     }
 
     return mPriv->interfaces;
-}
-
-/**
- * Return the bitwise OR of flags detailing the behavior of the Aliasing
- * interface on the remote object.
- *
- * The returned value is undefined unless the Connection has status
- * ConnectionStatusConnected and the list returned by interfaces() contains
- * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING.
- *
- * \return Bitfield of flags, as specified in #ConnectionAliasFlag.
- */
-uint Connection::aliasFlags() const
-{
-    if (mPriv->missingFeatures & FeatureAliasing) {
-        warning() << "Trying to retrieve aliasFlags from connection, but "
-                     "aliasing is not supported";
-    }
-    else if (!(mPriv->features & FeatureAliasing)) {
-        warning() << "Trying to retrieve aliasFlags from connection without "
-                     "calling Connection::becomeReady(FeatureAliasing)";
-    }
-    else if (mPriv->pendingFeatures & FeatureAliasing) {
-        warning() << "Trying to retrieve aliasFlags from connection, but "
-                     "aliasing is still being retrieved";
-    }
-
-    return mPriv->aliasFlags;
 }
 
 /**
@@ -914,10 +856,6 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         // queue introspection of all optional features and add the feature to
         // pendingFeatures so we don't queue up the introspect func for the feature
         // again on becomeReady.
-        if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)) {
-            mPriv->introspectQueue.enqueue(&Private::introspectAliasing);
-            mPriv->pendingFeatures |= FeatureAliasing;
-        }
         if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)) {
             mPriv->introspectQueue.enqueue(&Private::introspectPresence);
             mPriv->pendingFeatures |= FeaturePresence;
@@ -931,32 +869,6 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "GetInterfaces() failed with" <<
             reply.error().name() << ":" << reply.error().message() <<
             "- assuming no new interfaces";
-    }
-
-    continueIntrospection();
-
-    watcher->deleteLater();
-}
-
-void Connection::gotAliasFlags(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<uint> reply = *watcher;
-
-    mPriv->pendingFeatures &= ~FeatureAliasing;
-
-    if (!reply.isError()) {
-        mPriv->features |= FeatureAliasing;
-        debug() << "Adding FeatureAliasing to features";
-
-        mPriv->aliasFlags = static_cast<ConnectionAliasFlag>(reply.value());
-        debug().nospace() << "Got alias flags 0x" << hex << mPriv->aliasFlags;
-    }
-    else {
-        mPriv->missingFeatures |= FeatureAliasing;
-        debug() << "Adding FeatureAliasing to missing features";
-
-        warning().nospace() << "GetAliasFlags() failed with" <<
-            reply.error().name() << ":" << reply.error().message();
     }
 
     continueIntrospection();
@@ -1340,7 +1252,7 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
         }
     }
 
-    Feature optionalFeatures[3] = { FeatureAliasing, FeaturePresence, FeatureSimplePresence };
+    Feature optionalFeatures[3] = { FeaturePresence, FeatureSimplePresence };
     Feature optionalFeature;
     for (uint i = 0; i < sizeof(optionalFeatures) / sizeof(Feature); ++i) {
         optionalFeature = optionalFeatures[i];
@@ -1354,8 +1266,7 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
             }
 
             // don't enqueue introspect funcs here, as they will be enqueued
-            // when possible, depending on readiness, e.g. introspectMain needs
-            // to be called before introspectAliasing, ...
+            // when possible, depending on readiness
         }
     }
 
@@ -1494,10 +1405,6 @@ void Connection::continueIntrospection()
                 // we should have all interfaces now, so if an interface is not
                 // present and we have a feature for it, add the feature to missing
                 // features.
-                if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)) {
-                    debug() << "adding FeatureAliasing to missing features";
-                    mPriv->missingFeatures |= FeatureAliasing;
-                }
                 if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_PRESENCE)) {
                     debug() << "adding FeaturePresence to missing features";
                     mPriv->missingFeatures |= FeaturePresence;

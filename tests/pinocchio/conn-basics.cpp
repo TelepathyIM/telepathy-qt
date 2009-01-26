@@ -161,12 +161,6 @@ void TestConnBasics::testConnect()
     QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
           this, SLOT(expectReady(uint, uint))));
 
-    QVERIFY(connect(mConn->becomeReady(Connection::FeatureAliasing),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
     QVERIFY(connect(mConn->becomeReady(Connection::FeaturePresence),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             this,
@@ -179,12 +173,11 @@ void TestConnBasics::testConnect()
             SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(connect(mConn->becomeReady(Connection::FeatureAliasing | Connection::FeaturePresence | Connection::FeatureSimplePresence),
+    QVERIFY(connect(mConn->becomeReady(Connection::FeaturePresence | Connection::FeatureSimplePresence),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             this,
             SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(Connection::FeatureAliasing), true);
     QCOMPARE(mConn->isReady(Connection::FeaturePresence), true);
     QCOMPARE(mConn->isReady(Connection::FeatureSimplePresence), false);
 
