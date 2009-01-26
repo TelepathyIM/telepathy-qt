@@ -95,7 +95,6 @@ struct Connection::Private
      * \value ReadinessDead The remote object has gone into a state where it can no longer be
      *                      used. No functionality is available.
      *                      No further readiness changes are possible.
-     * \value _ReadinessInvalid The remote object has gone into a invalid state.
      */
     enum Readiness {
         ReadinessJustCreated = 0,
