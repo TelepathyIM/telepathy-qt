@@ -101,7 +101,7 @@ void TestConnBasics::testInitialIntrospection()
     mConn = new Connection(mConnBusName, mConnObjectPath);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
-        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+        static_cast<uint>(Connection::StatusUnknown));
 
     delete mConn;
     mConn = NULL;
@@ -111,14 +111,14 @@ void TestConnBasics::testInitialIntrospection()
 void TestConnBasics::expectReady(uint newStatus, uint newStatusReason)
 {
     switch (newStatus) {
-    case Telepathy::ConnectionStatusDisconnected:
+    case Connection::StatusDisconnected:
         qWarning() << "Disconnected";
         mLoop->exit(1);
         break;
-    case Telepathy::ConnectionStatusConnecting:
+    case Connection::StatusConnecting:
         /* do nothing */
         break;
-    case Telepathy::ConnectionStatusConnected:
+    case Connection::StatusConnected:
         qDebug() << "Ready";
         mLoop->exit(0);
         break;
@@ -136,7 +136,7 @@ void TestConnBasics::testConnect()
     mConn = new Connection(mConnBusName, mConnObjectPath);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
-        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+        static_cast<uint>(Connection::StatusUnknown));
 
     QVERIFY(connect(mConn->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -175,7 +175,7 @@ void TestConnBasics::testConnect()
     QCOMPARE(mConn->isReady(Connection::FeatureSelfPresence), false);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
-        static_cast<uint>(Telepathy::ConnectionStatusConnected));
+        static_cast<uint>(Connection::StatusConnected));
     QCOMPARE(static_cast<uint>(mConn->statusReason()),
         static_cast<uint>(Telepathy::ConnectionStatusReasonRequested));
 
@@ -194,7 +194,7 @@ void TestConnBasics::testConnect()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
-        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+        static_cast<uint>(Connection::StatusDisconnected));
     QCOMPARE(static_cast<uint>(mConn->statusReason()),
         static_cast<uint>(Telepathy::ConnectionStatusReasonRequested));
 
@@ -258,7 +258,7 @@ void TestConnBasics::testInterfaceFactory()
         mConnBusName, mConnObjectPath);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
-        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+        static_cast<uint>(Connection::StatusUnknown));
 
     PropertiesInterface* props = mConn->propertiesInterface();
     QVERIFY(props != NULL);
@@ -289,7 +289,7 @@ void TestConnBasics::testSpecifiedBus()
         mConnBusName, mConnObjectPath);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
-        static_cast<uint>(Telepathy::ConnectionStatusDisconnected));
+        static_cast<uint>(Connection::StatusUnknown));
 
     delete mConn;
     mConn = NULL;

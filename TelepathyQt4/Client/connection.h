@@ -54,6 +54,7 @@ class Connection : public StatefulDBusProxy,
 {
     Q_OBJECT
     Q_DISABLE_COPY(Connection)
+    Q_ENUMS(Status)
 
 public:
     enum Feature {
@@ -61,6 +62,13 @@ public:
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
+
+    enum Status {
+        StatusDisconnected = Telepathy::ConnectionStatusDisconnected,
+        StatusConnecting = Telepathy::ConnectionStatusConnecting,
+        StatusConnected = Telepathy::ConnectionStatusConnected,
+        StatusUnknown = 0xFFFFFFFF
+    };
 
     Connection(const QString &serviceName,
                const QString &objectPath,

@@ -47,14 +47,14 @@ private Q_SLOTS:
 void TestHandles::expectConnReady(uint newStatus, uint newStatusReason)
 {
     switch (newStatus) {
-    case Telepathy::ConnectionStatusDisconnected:
+    case Connection::StatusDisconnected:
         qWarning() << "Disconnected";
         mLoop->exit(1);
         break;
-    case Telepathy::ConnectionStatusConnecting:
+    case Connection::StatusConnecting:
         /* do nothing */
         break;
-    case Telepathy::ConnectionStatusConnected:
+    case Connection::StatusConnected:
         qDebug() << "Ready";
         mLoop->exit(0);
         break;

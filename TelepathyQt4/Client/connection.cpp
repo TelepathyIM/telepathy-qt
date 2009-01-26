@@ -217,9 +217,9 @@ Connection::Private::Private(Connection *parent)
       simplePresence(0),
       initialIntrospection(false),
       readiness(ReadinessJustCreated),
-      pendingStatus(ConnectionStatusDisconnected),
+      pendingStatus(Connection::StatusUnknown),
       pendingStatusReason(ConnectionStatusReasonNoneSpecified),
-      status(ConnectionStatusDisconnected),
+      status(Connection::StatusUnknown),
       statusReason(ConnectionStatusReasonNoneSpecified),
       haveInitialStatus(false),
       selfHandle(0),
@@ -512,7 +512,7 @@ Connection::~Connection()
 /**
  * Return the connection's status.
  *
- * The returned value may have changed whenever statusChaned() is
+ * The returned value may have changed whenever statusChanged() is
  * emitted.
  *
  * \return The status, as defined in #ConnectionStatus.
