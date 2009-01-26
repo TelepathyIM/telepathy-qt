@@ -1295,16 +1295,21 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
             mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
             mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
 
-            // we still don't have our own presence but as the user
-            // requested for FeatureSelfPresence, change our presence to
-            // offline
-            SimplePresence presence = { Telepathy::ConnectionPresenceTypeOffline, };
-            mPriv->changeSelfPresence(presence);
-
             // we are already connected, so we at least enqueued the call to
             // getSelfHandle and we can enqueue the call to getSelfPresence
             if (mPriv->readiness == Private::ReadinessFull) {
+                // we stiff don't have our own presence but we are online
+                // so set selfPresence to available
+                SimplePresence presence = { Telepathy::ConnectionPresenceTypeAvailable, };
+                mPriv->changeSelfPresence(presence);
                 mPriv->introspectQueue.enqueue(&Private::introspectSelfPresence);
+            }
+            else {
+                // we still don't have our own presence but as the user
+                // requested for FeatureSelfPresence, change our presence to
+                // offline
+                SimplePresence presence = { Telepathy::ConnectionPresenceTypeOffline, };
+                mPriv->changeSelfPresence(presence);
             }
 
             QTimer::singleShot(0, this, SLOT(continueIntrospection()));
