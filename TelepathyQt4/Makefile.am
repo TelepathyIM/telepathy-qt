@@ -41,6 +41,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/channel.cpp \
     Client/connection.cpp \
     Client/connection-manager.cpp \
+    Client/connection-internal.h \
     Client/connection-manager-internal.h \
     Client/dbus.cpp \
     Client/dbus-proxy.cpp \
@@ -88,6 +89,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/channel.moc.hpp \
     Client/_gen/connection.moc.hpp \
     Client/_gen/connection-manager.moc.hpp \
+    Client/_gen/connection-internal.moc.hpp \
     Client/_gen/connection-manager-internal.moc.hpp \
     Client/_gen/dbus-proxy.moc.hpp \
     Client/_gen/pending-account.moc.hpp \

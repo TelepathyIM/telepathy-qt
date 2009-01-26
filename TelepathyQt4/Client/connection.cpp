@@ -20,10 +20,12 @@
  */
 
 #include <TelepathyQt4/Client/Connection>
+#include "TelepathyQt4/Client/connection-internal.h"
 
-#include "TelepathyQt4/Client/_gen/connection.moc.hpp"
 #include "TelepathyQt4/_gen/cli-connection.moc.hpp"
 #include "TelepathyQt4/_gen/cli-connection-body.hpp"
+#include "TelepathyQt4/Client/_gen/connection.moc.hpp"
+#include "TelepathyQt4/Client/_gen/connection-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -430,6 +432,40 @@ void Connection::Private::changeSelfPresence(const Telepathy::SimplePresence &pr
     }
     selfPresence = presence;
     parent->emit selfPresenceChanged(presence);
+}
+
+Connection::PendingConnect::PendingConnect(Connection *parent, Connection::Features features)
+    : PendingOperation(parent),
+      features(features)
+{
+    QDBusPendingCall call = parent->baseInterface()->Connect();
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, parent);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            this,
+            SLOT(onConnectReply(QDBusPendingCallWatcher*)));
+}
+
+void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher)
+{
+    if (watcher->isError()) {
+        setFinishedWithError(watcher->error());
+    }
+    else {
+        connect(qobject_cast<Connection*>(parent())->becomeReady(features),
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(onBecomeReadyReply(Telepathy::Client::PendingOperation*)));
+    }
+}
+
+void Connection::PendingConnect::onBecomeReadyReply(Telepathy::Client::PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    }
+    else {
+        setFinished();
+    }
 }
 
 QMap<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;
@@ -1348,9 +1384,9 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
  * \return A %PendingOperation, which will emit finished when the
  *         request finishes.
  */
-PendingOperation *Connection::requestConnect()
+PendingOperation *Connection::requestConnect(Connection::Features features)
 {
-    return new PendingVoidMethodCall(this, baseInterface()->Connect());
+    return new PendingConnect(this, features);
 }
 
 /**

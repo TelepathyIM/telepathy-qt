@@ -151,7 +151,7 @@ public:
 
     PendingChannel *ensureChannel(const QVariantMap &request);
 
-    PendingOperation *requestConnect();
+    PendingOperation *requestConnect(Features features = 0);
 
     PendingOperation *requestDisconnect();
 
@@ -193,8 +193,10 @@ private:
     void handleRequestLanded(uint type);
 
     struct Private;
+    class PendingConnect;
     friend struct Private;
     friend class PendingChannel;
+    friend class PendingConnect;
     friend class PendingHandles;
     friend class ReferencedHandles;
     Private *mPriv;
