@@ -57,7 +57,7 @@ class Connection : public StatefulDBusProxy,
 
 public:
     enum Feature {
-        FeatureSimplePresence = 1,
+        FeatureSelfPresence = 1,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)

@@ -523,15 +523,15 @@ QStringList Connection::interfaces() const
  */
 SimpleStatusSpecMap Connection::simplePresenceStatuses() const
 {
-    if (mPriv->missingFeatures & FeatureSimplePresence) {
+    if (mPriv->missingFeatures & FeatureSelfPresence) {
         warning() << "Trying to retrieve simple presence from connection, but "
                      "simple presence is not supported";
     }
-    else if (!(mPriv->features & FeatureSimplePresence)) {
+    else if (!(mPriv->features & FeatureSelfPresence)) {
         warning() << "Trying to retrieve simple presence from connection without "
-                     "calling Connection::becomeReady(FeatureSimplePresence)";
+                     "calling Connection::becomeReady(FeatureSelfPresence)";
     }
-    else if (mPriv->pendingFeatures & FeatureSimplePresence) {
+    else if (mPriv->pendingFeatures & FeatureSelfPresence) {
         warning() << "Trying to retrieve simple presence from connection, but "
                      "simple presence is still being retrieved";
     }
@@ -805,7 +805,7 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         // again on becomeReady.
         if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
             mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
-            mPriv->pendingFeatures |= FeatureSimplePresence;
+            mPriv->pendingFeatures |= FeatureSelfPresence;
         }
     }
     else {
@@ -823,18 +823,18 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusVariant> reply = *watcher;
 
-    mPriv->pendingFeatures &= ~FeatureSimplePresence;
+    mPriv->pendingFeatures &= ~FeatureSelfPresence;
 
     if (!reply.isError()) {
-        mPriv->features |= FeatureSimplePresence;
-        debug() << "Adding FeatureSimplePresence to features";
+        mPriv->features |= FeatureSelfPresence;
+        debug() << "Adding FeatureSelfPresence to features";
 
         mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
         debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
     }
     else {
-        mPriv->missingFeatures |= FeatureSimplePresence;
-        debug() << "Adding FeatureSimplePresence to missing features";
+        mPriv->missingFeatures |= FeatureSelfPresence;
+        debug() << "Adding FeatureSelfPresence to missing features";
 
         warning().nospace() << "Getting simple presence statuses failed with" <<
             reply.error().name() << ":" << reply.error().message();
@@ -1168,7 +1168,7 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
         }
     }
 
-    Feature optionalFeatures[1] = { FeatureSimplePresence };
+    Feature optionalFeatures[1] = { FeatureSelfPresence };
     Feature optionalFeature;
     for (uint i = 0; i < sizeof(optionalFeatures) / sizeof(Feature); ++i) {
         optionalFeature = optionalFeatures[i];
@@ -1322,8 +1322,8 @@ void Connection::continueIntrospection()
                 // present and we have a feature for it, add the feature to missing
                 // features.
                 if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
-                    debug() << "adding FeatureSimplePresence to missing features";
-                    mPriv->missingFeatures |= FeatureSimplePresence;
+                    debug() << "adding FeatureSelfPresence to missing features";
+                    mPriv->missingFeatures |= FeatureSelfPresence;
                 }
             }
         }
