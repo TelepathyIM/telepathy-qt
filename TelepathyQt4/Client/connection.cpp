@@ -1371,7 +1371,7 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
  * succeed.
  *
  * \return A %PendingOperation, which will emit finished when the
- *         Disconnect D-Bus method returns.
+ *         request finishes.
  */
 PendingOperation *Connection::requestConnect()
 {
@@ -1385,7 +1385,7 @@ PendingOperation *Connection::requestConnect()
  * succeed.
  *
  * \return A %PendingOperation, which will emit finished when the
- *         Disconnect D-Bus method returns.
+ *         request finishes.
  */
 PendingOperation *Connection::requestDisconnect()
 {
