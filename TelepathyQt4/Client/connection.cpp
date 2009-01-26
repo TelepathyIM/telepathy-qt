@@ -457,7 +457,7 @@ QMutex Connection::Private::handleContextsLock;
  * introspection process populates their values in the most efficient way
  * possible based on what the service implements. Their return value is mostly
  * undefined until the introspection process is completed; a status change to
- * ConnectionStatusConnected indicates that the introspection process is finished. See the
+ * StatusConnected indicates that the introspection process is finished. See the
  * individual accessor descriptions for details on which functions can be used
  * in the different states.
  */
@@ -515,7 +515,7 @@ Connection::~Connection()
  * The returned value may have changed whenever statusChanged() is
  * emitted.
  *
- * \return The status, as defined in #ConnectionStatus.
+ * \return The status, as defined in Status.
  */
 uint Connection::status() const
 {
@@ -530,7 +530,7 @@ uint Connection::status() const
  * Return the reason for the connection's status (which is returned by
  * status()). The validity and change rules are the same as for status().
  *
- * \return The reason, as defined in #ConnectionStatusReason.
+ * \return The reason, as defined in Status.
  */
 uint Connection::statusReason() const
 {
@@ -544,10 +544,10 @@ uint Connection::statusReason() const
 /**
  * Return a list of optional interfaces supported by this object. The
  * contents of the list is undefined unless the Connection has status
- * ConnectionStatusConnecting or ConnectionStatusConnected. The returned value stays
+ * StatusConnecting or StatusConnected. The returned value stays
  * constant for the entire time the connection spends in each of these
  * states; however interfaces might have been added to the supported set by
- * the time ConnectionStatusConnected is reached.
+ * the time StatusConnected is reached.
  *
  * \return Names of the supported interfaces.
  */
@@ -572,7 +572,7 @@ QStringList Connection::interfaces() const
  * Return the handle which represents the user on this connection, which will remain
  * valid for the lifetime of this connection, or until a change in the user's
  * identifier is signalled by the selfHandleChanged signal. If the connection is
- * not yet in the ConnectionStatusConnected state, the value of this property MAY be zero.
+ * not yet in the StatusConnected state, the value of this property MAY be zero.
  *
  * \return Self handle.
  */
@@ -589,8 +589,8 @@ uint Connection::selfHandle() const
  * contain %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE.
  *
  * The value may have changed arbitrarily during the time the
- * Connection spends in status ConnectionStatusConnecting,
- * again staying fixed for the entire time in ConnectionStatusConnected.
+ * Connection spends in status StatusConnecting,
+ * again staying fixed for the entire time in StatusConnected.
  *
  * \return Dictionary from string identifiers to structs for each valid
  * status.
@@ -616,10 +616,19 @@ SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
 /**
  * Set the self presence status.
  *
+ * \a status must be one of the allowed statuses returned by
+ * allowedPresenceStatuses().
+ *
+ * Note that clients SHOULD set the status message for the local user to the empty string,
+ * unless the user has actually provided a specific message (i.e. one that
+ * conveys more information than the Status).
+ *
  * \param status The desired status.
  * \param statusMessage The desired status message.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ *
+ * \sa allowedPresenceStatuses()
  */
 PendingOperation *Connection::setSelfPresence(const QString &status,
         const QString &statusMessage)
@@ -638,6 +647,12 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
  * Note that in order for this method to work properly,
  * Connection::becomeReady(FeatureSelfPresence) needs to be called, otherwise
  * ConnectionPresenceTypeUnknown will be returned.
+ *
+ * When Connection::becomeReady(FeatureSelfPresence) is called, if the
+ * connection is not yet in the status StatusConnected, the presence will
+ * automatically change to ConnectionPresenceTypeOffline and if the connection
+ * is already connected it will be set to ConnectionPresenceTypeAvailable.
+ * The status will then be correctly signalled with selfStatusChanged signal.
  *
  * \param status The desired status.
  * \param statusMessage The desired status message.
