@@ -334,8 +334,8 @@ void AccountManager::slotAccountRemoved()
     if ( account )
     {
         QString handle = account->handle();
-        d->removeAccount( handle );
         emit signalAccountRemoved( account );
+        d->removeAccount( handle );
         emit signalAccountsUpdated();
     }
 }
