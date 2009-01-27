@@ -134,16 +134,10 @@ void TestConnBasics::expectReady(uint newStatus, uint newStatusReason)
 void TestConnBasics::testConnect()
 {
     mConn = new Connection(mConnBusName, mConnObjectPath);
+    QCOMPARE(mConn->isReady(), false);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Connection::StatusUnknown));
-
-    QVERIFY(connect(mConn->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
 
     qDebug() << "calling Connect()";
     QVERIFY(connect(mConn->requestConnect(),
@@ -152,14 +146,24 @@ void TestConnBasics::testConnect()
             SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    // Wait for readiness to reach Full
-
-    qDebug() << "waiting for Full readiness";
-    QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
-          this, SLOT(expectReady(uint, uint))));
+    QVERIFY(connect(mConn->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
-          this, SLOT(expectReady(uint, uint))));
+    QCOMPARE(mConn->isReady(), true);
+
+    if (mConn->status() != Connection::StatusConnected) {
+        QVERIFY(connect(mConn,
+                        SIGNAL(statusChanged(uint, uint)),
+                        SLOT(expectReady(uint, uint))));
+        QCOMPARE(mLoop->exec(), 0);
+        QVERIFY(disconnect(mConn,
+                           SIGNAL(statusChanged(uint, uint)),
+                           this,
+                           SLOT(expectReady(uint, uint))));
+        QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
+    }
 
     QVERIFY(connect(mConn->becomeReady(Connection::FeatureSelfPresence),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -207,13 +211,6 @@ void TestConnBasics::testAlreadyConnected()
 {
     mConn = new Connection(mConnBusName, mConnObjectPath);
 
-    QVERIFY(connect(mConn->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
-
     qDebug() << "calling Connect()";
     QVERIFY(connect(mConn->requestConnect(),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -221,14 +218,24 @@ void TestConnBasics::testAlreadyConnected()
             SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    // Wait for readiness to reach Full
-
-    qDebug() << "waiting for Full readiness";
-    QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
-          this, SLOT(expectReady(uint, uint))));
+    QVERIFY(connect(mConn->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            this,
+            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
-          this, SLOT(expectReady(uint, uint))));
+    QCOMPARE(mConn->isReady(), true);
+
+    if (mConn->status() != Connection::StatusConnected) {
+        QVERIFY(connect(mConn,
+                        SIGNAL(statusChanged(uint, uint)),
+                        SLOT(expectReady(uint, uint))));
+        QCOMPARE(mLoop->exec(), 0);
+        QVERIFY(disconnect(mConn,
+                           SIGNAL(statusChanged(uint, uint)),
+                           this,
+                           SLOT(expectReady(uint, uint))));
+        QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
+    }
 
     // delete proxy, make a new one
     delete mConn;
