@@ -59,12 +59,12 @@ public:
         _ReadinessInvalid = 0xffff
     };
 
-    Channel(Connection* connection,
-            const QString& objectPath,
-            QObject* parent = 0);
+    Channel(Connection *connection,
+            const QString &objectPath,
+            QObject *parent = 0);
     ~Channel();
 
-    Connection* connection() const;
+    Connection *connection() const;
 
     Readiness readiness() const;
 
@@ -93,7 +93,7 @@ public:
         GroupMemberChangeInfo()
             : mActor(-1), mReason(0), mIsValid(false) {}
 
-        GroupMemberChangeInfo(uint actor, uint reason, const QString& message)
+        GroupMemberChangeInfo(uint actor, uint reason, const QString &message)
             : mActor(actor), mReason(reason), mMessage(message), mIsValid(true) {}
 
         bool isValid() const { return mIsValid; }
@@ -102,7 +102,7 @@ public:
 
         uint reason() const { return mReason; }
 
-        const QString& message() const { return mMessage; }
+        const QString &message() const { return mMessage; }
 
     private:
         uint mActor;
@@ -130,19 +130,30 @@ public:
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
 
-    void groupMembersChanged(const QSet<uint>& members, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
+    void groupMembersChanged(const QSet<uint> &members,
+            const Telepathy::UIntList &added,
+            const Telepathy::UIntList &removed,
+            uint actor, uint reason, const QString &message);
 
-    void groupLocalPendingChanged(const GroupMemberChangeInfoMap& localPending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
+    void groupLocalPendingChanged(const GroupMemberChangeInfoMap &localPending,
+            const Telepathy::UIntList &added,
+            const Telepathy::UIntList &removed,
+            uint actor, uint reason, const QString &message);
 
-    void groupRemotePendingChanged(const QSet<uint>& remotePending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message);
+    void groupRemotePendingChanged(const QSet<uint> &remotePending,
+            const Telepathy::UIntList &added,
+            const Telepathy::UIntList &removed,
+            uint actor, uint reason, const QString &message);
 
-    void groupHandleOwnersChanged(const HandleOwnerMap& owners, const Telepathy::UIntList& added, const Telepathy::UIntList& removed);
+    void groupHandleOwnersChanged(const HandleOwnerMap &owners,
+            const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
 
     void groupSelfHandleChanged(uint selfHandle);
 
 public:
     template <class Interface>
-    inline Interface* optionalInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline Interface *optionalInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object supporting the interface
         QString name(Interface::staticInterfaceName());
@@ -153,48 +164,56 @@ public:
         return OptionalInterfaceFactory<Channel>::interface<Interface>();
     }
 
-    inline ChannelInterfaceCallStateInterface* callStateInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelInterfaceCallStateInterface *callStateInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ChannelInterfaceCallStateInterface>(check);
     }
 
-    inline ChannelInterfaceChatStateInterface* chatStateInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelInterfaceChatStateInterface *chatStateInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ChannelInterfaceChatStateInterface>(check);
     }
 
-    inline ChannelInterfaceDTMFInterface* DTMFInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelInterfaceDTMFInterface *DTMFInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ChannelInterfaceDTMFInterface>(check);
     }
 
-    inline ChannelInterfaceGroupInterface* groupInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelInterfaceGroupInterface *groupInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ChannelInterfaceGroupInterface>(check);
     }
 
-    inline ChannelInterfaceHoldInterface* holdInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelInterfaceHoldInterface *holdInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ChannelInterfaceHoldInterface>(check);
     }
 
-    inline ChannelInterfaceMediaSignallingInterface* mediaSignallingInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelInterfaceMediaSignallingInterface *mediaSignallingInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ChannelInterfaceMediaSignallingInterface>(check);
     }
 
-    inline ChannelInterfacePasswordInterface* passwordInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelInterfacePasswordInterface *passwordInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ChannelInterfacePasswordInterface>(check);
     }
 
-    inline DBus::PropertiesInterface* propertiesInterface() const
+    inline DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
     template <class Interface>
-    inline Interface* typeInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline Interface *typeInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object having the correct channel type
         QString name(Interface::staticInterfaceName());
@@ -205,46 +224,52 @@ public:
         return OptionalInterfaceFactory<Channel>::interface<Interface>();
     }
 
-    inline ChannelTypeRoomListInterface* roomListInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelTypeRoomListInterface *roomListInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<ChannelTypeRoomListInterface>(check);
     }
 
-    inline ChannelTypeStreamedMediaInterface* streamedMediaInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelTypeStreamedMediaInterface *streamedMediaInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<ChannelTypeStreamedMediaInterface>(check);
     }
 
-    inline ChannelTypeTextInterface* textInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelTypeTextInterface *textInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<ChannelTypeTextInterface>(check);
     }
 
-    inline ChannelTypeTubesInterface* tubesInterface(InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    inline ChannelTypeTubesInterface *tubesInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<ChannelTypeTubesInterface>(check);
     }
 
 protected:
-    ChannelInterface* baseInterface() const;
+    ChannelInterface *baseInterface() const;
 
 private Q_SLOTS:
-    void gotMainProperties(QDBusPendingCallWatcher* watcher);
-    void gotChannelType(QDBusPendingCallWatcher* watcher);
-    void gotHandle(QDBusPendingCallWatcher* watcher);
-    void gotInterfaces(QDBusPendingCallWatcher* watcher);
+    void gotMainProperties(QDBusPendingCallWatcher *watcher);
+    void gotChannelType(QDBusPendingCallWatcher *watcher);
+    void gotHandle(QDBusPendingCallWatcher *watcher);
+    void gotInterfaces(QDBusPendingCallWatcher *watcher);
     void onClosed();
 
     void onConnectionInvalidated();
     void onConnectionDestroyed();
 
-    void gotGroupProperties(QDBusPendingCallWatcher* watcher);
-    void gotGroupFlags(QDBusPendingCallWatcher* watcher);
-    void gotAllMembers(QDBusPendingCallWatcher* watcher);
-    void gotLocalPending(QDBusPendingCallWatcher* watcher);
-    void gotSelfHandle(QDBusPendingCallWatcher* watcher);
+    void gotGroupProperties(QDBusPendingCallWatcher *watcher);
+    void gotGroupFlags(QDBusPendingCallWatcher *watcher);
+    void gotAllMembers(QDBusPendingCallWatcher *watcher);
+    void gotLocalPending(QDBusPendingCallWatcher *watcher);
+    void gotSelfHandle(QDBusPendingCallWatcher *watcher);
     void onGroupFlagsChanged(uint, uint);
-    void onMembersChanged(const QString&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint);
+    void onMembersChanged(const QString&,
+            const Telepathy::UIntList&, const Telepathy::UIntList&,
+            const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint);
     void onHandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&);
     void onSelfHandleChanged(uint);
 

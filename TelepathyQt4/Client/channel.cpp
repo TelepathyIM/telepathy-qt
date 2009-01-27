@@ -58,17 +58,17 @@ namespace Client
 struct Channel::Private
 {
     // Public object
-    Channel& parent;
+    Channel &parent;
 
     // Instance of generated interface class
-    ChannelInterface* baseInterface;
+    ChannelInterface *baseInterface;
 
     // Owning connection
-    Connection* connection;
+    Connection *connection;
 
     // Optional interface proxies
-    ChannelInterfaceGroupInterface* group;
-    DBus::PropertiesInterface* properties;
+    ChannelInterfaceGroupInterface *group;
+    DBus::PropertiesInterface *properties;
 
     // Introspection
     Readiness readiness;
@@ -102,7 +102,7 @@ struct Channel::Private
     // Group remove info
     GroupMemberChangeInfo groupSelfRemoveInfo;
 
-    Private(Channel& parent, Connection* connection)
+    Private(Channel &parent, Connection *connection)
         : parent(parent)
     {
         debug() << "Creating new Channel";
@@ -136,7 +136,8 @@ struct Channel::Private
                        SLOT(onConnectionDestroyed()));
 
         if (!connection->isValid()) {
-            warning() << "Connection given as the owner for a Channel was invalid! Channel will be stillborn.";
+            warning() << "Connection given as the owner for a Channel was "
+                "invalid! Channel will be stillborn.";
             readiness = ReadinessDead;
         }
 
@@ -151,7 +152,7 @@ struct Channel::Private
         }
 
         debug() << "Calling Properties::GetAll(Channel)";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
                     properties->GetAll(TELEPATHY_INTERFACE_CHANNEL), &parent);
         parent.connect(watcher,
@@ -162,7 +163,7 @@ struct Channel::Private
     void introspectMainFallbackChannelType()
     {
         debug() << "Calling Channel::GetChannelType()";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(baseInterface->GetChannelType(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -172,7 +173,7 @@ struct Channel::Private
     void introspectMainFallbackHandle()
     {
         debug() << "Calling Channel::GetHandle()";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(baseInterface->GetHandle(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -182,7 +183,7 @@ struct Channel::Private
     void introspectMainFallbackInterfaces()
     {
         debug() << "Calling Channel::GetInterfaces()";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -205,13 +206,19 @@ struct Channel::Private
 
         debug() << "Connecting to Channel.Interface.Group::MembersChanged";
         parent.connect(group,
-                       SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint)),
-                       SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint)));
+                       SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
+                               const Telepathy::UIntList&, const Telepathy::UIntList&,
+                               const Telepathy::UIntList&, uint, uint)),
+                       SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
+                               const Telepathy::UIntList&, const Telepathy::UIntList&,
+                               const Telepathy::UIntList&, uint, uint)));
 
         debug() << "Connecting to Channel.Interface.Group::HandleOwnersChanged";
         parent.connect(group,
-                       SIGNAL(HandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&)),
-                       SLOT(onHandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&)));
+                       SIGNAL(HandleOwnersChanged(const Telepathy::HandleOwnerMap&,
+                               const Telepathy::UIntList&)),
+                       SLOT(onHandleOwnersChanged(const Telepathy::HandleOwnerMap&,
+                               const Telepathy::UIntList&)));
 
         debug() << "Connecting to Channel.Interface.Group::SelfHandleChanged";
         parent.connect(group,
@@ -219,9 +226,10 @@ struct Channel::Private
                        SLOT(onSelfHandleChanged(uint)));
 
         debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
-                    properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP), &parent);
+                    properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP),
+                    &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotGroupProperties(QDBusPendingCallWatcher*)));
@@ -232,7 +240,7 @@ struct Channel::Private
         Q_ASSERT(group != 0);
 
         debug() << "Calling Channel.Interface.Group::GetGroupFlags()";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(group->GetGroupFlags(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -244,7 +252,7 @@ struct Channel::Private
         Q_ASSERT(group != 0);
 
         debug() << "Calling Channel.Interface.Group::GetAllMembers()";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(group->GetAllMembers(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -256,8 +264,9 @@ struct Channel::Private
         Q_ASSERT(group != 0);
 
         debug() << "Calling Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
-        QDBusPendingCallWatcher* watcher =
-            new QDBusPendingCallWatcher(group->GetLocalPendingMembersWithInfo(), &parent);
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(group->GetLocalPendingMembersWithInfo(),
+                    &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
                        SLOT(gotLocalPending(QDBusPendingCallWatcher*)));
@@ -268,7 +277,7 @@ struct Channel::Private
         Q_ASSERT(group != 0);
 
         debug() << "Calling Channel.Interface.Group::GetSelfHandle()";
-        QDBusPendingCallWatcher* watcher =
+        QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(group->GetSelfHandle(), &parent);
         parent.connect(watcher,
                        SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -280,16 +289,18 @@ struct Channel::Private
         if (readiness < ReadinessFull) {
             if (introspectQueue.isEmpty()) {
                 changeReadiness(ReadinessFull);
-            } else {
+            }
+            else {
                 (this->*introspectQueue.dequeue())();
             }
         }
     }
 
-    void extract0177MainProps(const QVariantMap& props)
+    void extract0177MainProps(const QVariantMap &props)
     {
         bool haveProps = props.size() >= 4
-                      && props.contains("ChannelType") && !qdbus_cast<QString>(props["ChannelType"]).isEmpty()
+                      && props.contains("ChannelType")
+                      && !qdbus_cast<QString>(props["ChannelType"]).isEmpty()
                       && props.contains("Interfaces")
                       && props.contains("TargetHandle")
                       && props.contains("TargetHandleType");
@@ -300,7 +311,8 @@ struct Channel::Private
             introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
             introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
             introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
-        } else {
+        }
+        else {
             debug() << " Found properties specified in 0.17.7";
 
             channelType = qdbus_cast<QString>(props["ChannelType"]);
@@ -312,10 +324,12 @@ struct Channel::Private
         }
     }
 
-    void extract0176GroupProps(const QVariantMap& props)
+    void extract0176GroupProps(const QVariantMap &props)
     {
         bool haveProps = props.size() >= 6
-                      && (props.contains("GroupFlags") && (qdbus_cast<uint>(props["GroupFlags"]) & ChannelGroupFlagProperties))
+                      && (props.contains("GroupFlags")
+                      && (qdbus_cast<uint>(props["GroupFlags"]) &
+                          ChannelGroupFlagProperties))
                       && props.contains("HandleOwners")
                       && props.contains("LocalPendingMembers")
                       && props.contains("Members")
@@ -330,7 +344,8 @@ struct Channel::Private
             introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
             introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPending);
             introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
-        } else {
+        }
+        else {
             debug() << " Found properties specified in 0.17.6";
 
             groupHaveMembers = true;
@@ -339,11 +354,14 @@ struct Channel::Private
 
             groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
             groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
-            groupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
-            groupRemotePending = QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
+            groupMembers =
+                QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
+            groupRemotePending = QSet<uint>::fromList(
+                    qdbus_cast<UIntList>(props["RemotePendingMembers"]));
             groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
 
-            foreach (LocalPendingInfo info, qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
+            foreach (LocalPendingInfo info,
+                    qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
                 groupLocalPending[info.toBeAdded] =
                     GroupMemberChangeInfo(info.actor, info.reason, info.message);
             }
@@ -352,7 +370,8 @@ struct Channel::Private
 
     void nowHaveInterfaces()
     {
-        debug() << "Channel has" << interfaces.size() << "optional interfaces:" << interfaces;
+        debug() << "Channel has" << interfaces.size() <<
+            "optional interfaces:" << interfaces;
 
         for (QStringList::const_iterator i = interfaces.begin();
                                          i != interfaces.end();
@@ -370,10 +389,12 @@ struct Channel::Private
             case ReadinessJustCreated:
                 // We don't allow ReadinessClosed to be reached without ReadinessFull
                 // being reached at some point first.
-                Q_ASSERT((newReadiness == ReadinessFull) || (newReadiness == ReadinessDead));
+                Q_ASSERT((newReadiness == ReadinessFull) ||
+                         (newReadiness == ReadinessDead));
                 break;
             case ReadinessFull:
-                Q_ASSERT((newReadiness == ReadinessDead) || (newReadiness == ReadinessClosed));
+                Q_ASSERT((newReadiness == ReadinessDead) ||
+                         (newReadiness == ReadinessClosed));
                 break;
             case ReadinessDead:
             case ReadinessClosed:
@@ -382,7 +403,8 @@ struct Channel::Private
                 break;
         }
 
-        debug() << "Channel readiness changed from" << readiness << "to" << newReadiness;
+        debug() << "Channel readiness changed from" <<
+            readiness << "to" << newReadiness;
 
         if (newReadiness == ReadinessFull) {
             debug() << "Channel fully ready";
@@ -392,17 +414,26 @@ struct Channel::Private
 
             if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
                 debug() << " Group: flags" << groupFlags;
-                if (groupAreHandleOwnersAvailable)
-                    debug() << " Group: Number of handle owner mappings" << groupHandleOwners.size();
-                else
+                if (groupAreHandleOwnersAvailable) {
+                    debug() << " Group: Number of handle owner mappings" <<
+                        groupHandleOwners.size();
+                }
+                else {
                     debug() << " Group: No handle owners property present";
-                debug() << " Group: Number of current members" << groupMembers.size();
-                debug() << " Group: Number of local pending members" << groupLocalPending.size();
-                debug() << " Group: Number of remote pending members" << groupRemotePending.size();
-                debug() << " Group: Self handle" << groupSelfHandle << "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
+                }
+                debug() << " Group: Number of current members" <<
+                    groupMembers.size();
+                debug() << " Group: Number of local pending members" <<
+                    groupLocalPending.size();
+                debug() << " Group: Number of remote pending members" <<
+                    groupRemotePending.size();
+                debug() << " Group: Self handle" << groupSelfHandle <<
+                    "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
             }
-        } else {
-            Q_ASSERT((newReadiness == ReadinessDead) || (newReadiness == ReadinessClosed));
+        }
+        else {
+            Q_ASSERT((newReadiness == ReadinessDead) ||
+                     (newReadiness == ReadinessClosed));
 
             debug() << "R.I.P. Channel.";
 
@@ -483,9 +514,9 @@ struct Channel::Private
  * \param objectPath  Path to the object on the service.
  * \param parent      Passed to the parent class constructor.
  */
-Channel::Channel(Connection* connection,
-                 const QString& objectPath,
-                 QObject* parent)
+Channel::Channel(Connection *connection,
+                 const QString &objectPath,
+                 QObject *parent)
     : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
             objectPath, parent),
       OptionalInterfaceFactory<Channel>(this),
@@ -512,7 +543,7 @@ Channel::~Channel()
  *
  * \return Pointer to the Connection.
  */
-Connection* Channel::connection() const
+Connection *Channel::connection() const
 {
     return mPriv->connection;
 }
@@ -537,12 +568,16 @@ QStringList Channel::interfaces() const
     // Different check than the others, because the optional interface getters
     // may be used internally with the knowledge about getting the interfaces
     // list, so we don't want this to cause warnings.
-    if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty())
-        warning() << "Channel::interfaces() used possibly before the list of interfaces has been received";
-    else if (mPriv->readiness == ReadinessDead)
+    if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty()) {
+        warning() << "Channel::interfaces() used possibly before the list of "
+            "interfaces has been received";
+    }
+    else if (mPriv->readiness == ReadinessDead) {
         warning() << "Channel::interfaces() used with readiness ReadinessDead";
-    else if (mPriv->readiness == ReadinessClosed)
+    }
+    else if (mPriv->readiness == ReadinessClosed) {
         warning() << "Channel::interfaces() used with readiness ReadinessClosed";
+    }
 
     return mPriv->interfaces;
 }
@@ -556,14 +591,18 @@ QString Channel::channelType() const
 {
     // Similarly, we don't want warnings triggered when using the type interface
     // proxies internally.
-    if (mPriv->readiness < ReadinessFull && mPriv->channelType.isEmpty())
-        warning() << "Channel::channelType() before the channel type has been received";
-    else if (mPriv->readiness == ReadinessDead)
+    if (mPriv->readiness < ReadinessFull && mPriv->channelType.isEmpty()) {
+        warning() << "Channel::channelType() before the channel type has "
+            "been received";
+    }
+    else if (mPriv->readiness == ReadinessDead) {
         warning() << "Channel::channelType() used with readiness ReadinessDead";
+    }
     // Channel type will still be valid if the channel has been closed after
     // introspection completed successfully.
-    // else if (mPriv->readiness == ReadinessClosed)
+    // else if (mPriv->readiness == ReadinessClosed) {
     //    warning() << "Channel::channelType() used with readiness ReadinessClosed";
+    // }
 
     return mPriv->channelType;
 }
@@ -575,8 +614,10 @@ QString Channel::channelType() const
  */
 uint Channel::targetHandleType() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::targetHandleType() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::targetHandleType() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
 
     return mPriv->targetHandleType;
 }
@@ -589,8 +630,10 @@ uint Channel::targetHandleType() const
  */
 uint Channel::targetHandle() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::targetHandle() used with readiness" << mPriv->readiness << "!= ReadinessFull";
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::targetHandle() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
 
     return mPriv->targetHandle;
 }
@@ -619,15 +662,18 @@ uint Channel::targetHandle() const
 QDBusPendingReply<> Channel::close()
 {
     // Closing a channel does not make sense if it is already dead or closed.
-    if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
+    if ((mPriv->readiness != ReadinessDead) &&
+        (mPriv->readiness != ReadinessClosed)) {
         return mPriv->baseInterface->Close();
+    }
 
     // If the channel is in a readiness where it doesn't make sense to be
     // closed, we emit a warning and return an error QDBusPendingReply.
     warning() << "Channel::close() used with readiness" << mPriv->readiness;
 
     return QDBusPendingReply<>(QDBusMessage::createError(
-            TELEPATHY_ERROR_NOT_AVAILABLE, "Attempted to close an already dead or closed channel"));
+                TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Attempted to close an already dead or closed channel"));
 }
 
 /**
@@ -680,10 +726,13 @@ QDBusPendingReply<> Channel::close()
  */
 uint Channel::groupFlags() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::groupFlags() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::groupFlags() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupFlags() used with no group interface";
+    }
 
     return mPriv->groupFlags;
 }
@@ -695,10 +744,13 @@ uint Channel::groupFlags() const
  */
 QSet<uint> Channel::groupMembers() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::groupMembers() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::groupMembers() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupMembers() used with no group interface";
+    }
 
     return mPriv->groupMembers;
 }
@@ -724,10 +776,13 @@ QSet<uint> Channel::groupMembers() const
  */
 Channel::GroupMemberChangeInfoMap Channel::groupLocalPending() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::groupLocalPending() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::groupLocalPending() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupLocalPending() used with no group interface";
+    }
 
     return mPriv->groupLocalPending;
 }
@@ -740,10 +795,14 @@ Channel::GroupMemberChangeInfoMap Channel::groupLocalPending() const
  */
 QSet<uint> Channel::groupRemotePending() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::groupRemotePending() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
-        warning() << "Channel::groupRemotePending() used with no group interface";
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::groupRemotePending() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupRemotePending() used with no "
+            "group interface";
+    }
 
     return mPriv->groupRemotePending;
 }
@@ -773,10 +832,14 @@ QSet<uint> Channel::groupRemotePending() const
  */
 bool Channel::groupAreHandleOwnersAvailable() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::groupAreHandleOwnersAvailable() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
-        warning() << "Channel::groupAreHandleOwnersAvailable() used with no group interface";
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::groupAreHandleOwnersAvailable() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupAreHandleOwnersAvailable() used with "
+            "no group interface";
+    }
 
     return mPriv->groupAreHandleOwnersAvailable;
 }
@@ -795,12 +858,18 @@ bool Channel::groupAreHandleOwnersAvailable() const
  */
 HandleOwnerMap Channel::groupHandleOwners() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::groupHandleOwners() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
-        warning() << "Channel::groupAreHandleOwnersAvailable() used with no group interface";
-    else if (!groupAreHandleOwnersAvailable())
-        warning() << "Channel::areHandleOwnersAvailable() used, but handle owners not available";
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::groupHandleOwners() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupAreHandleOwnersAvailable() used with no "
+            "group interface";
+    }
+    else if (!groupAreHandleOwnersAvailable()) {
+        warning() << "Channel::areHandleOwnersAvailable() used, but handle "
+            "owners not available";
+    }
 
     return mPriv->groupHandleOwners;
 }
@@ -816,10 +885,14 @@ HandleOwnerMap Channel::groupHandleOwners() const
  */
 bool Channel::groupIsSelfHandleTracked() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::isSelfHandleTracked() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
-        warning() << "Channel::groupIsSelfHandleTracked() used with no group interface";
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::isSelfHandleTracked() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupIsSelfHandleTracked() used with "
+            "no group interface";
+    }
 
     return mPriv->groupIsSelfHandleTracked;
 }
@@ -833,10 +906,14 @@ bool Channel::groupIsSelfHandleTracked() const
  */
 uint Channel::groupSelfHandle() const
 {
-    if (mPriv->readiness != ReadinessFull)
-        warning() << "Channel::groupSelfHandle() used with readiness" << mPriv->readiness << "!= ReadinessFull";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
-        warning() << "Channel::groupSelfHandle() used with no group interface";
+    if (mPriv->readiness != ReadinessFull) {
+        warning() << "Channel::groupSelfHandle() used with readiness" <<
+            mPriv->readiness << "!= ReadinessFull";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupSelfHandle() used with "
+            "no group interface";
+    }
 
     return mPriv->groupSelfHandle;
 }
@@ -862,10 +939,14 @@ uint Channel::groupSelfHandle() const
  */
 Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
 {
-    if (mPriv->readiness != ReadinessClosed)
-        warning() << "Channel::groupSelfRemoveInfo() used with readiness" << mPriv->readiness << "!= ReadinessClosed";
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))
-        warning() << "Channel::groupSelfRemoveInfo() used with no group interface";
+    if (mPriv->readiness != ReadinessClosed) {
+        warning() << "Channel::groupSelfRemoveInfo() used with readiness" <<
+            mPriv->readiness << "!= ReadinessClosed";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupSelfRemoveInfo() used with "
+            "no group interface";
+    }
 
     return mPriv->groupSelfRemoveInfo;
 }
@@ -881,7 +962,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn void groupMembersChanged(const QSet<uint>& members, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message)
+ * \fn void groupMembersChanged(const QSet<uint> &members, const Telepathy::UIntList &added, const Telepathy::UIntList &removed, uint actor, uint reason, const QString &message)
  *
  * Emitted when the value returned by groupMembers() changes.
  *
@@ -896,7 +977,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn void groupLocalPendingChanged(const GroupMemberChangeInfoMap& localPending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message)
+ * \fn void groupLocalPendingChanged(const GroupMemberChangeInfoMap &localPending, const Telepathy::UIntList &added, const Telepathy::UIntList &removed, uint actor, uint reason, const QString &message)
  *
  * Emitted when the value returned by groupLocalPending() changes.
  *
@@ -918,7 +999,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn void groupRemotePendingChanged(const QSet<uint>& remotePending, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, uint actor, uint reason, const QString& message)
+ * \fn void groupRemotePendingChanged(const QSet<uint> &remotePending, const Telepathy::UIntList &added, const Telepathy::UIntList &removed, uint actor, uint reason, const QString &message)
  *
  * Emitted when the value returned by groupRemotePending() changes.
  *
@@ -934,7 +1015,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn void groupHandleOwnersChanged(const HandleOwnerMap& owners, const Telepathy::UIntList& added, const Telepathy::UIntList& removed)
+ * \fn void groupHandleOwnersChanged(const HandleOwnerMap &owners, const Telepathy::UIntList &added, const Telepathy::UIntList &removed)
  *
  * Emitted when the value returned by groupHandleOwners() changes.
  *
@@ -966,7 +1047,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
 //@{
 
 /**
- * \fn template <class Interface> Interface* optionalInterface(InterfaceSupportedChecking check) const
+ * \fn template <class Interface> Interface *optionalInterface(InterfaceSupportedChecking check) const
  *
  * Returns a pointer to a valid instance of a given %Channel optional
  * interface class, associated with the same remote object the Channel is
@@ -993,7 +1074,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelInterfaceCallStateInterface* callStateInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceCallStateInterface *callStateInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a CallState interface proxy.
  *
@@ -1002,7 +1083,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelInterfaceChatStateInterface* chatStateInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceChatStateInterface *chatStateInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a ChatState interface proxy.
  *
@@ -1011,7 +1092,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelInterfaceDTMFInterface* DTMFInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceDTMFInterface *DTMFInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a DTMF interface proxy.
  *
@@ -1020,7 +1101,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelInterfaceGroupInterface* groupInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceGroupInterface *groupInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Group interface proxy.
  *
@@ -1029,7 +1110,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelInterfaceHoldInterface* holdInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceHoldInterface *holdInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Hold interface proxy.
  *
@@ -1038,7 +1119,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelInterfaceMediaSignallingInterface* mediaSignallingInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceMediaSignallingInterface *mediaSignallingInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a MediaSignalling interface proxy.
  *
@@ -1047,7 +1128,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelInterfacePasswordInterface* passwordInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfacePasswordInterface *passwordInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Password interface proxy.
  *
@@ -1056,7 +1137,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn DBus::PropertiesInterface* propertiesInterface() const
+ * \fn DBus::PropertiesInterface *propertiesInterface() const
  *
  * Convenience function for getting a Properties interface proxy. The
  * Properties interface is not necessarily reported by the services, so a
@@ -1068,7 +1149,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn template <class Interface> Interface* typeInterface(InterfaceSupportedChecking check) const
+ * \fn template <class Interface> Interface *typeInterface(InterfaceSupportedChecking check) const
  *
  * Returns a pointer to a valid instance of a given %Channel type interface
  * class, associated with the same remote object the Channel is
@@ -1094,7 +1175,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelTypeRoomListInterface* roomListInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeRoomListInterface *roomListInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeRoomList interface proxy.
  *
@@ -1103,7 +1184,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelTypeStreamedMediaInterface* streamedMediaInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeStreamedMediaInterface *streamedMediaInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeStreamedMedia interface proxy.
  *
@@ -1112,7 +1193,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelTypeTextInterface* textInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeTextInterface *textInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeText interface proxy.
  *
@@ -1121,7 +1202,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  */
 
 /**
- * \fn ChannelTypeTubesInterface* tubesInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeTubesInterface *tubesInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeTubes interface proxy.
  *
@@ -1136,14 +1217,14 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  *
  * \return A pointer to the existing ChannelInterface for this Channel
  */
-ChannelInterface* Channel::baseInterface() const
+ChannelInterface *Channel::baseInterface() const
 {
     return mPriv->baseInterface;
 }
 
 //@}
 
-void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
+void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
@@ -1151,24 +1232,31 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher* watcher)
     if (!reply.isError()) {
         debug() << "Got reply to Properties::GetAll(Channel)";
         props = reply.value();
-    } else {
-        warning().nospace() << "Properties::GetAll(Channel) failed with " << reply.error().name() << ": " << reply.error().message();
+    }
+    else {
+        warning().nospace() << "Properties::GetAll(Channel) failed with " <<
+            reply.error().name() << ": " << reply.error().message();
     }
 
     mPriv->extract0177MainProps(props);
-    // Add extraction (and possible fallbacks) in similar functions, called from here
+    // Add extraction (and possible fallbacks) in similar functions,
+    // called from here
 
     mPriv->continueIntrospection();
 }
 
-void Channel::gotChannelType(QDBusPendingCallWatcher* watcher)
+void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QString> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "Channel::GetChannelType() failed with " << reply.error().name() << ": " << reply.error().message() << ", Channel officially dead";
-        if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
+        warning().nospace() << "Channel::GetChannelType() failed with " <<
+            reply.error().name() << ": " << reply.error().message() <<
+            ", Channel officially dead";
+        if ((mPriv->readiness != ReadinessDead) &&
+            (mPriv->readiness != ReadinessClosed)) {
             mPriv->changeReadiness(ReadinessDead);
+        }
         return;
     }
 
@@ -1177,14 +1265,18 @@ void Channel::gotChannelType(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
-void Channel::gotHandle(QDBusPendingCallWatcher* watcher)
+void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint, uint> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "Channel::GetHandle() failed with " << reply.error().name() << ": " << reply.error().message() << ", Channel officially dead";
-        if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
+        warning().nospace() << "Channel::GetHandle() failed with " <<
+            reply.error().name() << ": " << reply.error().message() <<
+            ", Channel officially dead";
+        if ((mPriv->readiness != ReadinessDead) &&
+            (mPriv->readiness != ReadinessClosed)) {
             mPriv->changeReadiness(ReadinessDead);
+        }
         return;
     }
 
@@ -1194,14 +1286,18 @@ void Channel::gotHandle(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
-void Channel::gotInterfaces(QDBusPendingCallWatcher* watcher)
+void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QStringList> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "Channel::GetInterfaces() failed with " << reply.error().name() << ": " << reply.error().message() << ", Channel officially dead";
-        if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
+        warning().nospace() << "Channel::GetInterfaces() failed with " <<
+            reply.error().name() << ": " << reply.error().message() <<
+            ", Channel officially dead";
+        if ((mPriv->readiness != ReadinessDead) &&
+            (mPriv->readiness != ReadinessClosed)) {
             mPriv->changeReadiness(ReadinessDead);
+        }
         return;
     }
 
@@ -1215,10 +1311,13 @@ void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
 
-    if (mPriv->readiness == ReadinessFull)
+    if (mPriv->readiness == ReadinessFull) {
         mPriv->changeReadiness(ReadinessClosed);
-    else if ((mPriv->readiness != ReadinessDead) && (mPriv->readiness != ReadinessClosed))
+    }
+    else if ((mPriv->readiness != ReadinessDead) &&
+             (mPriv->readiness != ReadinessClosed)) {
         mPriv->changeReadiness(ReadinessDead);
+    }
 
     // I think this is the nearest error code we can get at the moment
     invalidate(TELEPATHY_ERROR_CANCELLED, "Closed");
@@ -1227,7 +1326,8 @@ void Channel::onClosed()
 void Channel::onConnectionInvalidated()
 {
     if (mPriv->readiness != ReadinessDead) {
-        debug() << "Owning connection died leaving an orphan Channel, changing to ReadinessDead";
+        debug() << "Owning connection died leaving an orphan Channel, "
+            "changing to ReadinessDead";
         mPriv->changeReadiness(ReadinessDead);
     }
 }
@@ -1239,7 +1339,7 @@ void Channel::onConnectionDestroyed()
     onConnectionInvalidated();
 }
 
-void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
+void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
@@ -1247,8 +1347,11 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
     if (!reply.isError()) {
         debug() << "Got reply to Properties::GetAll(Channel.Interface.Group)";
         props = reply.value();
-    } else {
-        warning().nospace() << "Properties::GetAll(Channel.Interface.Group) failed with " << reply.error().name() << ": " << reply.error().message();
+    }
+    else {
+        warning().nospace() << "Properties::GetAll(Channel.Interface.Group) "
+            "failed with " << reply.error().name() << ": " <<
+            reply.error().message();
     }
 
     mPriv->extract0176GroupProps(props);
@@ -1257,18 +1360,21 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
-void Channel::gotGroupFlags(QDBusPendingCallWatcher* watcher)
+void Channel::gotGroupFlags(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "Channel.Interface.Group::GetGroupFlags() failed with " << reply.error().name() << ": " << reply.error().message();
-    } else {
+        warning().nospace() << "Channel.Interface.Group::GetGroupFlags() failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+    else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetGroupFlags()";
         mPriv->groupFlags = reply.value();
 
         if (mPriv->groupFlags & ChannelGroupFlagProperties) {
-            warning() << " Reply included ChannelGroupFlagProperties, even though properties specified in 0.17.7 didn't work! - unsetting";
+            warning() << " Reply included ChannelGroupFlagProperties, even "
+                "though properties specified in 0.17.7 didn't work! - unsetting";
             mPriv->groupFlags &= ~ChannelGroupFlagProperties;
         }
     }
@@ -1276,13 +1382,15 @@ void Channel::gotGroupFlags(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
-void Channel::gotAllMembers(QDBusPendingCallWatcher* watcher)
+void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<UIntList, UIntList, UIntList> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "Channel.Interface.Group::GetAllMembers() failed with " << reply.error().name() << ": " << reply.error().message();
-    } else {
+        warning().nospace() << "Channel.Interface.Group::GetAllMembers() failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+    else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetAllMembers()";
 
         mPriv->groupHaveMembers = true;
@@ -1297,15 +1405,18 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
-void Channel::gotLocalPending(QDBusPendingCallWatcher* watcher)
+void Channel::gotLocalPending(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<LocalPendingInfoList> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "Channel.Interface.Group::GetLocalPendingMembersWithInfo() failed with " << reply.error().name() << ": " << reply.error().message();
+        warning().nospace() << "Channel.Interface.Group::GetLocalPendingMembersWithInfo() "
+            "failed with " << reply.error().name() << ": " << reply.error().message();
         warning() << " Falling back to what GetAllMembers returned with no extended info";
-    } else {
-        debug() << "Got reply to fallback Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
+    }
+    else {
+        debug() << "Got reply to fallback "
+            "Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
 
         foreach (LocalPendingInfo info, reply.value()) {
             mPriv->groupLocalPending[info.toBeAdded] =
@@ -1316,13 +1427,15 @@ void Channel::gotLocalPending(QDBusPendingCallWatcher* watcher)
     mPriv->continueIntrospection();
 }
 
-void Channel::gotSelfHandle(QDBusPendingCallWatcher* watcher)
+void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "Channel.Interface.Group::GetSelfHandle() failed with " << reply.error().name() << ": " << reply.error().message();
-    } else {
+        warning().nospace() << "Channel.Interface.Group::GetSelfHandle() failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+    else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetSelfHandle()";
         mPriv->groupSelfHandle = reply.value();
     }
@@ -1332,28 +1445,38 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher* watcher)
 
 void Channel::onGroupFlagsChanged(uint added, uint removed)
 {
-    debug().nospace() << "Got Channel.Interface.Group::GroupFlagsChanged(" << hex << added << ", " << removed << ")";
+    debug().nospace() << "Got Channel.Interface.Group::GroupFlagsChanged(" <<
+        hex << added << ", " << removed << ")";
 
     added &= ~(mPriv->groupFlags);
     removed &= mPriv->groupFlags;
 
-    debug().nospace() << "Arguments after filtering (" << hex << added << ", " << removed << ")";
+    debug().nospace() << "Arguments after filtering (" << hex << added <<
+        ", " << removed << ")";
 
     mPriv->groupFlags |= added;
     mPriv->groupFlags &= ~removed;
 
     if (added || removed) {
-        debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags << "value" << added << "added" << removed << "removed";
+        debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags <<
+            "value" << added << "added" << removed << "removed";
         emit groupFlagsChanged(mPriv->groupFlags, added, removed);
     }
 }
 
-void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList& added, const Telepathy::UIntList& removed, const Telepathy::UIntList& localPending, const Telepathy::UIntList& remotePending, uint actor, uint reason)
+void Channel::onMembersChanged(const QString &message,
+        const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
+        const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
+        uint actor, uint reason)
 {
-    debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() << "added," << removed.size() << "removed," << localPending.size() << "moved to LP," << remotePending.size() << "moved to RP," << actor << " being the actor," << reason << "the reason and" << message << "the message";
+    debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() <<
+        "added," << removed.size() << "removed," << localPending.size() <<
+        "moved to LP," << remotePending.size() << "moved to RP," << actor <<
+        "being the actor," << reason << "the reason and" << message << "the message";
 
     if (!mPriv->groupHaveMembers) {
-        debug() << "Still waiting for initial group members, so ignoring delta signal...";
+        debug() << "Still waiting for initial group members, "
+            "so ignoring delta signal...";
         return;
     }
 
@@ -1383,7 +1506,8 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
                 && remotePending.size() == 0
                 && removed.size() == 1
                 && mPriv->groupLocalPending.contains(removed[0])) {
-            debug() << " Special-case local pending rename" << removed[0] << " -> " << handle;
+            debug() << " Special-case local pending rename" << removed[0] <<
+                " -> " << handle;
             info = mPriv->groupLocalPending[removed[0]];
         }
 
@@ -1405,43 +1529,56 @@ void Channel::onMembersChanged(const QString& message, const Telepathy::UIntList
     foreach (uint handle, removed) {
         debug() << " ---" << handle;
 
-        if (mPriv->groupMembers.remove(handle))
+        if (mPriv->groupMembers.remove(handle)) {
             currentRemoved.append(handle);
+        }
 
-        if (mPriv->groupLocalPending.remove(handle))
+        if (mPriv->groupLocalPending.remove(handle)) {
             localRemoved.append(handle);
+        }
 
-        if (mPriv->groupRemotePending.remove(handle))
+        if (mPriv->groupRemotePending.remove(handle)) {
             remoteRemoved.append(handle);
+        }
 
         if (handle == mPriv->groupSelfHandle) {
             debug() << " Self handle removed, saving info...";
-            mPriv->groupSelfRemoveInfo = GroupMemberChangeInfo(actor, reason, message);
+            mPriv->groupSelfRemoveInfo =
+                GroupMemberChangeInfo(actor, reason, message);
         }
     }
 
     if (currentAdded.size() || currentRemoved.size()) {
-        debug() << " Emitting groupMembersChanged with" << currentAdded.size() << "contacts added and" << currentRemoved.size() << "contacts removed";
-        emit groupMembersChanged(mPriv->groupMembers, currentAdded, currentRemoved, actor, reason, message);
+        debug() << " Emitting groupMembersChanged with" << currentAdded.size() <<
+            "contacts added and" << currentRemoved.size() << "contacts removed";
+        emit groupMembersChanged(mPriv->groupMembers, currentAdded,
+                currentRemoved, actor, reason, message);
     }
 
     if (localAdded.size() || localRemoved.size()) {
-        debug() << " Emitting groupLocalPendingChanged with" << localAdded.size() << "contacts added and" << localRemoved.size() << "contacts removed";
-        emit groupLocalPendingChanged(mPriv->groupLocalPending, localAdded, localRemoved, actor, reason, message);
+        debug() << " Emitting groupLocalPendingChanged with" << localAdded.size() <<
+            "contacts added and" << localRemoved.size() << "contacts removed";
+        emit groupLocalPendingChanged(mPriv->groupLocalPending, localAdded,
+                localRemoved, actor, reason, message);
     }
 
     if (remoteAdded.size() || remoteRemoved.size()) {
-        debug() << " Emitting groupRemotePendingChanged with" << remoteAdded.size() << "contacts added and" << remoteRemoved.size() << "contacts removed";
-        emit groupMembersChanged(mPriv->groupRemotePending, remoteAdded, remoteRemoved, actor, reason, message);
+        debug() << " Emitting groupRemotePendingChanged with" << remoteAdded.size() <<
+            "contacts added and" << remoteRemoved.size() << "contacts removed";
+        emit groupMembersChanged(mPriv->groupRemotePending, remoteAdded,
+                remoteRemoved, actor, reason, message);
     }
 }
 
-void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap& added, const Telepathy::UIntList& removed)
+void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap &added,
+        const Telepathy::UIntList &removed)
 {
-    debug() << "Got Channel.Interface.Group::HandleOwnersChanged with" << added.size() << "added," << removed.size() << "removed";
+    debug() << "Got Channel.Interface.Group::HandleOwnersChanged with" <<
+        added.size() << "added," << removed.size() << "removed";
 
     if (!mPriv->groupAreHandleOwnersAvailable) {
-        debug() << "Still waiting for initial handle owners, so ignoring delta signal...";
+        debug() << "Still waiting for initial handle owners, so ignoring "
+            "delta signal...";
         return;
     }
 
@@ -1471,8 +1608,10 @@ void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap& added, cons
     }
 
     if (emitAdded.size() || emitRemoved.size()) {
-        debug() << "Emitting groupHandleOwnersChanged with" << emitAdded.size() << "added" << emitRemoved.size() << "removed";
-        emit groupHandleOwnersChanged(mPriv->groupHandleOwners, emitAdded, emitRemoved);
+        debug() << "Emitting groupHandleOwnersChanged with" << emitAdded.size() <<
+            "added" << emitRemoved.size() << "removed";
+        emit groupHandleOwnersChanged(mPriv->groupHandleOwners,
+                emitAdded, emitRemoved);
     }
 }
 
@@ -1482,7 +1621,8 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
 
     if (newSelfHandle != mPriv->groupSelfHandle) {
         mPriv->groupSelfHandle = newSelfHandle;
-        debug() << " Emitting groupSelfHandleChanged with new self handle" << newSelfHandle;
+        debug() << " Emitting groupSelfHandleChanged with new self handle" <<
+            newSelfHandle;
         emit groupSelfHandleChanged(newSelfHandle);
     }
 }
@@ -1506,7 +1646,7 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
  */
 
 /**
- * \fn GroupMemberChangeInfo(uint actor, uint reason, const QString& message)
+ * \fn GroupMemberChangeInfo(uint actor, uint reason, const QString &message)
  *
  * \internal
  */
@@ -1539,7 +1679,7 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
  */
 
 /**
- * \fn const QString& message() const
+ * \fn const QString &message() const
  * Returns a human-readable message from the contact represented by
  * actor() pertaining to the change, or an empty string if there is no
  * message.
