@@ -246,16 +246,6 @@ signals:
     void signalContactUnblocked( TpPrototype::ContactManager* contactManager, TpPrototype::Contact* contact );
 
     /**
-     * @todo: Add doc! (seil)
-     */
-    void signalForModelContactSubscribed( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
-
-    /**
-     * @todo: Add doc! (seil)
-     */
-    void signalForModelContactRemoved( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
-
-    /**
      * Members changed.
      * This signal is emitted whenever one of the internal lists of contacts (member, local pending, remote pending) changes.
      * @param contactManager The contact manager that handles the contacts.

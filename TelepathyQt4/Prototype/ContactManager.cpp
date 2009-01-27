@@ -888,8 +888,7 @@ void ContactManager::slotMembersChanged(const QString& message,
                         }
 
                         emit signalContactSubscribed( this,  d->m_members[handle] );
-                        emit signalForModelContactSubscribed( this,  d->m_members[handle] );
-                    }   
+                    }
                 }
             }
         }
