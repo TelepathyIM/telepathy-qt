@@ -21,9 +21,9 @@ class TestConnBasics : public Test
     Q_OBJECT
 
 public:
-    Connection *mConn;
-    ContactsConnection *mConnService;
-    QString mConnName, mConnPath;
+    TestConnBasics(QObject *parent = 0)
+        : Test(parent), mConnService(0), mConn(0)
+    { }
 
 protected Q_SLOTS:
     void expectConnReady(uint, uint);
@@ -31,18 +31,21 @@ protected Q_SLOTS:
     void expectPresenceAvailable(const Telepathy::SimplePresence &);
 
 private Q_SLOTS:
-    void initTestCaseImpl();
-    void initImpl();
+    void initTestCase();
 
     void testSimplePresence();
 
-    void cleanupImpl();
-    void cleanupTestCaseImpl();
+    void cleanupTestCase();
+
+private:
+    QString mConnName, mConnPath;
+    ContactsConnection *mConnService;
+    Connection *mConn;
 };
 
 void TestConnBasics::expectConnReady(uint newStatus, uint newStatusReason)
 {
-    qDebug() << "==>>> connection changed to status" << newStatus;
+    qDebug() << "connection changed to status" << newStatus;
     switch (newStatus) {
     case Connection::StatusDisconnected:
         qWarning() << "Disconnected";
@@ -77,9 +80,9 @@ void TestConnBasics::expectPresenceAvailable(const Telepathy::SimplePresence &pr
     mLoop->exit(1);
 }
 
-void TestConnBasics::initTestCaseImpl()
+void TestConnBasics::initTestCase()
 {
-    Test::initTestCaseImpl();
+    initTestCaseImpl();
 
     g_type_init();
     g_set_prgname("conn-basics");
@@ -95,8 +98,8 @@ void TestConnBasics::initTestCaseImpl()
             "protocol", "contacts",
             0));
     QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService), "contacts", &name,
-                &connPath, &error));
+    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
+                "contacts", &name, &connPath, &error));
     QVERIFY(error == 0);
 
     QVERIFY(name != 0);
@@ -107,29 +110,31 @@ void TestConnBasics::initTestCaseImpl()
 
     g_free(name);
     g_free(connPath);
-}
 
-void TestConnBasics::initImpl()
-{
     mConn = new Connection(mConnName, mConnPath);
+    QCOMPARE(mConn->isReady(), false);
 
+    mConn->requestConnect();
+
+    qDebug() << "waiting connection to become ready";
     QVERIFY(connect(mConn->becomeReady(),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
+    qDebug() << "connection is now ready";
 
-    mConn->requestConnect();
-
-    QVERIFY(connect(mConn,
-                    SIGNAL(statusChanged(uint, uint)),
-                    SLOT(expectConnReady(uint, uint))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn,
-                       SIGNAL(statusChanged(uint, uint)),
-                       this,
-                       SLOT(expectConnReady(uint, uint))));
-    QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
+    if (mConn->status() != Connection::StatusConnected) {
+        QVERIFY(connect(mConn,
+                        SIGNAL(statusChanged(uint, uint)),
+                        SLOT(expectConnReady(uint, uint))));
+        QCOMPARE(mLoop->exec(), 0);
+        QVERIFY(disconnect(mConn,
+                           SIGNAL(statusChanged(uint, uint)),
+                           this,
+                           SLOT(expectConnReady(uint, uint))));
+        QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
+    }
 }
 
 void TestConnBasics::testSimplePresence()
@@ -155,7 +160,7 @@ void TestConnBasics::testSimplePresence()
                 "status message:" << mConn->selfPresence().statusMessage;
 }
 
-void TestConnBasics::cleanupImpl()
+void TestConnBasics::cleanupTestCase()
 {
     if (mConn != 0) {
         // Disconnect and wait for the readiness change
@@ -175,16 +180,13 @@ void TestConnBasics::cleanupImpl()
         delete mConn;
         mConn = 0;
     }
-}
 
-void TestConnBasics::cleanupTestCaseImpl()
-{
     if (mConnService != 0) {
         g_object_unref(mConnService);
         mConnService = 0;
     }
 
-    Test::cleanupTestCaseImpl();
+    cleanupTestCaseImpl();
 }
 
 QTEST_MAIN(TestConnBasics)
