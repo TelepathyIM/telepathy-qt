@@ -126,21 +126,19 @@ struct Channel::Private
 Channel::Private::Private(Channel *parent, Connection *connection)
     : parent(parent),
       baseInterface(new ChannelInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent))
+                    parent->busName(), parent->objectPath(), parent)),
+      group(0),
+      properties(0),
+      readiness(ReadinessJustCreated),
+      targetHandleType(0),
+      targetHandle(0),
+      groupFlags(0),
+      groupHaveMembers(false),
+      groupAreHandleOwnersAvailable(false),
+      groupIsSelfHandleTracked(false),
+      groupSelfHandle(0)
 {
     debug() << "Creating new Channel";
-
-    group = 0;
-    properties = 0;
-    readiness = ReadinessJustCreated;
-    targetHandleType = 0;
-    targetHandle = 0;
-
-    groupFlags = 0;
-    groupHaveMembers = false;
-    groupAreHandleOwnersAvailable = false;
-    groupIsSelfHandleTracked = false;
-    groupSelfHandle = 0;
 
     debug() << " Connecting to Channel::Closed()";
     parent->connect(baseInterface,
