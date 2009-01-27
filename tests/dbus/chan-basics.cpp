@@ -36,11 +36,13 @@ protected Q_SLOTS:
 
 private Q_SLOTS:
     void initTestCase();
+    void init();
 
     void testRequestHandle();
     void testCreateChannel();
     void testEnsureChannel();
 
+    void cleanup();
     void cleanupTestCase();
 
 private:
@@ -218,6 +220,11 @@ void TestChanBasics::initTestCase()
     QVERIFY(mConn->requestsInterface() != 0);
 }
 
+void TestChanBasics::init()
+{
+    initImpl();
+}
+
 void TestChanBasics::testRequestHandle()
 {
     // Test identifiers
@@ -264,6 +271,11 @@ void TestChanBasics::testEnsureChannel()
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectEnsureChannelFinished(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+}
+
+void TestChanBasics::cleanup()
+{
+    cleanupImpl();
 }
 
 void TestChanBasics::cleanupTestCase()
