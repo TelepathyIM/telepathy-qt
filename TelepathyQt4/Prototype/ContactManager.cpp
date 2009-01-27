@@ -719,13 +719,14 @@ void ContactManager::slotMembersChanged(const QString& message,
 {
     Q_UNUSED(actor);
     Q_UNUSED(reason);
-//    Q_UNUSED(message);
 
-//    qDebug() << "Members Changed" << message << "Actor" << actor << "Reason" <<reason;
-//    qDebug() << "Members Added" << members_added.size();
-//    qDebug() << "Members Removed" << members_removed.size();
-//    qDebug() << "Members Local Pending" << local_pending.size();
-//    qDebug() << "Members Remote Pending" << remote_pending.size();
+#ifdef ENABLE_DEBUG_OUTPUT_
+    qDebug() << "Members Changed" << message << "Actor" << actor << "Reason" <<reason;
+    qDebug() << "Members Added" << members_added.size();
+    qDebug() << "Members Removed" << members_removed.size();
+    qDebug() << "Members Local Pending" << local_pending.size();
+    qDebug() << "Members Remote Pending" << remote_pending.size();
+#endif
     // Figure out handles that we need to look up.
     // Batch them up to minimize roundtrips.
     
