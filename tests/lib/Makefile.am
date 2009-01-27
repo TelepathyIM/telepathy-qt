@@ -1,3 +1,5 @@
+SUBDIRS = echo2
+
 AM_CFLAGS = $(ERROR_CFLAGS)
 
 MOC_INCLUDES = \
