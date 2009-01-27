@@ -27,9 +27,11 @@ public:
 
 private Q_SLOTS:
     void initTestCase();
+    void init();
 
     void testBasics();
 
+    void cleanup();
     void cleanupTestCase();
 
 private:
@@ -50,6 +52,11 @@ void TestCmBasics::initTestCase()
         NULL));
     QVERIFY(mCMService != 0);
     QVERIFY(tp_base_connection_manager_register(mCMService));
+}
+
+void TestCmBasics::init()
+{
+    initImpl();
 
     mCM = new ConnectionManager("simple");
     QCOMPARE(mCM->isReady(), false);
@@ -94,13 +101,18 @@ void TestCmBasics::testBasics()
     QCOMPARE(mCM->supportedProtocols(), QStringList() << "simple");
 }
 
-void TestCmBasics::cleanupTestCase()
+void TestCmBasics::cleanup()
 {
     if (mCM) {
         delete mCM;
         mCM = 0;
     }
 
+    cleanupImpl();
+}
+
+void TestCmBasics::cleanupTestCase()
+{
     if (mCMService) {
         g_object_unref(mCMService);
         mCMService = 0;
