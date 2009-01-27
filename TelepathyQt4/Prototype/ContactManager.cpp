@@ -856,6 +856,7 @@ void ContactManager::slotMembersChanged(const QString& message,
 #ifdef ENABLE_DEBUG_OUTPUT_                      
                             qDebug() << "Added Handle to Subscribed List"<< handle;
 #endif
+                            Q_ASSERT( current_contact->type() == Contact::CT_Subscribed );
                             d->m_members.insert(handle, current_contact);
                             //d->m_subscribed.insert(handle, current_contact);
                         }
@@ -864,30 +865,40 @@ void ContactManager::slotMembersChanged(const QString& message,
 #ifdef ENABLE_DEBUG_OUTPUT_                            
                             qDebug() << "Subscribed Contact already in contactlist"<< handle;
 #endif
-
-                            if (d->m_members[handle]->type()==Contact::CT_LocalPending)
+#if 1 // Don't understand this code.
+                            
+                            if (d->m_members[handle]->type() == Contact::CT_LocalPending)
                             {
 #ifdef ENABLE_DEBUG_OUTPUT_
-                                qDebug() << "Changed Subscribed Contact to local pending"<< handle;
+                                qDebug() << "Changed Subscribed Contact to local pending:"<< d->m_members[handle]->name();
+                                qDebug() << "Current type: " << d->m_members[handle]->type();
 #endif
                                 d->m_members[handle]->setType(Contact::CT_LocalPending);
+
+                                // TODO: Signal?
                             }
                             else
                             {
+#endif
                                 d->m_members[handle]->setType(Contact::CT_Subscribed);
                                 if (d->m_remotePending.contains(handle))
                                     d->m_remotePending.remove(handle);
                                 if (d->m_localPending.contains(handle))
                                     d->m_localPending.remove(handle);
-                                  
+#ifdef ENABLE_DEBUG_OUTPUT_
+                                qDebug() << "Signal for Subscribed Contact:"<< d->m_members[handle]->name();
+#endif
+                                emit signalContactSubscribed( this,  d->m_members[handle] );
+#if 1
                             }
+#endif
+
 #ifdef ENABLE_DEBUG_OUTPUT_
                             qDebug() << "delete Contact object later:" << current_contact->name();;
 #endif
                             current_contact->deleteLater();
                         }
 
-                        emit signalContactSubscribed( this,  d->m_members[handle] );
                     }
                 }
             }
