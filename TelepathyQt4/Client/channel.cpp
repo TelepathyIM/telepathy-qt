@@ -30,6 +30,7 @@
 #include <TelepathyQt4/Constants>
 
 #include <QQueue>
+#include <QTimer>
 
 /**
  * \addtogroup clientsideproxies Client-side proxies
@@ -68,7 +69,6 @@ struct Channel::Private
     void introspectGroupFallbackMembers();
     void introspectGroupFallbackLocalPending();
     void introspectGroupFallbackSelfHandle();
-    void continueIntrospection();
 
     void extract0177MainProps(const QVariantMap &props);
     void extract0176GroupProps(const QVariantMap &props);
@@ -160,8 +160,6 @@ Channel::Private::Private(Channel *parent, Connection *connection)
             "invalid! Channel will be stillborn.";
         readiness = ReadinessDead;
     }
-
-    introspectQueue.enqueue(&Private::introspectMain);
 }
 
 void Channel::Private::introspectMain()
@@ -302,18 +300,6 @@ void Channel::Private::introspectGroupFallbackSelfHandle()
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
                     SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
-}
-
-void Channel::Private::continueIntrospection()
-{
-    if (readiness < ReadinessFull) {
-        if (introspectQueue.isEmpty()) {
-            changeReadiness(ReadinessFull);
-        }
-        else {
-            (this->*introspectQueue.dequeue())();
-        }
-    }
 }
 
 void Channel::Private::extract0177MainProps(const QVariantMap &props)
@@ -540,9 +526,8 @@ Channel::Channel(Connection *connection,
       OptionalInterfaceFactory<Channel>(this),
       mPriv(new Private(this, connection))
 {
-    // Introspection continued here so mPriv will be initialized (unlike if we
-    // continued it from the Private constructor)
-    mPriv->continueIntrospection();
+    mPriv->introspectQueue.enqueue(&Private::introspectMain);
+    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
 /**
@@ -1257,7 +1242,7 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
     // Add extraction (and possible fallbacks) in similar functions,
     // called from here
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
@@ -1277,7 +1262,7 @@ void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
 
     debug() << "Got reply to fallback Channel::GetChannelType()";
     mPriv->channelType = reply.value();
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
@@ -1298,7 +1283,7 @@ void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
     debug() << "Got reply to fallback Channel::GetHandle()";
     mPriv->targetHandleType = reply.argumentAt<0>();
     mPriv->targetHandle = reply.argumentAt<1>();
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
@@ -1319,7 +1304,7 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
     debug() << "Got reply to fallback Channel::GetInterfaces()";
     mPriv->interfaces = reply.value();
     mPriv->nowHaveInterfaces();
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::onClosed()
@@ -1372,7 +1357,7 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)
     mPriv->extract0176GroupProps(props);
     // Add extraction (and possible fallbacks) in similar functions, called from here
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::gotGroupFlags(QDBusPendingCallWatcher *watcher)
@@ -1394,7 +1379,7 @@ void Channel::gotGroupFlags(QDBusPendingCallWatcher *watcher)
         }
     }
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
@@ -1417,7 +1402,7 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
         }
     }
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::gotLocalPending(QDBusPendingCallWatcher *watcher)
@@ -1439,7 +1424,7 @@ void Channel::gotLocalPending(QDBusPendingCallWatcher *watcher)
         }
     }
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
@@ -1455,7 +1440,7 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
         mPriv->groupSelfHandle = reply.value();
     }
 
-    mPriv->continueIntrospection();
+    continueIntrospection();
 }
 
 void Channel::onGroupFlagsChanged(uint added, uint removed)
@@ -1639,6 +1624,18 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
         debug() << " Emitting groupSelfHandleChanged with new self handle" <<
             newSelfHandle;
         emit groupSelfHandleChanged(newSelfHandle);
+    }
+}
+
+void Channel::continueIntrospection()
+{
+    if (mPriv->readiness < ReadinessFull) {
+        if (mPriv->introspectQueue.isEmpty()) {
+            mPriv->changeReadiness(ReadinessFull);
+        }
+        else {
+            (mPriv->*(mPriv->introspectQueue.dequeue()))();
+        }
     }
 }
 

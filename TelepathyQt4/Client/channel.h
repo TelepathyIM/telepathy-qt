@@ -273,6 +273,8 @@ private Q_SLOTS:
     void onHandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&);
     void onSelfHandleChanged(uint);
 
+    void continueIntrospection();
+
 private:
     struct Private;
     friend struct Private;
