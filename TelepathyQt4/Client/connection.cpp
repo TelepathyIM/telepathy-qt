@@ -903,7 +903,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<uint> reply = *watcher;
 
     if (reply.isError()) {
-        warning().nospace() << "GetStatus() failed with" <<
+        warning().nospace() << "GetStatus() failed with " <<
             reply.error().name() << ":" << reply.error().message();
         invalidate(QLatin1String(TELEPATHY_ERROR_DISCONNECTED),
                 QString("ConnectionStatusReason = %1").arg(uint(mPriv->pendingStatusReason)));
@@ -965,9 +965,9 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         }
     }
     else {
-        warning().nospace() << "GetInterfaces() failed with" <<
+        warning().nospace() << "GetInterfaces() failed with " <<
             reply.error().name() << ":" << reply.error().message() <<
-            "- assuming no new interfaces";
+            " - assuming no new interfaces";
     }
 
     continueIntrospection();
@@ -992,7 +992,7 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
         mPriv->missingFeatures |= FeatureSelfPresence;
         debug() << "Adding FeatureSelfPresence to missing features";
 
-        warning().nospace() << "Getting simple presence statuses failed with" <<
+        warning().nospace() << "Getting simple presence statuses failed with " <<
             reply.error().name() << ":" << reply.error().message();
     }
 
@@ -1010,7 +1010,7 @@ void Connection::gotSelfPresence(QDBusPendingCallWatcher *watcher)
         debug() << "Got self presence:" << mPriv->selfPresence.type;
     }
     else {
-        warning().nospace() << "Getting self presence status failed with" <<
+        warning().nospace() << "Getting self presence status failed with " <<
             reply.error().name() << ":" << reply.error().message();
     }
 
@@ -1028,7 +1028,7 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
         debug() << "Got self handle" << mPriv->selfHandle;
     }
     else {
-        warning().nospace() << "Getting self handle failed with" <<
+        warning().nospace() << "Getting self handle failed with " <<
             reply.error().name() << ":" << reply.error().message();
     }
 
