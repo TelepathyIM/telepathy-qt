@@ -58,7 +58,7 @@ namespace Client
 struct Channel::Private
 {
     // Public object
-    Channel &parent;
+    Channel *parent;
 
     // Instance of generated interface class
     ChannelInterface *baseInterface;
@@ -102,7 +102,7 @@ struct Channel::Private
     // Group remove info
     GroupMemberChangeInfo groupSelfRemoveInfo;
 
-    Private(Channel &parent, Connection *connection)
+    Private(Channel *parent, Connection *connection)
         : parent(parent)
     {
         debug() << "Creating new Channel";
@@ -121,19 +121,19 @@ struct Channel::Private
         groupSelfHandle = 0;
 
         debug() << " Connecting to Channel::Closed()";
-        parent.connect(baseInterface,
-                       SIGNAL(Closed()),
-                       SLOT(onClosed()));
+        parent->connect(baseInterface,
+                        SIGNAL(Closed()),
+                        SLOT(onClosed()));
 
         debug() << " Connection to owning connection's lifetime signals";
-        parent.connect(connection,
-                       SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
-                                          const QString &, const QString &)),
-                       SLOT(onConnectionInvalidated()));
+        parent->connect(connection,
+                        SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                                           const QString &, const QString &)),
+                        SLOT(onConnectionInvalidated()));
 
-        parent.connect(connection,
-                       SIGNAL(destroyed()),
-                       SLOT(onConnectionDestroyed()));
+        parent->connect(connection,
+                        SIGNAL(destroyed()),
+                        SLOT(onConnectionDestroyed()));
 
         if (!connection->isValid()) {
             warning() << "Connection given as the owner for a Channel was "
@@ -147,47 +147,47 @@ struct Channel::Private
     void introspectMain()
     {
         if (!properties) {
-            properties = parent.propertiesInterface();
+            properties = parent->propertiesInterface();
             Q_ASSERT(properties != 0);
         }
 
         debug() << "Calling Properties::GetAll(Channel)";
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
-                    properties->GetAll(TELEPATHY_INTERFACE_CHANNEL), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+                    properties->GetAll(TELEPATHY_INTERFACE_CHANNEL), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
     }
 
     void introspectMainFallbackChannelType()
     {
         debug() << "Calling Channel::GetChannelType()";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(baseInterface->GetChannelType(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotChannelType(QDBusPendingCallWatcher*)));
+            new QDBusPendingCallWatcher(baseInterface->GetChannelType(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotChannelType(QDBusPendingCallWatcher*)));
     }
 
     void introspectMainFallbackHandle()
     {
         debug() << "Calling Channel::GetHandle()";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(baseInterface->GetHandle(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotHandle(QDBusPendingCallWatcher*)));
+            new QDBusPendingCallWatcher(baseInterface->GetHandle(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotHandle(QDBusPendingCallWatcher*)));
     }
 
     void introspectMainFallbackInterfaces()
     {
         debug() << "Calling Channel::GetInterfaces()";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
+            new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
     }
 
     void introspectGroup()
@@ -195,44 +195,44 @@ struct Channel::Private
         Q_ASSERT(properties != 0);
 
         if (!group) {
-            group = parent.groupInterface();
+            group = parent->groupInterface();
             Q_ASSERT(group != 0);
         }
 
         debug() << "Connecting to Channel.Interface.Group::GroupFlagsChanged";
-        parent.connect(group,
-                       SIGNAL(GroupFlagsChanged(uint, uint)),
-                       SLOT(onGroupFlagsChanged(uint, uint)));
+        parent->connect(group,
+                        SIGNAL(GroupFlagsChanged(uint, uint)),
+                        SLOT(onGroupFlagsChanged(uint, uint)));
 
         debug() << "Connecting to Channel.Interface.Group::MembersChanged";
-        parent.connect(group,
-                       SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
-                               const Telepathy::UIntList&, const Telepathy::UIntList&,
-                               const Telepathy::UIntList&, uint, uint)),
-                       SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
-                               const Telepathy::UIntList&, const Telepathy::UIntList&,
-                               const Telepathy::UIntList&, uint, uint)));
+        parent->connect(group,
+                        SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, uint, uint)),
+                        SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, uint, uint)));
 
         debug() << "Connecting to Channel.Interface.Group::HandleOwnersChanged";
-        parent.connect(group,
-                       SIGNAL(HandleOwnersChanged(const Telepathy::HandleOwnerMap&,
-                               const Telepathy::UIntList&)),
-                       SLOT(onHandleOwnersChanged(const Telepathy::HandleOwnerMap&,
-                               const Telepathy::UIntList&)));
+        parent->connect(group,
+                        SIGNAL(HandleOwnersChanged(const Telepathy::HandleOwnerMap&,
+                                const Telepathy::UIntList&)),
+                        SLOT(onHandleOwnersChanged(const Telepathy::HandleOwnerMap&,
+                                const Telepathy::UIntList&)));
 
         debug() << "Connecting to Channel.Interface.Group::SelfHandleChanged";
-        parent.connect(group,
-                       SIGNAL(SelfHandleChanged(uint)),
-                       SLOT(onSelfHandleChanged(uint)));
+        parent->connect(group,
+                        SIGNAL(SelfHandleChanged(uint)),
+                        SLOT(onSelfHandleChanged(uint)));
 
         debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
                     properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP),
-                    &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotGroupProperties(QDBusPendingCallWatcher*)));
+                    parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotGroupProperties(QDBusPendingCallWatcher*)));
     }
 
     void introspectGroupFallbackFlags()
@@ -241,10 +241,10 @@ struct Channel::Private
 
         debug() << "Calling Channel.Interface.Group::GetGroupFlags()";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(group->GetGroupFlags(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotGroupFlags(QDBusPendingCallWatcher*)));
+            new QDBusPendingCallWatcher(group->GetGroupFlags(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotGroupFlags(QDBusPendingCallWatcher*)));
     }
 
     void introspectGroupFallbackMembers()
@@ -253,10 +253,10 @@ struct Channel::Private
 
         debug() << "Calling Channel.Interface.Group::GetAllMembers()";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(group->GetAllMembers(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotAllMembers(QDBusPendingCallWatcher*)));
+            new QDBusPendingCallWatcher(group->GetAllMembers(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotAllMembers(QDBusPendingCallWatcher*)));
     }
 
     void introspectGroupFallbackLocalPending()
@@ -266,10 +266,10 @@ struct Channel::Private
         debug() << "Calling Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(group->GetLocalPendingMembersWithInfo(),
-                    &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotLocalPending(QDBusPendingCallWatcher*)));
+                    parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotLocalPending(QDBusPendingCallWatcher*)));
     }
 
     void introspectGroupFallbackSelfHandle()
@@ -278,10 +278,10 @@ struct Channel::Private
 
         debug() << "Calling Channel.Interface.Group::GetSelfHandle()";
         QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(group->GetSelfHandle(), &parent);
-        parent.connect(watcher,
-                       SIGNAL(finished(QDBusPendingCallWatcher*)),
-                       SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
+            new QDBusPendingCallWatcher(group->GetSelfHandle(), parent);
+        parent->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher*)),
+                        SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
     }
 
     void continueIntrospection()
@@ -445,7 +445,7 @@ struct Channel::Private
         }
 
         readiness = newReadiness;
-        emit parent.readinessChanged(newReadiness);
+        emit parent->readinessChanged(newReadiness);
     }
 };
 
@@ -520,7 +520,7 @@ Channel::Channel(Connection *connection,
     : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
             objectPath, parent),
       OptionalInterfaceFactory<Channel>(this),
-      mPriv(new Private(*this, connection))
+      mPriv(new Private(this, connection))
 {
     mPriv->baseInterface = new ChannelInterface(this->dbusConnection(),
             this->busName(), this->objectPath(), this);
