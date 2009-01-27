@@ -420,7 +420,6 @@ void Channel::Private::changeReadiness(Readiness newReadiness)
         case ReadinessDead:
         case ReadinessClosed:
         default:
-            Q_ASSERT(false);
             break;
     }
 
