@@ -405,6 +405,7 @@ void Channel::Private::changeReadiness(Readiness newReadiness)
         case ReadinessDead:
         case ReadinessClosed:
         default:
+            introspectQueue.clear();
             break;
     }
 
