@@ -57,6 +57,26 @@ namespace Client
 
 struct Channel::Private
 {
+    Private(Channel *parent, Connection *connection);
+
+    void introspectMain();
+    void introspectMainFallbackChannelType();
+    void introspectMainFallbackHandle();
+    void introspectMainFallbackInterfaces();
+    void introspectGroup();
+    void introspectGroupFallbackFlags();
+    void introspectGroupFallbackMembers();
+    void introspectGroupFallbackLocalPending();
+    void introspectGroupFallbackSelfHandle();
+    void continueIntrospection();
+
+    void extract0177MainProps(const QVariantMap &props);
+    void extract0176GroupProps(const QVariantMap &props);
+
+    void nowHaveInterfaces();
+
+    void changeReadiness(Readiness newReadiness);
+
     // Public object
     Channel *parent;
 
@@ -101,353 +121,353 @@ struct Channel::Private
 
     // Group remove info
     GroupMemberChangeInfo groupSelfRemoveInfo;
+};
 
-    Private(Channel *parent, Connection *connection)
-        : parent(parent)
-    {
-        debug() << "Creating new Channel";
+Channel::Private::Private(Channel *parent, Connection *connection)
+    : parent(parent)
+{
+    debug() << "Creating new Channel";
 
-        baseInterface = 0;
-        group = 0;
-        properties = 0;
-        readiness = ReadinessJustCreated;
-        targetHandleType = 0;
-        targetHandle = 0;
+    baseInterface = 0;
+    group = 0;
+    properties = 0;
+    readiness = ReadinessJustCreated;
+    targetHandleType = 0;
+    targetHandle = 0;
 
-        groupFlags = 0;
-        groupHaveMembers = false;
-        groupAreHandleOwnersAvailable = false;
-        groupIsSelfHandleTracked = false;
-        groupSelfHandle = 0;
+    groupFlags = 0;
+    groupHaveMembers = false;
+    groupAreHandleOwnersAvailable = false;
+    groupIsSelfHandleTracked = false;
+    groupSelfHandle = 0;
 
-        debug() << " Connecting to Channel::Closed()";
-        parent->connect(baseInterface,
-                        SIGNAL(Closed()),
-                        SLOT(onClosed()));
+    debug() << " Connecting to Channel::Closed()";
+    parent->connect(baseInterface,
+                    SIGNAL(Closed()),
+                    SLOT(onClosed()));
 
-        debug() << " Connection to owning connection's lifetime signals";
-        parent->connect(connection,
-                        SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
-                                           const QString &, const QString &)),
-                        SLOT(onConnectionInvalidated()));
+    debug() << " Connection to owning connection's lifetime signals";
+    parent->connect(connection,
+                    SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                                       const QString &, const QString &)),
+                    SLOT(onConnectionInvalidated()));
 
-        parent->connect(connection,
-                        SIGNAL(destroyed()),
-                        SLOT(onConnectionDestroyed()));
+    parent->connect(connection,
+                    SIGNAL(destroyed()),
+                    SLOT(onConnectionDestroyed()));
 
-        if (!connection->isValid()) {
-            warning() << "Connection given as the owner for a Channel was "
-                "invalid! Channel will be stillborn.";
-            readiness = ReadinessDead;
-        }
-
-        introspectQueue.enqueue(&Private::introspectMain);
+    if (!connection->isValid()) {
+        warning() << "Connection given as the owner for a Channel was "
+            "invalid! Channel will be stillborn.";
+        readiness = ReadinessDead;
     }
 
-    void introspectMain()
-    {
-        if (!properties) {
-            properties = parent->propertiesInterface();
-            Q_ASSERT(properties != 0);
-        }
+    introspectQueue.enqueue(&Private::introspectMain);
+}
 
-        debug() << "Calling Properties::GetAll(Channel)";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(
-                    properties->GetAll(TELEPATHY_INTERFACE_CHANNEL), parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
-    }
-
-    void introspectMainFallbackChannelType()
-    {
-        debug() << "Calling Channel::GetChannelType()";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(baseInterface->GetChannelType(), parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotChannelType(QDBusPendingCallWatcher*)));
-    }
-
-    void introspectMainFallbackHandle()
-    {
-        debug() << "Calling Channel::GetHandle()";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(baseInterface->GetHandle(), parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotHandle(QDBusPendingCallWatcher*)));
-    }
-
-    void introspectMainFallbackInterfaces()
-    {
-        debug() << "Calling Channel::GetInterfaces()";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
-    }
-
-    void introspectGroup()
-    {
+void Channel::Private::introspectMain()
+{
+    if (!properties) {
+        properties = parent->propertiesInterface();
         Q_ASSERT(properties != 0);
-
-        if (!group) {
-            group = parent->groupInterface();
-            Q_ASSERT(group != 0);
-        }
-
-        debug() << "Connecting to Channel.Interface.Group::GroupFlagsChanged";
-        parent->connect(group,
-                        SIGNAL(GroupFlagsChanged(uint, uint)),
-                        SLOT(onGroupFlagsChanged(uint, uint)));
-
-        debug() << "Connecting to Channel.Interface.Group::MembersChanged";
-        parent->connect(group,
-                        SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, uint, uint)),
-                        SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, uint, uint)));
-
-        debug() << "Connecting to Channel.Interface.Group::HandleOwnersChanged";
-        parent->connect(group,
-                        SIGNAL(HandleOwnersChanged(const Telepathy::HandleOwnerMap&,
-                                const Telepathy::UIntList&)),
-                        SLOT(onHandleOwnersChanged(const Telepathy::HandleOwnerMap&,
-                                const Telepathy::UIntList&)));
-
-        debug() << "Connecting to Channel.Interface.Group::SelfHandleChanged";
-        parent->connect(group,
-                        SIGNAL(SelfHandleChanged(uint)),
-                        SLOT(onSelfHandleChanged(uint)));
-
-        debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(
-                    properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP),
-                    parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotGroupProperties(QDBusPendingCallWatcher*)));
     }
 
-    void introspectGroupFallbackFlags()
-    {
+    debug() << "Calling Properties::GetAll(Channel)";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                properties->GetAll(TELEPATHY_INTERFACE_CHANNEL), parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+}
+
+void Channel::Private::introspectMainFallbackChannelType()
+{
+    debug() << "Calling Channel::GetChannelType()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(baseInterface->GetChannelType(), parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotChannelType(QDBusPendingCallWatcher*)));
+}
+
+void Channel::Private::introspectMainFallbackHandle()
+{
+    debug() << "Calling Channel::GetHandle()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(baseInterface->GetHandle(), parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotHandle(QDBusPendingCallWatcher*)));
+}
+
+void Channel::Private::introspectMainFallbackInterfaces()
+{
+    debug() << "Calling Channel::GetInterfaces()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(baseInterface->GetInterfaces(), parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
+}
+
+void Channel::Private::introspectGroup()
+{
+    Q_ASSERT(properties != 0);
+
+    if (!group) {
+        group = parent->groupInterface();
         Q_ASSERT(group != 0);
-
-        debug() << "Calling Channel.Interface.Group::GetGroupFlags()";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(group->GetGroupFlags(), parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotGroupFlags(QDBusPendingCallWatcher*)));
     }
 
-    void introspectGroupFallbackMembers()
-    {
-        Q_ASSERT(group != 0);
+    debug() << "Connecting to Channel.Interface.Group::GroupFlagsChanged";
+    parent->connect(group,
+                    SIGNAL(GroupFlagsChanged(uint, uint)),
+                    SLOT(onGroupFlagsChanged(uint, uint)));
 
-        debug() << "Calling Channel.Interface.Group::GetAllMembers()";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(group->GetAllMembers(), parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotAllMembers(QDBusPendingCallWatcher*)));
-    }
+    debug() << "Connecting to Channel.Interface.Group::MembersChanged";
+    parent->connect(group,
+                    SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
+                            const Telepathy::UIntList&, const Telepathy::UIntList&,
+                            const Telepathy::UIntList&, uint, uint)),
+                    SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
+                            const Telepathy::UIntList&, const Telepathy::UIntList&,
+                            const Telepathy::UIntList&, uint, uint)));
 
-    void introspectGroupFallbackLocalPending()
-    {
-        Q_ASSERT(group != 0);
+    debug() << "Connecting to Channel.Interface.Group::HandleOwnersChanged";
+    parent->connect(group,
+                    SIGNAL(HandleOwnersChanged(const Telepathy::HandleOwnerMap&,
+                            const Telepathy::UIntList&)),
+                    SLOT(onHandleOwnersChanged(const Telepathy::HandleOwnerMap&,
+                            const Telepathy::UIntList&)));
 
-        debug() << "Calling Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(group->GetLocalPendingMembersWithInfo(),
-                    parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotLocalPending(QDBusPendingCallWatcher*)));
-    }
+    debug() << "Connecting to Channel.Interface.Group::SelfHandleChanged";
+    parent->connect(group,
+                    SIGNAL(SelfHandleChanged(uint)),
+                    SLOT(onSelfHandleChanged(uint)));
 
-    void introspectGroupFallbackSelfHandle()
-    {
-        Q_ASSERT(group != 0);
+    debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP),
+                parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotGroupProperties(QDBusPendingCallWatcher*)));
+}
 
-        debug() << "Calling Channel.Interface.Group::GetSelfHandle()";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(group->GetSelfHandle(), parent);
-        parent->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher*)),
-                        SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
-    }
+void Channel::Private::introspectGroupFallbackFlags()
+{
+    Q_ASSERT(group != 0);
 
-    void continueIntrospection()
-    {
-        if (readiness < ReadinessFull) {
-            if (introspectQueue.isEmpty()) {
-                changeReadiness(ReadinessFull);
-            }
-            else {
-                (this->*introspectQueue.dequeue())();
-            }
-        }
-    }
+    debug() << "Calling Channel.Interface.Group::GetGroupFlags()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(group->GetGroupFlags(), parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotGroupFlags(QDBusPendingCallWatcher*)));
+}
 
-    void extract0177MainProps(const QVariantMap &props)
-    {
-        bool haveProps = props.size() >= 4
-                      && props.contains("ChannelType")
-                      && !qdbus_cast<QString>(props["ChannelType"]).isEmpty()
-                      && props.contains("Interfaces")
-                      && props.contains("TargetHandle")
-                      && props.contains("TargetHandleType");
+void Channel::Private::introspectGroupFallbackMembers()
+{
+    Q_ASSERT(group != 0);
 
-        if (!haveProps) {
-            warning() << " Properties specified in 0.17.7 not found";
+    debug() << "Calling Channel.Interface.Group::GetAllMembers()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(group->GetAllMembers(), parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotAllMembers(QDBusPendingCallWatcher*)));
+}
 
-            introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
-            introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
-            introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
+void Channel::Private::introspectGroupFallbackLocalPending()
+{
+    Q_ASSERT(group != 0);
+
+    debug() << "Calling Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(group->GetLocalPendingMembersWithInfo(),
+                parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotLocalPending(QDBusPendingCallWatcher*)));
+}
+
+void Channel::Private::introspectGroupFallbackSelfHandle()
+{
+    Q_ASSERT(group != 0);
+
+    debug() << "Calling Channel.Interface.Group::GetSelfHandle()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(group->GetSelfHandle(), parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
+}
+
+void Channel::Private::continueIntrospection()
+{
+    if (readiness < ReadinessFull) {
+        if (introspectQueue.isEmpty()) {
+            changeReadiness(ReadinessFull);
         }
         else {
-            debug() << " Found properties specified in 0.17.7";
-
-            channelType = qdbus_cast<QString>(props["ChannelType"]);
-            interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
-            targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
-            targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
-
-            nowHaveInterfaces();
+            (this->*introspectQueue.dequeue())();
         }
     }
+}
 
-    void extract0176GroupProps(const QVariantMap &props)
-    {
-        bool haveProps = props.size() >= 6
-                      && (props.contains("GroupFlags")
-                      && (qdbus_cast<uint>(props["GroupFlags"]) &
-                          ChannelGroupFlagProperties))
-                      && props.contains("HandleOwners")
-                      && props.contains("LocalPendingMembers")
-                      && props.contains("Members")
-                      && props.contains("RemotePendingMembers")
-                      && props.contains("SelfHandle");
+void Channel::Private::extract0177MainProps(const QVariantMap &props)
+{
+    bool haveProps = props.size() >= 4
+                  && props.contains("ChannelType")
+                  && !qdbus_cast<QString>(props["ChannelType"]).isEmpty()
+                  && props.contains("Interfaces")
+                  && props.contains("TargetHandle")
+                  && props.contains("TargetHandleType");
 
-        if (!haveProps) {
-            warning() << " Properties specified in 0.17.6 not found";
-            warning() << "  Handle owners and self handle tracking disabled";
+    if (!haveProps) {
+        warning() << " Properties specified in 0.17.7 not found";
 
-            introspectQueue.enqueue(&Private::introspectGroupFallbackFlags);
-            introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
-            introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPending);
-            introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
-        }
-        else {
-            debug() << " Found properties specified in 0.17.6";
+        introspectQueue.enqueue(&Private::introspectMainFallbackChannelType);
+        introspectQueue.enqueue(&Private::introspectMainFallbackHandle);
+        introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
+    }
+    else {
+        debug() << " Found properties specified in 0.17.7";
 
-            groupHaveMembers = true;
-            groupAreHandleOwnersAvailable = true;
-            groupIsSelfHandleTracked = true;
+        channelType = qdbus_cast<QString>(props["ChannelType"]);
+        interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+        targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
+        targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
 
-            groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
-            groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
-            groupMembers =
-                QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
-            groupRemotePending = QSet<uint>::fromList(
-                    qdbus_cast<UIntList>(props["RemotePendingMembers"]));
-            groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
+        nowHaveInterfaces();
+    }
+}
 
-            foreach (LocalPendingInfo info,
-                    qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
-                groupLocalPending[info.toBeAdded] =
-                    GroupMemberChangeInfo(info.actor, info.reason, info.message);
-            }
+void Channel::Private::extract0176GroupProps(const QVariantMap &props)
+{
+    bool haveProps = props.size() >= 6
+                  && (props.contains("GroupFlags")
+                  && (qdbus_cast<uint>(props["GroupFlags"]) &
+                      ChannelGroupFlagProperties))
+                  && props.contains("HandleOwners")
+                  && props.contains("LocalPendingMembers")
+                  && props.contains("Members")
+                  && props.contains("RemotePendingMembers")
+                  && props.contains("SelfHandle");
+
+    if (!haveProps) {
+        warning() << " Properties specified in 0.17.6 not found";
+        warning() << "  Handle owners and self handle tracking disabled";
+
+        introspectQueue.enqueue(&Private::introspectGroupFallbackFlags);
+        introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
+        introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPending);
+        introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
+    }
+    else {
+        debug() << " Found properties specified in 0.17.6";
+
+        groupHaveMembers = true;
+        groupAreHandleOwnersAvailable = true;
+        groupIsSelfHandleTracked = true;
+
+        groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
+        groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
+        groupMembers =
+            QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
+        groupRemotePending = QSet<uint>::fromList(
+                qdbus_cast<UIntList>(props["RemotePendingMembers"]));
+        groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
+
+        foreach (LocalPendingInfo info,
+                qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
+            groupLocalPending[info.toBeAdded] =
+                GroupMemberChangeInfo(info.actor, info.reason, info.message);
         }
     }
+}
 
-    void nowHaveInterfaces()
-    {
-        debug() << "Channel has" << interfaces.size() <<
-            "optional interfaces:" << interfaces;
+void Channel::Private::nowHaveInterfaces()
+{
+    debug() << "Channel has" << interfaces.size() <<
+        "optional interfaces:" << interfaces;
 
-        for (QStringList::const_iterator i = interfaces.begin();
-                                         i != interfaces.end();
-                                         ++i) {
-            if (*i == TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) {
-                introspectQueue.enqueue(&Private::introspectGroup);
-            }
+    for (QStringList::const_iterator i = interfaces.begin();
+                                     i != interfaces.end();
+                                     ++i) {
+        if (*i == TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) {
+            introspectQueue.enqueue(&Private::introspectGroup);
         }
     }
+}
 
-    void changeReadiness(Readiness newReadiness)
-    {
-        Q_ASSERT(newReadiness != readiness);
-        switch (readiness) {
-            case ReadinessJustCreated:
-                // We don't allow ReadinessClosed to be reached without ReadinessFull
-                // being reached at some point first.
-                Q_ASSERT((newReadiness == ReadinessFull) ||
-                         (newReadiness == ReadinessDead));
-                break;
-            case ReadinessFull:
-                Q_ASSERT((newReadiness == ReadinessDead) ||
-                         (newReadiness == ReadinessClosed));
-                break;
-            case ReadinessDead:
-            case ReadinessClosed:
-            default:
-                Q_ASSERT(false);
-                break;
-        }
-
-        debug() << "Channel readiness changed from" <<
-            readiness << "to" << newReadiness;
-
-        if (newReadiness == ReadinessFull) {
-            debug() << "Channel fully ready";
-            debug() << " Channel type" << channelType;
-            debug() << " Target handle" << targetHandle;
-            debug() << " Target handle type" << targetHandleType;
-
-            if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-                debug() << " Group: flags" << groupFlags;
-                if (groupAreHandleOwnersAvailable) {
-                    debug() << " Group: Number of handle owner mappings" <<
-                        groupHandleOwners.size();
-                }
-                else {
-                    debug() << " Group: No handle owners property present";
-                }
-                debug() << " Group: Number of current members" <<
-                    groupMembers.size();
-                debug() << " Group: Number of local pending members" <<
-                    groupLocalPending.size();
-                debug() << " Group: Number of remote pending members" <<
-                    groupRemotePending.size();
-                debug() << " Group: Self handle" << groupSelfHandle <<
-                    "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
-            }
-        }
-        else {
+void Channel::Private::changeReadiness(Readiness newReadiness)
+{
+    Q_ASSERT(newReadiness != readiness);
+    switch (readiness) {
+        case ReadinessJustCreated:
+            // We don't allow ReadinessClosed to be reached without ReadinessFull
+            // being reached at some point first.
+            Q_ASSERT((newReadiness == ReadinessFull) ||
+                     (newReadiness == ReadinessDead));
+            break;
+        case ReadinessFull:
             Q_ASSERT((newReadiness == ReadinessDead) ||
                      (newReadiness == ReadinessClosed));
-
-            debug() << "R.I.P. Channel.";
-
-            if (groupSelfRemoveInfo.isValid()) {
-                debug() << " Group: removed by  " << groupSelfRemoveInfo.actor();
-                debug() << "        because of  " << groupSelfRemoveInfo.reason();
-                debug() << "        with message" << groupSelfRemoveInfo.message();
-            }
-        }
-
-        readiness = newReadiness;
-        emit parent->readinessChanged(newReadiness);
+            break;
+        case ReadinessDead:
+        case ReadinessClosed:
+        default:
+            Q_ASSERT(false);
+            break;
     }
-};
+
+    debug() << "Channel readiness changed from" <<
+        readiness << "to" << newReadiness;
+
+    if (newReadiness == ReadinessFull) {
+        debug() << "Channel fully ready";
+        debug() << " Channel type" << channelType;
+        debug() << " Target handle" << targetHandle;
+        debug() << " Target handle type" << targetHandleType;
+
+        if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+            debug() << " Group: flags" << groupFlags;
+            if (groupAreHandleOwnersAvailable) {
+                debug() << " Group: Number of handle owner mappings" <<
+                    groupHandleOwners.size();
+            }
+            else {
+                debug() << " Group: No handle owners property present";
+            }
+            debug() << " Group: Number of current members" <<
+                groupMembers.size();
+            debug() << " Group: Number of local pending members" <<
+                groupLocalPending.size();
+            debug() << " Group: Number of remote pending members" <<
+                groupRemotePending.size();
+            debug() << " Group: Self handle" << groupSelfHandle <<
+                "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
+        }
+    }
+    else {
+        Q_ASSERT((newReadiness == ReadinessDead) ||
+                 (newReadiness == ReadinessClosed));
+
+        debug() << "R.I.P. Channel.";
+
+        if (groupSelfRemoveInfo.isValid()) {
+            debug() << " Group: removed by  " << groupSelfRemoveInfo.actor();
+            debug() << "        because of  " << groupSelfRemoveInfo.reason();
+            debug() << "        with message" << groupSelfRemoveInfo.message();
+        }
+    }
+
+    readiness = newReadiness;
+    emit parent->readinessChanged(newReadiness);
+}
 
 /**
  * \class Channel
