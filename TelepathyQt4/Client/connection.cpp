@@ -1091,8 +1091,7 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
                 "Connection does not support Requests Interface");
     }
 
-    if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")) ||
-        !request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"))) {
+    if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
         return new PendingChannel(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid 'request' argument");
     }
@@ -1143,8 +1142,7 @@ PendingChannel *Connection::ensureChannel(const QVariantMap &request)
                 "Connection does not support Requests Interface");
     }
 
-    if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")) ||
-        !request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"))) {
+    if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
         return new PendingChannel(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid 'request' argument");
     }
