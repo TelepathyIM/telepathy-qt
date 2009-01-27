@@ -6,17 +6,16 @@
 
 #include <QtTest/QtTest>
 
-class TestDoNothing : public QObject
+#include <tests/lib/test.h>
+
+class TestDoNothing : public Test
 {
     Q_OBJECT
 
 public:
     TestDoNothing(QObject *parent = 0)
-        : QObject(parent), mLoop(new QEventLoop(this))
+        : Test(parent)
     { }
-
-private:
-    QEventLoop *mLoop;
 
 private slots:
     void initTestCase();
@@ -29,42 +28,37 @@ private slots:
     void cleanupTestCase();
 };
 
-
 void TestDoNothing::initTestCase()
 {
-  QVERIFY(QDBusConnection::sessionBus().isConnected());
+    initTestCaseImpl();
 }
-
 
 void TestDoNothing::init()
 {
+    initImpl();
 }
-
 
 void TestDoNothing::doNothing()
 {
-  QTimer::singleShot(0, mLoop, SLOT(quit()));
-  QCOMPARE(mLoop->exec(), 0);
+    QTimer::singleShot(0, mLoop, SLOT(quit()));
+    QCOMPARE(mLoop->exec(), 0);
 }
-
 
 void TestDoNothing::doNothing2()
 {
-  QTimer::singleShot(0, mLoop, SLOT(quit()));
-  QCOMPARE(mLoop->exec(), 0);
+    QTimer::singleShot(0, mLoop, SLOT(quit()));
+    QCOMPARE(mLoop->exec(), 0);
 }
-
 
 void TestDoNothing::cleanup()
 {
+    cleanupImpl();
 }
-
 
 void TestDoNothing::cleanupTestCase()
 {
+    cleanupTestCaseImpl();
 }
 
-
 QTEST_MAIN(TestDoNothing)
-
 #include "_gen/do-nothing.cpp.moc.hpp"
