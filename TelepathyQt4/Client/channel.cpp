@@ -124,11 +124,12 @@ struct Channel::Private
 };
 
 Channel::Private::Private(Channel *parent, Connection *connection)
-    : parent(parent)
+    : parent(parent),
+      baseInterface(new ChannelInterface(parent->dbusConnection(),
+                    parent->busName(), parent->objectPath(), parent))
 {
     debug() << "Creating new Channel";
 
-    baseInterface = 0;
     group = 0;
     properties = 0;
     readiness = ReadinessJustCreated;
@@ -541,9 +542,6 @@ Channel::Channel(Connection *connection,
       OptionalInterfaceFactory<Channel>(this),
       mPriv(new Private(this, connection))
 {
-    mPriv->baseInterface = new ChannelInterface(this->dbusConnection(),
-            this->busName(), this->objectPath(), this);
-
     // Introspection continued here so mPriv will be initialized (unlike if we
     // continued it from the Private constructor)
     mPriv->continueIntrospection();
