@@ -146,6 +146,13 @@ Connection *PendingChannel::connection() const
  */
 bool PendingChannel::yours() const
 {
+    if (!isFinished()) {
+        warning() << "PendingChannel::yours called before finished, returning undefined value";
+    }
+    else if (!isValid()) {
+        warning() << "PendingChannel::yours called when not valid, returning undefined value";
+    }
+
     return mPriv->yours;
 }
 
@@ -194,7 +201,8 @@ Channel *PendingChannel::channel(QObject *parent) const
     if (!isFinished()) {
         warning() << "PendingChannel::channel called before finished, returning 0";
         return 0;
-    } else if (!isValid()) {
+    }
+    else if (!isValid()) {
         warning() << "PendingChannel::channel called when not valid, returning 0";
         return 0;
     }
