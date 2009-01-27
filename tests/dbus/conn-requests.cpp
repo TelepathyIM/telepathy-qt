@@ -18,12 +18,12 @@
 
 using namespace Telepathy::Client;
 
-class TestChanBasics : public Test
+class TestConnRequests : public Test
 {
     Q_OBJECT
 
 public:
-    TestChanBasics(QObject *parent = 0)
+    TestConnRequests(QObject *parent = 0)
         : Test(parent), mConnService(0), mConn(0), mHandle(0)
     { }
 
@@ -53,7 +53,7 @@ private:
     uint mHandle;
 };
 
-void TestChanBasics::expectConnReady(uint newStatus, uint newStatusReason)
+void TestConnRequests::expectConnReady(uint newStatus, uint newStatusReason)
 {
     qDebug() << "connection changed to status" << newStatus;
     switch (newStatus) {
@@ -76,12 +76,12 @@ void TestChanBasics::expectConnReady(uint newStatus, uint newStatusReason)
     }
 }
 
-void TestChanBasics::expectConnInvalidated()
+void TestConnRequests::expectConnInvalidated()
 {
     mLoop->exit(0);
 }
 
-void TestChanBasics::expectPendingHandleFinished(PendingOperation *op)
+void TestConnRequests::expectPendingHandleFinished(PendingOperation *op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -108,7 +108,7 @@ void TestChanBasics::expectPendingHandleFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestChanBasics::expectCreateChannelFinished(PendingOperation* op)
+void TestConnRequests::expectCreateChannelFinished(PendingOperation* op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -135,7 +135,7 @@ void TestChanBasics::expectCreateChannelFinished(PendingOperation* op)
     mLoop->exit(0);
 }
 
-void TestChanBasics::expectEnsureChannelFinished(PendingOperation* op)
+void TestConnRequests::expectEnsureChannelFinished(PendingOperation* op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -163,7 +163,7 @@ void TestChanBasics::expectEnsureChannelFinished(PendingOperation* op)
     mLoop->exit(0);
 }
 
-void TestChanBasics::initTestCase()
+void TestConnRequests::initTestCase()
 {
     initTestCaseImpl();
 
@@ -220,12 +220,12 @@ void TestChanBasics::initTestCase()
     QVERIFY(mConn->requestsInterface() != 0);
 }
 
-void TestChanBasics::init()
+void TestConnRequests::init()
 {
     initImpl();
 }
 
-void TestChanBasics::testRequestHandle()
+void TestConnRequests::testRequestHandle()
 {
     // Test identifiers
     QStringList ids = QStringList() << "alice";
@@ -243,7 +243,7 @@ void TestChanBasics::testRequestHandle()
     QVERIFY(mHandle != 0);
 }
 
-void TestChanBasics::testCreateChannel()
+void TestConnRequests::testCreateChannel()
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -258,7 +258,7 @@ void TestChanBasics::testCreateChannel()
     QCOMPARE(mLoop->exec(), 0);
 }
 
-void TestChanBasics::testEnsureChannel()
+void TestConnRequests::testEnsureChannel()
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -273,12 +273,12 @@ void TestChanBasics::testEnsureChannel()
     QCOMPARE(mLoop->exec(), 0);
 }
 
-void TestChanBasics::cleanup()
+void TestConnRequests::cleanup()
 {
     cleanupImpl();
 }
 
-void TestChanBasics::cleanupTestCase()
+void TestConnRequests::cleanupTestCase()
 {
     if (mConn != 0) {
         // Disconnect and wait for the readiness change
@@ -307,5 +307,5 @@ void TestChanBasics::cleanupTestCase()
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestChanBasics)
-#include "_gen/chan-basics.cpp.moc.hpp"
+QTEST_MAIN(TestConnRequests)
+#include "_gen/conn-requests.cpp.moc.hpp"
