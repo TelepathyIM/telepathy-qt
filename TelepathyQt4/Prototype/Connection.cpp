@@ -294,7 +294,10 @@ void Connection::slotStatusChanged( uint status, uint reason )
     d->m_status = static_cast<Telepathy::ConnectionStatus>( status );
     d->m_reason = static_cast<Telepathy::ConnectionStatusReason>( reason );
 
-    emit signalStatusChanged( this, d->m_status, old_status );
+    if ( d->m_status != old_status )
+    {
+        emit signalStatusChanged( this, d->m_status, old_status );
+    }
 
     if ( account() && account()->parameters().value( "register") == true )
     {
