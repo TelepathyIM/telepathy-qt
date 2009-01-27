@@ -9,82 +9,32 @@
 #include <TelepathyQt4/Client/PendingAccount>
 #include <TelepathyQt4/Client/PendingOperation>
 
-using namespace Telepathy;
+#include <tests/lib/test.h>
+
 using namespace Telepathy::Client;
 
-class TestAccountBasics : public QObject
+class TestAccountBasics : public Test
 {
     Q_OBJECT
 
 public:
-    TestAccountBasics(QObject *parent = 0);
-    ~TestAccountBasics();
+    TestAccountBasics(QObject *parent = 0)
+        : Test(parent), mAM(0)
+    { }
 
 protected Q_SLOTS:
-    void expectSuccessfulCall(Telepathy::Client::PendingOperation *);
-    void onAccountCreated(Telepathy::Client::PendingOperation *);
-    void onAccountReady(Telepathy::Client::PendingOperation *);
     void onAvatarChanged(const Telepathy::Avatar &);
 
 private Q_SLOTS:
-    void init();
+    void initTestCase();
 
     void testBasics();
 
-    void cleanup();
+    void cleanupTestCase();
 
 private:
-    QEventLoop *mLoop;
     AccountManager *mAM;
 };
-
-TestAccountBasics::TestAccountBasics(QObject *parent)
-    : QObject(parent),
-      mLoop(new QEventLoop(this)),
-      mAM(0)
-{
-}
-
-TestAccountBasics::~TestAccountBasics()
-{
-    delete mLoop;
-}
-
-void TestAccountBasics::expectSuccessfulCall(PendingOperation *operation)
-{
-    if (operation->isError()) {
-        qWarning().nospace() << operation->errorName()
-            << ": " << operation->errorMessage();
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
-}
-
-void TestAccountBasics::onAccountCreated(Telepathy::Client::PendingOperation *operation)
-{
-    if (operation->isError()) {
-        qWarning().nospace() << operation->errorName()
-            << ": " << operation->errorMessage();
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
-}
-
-void TestAccountBasics::onAccountReady(Telepathy::Client::PendingOperation *operation)
-{
-    if (operation->isError()) {
-        qWarning().nospace() << operation->errorName()
-            << ": " << operation->errorMessage();
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
-}
 
 void TestAccountBasics::onAvatarChanged(const Telepathy::Avatar &avatar)
 {
@@ -94,23 +44,19 @@ void TestAccountBasics::onAvatarChanged(const Telepathy::Avatar &avatar)
     mLoop->exit(0);
 }
 
-void TestAccountBasics::init()
+void TestAccountBasics::initTestCase()
 {
-    Telepathy::registerTypes();
-    Telepathy::enableDebug(true);
-    Telepathy::enableWarnings(true);
+    initTestCaseImpl();
+
+    mAM = new AccountManager();
+    QCOMPARE(mAM->isReady(), false);
 }
 
 void TestAccountBasics::testBasics()
 {
-    mAM = new AccountManager();
-    QCOMPARE(mAM->isReady(), false);
-
-    connect(mAM->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
-    qDebug() << "enter main loop";
+    QVERIFY(connect(mAM->becomeReady(),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAM->isReady(), true);
 
@@ -118,10 +64,9 @@ void TestAccountBasics::testBasics()
     parameters["account"] = "foobar";
     PendingAccount *pacc = mAM->createAccount("foo",
             "bar", "foobar", parameters);
-    connect(pacc,
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(onAccountCreated(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(pacc,
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mAM->interfaces(), QStringList());
@@ -137,37 +82,33 @@ void TestAccountBasics::testBasics()
 
     Account *acc = mAM->accountForPath(
             "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
-    connect(acc->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(onAccountReady(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(acc->becomeReady(),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(acc->displayName(), QString("foobar (account 0)"));
 
-    connect(acc->becomeReady(Account::FeatureAvatar),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
 
-    connect(acc,
-            SIGNAL(avatarChanged(const Telepathy::Avatar &)),
-            SLOT(onAvatarChanged(const Telepathy::Avatar &)));
+    QVERIFY(connect(acc,
+                    SIGNAL(avatarChanged(const Telepathy::Avatar &)),
+                    SLOT(onAvatarChanged(const Telepathy::Avatar &))));
 
     Telepathy::Avatar avatar = { QByteArray("asdfg"), "image/jpeg" };
-    connect(acc->setAvatar(avatar),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(acc->setAvatar(avatar),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    connect(acc->becomeReady(Account::FeatureAvatar),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     // wait for avatarChanged signal
@@ -175,26 +116,23 @@ void TestAccountBasics::testBasics()
 
     pacc = mAM->createAccount("spurious",
             "normal", "foobar", parameters);
-    connect(pacc,
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(onAccountCreated(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(pacc,
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     acc = mAM->accountForPath(
             "/org/freedesktop/Telepathy/Account/spurious/normal/Account0");
-    connect(acc->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(onAccountReady(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(acc->becomeReady(),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     acc = mAM->accountForPath(
             "/org/freedesktop/Telepathy/Account/spurious/normal/Account0");
-    connect(acc->becomeReady(Account::FeatureProtocolInfo),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(acc->becomeReady(Account::FeatureProtocolInfo),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     ProtocolInfo *protocolInfo = acc->protocolInfo();
@@ -203,18 +141,16 @@ void TestAccountBasics::testBasics()
     QCOMPARE(protocolInfo->hasParameter("password"), true);
     QCOMPARE(protocolInfo->hasParameter("register"), true);
 
-    connect(acc->becomeReady(Account::FeatureAvatar),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
 
-    connect(acc->becomeReady(Account::FeatureProtocolInfo | Account::FeatureAvatar),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
+    QVERIFY(connect(acc->becomeReady(Account::FeatureProtocolInfo | Account::FeatureAvatar),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
@@ -222,14 +158,15 @@ void TestAccountBasics::testBasics()
     QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
 }
 
-void TestAccountBasics::cleanup()
+void TestAccountBasics::cleanupTestCase()
 {
     if (mAM) {
         delete mAM;
         mAM = 0;
     }
+
+    cleanupTestCaseImpl();
 }
 
 QTEST_MAIN(TestAccountBasics)
-
 #include "_gen/account-basics.cpp.moc.hpp"
