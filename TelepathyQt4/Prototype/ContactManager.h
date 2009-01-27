@@ -223,7 +223,7 @@ signals:
     /**
      * A Contact was removed.
      * This signal is emitted if a contact was removed.
-     * @param contact The removed contact. This object will be delted after this call!
+     * @param contact The removed contact. This object is deleted after this call!
      */
     void signalContactRemoved( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
     

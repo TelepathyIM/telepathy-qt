@@ -39,7 +39,7 @@
 #include <TelepathyQt4/Prototype/Contact.h>
 #include <TelepathyQt4/Prototype/StreamedMediaChannel.h>
 
-//#define ENABLE_DEBUG_OUTPUT_
+// #define ENABLE_DEBUG_OUTPUT_
 
 using namespace TpPrototype;
 
@@ -232,23 +232,17 @@ bool ContactManager::removeContact( const Contact* contact_toremove )
     { return false; }
 
 #ifdef ENABLE_DEBUG_OUTPUT_
-    qDebug() << "ContactManager Try to remove a contact";
-#endif    
+    qDebug() << "ContactManager Try to remove a contact ..";
+#endif
     QList<uint> toremovelist;
     toremovelist.append(contact_toremove->telepathyHandle());
-    d->m_members.remove(contact_toremove->telepathyHandle());
-    d->m_subscribed.remove(contact_toremove->telepathyHandle());
-    d->m_remotePending.remove(contact_toremove->telepathyHandle());
-    d->m_localPending.remove(contact_toremove->telepathyHandle());
-    d->m_known.remove(contact_toremove->telepathyHandle());
+    
     if ( d->m_groupSubscribedChannel)
         d->m_groupSubscribedChannel->RemoveMembers(toremovelist,"Remove");
     if ( d->m_groupPublishedChannel)
         d->m_groupPublishedChannel->RemoveMembers(toremovelist,"Remove");
     if ( d->m_groupKnownChannel)
         d->m_groupKnownChannel->RemoveMembers(toremovelist,"Remove");
-
-    delete contact_toremove;
 
     return true;
 }
@@ -687,7 +681,7 @@ void ContactManager::slotDeniedMembersChanged(const QString& message,
     {
         QPointer<Contact> contact = new Contact( new_members.at(i), handle_names_reply.value().at(i), Contact::CT_Blocked, d->m_pInterface, this );
 #ifdef ENABLE_DEBUG_OUTPUT_
-        qDebug() << "Create contact for known Handle" << handle_names.value().at(i);
+        qDebug() << "Create contact for known Handle" << handle_names_reply.value().at(i);
 #endif
         Q_ASSERT(contact->isValid());
         d->m_members.insert( new_members.at( i ), contact );
@@ -887,6 +881,9 @@ void ContactManager::slotMembersChanged(const QString& message,
                                     d->m_localPending.remove(handle);
                                   
                             }
+#ifdef ENABLE_DEBUG_OUTPUT_
+                            qDebug() << "delete Contact object later:" << current_contact->name();;
+#endif
                             current_contact->deleteLater();
                         }
 
@@ -955,6 +952,9 @@ void ContactManager::slotMembersChanged(const QString& message,
                         d->m_members[handle]->setType(Contact::CT_LocalPending);
                         if (d->m_remotePending.contains(handle))
                             d->m_remotePending.remove(handle);
+#ifdef ENABLE_DEBUG_OUTPUT_
+                        qDebug() << "delete current contact"  << current_contact->name();
+#endif
                         delete current_contact;
                     }
 
@@ -1027,6 +1027,9 @@ void ContactManager::slotMembersChanged(const QString& message,
                         if (d->m_localPending.contains(handle))
                             d->m_localPending.remove(handle);
                         
+#ifdef ENABLE_DEBUG_OUTPUT_
+                        qDebug() << "Delete current contact:" << current_contact->name();
+#endif
                         delete current_contact;
                     }
 
@@ -1081,18 +1084,23 @@ void ContactManager::slotMembersChanged(const QString& message,
 #ifdef ENABLE_DEBUG_OUTPUT_
                         qDebug() << "Remove Contact";
 #endif                        
+                        emit signalContactRemoved( this, current_contact );
+                        
                         d->m_members.remove(handle);
                         d->m_subscribed.remove(handle);
                         d->m_remotePending.remove(handle);
                         d->m_localPending.remove(handle);
                         d->m_known.remove(handle);
-                        emit signalContactRemoved( this, current_contact );
+
+#ifdef ENABLE_DEBUG_OUTPUT_
+                        qDebug() << "delete Contact object: " << current_contact->name();
+#endif
                         delete current_contact;
                     }
                     else
                     {                 
 #ifdef ENABLE_DEBUG_OUTPUT_
-                        qDebug() << "Removed Contact not in contactlist";
+                        qDebug() << "Removed Contact not in contactlist: " << current_contact->name();
 #endif
                         delete current_contact;
                     }
