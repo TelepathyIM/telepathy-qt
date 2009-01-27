@@ -227,7 +227,7 @@ void TestHandles::cleanupTestCase()
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn,
-                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *, QString, QString)),
+                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }

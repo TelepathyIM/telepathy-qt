@@ -108,8 +108,8 @@ struct Channel::Private
 
         debug() << " Connection to owning connection's lifetime signals";
         parent.connect(connection,
-                       SIGNAL(invalidated(Telepathy::Client::DBusProxy *proxy,
-                                          QString errorName, QString errorMessage)),
+                       SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                                          const QString &, const QString &)),
                        SLOT(onConnectionInvalidated()));
 
         parent.connect(connection,

@@ -55,8 +55,8 @@ AbstractInterface::AbstractInterface(DBusProxy *parent, const char *interface)
             interface, parent->dbusConnection(), parent),
       mPriv(new Private())
 {
-    connect(parent, SIGNAL(invalidated(Telepathy::Client::DBusProxy *, QString, QString)),
-            this, SLOT(invalidate(Telepathy::Client::DBusProxy *, QString, QString)));
+    connect(parent, SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
+            this, SLOT(invalidate(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
 }
 
 AbstractInterface::~AbstractInterface()
@@ -80,7 +80,7 @@ QString AbstractInterface::invalidationMessage() const
 }
 
 void AbstractInterface::invalidate(Telepathy::Client::DBusProxy *proxy,
-        QString error, QString message)
+        const QString &error, const QString &message)
 {
     Q_ASSERT(!error.isEmpty());
 

@@ -47,8 +47,8 @@ public:
     QString invalidationMessage() const;
 
 protected Q_SLOTS:
-    virtual void invalidate(Telepathy::Client::DBusProxy *proxy, QString error,
-            QString message);
+    virtual void invalidate(Telepathy::Client::DBusProxy *proxy,
+            const QString &error, const QString &message);
 
 protected:
     AbstractInterface(DBusProxy *parent, const char *interface);
