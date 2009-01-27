@@ -32,9 +32,11 @@ protected Q_SLOTS:
 
 private Q_SLOTS:
     void initTestCase();
+    void init();
 
     void testSimplePresence();
 
+    void cleanup();
     void cleanupTestCase();
 
 private:
@@ -110,6 +112,11 @@ void TestConnBasics::initTestCase()
 
     g_free(name);
     g_free(connPath);
+}
+
+void TestConnBasics::init()
+{
+    initImpl();
 
     mConn = new Connection(mConnName, mConnPath);
     QCOMPARE(mConn->isReady(), false);
@@ -160,7 +167,7 @@ void TestConnBasics::testSimplePresence()
                 "status message:" << mConn->selfPresence().statusMessage;
 }
 
-void TestConnBasics::cleanupTestCase()
+void TestConnBasics::cleanup()
 {
     if (mConn != 0) {
         // Disconnect and wait for the readiness change
@@ -181,6 +188,11 @@ void TestConnBasics::cleanupTestCase()
         mConn = 0;
     }
 
+    cleanupImpl();
+}
+
+void TestConnBasics::cleanupTestCase()
+{
     if (mConnService != 0) {
         g_object_unref(mConnService);
         mConnService = 0;
