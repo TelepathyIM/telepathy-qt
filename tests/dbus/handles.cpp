@@ -34,9 +34,11 @@ protected Q_SLOTS:
 
 private Q_SLOTS:
     void initTestCase();
+    void init();
 
     void testRequestAndRelease();
 
+    void cleanup();
     void cleanupTestCase();
 
 private:
@@ -155,6 +157,11 @@ void TestHandles::initTestCase()
     }
 }
 
+void TestHandles::init()
+{
+    initImpl();
+}
+
 void TestHandles::testRequestAndRelease()
 {
     // Test identifiers
@@ -202,6 +209,11 @@ void TestHandles::testRequestAndRelease()
         uint handle = saveHandles[0];
         QVERIFY(!tp_handle_is_valid(serviceRepo, handle, NULL));
     }
+}
+
+void TestHandles::cleanup()
+{
+    cleanupImpl();
 }
 
 void TestHandles::cleanupTestCase()
