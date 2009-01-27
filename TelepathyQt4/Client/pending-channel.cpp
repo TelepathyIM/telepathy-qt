@@ -140,7 +140,7 @@ Connection *PendingChannel::connection() const
  * handling this channel; if true, the caller SHOULD handle it
  * themselves or delegate it to another client.
  *
- * Note that the value may change when the operation finishes.
+ * Note that the value is undefined until the operation finishes.
  *
  * \return Boolean indicating whether this channel belongs to this process.
  */
