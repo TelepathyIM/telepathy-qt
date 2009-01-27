@@ -1344,7 +1344,7 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
                 // we still don't have our own presence but as the user
                 // requested for FeatureSelfPresence, change our presence to
                 // offline
-                SimplePresence presence = { Telepathy::ConnectionPresenceTypeOffline, };
+                SimplePresence presence = { Telepathy::ConnectionPresenceTypeOffline, QLatin1String("offline"), };
                 mPriv->changeSelfPresence(presence);
             }
 
@@ -1354,7 +1354,7 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
             if (mPriv->readiness == Private::ReadinessFull) {
                 // we don't support simple presence but we are online, so
                 // set selfPresence to available as we are connected
-                SimplePresence presence = { Telepathy::ConnectionPresenceTypeAvailable, };
+                SimplePresence presence = { Telepathy::ConnectionPresenceTypeAvailable, QLatin1String("available"), };
                 mPriv->changeSelfPresence(presence);
 
                 // we should have all interfaces now, so if simple presence is not
