@@ -27,9 +27,11 @@ protected Q_SLOTS:
 
 private Q_SLOTS:
     void initTestCase();
+    void init();
 
     void testBasics();
 
+    void cleanup();
     void cleanupTestCase();
 
 private:
@@ -50,6 +52,11 @@ void TestAccountBasics::initTestCase()
 
     mAM = new AccountManager();
     QCOMPARE(mAM->isReady(), false);
+}
+
+void TestAccountBasics::init()
+{
+    initImpl();
 }
 
 void TestAccountBasics::testBasics()
@@ -156,6 +163,11 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
     protocolInfo = acc->protocolInfo();
     QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
+}
+
+void TestAccountBasics::cleanup()
+{
+    cleanupImpl();
 }
 
 void TestAccountBasics::cleanupTestCase()
