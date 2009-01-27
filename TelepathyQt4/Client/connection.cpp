@@ -1378,9 +1378,10 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
 
 /**
  * Start an asynchronous request that the connection be connected.
- * The returned PendingOperation object will signal the success or failure
- * of this request; under normal circumstances, it can be expected to
- * succeed.
+ *
+ * The returned PendingOperation will finish successfully when the connection
+ * has reached StatusConnected and the requested \a features are all ready, or
+ * finish with an error if a fatal error occurs during that process.
  *
  * \return A %PendingOperation, which will emit finished when the
  *         request finishes.
