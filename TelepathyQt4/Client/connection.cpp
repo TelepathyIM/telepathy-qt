@@ -217,6 +217,7 @@ Connection::Private::Private(Connection *parent)
                     parent->busName(), parent->objectPath(), parent)),
       properties(0),
       simplePresence(0),
+      ready(false),
       initialIntrospection(false),
       readiness(ReadinessJustCreated),
       pendingStatus(Connection::StatusUnknown),
