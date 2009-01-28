@@ -1095,13 +1095,15 @@ void ContactManager::slotMembersChanged(const QString& message,
 #ifdef ENABLE_DEBUG_OUTPUT_
                         qDebug() << "Remove Contact";
 #endif                        
-                        emit signalContactRemoved( this, current_contact );
+                        emit signalAboutToRemoveContact( this, current_contact );
                         
                         d->m_members.remove(handle);
                         d->m_subscribed.remove(handle);
                         d->m_remotePending.remove(handle);
                         d->m_localPending.remove(handle);
                         d->m_known.remove(handle);
+
+                        emit signalContactRemoved( this );
 
 #ifdef ENABLE_DEBUG_OUTPUT_
                         qDebug() << "delete Contact object: " << current_contact->name();
