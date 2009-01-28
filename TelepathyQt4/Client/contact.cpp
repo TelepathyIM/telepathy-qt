@@ -41,7 +41,23 @@ struct Contact::Private
 
     Connection *connection;
     ReferencedHandles handle;
+    QString id;
 };
+
+Connection *Contact::connection() const
+{
+    return mPriv->connection;
+}
+
+ReferencedHandles Contact::handle() const
+{
+    return mPriv->handle;
+}
+
+QString Contact::id() const
+{
+    return mPriv->id;
+}
 
 Contact::~Contact()
 {
@@ -53,6 +69,8 @@ Contact::Contact(Connection *connection, const ReferencedHandles &handle,
     : QObject(connection), mPriv(new Private(connection, handle))
 {
     debug() << this << "initialized with" << attributes.size() << "attributes";
+
+    mPriv->id = qdbus_cast<QString>(attributes["org.freedesktop.Telepathy.Connection/contact-id"]);
 }
 
 } // Telepathy::Client

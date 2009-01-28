@@ -48,6 +48,11 @@ public:
         };
         Q_DECLARE_FLAGS(Features, Feature);
 
+        Connection *connection() const;
+
+        ReferencedHandles handle() const;
+        QString id() const;
+
         ~Contact();
 
     private:
