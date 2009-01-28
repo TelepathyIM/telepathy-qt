@@ -29,6 +29,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/PendingChannel>
 #include <TelepathyQt4/Client/PendingContactAttributes>
 #include <TelepathyQt4/Client/PendingFailure>
@@ -166,6 +167,8 @@ struct Connection::Private
     static QMap<QPair<QString, QString>, HandleContext *> handleContexts;
     static QMutex handleContextsLock;
     HandleContext *handleContext;
+
+    ContactManager *contactManager;
 };
 
 // Handle tracking
@@ -227,19 +230,22 @@ Connection::Private::Private(Connection *parent)
       statusReason(ConnectionStatusReasonNoneSpecified),
       haveInitialStatus(false),
       selfHandle(0),
-      handleContext(0)
+      handleContext(0),
+      contactManager(new ContactManager(parent))
 {
     selfPresence.type = Telepathy::ConnectionPresenceTypeUnknown;
 }
 
 Connection::Private::~Private()
 {
-    QMutexLocker locker(&handleContextsLock);
+    delete contactManager;
 
     if (!handleContext) {
         // initial introspection is not done
         return;
     }
+
+    QMutexLocker locker(&handleContextsLock);
 
     // All handle contexts locked, so safe
     if (!--handleContext->refcount) {
@@ -1458,6 +1464,11 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
     pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
     return pending;
+}
+
+ContactManager *Connection::contactManager() const
+{
+    return mPriv->contactManager;
 }
 
 void Connection::refHandle(uint type, uint handle)

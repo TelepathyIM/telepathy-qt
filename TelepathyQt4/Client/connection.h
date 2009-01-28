@@ -44,6 +44,7 @@ namespace Client
 {
 
 class Channel;
+class ContactManager;
 class PendingChannel;
 class PendingContactAttributes;
 class PendingHandles;
@@ -161,6 +162,7 @@ public:
 
     PendingContactAttributes *getContactAttributes(const UIntList &contacts,
             const QStringList &interfaces, bool reference = true);
+    ContactManager *contactManager() const;
 
     bool isReady(Features features = 0) const;
 
