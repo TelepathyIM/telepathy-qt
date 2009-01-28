@@ -120,13 +120,18 @@ signals:
     /**
      * An account will be removed from internal data.
      * This signal is emitted after the account was removed but immediately before the account is removed from the internal lists.<br>
+     * Use this signal to obtain all necessary information to handle this remove operation properly. The signal <i>signalAccountRemoved()</i>
+     * will be called immediately after cleaning the internal lists.
+     * <br>
      * Do not use <i>account</i> after receiving this signal!
+     * @see signalAccountRemoved()
      */
     void signalAboutToRemoveAccount( TpPrototype::Account* account );
 
     /**
      * An account was removed.
      * This signal is emitted after <i>signalAboutToRemoveAccount()</i>. The internal lists are updated now.
+     * @see signalAboutToRemoveAccount()
      */
     void signalAccountRemoved();
     
