@@ -43,6 +43,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/connection-manager.cpp \
     Client/connection-internal.h \
     Client/connection-manager-internal.h \
+    Client/contact.cpp \
     Client/contact-manager.cpp \
     Client/dbus.cpp \
     Client/dbus-proxy.cpp \
@@ -122,6 +123,7 @@ tpqt4clientinclude_HEADERS = \
     Client/Channel \
     Client/Connection \
     Client/ConnectionManager \
+    Client/Contact \
     Client/ContactManager \
     Client/DBus \
     Client/DBusProxy \
@@ -179,6 +181,7 @@ tpqt4clientinclude_HEADERS = \
     Client/channel.h \
     Client/connection.h \
     Client/connection-manager.h \
+    Client/contact.h \
     Client/contact-manager.h \
     Client/dbus.h \
     Client/dbus-proxy.h \
