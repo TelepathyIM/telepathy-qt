@@ -58,6 +58,11 @@ struct ContactManager::Private
     Connection *conn;
 };
 
+Connection *ContactManager::connection() const
+{
+    return mPriv->conn;
+}
+
 ContactManager::ContactManager(Connection *parent)
     : mPriv(new Private)
 {

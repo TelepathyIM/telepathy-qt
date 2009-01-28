@@ -39,7 +39,7 @@ class ContactManager
 {
     public:
 
-        Connection *connection();
+        Connection *connection() const;
 
     private:
         ContactManager(Connection *parent);
