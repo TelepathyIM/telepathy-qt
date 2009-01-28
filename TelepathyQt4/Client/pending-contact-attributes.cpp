@@ -27,10 +27,39 @@
 
 #include "../debug-internal.h"
 
+/**
+ * \addtogroup clientsideproxies Client-side proxies
+ *
+ * Proxy objects representing remote service objects accessed via D-Bus.
+ *
+ * In addition to providing direct access to methods, signals and properties
+ * exported by the remote objects, some of these proxies offer features like
+ * automatic inspection of remote object capabilities, property tracking,
+ * backwards compatibility helpers for older services and other utilities.
+ */
+
+/**
+ * \defgroup clientconn Connection proxies
+ * \ingroup clientsideproxies
+ *
+ * Proxy objects representing remote Telepathy Connections and their optional
+ * interfaces.
+ */
+
 namespace Telepathy
 {
 namespace Client
 {
+
+/**
+ * \class PendingContactAttributes
+ * \ingroup clientconn
+ * \headerfile <TelepathyQt4/cli-pending-contact-attributes.h> <TelepathyQt4/Client/PendingContactAttributes>
+ *
+ * Class containing the parameters of and the reply to an asynchronous request for raw contact
+ * attributes, as used in the Connection::getContactAttributes() low-level convenience method
+ * wrapping the ConnectionInterfaceContactsInterface::GetContactAttributes() D-Bus method.
+ */
 
 struct PendingContactAttributes::Private
 {
@@ -55,31 +84,68 @@ PendingContactAttributes::PendingContactAttributes(Connection* connection, const
     mPriv->shouldReference = reference;
 }
 
+/**
+ * Class destructor.
+ */
 PendingContactAttributes::~PendingContactAttributes()
 {
     delete mPriv;
 }
 
+/**
+ * Returns the Connection object through which the request was made.
+ *
+ * \return Pointer to the Connection.
+ */
 Connection* PendingContactAttributes::connection() const
 {
     return mPriv->connection;
 }
 
+/**
+ * Returns the contacts for which attributes were requested.
+ *
+ * \return Reference to a list with the handles of the contacts.
+ */
 const UIntList &PendingContactAttributes::contactsRequested() const
 {
     return mPriv->contactsRequested;
 }
 
+/**
+ * Returns the interfaces the corresponding attributes of which were requested.
+ *
+ * \return Reference to a list of D-Bus interface names.
+ */
 const QStringList &PendingContactAttributes::interfacesRequested() const
 {
     return mPriv->interfacesRequested;
 }
 
+/**
+ * Returns whether it was requested that the contact handles should be referenced in addition to
+ * fetching their attributes. This corresponds to the <code>reference</code> argument to
+ * Connection::getContactAttributes().
+ *
+ * \return Whether the handles should be referenced or not.
+ */
 bool PendingContactAttributes::shouldReference() const
 {
     return mPriv->shouldReference;
 }
 
+/**
+ * If referencing the handles was requested (as indicated by shouldReference()), returns the
+ * now-referenced handles resulting from the operation. If the operation has not (yet) finished
+ * successfully (isFinished() returns <code>false</code>), or referencing was not requested, the
+ * return value is undefined.
+ *
+ * Even if referencing was requested, the list will not always contain all of the handles in
+ * contactsRequested(), only the ones which were valid. The valid handles will be in the same order
+ * as in contactsRequested(), though.
+ *
+ * \return ReferencedHandles instance containing the handles.
+ */
 ReferencedHandles PendingContactAttributes::validHandles() const
 {
     if (!isFinished()) {
@@ -94,6 +160,13 @@ ReferencedHandles PendingContactAttributes::validHandles() const
     return mPriv->validHandles;
 }
 
+/**
+ * Returns the handles which were found to be invalid while processing the operation. If the
+ * operation has not (yet) finished successfully (isFinished() returns <code>false</code>), the
+ * return value is undefined.
+ *
+ * \return A list with the invalid handles.
+ */
 UIntList PendingContactAttributes::invalidHandles() const
 {
     if (!isFinished()) {
@@ -105,6 +178,14 @@ UIntList PendingContactAttributes::invalidHandles() const
     return mPriv->invalidHandles;
 }
 
+/**
+ * Returns a dictionary mapping the valid contact handles in contactsRequested() (when also
+ * referencing, this means the contents of validHandles()) to contact attributes. If the operation
+ * has not (yet) finished successfully (isFinished() returns <code>false</code>), the return value
+ * is undefined.
+ *
+ * \return Mapping from handles to variant maps containing the attributes.
+ */
 ContactAttributesMap PendingContactAttributes::attributes() const
 {
     if (!isFinished()) {
