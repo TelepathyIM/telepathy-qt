@@ -57,5 +57,20 @@ PendingContacts::~PendingContacts()
     delete mPriv;
 }
 
+ContactManager *PendingContacts::contactManager() const
+{
+    return mPriv->connection->contactManager();
+}
+
+UIntList PendingContacts::handles() const
+{
+    return mPriv->handles;
+}
+
+QSet<Contact::Feature> PendingContacts::features() const
+{
+    return mPriv->features;
+}
+
 } // Telepathy::Client
 } // Telepathy
