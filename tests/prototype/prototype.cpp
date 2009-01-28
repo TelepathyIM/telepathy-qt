@@ -535,7 +535,7 @@ void UnitTests::testPrototypeAccountManager()
 
     QVERIFY2( waitForSignal( &spy_update_account, 2 ), "Received no signals after removeAccount() ");
     
-    QSignalSpy spy_remove_account( account_manager, SIGNAL( signalAccountRemoved( TpPrototype::Account* ) ) );
+    QSignalSpy spy_remove_account( account_manager, SIGNAL( signalAboutToRemoveAccount( TpPrototype::Account* ) ) );
     QCOMPARE( spy_remove_account.isValid(), true );
 
     int count = 0;

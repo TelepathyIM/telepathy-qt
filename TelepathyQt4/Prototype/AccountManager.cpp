@@ -280,8 +280,9 @@ void AccountManager::slotAccountValidityChanged( const QDBusObjectPath& account,
 #ifdef ENABLE_DEBUG_OUTPUT_
             qDebug() << "AccountManager::slotAccountValidityChanged: Remove account from list";
 #endif
-            emit signalAccountRemoved( d->m_validAccountHandles.value( account.path() ) );
+            emit signalAboutToRemoveAccount( d->m_validAccountHandles.value( account.path() ) );
             d->removeAccount( account.path() );
+            emit signalAccountRemoved();
             update_occurred = true;
         }
     }
@@ -305,8 +306,9 @@ void AccountManager::slotAccountRemoved( const QDBusObjectPath& account )
 
     // These signals are emitted if an account was removed extarnally.
     // The signals were already emitted by slotAccountRemoved() if the account was removed locally
-    emit signalAccountRemoved( account_object );
+    emit signalAboutToRemoveAccount( account_object );
     d->removeAccount( account.path() );
+    emit signalAccountRemoved();
     emit signalAccountsUpdated();
 }
 
@@ -334,8 +336,9 @@ void AccountManager::slotAccountRemoved()
     if ( account )
     {
         QString handle = account->handle();
-        emit signalAccountRemoved( account );
+        emit signalAboutToRemoveAccount( account );
         d->removeAccount( handle );
+        emit signalAccountRemoved();
         emit signalAccountsUpdated();
     }
 }

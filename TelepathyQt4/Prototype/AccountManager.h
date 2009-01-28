@@ -118,10 +118,17 @@ signals:
     void signalNewAccountAvailable( TpPrototype::Account* account );
 
     /**
-     * An account was removed.
-     * This signal is emitted after an account was removed. Do not use <i>account</i> after receiving this signal!
+     * An account will be removed from internal data.
+     * This signal is emitted after the account was removed but immediately before the account is removed from the internal lists.<br>
+     * Do not use <i>account</i> after receiving this signal!
      */
-    void signalAccountRemoved( TpPrototype::Account* account );
+    void signalAboutToRemoveAccount( TpPrototype::Account* account );
+
+    /**
+     * An account was removed.
+     * This signal is emitted after <i>signalAboutToRemoveAccount()</i>. The internal lists are updated now.
+     */
+    void signalAccountRemoved();
     
     /**
      * An account was updated.
