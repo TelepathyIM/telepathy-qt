@@ -178,8 +178,8 @@ void TestConnBasics::cleanup()
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn,
-                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *proxy,
-                                               QString errorName, QString errorMessage)),
+                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                                               const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }
