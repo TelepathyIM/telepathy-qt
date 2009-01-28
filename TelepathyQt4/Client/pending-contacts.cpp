@@ -23,7 +23,9 @@
 #include "TelepathyQt4/Client/_gen/pending-contacts.moc.hpp"
 
 #include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/PendingContactAttributes>
+#include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/ReferencedHandles>
 #include "TelepathyQt4/debug-internal.h"
 
@@ -35,23 +37,34 @@ namespace Client
 struct PendingContacts::Private
 {
     Private(Connection *connection, const UIntList &handles, const QSet<Contact::Feature> &features)
-        : connection(connection), handles(handles), features(features)
+        : connection(connection),
+          features(features),
+          isForIdentifiers(false),
+          handles(handles),
+          nested(0)
+    {
+    }
+
+    Private(Connection *connection, const QStringList &identifiers,
+            const QSet<Contact::Feature> &features)
+        : connection(connection),
+          features(features),
+          isForIdentifiers(true),
+          identifiers(identifiers),
+          nested(0)
     {
     }
 
     Connection *connection;
-    UIntList handles;
     QSet<Contact::Feature> features;
+
+    bool isForIdentifiers;
+    UIntList handles;
+    QStringList identifiers;
+    PendingContacts *nested;
 
     QList<QSharedPointer<Contact> > contacts;
 };
-
-PendingContacts::PendingContacts(Connection *connection,
-        const UIntList &handles, const QSet<Contact::Feature> &features)
-    : PendingOperation(connection),
-      mPriv(new Private(connection, handles, features))
-{
-}
 
 /**
  * Class destructor.
@@ -74,6 +87,25 @@ UIntList PendingContacts::handles() const
 QSet<Contact::Feature> PendingContacts::features() const
 {
     return mPriv->features;
+}
+
+bool PendingContacts::isForHandles() const
+{
+    return !isForIdentifiers();
+}
+
+bool PendingContacts::isForIdentifiers() const
+{
+    return mPriv->isForIdentifiers;
+}
+
+QStringList PendingContacts::identifiers() const
+{
+    if (!isForIdentifiers()) {
+
+    }
+
+    return mPriv->identifiers;
 }
 
 QList<QSharedPointer<Contact> > PendingContacts::contacts() const
@@ -113,6 +145,58 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
     }
 
     setFinished();
+}
+
+void PendingContacts::onHandlesFinished(PendingOperation *operation)
+{
+    PendingHandles *pendingHandles = qobject_cast<PendingHandles *>(operation);
+
+    debug() << "Handles finished for" << this;
+
+    if (pendingHandles->isError()) {
+        debug() << " error" << operation->errorName()
+                << "message" << operation->errorMessage();
+        setFinishedWithError(operation->errorName(), operation->errorMessage());
+        return;
+    }
+
+    debug() << " Success - doing nested contact query";
+
+    mPriv->nested = contactManager()->contactsForHandles(pendingHandles->handles(), features());
+    connect(mPriv->nested,
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onNestedFinished(Telepathy::Client::PendingOperation*)));
+}
+
+void PendingContacts::onNestedFinished(PendingOperation *operation)
+{
+    Q_ASSERT(operation == mPriv->nested);
+
+    debug() << "Nested PendingContacts finished for" << this;
+
+    if (operation->isError()) {
+        debug() << " error" << operation->errorName()
+                << "message" << operation->errorMessage();
+        setFinishedWithError(operation->errorName(), operation->errorMessage());
+        return;
+    }
+
+    mPriv->contacts = mPriv->nested->contacts();
+    mPriv->nested = 0;
+    setFinished();
+}
+
+PendingContacts::PendingContacts(Connection *connection,
+        const UIntList &handles, const QSet<Contact::Feature> &features)
+    : PendingOperation(connection),
+      mPriv(new Private(connection, handles, features))
+{
+}
+
+PendingContacts::PendingContacts(Connection *connection,
+        const QStringList &identifiers, const QSet<Contact::Feature> &features)
+    : PendingOperation(connection), mPriv(new Private(connection, identifiers, features))
+{
 }
 
 } // Telepathy::Client

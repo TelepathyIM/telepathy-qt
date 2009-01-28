@@ -48,6 +48,11 @@ class ContactManager
 
         PendingContacts *contactsForHandles(const UIntList &handles,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+        PendingContacts *contactsForHandles(const ReferencedHandles &handles,
+                const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+
+        PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
+                const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
 
     private:
         ContactManager(Connection *parent);

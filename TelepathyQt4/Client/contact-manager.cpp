@@ -27,6 +27,8 @@
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingContactAttributes>
 #include <TelepathyQt4/Client/PendingContacts>
+#include <TelepathyQt4/Client/PendingHandles>
+#include <TelepathyQt4/Client/ReferencedHandles>
 #include "TelepathyQt4/debug-internal.h"
 
 /**
@@ -102,6 +104,28 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     contacts->connect(attributes,
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(onAttributesFinished(Telepathy::Client::PendingOperation*)));
+
+    return contacts;
+}
+
+PendingContacts *ContactManager::contactsForHandles(const ReferencedHandles &handles,
+        const QSet<Contact::Feature> &features)
+{
+    return contactsForHandles(handles.toList(), features);
+}
+
+PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &identifiers,
+        const QSet<Contact::Feature> &features)
+{
+    debug() << "Building contacts for" << identifiers.size() << "identifiers" << "with" << features.size()
+        << "features";
+
+    PendingHandles *handles = mPriv->conn->requestHandles(HandleTypeContact, identifiers);
+
+    PendingContacts *contacts = new PendingContacts(mPriv->conn, identifiers, features);
+    contacts->connect(handles,
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onHandlesFinished(Telepathy::Client::PendingOperation*)));
 
     return contacts;
 }

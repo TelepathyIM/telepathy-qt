@@ -31,6 +31,7 @@
 #include <QList>
 #include <QSet>
 #include <QSharedPointer>
+#include <QStringList>
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Client/Contact>
@@ -51,17 +52,26 @@ public:
     ~PendingContacts();
 
     ContactManager *contactManager() const;
-    UIntList handles() const;
     QSet<Contact::Feature> features() const;
+
+    bool isForHandles() const;
+    UIntList handles() const;
+
+    bool isForIdentifiers() const;
+    QStringList identifiers() const;
 
     QList<QSharedPointer<Contact> > contacts() const;
 
 private Q_SLOTS:
     void onAttributesFinished(PendingOperation *);
+    void onHandlesFinished(PendingOperation *);
+    void onNestedFinished(PendingOperation *);
 
 private:
     Q_DISABLE_COPY(PendingContacts);
     PendingContacts(Connection *connection, const UIntList &handles,
+            const QSet<Contact::Feature> &features);
+    PendingContacts(Connection *connection, const QStringList &identifiers,
             const QSet<Contact::Feature> &features);
 
     struct Private;
