@@ -27,6 +27,7 @@
 #endif
 
 #include <QObject>
+#include <QVariantMap>
 
 namespace Telepathy
 {
@@ -34,9 +35,13 @@ namespace Client
 {
 class Connection;
 class ContactManager;
+class ReferencedHandles;
 
 class Contact : public QObject
 {
+    Q_OBJECT;
+    Q_DISABLE_COPY(Contact);
+
 public:
         enum Feature {
             _Padding = 0xFFFFFFFF
@@ -46,9 +51,10 @@ public:
         ~Contact();
 
     private:
-        Contact(Connection *parent);
+        Contact(Connection *parent, const ReferencedHandles &handle, const QVariantMap &attributes);
 
     struct Private;
+    friend class PendingContacts;
     friend struct Private;
     Private *mPriv;
 };

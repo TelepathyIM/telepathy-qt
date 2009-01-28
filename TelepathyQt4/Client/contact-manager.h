@@ -26,6 +26,11 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <QSet>
+
+#include <TelepathyQt4/Types>
+#include <TelepathyQt4/Client/Contact>
+
 namespace Telepathy
 {
 namespace Client
@@ -40,6 +45,9 @@ class ContactManager
     public:
 
         Connection *connection() const;
+
+        PendingContacts *contactsForHandles(const UIntList &handles,
+                const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
 
     private:
         ContactManager(Connection *parent);

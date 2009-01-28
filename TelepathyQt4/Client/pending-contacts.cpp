@@ -23,6 +23,8 @@
 #include "TelepathyQt4/Client/_gen/pending-contacts.moc.hpp"
 
 #include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/PendingContactAttributes>
+#include <TelepathyQt4/Client/ReferencedHandles>
 #include "TelepathyQt4/debug-internal.h"
 
 namespace Telepathy
@@ -40,6 +42,8 @@ struct PendingContacts::Private
     Connection *connection;
     UIntList handles;
     QSet<Contact::Feature> features;
+
+    QList<QSharedPointer<Contact> > contacts;
 };
 
 PendingContacts::PendingContacts(Connection *connection,
@@ -70,6 +74,45 @@ UIntList PendingContacts::handles() const
 QSet<Contact::Feature> PendingContacts::features() const
 {
     return mPriv->features;
+}
+
+QList<QSharedPointer<Contact> > PendingContacts::contacts() const
+{
+    if (!isFinished()) {
+        warning() << "PendingContacts::contacts() called before finished";
+    } else if (isError()) {
+        warning() << "PendingContacts::contacts() called when errored";
+    }
+
+    return mPriv->contacts;
+}
+
+void PendingContacts::onAttributesFinished(PendingOperation *operation)
+{
+    PendingContactAttributes *pendingAttributes =
+        qobject_cast<PendingContactAttributes *>(operation);
+
+    debug() << "Attributes finished for" << this;
+
+    if (pendingAttributes->isError()) {
+        debug() << " error" << pendingAttributes->errorName()
+                << "message" << pendingAttributes->errorMessage();
+        setFinishedWithError(pendingAttributes->errorName(), pendingAttributes->errorMessage());
+        return;
+    }
+
+    ReferencedHandles validHandles = pendingAttributes->validHandles();
+    ContactAttributesMap attributes = pendingAttributes->attributes();
+    debug() << " Success:" << validHandles.size() << "valid handles";
+
+    for (int i = 0; i < validHandles.size(); i++) {
+        uint handle = validHandles[i];
+        ReferencedHandles referenced = validHandles.mid(i, 1);
+        mPriv->contacts.push_back(QSharedPointer<Contact>(new Contact(mPriv->connection, referenced,
+                        attributes[handle])));
+    }
+
+    setFinished();
 }
 
 } // Telepathy::Client

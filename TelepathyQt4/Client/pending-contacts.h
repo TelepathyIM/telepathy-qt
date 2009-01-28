@@ -26,9 +26,14 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Client/PendingOperation>
+
+#include <QList>
+#include <QSet>
+#include <QSharedPointer>
+
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Client/Contact>
-#include <TelepathyQt4/Client/PendingOperation>
 
 namespace Telepathy
 {
@@ -48,6 +53,8 @@ public:
     ContactManager *contactManager() const;
     UIntList handles() const;
     QSet<Contact::Feature> features() const;
+
+    QList<QSharedPointer<Contact> > contacts() const;
 
 private Q_SLOTS:
     void onAttributesFinished(PendingOperation *);

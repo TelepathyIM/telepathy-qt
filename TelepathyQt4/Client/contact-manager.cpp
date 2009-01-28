@@ -21,7 +21,12 @@
 
 #include <TelepathyQt4/Client/ContactManager>
 
+#include <QMap>
+#include <QString>
+
 #include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/PendingContactAttributes>
+#include <TelepathyQt4/Client/PendingContacts>
 #include "TelepathyQt4/debug-internal.h"
 
 /**
@@ -61,6 +66,44 @@ struct ContactManager::Private
 Connection *ContactManager::connection() const
 {
     return mPriv->conn;
+}
+
+namespace
+{
+QString featureToInterface(Contact::Feature feature)
+{
+    switch (feature) {
+        // TODO: when more features are added, add the translation here too
+        default:
+            warning() << "ContactManager doesn't know which interface corresponds to feature"
+                << feature;
+            return QString();
+    }
+}
+}
+
+PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
+        const QSet<Contact::Feature> &features)
+{
+    debug() << "Building contacts for" << handles.size() << "handles" << "with" << features.size()
+        << "features";
+
+    QSet<QString> interfaces;
+    foreach (Contact::Feature feature, features) {
+        if (true) { // TODO when not naive: if one or more of the contacts doesn't have the feature
+            interfaces.insert(featureToInterface(feature));
+        }
+    }
+
+    PendingContactAttributes *attributes =
+        mPriv->conn->getContactAttributes(handles, interfaces.toList(), true);
+
+    PendingContacts *contacts = new PendingContacts(mPriv->conn, handles, features);
+    contacts->connect(attributes,
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onAttributesFinished(Telepathy::Client::PendingOperation*)));
+
+    return contacts;
 }
 
 ContactManager::ContactManager(Connection *parent)

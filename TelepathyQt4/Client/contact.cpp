@@ -20,9 +20,11 @@
  */
 
 #include <TelepathyQt4/Client/Contact>
+#include "TelepathyQt4/Client/_gen/contact.moc.hpp"
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ContactManager>
+#include <TelepathyQt4/Client/ReferencedHandles>
 #include "TelepathyQt4/debug-internal.h"
 
 namespace Telepathy
@@ -32,11 +34,25 @@ namespace Client
 
 struct Contact::Private
 {
+    Private(Connection *connection, const ReferencedHandles &handle)
+        : connection(connection), handle(handle)
+    {
+    }
+
+    Connection *connection;
+    ReferencedHandles handle;
 };
 
-Contact::Contact(Connection *connection)
-    : QObject(connection), mPriv(new Private)
+Contact::~Contact()
 {
+    delete mPriv;
+}
+
+Contact::Contact(Connection *connection, const ReferencedHandles &handle,
+        const QVariantMap &attributes)
+    : QObject(connection), mPriv(new Private(connection, handle))
+{
+    debug() << this << "initialized with" << attributes.size() << "attributes";
 }
 
 } // Telepathy::Client
