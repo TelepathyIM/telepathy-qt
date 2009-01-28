@@ -42,6 +42,7 @@ namespace Client
 {
 
 class Connection;
+class PendingOperation;
 
 class Channel : public StatefulDBusProxy,
                 private OptionalInterfaceFactory<Channel>
@@ -51,6 +52,11 @@ class Channel : public StatefulDBusProxy,
     Q_ENUMS(Readiness)
 
 public:
+    enum Feature {
+        _Paddding = 0xFFFFFFFF
+    };
+    Q_DECLARE_FLAGS(Features, Feature)
+
     enum Readiness {
         ReadinessJustCreated = 0,
         ReadinessFull = 5,
@@ -75,6 +81,10 @@ public:
     uint targetHandleType() const;
 
     uint targetHandle() const;
+
+    bool isReady(Features features = 0) const;
+
+    PendingOperation *becomeReady(Features features = 0);
 
 public Q_SLOTS:
     QDBusPendingReply<> close();

@@ -27,6 +27,8 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Constants>
 
 #include <QQueue>
@@ -77,6 +79,8 @@ struct Channel::Private
 
     void changeReadiness(Readiness newReadiness);
 
+    class PendingReady;
+
     // Public object
     Channel *parent;
 
@@ -90,10 +94,14 @@ struct Channel::Private
     ChannelInterfaceGroupInterface *group;
     DBus::PropertiesInterface *properties;
 
+    PendingReady *pendingReady;
+
     // Introspection
     Readiness readiness;
     QStringList interfaces;
     QQueue<void (Private::*)()> introspectQueue;
+
+    Channel::Features features;
 
     // Introspected properties
 
@@ -123,13 +131,29 @@ struct Channel::Private
     GroupMemberChangeInfo groupSelfRemoveInfo;
 };
 
+class Channel::Private::PendingReady : public PendingOperation
+{
+    // Channel is a friend so it can call finished() etc.
+    friend class Channel;
+
+public:
+    PendingReady(Channel *parent);
+};
+
+Channel::Private::PendingReady::PendingReady(Channel *parent)
+    : PendingOperation(parent)
+{
+}
+
 Channel::Private::Private(Channel *parent, Connection *connection)
     : parent(parent),
       baseInterface(new ChannelInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       group(0),
       properties(0),
+      pendingReady(0),
       readiness(ReadinessJustCreated),
+      features(0),
       targetHandleType(0),
       targetHandle(0),
       groupFlags(0),
@@ -638,6 +662,49 @@ uint Channel::targetHandle() const
 
     return mPriv->targetHandle;
 }
+
+/**
+ * Return whether this object has finished its initial setup.
+ *
+ * This is mostly useful as a sanity check, in code that shouldn't be run
+ * until the object is ready. To wait for the object to be ready, call
+ * becomeReady() and connect to the finished signal on the result.
+ *
+ * \param features Which features should be tested.
+ * \return \c true if the object has finished initial setup.
+ */
+bool Channel::isReady(Features features) const
+{
+    return (mPriv->readiness == ReadinessFull)
+        && ((mPriv->features & features) == features);
+}
+
+/**
+ * Return a pending operation which will succeed when this object finishes
+ * its initial setup, or will fail if a fatal error occurs during this
+ * initial setup.
+ *
+ * \param features Which features should be tested.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when this object has finished or failed its initial setup.
+ */
+PendingOperation *Channel::becomeReady(Features features)
+{
+    if (isReady(features)) {
+        return new PendingSuccess(this);
+    }
+
+    if (features != 0) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Unimplemented");
+    }
+
+    if (!mPriv->pendingReady) {
+        mPriv->pendingReady = new Private::PendingReady(this);
+    }
+    return mPriv->pendingReady;
+}
+
 
 /**
  * Close the channel.
@@ -1633,6 +1700,12 @@ void Channel::continueIntrospection()
     if (mPriv->readiness < ReadinessFull) {
         if (mPriv->introspectQueue.isEmpty()) {
             mPriv->changeReadiness(ReadinessFull);
+
+            if (mPriv->pendingReady) {
+                mPriv->pendingReady->setFinished();
+                // it will delete itself later
+                mPriv->pendingReady = 0;
+            }
         }
         else {
             (mPriv->*(mPriv->introspectQueue.dequeue()))();
