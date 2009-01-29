@@ -21,11 +21,13 @@
 
 #include <TelepathyQt4/KeyFile>
 
-#include "debug-internal.h"
-
 #include <QtCore/QByteArray>
 #include <QtCore/QFile>
 #include <QtCore/QHash>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
+
+#include "TelepathyQt4/debug-internal.h"
 
 namespace Telepathy
 {

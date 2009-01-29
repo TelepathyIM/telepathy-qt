@@ -26,8 +26,10 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QtCore/QString>
-#include <QtCore/QStringList>
+#include <QtGlobal>
+
+class QString;
+class QStringList;
 
 namespace Telepathy
 {
