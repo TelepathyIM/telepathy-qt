@@ -21,16 +21,16 @@
 
 #include <TelepathyQt4/ManagerFile>
 
-#include "debug-internal.h"
-
-#include <TelepathyQt4/KeyFile>
-#include <TelepathyQt4/Constants>
-
 #include <QtCore/QDir>
 #include <QtCore/QHash>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtDBus/QDBusVariant>
+
+#include <TelepathyQt4/KeyFile>
+#include <TelepathyQt4/Constants>
+
+#include "TelepathyQt4/debug-internal.h"
 
 namespace Telepathy
 {

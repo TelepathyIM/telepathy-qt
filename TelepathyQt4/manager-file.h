@@ -26,7 +26,11 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <QVariant>
+
 #include <TelepathyQt4/Types>
+
+class QString;
 
 namespace Telepathy
 {
