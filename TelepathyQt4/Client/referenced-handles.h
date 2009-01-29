@@ -282,6 +282,7 @@ class ReferencedHandles
 
     private:
         // For access to the "prime" constructor
+        friend class PendingContactAttributes;
         friend class PendingHandles;
 
         ReferencedHandles(Connection* connection, uint handleType, const UIntList& handles);

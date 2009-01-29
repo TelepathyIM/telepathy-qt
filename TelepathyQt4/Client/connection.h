@@ -44,8 +44,9 @@ namespace Client
 {
 
 class Channel;
-class Connection;
+class ContactManager;
 class PendingChannel;
+class PendingContactAttributes;
 class PendingHandles;
 class PendingOperation;
 
@@ -159,6 +160,10 @@ public:
 
     PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
 
+    PendingContactAttributes *getContactAttributes(const UIntList &contacts,
+            const QStringList &interfaces, bool reference = true);
+    ContactManager *contactManager() const;
+
     bool isReady(Features features = 0) const;
 
     PendingOperation *becomeReady(Features features = 0);
@@ -197,6 +202,7 @@ private:
     friend struct Private;
     friend class PendingChannel;
     friend class PendingConnect;
+    friend class PendingContactAttributes;
     friend class PendingHandles;
     friend class ReferencedHandles;
     Private *mPriv;

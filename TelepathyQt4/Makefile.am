@@ -43,6 +43,8 @@ libtelepathy_qt4_la_SOURCES = \
     Client/connection-manager.cpp \
     Client/connection-internal.h \
     Client/connection-manager-internal.h \
+    Client/contact.cpp \
+    Client/contact-manager.cpp \
     Client/dbus.cpp \
     Client/dbus-proxy.cpp \
     Client/media-session-handler.cpp \
@@ -51,6 +53,8 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-account.cpp \
     Client/pending-channel.cpp \
     Client/pending-connection.cpp \
+    Client/pending-contact-attributes.cpp \
+    Client/pending-contacts.cpp \
     Client/pending-handles.cpp \
     Client/pending-operation.cpp \
     Client/pending-string-list.cpp \
@@ -91,10 +95,13 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/connection-manager.moc.hpp \
     Client/_gen/connection-internal.moc.hpp \
     Client/_gen/connection-manager-internal.moc.hpp \
+    Client/_gen/contact.moc.hpp \
     Client/_gen/dbus-proxy.moc.hpp \
     Client/_gen/pending-account.moc.hpp \
-    Client/_gen/pending-connection.moc.hpp \
     Client/_gen/pending-channel.moc.hpp \
+    Client/_gen/pending-connection.moc.hpp \
+    Client/_gen/pending-contact-attributes.moc.hpp \
+    Client/_gen/pending-contacts.moc.hpp \
     Client/_gen/pending-handles.moc.hpp \
     Client/_gen/pending-operation.moc.hpp \
     Client/_gen/pending-string-list.moc.hpp \
@@ -119,6 +126,8 @@ tpqt4clientinclude_HEADERS = \
     Client/Channel \
     Client/Connection \
     Client/ConnectionManager \
+    Client/Contact \
+    Client/ContactManager \
     Client/DBus \
     Client/DBusProxy \
     Client/MediaSessionHandler \
@@ -127,6 +136,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingAccount \
     Client/PendingChannel \
     Client/PendingConnection \
+    Client/PendingContactAttributes \
     Client/PendingFailure \
     Client/PendingOperation \
     Client/PendingSuccess \
@@ -174,6 +184,8 @@ tpqt4clientinclude_HEADERS = \
     Client/channel.h \
     Client/connection.h \
     Client/connection-manager.h \
+    Client/contact.h \
+    Client/contact-manager.h \
     Client/dbus.h \
     Client/dbus-proxy.h \
     Client/media-session-handler.h \
@@ -182,6 +194,8 @@ tpqt4clientinclude_HEADERS = \
     Client/pending-account.h \
     Client/pending-channel.h \
     Client/pending-connection.h \
+    Client/pending-contact-attributes.h \
+    Client/pending-contacts.h \
     Client/pending-handles.h \
     Client/pending-operation.h \
     Client/pending-string-list.h \
