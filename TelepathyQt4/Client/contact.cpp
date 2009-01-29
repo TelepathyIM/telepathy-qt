@@ -66,7 +66,7 @@ Contact::~Contact()
 
 Contact::Contact(Connection *connection, const ReferencedHandles &handle,
         const QVariantMap &attributes)
-    : QObject(connection), mPriv(new Private(connection, handle))
+    : QObject(0), mPriv(new Private(connection, handle))
 {
     debug() << this << "initialized with" << attributes.size() << "attributes";
 
