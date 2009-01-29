@@ -47,6 +47,7 @@ class AccountManager;
 class Connection;
 class PendingConnection;
 class PendingOperation;
+class PendingReadyAccount;
 class ProtocolInfo;
 
 class Account : public StatelessDBusProxy,
@@ -127,7 +128,7 @@ public:
 
     bool isReady(Features features = 0) const;
 
-    PendingOperation *becomeReady(Features features = 0);
+    PendingReadyAccount *becomeReady(Features features = 0);
 
     QStringList interfaces() const;
 

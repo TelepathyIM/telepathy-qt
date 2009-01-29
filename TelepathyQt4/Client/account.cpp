@@ -30,6 +30,7 @@
 #include <TelepathyQt4/Client/AccountManager>
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
+#include <TelepathyQt4/Client/PendingReadyAccount>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
@@ -59,11 +60,9 @@ struct Account::Private
     Private(Account *parent);
     ~Private();
 
-    class PendingReady;
-
     AccountInterface *baseInterface;
     bool ready;
-    QList<PendingReady *> pendingOperations;
+    QList<PendingReadyAccount *> pendingOperations;
     QQueue<void (Account::*)()> introspectQueue;
     QStringList interfaces;
     Account::Features features;
@@ -89,23 +88,6 @@ struct Account::Private
     Telepathy::SimplePresence currentPresence;
     Telepathy::SimplePresence requestedPresence;
 };
-
-class Account::Private::PendingReady : public PendingOperation
-{
-    // Account is a friend so it can call finished() etc.
-    friend class Account;
-
-public:
-    PendingReady(Account::Features features, QObject *parent = 0);
-
-    Account::Features features;
-};
-
-Account::Private::PendingReady::PendingReady(Account::Features features, QObject *parent)
-    : PendingOperation(parent),
-      features(features)
-{
-}
 
 Account::Private::Private(Account *parent)
     : baseInterface(new AccountInterface(parent->dbusConnection(),
@@ -622,16 +604,19 @@ bool Account::isReady(Features features) const
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when this object has finished or failed its initial setup.
  */
-PendingOperation *Account::becomeReady(Features requestedFeatures)
+PendingReadyAccount *Account::becomeReady(Features requestedFeatures)
 {
     if (isReady(requestedFeatures)) {
-        return new PendingSuccess(this);
+        PendingReadyAccount *operation =
+                new PendingReadyAccount(requestedFeatures, this);
+        operation->setFinished();
+        return operation;
     }
 
     debug() << "calling becomeReady with requested features:"
             << requestedFeatures;
-    Q_FOREACH (Private::PendingReady *operation, mPriv->pendingOperations) {
-        if (operation->features == requestedFeatures) {
+    Q_FOREACH (PendingReadyAccount *operation, mPriv->pendingOperations) {
+        if (operation->features() == requestedFeatures) {
             debug() << "returning cached pending operation";
             return operation;
         }
@@ -642,7 +627,10 @@ PendingOperation *Account::becomeReady(Features requestedFeatures)
         // supported, just finish silently
         if (requestedFeatures == FeatureAvatar &&
             mPriv->missingFeatures & FeatureAvatar) {
-            return new PendingSuccess(this);
+            PendingReadyAccount *operation =
+                    new PendingReadyAccount(requestedFeatures, this);
+            operation->setFinished();
+            return operation;
         }
 
         // if we know that avatar is not supported, no need to
@@ -659,9 +647,12 @@ PendingOperation *Account::becomeReady(Features requestedFeatures)
         // but we already know that protocol info is not supported, so
         // fail directly
         if (mPriv->missingFeatures & FeatureProtocolInfo) {
-            return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+            PendingReadyAccount *operation =
+                    new PendingReadyAccount(requestedFeatures, this);
+            operation->setFinishedWithError(TELEPATHY_ERROR_NOT_IMPLEMENTED,
                     QString("ProtocolInfo not found for protocol %1 on CM %2")
                         .arg(mPriv->protocol).arg(mPriv->cmName));
+            return operation;
         }
 
         if (!(mPriv->features & FeatureProtocolInfo) &&
@@ -675,8 +666,8 @@ PendingOperation *Account::becomeReady(Features requestedFeatures)
     QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 
     debug() << "Creating new pending operation";
-    Private::PendingReady *operation =
-        new Private::PendingReady(requestedFeatures, this);
+    PendingReadyAccount *operation =
+            new PendingReadyAccount(requestedFeatures, this);
     mPriv->pendingOperations.append(operation);
     return operation;
 }
@@ -972,8 +963,8 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
 
         // signal all pending operations that cares about protocol info that
         // it failed, as FeatureProtocolInfo is mandatory
-        Q_FOREACH (Private::PendingReady *operation, mPriv->pendingOperations) {
-            if (operation->features & FeatureProtocolInfo) {
+        Q_FOREACH (PendingReadyAccount *operation, mPriv->pendingOperations) {
+            if (operation->features() & FeatureProtocolInfo) {
                 operation->setFinishedWithError(operation->errorName(),
                         operation->errorMessage());
                 mPriv->pendingOperations.removeOne(operation);
@@ -1002,10 +993,10 @@ void Account::onRemoved()
 void Account::continueIntrospection()
 {
     if (mPriv->introspectQueue.isEmpty()) {
-        Q_FOREACH (Private::PendingReady *operation, mPriv->pendingOperations) {
+        Q_FOREACH (PendingReadyAccount *operation, mPriv->pendingOperations) {
             if (mPriv->ready &&
-                ((operation->features &
-                    (mPriv->features | mPriv->missingFeatures)) == operation->features)) {
+                ((operation->features() &
+                    (mPriv->features | mPriv->missingFeatures)) == operation->features())) {
                 operation->setFinished();
             }
             if (operation->isFinished()) {
