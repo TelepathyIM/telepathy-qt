@@ -189,6 +189,17 @@ void TestContacts::testForHandles()
 
     // Get contacts for the mixture of valid and invalid handles
     PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
+
+    // Test the closure accessors
+    QCOMPARE(pending->contactManager(), mConn->contactManager());
+    QCOMPARE(pending->features(), QSet<Contact::Feature>());
+
+    QVERIFY(pending->isForHandles());
+    QVERIFY(!pending->isForIdentifiers());
+
+    QCOMPARE(pending->handles(), handles);
+
+    // Wait for the contacts to be built
     QVERIFY(connect(pending,
                 SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                 SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
