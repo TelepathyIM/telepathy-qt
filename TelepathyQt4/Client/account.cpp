@@ -596,12 +596,12 @@ bool Account::isReady(Features features) const
 }
 
 /**
- * Return a pending operation which will succeed when this object finishes
+ * Return a pending ready account which will succeed when this object finishes
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
  *
  * \param features Which features should be tested.
- * \return A PendingOperation which will emit PendingOperation::finished
+ * \return A PendingReadyAccount which will emit PendingOperation::finished
  *         when this object has finished or failed its initial setup.
  */
 PendingReadyAccount *Account::becomeReady(Features requestedFeatures)
