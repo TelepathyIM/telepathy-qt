@@ -28,7 +28,6 @@
 
 #include <TelepathyQt4/Client/PendingOperation>
 
-#include <QDBusPendingCall>
 #include <QStringList>
 
 namespace Telepathy
