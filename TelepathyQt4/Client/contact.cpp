@@ -25,6 +25,7 @@
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/ReferencedHandles>
+
 #include "TelepathyQt4/debug-internal.h"
 
 namespace Telepathy

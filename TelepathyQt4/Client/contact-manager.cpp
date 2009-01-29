@@ -29,6 +29,7 @@
 #include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/ReferencedHandles>
+
 #include "TelepathyQt4/debug-internal.h"
 
 /**

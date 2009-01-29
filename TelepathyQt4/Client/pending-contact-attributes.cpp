@@ -25,7 +25,7 @@
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ReferencedHandles>
 
-#include "../debug-internal.h"
+#include "TelepathyQt4/debug-internal.h"
 
 /**
  * \addtogroup clientsideproxies Client-side proxies
