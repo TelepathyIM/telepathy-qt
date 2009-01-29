@@ -226,60 +226,12 @@ void TestContacts::testForHandles()
 
     // Unref the handles we created service-side
     tp_handle_unref(serviceRepo, handles[0]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
     tp_handle_unref(serviceRepo, handles[1]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
     tp_handle_unref(serviceRepo, handles[3]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
 }
-
-#if 0
-void TestHandles::testRequestAndRelease()
-{
-    // Test identifiers
-    QStringList ids = QStringList() << "alice" << "bob" << "chris";
-
-    // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->requestHandles(Telepathy::HandleTypeContact, ids);
-    QVERIFY(connect(pending,
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(pending,
-                       SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                       this,
-                       SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
-    ReferencedHandles handles = mHandles;
-    mHandles = ReferencedHandles();
-
-    // Verify that the closure indicates correctly which names we requested
-    QCOMPARE(pending->namesRequested(), ids);
-
-    // Verify by directly poking the service that the handles correspond to the requested IDs
-    TpHandleRepoIface *serviceRepo =
-        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
-    for (int i = 0; i < 3; i++) {
-        uint handle = handles[i];
-        QCOMPARE(QString::fromUtf8(tp_handle_inspect(serviceRepo, handle)), ids[i]);
-    }
-
-    // Save the handles to a non-referenced normal container
-    Telepathy::UIntList saveHandles = handles.toList();
-
-    // Start releasing the handles, RAII style, and complete the asynchronous process doing that
-    handles = ReferencedHandles();
-    mLoop->processEvents();
-
-    // Make sure the service side has processed the release as well, by calling a method
-    QVERIFY(connect(mConn->requestConnect(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    // Check that the handles have been released
-    for (int i = 0; i < 3; i++) {
-        uint handle = saveHandles[0];
-        QVERIFY(!tp_handle_is_valid(serviceRepo, handle, NULL));
-    }
-}
-#endif
 
 void TestContacts::cleanup()
 {
