@@ -75,8 +75,12 @@ public:
 
     PendingOperation *becomeReady(Features features = 0);
 
-public Q_SLOTS:
-    QDBusPendingReply<> close();
+    bool isClosed() const;
+
+    PendingOperation *requestClose();
+
+Q_SIGNALS:
+    void closed();
 
 public:
     uint groupFlags() const;

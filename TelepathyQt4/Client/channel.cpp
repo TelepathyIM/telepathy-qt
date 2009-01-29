@@ -483,6 +483,10 @@ void Channel::Private::changeReadiness(Readiness newReadiness)
     }
 
     readiness = newReadiness;
+
+    if (readiness == ReadinessDead || readiness == ReadinessClosed) {
+        emit parent->closed();
+    }
 }
 
 /**
@@ -702,44 +706,42 @@ PendingOperation *Channel::becomeReady(Features features)
     return mPriv->pendingReady;
 }
 
+/**
+ * Return whether this channel is closed.
+ *
+ * \return \c true if the channel is closed, \c false otherwise.
+ */
+bool Channel::isClosed() const
+{
+    return (mPriv->readiness == Private::ReadinessClosed ||
+            mPriv->readiness == Private::ReadinessDead);
+}
 
 /**
- * Close the channel.
+ * Start an asynchronous request that the channel be closed.
+ * The returned PendingOperation object will signal the success or failure
+ * of this request; under normal circumstances, it can be expected to
+ * succeed.
  *
- * When this method is used as a slot, it is fire-and-forget. If you want
- * to know if an error occurs when closing the channel, then you should
- * use the returned object.
- *
- * A channel can be closed if its Readiness is ReadinessJustCreated or
- * ReadinessFull. It cannot be closed if its Readiness is ReadinessDead or
- * ReadinessClosed. If this method is called on a channel which is already
- * in either the ReadinessDead or ReadinessClosed state, a DBus error of type
- * TELEPATHY_ERROR_NOT_AVAILABLE will be returned.
- *
- * If the introspection of a channel is not complete (ReadinessJustCreated)
- * when close() is called, the channel readiness will change to ReadinessDead
- * instead of ReadinessClosed, which results if the channel is closed after
- * the introspection is complete (ReadinessFull).
- *
- * \return QDBusPendingReply object for the call to Close() on the Channel
- *         interface.
+ * \return A %PendingOperation, which will emit finished when the
+ *         request finishes.
  */
-QDBusPendingReply<> Channel::close()
+PendingOperation *Channel::requestClose()
 {
     // Closing a channel does not make sense if it is already dead or closed.
-    if ((mPriv->readiness != Private::ReadinessDead) &&
-        (mPriv->readiness != Private::ReadinessClosed)) {
-        return mPriv->baseInterface->Close();
+    if ((mPriv->readiness == Private::ReadinessDead) ||
+        (mPriv->readiness == Private::ReadinessClosed)) {
+        return new PendingSuccess(this);
     }
 
-    // If the channel is in a readiness where it doesn't make sense to be
-    // closed, we emit a warning and return an error QDBusPendingReply.
-    warning() << "Channel::close() used with readiness" << mPriv->readiness;
-
-    return QDBusPendingReply<>(QDBusMessage::createError(
-                TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Attempted to close an already dead or closed channel"));
+    return new PendingVoidMethodCall(this, mPriv->baseInterface->Close());
 }
+
+/**
+ * \fn void closed()
+ *
+ * Emitted whenever the channel closes.
+ */
 
 /**
  * \name Group interface
