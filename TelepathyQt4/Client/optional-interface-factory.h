@@ -38,13 +38,14 @@
  */
 
 #include <QtGlobal>
-
-#include <TelepathyQt4/Client/AbstractInterface>
+#include <QObject>
 
 namespace Telepathy
 {
 namespace Client
 {
+
+class AbstractInterface;
 
 class OptionalInterfaceCache
 {

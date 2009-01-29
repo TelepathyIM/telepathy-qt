@@ -21,6 +21,8 @@
 
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
+#include <TelepathyQt4/Client/AbstractInterface>
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include <QMap>
