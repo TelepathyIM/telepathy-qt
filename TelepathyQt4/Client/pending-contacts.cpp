@@ -79,11 +79,6 @@ ContactManager *PendingContacts::contactManager() const
     return mPriv->connection->contactManager();
 }
 
-UIntList PendingContacts::handles() const
-{
-    return mPriv->handles;
-}
-
 QSet<Contact::Feature> PendingContacts::features() const
 {
     return mPriv->features;
@@ -94,6 +89,15 @@ bool PendingContacts::isForHandles() const
     return !isForIdentifiers();
 }
 
+UIntList PendingContacts::handles() const
+{
+    if (!isForHandles()) {
+        warning() << "Tried to get handles from" << this << "which is for identifiers!";
+    }
+
+    return mPriv->handles;
+}
+
 bool PendingContacts::isForIdentifiers() const
 {
     return mPriv->isForIdentifiers;
@@ -102,7 +106,7 @@ bool PendingContacts::isForIdentifiers() const
 QStringList PendingContacts::identifiers() const
 {
     if (!isForIdentifiers()) {
-
+        warning() << "Tried to get identifiers from" << this << "which is for handles!";
     }
 
     return mPriv->identifiers;
