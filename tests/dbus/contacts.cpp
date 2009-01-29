@@ -209,20 +209,10 @@ void TestContacts::testForHandles()
     QCOMPARE(mContacts[1]->id(), QString("bob"));
     QCOMPARE(mContacts[2]->id(), QString("chris"));
 
-    // Make the contacts go out of scope, triggering the release of their handles
+    // Make the contacts go out of scope, starting releasing their handles, and finish that
     mContacts.clear();
     mLoop->processEvents();
-
-    // Make sure the service side has processed the release as well, by calling a method
-    ConnectionInterfaceContactsInterface *interface =
-        mConn->optionalInterface<ConnectionInterfaceContactsInterface>();
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(interface->GetContactAttributes(Telepathy::UIntList(),
-                    QStringList(), false));
-    QVERIFY(connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
-    QCOMPARE(mLoop->exec(), 0);
+    processDBusQueue(mConn);
 
     // Unref the handles we created service-side
     tp_handle_unref(serviceRepo, handles[0]);
