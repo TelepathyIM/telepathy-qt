@@ -42,6 +42,7 @@ private Q_SLOTS:
     void init();
 
     void testForHandles();
+    void testForIdentifiers();
 
     void cleanup();
     void cleanupTestCase();
@@ -247,6 +248,73 @@ void TestContacts::testForHandles()
     QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
     tp_handle_unref(serviceRepo, handles[3]);
     QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
+}
+
+void TestContacts::testForIdentifiers()
+{
+    QStringList validIDs = QStringList() << "Alice" << "Bob" << "Chris";
+    QStringList invalidIDs = QStringList() << "Not valid" << "Not valid either";
+    TpHandleRepoIface *serviceRepo =
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
+
+    // Check that a request with just the invalid IDs fails
+    PendingOperation *fails = mConn->contactManager()->contactsForIdentifiers(invalidIDs);
+    QVERIFY(connect(fails,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+
+    // A request with both valid and invalid IDs should also fail
+    fails = mConn->contactManager()->contactsForIdentifiers(invalidIDs + validIDs + invalidIDs);
+    QVERIFY(connect(fails,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+
+    // Go on to the meat: valid IDs
+    PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(validIDs);
+
+    // Test the closure accessors
+    QCOMPARE(pending->contactManager(), mConn->contactManager());
+    QCOMPARE(pending->features(), QSet<Contact::Feature>());
+
+    QVERIFY(!pending->isForHandles());
+    QVERIFY(pending->isForIdentifiers());
+
+    QCOMPARE(pending->identifiers(), validIDs);
+
+    // Finish it
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Check that there are 3 contacts consistent with the request
+    QCOMPARE(mContacts.size(), 3);
+
+    for (int i = 0; i < mContacts.size(); i++) {
+        QVERIFY(mContacts[i] != NULL);
+        QCOMPARE(mContacts[i]->connection(), mConn);
+        QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle()[0], NULL));
+    }
+
+    QCOMPARE(mContacts[0]->id(), QString("alice"));
+    QCOMPARE(mContacts[1]->id(), QString("bob"));
+    QCOMPARE(mContacts[2]->id(), QString("chris"));
+
+    // Make the contacts go out of scope, starting releasing their handles, and finish that (but
+    // save their handles first)
+    Telepathy::UIntList saveHandles = Telepathy::UIntList() << mContacts[0]->handle()[0]
+                                                            << mContacts[1]->handle()[0]
+                                                            << mContacts[2]->handle()[0];
+    mContacts.clear();
+    mLoop->processEvents();
+    processDBusQueue(mConn);
+
+    // Check that their handles are in fact released
+    foreach (uint handle, saveHandles) {
+        QVERIFY(!tp_handle_is_valid(serviceRepo, handle, NULL));
+    }
 }
 
 void TestContacts::cleanup()
