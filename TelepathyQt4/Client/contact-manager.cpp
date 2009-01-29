@@ -70,6 +70,19 @@ Connection *ContactManager::connection() const
     return mPriv->conn;
 }
 
+bool ContactManager::isSupported() const
+{
+    if (!connection()->isReady()) {
+        warning() << "ContactManager::isSupported() used before the connection is ready!";
+        return false;
+    } else if (connection()->status() != Connection::StatusConnected) {
+        warning() << "ContactManager::isSupported() used before the connection is connected!";
+        return false;
+    }
+
+    return connection()->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS);
+}
+
 namespace
 {
 QString featureToInterface(Contact::Feature feature)

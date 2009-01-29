@@ -46,6 +46,8 @@ class ContactManager
 
         Connection *connection() const;
 
+        bool isSupported() const;
+
         PendingContacts *contactsForHandles(const UIntList &handles,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
         PendingContacts *contactsForHandles(const ReferencedHandles &handles,
