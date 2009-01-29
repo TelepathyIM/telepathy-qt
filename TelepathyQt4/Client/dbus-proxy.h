@@ -66,7 +66,7 @@ protected:
 
 Q_SIGNALS:
     void invalidated(Telepathy::Client::DBusProxy *proxy,
-            QString errorName, QString errorMessage);
+            const QString &errorName, const QString &errorMessage);
 
 private Q_SLOTS:
     void emitInvalidated();

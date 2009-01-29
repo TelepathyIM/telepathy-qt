@@ -197,12 +197,7 @@ void TestHandles::testRequestAndRelease()
     // Start releasing the handles, RAII style, and complete the asynchronous process doing that
     handles = ReferencedHandles();
     mLoop->processEvents();
-
-    // Make sure the service side has processed the release as well, by calling a method
-    QVERIFY(connect(mConn->requestConnect(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    processDBusQueue(mConn);
 
     // Check that the handles have been released
     for (int i = 0; i < 3; i++) {
@@ -227,7 +222,7 @@ void TestHandles::cleanupTestCase()
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn,
-                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *, QString, QString)),
+                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }
