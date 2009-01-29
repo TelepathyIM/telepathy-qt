@@ -212,6 +212,10 @@ void TestContacts::testForHandles()
     QVERIFY(mContacts[1] != NULL);
     QVERIFY(mContacts[2] != NULL);
 
+    QCOMPARE(mContacts[0]->connection(), mConn);
+    QCOMPARE(mContacts[1]->connection(), mConn);
+    QCOMPARE(mContacts[2]->connection(), mConn);
+
     QCOMPARE(mContacts[0]->handle()[0], handles[0]);
     QCOMPARE(mContacts[1]->handle()[0], handles[1]);
     QCOMPARE(mContacts[2]->handle()[0], handles[3]);
