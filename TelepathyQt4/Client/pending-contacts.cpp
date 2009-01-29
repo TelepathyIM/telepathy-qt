@@ -65,6 +65,7 @@ struct PendingContacts::Private
     PendingContacts *nested;
 
     QList<QSharedPointer<Contact> > contacts;
+    UIntList invalidHandles;
 };
 
 /**
@@ -124,6 +125,19 @@ QList<QSharedPointer<Contact> > PendingContacts::contacts() const
     return mPriv->contacts;
 }
 
+UIntList PendingContacts::invalidHandles() const
+{
+    if (!isFinished()) {
+        warning() << "PendingContacts::invalidHandles() called before finished";
+    } else if (isError()) {
+        warning() << "PendingContacts::invalidHandles() called when errored";
+    } else if (!isForHandles()) {
+        warning() << "PendingContacts::invalidHandles() called for" << this << "which is for IDs!";
+    }
+
+    return mPriv->invalidHandles;
+}
+
 void PendingContacts::onAttributesFinished(PendingOperation *operation)
 {
     PendingContactAttributes *pendingAttributes =
@@ -139,8 +153,11 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
     }
 
     ReferencedHandles validHandles = pendingAttributes->validHandles();
+    mPriv->invalidHandles = pendingAttributes->invalidHandles();
     ContactAttributesMap attributes = pendingAttributes->attributes();
-    debug() << " Success:" << validHandles.size() << "valid handles";
+
+    debug() << " Success:" << validHandles.size() << "valid and"
+                           << mPriv->invalidHandles.size() << "invalid handles";
 
     for (int i = 0; i < validHandles.size(); i++) {
         uint handle = validHandles[i];

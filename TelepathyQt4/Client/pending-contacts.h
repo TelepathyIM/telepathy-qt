@@ -61,6 +61,7 @@ public:
     QStringList identifiers() const;
 
     QList<QSharedPointer<Contact> > contacts() const;
+    UIntList invalidHandles() const;
 
 private Q_SLOTS:
     void onAttributesFinished(Telepathy::Client::PendingOperation *);
