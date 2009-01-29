@@ -27,8 +27,11 @@
 #endif
 
 #include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Types>
+
+#include <QString>
+#include <QVariantMap>
+
+#include <QDBusPendingCallWatcher>
 
 namespace Telepathy
 {
