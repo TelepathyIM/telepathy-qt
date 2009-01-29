@@ -53,16 +53,19 @@ class PendingHandles;
 }
 }
 
-#include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/ReferencedHandles>
+
+#include <QStringList>
+
+#include <TelepathyQt4/Types>
 
 namespace Telepathy
 {
 namespace Client
 {
+
+class Connection;
+class ReferencedHandles;
 
 /**
  * \class PendingHandles
