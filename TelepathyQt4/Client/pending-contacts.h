@@ -63,9 +63,9 @@ public:
     QList<QSharedPointer<Contact> > contacts() const;
 
 private Q_SLOTS:
-    void onAttributesFinished(PendingOperation *);
-    void onHandlesFinished(PendingOperation *);
-    void onNestedFinished(PendingOperation *);
+    void onAttributesFinished(Telepathy::Client::PendingOperation *);
+    void onHandlesFinished(Telepathy::Client::PendingOperation *);
+    void onNestedFinished(Telepathy::Client::PendingOperation *);
 
 private:
     Q_DISABLE_COPY(PendingContacts);
