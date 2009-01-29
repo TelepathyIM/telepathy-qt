@@ -60,6 +60,14 @@ namespace Client
 
 struct Channel::Private
 {
+    enum Readiness {
+        ReadinessJustCreated = 0,
+        ReadinessFull = 5,
+        ReadinessDead = 10,
+        ReadinessClosed = 15,
+        _ReadinessInvalid = 0xffff
+    };
+
     Private(Channel *parent, Connection *connection);
 
     void introspectMain();
@@ -475,7 +483,6 @@ void Channel::Private::changeReadiness(Readiness newReadiness)
     }
 
     readiness = newReadiness;
-    emit parent->readinessChanged(newReadiness);
 }
 
 /**
@@ -574,16 +581,6 @@ Connection *Channel::connection() const
 }
 
 /**
- * Returns the current readiness of the Channel.
- *
- * \return The readiness, as defined in #Readiness.
- */
-Channel::Readiness Channel::readiness() const
-{
-    return mPriv->readiness;
-}
-
-/**
  * Returns a list of optional interfaces implemented by the remote object.
  *
  * \return D-Bus names of the implemented optional interfaces.
@@ -593,14 +590,14 @@ QStringList Channel::interfaces() const
     // Different check than the others, because the optional interface getters
     // may be used internally with the knowledge about getting the interfaces
     // list, so we don't want this to cause warnings.
-    if (mPriv->readiness < ReadinessFull && mPriv->interfaces.empty()) {
+    if (mPriv->readiness < Private::ReadinessFull && mPriv->interfaces.empty()) {
         warning() << "Channel::interfaces() used possibly before the list of "
             "interfaces has been received";
     }
-    else if (mPriv->readiness == ReadinessDead) {
+    else if (mPriv->readiness == Private::ReadinessDead) {
         warning() << "Channel::interfaces() used with readiness ReadinessDead";
     }
-    else if (mPriv->readiness == ReadinessClosed) {
+    else if (mPriv->readiness == Private::ReadinessClosed) {
         warning() << "Channel::interfaces() used with readiness ReadinessClosed";
     }
 
@@ -616,16 +613,16 @@ QString Channel::channelType() const
 {
     // Similarly, we don't want warnings triggered when using the type interface
     // proxies internally.
-    if (mPriv->readiness < ReadinessFull && mPriv->channelType.isEmpty()) {
+    if (mPriv->readiness < Private::ReadinessFull && mPriv->channelType.isEmpty()) {
         warning() << "Channel::channelType() before the channel type has "
             "been received";
     }
-    else if (mPriv->readiness == ReadinessDead) {
+    else if (mPriv->readiness == Private::ReadinessDead) {
         warning() << "Channel::channelType() used with readiness ReadinessDead";
     }
     // Channel type will still be valid if the channel has been closed after
     // introspection completed successfully.
-    // else if (mPriv->readiness == ReadinessClosed) {
+    // else if (mPriv->readiness == Private::ReadinessClosed) {
     //    warning() << "Channel::channelType() used with readiness ReadinessClosed";
     // }
 
@@ -639,7 +636,7 @@ QString Channel::channelType() const
  */
 uint Channel::targetHandleType() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::targetHandleType() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -655,7 +652,7 @@ uint Channel::targetHandleType() const
  */
 uint Channel::targetHandle() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::targetHandle() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -675,7 +672,7 @@ uint Channel::targetHandle() const
  */
 bool Channel::isReady(Features features) const
 {
-    return (mPriv->readiness == ReadinessFull)
+    return (mPriv->readiness == Private::ReadinessFull)
         && ((mPriv->features & features) == features);
 }
 
@@ -730,8 +727,8 @@ PendingOperation *Channel::becomeReady(Features features)
 QDBusPendingReply<> Channel::close()
 {
     // Closing a channel does not make sense if it is already dead or closed.
-    if ((mPriv->readiness != ReadinessDead) &&
-        (mPriv->readiness != ReadinessClosed)) {
+    if ((mPriv->readiness != Private::ReadinessDead) &&
+        (mPriv->readiness != Private::ReadinessClosed)) {
         return mPriv->baseInterface->Close();
     }
 
@@ -743,15 +740,6 @@ QDBusPendingReply<> Channel::close()
                 TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Attempted to close an already dead or closed channel"));
 }
-
-/**
- * \fn void readinessChanged(uint newReadiness)
- *
- * Emitted whenever the readiness of the Channel changes. When the channel
- * is closed, this signal will be emitted with readiness #ReadinessClosed.
- *
- * \param newReadiness The new readiness, as defined in #Readiness.
- */
 
 /**
  * \name Group interface
@@ -794,7 +782,7 @@ QDBusPendingReply<> Channel::close()
  */
 uint Channel::groupFlags() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::groupFlags() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -812,7 +800,7 @@ uint Channel::groupFlags() const
  */
 QSet<uint> Channel::groupMembers() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::groupMembers() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -844,7 +832,7 @@ QSet<uint> Channel::groupMembers() const
  */
 Channel::GroupMemberChangeInfoMap Channel::groupLocalPending() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::groupLocalPending() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -863,7 +851,7 @@ Channel::GroupMemberChangeInfoMap Channel::groupLocalPending() const
  */
 QSet<uint> Channel::groupRemotePending() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::groupRemotePending() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -900,7 +888,7 @@ QSet<uint> Channel::groupRemotePending() const
  */
 bool Channel::groupAreHandleOwnersAvailable() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -926,7 +914,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
  */
 HandleOwnerMap Channel::groupHandleOwners() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::groupHandleOwners() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -953,7 +941,7 @@ HandleOwnerMap Channel::groupHandleOwners() const
  */
 bool Channel::groupIsSelfHandleTracked() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::isSelfHandleTracked() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -974,7 +962,7 @@ bool Channel::groupIsSelfHandleTracked() const
  */
 uint Channel::groupSelfHandle() const
 {
-    if (mPriv->readiness != ReadinessFull) {
+    if (mPriv->readiness != Private::ReadinessFull) {
         warning() << "Channel::groupSelfHandle() used with readiness" <<
             mPriv->readiness << "!= ReadinessFull";
     }
@@ -1007,7 +995,7 @@ uint Channel::groupSelfHandle() const
  */
 Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
 {
-    if (mPriv->readiness != ReadinessClosed) {
+    if (mPriv->readiness != Private::ReadinessClosed) {
         warning() << "Channel::groupSelfRemoveInfo() used with readiness" <<
             mPriv->readiness << "!= ReadinessClosed";
     }
@@ -1321,9 +1309,9 @@ void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetChannelType() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        if ((mPriv->readiness != ReadinessDead) &&
-            (mPriv->readiness != ReadinessClosed)) {
-            mPriv->changeReadiness(ReadinessDead);
+        if ((mPriv->readiness != Private::ReadinessDead) &&
+            (mPriv->readiness != Private::ReadinessClosed)) {
+            mPriv->changeReadiness(Private::ReadinessDead);
         }
         return;
     }
@@ -1341,9 +1329,9 @@ void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetHandle() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        if ((mPriv->readiness != ReadinessDead) &&
-            (mPriv->readiness != ReadinessClosed)) {
-            mPriv->changeReadiness(ReadinessDead);
+        if ((mPriv->readiness != Private::ReadinessDead) &&
+            (mPriv->readiness != Private::ReadinessClosed)) {
+            mPriv->changeReadiness(Private::ReadinessDead);
         }
         return;
     }
@@ -1362,9 +1350,9 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetInterfaces() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        if ((mPriv->readiness != ReadinessDead) &&
-            (mPriv->readiness != ReadinessClosed)) {
-            mPriv->changeReadiness(ReadinessDead);
+        if ((mPriv->readiness != Private::ReadinessDead) &&
+            (mPriv->readiness != Private::ReadinessClosed)) {
+            mPriv->changeReadiness(Private::ReadinessDead);
         }
         return;
     }
@@ -1379,12 +1367,12 @@ void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
 
-    if (mPriv->readiness == ReadinessFull) {
-        mPriv->changeReadiness(ReadinessClosed);
+    if (mPriv->readiness == Private::ReadinessFull) {
+        mPriv->changeReadiness(Private::ReadinessClosed);
     }
-    else if ((mPriv->readiness != ReadinessDead) &&
-             (mPriv->readiness != ReadinessClosed)) {
-        mPriv->changeReadiness(ReadinessDead);
+    else if ((mPriv->readiness != Private::ReadinessDead) &&
+             (mPriv->readiness != Private::ReadinessClosed)) {
+        mPriv->changeReadiness(Private::ReadinessDead);
     }
 
     // I think this is the nearest error code we can get at the moment
@@ -1393,10 +1381,10 @@ void Channel::onClosed()
 
 void Channel::onConnectionInvalidated()
 {
-    if (mPriv->readiness != ReadinessDead) {
+    if (mPriv->readiness != Private::ReadinessDead) {
         debug() << "Owning connection died leaving an orphan Channel, "
             "changing to ReadinessDead";
-        mPriv->changeReadiness(ReadinessDead);
+        mPriv->changeReadiness(Private::ReadinessDead);
     }
 }
 
@@ -1697,9 +1685,9 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
 
 void Channel::continueIntrospection()
 {
-    if (mPriv->readiness < ReadinessFull) {
+    if (mPriv->readiness < Private::ReadinessFull) {
         if (mPriv->introspectQueue.isEmpty()) {
-            mPriv->changeReadiness(ReadinessFull);
+            mPriv->changeReadiness(Private::ReadinessFull);
 
             if (mPriv->pendingReady) {
                 mPriv->pendingReady->setFinished();

@@ -49,7 +49,6 @@ class Channel : public StatefulDBusProxy,
 {
     Q_OBJECT
     Q_DISABLE_COPY(Channel)
-    Q_ENUMS(Readiness)
 
 public:
     enum Feature {
@@ -57,22 +56,12 @@ public:
     };
     Q_DECLARE_FLAGS(Features, Feature)
 
-    enum Readiness {
-        ReadinessJustCreated = 0,
-        ReadinessFull = 5,
-        ReadinessDead = 10,
-        ReadinessClosed = 15,
-        _ReadinessInvalid = 0xffff
-    };
-
     Channel(Connection *connection,
             const QString &objectPath,
             QObject *parent = 0);
     ~Channel();
 
     Connection *connection() const;
-
-    Readiness readiness() const;
 
     QStringList interfaces() const;
 
@@ -88,9 +77,6 @@ public:
 
 public Q_SLOTS:
     QDBusPendingReply<> close();
-
-Q_SIGNALS:
-    void readinessChanged(uint newReadiness);
 
 public:
     uint groupFlags() const;
