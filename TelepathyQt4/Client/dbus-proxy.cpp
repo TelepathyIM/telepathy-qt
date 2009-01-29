@@ -28,7 +28,10 @@
 #include <TelepathyQt4/Constants>
 
 #include <QTimer>
+
+#include <QDBusConnection>
 #include <QDBusConnectionInterface>
+#include <QDBusError>
 
 namespace Telepathy
 {
@@ -232,6 +235,11 @@ void DBusProxy::invalidate(const QString &reason, const QString &message)
     // Defer emitting the invalidated signal until we next
     // return to the mainloop.
     QTimer::singleShot(0, this, SLOT(emitInvalidated()));
+}
+
+void DBusProxy::invalidate(const QDBusError &error)
+{
+    invalidate(error.name(), error.message());
 }
 
 void DBusProxy::emitInvalidated()

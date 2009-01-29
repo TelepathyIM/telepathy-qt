@@ -26,8 +26,10 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QDBusConnection>
-#include <QDBusError>
+#include <QObject>
+
+class QDBusConnection;
+class QDBusError;
 
 namespace Telepathy
 {
@@ -62,7 +64,7 @@ public:
 protected:
     void setBusName(const QString &busName);
     void invalidate(const QString &reason, const QString &message);
-    inline void invalidate(const QDBusError &error);
+    void invalidate(const QDBusError &error);
 
 Q_SIGNALS:
     void invalidated(Telepathy::Client::DBusProxy *proxy,
@@ -114,11 +116,6 @@ private:
     friend class Private;
     Private *mPriv;
 };
-
-void DBusProxy::invalidate(const QDBusError &error)
-{
-    invalidate(error.name(), error.message());
-}
 
 }
 }
