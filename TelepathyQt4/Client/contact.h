@@ -39,24 +39,25 @@ class ReferencedHandles;
 
 class Contact : public QObject
 {
-    Q_OBJECT;
-    Q_DISABLE_COPY(Contact);
+    Q_OBJECT
 
 public:
-        enum Feature {
-            _Padding = 0xFFFFFFFF
-        };
-        Q_DECLARE_FLAGS(Features, Feature);
+    enum Feature {
+        _Padding = 0xFFFFFFFF
+    };
+    Q_DECLARE_FLAGS(Features, Feature);
 
-        Connection *connection() const;
+    Connection *connection() const;
 
-        ReferencedHandles handle() const;
-        QString id() const;
+    ReferencedHandles handle() const;
+    QString id() const;
 
-        ~Contact();
+    ~Contact();
 
-    private:
-        Contact(Connection *parent, const ReferencedHandles &handle, const QVariantMap &attributes);
+private:
+    Q_DISABLE_COPY(Contact);
+
+    Contact(Connection *parent, const ReferencedHandles &handle, const QVariantMap &attributes);
 
     struct Private;
     friend class PendingContacts;
