@@ -1,16 +1,19 @@
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <QDebug>
+#include <QList>
+#include <QSharedPointer>
+#include <QTimer>
 
-#include <QtDBus/QtDBus>
-
-#include <QtTest/QtTest>
+#include <QtDBus>
+#include <QtTest>
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
+#include <TelepathyQt4/Client/ReferencedHandles>
 #include <TelepathyQt4/Debug>
+#include <TelepathyQt4/Types>
 
 #include <telepathy-glib/debug.h>
 
@@ -32,10 +35,13 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint newStatus, uint newStatusReason);
     void expectConnInvalidated();
+    void expectPendingContactsFinished(Telepathy::Client::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
     void init();
+
+    void testForHandles();
 
     void cleanup();
     void cleanupTestCase();
@@ -44,6 +50,7 @@ private:
     QString mConnName, mConnPath;
     ContactsConnection *mConnService;
     Connection *mConn;
+    QList<QSharedPointer<Contact> > mContacts;
 };
 
 void TestContacts::expectConnReady(uint newStatus, uint newStatusReason)
@@ -73,6 +80,32 @@ void TestContacts::expectConnInvalidated()
     mLoop->exit(0);
 }
 
+void TestContacts::expectPendingContactsFinished(PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    qDebug() << "finished";
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+    mContacts = pending->contacts();
+    mLoop->exit(0);
+}
 void TestContacts::initTestCase()
 {
     initTestCaseImpl();
@@ -133,6 +166,70 @@ void TestContacts::init()
     initImpl();
 }
 
+void TestContacts::testForHandles()
+{
+    Telepathy::UIntList handles;
+    TpHandleRepoIface *serviceRepo =
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
+
+    // Set up a few valid handles
+    handles << tp_handle_ensure(serviceRepo, "alice", NULL, NULL);
+    QVERIFY(handles[0] != 0);
+    handles << tp_handle_ensure(serviceRepo, "bob", NULL, NULL);
+    QVERIFY(handles[1] != 0);
+    // Put one probably invalid one in between
+    handles << 31337;
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
+    // Then another valid one
+    handles << tp_handle_ensure(serviceRepo, "chris", NULL, NULL);
+    QVERIFY(handles[3] != 0);
+    // And yet another invalid one
+    handles << 12345;
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[4], NULL));
+
+    // Get contacts for the mixture of valid and invalid handles
+    PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // There should be 3 resulting contacts
+    QCOMPARE(mContacts.size(), 3);
+
+    QVERIFY(mContacts[0] != NULL);
+    QVERIFY(mContacts[1] != NULL);
+    QVERIFY(mContacts[2] != NULL);
+
+    QCOMPARE(mContacts[0]->handle()[0], handles[0]);
+    QCOMPARE(mContacts[1]->handle()[0], handles[1]);
+    QCOMPARE(mContacts[2]->handle()[0], handles[3]);
+
+    QCOMPARE(mContacts[0]->id(), QString("alice"));
+    QCOMPARE(mContacts[1]->id(), QString("bob"));
+    QCOMPARE(mContacts[2]->id(), QString("chris"));
+
+    // Make the contacts go out of scope, triggering the release of their handles
+    mContacts.clear();
+    mLoop->processEvents();
+
+    // Make sure the service side has processed the release as well, by calling a method
+    ConnectionInterfaceContactsInterface *interface =
+        mConn->optionalInterface<ConnectionInterfaceContactsInterface>();
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(interface->GetContactAttributes(Telepathy::UIntList(),
+                    QStringList(), false));
+    QVERIFY(connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Unref the handles we created service-side
+    tp_handle_unref(serviceRepo, handles[0]);
+    tp_handle_unref(serviceRepo, handles[1]);
+    tp_handle_unref(serviceRepo, handles[3]);
+}
+
 #if 0
 void TestHandles::testRequestAndRelease()
 {
@@ -191,6 +288,10 @@ void TestContacts::cleanup()
 
 void TestContacts::cleanupTestCase()
 {
+    if (!mContacts.isEmpty()) {
+        mContacts.clear();
+    }
+
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
