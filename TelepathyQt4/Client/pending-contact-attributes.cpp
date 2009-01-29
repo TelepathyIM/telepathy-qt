@@ -232,10 +232,9 @@ void PendingContactAttributes::onCallFinished(QDBusPendingCallWatcher* watcher)
     watcher->deleteLater();
 }
 
-void PendingContactAttributes::setUnsupported()
+void PendingContactAttributes::failImmediately(const QString &error, const QString &errorMessage)
 {
-    setFinishedWithError(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-            "The remote object doesn't report the Contacts interface as supported");
+    setFinishedWithError(error, errorMessage);
 }
 
 } // Telepathy::Client

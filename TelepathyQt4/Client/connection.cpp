@@ -1426,6 +1426,10 @@ PendingOperation *Connection::requestDisconnect()
  * PendingContactAttributes instance will fail instantly with the error
  * TELEPATHY_ERROR_NOT_IMPLEMENTED.
  *
+ * Similarly, if the connection isn't both connected and ready (<code>status() == StatusConnected &&
+ * isReady()</code>), the returned PendingContactAttributes instance will fail instantly with the
+ * error TELEPATHY_ERROR_NOT_AVAILABLE.
+ *
  * \sa PendingContactAttributes
  *
  * \param contacts Passed to ConnectionInterfaceContactsInterface::GetContactAttributes().
@@ -1439,12 +1443,22 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
 {
     debug() << "Request for attributes for" << handles.size() << "contacts";
 
-    if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+    PendingContactAttributes *pending =
+        new PendingContactAttributes(this, handles, interfaces, reference);
+    if (!isReady()) {
+        warning() << "Connection::getContactAttributes() used when not ready";
+        pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE, "The connection isn't ready");
+        return pending;
+    } else if (status() != StatusConnected) {
+        warning() << "Connection::getContactAttributes() used with status" << status() << "!= StatusConnected";
+        pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "The connection isn't Connected");
+        return pending;
+    } else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
         warning() << "Connection::getContactAttributes() used without the remote object supporting"
                   << "the Contacts interface";
-        PendingContactAttributes *pending =
-            new PendingContactAttributes(this, handles, interfaces, reference);
-        pending->setUnsupported();
+        pending->failImmediately(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "The connection doesn't support the Contacts interface");
         return pending;
     }
 
@@ -1454,8 +1468,6 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
         handleContext->types[HandleTypeContact].requestsInFlight++;
     }
 
-    PendingContactAttributes *pending =
-        new PendingContactAttributes(this, handles, interfaces, reference);
     ConnectionInterfaceContactsInterface *contactsInterface =
         optionalInterface<ConnectionInterfaceContactsInterface>();
     QDBusPendingCallWatcher *watcher =

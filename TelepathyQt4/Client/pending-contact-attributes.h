@@ -66,7 +66,7 @@ private:
 
     PendingContactAttributes(Connection *connection, const UIntList &handles,
             const QStringList &interfaces, bool reference);
-    void setUnsupported();
+    void failImmediately(const QString &error, const QString &errorMessage);
 
     struct Private;
     friend struct Private;
