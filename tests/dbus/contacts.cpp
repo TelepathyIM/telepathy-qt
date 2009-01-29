@@ -107,8 +107,9 @@ void TestContacts::expectPendingContactsFinished(PendingOperation *op)
     PendingContacts *pending = qobject_cast<PendingContacts *>(op);
     mContacts = pending->contacts();
 
-    if (pending->isForHandles())
+    if (pending->isForHandles()) {
         mInvalidHandles = pending->invalidHandles();
+    }
 
     mLoop->exit(0);
 }
