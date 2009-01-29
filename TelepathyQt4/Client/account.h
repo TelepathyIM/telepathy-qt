@@ -32,7 +32,6 @@
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Types>
 
 #include <QString>
 #include <QStringList>
