@@ -51,6 +51,7 @@ private:
     ContactsConnection *mConnService;
     Connection *mConn;
     QList<QSharedPointer<Contact> > mContacts;
+    Telepathy::UIntList mInvalidHandles;
 };
 
 void TestContacts::expectConnReady(uint newStatus, uint newStatusReason)
@@ -104,8 +105,13 @@ void TestContacts::expectPendingContactsFinished(PendingOperation *op)
     qDebug() << "finished";
     PendingContacts *pending = qobject_cast<PendingContacts *>(op);
     mContacts = pending->contacts();
+
+    if (pending->isForHandles())
+        mInvalidHandles = pending->invalidHandles();
+
     mLoop->exit(0);
 }
+
 void TestContacts::initTestCase()
 {
     initTestCaseImpl();
@@ -205,9 +211,14 @@ void TestContacts::testForHandles()
                 SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    // There should be 3 resulting contacts
+    // There should be 3 resulting contacts and 2 handles found to be invalid
     QCOMPARE(mContacts.size(), 3);
 
+    QCOMPARE(mInvalidHandles.size(), 2);
+    QCOMPARE(mInvalidHandles[0], handles[2]);
+    QCOMPARE(mInvalidHandles[1], handles[4]);
+
+    // Check the contact contents
     QVERIFY(mContacts[0] != NULL);
     QVERIFY(mContacts[1] != NULL);
     QVERIFY(mContacts[2] != NULL);
@@ -247,6 +258,10 @@ void TestContacts::cleanupTestCase()
 {
     if (!mContacts.isEmpty()) {
         mContacts.clear();
+    }
+
+    if (!mInvalidHandles.isEmpty()) {
+        mInvalidHandles.clear();
     }
 
     if (mConn) {
