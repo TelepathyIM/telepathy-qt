@@ -96,6 +96,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/connection-internal.moc.hpp \
     Client/_gen/connection-manager-internal.moc.hpp \
     Client/_gen/contact.moc.hpp \
+    Client/_gen/contact-manager.moc.hpp \
     Client/_gen/dbus-proxy.moc.hpp \
     Client/_gen/pending-account.moc.hpp \
     Client/_gen/pending-channel.moc.hpp \

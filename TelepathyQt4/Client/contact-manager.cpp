@@ -20,9 +20,12 @@
  */
 
 #include <TelepathyQt4/Client/ContactManager>
+#include "TelepathyQt4/Client/_gen/contact-manager.moc.hpp"
 
 #include <QMap>
 #include <QString>
+#include <QSet>
+#include <QWeakPointer>
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingContactAttributes>
@@ -64,6 +67,7 @@ namespace Client
 struct ContactManager::Private
 {
     Connection *conn;
+    QMap<uint, QWeakPointer<Contact> > contacts;
 };
 
 Connection *ContactManager::connection() const
@@ -104,20 +108,58 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     debug() << "Building contacts for" << handles.size() << "handles" << "with" << features.size()
         << "features";
 
-    QSet<QString> interfaces;
-    foreach (Contact::Feature feature, features) {
-        if (true) { // TODO when not naive: if one or more of the contacts doesn't have the feature
-            interfaces.insert(featureToInterface(feature));
+    QMap<uint, QSharedPointer<Contact> > satisfyingContacts;
+    QSet<uint> otherContacts;
+    QSet<Contact::Feature> missingFeatures;
+
+    foreach (uint handle, handles) {
+        QSharedPointer<Contact> contact = mPriv->contacts[handle].toStrongRef();
+        if (contact) {
+            if (true /* TODO: contact->hasFeatures(features) */) {
+                // Contact exists and has all the requested features
+                satisfyingContacts.insert(handle, contact);
+            } else {
+                // Contact exists but is missing features
+                otherContacts.insert(handle);
+                missingFeatures.unite(features /* TODO:- contact->features() */);
+            }
+        } else {
+            // Contact doesn't exist - we need to get all of the features (same as unite(features))
+            missingFeatures = features;
+            // It might be a weak pointer with 0 refs, make sure to remove it
+            mPriv->contacts.remove(handle);
+            // In either case, the contact needs to be fetched
+            otherContacts.insert(handle);
         }
     }
 
-    PendingContactAttributes *attributes =
-        mPriv->conn->getContactAttributes(handles, interfaces.toList(), true);
+    debug() << " " << satisfyingContacts.size() << "satisfying and"
+                   << otherContacts.size() << "other contacts";
+    debug() << " " << missingFeatures.size() << "features missing";
 
-    PendingContacts *contacts = new PendingContacts(this, handles, features);
-    contacts->connect(attributes,
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            SLOT(onAttributesFinished(Telepathy::Client::PendingOperation*)));
+    QSet<QString> interfaces;
+    foreach (Contact::Feature feature, missingFeatures) {
+        interfaces.insert(featureToInterface(feature));
+    }
+
+    PendingContacts *contacts = new PendingContacts(this, handles, features, satisfyingContacts);
+    connect(contacts,
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            SLOT(onPendingContactsFinished(Telepathy::Client::PendingOperation *)));
+
+    if (!otherContacts.isEmpty()) {
+        debug() << " Fetching" << interfaces.size() << "interfaces for"
+                               << otherContacts.size() << "contacts";
+
+        PendingContactAttributes *attributes =
+            mPriv->conn->getContactAttributes(otherContacts.toList(), interfaces.toList(), true);
+
+        contacts->connect(attributes,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(onAttributesFinished(Telepathy::Client::PendingOperation*)));
+    } else {
+        contacts->allAttributesFetched();
+    }
 
     return contacts;
 }
@@ -142,6 +184,18 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
             SLOT(onHandlesFinished(Telepathy::Client::PendingOperation*)));
 
     return contacts;
+}
+
+void ContactManager::onPendingContactsFinished(Telepathy::Client::PendingOperation *operation)
+{
+    PendingContacts *contacts = qobject_cast<PendingContacts *>(operation);
+
+    if (contacts->isValid()) {
+        debug() << this << "Caching" << contacts->contacts().size() << "contacts";
+        foreach (QSharedPointer<Contact> contact, contacts->contacts()) {
+            mPriv->contacts.insert(contact->handle()[0], contact);
+        }
+    }
 }
 
 ContactManager::ContactManager(Connection *parent)

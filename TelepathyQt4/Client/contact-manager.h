@@ -29,6 +29,7 @@
 #include <QObject>
 
 #include <QSet>
+#include <QSharedPointer>
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Client/Contact>
@@ -40,9 +41,12 @@ namespace Client
 
 class Connection;
 class PendingContacts;
+class PendingOperation;
 
 class ContactManager : public QObject
 {
+    Q_OBJECT
+
     public:
 
         Connection *connection() const;
@@ -56,6 +60,9 @@ class ContactManager : public QObject
 
         PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+
+    private Q_SLOTS:
+        void onPendingContactsFinished(Telepathy::Client::PendingOperation *);
 
     private:
         ContactManager(Connection *parent);

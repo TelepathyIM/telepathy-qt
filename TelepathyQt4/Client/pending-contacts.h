@@ -29,6 +29,7 @@
 #include <TelepathyQt4/Client/PendingOperation>
 
 #include <QList>
+#include <QMap>
 #include <QSet>
 #include <QSharedPointer>
 #include <QStringList>
@@ -69,10 +70,14 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(PendingContacts);
+
     PendingContacts(ContactManager *manager, const UIntList &handles,
-            const QSet<Contact::Feature> &features);
+            const QSet<Contact::Feature> &features,
+            const QMap<uint, QSharedPointer<Contact> > &satisfyingContacts);
     PendingContacts(ContactManager *manager, const QStringList &identifiers,
             const QSet<Contact::Feature> &features);
+
+    void allAttributesFetched();
 
     struct Private;
     friend struct Private;
