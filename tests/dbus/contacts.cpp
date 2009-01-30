@@ -237,7 +237,33 @@ void TestContacts::testForHandles()
     QCOMPARE(mContacts[1]->id(), QString("bob"));
     QCOMPARE(mContacts[2]->id(), QString("chris"));
 
+    // Save the contacts, and make a new request, replacing one of the invalid handles with a valid
+    // one
+    QList<QSharedPointer<Contact> > saveContacts = mContacts;
+    handles[2] = tp_handle_ensure(serviceRepo, "dora", NULL, NULL);
+    QVERIFY(handles[2] != 0);
+
+    pending = mConn->contactManager()->contactsForHandles(handles);
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Check that we got the correct number of contacts back
+    QCOMPARE(mContacts.size(), 4);
+    QCOMPARE(mInvalidHandles.size(), 1);
+
+    // Check that the contacts we already had were returned for the initial three
+    QCOMPARE(saveContacts[0], mContacts[0]);
+    QCOMPARE(saveContacts[1], mContacts[1]);
+    QCOMPARE(saveContacts[2], mContacts[3]);
+
+    // Check that the new contact is OK too
+    QCOMPARE(mContacts[2]->handle()[0], handles[2]);
+    QCOMPARE(mContacts[2]->id(), QString("dora"));
+
     // Make the contacts go out of scope, starting releasing their handles, and finish that
+    saveContacts.clear();
     mContacts.clear();
     mLoop->processEvents();
     processDBusQueue(mConn);
@@ -246,9 +272,11 @@ void TestContacts::testForHandles()
     tp_handle_unref(serviceRepo, handles[0]);
     QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
     tp_handle_unref(serviceRepo, handles[1]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
+    tp_handle_unref(serviceRepo, handles[2]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
     tp_handle_unref(serviceRepo, handles[3]);
-    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[3], NULL));
 }
 
 void TestContacts::testForIdentifiers()
