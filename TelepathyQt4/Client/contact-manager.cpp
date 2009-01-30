@@ -145,7 +145,7 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
 }
 
 ContactManager::ContactManager(Connection *parent)
-    : mPriv(new Private)
+    : QObject(parent), mPriv(new Private)
 {
     mPriv->conn = parent;
 }

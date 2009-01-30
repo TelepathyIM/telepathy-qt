@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <QObject>
+
 #include <QSet>
 
 #include <TelepathyQt4/Types>
@@ -37,10 +39,9 @@ namespace Client
 {
 
 class Connection;
-class Contact;
 class PendingContacts;
 
-class ContactManager
+class ContactManager : public QObject
 {
     public:
 
