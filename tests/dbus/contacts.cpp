@@ -225,9 +225,9 @@ void TestContacts::testForHandles()
     QVERIFY(mContacts[1] != NULL);
     QVERIFY(mContacts[2] != NULL);
 
-    QCOMPARE(mContacts[0]->connection(), mConn);
-    QCOMPARE(mContacts[1]->connection(), mConn);
-    QCOMPARE(mContacts[2]->connection(), mConn);
+    QCOMPARE(mContacts[0]->manager(), mConn->contactManager());
+    QCOMPARE(mContacts[1]->manager(), mConn->contactManager());
+    QCOMPARE(mContacts[2]->manager(), mConn->contactManager());
 
     QCOMPARE(mContacts[0]->handle()[0], handles[0]);
     QCOMPARE(mContacts[1]->handle()[0], handles[1]);
@@ -295,7 +295,7 @@ void TestContacts::testForIdentifiers()
 
     for (int i = 0; i < mContacts.size(); i++) {
         QVERIFY(mContacts[i] != NULL);
-        QCOMPARE(mContacts[i]->connection(), mConn);
+        QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
         QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle()[0], NULL));
     }
 

@@ -114,7 +114,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     PendingContactAttributes *attributes =
         mPriv->conn->getContactAttributes(handles, interfaces.toList(), true);
 
-    PendingContacts *contacts = new PendingContacts(mPriv->conn, handles, features);
+    PendingContacts *contacts = new PendingContacts(this, handles, features);
     contacts->connect(attributes,
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(onAttributesFinished(Telepathy::Client::PendingOperation*)));
@@ -136,7 +136,7 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
 
     PendingHandles *handles = mPriv->conn->requestHandles(HandleTypeContact, identifiers);
 
-    PendingContacts *contacts = new PendingContacts(mPriv->conn, identifiers, features);
+    PendingContacts *contacts = new PendingContacts(this, identifiers, features);
     contacts->connect(handles,
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(onHandlesFinished(Telepathy::Client::PendingOperation*)));

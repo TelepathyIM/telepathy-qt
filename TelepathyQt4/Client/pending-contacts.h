@@ -41,7 +41,6 @@ namespace Telepathy
 namespace Client
 {
 
-class Connection;
 class ContactManager;
 
 class PendingContacts : public PendingOperation
@@ -70,9 +69,9 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(PendingContacts);
-    PendingContacts(Connection *connection, const UIntList &handles,
+    PendingContacts(ContactManager *manager, const UIntList &handles,
             const QSet<Contact::Feature> &features);
-    PendingContacts(Connection *connection, const QStringList &identifiers,
+    PendingContacts(ContactManager *manager, const QStringList &identifiers,
             const QSet<Contact::Feature> &features);
 
     struct Private;

@@ -33,7 +33,6 @@ namespace Telepathy
 {
 namespace Client
 {
-class Connection;
 class ContactManager;
 class ReferencedHandles;
 
@@ -47,7 +46,7 @@ public:
     };
     Q_DECLARE_FLAGS(Features, Feature);
 
-    Connection *connection() const;
+    ContactManager *manager() const;
 
     ReferencedHandles handle() const;
     QString id() const;
@@ -57,7 +56,8 @@ public:
 private:
     Q_DISABLE_COPY(Contact);
 
-    Contact(Connection *parent, const ReferencedHandles &handle, const QVariantMap &attributes);
+    Contact(ContactManager *manager, const ReferencedHandles &handle,
+            const QVariantMap &attributes);
 
     struct Private;
     friend class PendingContacts;
