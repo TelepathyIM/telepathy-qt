@@ -238,8 +238,6 @@ Connection::Private::Private(Connection *parent)
 
 Connection::Private::~Private()
 {
-    delete contactManager;
-
     if (!handleContext) {
         // initial introspection is not done
         return;

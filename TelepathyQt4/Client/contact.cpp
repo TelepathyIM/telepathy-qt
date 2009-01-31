@@ -35,19 +35,19 @@ namespace Client
 
 struct Contact::Private
 {
-    Private(Connection *connection, const ReferencedHandles &handle)
-        : connection(connection), handle(handle)
+    Private(ContactManager *manager, const ReferencedHandles &handle)
+        : manager(manager), handle(handle)
     {
     }
 
-    Connection *connection;
+    ContactManager *manager;
     ReferencedHandles handle;
     QString id;
 };
 
-Connection *Contact::connection() const
+ContactManager *Contact::manager() const
 {
-    return mPriv->connection;
+    return mPriv->manager;
 }
 
 ReferencedHandles Contact::handle() const
@@ -65,9 +65,9 @@ Contact::~Contact()
     delete mPriv;
 }
 
-Contact::Contact(Connection *connection, const ReferencedHandles &handle,
+Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
         const QVariantMap &attributes)
-    : QObject(0), mPriv(new Private(connection, handle))
+    : QObject(0), mPriv(new Private(manager, handle))
 {
     debug() << this << "initialized with" << attributes.size() << "attributes";
 
