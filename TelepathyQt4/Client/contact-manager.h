@@ -61,16 +61,17 @@ class ContactManager : public QObject
         PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
 
-    private Q_SLOTS:
-        void onPendingContactsFinished(Telepathy::Client::PendingOperation *);
-
     private:
         ContactManager(Connection *parent);
         ~ContactManager();
 
+        QSharedPointer<Contact> ensureContact(const ReferencedHandles &handle,
+                const QVariantMap &attributes);
+
         struct Private;
         friend struct Private;
         friend class Connection;
+        friend class PendingContacts;
         Private *mPriv;
 };
 

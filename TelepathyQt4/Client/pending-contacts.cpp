@@ -159,16 +159,19 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
     ContactAttributesMap attributes = pendingAttributes->attributes();
 
     debug() << " Success:" << validHandles.size() << "valid and"
-                           << mPriv->invalidHandles.size() << "invalid handles";
+                           << pendingAttributes->invalidHandles().size() << "invalid handles";
 
     foreach (uint handle, mPriv->handles) {
-        int indexInValid = validHandles.indexOf(handle);
-        if (indexInValid >= 0) {
-            ReferencedHandles referenced = validHandles.mid(indexInValid, 1);
-            mPriv->satisfyingContacts.insert(handle, QSharedPointer<Contact>(new Contact(
-                            mPriv->manager, referenced, attributes[handle])));
-        } else if (!mPriv->satisfyingContacts.contains(handle)) {
-            mPriv->invalidHandles.push_back(handle);
+        if (!mPriv->satisfyingContacts.contains(handle)) {
+            int indexInValid = validHandles.indexOf(handle);
+            if (indexInValid >= 0) {
+                ReferencedHandles referencedHandle = validHandles.mid(indexInValid, 1);
+                QVariantMap handleAttributes = attributes[handle];
+                mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
+                            handleAttributes));
+            } else {
+                mPriv->invalidHandles.push_back(handle);
+            }
         }
     }
 

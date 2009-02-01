@@ -69,8 +69,10 @@ Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
         const QVariantMap &attributes)
     : QObject(0), mPriv(new Private(manager, handle))
 {
-    debug() << this << "initialized with" << attributes.size() << "attributes";
+    augment(attributes);
+}
 
+void Contact::augment(const QVariantMap &attributes) {
     mPriv->id = qdbus_cast<QString>(attributes["org.freedesktop.Telepathy.Connection/contact-id"]);
 }
 

@@ -142,10 +142,8 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         interfaces.insert(featureToInterface(feature));
     }
 
-    PendingContacts *contacts = new PendingContacts(this, handles, features, satisfyingContacts);
-    connect(contacts,
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onPendingContactsFinished(Telepathy::Client::PendingOperation *)));
+    PendingContacts *contacts =
+        new PendingContacts(this, handles, features, satisfyingContacts);
 
     if (!otherContacts.isEmpty()) {
         debug() << " Fetching" << interfaces.size() << "interfaces for"
@@ -186,18 +184,6 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
     return contacts;
 }
 
-void ContactManager::onPendingContactsFinished(Telepathy::Client::PendingOperation *operation)
-{
-    PendingContacts *contacts = qobject_cast<PendingContacts *>(operation);
-
-    if (contacts->isValid()) {
-        debug() << this << "Caching" << contacts->contacts().size() << "contacts";
-        foreach (QSharedPointer<Contact> contact, contacts->contacts()) {
-            mPriv->contacts.insert(contact->handle()[0], contact);
-        }
-    }
-}
-
 ContactManager::ContactManager(Connection *parent)
     : QObject(parent), mPriv(new Private)
 {
@@ -207,6 +193,21 @@ ContactManager::ContactManager(Connection *parent)
 ContactManager::~ContactManager()
 {
     delete mPriv;
+}
+
+QSharedPointer<Contact> ContactManager::ensureContact(const ReferencedHandles &handle,
+        const QVariantMap &attributes) {
+    uint bareHandle = handle[0];
+    QSharedPointer<Contact> contact = mPriv->contacts.value(bareHandle).toStrongRef();
+
+    if (!contact) {
+        contact = QSharedPointer<Contact>(new Contact(this, handle, attributes));
+        mPriv->contacts.insert(bareHandle, contact);
+    } else {
+        contact->augment(attributes);
+    }
+
+    return contact;
 }
 
 }

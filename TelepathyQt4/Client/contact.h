@@ -59,8 +59,10 @@ private:
     Contact(ContactManager *manager, const ReferencedHandles &handle,
             const QVariantMap &attributes);
 
+    void augment(const QVariantMap &attributes);
+
     struct Private;
-    friend class PendingContacts;
+    friend class ContactManager;
     friend struct Private;
     Private *mPriv;
 };
