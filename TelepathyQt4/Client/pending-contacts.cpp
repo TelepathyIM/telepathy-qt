@@ -79,7 +79,7 @@ PendingContacts::~PendingContacts()
     delete mPriv;
 }
 
-ContactManager *PendingContacts::contactManager() const
+ContactManager *PendingContacts::manager() const
 {
     return mPriv->manager;
 }
@@ -190,7 +190,7 @@ void PendingContacts::onHandlesFinished(PendingOperation *operation)
 
     debug() << " Success - doing nested contact query";
 
-    mPriv->nested = contactManager()->contactsForHandles(pendingHandles->handles(), features());
+    mPriv->nested = manager()->contactsForHandles(pendingHandles->handles(), features());
     connect(mPriv->nested,
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(onNestedFinished(Telepathy::Client::PendingOperation*)));

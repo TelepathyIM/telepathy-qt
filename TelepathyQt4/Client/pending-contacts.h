@@ -51,7 +51,7 @@ class PendingContacts : public PendingOperation
 public:
     ~PendingContacts();
 
-    ContactManager *contactManager() const;
+    ContactManager *manager() const;
     QSet<Contact::Feature> features() const;
 
     bool isForHandles() const;

@@ -199,7 +199,7 @@ void TestContacts::testForHandles()
     PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
 
     // Test the closure accessors
-    QCOMPARE(pending->contactManager(), mConn->contactManager());
+    QCOMPARE(pending->manager(), mConn->contactManager());
     QCOMPARE(pending->features(), QSet<Contact::Feature>());
 
     QVERIFY(pending->isForHandles());
@@ -304,7 +304,7 @@ void TestContacts::testForIdentifiers()
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(validIDs);
 
     // Test the closure accessors
-    QCOMPARE(pending->contactManager(), mConn->contactManager());
+    QCOMPARE(pending->manager(), mConn->contactManager());
     QCOMPARE(pending->features(), QSet<Contact::Feature>());
 
     QVERIFY(!pending->isForHandles());
