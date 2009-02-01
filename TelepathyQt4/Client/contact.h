@@ -27,6 +27,7 @@
 #endif
 
 #include <QObject>
+#include <QSet>
 #include <QVariantMap>
 
 namespace Telepathy
@@ -44,12 +45,14 @@ public:
     enum Feature {
         _Padding = 0xFFFFFFFF
     };
-    Q_DECLARE_FLAGS(Features, Feature);
 
     ContactManager *manager() const;
 
     ReferencedHandles handle() const;
     QString id() const;
+
+    QSet<Feature> requestedFeatures() const;
+    QSet<Feature> actualFeatures() const;
 
     ~Contact();
 
@@ -57,17 +60,15 @@ private:
     Q_DISABLE_COPY(Contact);
 
     Contact(ContactManager *manager, const ReferencedHandles &handle,
-            const QVariantMap &attributes);
+            const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
 
-    void augment(const QVariantMap &attributes);
+    void augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
 
     struct Private;
     friend class ContactManager;
     friend struct Private;
     Private *mPriv;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(Contact::Features)
 
 } // Telepathy::Client
 } // Telepathy

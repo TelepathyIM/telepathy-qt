@@ -43,6 +43,9 @@ struct Contact::Private
     ContactManager *manager;
     ReferencedHandles handle;
     QString id;
+
+    QSet<Feature> requestedFeatures;
+    QSet<Feature> actualFeatures;
 };
 
 ContactManager *Contact::manager() const
@@ -60,20 +63,37 @@ QString Contact::id() const
     return mPriv->id;
 }
 
+QSet<Contact::Feature> Contact::requestedFeatures() const
+{
+    return mPriv->requestedFeatures;
+}
+
+QSet<Contact::Feature> Contact::actualFeatures() const
+{
+    return mPriv->actualFeatures;
+}
+
 Contact::~Contact()
 {
     delete mPriv;
 }
 
 Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
-        const QVariantMap &attributes)
+        const QSet<Feature> &requestedFeatures, const QVariantMap &attributes)
     : QObject(0), mPriv(new Private(manager, handle))
 {
-    augment(attributes);
+    augment(requestedFeatures, attributes);
 }
 
-void Contact::augment(const QVariantMap &attributes) {
+void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes) {
+    mPriv->requestedFeatures.unite(requestedFeatures);
+
     mPriv->id = qdbus_cast<QString>(attributes["org.freedesktop.Telepathy.Connection/contact-id"]);
+
+    foreach (Feature feature, requestedFeatures) {
+        Q_UNUSED(feature);
+        // ...
+    }
 }
 
 } // Telepathy::Client

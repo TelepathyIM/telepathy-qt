@@ -168,7 +168,7 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
                 ReferencedHandles referencedHandle = validHandles.mid(indexInValid, 1);
                 QVariantMap handleAttributes = attributes[handle];
                 mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
-                            handleAttributes));
+                            features(), handleAttributes));
             } else {
                 mPriv->invalidHandles.push_back(handle);
             }

@@ -66,7 +66,7 @@ class ContactManager : public QObject
         ~ContactManager();
 
         QSharedPointer<Contact> ensureContact(const ReferencedHandles &handle,
-                const QVariantMap &attributes);
+                const QSet<Contact::Feature> &features, const QVariantMap &attributes);
 
         struct Private;
         friend struct Private;

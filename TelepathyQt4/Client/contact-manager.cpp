@@ -115,13 +115,13 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     foreach (uint handle, handles) {
         QSharedPointer<Contact> contact = mPriv->contacts[handle].toStrongRef();
         if (contact) {
-            if (true /* TODO: contact->hasFeatures(features) */) {
+            if ((features - contact->requestedFeatures()).isEmpty()) {
                 // Contact exists and has all the requested features
                 satisfyingContacts.insert(handle, contact);
             } else {
                 // Contact exists but is missing features
                 otherContacts.insert(handle);
-                missingFeatures.unite(features /* TODO:- contact->features() */);
+                missingFeatures.unite(features - contact->requestedFeatures());
             }
         } else {
             // Contact doesn't exist - we need to get all of the features (same as unite(features))
@@ -196,15 +196,15 @@ ContactManager::~ContactManager()
 }
 
 QSharedPointer<Contact> ContactManager::ensureContact(const ReferencedHandles &handle,
-        const QVariantMap &attributes) {
+        const QSet<Contact::Feature> &features, const QVariantMap &attributes) {
     uint bareHandle = handle[0];
     QSharedPointer<Contact> contact = mPriv->contacts.value(bareHandle).toStrongRef();
 
     if (!contact) {
-        contact = QSharedPointer<Contact>(new Contact(this, handle, attributes));
+        contact = QSharedPointer<Contact>(new Contact(this, handle, features, attributes));
         mPriv->contacts.insert(bareHandle, contact);
     } else {
-        contact->augment(attributes);
+        contact->augment(features, attributes);
     }
 
     return contact;

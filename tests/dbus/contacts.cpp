@@ -221,13 +221,12 @@ void TestContacts::testForHandles()
     QCOMPARE(mInvalidHandles[1], handles[4]);
 
     // Check the contact contents
-    QVERIFY(mContacts[0] != NULL);
-    QVERIFY(mContacts[1] != NULL);
-    QVERIFY(mContacts[2] != NULL);
-
-    QCOMPARE(mContacts[0]->manager(), mConn->contactManager());
-    QCOMPARE(mContacts[1]->manager(), mConn->contactManager());
-    QCOMPARE(mContacts[2]->manager(), mConn->contactManager());
+    for (int i = 0; i < 3; i++) {
+        QVERIFY(mContacts[i] != NULL);
+        QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
+        QCOMPARE(mContacts[i]->requestedFeatures(), QSet<Contact::Feature>());
+        QCOMPARE(mContacts[i]->actualFeatures(), QSet<Contact::Feature>());
+    }
 
     QCOMPARE(mContacts[0]->handle()[0], handles[0]);
     QCOMPARE(mContacts[1]->handle()[0], handles[1]);
@@ -325,6 +324,8 @@ void TestContacts::testForIdentifiers()
         QVERIFY(mContacts[i] != NULL);
         QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
         QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle()[0], NULL));
+        QCOMPARE(mContacts[i]->requestedFeatures(), QSet<Contact::Feature>());
+        QCOMPARE(mContacts[i]->actualFeatures(), QSet<Contact::Feature>());
     }
 
     QCOMPARE(mContacts[0]->id(), QString("alice"));
