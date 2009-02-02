@@ -353,14 +353,27 @@ void TestContacts::testForIdentifiers()
 void TestContacts::testUpgrade()
 {
     QStringList ids = QStringList() << "alice" << "bob" << "chris";
-    Telepathy::UIntList handles;
+    static ContactsConnectionPresenceStatusIndex statuses[] = {
+        CONTACTS_CONNECTION_STATUS_AVAILABLE,
+        CONTACTS_CONNECTION_STATUS_BUSY,
+        CONTACTS_CONNECTION_STATUS_AWAY
+    };
+    const char *messages[] = {
+        "",
+        "Fixing it",
+        "GON OUT BACKSON"
+    };
     TpHandleRepoIface *serviceRepo =
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
 
+    Telepathy::UIntList handles;
     for (int i = 0; i < 3; i++) {
         handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
         QVERIFY(handles[i] != 0);
     }
+
+    contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(), statuses,
+            messages);
 
     PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
 
@@ -375,8 +388,7 @@ void TestContacts::testUpgrade()
     QList<QSharedPointer<Contact> > saveContacts = mContacts;
 
     // Upgrade them
-    // TODO: when features are added, actually add more features when upgrading :P
-    QSet<Contact::Feature> features = QSet<Contact::Feature>();
+    QSet<Contact::Feature> features = QSet<Contact::Feature>() << Contact::FeatureSimplePresence;
     pending = mConn->contactManager()->upgradeContacts(saveContacts, features);
 
     // Test the closure accessors
@@ -402,9 +414,20 @@ void TestContacts::testUpgrade()
     for (int i = 0; i < 3; i++) {
         QCOMPARE(mContacts[i]->handle()[0], handles[i]);
         QCOMPARE(mContacts[i]->id(), ids[i]);
-        QCOMPARE(mContacts[i]->requestedFeatures(), features);
+        QVERIFY((features - mContacts[i]->requestedFeatures()).isEmpty());
         QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
+
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
+        QCOMPARE(mContacts[i]->presenceMessage(), QString(messages[i]));
     }
+
+    QCOMPARE(mContacts[0]->presenceStatus(), QString("available"));
+    QCOMPARE(mContacts[1]->presenceStatus(), QString("busy"));
+    QCOMPARE(mContacts[2]->presenceStatus(), QString("away"));
+
+    QCOMPARE(mContacts[0]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAvailable));
+    QCOMPARE(mContacts[1]->presenceType(), uint(Telepathy::ConnectionPresenceTypeBusy));
+    QCOMPARE(mContacts[2]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAway));
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that
     saveContacts.clear();
