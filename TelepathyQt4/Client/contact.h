@@ -30,6 +30,8 @@
 #include <QSet>
 #include <QVariantMap>
 
+#include <TelepathyQt4/Types>
+
 namespace Telepathy
 {
 namespace Client
@@ -43,6 +45,7 @@ class Contact : public QObject
 
 public:
     enum Feature {
+        FeatureSimplePresence,
         _Padding = 0xFFFFFFFF
     };
 
@@ -53,6 +56,10 @@ public:
 
     QSet<Feature> requestedFeatures() const;
     QSet<Feature> actualFeatures() const;
+
+    QString presenceStatus() const;
+    uint presenceType() const;
+    QString presenceMessage() const;
 
     ~Contact();
 

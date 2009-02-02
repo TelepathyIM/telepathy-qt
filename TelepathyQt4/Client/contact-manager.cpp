@@ -93,7 +93,8 @@ namespace
 QString featureToInterface(Contact::Feature feature)
 {
     switch (feature) {
-        // TODO: when more features are added, add the translation here too
+        case Contact::FeatureSimplePresence:
+            return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
         default:
             warning() << "ContactManager doesn't know which interface corresponds to feature"
                 << feature;
@@ -141,6 +142,8 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     foreach (Contact::Feature feature, missingFeatures) {
         interfaces.insert(featureToInterface(feature));
     }
+
+    // TODO: filter using conn->contactAttributeInterfaces() when I add that
 
     PendingContacts *contacts =
         new PendingContacts(this, handles, features, satisfyingContacts);
