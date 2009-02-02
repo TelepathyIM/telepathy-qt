@@ -204,6 +204,7 @@ void TestContacts::testForHandles()
 
     QVERIFY(pending->isForHandles());
     QVERIFY(!pending->isForIdentifiers());
+    QVERIFY(!pending->isUpgrade());
 
     QCOMPARE(pending->handles(), handles);
 
@@ -308,6 +309,7 @@ void TestContacts::testForIdentifiers()
 
     QVERIFY(!pending->isForHandles());
     QVERIFY(pending->isForIdentifiers());
+    QVERIFY(!pending->isUpgrade());
 
     QCOMPARE(pending->identifiers(), validIDs);
 

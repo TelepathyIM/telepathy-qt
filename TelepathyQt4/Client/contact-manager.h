@@ -28,6 +28,7 @@
 
 #include <QObject>
 
+#include <QList>
 #include <QSet>
 #include <QSharedPointer>
 
@@ -60,6 +61,9 @@ class ContactManager : public QObject
 
         PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+
+        PendingContacts *upgradeContacts(const QList<QSharedPointer<Contact> > &contacts,
+                const QSet<Contact::Feature> &features);
 
     private:
         ContactManager(Connection *parent);

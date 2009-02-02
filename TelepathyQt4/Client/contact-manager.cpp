@@ -184,6 +184,15 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
     return contacts;
 }
 
+PendingContacts *ContactManager::upgradeContacts(const QList<QSharedPointer<Contact> > &contacts,
+        const QSet<Contact::Feature> &features)
+{
+    debug() << "Upgrading" << contacts.size() << "contacts to have at least"
+                           << features.size() << "features";
+
+    return new PendingContacts(this, contacts, features);
+}
+
 ContactManager::ContactManager(Connection *parent)
     : QObject(parent), mPriv(new Private)
 {
