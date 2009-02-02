@@ -717,6 +717,7 @@ void ContactManager::slotMembersChanged(const QString& message,
                                         const Telepathy::UIntList& remote_pending,
                                         uint actor, uint reason)
 {
+    static bool is_already_in = false; // FIXME: Remove this until RTCHM-329 
     Q_UNUSED(actor);
     Q_UNUSED(reason);
 
@@ -1053,6 +1054,14 @@ void ContactManager::slotMembersChanged(const QString& message,
     
     if (members_removed.size()!=0)
     {
+        // FIXME: Remove this until RTCHM-329 
+        if (is_already_in)
+        {
+            qDebug() << "Reentrance detected.."; 
+            return; 
+        }     
+        is_already_in = true;
+        
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug() << "SlotMembers Changed Removed Called";
 #endif
@@ -1122,6 +1131,7 @@ void ContactManager::slotMembersChanged(const QString& message,
                 }
             }
         }
+        is_already_in = false; // FIXME: Remove this until RTCHM-329 
     }
     emit signalMembersChanged( this,
                                message,
