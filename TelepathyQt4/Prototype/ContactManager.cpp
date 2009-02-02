@@ -1073,7 +1073,9 @@ void ContactManager::slotMembersChanged(const QString& message,
         QHash<uint, QPointer<Contact> > tmp_list;
         for (int i = 0; i < removed_to_look_up.size(); ++i)
         {
-            QPointer<Contact> contact = new Contact(removed_to_look_up.at(i), handle_names.value().at(i), Contact::CT_Known, d->m_pInterface, this );
+            // QPointer<Contact> contact = new Contact(removed_to_look_up.at(i), handle_names.value().at(i), Contact::CT_Known, d->m_pInterface, this );
+            Contact* contact = d->m_members.value( removed_to_look_up.at(i) );
+            Q_ASSERT(contact);
             Q_ASSERT(contact->isValid());
             tmp_list.insert(removed_to_look_up.at(i), contact);
         }
