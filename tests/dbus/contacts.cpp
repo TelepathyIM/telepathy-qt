@@ -43,6 +43,7 @@ private Q_SLOTS:
 
     void testForHandles();
     void testForIdentifiers();
+    void testUpgrade();
 
     void cleanup();
     void cleanupTestCase();
@@ -347,6 +348,77 @@ void TestContacts::testForIdentifiers()
     foreach (uint handle, saveHandles) {
         QVERIFY(!tp_handle_is_valid(serviceRepo, handle, NULL));
     }
+}
+
+void TestContacts::testUpgrade()
+{
+    QStringList ids = QStringList() << "alice" << "bob" << "chris";
+    Telepathy::UIntList handles;
+    TpHandleRepoIface *serviceRepo =
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
+
+    for (int i = 0; i < 3; i++) {
+        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
+        QVERIFY(handles[i] != 0);
+    }
+
+    PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
+
+    // Wait for the contacts to be built
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // There should be 3 resulting contacts - save them for future reference
+    QCOMPARE(mContacts.size(), 3);
+    QList<QSharedPointer<Contact> > saveContacts = mContacts;
+
+    // Upgrade them
+    // TODO: when features are added, actually add more features when upgrading :P
+    QSet<Contact::Feature> features = QSet<Contact::Feature>();
+    pending = mConn->contactManager()->upgradeContacts(saveContacts, features);
+
+    // Test the closure accessors
+    QCOMPARE(pending->manager(), mConn->contactManager());
+    QCOMPARE(pending->features(), features);
+
+    QVERIFY(!pending->isForHandles());
+    QVERIFY(!pending->isForIdentifiers());
+    QVERIFY(pending->isUpgrade());
+
+    QCOMPARE(pending->contactsToUpgrade(), saveContacts);
+
+    // Wait for the contacts to be built
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Check that we got the correct contacts back
+    QCOMPARE(mContacts, saveContacts);
+
+    // Check the contact contents
+    for (int i = 0; i < 3; i++) {
+        QCOMPARE(mContacts[i]->handle()[0], handles[i]);
+        QCOMPARE(mContacts[i]->id(), ids[i]);
+        QCOMPARE(mContacts[i]->requestedFeatures(), features);
+        QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
+    }
+
+    // Make the contacts go out of scope, starting releasing their handles, and finish that
+    saveContacts.clear();
+    mContacts.clear();
+    mLoop->processEvents();
+    processDBusQueue(mConn);
+
+    // Unref the handles we created service-side
+    tp_handle_unref(serviceRepo, handles[0]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
+    tp_handle_unref(serviceRepo, handles[1]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
+    tp_handle_unref(serviceRepo, handles[2]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
 }
 
 void TestContacts::cleanup()
