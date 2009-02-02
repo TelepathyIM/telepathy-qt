@@ -68,6 +68,9 @@ struct ContactManager::Private
 {
     Connection *conn;
     QMap<uint, QWeakPointer<Contact> > contacts;
+
+    QMap<Contact::Feature, bool> tracking;
+    void ensureTracking(Contact::Feature feature);
 };
 
 Connection *ContactManager::connection() const
@@ -141,6 +144,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<QString> interfaces;
     foreach (Contact::Feature feature, missingFeatures) {
         interfaces.insert(featureToInterface(feature));
+        mPriv->ensureTracking(feature);
     }
 
     // TODO: filter using conn->contactAttributeInterfaces() when I add that
@@ -196,6 +200,19 @@ PendingContacts *ContactManager::upgradeContacts(const QList<QSharedPointer<Cont
     return new PendingContacts(this, contacts, features);
 }
 
+void ContactManager::onPresencesChanged(const Telepathy::SimpleContactPresences &presences)
+{
+    debug() << "Got PresencesChanged for" << presences.size() << "contacts";
+
+    foreach (uint handle, presences.keys()) {
+        QSharedPointer<Contact> contact = mPriv->contacts.value(handle).toStrongRef();
+
+        if (contact) {
+            contact->receiveSimplePresence(presences[handle]);
+        }
+    }
+}
+
 ContactManager::ContactManager(Connection *parent)
     : QObject(parent), mPriv(new Private)
 {
@@ -220,6 +237,29 @@ QSharedPointer<Contact> ContactManager::ensureContact(const ReferencedHandles &h
     }
 
     return contact;
+}
+
+void ContactManager::Private::ensureTracking(Contact::Feature feature)
+{
+    if (tracking[feature])
+        return;
+
+    switch (feature) {
+        case Contact::FeatureSimplePresence:
+            QObject::connect(
+                    conn->simplePresenceInterface(),
+                    SIGNAL(PresencesChanged(const Telepathy::SimpleContactPresences &)),
+                    conn->contactManager(),
+                    SLOT(onPresencesChanged(const Telepathy::SimpleContactPresences &)));
+            break;
+
+        default:
+            warning() << " Unknown feature" << feature
+                << "when trying to figure out how to connect change notification!";
+            return;
+    }
+
+    tracking[feature] = true;
 }
 
 }

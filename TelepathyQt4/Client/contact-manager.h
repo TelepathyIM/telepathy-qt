@@ -65,6 +65,9 @@ class ContactManager : public QObject
         PendingContacts *upgradeContacts(const QList<QSharedPointer<Contact> > &contacts,
                 const QSet<Contact::Feature> &features);
 
+    private Q_SLOTS:
+        void onPresencesChanged(const Telepathy::SimpleContactPresences &);
+
     private:
         ContactManager(Connection *parent);
         ~ContactManager();

@@ -139,8 +139,7 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE "/presence"));
 
                 if (!maybePresence.status.isEmpty()) {
-                    mPriv->simplePresence = maybePresence;
-                    mPriv->actualFeatures.insert(FeatureSimplePresence);
+                    receiveSimplePresence(maybePresence);
                 }
                 break;
 
@@ -148,6 +147,20 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                 warning() << "Unknown feature" << feature << "encountered when augmenting Contact";
                 break;
         }
+    }
+}
+
+void Contact::receiveSimplePresence(const SimplePresence &presence)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence))
+        return;
+
+    mPriv->actualFeatures.insert(FeatureSimplePresence);
+
+    if (mPriv->simplePresence.status != presence.status
+            || mPriv->simplePresence.statusMessage != presence.statusMessage) {
+        mPriv->simplePresence = presence;
+        emit simplePresenceChanged(presenceStatus(), presenceType(), presenceMessage());
     }
 }
 

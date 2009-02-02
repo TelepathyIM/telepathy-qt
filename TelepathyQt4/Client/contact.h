@@ -63,6 +63,9 @@ public:
 
     ~Contact();
 
+Q_SIGNALS:
+    void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
+
 private:
     Q_DISABLE_COPY(Contact);
 
@@ -70,6 +73,7 @@ private:
             const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
 
     void augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
+    void receiveSimplePresence(const SimplePresence &presence);
 
     struct Private;
     friend class ContactManager;
