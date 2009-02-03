@@ -68,6 +68,7 @@ struct ContactManager::Private
 {
     Connection *conn;
     QMap<uint, QWeakPointer<Contact> > contacts;
+    QSharedPointer<Contact> lookupContactByHandle(uint handle);
 
     QMap<Contact::Feature, bool> tracking;
     void ensureTracking(Contact::Feature feature);
@@ -117,7 +118,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<Contact::Feature> missingFeatures;
 
     foreach (uint handle, handles) {
-        QSharedPointer<Contact> contact = mPriv->contacts[handle].toStrongRef();
+        QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(handle);
         if (contact) {
             if ((features - contact->requestedFeatures()).isEmpty()) {
                 // Contact exists and has all the requested features
@@ -130,9 +131,6 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         } else {
             // Contact doesn't exist - we need to get all of the features (same as unite(features))
             missingFeatures = features;
-            // It might be a weak pointer with 0 refs, make sure to remove it
-            mPriv->contacts.remove(handle);
-            // In either case, the contact needs to be fetched
             otherContacts.insert(handle);
         }
     }
@@ -205,7 +203,7 @@ void ContactManager::onPresencesChanged(const Telepathy::SimpleContactPresences 
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
 
     foreach (uint handle, presences.keys()) {
-        QSharedPointer<Contact> contact = mPriv->contacts.value(handle).toStrongRef();
+        QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(handle);
 
         if (contact) {
             contact->receiveSimplePresence(presences[handle]);
@@ -227,13 +225,28 @@ ContactManager::~ContactManager()
 QSharedPointer<Contact> ContactManager::ensureContact(const ReferencedHandles &handle,
         const QSet<Contact::Feature> &features, const QVariantMap &attributes) {
     uint bareHandle = handle[0];
-    QSharedPointer<Contact> contact = mPriv->contacts.value(bareHandle).toStrongRef();
+    QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(bareHandle);
 
     if (!contact) {
         contact = QSharedPointer<Contact>(new Contact(this, handle, features, attributes));
         mPriv->contacts.insert(bareHandle, contact);
     } else {
         contact->augment(features, attributes);
+    }
+
+    return contact;
+}
+
+QSharedPointer<Contact> ContactManager::Private::lookupContactByHandle(uint handle)
+{
+    QSharedPointer<Contact> contact;
+
+    if (contacts.contains(handle)) {
+        contact = contacts.value(handle).toStrongRef();
+        if (!contact) {
+            // Dangling weak pointer, remove it
+            contacts.remove(handle);
+        }
     }
 
     return contact;
