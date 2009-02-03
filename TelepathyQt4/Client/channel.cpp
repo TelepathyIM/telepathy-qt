@@ -60,14 +60,6 @@ namespace Client
 
 struct Channel::Private
 {
-    enum Readiness {
-        ReadinessJustCreated = 0,
-        ReadinessFull = 5,
-        ReadinessDead = 10,
-        ReadinessClosed = 15,
-        _ReadinessInvalid = 0xffff
-    };
-
     Private(Channel *parent, Connection *connection);
 
     void introspectMain();
@@ -85,7 +77,7 @@ struct Channel::Private
 
     void nowHaveInterfaces();
 
-    void changeReadiness(Readiness newReadiness);
+    void setClosed();
 
     class PendingReady;
 
@@ -103,9 +95,10 @@ struct Channel::Private
     DBus::PropertiesInterface *properties;
 
     PendingReady *pendingReady;
+    bool ready;
+    bool closed;
 
     // Introspection
-    Readiness readiness;
     QStringList interfaces;
     QQueue<void (Private::*)()> introspectQueue;
 
@@ -160,7 +153,8 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       group(0),
       properties(0),
       pendingReady(0),
-      readiness(ReadinessJustCreated),
+      ready(false),
+      closed(false),
       features(0),
       targetHandleType(0),
       targetHandle(0),
@@ -172,25 +166,26 @@ Channel::Private::Private(Channel *parent, Connection *connection)
 {
     debug() << "Creating new Channel";
 
-    debug() << " Connecting to Channel::Closed()";
-    parent->connect(baseInterface,
-                    SIGNAL(Closed()),
-                    SLOT(onClosed()));
+    if (connection->isValid()) {
+        debug() << " Connecting to Channel::Closed() signal";
+        parent->connect(baseInterface,
+                        SIGNAL(Closed()),
+                        SLOT(onClosed()));
 
-    debug() << " Connection to owning connection's lifetime signals";
-    parent->connect(connection,
-                    SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
-                                       const QString &, const QString &)),
-                    SLOT(onConnectionInvalidated()));
+        debug() << " Connection to owning connection's lifetime signals";
+        parent->connect(connection,
+                        SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                                           const QString &, const QString &)),
+                        SLOT(onConnectionInvalidated()));
 
-    parent->connect(connection,
-                    SIGNAL(destroyed()),
-                    SLOT(onConnectionDestroyed()));
-
-    if (!connection->isValid()) {
+        parent->connect(connection,
+                        SIGNAL(destroyed()),
+                        SLOT(onConnectionDestroyed()));
+    }
+    else {
         warning() << "Connection given as the owner for a Channel was "
             "invalid! Channel will be stillborn.";
-        readiness = ReadinessDead;
+        closed = true;
     }
 }
 
@@ -420,73 +415,24 @@ void Channel::Private::nowHaveInterfaces()
     }
 }
 
-void Channel::Private::changeReadiness(Readiness newReadiness)
+void Channel::Private::setClosed()
 {
-    Q_ASSERT(newReadiness != readiness);
-    switch (readiness) {
-        case ReadinessJustCreated:
-            // We don't allow ReadinessClosed to be reached without ReadinessFull
-            // being reached at some point first.
-            Q_ASSERT((newReadiness == ReadinessFull) ||
-                     (newReadiness == ReadinessDead));
-            break;
-        case ReadinessFull:
-            Q_ASSERT((newReadiness == ReadinessDead) ||
-                     (newReadiness == ReadinessClosed));
-            break;
-        case ReadinessDead:
-        case ReadinessClosed:
-        default:
-            introspectQueue.clear();
-            break;
+    if (closed) {
+        warning() << "Channel::Private::setClosed called with channel already closed";
+        return;
     }
 
-    debug() << "Channel readiness changed from" <<
-        readiness << "to" << newReadiness;
+    closed = true;
 
-    if (newReadiness == ReadinessFull) {
-        debug() << "Channel fully ready";
-        debug() << " Channel type" << channelType;
-        debug() << " Target handle" << targetHandle;
-        debug() << " Target handle type" << targetHandleType;
+    debug() << "R.I.P. Channel.";
 
-        if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-            debug() << " Group: flags" << groupFlags;
-            if (groupAreHandleOwnersAvailable) {
-                debug() << " Group: Number of handle owner mappings" <<
-                    groupHandleOwners.size();
-            }
-            else {
-                debug() << " Group: No handle owners property present";
-            }
-            debug() << " Group: Number of current members" <<
-                groupMembers.size();
-            debug() << " Group: Number of local pending members" <<
-                groupLocalPending.size();
-            debug() << " Group: Number of remote pending members" <<
-                groupRemotePending.size();
-            debug() << " Group: Self handle" << groupSelfHandle <<
-                "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
-        }
-    }
-    else {
-        Q_ASSERT((newReadiness == ReadinessDead) ||
-                 (newReadiness == ReadinessClosed));
-
-        debug() << "R.I.P. Channel.";
-
-        if (groupSelfRemoveInfo.isValid()) {
-            debug() << " Group: removed by  " << groupSelfRemoveInfo.actor();
-            debug() << "        because of  " << groupSelfRemoveInfo.reason();
-            debug() << "        with message" << groupSelfRemoveInfo.message();
-        }
+    if (groupSelfRemoveInfo.isValid()) {
+        debug() << " Group: removed by  " << groupSelfRemoveInfo.actor();
+        debug() << "        because of  " << groupSelfRemoveInfo.reason();
+        debug() << "        with message" << groupSelfRemoveInfo.message();
     }
 
-    readiness = newReadiness;
-
-    if (readiness == ReadinessDead || readiness == ReadinessClosed) {
-        emit parent->closed();
-    }
+    emit parent->closed();
 }
 
 /**
@@ -562,8 +508,11 @@ Channel::Channel(Connection *connection,
       OptionalInterfaceFactory<Channel>(this),
       mPriv(new Private(this, connection))
 {
-    mPriv->introspectQueue.enqueue(&Private::introspectMain);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    // no need to start introspection if channel is already closed
+    if (!mPriv->closed) {
+        mPriv->introspectQueue.enqueue(&Private::introspectMain);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -594,15 +543,12 @@ QStringList Channel::interfaces() const
     // Different check than the others, because the optional interface getters
     // may be used internally with the knowledge about getting the interfaces
     // list, so we don't want this to cause warnings.
-    if (mPriv->readiness < Private::ReadinessFull && mPriv->interfaces.empty()) {
+    if (!isReady() && mPriv->interfaces.empty()) {
         warning() << "Channel::interfaces() used possibly before the list of "
             "interfaces has been received";
     }
-    else if (mPriv->readiness == Private::ReadinessDead) {
-        warning() << "Channel::interfaces() used with readiness ReadinessDead";
-    }
-    else if (mPriv->readiness == Private::ReadinessClosed) {
-        warning() << "Channel::interfaces() used with readiness ReadinessClosed";
+    else if (mPriv->closed) {
+        warning() << "Channel::interfaces() used with channel closed";
     }
 
     return mPriv->interfaces;
@@ -617,18 +563,13 @@ QString Channel::channelType() const
 {
     // Similarly, we don't want warnings triggered when using the type interface
     // proxies internally.
-    if (mPriv->readiness < Private::ReadinessFull && mPriv->channelType.isEmpty()) {
+    if (!isReady() && mPriv->channelType.isEmpty()) {
         warning() << "Channel::channelType() before the channel type has "
             "been received";
     }
-    else if (mPriv->readiness == Private::ReadinessDead) {
-        warning() << "Channel::channelType() used with readiness ReadinessDead";
+    else if (mPriv->closed) {
+        warning() << "Channel::channelType() used with channel closed";
     }
-    // Channel type will still be valid if the channel has been closed after
-    // introspection completed successfully.
-    // else if (mPriv->readiness == Private::ReadinessClosed) {
-    //    warning() << "Channel::channelType() used with readiness ReadinessClosed";
-    // }
 
     return mPriv->channelType;
 }
@@ -640,9 +581,8 @@ QString Channel::channelType() const
  */
 uint Channel::targetHandleType() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::targetHandleType() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::targetHandleType() used channel not ready";
     }
 
     return mPriv->targetHandleType;
@@ -656,9 +596,8 @@ uint Channel::targetHandleType() const
  */
 uint Channel::targetHandle() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::targetHandle() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::targetHandle() used channel not ready";
     }
 
     return mPriv->targetHandle;
@@ -676,7 +615,7 @@ uint Channel::targetHandle() const
  */
 bool Channel::isReady(Features features) const
 {
-    return (mPriv->readiness == Private::ReadinessFull)
+    return mPriv->ready
         && ((mPriv->features & features) == features);
 }
 
@@ -691,6 +630,11 @@ bool Channel::isReady(Features features) const
  */
 PendingOperation *Channel::becomeReady(Features features)
 {
+    if (mPriv->closed) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Channel is already closed");
+    }
+
     if (isReady(features)) {
         return new PendingSuccess(this);
     }
@@ -713,8 +657,7 @@ PendingOperation *Channel::becomeReady(Features features)
  */
 bool Channel::isClosed() const
 {
-    return (mPriv->readiness == Private::ReadinessClosed ||
-            mPriv->readiness == Private::ReadinessDead);
+    return mPriv->closed;
 }
 
 /**
@@ -728,9 +671,9 @@ bool Channel::isClosed() const
  */
 PendingOperation *Channel::requestClose()
 {
-    // Closing a channel does not make sense if it is already dead or closed.
-    if ((mPriv->readiness == Private::ReadinessDead) ||
-        (mPriv->readiness == Private::ReadinessClosed)) {
+    // Closing a channel does not make sense if it is already closed,
+    // just silently returns.
+    if (mPriv->closed) {
         return new PendingSuccess(this);
     }
 
@@ -784,9 +727,8 @@ PendingOperation *Channel::requestClose()
  */
 uint Channel::groupFlags() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::groupFlags() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::groupFlags() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupFlags() used with no group interface";
@@ -802,9 +744,8 @@ uint Channel::groupFlags() const
  */
 QSet<uint> Channel::groupMembers() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::groupMembers() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::groupMembers() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupMembers() used with no group interface";
@@ -834,9 +775,8 @@ QSet<uint> Channel::groupMembers() const
  */
 Channel::GroupMemberChangeInfoMap Channel::groupLocalPending() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::groupLocalPending() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::groupLocalPending() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupLocalPending() used with no group interface";
@@ -853,9 +793,8 @@ Channel::GroupMemberChangeInfoMap Channel::groupLocalPending() const
  */
 QSet<uint> Channel::groupRemotePending() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::groupRemotePending() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::groupRemotePending() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupRemotePending() used with no "
@@ -890,9 +829,8 @@ QSet<uint> Channel::groupRemotePending() const
  */
 bool Channel::groupAreHandleOwnersAvailable() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::groupAreHandleOwnersAvailable() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::groupAreHandleOwnersAvailable() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with "
@@ -916,16 +854,15 @@ bool Channel::groupAreHandleOwnersAvailable() const
  */
 HandleOwnerMap Channel::groupHandleOwners() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::groupHandleOwners() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::groupHandleOwners() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with no "
             "group interface";
     }
     else if (!groupAreHandleOwnersAvailable()) {
-        warning() << "Channel::areHandleOwnersAvailable() used, but handle "
+        warning() << "Channel::groupAreHandleOwnersAvailable() used, but handle "
             "owners not available";
     }
 
@@ -943,9 +880,8 @@ HandleOwnerMap Channel::groupHandleOwners() const
  */
 bool Channel::groupIsSelfHandleTracked() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::isSelfHandleTracked() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::groupIsSelfHandleTracked() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupIsSelfHandleTracked() used with "
@@ -964,9 +900,8 @@ bool Channel::groupIsSelfHandleTracked() const
  */
 uint Channel::groupSelfHandle() const
 {
-    if (mPriv->readiness != Private::ReadinessFull) {
-        warning() << "Channel::groupSelfHandle() used with readiness" <<
-            mPriv->readiness << "!= ReadinessFull";
+    if (!isReady()) {
+        warning() << "Channel::groupSelfHandle() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupSelfHandle() used with "
@@ -997,9 +932,8 @@ uint Channel::groupSelfHandle() const
  */
 Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
 {
-    if (mPriv->readiness != Private::ReadinessClosed) {
-        warning() << "Channel::groupSelfRemoveInfo() used with readiness" <<
-            mPriv->readiness << "!= ReadinessClosed";
+    if (!mPriv->closed) {
+        warning() << "Channel::groupSelfRemoveInfo() used channel not closed";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupSelfRemoveInfo() used with "
@@ -1311,10 +1245,7 @@ void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetChannelType() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        if ((mPriv->readiness != Private::ReadinessDead) &&
-            (mPriv->readiness != Private::ReadinessClosed)) {
-            mPriv->changeReadiness(Private::ReadinessDead);
-        }
+        mPriv->setClosed();
         return;
     }
 
@@ -1331,10 +1262,7 @@ void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetHandle() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        if ((mPriv->readiness != Private::ReadinessDead) &&
-            (mPriv->readiness != Private::ReadinessClosed)) {
-            mPriv->changeReadiness(Private::ReadinessDead);
-        }
+        mPriv->setClosed();
         return;
     }
 
@@ -1352,10 +1280,7 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetInterfaces() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        if ((mPriv->readiness != Private::ReadinessDead) &&
-            (mPriv->readiness != Private::ReadinessClosed)) {
-            mPriv->changeReadiness(Private::ReadinessDead);
-        }
+        mPriv->setClosed();
         return;
     }
 
@@ -1369,13 +1294,7 @@ void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
 
-    if (mPriv->readiness == Private::ReadinessFull) {
-        mPriv->changeReadiness(Private::ReadinessClosed);
-    }
-    else if ((mPriv->readiness != Private::ReadinessDead) &&
-             (mPriv->readiness != Private::ReadinessClosed)) {
-        mPriv->changeReadiness(Private::ReadinessDead);
-    }
+    mPriv->setClosed();
 
     // I think this is the nearest error code we can get at the moment
     invalidate(TELEPATHY_ERROR_CANCELLED, "Closed");
@@ -1383,11 +1302,9 @@ void Channel::onClosed()
 
 void Channel::onConnectionInvalidated()
 {
-    if (mPriv->readiness != Private::ReadinessDead) {
-        debug() << "Owning connection died leaving an orphan Channel, "
-            "changing to ReadinessDead";
-        mPriv->changeReadiness(Private::ReadinessDead);
-    }
+    debug() << "Owning connection died leaving an orphan Channel, "
+        "changing to closed";
+    mPriv->setClosed();
 }
 
 void Channel::onConnectionDestroyed()
@@ -1687,19 +1604,41 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
 
 void Channel::continueIntrospection()
 {
-    if (mPriv->readiness < Private::ReadinessFull) {
-        if (mPriv->introspectQueue.isEmpty()) {
-            mPriv->changeReadiness(Private::ReadinessFull);
+    if (mPriv->introspectQueue.isEmpty()) {
+        mPriv->ready = true;
 
-            if (mPriv->pendingReady) {
-                mPriv->pendingReady->setFinished();
-                // it will delete itself later
-                mPriv->pendingReady = 0;
+        if (mPriv->pendingReady) {
+            mPriv->pendingReady->setFinished();
+            // it will delete itself later
+            mPriv->pendingReady = 0;
+        }
+
+        debug() << "Channel fully ready";
+        debug() << " Channel type" << mPriv->channelType;
+        debug() << " Target handle" << mPriv->targetHandle;
+        debug() << " Target handle type" << mPriv->targetHandleType;
+
+        if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+            debug() << " Group: flags" << mPriv->groupFlags;
+            if (mPriv->groupAreHandleOwnersAvailable) {
+                debug() << " Group: Number of handle owner mappings" <<
+                    mPriv->groupHandleOwners.size();
             }
+            else {
+                debug() << " Group: No handle owners property present";
+            }
+            debug() << " Group: Number of current members" <<
+                mPriv->groupMembers.size();
+            debug() << " Group: Number of local pending members" <<
+                mPriv->groupLocalPending.size();
+            debug() << " Group: Number of remote pending members" <<
+                mPriv->groupRemotePending.size();
+            debug() << " Group: Self handle" << mPriv->groupSelfHandle <<
+                "tracked:" << (mPriv->groupIsSelfHandleTracked ? "yes" : "no");
         }
-        else {
-            (mPriv->*(mPriv->introspectQueue.dequeue()))();
-        }
+    }
+    else {
+        (mPriv->*(mPriv->introspectQueue.dequeue()))();
     }
 }
 
