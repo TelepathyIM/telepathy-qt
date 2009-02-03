@@ -438,7 +438,7 @@ void Channel::Private::setClosed()
 /**
  * \class Channel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/Client/channel.h <TelepathyQt4/Client/Channel>
+ * \headerfile <TelepathyQt4/Client/channel.h> <TelepathyQt4/Client/Channel>
  *
  * High-level proxy object for accessing remote %Telepathy %Channel objects.
  *
@@ -454,41 +454,16 @@ void Channel::Private::setClosed()
  * instead, they return values cached from a previous introspection run. The
  * introspection process populates their values in the most efficient way
  * possible based on what the service implements. However, their value is not
- * defined unless the object has readiness #ReadinessFull, as returned by
- * readiness() and indicated by emissions of the readinessChanged() signal.
+ * defined unless the object is ready, as returned by
+ * isReady(). becomeReady should be used to make sure channel is ready.
  *
  * Additionally, the state of the Group interface on the remote object (if
  * present) will be cached in the introspection process, and also tracked for
  * any changes.
  *
  * Each Channel is owned by a Connection. If the Connection becomes dead (as
- * signaled by Connection::readinessChanged) or is deleted, the Channel object
- * will transition to ReadinessDead too.
- */
-
-/**
- * \enum Channel::Readiness
- *
- * Describes readiness of the Channel for usage. The readiness depends on
- * the state of the remote object. In suitable states, an asynchronous
- * introspection process is started, and the Channel becomes more ready when
- * that process is completed.
- *
- * \value ReadinessJustCreated The object has just been created and introspection is still in
- *                             progress. No functionality dependent on introspection is available.
- *                             The readiness can change to any other state except ReadinessClosed
- *                             depending on the result of the initial state query to the remote
- *                             object.
- *
- * \value ReadinessFull The remote object is alive and all introspection has been completed.
- *                      Most functionality is available.
- *                      The readiness can change to ReadinessDead or ReadinessClosed.
- * \value ReadinessDead The remote object has gone into a state where it can no longer be
- *                      used in an unexpected way. No functionality is available.
- *                      No further readiness changes are possible.
- * \value ReadinessClosed The remote object has been closed and so can no longer be used.
- *                        No functionality is available.
- *                        No further readiness changes are possible.
+ * signaled by Connection::statusChanged(Disconnected)) or is deleted, the Channel object
+ * will transition to closed too.
  */
 
 /**
@@ -692,8 +667,7 @@ PendingOperation *Channel::requestClose()
  * Cached access to state of the group interface on the associated remote
  * object, if the interface is present. All methods return undefined values
  * if the list returned by interfaces() doesn't include
- * #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP or if the object doesn't have
- * readiness #ReadinessFull.
+ * #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP or if the object is not ready.
  *
  * As the Group interface state can change freely during the lifetime of the
  * group due to events like new contacts joining the group, the cached state
@@ -701,8 +675,6 @@ PendingOperation *Channel::requestClose()
  * to the change notification signals present in the D-Bus interface.
  *
  * As the cached value changes, change notification signals are emitted.
- * However, the value being initially discovered by introspection is still
- * signaled by a readiness change to #ReadinessFull.
  *
  * There is a change notification signal &lt;attribute&gt;Changed
  * corresponding to each cached attribute. The first parameter for each of
@@ -810,7 +782,7 @@ QSet<uint> Channel::groupRemotePending() const
  *
  * Handle owner lookup is only available if:
  * <ul>
- *  <li>The object has readiness #ReadinessFull
+ *  <li>The object is ready
  *  <li>The list returned by interfaces() contains
  *        #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP</li>
  *  <li>The set of flags returned by groupFlags() contains
@@ -822,8 +794,7 @@ QSet<uint> Channel::groupRemotePending() const
  * never be emitted.
  *
  * The value returned by this function will stay fixed for the entire time
- * the object spends having readiness #ReadinessFull, so no change
- * notification is provided.
+ * the object is ready, so no change notification is provided.
  *
  * \return If handle owner lookup functionality is available.
  */
@@ -916,13 +887,12 @@ uint Channel::groupSelfHandle() const
  * the user hasn't been removed from the group, an object for which
  * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
  *
- * This method only after the channel has gone into readiness
- * #ReadinessClosed. This is useful for getting the
- * remove information after missing the corresponding groupMembersChanged()
- * (or groupLocalPendingChanged()/groupRemotePendingChanged()) signal, as
+ * This method should be called only after the channel has been closed.
+ * This is useful for getting the remove information after missing the
+ * corresponding groupMembersChanged() (or
+ * groupLocalPendingChanged()/groupRemotePendingChanged()) signal, as
  * the local user being removed usually causes the remote %Channel to be
- * closed, and consequently the Channel object going into that readiness
- * state.
+ * closed.
  *
  * The returned information is not guaranteed to be correct if
  * groupIsSelfHandleTracked() returns false and a self handle change has
@@ -1050,7 +1020,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  * bypassed by specifying #BypassInterfaceCheck for <code>check</code>, in
  * which case a valid instance is always returned.
  *
- * If the object doesn't have readiness #ReadinessFull, the list returned by
+ * If the object is not ready, the list returned by
  * interfaces() isn't guaranteed to yet represent the full set of interfaces
  * supported by the remote object. Hence the check might fail even if the
  * remote object actually supports the requested interface; using
@@ -1148,8 +1118,8 @@ Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
  * associated with, and destroyed together with the Channel.
  *
  * If the interface name returned by channelType() isn't equivalent to the
- * name of the requested interface, or the Channel doesn't have readiness
- * #ReadinessFull, <code>0</code> is returned. This check can be bypassed by
+ * name of the requested interface, or the Channel is not ready,
+ * <code>0</code> is returned. This check can be bypassed by
  * specifying #BypassInterfaceCheck for <code>check</code>, in which case a
  * valid instance is always returned.
  *
