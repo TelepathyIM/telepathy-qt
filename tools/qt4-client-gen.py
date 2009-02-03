@@ -301,12 +301,12 @@ Q_SIGNALS:\
         # specific signals in order to remove its signal match rules)
         self.h("""
 protected:
-    virtual void invalidate(Telepathy::Client::DBusProxy *, QString, QString);
+    virtual void invalidate(Telepathy::Client::DBusProxy *, const QString &, const QString &);
 """)
 
         self.b("""
 void %(name)s::invalidate(Telepathy::Client::DBusProxy *proxy,
-        QString error, QString message)
+        const QString &error, const QString &message)
 {
 """ % {'name' : name})
 
