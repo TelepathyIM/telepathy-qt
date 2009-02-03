@@ -373,7 +373,7 @@ Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const Q
 
                 contact=contacts.at( i);
 #ifdef ENABLE_DEBUG_OUTPUT_
-                qDebug() << "Contact "<< key << "Status" <<presences.value( key ).status << "Message:" << presences.value( key ).statusMessage;
+                qDebug() << "Contact "<< key << "Type:" <<  contact->type() << "Status" <<presences.value( key ).status << "Message:" << presences.value( key ).statusMessage;
 #endif
                 if (contact->telepathyHandle()==key)
                 {
@@ -436,6 +436,9 @@ Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const Q
 // Called by the _simple_ presence interface if presence were updated
 void PresenceManager::slotPresencesChanged( const Telepathy::SimpleContactPresences& presences )
 {
+#ifdef ENABLE_DEBUG_OUTPUT_
+    qDebug() << __PRETTY_FUNCTION__;
+#endif
     if ( !d->m_pConnection )
     {
         qWarning() << "PresenceManager::slotPresencesChanged(): Received a presence changed signal but no connection object exists!";
@@ -486,7 +489,7 @@ void PresenceManager::slotPresencesChanged( const Telepathy::SimpleContactPresen
                 found_contact->setPresenceMessage(changed_presence.statusMessage);
 
 #ifdef ENABLE_DEBUG_OUTPUT_
-                qDebug() << "PresenceManager::slotPresencesChanged() -> signalRemotePresencesUpdated";
+                qDebug() << "PresenceManager::slotPresencesChanged() -> signalRemotePresencesUpdated (contact: " << found_contact->name() << "type:" << found_contact->type() << ")";
 #endif
                 emit signalRemotePresencesUpdated( found_contact, changed_presence );
             }

@@ -221,11 +221,22 @@ signals:
     void signalContactSubscribed( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
     
     /**
-     * A Contact was removed.
-     * This signal is emitted if a contact was removed.
-     * @param contact The removed contact. This object will be delted after this call!
+     * A Contact will be removed.
+     * This signal is emitted after the contact was removed but immediately before the account is removed from the internal lists.<br>
+     * Use this signal to obtain all necessary information to handle this remove operation properly. The signal <i>signalContactRemoved()</i>
+     * will be called immediately after cleaning the internal lists.
+     * <br>
+     * @param contact The removed contact. This object is deleted after this call!
+     * @see signalContactRemoved()
      */
-    void signalContactRemoved( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
+    void signalAboutToRemoveContact( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
+
+    /**
+     * A contact is removed.
+     * This signal is emmited immediately after <i>signalAboutToRemoveContact()</i> if all internal lists are updated.
+     * @see signalAboutToRemoveContact()
+     */
+    void signalContactRemoved( TpPrototype ::ContactManager* contactManager );
     
     /**
      * @todo: Add doc! (seil)
@@ -244,16 +255,6 @@ signals:
      * This signal is emitted after a contact was unblocked.
      */
     void signalContactUnblocked( TpPrototype::ContactManager* contactManager, TpPrototype::Contact* contact );
-
-    /**
-     * @todo: Add doc! (seil)
-     */
-    void signalForModelContactSubscribed( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
-
-    /**
-     * @todo: Add doc! (seil)
-     */
-    void signalForModelContactRemoved( TpPrototype ::ContactManager* contactManager, TpPrototype ::Contact* contact );
 
     /**
      * Members changed.
