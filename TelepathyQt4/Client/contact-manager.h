@@ -66,6 +66,7 @@ class ContactManager : public QObject
                 const QSet<Contact::Feature> &features);
 
     private Q_SLOTS:
+        void onAliasesChanged(const Telepathy::AliasPairList &);
         void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
     private:

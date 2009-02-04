@@ -45,6 +45,7 @@ class Contact : public QObject
 
 public:
     enum Feature {
+        FeatureAlias,
         FeatureSimplePresence,
         _Padding = 0xFFFFFFFF
     };
@@ -57,6 +58,8 @@ public:
     QSet<Feature> requestedFeatures() const;
     QSet<Feature> actualFeatures() const;
 
+    QString alias() const;
+
     QString presenceStatus() const;
     uint presenceType() const;
     QString presenceMessage() const;
@@ -64,6 +67,7 @@ public:
     ~Contact();
 
 Q_SIGNALS:
+    void aliasChanged(const QString &alias);
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
 
 private:
@@ -73,6 +77,8 @@ private:
             const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
 
     void augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
+
+    void receiveAlias(const QString &alias);
     void receiveSimplePresence(const SimplePresence &presence);
 
     struct Private;

@@ -48,6 +48,7 @@ struct Contact::Private
     QSet<Feature> requestedFeatures;
     QSet<Feature> actualFeatures;
 
+    QString alias;
     SimplePresence simplePresence;
 };
 
@@ -74,6 +75,17 @@ QSet<Contact::Feature> Contact::requestedFeatures() const
 QSet<Contact::Feature> Contact::actualFeatures() const
 {
     return mPriv->actualFeatures;
+}
+
+QString Contact::alias() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAlias)) {
+        warning() << "Contact::alias() used on" << this
+            << "for which FeatureAlias hasn't been requested - returning id";
+        return id();
+    }
+
+    return mPriv->alias;
 }
 
 QString Contact::presenceStatus() const
@@ -131,9 +143,19 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
     mPriv->id = qdbus_cast<QString>(attributes[TELEPATHY_INTERFACE_CONNECTION "/contact-id"]);
 
     foreach (Feature feature, requestedFeatures) {
+        QString maybeAlias;
         SimplePresence maybePresence;
 
         switch (feature) {
+            case FeatureAlias:
+                maybeAlias = qdbus_cast<QString>(attributes.value(
+                            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING "/alias"));
+
+                if (!maybeAlias.isEmpty()) {
+                    receiveAlias(maybeAlias);
+                }
+                break;
+
             case FeatureSimplePresence:
                 maybePresence = qdbus_cast<SimplePresence>(attributes.value(
                             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE "/presence"));
@@ -150,10 +172,25 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
     }
 }
 
+void Contact::receiveAlias(const QString &alias)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAlias)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureAlias);
+
+    if (mPriv->alias != alias) {
+        mPriv->alias = alias;
+        emit aliasChanged(alias);
+    }
+}
+
 void Contact::receiveSimplePresence(const SimplePresence &presence)
 {
-    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence))
+    if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
         return;
+    }
 
     mPriv->actualFeatures.insert(FeatureSimplePresence);
 

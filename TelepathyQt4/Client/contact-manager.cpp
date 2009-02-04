@@ -97,6 +97,8 @@ namespace
 QString featureToInterface(Contact::Feature feature)
 {
     switch (feature) {
+        case Contact::FeatureAlias:
+            return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING;
         case Contact::FeatureSimplePresence:
             return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
         default:
@@ -198,6 +200,19 @@ PendingContacts *ContactManager::upgradeContacts(const QList<QSharedPointer<Cont
     return new PendingContacts(this, contacts, features);
 }
 
+void ContactManager::onAliasesChanged(const Telepathy::AliasPairList &aliases)
+{
+    debug() << "Got AliasesChanged for" << aliases.size() << "contacts";
+
+    foreach (AliasPair pair, aliases) {
+        QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(pair.handle);
+
+        if (contact) {
+            contact->receiveAlias(pair.alias);
+        }
+    }
+}
+
 void ContactManager::onPresencesChanged(const Telepathy::SimpleContactPresences &presences)
 {
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
@@ -258,6 +273,14 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
         return;
 
     switch (feature) {
+        case Contact::FeatureAlias:
+            QObject::connect(
+                    conn->aliasingInterface(),
+                    SIGNAL(AliasesChanged(const Telepathy::AliasPairList &)),
+                    conn->contactManager(),
+                    SLOT(onAliasesChanged(const Telepathy::AliasPairList &)));
+            break;
+
         case Contact::FeatureSimplePresence:
             QObject::connect(
                     conn->simplePresenceInterface(),
