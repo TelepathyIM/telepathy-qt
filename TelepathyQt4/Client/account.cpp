@@ -874,6 +874,7 @@ void Account::updateProperties(const QVariantMap &props)
         }
         mPriv->connection.clear();
         mPriv->connectionObjectPath = path;
+        emit haveConnectionChanged(!path.isEmpty());
     }
 
     if (props.contains("ConnectionStatus") || props.contains("ConnectionStatusReason")) {

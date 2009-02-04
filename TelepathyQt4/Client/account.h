@@ -174,6 +174,7 @@ Q_SIGNALS:
     void avatarChanged(const Telepathy::Avatar &);
     void connectionStatusChanged(Telepathy::ConnectionStatus,
             Telepathy::ConnectionStatusReason);
+    void haveConnectionChanged(bool haveConnection);
 
 protected:
     AccountInterface *baseInterface() const;
