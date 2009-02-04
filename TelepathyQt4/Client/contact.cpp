@@ -121,7 +121,7 @@ QString Contact::presenceStatus() const
     if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
         warning() << "Contact::presenceStatus() used on" << this
             << "for which FeatureSimplePresence hasn't been requested - returning \"unknown\"";
-        return QString("");
+        return QString("unknown");
     }
 
     return mPriv->simplePresence.status;
@@ -158,10 +158,6 @@ Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
         const QSet<Feature> &requestedFeatures, const QVariantMap &attributes)
     : QObject(0), mPriv(new Private(manager, handle))
 {
-    mPriv->simplePresence.type = ConnectionPresenceTypeUnknown;
-    mPriv->simplePresence.status = "unknown";
-    mPriv->simplePresence.statusMessage = "";
-
     augment(requestedFeatures, attributes);
 }
 
@@ -181,6 +177,8 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
 
                 if (!maybeAlias.isEmpty()) {
                     receiveAlias(maybeAlias);
+                } else if (mPriv->alias.isEmpty()) {
+                    mPriv->alias = mPriv->id;
                 }
                 break;
 
@@ -189,11 +187,15 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token")) {
                     receiveAvatarToken(qdbus_cast<QString>(attributes.value(
                                     TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token")));
-                } else if (mPriv->requestedFeatures.contains(FeatureAvatarToken)) {
-                    // TODO: When Conn::CAI and ContactManager::featuresSupported are added, check
-                    // for those (probably only the latter) here to decide whether to set this or
-                    // not
-                    mPriv->actualFeatures.insert(FeatureAvatarToken);
+                } else {
+                    if (manager()->supportedFeatures().contains(FeatureAvatarToken)) {
+                        // AvatarToken being supported but not included in the mapping indicates
+                        // that the avatar token is not known - however, the feature is working fine
+                        mPriv->actualFeatures.insert(FeatureAvatarToken);
+                    }
+                    // In either case, the avatar token can't be known
+                    mPriv->isAvatarTokenKnown = false;
+                    mPriv->avatarToken = "";
                 }
                 break;
 
@@ -203,6 +205,10 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
 
                 if (!maybePresence.status.isEmpty()) {
                     receiveSimplePresence(maybePresence);
+                } else {
+                    mPriv->simplePresence.type = ConnectionPresenceTypeUnknown;
+                    mPriv->simplePresence.status = "unknown";
+                    mPriv->simplePresence.statusMessage = "";
                 }
                 break;
 

@@ -192,6 +192,12 @@ void TestContacts::testSupport()
                 TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS));
     QVERIFY(mConn->contactAttributeInterfaces().contains(
                 TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
+
+    QSet<Contact::Feature> supportedFeatures = mConn->contactManager()->supportedFeatures();
+    QVERIFY(!supportedFeatures.isEmpty());
+    QVERIFY(supportedFeatures.contains(Contact::FeatureAlias));
+    QVERIFY(supportedFeatures.contains(Contact::FeatureAvatarToken));
+    QVERIFY(supportedFeatures.contains(Contact::FeatureSimplePresence));
 }
 
 void TestContacts::testForHandles()
@@ -561,7 +567,7 @@ void TestContacts::testFeaturesNotRequested()
         QVERIFY(!contact->isAvatarTokenKnown());
         QCOMPARE(contact->avatarToken(), QString(""));
 
-        QCOMPARE(contact->presenceStatus(), QString(""));
+        QCOMPARE(contact->presenceStatus(), QString("unknown"));
         QCOMPARE(contact->presenceType(), uint(Telepathy::ConnectionPresenceTypeUnknown));
         QCOMPARE(contact->presenceMessage(), QString(""));
     }

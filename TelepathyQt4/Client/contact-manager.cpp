@@ -72,6 +72,8 @@ struct ContactManager::Private
 
     QMap<Contact::Feature, bool> tracking;
     void ensureTracking(Contact::Feature feature);
+
+    QSet<Contact::Feature> supportedFeatures;
 };
 
 Connection *ContactManager::connection() const
@@ -111,6 +113,33 @@ QString featureToInterface(Contact::Feature feature)
 }
 }
 
+QSet<Contact::Feature> ContactManager::supportedFeatures() const
+{
+    if (!isSupported()) {
+        warning() << "ContactManager::supportedFeatures() used with the entire ContactManager"
+            << "functionality being unsupported, returning an empty set";
+        return QSet<Contact::Feature>();
+    }
+
+    if (mPriv->supportedFeatures.isEmpty()) {
+        QList<Contact::Feature> allFeatures = QList<Contact::Feature>()
+            << Contact::FeatureAlias
+            << Contact::FeatureAvatarToken
+            << Contact::FeatureSimplePresence;
+        QStringList interfaces = mPriv->conn->contactAttributeInterfaces();
+
+        foreach (Contact::Feature feature, allFeatures) {
+            if (interfaces.contains(featureToInterface(feature))) {
+                mPriv->supportedFeatures.insert(feature);
+            }
+        }
+
+        debug() << mPriv->supportedFeatures.size() << "contact features supported using" << this;
+    }
+
+    return mPriv->supportedFeatures;
+}
+
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         const QSet<Contact::Feature> &features)
 {
@@ -143,13 +172,16 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
                    << otherContacts.size() << "other contacts";
     debug() << " " << missingFeatures.size() << "features missing";
 
+    QSet<Contact::Feature> supported = supportedFeatures();
     QSet<QString> interfaces;
     foreach (Contact::Feature feature, missingFeatures) {
-        interfaces.insert(featureToInterface(feature));
         mPriv->ensureTracking(feature);
-    }
 
-    // TODO: filter using conn->contactAttributeInterfaces() when I add that
+        if (supported.contains(feature)) {
+            // Only query interfaces which are reported as supported to not get an error
+            interfaces.insert(featureToInterface(feature));
+        }
+    }
 
     PendingContacts *contacts =
         new PendingContacts(this, handles, features, satisfyingContacts);
