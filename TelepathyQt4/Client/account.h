@@ -105,7 +105,7 @@ public:
 
     Telepathy::ConnectionStatus connectionStatus() const;
     Telepathy::ConnectionStatusReason connectionStatusReason() const;
-    Connection *getConnection() const;
+    Connection *connection() const;
 
     Telepathy::SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(

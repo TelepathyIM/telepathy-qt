@@ -458,7 +458,7 @@ Telepathy::ConnectionStatusReason Account::connectionStatusReason() const
  *
  * \return Connection object, or 0 if an error occurred.
  */
-Connection *Account::getConnection() const
+Connection *Account::connection() const
 {
     if (mPriv->connectionObjectPath.isEmpty()) {
         return 0;
