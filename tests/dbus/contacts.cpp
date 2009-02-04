@@ -41,6 +41,7 @@ private Q_SLOTS:
     void initTestCase();
     void init();
 
+    void testSupport();
     void testForHandles();
     void testForIdentifiers();
     void testFeatures();
@@ -174,6 +175,14 @@ void TestContacts::initTestCase()
 void TestContacts::init()
 {
     initImpl();
+}
+
+void TestContacts::testSupport()
+{
+    QCOMPARE(mConn->contactManager()->connection(), mConn);
+    QVERIFY(mConn->contactManager()->isSupported());
+
+    // TODO: when Connection::CAI and ContactManager::featureSupported() are added, test them here
 }
 
 void TestContacts::testForHandles()
