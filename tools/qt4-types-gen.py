@@ -353,6 +353,38 @@ struct %(name)s
 
 """)
 
+            self.both('bool operator==(%s v1, %s v2)' %
+                      (depinfo.binding.inarg, depinfo.binding.inarg))
+            self.decl(';\n')
+            self.impl("""
+{""")
+            if (bindings[0].val != 'QDBusVariant'):
+                self.impl("""
+    return ((v1.%s == v2.%s)""" % (names[0], names[0]))
+            else:
+                self.impl("""
+    return ((v1.%s.variant() == v2.%s.variant())""" % (names[0], names[0]))
+            for i in xrange(1, members):
+                if (bindings[i].val != 'QDBusVariant'):
+                    self.impl("""
+            && (v1.%s == v2.%s)""" % (names[i], names[i]))
+                else:
+                    self.impl("""
+            && (v1.%s.variant() == v2.%s.variant())""" % (names[i], names[i]))
+            self.impl("""
+            );
+}
+
+""")
+
+            self.decl('inline bool operator!=(%s v1, %s v2)' %
+                      (depinfo.binding.inarg, depinfo.binding.inarg))
+            self.decl("""
+{
+    return !operator==(v1, v2);
+}
+""")
+
             self.both('QDBusArgument& operator<<(QDBusArgument& arg, %s val)' % depinfo.binding.inarg)
             self.decl(';\n')
             self.impl("""
