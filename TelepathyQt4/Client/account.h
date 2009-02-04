@@ -33,6 +33,7 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Constants>
 
+#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -105,7 +106,7 @@ public:
 
     Telepathy::ConnectionStatus connectionStatus() const;
     Telepathy::ConnectionStatusReason connectionStatusReason() const;
-    Connection *connection() const;
+    QSharedPointer<Connection> connection() const;
 
     Telepathy::SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(

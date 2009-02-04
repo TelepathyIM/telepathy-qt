@@ -87,6 +87,7 @@ struct Account::Private
     Telepathy::SimplePresence automaticPresence;
     Telepathy::SimplePresence currentPresence;
     Telepathy::SimplePresence requestedPresence;
+    QSharedPointer<Connection> connection;
 };
 
 Account::Private::Private(Account *parent)
@@ -458,14 +459,18 @@ Telepathy::ConnectionStatusReason Account::connectionStatusReason() const
  *
  * \return Connection object, or 0 if an error occurred.
  */
-Connection *Account::connection() const
+QSharedPointer<Connection> Account::connection() const
 {
     if (mPriv->connectionObjectPath.isEmpty()) {
-        return 0;
+        return QSharedPointer<Connection>();
     }
     QString objectPath = mPriv->connectionObjectPath;
     QString serviceName = objectPath.mid(1).replace('/', '.');
-    return new Connection(dbusConnection(), serviceName, objectPath);
+    if (!mPriv->connection) {
+        mPriv->connection = QSharedPointer<Connection>(
+                new Connection(dbusConnection(), serviceName, objectPath));
+    }
+    return mPriv->connection;
 }
 
 /**
@@ -856,6 +861,7 @@ void Account::updateProperties(const QVariantMap &props)
         if (path == QLatin1String("/")) {
             path = QString();
         }
+        mPriv->connection.clear();
         mPriv->connectionObjectPath = path;
     }
 
