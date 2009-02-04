@@ -464,7 +464,7 @@ Connection *Account::connection() const
         return 0;
     }
     QString objectPath = mPriv->connectionObjectPath;
-    QString serviceName = objectPath.replace('/', '.');
+    QString serviceName = objectPath.mid(1).replace('/', '.');
     return new Connection(dbusConnection(), serviceName, objectPath);
 }
 
