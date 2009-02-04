@@ -162,6 +162,7 @@ public:
 
     PendingContactAttributes *getContactAttributes(const UIntList &contacts,
             const QStringList &interfaces, bool reference = true);
+    QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
 
     bool isReady(Features features = 0) const;
@@ -180,6 +181,7 @@ private Q_SLOTS:
     void onStatusChanged(uint, uint);
     void gotStatus(QDBusPendingCallWatcher *watcher);
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
+    void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
     void gotSelfPresence(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);

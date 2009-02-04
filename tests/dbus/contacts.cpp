@@ -183,7 +183,15 @@ void TestContacts::testSupport()
     QCOMPARE(mConn->contactManager()->connection(), mConn);
     QVERIFY(mConn->contactManager()->isSupported());
 
-    // TODO: when Connection::CAI and ContactManager::featureSupported() are added, test them here
+    QVERIFY(!mConn->contactAttributeInterfaces().isEmpty());
+
+    QVERIFY(mConn->contactAttributeInterfaces().contains(TELEPATHY_INTERFACE_CONNECTION));
+    QVERIFY(mConn->contactAttributeInterfaces().contains(
+                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING));
+    QVERIFY(mConn->contactAttributeInterfaces().contains(
+                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS));
+    QVERIFY(mConn->contactAttributeInterfaces().contains(
+                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
 }
 
 void TestContacts::testForHandles()

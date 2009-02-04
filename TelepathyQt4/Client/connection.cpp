@@ -114,6 +114,7 @@ struct Connection::Private
 
     void startIntrospection();
     void introspectMain();
+    void introspectContacts();
     void introspectSimplePresence();
     void introspectSelfPresence();
     void introspectSelfHandle();
@@ -160,6 +161,7 @@ struct Connection::Private
     bool haveInitialStatus;
     SimpleStatusSpecMap simplePresenceStatuses;
     SimplePresence selfPresence;
+    QStringList contactAttributeInterfaces;
 
     uint selfHandle;
 
@@ -321,6 +323,24 @@ void Connection::Private::introspectMain()
                     SLOT(gotInterfaces(QDBusPendingCallWatcher *)));
 }
 
+void Connection::Private::introspectContacts()
+{
+    if (!properties) {
+        properties = parent->propertiesInterface();
+        Q_ASSERT(properties != 0);
+    }
+
+    debug() << "Getting available interfaces for GetContactAttributes";
+    QDBusPendingCall call =
+        properties->Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS,
+                       "ContactAttributeInterfaces");
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(call, parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher *)),
+                    SLOT(gotContactAttributeInterfaces(QDBusPendingCallWatcher *)));
+}
+
 void Connection::Private::introspectSimplePresence()
 {
     if (!properties) {
@@ -331,12 +351,12 @@ void Connection::Private::introspectSimplePresence()
     debug() << "Getting available SimplePresence statuses";
     QDBusPendingCall call =
         properties->Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
-                       "Statuses");
+                "Statuses");
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, parent);
     parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
 }
 
 void Connection::Private::introspectSelfPresence()
@@ -946,6 +966,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
     }
 
     mPriv->introspectQueue.enqueue(&Private::introspectMain);
+
     continueIntrospection();
 
     watcher->deleteLater();
@@ -956,10 +977,16 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QStringList> reply = *watcher;
 
     if (!reply.isError()) {
-        debug() << "Connection basic functionality is ready";
-        mPriv->ready = true;
         debug() << "Got reply to GetInterfaces():" << mPriv->interfaces;
         mPriv->interfaces = reply.value();
+
+        if (mPriv->pendingStatus == ConnectionStatusConnected
+                && mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+            mPriv->introspectQueue.enqueue(&Private::introspectContacts);
+        } else {
+            debug() << "Connection basic functionality is ready";
+            mPriv->ready = true;
+        }
 
         // if FeatureSelfPresence was requested and the interface exists and
         // the introspect func is not already enqueued, enqueue it.
@@ -973,6 +1000,27 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "GetInterfaces() failed with " <<
             reply.error().name() << ":" << reply.error().message() <<
             " - assuming no new interfaces";
+    }
+
+    continueIntrospection();
+
+    watcher->deleteLater();
+}
+
+void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
+{
+    debug() << "Connection basic functionality is ready (Got CAI)";
+    mPriv->ready = true;
+
+    QDBusPendingReply<QDBusVariant> reply = *watcher;
+
+    if (!reply.isError()) {
+        mPriv->contactAttributeInterfaces = qdbus_cast<QStringList>(reply.value().variant());
+        debug() << "Got" << mPriv->contactAttributeInterfaces.size() << "contact attribute interfaces";
+    }
+    else {
+        warning().nospace() << "Getting contact attribute interfaces failed with " <<
+            reply.error().name() << ":" << reply.error().message();
     }
 
     continueIntrospection();
@@ -1474,6 +1522,21 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
     pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
     return pending;
+}
+
+QStringList Connection::contactAttributeInterfaces() const
+{
+    if (!isReady()) {
+        warning() << "Connection::contactAttributeInterfaces() used when not ready";
+    } else if (status() != StatusConnected) {
+        warning() << "Connection::contactAttributeInterfaces() used with status"
+            << status() << "!= StatusConnected";
+    } else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        warning() << "Connection::contactAttributeInterfaces() used without the remote object supporting"
+                  << "the Contacts interface";
+    }
+
+    return mPriv->contactAttributeInterfaces;
 }
 
 ContactManager *Connection::contactManager() const
