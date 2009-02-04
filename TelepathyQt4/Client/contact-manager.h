@@ -67,6 +67,7 @@ class ContactManager : public QObject
 
     private Q_SLOTS:
         void onAliasesChanged(const Telepathy::AliasPairList &);
+        void onAvatarUpdated(uint, const QString &);
         void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
     private:

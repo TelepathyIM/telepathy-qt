@@ -99,6 +99,8 @@ QString featureToInterface(Contact::Feature feature)
     switch (feature) {
         case Contact::FeatureAlias:
             return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING;
+        case Contact::FeatureAvatarToken:
+            return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS;
         case Contact::FeatureSimplePresence:
             return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
         default:
@@ -213,6 +215,16 @@ void ContactManager::onAliasesChanged(const Telepathy::AliasPairList &aliases)
     }
 }
 
+void ContactManager::onAvatarUpdated(uint handle, const QString &token)
+{
+    debug() << "Got AvatarUpdate for contact with handle" << handle;
+
+    QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(handle);
+    if (contact) {
+        contact->receiveAvatarToken(token);
+    }
+}
+
 void ContactManager::onPresencesChanged(const Telepathy::SimpleContactPresences &presences)
 {
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
@@ -279,6 +291,14 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
                     SIGNAL(AliasesChanged(const Telepathy::AliasPairList &)),
                     conn->contactManager(),
                     SLOT(onAliasesChanged(const Telepathy::AliasPairList &)));
+            break;
+
+        case Contact::FeatureAvatarToken:
+            QObject::connect(
+                    conn->avatarsInterface(),
+                    SIGNAL(AvatarUpdated(uint, const QString &)),
+                    conn->contactManager(),
+                    SLOT(onAvatarUpdated(uint, const QString &)));
             break;
 
         case Contact::FeatureSimplePresence:

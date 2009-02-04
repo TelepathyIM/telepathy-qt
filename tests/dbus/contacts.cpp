@@ -372,6 +372,14 @@ void TestContacts::testFeatures()
         "Alice Through the Looking Glass",
         "Bob the Pensioner"
     };
+    const char *initialTokens[] = {
+        "bbbbb",
+        "ccccc"
+    };
+    const char *latterTokens[] = {
+        "AAAA",
+        "BBBB"
+    };
     static ContactsConnectionPresenceStatusIndex initialStatuses[] = {
         CONTACTS_CONNECTION_STATUS_AVAILABLE,
         CONTACTS_CONNECTION_STATUS_BUSY,
@@ -392,6 +400,7 @@ void TestContacts::testFeatures()
     };
     QSet<Contact::Feature> features = QSet<Contact::Feature>()
         << Contact::FeatureAlias
+        << Contact::FeatureAvatarToken
         << Contact::FeatureSimplePresence;
     TpHandleRepoIface *serviceRepo =
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
@@ -406,6 +415,8 @@ void TestContacts::testFeatures()
     // Set the initial attributes
     contacts_connection_change_aliases(mConnService, 3, handles.toVector().constData(),
             initialAliases);
+    contacts_connection_change_avatar_tokens(mConnService, 2, handles.toVector().constData() + 1,
+            initialTokens);
     contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(),
             initialStatuses, initialMessages);
 
@@ -427,9 +438,20 @@ void TestContacts::testFeatures()
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
         QCOMPARE(mContacts[i]->alias(), QString(initialAliases[i]));
 
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
         QCOMPARE(mContacts[i]->presenceMessage(), QString(initialMessages[i]));
     }
+
+    // Check that there's no known avatar token for the first contact, but that there is for the
+    // two others
+    QVERIFY(!mContacts[0]->isAvatarTokenKnown());
+    QVERIFY(mContacts[1]->isAvatarTokenKnown());
+    QVERIFY(mContacts[2]->isAvatarTokenKnown());
+
+    QCOMPARE(mContacts[0]->avatarToken(), QString(""));
+    QCOMPARE(mContacts[1]->avatarToken(), QString(initialTokens[0]));
+    QCOMPARE(mContacts[2]->avatarToken(), QString(initialTokens[1]));
 
     QCOMPARE(mContacts[0]->presenceStatus(), QString("available"));
     QCOMPARE(mContacts[1]->presenceStatus(), QString("busy"));
@@ -442,6 +464,8 @@ void TestContacts::testFeatures()
     // Change some of the contacts to a new set of attributes
     contacts_connection_change_aliases(mConnService, 2, handles.toVector().constData(),
             latterAliases);
+    contacts_connection_change_avatar_tokens(mConnService, 2, handles.toVector().constData(),
+            latterTokens);
     contacts_connection_change_presences(mConnService, 2, handles.toVector().constData(),
             latterStatuses, latterMessages);
     mLoop->processEvents();
@@ -455,12 +479,19 @@ void TestContacts::testFeatures()
         QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
+
+        QVERIFY(mContacts[i]->isAvatarTokenKnown());
     }
 
     QCOMPARE(mContacts[0]->alias(), QString(latterAliases[0]));
     QCOMPARE(mContacts[1]->alias(), QString(latterAliases[1]));
     QCOMPARE(mContacts[2]->alias(), QString(initialAliases[2]));
+
+    QCOMPARE(mContacts[0]->avatarToken(), QString(latterTokens[0]));
+    QCOMPARE(mContacts[1]->avatarToken(), QString(latterTokens[1]));
+    QCOMPARE(mContacts[2]->avatarToken(), QString(initialTokens[1]));
 
     QCOMPARE(mContacts[0]->presenceStatus(), QString("away"));
     QCOMPARE(mContacts[1]->presenceStatus(), QString("available"));
@@ -496,6 +527,11 @@ void TestContacts::testUpgrade()
         "Bob The Builder",
         "Chris Sawyer"
     };
+    const char *tokens[] = {
+        "aaaaa",
+        "bbbbb",
+        "ccccc"
+    };
     static ContactsConnectionPresenceStatusIndex statuses[] = {
         CONTACTS_CONNECTION_STATUS_AVAILABLE,
         CONTACTS_CONNECTION_STATUS_BUSY,
@@ -516,6 +552,7 @@ void TestContacts::testUpgrade()
     }
 
     contacts_connection_change_aliases(mConnService, 3, handles.toVector().constData(), aliases);
+    contacts_connection_change_avatar_tokens(mConnService, 3, handles.toVector().constData(), tokens);
     contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(), statuses,
             messages);
 
@@ -534,6 +571,7 @@ void TestContacts::testUpgrade()
     // Upgrade them
     QSet<Contact::Feature> features = QSet<Contact::Feature>()
         << Contact::FeatureAlias
+        << Contact::FeatureAvatarToken
         << Contact::FeatureSimplePresence;
     pending = mConn->contactManager()->upgradeContacts(saveContacts, features);
 
@@ -565,6 +603,10 @@ void TestContacts::testUpgrade()
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
         QCOMPARE(mContacts[i]->alias(), QString(aliases[i]));
+
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
+        QVERIFY(mContacts[i]->isAvatarTokenKnown());
+        QCOMPARE(mContacts[i]->avatarToken(), QString(tokens[i]));
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
         QCOMPARE(mContacts[i]->presenceMessage(), QString(messages[i]));

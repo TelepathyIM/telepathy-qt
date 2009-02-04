@@ -46,6 +46,7 @@ class Contact : public QObject
 public:
     enum Feature {
         FeatureAlias,
+        FeatureAvatarToken,
         FeatureSimplePresence,
         _Padding = 0xFFFFFFFF
     };
@@ -60,6 +61,9 @@ public:
 
     QString alias() const;
 
+    bool isAvatarTokenKnown() const;
+    QString avatarToken() const;
+
     QString presenceStatus() const;
     uint presenceType() const;
     QString presenceMessage() const;
@@ -68,6 +72,7 @@ public:
 
 Q_SIGNALS:
     void aliasChanged(const QString &alias);
+    void avatarTokenChanged(const QString &avatarToken);
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
 
 private:
@@ -79,6 +84,7 @@ private:
     void augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
 
     void receiveAlias(const QString &alias);
+    void receiveAvatarToken(const QString &avatarToken);
     void receiveSimplePresence(const SimplePresence &presence);
 
     struct Private;

@@ -37,7 +37,7 @@ namespace Client
 struct Contact::Private
 {
     Private(ContactManager *manager, const ReferencedHandles &handle)
-        : manager(manager), handle(handle)
+        : manager(manager), handle(handle), isAvatarTokenKnown(false)
     {
     }
 
@@ -49,6 +49,8 @@ struct Contact::Private
     QSet<Feature> actualFeatures;
 
     QString alias;
+    bool isAvatarTokenKnown;
+    QString avatarToken;
     SimplePresence simplePresence;
 };
 
@@ -86,6 +88,32 @@ QString Contact::alias() const
     }
 
     return mPriv->alias;
+}
+
+bool Contact::isAvatarTokenKnown() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAvatarToken)) {
+        warning() << "Contact::isAvatarTokenKnown() used on" << this
+            << "for which FeatureAvatarToken hasn't been requested - returning false";
+        return false;
+    }
+
+    return mPriv->isAvatarTokenKnown;
+}
+
+QString Contact::avatarToken() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAvatarToken)) {
+        warning() << "Contact::avatarToken() used on" << this
+            << "for which FeatureAvatarToken hasn't been requested - returning \"\"";
+        return QString("");
+    } else if (!isAvatarTokenKnown()) {
+        warning() << "Contact::avatarToken() used on" << this
+            << "for which the avatar token is not (yet) known - returning \"\"";
+        return QString("");
+    }
+
+    return mPriv->avatarToken;
 }
 
 QString Contact::presenceStatus() const
@@ -156,6 +184,19 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                 }
                 break;
 
+            case FeatureAvatarToken:
+                if (attributes.contains(
+                            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token")) {
+                    receiveAvatarToken(qdbus_cast<QString>(attributes.value(
+                                    TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token")));
+                } else if (mPriv->requestedFeatures.contains(FeatureAvatarToken)) {
+                    // TODO: When Conn::CAI and ContactManager::featuresSupported are added, check
+                    // for those (probably only the latter) here to decide whether to set this or
+                    // not
+                    mPriv->actualFeatures.insert(FeatureAvatarToken);
+                }
+                break;
+
             case FeatureSimplePresence:
                 maybePresence = qdbus_cast<SimplePresence>(attributes.value(
                             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE "/presence"));
@@ -183,6 +224,21 @@ void Contact::receiveAlias(const QString &alias)
     if (mPriv->alias != alias) {
         mPriv->alias = alias;
         emit aliasChanged(alias);
+    }
+}
+
+void Contact::receiveAvatarToken(const QString &token)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAvatarToken)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureAvatarToken);
+
+    if (!mPriv->isAvatarTokenKnown || mPriv->avatarToken != token) {
+        mPriv->isAvatarTokenKnown = true;
+        mPriv->avatarToken = token;
+        emit avatarTokenChanged(token);
     }
 }
 
