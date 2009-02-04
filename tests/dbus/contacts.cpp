@@ -45,6 +45,7 @@ private Q_SLOTS:
     void testForHandles();
     void testForIdentifiers();
     void testFeatures();
+    void testFeaturesNotRequested();
     void testUpgrade();
 
     void cleanup();
@@ -519,6 +520,57 @@ void TestContacts::testFeatures()
     QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
 }
 
+void TestContacts::testFeaturesNotRequested()
+{
+    // Test ids and corresponding handles
+    QStringList ids = QStringList() << "alice" << "bob" << "chris";
+    TpHandleRepoIface *serviceRepo =
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
+    Telepathy::UIntList handles;
+    for (int i = 0; i < 3; i++) {
+        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
+        QVERIFY(handles[i] != 0);
+    }
+
+    // Build contacts (note: no features)
+    PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Check that the feature accessors return sensible fallback values (note: the warnings are
+    // intentional - however, I'm not quite sure if they should be just debug (like in tp-glib))
+    QCOMPARE(mContacts.size(), 3);
+    for (int i = 0; i < 3; i++) {
+        QSharedPointer<Contact> contact = mContacts[i];
+
+        QVERIFY(contact->requestedFeatures().isEmpty());
+        QVERIFY(contact->actualFeatures().isEmpty());
+
+        QCOMPARE(contact->alias(), contact->id());
+
+        QVERIFY(!contact->isAvatarTokenKnown());
+        QCOMPARE(contact->avatarToken(), QString(""));
+
+        QCOMPARE(contact->presenceStatus(), QString(""));
+        QCOMPARE(contact->presenceType(), uint(Telepathy::ConnectionPresenceTypeUnknown));
+        QCOMPARE(contact->presenceMessage(), QString(""));
+    }
+
+    // Make the contacts go out of scope, starting releasing their handles, and finish that
+    mContacts.clear();
+    mLoop->processEvents();
+    processDBusQueue(mConn);
+
+    // Unref the handles we created service-side
+    tp_handle_unref(serviceRepo, handles[0]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
+    tp_handle_unref(serviceRepo, handles[1]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
+    tp_handle_unref(serviceRepo, handles[2]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
+}
 void TestContacts::testUpgrade()
 {
     QStringList ids = QStringList() << "alice" << "bob" << "chris";
