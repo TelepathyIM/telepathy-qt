@@ -449,6 +449,17 @@ Telepathy::ConnectionStatusReason Account::connectionStatusReason() const
 }
 
 /**
+ * Return whether this account have a connection object that can be retrieved
+ * using connection().
+ *
+ * \return \c true if a connection object can be retrieved, \c false otherwise
+ */
+bool Account::haveConnection() const
+{
+    return !mPriv->connectionObjectPath.isEmpty();
+}
+
+/**
  * Get the Connection object for this account.
  *
  * Note that the Connection object won't be cached by account, and

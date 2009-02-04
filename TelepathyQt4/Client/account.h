@@ -106,6 +106,7 @@ public:
 
     Telepathy::ConnectionStatus connectionStatus() const;
     Telepathy::ConnectionStatusReason connectionStatusReason() const;
+    bool haveConnection() const;
     QSharedPointer<Connection> connection() const;
 
     Telepathy::SimplePresence automaticPresence() const;
