@@ -114,6 +114,7 @@ public:
     /**
      * Get the current presence.
      * The presence for the current connection is returned.
+     * Needs to be called befor <b>signalPresenceChanged()</b>will be emitted.
      * @return The current aggregated presence.
      */
     QString currentPresence();
@@ -129,7 +130,7 @@ signals:
     void signalRemoved();
 
     /** Account presence was changed. Signal is emitted after the account changed its presence state.
-     * @todo Implement this..
+     * <b>currentPresence()</b> has to be called before.
      */
     void signalPresenceChanged();
     

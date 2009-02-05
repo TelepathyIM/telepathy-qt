@@ -203,6 +203,14 @@ QString Account::currentPresence()
     {
         return g_offline;
     }
+#if 1
+    disconnect ( connection()->presenceManager(), SIGNAL( signalOwnPresenceUpdated( const TpPrototype::Account* , const Telepathy::SimplePresence& ) ),
+            this, SIGNAL( signalPresenceChanged() ) );
+
+    connect ( connection()->presenceManager(), SIGNAL( signalOwnPresenceUpdated( const TpPrototype::Account* , const Telepathy::SimplePresence& ) ),
+                this, SIGNAL( signalPresenceChanged() ) );
+#endif
+
     return connection()->presenceManager()->currentPresence().status;
 }
 
