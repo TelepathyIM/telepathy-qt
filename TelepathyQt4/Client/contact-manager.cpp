@@ -86,10 +86,10 @@ bool ContactManager::isSupported() const
     if (!connection()->isReady()) {
         warning() << "ContactManager::isSupported() used before the connection is ready!";
         return false;
-    } else if (connection()->status() != Connection::StatusConnected) {
+    } /* FIXME: readd this check when Connection is no longer a steaming pile of junk: else if (connection()->status() != Connection::StatusConnected) {
         warning() << "ContactManager::isSupported() used before the connection is connected!";
         return false;
-    }
+    } */
 
     return connection()->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS);
 }

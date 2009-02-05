@@ -35,6 +35,7 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
+#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 
@@ -44,6 +45,7 @@ namespace Client
 {
 
 class Channel;
+class Contact;
 class ContactManager;
 class PendingChannel;
 class PendingContactAttributes;
@@ -92,6 +94,8 @@ public:
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
     Telepathy::SimplePresence selfPresence() const;
+
+    QSharedPointer<Contact> selfContact() const;
 
     template <class Interface>
     inline Interface *optionalInterface(
@@ -183,6 +187,7 @@ private Q_SLOTS:
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
     void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
+    void gotSelfContact(Telepathy::Client::PendingOperation *);
     void gotSelfPresence(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
 

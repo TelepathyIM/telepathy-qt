@@ -42,6 +42,7 @@ private Q_SLOTS:
     void init();
 
     void testSupport();
+    void testSelfContact();
     void testForHandles();
     void testForIdentifiers();
     void testFeatures();
@@ -198,6 +199,24 @@ void TestContacts::testSupport()
     QVERIFY(supportedFeatures.contains(Contact::FeatureAlias));
     QVERIFY(supportedFeatures.contains(Contact::FeatureAvatarToken));
     QVERIFY(supportedFeatures.contains(Contact::FeatureSimplePresence));
+}
+
+void TestContacts::testSelfContact()
+{
+    QSharedPointer<Contact> selfContact = mConn->selfContact();
+    QVERIFY(selfContact != 0);
+
+    QCOMPARE(selfContact->handle()[0], mConn->selfHandle());
+    QCOMPARE(selfContact->id(), QString("me@example.com"));
+
+    QCOMPARE(selfContact->alias(), QString("me@example.com"));
+
+    QVERIFY(!selfContact->isAvatarTokenKnown());
+
+    QCOMPARE(selfContact->presenceStatus(), QString("available"));
+    QCOMPARE(selfContact->presenceType(), uint(Telepathy::ConnectionPresenceTypeAvailable));
+    QCOMPARE(selfContact->presenceMessage(), QString(""));
+
 }
 
 void TestContacts::testForHandles()

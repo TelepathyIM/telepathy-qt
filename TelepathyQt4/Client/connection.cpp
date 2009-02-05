@@ -32,6 +32,7 @@
 #include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/PendingChannel>
 #include <TelepathyQt4/Client/PendingContactAttributes>
+#include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
@@ -42,6 +43,7 @@
 #include <QMutexLocker>
 #include <QPair>
 #include <QQueue>
+#include <QSharedPointer>
 #include <QString>
 #include <QTimer>
 #include <QtGlobal>
@@ -116,6 +118,7 @@ struct Connection::Private
     void introspectMain();
     void introspectContacts();
     void introspectSimplePresence();
+    void introspectSelfContact();
     void introspectSelfPresence();
     void introspectSelfHandle();
 
@@ -160,6 +163,7 @@ struct Connection::Private
     uint statusReason;
     bool haveInitialStatus;
     SimpleStatusSpecMap simplePresenceStatuses;
+    QSharedPointer<Contact> selfContact;
     SimplePresence selfPresence;
     QStringList contactAttributeInterfaces;
 
@@ -240,6 +244,10 @@ Connection::Private::Private(Connection *parent)
 
 Connection::Private::~Private()
 {
+    // Clear selfContact so its handle will be released cleanly before the handleContext
+    selfContact.clear();
+
+    // FIXME: This doesn't look right! In fact, looks absolutely horrendous.
     if (!handleContext) {
         // initial introspection is not done
         return;
@@ -357,6 +365,20 @@ void Connection::Private::introspectSimplePresence()
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
+}
+
+void Connection::Private::introspectSelfContact()
+{
+    debug() << "Building self contact";
+    // FIXME: these should be features when Connection is sanitized
+    PendingContacts *contacts = contactManager->contactsForHandles(
+            UIntList() << selfHandle,
+            QSet<Contact::Feature>() << Contact::FeatureAlias
+                                     << Contact::FeatureAvatarToken
+                                     << Contact::FeatureSimplePresence);
+    parent->connect(contacts,
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            SLOT(gotSelfContact(Telepathy::Client::PendingOperation *)));
 }
 
 void Connection::Private::introspectSelfPresence()
@@ -739,6 +761,17 @@ Telepathy::SimplePresence Connection::selfPresence() const
     return mPriv->selfPresence;
 }
 
+QSharedPointer<Contact> Connection::selfContact() const
+{
+    if (!isReady()) {
+        warning() << "Connection::selfContact() used before the connection is ready!";
+    }
+    // FIXME: add checks for the SelfContact feature having been requested when Connection features
+    // actually work sensibly and selfContact is made a feature
+
+    return mPriv->selfContact;
+}
+
 /**
  * \fn Connection::optionalInterface(InterfaceSupportedChecking check) const
  *
@@ -980,9 +1013,8 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to GetInterfaces():" << mPriv->interfaces;
         mPriv->interfaces = reply.value();
 
-        if (mPriv->pendingStatus == ConnectionStatusConnected
-                && mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
-            mPriv->introspectQueue.enqueue(&Private::introspectContacts);
+        if (mPriv->pendingStatus == ConnectionStatusConnected) {
+            mPriv->introspectQueue.enqueue(&Private::introspectSelfHandle);
         } else {
             debug() << "Connection basic functionality is ready";
             mPriv->ready = true;
@@ -1009,16 +1041,19 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
 
 void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
 {
+    QDBusPendingReply<QDBusVariant> reply = *watcher;
+
+    // This is junk, but need to do this to make ContactManager behave - ideally, the self contact
+    // wouldn't be core, but CAI would, so isReady(<nothing but core>) should return true already
+    // at this point, and ContactManager should be happy
     debug() << "Connection basic functionality is ready (Got CAI)";
     mPriv->ready = true;
-
-    QDBusPendingReply<QDBusVariant> reply = *watcher;
 
     if (!reply.isError()) {
         mPriv->contactAttributeInterfaces = qdbus_cast<QStringList>(reply.value().variant());
         debug() << "Got" << mPriv->contactAttributeInterfaces.size() << "contact attribute interfaces";
-    }
-    else {
+        mPriv->introspectQueue.enqueue(&Private::introspectSelfContact);
+    } else {
         warning().nospace() << "Getting contact attribute interfaces failed with " <<
             reply.error().name() << ":" << reply.error().message();
     }
@@ -1026,6 +1061,24 @@ void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
     continueIntrospection();
 
     watcher->deleteLater();
+}
+
+void Connection::gotSelfContact(PendingOperation *op)
+{
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+
+    debug() << "Connection basic functionality is ready (Got SelfContact)";
+    mPriv->ready = true;
+
+    if (pending->isValid()) {
+        Q_ASSERT(pending->contacts().size() == 1);
+        mPriv->selfContact = pending->contacts()[0];
+    } else {
+        warning().nospace() << "Getting self contact failed with " <<
+            pending->errorName() << ":" << pending->errorMessage();
+    }
+
+    continueIntrospection();
 }
 
 void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
@@ -1079,10 +1132,16 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
     if (!reply.isError()) {
         mPriv->selfHandle = reply.value();
         debug() << "Got self handle" << mPriv->selfHandle;
-    }
-    else {
+    } else {
         warning().nospace() << "Getting self handle failed with " <<
             reply.error().name() << ":" << reply.error().message();
+    }
+
+    if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        mPriv->introspectQueue.enqueue(&Private::introspectContacts);
+    } else {
+        debug() << "Connection basic functionality is ready (Don't have Contacts)";
+        mPriv->ready = true;
     }
 
     continueIntrospection();
@@ -1495,12 +1554,12 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
         warning() << "Connection::getContactAttributes() used when not ready";
         pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE, "The connection isn't ready");
         return pending;
-    } else if (status() != StatusConnected) {
+    } /* FIXME: readd this check when Connection isn't FSCKING broken anymore: else if (status() != StatusConnected) {
         warning() << "Connection::getContactAttributes() used with status" << status() << "!= StatusConnected";
         pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE,
                 "The connection isn't Connected");
         return pending;
-    } else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+    } */else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
         warning() << "Connection::getContactAttributes() used without the remote object supporting"
                   << "the Contacts interface";
         pending->failImmediately(TELEPATHY_ERROR_NOT_IMPLEMENTED,
@@ -1639,8 +1698,6 @@ void Connection::continueIntrospection()
                 mPriv->readiness != Private::ReadinessFull) {
                 mPriv->changeReadiness(Private::ReadinessFull);
 
-                mPriv->introspectQueue.enqueue(&Private::introspectSelfHandle);
-
                 // we should have all interfaces now, so if an interface is not
                 // present and we have a feature for it, add the feature to missing
                 // features.
@@ -1657,8 +1714,6 @@ void Connection::continueIntrospection()
                         mPriv->introspectQueue.enqueue(&Private::introspectSelfPresence);
                     }
                 }
-
-                (mPriv->*(mPriv->introspectQueue.dequeue()))();
             }
         }
     }
