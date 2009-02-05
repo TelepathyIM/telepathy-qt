@@ -77,8 +77,6 @@ struct Channel::Private
 
     void nowHaveInterfaces();
 
-    void setClosed();
-
     class PendingReady;
 
     // Public object
@@ -96,7 +94,6 @@ struct Channel::Private
 
     PendingReady *pendingReady;
     bool ready;
-    bool closed;
 
     // Introspection
     QStringList interfaces;
@@ -154,7 +151,6 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       properties(0),
       pendingReady(0),
       ready(false),
-      closed(false),
       features(0),
       targetHandleType(0),
       targetHandle(0),
@@ -185,7 +181,8 @@ Channel::Private::Private(Channel *parent, Connection *connection)
     else {
         warning() << "Connection given as the owner for a Channel was "
             "invalid! Channel will be stillborn.";
-        closed = true;
+        parent->invalidate(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                   "Connection given as the owner of this channel was invalid");
     }
 }
 
@@ -415,26 +412,6 @@ void Channel::Private::nowHaveInterfaces()
     }
 }
 
-void Channel::Private::setClosed()
-{
-    if (closed) {
-        warning() << "Channel::Private::setClosed called with channel already closed";
-        return;
-    }
-
-    closed = true;
-
-    debug() << "R.I.P. Channel.";
-
-    if (groupSelfRemoveInfo.isValid()) {
-        debug() << " Group: removed by  " << groupSelfRemoveInfo.actor();
-        debug() << "        because of  " << groupSelfRemoveInfo.reason();
-        debug() << "        with message" << groupSelfRemoveInfo.message();
-    }
-
-    emit parent->closed();
-}
-
 /**
  * \class Channel
  * \ingroup clientchannel
@@ -483,8 +460,8 @@ Channel::Channel(Connection *connection,
       OptionalInterfaceFactory<Channel>(this),
       mPriv(new Private(this, connection))
 {
-    // no need to start introspection if channel is already closed
-    if (!mPriv->closed) {
+    // no need to start introspection if channel is invalid
+    if (isValid()) {
         mPriv->introspectQueue.enqueue(&Private::introspectMain);
         QTimer::singleShot(0, this, SLOT(continueIntrospection()));
     }
@@ -522,7 +499,7 @@ QStringList Channel::interfaces() const
         warning() << "Channel::interfaces() used possibly before the list of "
             "interfaces has been received";
     }
-    else if (mPriv->closed) {
+    else if (!isValid()) {
         warning() << "Channel::interfaces() used with channel closed";
     }
 
@@ -542,7 +519,7 @@ QString Channel::channelType() const
         warning() << "Channel::channelType() before the channel type has "
             "been received";
     }
-    else if (mPriv->closed) {
+    else if (!isValid()) {
         warning() << "Channel::channelType() used with channel closed";
     }
 
@@ -605,7 +582,7 @@ bool Channel::isReady(Features features) const
  */
 PendingOperation *Channel::becomeReady(Features features)
 {
-    if (mPriv->closed) {
+    if (!isValid()) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Channel is already closed");
     }
@@ -626,16 +603,6 @@ PendingOperation *Channel::becomeReady(Features features)
 }
 
 /**
- * Return whether this channel is closed.
- *
- * \return \c true if the channel is closed, \c false otherwise.
- */
-bool Channel::isClosed() const
-{
-    return mPriv->closed;
-}
-
-/**
  * Start an asynchronous request that the channel be closed.
  * The returned PendingOperation object will signal the success or failure
  * of this request; under normal circumstances, it can be expected to
@@ -648,18 +615,12 @@ PendingOperation *Channel::requestClose()
 {
     // Closing a channel does not make sense if it is already closed,
     // just silently returns.
-    if (mPriv->closed) {
+    if (!isValid()) {
         return new PendingSuccess(this);
     }
 
     return new PendingVoidMethodCall(this, mPriv->baseInterface->Close());
 }
-
-/**
- * \fn void closed()
- *
- * Emitted whenever the channel closes.
- */
 
 /**
  * \name Group interface
@@ -902,7 +863,7 @@ uint Channel::groupSelfHandle() const
  */
 Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
 {
-    if (!mPriv->closed) {
+    if (isValid()) {
         warning() << "Channel::groupSelfRemoveInfo() used channel not closed";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
@@ -1215,7 +1176,7 @@ void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetChannelType() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        mPriv->setClosed();
+        invalidate(reply.error());
         return;
     }
 
@@ -1232,7 +1193,7 @@ void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetHandle() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        mPriv->setClosed();
+        invalidate(reply.error());
         return;
     }
 
@@ -1250,7 +1211,7 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Channel::GetInterfaces() failed with " <<
             reply.error().name() << ": " << reply.error().message() <<
             ", Channel officially dead";
-        mPriv->setClosed();
+        invalidate(reply.error());
         return;
     }
 
@@ -1263,9 +1224,6 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
 void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
-
-    mPriv->setClosed();
-
     // I think this is the nearest error code we can get at the moment
     invalidate(TELEPATHY_ERROR_CANCELLED, "Closed");
 }
@@ -1274,14 +1232,16 @@ void Channel::onConnectionInvalidated()
 {
     debug() << "Owning connection died leaving an orphan Channel, "
         "changing to closed";
-    mPriv->setClosed();
+    invalidate(TELEPATHY_ERROR_CANCELLED,
+               "Connection given as the owner of this channel was invalidate");
 }
 
 void Channel::onConnectionDestroyed()
 {
     debug() << "Owning connection destroyed, cutting off dangling pointer";
     mPriv->connection = 0;
-    onConnectionInvalidated();
+    invalidate(TELEPATHY_ERROR_CANCELLED,
+               "Connection given as the owner of this channel was destroyed");
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)

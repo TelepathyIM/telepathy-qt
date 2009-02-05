@@ -75,12 +75,7 @@ public:
 
     PendingOperation *becomeReady(Features features = 0);
 
-    bool isClosed() const;
-
     PendingOperation *requestClose();
-
-Q_SIGNALS:
-    void closed();
 
 public:
     uint groupFlags() const;

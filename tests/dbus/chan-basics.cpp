@@ -296,7 +296,7 @@ void TestChanBasics::testEnsureChannel()
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                         SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->isClosed(), true);
+        QCOMPARE(mChan->isValid(), false);
 
         delete mChan;
         mChan = 0;
