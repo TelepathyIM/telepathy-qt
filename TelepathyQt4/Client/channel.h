@@ -28,11 +28,13 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
+#include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
 #include <QSet>
+#include <QSharedPointer>
 
 class QDBusPendingCallWatcher;
 
@@ -80,7 +82,9 @@ public:
 public:
     uint groupFlags() const;
 
-    QSet<uint> groupMembers() const;
+    QList<QSharedPointer<Contact> > groupContacts() const;
+    QList<QSharedPointer<Contact> > groupLocalPendingContacts() const;
+    QList<QSharedPointer<Contact> > groupRemotePendingContacts() const;
 
     class GroupMemberChangeInfo
     {
@@ -108,10 +112,6 @@ public:
 
     typedef QMap<uint, GroupMemberChangeInfo> GroupMemberChangeInfoMap;
 
-    GroupMemberChangeInfoMap groupLocalPending() const;
-
-    QSet<uint> groupRemotePending() const;
-
     bool groupAreHandleOwnersAvailable() const;
 
     HandleOwnerMap groupHandleOwners() const;
@@ -125,19 +125,13 @@ public:
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
 
-    void groupMembersChanged(const QSet<uint> &members,
-            const Telepathy::UIntList &added,
-            const Telepathy::UIntList &removed,
-            uint actor, uint reason, const QString &message);
-
-    void groupLocalPendingChanged(const GroupMemberChangeInfoMap &localPending,
-            const Telepathy::UIntList &added,
-            const Telepathy::UIntList &removed,
-            uint actor, uint reason, const QString &message);
-
-    void groupRemotePendingChanged(const QSet<uint> &remotePending,
-            const Telepathy::UIntList &added,
-            const Telepathy::UIntList &removed,
+    void groupMembersChanged(
+            const QList<QSharedPointer<Contact> > &groupMembersAdded,
+            const QList<QSharedPointer<Contact> > &groupMembersRemoved,
+            const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+            const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved,
+            const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
+            const QList<QSharedPointer<Contact> > &groupRemotePendingMembersRemoved,
             uint actor, uint reason, const QString &message);
 
     void groupHandleOwnersChanged(const HandleOwnerMap &owners,
@@ -259,8 +253,9 @@ private Q_SLOTS:
     void gotGroupProperties(QDBusPendingCallWatcher *watcher);
     void gotGroupFlags(QDBusPendingCallWatcher *watcher);
     void gotAllMembers(QDBusPendingCallWatcher *watcher);
-    void gotLocalPending(QDBusPendingCallWatcher *watcher);
+    // void gotLocalPending(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
+    void gotContacts(Telepathy::Client::PendingOperation *op);
     void onGroupFlagsChanged(uint, uint);
     void onMembersChanged(const QString&,
             const Telepathy::UIntList&, const Telepathy::UIntList&,
