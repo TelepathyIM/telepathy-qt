@@ -61,7 +61,7 @@ class Connection : public StatefulDBusProxy,
 
 public:
     enum Feature {
-        FeatureSelfPresence = 1,
+        FeatureSimplePresence = 1,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -93,7 +93,6 @@ public:
 
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
-    Telepathy::SimplePresence selfPresence() const;
 
     QSharedPointer<Contact> selfContact() const;
 
@@ -188,14 +187,11 @@ private Q_SLOTS:
     void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
     void gotSelfContact(Telepathy::Client::PendingOperation *);
-    void gotSelfPresence(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
 
     void doReleaseSweep(uint type);
 
     void continueIntrospection();
-
-    void onPresenceChanged(const Telepathy::SimpleContactPresences &);
 
     void onSelfHandleChanged(uint);
 

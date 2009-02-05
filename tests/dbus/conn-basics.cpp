@@ -146,25 +146,14 @@ void TestConnBasics::init()
 
 void TestConnBasics::testSimplePresence()
 {
-    QCOMPARE(mConn->isReady(Connection::FeatureSelfPresence), false);
-    QVERIFY(connect(mConn->becomeReady(Connection::FeatureSelfPresence),
+    QCOMPARE(mConn->isReady(Connection::FeatureSimplePresence), false);
+    QVERIFY(connect(mConn->becomeReady(Connection::FeatureSimplePresence),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(Connection::FeatureSelfPresence), true);
-
-    QVERIFY(connect(mConn,
-                    SIGNAL(selfPresenceChanged(const Telepathy::SimplePresence &)),
-                    SLOT(expectPresenceAvailable(const Telepathy::SimplePresence &))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->selfPresence().type, (uint) Telepathy::ConnectionPresenceTypeAvailable);
-    QCOMPARE(mConn->selfPresence().status, QString("available"));
+    QCOMPARE(mConn->isReady(Connection::FeatureSimplePresence), true);
 
     qDebug() << "mConn->status:" << mConn->status();
-    qDebug() << "mConn->selfPresence "
-                "type:" << mConn->selfPresence().type <<
-                "status:" << mConn->selfPresence().status <<
-                "status message:" << mConn->selfPresence().statusMessage;
 }
 
 void TestConnBasics::cleanup()
