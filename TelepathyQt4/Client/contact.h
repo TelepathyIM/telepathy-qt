@@ -75,6 +75,12 @@ Q_SIGNALS:
     void avatarTokenChanged(const QString &avatarToken);
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
 
+    // TODO: consider how the Renaming interface should work and map to Contacts
+    // I guess it would be something like:
+    // void renamedTo(QSharedPointer<Contact>)
+    // with that contact getting the same features requested as the current one. Or would we rather
+    // want to signal that change right away with a handle?
+
 private:
     Q_DISABLE_COPY(Contact);
 

@@ -175,7 +175,8 @@ public:
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
     void selfHandleChanged(uint newHandle);
-    void selfPresenceChanged(const Telepathy::SimplePresence &newPresence);
+    // FIXME: might not need this when Renaming is fixed and mapped to Contacts
+    void selfContactChanged();
 
 protected:
     ConnectionInterface *baseInterface() const;

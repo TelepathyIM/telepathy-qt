@@ -998,7 +998,11 @@ void Connection::gotSelfContact(PendingOperation *op)
 
     if (pending->isValid()) {
         Q_ASSERT(pending->contacts().size() == 1);
-        mPriv->selfContact = pending->contacts()[0];
+        QSharedPointer<Contact> contact = pending->contacts()[0];
+        if (mPriv->selfContact != contact) {
+            mPriv->selfContact = contact;
+            emit selfContactChanged();
+        }
     } else {
         warning().nospace() << "Getting self contact failed with " <<
             pending->errorName() << ":" << pending->errorMessage();
@@ -1616,6 +1620,14 @@ void Connection::onSelfHandleChanged(uint handle)
 {
     mPriv->selfHandle = handle;
     emit selfHandleChanged(handle);
+
+    // FIXME: not ideal - when SelfContact is a feature, should check
+    // actualFeatures().contains(SelfContact) instead
+    // Also, when we figure out how the Renaming interface should work and how that should map to
+    // Contact objects, this might not need any special handling anymore.
+    if (interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        mPriv->introspectSelfContact();
+    }
 }
 
 }
