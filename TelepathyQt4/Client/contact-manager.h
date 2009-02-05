@@ -28,6 +28,7 @@
 
 #include <QObject>
 
+#include <QList>
 #include <QSet>
 #include <QSharedPointer>
 
@@ -52,6 +53,7 @@ class ContactManager : public QObject
         Connection *connection() const;
 
         bool isSupported() const;
+        QSet<Contact::Feature> supportedFeatures() const;
 
         PendingContacts *contactsForHandles(const UIntList &handles,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
@@ -61,16 +63,25 @@ class ContactManager : public QObject
         PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
 
+        PendingContacts *upgradeContacts(const QList<QSharedPointer<Contact> > &contacts,
+                const QSet<Contact::Feature> &features);
+
     private Q_SLOTS:
-        void onPendingContactsFinished(Telepathy::Client::PendingOperation *);
+        void onAliasesChanged(const Telepathy::AliasPairList &);
+        void onAvatarUpdated(uint, const QString &);
+        void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
     private:
         ContactManager(Connection *parent);
         ~ContactManager();
 
+        QSharedPointer<Contact> ensureContact(const ReferencedHandles &handle,
+                const QSet<Contact::Feature> &features, const QVariantMap &attributes);
+
         struct Private;
         friend struct Private;
         friend class Connection;
+        friend class PendingContacts;
         Private *mPriv;
 };
 

@@ -41,8 +41,13 @@ private Q_SLOTS:
     void initTestCase();
     void init();
 
+    void testSupport();
+    void testSelfContact();
     void testForHandles();
     void testForIdentifiers();
+    void testFeatures();
+    void testFeaturesNotRequested();
+    void testUpgrade();
 
     void cleanup();
     void cleanupTestCase();
@@ -174,6 +179,46 @@ void TestContacts::init()
     initImpl();
 }
 
+void TestContacts::testSupport()
+{
+    QCOMPARE(mConn->contactManager()->connection(), mConn);
+    QVERIFY(mConn->contactManager()->isSupported());
+
+    QVERIFY(!mConn->contactAttributeInterfaces().isEmpty());
+
+    QVERIFY(mConn->contactAttributeInterfaces().contains(TELEPATHY_INTERFACE_CONNECTION));
+    QVERIFY(mConn->contactAttributeInterfaces().contains(
+                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING));
+    QVERIFY(mConn->contactAttributeInterfaces().contains(
+                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS));
+    QVERIFY(mConn->contactAttributeInterfaces().contains(
+                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
+
+    QSet<Contact::Feature> supportedFeatures = mConn->contactManager()->supportedFeatures();
+    QVERIFY(!supportedFeatures.isEmpty());
+    QVERIFY(supportedFeatures.contains(Contact::FeatureAlias));
+    QVERIFY(supportedFeatures.contains(Contact::FeatureAvatarToken));
+    QVERIFY(supportedFeatures.contains(Contact::FeatureSimplePresence));
+}
+
+void TestContacts::testSelfContact()
+{
+    QSharedPointer<Contact> selfContact = mConn->selfContact();
+    QVERIFY(selfContact != 0);
+
+    QCOMPARE(selfContact->handle()[0], mConn->selfHandle());
+    QCOMPARE(selfContact->id(), QString("me@example.com"));
+
+    QCOMPARE(selfContact->alias(), QString("me@example.com"));
+
+    QVERIFY(!selfContact->isAvatarTokenKnown());
+
+    QCOMPARE(selfContact->presenceStatus(), QString("available"));
+    QCOMPARE(selfContact->presenceType(), uint(Telepathy::ConnectionPresenceTypeAvailable));
+    QCOMPARE(selfContact->presenceMessage(), QString(""));
+
+}
+
 void TestContacts::testForHandles()
 {
     Telepathy::UIntList handles;
@@ -199,11 +244,12 @@ void TestContacts::testForHandles()
     PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
 
     // Test the closure accessors
-    QCOMPARE(pending->contactManager(), mConn->contactManager());
+    QCOMPARE(pending->manager(), mConn->contactManager());
     QCOMPARE(pending->features(), QSet<Contact::Feature>());
 
     QVERIFY(pending->isForHandles());
     QVERIFY(!pending->isForIdentifiers());
+    QVERIFY(!pending->isUpgrade());
 
     QCOMPARE(pending->handles(), handles);
 
@@ -221,13 +267,12 @@ void TestContacts::testForHandles()
     QCOMPARE(mInvalidHandles[1], handles[4]);
 
     // Check the contact contents
-    QVERIFY(mContacts[0] != NULL);
-    QVERIFY(mContacts[1] != NULL);
-    QVERIFY(mContacts[2] != NULL);
-
-    QCOMPARE(mContacts[0]->manager(), mConn->contactManager());
-    QCOMPARE(mContacts[1]->manager(), mConn->contactManager());
-    QCOMPARE(mContacts[2]->manager(), mConn->contactManager());
+    for (int i = 0; i < 3; i++) {
+        QVERIFY(mContacts[i] != NULL);
+        QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
+        QCOMPARE(mContacts[i]->requestedFeatures(), QSet<Contact::Feature>());
+        QCOMPARE(mContacts[i]->actualFeatures(), QSet<Contact::Feature>());
+    }
 
     QCOMPARE(mContacts[0]->handle()[0], handles[0]);
     QCOMPARE(mContacts[1]->handle()[0], handles[1]);
@@ -304,11 +349,12 @@ void TestContacts::testForIdentifiers()
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(validIDs);
 
     // Test the closure accessors
-    QCOMPARE(pending->contactManager(), mConn->contactManager());
+    QCOMPARE(pending->manager(), mConn->contactManager());
     QCOMPARE(pending->features(), QSet<Contact::Feature>());
 
     QVERIFY(!pending->isForHandles());
     QVERIFY(pending->isForIdentifiers());
+    QVERIFY(!pending->isUpgrade());
 
     QCOMPARE(pending->identifiers(), validIDs);
 
@@ -325,6 +371,8 @@ void TestContacts::testForIdentifiers()
         QVERIFY(mContacts[i] != NULL);
         QCOMPARE(mContacts[i]->manager(), mConn->contactManager());
         QVERIFY(tp_handle_is_valid(serviceRepo, mContacts[i]->handle()[0], NULL));
+        QCOMPARE(mContacts[i]->requestedFeatures(), QSet<Contact::Feature>());
+        QCOMPARE(mContacts[i]->actualFeatures(), QSet<Contact::Feature>());
     }
 
     QCOMPARE(mContacts[0]->id(), QString("alice"));
@@ -344,6 +392,332 @@ void TestContacts::testForIdentifiers()
     foreach (uint handle, saveHandles) {
         QVERIFY(!tp_handle_is_valid(serviceRepo, handle, NULL));
     }
+}
+
+void TestContacts::testFeatures()
+{
+    QStringList ids = QStringList() << "alice" << "bob" << "chris";
+    const char *initialAliases[] = {
+        "Alice in Wonderland",
+        "Bob the Builder",
+        "Chris Sawyer"
+    };
+    const char *latterAliases[] = {
+        "Alice Through the Looking Glass",
+        "Bob the Pensioner"
+    };
+    const char *initialTokens[] = {
+        "bbbbb",
+        "ccccc"
+    };
+    const char *latterTokens[] = {
+        "AAAA",
+        "BBBB"
+    };
+    static ContactsConnectionPresenceStatusIndex initialStatuses[] = {
+        CONTACTS_CONNECTION_STATUS_AVAILABLE,
+        CONTACTS_CONNECTION_STATUS_BUSY,
+        CONTACTS_CONNECTION_STATUS_AWAY
+    };
+    static ContactsConnectionPresenceStatusIndex latterStatuses[] = {
+        CONTACTS_CONNECTION_STATUS_AWAY,
+        CONTACTS_CONNECTION_STATUS_AVAILABLE,
+    };
+    const char *initialMessages[] = {
+        "",
+        "Fixing it",
+        "GON OUT BACKSON"
+    };
+    const char *latterMessages[] = {
+        "Having some carrots",
+        "Done building for life, yay",
+    };
+    QSet<Contact::Feature> features = QSet<Contact::Feature>()
+        << Contact::FeatureAlias
+        << Contact::FeatureAvatarToken
+        << Contact::FeatureSimplePresence;
+    TpHandleRepoIface *serviceRepo =
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
+
+    // Get test handles
+    Telepathy::UIntList handles;
+    for (int i = 0; i < 3; i++) {
+        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
+        QVERIFY(handles[i] != 0);
+    }
+
+    // Set the initial attributes
+    contacts_connection_change_aliases(mConnService, 3, handles.toVector().constData(),
+            initialAliases);
+    contacts_connection_change_avatar_tokens(mConnService, 2, handles.toVector().constData() + 1,
+            initialTokens);
+    contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(),
+            initialStatuses, initialMessages);
+
+    // Build contacts
+    PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles, features);
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Check the contact contents
+    QCOMPARE(mContacts.size(), 3);
+    for (int i = 0; i < 3; i++) {
+        QCOMPARE(mContacts[i]->handle()[0], handles[i]);
+        QCOMPARE(mContacts[i]->id(), ids[i]);
+        QVERIFY((features - mContacts[i]->requestedFeatures()).isEmpty());
+        QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
+
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
+        QCOMPARE(mContacts[i]->alias(), QString(initialAliases[i]));
+
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
+        QCOMPARE(mContacts[i]->presenceMessage(), QString(initialMessages[i]));
+    }
+
+    // Check that there's no known avatar token for the first contact, but that there is for the
+    // two others
+    QVERIFY(!mContacts[0]->isAvatarTokenKnown());
+    QVERIFY(mContacts[1]->isAvatarTokenKnown());
+    QVERIFY(mContacts[2]->isAvatarTokenKnown());
+
+    QCOMPARE(mContacts[0]->avatarToken(), QString(""));
+    QCOMPARE(mContacts[1]->avatarToken(), QString(initialTokens[0]));
+    QCOMPARE(mContacts[2]->avatarToken(), QString(initialTokens[1]));
+
+    QCOMPARE(mContacts[0]->presenceStatus(), QString("available"));
+    QCOMPARE(mContacts[1]->presenceStatus(), QString("busy"));
+    QCOMPARE(mContacts[2]->presenceStatus(), QString("away"));
+
+    QCOMPARE(mContacts[0]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAvailable));
+    QCOMPARE(mContacts[1]->presenceType(), uint(Telepathy::ConnectionPresenceTypeBusy));
+    QCOMPARE(mContacts[2]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAway));
+
+    // Change some of the contacts to a new set of attributes
+    contacts_connection_change_aliases(mConnService, 2, handles.toVector().constData(),
+            latterAliases);
+    contacts_connection_change_avatar_tokens(mConnService, 2, handles.toVector().constData(),
+            latterTokens);
+    contacts_connection_change_presences(mConnService, 2, handles.toVector().constData(),
+            latterStatuses, latterMessages);
+    mLoop->processEvents();
+    processDBusQueue(mConn);
+
+    // Check that the attributes were updated in the Contact objects
+    for (int i = 0; i < 3; i++) {
+        QCOMPARE(mContacts[i]->handle()[0], handles[i]);
+        QCOMPARE(mContacts[i]->id(), ids[i]);
+        QVERIFY((features - mContacts[i]->requestedFeatures()).isEmpty());
+        QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
+
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
+
+        QVERIFY(mContacts[i]->isAvatarTokenKnown());
+    }
+
+    QCOMPARE(mContacts[0]->alias(), QString(latterAliases[0]));
+    QCOMPARE(mContacts[1]->alias(), QString(latterAliases[1]));
+    QCOMPARE(mContacts[2]->alias(), QString(initialAliases[2]));
+
+    QCOMPARE(mContacts[0]->avatarToken(), QString(latterTokens[0]));
+    QCOMPARE(mContacts[1]->avatarToken(), QString(latterTokens[1]));
+    QCOMPARE(mContacts[2]->avatarToken(), QString(initialTokens[1]));
+
+    QCOMPARE(mContacts[0]->presenceStatus(), QString("away"));
+    QCOMPARE(mContacts[1]->presenceStatus(), QString("available"));
+    QCOMPARE(mContacts[2]->presenceStatus(), QString("away"));
+
+    QCOMPARE(mContacts[0]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAway));
+    QCOMPARE(mContacts[1]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAvailable));
+    QCOMPARE(mContacts[2]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAway));
+
+    QCOMPARE(mContacts[0]->presenceMessage(), QString(latterMessages[0]));
+    QCOMPARE(mContacts[1]->presenceMessage(), QString(latterMessages[1]));
+    QCOMPARE(mContacts[2]->presenceMessage(), QString(initialMessages[2]));
+
+    // Make the contacts go out of scope, starting releasing their handles, and finish that
+    mContacts.clear();
+    mLoop->processEvents();
+    processDBusQueue(mConn);
+
+    // Unref the handles we created service-side
+    tp_handle_unref(serviceRepo, handles[0]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
+    tp_handle_unref(serviceRepo, handles[1]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
+    tp_handle_unref(serviceRepo, handles[2]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
+}
+
+void TestContacts::testFeaturesNotRequested()
+{
+    // Test ids and corresponding handles
+    QStringList ids = QStringList() << "alice" << "bob" << "chris";
+    TpHandleRepoIface *serviceRepo =
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
+    Telepathy::UIntList handles;
+    for (int i = 0; i < 3; i++) {
+        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
+        QVERIFY(handles[i] != 0);
+    }
+
+    // Build contacts (note: no features)
+    PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Check that the feature accessors return sensible fallback values (note: the warnings are
+    // intentional - however, I'm not quite sure if they should be just debug (like in tp-glib))
+    QCOMPARE(mContacts.size(), 3);
+    for (int i = 0; i < 3; i++) {
+        QSharedPointer<Contact> contact = mContacts[i];
+
+        QVERIFY(contact->requestedFeatures().isEmpty());
+        QVERIFY(contact->actualFeatures().isEmpty());
+
+        QCOMPARE(contact->alias(), contact->id());
+
+        QVERIFY(!contact->isAvatarTokenKnown());
+        QCOMPARE(contact->avatarToken(), QString(""));
+
+        QCOMPARE(contact->presenceStatus(), QString("unknown"));
+        QCOMPARE(contact->presenceType(), uint(Telepathy::ConnectionPresenceTypeUnknown));
+        QCOMPARE(contact->presenceMessage(), QString(""));
+    }
+
+    // Make the contacts go out of scope, starting releasing their handles, and finish that
+    mContacts.clear();
+    mLoop->processEvents();
+    processDBusQueue(mConn);
+
+    // Unref the handles we created service-side
+    tp_handle_unref(serviceRepo, handles[0]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
+    tp_handle_unref(serviceRepo, handles[1]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
+    tp_handle_unref(serviceRepo, handles[2]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
+}
+void TestContacts::testUpgrade()
+{
+    QStringList ids = QStringList() << "alice" << "bob" << "chris";
+    const char *aliases[] = {
+        "Alice in Wonderland",
+        "Bob The Builder",
+        "Chris Sawyer"
+    };
+    const char *tokens[] = {
+        "aaaaa",
+        "bbbbb",
+        "ccccc"
+    };
+    static ContactsConnectionPresenceStatusIndex statuses[] = {
+        CONTACTS_CONNECTION_STATUS_AVAILABLE,
+        CONTACTS_CONNECTION_STATUS_BUSY,
+        CONTACTS_CONNECTION_STATUS_AWAY
+    };
+    const char *messages[] = {
+        "",
+        "Fixing it",
+        "GON OUT BACKSON"
+    };
+    TpHandleRepoIface *serviceRepo =
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
+
+    Telepathy::UIntList handles;
+    for (int i = 0; i < 3; i++) {
+        handles.push_back(tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(), NULL, NULL));
+        QVERIFY(handles[i] != 0);
+    }
+
+    contacts_connection_change_aliases(mConnService, 3, handles.toVector().constData(), aliases);
+    contacts_connection_change_avatar_tokens(mConnService, 3, handles.toVector().constData(), tokens);
+    contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(), statuses,
+            messages);
+
+    PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
+
+    // Wait for the contacts to be built
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // There should be 3 resulting contacts - save them for future reference
+    QCOMPARE(mContacts.size(), 3);
+    QList<QSharedPointer<Contact> > saveContacts = mContacts;
+
+    // Upgrade them
+    QSet<Contact::Feature> features = QSet<Contact::Feature>()
+        << Contact::FeatureAlias
+        << Contact::FeatureAvatarToken
+        << Contact::FeatureSimplePresence;
+    pending = mConn->contactManager()->upgradeContacts(saveContacts, features);
+
+    // Test the closure accessors
+    QCOMPARE(pending->manager(), mConn->contactManager());
+    QCOMPARE(pending->features(), features);
+
+    QVERIFY(!pending->isForHandles());
+    QVERIFY(!pending->isForIdentifiers());
+    QVERIFY(pending->isUpgrade());
+
+    QCOMPARE(pending->contactsToUpgrade(), saveContacts);
+
+    // Wait for the contacts to be built
+    QVERIFY(connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Check that we got the correct contacts back
+    QCOMPARE(mContacts, saveContacts);
+
+    // Check the contact contents
+    for (int i = 0; i < 3; i++) {
+        QCOMPARE(mContacts[i]->handle()[0], handles[i]);
+        QCOMPARE(mContacts[i]->id(), ids[i]);
+        QVERIFY((features - mContacts[i]->requestedFeatures()).isEmpty());
+        QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
+
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
+        QCOMPARE(mContacts[i]->alias(), QString(aliases[i]));
+
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
+        QVERIFY(mContacts[i]->isAvatarTokenKnown());
+        QCOMPARE(mContacts[i]->avatarToken(), QString(tokens[i]));
+
+        QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
+        QCOMPARE(mContacts[i]->presenceMessage(), QString(messages[i]));
+    }
+
+    QCOMPARE(mContacts[0]->presenceStatus(), QString("available"));
+    QCOMPARE(mContacts[1]->presenceStatus(), QString("busy"));
+    QCOMPARE(mContacts[2]->presenceStatus(), QString("away"));
+
+    QCOMPARE(mContacts[0]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAvailable));
+    QCOMPARE(mContacts[1]->presenceType(), uint(Telepathy::ConnectionPresenceTypeBusy));
+    QCOMPARE(mContacts[2]->presenceType(), uint(Telepathy::ConnectionPresenceTypeAway));
+
+    // Make the contacts go out of scope, starting releasing their handles, and finish that
+    saveContacts.clear();
+    mContacts.clear();
+    mLoop->processEvents();
+    processDBusQueue(mConn);
+
+    // Unref the handles we created service-side
+    tp_handle_unref(serviceRepo, handles[0]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[0], NULL));
+    tp_handle_unref(serviceRepo, handles[1]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
+    tp_handle_unref(serviceRepo, handles[2]);
+    QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
 }
 
 void TestContacts::cleanup()

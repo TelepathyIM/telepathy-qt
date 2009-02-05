@@ -51,7 +51,7 @@ class PendingContacts : public PendingOperation
 public:
     ~PendingContacts();
 
-    ContactManager *contactManager() const;
+    ContactManager *manager() const;
     QSet<Contact::Feature> features() const;
 
     bool isForHandles() const;
@@ -59,6 +59,9 @@ public:
 
     bool isForIdentifiers() const;
     QStringList identifiers() const;
+
+    bool isUpgrade() const;
+    QList<QSharedPointer<Contact> > contactsToUpgrade() const;
 
     QList<QSharedPointer<Contact> > contacts() const;
     UIntList invalidHandles() const;
@@ -75,6 +78,8 @@ private:
             const QSet<Contact::Feature> &features,
             const QMap<uint, QSharedPointer<Contact> > &satisfyingContacts);
     PendingContacts(ContactManager *manager, const QStringList &identifiers,
+            const QSet<Contact::Feature> &features);
+    PendingContacts(ContactManager *manager, const QList<QSharedPointer<Contact> > &contacts,
             const QSet<Contact::Feature> &features);
 
     void allAttributesFetched();

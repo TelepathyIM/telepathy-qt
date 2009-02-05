@@ -35,6 +35,7 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
+#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 
@@ -44,6 +45,7 @@ namespace Client
 {
 
 class Channel;
+class Contact;
 class ContactManager;
 class PendingChannel;
 class PendingContactAttributes;
@@ -59,7 +61,7 @@ class Connection : public StatefulDBusProxy,
 
 public:
     enum Feature {
-        FeatureSelfPresence = 1,
+        FeatureSimplePresence = 1,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -91,7 +93,8 @@ public:
 
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
-    Telepathy::SimplePresence selfPresence() const;
+
+    QSharedPointer<Contact> selfContact() const;
 
     template <class Interface>
     inline Interface *optionalInterface(
@@ -162,6 +165,7 @@ public:
 
     PendingContactAttributes *getContactAttributes(const UIntList &contacts,
             const QStringList &interfaces, bool reference = true);
+    QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
 
     bool isReady(Features features = 0) const;
@@ -171,7 +175,8 @@ public:
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
     void selfHandleChanged(uint newHandle);
-    void selfPresenceChanged(const Telepathy::SimplePresence &newPresence);
+    // FIXME: might not need this when Renaming is fixed and mapped to Contacts
+    void selfContactChanged();
 
 protected:
     ConnectionInterface *baseInterface() const;
@@ -180,15 +185,14 @@ private Q_SLOTS:
     void onStatusChanged(uint, uint);
     void gotStatus(QDBusPendingCallWatcher *watcher);
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
+    void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
-    void gotSelfPresence(QDBusPendingCallWatcher *watcher);
+    void gotSelfContact(Telepathy::Client::PendingOperation *);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
 
     void doReleaseSweep(uint type);
 
     void continueIntrospection();
-
-    void onPresenceChanged(const Telepathy::SimpleContactPresences &);
 
     void onSelfHandleChanged(uint);
 

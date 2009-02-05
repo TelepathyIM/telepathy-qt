@@ -32,6 +32,7 @@
 #include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/PendingChannel>
 #include <TelepathyQt4/Client/PendingContactAttributes>
+#include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
@@ -42,6 +43,7 @@
 #include <QMutexLocker>
 #include <QPair>
 #include <QQueue>
+#include <QSharedPointer>
 #include <QString>
 #include <QTimer>
 #include <QtGlobal>
@@ -114,15 +116,14 @@ struct Connection::Private
 
     void startIntrospection();
     void introspectMain();
+    void introspectContacts();
     void introspectSimplePresence();
-    void introspectSelfPresence();
+    void introspectSelfContact();
     void introspectSelfHandle();
 
     void changeReadiness(Readiness newReadiness);
 
     void updatePendingOperations();
-
-    void changeSelfPresence(const Telepathy::SimplePresence &presence);
 
     struct HandleContext;
     class PendingReady;
@@ -159,7 +160,8 @@ struct Connection::Private
     uint statusReason;
     bool haveInitialStatus;
     SimpleStatusSpecMap simplePresenceStatuses;
-    SimplePresence selfPresence;
+    QSharedPointer<Contact> selfContact;
+    QStringList contactAttributeInterfaces;
 
     uint selfHandle;
 
@@ -233,11 +235,14 @@ Connection::Private::Private(Connection *parent)
       handleContext(0),
       contactManager(new ContactManager(parent))
 {
-    selfPresence.type = Telepathy::ConnectionPresenceTypeUnknown;
 }
 
 Connection::Private::~Private()
 {
+    // Clear selfContact so its handle will be released cleanly before the handleContext
+    selfContact.clear();
+
+    // FIXME: This doesn't look right! In fact, looks absolutely horrendous.
     if (!handleContext) {
         // initial introspection is not done
         return;
@@ -321,6 +326,24 @@ void Connection::Private::introspectMain()
                     SLOT(gotInterfaces(QDBusPendingCallWatcher *)));
 }
 
+void Connection::Private::introspectContacts()
+{
+    if (!properties) {
+        properties = parent->propertiesInterface();
+        Q_ASSERT(properties != 0);
+    }
+
+    debug() << "Getting available interfaces for GetContactAttributes";
+    QDBusPendingCall call =
+        properties->Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS,
+                       "ContactAttributeInterfaces");
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(call, parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher *)),
+                    SLOT(gotContactAttributeInterfaces(QDBusPendingCallWatcher *)));
+}
+
 void Connection::Private::introspectSimplePresence()
 {
     if (!properties) {
@@ -331,34 +354,26 @@ void Connection::Private::introspectSimplePresence()
     debug() << "Getting available SimplePresence statuses";
     QDBusPendingCall call =
         properties->Get(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
-                       "Statuses");
+                "Statuses");
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, parent);
     parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
 }
 
-void Connection::Private::introspectSelfPresence()
+void Connection::Private::introspectSelfContact()
 {
-    if (!simplePresence) {
-        simplePresence = parent->simplePresenceInterface();
-        Q_ASSERT(simplePresence != 0);
-    }
-
-    parent->connect(simplePresence,
-                    SIGNAL(PresencesChanged(const Telepathy::SimpleContactPresences&)),
-                    SLOT(onPresenceChanged(const Telepathy::SimpleContactPresences&)));
-
-    debug() << "Getting self presence status";
-    UIntList handles;
-    handles << selfHandle;
-    QDBusPendingCall call = simplePresence->GetPresences(handles);
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(call, parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotSelfPresence(QDBusPendingCallWatcher *)));
+    debug() << "Building self contact";
+    // FIXME: these should be features when Connection is sanitized
+    PendingContacts *contacts = contactManager->contactsForHandles(
+            UIntList() << selfHandle,
+            QSet<Contact::Feature>() << Contact::FeatureAlias
+                                     << Contact::FeatureAvatarToken
+                                     << Contact::FeatureSimplePresence);
+    parent->connect(contacts,
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            SLOT(gotSelfContact(Telepathy::Client::PendingOperation *)));
 }
 
 void Connection::Private::introspectSelfHandle()
@@ -427,17 +442,6 @@ void Connection::Private::updatePendingOperations()
             pendingOperations.removeOne(operation);
         }
     }
-}
-
-void Connection::Private::changeSelfPresence(const Telepathy::SimplePresence &presence)
-{
-    if (presence.type == selfPresence.type &&
-        presence.status == selfPresence.status &&
-        presence.statusMessage == selfPresence.statusMessage) {
-        return;
-    }
-    selfPresence = presence;
-    parent->emit selfPresenceChanged(presence);
 }
 
 Connection::PendingConnect::PendingConnect(Connection *parent, Connection::Features features)
@@ -639,15 +643,15 @@ uint Connection::selfHandle() const
  */
 SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
 {
-    if (mPriv->missingFeatures & FeatureSelfPresence) {
+    if (mPriv->missingFeatures & FeatureSimplePresence) {
         warning() << "Trying to retrieve simple presence from connection, but "
                      "simple presence is not supported";
     }
-    else if (!(mPriv->features & FeatureSelfPresence)) {
+    else if (!(mPriv->features & FeatureSimplePresence)) {
         warning() << "Trying to retrieve simple presence from connection without "
-                     "calling Connection::becomeReady(FeatureSelfPresence)";
+                     "calling Connection::becomeReady(FeatureSimplePresence)";
     }
-    else if (mPriv->pendingFeatures & FeatureSelfPresence) {
+    else if (mPriv->pendingFeatures & FeatureSimplePresence) {
         warning() << "Trying to retrieve simple presence from connection, but "
                      "simple presence is still being retrieved";
     }
@@ -683,40 +687,15 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
             simplePresenceInterface()->SetPresence(status, statusMessage));
 }
 
-/**
- * Get the self presence status.
- *
- * Note that in order for this method to work properly,
- * Connection::becomeReady(FeatureSelfPresence) needs to be called, otherwise
- * ConnectionPresenceTypeUnknown will be returned.
- *
- * When Connection::becomeReady(FeatureSelfPresence) is called, if the
- * connection is not yet in the status StatusConnected, the presence will
- * automatically change to ConnectionPresenceTypeOffline and if the connection
- * is already connected it will be set to ConnectionPresenceTypeAvailable.
- * The status will then be correctly signalled with selfStatusChanged signal.
- *
- * \param status The desired status.
- * \param statusMessage The desired status message.
- * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
- */
-Telepathy::SimplePresence Connection::selfPresence() const
+QSharedPointer<Contact> Connection::selfContact() const
 {
-    if (mPriv->missingFeatures & FeatureSelfPresence) {
-        warning() << "Trying to retrieve self simple presence from connection, but "
-                     "simple presence is not supported";
+    if (!isReady()) {
+        warning() << "Connection::selfContact() used before the connection is ready!";
     }
-    else if (!(mPriv->features & FeatureSelfPresence)) {
-        warning() << "Trying to retrieve self simple presence from connection without "
-                     "calling Connection::becomeReady(FeatureSelfPresence)";
-    }
-    else if (mPriv->pendingFeatures & FeatureSelfPresence) {
-        warning() << "Trying to retrieve self simple presence from connection, but "
-                     "simple presence is still being retrieved";
-    }
+    // FIXME: add checks for the SelfContact feature having been requested when Connection features
+    // actually work sensibly and selfContact is made a feature
 
-    return mPriv->selfPresence;
+    return mPriv->selfContact;
 }
 
 /**
@@ -946,6 +925,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
     }
 
     mPriv->introspectQueue.enqueue(&Private::introspectMain);
+
     continueIntrospection();
 
     watcher->deleteLater();
@@ -956,14 +936,19 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QStringList> reply = *watcher;
 
     if (!reply.isError()) {
-        debug() << "Connection basic functionality is ready";
-        mPriv->ready = true;
         debug() << "Got reply to GetInterfaces():" << mPriv->interfaces;
         mPriv->interfaces = reply.value();
 
-        // if FeatureSelfPresence was requested and the interface exists and
+        if (mPriv->pendingStatus == ConnectionStatusConnected) {
+            mPriv->introspectQueue.enqueue(&Private::introspectSelfHandle);
+        } else {
+            debug() << "Connection basic functionality is ready";
+            mPriv->ready = true;
+        }
+
+        // if FeatureSimplePresence was requested and the interface exists and
         // the introspect func is not already enqueued, enqueue it.
-        if (mPriv->pendingFeatures & FeatureSelfPresence &&
+        if (mPriv->pendingFeatures & FeatureSimplePresence &&
             mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE) &&
             !mPriv->introspectQueue.contains(&Private::introspectSimplePresence)) {
             mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
@@ -980,24 +965,22 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
+void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusVariant> reply = *watcher;
 
-    mPriv->pendingFeatures &= ~FeatureSelfPresence;
+    // This is junk, but need to do this to make ContactManager behave - ideally, the self contact
+    // wouldn't be core, but CAI would, so isReady(<nothing but core>) should return true already
+    // at this point, and ContactManager should be happy
+    debug() << "Connection basic functionality is ready (Got CAI)";
+    mPriv->ready = true;
 
     if (!reply.isError()) {
-        mPriv->features |= FeatureSelfPresence;
-        debug() << "Adding FeatureSelfPresence to features";
-
-        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
-        debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
-    }
-    else {
-        mPriv->missingFeatures |= FeatureSelfPresence;
-        debug() << "Adding FeatureSelfPresence to missing features";
-
-        warning().nospace() << "Getting simple presence statuses failed with " <<
+        mPriv->contactAttributeInterfaces = qdbus_cast<QStringList>(reply.value().variant());
+        debug() << "Got" << mPriv->contactAttributeInterfaces.size() << "contact attribute interfaces";
+        mPriv->introspectQueue.enqueue(&Private::introspectSelfContact);
+    } else {
+        warning().nospace() << "Getting contact attribute interfaces failed with " <<
             reply.error().name() << ":" << reply.error().message();
     }
 
@@ -1006,16 +989,46 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-void Connection::gotSelfPresence(QDBusPendingCallWatcher *watcher)
+void Connection::gotSelfContact(PendingOperation *op)
 {
-    QDBusPendingReply<Telepathy::SimpleContactPresences> reply = *watcher;
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+
+    debug() << "Connection basic functionality is ready (Got SelfContact)";
+    mPriv->ready = true;
+
+    if (pending->isValid()) {
+        Q_ASSERT(pending->contacts().size() == 1);
+        QSharedPointer<Contact> contact = pending->contacts()[0];
+        if (mPriv->selfContact != contact) {
+            mPriv->selfContact = contact;
+            emit selfContactChanged();
+        }
+    } else {
+        warning().nospace() << "Getting self contact failed with " <<
+            pending->errorName() << ":" << pending->errorMessage();
+    }
+
+    continueIntrospection();
+}
+
+void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QDBusVariant> reply = *watcher;
+
+    mPriv->pendingFeatures &= ~FeatureSimplePresence;
 
     if (!reply.isError()) {
-        mPriv->changeSelfPresence(reply.value()[mPriv->selfHandle]);
-        debug() << "Got self presence:" << mPriv->selfPresence.type;
+        mPriv->features |= FeatureSimplePresence;
+        debug() << "Adding FeatureSimplePresence to features";
+
+        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
+        debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
     }
     else {
-        warning().nospace() << "Getting self presence status failed with " <<
+        mPriv->missingFeatures |= FeatureSimplePresence;
+        debug() << "Adding FeatureSimplePresence to missing features";
+
+        warning().nospace() << "Getting simple presence statuses failed with " <<
             reply.error().name() << ":" << reply.error().message();
     }
 
@@ -1031,10 +1044,16 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
     if (!reply.isError()) {
         mPriv->selfHandle = reply.value();
         debug() << "Got self handle" << mPriv->selfHandle;
-    }
-    else {
+    } else {
         warning().nospace() << "Getting self handle failed with " <<
             reply.error().name() << ":" << reply.error().message();
+    }
+
+    if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        mPriv->introspectQueue.enqueue(&Private::introspectContacts);
+    } else {
+        debug() << "Connection basic functionality is ready (Don't have Contacts)";
+        mPriv->ready = true;
     }
 
     continueIntrospection();
@@ -1318,52 +1337,32 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
         }
     }
 
-    if (requestedFeatures & FeatureSelfPresence) {
+    if (requestedFeatures & FeatureSimplePresence) {
         // as the feature is optional, if it's know to not be supported,
         // just finish silently
-        if (requestedFeatures == FeatureSelfPresence &&
-            mPriv->missingFeatures & FeatureSelfPresence) {
+        if (requestedFeatures == FeatureSimplePresence &&
+            mPriv->missingFeatures & FeatureSimplePresence) {
             return new PendingSuccess(this);
         }
 
         // if we already have the interface simple presence enqueue the call to
         // introspect simple presence, otherwise it will be enqueued when/if the
         // interface is available
-        if (!(mPriv->features & FeatureSelfPresence) &&
-            !(mPriv->pendingFeatures & FeatureSelfPresence) &&
-            !(mPriv->missingFeatures & FeatureSelfPresence) &&
+        if (!(mPriv->features & FeatureSimplePresence) &&
+            !(mPriv->pendingFeatures & FeatureSimplePresence) &&
+            !(mPriv->missingFeatures & FeatureSimplePresence) &&
             mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
             mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
 
-            // we are already connected, so we at least enqueued the call to
-            // getSelfHandle and we can enqueue the call to getSelfPresence
-            if (mPriv->readiness == Private::ReadinessFull) {
-                // we stiff don't have our own presence but we are online
-                // so set selfPresence to available
-                SimplePresence presence = { Telepathy::ConnectionPresenceTypeAvailable, };
-                mPriv->changeSelfPresence(presence);
-                mPriv->introspectQueue.enqueue(&Private::introspectSelfPresence);
-            }
-            else {
-                // we still don't have our own presence but as the user
-                // requested for FeatureSelfPresence, change our presence to
-                // offline
-                SimplePresence presence = { Telepathy::ConnectionPresenceTypeOffline, QLatin1String("offline"), };
-                mPriv->changeSelfPresence(presence);
-            }
-
+            // FIXME: Is not particularly good... this might introspect something completely
+            // unrelated (the head of the queue) at the wrong time
             QTimer::singleShot(0, this, SLOT(continueIntrospection()));
-        }
-        else {
+        } else {
             if (mPriv->readiness == Private::ReadinessFull) {
                 // we don't support simple presence but we are online, so
-                // set selfPresence to available as we are connected
-                SimplePresence presence = { Telepathy::ConnectionPresenceTypeAvailable, QLatin1String("available"), };
-                mPriv->changeSelfPresence(presence);
-
                 // we should have all interfaces now, so if simple presence is not
                 // present, add it to missing features.
-                mPriv->missingFeatures |= FeatureSelfPresence;
+                mPriv->missingFeatures |= FeatureSimplePresence;
             }
         }
     }
@@ -1447,12 +1446,12 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
         warning() << "Connection::getContactAttributes() used when not ready";
         pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE, "The connection isn't ready");
         return pending;
-    } else if (status() != StatusConnected) {
+    } /* FIXME: readd this check when Connection isn't FSCKING broken anymore: else if (status() != StatusConnected) {
         warning() << "Connection::getContactAttributes() used with status" << status() << "!= StatusConnected";
         pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE,
                 "The connection isn't Connected");
         return pending;
-    } else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+    } */else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
         warning() << "Connection::getContactAttributes() used without the remote object supporting"
                   << "the Contacts interface";
         pending->failImmediately(TELEPATHY_ERROR_NOT_IMPLEMENTED,
@@ -1474,6 +1473,21 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
     pending->connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                               SLOT(onCallFinished(QDBusPendingCallWatcher*)));
     return pending;
+}
+
+QStringList Connection::contactAttributeInterfaces() const
+{
+    if (!isReady()) {
+        warning() << "Connection::contactAttributeInterfaces() used when not ready";
+    } else if (status() != StatusConnected) {
+        warning() << "Connection::contactAttributeInterfaces() used with status"
+            << status() << "!= StatusConnected";
+    } else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        warning() << "Connection::contactAttributeInterfaces() used without the remote object supporting"
+                  << "the Contacts interface";
+    }
+
+    return mPriv->contactAttributeInterfaces;
 }
 
 ContactManager *Connection::contactManager() const
@@ -1576,26 +1590,22 @@ void Connection::continueIntrospection()
                 mPriv->readiness != Private::ReadinessFull) {
                 mPriv->changeReadiness(Private::ReadinessFull);
 
-                mPriv->introspectQueue.enqueue(&Private::introspectSelfHandle);
-
                 // we should have all interfaces now, so if an interface is not
                 // present and we have a feature for it, add the feature to missing
                 // features.
                 if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
-                    debug() << "removing FeatureSelfPresence from pending features";
-                    mPriv->pendingFeatures &= ~FeatureSelfPresence;
-                    debug() << "adding FeatureSelfPresence to missing features";
-                    mPriv->missingFeatures |= FeatureSelfPresence;
+                    debug() << "removing FeatureSimplePresence from pending features";
+                    mPriv->pendingFeatures &= ~FeatureSimplePresence;
+                    debug() << "adding FeatureSimplePresence to missing features";
+                    mPriv->missingFeatures |= FeatureSimplePresence;
                 }
                 else {
-                    // the user requested for FeatureSelfPresence so, now we are
+                    // the user requested for FeatureSimplePresence so, now we are
                     // able to get it
-                    if (mPriv->pendingFeatures == FeatureSelfPresence) {
-                        mPriv->introspectQueue.enqueue(&Private::introspectSelfPresence);
+                    if (mPriv->pendingFeatures == FeatureSimplePresence) {
+                        mPriv->introspectQueue.enqueue(&Private::introspectSimplePresence);
                     }
                 }
-
-                (mPriv->*(mPriv->introspectQueue.dequeue()))();
             }
         }
     }
@@ -1606,17 +1616,18 @@ void Connection::continueIntrospection()
     mPriv->updatePendingOperations();
 }
 
-void Connection::onPresenceChanged(const Telepathy::SimpleContactPresences &presences)
-{
-    if (presences.contains(mPriv->selfHandle)) {
-        mPriv->changeSelfPresence(presences.value(mPriv->selfHandle));
-    }
-}
-
 void Connection::onSelfHandleChanged(uint handle)
 {
     mPriv->selfHandle = handle;
     emit selfHandleChanged(handle);
+
+    // FIXME: not ideal - when SelfContact is a feature, should check
+    // actualFeatures().contains(SelfContact) instead
+    // Also, when we figure out how the Renaming interface should work and how that should map to
+    // Contact objects, this might not need any special handling anymore.
+    if (interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        mPriv->introspectSelfContact();
+    }
 }
 
 }

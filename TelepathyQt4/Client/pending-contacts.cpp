@@ -36,13 +36,20 @@ namespace Client
 
 struct PendingContacts::Private
 {
+    enum RequestType
+    {
+        ForHandles,
+        ForIdentifiers,
+        Upgrade
+    };
+
     Private(ContactManager *manager, const UIntList &handles,
             const QSet<Contact::Feature> &features,
             const QMap<uint, QSharedPointer<Contact> > &satisfyingContacts)
         : manager(manager),
           features(features),
           satisfyingContacts(satisfyingContacts),
-          isForIdentifiers(false),
+          requestType(ForHandles),
           handles(handles),
           nested(0)
     {
@@ -52,21 +59,35 @@ struct PendingContacts::Private
             const QSet<Contact::Feature> &features)
         : manager(manager),
           features(features),
-          isForIdentifiers(true),
+          requestType(ForIdentifiers),
           identifiers(identifiers),
           nested(0)
     {
     }
 
+    Private(ContactManager *manager, const QList<QSharedPointer<Contact> > &contactsToUpgrade,
+            const QSet<Contact::Feature> &features)
+        : manager(manager),
+          features(features),
+          requestType(Upgrade),
+          contactsToUpgrade(contactsToUpgrade),
+          nested(0)
+    {
+    }
+
+    // Generic parameters
     ContactManager *manager;
     QSet<Contact::Feature> features;
     QMap<uint, QSharedPointer<Contact> > satisfyingContacts;
 
-    bool isForIdentifiers;
+    // Request type specific parameters
+    RequestType requestType;
     UIntList handles;
     QStringList identifiers;
+    QList<QSharedPointer<Contact> > contactsToUpgrade;
     PendingContacts *nested;
 
+    // Results
     QList<QSharedPointer<Contact> > contacts;
     UIntList invalidHandles;
 };
@@ -79,7 +100,7 @@ PendingContacts::~PendingContacts()
     delete mPriv;
 }
 
-ContactManager *PendingContacts::contactManager() const
+ContactManager *PendingContacts::manager() const
 {
     return mPriv->manager;
 }
@@ -91,13 +112,13 @@ QSet<Contact::Feature> PendingContacts::features() const
 
 bool PendingContacts::isForHandles() const
 {
-    return !isForIdentifiers();
+    return mPriv->requestType == Private::ForHandles;
 }
 
 UIntList PendingContacts::handles() const
 {
     if (!isForHandles()) {
-        warning() << "Tried to get handles from" << this << "which is for identifiers!";
+        warning() << "Tried to get handles from" << this << "which is not for handles!";
     }
 
     return mPriv->handles;
@@ -105,16 +126,30 @@ UIntList PendingContacts::handles() const
 
 bool PendingContacts::isForIdentifiers() const
 {
-    return mPriv->isForIdentifiers;
+    return mPriv->requestType == Private::ForIdentifiers;
 }
 
 QStringList PendingContacts::identifiers() const
 {
     if (!isForIdentifiers()) {
-        warning() << "Tried to get identifiers from" << this << "which is for handles!";
+        warning() << "Tried to get identifiers from" << this << "which is not for identifiers!";
     }
 
     return mPriv->identifiers;
+}
+
+QList<QSharedPointer<Contact> > PendingContacts::contactsToUpgrade() const
+{
+    if (!isUpgrade()) {
+        warning() << "Tried to get contacts to upgrade from" << this << "which is not an upgrade!";
+    }
+
+    return mPriv->contactsToUpgrade;
+}
+
+bool PendingContacts::isUpgrade() const
+{
+    return mPriv->requestType == Private::Upgrade;
 }
 
 QList<QSharedPointer<Contact> > PendingContacts::contacts() const
@@ -159,16 +194,19 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
     ContactAttributesMap attributes = pendingAttributes->attributes();
 
     debug() << " Success:" << validHandles.size() << "valid and"
-                           << mPriv->invalidHandles.size() << "invalid handles";
+                           << pendingAttributes->invalidHandles().size() << "invalid handles";
 
     foreach (uint handle, mPriv->handles) {
-        int indexInValid = validHandles.indexOf(handle);
-        if (indexInValid >= 0) {
-            ReferencedHandles referenced = validHandles.mid(indexInValid, 1);
-            mPriv->satisfyingContacts.insert(handle, QSharedPointer<Contact>(new Contact(
-                            mPriv->manager, referenced, attributes[handle])));
-        } else if (!mPriv->satisfyingContacts.contains(handle)) {
-            mPriv->invalidHandles.push_back(handle);
+        if (!mPriv->satisfyingContacts.contains(handle)) {
+            int indexInValid = validHandles.indexOf(handle);
+            if (indexInValid >= 0) {
+                ReferencedHandles referencedHandle = validHandles.mid(indexInValid, 1);
+                QVariantMap handleAttributes = attributes[handle];
+                mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
+                            features(), handleAttributes));
+            } else {
+                mPriv->invalidHandles.push_back(handle);
+            }
         }
     }
 
@@ -190,7 +228,7 @@ void PendingContacts::onHandlesFinished(PendingOperation *operation)
 
     debug() << " Success - doing nested contact query";
 
-    mPriv->nested = contactManager()->contactsForHandles(pendingHandles->handles(), features());
+    mPriv->nested = manager()->contactsForHandles(pendingHandles->handles(), features());
     connect(mPriv->nested,
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(onNestedFinished(Telepathy::Client::PendingOperation*)));
@@ -226,6 +264,21 @@ PendingContacts::PendingContacts(ContactManager *manager,
         const QStringList &identifiers, const QSet<Contact::Feature> &features)
     : PendingOperation(manager), mPriv(new Private(manager, identifiers, features))
 {
+}
+
+PendingContacts::PendingContacts(ContactManager *manager,
+        const QList<QSharedPointer<Contact> > &contacts, const QSet<Contact::Feature> &features)
+    : PendingOperation(manager), mPriv(new Private(manager, contacts, features))
+{
+    UIntList handles;
+    foreach (QSharedPointer<Contact> contact, contacts) {
+        handles.push_back(contact->handle()[0]);
+    }
+
+    mPriv->nested = manager->contactsForHandles(handles, features);
+    connect(mPriv->nested,
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onNestedFinished(Telepathy::Client::PendingOperation*)));
 }
 
 void PendingContacts::allAttributesFetched()
