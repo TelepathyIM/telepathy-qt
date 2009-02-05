@@ -631,7 +631,7 @@ PendingReadyAccount *Account::becomeReady(Features requestedFeatures)
 
     debug() << "calling becomeReady with requested features:"
             << requestedFeatures;
-    Q_FOREACH (PendingReadyAccount *operation, mPriv->pendingOperations) {
+    foreach (PendingReadyAccount *operation, mPriv->pendingOperations) {
         if (operation->features() == requestedFeatures) {
             debug() << "returning cached pending operation";
             return operation;
@@ -811,37 +811,37 @@ void Account::updateProperties(const QVariantMap &props)
     if (props.contains("DisplayName") &&
         mPriv->displayName != qdbus_cast<QString>(props["DisplayName"])) {
         mPriv->displayName = qdbus_cast<QString>(props["DisplayName"]);
-        Q_EMIT displayNameChanged(mPriv->displayName);
+        emit displayNameChanged(mPriv->displayName);
     }
 
     if (props.contains("Icon") &&
         mPriv->icon != qdbus_cast<QString>(props["Icon"])) {
         mPriv->icon = qdbus_cast<QString>(props["Icon"]);
-        Q_EMIT iconChanged(mPriv->icon);
+        emit iconChanged(mPriv->icon);
     }
 
     if (props.contains("Nickname") &&
         mPriv->nickname != qdbus_cast<QString>(props["Nickname"])) {
         mPriv->nickname = qdbus_cast<QString>(props["Nickname"]);
-        Q_EMIT nicknameChanged(mPriv->icon);
+        emit nicknameChanged(mPriv->icon);
     }
 
     if (props.contains("NormalizedName") &&
         mPriv->normalizedName != qdbus_cast<QString>(props["NormalizedName"])) {
         mPriv->normalizedName = qdbus_cast<QString>(props["NormalizedName"]);
-        Q_EMIT normalizedNameChanged(mPriv->normalizedName);
+        emit normalizedNameChanged(mPriv->normalizedName);
     }
 
     if (props.contains("Valid") &&
         mPriv->valid != qdbus_cast<bool>(props["Valid"])) {
         mPriv->valid = qdbus_cast<bool>(props["Valid"]);
-        Q_EMIT validityChanged(mPriv->valid);
+        emit validityChanged(mPriv->valid);
     }
 
     if (props.contains("Enabled") &&
         mPriv->enabled != qdbus_cast<bool>(props["Enabled"])) {
         mPriv->enabled = qdbus_cast<bool>(props["Enabled"]);
-        Q_EMIT stateChanged(mPriv->enabled);
+        emit stateChanged(mPriv->enabled);
     }
 
     if (props.contains("ConnectAutomatically") &&
@@ -849,13 +849,13 @@ void Account::updateProperties(const QVariantMap &props)
                 qdbus_cast<bool>(props["ConnectAutomatically"])) {
         mPriv->connectsAutomatically =
                 qdbus_cast<bool>(props["ConnectAutomatically"]);
-        Q_EMIT connectsAutomaticallyPropertyChanged(mPriv->connectsAutomatically);
+        emit connectsAutomaticallyPropertyChanged(mPriv->connectsAutomatically);
     }
 
     if (props.contains("Parameters") &&
         mPriv->parameters != qdbus_cast<QVariantMap>(props["Parameters"])) {
         mPriv->parameters = qdbus_cast<QVariantMap>(props["Parameters"]);
-        Q_EMIT parametersChanged(mPriv->parameters);
+        emit parametersChanged(mPriv->parameters);
     }
 
     if (props.contains("AutomaticPresence") &&
@@ -863,7 +863,7 @@ void Account::updateProperties(const QVariantMap &props)
                 props["AutomaticPresence"])) {
         mPriv->automaticPresence = qdbus_cast<Telepathy::SimplePresence>(
                 props["AutomaticPresence"]);
-        Q_EMIT automaticPresenceChanged(mPriv->automaticPresence);
+        emit automaticPresenceChanged(mPriv->automaticPresence);
     }
 
     if (props.contains("CurrentPresence") &&
@@ -871,7 +871,7 @@ void Account::updateProperties(const QVariantMap &props)
                 props["CurrentPresence"])) {
         mPriv->currentPresence = qdbus_cast<Telepathy::SimplePresence>(
                 props["CurrentPresence"]);
-        Q_EMIT presenceChanged(mPriv->currentPresence);
+        emit presenceChanged(mPriv->currentPresence);
     }
 
     if (props.contains("RequestedPresence") &&
@@ -879,7 +879,7 @@ void Account::updateProperties(const QVariantMap &props)
                 props["RequestedPresence"])) {
         mPriv->requestedPresence = qdbus_cast<Telepathy::SimplePresence>(
                 props["RequestedPresence"]);
-        Q_EMIT requestedPresenceChanged(mPriv->requestedPresence);
+        emit requestedPresenceChanged(mPriv->requestedPresence);
     }
 
     if (props.contains("Connection")) {
@@ -915,7 +915,7 @@ void Account::updateProperties(const QVariantMap &props)
         }
 
         if (changed) {
-            Q_EMIT connectionStatusChanged(
+            emit connectionStatusChanged(
                     mPriv->connectionStatus, mPriv->connectionStatusReason);
         }
     }
@@ -964,7 +964,7 @@ void Account::onGetAvatarReturn(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to GetAvatar(Account)";
         mPriv->avatar = qdbus_cast<Telepathy::Avatar>(reply);
 
-        Q_EMIT avatarChanged(mPriv->avatar);
+        emit avatarChanged(mPriv->avatar);
     } else {
         // add it to missing features so we don't try to retrieve the avatar
         // again
@@ -990,7 +990,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
 {
     bool error = operation->isError();
     if (!error) {
-        Q_FOREACH (ProtocolInfo *info, mPriv->cm->protocols()) {
+        foreach (ProtocolInfo *info, mPriv->cm->protocols()) {
             if (info->name() == mPriv->protocol) {
                 mPriv->protocolInfo = info;
                 break;
@@ -1010,7 +1010,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
 
         // signal all pending operations that cares about protocol info that
         // it failed, as FeatureProtocolInfo is mandatory
-        Q_FOREACH (PendingReadyAccount *operation, mPriv->pendingOperations) {
+        foreach (PendingReadyAccount *operation, mPriv->pendingOperations) {
             if (operation->features() & FeatureProtocolInfo) {
                 operation->setFinishedWithError(operation->errorName(),
                         operation->errorMessage());
@@ -1040,7 +1040,7 @@ void Account::onRemoved()
 void Account::continueIntrospection()
 {
     if (mPriv->introspectQueue.isEmpty()) {
-        Q_FOREACH (PendingReadyAccount *operation, mPriv->pendingOperations) {
+        foreach (PendingReadyAccount *operation, mPriv->pendingOperations) {
             if (mPriv->ready &&
                 ((operation->features() &
                     (mPriv->features | mPriv->missingFeatures)) == operation->features())) {
