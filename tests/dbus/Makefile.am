@@ -39,6 +39,7 @@ if ENABLE_TP_GLIB_TESTS
 # to use the GLib main loop
 TESTS += \
     test-chan-basics \
+    test-chan-group \
     test-cm-basics \
     test-conn-basics \
     test-conn-requests \
@@ -48,6 +49,7 @@ TESTS += \
 
 BUILT_SOURCES += \
     _gen/chan-basics.cpp.moc.hpp \
+    _gen/chan-group.cpp.moc.hpp \
     _gen/cm-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
     _gen/conn-requests.cpp.moc.hpp \
@@ -59,6 +61,9 @@ MOC_INCLUDES += $(TP_GLIB_CFLAGS)
 
 test_chan_basics_SOURCES = chan-basics.cpp
 test_chan_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
+
+test_chan_group_SOURCES = chan-group.cpp
+test_chan_group_LDADD = $(LDADD) $(top_builddir)/tests/lib/csh/libtp-glib-csh-tests.la
 
 test_cm_basics_SOURCES = cm-basics.cpp
 test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
