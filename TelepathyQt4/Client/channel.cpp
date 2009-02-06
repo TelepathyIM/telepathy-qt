@@ -493,6 +493,14 @@ void Channel::Private::processMembersChanged()
         if (!groupContacts.contains(handle)) {
             pendingGroupMembers.insert(handle);
         }
+
+        // the member was added to current members, check if it was in the
+        // local/pending lists and if true, schedule for removal from that list
+        if (groupLocalPendingContacts.contains(handle)) {
+            groupLocalPendingMembersToRemove.append(handle);
+        } else if(groupRemotePendingContacts.contains(handle)) {
+            groupRemotePendingMembersToRemove.append(handle);
+        }
     }
 
     foreach (uint handle, currentGroupMembersChangedInfo->localPending) {
@@ -508,15 +516,7 @@ void Channel::Private::processMembersChanged()
     }
 
     foreach (uint handle, currentGroupMembersChangedInfo->removed) {
-        // just remove contacts that are known, if the handle was removed but we
-        // don't have a contact object for it, ignore
-        if (groupContacts.contains(handle)) {
-            groupMembersToRemove.append(handle);
-        } else if (groupLocalPendingContacts.contains(handle)) {
-            groupLocalPendingMembersToRemove.append(handle);
-        } else if (groupRemotePendingContacts.contains(handle)) {
-            groupRemotePendingMembersToRemove.append(handle);
-        }
+        groupMembersToRemove.append(handle);
     }
 
     if (pendingGroupMembers.isEmpty() &&
@@ -526,20 +526,29 @@ void Channel::Private::processMembersChanged()
         // no member added, just remove the members to be removed and signal
         // membersChanged
         QList<QSharedPointer<Contact> > groupContactsRemoved;
+        QSharedPointer<Contact> contactToRemove;
         foreach (uint handle, groupMembersToRemove) {
-            groupContactsRemoved.append(groupContacts[handle]);
-            groupContacts.remove(handle);
+            if (groupContacts.contains(handle)) {
+                contactToRemove = groupContacts[handle];
+                groupContacts.remove(handle);
+            } else if (groupLocalPendingContacts.contains(handle)) {
+                contactToRemove = groupLocalPendingContacts[handle];
+                groupLocalPendingContacts.remove(handle);
+            } else if (groupRemotePendingContacts.contains(handle)) {
+                contactToRemove = groupRemotePendingContacts[handle];
+                groupRemotePendingContacts.remove(handle);
+            }
+
+            if (contactToRemove) {
+                groupContactsRemoved.append(contactToRemove);
+            }
         }
 
-        QList<QSharedPointer<Contact> > groupLocalPendingContactsRemoved;
         foreach (uint handle, groupLocalPendingMembersToRemove) {
-            groupLocalPendingContactsRemoved.append(groupLocalPendingContacts[handle]);
             groupLocalPendingContacts.remove(handle);
         }
 
-        QList<QSharedPointer<Contact> > groupRemotePendingContactsRemoved;
         foreach (uint handle, groupRemotePendingMembersToRemove) {
-            groupRemotePendingContactsRemoved.append(groupRemotePendingContacts[handle]);
             groupRemotePendingContacts.remove(handle);
         }
 
@@ -550,11 +559,9 @@ void Channel::Private::processMembersChanged()
         // TODO represent actor as a contact object also
         emit parent->groupMembersChanged(
                 QList<QSharedPointer<Contact> >(), // current added
-                groupContactsRemoved,
                 QList<QSharedPointer<Contact> >(), // local pending added
-                groupLocalPendingContactsRemoved,
                 QList<QSharedPointer<Contact> >(), // local pending removed
-                groupRemotePendingContactsRemoved,
+                groupContactsRemoved,
                 currentGroupMembersChangedInfo->actor,
                 currentGroupMembersChangedInfo->reason,
                 currentGroupMembersChangedInfo->message);
@@ -1568,26 +1575,35 @@ void Channel::gotContacts(PendingOperation *op)
     if (mPriv->buildingInitialContacts) {
         mPriv->buildingInitialContacts = false;
         // if we were building the initial contacts from handles and the
-        // introspect queue is empty it means we ready now, so signal it
+        // introspect queue is empty it means we are ready now, so signal it
         if (mPriv->introspectQueue.isEmpty()) {
             mPriv->setReady();
         }
     } else {
         QList<QSharedPointer<Contact> > groupContactsRemoved;
+        QSharedPointer<Contact> contactToRemove;
         foreach (uint handle, mPriv->groupMembersToRemove) {
-            groupContactsRemoved.append(mPriv->groupContacts[handle]);
-            mPriv->groupContacts.remove(handle);
+            if (mPriv->groupContacts.contains(handle)) {
+                contactToRemove = mPriv->groupContacts[handle];
+                mPriv->groupContacts.remove(handle);
+            } else if (mPriv->groupLocalPendingContacts.contains(handle)) {
+                contactToRemove = mPriv->groupLocalPendingContacts[handle];
+                mPriv->groupLocalPendingContacts.remove(handle);
+            } else if (mPriv->groupRemotePendingContacts.contains(handle)) {
+                contactToRemove = mPriv->groupRemotePendingContacts[handle];
+                mPriv->groupRemotePendingContacts.remove(handle);
+            }
+
+            if (contactToRemove) {
+                groupContactsRemoved.append(contactToRemove);
+            }
         }
 
-        QList<QSharedPointer<Contact> > groupLocalPendingContactsRemoved;
         foreach (uint handle, mPriv->groupLocalPendingMembersToRemove) {
-            groupLocalPendingContactsRemoved.append(mPriv->groupLocalPendingContacts[handle]);
             mPriv->groupLocalPendingContacts.remove(handle);
         }
 
-        QList<QSharedPointer<Contact> > groupRemotePendingContactsRemoved;
         foreach (uint handle, mPriv->groupRemotePendingMembersToRemove) {
-            groupRemotePendingContactsRemoved.append(mPriv->groupRemotePendingContacts[handle]);
             mPriv->groupRemotePendingContacts.remove(handle);
         }
 
@@ -1598,11 +1614,9 @@ void Channel::gotContacts(PendingOperation *op)
         // TODO represent actor as a contact object also
         emit groupMembersChanged(
                 groupContactsAdded,
-                groupContactsRemoved,
                 groupLocalPendingContactsAdded,
-                groupLocalPendingContactsRemoved,
                 groupRemotePendingContactsAdded,
-                groupRemotePendingContactsRemoved,
+                groupContactsRemoved,
                 mPriv->currentGroupMembersChangedInfo->actor,
                 mPriv->currentGroupMembersChangedInfo->reason,
                 mPriv->currentGroupMembersChangedInfo->message);

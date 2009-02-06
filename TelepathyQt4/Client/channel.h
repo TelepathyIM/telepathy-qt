@@ -127,11 +127,9 @@ Q_SIGNALS:
 
     void groupMembersChanged(
             const QList<QSharedPointer<Contact> > &groupMembersAdded,
-            const QList<QSharedPointer<Contact> > &groupMembersRemoved,
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved,
-            const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-            const QList<QSharedPointer<Contact> > &groupRemotePendingMembersRemoved,
+            const QList<QSharedPointer<Contact> > &groupMembersRemoved,
             uint actor, uint reason, const QString &message);
 
     void groupHandleOwnersChanged(const HandleOwnerMap &owners,
