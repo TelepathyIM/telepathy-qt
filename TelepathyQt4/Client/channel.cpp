@@ -559,6 +559,10 @@ void Channel::Private::processMembersChanged()
                 currentGroupMembersChangedInfo->reason,
                 currentGroupMembersChangedInfo->message);
         delete currentGroupMembersChangedInfo;
+
+        // TODO should processMembersChanged be a slot and fired with singleShot
+        //      so we avoid blocking here
+        processMembersChanged();
     } else {
         buildContacts();
     }
