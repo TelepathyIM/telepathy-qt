@@ -24,7 +24,7 @@
 
 G_DEFINE_TYPE (ExampleCSHConnection,
     example_csh_connection,
-    TP_TYPE_BASE_CONNECTION)
+    CONTACTS_TYPE_CONNECTION)
 
 /* type definition stuff */
 
@@ -247,6 +247,11 @@ example_csh_connection_class_init (ExampleCSHConnectionClass *klass)
 {
   static const gchar *interfaces_always_present[] = {
       TP_IFACE_CONNECTION_INTERFACE_REQUESTS,
+      TP_IFACE_CONNECTION_INTERFACE_ALIASING,
+      TP_IFACE_CONNECTION_INTERFACE_AVATARS,
+      TP_IFACE_CONNECTION_INTERFACE_CONTACTS,
+      TP_IFACE_CONNECTION_INTERFACE_PRESENCE,
+      TP_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
       NULL };
   TpBaseConnectionClass *base_class =
       (TpBaseConnectionClass *) klass;

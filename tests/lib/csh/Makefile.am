@@ -17,6 +17,7 @@ libtp_glib_csh_tests_la_SOURCES = \
     room-manager.h
 
 libtp_glib_csh_tests_la_LIBADD = \
-    $(TP_GLIB_LIBS)
+    $(TP_GLIB_LIBS) \
+    $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 endif
