@@ -1746,6 +1746,12 @@ void Channel::onMembersChanged(const QString &message,
         return;
     }
 
+    if (added.isEmpty() && removed.isEmpty() &&
+        localPending.isEmpty() && remotePending.isEmpty()) {
+        debug() << "Nothing really changed, so skipping membersChanged";
+        return;
+    }
+
     mPriv->groupMembersChangedQueue.enqueue(
             new Private::GroupMembersChangedInfo(message, added, removed,
                 localPending, remotePending, actor, reason));
