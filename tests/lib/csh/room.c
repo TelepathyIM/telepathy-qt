@@ -58,6 +58,8 @@ struct _ExampleCSHRoomChannelPrivate
   gchar *object_path;
   TpHandle handle;
   TpHandle initiator;
+  TpIntSet *remote;
+  guint accept_invitations_timeout;
 
   /* These are really booleans, but gboolean is signed. Thanks, GLib */
   unsigned closed:1;
@@ -208,6 +210,13 @@ complete_join (ExampleCSHRoomChannel *self)
       0);
 }
 
+static void
+accept_invitations (ExampleCSHRoomChannel *self)
+{
+  tp_group_mixin_change_members ((GObject *) self, "", self->priv->remote, NULL, NULL,
+      self->priv->remote, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  tp_intset_clear(self->priv->remote);
+}
 
 static void
 join_room (ExampleCSHRoomChannel *self)
@@ -286,6 +295,8 @@ constructor (GType type,
       TP_CHANNEL_GROUP_FLAG_CHANNEL_SPECIFIC_HANDLES |
       TP_CHANNEL_GROUP_FLAG_PROPERTIES,
       0);
+
+  self->priv->remote = tp_intset_new ();
 
   /* Immediately attempt to join the group */
   join_room (self);
@@ -420,6 +431,11 @@ dispose (GObject *object)
 
   self->priv->disposed = TRUE;
 
+  if (self->priv->accept_invitations_timeout)
+    g_source_remove (self->priv->accept_invitations_timeout);
+
+  tp_intset_destroy (self->priv->remote);
+
   if (!self->priv->closed)
     {
       self->priv->closed = TRUE;
@@ -449,7 +465,6 @@ finalize (GObject *object)
   ((GObjectClass *) example_csh_room_channel_parent_class)->finalize (object);
 }
 
-
 static gboolean
 add_member (GObject *object,
             TpHandle handle,
@@ -457,11 +472,25 @@ add_member (GObject *object,
             GError **error)
 {
   /* In a real implementation, if handle was mixin->self_handle we'd accept
-   * an invitation here; otherwise we'd invite the given contact.
-   * Here, we do nothing for now. */
+   * an invitation here; otherwise we'd invite the given contact. */
+  ExampleCSHRoomChannel *self = EXAMPLE_CSH_ROOM_CHANNEL (object);
+
+  /* we know that anon_local is channel-specific, but not whose it is,
+   * hence 0 */
+  tp_group_mixin_add_handle_owner (object, handle, 0);
+
+  /* everyone in! */
+  tp_intset_add (self->priv->remote, handle);
+
+  tp_group_mixin_change_members (object, message, NULL, NULL, NULL,
+      self->priv->remote, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+
+  // accept invitation after 500ms
+  self->priv->accept_invitations_timeout =
+      g_timeout_add (500, (GSourceFunc) accept_invitations, self);
+
   return TRUE;
 }
-
 
 static void
 example_csh_room_channel_class_init (ExampleCSHRoomChannelClass *klass)
