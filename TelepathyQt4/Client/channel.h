@@ -82,6 +82,13 @@ public:
 public:
     uint groupFlags() const;
 
+    bool groupCanAddContacts() const;
+    PendingOperation *groupAddContacts(const QList<QSharedPointer<Contact> > &contacts,
+            const QString &message);
+    bool groupCanRemoveContacts() const;
+    PendingOperation *groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
+            const QString &message);
+
     QList<QSharedPointer<Contact> > groupContacts() const;
     QList<QSharedPointer<Contact> > groupLocalPendingContacts() const;
     QList<QSharedPointer<Contact> > groupRemotePendingContacts() const;
