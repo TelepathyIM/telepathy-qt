@@ -7,7 +7,9 @@
 
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/PendingChannel>
+#include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/ReferencedHandles>
 #include <TelepathyQt4/Debug>
@@ -31,8 +33,11 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint, uint);
     void expectConnInvalidated();
-    void expectPendingHandlesFinished(Telepathy::Client::PendingOperation*);
+    void expectPendingRoomHandlesFinished(Telepathy::Client::PendingOperation*);
+    void expectPendingContactHandlesFinished(Telepathy::Client::PendingOperation*);
     void expectCreateChannelFinished(Telepathy::Client::PendingOperation *);
+    void expectPendingContactsFinished(Telepathy::Client::PendingOperation *);
+    void onChannelGroupFlagsChanged(uint, uint, uint);
     void onGroupMembersChanged(
             const QList<QSharedPointer<Contact> > &groupMembersAdded,
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
@@ -58,7 +63,9 @@ private:
     Connection *mConn;
     Channel *mChan;
     QString mChanObjectPath;
-    ReferencedHandles mHandles;
+    ReferencedHandles mRoomHandles;
+    ReferencedHandles mContactHandles;
+    QList<QSharedPointer<Contact> > mContacts;
 };
 
 void TestChanGroup::expectConnReady(uint newStatus, uint newStatusReason)
@@ -89,7 +96,7 @@ void TestChanGroup::expectConnInvalidated()
     mLoop->exit(0);
 }
 
-void TestChanGroup::expectPendingHandlesFinished(PendingOperation *op)
+void TestChanGroup::expectPendingRoomHandlesFinished(PendingOperation *op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -112,7 +119,34 @@ void TestChanGroup::expectPendingHandlesFinished(PendingOperation *op)
 
     qDebug() << "finished";
     PendingHandles *pending = qobject_cast<PendingHandles*>(op);
-    mHandles = pending->handles();
+    mRoomHandles = pending->handles();
+    mLoop->exit(0);
+}
+
+void TestChanGroup::expectPendingContactHandlesFinished(PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    qDebug() << "finished";
+    PendingHandles *pending = qobject_cast<PendingHandles*>(op);
+    mContactHandles = pending->handles();
     mLoop->exit(0);
 }
 
@@ -143,6 +177,40 @@ void TestChanGroup::expectCreateChannelFinished(PendingOperation* op)
     mLoop->exit(0);
 }
 
+void TestChanGroup::expectPendingContactsFinished(PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    qDebug() << "finished";
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+    mContacts = pending->contacts();
+
+    mLoop->exit(0);
+}
+
+void TestChanGroup::onChannelGroupFlagsChanged(uint flags, uint added, uint removed)
+{
+    qDebug() << "group flags changed";
+    mLoop->exit(0);
+}
+
 void TestChanGroup::onGroupMembersChanged(
         const QList<QSharedPointer<Contact> > &groupMembersAdded,
         const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
@@ -150,27 +218,51 @@ void TestChanGroup::onGroupMembersChanged(
         const QList<QSharedPointer<Contact> > &groupMembersRemoved,
         uint actor, uint reason, const QString &message)
 {
+    int ret = -1;
+
+    qDebug() << "group members changed";
+
     debugContacts();
 
     QVERIFY(mChan->groupContacts().size() > 1);
-    QVERIFY(mChan->groupLocalPendingContacts().isEmpty());
-    QVERIFY(mChan->groupRemotePendingContacts().isEmpty());
 
-    if (mChan->groupContacts().count() == 5) {
+    if (mChan->groupRemotePendingContacts().isEmpty()) {
+        QVERIFY(mChan->groupLocalPendingContacts().isEmpty());
+
         QStringList ids;
         foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
             ids << contact->id();
         }
 
-        QCOMPARE(ids, QStringList() <<
-                        "me@#room" <<
-                        "alice@#room" <<
-                        "bob@#room" <<
-                        "chris@#room" <<
-                        "anonymous coward@#room");
-
-        mLoop->exit(0);
+        if (mChan->groupContacts().count() == 5) {
+            QCOMPARE(ids, QStringList() <<
+                            "me@#room" <<
+                            "alice@#room" <<
+                            "bob@#room" <<
+                            "chris@#room" <<
+                            "anonymous coward@#room");
+            ret = 0;
+        } else if (mChan->groupContacts().count() == 6) {
+            QCOMPARE(ids, QStringList() <<
+                            "me@#room" <<
+                            "alice@#room" <<
+                            "bob@#room" <<
+                            "chris@#room" <<
+                            "anonymous coward@#room" <<
+                            "john@#room");
+            ret = 2;
+        }
+    } else {
+        if (mChan->groupRemotePendingContacts().count() == 1) {
+            QCOMPARE(message, QString("I want to add john"));
+            QCOMPARE(mChan->groupRemotePendingContacts().first()->id(),
+                     QString("john@#room"));
+            ret = 1;
+        }
     }
+
+    qDebug() << "onGroupMembersChanged exiting with ret" << ret;
+    mLoop->exit(ret);
 }
 
 void TestChanGroup::debugContacts()
@@ -262,12 +354,12 @@ void TestChanGroup::testRequestHandle()
     PendingHandles *pending = mConn->requestHandles(Telepathy::HandleTypeRoom, ids);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
+                    SLOT(expectPendingRoomHandlesFinished(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(pending,
                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                        this,
-                       SLOT(expectPendingHandlesFinished(Telepathy::Client::PendingOperation*))));
+                       SLOT(expectPendingRoomHandlesFinished(Telepathy::Client::PendingOperation*))));
 }
 
 void TestChanGroup::testCreateChannel()
@@ -278,7 +370,7 @@ void TestChanGroup::testCreateChannel()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    Telepathy::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   mHandles[0]);
+                   mRoomHandles[0]);
     QVERIFY(connect(mConn->createChannel(request),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
@@ -290,6 +382,16 @@ void TestChanGroup::testCreateChannel()
                         SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
+
+        QCOMPARE(mChan->groupCanAddContacts(), false);
+        QCOMPARE(mChan->groupCanRemoveContacts(), false);
+
+        QVERIFY(connect(mChan,
+                        SIGNAL(groupFlagsChanged(uint, uint, uint)),
+                        SLOT(onChannelGroupFlagsChanged(uint, uint, uint))));
+        QCOMPARE(mLoop->exec(), 0);
+        QCOMPARE(mChan->groupCanAddContacts(), true);
+        QCOMPARE(mChan->groupCanRemoveContacts(), false);
 
         debugContacts();
 
@@ -307,6 +409,31 @@ void TestChanGroup::testCreateChannel()
                                 const QList<QSharedPointer<Contact> > &,
                                 uint, uint, const QString &))));
         QCOMPARE(mLoop->exec(), 0);
+
+        QStringList ids = QStringList() << "john@#room";
+        QVERIFY(connect(mConn->requestHandles(Telepathy::HandleTypeContact, ids),
+                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                        SLOT(expectPendingContactHandlesFinished(Telepathy::Client::PendingOperation*))));
+        QCOMPARE(mLoop->exec(), 0);
+
+        // Wait for the contacts to be built
+        QVERIFY(connect(mConn->contactManager()->contactsForHandles(mContactHandles),
+                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                        SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+        QCOMPARE(mLoop->exec(), 0);
+
+        QCOMPARE(mContacts.size(), 1);
+        QCOMPARE(mContacts.first()->id(), QString("john@#room"));
+
+        mChan->groupAddContacts(mContacts, "I want to add john");
+
+        // members changed should be emitted twice now, one for adding john to
+        // remote pending and one for adding it to current members
+
+        // expect john to be added to remote pending
+        QCOMPARE(mLoop->exec(), 1);
+        // expect john to accept invite
+        QCOMPARE(mLoop->exec(), 2);
 
         delete mChan;
         mChan = 0;
