@@ -66,6 +66,7 @@ namespace Client
 struct Channel::Private
 {
     Private(Channel *parent, Connection *connection);
+    ~Private();
 
     void introspectMain();
     void introspectMainFallbackChannelType();
@@ -234,6 +235,14 @@ Channel::Private::Private(Channel *parent, Connection *connection)
             "invalid! Channel will be stillborn.";
         parent->invalidate(TELEPATHY_ERROR_INVALID_ARGUMENT,
                    "Connection given as the owner of this channel was invalid");
+    }
+}
+
+Channel::Private::~Private()
+{
+    delete currentGroupMembersChangedInfo;
+    foreach (GroupMembersChangedInfo *info, groupMembersChangedQueue) {
+        delete info;
     }
 }
 
