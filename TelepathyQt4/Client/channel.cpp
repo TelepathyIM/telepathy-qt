@@ -420,6 +420,14 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         requested = qdbus_cast<uint>(props["Requested"]);
         initiatorHandle = qdbus_cast<uint>(props["InitiatorHandle"]);
 
+        if (!interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) &&
+            initiatorHandle) {
+            // there is no group interface, so lets true build the contact
+            // object for initiatorHandle now
+            buildingInitialContacts = true;
+            buildContacts();
+        }
+
         nowHaveInterfaces();
     }
 
@@ -478,12 +486,8 @@ void Channel::Private::nowHaveInterfaces()
     debug() << "Channel has" << interfaces.size() <<
         "optional interfaces:" << interfaces;
 
-    for (QStringList::const_iterator i = interfaces.begin();
-                                     i != interfaces.end();
-                                     ++i) {
-        if (*i == TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) {
-            introspectQueue.enqueue(&Private::introspectGroup);
-        }
+    if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        introspectQueue.enqueue(&Private::introspectGroup);
     }
 }
 
