@@ -266,7 +266,7 @@ void TestChanBasics::testCreateChannel()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
         QCOMPARE(mChan->requested(), true);
-        QCOMPARE(mChan->initiatorContact().isNull(), true);
+        QCOMPARE(mChan->initiatorContact()->id(), QString("me@example.com"));
 
         delete mChan;
         mChan = 0;
@@ -294,7 +294,7 @@ void TestChanBasics::testEnsureChannel()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
         QCOMPARE(mChan->requested(), true);
-        QCOMPARE(mChan->initiatorContact().isNull(), true);
+        QCOMPARE(mChan->initiatorContact()->id(), QString("me@example.com"));
 
         QVERIFY(connect(mChan->requestClose(),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
