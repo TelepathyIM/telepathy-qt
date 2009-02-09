@@ -87,6 +87,7 @@ struct Channel::Private
     void processMembersChanged();
     void updateContacts(const QList<QSharedPointer<Contact> > &contacts =
             QList<QSharedPointer<Contact> >());
+    bool fakeGroupInterfaceIfNeeded();
     void setReady();
 
     class PendingReady;
@@ -420,9 +421,10 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         requested = qdbus_cast<uint>(props["Requested"]);
         initiatorHandle = qdbus_cast<uint>(props["InitiatorHandle"]);
 
-        if (!interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) &&
+        if (!fakeGroupInterfaceIfNeeded() &&
+            !interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) &&
             initiatorHandle) {
-            // there is no group interface, so lets true build the contact
+            // there is no group interface, so lets try to build the contact
             // object for initiatorHandle now
             buildingInitialContacts = true;
             buildContacts();
@@ -751,6 +753,47 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     processMembersChanged();
 }
 
+bool Channel::Private::fakeGroupInterfaceIfNeeded()
+{
+    if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        return false;
+    }
+
+    bool ret = false;
+
+    // this check isn't really needed as all other target handle types
+    // supports the group interface, but let's make sure
+    if (targetHandleType == Telepathy::HandleTypeContact) {
+        // fake group interface
+
+        if (connection->selfContact() || !targetHandle) {
+            // for groupSelfContact()
+            groupSelfHandle = connection->selfContact()->handle()[0];
+
+            // for groupContacts()
+            pendingGroupMembers.insert(groupSelfHandle);
+            pendingGroupMembers.insert(targetHandle);
+
+            debug().nospace() << "Faking a group on channel with self handle=" <<
+                groupSelfHandle << " and other handle=" << targetHandle;
+            ret = true;
+
+            buildingInitialContacts = true;
+            buildContacts();
+        }
+        else {
+            warning() << "Connection::selfContact returned a null contact or targetHandle is 0, "
+                "not faking a group on channel";
+        }
+
+    } else {
+        warning() << "Channel does not support group interface and targetHandleType != Contact, "
+            "not faking a group on channel";
+    }
+
+    return ret;
+}
+
 void Channel::Private::setReady()
 {
     Q_ASSERT(!ready);
@@ -1074,9 +1117,6 @@ uint Channel::groupFlags() const
     if (!isReady()) {
         warning() << "Channel::groupFlags() used channel not ready";
     }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupFlags() used with no group interface";
-    }
 
     return mPriv->groupFlags;
 }
@@ -1091,9 +1131,6 @@ bool Channel::groupCanAddContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupCanAddContacts() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupCanAddContacts() used with no group interface";
     }
 
     return mPriv->groupFlags & Telepathy::ChannelGroupFlagCanAdd;
@@ -1148,9 +1185,6 @@ bool Channel::groupCanRemoveContacts() const
     if (!isReady()) {
         warning() << "Channel::groupCanRemoveContacts() used channel not ready";
     }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupCanRemoveContacts() used with no group interface";
-    }
 
     return mPriv->groupFlags & Telepathy::ChannelGroupFlagCanRemove;
 }
@@ -1202,9 +1236,6 @@ QList<QSharedPointer<Contact> > Channel::groupContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupMembers() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupMembers() used with no group interface";
     }
 
     return mPriv->groupContacts.values();
@@ -1292,10 +1323,11 @@ Channel::GroupMemberChangeInfo Channel::groupLocalPendingContactChangeInfo(
 Channel::GroupMemberChangeInfo Channel::groupSelfContactRemoveInfo() const
 {
     if (!isReady()) {
-        warning() << "Channel::groupLocalPending() used channel not ready";
+        warning() << "Channel::groupSelfContactRemoveInfo() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupLocalPending() used with no group interface";
+        warning() << "Channel::groupSelfContactRemoveInfo() used with "
+            "no group interface";
     }
 
     return mPriv->groupSelfContactRemoveInfo;
@@ -1398,10 +1430,6 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 {
     if (!isReady()) {
         warning() << "Channel::groupSelfContact() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupSelfContact() used with "
-            "no group interface";
     }
 
     return mPriv->groupSelfContact;
@@ -1748,6 +1776,9 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
     debug() << "Got reply to fallback Channel::GetInterfaces()";
     mPriv->interfaces = reply.value();
     mPriv->nowHaveInterfaces();
+
+    mPriv->fakeGroupInterfaceIfNeeded();
+
     continueIntrospection();
 }
 
