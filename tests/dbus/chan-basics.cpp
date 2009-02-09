@@ -265,6 +265,7 @@ void TestChanBasics::testCreateChannel()
                         SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
+        QCOMPARE(mChan->requested(), true);
 
         delete mChan;
         mChan = 0;
@@ -291,6 +292,7 @@ void TestChanBasics::testEnsureChannel()
                         SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
+        QCOMPARE(mChan->requested(), true);
 
         QVERIFY(connect(mChan->requestClose(),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
