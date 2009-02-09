@@ -135,9 +135,8 @@ public:
 
     HandleOwnerMap groupHandleOwners() const;
 
-    bool groupIsSelfHandleTracked() const;
-
-    uint groupSelfHandle() const;
+    bool groupIsSelfContactTracked() const;
+    QSharedPointer<Contact> groupSelfContact() const;
 
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
@@ -153,7 +152,7 @@ Q_SIGNALS:
     void groupHandleOwnersChanged(const HandleOwnerMap &owners,
             const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
 
-    void groupSelfHandleChanged(uint selfHandle);
+    void groupSelfContactChanged();
 
 public:
     template <class Interface>

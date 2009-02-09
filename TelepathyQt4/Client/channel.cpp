@@ -148,8 +148,10 @@ struct Channel::Private
     HandleOwnerMap groupHandleOwners;
 
     // Group self handle
+    bool pendingRetrieveGroupSelfContact;
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
+    QSharedPointer<Contact> groupSelfContact;
 };
 
 struct Channel::Private::GroupMembersChangedInfo
@@ -209,6 +211,7 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       buildingContacts(false),
       currentGroupMembersChangedInfo(0),
       groupAreHandleOwnersAvailable(false),
+      pendingRetrieveGroupSelfContact(false),
       groupIsSelfHandleTracked(false),
       groupSelfHandle(0)
 {
@@ -496,6 +499,12 @@ void Channel::Private::buildContacts()
         toBuild.append(currentGroupMembersChangedInfo->actor);
     }
 
+    // always try to retrieve selfContact and check if it changed on
+    // updateContacts or on gotContacts, in case we were not able to retrieve it
+    if (groupSelfHandle) {
+        toBuild.append(groupSelfHandle);
+    }
+
     PendingContacts *pendingContacts = manager->contactsForHandles(
             toBuild);
     parent->connect(pendingContacts,
@@ -506,12 +515,22 @@ void Channel::Private::buildContacts()
 void Channel::Private::processMembersChanged()
 {
     if (groupMembersChangedQueue.isEmpty()) {
+        if (pendingRetrieveGroupSelfContact) {
+            pendingRetrieveGroupSelfContact = false;
+            // nothing queued but selfContact changed
+            buildContacts();
+        }
         return;
     }
 
     Q_ASSERT(pendingGroupMembers.isEmpty());
     Q_ASSERT(pendingGroupLocalPendingMembers.isEmpty());
     Q_ASSERT(pendingGroupRemotePendingMembers.isEmpty());
+
+    // always set this to false here, as buildContacts will always try to
+    // retrieve the selfContact and updateContacts will check if the built
+    // contact is the same as the current contact.
+    pendingRetrieveGroupSelfContact = false;
 
     currentGroupMembersChangedInfo = groupMembersChangedQueue.dequeue();
 
@@ -580,6 +599,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     QList<QSharedPointer<Contact> > groupLocalPendingContactsAdded;
     QList<QSharedPointer<Contact> > groupRemotePendingContactsAdded;
     QSharedPointer<Contact> actorContact;
+    bool selfContactUpdated = false;
 
     foreach (QSharedPointer<Contact> contact, contacts) {
         uint handle = contact->handle()[0];
@@ -593,6 +613,11 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         } else if (pendingGroupRemotePendingMembers.contains(handle)) {
             groupRemotePendingContactsAdded.append(contact);
             groupRemotePendingContacts[handle] = contact;
+        }
+
+        if (groupSelfHandle == handle && groupSelfContact != contact) {
+            groupSelfContact = contact;
+            selfContactUpdated = false;
         }
 
         if (currentGroupMembersChangedInfo &&
@@ -671,16 +696,25 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     }
     groupRemotePendingMembersToRemove.clear();
 
-    emit parent->groupMembersChanged(
-            groupContactsAdded,
-            groupLocalPendingContactsAdded,
-            groupRemotePendingContactsAdded,
-            groupContactsRemoved,
-            actorContact,
-            currentGroupMembersChangedInfo->reason,
-            currentGroupMembersChangedInfo->message);
+    if (!groupContactsAdded.isEmpty() ||
+        !groupLocalPendingContactsAdded.isEmpty() ||
+        !groupRemotePendingContactsAdded.isEmpty() ||
+        !groupContactsRemoved.isEmpty()) {
+        emit parent->groupMembersChanged(
+                groupContactsAdded,
+                groupLocalPendingContactsAdded,
+                groupRemotePendingContactsAdded,
+                groupContactsRemoved,
+                actorContact,
+                currentGroupMembersChangedInfo->reason,
+                currentGroupMembersChangedInfo->message);
+    }
     delete currentGroupMembersChangedInfo;
     currentGroupMembersChangedInfo = 0;
+
+    if (selfContactUpdated) {
+        emit parent->groupSelfContactChanged();
+    }
 
     processMembersChanged();
 }
@@ -1265,15 +1299,15 @@ HandleOwnerMap Channel::groupHandleOwners() const
 }
 
 /**
- * Returns whether the value returned by groupSelfHandle() is guaranteed to
+ * Return whether the value returned by groupSelfContact() is guaranteed to
  * stay synchronized with what groupInterface()->GetSelfHandle() would
  * return. Older services not providing group properties don't necessarily
- * emit the SelfHandleChanged signal either, so self handle changes can't be
+ * emit the SelfHandleChanged signal either, so self contact changes can't be
  * reliably tracked.
  *
- * \return Whether or not changes to the self handle are tracked.
+ * \return Whether or not changes to the self contact are tracked.
  */
-bool Channel::groupIsSelfHandleTracked() const
+bool Channel::groupIsSelfContactTracked() const
 {
     if (!isReady()) {
         warning() << "Channel::groupIsSelfHandleTracked() used channel not ready";
@@ -1287,23 +1321,23 @@ bool Channel::groupIsSelfHandleTracked() const
 }
 
 /**
- * Returns a handle representing the user in the group if the user is a
- * member of the group, otherwise either a handle representing the user or
+ * Return a Contact object representing the user in the group if the user is a
+ * member of the group, otherwise either a Contact object representing the user or
  * 0.
  *
  * \return A contact handle representing the user, if possible.
  */
-uint Channel::groupSelfHandle() const
+QSharedPointer<Contact> Channel::groupSelfContact() const
 {
     if (!isReady()) {
-        warning() << "Channel::groupSelfHandle() used channel not ready";
+        warning() << "Channel::groupSelfContact() used channel not ready";
     }
     else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupSelfHandle() used with "
+        warning() << "Channel::groupSelfContact() used with "
             "no group interface";
     }
 
-    return mPriv->groupSelfHandle;
+    return mPriv->groupSelfContact;
 }
 
 /**
@@ -1382,12 +1416,9 @@ uint Channel::groupSelfHandle() const
  */
 
 /**
- * \fn void groupSelfHandleChanged(uint selfHandle)
+ * \fn void groupSelfContactChanged()
  *
- * Emitted when the value returned by groupSelfHandle() changes.
- *
- * \param selfHandle The value which would now be returned by
- *                   groupSelfHandle().
+ * Emitted when the value returned by groupSelfContact() changes.
  */
 
 //@}
@@ -1735,7 +1766,7 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
         mPriv->pendingGroupLocalPendingMembers = QSet<uint>::fromList(reply.argumentAt<1>());
         mPriv->pendingGroupRemotePendingMembers = QSet<uint>::fromList(reply.argumentAt<2>());
 
-        // delay building contacts now until we process gotLocalPendingMembersWithInfo
+        // delay building contacts now until we process gotSelfHandle
     }
 
     continueIntrospection();
@@ -1759,10 +1790,6 @@ void Channel::gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher)
         }
     }
 
-    // build contacts even if the call failed
-    mPriv->buildingInitialContacts = true;
-    mPriv->buildContacts();
-
     continueIntrospection();
 }
 
@@ -1778,6 +1805,10 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to fallback Channel.Interface.Group::GetSelfHandle()";
         mPriv->groupSelfHandle = reply.value();
     }
+
+    // build contacts even if the call failed
+    mPriv->buildingInitialContacts = true;
+    mPriv->buildContacts();
 
     continueIntrospection();
 }
@@ -1795,6 +1826,13 @@ void Channel::gotContacts(PendingOperation *op)
         if (!pending->invalidHandles().isEmpty()) {
             warning() << "Unable to construct Contact objects for handles:" <<
                 pending->invalidHandles();
+
+            if (mPriv->groupSelfHandle &&
+                pending->invalidHandles().contains(mPriv->groupSelfHandle)) {
+                warning() << "Unable to retrieve self contact";
+                mPriv->groupSelfContact.clear();
+                emit groupSelfContactChanged();
+            }
         }
     } else {
         warning().nospace() << "Getting contacts failed with " <<
@@ -1911,7 +1949,20 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
         mPriv->groupSelfHandle = newSelfHandle;
         debug() << " Emitting groupSelfHandleChanged with new self handle" <<
             newSelfHandle;
-        emit groupSelfHandleChanged(newSelfHandle);
+
+        if (mPriv->groupSelfHandle) {
+            if (!mPriv->buildingContacts) {
+                mPriv->buildContacts();
+            } else {
+                // next call to processMembersChanged will build selfContact again
+                mPriv->pendingRetrieveGroupSelfContact = true;
+            }
+        } else {
+            // newSelfHandle == 0 <- strange
+            // no need to call buildContacts ...
+            mPriv->groupSelfContact.clear();
+            emit groupSelfContactChanged();
+        }
     }
 }
 
