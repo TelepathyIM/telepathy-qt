@@ -120,6 +120,7 @@ struct Channel::Private
     QString channelType;
     uint targetHandleType;
     uint targetHandle;
+    bool requested;
 
     // Group flags
     uint groupFlags;
@@ -205,6 +206,7 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       features(0),
       targetHandleType(0),
       targetHandle(0),
+      requested(false),
       groupFlags(0),
       groupHaveMembers(false),
       buildingInitialContacts(false),
@@ -412,6 +414,7 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
         targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
         targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
+        requested = qdbus_cast<uint>(props["Requested"]);
 
         nowHaveInterfaces();
     }
@@ -897,6 +900,24 @@ uint Channel::targetHandle() const
     }
 
     return mPriv->targetHandle;
+}
+
+/**
+ * Return whether this channel was created in response to a
+ * local request.
+ *
+ * Note that the value is undefined until the channel is ready.
+ *
+ * \return \c true if this channel was created in response to a local request,
+ *         \c false otherwise.
+ */
+bool Channel::requested() const
+{
+    if (!isReady()) {
+        warning() << "Channel::requested() used channel not ready";
+    }
+
+    return mPriv->requested;
 }
 
 /**

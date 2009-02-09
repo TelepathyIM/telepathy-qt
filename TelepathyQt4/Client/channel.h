@@ -73,6 +73,8 @@ public:
 
     uint targetHandle() const;
 
+    bool requested() const;
+
     bool isReady(Features features = 0) const;
 
     PendingOperation *becomeReady(Features features = 0);
