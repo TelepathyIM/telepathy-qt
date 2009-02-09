@@ -47,6 +47,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/contact-manager.cpp \
     Client/dbus.cpp \
     Client/dbus-proxy.cpp \
+    Client/file-transfer.cpp \
     Client/media-session-handler.cpp \
     Client/media-stream-handler.cpp \
     Client/optional-interface-factory.cpp \
@@ -61,6 +62,9 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-string-list.cpp \
     Client/properties.cpp \
     Client/referenced-handles.cpp \
+    Client/room-list.cpp \
+    Client/streamed-media-channel.cpp \
+    Client/text-channel.cpp \
     debug.cpp \
     debug-internal.h \
     key-file.cpp \
@@ -99,6 +103,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/contact.moc.hpp \
     Client/_gen/contact-manager.moc.hpp \
     Client/_gen/dbus-proxy.moc.hpp \
+    Client/_gen/file-transfer.moc.hpp \
     Client/_gen/pending-account.moc.hpp \
     Client/_gen/pending-channel.moc.hpp \
     Client/_gen/pending-connection.moc.hpp \
@@ -108,7 +113,10 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/pending-operation.moc.hpp \
     Client/_gen/pending-ready-account.moc.hpp \
     Client/_gen/pending-string-list.moc.hpp \
-    Client/_gen/simple-pending-operations.moc.hpp
+    Client/_gen/room-list.moc.hpp \
+    Client/_gen/simple-pending-operations.moc.hpp \
+    Client/_gen/streamed-media-channel.moc.hpp \
+    Client/_gen/text-channel.moc.hpp
 
 tpqt4include_HEADERS = \
     Constants \
@@ -133,6 +141,7 @@ tpqt4clientinclude_HEADERS = \
     Client/ContactManager \
     Client/DBus \
     Client/DBusProxy \
+    Client/FileTransfer \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
     Client/OptionalInterfaceFactory \
@@ -149,8 +158,11 @@ tpqt4clientinclude_HEADERS = \
     Client/Properties \
     Client/ReferencedHandles \
     Client/ReferencedHandlesIterator \
+    Client/RoomList \
     Client/StatelessDBusProxy \
     Client/StatefulDBusProxy \
+    Client/StreamedMediaChannel \
+    Client/TextChannel \
     Client/AccountInterface \
     Client/AccountManagerInterface \
     Client/ChannelInterface \
@@ -192,6 +204,7 @@ tpqt4clientinclude_HEADERS = \
     Client/contact-manager.h \
     Client/dbus.h \
     Client/dbus-proxy.h \
+    Client/file-transfer.h \
     Client/media-session-handler.h \
     Client/media-stream-handler.h \
     Client/optional-interface-factory.h \
@@ -206,7 +219,10 @@ tpqt4clientinclude_HEADERS = \
     Client/pending-string-list.h \
     Client/properties.h \
     Client/referenced-handles.h \
-    Client/simple-pending-operations.h
+    Client/room-list.h \
+    Client/simple-pending-operations.h \
+    Client/streamed-media-channel.h \
+    Client/text-channel.h
 
 nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
