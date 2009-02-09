@@ -266,7 +266,18 @@ void TestChanBasics::testCreateChannel()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
         QCOMPARE(mChan->requested(), true);
+        QCOMPARE(mChan->groupCanAddContacts(), false);
+        QCOMPARE(mChan->groupCanRemoveContacts(), false);
         QCOMPARE(mChan->initiatorContact()->id(), QString("me@example.com"));
+        QCOMPARE(mChan->groupSelfContact()->id(), QString("me@example.com"));
+        QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
+
+        QStringList ids;
+        foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
+            ids << contact->id();
+        }
+        QCOMPARE(ids, QStringList() <<
+                "me@example.com" << "alice");
 
         delete mChan;
         mChan = 0;
@@ -294,7 +305,18 @@ void TestChanBasics::testEnsureChannel()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
         QCOMPARE(mChan->requested(), true);
+        QCOMPARE(mChan->groupCanAddContacts(), false);
+        QCOMPARE(mChan->groupCanRemoveContacts(), false);
         QCOMPARE(mChan->initiatorContact()->id(), QString("me@example.com"));
+        QCOMPARE(mChan->groupSelfContact()->id(), QString("me@example.com"));
+        QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
+
+        QStringList ids;
+        foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
+            ids << contact->id();
+        }
+        QCOMPARE(ids, QStringList() <<
+                "me@example.com" << "alice");
 
         QVERIFY(connect(mChan->requestClose(),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
