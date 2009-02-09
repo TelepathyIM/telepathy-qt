@@ -73,7 +73,7 @@ public:
 
     uint targetHandle() const;
 
-    bool requested() const;
+    bool isRequested() const;
 
     QSharedPointer<Contact> initiatorContact() const;
 

@@ -983,10 +983,10 @@ uint Channel::targetHandle() const
  * \return \c true if this channel was created in response to a local request,
  *         \c false otherwise.
  */
-bool Channel::requested() const
+bool Channel::isRequested() const
 {
     if (!isReady()) {
-        warning() << "Channel::requested() used channel not ready";
+        warning() << "Channel::isRequested() used channel not ready";
     }
 
     return mPriv->requested;

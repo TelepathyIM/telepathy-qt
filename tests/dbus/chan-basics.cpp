@@ -265,7 +265,7 @@ void TestChanBasics::testCreateChannel()
                         SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
-        QCOMPARE(mChan->requested(), true);
+        QCOMPARE(mChan->isRequested(), true);
         QCOMPARE(mChan->groupCanAddContacts(), false);
         QCOMPARE(mChan->groupCanRemoveContacts(), false);
         QCOMPARE(mChan->initiatorContact()->id(), QString("me@example.com"));
@@ -304,7 +304,7 @@ void TestChanBasics::testEnsureChannel()
                         SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
-        QCOMPARE(mChan->requested(), true);
+        QCOMPARE(mChan->isRequested(), true);
         QCOMPARE(mChan->groupCanAddContacts(), false);
         QCOMPARE(mChan->groupCanRemoveContacts(), false);
         QCOMPARE(mChan->initiatorContact()->id(), QString("me@example.com"));
