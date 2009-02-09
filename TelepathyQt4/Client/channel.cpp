@@ -204,6 +204,9 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       targetHandle(0),
       groupFlags(0),
       groupHaveMembers(false),
+      buildingInitialContacts(false),
+      buildingContacts(false),
+      currentGroupMembersChangedInfo(0),
       groupAreHandleOwnersAvailable(false),
       groupIsSelfHandleTracked(false),
       groupSelfHandle(0)
