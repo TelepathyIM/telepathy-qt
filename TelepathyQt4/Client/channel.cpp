@@ -121,6 +121,8 @@ struct Channel::Private
     uint targetHandleType;
     uint targetHandle;
     bool requested;
+    uint initiatorHandle;
+    QSharedPointer<Contact> initiatorContact;
 
     // Group flags
     uint groupFlags;
@@ -207,6 +209,7 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       targetHandleType(0),
       targetHandle(0),
       requested(false),
+      initiatorHandle(0),
       groupFlags(0),
       groupHaveMembers(false),
       buildingInitialContacts(false),
@@ -415,9 +418,12 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
         targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
         requested = qdbus_cast<uint>(props["Requested"]);
+        initiatorHandle = qdbus_cast<uint>(props["InitiatorHandle"]);
 
         nowHaveInterfaces();
     }
+
+    debug() << "Have initiator handle:" << (initiatorHandle ? "yes" : "no");
 }
 
 void Channel::Private::extract0176GroupProps(const QVariantMap &props)
@@ -500,6 +506,10 @@ void Channel::Private::buildContacts()
     if (currentGroupMembersChangedInfo &&
         currentGroupMembersChangedInfo->actor != 0) {
         toBuild.append(currentGroupMembersChangedInfo->actor);
+    }
+
+    if (buildingInitialContacts && initiatorHandle) {
+        toBuild.append(initiatorHandle);
     }
 
     // always try to retrieve selfContact and check if it changed on
@@ -623,6 +633,10 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
             selfContactUpdated = false;
         }
 
+        if (buildingInitialContacts && initiatorHandle == handle) {
+            initiatorContact = contact;
+        }
+
         if (currentGroupMembersChangedInfo &&
             currentGroupMembersChangedInfo->actor == contact->handle()[0]) {
             actorContact = contact;
@@ -656,6 +670,17 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
 
     if (buildingInitialContacts) {
         buildingInitialContacts = false;
+
+        if (initiatorHandle && !initiatorContact) {
+            warning() << "Unable to create contact object for initiator with handle" <<
+                initiatorHandle;
+        }
+
+        if (groupSelfHandle && !groupSelfContact) {
+            warning() << "Unable to create contact object for self handle" <<
+                groupSelfHandle;
+        }
+
         if (introspectQueue.isEmpty()) {
             // if we were building the initial contacts from handles and the
             // introspect queue is empty it means we are ready now, so signal it
@@ -918,6 +943,23 @@ bool Channel::requested() const
     }
 
     return mPriv->requested;
+}
+
+/**
+ * Return the contact who initiated the channel.
+ *
+ * Note that the value is undefined until the channel is ready.
+ *
+ * \return A Contact object representing the contact who initiated the channel,
+ *         or QSharedPointer that points to null(0) if it can't be retrieved.
+ */
+QSharedPointer<Contact> Channel::initiatorContact() const
+{
+    if (!isReady()) {
+        warning() << "Channel::initiatorContact() used channel not ready";
+    }
+
+    return mPriv->initiatorContact;
 }
 
 /**

@@ -75,6 +75,8 @@ public:
 
     bool requested() const;
 
+    QSharedPointer<Contact> initiatorContact() const;
+
     bool isReady(Features features = 0) const;
 
     PendingOperation *becomeReady(Features features = 0);
