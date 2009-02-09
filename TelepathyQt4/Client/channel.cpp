@@ -842,11 +842,14 @@ void Channel::Private::setReady()
  * <ul>
  *  <li>Life cycle tracking</li>
  *  <li>Getting the channel type, handle type, handle and interfaces automatically</li>
+ *  <li>High-level methods for the group interface</li>
+ *  <li>A fake group implementation when handle type != Contact</li>
  *  <li>Shared optional interface proxy instances</li>
  * </ul>
  *
  * The remote object state accessor functions on this object (interfaces(),
- * channelType(), targetHandleType(), targetHandle()) don't make any DBus calls;
+ * channelType(), targetHandleType(), targetHandle(), requested(),
+ * initiatorContact(), etc) don't make any DBus calls;
  * instead, they return values cached from a previous introspection run. The
  * introspection process populates their values in the most efficient way
  * possible based on what the service implements. However, their value is not
@@ -863,13 +866,12 @@ void Channel::Private::setReady()
  */
 
 /**
- * Creates a Channel associated with the given object on the same service as
- * the given connection.
+ * Construct a new Channel object.
  *
- * \param connection  Connection owning this Channel, and specifying the
- *                    service.
- * \param objectPath  Path to the object on the service.
- * \param parent      Passed to the parent class constructor.
+ * \param connection Connection owning this Channel, and specifying the
+ *                   service.
+ * \param objectPath Channel object path.
+ * \param parent Object parent.
  */
 Channel::Channel(Connection *connection,
                  const QString &objectPath,
@@ -895,9 +897,9 @@ Channel::~Channel()
 }
 
 /**
- * Returns the owning Connection of the Channel.
+ * Return the owning Connection of the Channel.
  *
- * \return Pointer to the Connection.
+ * \return A pointer to the Connection object that owns this Channel.
  */
 Connection *Channel::connection() const
 {
@@ -905,7 +907,7 @@ Connection *Channel::connection() const
 }
 
 /**
- * Returns a list of optional interfaces implemented by the remote object.
+ * Return a list of optional interfaces implemented by the remote object.
  *
  * \return D-Bus names of the implemented optional interfaces.
  */
@@ -926,7 +928,7 @@ QStringList Channel::interfaces() const
 }
 
 /**
- * Returns the type of this channel.
+ * Return the type of this channel.
  *
  * \return D-Bus interface name for the type of the channel.
  */
@@ -946,9 +948,9 @@ QString Channel::channelType() const
 }
 
 /**
- * Returns the type of the handle returned by #targetHandle().
+ * Return the type of the handle returned by targetHandle().
  *
- * \return The type of the handle, as specified in #HandleType.
+ * \return The type of the handle, as specified in HandleType.
  */
 uint Channel::targetHandleType() const
 {
@@ -960,10 +962,10 @@ uint Channel::targetHandleType() const
 }
 
 /**
- * Returns the handle of the remote party with which this channel
+ * Return the handle of the remote party with which this channel
  * communicates.
  *
- * \return The handle, which is of the type #targetHandleType() indicates.
+ * \return The handle, which is of the type targetHandleType() indicates.
  */
 uint Channel::targetHandle() const
 {
@@ -1068,7 +1070,7 @@ PendingOperation *Channel::becomeReady(Features features)
 PendingOperation *Channel::requestClose()
 {
     // Closing a channel does not make sense if it is already closed,
-    // just silently returns.
+    // just silently Return.
     if (!isValid()) {
         return new PendingSuccess(this);
     }
@@ -1080,9 +1082,13 @@ PendingOperation *Channel::requestClose()
  * \name Group interface
  *
  * Cached access to state of the group interface on the associated remote
- * object, if the interface is present. All methods return undefined values
+ * object, if the interface is present. Almost all methods return undefined values
  * if the list returned by interfaces() doesn't include
  * #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP or if the object is not ready.
+ *
+ * Some methods can be used when targetHandleType() == HandleTypeContact, such
+ * as groupFlags(), groupCanAddContacts(), groupCanRemoveContacts(),
+ * groupSelfContact() and groupContacts().
  *
  * As the Group interface state can change freely during the lifetime of the
  * group due to events like new contacts joining the group, the cached state
@@ -1105,7 +1111,7 @@ PendingOperation *Channel::requestClose()
 //@{
 
 /**
- * Returns a set of flags indicating the capabilities and behaviour of the
+ * Return a set of flags indicating the capabilities and behaviour of the
  * group represented by the remote object.
  *
  * Change notification is via groupFlagsChanged().
@@ -1228,7 +1234,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
 }
 
 /**
- * Returns the current contacts of the group.
+ * Return the current contacts of the group.
  *
  * \return List of contact objects.
  */
@@ -1242,10 +1248,10 @@ QList<QSharedPointer<Contact> > Channel::groupContacts() const
 }
 
 /**
- * Returns the contacts currently waiting for local approval to join the
+ * Return the contacts currently waiting for local approval to join the
  * group.
  *
- * \returns List of contacts.
+ * \Return List of contacts.
  */
 QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
 {
@@ -1260,10 +1266,10 @@ QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
 }
 
 /**
- * Returns the contacts currently waiting for remote approval to join the
+ * Return the contacts currently waiting for remote approval to join the
  * group.
  *
- * \returns List of contacts.
+ * \Return List of contacts.
  */
 QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
 {
@@ -1281,7 +1287,7 @@ QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
 /**
  * Return information of a local pending contact change. If
  * no information is available, an object for which
- * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
+ * GroupMemberChangeInfo::isValid() Return <code>false</code> is returned.
  *
  * \param A Contact object that is on the local pending contacts list.
  * \return The change info in a GroupMemberChangeInfo object.
@@ -1307,7 +1313,7 @@ Channel::GroupMemberChangeInfo Channel::groupLocalPendingContactChangeInfo(
 /**
  * Return information on the removal of the local user from the group. If
  * the user hasn't been removed from the group, an object for which
- * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
+ * GroupMemberChangeInfo::isValid() Return <code>false</code> is returned.
  *
  * This method should be called only after the channel has been closed.
  * This is useful for getting the remove information after missing the
@@ -1315,7 +1321,7 @@ Channel::GroupMemberChangeInfo Channel::groupLocalPendingContactChangeInfo(
  * removed usually causes the remote Channel to be closed.
  *
  * The returned information is not guaranteed to be correct if
- * groupIsSelfHandleTracked() returns false and a self handle change has
+ * groupIsSelfHandleTracked() Return false and a self handle change has
  * occurred on the remote object.
  *
  * \return The remove info in a GroupMemberChangeInfo object.
@@ -1334,7 +1340,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfContactRemoveInfo() const
 }
 
 /**
- * Returns whether globally valid handles can be looked up using the
+ * Return whether globally valid handles can be looked up using the
  * channel-specific handle on this channel using this object.
  *
  * Handle owner lookup is only available if:
@@ -1346,7 +1352,7 @@ Channel::GroupMemberChangeInfo Channel::groupSelfContactRemoveInfo() const
  *        GroupFlagProperties and GroupFlagChannelSpecificHandles</li>
  * </ul>
  *
- * If this function returns <code>false</code>, the return value of
+ * If this function Return <code>false</code>, the return value of
  * groupHandleOwners() is undefined and groupHandleOwnersChanged() will
  * never be emitted.
  *
@@ -1369,7 +1375,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
 }
 
 /**
- * Returns a mapping of handles specific to this channel to globally valid
+ * Return a mapping of handles specific to this channel to globally valid
  * handles.
  *
  * The mapping includes at least all of the channel-specific handles in this
@@ -1446,56 +1452,22 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn void groupMembersChanged(const QSet<uint> &members, const Telepathy::UIntList &added, const Telepathy::UIntList &removed, uint actor, uint reason, const QString &message)
+ * \fn void groupMembersChanged(const QList<QSharedPointer<Contact> > &groupMembersAdded, const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded, const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved, const QList<QSharedPointer<Contact> > &groupMembersRemoved, QSharedPointer<Contact> actor, uint reason, const QString &message);
  *
- * Emitted when the value returned by groupMembers() changes.
+ * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
+ * groupRemotePendingContacts() changes.
  *
- * \param members The value which would now be returned by groupMembers().
- * \param added Handles of the contacts which were added to the value.
- * \param removed Handles of the contacts which were removed from the value.
- * \param actor Handle of the contact requesting or causing the change.
+ * \param groupMembersAdded The contacts that were added to this channel.
+ * \param groupLocalPendingMembersAdded The local pending contacts that were
+ *                                      added to this channel.
+ * \param groupRemotePendingMembersAdded The remote pending contacts that were
+ *                                       added to this channel.
+ * \param groupMembersRemoved The contacts removed from this channel.
+ * \param actor The contact requesting or causing the change.
  * \param reason Reason of the change, as specified in
- *        #ChannelGroupChangeReason.
+ *               #ChannelGroupChangeReason.
  * \param message Message specified by the actor related to the change, such
- *        as the part message in IRC.
- */
-
-/**
- * \fn void groupLocalPendingChanged(const GroupMemberChangeInfoMap &localPending, const Telepathy::UIntList &added, const Telepathy::UIntList &removed, uint actor, uint reason, const QString &message)
- *
- * Emitted when the value returned by groupLocalPending() changes.
- *
- * The added and remove lists only specify the handles of the contacts added
- * to or removed from the mapping, not the extended information pertaining
- * to them. Local pending info never changes for a particular contact after
- * the contact first appears in the mapping, so no change notification is
- * necessary for the extended information itself.
- *
- * \param localPending The value which would now be returned by
- *        groupLocalPending().
- * \param added Handles of the contacts which were added to the value.
- * \param removed Handles of the contacts which were removed from the value.
- * \param actor Handle of the contact requesting or causing the change.
- * \param reason Reason of the change, as specified in
- *        #ChannelGroupChangeReason.
- * \param message Message specified by the actor related to the change, such
- *        as the part message in IRC.
- */
-
-/**
- * \fn void groupRemotePendingChanged(const QSet<uint> &remotePending, const Telepathy::UIntList &added, const Telepathy::UIntList &removed, uint actor, uint reason, const QString &message)
- *
- * Emitted when the value returned by groupRemotePending() changes.
- *
- * \param remotePending The value which would now be returned by
- *        groupRemotePending().
- * \param added Handles of the contacts which were added to the value.
- * \param removed Handles of the contacts which were removed from the value.
- * \param actor Handle of the contact requesting or causing the change.
- * \param reason Reason of the change, as specified in
- *        #ChannelGroupChangeReason.
- * \param message Message specified by the actor related to the change, such
- *        as the part message in IRC.
+ *                as the part message in IRC.
  */
 
 /**
@@ -1530,7 +1502,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 /**
  * \fn template <class Interface> Interface *optionalInterface(InterfaceSupportedChecking check) const
  *
- * Returns a pointer to a valid instance of a given %Channel optional
+ * Return a pointer to a valid instance of a given %Channel optional
  * interface class, associated with the same remote object the Channel is
  * associated with, and destroyed together with the Channel.
  *
@@ -1632,7 +1604,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 /**
  * \fn template <class Interface> Interface *typeInterface(InterfaceSupportedChecking check) const
  *
- * Returns a pointer to a valid instance of a given %Channel type interface
+ * Return a pointer to a valid instance of a given %Channel type interface
  * class, associated with the same remote object the Channel is
  * associated with, and destroyed together with the Channel.
  *
@@ -2104,7 +2076,7 @@ void Channel::continueIntrospection()
 /**
  * \fn bool isValid() const;
  *
- * Returns whether or not this object actually contains valid
+ * Return whether or not this object actually contains valid
  * information received from the service. If the returned value is
  * false, the values returned by the other methods for this object are
  * undefined.
@@ -2115,7 +2087,7 @@ void Channel::continueIntrospection()
 /**
  * \fn uint actor() const
  *
- * Returns the contact requesting or causing the change.
+ * Return the contact requesting or causing the change.
  *
  * \return The handle of the contact.
  */
@@ -2123,14 +2095,14 @@ void Channel::continueIntrospection()
 /**
  * \fn uint reason() const
  *
- * Returns the reason for the change.
+ * Return the reason for the change.
  *
  * \return The reason, as specified in #ChannelGroupChangeReason.
  */
 
 /**
  * \fn const QString &message() const
- * Returns a human-readable message from the contact represented by
+ * Return a human-readable message from the contact represented by
  * actor() pertaining to the change, or an empty string if there is no
  * message.
  *
