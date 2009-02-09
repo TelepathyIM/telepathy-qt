@@ -43,7 +43,7 @@ protected Q_SLOTS:
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
             const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
             const QList<QSharedPointer<Contact> > &groupMembersRemoved,
-            uint actor, uint reason, const QString &message);
+            QSharedPointer<Contact> actor, uint reason, const QString &message);
 
 private Q_SLOTS:
     void initTestCase();
@@ -216,7 +216,7 @@ void TestChanGroup::onGroupMembersChanged(
         const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
         const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
         const QList<QSharedPointer<Contact> > &groupMembersRemoved,
-        uint actor, uint reason, const QString &message)
+        QSharedPointer<Contact> actor, uint reason, const QString &message)
 {
     int ret = -1;
 
@@ -401,13 +401,13 @@ void TestChanGroup::testCreateChannel()
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
-                                uint, uint, const QString &)),
+                                QSharedPointer<Contact>, uint, const QString &)),
                         SLOT(onGroupMembersChanged(
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
-                                uint, uint, const QString &))));
+                                QSharedPointer<Contact>, uint, const QString &))));
         QCOMPARE(mLoop->exec(), 0);
 
         QStringList ids = QStringList() << "john@#room";

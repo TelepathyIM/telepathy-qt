@@ -137,7 +137,8 @@ Q_SIGNALS:
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved,
             const QList<QSharedPointer<Contact> > &groupMembersRemoved,
-            uint actor, uint reason, const QString &message);
+            QSharedPointer<Contact> actor,
+            uint reason, const QString &message);
 
     void groupHandleOwnersChanged(const HandleOwnerMap &owners,
             const Telepathy::UIntList &added, const Telepathy::UIntList &removed);

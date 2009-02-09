@@ -475,9 +475,15 @@ void Channel::Private::buildContacts()
 
     ContactManager *manager = connection->contactManager();
 
+    UIntList toBuild = QSet<uint>(pendingGroupMembers +
+            pendingGroupLocalPendingMembers +
+            pendingGroupRemotePendingMembers).toList();
+    if (currentGroupMembersChangedInfo &&
+        currentGroupMembersChangedInfo->actor != 0) {
+        toBuild.append(currentGroupMembersChangedInfo->actor);
+    }
     PendingContacts *pendingContacts = manager->contactsForHandles(
-            QSet<uint>(pendingGroupMembers + pendingGroupLocalPendingMembers +
-                       pendingGroupRemotePendingMembers).toList());
+            toBuild);
     parent->connect(pendingContacts,
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(gotContacts(Telepathy::Client::PendingOperation *)));
@@ -542,6 +548,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     QList<QSharedPointer<Contact> > groupContactsAdded;
     QList<QSharedPointer<Contact> > groupLocalPendingContactsAdded;
     QList<QSharedPointer<Contact> > groupRemotePendingContactsAdded;
+    QSharedPointer<Contact> actorContact;
 
     foreach (QSharedPointer<Contact> contact, contacts) {
         uint handle = contact->handle()[0];
@@ -554,6 +561,10 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         } else if (pendingGroupRemotePendingMembers.contains(handle)) {
             groupRemotePendingContactsAdded.append(contact);
             groupRemotePendingContacts[handle] = contact;
+        }
+        if (currentGroupMembersChangedInfo &&
+            currentGroupMembersChangedInfo->actor == contact->handle()[0]) {
+            actorContact = contact;
         }
     }
 
@@ -602,16 +613,16 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     }
     groupRemotePendingMembersToRemove.clear();
 
-    // TODO represent actor as a contact object also
     emit parent->groupMembersChanged(
             groupContactsAdded,
             groupLocalPendingContactsAdded,
             groupRemotePendingContactsAdded,
             groupContactsRemoved,
-            currentGroupMembersChangedInfo->actor,
+            actorContact,
             currentGroupMembersChangedInfo->reason,
             currentGroupMembersChangedInfo->message);
     delete currentGroupMembersChangedInfo;
+    currentGroupMembersChangedInfo = 0;
 
     processMembersChanged();
 }
