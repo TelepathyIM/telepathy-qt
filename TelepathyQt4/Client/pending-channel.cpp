@@ -27,6 +27,11 @@
 
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/FileTransfer>
+#include <TelepathyQt4/Client/RoomList>
+#include <TelepathyQt4/Client/StreamedMediaChannel>
+#include <TelepathyQt4/Client/TextChannel>
+#include <TelepathyQt4/Constants>
 
 /**
  * \addtogroup clientsideproxies Client-side proxies
@@ -207,10 +212,28 @@ Channel *PendingChannel::channel(QObject *parent) const
         return 0;
     }
 
-    Channel *channel =
-        new Channel(connection(),
-                    mPriv->objectPath.path(),
-                    parent);
+    Channel *channel;
+
+    if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
+        channel = new TextChannel(connection(), mPriv->objectPath.path(),
+                parent);
+    }
+    else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+        channel = new StreamedMediaChannel(connection(),
+                mPriv->objectPath.path(), parent);
+    }
+    else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
+        channel = new RoomList(connection(), mPriv->objectPath.path(),
+                parent);
+    }
+    else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {
+        channel = new FileTransfer(connection(), mPriv->objectPath.path(),
+                parent);
+    }
+    else {
+        // ContactList, old-style Tubes, or a future channel type
+        channel = new Channel(connection(), mPriv->objectPath.path(), parent);
+    }
     return channel;
 }
 
