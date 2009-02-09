@@ -75,7 +75,7 @@ struct Channel::Private
     void introspectGroup();
     void introspectGroupFallbackFlags();
     void introspectGroupFallbackMembers();
-    // void introspectGroupFallbackLocalPending();
+    void introspectGroupFallbackLocalPendingWithInfo();
     void introspectGroupFallbackSelfHandle();
 
     void extract0177MainProps(const QVariantMap &props);
@@ -131,12 +131,15 @@ struct Channel::Private
     QSet<uint> pendingGroupMembers;
     QSet<uint> pendingGroupLocalPendingMembers;
     QSet<uint> pendingGroupRemotePendingMembers;
+    QMap<uint, LocalPendingInfo> pendingGroupMembersChangeInfo;
     UIntList groupMembersToRemove;
     UIntList groupLocalPendingMembersToRemove;
     UIntList groupRemotePendingMembersToRemove;
     QHash<uint, QSharedPointer<Contact> > groupContacts;
     QHash<uint, QSharedPointer<Contact> > groupLocalPendingContacts;
     QHash<uint, QSharedPointer<Contact> > groupRemotePendingContacts;
+    QHash<uint, GroupMemberChangeInfo > groupLocalPendingContactsChangeInfo;
+    GroupMemberChangeInfo groupSelfContactRemoveInfo;
     QQueue<GroupMembersChangedInfo *> groupMembersChangedQueue;
     GroupMembersChangedInfo *currentGroupMembersChangedInfo;
 
@@ -147,9 +150,6 @@ struct Channel::Private
     // Group self handle
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
-
-    // Group remove info
-    GroupMemberChangeInfo groupSelfRemoveInfo;
 };
 
 struct Channel::Private::GroupMembersChangedInfo
@@ -361,8 +361,7 @@ void Channel::Private::introspectGroupFallbackMembers()
                     SLOT(gotAllMembers(QDBusPendingCallWatcher*)));
 }
 
-#if 0
-void Channel::Private::introspectGroupFallbackLocalPending()
+void Channel::Private::introspectGroupFallbackLocalPendingWithInfo()
 {
     Q_ASSERT(group != 0);
 
@@ -372,9 +371,8 @@ void Channel::Private::introspectGroupFallbackLocalPending()
                 parent);
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotLocalPending(QDBusPendingCallWatcher*)));
+                    SLOT(gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher*)));
 }
-#endif
 
 void Channel::Private::introspectGroupFallbackSelfHandle()
 {
@@ -434,8 +432,7 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
 
         introspectQueue.enqueue(&Private::introspectGroupFallbackFlags);
         introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
-        // TODO reenable here, disabled for now
-        // introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPending);
+        introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPendingWithInfo);
         introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
     }
     else {
@@ -449,10 +446,10 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
 
         pendingGroupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
-        // TODO add GroupMemberChangeInfo support
-        foreach (LocalPendingInfo info,
+        foreach (const LocalPendingInfo &info,
                 qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
             pendingGroupLocalPendingMembers.insert(info.toBeAdded);
+            pendingGroupMembersChangeInfo[info.actor] = info;
         }
         pendingGroupRemotePendingMembers =
             QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
@@ -487,10 +484,18 @@ void Channel::Private::buildContacts()
     UIntList toBuild = QSet<uint>(pendingGroupMembers +
             pendingGroupLocalPendingMembers +
             pendingGroupRemotePendingMembers).toList();
+
+    foreach (const uint &handle, pendingGroupMembersChangeInfo.keys()) {
+        if (handle) {
+            toBuild.append(handle);
+        }
+    }
+
     if (currentGroupMembersChangedInfo &&
         currentGroupMembersChangedInfo->actor != 0) {
         toBuild.append(currentGroupMembersChangedInfo->actor);
     }
+
     PendingContacts *pendingContacts = manager->contactsForHandles(
             toBuild);
     parent->connect(pendingContacts,
@@ -526,7 +531,14 @@ void Channel::Private::processMembersChanged()
 
     foreach (uint handle, currentGroupMembersChangedInfo->localPending) {
         if (!groupLocalPendingContacts.contains(handle)) {
+            LocalPendingInfo info = {
+                handle,
+                currentGroupMembersChangedInfo->actor,
+                currentGroupMembersChangedInfo->reason,
+                currentGroupMembersChangedInfo->message
+            };
             pendingGroupLocalPendingMembers.insert(handle);
+            pendingGroupMembersChangeInfo[info.actor] = info;
         }
     }
 
@@ -538,6 +550,16 @@ void Channel::Private::processMembersChanged()
 
     foreach (uint handle, currentGroupMembersChangedInfo->removed) {
         groupMembersToRemove.append(handle);
+
+        if (handle == groupSelfHandle) {
+            LocalPendingInfo info = {
+                handle,
+                currentGroupMembersChangedInfo->actor,
+                currentGroupMembersChangedInfo->reason,
+                currentGroupMembersChangedInfo->message
+            };
+            pendingGroupMembersChangeInfo[info.actor] = info;
+        }
     }
 
     if (pendingGroupMembers.isEmpty() &&
@@ -567,19 +589,42 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         } else if (pendingGroupLocalPendingMembers.contains(handle)) {
             groupLocalPendingContactsAdded.append(contact);
             groupLocalPendingContacts[handle] = contact;
+            groupLocalPendingContactsChangeInfo[handle] = GroupMemberChangeInfo();
         } else if (pendingGroupRemotePendingMembers.contains(handle)) {
             groupRemotePendingContactsAdded.append(contact);
             groupRemotePendingContacts[handle] = contact;
         }
+
         if (currentGroupMembersChangedInfo &&
             currentGroupMembersChangedInfo->actor == contact->handle()[0]) {
             actorContact = contact;
         }
     }
 
+    // this is not ideal, but we need to make sure groupLocalPendingContactsChangeInfo
+    // is there first
+    foreach (QSharedPointer<Contact> contact, contacts) {
+        uint handle = contact->handle()[0];
+        // the key here is the actor
+        // if we retrieved the actor as well as the contact, update info for the
+        // contact
+        if (pendingGroupMembersChangeInfo.contains(handle)) {
+            LocalPendingInfo info = pendingGroupMembersChangeInfo[handle];
+            if (groupLocalPendingContactsChangeInfo.contains(info.toBeAdded)) {
+                groupLocalPendingContactsChangeInfo[info.toBeAdded].update(
+                        contact, info.reason, info.message);
+            }
+            else if (handle == groupSelfHandle) {
+                groupSelfContactRemoveInfo = GroupMemberChangeInfo(
+                        contact, info.reason, info.message);
+            }
+        }
+    }
+
     pendingGroupMembers.clear();
     pendingGroupLocalPendingMembers.clear();
     pendingGroupRemotePendingMembers.clear();
+    pendingGroupMembersChangeInfo.clear();
 
     if (buildingInitialContacts) {
         buildingInitialContacts = false;
@@ -604,6 +649,10 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         } else if (groupRemotePendingContacts.contains(handle)) {
             contactToRemove = groupRemotePendingContacts[handle];
             groupRemotePendingContacts.remove(handle);
+        }
+
+        if (groupLocalPendingContactsChangeInfo.contains(handle)) {
+            groupLocalPendingContactsChangeInfo.remove(handle);
         }
 
         if (contactToRemove) {
@@ -1098,6 +1147,60 @@ QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
 }
 
 /**
+ * Return information of a local pending contact change. If
+ * no information is available, an object for which
+ * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
+ *
+ * \param A Contact object that is on the local pending contacts list.
+ * \return The change info in a GroupMemberChangeInfo object.
+ */
+Channel::GroupMemberChangeInfo Channel::groupLocalPendingContactChangeInfo(
+        const QSharedPointer<Contact> &contact) const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupLocalPending() used channel not ready";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupLocalPending() used with no group interface";
+    }
+    else if (!contact) {
+        warning() << "Channel::groupLocalPending() used with null contact param";
+        return GroupMemberChangeInfo();
+    }
+
+    uint handle = contact->handle()[0];
+    return mPriv->groupLocalPendingContactsChangeInfo.value(handle);
+}
+
+/**
+ * Return information on the removal of the local user from the group. If
+ * the user hasn't been removed from the group, an object for which
+ * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
+ *
+ * This method should be called only after the channel has been closed.
+ * This is useful for getting the remove information after missing the
+ * corresponding groupMembersChanged() signal, as the local user being
+ * removed usually causes the remote Channel to be closed.
+ *
+ * The returned information is not guaranteed to be correct if
+ * groupIsSelfHandleTracked() returns false and a self handle change has
+ * occurred on the remote object.
+ *
+ * \return The remove info in a GroupMemberChangeInfo object.
+ */
+Channel::GroupMemberChangeInfo Channel::groupSelfContactRemoveInfo() const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupLocalPending() used channel not ready";
+    }
+    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupLocalPending() used with no group interface";
+    }
+
+    return mPriv->groupSelfContactRemoveInfo;
+}
+
+/**
  * Returns whether globally valid handles can be looked up using the
  * channel-specific handle on this channel using this object.
  *
@@ -1201,37 +1304,6 @@ uint Channel::groupSelfHandle() const
     }
 
     return mPriv->groupSelfHandle;
-}
-
-/**
- * Returns information on the removal of the local user from the group. If
- * the user hasn't been removed from the group, an object for which
- * GroupMemberChangeInfo::isValid() returns <code>false</code> is returned.
- *
- * This method should be called only after the channel has been closed.
- * This is useful for getting the remove information after missing the
- * corresponding groupMembersChanged() (or
- * groupLocalPendingChanged()/groupRemotePendingChanged()) signal, as
- * the local user being removed usually causes the remote %Channel to be
- * closed.
- *
- * The returned information is not guaranteed to be correct if
- * groupIsSelfHandleTracked() returns false and a self handle change has
- * occurred on the remote object.
- *
- * \return The remove info in a GroupMemberChangeInfo object.
- */
-Channel::GroupMemberChangeInfo Channel::groupSelfRemoveInfo() const
-{
-    if (isValid()) {
-        warning() << "Channel::groupSelfRemoveInfo() used channel not closed";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupSelfRemoveInfo() used with "
-            "no group interface";
-    }
-
-    return mPriv->groupSelfRemoveInfo;
 }
 
 /**
@@ -1663,15 +1735,13 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
         mPriv->pendingGroupLocalPendingMembers = QSet<uint>::fromList(reply.argumentAt<1>());
         mPriv->pendingGroupRemotePendingMembers = QSet<uint>::fromList(reply.argumentAt<2>());
 
-        mPriv->buildingInitialContacts = true;
-        mPriv->buildContacts();
+        // delay building contacts now until we process gotLocalPendingMembersWithInfo
     }
 
     continueIntrospection();
 }
 
-#if 0
-void Channel::gotLocalPending(QDBusPendingCallWatcher *watcher)
+void Channel::gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<LocalPendingInfoList> reply = *watcher;
 
@@ -1685,14 +1755,16 @@ void Channel::gotLocalPending(QDBusPendingCallWatcher *watcher)
             "Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
 
         foreach (LocalPendingInfo info, reply.value()) {
-            mPriv->groupLocalPending[info.toBeAdded] =
-                GroupMemberChangeInfo(info.actor, info.reason, info.message);
+            mPriv->pendingGroupMembersChangeInfo[info.actor] = info;
         }
     }
 
+    // build contacts even if the call failed
+    mPriv->buildingInitialContacts = true;
+    mPriv->buildContacts();
+
     continueIntrospection();
 }
-#endif
 
 void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
 {

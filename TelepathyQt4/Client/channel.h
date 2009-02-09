@@ -97,27 +97,39 @@ public:
     {
     public:
         GroupMemberChangeInfo()
-            : mActor(-1), mReason(0), mIsValid(false) {}
+            : mReason(0), mIsValid(false) {}
 
-        GroupMemberChangeInfo(uint actor, uint reason, const QString &message)
+        GroupMemberChangeInfo(const QSharedPointer<Contact> &actor, uint reason, const QString &message)
             : mActor(actor), mReason(reason), mMessage(message), mIsValid(true) {}
 
-        bool isValid() const { return mIsValid; }
+        bool isValid() const { return !mActor.isNull(); }
 
-        uint actor() const { return mActor; }
+        QSharedPointer<Contact> actor() const { return mActor; }
 
         uint reason() const { return mReason; }
 
         const QString &message() const { return mMessage; }
 
     private:
-        uint mActor;
+        friend class Channel;
+
+        void update(const QSharedPointer<Contact> &actor, uint reason, const QString &message)
+        {
+            mActor = actor;
+            mReason = reason;
+            mMessage = message;
+        }
+
+        QSharedPointer<Contact> mActor;
         uint mReason;
         QString mMessage;
         bool mIsValid;
     };
 
     typedef QMap<uint, GroupMemberChangeInfo> GroupMemberChangeInfoMap;
+
+    GroupMemberChangeInfo groupLocalPendingContactChangeInfo(const QSharedPointer<Contact> &contact) const;
+    GroupMemberChangeInfo groupSelfContactRemoveInfo() const;
 
     bool groupAreHandleOwnersAvailable() const;
 
@@ -126,8 +138,6 @@ public:
     bool groupIsSelfHandleTracked() const;
 
     uint groupSelfHandle() const;
-
-    GroupMemberChangeInfo groupSelfRemoveInfo() const;
 
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
@@ -259,7 +269,7 @@ private Q_SLOTS:
     void gotGroupProperties(QDBusPendingCallWatcher *watcher);
     void gotGroupFlags(QDBusPendingCallWatcher *watcher);
     void gotAllMembers(QDBusPendingCallWatcher *watcher);
-    // void gotLocalPending(QDBusPendingCallWatcher *watcher);
+    void gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
     void gotContacts(Telepathy::Client::PendingOperation *op);
     void onGroupFlagsChanged(uint, uint);
