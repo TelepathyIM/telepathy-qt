@@ -383,6 +383,8 @@ void TestChanGroup::testCreateChannel()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
 
+        QCOMPARE(mChan->groupSelfContact()->id(), QString("me@#room"));
+
         QCOMPARE(mChan->groupCanAddContacts(), false);
         QCOMPARE(mChan->groupCanRemoveContacts(), false);
 
