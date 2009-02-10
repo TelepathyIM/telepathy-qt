@@ -159,7 +159,7 @@ Q_SIGNALS:
     void groupHandleOwnersChanged(const HandleOwnerMap &owners,
             const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
 
-    void groupSelfContactChanged();
+    void groupSelfContactChanged(const QSharedPointer<Contact> &contact);
 
 public:
     template <class Interface>
