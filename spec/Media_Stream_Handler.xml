@@ -98,7 +98,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="CodecChoice" tp:name-for-bindings="Codec_Choice">
       <arg direction="in" name="Codec_ID" type="u"/>
       <tp:docstring>
-        Inform the connection manager of the current codec choice.
+        Inform the connection manager of codec used to receive data.
       </tp:docstring>
     </method>
     <method name="Error" tp:name-for-bindings="Error">
@@ -222,10 +222,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           Locally-supported codecs
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Used to provide codecs after Ready(), so the media client can go
-        ready for an incoming call and exchange candidates/codecs before
-        knowing what local codecs are available.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Used to provide codecs after Ready(), so the media client can go
+          ready for an incoming call and exchange candidates/codecs before
+          knowing what local codecs are available.</p>
+
+        <p>This is useful for gatewaying calls between two connection managers.
+          Given an incoming call, you need to call
+          <tp:member-ref>Ready</tp:member-ref> to get the remote codecs before
+          you can use them as the "local" codecs to place the outgoing call,
+          and hence receive the outgoing call's remote codecs to use as the
+          incoming call's "local" codecs.</p>
+
+        <p>In this situation, you would pass an empty list of codecs to the
+          incoming call's Ready method, then later call SetLocalCodecs on the
+          incoming call in order to respond to the offer.</p>
       </tp:docstring>
     </method>
     <signal name="RemoveRemoteCandidate"
@@ -235,10 +246,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           String identifier for remote candidate to drop
         </tp:docstring>
       </arg>
+      <tp:deprecated>
+        There is no case where you want to release candidates (except
+        for an ICE reset, and there you'd want to replace then all,
+        using <tp:member-ref>SetRemoteCandidateList</tp:member-ref>).
+      </tp:deprecated>
       <tp:docstring>
         Signal emitted when the connection manager wishes to inform the
         client that the remote end has removed a previously usable
         candidate.
+
+        <tp:rationale>
+          It seemed like a good idea at the time, but wasn't.
+        </tp:rationale>
       </tp:docstring>
     </signal>
     <signal name="SetActiveCandidatePair"
@@ -275,13 +295,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         Signal emitted when the connection manager wishes to inform the
         client of the codecs supported by the remote end.
+	If these codecs are compatible with the remote codecs, then the client
+        must call <tp:member-ref>SupportedCodecs</tp:member-ref>,
+        otherwise call <tp:member-ref>Error</tp:member-ref>.
       </tp:docstring>
     </signal>
     <signal name="SetStreamPlaying" tp:name-for-bindings="Set_Stream_Playing">
       <arg name="Playing" type="b"/>
       <tp:docstring>
-        Signal emitted when the connection manager wishes to set the
-        stream playing or stopped.
+        If emitted with argument TRUE, this means that the connection manager
+        wishes to set the stream playing; this means that the streaming
+        implementation should expect to receive data. If emitted with argument
+        FALSE this signal is basically meaningless and should be ignored.
+
+        <tp:rationale>
+          We're very sorry.
+        </tp:rationale>
       </tp:docstring>
     </signal>
     <signal name="SetStreamSending" tp:name-for-bindings="Set_Stream_Sending">
@@ -317,6 +346,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         as specified in Channel.Type.StreamedMedia::ListStreams.
       </tp:docstring>
     </method>
+
     <method name="SupportedCodecs" tp:name-for-bindings="Supported_Codecs">
       <arg direction="in" name="Codecs" type="a(usuuua{ss})"
         tp:type="Media_Stream_Handler_Codec[]">
@@ -330,6 +360,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         to notify what codecs are supported by the peer, and will thus be an
         intersection of all locally supported codecs (passed to Ready)
         and those supported by the peer.
+      </tp:docstring>
+    </method>
+
+    <method name="CodecsUpdated" tp:name-for-bindings="Codecs_Updated">
+      <arg direction="in" name="Codecs" type="a(usuuua{ss})"
+        tp:type="Media_Stream_Handler_Codec[]">
+        <tp:docstring>
+          Locally supported codecs, which SHOULD be the same as were previously
+          in effect, but possibly with different parameters.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Inform the connection manager that the parameters of the supported
+        codecs for this session have changed. The connection manager should
+        send the new parameters to the remote contact.
+
+        <tp:rationale>
+          This is required for H.264 and Theora, for example.
+        </tp:rationale>
       </tp:docstring>
     </method>
 

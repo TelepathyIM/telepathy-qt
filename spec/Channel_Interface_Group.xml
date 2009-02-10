@@ -91,17 +91,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         this method and GetLocalPendingMembersWithInfo if necessary.
       </tp:deprecated>
 
-      <arg direction="out" type="au" tp:type="Contact_Handle[]">
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"
+        name="Members">
         <tp:docstring>
           array of handles of current members
         </tp:docstring>
       </arg>
-      <arg direction="out" type="au" tp:type="Contact_Handle[]">
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"
+        name="Local_Pending">
         <tp:docstring>
           array of handles of local pending members
         </tp:docstring>
       </arg>
-      <arg direction="out" type="au" tp:type="Contact_Handle[]">
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"
+        name="Remote_Pending">
         <tp:docstring>
           array of handles of remote pending members
         </tp:docstring>
@@ -254,7 +257,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </property>
 
     <method name="GetGroupFlags" tp:name-for-bindings="Get_Group_Flags">
-      <arg direction="out" type="u" tp:type="Channel_Group_Flags">
+      <arg direction="out" type="u" tp:type="Channel_Group_Flags"
+        name="Group_Flags">
         <tp:docstring>
           The value of the GroupFlags property
         </tp:docstring>
@@ -340,7 +344,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           A list of integer handles representing members of the channel
         </tp:docstring>
       </arg>
-      <arg direction="out" type="au" tp:type="Contact_Handle[]">
+      <arg direction="out" type="au" tp:type="Contact_Handle[]" name="Owners">
         <tp:docstring>
           An array of integer handles representing the owner handles of
           the given room members, in the same order, or 0 if the
@@ -379,7 +383,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="GetLocalPendingMembers"
       tp:name-for-bindings="Get_Local_Pending_Members">
-      <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"
+        name="Handles"/>
       <tp:docstring>
         Returns the To_Be_Added handle (only) for each structure in the
         <tp:member-ref>LocalPendingMembers</tp:member-ref> property.
@@ -400,7 +405,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
       <tp:deprecated version="0.17.6">Use the LocalPendingMembers
         property, if Channel_Group_Flag_Properties is present.</tp:deprecated>
-      <arg direction="out" type="a(uuus)" tp:type="Local_Pending_Info[]">
+      <arg direction="out" type="a(uuus)" tp:type="Local_Pending_Info[]"
+        name="Info">
         <tp:docstring>
           An array of structs containing:
           <ul>
@@ -452,7 +458,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </property>
 
     <method name="GetMembers" tp:name-for-bindings="Get_Members">
-      <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"
+        name="Handles"/>
       <tp:docstring>
         Returns the <tp:member-ref>Members</tp:member-ref> property.
       </tp:docstring>
@@ -476,7 +483,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="GetRemotePendingMembers"
       tp:name-for-bindings="Get_Remote_Pending_Members">
-      <arg direction="out" type="au" tp:type="Contact_Handle[]"/>
+      <arg direction="out" type="au" tp:type="Contact_Handle[]"
+        name="Handles"/>
       <tp:docstring>
         Returns an array of handles representing contacts who have been
         invited to the channel and are awaiting remote approval.
@@ -524,7 +532,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </property>
 
     <method name="GetSelfHandle" tp:name-for-bindings="Get_Self_Handle">
-      <arg direction="out" type="u" tp:type="Contact_Handle"/>
+      <arg direction="out" type="u" tp:type="Contact_Handle"
+        name="Self_Handle"/>
       <tp:docstring>
         Returns the value of the <tp:member-ref>SelfHandle</tp:member-ref>
         property.
@@ -563,29 +572,81 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Offline" value="1">
-        <tp:docstring>
-            The change is due to a user going offline. Also used when
-            user is already offline, but this wasn't known previously.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is due to a user going offline. Also used when
+            user is already offline, but this wasn't known previously.</p>
+
+          <p>If a one-to-one <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+            call fails because the contact being called is offline, the
+            connection manager SHOULD indicate this by removing both the
+            <tp:member-ref>SelfHandle</tp:member-ref> and the other contact's
+            handle from the Group interface with reason Offline.</p>
+
+          <tp:rationale>
+            For 1-1 calls, the call terminates as a result of removing the
+            remote contact, so the SelfHandle should be removed at the same
+            time as the remote contact and for the same reason.
+          </tp:rationale>
+
+          <p>If a handle is removed from a group for this reason, the
+            equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Offline</code>.</p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Kicked" value="2">
-        <tp:docstring>
-            The change is due to a kick operation.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is due to a kick operation.</p>
+
+          <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed
+            from a group for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Channel.Kicked</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Busy" value="3">
-        <tp:docstring>
-            The change is due to a busy indication.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is due to a busy indication.</p>
+
+          <p>If a one-to-one <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+            call fails because the contact being called is busy, the
+            connection manager SHOULD indicate this by removing both the
+            <tp:member-ref>SelfHandle</tp:member-ref> and the other contact's
+            handle from the Group interface with reason Busy.</p>
+
+          <tp:rationale>
+            For 1-1 calls, the call terminates as a result of removing the
+            remote contact, so the SelfHandle should be removed at the same
+            time as the remote contact and for the same reason.
+          </tp:rationale>
+
+          <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed
+            from a group for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Busy</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Invited" value="4">
         <tp:docstring>
-            The change is due to an invitation.
+          The change is due to an invitation. This reason SHOULD only be used
+          when contacts are added to the remote-pending set (to indicate that
+          the contact has been invited) or to the members (to indicate that
+          the contact has accepted the invitation).
+
+          <tp:rationale>
+            Otherwise, what would it mean?
+          </tp:rationale>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Banned" value="5">
-        <tp:docstring>
-            The change is due to a kick+ban operation.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is due to a kick+ban operation.</p>
+
+          <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed
+            from a group for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Channel.Banned</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Error" value="6">
@@ -594,18 +655,53 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Invalid_Contact" value="7">
-        <tp:docstring>
-            The change is because the requested contact does not exist.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is because the requested contact does not exist.</p>
+
+          <p>For instance, if the user invites a nonexistent contact to a
+            chatroom or attempts to call a nonexistent contact, this could
+            be indicated by the CM adding that contact's handle to
+            remote-pending for reason None or Invited, then removing it for
+            reason Invalid_Contact. In the case of a 1-1 StreamedMedia
+            call, the CM SHOULD remove the self handle from the Group
+            in the same signal.</p>
+
+          <tp:rationale>
+            For 1-1 calls, the call terminates as a result of removing the
+            remote contact, so the SelfHandle should be removed at the same
+            time as the remote contact and for the same reason.
+          </tp:rationale>
+
+          <p>If a contact is removed from a group for this reason, the
+            equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.DoesNotExist</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="No_Answer" value="8">
-        <tp:docstring>
-            The change is because the requested contact did not respond.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is because the requested contact did not respond.</p>
+
+          <p>If a one-to-one <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+            call fails because the contact being called did not respond, the
+            connection manager SHOULD indicate this by removing both the
+            <tp:member-ref>SelfHandle</tp:member-ref> and the other contact's
+            handle from the Group interface with reason No_Answer.</p>
+
+          <tp:rationale>
+            Documenting existing practice.
+          </tp:rationale>
+
+          <p>If a contact is removed from a group for this reason, the
+            equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.NoAnswer</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Renamed" value="9">
-        <tp:docstring>
-          The change is because a contact's unique identifier changed.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is because a contact's unique identifier changed.
           There must be exactly one handle in the removed set and exactly
           one handle in one of the added sets. The <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface.Renaming">Renamed</tp:dbus-ref>
@@ -613,13 +709,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface">Renaming</tp:dbus-ref>
           interface will have been emitted for the same handles,
-          shortly before this <tp:member-ref>MembersChanged</tp:member-ref> signal is emitted.
+          shortly before this <tp:member-ref>MembersChanged</tp:member-ref> signal is emitted.</p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Permission_Denied" value="10">
-        <tp:docstring>
-            The change is because there was no permission to contact the
-            requested handle.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is because there was no permission to contact the
+            requested handle.</p>
+
+          <p>If a contact is removed from a group for this reason, the
+            equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.PermissionDenied</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Separated" value="11">
@@ -648,6 +749,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             the group with reason Separated. Application protocols in Tubes
             should be prepared to cope with this situation.
           </p>
+
+          <p>The <tp:member-ref>SelfHandle</tp:member-ref> SHOULD NOT be
+            removed from channels with this reason.</p>
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
@@ -927,6 +1031,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:member-ref>MembersChangedDetailed</tp:member-ref> signal)
     should be emitted when information
     is retrieved from the server, or changes occur.</p>
+
+  <p>If the <tp:member-ref>MembersChanged</tp:member-ref> or
+    <tp:member-ref>MembersChangedDetailed</tp:member-ref> signal indicates
+    that the <tp:member-ref>SelfHandle</tp:member-ref> has been removed from
+    the channel, and the channel subsequently emits <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy.Channel">Closed</tp:dbus-ref>,
+    clients SHOULD consider the details given in the MembersChanged or
+    MembersChangedDetailed signal to be the reason why the channel closed.</p>
 
   <p>Addition of members to the channel may be requested by using
     <tp:member-ref>AddMembers</tp:member-ref>. If

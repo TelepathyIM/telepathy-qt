@@ -126,32 +126,32 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="GetAvatarRequirements"
       tp:name-for-bindings="Get_Avatar_Requirements">
-      <arg direction="out" type="as">
+      <arg direction="out" type="as" name="MIME_Types">
         <tp:docstring>
           An array of supported MIME types (eg image/jpeg)
         </tp:docstring>
       </arg>
-      <arg direction="out" type="q">
+      <arg direction="out" type="q" name="Min_Width">
         <tp:docstring>
           The minimum image width in pixels
         </tp:docstring>
       </arg>
-      <arg direction="out" type="q">
+      <arg direction="out" type="q" name="Min_Height">
         <tp:docstring>
           The minimum image height in pixels
         </tp:docstring>
       </arg>
-      <arg direction="out" type="q">
+      <arg direction="out" type="q" name="Max_Width">
         <tp:docstring>
           The maximum image width in pixels, or 0 if there is no limit
         </tp:docstring>
       </arg>
-      <arg direction="out" type="q">
+      <arg direction="out" type="q" name="Max_Height">
         <tp:docstring>
           The maximum image height in pixels, or 0 if there is no limit
         </tp:docstring>
       </arg>
-      <arg direction="out" type="u">
+      <arg direction="out" type="u" name="Max_Bytes">
         <tp:docstring>
           The maximum image size in bytes, or 0 if there is no limit
         </tp:docstring>
@@ -233,12 +233,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           An integer handle for the contact to request the avatar for
         </tp:docstring>
       </arg>
-      <arg direction="out" type="ay">
+      <arg direction="out" type="ay" name="Data">
         <tp:docstring>
           An array of bytes containing the image data
         </tp:docstring>
       </arg>
-      <arg direction="out" type="s">
+      <arg direction="out" type="s" name="MIME_Type">
         <tp:docstring>
         A string containing the image MIME type (eg image/jpeg), or empty if
         unknown

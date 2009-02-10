@@ -158,7 +158,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The required protocol name
         </tp:docstring>
       </arg>
-      <arg direction="out" type="a(susv)" tp:type="Param_Spec[]">
+      <arg direction="out" type="a(susv)" tp:type="Param_Spec[]"
+        name="Parameters">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structs representing possible parameters.
         </tp:docstring>
@@ -178,7 +179,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <method name="ListProtocols" tp:name-for-bindings="List_Protocols">
-      <arg direction="out" type="as" tp:type="Protocol[]">
+      <arg direction="out" type="as" tp:type="Protocol[]" name="Protocols">
         <tp:docstring>
           A array of string protocol identifiers supported by this manager
         </tp:docstring>
@@ -226,12 +227,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           and the above well-known list.
         </tp:docstring>
       </arg>
-      <arg direction="out" type="s" tp:type="DBus_Bus_Name">
+      <arg direction="out" type="s" tp:type="DBus_Bus_Name" name="Bus_Name">
         <tp:docstring>
           A D-Bus service name where the new Connection object can be found
         </tp:docstring>
       </arg>
-      <arg direction="out" type="o">
+      <arg direction="out" type="o" name="Object_Path">
         <tp:docstring>
           The D-Bus object path to the Connection on this service
         </tp:docstring>

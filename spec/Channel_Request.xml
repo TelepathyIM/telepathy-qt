@@ -49,7 +49,7 @@
     </property>
 
     <property name="UserActionTime" tp:name-for-bindings="User_Action_Time"
-      type="t" tp:type="Unix_Timestamp64" access="read">
+      type="x" tp:type="Unix_Timestamp64" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The time at which user action occurred, or 0 if this channel
           request is for some reason not involving user action.</p>

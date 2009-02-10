@@ -58,7 +58,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           SRV (RFC 2782) Service Types
           http://www.dns-sd.org/ServiceTypes.html</a>):
           <code>{'u': 'username', 'p': 'password', 'path': 'path'}</code></p>
-        <p>When requesting a channel with 
+        <p>When requesting a channel with
           <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
           this property MAY be included in the request. If it is not included in
           the request, the connection manager MUST consider the property to be
@@ -68,11 +68,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="Status" type="u" tp:type="Tube_Channel_State" access="read"
-              tp:name-for-bindings="Status">
+    <property name="State" type="u" tp:type="Tube_Channel_State" access="read"
+              tp:name-for-bindings="State">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Status of the tube in this channel.</p>
-        <p>When requesting a channel with 
+        <p>State of the tube in this channel.</p>
+        <p>When requesting a channel with
           <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
           this property MUST NOT be included in the request.</p>
       </tp:docstring>

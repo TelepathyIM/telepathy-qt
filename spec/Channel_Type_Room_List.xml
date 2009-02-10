@@ -40,7 +40,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </property>
 
     <method name="GetListingRooms" tp:name-for-bindings="Get_Listing_Rooms">
-      <arg direction="out" type="b">
+      <arg direction="out" type="b" name="In_Progress">
         <tp:docstring>
           A boolean indicating if room listing is in progress
         </tp:docstring>

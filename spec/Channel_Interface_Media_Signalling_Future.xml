@@ -1,0 +1,189 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_Media_Signalling_Future"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright (C) 2009 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright (C) 2009 Nokia Corporation </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+      USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Interface.MediaSignalling.FUTURE">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.MediaSignalling"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface contains functionality which we intend to incorporate
+        into the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Channel.Interface.MediaSignalling</tp:dbus-ref>
+        interface in future. It should be considered to be conceptually part
+        of the core MediaSignalling interface, but without API or ABI
+        guarantees.</p>
+
+      <tp:rationale>
+        <p>The rationale is the same as for <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Channel.FUTURE</tp:dbus-ref>.</p>
+      </tp:rationale>
+    </tp:docstring>
+
+    <property name="ICETransportAvailable"
+      tp:name-for-bindings="ICE_Transport_Available"
+      type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>True if this channel supports the use of the ICE-UDP transport
+          (<a href="http://xmpp.org/extensions/xep-0176.html">XEP-0176</a>,
+          <a href="http://tools.ietf.org/html/draft-ietf-mmusic-ice">ICE RFC
+            draft)</a>. Various other transports have boolean properties
+          that work in the same way as this one, so this description covers
+          all such transports.</p>
+
+        <p>This property is immutable (cannot change), and therefore SHOULD
+          appear wherever immutable properties are reported, e.g. <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+          signals.</p>
+
+        <p>Connection managers capable of signalling streamed media calls to
+          contacts SHOULD include the properties representing all supported
+          transports in the allowed properties list of the channel class
+          in <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
+          that advertises support for streamed media channels.</p>
+
+        <p>Similarly, connection managers that support the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface">ContactCapabilities.DRAFT</tp:dbus-ref>
+          interface SHOULD include all supported transports in the allowed
+          properties list of the channel class that advertises a contact's
+          ability to receive streamed media calls.</p>
+
+        <p>Clients that are able to receive calls with particular NAT
+          traversal mechanisms MAY include the following filters if
+          calling <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT">SetSelfCapabilities</tp:dbus-ref>
+          (clients of a <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">ChannelDispatcher.DRAFT</tp:dbus-ref>
+          SHOULD instead arrange for the ChannelDispatcher to do this,
+          by including the filters in their <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandlerChannelFilter</tp:dbus-ref>
+          properties):</p>
+
+        <ul>
+          <li>{ ChannelType = StreamedMedia, ICETransportAvailable = true }
+            if the ICE transport is supported</li>
+          <li>{ ChannelType = StreamedMedia, RawUDPTransportAvailable = true }
+            if the raw UDP transport is supported</li>
+          <li>... and so on, one filter per available transport.</li>
+        </ul>
+
+        <p>Connection managers MAY use this information to adjust the
+          transports for which they advertise support to other contacts.
+          If a client has indicated support for any particular transports,
+          the connection manager SHOULD advertise support for
+          each transport that is supported by any client, and also
+          supported by the CM itself.</p>
+
+        <tp:rationale>
+          <p>This minimizes the possibility that a call will be started that
+            cannot in fact succeed, because the intersection of the contacts'
+            available transports is empty.</p>
+        </tp:rationale>
+
+        <p>If no client has mentioned any of the transports known to the
+          connection manager in a call to SetSelfCapabilities, the connection
+          manager SHOULD advertise support for every transport that it can
+          signal.</p>
+
+        <tp:rationale>
+          <p>This simplifies implementation on integrated platforms like Maemo,
+            where it can be assumed that client libraries will support all the
+            "standard" transports known to any connection manager, and
+            lowers the "barrier to entry" for new Telepathy clients.</p>
+        </tp:rationale>
+
+        <p>Clients making outgoing calls for which the same client that made
+          the request will handle the streaming MAY indicate their ability or
+          inability to handle particular transports by including
+          <code>ICETransportAvailable = true</code>,
+          <code>RawUDPTransportAvailable = false</code>, etc.
+          in the request properties parameter of their call to <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">EnsureChannel</tp:dbus-ref>
+          or similar functions. When they do so, the connection manager
+          SHOULD attempt to use a transport that the client has indicated
+          it is able to handle; if this is not possible, the connection
+          manager SHOULD raise an error instead of creating a channel.</p>
+
+        <tp:rationale>
+          <p>This enables such clients to restrict the CM to the subset of
+            transports supported by that particular client.</p>
+        </tp:rationale>
+
+        <p>Clients making outgoing calls for which they will not themselves
+          handle the streaming (e.g. an address book starting a call which
+          will be streamed by a separate call UI) SHOULD NOT include those
+          properties in the request.</p>
+
+        <tp:rationale>
+          <p>In general, such a client can't know the capabilities of the
+            streaming implementation, or even which streaming implementation
+            will be used.</p>
+        </tp:rationale>
+
+        <p>In the absence of any indication of supported transports from the
+          client, the connection manager SHOULD assume that the transports
+          indicated by calling SetSelfCapabilities are available. If
+          no transports were indicated as supported by calling
+          SetSelfCapabilities either, it SHOULD assume that any transport
+          that it can signal will be acceptable.</p>
+
+        <p>If this property, or any of the similar transport availability
+          properties, is passed to EnsureChannel (as opposed to CreateChannel),
+          the connection manager SHOULD ignore these properties when checking
+          whether it can return an existing channel as suitable; these
+          properties only become significant when the connection manager has
+          decided to create a new channel.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="RawUDPTransportAvailable"
+      tp:name-for-bindings="Raw_UDP_Transport_Available"
+      type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same as <tp:member-ref>ICETransportAvailable</tp:member-ref>,
+          but for raw UDP streaming as described by <a
+            href="http://xmpp.org/extensions/xep-0177.html">XEP-0177</a>.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="GoogleP2PTransportAvailable"
+      tp:name-for-bindings="Google_P2P_Transport_Available"
+      type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same as <tp:member-ref>ICETransportAvailable</tp:member-ref>,
+          but for the variant of ICE used by the Google Talk peer-to-peer
+          connectivity establishment mechanism (as implemented in libjingle
+          0.3).</p>
+      </tp:docstring>
+    </property>
+
+    <property name="MSNTransportAvailable"
+      tp:name-for-bindings="MSN_Transport_Available"
+      type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same as <tp:member-ref>ICETransportAvailable</tp:member-ref>,
+          but for the variant of ICE used by MSN.</p>
+      </tp:docstring>
+    </property>
+
+  </interface>
+</node>

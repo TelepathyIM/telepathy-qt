@@ -160,7 +160,7 @@
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="User_Action_Time" type="t"
+      <arg direction="in" name="User_Action_Time" type="x"
         tp:type="Unix_Timestamp64">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The time at which user action occurred, or 0 if this channel
@@ -280,7 +280,7 @@
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="User_Action_Time" type="t"
+      <arg direction="in" name="User_Action_Time" type="x"
         tp:type="Unix_Timestamp64">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The time at which user action occurred, or 0 if this channel

@@ -62,7 +62,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="in" name="Properties" type="au" tp:type="Property_ID[]">
         <tp:docstring>An array of property identifiers</tp:docstring>
       </arg>
-      <arg direction="out" type="a(uv)" tp:type="Property_Value[]">
+      <arg direction="out" type="a(uv)" tp:type="Property_Value[]"
+        name="Values">
         <!-- XXX: if we're ever breaking API compatibility, make this a{uv} -->
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>An array of structs containing:</p>
@@ -90,7 +91,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         Returns a dictionary of the properties available on this channel.
       </tp:docstring>
-      <arg direction="out" type="a(ussu)" tp:type="Property_Spec[]">
+      <arg direction="out" type="a(ussu)" tp:type="Property_Spec[]"
+        name="Available_Properties">
         <!-- XXX: if we're ever breaking API compatibility, make this
         a{u(ssu)} ? -->
         <tp:docstring>

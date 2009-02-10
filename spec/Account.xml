@@ -369,10 +369,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <property name="Connection" tp:name-for-bindings="Connection"
       type="o" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        Either the object path of the <tp:dbus-ref
+        <p>Either the object path of the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref> to
         this account, or the special value <code>'/'</code> if there is no
-        connection.
+        connection.</p>
+
+        <p>If this object path is not '/', the Connection's well-known bus
+          name can be derived from this object path by removing the first '/'
+          and replacing subsequent '/' characters with '.'.</p>
 
         <tp:rationale>
           Object paths aren't nullable, so we can't use an empty string.
@@ -465,7 +469,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           result of <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Connection">GetSelfHandle</tp:dbus-ref>
           for an active connection).</p>
-        
+
         <p>It is unspecified whether this user ID is globally unique.</p>
 
         <tp:rationale>

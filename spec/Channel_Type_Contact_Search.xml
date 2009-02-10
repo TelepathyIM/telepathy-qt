@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Type.ContactSearch"
     tp:causes-havoc='not well-tested'>
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
- 
+
     <tp:struct name="Search_Key_Info">
       <tp:docstring>A struct representing details on search strings.</tp:docstring>
       <tp:member type="b" name="Is_Mandatory">
@@ -49,7 +49,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <arg direction="out" type="a{s(bg)}" tp:type="Search_Key_Info_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          A dictionary mapping string search key names to its search details. 
+          A dictionary mapping string search key names to its search details.
         </tp:docstring>
       </arg>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

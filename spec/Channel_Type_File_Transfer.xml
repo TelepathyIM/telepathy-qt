@@ -18,9 +18,9 @@ Library General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Channel.Type.FileTransfer.DRAFT"
-    tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.Channel.Type.FileTransfer">
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:added version="0.17.18">(as stable API)</tp:added>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type for transferring files. The
       transmission of data between contacts is achieved by reading from
@@ -178,7 +178,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </property>
 
-    <property name="Date" type="t" access="read"
+    <property name="Date" type="x" access="read"
       tp:type="Unix_Timestamp64" tp:name-for-bindings="Date">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The last modification time of the file being transferred. This
