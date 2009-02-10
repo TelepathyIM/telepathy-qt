@@ -35,7 +35,17 @@
 
   <tp:error name="Disconnected">
     <tp:docstring>
-    The connection is not currently connected and cannot be used.
+      The connection is not currently connected and cannot be used.
+      This error may also be raised when operations are performed on a
+      Connection for which
+      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">StatusChanged</tp:dbus-ref>
+      has signalled status Disconnected for reason None.
+
+      <tp:rationale>
+        The second usage corresponds to None in the
+        <tp:type>Connection_Status_Reason</tp:type> enum; if a better reason
+        is available, the corresponding error should be used instead.
+      </tp:rationale>
     </tp:docstring>
   </tp:error>
 
@@ -73,7 +83,216 @@
   <tp:error name="Cancelled">
     <tp:docstring>
       Raised by an ongoing request if it is cancelled by user request before
-      it has completed.
+      it has completed, or when operations are performed on an object which
+      the user has asked to close (for instance, a Connection where the user
+      has called Disconnect, or a Channel where the user has called Close).
+
+      <tp:rationale>
+        The second form can be used to correspond to the Requested member in
+        the <tp:type>Connection_Status_Reason</tp:type> enum, or to
+        to represent the situation where disconnecting a Connection,
+        closing a Channel, etc. has been requested by the user but this
+        request has not yet been acted on, for instance because the
+        service will only act on the request when it has finished processing
+        an event queue.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Authentication Failed">
+    <tp:docstring>
+      Raised when authentication with a service was unsuccessful.
+      <tp:rationale>
+        This corresponds to Authentication_Failed in the
+        <tp:type>Connection_Status_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Encryption Not Available">
+    <tp:docstring>
+      Raised if a user request insisted that encryption should be used,
+      but encryption was not actually available.
+
+      <tp:rationale>
+        This corresponds to part of Encryption_Error in the
+        <tp:type>Connection_Status_Reason</tp:type> enum. It's been separated
+        into a distinct error here because the two concepts that were part
+        of EncryptionError seem to be things that could reasonably appear
+        differently in the UI.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Encryption Error">
+    <tp:docstring>
+      Raised if encryption appears to be available, but could not actually be
+      used (for instance if SSL/TLS negotiation fails).
+      <tp:rationale>
+        This corresponds to part of Encryption_Error in the
+        <tp:type>Connection_Status_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Not Provided">
+    <tp:docstring>
+      Raised if the server did not provide a SSL/TLS certificate. This error
+      MUST NOT be used to represent the absence of a client certificate
+      provided by the Telepathy connection manager.
+      <tp:rationale>
+        This corresponds to Cert_Not_Provided in the
+        <tp:type>Connection_Status_Reason</tp:type> enum. That error
+        explicitly applied only to server SSL certificates, so this one
+        is similarly limited; having the CM present a client certificate
+        is a possible future feature, but it should have its own error
+        handling.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Untrusted">
+    <tp:docstring>
+      Raised if the server provided a SSL/TLS certificate signed by an
+      untrusted certifying authority. This error SHOULD NOT be used to
+      represent a self-signed certificate: see the Self Signed error for that.
+      <tp:rationale>
+        This corresponds to Cert_Untrusted in the
+        <tp:type>Connection_Status_Reason</tp:type> enum, with a clarification
+        to avoid ambiguity.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Expired">
+    <tp:docstring>
+      Raised if the server provided an expired SSL/TLS certificate.
+      <tp:rationale>
+        This corresponds to Cert_Expired in the
+        <tp:type>Connection_Status_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Not Activated">
+    <tp:docstring>
+      Raised if the server provided an SSL/TLS certificate that will become
+      valid at some point in the future.
+      <tp:rationale>
+        This corresponds to Cert_Not_Activated in the
+        <tp:type>Connection_Status_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Fingerprint Mismatch">
+    <tp:docstring>
+      Raised if the server provided an SSL/TLS certificate that did not have
+      the expected fingerprint.
+      <tp:rationale>
+        This corresponds to Cert_Fingerprint_Mismatch in the
+        <tp:type>Connection_Status_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Hostname Mismatch">
+    <tp:docstring>
+      Raised if the server provided an SSL/TLS certificate that did not match
+      its hostname.
+      <tp:rationale>
+        This corresponds to Cert_Hostname_Mismatch in the
+        <tp:type>Connection_Status_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Self Signed">
+    <tp:docstring>
+      Raised if the server provided an SSL/TLS certificate that is self-signed
+      and untrusted.
+      <tp:rationale>
+        This corresponds to Cert_Hostname_Mismatch in the
+        <tp:type>Connection_Status_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Invalid">
+    <tp:docstring>
+      Raised if the server provided an SSL/TLS certificate that is
+      unacceptable in some way that does not have a more specific error.
+      <tp:rationale>
+        This corresponds to Cert_Other_Error in the
+        <tp:type>Connection_Status_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Not Capable">
+    <tp:docstring>
+    Raised when requested functionality is unavailable due to contact
+    not having required capabilities.
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Offline">
+    <tp:docstring>
+      Raised when requested functionality is unavailable because a contact is
+      offline.
+
+      <tp:rationale>
+        This corresponds to Offline in the
+        <tp:type>Channel_Group_Change_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Channel.Kicked">
+    <tp:docstring>
+      Used to represent a user being ejected from a channel by another user,
+      for instance being kicked from a chatroom.
+
+      <tp:rationale>
+        This corresponds to Kicked in the
+        <tp:type>Channel_Group_Change_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Busy">
+    <tp:docstring>
+      Used to represent a user being removed from a channel because of a
+      "busy" indication.
+
+      <tp:rationale>
+        This corresponds to Busy in the
+        <tp:type>Channel_Group_Change_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="No Answer">
+    <tp:docstring>
+      Used to represent a user being removed from a channel because they did
+      not respond, e.g. to a StreamedMedia call.
+
+      <tp:rationale>
+        This corresponds to No_Answer in the
+        <tp:type>Channel_Group_Change_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Does Not Exist">
+    <tp:docstring>
+      Raised when the requested user does not, in fact, exist.
+
+      <tp:rationale>
+        This corresponds to Invalid_Contact in the
+        <tp:type>Channel_Group_Change_Reason</tp:type> enum, but can also be
+        used to represent other things not existing (like chatrooms, perhaps).
+      </tp:rationale>
     </tp:docstring>
   </tp:error>
 

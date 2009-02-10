@@ -67,7 +67,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <method name="GetMessageTypes" tp:name-for-bindings="Get_Message_Types">
-      <arg direction="out" type="au" tp:type="Channel_Text_Message_Type[]">
+      <arg direction="out" type="au" tp:type="Channel_Text_Message_Type[]"
+        name="Available_Types">
         <tp:docstring>
           An array of integer message types (ChannelTextMessageType)
         </tp:docstring>
@@ -92,7 +93,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           acknowledge messages after they have actually stored them, which is
           impossible if this flag is true.</tp:deprecated>
       </arg>
-      <arg direction="out" type="a(uuuuus)" tp:type="Pending_Text_Message[]">
+      <arg direction="out" type="a(uuuuus)" tp:type="Pending_Text_Message[]"
+        name="Pending_Messages">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structs representing the pending queue. Each contains:
           <ul>

@@ -75,6 +75,7 @@
           first member). Omitted from the result if the contact's capabilities
           are not known; present in the result as an empty array if the
           contact is known to have no capabilities at all.</dd>
+
         <dt>org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT/caps
           (type a{ua(a{sv}as)},
           <tp:type>Contact_Capabilities_Map</tp:type>)</dt>
@@ -83,6 +84,14 @@
           Omitted from the result if the contact's capabilities
           are not known; present in the result as an empty array if the
           contact is known to have no capabilities at all.</dd>
+
+        <dt>org.freedesktop.Telepathy.Connection.Interface.Location.DRAFT/location
+          (type a{sv}, <tp:type>Location</tp:type>)</dt>
+        <dd>The same struct used by
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.Location.DRAFT">GetLocations</tp:dbus-ref>
+          Omitted from the result if the contact's location
+          is not known.</dd>
+
       </dl>
     </tp:docstring>
 

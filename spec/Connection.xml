@@ -67,7 +67,8 @@ USA.</p>
     </method>
 
     <method name="GetInterfaces" tp:name-for-bindings="Get_Interfaces">
-      <arg direction="out" type="as" tp:type="DBus_Interface[]">
+      <arg direction="out" type="as" tp:type="DBus_Interface[]"
+        name="Interfaces">
         <tp:docstring>
           An array of D-Bus interface names
         </tp:docstring>
@@ -110,7 +111,7 @@ USA.</p>
     </method>
 
     <method name="GetProtocol" tp:name-for-bindings="Get_Protocol">
-      <arg direction="out" type="s" tp:type="Protocol">
+      <arg direction="out" type="s" tp:type="Protocol" name="Protocol">
         <tp:docstring>
           A string identifier for the protocol
         </tp:docstring>
@@ -157,7 +158,8 @@ USA.</p>
     </property>
 
     <method name="GetSelfHandle" tp:name-for-bindings="Get_Self_Handle">
-      <arg direction="out" type="u" tp:type="Contact_Handle">
+      <arg direction="out" type="u" tp:type="Contact_Handle"
+        name="Self_Handle">
         <tp:docstring>
           The value of the <tp:member-ref>SelfHandle</tp:member-ref> property
         </tp:docstring>
@@ -177,7 +179,8 @@ USA.</p>
     </method>
 
     <method name="GetStatus" tp:name-for-bindings="Get_Status">
-      <arg direction="out" type="u" tp:type="Connection_Status">
+      <arg direction="out" type="u" tp:type="Connection_Status"
+        name="Status">
         <tp:docstring>
           An integer representing the current status
         </tp:docstring>
@@ -246,7 +249,7 @@ USA.</p>
         </tp:docstring>
       </arg>
 
-      <arg direction="out" type="as">
+      <arg direction="out" type="as" name="Identifiers">
         <tp:docstring>
           An array of handle names in the same order as the given numbers
         </tp:docstring>
@@ -269,7 +272,8 @@ USA.</p>
     </method>
 
     <method name="ListChannels" tp:name-for-bindings="List_Channels">
-      <arg direction="out" type="a(osuu)" tp:type="Channel_Info[]">
+      <arg direction="out" type="a(osuu)" tp:type="Channel_Info[]"
+        name="Channel_Info">
         <tp:docstring>
           An array of structs representing channels.
         </tp:docstring>
@@ -429,7 +433,7 @@ USA.</p>
         </tp:docstring>
       </arg>
 
-      <arg direction="out" type="o">
+      <arg direction="out" type="o" name="Object_Path">
         <tp:docstring>
           The D-Bus object path for the channel created or retrieved
         </tp:docstring>
@@ -486,6 +490,12 @@ USA.</p>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
             The requested channel type cannot be created with the given handle
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotCapable">
+          <tp:docstring>
+            The requested channel cannot be created because contact doesn't
+            have the required capabilities.
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.Channel.Banned"/>
@@ -562,7 +572,8 @@ USA.</p>
         </tp:docstring>
       </arg>
 
-      <arg direction="out" type="au" tp:type="Handle[]">
+      <arg direction="out" type="au" tp:type="Handle[]"
+        name="Handles">
         <tp:docstring>
           An array of integer handle numbers in the same order as the given strings
         </tp:docstring>
@@ -582,21 +593,27 @@ USA.</p>
 
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
           <tp:docstring>
-            The handle type is invalid
-          </tp:docstring>
-        </tp:error>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          <tp:docstring>
-            The given name is not a valid entity of the given type
+            The given name does not identify a valid entity of the given type.
+
+            <tp:rationale>
+              For instance, an XMPP connection would raise this error for
+              identifiers with type Handle_Type_Room that do not contain
+              exactly one '@' character, that contain spaces, and so on.
+            </tp:rationale>
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
           <tp:docstring>
-            The given handle type is valid, but not implemented on this
-            connection.  For instance, a CM for a protocol that doesn't have
-            chat rooms would not implement room handles.
+            The given handle type is not valid, or is not implemented on this
+            connection.
+
+            <tp:rationale>
+              For instance, a connection to a protocol that doesn't have
+              chat rooms would raise this error for room handles, and all CMs
+              would raise this error for Handle_Type_None.
+            </tp:rationale>
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>
@@ -622,82 +639,274 @@ USA.</p>
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
+
     <tp:enum name="Connection_Status_Reason" type="u">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A reason why the status of the connection changed. Apart from
+          Requested, the values of this enumeration only make sense as
+          reasons why the status changed to Disconnected.</p>
+      </tp:docstring>
+
       <tp:enumvalue suffix="None_Specified" value="0">
-        <tp:docstring>
-            There is no reason set for this state change.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>There is no reason set for this state change. Unknown status
+            reasons SHOULD be treated like this reason.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Disconnected</code>.</p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Requested" value="1">
-        <tp:docstring>
-            The change is in response to a user request.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change is in response to a user request. Changes to the
+            Connecting or Connected status SHOULD always indicate this reason;
+            changes to the Disconnected status SHOULD indicate this reason
+            if and only if the disconnection was requested by the user.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cancelled</code>.</p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Network_Error" value="2">
-        <tp:docstring>
-            There was an error sending or receiving on the network socket.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>There was an error sending or receiving on the network socket.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.NetworkError</code>.</p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Authentication_Failed" value="3">
-        <tp:docstring>
-            The username or password was invalid.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The username or password was invalid.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.AuthenticationFailed</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Encryption_Error" value="4">
-        <tp:docstring>
-            There was an error negotiating SSL on this connection, or
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>There was an error negotiating SSL on this connection, or
             encryption was unavailable and require-encryption was set when the
-            connection was created.
+            connection was created.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.EncryptionNotAvailable</code>
+            if encryption was not available at all, or
+            <code>org.freedesktop.Telepathy.Error.EncryptionError</code>
+            if encryption failed.</p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Name_In_Use" value="5">
-        <tp:docstring>
-            Someone is already connected to the server using the name
-            you are trying to connect with.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>In general, this reason indicates that the requested account
+            name or other identification could not be used due to conflict
+            with another connection. It can be divided into three cases:</p>
+
+          <ul>
+            <li>If the status change is from Connecting to Disconnected
+              and the 'register' parameter to RequestConnection was present
+              and true, the requested account could not be created on the
+              server because it already exists.</li>
+
+            <li>If the status change is from Connecting to Disconnected
+              but the 'register' parameter is absent or false, the connection
+              manager could not connect to the specified account because
+              a connection to that account already exists.
+
+              <tp:rationale>
+                In some protocols, like XMPP (when connecting with the same
+                JID and resource as an existing connection), the existing
+                connection "wins" and the new one fails to connect.
+              </tp:rationale>
+            </li>
+
+            <li>If the status change is from Connected to Disconnected,
+              the existing connection was automatically disconnected because
+              a new connection to the same account (perhaps from a different
+              client or location) was established.
+
+              <tp:rationale>
+                In some protocols, like MSNP (when connecting twice with the
+                same Passport), the new connection "wins" and the
+                existing one is automatically disconnected.
+              </tp:rationale>
+            </li>
+          </ul>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.NotYours</code>.
+          </p>
+
+          <tp:rationale>
+            These three errors are distinct but very similar, and can be
+            distinguished by other factors.
+          </tp:rationale>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Cert_Not_Provided" value="6">
-        <tp:docstring>
-            The server did not provide a SSL certificate.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server did not provide a SSL certificate.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.NotProvided</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Cert_Untrusted" value="7">
-        <tp:docstring>
-            The server's SSL certificate could not be trusted.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server's SSL certificate is signed by an untrusted certifying
+            authority. This error SHOULD NOT be used to represent a self-signed
+            certificate: use the more specific Cert_Self_Signed reason for
+            that.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.Untrusted</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Cert_Expired" value="8">
-        <tp:docstring>
-            The server's SSL certificate has expired.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server's SSL certificate has expired.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.Expired</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Cert_Not_Activated" value="9">
-        <tp:docstring>
-            The server's SSL certificate is not yet valid.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server's SSL certificate is not yet valid.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.NotActivated</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Cert_Hostname_Mismatch" value="10">
-        <tp:docstring>
-            The server's SSL certificate did not match its hostname.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server's SSL certificate did not match its hostname.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.HostnameMismatch</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Cert_Fingerprint_Mismatch" value="11">
-        <tp:docstring>
-            The server's SSL certificate does not have the expected
-            fingerprint.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server's SSL certificate does not have the expected
+            fingerprint.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.FingerprintMismatch</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Cert_Self_Signed" value="12">
-        <tp:docstring>
-            The server's SSL certificate is self-signed.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server's SSL certificate is self-signed.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.HostnameMismatch</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
+
       <tp:enumvalue suffix="Cert_Other_Error" value="13">
-        <tp:docstring>
-            There was some other error validating the server's SSL certificate.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>There was some other error validating the server's SSL
+            certificate.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.Invalid</code>.
+          </p>
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
+
+    <signal name="ConnectionError" tp:name-for-bindings="Connection_Error">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when an error occurs that renders this connection unusable.
+        </p>
+
+        <p>Whenever this signal is emitted, it MUST immediately be followed by
+          a <tp:member-ref>StatusChanged</tp:member-ref> signal with status
+          Connection_Status_Reason_Disconnected and an appropriate reason
+          code.</p>
+
+        <p>Connection managers SHOULD emit this signal on disconnection, but
+          need not do so. Clients MUST support connection managers that emit
+          StatusChanged(Disconnected, ...) without first emitting
+          ConnectionError.</p>
+
+        <tp:rationale>
+          <p>This signal provides additional information about the reason
+            for disconnection. The reason for connection is always
+            straightforward - it was requested - so it does not need further
+            explanation. However, on errors, it can be useful to provide
+            additional information.</p>
+
+          <p>The <tp:type>Connection_Status_Reason</tp:type> is not given
+            here, since it will be signalled in
+            <tp:member-ref>StatusChanged</tp:member-ref>. A reasonable client
+            implementation would be to store the information given by this
+            signal until StatusChanged is received, at which point the
+            information given by this signal can be used to supplement the
+            StatusChanged signal.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Error" type="s" tp:type="DBus_Error_Name">
+        <tp:docstring>
+          The name of a D-Bus error describing the error that occurred,
+          which may correspond to a
+          <tp:type>Connection_Status_Reason</tp:type> or be a
+          protocol-specific or connection-manager-specific error in a
+          suitable namespace.
+
+          <tp:rationale>
+            For instance, a SIP connection manager could signal
+            "402 Payment Required" as an error in a
+            connection-manager-specific namespace, or a link-local
+            XMPP implementation that used Avahi could provide the error
+            given to it by the avahi-daemon.
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Details" type="a{sv}" tp:type="String_Variant_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Additional information about the error, which may include
+            the following well-known keys:</p>
+
+          <dl>
+            <dt>debug-message (s)</dt>
+            <dd>Debugging information on the change, corresponding to the
+              message part of a D-Bus error message, which SHOULD NOT be
+              displayed to users under normal circumstances</dd>
+          </dl>
+
+          <tp:rationale>
+            <p>This argument allows for future extensions. For instance,
+              if indicating DNS lookup failure, we could define a key
+              that indicates the hostname that could not be found.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
+    </signal>
 
     <signal name="StatusChanged" tp:name-for-bindings="Status_Changed">
       <arg name="Status" type="u" tp:type="Connection_Status">

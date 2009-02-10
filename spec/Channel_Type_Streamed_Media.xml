@@ -89,7 +89,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:simple-type name="Stream_ID" type="u"/>
 
     <method name="ListStreams" tp:name-for-bindings="List_Streams">
-      <arg direction="out" type="a(uuuuuu)" tp:type="Media_Stream_Info[]">
+      <arg direction="out" type="a(uuuuuu)" tp:type="Media_Stream_Info[]"
+        name="Streams">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structs containing:
           <ul>
@@ -180,7 +181,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           An array of stream types (values of MediaStreamType)
         </tp:docstring>
       </arg>
-      <arg direction="out" type="a(uuuuuu)" tp:type="Media_Stream_Info[]">
+      <arg direction="out" type="a(uuuuuu)" tp:type="Media_Stream_Info[]"
+        name="Streams">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structs (in the same order as the given stream types)
           containing:
@@ -206,6 +208,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         will be emitted with the
         MEDIA_STREAM_PENDING_REMOTE_SEND flag set, and the signal emitted again
         with the flag cleared when the remote end has replied.</p>
+
+        <p>If streams of the requested types have already been requested
+          via this method or <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type.StreamedMedia">FUTURE.InitialAudio</tp:dbus-ref>/<tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type.StreamedMedia">FUTURE.InitialVideo</tp:dbus-ref>,
+          this method SHOULD return successfully.</p>
       </tp:docstring>
       <tp:changed version="0.17.2">
         <p>It is valid to use a handle which is neither
@@ -371,7 +379,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <p>In the past, several other patterns have been used to place outgoing
         calls; see
-        <tt>http://telepathy.freedesktop.org/wiki/Requesting%20StreamedMedia%20channels</tt>
+        <a href="http://telepathy.freedesktop.org/wiki/Requesting%20StreamedMedia%20channels">'Requesting StreamedMedia Channels' on the Telepathy wiki</a>
         for the details.</p>
 
     <p>In general this should be used in conjunction with the <tp:dbus-ref
@@ -389,7 +397,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         The channel-type-specific capability flags used for
         Channel.Type.StreamedMedia in the <tp:dbus-ref
           namespace="org.freedesktop.Telepathy">Connection.Interface.Capabilities</tp:dbus-ref>
-        interface.
+        interface. See the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type.StreamedMedia">FUTURE.InitialAudio</tp:dbus-ref>
+        property for details of the mechanisms that will replace this.
       </tp:docstring>
       <tp:flag suffix="Audio" value="1">
         <tp:docstring>

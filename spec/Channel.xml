@@ -220,7 +220,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="GetChannelType" tp:name-for-bindings="Get_Channel_Type">
       <tp:deprecated version="0.17.7">Use the ChannelType
         property if possible.</tp:deprecated>
-      <arg direction="out" type="s" tp:type="DBus_Interface">
+      <arg direction="out" type="s" tp:type="DBus_Interface"
+        name="Channel_Type">
         <tp:docstring>The interface name</tp:docstring>
       </arg>
       <tp:docstring>
@@ -238,12 +239,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="GetHandle" tp:name-for-bindings="Get_Handle">
       <tp:deprecated version="0.17.7">Use the TargetHandleType
         and TargetHandle properties if possible.</tp:deprecated>
-      <arg direction="out" type="u" tp:type="Handle_Type">
+      <arg direction="out" type="u" tp:type="Handle_Type"
+        name="Target_Handle_Type">
         <tp:docstring>
           The same as TargetHandleType.
         </tp:docstring>
       </arg>
-      <arg direction="out" type="u" tp:type="Handle">
+      <arg direction="out" type="u" tp:type="Handle" name="Target_Handle">
         <tp:docstring>
           The same as TargetHandle.
         </tp:docstring>
@@ -266,7 +268,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <method name="GetInterfaces" tp:name-for-bindings="Get_Interfaces">
       <tp:deprecated version="0.17.7">Use the Interfaces
         property if possible.</tp:deprecated>
-      <arg direction="out" type="as" tp:type="DBus_Interface[]">
+      <arg direction="out" type="as" tp:type="DBus_Interface[]"
+        name="Interfaces">
         <tp:docstring>
           An array of the D-Bus interface names
         </tp:docstring>

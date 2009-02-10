@@ -71,7 +71,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:flag>
     </tp:flags>
     <method name="GetAliasFlags" tp:name-for-bindings="Get_Alias_Flags">
-      <arg direction="out" type="u" tp:type="Connection_Alias_Flags">
+      <arg direction="out" type="u" tp:type="Connection_Alias_Flags"
+        name="Alias_Flags">
         <tp:docstring>
           An integer with a bitwise OR of flags from ConnectionAliasFlags
         </tp:docstring>
@@ -90,7 +91,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           An array of handles representing contacts
         </tp:docstring>
       </arg>
-      <arg direction="out" type="as">
+      <arg direction="out" type="as" name="Aliases">
         <tp:docstring>
           A list of aliases in the same order as the contact handles
         </tp:docstring>
@@ -111,7 +112,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           An array of handles representing contacts
         </tp:docstring>
       </arg>
-      <arg direction="out" type="a{us}" tp:type="Alias_Map">
+      <arg direction="out" type="a{us}" tp:type="Alias_Map" name="Aliases">
         <tp:docstring>
           A dictionary mapping contact handles to aliases
         </tp:docstring>

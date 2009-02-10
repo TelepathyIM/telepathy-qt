@@ -22,6 +22,41 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
 
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>An interface for signalling a channel containing synchronised media
+        sessions which can contain an arbitrary number of streams. The
+        presence of this interface on a Channel indicates that the connection
+        manager will not carry out the actual streaming for this channel,
+        and that the client handling the channel is responsible for doing
+        so; in most cases we recommend doing this by using the
+        telepathy-farsight library.</p>
+
+      <tp:rationale>
+        <p>Streaming audio and (particularly) video requires a high level of
+          integration with the UI, and having the connection manager act as
+          a proxy would be likely to introduce unacceptable latency. As a
+          result, audio/video streaming is offloaded into the client
+          where possible, as an exception to the general design of
+          Telepathy.</p>
+      </tp:rationale>
+
+      <p>The negotiation interface is based on the API of the
+        <a href="http://farsight.freedesktop.org/">Farsight</a> library.
+        This, in turn, is based upon the IETF MMusic ICE drafts, where
+        connections are established by signalling potential connection
+        candidates to the peer until a usable connection is found, and
+        codecs are negotiated with an SDP-style offer and answer. However,
+        the principles should be applicable to other media streaming methods
+        and the API re-used without difficulty.</p>
+
+      <p>Note that the naming conventions used in the MediaStreamHandler
+        and MediaSessionHandler interfaces are rather confusing; methods
+        have signal-like names and signals have method-like names, due to
+        the API being based rather too closely on that of Farsight. This
+        is for historical reasons and will be fixed in a future release
+        of the Telepathy specification.</p>
+    </tp:docstring>
+
     <tp:simple-type name="Media_Session_Type" type="s">
       <tp:docstring>The type of a media session. Currently, the only supported
         value is "rtp".</tp:docstring>
@@ -41,7 +76,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="GetSessionHandlers"
       tp:name-for-bindings="Get_Session_Handlers">
-      <arg direction="out" type="a(os)" tp:type="Media_Session_Handler_Info[]"/>
+      <arg direction="out" type="a(os)" tp:type="Media_Session_Handler_Info[]"
+        name="Session_Handlers"/>
       <tp:docstring>
         Returns all currently active session handlers on this channel
         as a list of (session_handler_path, type).
@@ -104,17 +140,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </tp:property>
 
-    <tp:docstring>
-      An interface for signalling a channel containing synchronised media
-    sessions which can contain an arbitrary number of streams. The negotiation
-    interface is based closely around the API of the Farsight library
-    (http://farsight.sourceforge.net/). This in turn is based upon the IETF
-    MMusic ICE drafts where connections are established by signalling potential
-    connection candidates to the peer until a usable connection is found, and
-    codecs are negotiated with an SDP-style offer and answer. However, the
-    principles should be applicable to other media streaming methods and the
-    API re-used without difficulty.
-    </tp:docstring>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

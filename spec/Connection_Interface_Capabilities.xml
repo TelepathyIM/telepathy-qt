@@ -130,7 +130,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           An array of D-Bus interface names of channel types to remove
         </tp:docstring>
       </arg>
-      <arg direction="out" type="a(su)" tp:type="Capability_Pair[]">
+      <arg direction="out" type="a(su)" tp:type="Capability_Pair[]"
+        name="Self_Capabilities">
         <tp:docstring>
           An array of structures describing the current capabilities containing:
           <ul>
@@ -203,7 +204,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             list.</p>
         </tp:docstring>
       </arg>
-      <arg direction="out" type="a(usuu)" tp:type="Contact_Capability[]">
+      <arg direction="out" type="a(usuu)" tp:type="Contact_Capability[]"
+        name="Contact_Capabilities">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           An array of structures containing:
           <ul>
