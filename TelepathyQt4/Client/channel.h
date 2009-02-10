@@ -89,6 +89,7 @@ public:
     bool groupCanAddContacts() const;
     PendingOperation *groupAddContacts(const QList<QSharedPointer<Contact> > &contacts,
             const QString &message);
+    bool groupCanRescindContacts() const;
     bool groupCanRemoveContacts() const;
     PendingOperation *groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
             const QString &message);
