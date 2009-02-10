@@ -1992,6 +1992,24 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
         debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags <<
             "value" << added << "added" << removed << "removed";
         emit groupFlagsChanged(mPriv->groupFlags, added, removed);
+
+        if (added & Telepathy::ChannelGroupFlagCanAdd ||
+            removed & Telepathy::ChannelGroupFlagCanAdd) {
+            debug() << "Emitting groupCanAddContactsChanged";
+            emit groupCanAddContactsChanged(groupCanAddContacts());
+        }
+
+        if (added & Telepathy::ChannelGroupFlagCanRemove ||
+            removed & Telepathy::ChannelGroupFlagCanRemove) {
+            debug() << "Emitting groupCanRemoveContactsChanged";
+            emit groupCanRemoveContactsChanged(groupCanRemoveContacts());
+        }
+
+        if (added & Telepathy::ChannelGroupFlagCanRescind ||
+            removed & Telepathy::ChannelGroupFlagCanRescind) {
+            debug() << "Emitting groupCanRescindContactsChanged";
+            emit groupCanRescindContactsChanged(groupCanRescindContacts());
+        }
     }
 }
 

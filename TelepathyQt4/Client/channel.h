@@ -148,6 +148,10 @@ public:
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
 
+    void groupCanAddContactsChanged(bool canAddContacts);
+    void groupCanRemoveContactsChanged(bool canRemoveContacts);
+    void groupCanRescindContactsChanged(bool canRescindContacts);
+
     void groupMembersChanged(
             const QList<QSharedPointer<Contact> > &groupMembersAdded,
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
