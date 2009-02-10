@@ -174,7 +174,14 @@ const QString &PendingChannel::channelType() const
 }
 
 /**
- * Return the handle type specified in the channel request.
+ * If the channel request has finished, return the handle type of the resulting
+ * channel. Otherwise, return the handle type that was requested.
+ *
+ * (One example of a request producing a different target handle type is that
+ * on protocols like MSN, one-to-one conversations don't really exist, and if
+ * you request a text channel with handle type HandleTypeContact, what you
+ * will actually get is a text channel with handle type HandleTypeNone, with
+ * the requested contact as a member.)
  *
  * \return The handle type, as specified in #HandleType.
  */
@@ -184,7 +191,9 @@ uint PendingChannel::handleType() const
 }
 
 /**
- * Return the handle specified in the channel request.
+ * If the channel request has finished, return the target handle of the
+ * resulting channel. Otherwise, return the target handle that was requested
+ * (which might be different in some situations - see handleType).
  *
  * \return The handle.
  */
