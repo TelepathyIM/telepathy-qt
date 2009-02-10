@@ -764,8 +764,6 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
 
     bool ret = false;
 
-    // this check isn't really needed as all other target handle types
-    // supports the group interface, but let's make sure
     if (targetHandleType == Telepathy::HandleTypeContact) {
         // fake group interface
 
@@ -788,10 +786,6 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
             warning() << "Connection::selfContact returned a null contact or targetHandle is 0, "
                 "not faking a group on channel";
         }
-
-    } else {
-        warning() << "Channel does not support group interface and targetHandleType != Contact, "
-            "not faking a group on channel";
     }
 
     return ret;
