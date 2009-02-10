@@ -227,7 +227,8 @@ Channel *PendingChannel::channel(QObject *parent) const
         channel = new RoomList(connection(), mPriv->objectPath.path(),
                 mPriv->immutableProperties, parent);
     }
-    else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {
+    // FIXME: update spec so we can do this properly
+    else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
         channel = new FileTransfer(connection(), mPriv->objectPath.path(),
                 mPriv->immutableProperties, parent);
     }
