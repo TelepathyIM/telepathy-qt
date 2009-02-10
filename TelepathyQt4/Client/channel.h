@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
@@ -92,7 +93,8 @@ public:
     bool groupCanRescindContacts() const;
     bool groupCanRemoveContacts() const;
     PendingOperation *groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
-            const QString &message = QString());
+            const QString &message = QString(),
+            uint reason = Telepathy::ChannelGroupChangeReasonNone);
 
     QList<QSharedPointer<Contact> > groupContacts() const;
     QList<QSharedPointer<Contact> > groupLocalPendingContacts() const;

@@ -1229,12 +1229,14 @@ bool Channel::groupCanRemoveContacts() const
  *
  * \param contacts Contacts to be removed.
  * \param message A string message, which can be blank if desired.
+ * \param reason Reason of the change, as specified in
+ *               #ChannelGroupChangeReason.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa groupCanRemoveContacts()
  */
 PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
-        const QString &message)
+        const QString &message, uint reason)
 {
     if (!isReady()) {
         warning() << "Channel::groupRemoveContacts() used channel not ready";
@@ -1291,7 +1293,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
         handles << contact->handle()[0];
     }
     return new PendingVoidMethodCall(this,
-            mPriv->group->RemoveMembers(handles, message));
+            mPriv->group->RemoveMembersWithReason(handles, message, reason));
 }
 
 /**
