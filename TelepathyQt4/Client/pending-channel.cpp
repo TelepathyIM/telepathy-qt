@@ -203,6 +203,31 @@ uint PendingChannel::handle() const
 }
 
 /**
+ * If this channel request has finished, return the immutable properties of
+ * the resulting channel. Otherwise, return an empty map.
+ *
+ * The keys and values in this map are defined by the Telepathy D-Bus API
+ * specification, or by third-party extensions to that specification.
+ * These are the properties that cannot change over the lifetime of the
+ * channel; they're announced in the result of the request, for efficiency.
+ * This map should be passed to the constructor of Channel or its subclasses
+ * (such as TextChannel).
+ *
+ * These properties can also be used to process channels in a way that does
+ * not require the creation of a Channel object - for instance, a
+ * ChannelDispatcher implementation should be able to classify and process
+ * channels based on their immutable properties, without needing to create
+ * Channel objects.
+ *
+ * \return A map in which the keys are D-Bus property names and the values
+ *         are the corresponding values.
+ */
+QVariantMap PendingChannel::immutableProperties() const
+{
+    return mPriv->immutableProperties;
+}
+
+/**
  * Returns a newly constructed Channel high-level proxy object associated
  * with the remote channel resulting from the channel request. If isValid()
  * returns <code>false</code>, the request has not (at least yet) completed
