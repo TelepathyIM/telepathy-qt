@@ -39,7 +39,7 @@ class TextChannel : public Channel
 
 public:
     TextChannel(Connection *connection, const QString &objectPath,
-            QObject *parent = 0);
+            const QVariantMap &immutableProperties, QObject *parent = 0);
     ~TextChannel();
 
 private:

@@ -39,7 +39,7 @@ class StreamedMediaChannel : public Channel
 
 public:
     StreamedMediaChannel(Connection *connection, const QString &objectPath,
-            QObject *parent = 0);
+            const QVariantMap &immutableProperties, QObject *parent = 0);
     ~StreamedMediaChannel();
 
 private:

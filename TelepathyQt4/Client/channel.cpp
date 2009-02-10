@@ -517,16 +517,23 @@ void Channel::Private::changeReadiness(Readiness newReadiness)
  * \param connection  Connection owning this Channel, and specifying the
  *                    service.
  * \param objectPath  Path to the object on the service.
+ * \param immutableProperties  The immutable properties of the channel, as
+ *                             signalled by NewChannels or returned by
+ *                             CreateChannel or EnsureChannel
  * \param parent      Passed to the parent class constructor.
  */
 Channel::Channel(Connection *connection,
                  const QString &objectPath,
+                 const QVariantMap &immutableProperties,
                  QObject *parent)
     : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
             objectPath, parent),
       OptionalInterfaceFactory<Channel>(this),
       mPriv(new Private(this, connection))
 {
+    // FIXME: remember the immutableProperties, and use them to reduce the
+    // number of D-Bus calls we need to make (but we should make at least
+    // one, to check that the channel does in fact exist)
     mPriv->introspectQueue.enqueue(&Private::introspectMain);
     QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }

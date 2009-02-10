@@ -65,8 +65,9 @@ TextChannel::Private::~Private()
  */
 TextChannel::TextChannel(Connection *connection,
         const QString &objectPath,
+        const QVariantMap &immutableProperties,
         QObject *parent)
-    : Channel(connection, objectPath, parent),
+    : Channel(connection, objectPath, immutableProperties, parent),
       mPriv(new Private())
 {
 }

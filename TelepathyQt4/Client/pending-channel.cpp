@@ -56,6 +56,7 @@ struct PendingChannel::Private
     uint handleType;
     uint handle;
     QDBusObjectPath objectPath;
+    QVariantMap immutableProperties;
 };
 
 /**
@@ -216,23 +217,24 @@ Channel *PendingChannel::channel(QObject *parent) const
 
     if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
         channel = new TextChannel(connection(), mPriv->objectPath.path(),
-                parent);
+                mPriv->immutableProperties, parent);
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
         channel = new StreamedMediaChannel(connection(),
-                mPriv->objectPath.path(), parent);
+                mPriv->objectPath.path(), mPriv->immutableProperties, parent);
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
         channel = new RoomList(connection(), mPriv->objectPath.path(),
-                parent);
+                mPriv->immutableProperties, parent);
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {
         channel = new FileTransfer(connection(), mPriv->objectPath.path(),
-                parent);
+                mPriv->immutableProperties, parent);
     }
     else {
         // ContactList, old-style Tubes, or a future channel type
-        channel = new Channel(connection(), mPriv->objectPath.path(), parent);
+        channel = new Channel(connection(), mPriv->objectPath.path(),
+                mPriv->immutableProperties, parent);
     }
     return channel;
 }
@@ -247,6 +249,7 @@ void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watche
             mPriv->objectPath.path();
 
         QVariantMap map = reply.argumentAt<1>();
+        mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
         mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
@@ -273,6 +276,7 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watche
             mPriv->objectPath.path();
 
         QVariantMap map = reply.argumentAt<2>();
+        mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
         mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();

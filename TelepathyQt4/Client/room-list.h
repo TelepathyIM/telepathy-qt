@@ -39,7 +39,7 @@ class RoomList : public Channel
 
 public:
     RoomList(Connection *connection, const QString &objectPath,
-            QObject *parent = 0);
+            const QVariantMap &immutableProperties, QObject *parent = 0);
     ~RoomList();
 
 private:

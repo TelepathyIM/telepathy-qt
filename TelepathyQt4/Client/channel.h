@@ -61,6 +61,7 @@ public:
 
     Channel(Connection *connection,
             const QString &objectPath,
+            const QVariantMap &immutableProperties,
             QObject *parent = 0);
     ~Channel();
 

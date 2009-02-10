@@ -39,7 +39,7 @@ class FileTransfer : public Channel
 
 public:
     FileTransfer(Connection *connection, const QString &objectPath,
-            QObject *parent = 0);
+            const QVariantMap &immutableProperties, QObject *parent = 0);
     ~FileTransfer();
 
 private:

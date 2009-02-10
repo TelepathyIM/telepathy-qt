@@ -61,12 +61,16 @@ StreamedMediaChannel::Private::~Private()
  * \param connection  Connection owning this StreamedMediaChannel, and
  *                    specifying the service.
  * \param objectPath  Path to the object on the service.
+ * \param immutableProperties  The immutable properties of the channel, as
+ *                             signalled by NewChannels or returned by
+ *                             CreateChannel or EnsureChannel
  * \param parent      Passed to the parent class constructor.
  */
 StreamedMediaChannel::StreamedMediaChannel(Connection *connection,
         const QString &objectPath,
+        const QVariantMap &immutableProperties,
         QObject *parent)
-    : Channel(connection, objectPath, parent),
+    : Channel(connection, objectPath, immutableProperties, parent),
       mPriv(new Private())
 {
 }
