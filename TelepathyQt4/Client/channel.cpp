@@ -1158,14 +1158,14 @@ PendingOperation *Channel::groupAddContacts(const QList<QSharedPointer<Contact> 
         warning() << "Channel::groupAddContacts() used channel not ready";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Channel not ready");
-    } else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupAddContacts() used with no group interface";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support group interface");
     } else if (!groupCanAddContacts()) {
         warning() << "Channel::groupAddContacts() used but adding contacts is not supported";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Channel does not support adding contacts");
+    } else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupAddContacts() used with no group interface";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Channel does not support group interface");
     } else if (contacts.isEmpty()) {
         warning() << "Channel::groupAddContacts() used with empty contacts param";
         return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
@@ -1211,14 +1211,14 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
         warning() << "Channel::groupRemoveContacts() used channel not ready";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Channel not ready");
-    } else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
-        warning() << "Channel::groupRemoveContacts() used with no group interface";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support group interface");
     } else if (!groupCanRemoveContacts()) {
         warning() << "Channel::groupRemoveContacts() used but removing contacts is not supported";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Channel does not support removing contacts");
+    } else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        warning() << "Channel::groupRemoveContacts() used with no group interface";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Channel does not support group interface");
     } else if (contacts.isEmpty()) {
         warning() << "Channel::groupRemoveContacts() used with empty contacts param";
         return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
