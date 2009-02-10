@@ -193,12 +193,6 @@ public:
         return optionalInterface<ChannelInterfaceDTMFInterface>(check);
     }
 
-    inline ChannelInterfaceGroupInterface *groupInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<ChannelInterfaceGroupInterface>(check);
-    }
-
     inline ChannelInterfaceHoldInterface *holdInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
@@ -261,6 +255,12 @@ public:
 
 protected:
     ChannelInterface *baseInterface() const;
+
+    inline ChannelInterfaceGroupInterface *groupInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<ChannelInterfaceGroupInterface>(check);
+    }
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
