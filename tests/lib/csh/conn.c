@@ -1,8 +1,8 @@
 /*
  * conn.c - an example connection
  *
- * Copyright (C) 2007 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2007 Nokia Corporation
+ * Copyright (C) 2007-2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2007-2008 Nokia Corporation
  *
  * Copying and distribution of this file, with or without modification,
  * are permitted in any medium without royalty provided the copyright
@@ -11,6 +11,8 @@
 
 #include "conn.h"
 
+#include <string.h>
+
 #include <dbus/dbus-glib.h>
 
 #include <telepathy-glib/dbus.h>
@@ -18,11 +20,13 @@
 #include <telepathy-glib/handle-repo-dynamic.h>
 #include <telepathy-glib/interfaces.h>
 
-#include "im-manager.h"
+#include "room-manager.h"
 
-G_DEFINE_TYPE (ExampleEcho2Connection,
-    example_echo_2_connection,
+G_DEFINE_TYPE (ExampleCSHConnection,
+    example_csh_connection,
     CONTACTS_TYPE_CONNECTION)
+
+/* type definition stuff */
 
 enum
 {
@@ -30,17 +34,16 @@ enum
   N_PROPS
 };
 
-struct _ExampleEcho2ConnectionPrivate
+struct _ExampleCSHConnectionPrivate
 {
   gchar *account;
 };
 
 static void
-example_echo_2_connection_init (ExampleEcho2Connection *self)
+example_csh_connection_init (ExampleCSHConnection *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      EXAMPLE_TYPE_ECHO_2_CONNECTION,
-      ExampleEcho2ConnectionPrivate);
+      EXAMPLE_TYPE_CSH_CONNECTION, ExampleCSHConnectionPrivate);
 }
 
 static void
@@ -49,7 +52,7 @@ get_property (GObject *object,
               GValue *value,
               GParamSpec *spec)
 {
-  ExampleEcho2Connection *self = EXAMPLE_ECHO_2_CONNECTION (object);
+  ExampleCSHConnection *self = EXAMPLE_CSH_CONNECTION (object);
 
   switch (property_id) {
     case PROP_ACCOUNT:
@@ -66,7 +69,7 @@ set_property (GObject *object,
               const GValue *value,
               GParamSpec *spec)
 {
-  ExampleEcho2Connection *self = EXAMPLE_ECHO_2_CONNECTION (object);
+  ExampleCSHConnection *self = EXAMPLE_CSH_CONNECTION (object);
 
   switch (property_id) {
     case PROP_ACCOUNT:
@@ -81,27 +84,37 @@ set_property (GObject *object,
 static void
 finalize (GObject *object)
 {
-  ExampleEcho2Connection *self = EXAMPLE_ECHO_2_CONNECTION (object);
+  ExampleCSHConnection *self = EXAMPLE_CSH_CONNECTION (object);
 
   g_free (self->priv->account);
 
-  G_OBJECT_CLASS (example_echo_2_connection_parent_class)->finalize (object);
+  G_OBJECT_CLASS (example_csh_connection_parent_class)->finalize (object);
 }
 
 static gchar *
 get_unique_connection_name (TpBaseConnection *conn)
 {
-  ExampleEcho2Connection *self = EXAMPLE_ECHO_2_CONNECTION (conn);
+  ExampleCSHConnection *self = EXAMPLE_CSH_CONNECTION (conn);
 
   return g_strdup (self->priv->account);
 }
 
-static gchar *
-example_normalize_contact (TpHandleRepoIface *repo,
-                           const gchar *id,
-                           gpointer context,
-                           GError **error)
+gchar *
+example_csh_normalize_contact (TpHandleRepoIface *repo,
+                               const gchar *id,
+                               gpointer context,
+                               GError **error)
 {
+  const gchar *at;
+  /* For this example, we imagine that global handles look like
+   * username@realm and channel-specific handles look like nickname@#chatroom,
+   * where username and nickname contain any UTF-8 except "@", and realm
+   * and chatroom contain any UTF-8 except "@" and "#".
+   *
+   * Additionally, we imagine that everything is case-sensitive but is
+   * required to be in NFKC.
+   */
+
   if (id[0] == '\0')
     {
       g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
@@ -109,7 +122,68 @@ example_normalize_contact (TpHandleRepoIface *repo,
       return NULL;
     }
 
-  return g_utf8_strdown (id, -1);
+  at = strchr (id, '@');
+
+  if (at == NULL || at == id || at[1] == '\0')
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+          "ID must look like aaa@bbb");
+      return NULL;
+    }
+
+  if (strchr (at + 1, '@') != NULL)
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+          "ID cannot contain more than one '@'");
+      return NULL;
+    }
+
+  if (at[1] == '#' && at[2] == '\0')
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+          "chatroom name cannot be empty");
+      return NULL;
+    }
+
+  if (strchr (at + 2, '#') != NULL)
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+          "realm/chatroom cannot contain '#' except at the beginning");
+      return NULL;
+    }
+
+  return g_utf8_normalize (id, -1, G_NORMALIZE_ALL_COMPOSE);
+}
+
+static gchar *
+example_csh_normalize_room (TpHandleRepoIface *repo,
+                            const gchar *id,
+                            gpointer context,
+                            GError **error)
+{
+  /* See example_csh_normalize_contact(). */
+
+  if (id[0] != '#')
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+          "Chatroom names in this protocol start with #");
+    }
+
+  if (id[1] == '\0')
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+          "Chatroom name cannot be empty");
+      return NULL;
+    }
+
+  if (strchr (id, '@') != NULL)
+    {
+      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
+          "Chatroom names in this protocol cannot contain '@'");
+      return NULL;
+    }
+
+  return g_utf8_normalize (id, -1, G_NORMALIZE_ALL_COMPOSE);
 }
 
 static void
@@ -117,7 +191,10 @@ create_handle_repos (TpBaseConnection *conn,
                      TpHandleRepoIface *repos[NUM_TP_HANDLE_TYPES])
 {
   repos[TP_HANDLE_TYPE_CONTACT] = tp_dynamic_handle_repo_new
-      (TP_HANDLE_TYPE_CONTACT, example_normalize_contact, NULL);
+      (TP_HANDLE_TYPE_CONTACT, example_csh_normalize_contact, NULL);
+
+  repos[TP_HANDLE_TYPE_ROOM] = tp_dynamic_handle_repo_new
+      (TP_HANDLE_TYPE_ROOM, example_csh_normalize_room, NULL);
 }
 
 static GPtrArray *
@@ -125,7 +202,7 @@ create_channel_managers (TpBaseConnection *conn)
 {
   GPtrArray *ret = g_ptr_array_sized_new (1);
 
-  g_ptr_array_add (ret, g_object_new (EXAMPLE_TYPE_ECHO_2_IM_MANAGER,
+  g_ptr_array_add (ret, g_object_new (EXAMPLE_TYPE_CSH_ROOM_MANAGER,
         "connection", conn,
         NULL));
 
@@ -136,7 +213,7 @@ static gboolean
 start_connecting (TpBaseConnection *conn,
                   GError **error)
 {
-  ExampleEcho2Connection *self = EXAMPLE_ECHO_2_CONNECTION (conn);
+  ExampleCSHConnection *self = EXAMPLE_CSH_CONNECTION (conn);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles (conn,
       TP_HANDLE_TYPE_CONTACT);
 
@@ -145,7 +222,10 @@ start_connecting (TpBaseConnection *conn,
    * we can do it immediately. */
 
   conn->self_handle = tp_handle_ensure (contact_repo, self->priv->account,
-      NULL, NULL);
+      NULL, error);
+
+  if (conn->self_handle == 0)
+    return FALSE;
 
   tp_base_connection_change_status (conn, TP_CONNECTION_STATUS_CONNECTED,
       TP_CONNECTION_STATUS_REASON_REQUESTED);
@@ -163,7 +243,7 @@ shut_down (TpBaseConnection *conn)
 }
 
 static void
-example_echo_2_connection_class_init (ExampleEcho2ConnectionClass *klass)
+example_csh_connection_class_init (ExampleCSHConnectionClass *klass)
 {
   static const gchar *interfaces_always_present[] = {
       TP_IFACE_CONNECTION_INTERFACE_REQUESTS,
@@ -181,7 +261,7 @@ example_echo_2_connection_class_init (ExampleEcho2ConnectionClass *klass)
   object_class->get_property = get_property;
   object_class->set_property = set_property;
   object_class->finalize = finalize;
-  g_type_class_add_private (klass, sizeof (ExampleEcho2ConnectionPrivate));
+  g_type_class_add_private (klass, sizeof (ExampleCSHConnectionPrivate));
 
   base_class->create_handle_repos = create_handle_repos;
   base_class->get_unique_connection_name = get_unique_connection_name;
@@ -193,6 +273,6 @@ example_echo_2_connection_class_init (ExampleEcho2ConnectionClass *klass)
   param_spec = g_param_spec_string ("account", "Account name",
       "The username of this user", NULL,
       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE |
-      G_PARAM_STATIC_NAME | G_PARAM_STATIC_BLURB);
+      G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_ACCOUNT, param_spec);
 }

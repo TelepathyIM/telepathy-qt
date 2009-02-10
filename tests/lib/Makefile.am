@@ -1,4 +1,4 @@
-SUBDIRS = echo2
+SUBDIRS = . csh echo2
 
 AM_CFLAGS = $(ERROR_CFLAGS)
 

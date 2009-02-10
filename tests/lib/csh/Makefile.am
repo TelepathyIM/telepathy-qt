@@ -6,17 +6,17 @@ if ENABLE_TP_GLIB_TESTS
 AM_CFLAGS += $(TP_GLIB_CFLAGS)
 AM_CXXFLAGS += $(TP_GLIB_CFLAGS)
 
-noinst_LTLIBRARIES = libtp-glib-echo2-tests.la
+noinst_LTLIBRARIES = libtp-glib-csh-tests.la
 
-libtp_glib_echo2_tests_la_SOURCES = \
-    chan.c \
-    chan.h \
+libtp_glib_csh_tests_la_SOURCES = \
     conn.c \
     conn.h \
-    im-manager.c \
-    im-manager.h
+    room.c \
+    room.h \
+    room-manager.c \
+    room-manager.h
 
-libtp_glib_echo2_tests_la_LIBADD = \
+libtp_glib_csh_tests_la_LIBADD = \
     $(TP_GLIB_LIBS) \
     $(top_builddir)/tests/lib/libtp-glib-tests.la
 

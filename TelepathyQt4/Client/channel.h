@@ -28,11 +28,13 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
+#include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
 #include <QSet>
+#include <QSharedPointer>
 
 class QDBusPendingCallWatcher;
 
@@ -42,22 +44,19 @@ namespace Client
 {
 
 class Connection;
+class PendingOperation;
 
 class Channel : public StatefulDBusProxy,
                 private OptionalInterfaceFactory<Channel>
 {
     Q_OBJECT
     Q_DISABLE_COPY(Channel)
-    Q_ENUMS(Readiness)
 
 public:
-    enum Readiness {
-        ReadinessJustCreated = 0,
-        ReadinessFull = 5,
-        ReadinessDead = 10,
-        ReadinessClosed = 15,
-        _ReadinessInvalid = 0xffff
+    enum Feature {
+        _Paddding = 0xFFFFFFFF
     };
+    Q_DECLARE_FLAGS(Features, Feature)
 
     Channel(Connection *connection,
             const QString &objectPath,
@@ -67,8 +66,6 @@ public:
 
     Connection *connection() const;
 
-    Readiness readiness() const;
-
     QStringList interfaces() const;
 
     QString channelType() const;
@@ -77,36 +74,58 @@ public:
 
     uint targetHandle() const;
 
-public Q_SLOTS:
-    QDBusPendingReply<> close();
+    bool isRequested() const;
 
-Q_SIGNALS:
-    void readinessChanged(uint newReadiness);
+    QSharedPointer<Contact> initiatorContact() const;
+
+    bool isReady(Features features = 0) const;
+
+    PendingOperation *becomeReady(Features features = 0);
+
+    PendingOperation *requestClose();
 
 public:
     uint groupFlags() const;
 
-    QSet<uint> groupMembers() const;
+    bool groupCanAddContacts() const;
+    PendingOperation *groupAddContacts(const QList<QSharedPointer<Contact> > &contacts,
+            const QString &message);
+    bool groupCanRemoveContacts() const;
+    PendingOperation *groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
+            const QString &message);
+
+    QList<QSharedPointer<Contact> > groupContacts() const;
+    QList<QSharedPointer<Contact> > groupLocalPendingContacts() const;
+    QList<QSharedPointer<Contact> > groupRemotePendingContacts() const;
 
     class GroupMemberChangeInfo
     {
     public:
         GroupMemberChangeInfo()
-            : mActor(-1), mReason(0), mIsValid(false) {}
+            : mReason(0), mIsValid(false) {}
 
-        GroupMemberChangeInfo(uint actor, uint reason, const QString &message)
+        GroupMemberChangeInfo(const QSharedPointer<Contact> &actor, uint reason, const QString &message)
             : mActor(actor), mReason(reason), mMessage(message), mIsValid(true) {}
 
-        bool isValid() const { return mIsValid; }
+        bool isValid() const { return !mActor.isNull(); }
 
-        uint actor() const { return mActor; }
+        QSharedPointer<Contact> actor() const { return mActor; }
 
         uint reason() const { return mReason; }
 
         const QString &message() const { return mMessage; }
 
     private:
-        uint mActor;
+        friend class Channel;
+
+        void update(const QSharedPointer<Contact> &actor, uint reason, const QString &message)
+        {
+            mActor = actor;
+            mReason = reason;
+            mMessage = message;
+        }
+
+        QSharedPointer<Contact> mActor;
         uint mReason;
         QString mMessage;
         bool mIsValid;
@@ -114,42 +133,31 @@ public:
 
     typedef QMap<uint, GroupMemberChangeInfo> GroupMemberChangeInfoMap;
 
-    GroupMemberChangeInfoMap groupLocalPending() const;
-
-    QSet<uint> groupRemotePending() const;
+    GroupMemberChangeInfo groupLocalPendingContactChangeInfo(const QSharedPointer<Contact> &contact) const;
+    GroupMemberChangeInfo groupSelfContactRemoveInfo() const;
 
     bool groupAreHandleOwnersAvailable() const;
 
     HandleOwnerMap groupHandleOwners() const;
 
-    bool groupIsSelfHandleTracked() const;
-
-    uint groupSelfHandle() const;
-
-    GroupMemberChangeInfo groupSelfRemoveInfo() const;
+    bool groupIsSelfContactTracked() const;
+    QSharedPointer<Contact> groupSelfContact() const;
 
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
 
-    void groupMembersChanged(const QSet<uint> &members,
-            const Telepathy::UIntList &added,
-            const Telepathy::UIntList &removed,
-            uint actor, uint reason, const QString &message);
-
-    void groupLocalPendingChanged(const GroupMemberChangeInfoMap &localPending,
-            const Telepathy::UIntList &added,
-            const Telepathy::UIntList &removed,
-            uint actor, uint reason, const QString &message);
-
-    void groupRemotePendingChanged(const QSet<uint> &remotePending,
-            const Telepathy::UIntList &added,
-            const Telepathy::UIntList &removed,
-            uint actor, uint reason, const QString &message);
+    void groupMembersChanged(
+            const QList<QSharedPointer<Contact> > &groupMembersAdded,
+            const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+            const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved,
+            const QList<QSharedPointer<Contact> > &groupMembersRemoved,
+            QSharedPointer<Contact> actor,
+            uint reason, const QString &message);
 
     void groupHandleOwnersChanged(const HandleOwnerMap &owners,
             const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
 
-    void groupSelfHandleChanged(uint selfHandle);
+    void groupSelfContactChanged();
 
 public:
     template <class Interface>
@@ -265,8 +273,9 @@ private Q_SLOTS:
     void gotGroupProperties(QDBusPendingCallWatcher *watcher);
     void gotGroupFlags(QDBusPendingCallWatcher *watcher);
     void gotAllMembers(QDBusPendingCallWatcher *watcher);
-    void gotLocalPending(QDBusPendingCallWatcher *watcher);
+    void gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
+    void gotContacts(Telepathy::Client::PendingOperation *op);
     void onGroupFlagsChanged(uint, uint);
     void onMembersChanged(const QString&,
             const Telepathy::UIntList&, const Telepathy::UIntList&,
