@@ -1192,7 +1192,7 @@ PendingOperation *Channel::groupAddContacts(const QList<QSharedPointer<Contact> 
 }
 
 /**
- * Return if contacts on the remote pending list can be removed from this channel.
+ * Return if contacts in groupRemotePendingContacts() can be removed from this channel.
  *
  * \return \c true if contacts can be removed, \c false otherwise.
  * \sa groupRemoveContacts()
@@ -1207,7 +1207,10 @@ bool Channel::groupCanRescindContacts() const
 }
 
 /**
- * Return if contacts can be removed from this channel.
+ * Return if contacts in groupContacts() can be removed from this channel.
+ *
+ * Note that contacts in local pending lists can always be removed from the
+ * channel.
  *
  * \return \c true if contacts can be removed, \c false otherwise.
  * \sa groupRemoveContacts()
@@ -1237,11 +1240,9 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
         warning() << "Channel::groupRemoveContacts() used channel not ready";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Channel not ready");
-    } else if (!groupCanRemoveContacts()) {
-        warning() << "Channel::groupRemoveContacts() used but removing contacts is not supported";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support removing contacts");
-    } else if (contacts.isEmpty()) {
+    }
+
+    if (contacts.isEmpty()) {
         warning() << "Channel::groupRemoveContacts() used with empty contacts param";
         return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "contacts param cannot be an empty list");
@@ -1256,6 +1257,18 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
         }
     }
 
+    if (!groupCanRemoveContacts()) {
+        foreach (const QSharedPointer<Contact> &contact, contacts) {
+            if (mPriv->groupContacts.contains(contact->handle()[0])) {
+                warning() << "Channel::groupRemoveContacts() used but remove a contact "
+                    "in groupContacts() but contacts in groupContacts() can't be removed "
+                    "on this channel";
+                return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                        "Channel does not support removing contacts in groupContacts()");
+            }
+        }
+    }
+
     if (!groupCanRescindContacts()) {
         foreach (const QSharedPointer<Contact> &contact, contacts) {
             if (mPriv->groupRemotePendingContacts.contains(contact->handle()[0])) {
@@ -1265,7 +1278,9 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
                         "Channel does not support rescinding contacts");
             }
         }
-    } else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    }
+
+    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupRemoveContacts() used with no group interface";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Channel does not support group interface");
