@@ -525,7 +525,10 @@ void Channel::Private::buildContacts()
     }
 
     PendingContacts *pendingContacts = manager->contactsForHandles(
-            toBuild);
+            toBuild,
+            QSet<Contact::Feature>() << Contact::FeatureAlias
+                                     << Contact::FeatureAvatarToken
+                                     << Contact::FeatureSimplePresence);
     parent->connect(pendingContacts,
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(gotContacts(Telepathy::Client::PendingOperation *)));
