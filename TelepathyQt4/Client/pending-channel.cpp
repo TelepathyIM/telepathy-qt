@@ -27,6 +27,11 @@
 
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/FileTransfer>
+#include <TelepathyQt4/Client/RoomList>
+#include <TelepathyQt4/Client/StreamedMediaChannel>
+#include <TelepathyQt4/Client/TextChannel>
+#include <TelepathyQt4/Constants>
 
 /**
  * \addtogroup clientsideproxies Client-side proxies
@@ -51,6 +56,7 @@ struct PendingChannel::Private
     uint handleType;
     uint handle;
     QDBusObjectPath objectPath;
+    QVariantMap immutableProperties;
 };
 
 /**
@@ -168,7 +174,14 @@ const QString &PendingChannel::channelType() const
 }
 
 /**
- * Return the handle type specified in the channel request.
+ * If the channel request has finished, return the handle type of the resulting
+ * channel. Otherwise, return the handle type that was requested.
+ *
+ * (One example of a request producing a different target handle type is that
+ * on protocols like MSN, one-to-one conversations don't really exist, and if
+ * you request a text channel with handle type HandleTypeContact, what you
+ * will actually get is a text channel with handle type HandleTypeNone, with
+ * the requested contact as a member.)
  *
  * \return The handle type, as specified in #HandleType.
  */
@@ -178,13 +191,40 @@ uint PendingChannel::handleType() const
 }
 
 /**
- * Return the handle specified in the channel request.
+ * If the channel request has finished, return the target handle of the
+ * resulting channel. Otherwise, return the target handle that was requested
+ * (which might be different in some situations - see handleType).
  *
  * \return The handle.
  */
 uint PendingChannel::handle() const
 {
     return mPriv->handle;
+}
+
+/**
+ * If this channel request has finished, return the immutable properties of
+ * the resulting channel. Otherwise, return an empty map.
+ *
+ * The keys and values in this map are defined by the Telepathy D-Bus API
+ * specification, or by third-party extensions to that specification.
+ * These are the properties that cannot change over the lifetime of the
+ * channel; they're announced in the result of the request, for efficiency.
+ * This map should be passed to the constructor of Channel or its subclasses
+ * (such as TextChannel).
+ *
+ * These properties can also be used to process channels in a way that does
+ * not require the creation of a Channel object - for instance, a
+ * ChannelDispatcher implementation should be able to classify and process
+ * channels based on their immutable properties, without needing to create
+ * Channel objects.
+ *
+ * \return A map in which the keys are D-Bus property names and the values
+ *         are the corresponding values.
+ */
+QVariantMap PendingChannel::immutableProperties() const
+{
+    return mPriv->immutableProperties;
 }
 
 /**
@@ -207,10 +247,30 @@ Channel *PendingChannel::channel(QObject *parent) const
         return 0;
     }
 
-    Channel *channel =
-        new Channel(connection(),
-                    mPriv->objectPath.path(),
-                    parent);
+    Channel *channel;
+
+    if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
+        channel = new TextChannel(connection(), mPriv->objectPath.path(),
+                mPriv->immutableProperties, parent);
+    }
+    else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+        channel = new StreamedMediaChannel(connection(),
+                mPriv->objectPath.path(), mPriv->immutableProperties, parent);
+    }
+    else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
+        channel = new RoomList(connection(), mPriv->objectPath.path(),
+                mPriv->immutableProperties, parent);
+    }
+    // FIXME: update spec so we can do this properly
+    else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
+        channel = new FileTransfer(connection(), mPriv->objectPath.path(),
+                mPriv->immutableProperties, parent);
+    }
+    else {
+        // ContactList, old-style Tubes, or a future channel type
+        channel = new Channel(connection(), mPriv->objectPath.path(),
+                mPriv->immutableProperties, parent);
+    }
     return channel;
 }
 
@@ -224,6 +284,7 @@ void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watche
             mPriv->objectPath.path();
 
         QVariantMap map = reply.argumentAt<1>();
+        mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
         mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();
@@ -250,6 +311,7 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watche
             mPriv->objectPath.path();
 
         QVariantMap map = reply.argumentAt<2>();
+        mPriv->immutableProperties = map;
         mPriv->channelType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         mPriv->handleType = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")).toUInt();
         mPriv->handle = map.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")).toUInt();

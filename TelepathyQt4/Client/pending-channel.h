@@ -59,6 +59,8 @@ public:
 
     uint handle() const;
 
+    QVariantMap immutableProperties() const;
+
     Channel *channel(QObject *parent = 0) const;
 
 private Q_SLOTS:
