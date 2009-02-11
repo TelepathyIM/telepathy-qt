@@ -247,8 +247,7 @@ void TestChanGroup::onGroupMembersChanged(
                             QString("anonymous coward@") + roomName);
             ret = 0;
         } else if (mChan->groupContacts().count() == 6) {
-            // TODO: re-enable when details are properly transferred
-            // QCOMPARE(details.message(), QString("Invitation accepted"));
+            QCOMPARE(details.message(), QString("Invitation accepted"));
             QCOMPARE(ids, QStringList() <<
                             QString("me@") + roomName <<
                             QString("alice@") + roomName <<
@@ -261,8 +260,7 @@ void TestChanGroup::onGroupMembersChanged(
     } else {
         if (mChan->groupRemotePendingContacts().count() == 1) {
             QCOMPARE(details.actor(), mChan->groupSelfContact());
-            // TODO: re-enable when details are properly transferred
-            // QCOMPARE(details.message(), QString("I want to add john"));
+            QCOMPARE(details.message(), QString("I want to add john"));
             QCOMPARE(mChan->groupRemotePendingContacts().first()->id(),
                      QString("john@" + roomName));
             ret = 1;

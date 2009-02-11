@@ -166,19 +166,16 @@ struct Channel::Private::GroupMembersChangedInfo
 {
     GroupMembersChangedInfo(const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
             const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
-            uint actor, uint reason, const QString &message,
-            const HandleIdentifierMap &contactIds = HandleIdentifierMap(),
-            const QString &error = QString(), const QString &debugMessage = QString())
+            const QVariantMap &details)
         : added(added),
           removed(removed),
           localPending(localPending),
           remotePending(remotePending),
-          actor(actor),
-          reason(reason),
-          message(message),
-          contactIds(contactIds),
-          error(error),
-          debugMessage(debugMessage)
+          details(details),
+          // TODO most of these probably should be removed once the rest of the code using them is sanitized
+          actor(qdbus_cast<uint>(details.value("actor"))),
+          reason(qdbus_cast<uint>(details.value("change-reason"))),
+          message(qdbus_cast<QString>(details.value("message")))
     {
     }
 
@@ -186,12 +183,10 @@ struct Channel::Private::GroupMembersChangedInfo
     Telepathy::UIntList removed;
     Telepathy::UIntList localPending;
     Telepathy::UIntList remotePending;
+    QVariantMap details;
     uint actor;
     uint reason;
     QString message;
-    HandleIdentifierMap contactIds;
-    QString error;
-    QString debugMessage;
 };
 
 class Channel::Private::PendingReady : public PendingOperation
@@ -565,7 +560,6 @@ void Channel::Private::buildContacts()
     buildingContacts = true;
 
     ContactManager *manager = connection->contactManager();
-
     UIntList toBuild = QSet<uint>(pendingGroupMembers +
             pendingGroupLocalPendingMembers +
             pendingGroupRemotePendingMembers).toList();
@@ -577,7 +571,7 @@ void Channel::Private::buildContacts()
     }
 
     if (currentGroupMembersChangedInfo &&
-        currentGroupMembersChangedInfo->actor != 0) {
+            currentGroupMembersChangedInfo->actor != 0) {
         toBuild.append(currentGroupMembersChangedInfo->actor);
     }
 
@@ -746,9 +740,10 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
             // TODO: Transfer the variant map too - SHOULDN'T BE FLATTENED TO LocalPendingInfo!
             if (groupLocalPendingContactsChangeInfo.contains(info.toBeAdded)) {
                 groupLocalPendingContactsChangeInfo[info.toBeAdded] =
-                    GroupMemberChangeDetails(actorContact, QVariantMap());
+                    GroupMemberChangeDetails(actorContact, currentGroupMembersChangedInfo->details);
             } else if (handle == groupSelfHandle) {
-                groupSelfContactRemoveInfo = GroupMemberChangeDetails(actorContact, QVariantMap());
+                groupSelfContactRemoveInfo = GroupMemberChangeDetails(actorContact,
+                        currentGroupMembersChangedInfo->details);
             }
         }
     }
@@ -818,10 +813,9 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         !groupLocalPendingContactsAdded.isEmpty() ||
         !groupRemotePendingContactsAdded.isEmpty() ||
         !groupContactsRemoved.isEmpty()) {
-        // TODO: Transfer the actual variantmap - shouldn't be unpacked in between!
         GroupMemberChangeDetails details(
                 actorContact,
-                QVariantMap());
+                currentGroupMembersChangedInfo->details);
         emit parent->groupMembersChanged(
                 groupContactsAdded,
                 groupLocalPendingContactsAdded,
@@ -2159,12 +2153,7 @@ void Channel::onMembersChangedDetailed(
             new Private::GroupMembersChangedInfo(
                 added, removed,
                 localPending, remotePending,
-                details.value("actor").value<uint>(),
-                details.value("change-reason").value<uint>(),
-                details.value("message").value<QString>(),
-                details.value("contact-ids").value<HandleIdentifierMap>(),
-                details.value("error").value<QString>(),
-                details.value("debug-message").value<QString>()));
+                details));
 
     if (!mPriv->buildingContacts) {
         // if we are building contacts, we should wait it to finish so we don't
