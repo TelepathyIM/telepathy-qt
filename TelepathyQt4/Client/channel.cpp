@@ -475,6 +475,7 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
 
         pendingGroupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
+        // FIXME: this will be ignored currently
         foreach (const LocalPendingInfo &info,
                 qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
             pendingGroupLocalPendingMembers.insert(info.toBeAdded);
@@ -643,6 +644,7 @@ void Channel::Private::processMembersChanged()
     }
 
     foreach (uint handle, currentGroupMembersChangedInfo->localPending) {
+        // FIXME: no need to do this really, but need to fix the updateMembers logic first
         if (!groupLocalPendingContacts.contains(handle)) {
             LocalPendingInfo info = {
                 handle,
@@ -664,6 +666,7 @@ void Channel::Private::processMembersChanged()
     foreach (uint handle, currentGroupMembersChangedInfo->removed) {
         groupMembersToRemove.append(handle);
 
+        // FIXME: no need to do this really, but need to fix the updateMembers logic first
         if (handle == groupSelfHandle) {
             LocalPendingInfo info = {
                 handle,
@@ -729,6 +732,8 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         selfContactUpdated = true;
     }
 
+    // FIXME: fix this logic - shouldn't bother itself so much with the LPI, but should still
+    // support initial LPI
     // this is not ideal, but we need to make sure groupLocalPendingContactsChangeInfo
     // is there first
     foreach (QSharedPointer<Contact> contact, contacts) {
@@ -775,6 +780,8 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         processMembersChanged();
         return;
     }
+
+    // FIXME: use QSet to make the code somewhat easier to comprehend and change
 
     QList<QSharedPointer<Contact> > groupContactsRemoved;
     QSharedPointer<Contact> contactToRemove;
