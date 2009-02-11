@@ -74,14 +74,13 @@ void ManagerFile::Private::init()
         configDirs << xdgDataHome + QLatin1String("/telepathy/managers/");
     }
 
-    QStringList xdgDataDirs = QString::fromLocal8Bit(
-            qgetenv("XDG_DATA_DIRS")).split(QLatin1Char(':'));
-
-    if (xdgDataDirs.isEmpty()) {
+    QString xdgDataDirsEnv = QString::fromLocal8Bit(qgetenv("XDG_DATA_DIRS"));
+    if (xdgDataDirsEnv.isEmpty()) {
         configDirs << "/usr/local/share/telepathy/managers/";
         configDirs << "/usr/share/telepathy/managers/";
     }
     else {
+        QStringList xdgDataDirs = xdgDataDirsEnv.split(QLatin1Char(':'));
         Q_FOREACH (const QString xdgDataDir, xdgDataDirs) {
             configDirs << xdgDataDir + QLatin1String("/telepathy/managers/");
         }
