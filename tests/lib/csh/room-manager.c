@@ -399,3 +399,17 @@ example_csh_room_manager_set_enable_change_members_detailed (ExampleCSHRoomManag
                                                            enable);
     }
 }
+
+void
+example_csh_room_manager_accept_invitations (ExampleCSHRoomManager *self)
+{
+  GHashTableIter iter;
+  gpointer handle, channel;
+
+  g_return_if_fail (EXAMPLE_IS_CSH_ROOM_MANAGER (self));
+
+  g_hash_table_iter_init (&iter, self->priv->channels);
+
+  while (g_hash_table_iter_next (&iter, &handle, &channel))
+    example_csh_room_accept_invitations (EXAMPLE_CSH_ROOM_CHANNEL (channel));
+}
