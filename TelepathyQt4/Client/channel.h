@@ -36,6 +36,7 @@
 
 #include <QSet>
 #include <QSharedPointer>
+#include <QVariantMap>
 
 class QDBusPendingCallWatcher;
 
@@ -101,79 +102,46 @@ public:
     QList<QSharedPointer<Contact> > groupLocalPendingContacts() const;
     QList<QSharedPointer<Contact> > groupRemotePendingContacts() const;
 
-    class GroupMemberChangeInfo
-    {
-    public:
-        GroupMemberChangeInfo()
-            : mReason(0), mIsValid(false) {}
-
-        GroupMemberChangeInfo(const QSharedPointer<Contact> &actor, uint reason, const QString &message)
-            : mActor(actor), mReason(reason), mMessage(message), mIsValid(true) {}
-
-        bool isValid() const { return !mActor.isNull(); }
-
-        QSharedPointer<Contact> actor() const { return mActor; }
-
-        uint reason() const { return mReason; }
-
-        const QString &message() const { return mMessage; }
-
-    private:
-        friend class Channel;
-
-        void update(const QSharedPointer<Contact> &actor, uint reason, const QString &message)
-        {
-            mActor = actor;
-            mReason = reason;
-            mMessage = message;
-        }
-
-        QSharedPointer<Contact> mActor;
-        uint mReason;
-        QString mMessage;
-        bool mIsValid;
-    };
-
     class GroupMemberChangeDetails
     {
     public:
-        GroupMemberChangeDetails(const QSharedPointer<Contact> &actorContact,
-                uint reason, const QString &message,
-                const HandleIdentifierMap &contactIds,
-                const QString &error, const QString &debugMessage)
-            : mActorContact(actorContact), mReason(reason), mMessage(message),
-              mContactIds(contactIds), mError(error), mDebugMessage(debugMessage) {}
+        GroupMemberChangeDetails()
+            : mIsValid(false) {}
 
-        QSharedPointer<Contact> actorContact() const { return mActorContact; }
+        bool isValid() const { return mIsValid; }
 
-        uint reason() const { return mReason; }
+        bool hasActor() const { return !mActor.isNull(); }
+        QSharedPointer<Contact> actor() const { return mActor; }
 
-        const QString &message() const { return mMessage; }
+        bool hasReason() const { return mDetails.contains("change-reason"); }
+        uint reason() const { return qdbus_cast<uint>(mDetails.value("change-reason")); }
 
-        HandleIdentifierMap contactIds() const { return mContactIds; }
+        bool hasMessage() const { return mDetails.contains("message"); }
+        QString message () const { return qdbus_cast<QString>(mDetails.value("message")); }
 
-        QString error() const { return mError; }
+        bool hasError() const { return mDetails.contains("error"); }
+        QString error() const { return qdbus_cast<QString>(mDetails.value("error")); }
 
-        QString debugMessage() const { return mDebugMessage; }
+        bool hasDebugMessage() const { return mDetails.contains("debug-message"); }
+        QString debugMessage() const { return qdbus_cast<QString>(mDetails.value("debug-message")); }
+
+        QVariantMap allDetails() const { return mDetails; }
 
     private:
         friend class Channel;
 
-        QSharedPointer<Contact> mActorContact;
-        uint mReason;
-        QString mMessage;
-        HandleIdentifierMap mContactIds;
-        QString mError;
-        QString mDebugMessage;
+        GroupMemberChangeDetails(const QSharedPointer<Contact> &actor, const QVariantMap &details)
+            : mActor(actor), mDetails(details), mIsValid(true) {}
+
+        QSharedPointer<Contact> mActor;
+        QVariantMap mDetails;
+        bool mIsValid;
     };
 
-    typedef QMap<uint, GroupMemberChangeInfo> GroupMemberChangeInfoMap;
-
-    GroupMemberChangeInfo groupLocalPendingContactChangeInfo(const QSharedPointer<Contact> &contact) const;
-    GroupMemberChangeInfo groupSelfContactRemoveInfo() const;
+    GroupMemberChangeDetails groupLocalPendingContactChangeInfo(const QSharedPointer<Contact> &contact) const;
+    GroupMemberChangeDetails groupSelfContactRemoveInfo() const;
 
     bool groupAreHandleOwnersAvailable() const;
-
     HandleOwnerMap groupHandleOwners() const;
 
     bool groupIsSelfContactTracked() const;
@@ -337,7 +305,6 @@ private:
 } // Telepathy::Client
 } // Telepathy
 
-Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupMemberChangeInfo);
-Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupMemberChangeInfoMap);
+Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupMemberChangeDetails);
 
 #endif

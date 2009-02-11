@@ -146,8 +146,8 @@ struct Channel::Private
     QHash<uint, QSharedPointer<Contact> > groupContacts;
     QHash<uint, QSharedPointer<Contact> > groupLocalPendingContacts;
     QHash<uint, QSharedPointer<Contact> > groupRemotePendingContacts;
-    QHash<uint, GroupMemberChangeInfo > groupLocalPendingContactsChangeInfo;
-    GroupMemberChangeInfo groupSelfContactRemoveInfo;
+    QHash<uint, GroupMemberChangeDetails> groupLocalPendingContactsChangeInfo;
+    GroupMemberChangeDetails groupSelfContactRemoveInfo;
     QQueue<GroupMembersChangedInfo *> groupMembersChangedQueue;
     GroupMembersChangedInfo *currentGroupMembersChangedInfo;
 
@@ -708,7 +708,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         } else if (pendingGroupLocalPendingMembers.contains(handle)) {
             groupLocalPendingContactsAdded.append(contact);
             groupLocalPendingContacts[handle] = contact;
-            groupLocalPendingContactsChangeInfo[handle] = GroupMemberChangeInfo();
+            groupLocalPendingContactsChangeInfo[handle] = GroupMemberChangeDetails();
         } else if (pendingGroupRemotePendingMembers.contains(handle)) {
             groupRemotePendingContactsAdded.append(contact);
             groupRemotePendingContacts[handle] = contact;
@@ -743,13 +743,12 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         // contact
         if (pendingGroupMembersChangeInfo.contains(handle)) {
             LocalPendingInfo info = pendingGroupMembersChangeInfo[handle];
+            // TODO: Transfer the variant map too - SHOULDN'T BE FLATTENED TO LocalPendingInfo!
             if (groupLocalPendingContactsChangeInfo.contains(info.toBeAdded)) {
-                groupLocalPendingContactsChangeInfo[info.toBeAdded].update(
-                        contact, info.reason, info.message);
-            }
-            else if (handle == groupSelfHandle) {
-                groupSelfContactRemoveInfo = GroupMemberChangeInfo(
-                        contact, info.reason, info.message);
+                groupLocalPendingContactsChangeInfo[info.toBeAdded] =
+                    GroupMemberChangeDetails(actorContact, QVariantMap());
+            } else if (handle == groupSelfHandle) {
+                groupSelfContactRemoveInfo = GroupMemberChangeDetails(actorContact, QVariantMap());
             }
         }
     }
@@ -819,13 +818,10 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         !groupLocalPendingContactsAdded.isEmpty() ||
         !groupRemotePendingContactsAdded.isEmpty() ||
         !groupContactsRemoved.isEmpty()) {
+        // TODO: Transfer the actual variantmap - shouldn't be unpacked in between!
         GroupMemberChangeDetails details(
                 actorContact,
-                currentGroupMembersChangedInfo->reason,
-                currentGroupMembersChangedInfo->message,
-                currentGroupMembersChangedInfo->contactIds,
-                currentGroupMembersChangedInfo->error,
-                currentGroupMembersChangedInfo->debugMessage);
+                QVariantMap());
         emit parent->groupMembersChanged(
                 groupContactsAdded,
                 groupLocalPendingContactsAdded,
@@ -1446,7 +1442,7 @@ QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
  * \param A Contact object that is on the local pending contacts list.
  * \return The change info in a GroupMemberChangeInfo object.
  */
-Channel::GroupMemberChangeInfo Channel::groupLocalPendingContactChangeInfo(
+Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
         const QSharedPointer<Contact> &contact) const
 {
     if (!isReady()) {
@@ -1457,7 +1453,7 @@ Channel::GroupMemberChangeInfo Channel::groupLocalPendingContactChangeInfo(
     }
     else if (!contact) {
         warning() << "Channel::groupLocalPending() used with null contact param";
-        return GroupMemberChangeInfo();
+        return GroupMemberChangeDetails();
     }
 
     uint handle = contact->handle()[0];
@@ -1480,7 +1476,7 @@ Channel::GroupMemberChangeInfo Channel::groupLocalPendingContactChangeInfo(
  *
  * \return The remove info in a GroupMemberChangeInfo object.
  */
-Channel::GroupMemberChangeInfo Channel::groupSelfContactRemoveInfo() const
+Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
 {
     if (!isReady()) {
         warning() << "Channel::groupSelfContactRemoveInfo() used channel not ready";
