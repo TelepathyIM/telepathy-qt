@@ -835,7 +835,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     currentGroupMembersChangedInfo = 0;
 
     if (selfContactUpdated) {
-        emit parent->groupSelfContactChanged(groupSelfContact);
+        emit parent->groupSelfContactChanged();
     }
 
     processMembersChanged();
@@ -1635,11 +1635,9 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn void groupSelfContactChanged(const QSharedPointer<Contact> &contact)
+ * \fn void groupSelfContactChanged()
  *
  * Emitted when the value returned by groupSelfContact() changes.
- *
- * \param contact The self contact.
  */
 
 //@}
@@ -2055,7 +2053,7 @@ void Channel::gotContacts(PendingOperation *op)
                 pending->invalidHandles().contains(mPriv->groupSelfHandle)) {
                 warning() << "Unable to retrieve self contact";
                 mPriv->groupSelfContact.clear();
-                emit groupSelfContactChanged(mPriv->groupSelfContact);
+                emit groupSelfContactChanged();
             }
         }
     } else {
