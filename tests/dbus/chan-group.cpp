@@ -43,7 +43,7 @@ protected Q_SLOTS:
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
             const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
             const QList<QSharedPointer<Contact> > &groupMembersRemoved,
-            QSharedPointer<Contact> actor, uint reason, const QString &message);
+            const Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
     void initTestCase();
@@ -216,7 +216,7 @@ void TestChanGroup::onGroupMembersChanged(
         const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
         const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
         const QList<QSharedPointer<Contact> > &groupMembersRemoved,
-        QSharedPointer<Contact> actor, uint reason, const QString &message)
+        const Channel::GroupMemberChangeDetails &details)
 {
     int ret = -1;
 
@@ -254,7 +254,7 @@ void TestChanGroup::onGroupMembersChanged(
         }
     } else {
         if (mChan->groupRemotePendingContacts().count() == 1) {
-            QCOMPARE(message, QString("I want to add john"));
+            QCOMPARE(details.message(), QString("I want to add john"));
             QCOMPARE(mChan->groupRemotePendingContacts().first()->id(),
                      QString("john@#room"));
             ret = 1;
@@ -405,13 +405,13 @@ void TestChanGroup::testCreateChannel()
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
-                                QSharedPointer<Contact>, uint, const QString &)),
+                                const Channel::GroupMemberChangeDetails &)),
                         SLOT(onGroupMembersChanged(
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
                                 const QList<QSharedPointer<Contact> > &,
-                                QSharedPointer<Contact>, uint, const QString &))));
+                                const Channel::GroupMemberChangeDetails &))));
         QCOMPARE(mLoop->exec(), 0);
 
         QStringList ids = QStringList() << "john@#room";

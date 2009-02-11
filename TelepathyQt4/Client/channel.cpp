@@ -83,6 +83,8 @@ struct Channel::Private
 
     void nowHaveInterfaces();
 
+    bool setGroupFlags(uint groupFlags);
+
     void buildContacts();
     void processMembersChanged();
     void updateContacts(const QList<QSharedPointer<Contact> > &contacts =
@@ -128,6 +130,8 @@ struct Channel::Private
     // Group flags
     uint groupFlags;
 
+    bool usingMembersChangedDetailed;
+
     // Group members
     bool groupHaveMembers;
     bool buildingInitialContacts;
@@ -160,27 +164,34 @@ struct Channel::Private
 
 struct Channel::Private::GroupMembersChangedInfo
 {
-    GroupMembersChangedInfo(const QString &message,
-            const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
+    GroupMembersChangedInfo(const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
             const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
-            uint actor, uint reason)
-        : message(message),
-          added(added),
+            uint actor, uint reason, const QString &message,
+            const HandleIdentifierMap &contactIds = HandleIdentifierMap(),
+            const QString &error = QString(), const QString &debugMessage = QString())
+        : added(added),
           removed(removed),
           localPending(localPending),
           remotePending(remotePending),
           actor(actor),
-          reason(reason)
+          reason(reason),
+          message(message),
+          contactIds(contactIds),
+          error(error),
+          debugMessage(debugMessage)
     {
     }
 
-    QString message;
     Telepathy::UIntList added;
     Telepathy::UIntList removed;
     Telepathy::UIntList localPending;
     Telepathy::UIntList remotePending;
     uint actor;
     uint reason;
+    QString message;
+    HandleIdentifierMap contactIds;
+    QString error;
+    QString debugMessage;
 };
 
 class Channel::Private::PendingReady : public PendingOperation
@@ -212,6 +223,7 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       requested(false),
       initiatorHandle(0),
       groupFlags(0),
+      usingMembersChangedDetailed(false),
       groupHaveMembers(false),
       buildingInitialContacts(false),
       buildingContacts(false),
@@ -464,7 +476,7 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         groupAreHandleOwnersAvailable = true;
         groupIsSelfHandleTracked = true;
 
-        groupFlags = qdbus_cast<uint>(props["GroupFlags"]);
+        setGroupFlags(qdbus_cast<uint>(props["GroupFlags"]));
         groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
 
         pendingGroupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
@@ -491,6 +503,61 @@ void Channel::Private::nowHaveInterfaces()
     if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         introspectQueue.enqueue(&Private::introspectGroup);
     }
+}
+
+bool Channel::Private::setGroupFlags(uint newGroupFlags)
+{
+    if (groupFlags == newGroupFlags) {
+        return false;
+    }
+
+    groupFlags = newGroupFlags;
+
+    // this shouldn't happen but let's make sure
+    if (!interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+        return false;
+    }
+
+    if ((groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
+        !usingMembersChangedDetailed) {
+        usingMembersChangedDetailed = true;
+        parent->disconnect(group,
+                           SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
+                                   const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                   const Telepathy::UIntList&, uint, uint)),
+                           parent,
+                           SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
+                                   const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                   const Telepathy::UIntList&, uint, uint)));
+        parent->connect(group,
+                        SIGNAL(MembersChangedDetailed(const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, const QVariantMap&)),
+                        SLOT(onMembersChangedDetailed(const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, const QVariantMap&)));
+    } else if (!(groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
+               usingMembersChangedDetailed) {
+        usingMembersChangedDetailed = false;
+        parent->disconnect(group,
+                           SIGNAL(MembersChangedDetailed(const Telepathy::UIntList&,
+                                   const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                   const Telepathy::UIntList&, const QVariantMap&)),
+                           parent,
+                           SLOT(onMembersChangedDetailed(const Telepathy::UIntList&,
+                                   const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                   const Telepathy::UIntList&, const QVariantMap&)));
+        parent->connect(group,
+                        SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, uint, uint)),
+                        parent,
+                        SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, const Telepathy::UIntList&,
+                                const Telepathy::UIntList&, uint, uint)));
+    }
+
+    return true;
 }
 
 void Channel::Private::buildContacts()
@@ -737,14 +804,19 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         !groupLocalPendingContactsAdded.isEmpty() ||
         !groupRemotePendingContactsAdded.isEmpty() ||
         !groupContactsRemoved.isEmpty()) {
+        GroupMemberChangeDetails details(
+                actorContact,
+                currentGroupMembersChangedInfo->reason,
+                currentGroupMembersChangedInfo->message,
+                currentGroupMembersChangedInfo->contactIds,
+                currentGroupMembersChangedInfo->error,
+                currentGroupMembersChangedInfo->debugMessage);
         emit parent->groupMembersChanged(
                 groupContactsAdded,
                 groupLocalPendingContactsAdded,
                 groupRemotePendingContactsAdded,
                 groupContactsRemoved,
-                actorContact,
-                currentGroupMembersChangedInfo->reason,
-                currentGroupMembersChangedInfo->message);
+                details);
     }
     delete currentGroupMembersChangedInfo;
     currentGroupMembersChangedInfo = 0;
@@ -1870,7 +1942,7 @@ void Channel::gotGroupFlags(QDBusPendingCallWatcher *watcher)
     }
     else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetGroupFlags()";
-        mPriv->groupFlags = reply.value();
+        mPriv->setGroupFlags(reply.value());
 
         if (mPriv->groupFlags & ChannelGroupFlagProperties) {
             warning() << " Reply included ChannelGroupFlagProperties, even "
@@ -1985,10 +2057,10 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
     debug().nospace() << "Arguments after filtering (" << hex << added <<
         ", " << removed << ")";
 
-    mPriv->groupFlags |= added;
-    mPriv->groupFlags &= ~removed;
-
-    if (added || removed) {
+    uint groupFlags = mPriv->groupFlags;
+    groupFlags |= added;
+    groupFlags &= ~removed;
+    if (mPriv->setGroupFlags(groupFlags)) {
         debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags <<
             "value" << added << "added" << removed << "removed";
         emit groupFlagsChanged(mPriv->groupFlags, added, removed);
@@ -2036,8 +2108,49 @@ void Channel::onMembersChanged(const QString &message,
     }
 
     mPriv->groupMembersChangedQueue.enqueue(
-            new Private::GroupMembersChangedInfo(message, added, removed,
-                localPending, remotePending, actor, reason));
+            new Private::GroupMembersChangedInfo(added, removed,
+                localPending, remotePending, actor, reason, message));
+
+    if (!mPriv->buildingContacts) {
+        // if we are building contacts, we should wait it to finish so we don't
+        // present the user with wrong information
+        mPriv->processMembersChanged();
+    }
+}
+
+void Channel::onMembersChangedDetailed(
+        const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
+        const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
+        const QVariantMap &details)
+{
+    debug() << "Got Channel.Interface.Group::MembersChangedDetailed with" << added.size() <<
+        "added," << removed.size() << "removed," << localPending.size() <<
+        "moved to LP," << remotePending.size() << "moved to RP," << details.value("actor").value<uint>() <<
+        "being the actor," << details.value("change-reason").value<uint>() << "the reason and" <<
+        details.value("message").value<QString>() << "the message";
+
+    if (!mPriv->groupHaveMembers) {
+        debug() << "Still waiting for initial group members, "
+            "so ignoring delta signal...";
+        return;
+    }
+
+    if (added.isEmpty() && removed.isEmpty() &&
+        localPending.isEmpty() && remotePending.isEmpty()) {
+        debug() << "Nothing really changed, so skipping membersChanged";
+        return;
+    }
+
+    mPriv->groupMembersChangedQueue.enqueue(
+            new Private::GroupMembersChangedInfo(
+                added, removed,
+                localPending, remotePending,
+                details.value("actor").value<uint>(),
+                details.value("reason").value<uint>(),
+                details.value("message").value<QString>(),
+                details.value("contact-ids").value<HandleIdentifierMap>(),
+                details.value("error").value<QString>(),
+                details.value("debug-message").value<QString>()));
 
     if (!mPriv->buildingContacts) {
         // if we are building contacts, we should wait it to finish so we don't
