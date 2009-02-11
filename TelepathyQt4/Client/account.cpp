@@ -57,9 +57,10 @@ namespace Client
 
 struct Account::Private
 {
-    Private(Account *parent);
+    Private(AccountManager *am, Account *parent);
     ~Private();
 
+    AccountManager *am;
     AccountInterface *baseInterface;
     bool ready;
     QList<PendingReadyAccount *> pendingOperations;
@@ -90,8 +91,9 @@ struct Account::Private
     QSharedPointer<Connection> connection;
 };
 
-Account::Private::Private(Account *parent)
-    : baseInterface(new AccountInterface(parent->dbusConnection(),
+Account::Private::Private(AccountManager *am, Account *parent)
+    : am(am),
+      baseInterface(new AccountInterface(parent->dbusConnection(),
                         parent->busName(), parent->objectPath(), parent)),
       ready(false),
       features(0),
@@ -152,7 +154,7 @@ Account::Account(AccountManager *am, const QString &objectPath,
     : StatelessDBusProxy(am->dbusConnection(),
             am->busName(), objectPath, parent),
       OptionalInterfaceFactory<Account>(this),
-      mPriv(new Private(this))
+      mPriv(new Private(am, this))
 {
     connect(mPriv->baseInterface,
             SIGNAL(Removed()),
@@ -180,7 +182,7 @@ Account::~Account()
  */
 AccountManager *Account::manager() const
 {
-    return qobject_cast<AccountManager *>(parent());
+    return mPriv->am;
 }
 
 /**
