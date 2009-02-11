@@ -62,6 +62,7 @@ struct _ExampleCSHRoomChannelPrivate
   guint accept_invitations_timeout;
 
   /* These are really booleans, but gboolean is signed. Thanks, GLib */
+  unsigned members_changed_detailed:1;
   unsigned closed:1;
   unsigned disposed:1;
 };
@@ -120,6 +121,8 @@ complete_join (ExampleCSHRoomChannel *self)
   TpHandle alice_global, bob_global, chris_global;
   TpGroupMixin *mixin = TP_GROUP_MIXIN (self);
   TpIntSet *added;
+  GHashTable *details;
+  GValue *v;
 
   /* For this example, we assume that all chatrooms initially contain
    * Alice, Bob and Chris (and that their global IDs are also known),
@@ -166,12 +169,22 @@ complete_join (ExampleCSHRoomChannel *self)
           self->priv->conn->self_handle);
       tp_group_mixin_change_self_handle ((GObject *) self, new_self);
 
+      details = g_hash_table_new_full (g_str_hash, g_str_equal,
+         NULL, (GDestroyNotify) tp_g_value_slice_free);
+
+      v = tp_g_value_slice_new (G_TYPE_UINT);
+      g_value_set_uint (v, TP_CHANNEL_GROUP_CHANGE_REASON_RENAMED);
+      g_hash_table_insert (details, "change-reason", v);
+
+      tp_group_mixin_change_members_detailed ((GObject *) self, NULL, removed,
+         NULL, rp, details);
       tp_group_mixin_change_members ((GObject *) self, "", NULL, removed, NULL,
           rp, 0, TP_CHANNEL_GROUP_CHANGE_REASON_RENAMED);
 
       tp_handle_unref (contact_repo, new_self);
       tp_intset_destroy (removed);
       tp_intset_destroy (rp);
+      g_hash_table_unref (details);
     }
 
   tp_group_mixin_add_handle_owner ((GObject *) self, alice_local,
@@ -192,8 +205,19 @@ complete_join (ExampleCSHRoomChannel *self)
   tp_intset_add (added, anon_local);
   tp_intset_add (added, mixin->self_handle);
 
+  details = g_hash_table_new_full (g_str_hash, g_str_equal,
+     NULL, (GDestroyNotify) tp_g_value_slice_free);
+
+  v = tp_g_value_slice_new (G_TYPE_UINT);
+  g_value_set_uint (v, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  g_hash_table_insert (details, "change-reason", v);
+
+  tp_group_mixin_change_members_detailed ((GObject *) self, added, NULL,
+     NULL, NULL, details);
   tp_group_mixin_change_members ((GObject *) self, "", added, NULL, NULL,
-      NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+     NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+
+  g_hash_table_unref (details);
 
   tp_handle_unref (contact_repo, alice_local);
   tp_handle_unref (contact_repo, bob_local);
@@ -206,15 +230,33 @@ complete_join (ExampleCSHRoomChannel *self)
 
   /* now that the dust has settled, we can also invite people */
   tp_group_mixin_change_flags ((GObject *) self,
-      TP_CHANNEL_GROUP_FLAG_CAN_ADD | TP_CHANNEL_GROUP_FLAG_MESSAGE_ADD,
+      TP_CHANNEL_GROUP_FLAG_CAN_ADD | TP_CHANNEL_GROUP_FLAG_MESSAGE_ADD |
+      (self->priv->members_changed_detailed ? TP_CHANNEL_GROUP_FLAG_MEMBERS_CHANGED_DETAILED : 0),
       0);
 }
 
 static void
 accept_invitations (ExampleCSHRoomChannel *self)
 {
-  tp_group_mixin_change_members ((GObject *) self, "", self->priv->remote, NULL, NULL,
-      self->priv->remote, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  GHashTable *details = g_hash_table_new_full (g_str_hash, g_str_equal,
+     NULL, (GDestroyNotify) tp_g_value_slice_free);
+  GValue *v;
+
+  v = tp_g_value_slice_new (G_TYPE_UINT);
+  g_value_set_uint (v, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  g_hash_table_insert (details, "change-reason", v);
+
+  v = tp_g_value_slice_new (G_TYPE_STRING);
+  g_value_set_static_string (v, "Invitation accepted");
+  g_hash_table_insert (details, "message", v);
+
+  tp_group_mixin_change_members_detailed ((GObject *) self, self->priv->remote, NULL,
+     NULL, NULL, details);
+  tp_group_mixin_change_members ((GObject *) self, "Invitation accepted",
+     self->priv->remote, NULL, NULL,
+     NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+
+  g_hash_table_unref (details);
   tp_intset_clear(self->priv->remote);
 }
 
@@ -224,6 +266,8 @@ join_room (ExampleCSHRoomChannel *self)
   TpGroupMixin *mixin = TP_GROUP_MIXIN (self);
   GObject *object = (GObject *) self;
   TpIntSet *add_remote_pending;
+  GHashTable *details;
+  GValue *v;
 
   g_assert (!tp_handle_set_is_member (mixin->members, mixin->self_handle));
   g_assert (!tp_handle_set_is_member (mixin->remote_pending,
@@ -236,10 +280,25 @@ join_room (ExampleCSHRoomChannel *self)
 
   tp_group_mixin_add_handle_owner (object, mixin->self_handle,
       self->priv->conn->self_handle);
+
+  details = g_hash_table_new_full (g_str_hash, g_str_equal,
+     NULL, (GDestroyNotify) tp_g_value_slice_free);
+
+  v = tp_g_value_slice_new (G_TYPE_UINT);
+  g_value_set_uint (v, mixin->self_handle);
+  g_hash_table_insert (details, "actor", v);
+
+  v = tp_g_value_slice_new (G_TYPE_UINT);
+  g_value_set_uint (v, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  g_hash_table_insert (details, "change-reason", v);
+
+  tp_group_mixin_change_members_detailed ((GObject *) self, NULL, NULL,
+     NULL, add_remote_pending, details);
   tp_group_mixin_change_members (object, "", NULL, NULL, NULL,
-      add_remote_pending, self->priv->conn->self_handle,
+      add_remote_pending, mixin->self_handle,
       TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
 
+  g_hash_table_unref (details);
   tp_intset_destroy (add_remote_pending);
 
   /* Actually join the room. In a real implementation this would be a network
@@ -297,6 +356,7 @@ constructor (GType type,
       0);
 
   self->priv->remote = tp_intset_new ();
+  self->priv->members_changed_detailed = FALSE;
 
   /* Immediately attempt to join the group */
   join_room (self);
@@ -474,6 +534,9 @@ add_member (GObject *object,
   /* In a real implementation, if handle was mixin->self_handle we'd accept
    * an invitation here; otherwise we'd invite the given contact. */
   ExampleCSHRoomChannel *self = EXAMPLE_CSH_ROOM_CHANNEL (object);
+  TpGroupMixin *mixin = TP_GROUP_MIXIN (self);
+  GHashTable *details;
+  GValue *v;
 
   /* we know that anon_local is channel-specific, but not whose it is,
    * hence 0 */
@@ -482,8 +545,26 @@ add_member (GObject *object,
   /* everyone in! */
   tp_intset_add (self->priv->remote, handle);
 
+  details = g_hash_table_new_full (g_str_hash, g_str_equal,
+     NULL, (GDestroyNotify) tp_g_value_slice_free);
+
+  v = tp_g_value_slice_new (G_TYPE_UINT);
+  g_value_set_uint (v, mixin->self_handle);
+  g_hash_table_insert (details, "actor", v);
+
+  v = tp_g_value_slice_new (G_TYPE_UINT);
+  g_value_set_uint (v, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  g_hash_table_insert (details, "change-reason", v);
+
+  v = tp_g_value_slice_new (G_TYPE_STRING);
+  g_value_set_static_string (v, message);
+  g_hash_table_insert (details, "message", v);
+
+  tp_group_mixin_change_members_detailed (object, NULL, NULL, NULL,
+      self->priv->remote, details);
   tp_group_mixin_change_members (object, message, NULL, NULL, NULL,
-      self->priv->remote, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+      self->priv->remote, mixin->self_handle,
+      TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
 
   // accept invitation after 500ms
   self->priv->accept_invitations_timeout =
@@ -677,4 +758,34 @@ text_iface_init (gpointer iface,
 #define IMPLEMENT(x) tp_svc_channel_type_text_implement_##x (klass, text_##x)
   IMPLEMENT (send);
 #undef IMPLEMENT
+}
+
+void
+example_csh_room_set_enable_change_members_detailed (ExampleCSHRoomChannel *self,
+                                                     gboolean enable)
+{
+  g_return_if_fail (EXAMPLE_IS_CSH_ROOM_CHANNEL (self));
+
+  if ((enable && self->priv->members_changed_detailed) ||
+      !(enable && !self->priv->members_changed_detailed))
+    {
+      // nothing to change
+      return;
+    }
+
+
+  if (enable)
+    {
+      tp_group_mixin_change_flags ((GObject *) self,
+        TP_CHANNEL_GROUP_FLAG_MEMBERS_CHANGED_DETAILED,
+        0);
+    }
+  else
+    {
+      tp_group_mixin_change_flags ((GObject *) self,
+        0,
+        TP_CHANNEL_GROUP_FLAG_MEMBERS_CHANGED_DETAILED);
+    }
+
+  self->priv->members_changed_detailed = enable;
 }

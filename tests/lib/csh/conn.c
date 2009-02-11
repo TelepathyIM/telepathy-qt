@@ -276,3 +276,24 @@ example_csh_connection_class_init (ExampleCSHConnectionClass *klass)
       G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_ACCOUNT, param_spec);
 }
+
+void
+example_csh_connection_set_enable_change_members_detailed (ExampleCSHConnection *self,
+                                                           gboolean enable)
+{
+  TpChannelManagerIter iter;
+  TpChannelManager *channel_manager;
+
+  g_return_if_fail (EXAMPLE_IS_CSH_CONNECTION (self));
+
+  tp_base_connection_channel_manager_iter_init (&iter, (TpBaseConnection *) self);
+
+  while (tp_base_connection_channel_manager_iter_next (&iter, &channel_manager))
+    {
+      if (EXAMPLE_IS_CSH_ROOM_MANAGER (channel_manager))
+        {
+          example_csh_room_manager_set_enable_change_members_detailed (
+            (ExampleCSHRoomManager *) channel_manager, enable);
+        }
+    }
+}

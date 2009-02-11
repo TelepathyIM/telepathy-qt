@@ -26,6 +26,9 @@ typedef struct _ExampleCSHRoomChannelPrivate ExampleCSHRoomChannelPrivate;
 
 GType example_csh_room_channel_get_type (void);
 
+void example_csh_room_set_enable_change_members_detailed (ExampleCSHRoomChannel *channel,
+                                                          gboolean enable);
+
 #define EXAMPLE_TYPE_CSH_ROOM_CHANNEL \
   (example_csh_room_channel_get_type ())
 #define EXAMPLE_CSH_ROOM_CHANNEL(obj) \

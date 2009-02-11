@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/_gen/cli-channel.h>
 
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
@@ -89,10 +90,12 @@ public:
 
     bool groupCanAddContacts() const;
     PendingOperation *groupAddContacts(const QList<QSharedPointer<Contact> > &contacts,
-            const QString &message);
+            const QString &message = QString());
+    bool groupCanRescindContacts() const;
     bool groupCanRemoveContacts() const;
     PendingOperation *groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
-            const QString &message);
+            const QString &message = QString(),
+            uint reason = Telepathy::ChannelGroupChangeReasonNone);
 
     QList<QSharedPointer<Contact> > groupContacts() const;
     QList<QSharedPointer<Contact> > groupLocalPendingContacts() const;
@@ -131,6 +134,39 @@ public:
         bool mIsValid;
     };
 
+    class GroupMemberChangeDetails
+    {
+    public:
+        GroupMemberChangeDetails(const QSharedPointer<Contact> &actorContact,
+                uint reason, const QString &message,
+                const HandleIdentifierMap &contactIds,
+                const QString &error, const QString &debugMessage)
+            : mActorContact(actorContact), mReason(reason), mMessage(message),
+              mContactIds(contactIds), mError(error), mDebugMessage(debugMessage) {}
+
+        QSharedPointer<Contact> actorContact() const { return mActorContact; }
+
+        uint reason() const { return mReason; }
+
+        const QString &message() const { return mMessage; }
+
+        HandleIdentifierMap contactIds() const { return mContactIds; }
+
+        QString error() const { return mError; }
+
+        QString debugMessage() const { return mDebugMessage; }
+
+    private:
+        friend class Channel;
+
+        QSharedPointer<Contact> mActorContact;
+        uint mReason;
+        QString mMessage;
+        HandleIdentifierMap mContactIds;
+        QString mError;
+        QString mDebugMessage;
+    };
+
     typedef QMap<uint, GroupMemberChangeInfo> GroupMemberChangeInfoMap;
 
     GroupMemberChangeInfo groupLocalPendingContactChangeInfo(const QSharedPointer<Contact> &contact) const;
@@ -146,18 +182,21 @@ public:
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
 
+    void groupCanAddContactsChanged(bool canAddContacts);
+    void groupCanRemoveContactsChanged(bool canRemoveContacts);
+    void groupCanRescindContactsChanged(bool canRescindContacts);
+
     void groupMembersChanged(
             const QList<QSharedPointer<Contact> > &groupMembersAdded,
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
             const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved,
             const QList<QSharedPointer<Contact> > &groupMembersRemoved,
-            QSharedPointer<Contact> actor,
-            uint reason, const QString &message);
+            const Channel::GroupMemberChangeDetails &details);
 
     void groupHandleOwnersChanged(const HandleOwnerMap &owners,
             const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
 
-    void groupSelfContactChanged();
+    void groupSelfContactChanged(const QSharedPointer<Contact> &contact);
 
 public:
     template <class Interface>
@@ -189,12 +228,6 @@ public:
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<ChannelInterfaceDTMFInterface>(check);
-    }
-
-    inline ChannelInterfaceGroupInterface *groupInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return optionalInterface<ChannelInterfaceGroupInterface>(check);
     }
 
     inline ChannelInterfaceHoldInterface *holdInterface(
@@ -260,6 +293,12 @@ public:
 protected:
     ChannelInterface *baseInterface() const;
 
+    inline ChannelInterfaceGroupInterface *groupInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<ChannelInterfaceGroupInterface>(check);
+    }
+
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void gotChannelType(QDBusPendingCallWatcher *watcher);
@@ -280,6 +319,10 @@ private Q_SLOTS:
     void onMembersChanged(const QString&,
             const Telepathy::UIntList&, const Telepathy::UIntList&,
             const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint);
+    void onMembersChangedDetailed(
+        const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
+        const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
+        const QVariantMap &details);
     void onHandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&);
     void onSelfHandleChanged(uint);
 
