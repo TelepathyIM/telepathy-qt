@@ -2060,7 +2060,9 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
     uint groupFlags = mPriv->groupFlags;
     groupFlags |= added;
     groupFlags &= ~removed;
-    if (mPriv->setGroupFlags(groupFlags)) {
+    // just emit groupFlagsChanged and related signals if the flags really
+    // changed and we are ready
+    if (mPriv->setGroupFlags(groupFlags) && isReady()) {
         debug() << "Emitting groupFlagsChanged with" << mPriv->groupFlags <<
             "value" << added << "added" << removed << "removed";
         emit groupFlagsChanged(mPriv->groupFlags, added, removed);
@@ -2196,7 +2198,9 @@ void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap &added,
         }
     }
 
-    if (emitAdded.size() || emitRemoved.size()) {
+    // just emit groupHandleOwnersChanged if it really changed and
+    // we are ready
+    if ((emitAdded.size() || emitRemoved.size()) && isReady()) {
         debug() << "Emitting groupHandleOwnersChanged with" << emitAdded.size() <<
             "added" << emitRemoved.size() << "removed";
         emit groupHandleOwnersChanged(mPriv->groupHandleOwners,
