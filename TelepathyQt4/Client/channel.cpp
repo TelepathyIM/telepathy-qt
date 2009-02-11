@@ -533,6 +533,7 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
                                 const Telepathy::UIntList&, const QVariantMap&)));
     } else if (!(groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
                usingMembersChangedDetailed) {
+        warning() << " Channel service did spec-incompliant removal of MCD from GroupFlags";
         usingMembersChangedDetailed = false;
         parent->disconnect(group,
                            SIGNAL(MembersChangedDetailed(const Telepathy::UIntList&,
