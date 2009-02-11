@@ -460,6 +460,21 @@ void TestChanGroup::doTestCreateChannel()
         QCOMPARE(mLoop->exec(), 1);
         QCOMPARE(mLoop->exec(), 1);
 
+        QString roomName = QString("#room%1").arg(mRoomNumber);
+        QStringList expectedIds;
+        expectedIds << QString("john@") + roomName <<
+                QString("mary@") + roomName <<
+                QString("another anonymous coward@") + roomName;
+
+        ids.clear();
+        foreach (const QSharedPointer<Contact> &contact, mChan->groupRemotePendingContacts()) {
+            ids << contact->id();
+        }
+
+        ids.sort();
+        expectedIds.sort();
+        QCOMPARE(ids, expectedIds);
+
         QList<QSharedPointer<Contact> > toRemove;
         toRemove.append(mContacts[1]);
         toRemove.append(mContacts[2]);
@@ -473,8 +488,7 @@ void TestChanGroup::doTestCreateChannel()
         // expect john to accept invite
         QCOMPARE(mLoop->exec(), 3);
 
-        QString roomName = QString("#room%1").arg(mRoomNumber);
-        QStringList expectedIds;
+        expectedIds.clear();
         expectedIds << QString("me@") + roomName <<
                 QString("alice@") + roomName <<
                 QString("bob@") + roomName <<
@@ -482,13 +496,29 @@ void TestChanGroup::doTestCreateChannel()
                 QString("anonymous coward@") + roomName <<
                 QString("john@") + roomName;
 
+        toRemove.clear();
+        ids.clear();
+        foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
+            ids << contact->id();
+            if (contact != mChan->groupSelfContact() && toRemove.isEmpty()) {
+                toRemove.append(contact);
+            }
+        }
+
+        ids.sort();
+        expectedIds.sort();
+        QCOMPARE(ids, expectedIds);
+
+        mChan->groupRemoveContacts(toRemove, "Checking removal of a contact in current list");
+        QCOMPARE(mLoop->exec(), 2);
+
         ids.clear();
         foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
             ids << contact->id();
         }
 
         ids.sort();
-        expectedIds.sort();
+        expectedIds.removeOne(toRemove.first()->id());
         QCOMPARE(ids, expectedIds);
 
         delete mChan;
