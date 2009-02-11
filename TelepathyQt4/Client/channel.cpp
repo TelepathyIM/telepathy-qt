@@ -2114,28 +2114,23 @@ void Channel::onMembersChanged(const QString &message,
         "added," << removed.size() << "removed," << localPending.size() <<
         "moved to LP," << remotePending.size() << "moved to RP," << actor <<
         "being the actor," << reason << "the reason and" << message << "the message";
+    debug() << " synthesizing a corresponding MembersChangedDetailed signal";
 
-    if (!mPriv->groupHaveMembers) {
-        debug() << "Still waiting for initial group members, "
-            "so ignoring delta signal...";
-        return;
+    QVariantMap details;
+
+    if (!message.isEmpty()) {
+        details.insert("message", message);
     }
 
-    if (added.isEmpty() && removed.isEmpty() &&
-        localPending.isEmpty() && remotePending.isEmpty()) {
-        debug() << "Nothing really changed, so skipping membersChanged";
-        return;
+    if (actor != 0) {
+        details.insert("actor", actor);
     }
 
-    mPriv->groupMembersChangedQueue.enqueue(
-            new Private::GroupMembersChangedInfo(added, removed,
-                localPending, remotePending, actor, reason, message));
-
-    if (!mPriv->buildingContacts) {
-        // if we are building contacts, we should wait it to finish so we don't
-        // present the user with wrong information
-        mPriv->processMembersChanged();
+    if (reason != ChannelGroupChangeReasonNone) {
+        details.insert("change-reason", reason);
     }
+
+    onMembersChangedDetailed(added, removed, localPending, remotePending, details);
 }
 
 void Channel::onMembersChangedDetailed(
@@ -2145,9 +2140,8 @@ void Channel::onMembersChangedDetailed(
 {
     debug() << "Got Channel.Interface.Group::MembersChangedDetailed with" << added.size() <<
         "added," << removed.size() << "removed," << localPending.size() <<
-        "moved to LP," << remotePending.size() << "moved to RP," << details.value("actor").value<uint>() <<
-        "being the actor," << details.value("change-reason").value<uint>() << "the reason and" <<
-        details.value("message").value<QString>() << "the message";
+        "moved to LP," << remotePending.size() << "moved to RP and with" << details.size() <<
+        "details";
 
     if (!mPriv->groupHaveMembers) {
         debug() << "Still waiting for initial group members, "
@@ -2166,7 +2160,7 @@ void Channel::onMembersChangedDetailed(
                 added, removed,
                 localPending, remotePending,
                 details.value("actor").value<uint>(),
-                details.value("reason").value<uint>(),
+                details.value("change-reason").value<uint>(),
                 details.value("message").value<QString>(),
                 details.value("contact-ids").value<HandleIdentifierMap>(),
                 details.value("error").value<QString>(),
