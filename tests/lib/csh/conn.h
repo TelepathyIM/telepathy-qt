@@ -36,6 +36,7 @@ GType example_csh_connection_get_type (void);
 
 void example_csh_connection_set_enable_change_members_detailed (ExampleCSHConnection *self,
                                                                 gboolean enable);
+void example_csh_connection_accept_invitations (ExampleCSHConnection *self);
 
 /* TYPE MACROS */
 #define EXAMPLE_TYPE_CSH_CONNECTION \

@@ -35,6 +35,7 @@ GType example_csh_room_manager_get_type (void);
 
 void example_csh_room_manager_set_enable_change_members_detailed (ExampleCSHRoomManager *manager,
                                                                   gboolean enable);
+void example_csh_room_manager_accept_invitations (ExampleCSHRoomManager *manager);
 
 /* TYPE MACROS */
 #define EXAMPLE_TYPE_CSH_ROOM_MANAGER \
