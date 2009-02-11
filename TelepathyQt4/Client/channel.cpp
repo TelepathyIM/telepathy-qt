@@ -591,6 +591,16 @@ void Channel::Private::buildContacts()
         toBuild.append(groupSelfHandle);
     }
 
+    // group self handle changed to 0 <- strange but it may happen, and contacts
+    // were being built at the time, so check now
+    if (toBuild.isEmpty()) {
+        if (!groupSelfHandle && groupSelfContact) {
+            groupSelfContact.clear();
+            emit parent->groupSelfContactChanged(groupSelfContact);
+        }
+        return;
+    }
+
     PendingContacts *pendingContacts = manager->contactsForHandles(
             toBuild,
             QSet<Contact::Feature>() << Contact::FeatureAlias
@@ -706,7 +716,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
 
         if (groupSelfHandle == handle && groupSelfContact != contact) {
             groupSelfContact = contact;
-            selfContactUpdated = false;
+            selfContactUpdated = true;
         }
 
         if (buildingInitialContacts && initiatorHandle == handle) {
@@ -717,6 +727,11 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
             currentGroupMembersChangedInfo->actor == contact->handle()[0]) {
             actorContact = contact;
         }
+    }
+
+    if (!groupSelfHandle && groupSelfContact) {
+        groupSelfContact.clear();
+        selfContactUpdated = true;
     }
 
     // this is not ideal, but we need to make sure groupLocalPendingContactsChangeInfo
@@ -2217,18 +2232,11 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
         debug() << " Emitting groupSelfHandleChanged with new self handle" <<
             newSelfHandle;
 
-        if (mPriv->groupSelfHandle) {
-            if (!mPriv->buildingContacts) {
-                mPriv->buildContacts();
-            } else {
-                // next call to processMembersChanged will build selfContact again
-                mPriv->pendingRetrieveGroupSelfContact = true;
-            }
+        if (!mPriv->buildingContacts) {
+            mPriv->buildContacts();
         } else {
-            // newSelfHandle == 0 <- strange
-            // no need to call buildContacts ...
-            mPriv->groupSelfContact.clear();
-            emit groupSelfContactChanged(mPriv->groupSelfContact);
+            // next call to processMembersChanged will build selfContact again
+            mPriv->pendingRetrieveGroupSelfContact = true;
         }
     }
 }
