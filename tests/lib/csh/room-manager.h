@@ -33,6 +33,9 @@ struct _ExampleCSHRoomManager {
 
 GType example_csh_room_manager_get_type (void);
 
+void example_csh_room_manager_set_enable_change_members_detailed (ExampleCSHRoomManager *manager,
+                                                                  gboolean enable);
+
 /* TYPE MACROS */
 #define EXAMPLE_TYPE_CSH_ROOM_MANAGER \
   (example_csh_room_manager_get_type ())

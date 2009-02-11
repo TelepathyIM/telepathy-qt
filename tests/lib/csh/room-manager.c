@@ -43,6 +43,8 @@ struct _ExampleCSHRoomManagerPrivate
   /* GUINT_TO_POINTER (room handle) => ExampleCSHRoomChannel */
   GHashTable *channels;
   gulong status_changed_id;
+
+  unsigned enable_change_members_detailed:1;
 };
 
 static void
@@ -131,6 +133,7 @@ constructed (GObject *object)
 
   self->priv->status_changed_id = g_signal_connect (self->priv->conn,
       "status-changed", (GCallback) status_changed_cb, self);
+  self->priv->enable_change_members_detailed = FALSE;
 }
 
 static void
@@ -228,6 +231,8 @@ new_channel (ExampleCSHRoomManager *self,
       "handle", handle,
       /* FIXME: initiator */
       NULL);
+  example_csh_room_set_enable_change_members_detailed(
+    chan, self->priv->enable_change_members_detailed);
 
   g_free (object_path);
 
@@ -373,4 +378,24 @@ channel_manager_iface_init (gpointer g_iface,
   iface->ensure_channel = example_csh_room_manager_ensure_channel;
   /* In this channel manager, Request has the same semantics as Ensure */
   iface->request_channel = example_csh_room_manager_ensure_channel;
+}
+
+void
+example_csh_room_manager_set_enable_change_members_detailed (ExampleCSHRoomManager *self,
+                                                             gboolean enable)
+{
+  GHashTableIter iter;
+  gpointer handle, channel;
+
+  g_return_if_fail (EXAMPLE_IS_CSH_ROOM_MANAGER (self));
+
+  self->priv->enable_change_members_detailed = enable;
+
+  g_hash_table_iter_init (&iter, self->priv->channels);
+
+  while (g_hash_table_iter_next (&iter, &handle, &channel))
+    {
+      example_csh_room_set_enable_change_members_detailed (EXAMPLE_CSH_ROOM_CHANNEL (channel),
+                                                           enable);
+    }
 }

@@ -51,18 +51,21 @@ private Q_SLOTS:
 
     void testRequestHandle();
     void testCreateChannel();
+    void testCreateChannelDetailed();
 
     void cleanup();
     void cleanupTestCase();
 
 private:
     void debugContacts();
+    void doTestCreateChannel();
 
     QString mConnName, mConnPath;
     ExampleCSHConnection *mConnService;
     Connection *mConn;
     Channel *mChan;
     QString mChanObjectPath;
+    uint mRoomNumber;
     ReferencedHandles mRoomHandles;
     ReferencedHandles mContactHandles;
     QList<QSharedPointer<Contact> > mContacts;
@@ -226,6 +229,7 @@ void TestChanGroup::onGroupMembersChanged(
 
     QVERIFY(mChan->groupContacts().size() > 1);
 
+    QString roomName = QString("#room%1").arg(mRoomNumber);
     if (mChan->groupRemotePendingContacts().isEmpty()) {
         QVERIFY(mChan->groupLocalPendingContacts().isEmpty());
 
@@ -236,27 +240,29 @@ void TestChanGroup::onGroupMembersChanged(
 
         if (mChan->groupContacts().count() == 5) {
             QCOMPARE(ids, QStringList() <<
-                            "me@#room" <<
-                            "alice@#room" <<
-                            "bob@#room" <<
-                            "chris@#room" <<
-                            "anonymous coward@#room");
+                            QString("me@") + roomName <<
+                            QString("alice@") + roomName <<
+                            QString("bob@") + roomName <<
+                            QString("chris@") + roomName <<
+                            QString("anonymous coward@") + roomName);
             ret = 0;
         } else if (mChan->groupContacts().count() == 6) {
+            QCOMPARE(details.message(), QString("Invitation accepted"));
             QCOMPARE(ids, QStringList() <<
-                            "me@#room" <<
-                            "alice@#room" <<
-                            "bob@#room" <<
-                            "chris@#room" <<
-                            "anonymous coward@#room" <<
-                            "john@#room");
+                            QString("me@") + roomName <<
+                            QString("alice@") + roomName <<
+                            QString("bob@") + roomName <<
+                            QString("chris@") + roomName <<
+                            QString("anonymous coward@") + roomName <<
+                            QString("john@") + roomName);
             ret = 2;
         }
     } else {
         if (mChan->groupRemotePendingContacts().count() == 1) {
+            QCOMPARE(details.actorContact(), mChan->groupSelfContact());
             QCOMPARE(details.message(), QString("I want to add john"));
             QCOMPARE(mChan->groupRemotePendingContacts().first()->id(),
-                     QString("john@#room"));
+                     QString("john@" + roomName));
             ret = 1;
         }
     }
@@ -348,7 +354,7 @@ void TestChanGroup::init()
 void TestChanGroup::testRequestHandle()
 {
     // Test identifiers
-    QStringList ids = QStringList() << "#room";
+    QStringList ids = QStringList() << "#room0" << "#room1";
 
     // Request handles for the identifiers and wait for the request to process
     PendingHandles *pending = mConn->requestHandles(Telepathy::HandleTypeRoom, ids);
@@ -364,13 +370,27 @@ void TestChanGroup::testRequestHandle()
 
 void TestChanGroup::testCreateChannel()
 {
+    mRoomNumber = 0;
+    doTestCreateChannel();
+}
+
+void TestChanGroup::testCreateChannelDetailed()
+{
+    example_csh_connection_set_enable_change_members_detailed(mConnService, true);
+    mRoomNumber = 1;
+    doTestCreateChannel();
+}
+
+void TestChanGroup::doTestCreateChannel()
+{
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    Telepathy::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   mRoomHandles[0]);
+                   mRoomHandles[mRoomNumber]);
+
     QVERIFY(connect(mConn->createChannel(request),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
@@ -385,7 +405,7 @@ void TestChanGroup::testCreateChannel()
 
         QCOMPARE(mChan->isRequested(), true);
         QCOMPARE(mChan->initiatorContact().isNull(), true);
-        QCOMPARE(mChan->groupSelfContact()->id(), QString("me@#room"));
+        QCOMPARE(mChan->groupSelfContact()->id(), QString("me@#room%1").arg(mRoomNumber));
 
         QCOMPARE(mChan->groupCanAddContacts(), false);
         QCOMPARE(mChan->groupCanRemoveContacts(), false);
@@ -414,7 +434,7 @@ void TestChanGroup::testCreateChannel()
                                 const Channel::GroupMemberChangeDetails &))));
         QCOMPARE(mLoop->exec(), 0);
 
-        QStringList ids = QStringList() << "john@#room";
+        QStringList ids = QStringList() << QString("john@#room%1").arg(mRoomNumber);
         QVERIFY(connect(mConn->requestHandles(Telepathy::HandleTypeContact, ids),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                         SLOT(expectPendingContactHandlesFinished(Telepathy::Client::PendingOperation*))));
@@ -427,7 +447,7 @@ void TestChanGroup::testCreateChannel()
         QCOMPARE(mLoop->exec(), 0);
 
         QCOMPARE(mContacts.size(), 1);
-        QCOMPARE(mContacts.first()->id(), QString("john@#room"));
+        QCOMPARE(mContacts.first()->id(), QString("john@#room%1").arg(mRoomNumber));
 
         mChan->groupAddContacts(mContacts, "I want to add john");
 

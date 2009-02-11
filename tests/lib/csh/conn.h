@@ -34,6 +34,9 @@ struct _ExampleCSHConnection {
 
 GType example_csh_connection_get_type (void);
 
+void example_csh_connection_set_enable_change_members_detailed (ExampleCSHConnection *self,
+                                                                gboolean enable);
+
 /* TYPE MACROS */
 #define EXAMPLE_TYPE_CSH_CONNECTION \
   (example_csh_connection_get_type ())
