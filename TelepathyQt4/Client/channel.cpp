@@ -592,7 +592,7 @@ void Channel::Private::buildContacts()
     if (toBuild.isEmpty()) {
         if (!groupSelfHandle && groupSelfContact) {
             groupSelfContact.clear();
-            emit parent->groupSelfContactChanged(groupSelfContact);
+            emit parent->groupSelfContactChanged();
         }
         return;
     }
