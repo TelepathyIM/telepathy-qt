@@ -71,6 +71,10 @@ private:
     ReferencedHandles mRoomHandles;
     ReferencedHandles mContactHandles;
     QList<QSharedPointer<Contact> > mContacts;
+    QList<QSharedPointer<Contact> > mChangedCurrent;
+    QList<QSharedPointer<Contact> > mChangedLP;
+    QList<QSharedPointer<Contact> > mChangedRP;
+    QList<QSharedPointer<Contact> > mChangedRemoved;
     Channel::GroupMemberChangeDetails mDetails;
 };
 
@@ -225,6 +229,10 @@ void TestChanGroup::onGroupMembersChanged(
         const Channel::GroupMemberChangeDetails &details)
 {
     qDebug() << "group members changed";
+    mChangedCurrent = groupMembersAdded;
+    mChangedLP = groupLocalPendingMembersAdded;
+    mChangedRP = groupRemotePendingMembersAdded;
+    mChangedRemoved = groupMembersRemoved;
     mDetails = details;
     debugContacts();
     mLoop->exit(0);
