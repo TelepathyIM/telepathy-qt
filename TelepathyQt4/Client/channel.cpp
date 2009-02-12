@@ -2039,7 +2039,7 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
         mPriv->groupSelfHandle = reply.value();
     }
 
-    // FIXME: fix self contact building with no group
+    mPriv->nowHaveInitialMembers();
 
     continueIntrospection();
 }
