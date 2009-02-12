@@ -804,8 +804,11 @@ void Account::callGetProtocolInfo()
 
 void Account::updateProperties(const QVariantMap &props)
 {
+    debug() << "Account::updateProperties: changed:";
+
     if (props.contains("Interfaces")) {
         mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+        debug() << " Interfaces:" << mPriv->interfaces;
 
         checkForAvatarInterface();
     }
@@ -813,36 +816,42 @@ void Account::updateProperties(const QVariantMap &props)
     if (props.contains("DisplayName") &&
         mPriv->displayName != qdbus_cast<QString>(props["DisplayName"])) {
         mPriv->displayName = qdbus_cast<QString>(props["DisplayName"]);
+        debug() << " Display Name:" << mPriv->displayName;
         emit displayNameChanged(mPriv->displayName);
     }
 
     if (props.contains("Icon") &&
         mPriv->icon != qdbus_cast<QString>(props["Icon"])) {
         mPriv->icon = qdbus_cast<QString>(props["Icon"]);
+        debug() << " Icon:" << mPriv->icon;
         emit iconChanged(mPriv->icon);
     }
 
     if (props.contains("Nickname") &&
         mPriv->nickname != qdbus_cast<QString>(props["Nickname"])) {
         mPriv->nickname = qdbus_cast<QString>(props["Nickname"]);
-        emit nicknameChanged(mPriv->icon);
+        debug() << " Nickname:" << mPriv->nickname;
+        emit nicknameChanged(mPriv->nickname);
     }
 
     if (props.contains("NormalizedName") &&
         mPriv->normalizedName != qdbus_cast<QString>(props["NormalizedName"])) {
         mPriv->normalizedName = qdbus_cast<QString>(props["NormalizedName"]);
+        debug() << " Normalized Name:" << mPriv->normalizedName;
         emit normalizedNameChanged(mPriv->normalizedName);
     }
 
     if (props.contains("Valid") &&
         mPriv->valid != qdbus_cast<bool>(props["Valid"])) {
         mPriv->valid = qdbus_cast<bool>(props["Valid"]);
+        debug() << " Valid:" << (mPriv->valid ? "true" : "false");
         emit validityChanged(mPriv->valid);
     }
 
     if (props.contains("Enabled") &&
         mPriv->enabled != qdbus_cast<bool>(props["Enabled"])) {
         mPriv->enabled = qdbus_cast<bool>(props["Enabled"]);
+        debug() << " Enabled:" << (mPriv->enabled ? "true" : "false");
         emit stateChanged(mPriv->enabled);
     }
 
@@ -851,12 +860,14 @@ void Account::updateProperties(const QVariantMap &props)
                 qdbus_cast<bool>(props["ConnectAutomatically"])) {
         mPriv->connectsAutomatically =
                 qdbus_cast<bool>(props["ConnectAutomatically"]);
+        debug() << " Connects Automatically:" << (mPriv->enabled ? "true" : "false");
         emit connectsAutomaticallyPropertyChanged(mPriv->connectsAutomatically);
     }
 
     if (props.contains("Parameters") &&
         mPriv->parameters != qdbus_cast<QVariantMap>(props["Parameters"])) {
         mPriv->parameters = qdbus_cast<QVariantMap>(props["Parameters"]);
+        debug() << " Parameters:" << mPriv->parameters;
         emit parametersChanged(mPriv->parameters);
     }
 
@@ -865,6 +876,8 @@ void Account::updateProperties(const QVariantMap &props)
                 props["AutomaticPresence"])) {
         mPriv->automaticPresence = qdbus_cast<Telepathy::SimplePresence>(
                 props["AutomaticPresence"]);
+        debug() << " Automatic Presence:" << mPriv->automaticPresence.type <<
+            "-" << mPriv->automaticPresence.status;
         emit automaticPresenceChanged(mPriv->automaticPresence);
     }
 
@@ -873,6 +886,8 @@ void Account::updateProperties(const QVariantMap &props)
                 props["CurrentPresence"])) {
         mPriv->currentPresence = qdbus_cast<Telepathy::SimplePresence>(
                 props["CurrentPresence"]);
+        debug() << " Current Presence:" << mPriv->currentPresence.type <<
+            "-" << mPriv->currentPresence.status;
         emit presenceChanged(mPriv->currentPresence);
     }
 
@@ -881,11 +896,14 @@ void Account::updateProperties(const QVariantMap &props)
                 props["RequestedPresence"])) {
         mPriv->requestedPresence = qdbus_cast<Telepathy::SimplePresence>(
                 props["RequestedPresence"]);
+        debug() << " Requested Presence:" << mPriv->requestedPresence.type <<
+            "-" << mPriv->requestedPresence.status;
         emit requestedPresenceChanged(mPriv->requestedPresence);
     }
 
     if (props.contains("Connection")) {
         QString path = qdbus_cast<QDBusObjectPath>(props["Connection"]).path();
+        debug() << " Connection Object Path:" << path;
         if (path == QLatin1String("/")) {
             path = QString();
         }
@@ -905,6 +923,7 @@ void Account::updateProperties(const QVariantMap &props)
                     qdbus_cast<uint>(props["ConnectionStatus"]))) {
             mPriv->connectionStatus = Telepathy::ConnectionStatus(
                     qdbus_cast<uint>(props["ConnectionStatus"]));
+            debug() << " Connection Status:" << mPriv->connectionStatus;
             changed = true;
         }
 
@@ -913,6 +932,7 @@ void Account::updateProperties(const QVariantMap &props)
                     qdbus_cast<uint>(props["ConnectionStatusReason"]))) {
             mPriv->connectionStatusReason = Telepathy::ConnectionStatusReason(
                     qdbus_cast<uint>(props["ConnectionStatusReason"]));
+            debug() << " Connection StatusReason:" << mPriv->connectionStatusReason;
             changed = true;
         }
 
