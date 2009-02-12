@@ -139,7 +139,6 @@ struct Channel::Private
     // Queue of received MCD signals to process
     QQueue<GroupMembersChangedInfo *> groupMembersChangedQueue;
     GroupMembersChangedInfo *currentGroupMembersChangedInfo;
-    QMap<uint, LocalPendingInfo> pendingGroupMembersChangeInfo;
 
     // Pending from the MCD signal currently processed, but contacts not yet built
     QSet<uint> pendingGroupMembers;
@@ -482,12 +481,14 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
 
         pendingGroupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
-        // FIXME: this will be ignored currently
+        // FIXME: this will be ignored currently - fix by synthesizing MCD signals from here
+        /*
         foreach (const LocalPendingInfo &info,
                 qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
             pendingGroupLocalPendingMembers.insert(info.toBeAdded);
             pendingGroupMembersChangeInfo[info.actor] = info;
         }
+        */
         pendingGroupRemotePendingMembers =
             QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
 
@@ -573,12 +574,6 @@ void Channel::Private::buildContacts()
             pendingGroupLocalPendingMembers +
             pendingGroupRemotePendingMembers).toList();
 
-    foreach (const uint &handle, pendingGroupMembersChangeInfo.keys()) {
-        if (handle) {
-            toBuild.append(handle);
-        }
-    }
-
     if (currentGroupMembersChangedInfo &&
             currentGroupMembersChangedInfo->actor != 0) {
         toBuild.append(currentGroupMembersChangedInfo->actor);
@@ -651,16 +646,8 @@ void Channel::Private::processMembersChanged()
     }
 
     foreach (uint handle, currentGroupMembersChangedInfo->localPending) {
-        // FIXME: no need to do this really, but need to fix the updateMembers logic first
         if (!groupLocalPendingContacts.contains(handle)) {
-            LocalPendingInfo info = {
-                handle,
-                currentGroupMembersChangedInfo->actor,
-                currentGroupMembersChangedInfo->reason,
-                currentGroupMembersChangedInfo->message
-            };
             pendingGroupLocalPendingMembers.insert(handle);
-            pendingGroupMembersChangeInfo[info.actor] = info;
         }
     }
 
@@ -672,17 +659,6 @@ void Channel::Private::processMembersChanged()
 
     foreach (uint handle, currentGroupMembersChangedInfo->removed) {
         groupMembersToRemove.append(handle);
-
-        // FIXME: no need to do this really, but need to fix the updateMembers logic first
-        if (handle == groupSelfHandle) {
-            LocalPendingInfo info = {
-                handle,
-                currentGroupMembersChangedInfo->actor,
-                currentGroupMembersChangedInfo->reason,
-                currentGroupMembersChangedInfo->message
-            };
-            pendingGroupMembersChangeInfo[info.actor] = info;
-        }
     }
 
     if (pendingGroupMembers.isEmpty() &&
@@ -705,6 +681,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     QSharedPointer<Contact> actorContact;
     bool selfContactUpdated = false;
 
+    // FIXME: simplify. Some duplication of logic present.
     foreach (QSharedPointer<Contact> contact, contacts) {
         uint handle = contact->handle()[0];
         if (pendingGroupMembers.contains(handle)) {
@@ -713,6 +690,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         } else if (pendingGroupLocalPendingMembers.contains(handle)) {
             groupLocalPendingContactsAdded.append(contact);
             groupLocalPendingContacts[handle] = contact;
+            // FIXME: should set the details and actor here too
             groupLocalPendingContactsChangeInfo[handle] = GroupMemberChangeDetails();
         } else if (pendingGroupRemotePendingMembers.contains(handle)) {
             groupRemotePendingContactsAdded.append(contact);
@@ -739,32 +717,19 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         selfContactUpdated = true;
     }
 
-    // FIXME: fix this logic - shouldn't bother itself so much with the LPI, but should still
-    // support initial LPI
-    // this is not ideal, but we need to make sure groupLocalPendingContactsChangeInfo
-    // is there first
+    // FIXME: This shouldn't be needed. Clearer would be to first scan for the actor being present in the contacts
+    // supplied.
     foreach (QSharedPointer<Contact> contact, contacts) {
         uint handle = contact->handle()[0];
-        // the key here is the actor
-        // if we retrieved the actor as well as the contact, update info for the
-        // contact
-        if (pendingGroupMembersChangeInfo.contains(handle)) {
-            LocalPendingInfo info = pendingGroupMembersChangeInfo[handle];
-            // TODO: Transfer the variant map too - SHOULDN'T BE FLATTENED TO LocalPendingInfo!
-            if (groupLocalPendingContactsChangeInfo.contains(info.toBeAdded)) {
-                groupLocalPendingContactsChangeInfo[info.toBeAdded] =
-                    GroupMemberChangeDetails(actorContact, currentGroupMembersChangedInfo->details);
-            } else if (handle == groupSelfHandle) {
-                groupSelfContactRemoveInfo = GroupMemberChangeDetails(actorContact,
-                        currentGroupMembersChangedInfo->details);
-            }
+        if (groupLocalPendingContactsChangeInfo.contains(handle)) {
+            groupLocalPendingContactsChangeInfo[handle] =
+                GroupMemberChangeDetails(actorContact, currentGroupMembersChangedInfo->details);
         }
     }
 
     pendingGroupMembers.clear();
     pendingGroupLocalPendingMembers.clear();
     pendingGroupRemotePendingMembers.clear();
-    pendingGroupMembersChangeInfo.clear();
 
     if (buildingInitialContacts) {
         buildingInitialContacts = false;
@@ -2014,9 +1979,7 @@ void Channel::gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to fallback "
             "Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
 
-        foreach (LocalPendingInfo info, reply.value()) {
-            mPriv->pendingGroupMembersChangeInfo[info.actor] = info;
-        }
+        // FIXME: queue synthesized MCD corresponding to the reply
     }
 
     continueIntrospection();
