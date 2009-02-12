@@ -57,6 +57,8 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
+    void checkExpectedIds(const QList<QSharedPointer<Contact> > &contacts,
+        const QStringList &expectedIds);
     void debugContacts();
     void doTestCreateChannel();
 
@@ -69,6 +71,7 @@ private:
     ReferencedHandles mRoomHandles;
     ReferencedHandles mContactHandles;
     QList<QSharedPointer<Contact> > mContacts;
+    Channel::GroupMemberChangeDetails mDetails;
 };
 
 void TestChanGroup::expectConnReady(uint newStatus, uint newStatusReason)
@@ -221,52 +224,22 @@ void TestChanGroup::onGroupMembersChanged(
         const QList<QSharedPointer<Contact> > &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    int ret = -1;
-
     qDebug() << "group members changed";
-
+    mDetails = details;
     debugContacts();
+    mLoop->exit(0);
+}
 
-    QVERIFY(mChan->groupContacts().size() > 1);
-
-    QString roomName = QString("#room%1").arg(mRoomNumber);
-    if (groupMembersRemoved.isEmpty()) {
-        if (mChan->groupRemotePendingContacts().isEmpty()) {
-            QVERIFY(mChan->groupLocalPendingContacts().isEmpty());
-
-            QStringList ids;
-            foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
-                ids << contact->id();
-            }
-
-            QStringList expectedIds;
-            expectedIds << QString("me@") + roomName <<
-                QString("alice@") + roomName <<
-                QString("bob@") + roomName <<
-                QString("chris@") + roomName <<
-                QString("anonymous coward@") + roomName;
-
-            if (mChan->groupContacts().count() == 5) {
-                ret = 0;
-            } else if (mChan->groupContacts().count() == 6) {
-                QCOMPARE(details.message(), QString("Invitation accepted"));
-                expectedIds << QString("john@") + roomName;
-                ret = 3;
-            }
-            ids.sort();
-            expectedIds.sort();
-            QCOMPARE(ids, expectedIds);
-        } else {
-            QCOMPARE(details.actor(), mChan->groupSelfContact());
-            QCOMPARE(details.message(), QString("I want to add them"));
-            ret = 1;
-        }
-    } else {
-        ret = 2;
+void TestChanGroup::checkExpectedIds(const QList<QSharedPointer<Contact> > &contacts,
+        const QStringList &expectedIds)
+{
+    QStringList ids;
+    foreach (const QSharedPointer<Contact> &contact, contacts) {
+        ids << contact->id();
     }
 
-    qDebug() << "onGroupMembersChanged exiting with ret" << ret;
-    mLoop->exit(ret);
+    ids.sort();
+    QCOMPARE(ids, expectedIds);
 }
 
 void TestChanGroup::debugContacts()
@@ -393,137 +366,158 @@ void TestChanGroup::doTestCreateChannel()
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan != 0);
 
-    if (mChan) {
-        QVERIFY(connect(mChan->becomeReady(),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QVERIFY(connect(mChan->becomeReady(),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(), true);
+
+    QCOMPARE(mChan->isRequested(), true);
+    QCOMPARE(mChan->initiatorContact().isNull(), true);
+    QCOMPARE(mChan->groupSelfContact()->id(), QString("me@#room%1").arg(mRoomNumber));
+
+    QVERIFY(connect(mChan,
+                    SIGNAL(groupFlagsChanged(uint, uint, uint)),
+                    SLOT(onChannelGroupFlagsChanged(uint, uint, uint))));
+
+    if (!mChan->groupCanAddContacts() || !mChan->groupCanRemoveContacts()) {
+        // wait the group flags change
         QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->isReady(), true);
-
-        QCOMPARE(mChan->isRequested(), true);
-        QCOMPARE(mChan->initiatorContact().isNull(), true);
-        QCOMPARE(mChan->groupSelfContact()->id(), QString("me@#room%1").arg(mRoomNumber));
-
-        QCOMPARE(mChan->groupCanAddContacts(), false);
-        QCOMPARE(mChan->groupCanRemoveContacts(), false);
-
-        QVERIFY(connect(mChan,
-                        SIGNAL(groupFlagsChanged(uint, uint, uint)),
-                        SLOT(onChannelGroupFlagsChanged(uint, uint, uint))));
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChan->groupCanAddContacts(), true);
-        QCOMPARE(mChan->groupCanRemoveContacts(), true);
-
-        debugContacts();
-
-        QVERIFY(connect(mChan,
-                        SIGNAL(groupMembersChanged(
-                                const QList<QSharedPointer<Contact> > &,
-                                const QList<QSharedPointer<Contact> > &,
-                                const QList<QSharedPointer<Contact> > &,
-                                const QList<QSharedPointer<Contact> > &,
-                                const Channel::GroupMemberChangeDetails &)),
-                        SLOT(onGroupMembersChanged(
-                                const QList<QSharedPointer<Contact> > &,
-                                const QList<QSharedPointer<Contact> > &,
-                                const QList<QSharedPointer<Contact> > &,
-                                const QList<QSharedPointer<Contact> > &,
-                                const Channel::GroupMemberChangeDetails &))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        QStringList ids = QStringList() <<
-            QString("john@#room%1").arg(mRoomNumber) <<
-            QString("mary@#room%1").arg(mRoomNumber) <<
-            QString("another anonymous coward@#room%1").arg(mRoomNumber);
-        QVERIFY(connect(mConn->requestHandles(Telepathy::HandleTypeContact, ids),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectPendingContactHandlesFinished(Telepathy::Client::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        // Wait for the contacts to be built
-        QVERIFY(connect(mConn->contactManager()->contactsForHandles(mContactHandles),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
-
-        QCOMPARE(mContacts.size(), 3);
-        QCOMPARE(mContacts.first()->id(), QString("john@#room%1").arg(mRoomNumber));
-
-        mChan->groupAddContacts(mContacts, "I want to add them");
-
-        // members changed should be emitted twice now, one for adding john to
-        // remote pending and one for adding it to current members
-
-        // expect contacts to be added to remote pending
-        QCOMPARE(mLoop->exec(), 1);
-        QCOMPARE(mLoop->exec(), 1);
-        QCOMPARE(mLoop->exec(), 1);
-
-        QString roomName = QString("#room%1").arg(mRoomNumber);
-        QStringList expectedIds;
-        expectedIds << QString("john@") + roomName <<
-                QString("mary@") + roomName <<
-                QString("another anonymous coward@") + roomName;
-
-        ids.clear();
-        foreach (const QSharedPointer<Contact> &contact, mChan->groupRemotePendingContacts()) {
-            ids << contact->id();
-        }
-
-        ids.sort();
-        expectedIds.sort();
-        QCOMPARE(ids, expectedIds);
-
-        QList<QSharedPointer<Contact> > toRemove;
-        toRemove.append(mContacts[1]);
-        toRemove.append(mContacts[2]);
-        mChan->groupRemoveContacts(toRemove, "I want to remove some of them");
-
-        // expect mary and another anonymous coward to reject invite
-        QCOMPARE(mLoop->exec(), 2);
-
-        example_csh_connection_accept_invitations(mConnService);
-
-        // expect john to accept invite
-        QCOMPARE(mLoop->exec(), 3);
-
-        expectedIds.clear();
-        expectedIds << QString("me@") + roomName <<
-                QString("alice@") + roomName <<
-                QString("bob@") + roomName <<
-                QString("chris@") + roomName <<
-                QString("anonymous coward@") + roomName <<
-                QString("john@") + roomName;
-
-        toRemove.clear();
-        ids.clear();
-        foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
-            ids << contact->id();
-            if (contact != mChan->groupSelfContact() && toRemove.isEmpty()) {
-                toRemove.append(contact);
-            }
-        }
-
-        ids.sort();
-        expectedIds.sort();
-        QCOMPARE(ids, expectedIds);
-
-        mChan->groupRemoveContacts(toRemove, "Checking removal of a contact in current list");
-        QCOMPARE(mLoop->exec(), 2);
-
-        ids.clear();
-        foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
-            ids << contact->id();
-        }
-
-        ids.sort();
-        expectedIds.removeOne(toRemove.first()->id());
-        QCOMPARE(ids, expectedIds);
-
-        delete mChan;
-        mChan = 0;
     }
+
+    QCOMPARE(mChan->groupCanAddContacts(), true);
+    QCOMPARE(mChan->groupCanRemoveContacts(), true);
+
+    debugContacts();
+
+    QVERIFY(connect(mChan,
+                    SIGNAL(groupMembersChanged(
+                            const QList<QSharedPointer<Contact> > &,
+                            const QList<QSharedPointer<Contact> > &,
+                            const QList<QSharedPointer<Contact> > &,
+                            const QList<QSharedPointer<Contact> > &,
+                            const Channel::GroupMemberChangeDetails &)),
+                    SLOT(onGroupMembersChanged(
+                            const QList<QSharedPointer<Contact> > &,
+                            const QList<QSharedPointer<Contact> > &,
+                            const QList<QSharedPointer<Contact> > &,
+                            const QList<QSharedPointer<Contact> > &,
+                            const Channel::GroupMemberChangeDetails &))));
+
+    if (mChan->groupContacts().count() != 5) {
+        // wait the initial contacts to be added to the group
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QCOMPARE(mChan->groupContacts().count(), 5);
+
+    QString roomName = QString("#room%1").arg(mRoomNumber);
+
+    QStringList expectedIds;
+    expectedIds << QString("me@") + roomName <<
+        QString("alice@") + roomName <<
+        QString("bob@") + roomName <<
+        QString("chris@") + roomName <<
+        QString("anonymous coward@") + roomName;
+    expectedIds.sort();
+    checkExpectedIds(mChan->groupContacts(), expectedIds);
+
+    QStringList ids = QStringList() <<
+        QString("john@#room%1").arg(mRoomNumber) <<
+        QString("mary@#room%1").arg(mRoomNumber) <<
+        QString("another anonymous coward@#room%1").arg(mRoomNumber);
+    QVERIFY(connect(mConn->requestHandles(Telepathy::HandleTypeContact, ids),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                    SLOT(expectPendingContactHandlesFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Wait for the contacts to be built
+    QVERIFY(connect(mConn->contactManager()->contactsForHandles(mContactHandles),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(mContacts.size(), 3);
+    ids.sort();
+    checkExpectedIds(mContacts, ids);
+
+    QString message("I want to add them");
+    mChan->groupAddContacts(mContacts, message);
+
+    // expect contacts to be added to remote pending, the csh test emits one at
+    // a time
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mDetails.actor(), mChan->groupSelfContact());
+    QCOMPARE(mDetails.message(), message);
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mDetails.actor(), mChan->groupSelfContact());
+    QCOMPARE(mDetails.message(), message);
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mDetails.actor(), mChan->groupSelfContact());
+    QCOMPARE(mDetails.message(), message);
+
+    expectedIds.clear();
+    expectedIds << QString("john@") + roomName <<
+            QString("mary@") + roomName <<
+            QString("another anonymous coward@") + roomName;
+    expectedIds.sort();
+    checkExpectedIds(mChan->groupRemotePendingContacts(), expectedIds);
+
+    QList<QSharedPointer<Contact> > toRemove;
+    toRemove.append(mContacts[1]);
+    toRemove.append(mContacts[2]);
+    mChan->groupRemoveContacts(toRemove, "I want to remove some of them");
+
+    // expect mary and another anonymous coward to be removed
+    QCOMPARE(mLoop->exec(), 0);
+
+    expectedIds.clear();
+    expectedIds << QString("me@") + roomName <<
+        QString("alice@") + roomName <<
+        QString("bob@") + roomName <<
+        QString("chris@") + roomName <<
+        QString("anonymous coward@") + roomName;
+    expectedIds.sort();
+    checkExpectedIds(mChan->groupContacts(), expectedIds);
+    expectedIds.clear();
+    expectedIds << QString("john@") + roomName;
+    checkExpectedIds(mChan->groupRemotePendingContacts(), expectedIds);
+
+    example_csh_connection_accept_invitations(mConnService);
+
+    // expect john to accept invite
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mDetails.message(), QString("Invitation accepted"));
+
+    expectedIds.clear();
+    expectedIds << QString("me@") + roomName <<
+            QString("alice@") + roomName <<
+            QString("bob@") + roomName <<
+            QString("chris@") + roomName <<
+            QString("anonymous coward@") + roomName <<
+            QString("john@") + roomName;
+    expectedIds.sort();
+    checkExpectedIds(mChan->groupContacts(), expectedIds);
+
+    toRemove.clear();
+    ids.clear();
+    foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
+        ids << contact->id();
+        if (contact != mChan->groupSelfContact() && toRemove.isEmpty()) {
+            toRemove.append(contact);
+            expectedIds.removeOne(contact->id());
+        }
+    }
+
+    mChan->groupRemoveContacts(toRemove, "Checking removal of a contact in current list");
+    QCOMPARE(mLoop->exec(), 0);
+    expectedIds.sort();
+    checkExpectedIds(mChan->groupContacts(), expectedIds);
+
+    delete mChan;
+    mChan = 0;
 }
 
 void TestChanGroup::cleanup()
