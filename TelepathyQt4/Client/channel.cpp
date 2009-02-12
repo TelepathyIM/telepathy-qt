@@ -666,6 +666,7 @@ void Channel::Private::processMembersChanged()
             pendingRetrieveGroupSelfContact = false;
             // nothing queued but selfContact changed
             buildContacts();
+            return;
         }
 
         if (!ready) {
