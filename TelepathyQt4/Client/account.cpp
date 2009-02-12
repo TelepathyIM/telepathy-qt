@@ -903,7 +903,7 @@ void Account::updateProperties(const QVariantMap &props)
 
     if (props.contains("Connection")) {
         QString path = qdbus_cast<QDBusObjectPath>(props["Connection"]).path();
-        if (!path) {
+        if (path.isEmpty()) {
             debug() << " The map contains \"Connection\" but it's empty as a QDBusObjectPath!";
             debug() << " Trying QString (known bug in some MC/dbus-glib versions)";
             path = qdbus_cast<QString>(props["Connection"]);
