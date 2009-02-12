@@ -471,6 +471,8 @@ void TestChanGroup::doTestCreateChannel()
     mChan->groupRemoveContacts(toRemove, "I want to remove some of them");
 
     // expect mary and another anonymous coward to be removed
+    // CSH emits these as two signals though, so waiting for one membersChanged isn't enough
+    QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mLoop->exec(), 0);
 
     expectedIds.clear();
