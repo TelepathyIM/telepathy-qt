@@ -82,6 +82,7 @@ struct Channel::Private
     void extract0176GroupProps(const QVariantMap &props);
 
     void nowHaveInterfaces();
+    void nowHaveInitialMembers();
 
     bool setGroupFlags(uint groupFlags);
 
@@ -133,7 +134,6 @@ struct Channel::Private
 
     // Group member introspection
     bool groupHaveMembers;
-    bool buildingInitialContacts;
     bool buildingContacts;
 
     // Queue of received MCD signals to process
@@ -147,6 +147,11 @@ struct Channel::Private
     UIntList groupMembersToRemove;
     UIntList groupLocalPendingMembersToRemove;
     UIntList groupRemotePendingMembersToRemove;
+
+    // Initial members
+    UIntList groupInitialMembers;
+    LocalPendingInfoList groupInitialLP;
+    UIntList groupInitialRP;
 
     // Current members
     QHash<uint, QSharedPointer<Contact> > groupContacts;
@@ -226,7 +231,6 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       groupFlags(0),
       usingMembersChangedDetailed(false),
       groupHaveMembers(false),
-      buildingInitialContacts(false),
       buildingContacts(false),
       currentGroupMembersChangedInfo(0),
       groupAreHandleOwnersAvailable(false),
@@ -437,9 +441,10 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         if (!fakeGroupInterfaceIfNeeded() &&
             !interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) &&
             initiatorHandle) {
-            // there is no group interface, so lets try to build the contact
-            // object for initiatorHandle now
-            buildingInitialContacts = true;
+            // No group interface, so nobody will build the poor fellow for us. Will do it ourselves
+            // out of pity for him.
+            // TODO: needs testing. I would imagine some of the elaborate updateContacts logic
+            // tripping over with just this.
             buildContacts();
         }
 
@@ -469,33 +474,22 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         introspectQueue.enqueue(&Private::introspectGroupFallbackMembers);
         introspectQueue.enqueue(&Private::introspectGroupFallbackLocalPendingWithInfo);
         introspectQueue.enqueue(&Private::introspectGroupFallbackSelfHandle);
-    }
-    else {
+    } else {
         debug() << " Found properties specified in 0.17.6";
 
-        groupHaveMembers = true;
         groupAreHandleOwnersAvailable = true;
         groupIsSelfHandleTracked = true;
 
         setGroupFlags(qdbus_cast<uint>(props["GroupFlags"]));
         groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
 
-        pendingGroupMembers = QSet<uint>::fromList(qdbus_cast<UIntList>(props["Members"]));
-        // FIXME: this will be ignored currently - fix by synthesizing MCD signals from here
-        /*
-        foreach (const LocalPendingInfo &info,
-                qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"])) {
-            pendingGroupLocalPendingMembers.insert(info.toBeAdded);
-            pendingGroupMembersChangeInfo[info.actor] = info;
-        }
-        */
-        pendingGroupRemotePendingMembers =
-            QSet<uint>::fromList(qdbus_cast<UIntList>(props["RemotePendingMembers"]));
+        groupInitialMembers = qdbus_cast<UIntList>(props["Members"]);
+        groupInitialLP = qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"]);
+        groupInitialRP = qdbus_cast<UIntList>(props["RemotePendingMembers"]);
 
         groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
 
-        buildingInitialContacts = true;
-        buildContacts();
+        nowHaveInitialMembers();
     }
 }
 
@@ -507,6 +501,56 @@ void Channel::Private::nowHaveInterfaces()
     if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         introspectQueue.enqueue(&Private::introspectGroup);
     }
+}
+
+void Channel::Private::nowHaveInitialMembers()
+{
+    // Must be called with no contacts anywhere in the first place
+    Q_ASSERT(!ready);
+    Q_ASSERT(!buildingContacts);
+
+    Q_ASSERT(pendingGroupMembers.isEmpty());
+    Q_ASSERT(pendingGroupLocalPendingMembers.isEmpty());
+    Q_ASSERT(pendingGroupRemotePendingMembers.isEmpty());
+
+    Q_ASSERT(groupContacts.isEmpty());
+    Q_ASSERT(groupLocalPendingContacts.isEmpty());
+    Q_ASSERT(groupRemotePendingContacts.isEmpty());
+
+    // Set groupHaveMembers so we start queueing fresh MCD signals
+    Q_ASSERT(!groupHaveMembers);
+    groupHaveMembers = true;
+
+    // Synthesize MCD for current + RP
+    groupMembersChangedQueue.enqueue(new GroupMembersChangedInfo(
+                groupInitialMembers, // Members
+                UIntList(), // Removed - obviously, none
+                UIntList(), // LP - will be handled separately, see below
+                groupInitialRP, // Remote pending
+                QVariantMap())); // No details for members + RP
+
+    // Synthesize one MCD for each initial LP member - they might have different details
+    foreach (const LocalPendingInfo &info, groupInitialLP) {
+        QVariantMap details;
+
+        if (info.actor != 0) {
+            details.insert("actor", info.actor);
+        }
+
+        if (info.reason != ChannelGroupChangeReasonNone) {
+            details.insert("change-reason", info.reason);
+        }
+
+        if (!info.message.isEmpty()) {
+            details.insert("message", info.message);
+        }
+
+        groupMembersChangedQueue.enqueue(new GroupMembersChangedInfo(UIntList(), UIntList(),
+                    UIntList() << info.toBeAdded, UIntList(), details));
+    }
+
+    // At least our added MCD event to process
+    processMembersChanged();
 }
 
 bool Channel::Private::setGroupFlags(uint newGroupFlags)
@@ -579,7 +623,9 @@ void Channel::Private::buildContacts()
         toBuild.append(currentGroupMembersChangedInfo->actor);
     }
 
-    if (buildingInitialContacts && initiatorHandle) {
+    if (!initiatorContact && initiatorHandle) {
+        // No initiator contact, but Yes initiator handle - might do something about it with just
+        // that information
         toBuild.append(initiatorHandle);
     }
 
@@ -594,7 +640,9 @@ void Channel::Private::buildContacts()
     if (toBuild.isEmpty()) {
         if (!groupSelfHandle && groupSelfContact) {
             groupSelfContact.clear();
-            emit parent->groupSelfContactChanged();
+            if (ready) {
+                emit parent->groupSelfContactChanged();
+            }
         }
         return;
     }
@@ -611,12 +659,39 @@ void Channel::Private::buildContacts()
 
 void Channel::Private::processMembersChanged()
 {
+    Q_ASSERT(!buildingContacts);
+
     if (groupMembersChangedQueue.isEmpty()) {
         if (pendingRetrieveGroupSelfContact) {
             pendingRetrieveGroupSelfContact = false;
             // nothing queued but selfContact changed
             buildContacts();
+            return;
         }
+
+        if (!ready) {
+            if (introspectQueue.isEmpty()) {
+                debug() << "Both the MCD and the introspect queue empty for the first time. Ready!";
+
+                if (initiatorHandle && !initiatorContact) {
+                    warning() << " Unable to create contact object for initiator with handle" <<
+                        initiatorHandle;
+                }
+
+                if (groupSelfHandle && !groupSelfContact) {
+                    warning() << " Unable to create contact object for self handle" <<
+                        groupSelfHandle;
+                }
+
+                setReady();
+
+                processMembersChanged();
+                return;
+            } else {
+                debug() << "Contact queue empty but introspect queue isn't. IS will set ready.";
+            }
+        }
+
         return;
     }
 
@@ -661,16 +736,8 @@ void Channel::Private::processMembersChanged()
         groupMembersToRemove.append(handle);
     }
 
-    if (pendingGroupMembers.isEmpty() &&
-        pendingGroupLocalPendingMembers.isEmpty() &&
-        pendingGroupRemotePendingMembers.isEmpty())
-    {
-        // no member added, just remove the members to be removed and signal
-        // membersChanged
-        updateContacts();
-    } else {
-        buildContacts();
-    }
+    // Always go through buildContacts - we might have a self/initiator/whatever handle to build
+    buildContacts();
 }
 
 void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &contacts)
@@ -680,6 +747,8 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     QList<QSharedPointer<Contact> > groupRemotePendingContactsAdded;
     QSharedPointer<Contact> actorContact;
     bool selfContactUpdated = false;
+
+    debug() << "Entering Chan::Priv::updateContacts() with" << contacts.size() << "contacts";
 
     // FIXME: simplify. Some duplication of logic present.
     foreach (QSharedPointer<Contact> contact, contacts) {
@@ -702,7 +771,9 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
             selfContactUpdated = true;
         }
 
-        if (buildingInitialContacts && initiatorHandle == handle) {
+        if (!initiatorContact && initiatorHandle == handle) {
+            // No initiator contact stored, but there's a contact for the initiator handle
+            // We can use that!
             initiatorContact = contact;
         }
 
@@ -717,40 +788,18 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         selfContactUpdated = true;
     }
 
-    // FIXME: This shouldn't be needed. Clearer would be to first scan for the actor being present in the contacts
-    // supplied.
+    pendingGroupMembers.clear();
+    pendingGroupLocalPendingMembers.clear();
+    pendingGroupRemotePendingMembers.clear();
+
+    // FIXME: This shouldn't be needed. Clearer would be to first scan for the actor being present
+    // in the contacts supplied.
     foreach (QSharedPointer<Contact> contact, contacts) {
         uint handle = contact->handle()[0];
         if (groupLocalPendingContactsChangeInfo.contains(handle)) {
             groupLocalPendingContactsChangeInfo[handle] =
                 GroupMemberChangeDetails(actorContact, currentGroupMembersChangedInfo->details);
         }
-    }
-
-    pendingGroupMembers.clear();
-    pendingGroupLocalPendingMembers.clear();
-    pendingGroupRemotePendingMembers.clear();
-
-    if (buildingInitialContacts) {
-        buildingInitialContacts = false;
-
-        if (initiatorHandle && !initiatorContact) {
-            warning() << "Unable to create contact object for initiator with handle" <<
-                initiatorHandle;
-        }
-
-        if (groupSelfHandle && !groupSelfContact) {
-            warning() << "Unable to create contact object for self handle" <<
-                groupSelfHandle;
-        }
-
-        if (introspectQueue.isEmpty()) {
-            // if we were building the initial contacts from handles and the
-            // introspect queue is empty it means we are ready now, so signal it
-            setReady();
-        }
-        processMembersChanged();
-        return;
     }
 
     // FIXME: use QSet to make the code somewhat easier to comprehend and change
@@ -779,6 +828,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     }
     groupMembersToRemove.clear();
 
+    // FIXME: drop the LPToRemove and RPToRemove sets - they're redundant
     foreach (uint handle, groupLocalPendingMembersToRemove) {
         groupLocalPendingContacts.remove(handle);
     }
@@ -796,17 +846,21 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         GroupMemberChangeDetails details(
                 actorContact,
                 currentGroupMembersChangedInfo->details);
-        emit parent->groupMembersChanged(
-                groupContactsAdded,
-                groupLocalPendingContactsAdded,
-                groupRemotePendingContactsAdded,
-                groupContactsRemoved,
-                details);
+        if (ready) {
+            // Channel is ready, we can signal membership changes to the outside world without
+            // confusing anyone's fragile logic.
+            emit parent->groupMembersChanged(
+                    groupContactsAdded,
+                    groupLocalPendingContactsAdded,
+                    groupRemotePendingContactsAdded,
+                    groupContactsRemoved,
+                    details);
+        }
     }
     delete currentGroupMembersChangedInfo;
     currentGroupMembersChangedInfo = 0;
 
-    if (selfContactUpdated) {
+    if (selfContactUpdated && ready) {
         emit parent->groupSelfContactChanged();
     }
 
@@ -817,35 +871,26 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
 {
     if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         return false;
+    } else if (targetHandleType != Telepathy::HandleTypeContact) {
+        return false;
     }
 
-    bool ret = false;
+    // fake group interface
+    if (connection->selfContact() && targetHandle) {
+        // Fake groupSelfHandle and initial members, let the MCD handling take care of the rest
+        groupSelfHandle = connection->selfContact()->handle()[0];
+        groupInitialMembers = UIntList() << groupSelfHandle << targetHandle;
 
-    if (targetHandleType == Telepathy::HandleTypeContact) {
-        // fake group interface
+        debug().nospace() << "Faking a group on channel with self handle=" <<
+            groupSelfHandle << " and other handle=" << targetHandle;
 
-        if (connection->selfContact() || !targetHandle) {
-            // for groupSelfContact()
-            groupSelfHandle = connection->selfContact()->handle()[0];
-
-            // for groupContacts()
-            pendingGroupMembers.insert(groupSelfHandle);
-            pendingGroupMembers.insert(targetHandle);
-
-            debug().nospace() << "Faking a group on channel with self handle=" <<
-                groupSelfHandle << " and other handle=" << targetHandle;
-            ret = true;
-
-            buildingInitialContacts = true;
-            buildContacts();
-        }
-        else {
-            warning() << "Connection::selfContact returned a null contact or targetHandle is 0, "
-                "not faking a group on channel";
-        }
+        nowHaveInitialMembers();
+    } else {
+        warning() << "Connection::selfContact returned a null contact or targetHandle is 0, "
+            "not faking a group on channel";
     }
 
-    return ret;
+    return true;
 }
 
 void Channel::Private::setReady()
@@ -1951,16 +1996,16 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
     if (reply.isError()) {
         warning().nospace() << "Channel.Interface.Group::GetAllMembers() failed with " <<
             reply.error().name() << ": " << reply.error().message();
-    }
-    else {
+    } else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetAllMembers()";
 
-        mPriv->groupHaveMembers = true;
-        mPriv->pendingGroupMembers = QSet<uint>::fromList(reply.argumentAt<0>());
-        mPriv->pendingGroupLocalPendingMembers = QSet<uint>::fromList(reply.argumentAt<1>());
-        mPriv->pendingGroupRemotePendingMembers = QSet<uint>::fromList(reply.argumentAt<2>());
+        mPriv->groupInitialMembers = reply.argumentAt<0>();
+        mPriv->groupInitialRP = reply.argumentAt<2>();
 
-        // delay building contacts now until we process gotSelfHandle
+        foreach (uint handle, reply.argumentAt<1>()) {
+            LocalPendingInfo info = {handle, 0, ChannelGroupChangeReasonNone, ""};
+            mPriv->groupInitialLP.push_back(info);
+        }
     }
 
     continueIntrospection();
@@ -1978,8 +2023,8 @@ void Channel::gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher)
     else {
         debug() << "Got reply to fallback "
             "Channel.Interface.Group::GetLocalPendingMembersWithInfo()";
-
-        // FIXME: queue synthesized MCD corresponding to the reply
+        // Overrides the previous vague list provided by gotAllMembers
+        mPriv->groupInitialLP = reply.value();
     }
 
     continueIntrospection();
@@ -1992,15 +2037,12 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
     if (reply.isError()) {
         warning().nospace() << "Channel.Interface.Group::GetSelfHandle() failed with " <<
             reply.error().name() << ": " << reply.error().message();
-    }
-    else {
+    } else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetSelfHandle()";
         mPriv->groupSelfHandle = reply.value();
     }
 
-    // build contacts even if the call failed
-    mPriv->buildingInitialContacts = true;
-    mPriv->buildContacts();
+    // FIXME: fix self contact building with no group
 
     continueIntrospection();
 }
@@ -2194,24 +2236,23 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
         debug() << " Emitting groupSelfHandleChanged with new self handle" <<
             newSelfHandle;
 
-        if (!mPriv->buildingContacts) {
-            mPriv->buildContacts();
-        } else {
-            // next call to processMembersChanged will build selfContact again
-            mPriv->pendingRetrieveGroupSelfContact = true;
-        }
+        // FIXME: fix self contact building with no group
+        mPriv->pendingRetrieveGroupSelfContact = true;
     }
 }
 
 void Channel::continueIntrospection()
 {
     if (mPriv->introspectQueue.isEmpty()) {
-        // we are still building initial contact objects so delay call to ready
-        if (!mPriv->buildingInitialContacts) {
-            mPriv->setReady();
+        if (!mPriv->ready) {
+            if (mPriv->groupMembersChangedQueue.isEmpty() && !mPriv->buildingContacts) {
+                debug() << "Both the IS and the MCD queue empty for the first time. Ready.";
+                mPriv->setReady();
+            } else {
+                debug() << "Introspection done before contacts done - contacts sets ready";
+            }
         }
-    }
-    else {
+    } else {
         (mPriv->*(mPriv->introspectQueue.dequeue()))();
     }
 }
