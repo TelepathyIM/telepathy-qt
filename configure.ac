@@ -241,6 +241,7 @@ AC_OUTPUT([
     doxygen.cfg
     examples/Makefile
     examples/extensions/Makefile
+    examples/accounts/Makefile
     m4/Makefile
     spec/Makefile
     tests/Makefile

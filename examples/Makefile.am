@@ -1,1 +1,1 @@
-SUBDIRS = extensions
+SUBDIRS = extensions accounts
