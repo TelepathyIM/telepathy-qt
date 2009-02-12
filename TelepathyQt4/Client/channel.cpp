@@ -129,33 +129,40 @@ struct Channel::Private
 
     // Group flags
     uint groupFlags;
-
     bool usingMembersChangedDetailed;
 
-    // Group members
+    // Group member introspection
     bool groupHaveMembers;
     bool buildingInitialContacts;
     bool buildingContacts;
+
+    // Queue of received MCD signals to process
+    QQueue<GroupMembersChangedInfo *> groupMembersChangedQueue;
+    GroupMembersChangedInfo *currentGroupMembersChangedInfo;
+    QMap<uint, LocalPendingInfo> pendingGroupMembersChangeInfo;
+
+    // Pending from the MCD signal currently processed, but contacts not yet built
     QSet<uint> pendingGroupMembers;
     QSet<uint> pendingGroupLocalPendingMembers;
     QSet<uint> pendingGroupRemotePendingMembers;
-    QMap<uint, LocalPendingInfo> pendingGroupMembersChangeInfo;
     UIntList groupMembersToRemove;
     UIntList groupLocalPendingMembersToRemove;
     UIntList groupRemotePendingMembersToRemove;
+
+    // Current members
     QHash<uint, QSharedPointer<Contact> > groupContacts;
     QHash<uint, QSharedPointer<Contact> > groupLocalPendingContacts;
     QHash<uint, QSharedPointer<Contact> > groupRemotePendingContacts;
+
+    // Stored change info
     QHash<uint, GroupMemberChangeDetails> groupLocalPendingContactsChangeInfo;
     GroupMemberChangeDetails groupSelfContactRemoveInfo;
-    QQueue<GroupMembersChangedInfo *> groupMembersChangedQueue;
-    GroupMembersChangedInfo *currentGroupMembersChangedInfo;
 
     // Group handle owners
     bool groupAreHandleOwnersAvailable;
     HandleOwnerMap groupHandleOwners;
 
-    // Group self handle
+    // Group self identity
     bool pendingRetrieveGroupSelfContact;
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
