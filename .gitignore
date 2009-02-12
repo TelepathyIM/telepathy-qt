@@ -32,6 +32,7 @@
 /libtool
 /ltmain.sh
 /missing
+/m4/*
 /stamp-h1
 /telepathy-qt4.pro*
 /telepathy-qt4-*.tar.gz
