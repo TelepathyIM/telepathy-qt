@@ -666,7 +666,6 @@ void Channel::Private::processMembersChanged()
             pendingRetrieveGroupSelfContact = false;
             // nothing queued but selfContact changed
             buildContacts();
-            return;
         }
 
         if (!ready) {
@@ -684,9 +683,6 @@ void Channel::Private::processMembersChanged()
                 }
 
                 setReady();
-
-                processMembersChanged();
-                return;
             } else {
                 debug() << "Contact queue empty but introspect queue isn't. IS will set ready.";
             }
