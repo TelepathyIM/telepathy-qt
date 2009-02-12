@@ -148,6 +148,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingAccount \
     Client/PendingChannel \
     Client/PendingConnection \
+    Client/PendingContacts \
     Client/PendingContactAttributes \
     Client/PendingFailure \
     Client/PendingOperation \
