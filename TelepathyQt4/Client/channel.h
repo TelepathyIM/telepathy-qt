@@ -68,25 +68,20 @@ public:
 
     Connection *connection() const;
 
+    QString channelType() const;
     QStringList interfaces() const;
 
-    QString channelType() const;
-
     uint targetHandleType() const;
-
     uint targetHandle() const;
 
     bool isRequested() const;
-
     QSharedPointer<Contact> initiatorContact() const;
 
     bool isReady(Features features = 0) const;
-
     PendingOperation *becomeReady(Features features = 0);
 
     PendingOperation *requestClose();
 
-public:
     uint groupFlags() const;
 
     bool groupCanAddContacts() const;
@@ -283,6 +278,7 @@ private Q_SLOTS:
     void gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
     void gotContacts(Telepathy::Client::PendingOperation *op);
+
     void onGroupFlagsChanged(uint, uint);
     void onMembersChanged(const QString&,
             const Telepathy::UIntList&, const Telepathy::UIntList&,
