@@ -27,7 +27,8 @@ class TestChanGroup : public Test
 
 public:
     TestChanGroup(QObject *parent = 0)
-        : Test(parent), mConnService(0), mConn(0), mChan(0)
+        : Test(parent), mConnService(0), mConn(0), mChan(0),
+          mRoomNumber(0), mRoomCount(4), mRequested(false)
     { }
 
 protected Q_SLOTS:
@@ -52,6 +53,8 @@ private Q_SLOTS:
     void testRequestHandle();
     void testCreateChannel();
     void testCreateChannelDetailed();
+    void testCreateChannelFallback();
+    void testCreateChannelFallbackDetailed();
 
     void cleanup();
     void cleanupTestCase();
@@ -68,6 +71,7 @@ private:
     Channel *mChan;
     QString mChanObjectPath;
     uint mRoomNumber;
+    uint mRoomCount;
     ReferencedHandles mRoomHandles;
     ReferencedHandles mContactHandles;
     QList<QSharedPointer<Contact> > mContacts;
@@ -76,6 +80,7 @@ private:
     QList<QSharedPointer<Contact> > mChangedRP;
     QList<QSharedPointer<Contact> > mChangedRemoved;
     Channel::GroupMemberChangeDetails mDetails;
+    bool mRequested;
 };
 
 void TestChanGroup::expectConnReady(uint newStatus, uint newStatusReason)
@@ -333,7 +338,10 @@ void TestChanGroup::init()
 void TestChanGroup::testRequestHandle()
 {
     // Test identifiers
-    QStringList ids = QStringList() << "#room0" << "#room1";
+    QStringList ids;
+    for (uint i = 0; i < mRoomCount; ++i) {
+        ids << QString("#room%1").arg(i);
+    }
 
     // Request handles for the identifiers and wait for the request to process
     PendingHandles *pending = mConn->requestHandles(Telepathy::HandleTypeRoom, ids);
@@ -349,16 +357,40 @@ void TestChanGroup::testRequestHandle()
 
 void TestChanGroup::testCreateChannel()
 {
-    mRoomNumber = 0;
+    mRequested = true;
+    example_csh_connection_set_enable_change_members_detailed(mConnService, false);
+    example_csh_connection_set_use_properties_room (mConnService, true);
     doTestCreateChannel();
+    mRoomNumber++;
 }
 
 void TestChanGroup::testCreateChannelDetailed()
 {
+    mRequested = true;
     example_csh_connection_set_enable_change_members_detailed(mConnService, true);
-    mRoomNumber = 1;
+    example_csh_connection_set_use_properties_room (mConnService, true);
     doTestCreateChannel();
+    mRoomNumber++;
 }
+
+void TestChanGroup::testCreateChannelFallback()
+{
+    mRequested = false;
+    example_csh_connection_set_enable_change_members_detailed(mConnService, false);
+    example_csh_connection_set_use_properties_room (mConnService, false);
+    doTestCreateChannel();
+    mRoomNumber++;
+}
+
+void TestChanGroup::testCreateChannelFallbackDetailed()
+{
+    mRequested = false;
+    example_csh_connection_set_enable_change_members_detailed(mConnService, true);
+    example_csh_connection_set_use_properties_room (mConnService, false);
+    doTestCreateChannel();
+    mRoomNumber++;
+}
+
 
 void TestChanGroup::doTestCreateChannel()
 {
@@ -382,7 +414,7 @@ void TestChanGroup::doTestCreateChannel()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
-    QCOMPARE(mChan->isRequested(), true);
+    QCOMPARE(mChan->isRequested(), mRequested);
     QCOMPARE(mChan->initiatorContact().isNull(), true);
     QCOMPARE(mChan->groupSelfContact()->id(), QString("me@#room%1").arg(mRoomNumber));
 
