@@ -31,7 +31,7 @@
 
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/PendingConnection>
-#include <TelepathyQt4/Client/PendingSuccess>
+#include <TelepathyQt4/Client/PendingReadyConnectionManager>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
@@ -222,11 +222,6 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
             (Telepathy::ConnMgrParamFlag) flags);
 
     mPriv->params.append(param);
-}
-
-ConnectionManager::Private::PendingReady::PendingReady(ConnectionManager *parent)
-    : PendingOperation(parent)
-{
 }
 
 ConnectionManager::Private::PendingNames::PendingNames(const QDBusConnection &bus)
@@ -478,24 +473,30 @@ bool ConnectionManager::isReady(Features features) const
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
  *
- * \return A PendingOperation which will emit PendingOperation::finished
+ * \return A PendingReadyConnectionManager object which will emit finished
  *         when this object has finished or failed its initial setup.
  */
-PendingOperation *ConnectionManager::becomeReady(Features features)
+PendingReadyConnectionManager *ConnectionManager::becomeReady(Features requestedFeatures)
 {
     if (!isValid()) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+        PendingReadyConnectionManager *operation =
+            new PendingReadyConnectionManager(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
                 "ConnectionManager is invalid");
+        return operation;
     }
 
-    if (isReady(features)) {
-        return new PendingSuccess(this);
+    if (isReady(requestedFeatures)) {
+        PendingReadyConnectionManager *operation =
+            new PendingReadyConnectionManager(requestedFeatures, this);
+        operation->setFinished();
+        return operation;
     }
 
     if (!mPriv->pendingReady) {
-        mPriv->pendingReady = new Private::PendingReady(this);
+        mPriv->pendingReady =
+            new PendingReadyConnectionManager(requestedFeatures, this);
     }
-
     return mPriv->pendingReady;
 }
 

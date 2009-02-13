@@ -39,7 +39,7 @@ namespace Client
 {
 
 class PendingConnection;
-class PendingOperation;
+class PendingReadyConnectionManager;
 class PendingStringList;
 class ProtocolParameter;
 class ProtocolInfo;
@@ -146,7 +146,7 @@ public:
 
     bool isReady(Features features = 0) const;
 
-    PendingOperation *becomeReady(Features features = 0);
+    PendingReadyConnectionManager *becomeReady(Features features = 0);
 
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 

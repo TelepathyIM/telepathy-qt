@@ -36,6 +36,7 @@ namespace Client
 
 class ConnectionManager;
 class ConnectionManagerInterface;
+class PendingReadyConnectionManager;
 
 struct ConnectionManager::Private
 {
@@ -47,7 +48,6 @@ struct ConnectionManager::Private
 
     ProtocolInfo *protocol(const QString &protocolName);
 
-    class PendingReady;
     class PendingNames;
 
     ConnectionManagerInterface *baseInterface;
@@ -58,19 +58,9 @@ struct ConnectionManager::Private
     QQueue<QString> protocolQueue;
     QStringList interfaces;
     ProtocolInfoList protocols;
-    PendingReady *pendingReady;
+    PendingReadyConnectionManager *pendingReady;
     ConnectionManager::Features features;
 };
-
-class ConnectionManager::Private::PendingReady : public PendingOperation
-{
-    // ConnectionManager is a friend so it can call finished() etc.
-    friend class ConnectionManager;
-
-public:
-    PendingReady(ConnectionManager *parent);
-};
-
 
 class ConnectionManager::Private::PendingNames : public PendingStringList
 {
