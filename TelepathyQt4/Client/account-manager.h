@@ -44,7 +44,7 @@ namespace Client
 class Account;
 class AccountManager;
 class PendingAccount;
-class PendingOperation;
+class PendingReadyAccountManager;
 
 class AccountManager : public StatelessDBusProxy,
                        private OptionalInterfaceFactory<AccountManager>
@@ -89,7 +89,7 @@ public:
 
     bool isReady(Features features = 0) const;
 
-    PendingOperation *becomeReady(Features features = 0);
+    PendingReadyAccountManager *becomeReady(Features features = 0);
 
 Q_SIGNALS:
     void accountCreated(const QString &path);

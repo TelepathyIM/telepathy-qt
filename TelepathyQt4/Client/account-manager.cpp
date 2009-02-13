@@ -29,7 +29,7 @@
 
 #include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/PendingAccount>
-#include <TelepathyQt4/Client/PendingSuccess>
+#include <TelepathyQt4/Client/PendingReadyAccountManager>
 #include <TelepathyQt4/Constants>
 
 #include <QQueue>
@@ -67,31 +67,15 @@ struct AccountManager::Private
 
     void setAccountPaths(QSet<QString> &set, const QVariant &variant);
 
-    class PendingReady;
-
     AccountManagerInterface *baseInterface;
     bool ready;
-    PendingReady *pendingReady;
+    PendingReadyAccountManager *pendingReady;
     QQueue<void (AccountManager::*)()> introspectQueue;
     QStringList interfaces;
     AccountManager::Features features;
     QSet<QString> validAccountPaths;
     QSet<QString> invalidAccountPaths;
 };
-
-class AccountManager::Private::PendingReady : public PendingOperation
-{
-    // AccountManager is a friend so it can call finished() etc.
-    friend class AccountManager;
-
-public:
-    PendingReady(AccountManager *parent);
-};
-
-AccountManager::Private::PendingReady::PendingReady(AccountManager *parent)
-    : PendingOperation(parent)
-{
-}
 
 AccountManager::Private::Private(AccountManager *parent)
     : baseInterface(new AccountManagerInterface(parent->dbusConnection(),
@@ -368,27 +352,37 @@ bool AccountManager::isReady(Features features) const
  * initial setup.
  *
  * \param features Which features should be tested.
- * \return A PendingOperation which will emit PendingOperation::finished
+ * \return A PendingReadyAccountManager object which will emit finished
  *         when this object has finished or failed its initial setup.
  */
-PendingOperation *AccountManager::becomeReady(Features features)
+PendingReadyAccountManager *AccountManager::becomeReady(Features requestedFeatures)
 {
     if (!isValid()) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+        PendingReadyAccountManager *operation =
+            new PendingReadyAccountManager(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
                 "AccountManager is invalid");
+        return operation;
     }
 
-    if (isReady(features)) {
-        return new PendingSuccess(this);
+    if (isReady(requestedFeatures)) {
+        PendingReadyAccountManager *operation =
+            new PendingReadyAccountManager(requestedFeatures, this);
+        operation->setFinished();
+        return operation;
     }
 
-    if (features != 0) {
-        return new PendingFailure(this, "org.freedesktop.Telepathy.Qt.DoesntWork",
-                "Unimplemented");
+    if (requestedFeatures != 0) {
+        PendingReadyAccountManager *operation =
+            new PendingReadyAccountManager(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid features argument");
+        return operation;
     }
 
     if (!mPriv->pendingReady) {
-        mPriv->pendingReady = new Private::PendingReady(this);
+        mPriv->pendingReady =
+            new PendingReadyAccountManager(requestedFeatures, this);
     }
     return mPriv->pendingReady;
 }
