@@ -51,6 +51,7 @@ class PendingChannel;
 class PendingContactAttributes;
 class PendingHandles;
 class PendingOperation;
+class PendingReadyConnection;
 
 class Connection : public StatefulDBusProxy,
                    private OptionalInterfaceFactory<Connection>
@@ -170,7 +171,7 @@ public:
 
     bool isReady(Features features = 0) const;
 
-    PendingOperation *becomeReady(Features features = 0);
+    PendingReadyConnection *becomeReady(Features features = 0);
 
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
