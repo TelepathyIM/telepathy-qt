@@ -30,6 +30,7 @@
 #include <TelepathyQt4/Client/AccountManager>
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
+#include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingReadyAccount>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
 #include <TelepathyQt4/Constants>
@@ -156,15 +157,17 @@ Account::Account(AccountManager *am, const QString &objectPath,
       OptionalInterfaceFactory<Account>(this),
       mPriv(new Private(am, this))
 {
-    connect(mPriv->baseInterface,
-            SIGNAL(Removed()),
-            SLOT(onRemoved()));
-    connect(mPriv->baseInterface,
-            SIGNAL(AccountPropertyChanged(const QVariantMap &)),
-            SLOT(onPropertyChanged(const QVariantMap &)));
+    if (isValid()) {
+        connect(mPriv->baseInterface,
+                SIGNAL(Removed()),
+                SLOT(onRemoved()));
+        connect(mPriv->baseInterface,
+                SIGNAL(AccountPropertyChanged(const QVariantMap &)),
+                SLOT(onPropertyChanged(const QVariantMap &)));
 
-    mPriv->introspectQueue.enqueue(&Account::callGetAll);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+        mPriv->introspectQueue.enqueue(&Account::callGetAll);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -624,6 +627,14 @@ bool Account::isReady(Features features) const
  */
 PendingReadyAccount *Account::becomeReady(Features requestedFeatures)
 {
+    if (!isValid()) {
+        PendingReadyAccount *operation =
+                new PendingReadyAccount(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Account is invalid");
+        return operation;
+    }
+
     if (isReady(requestedFeatures)) {
         PendingReadyAccount *operation =
                 new PendingReadyAccount(requestedFeatures, this);
