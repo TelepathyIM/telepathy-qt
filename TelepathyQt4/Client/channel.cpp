@@ -1143,7 +1143,7 @@ PendingOperation *Channel::becomeReady(Features features)
 {
     if (!isValid()) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel is already closed");
+                "Channel is invalid");
     }
 
     if (isReady(features)) {
