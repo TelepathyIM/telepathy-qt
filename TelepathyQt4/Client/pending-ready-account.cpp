@@ -46,13 +46,13 @@ namespace Client
 
 struct PendingReadyAccount::Private
 {
-    Private(Account::Features features, Account *account) :
-        features(features),
+    Private(Account::Features requestedFeatures, Account *account) :
+        requestedFeatures(requestedFeatures),
         account(account)
     {
     }
 
-    Account::Features features;
+    Account::Features requestedFeatures;
     Account *account;
 };
 
@@ -71,9 +71,9 @@ struct PendingReadyAccount::Private
  *
  * \param account The Account that will become ready.
  */
-PendingReadyAccount::PendingReadyAccount(Account::Features features, Account *account)
+PendingReadyAccount::PendingReadyAccount(Account::Features requestedFeatures, Account *account)
     : PendingOperation(account),
-      mPriv(new Private(features, account))
+      mPriv(new Private(requestedFeatures, account))
 {
 }
 
@@ -101,9 +101,9 @@ Account *PendingReadyAccount::account() const
  *
  * \return Features.
  */
-Account::Features PendingReadyAccount::features() const
+Account::Features PendingReadyAccount::requestedFeatures() const
 {
-    return mPriv->features;
+    return mPriv->requestedFeatures;
 }
 
 } // Telepathy::Client

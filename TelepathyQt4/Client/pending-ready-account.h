@@ -44,11 +44,11 @@ public:
     ~PendingReadyAccount();
 
     Account *account() const;
-    Account::Features features() const;
+    Account::Features requestedFeatures() const;
 
 private:
     Q_DISABLE_COPY(PendingReadyAccount);
-    PendingReadyAccount(Account::Features features, Account *account);
+    PendingReadyAccount(Account::Features requestedFeatures, Account *account);
 
     struct Private;
     friend struct Private;

@@ -622,7 +622,7 @@ bool Account::isReady(Features features) const
  * initial setup.
  *
  * \param features Which features should be tested.
- * \return A PendingReadyAccount which will emit PendingOperation::finished
+ * \return A PendingReadyAccount object which will emit finished
  *         when this object has finished or failed its initial setup.
  */
 PendingReadyAccount *Account::becomeReady(Features requestedFeatures)
@@ -645,7 +645,7 @@ PendingReadyAccount *Account::becomeReady(Features requestedFeatures)
     debug() << "calling becomeReady with requested features:"
             << requestedFeatures;
     foreach (PendingReadyAccount *operation, mPriv->pendingOperations) {
-        if (operation->features() == requestedFeatures) {
+        if (operation->requestedFeatures() == requestedFeatures) {
             debug() << "returning cached pending operation";
             return operation;
         }
@@ -1050,7 +1050,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
         // signal all pending operations that cares about protocol info that
         // it failed, as FeatureProtocolInfo is mandatory
         foreach (PendingReadyAccount *operation, mPriv->pendingOperations) {
-            if (operation->features() & FeatureProtocolInfo) {
+            if (operation->requestedFeatures() & FeatureProtocolInfo) {
                 operation->setFinishedWithError(operation->errorName(),
                         operation->errorMessage());
                 mPriv->pendingOperations.removeOne(operation);
@@ -1081,8 +1081,8 @@ void Account::continueIntrospection()
     if (mPriv->introspectQueue.isEmpty()) {
         foreach (PendingReadyAccount *operation, mPriv->pendingOperations) {
             if (mPriv->ready &&
-                ((operation->features() &
-                    (mPriv->features | mPriv->missingFeatures)) == operation->features())) {
+                ((operation->requestedFeatures() &
+                    (mPriv->features | mPriv->missingFeatures)) == operation->requestedFeatures())) {
                 operation->setFinished();
             }
             if (operation->isFinished()) {
