@@ -47,6 +47,7 @@ namespace Client
 
 class Connection;
 class PendingOperation;
+class PendingReadyChannel;
 
 class Channel : public StatefulDBusProxy,
                 private OptionalInterfaceFactory<Channel>
@@ -78,7 +79,7 @@ public:
     QSharedPointer<Contact> initiatorContact() const;
 
     bool isReady(Features features = 0) const;
-    PendingOperation *becomeReady(Features features = 0);
+    PendingReadyChannel *becomeReady(Features features = 0);
 
     PendingOperation *requestClose();
 
