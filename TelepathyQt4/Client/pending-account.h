@@ -26,8 +26,10 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/PendingOperation>
 
+#include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -39,7 +41,6 @@ namespace Client
 {
 
 class AccountManager;
-class Account;
 
 class PendingAccount : public PendingOperation
 {
@@ -49,7 +50,7 @@ public:
     ~PendingAccount();
 
     AccountManager *manager() const;
-    Account *account() const;
+    QSharedPointer<Account> account() const;
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
