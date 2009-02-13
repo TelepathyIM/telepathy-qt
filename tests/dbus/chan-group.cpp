@@ -65,7 +65,7 @@ private:
     QString mConnName, mConnPath;
     ExampleCSHConnection *mConnService;
     Connection *mConn;
-    Channel *mChan;
+    QSharedPointer<Channel> mChan;
     QString mChanObjectPath;
     uint mRoomNumber;
     ReferencedHandles mRoomHandles;
@@ -386,7 +386,7 @@ void TestChanGroup::doTestCreateChannel()
     QCOMPARE(mChan->initiatorContact().isNull(), true);
     QCOMPARE(mChan->groupSelfContact()->id(), QString("me@#room%1").arg(mRoomNumber));
 
-    QVERIFY(connect(mChan,
+    QVERIFY(connect(mChan.data(),
                     SIGNAL(groupFlagsChanged(uint, uint, uint)),
                     SLOT(onChannelGroupFlagsChanged(uint, uint, uint))));
 
@@ -400,7 +400,7 @@ void TestChanGroup::doTestCreateChannel()
 
     debugContacts();
 
-    QVERIFY(connect(mChan,
+    QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
                             const QList<QSharedPointer<Contact> > &,
                             const QList<QSharedPointer<Contact> > &,
@@ -526,8 +526,7 @@ void TestChanGroup::doTestCreateChannel()
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
 
-    delete mChan;
-    mChan = 0;
+    mChan.clear();
 }
 
 void TestChanGroup::cleanup()
