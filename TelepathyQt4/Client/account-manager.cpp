@@ -154,7 +154,9 @@ AccountManager::AccountManager(QObject* parent)
       OptionalInterfaceFactory<AccountManager>(this),
       mPriv(new Private(this))
 {
-    init();
+    if (isValid()) {
+        init();
+    }
 }
 
 /**
@@ -171,7 +173,9 @@ AccountManager::AccountManager(const QDBusConnection& bus,
       OptionalInterfaceFactory<AccountManager>(this),
       mPriv(new Private(this))
 {
-    init();
+    if (isValid()) {
+        init();
+    }
 }
 
 /**
@@ -369,6 +373,11 @@ bool AccountManager::isReady(Features features) const
  */
 PendingOperation *AccountManager::becomeReady(Features features)
 {
+    if (!isValid()) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "AccountManager is invalid");
+    }
+
     if (isReady(features)) {
         return new PendingSuccess(this);
     }
