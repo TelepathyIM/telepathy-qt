@@ -523,8 +523,10 @@ Connection::Connection(const QString &serviceName,
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(this))
 {
-    mPriv->introspectQueue.enqueue(&Private::startIntrospection);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    if (isValid()) {
+        mPriv->introspectQueue.enqueue(&Private::startIntrospection);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -543,8 +545,10 @@ Connection::Connection(const QDBusConnection &bus,
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(this))
 {
-    mPriv->introspectQueue.enqueue(&Private::startIntrospection);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    if (isValid()) {
+        mPriv->introspectQueue.enqueue(&Private::startIntrospection);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -1324,6 +1328,11 @@ bool Connection::isReady(Features features) const
  */
 PendingOperation *Connection::becomeReady(Features requestedFeatures)
 {
+    if (!isValid()) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Connection is invalid");
+    }
+
     if (isReady(requestedFeatures)) {
         return new PendingSuccess(this);
     }
