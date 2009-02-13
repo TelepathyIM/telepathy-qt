@@ -7,6 +7,7 @@
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingChannel>
+#include <TelepathyQt4/Client/PendingReadyConnection>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
