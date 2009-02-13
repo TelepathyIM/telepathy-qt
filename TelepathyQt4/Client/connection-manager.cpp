@@ -291,7 +291,8 @@ ConnectionManager::Private::Private(const QString &name, ConnectionManager *pare
                             parent->busName(), parent->objectPath(), parent)),
       name(name),
       ready(false),
-      pendingReady(0)
+      pendingReady(0),
+      features(0)
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();
 }
@@ -466,9 +467,10 @@ PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
  *
  * \return \c true if the object has finished initial setup.
  */
-bool ConnectionManager::isReady() const
+bool ConnectionManager::isReady(Features features) const
 {
-    return mPriv->ready;
+    return mPriv->ready
+        && ((mPriv->features & features) == features);
 }
 
 /**
@@ -479,14 +481,14 @@ bool ConnectionManager::isReady() const
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when this object has finished or failed its initial setup.
  */
-PendingOperation *ConnectionManager::becomeReady()
+PendingOperation *ConnectionManager::becomeReady(Features features)
 {
     if (!isValid()) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "ConnectionManager is invalid");
     }
 
-    if (mPriv->ready) {
+    if (isReady(features)) {
         return new PendingSuccess(this);
     }
 

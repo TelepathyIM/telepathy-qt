@@ -59,6 +59,7 @@ struct ConnectionManager::Private
     QStringList interfaces;
     ProtocolInfoList protocols;
     PendingReady *pendingReady;
+    ConnectionManager::Features features;
 };
 
 class ConnectionManager::Private::PendingReady : public PendingOperation
