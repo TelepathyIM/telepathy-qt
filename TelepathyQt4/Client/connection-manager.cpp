@@ -352,8 +352,10 @@ ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
       OptionalInterfaceFactory<ConnectionManager>(this),
       mPriv(new Private(name, this))
 {
-    mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    if (isValid()) {
+        mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -370,8 +372,10 @@ ConnectionManager::ConnectionManager(const QDBusConnection &bus,
       OptionalInterfaceFactory<ConnectionManager>(this),
       mPriv(new Private(name, this))
 {
-    mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    if (isValid()) {
+        mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -477,6 +481,11 @@ bool ConnectionManager::isReady() const
  */
 PendingOperation *ConnectionManager::becomeReady()
 {
+    if (!isValid()) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "ConnectionManager is invalid");
+    }
+
     if (mPriv->ready) {
         return new PendingSuccess(this);
     }
