@@ -888,7 +888,7 @@ void Account::updateProperties(const QVariantMap &props)
                 props["CurrentPresence"]);
         debug() << " Current Presence:" << mPriv->currentPresence.type <<
             "-" << mPriv->currentPresence.status;
-        emit presenceChanged(mPriv->currentPresence);
+        emit currentPresenceChanged(mPriv->currentPresence);
     }
 
     if (props.contains("RequestedPresence") &&

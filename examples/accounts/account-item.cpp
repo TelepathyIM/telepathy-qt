@@ -83,7 +83,7 @@ void AccountItem::onReady(Telepathy::Client::PendingOperation *op)
             SIGNAL(automaticPresenceChanged(const Telepathy::SimplePresence &)),
             SLOT(onAutomaticPresenceChanged(const Telepathy::SimplePresence &)));
     connect(acc,
-            SIGNAL(presenceChanged(const Telepathy::SimplePresence &)),
+            SIGNAL(currentPresenceChanged(const Telepathy::SimplePresence &)),
             SLOT(onCurrentPresenceChanged(const Telepathy::SimplePresence &)));
     connect(acc,
             SIGNAL(requestedPresenceChanged(const Telepathy::SimplePresence &)),

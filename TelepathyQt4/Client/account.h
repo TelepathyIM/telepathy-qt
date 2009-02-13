@@ -169,7 +169,7 @@ Q_SIGNALS:
     void connectsAutomaticallyPropertyChanged(bool);
     void parametersChanged(const QVariantMap &);
     void automaticPresenceChanged(const Telepathy::SimplePresence &) const;
-    void presenceChanged(const Telepathy::SimplePresence &) const;
+    void currentPresenceChanged(const Telepathy::SimplePresence &) const;
     void requestedPresenceChanged(const Telepathy::SimplePresence &) const;
     void avatarChanged(const Telepathy::Avatar &);
     void connectionStatusChanged(Telepathy::ConnectionStatus,
