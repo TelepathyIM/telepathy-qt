@@ -102,9 +102,13 @@ DBusProxy::Private::Private(const QDBusConnection &dbusConnection,
  */
 DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &path, QObject *parent)
- : QObject(parent),
-   mPriv(new Private(dbusConnection, busName, path))
+    : QObject(parent),
+      mPriv(new Private(dbusConnection, busName, path))
 {
+    if (!dbusConnection.isConnected()) {
+        invalidate("org.freedesktop.DBus.Error.Disconnected",
+            "DBus connection disconnected");
+    }
 }
 
 /**
