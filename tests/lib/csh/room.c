@@ -28,10 +28,14 @@ G_DEFINE_TYPE_WITH_CODE (ExampleCSHRoomChannel,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_TYPE_TEXT, text_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_GROUP,
       tp_group_mixin_iface_init);
-    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_DBUS_PROPERTIES,
-      tp_dbus_properties_mixin_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_EXPORTABLE_CHANNEL, NULL);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL))
+
+G_DEFINE_TYPE_WITH_CODE (ExampleCSHRoomPropertiesChannel,
+    example_csh_room_properties_channel,
+    EXAMPLE_TYPE_CSH_ROOM_CHANNEL,
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_DBUS_PROPERTIES,
+      tp_dbus_properties_mixin_iface_init))
 
 /* type definition stuff */
 
@@ -78,6 +82,11 @@ example_csh_room_channel_init (ExampleCSHRoomChannel *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, EXAMPLE_TYPE_CSH_ROOM_CHANNEL,
       ExampleCSHRoomChannelPrivate);
+}
+
+static void
+example_csh_room_properties_channel_init (ExampleCSHRoomPropertiesChannel *self)
+{
 }
 
 static TpHandle
@@ -685,6 +694,10 @@ example_csh_room_channel_class_init (ExampleCSHRoomChannelClass *klass)
   tp_group_mixin_init_dbus_properties (object_class);
 }
 
+static void
+example_csh_room_properties_channel_class_init (ExampleCSHRoomPropertiesChannelClass *klass)
+{
+}
 
 static void
 channel_close (TpSvcChannel *iface,

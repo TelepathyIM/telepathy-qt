@@ -45,6 +45,7 @@ struct _ExampleCSHRoomManagerPrivate
   gulong status_changed_id;
 
   unsigned enable_change_members_detailed:1;
+  unsigned use_properties_room:1;
 };
 
 static void
@@ -134,6 +135,7 @@ constructed (GObject *object)
   self->priv->status_changed_id = g_signal_connect (self->priv->conn,
       "status-changed", (GCallback) status_changed_cb, self);
   self->priv->enable_change_members_detailed = FALSE;
+  self->priv->use_properties_room = TRUE;
 }
 
 static void
@@ -221,11 +223,16 @@ new_channel (ExampleCSHRoomManager *self,
   ExampleCSHRoomChannel *chan;
   gchar *object_path;
   GSList *requests = NULL;
+  GType room_type;
 
   object_path = g_strdup_printf ("%s/CSHRoomChannel%u",
       self->priv->conn->object_path, handle);
 
-  chan = g_object_new (EXAMPLE_TYPE_CSH_ROOM_CHANNEL,
+  if (self->priv->use_properties_room)
+    room_type = EXAMPLE_TYPE_CSH_ROOM_PROPERTIES_CHANNEL;
+  else
+    room_type = EXAMPLE_TYPE_CSH_ROOM_CHANNEL;
+  chan = g_object_new (room_type,
       "connection", self->priv->conn,
       "object-path", object_path,
       "handle", handle,
@@ -412,4 +419,13 @@ example_csh_room_manager_accept_invitations (ExampleCSHRoomManager *self)
 
   while (g_hash_table_iter_next (&iter, &handle, &channel))
     example_csh_room_accept_invitations (EXAMPLE_CSH_ROOM_CHANNEL (channel));
+}
+
+void
+example_csh_room_manager_set_use_properties_room (ExampleCSHRoomManager *self,
+                                                  gboolean use_properties_room)
+{
+  g_return_if_fail (EXAMPLE_IS_CSH_ROOM_MANAGER (self));
+
+  self->priv->use_properties_room = use_properties_room;
 }
