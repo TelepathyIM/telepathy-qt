@@ -57,7 +57,7 @@ struct PendingConnection::Private
     }
 
     ConnectionManager *manager;
-    Connection *connection;
+    QSharedPointer<Connection> connection;
 };
 
 /**
@@ -113,12 +113,14 @@ ConnectionManager *PendingConnection::manager() const
  *
  * \return Connection object.
  */
-Connection *PendingConnection::connection() const
+QSharedPointer<Connection> PendingConnection::connection() const
 {
     if (!isFinished()) {
-        warning() <<
-            "PendingConnection::connection called before finished, returning 0";
-        return 0;
+        warning() << "PendingConnection::connection called before finished, returning 0";
+        return QSharedPointer<Connection>();
+    } else if (!isValid()) {
+        warning() << "PendingConnection::connection called when not valid, returning 0";
+        return QSharedPointer<Connection>();
     }
 
     return mPriv->connection;
@@ -133,8 +135,9 @@ void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
         QString serviceName = reply.argumentAt<0>();
         QDBusObjectPath objectPath = reply.argumentAt<1>();
         debug() << "Creating connection for objectPath: " << objectPath.path();
-        mPriv->connection = new Connection(mPriv->manager->dbusConnection(),
-                serviceName, objectPath.path(), mPriv->manager);
+        mPriv->connection = QSharedPointer<Connection>(
+                new Connection(mPriv->manager->dbusConnection(),
+                    serviceName, objectPath.path()));
         setFinished();
     } else {
         debug().nospace() <<

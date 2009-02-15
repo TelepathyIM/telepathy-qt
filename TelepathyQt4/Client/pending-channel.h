@@ -26,8 +26,10 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/PendingOperation>
 
+#include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -38,7 +40,6 @@ namespace Telepathy
 namespace Client
 {
 
-class Channel;
 class Connection;
 
 class PendingChannel : public PendingOperation
@@ -61,7 +62,7 @@ public:
 
     QVariantMap immutableProperties() const;
 
-    Channel *channel(QObject *parent = 0) const;
+    QSharedPointer<Channel> channel() const;
 
 private Q_SLOTS:
     void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);

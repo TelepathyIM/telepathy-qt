@@ -57,7 +57,7 @@ struct PendingAccount::Private
     }
 
     AccountManager *manager;
-    Account *account;
+    QSharedPointer<Account> account;
 };
 
 /**
@@ -116,12 +116,14 @@ AccountManager *PendingAccount::manager() const
  *
  * \return Account object.
  */
-Account *PendingAccount::account() const
+QSharedPointer<Account> PendingAccount::account() const
 {
     if (!isFinished()) {
-        warning() <<
-            "PendingAccount::account called before finished, returning 0";
-        return 0;
+        warning() << "PendingAccount::account called before finished, returning 0";
+        return QSharedPointer<Account>();
+    } else if (!isValid()) {
+        warning() << "PendingAccount::account called when not valid, returning 0";
+        return QSharedPointer<Account>();
     }
 
     return mPriv->account;
@@ -135,8 +137,8 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to AccountManager.CreateAccount";
         QDBusObjectPath objectPath = reply.value();
         debug() << "Creating account for objectPath: " << objectPath.path();
-        mPriv->account = new Account(mPriv->manager,
-                objectPath.path(), mPriv->manager);
+        mPriv->account = QSharedPointer<Account>(
+                new Account(mPriv->manager, objectPath.path()));
         setFinished();
     } else {
         debug().nospace() <<

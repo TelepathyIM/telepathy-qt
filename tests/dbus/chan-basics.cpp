@@ -50,7 +50,7 @@ private:
     QString mConnName, mConnPath;
     ExampleEcho2Connection *mConnService;
     Connection *mConn;
-    Channel *mChan;
+    QSharedPointer<Channel> mChan;
     QString mChanObjectPath;
     uint mHandle;
 };
@@ -279,8 +279,7 @@ void TestChanBasics::testCreateChannel()
         QCOMPARE(ids, QStringList() <<
                 "me@example.com" << "alice");
 
-        delete mChan;
-        mChan = 0;
+        mChan.clear();
     }
 }
 
@@ -324,8 +323,7 @@ void TestChanBasics::testEnsureChannel()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isValid(), false);
 
-        delete mChan;
-        mChan = 0;
+        mChan.clear();
     }
 }
 

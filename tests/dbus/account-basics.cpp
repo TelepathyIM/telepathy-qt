@@ -76,6 +76,7 @@ void TestAccountBasics::testBasics()
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(!pacc->account().isNull());
 
     QCOMPARE(mAM->interfaces(), QStringList());
 
@@ -88,7 +89,7 @@ void TestAccountBasics::testBasics()
              QStringList() <<
                "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
 
-    Account *acc = mAM->accountForPath(
+    QSharedPointer<Account> acc = mAM->accountForPath(
             "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),
@@ -104,7 +105,7 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
 
-    QVERIFY(connect(acc,
+    QVERIFY(connect(acc.data(),
                     SIGNAL(avatarChanged(const Telepathy::Avatar &)),
                     SLOT(onAvatarChanged(const Telepathy::Avatar &))));
 

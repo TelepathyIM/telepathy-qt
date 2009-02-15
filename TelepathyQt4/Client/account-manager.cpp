@@ -77,6 +77,7 @@ struct AccountManager::Private
     AccountManager::Features features;
     QSet<QString> validAccountPaths;
     QSet<QString> invalidAccountPaths;
+    QMap<QString, QSharedPointer<Account> > accounts;
 };
 
 class AccountManager::Private::PendingReady : public PendingOperation
@@ -240,7 +241,7 @@ QStringList AccountManager::allAccountPaths() const
  * \return A list of Account objects
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
  */
-QList<Account *> AccountManager::validAccounts()
+QList<QSharedPointer<Account> > AccountManager::validAccounts()
 {
     return accountsForPaths(validAccountPaths());
 }
@@ -257,7 +258,7 @@ QList<Account *> AccountManager::validAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), allAccounts(), accountsForPaths()
  */
-QList<Account *> AccountManager::invalidAccounts()
+QList<QSharedPointer<Account> > AccountManager::invalidAccounts()
 {
     return accountsForPaths(invalidAccountPaths());
 }
@@ -274,7 +275,7 @@ QList<Account *> AccountManager::invalidAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
-QList<Account *> AccountManager::allAccounts()
+QList<QSharedPointer<Account> > AccountManager::allAccounts()
 {
     return accountsForPaths(allAccountPaths());
 }
@@ -292,11 +293,21 @@ QList<Account *> AccountManager::allAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
-Account *AccountManager::accountForPath(const QString &path)
+QSharedPointer<Account> AccountManager::accountForPath(const QString &path)
 {
-    // TODO should we use AM as parent of account,
-    //      or receive parent as a param?
-    return new Account(this, path, this);
+    if (mPriv->accounts.contains(path)) {
+        return mPriv->accounts[path];
+    }
+
+    if (!mPriv->validAccountPaths.contains(path) &&
+        !mPriv->invalidAccountPaths.contains(path)) {
+        return QSharedPointer<Account>();
+    }
+
+    QSharedPointer<Account> account = QSharedPointer<Account>(
+            new Account(this, path));
+    mPriv->accounts[path] = account;
+    return account;
 }
 
 /**
@@ -312,9 +323,9 @@ Account *AccountManager::accountForPath(const QString &path)
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), allAccounts()
  */
-QList<Account *> AccountManager::accountsForPaths(const QStringList &paths)
+QList<QSharedPointer<Account> > AccountManager::accountsForPaths(const QStringList &paths)
 {
-    QList<Account *> result;
+    QList<QSharedPointer<Account> > result;
     Q_FOREACH (const QString &path, paths) {
         result << accountForPath(path);
     }
@@ -497,7 +508,9 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
     debug() << "Account removed:" << path;
     mPriv->validAccountPaths.remove(path);
     mPriv->invalidAccountPaths.remove(path);
-
+    if (mPriv->accounts.contains(path)) {
+        mPriv->accounts.remove(path);
+    }
     Q_EMIT accountRemoved(path);
 }
 

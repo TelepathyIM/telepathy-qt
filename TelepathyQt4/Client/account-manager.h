@@ -33,6 +33,7 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
 #include <QDBusObjectPath>
+#include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -74,12 +75,12 @@ public:
     QStringList invalidAccountPaths() const;
     QStringList allAccountPaths() const;
 
-    QList<Account *> validAccounts();
-    QList<Account *> invalidAccounts();
-    QList<Account *> allAccounts();
+    QList<QSharedPointer<Account> > validAccounts();
+    QList<QSharedPointer<Account> > invalidAccounts();
+    QList<QSharedPointer<Account> > allAccounts();
 
-    Account *accountForPath(const QString &path);
-    QList<Account *> accountsForPaths(const QStringList &paths);
+    QSharedPointer<Account> accountForPath(const QString &path);
+    QList<QSharedPointer<Account> > accountsForPaths(const QStringList &paths);
 
     PendingAccount *createAccount(const QString &connectionManager,
             const QString &protocol, const QString &displayName,

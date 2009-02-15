@@ -26,8 +26,10 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingOperation>
 
+#include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -39,7 +41,6 @@ namespace Client
 {
 
 class ConnectionManager;
-class Connection;
 
 class PendingConnection : public PendingOperation
 {
@@ -49,7 +50,7 @@ public:
     ~PendingConnection();
 
     ConnectionManager *manager() const;
-    Connection *connection() const;
+    QSharedPointer<Connection> connection() const;
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
