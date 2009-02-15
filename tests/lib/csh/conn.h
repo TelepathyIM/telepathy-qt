@@ -38,6 +38,9 @@ void example_csh_connection_set_enable_change_members_detailed (ExampleCSHConnec
                                                                 gboolean enable);
 void example_csh_connection_accept_invitations (ExampleCSHConnection *self);
 
+void example_csh_connection_set_use_properties_room (ExampleCSHConnection *self,
+                                                     gboolean use_properties_room);
+
 /* TYPE MACROS */
 #define EXAMPLE_TYPE_CSH_CONNECTION \
   (example_csh_connection_get_type ())

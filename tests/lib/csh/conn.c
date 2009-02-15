@@ -317,3 +317,24 @@ example_csh_connection_accept_invitations (ExampleCSHConnection *self)
         }
     }
 }
+
+void
+example_csh_connection_set_use_properties_room (ExampleCSHConnection *self,
+                                                gboolean use_properties_room)
+{
+  TpChannelManagerIter iter;
+  TpChannelManager *channel_manager;
+
+  g_return_if_fail (EXAMPLE_IS_CSH_CONNECTION (self));
+
+  tp_base_connection_channel_manager_iter_init (&iter, (TpBaseConnection *) self);
+
+  while (tp_base_connection_channel_manager_iter_next (&iter, &channel_manager))
+    {
+      if (EXAMPLE_IS_CSH_ROOM_MANAGER (channel_manager))
+        {
+          example_csh_room_manager_set_use_properties_room (
+            (ExampleCSHRoomManager *) channel_manager, use_properties_room);
+        }
+    }
+}
