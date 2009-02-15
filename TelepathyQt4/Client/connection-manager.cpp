@@ -31,7 +31,7 @@
 
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/PendingConnection>
-#include <TelepathyQt4/Client/PendingSuccess>
+#include <TelepathyQt4/Client/PendingReadyConnectionManager>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
@@ -224,11 +224,6 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
     mPriv->params.append(param);
 }
 
-ConnectionManager::Private::PendingReady::PendingReady(ConnectionManager *parent)
-    : PendingOperation(parent)
-{
-}
-
 ConnectionManager::Private::PendingNames::PendingNames(const QDBusConnection &bus)
     : PendingStringList(),
       mBus(bus)
@@ -291,7 +286,8 @@ ConnectionManager::Private::Private(const QString &name, ConnectionManager *pare
                             parent->busName(), parent->objectPath(), parent)),
       name(name),
       ready(false),
-      pendingReady(0)
+      pendingReady(0),
+      features(0)
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();
 }
@@ -352,8 +348,10 @@ ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
       OptionalInterfaceFactory<ConnectionManager>(this),
       mPriv(new Private(name, this))
 {
-    mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    if (isValid()) {
+        mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -370,8 +368,10 @@ ConnectionManager::ConnectionManager(const QDBusConnection &bus,
       OptionalInterfaceFactory<ConnectionManager>(this),
       mPriv(new Private(name, this))
 {
-    mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    if (isValid()) {
+        mPriv->introspectQueue.enqueue(&ConnectionManager::callReadConfig);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -462,9 +462,10 @@ PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
  *
  * \return \c true if the object has finished initial setup.
  */
-bool ConnectionManager::isReady() const
+bool ConnectionManager::isReady(Features features) const
 {
-    return mPriv->ready;
+    return mPriv->ready
+        && ((mPriv->features & features) == features);
 }
 
 /**
@@ -472,19 +473,30 @@ bool ConnectionManager::isReady() const
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
  *
- * \return A PendingOperation which will emit PendingOperation::finished
+ * \return A PendingReadyConnectionManager object which will emit finished
  *         when this object has finished or failed its initial setup.
  */
-PendingOperation *ConnectionManager::becomeReady()
+PendingReadyConnectionManager *ConnectionManager::becomeReady(Features requestedFeatures)
 {
-    if (mPriv->ready) {
-        return new PendingSuccess(this);
+    if (!isValid()) {
+        PendingReadyConnectionManager *operation =
+            new PendingReadyConnectionManager(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "ConnectionManager is invalid");
+        return operation;
+    }
+
+    if (isReady(requestedFeatures)) {
+        PendingReadyConnectionManager *operation =
+            new PendingReadyConnectionManager(requestedFeatures, this);
+        operation->setFinished();
+        return operation;
     }
 
     if (!mPriv->pendingReady) {
-        mPriv->pendingReady = new Private::PendingReady(this);
+        mPriv->pendingReady =
+            new PendingReadyConnectionManager(requestedFeatures, this);
     }
-
     return mPriv->pendingReady;
 }
 

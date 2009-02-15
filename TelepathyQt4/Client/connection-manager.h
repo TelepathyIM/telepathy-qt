@@ -39,7 +39,7 @@ namespace Client
 {
 
 class PendingConnection;
-class PendingOperation;
+class PendingReadyConnectionManager;
 class PendingStringList;
 class ProtocolParameter;
 class ProtocolInfo;
@@ -118,6 +118,11 @@ class ConnectionManager : public StatelessDBusProxy,
     Q_OBJECT
 
 public:
+    enum Feature {
+        _Padding = 0xFFFFFFFF
+    };
+    Q_DECLARE_FLAGS(Features, Feature)
+
     ConnectionManager(const QString &name, QObject *parent = 0);
     ConnectionManager(const QDBusConnection &bus,
             const QString &name, QObject *parent = 0);
@@ -139,9 +144,9 @@ public:
         return OptionalInterfaceFactory<ConnectionManager>::interface<DBus::PropertiesInterface>();
     }
 
-    bool isReady() const;
+    bool isReady(Features features = 0) const;
 
-    PendingOperation *becomeReady();
+    PendingReadyConnectionManager *becomeReady(Features features = 0);
 
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 

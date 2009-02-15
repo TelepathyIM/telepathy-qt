@@ -19,14 +19,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_cli_pending_ready_account_h_HEADER_GUARD_
-#define _TelepathyQt4_cli_pending_ready_account_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_cli_pending_ready_connection_manager_h_HEADER_GUARD_
+#define _TelepathyQt4_cli_pending_ready_connection_manager_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/Client/Account>
+#include <TelepathyQt4/Client/ConnectionManager>
 #include <TelepathyQt4/Client/PendingOperation>
 
 class QDBusPendingCallWatcher;
@@ -36,23 +36,23 @@ namespace Telepathy
 namespace Client
 {
 
-class PendingReadyAccount : public PendingOperation
+class PendingReadyConnectionManager : public PendingOperation
 {
     Q_OBJECT
 
 public:
-    ~PendingReadyAccount();
+    ~PendingReadyConnectionManager();
 
-    Account *account() const;
-    Account::Features requestedFeatures() const;
+    ConnectionManager *connectionManager() const;
+    ConnectionManager::Features requestedFeatures() const;
 
 private:
-    Q_DISABLE_COPY(PendingReadyAccount);
-    PendingReadyAccount(Account::Features requestedFeatures, Account *account);
+    Q_DISABLE_COPY(PendingReadyConnectionManager);
+    PendingReadyConnectionManager(ConnectionManager::Features requestedFeatures, ConnectionManager *connectionManager);
 
     struct Private;
     friend struct Private;
-    friend class Account;
+    friend class ConnectionManager;
     Private *mPriv;
 };
 

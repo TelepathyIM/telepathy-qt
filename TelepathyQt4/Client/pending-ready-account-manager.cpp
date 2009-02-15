@@ -19,9 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/Client/PendingReadyAccount>
+#include <TelepathyQt4/Client/PendingReadyAccountManager>
 
-#include "TelepathyQt4/Client/_gen/pending-ready-account.moc.hpp"
+#include "TelepathyQt4/Client/_gen/pending-ready-account-manager.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -44,64 +44,65 @@ namespace Telepathy
 namespace Client
 {
 
-struct PendingReadyAccount::Private
+struct PendingReadyAccountManager::Private
 {
-    Private(Account::Features requestedFeatures, Account *account) :
+    Private(AccountManager::Features requestedFeatures, AccountManager *accountManager) :
         requestedFeatures(requestedFeatures),
-        account(account)
+        accountManager(accountManager)
     {
     }
 
-    Account::Features requestedFeatures;
-    Account *account;
+    AccountManager::Features requestedFeatures;
+    AccountManager *accountManager;
 };
 
 /**
- * \class PendingReadyAccount
+ * \class PendingReadyAccountManager
  * \ingroup clientaccount
- * \headerfile <TelepathyQt4/Client/pending-ready-account.h> <TelepathyQt4/Client/PendingReadyAccount>
+ * \headerfile <TelepathyQt4/Client/pending-ready-account-manager.h> <TelepathyQt4/Client/PendingReadyAccountManager>
  *
  * Class containing the features requested and the reply to a request
- * for an account to become ready. Instances of this class cannot be
- * constructed directly; the only way to get one is via Account::becomeReady().
+ * for an account manager to become ready. Instances of this class cannot be
+ * constructed directly; the only way to get one is via AccountManager::becomeReady().
  */
 
 /**
- * Construct a PendingReadyAccount object.
+ * Construct a PendingReadyAccountManager object.
  *
- * \param account The Account that will become ready.
+ * \param accountManager The AccountManager that will become ready.
  */
-PendingReadyAccount::PendingReadyAccount(Account::Features requestedFeatures, Account *account)
-    : PendingOperation(account),
-      mPriv(new Private(requestedFeatures, account))
+PendingReadyAccountManager::PendingReadyAccountManager(AccountManager::Features requestedFeatures,
+        AccountManager *accountManager)
+    : PendingOperation(accountManager),
+      mPriv(new Private(requestedFeatures, accountManager))
 {
 }
 
 /**
  * Class destructor.
  */
-PendingReadyAccount::~PendingReadyAccount()
+PendingReadyAccountManager::~PendingReadyAccountManager()
 {
     delete mPriv;
 }
 
 /**
- * Return the Account object through which the request was made.
+ * Return the AccountManager object through which the request was made.
  *
- * \return Account object.
+ * \return AccountManager object.
  */
-Account *PendingReadyAccount::account() const
+AccountManager *PendingReadyAccountManager::accountManager() const
 {
-    return mPriv->account;
+    return mPriv->accountManager;
 }
 
 /**
  * Return the Features that were requested to become ready on the
- * account.
+ * account manager.
  *
  * \return Features.
  */
-Account::Features PendingReadyAccount::requestedFeatures() const
+AccountManager::Features PendingReadyAccountManager::requestedFeatures() const
 {
     return mPriv->requestedFeatures;
 }

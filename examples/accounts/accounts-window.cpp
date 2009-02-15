@@ -27,6 +27,7 @@
 #include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/AccountManager>
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/PendingReadyAccountManager>
 
 #include <QCheckBox>
 #include <QDebug>

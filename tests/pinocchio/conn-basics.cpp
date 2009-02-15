@@ -7,6 +7,8 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
+#include <TelepathyQt4/Client/PendingReadyConnection>
+#include <TelepathyQt4/Client/PendingReadyConnectionManager>
 
 #include <tests/pinocchio/lib.h>
 

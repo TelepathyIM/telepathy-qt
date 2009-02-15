@@ -31,6 +31,7 @@
 #include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/PendingReadyChannel>
 #include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Client/ReferencedHandles>
 #include <TelepathyQt4/Constants>
@@ -93,7 +94,6 @@ struct Channel::Private
     bool fakeGroupInterfaceIfNeeded();
     void setReady();
 
-    class PendingReady;
     struct GroupMembersChangedInfo;
 
     // Public object
@@ -109,8 +109,8 @@ struct Channel::Private
     ChannelInterfaceGroupInterface *group;
     DBus::PropertiesInterface *properties;
 
-    PendingReady *pendingReady;
     bool ready;
+    PendingReadyChannel *pendingReady;
 
     // Introspection
     QStringList interfaces;
@@ -200,20 +200,6 @@ struct Channel::Private::GroupMembersChangedInfo
     QString message;
 };
 
-class Channel::Private::PendingReady : public PendingOperation
-{
-    // Channel is a friend so it can call finished() etc.
-    friend class Channel;
-
-public:
-    PendingReady(Channel *parent);
-};
-
-Channel::Private::PendingReady::PendingReady(Channel *parent)
-    : PendingOperation(parent)
-{
-}
-
 Channel::Private::Private(Channel *parent, Connection *connection)
     : parent(parent),
       baseInterface(new ChannelInterface(parent->dbusConnection(),
@@ -221,8 +207,8 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       connection(connection),
       group(0),
       properties(0),
-      pendingReady(0),
       ready(false),
+      pendingReady(0),
       features(0),
       targetHandleType(0),
       targetHandle(0),
@@ -1136,27 +1122,37 @@ bool Channel::isReady(Features features) const
  * initial setup.
  *
  * \param features Which features should be tested.
- * \return A PendingOperation which will emit PendingOperation::finished
+ * \return A PendingReadyChannel object which will emit finished
  *         when this object has finished or failed its initial setup.
  */
-PendingOperation *Channel::becomeReady(Features features)
+PendingReadyChannel *Channel::becomeReady(Features requestedFeatures)
 {
     if (!isValid()) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel is already closed");
+        PendingReadyChannel *operation =
+            new PendingReadyChannel(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Channel is invalid");
+        return operation;
     }
 
-    if (isReady(features)) {
-        return new PendingSuccess(this);
+    if (isReady(requestedFeatures)) {
+        PendingReadyChannel *operation =
+            new PendingReadyChannel(requestedFeatures, this);
+        operation->setFinished();
+        return operation;
     }
 
-    if (features != 0) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Unimplemented");
+    if (requestedFeatures != 0) {
+        PendingReadyChannel *operation =
+            new PendingReadyChannel(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid features argument");
+        return operation;
     }
 
     if (!mPriv->pendingReady) {
-        mPriv->pendingReady = new Private::PendingReady(this);
+        mPriv->pendingReady =
+            new PendingReadyChannel(requestedFeatures, this);
     }
     return mPriv->pendingReady;
 }

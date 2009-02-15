@@ -35,6 +35,7 @@
 #include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingHandles>
+#include <TelepathyQt4/Client/PendingReadyConnection>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
 
 #include <QMap>
@@ -126,7 +127,6 @@ struct Connection::Private
     void updatePendingOperations();
 
     struct HandleContext;
-    class PendingReady;
 
     // Public object
     Connection *parent;
@@ -139,7 +139,7 @@ struct Connection::Private
     ConnectionInterfaceSimplePresenceInterface *simplePresence;
 
     bool ready;
-    QList<PendingReady *> pendingOperations;
+    QList<PendingReadyConnection *> pendingOperations;
 
     // Introspection
     bool initialIntrospection;
@@ -199,23 +199,6 @@ struct Connection::Private::HandleContext
     QMutex lock;
     QMap<uint, Type> types;
 };
-
-class Connection::Private::PendingReady : public PendingOperation
-{
-    // Connection is a friend so it can call finished() etc.
-    friend class Connection;
-
-public:
-    PendingReady(Connection::Features features, QObject *parent);
-
-    Connection::Features features;
-};
-
-Connection::Private::PendingReady::PendingReady(Connection::Features features, QObject *parent)
-    : PendingOperation(parent),
-      features(features)
-{
-}
 
 Connection::Private::Private(Connection *parent)
     : parent(parent),
@@ -432,10 +415,10 @@ void Connection::Private::changeReadiness(Readiness newReadiness)
 
 void Connection::Private::updatePendingOperations()
 {
-    foreach (Private::PendingReady *operation, pendingOperations) {
+    foreach (PendingReadyConnection *operation, pendingOperations) {
         if (ready &&
-            ((operation->features &
-                (features | missingFeatures)) == operation->features)) {
+            ((operation->requestedFeatures() &
+                (features | missingFeatures)) == operation->requestedFeatures())) {
             operation->setFinished();
         }
         if (operation->isFinished()) {
@@ -523,8 +506,10 @@ Connection::Connection(const QString &serviceName,
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(this))
 {
-    mPriv->introspectQueue.enqueue(&Private::startIntrospection);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    if (isValid()) {
+        mPriv->introspectQueue.enqueue(&Private::startIntrospection);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -543,8 +528,10 @@ Connection::Connection(const QDBusConnection &bus,
       OptionalInterfaceFactory<Connection>(this),
       mPriv(new Private(this))
 {
-    mPriv->introspectQueue.enqueue(&Private::startIntrospection);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    if (isValid()) {
+        mPriv->introspectQueue.enqueue(&Private::startIntrospection);
+        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
+    }
 }
 
 /**
@@ -1319,19 +1306,30 @@ bool Connection::isReady(Features features) const
  * initial setup.
  *
  * \param features Which features should be tested.
- * \return A PendingOperation which will emit PendingOperation::finished
+ * \return A PendingReadyConnection object which will emit finished
  *         when this object has finished or failed its initial setup.
  */
-PendingOperation *Connection::becomeReady(Features requestedFeatures)
+PendingReadyConnection *Connection::becomeReady(Features requestedFeatures)
 {
+    if (!isValid()) {
+        PendingReadyConnection *operation =
+            new PendingReadyConnection(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Connection is invalid");
+        return operation;
+    }
+
     if (isReady(requestedFeatures)) {
-        return new PendingSuccess(this);
+        PendingReadyConnection *operation =
+            new PendingReadyConnection(requestedFeatures, this);
+        operation->setFinished();
+        return operation;
     }
 
     debug() << "Calling becomeReady with requested features:"
             << requestedFeatures;
-    foreach (Private::PendingReady *operation, mPriv->pendingOperations) {
-        if (operation->features == requestedFeatures) {
+    foreach (PendingReadyConnection *operation, mPriv->pendingOperations) {
+        if (operation->requestedFeatures() == requestedFeatures) {
             debug() << "Returning cached pending operation";
             return operation;
         }
@@ -1342,7 +1340,10 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
         // just finish silently
         if (requestedFeatures == FeatureSimplePresence &&
             mPriv->missingFeatures & FeatureSimplePresence) {
-            return new PendingSuccess(this);
+            PendingReadyConnection *operation =
+                new PendingReadyConnection(requestedFeatures, this);
+            operation->setFinished();
+            return operation;
         }
 
         // if we already have the interface simple presence enqueue the call to
@@ -1370,8 +1371,8 @@ PendingOperation *Connection::becomeReady(Features requestedFeatures)
     mPriv->pendingFeatures |= requestedFeatures;
 
     debug() << "Creating new pending operation";
-    Private::PendingReady *operation =
-        new Private::PendingReady(requestedFeatures, this);
+    PendingReadyConnection *operation =
+        new PendingReadyConnection(requestedFeatures, this);
     mPriv->pendingOperations.append(operation);
 
     mPriv->updatePendingOperations();

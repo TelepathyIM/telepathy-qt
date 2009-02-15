@@ -19,9 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/Client/PendingReadyAccount>
+#include <TelepathyQt4/Client/PendingReadyChannel>
 
-#include "TelepathyQt4/Client/_gen/pending-ready-account.moc.hpp"
+#include "TelepathyQt4/Client/_gen/pending-ready-channel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -44,64 +44,64 @@ namespace Telepathy
 namespace Client
 {
 
-struct PendingReadyAccount::Private
+struct PendingReadyChannel::Private
 {
-    Private(Account::Features requestedFeatures, Account *account) :
+    Private(Channel::Features requestedFeatures, Channel *channel) :
         requestedFeatures(requestedFeatures),
-        account(account)
+        channel(channel)
     {
     }
 
-    Account::Features requestedFeatures;
-    Account *account;
+    Channel::Features requestedFeatures;
+    Channel *channel;
 };
 
 /**
- * \class PendingReadyAccount
- * \ingroup clientaccount
- * \headerfile <TelepathyQt4/Client/pending-ready-account.h> <TelepathyQt4/Client/PendingReadyAccount>
+ * \class PendingReadyChannel
+ * \ingroup clientchannel
+ * \headerfile <TelepathyQt4/Client/pending-ready-channel.h> <TelepathyQt4/Client/PendingReadyChannel>
  *
  * Class containing the features requested and the reply to a request
- * for an account to become ready. Instances of this class cannot be
- * constructed directly; the only way to get one is via Account::becomeReady().
+ * for a channel to become ready. Instances of this class cannot be
+ * constructed directly; the only way to get one is via Channel::becomeReady().
  */
 
 /**
- * Construct a PendingReadyAccount object.
+ * Construct a PendingReadyChannel object.
  *
- * \param account The Account that will become ready.
+ * \param channel The Channel that will become ready.
  */
-PendingReadyAccount::PendingReadyAccount(Account::Features requestedFeatures, Account *account)
-    : PendingOperation(account),
-      mPriv(new Private(requestedFeatures, account))
+PendingReadyChannel::PendingReadyChannel(Channel::Features requestedFeatures, Channel *channel)
+    : PendingOperation(channel),
+      mPriv(new Private(requestedFeatures, channel))
 {
 }
 
 /**
  * Class destructor.
  */
-PendingReadyAccount::~PendingReadyAccount()
+PendingReadyChannel::~PendingReadyChannel()
 {
     delete mPriv;
 }
 
 /**
- * Return the Account object through which the request was made.
+ * Return the Channel object through which the request was made.
  *
- * \return Account object.
+ * \return Channel object.
  */
-Account *PendingReadyAccount::account() const
+Channel *PendingReadyChannel::channel() const
 {
-    return mPriv->account;
+    return mPriv->channel;
 }
 
 /**
  * Return the Features that were requested to become ready on the
- * account.
+ * channel.
  *
  * \return Features.
  */
-Account::Features PendingReadyAccount::requestedFeatures() const
+Channel::Features PendingReadyChannel::requestedFeatures() const
 {
     return mPriv->requestedFeatures;
 }

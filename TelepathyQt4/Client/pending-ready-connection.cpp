@@ -19,9 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/Client/PendingReadyAccount>
+#include <TelepathyQt4/Client/PendingReadyConnection>
 
-#include "TelepathyQt4/Client/_gen/pending-ready-account.moc.hpp"
+#include "TelepathyQt4/Client/_gen/pending-ready-connection.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -44,64 +44,64 @@ namespace Telepathy
 namespace Client
 {
 
-struct PendingReadyAccount::Private
+struct PendingReadyConnection::Private
 {
-    Private(Account::Features requestedFeatures, Account *account) :
+    Private(Connection::Features requestedFeatures, Connection *connection) :
         requestedFeatures(requestedFeatures),
-        account(account)
+        connection(connection)
     {
     }
 
-    Account::Features requestedFeatures;
-    Account *account;
+    Connection::Features requestedFeatures;
+    Connection *connection;
 };
 
 /**
- * \class PendingReadyAccount
- * \ingroup clientaccount
- * \headerfile <TelepathyQt4/Client/pending-ready-account.h> <TelepathyQt4/Client/PendingReadyAccount>
+ * \class PendingReadyConnection
+ * \ingroup clientconnection
+ * \headerfile <TelepathyQt4/Client/pending-ready-connection.h> <TelepathyQt4/Client/PendingReadyConnection>
  *
  * Class containing the features requested and the reply to a request
- * for an account to become ready. Instances of this class cannot be
- * constructed directly; the only way to get one is via Account::becomeReady().
+ * for a connection to become ready. Instances of this class cannot be
+ * constructed directly; the only way to get one is via Connection::becomeReady().
  */
 
 /**
- * Construct a PendingReadyAccount object.
+ * Construct a PendingReadyConnection object.
  *
- * \param account The Account that will become ready.
+ * \param connection The Connection that will become ready.
  */
-PendingReadyAccount::PendingReadyAccount(Account::Features requestedFeatures, Account *account)
-    : PendingOperation(account),
-      mPriv(new Private(requestedFeatures, account))
+PendingReadyConnection::PendingReadyConnection(Connection::Features requestedFeatures, Connection *connection)
+    : PendingOperation(connection),
+      mPriv(new Private(requestedFeatures, connection))
 {
 }
 
 /**
  * Class destructor.
  */
-PendingReadyAccount::~PendingReadyAccount()
+PendingReadyConnection::~PendingReadyConnection()
 {
     delete mPriv;
 }
 
 /**
- * Return the Account object through which the request was made.
+ * Return the Connection object through which the request was made.
  *
- * \return Account object.
+ * \return Connection object.
  */
-Account *PendingReadyAccount::account() const
+Connection *PendingReadyConnection::connection() const
 {
-    return mPriv->account;
+    return mPriv->connection;
 }
 
 /**
  * Return the Features that were requested to become ready on the
- * account.
+ * connection.
  *
  * \return Features.
  */
-Account::Features PendingReadyAccount::requestedFeatures() const
+Connection::Features PendingReadyConnection::requestedFeatures() const
 {
     return mPriv->requestedFeatures;
 }
