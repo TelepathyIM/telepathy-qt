@@ -247,6 +247,41 @@ bool StreamedMediaChannel::requestChannel( QList<Telepathy::MediaStreamType> typ
     return true;
 }
 
+bool StreamedMediaChannel::requestStreams( TpPrototype::Contact* contact, QList<Telepathy::MediaStreamType> types )
+{
+    Q_ASSERT( d->m_pStreamedMediaInterface );
+
+    if ( !d->m_pStreamedMediaInterface )
+    {
+        return false;
+    }
+
+    QList<uint> stream_types;
+    foreach( uint type, types )
+    {
+        stream_types << type;
+    }
+
+    
+    QDBusPendingReply<Telepathy::MediaStreamInfoList> request_streams_reply = d->m_pStreamedMediaInterface->RequestStreams( d->m_pContact->telepathyHandle(),
+            stream_types );
+    request_streams_reply.waitForFinished();
+
+    if ( !request_streams_reply.isValid() )
+    {
+        QDBusError error = request_streams_reply.error();
+
+        qWarning() << "RequestStreams: error type:" << error.type()
+                << "error name:" << error.name()
+                << "error message:" << error.message();
+
+        return false;
+    }
+    
+    // Fall through..
+    return true;
+}
+
 bool StreamedMediaChannel::addContactsToGroup( QList<QPointer<TpPrototype::Contact> > contacts )
 {
     QList<uint> handle_list = d->handleListForContacts( contacts );

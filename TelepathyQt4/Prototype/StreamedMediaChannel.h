@@ -131,6 +131,8 @@ public:
      */
     bool requestChannel( QList<Telepathy::MediaStreamType> types );
 
+    bool requestStreams( TpPrototype::Contact* contact, QList<Telepathy::MediaStreamType> types );
+    
     /**
      * Add contacts to the group.
      * Multiple contacts may sharing the same stream. Use this function to invite a contact to this group. The contact will
