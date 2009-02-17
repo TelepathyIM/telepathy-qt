@@ -121,8 +121,21 @@ Account::Private::Private(AccountManager *am, Account *parent)
         cmName = rx.cap(1);
         protocol = rx.cap(2);
     } else {
-        warning() << "Not a valid Account object path:" <<
-            parent->objectPath();
+        warning() << "Account object path is not spec-compliant, "
+            "trying again with a different account-specific part check";
+
+        rx = QRegExp("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
+               "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
+               "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
+               "/([_A-Za-z0-9]*)"  // account-specific part
+               );
+        if (rx.exactMatch(parent->objectPath())) {
+            cmName = rx.cap(1);
+            protocol = rx.cap(2);
+        } else {
+            warning() << "Not a valid Account object path:" <<
+                parent->objectPath();
+        }
     }
 }
 
