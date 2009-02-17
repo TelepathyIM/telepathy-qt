@@ -10,6 +10,7 @@
 #include <TelepathyQt4/Client/PendingStringList>
 #include <TelepathyQt4/Debug>
 
+#include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
 
 #include <tests/lib/simple-manager.h>
@@ -47,12 +48,18 @@ void TestCmBasics::initTestCase()
     g_type_init();
     g_set_prgname("cm-basics");
     tp_debug_set_flags("all");
+    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     mCMService = TP_BASE_CONNECTION_MANAGER(g_object_new(
         SIMPLE_TYPE_CONNECTION_MANAGER,
         NULL));
     QVERIFY(mCMService != 0);
+
+    // This TpDBusDaemon is a workaround for fd.o#20165 (revert when we start
+    // to depend on a telepathy-glib without this bug)
+    TpDBusDaemon *dbus_daemon = tp_dbus_daemon_dup(0);
     QVERIFY(tp_base_connection_manager_register(mCMService));
+    g_object_unref(dbus_daemon);
 }
 
 void TestCmBasics::init()

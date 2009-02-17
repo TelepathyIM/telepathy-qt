@@ -282,6 +282,7 @@ void TestChanGroup::initTestCase()
     g_type_init();
     g_set_prgname("chan-group");
     tp_debug_set_flags("all");
+    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     gchar *name;
     gchar *connPath;
