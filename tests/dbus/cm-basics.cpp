@@ -47,6 +47,7 @@ void TestCmBasics::initTestCase()
     g_type_init();
     g_set_prgname("cm-basics");
     tp_debug_set_flags("all");
+    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     mCMService = TP_BASE_CONNECTION_MANAGER(g_object_new(
         SIMPLE_TYPE_CONNECTION_MANAGER,
