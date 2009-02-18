@@ -185,6 +185,12 @@ void TestTextChan::testMessages()
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
 
+    QCOMPARE(mChan->supportedContentTypes(), QStringList() << "*/*");
+    QCOMPARE(static_cast<uint>(mChan->messagePartSupport()),
+            static_cast<uint>(Telepathy::MessagePartSupportFlagOneAttachment |
+                Telepathy::MessagePartSupportFlagMultipleAttachments));
+    QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
+
     // Make the message queue become ready too
     QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageQueue),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),
@@ -241,6 +247,10 @@ void TestTextChan::testLegacyText()
     QVERIFY(mChan->isReady());
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
+
+    QCOMPARE(mChan->supportedContentTypes(), QStringList() << "text/plain");
+    QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);
+    QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
 
     // Make the message queue become ready too
     QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageQueue),
