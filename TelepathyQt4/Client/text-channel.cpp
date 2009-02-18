@@ -114,6 +114,10 @@ TextChannel::~TextChannel()
  * Return whether this channel supports the Telepathy Messages interface.
  * If it does not, some advanced functionality will be unavailable.
  *
+ * The result of calling this method is undefined until basic Channel
+ * functionality has been enabled by calling becomeReady and waiting for the
+ * pending operation to complete.
+ *
  * \return true if the Messages interface is supported
  */
 bool TextChannel::hasMessagesInterface() const
@@ -125,7 +129,10 @@ bool TextChannel::hasMessagesInterface() const
 /**
  * Return whether the desired features are ready for use.
  *
- * \return true if all the requested features are ready
+ * \param channelFeatures Features of the Channel class
+ * \param textFeatures Features of the TextChannel class
+ * \return true if basic Channel functionality, and all the requested features
+ *         (if any), are ready for use
  */
 bool TextChannel::isReady(Channel::Features channelFeatures,
         Features textFeatures) const
@@ -136,6 +143,15 @@ bool TextChannel::isReady(Channel::Features channelFeatures,
         ((mPriv->features & textFeatures) == textFeatures);
 }
 
+/**
+ * Gather the necessary information to use the requested features.
+ *
+ * \param channelFeatures Features of the Channel class
+ * \param textFeatures Features of the TextChannel class
+ * \return A pending operation which will finish when basic Channel
+ *         functionality, and all the requested features (if any), are ready
+ *         for use
+ */
 PendingReadyChannel *TextChannel::becomeReady(
         Channel::Features channelFeatures,
         Features textFeatures)
