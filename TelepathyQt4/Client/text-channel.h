@@ -33,6 +33,7 @@ namespace Client
 {
 
 class TextChannel;
+class PendingReadyChannel;
 
 class Message
 {
@@ -152,7 +153,7 @@ public:
         // messageQueue when their corresponding contact objects have been
         // created, and that messageReceived will be emitted. If not enabled,
         // messageReceived will not be emitted.
-        FeatureMessageQueue,
+        FeatureMessageQueue = 1,
 
         // FeatureMessageCapabilities guarantees that messagePartSupport,
         // supportedContentTypes and deliveryReportingSupport have been
@@ -161,23 +162,25 @@ public:
         // Implementation detail: FeatureMessageQueue might as
         // well imply this as a side-effect (it doesn't take any more round
         // trips).
-        FeatureMessageCapabilities,
+        FeatureMessageCapabilities = 2,
 
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
 
-#if 0
-    PendingOperation *becomeReady(Features features = 0,
-            Channel::Features features = 0);
+    bool hasMessagesInterface() const;
 
+    bool isReady(Channel::Features channelFeatures = 0,
+            Features textFeatures = 0) const;
+
+    PendingReadyChannel *becomeReady(Channel::Features channelFeatures = 0,
+            Features textFeatures = 0);
+
+#if 0
     inline bool canInviteContacts() const
     {
         return groupCanAddContacts();
     }
-
-    // if false, some features won't work
-    bool hasMessagesInterface() const;
 
     // requires FeatureMessageCapabilities
     //
@@ -262,6 +265,20 @@ Q_SIGNALS:
     // hasMessagesInterface() returns true.
     void pendingMessagesRemoved(QList<ReceivedMessage> messages);
 #endif
+
+private Q_SLOTS:
+    void onChannelReady(Telepathy::Client::PendingOperation *);
+
+    void onMessageSent(const Telepathy::MessagePartList &, uint,
+            const QString &);
+    void onMessageReceived(const Telepathy::MessagePartList &);
+    void onPendingMessagesRemoved(const Telepathy::UIntList &);
+    void onGetAllMessagesReply(QDBusPendingCallWatcher *);
+
+    void onTextSent(uint, uint, const QString &);
+    void onTextReceived(uint, uint, uint, uint, uint, const QString &);
+    void onTextSendError(uint, uint, uint, const QString &);
+    void onListPendingMessagesReply(QDBusPendingCallWatcher *);
 
 private:
     struct Private;
