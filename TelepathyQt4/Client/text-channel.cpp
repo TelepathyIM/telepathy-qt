@@ -81,7 +81,10 @@ TextChannel::Private::~Private()
  * Features that can be enabled on a TextChannel using becomeReady().
  *
  * \value FeatureMessageQueue Doesn't do anything yet
- * \value FeatureMessageCapabilities Doesn't do anything yet
+ * \value FeatureMessageCapabilities The supportedContentTypes,
+ *                                   messagePartSupport and
+ *                                   deliveryReportingSupport methods can
+ *                                   be called
  */
 
 /**
@@ -124,6 +127,79 @@ bool TextChannel::hasMessagesInterface() const
 {
     return interfaces().contains(QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES));
+}
+
+/**
+ * Return whether contacts can be invited into this channel using
+ * inviteContacts (which is equivalent to groupAddContacts). Whether this
+ * is the case depends on the underlying protocol, the type of channel,
+ * and the user's privileges (in some chatrooms, only a privileged user
+ * can invite other contacts).
+ *
+ * This is an alias for groupCanAddContacts, to indicate its meaning more
+ * clearly for Text channels.
+ *
+ * The result of calling this method is undefined until basic Group
+ * functionality has been enabled by calling becomeReady and waiting for the
+ * pending operation to complete.
+ *
+ * \return The same thing as groupCanAddContacts
+ */
+bool TextChannel::canInviteContacts() const
+{
+    return groupCanAddContacts();
+}
+
+/* <!--x--> in the block below is used to escape the star-slash sequence */
+/**
+ * Return a list of supported MIME content types for messages on this channel.
+ * For a simple text channel this will be a list containing one item,
+ * "text/plain".
+ *
+ * This list may contain the special value "*<!--x-->/<!--x-->*", which
+ * indicates that any content type is supported.
+ *
+ * The result of calling this method is undefined until the
+ * FeatureMessageCapabilities Feature has been enabled, by calling becomeReady
+ * and waiting for the pending operation to complete
+ *
+ * \return A list of MIME content types
+ */
+QStringList TextChannel::supportedContentTypes() const
+{
+    return mPriv->supportedContentTypes;
+}
+
+/**
+ * Return a set of flags indicating support for multi-part messages on this
+ * channel. This is zero on simple text channels, or greater than zero if
+ * there is partial or full support for multi-part messages.
+ *
+ * The result of calling this method is undefined until the
+ * FeatureMessageCapabilities Feature has been enabled, by calling becomeReady
+ * and waiting for the pending operation to complete.
+ *
+ * \return A set of MessagePartSupportFlags
+ */
+MessagePartSupportFlags TextChannel::messagePartSupport() const
+{
+    return mPriv->messagePartSupport;
+}
+
+/**
+ * Return a set of flags indicating support for delivery reporting on this
+ * channel. This is zero if there are no particular guarantees, or greater
+ * than zero if delivery reports can be expected under certain circumstances.
+ *
+ * The result of calling this method is undefined until the
+ * FeatureMessageCapabilities Feature has been enabled, by calling becomeReady
+ * and waiting for the pending operation to complete.
+ *
+ * \return A set of DeliveryReportingSupportFlags
+ */
+DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
+{
+    return mPriv->deliveryReportingSupport;
 }
 
 /**

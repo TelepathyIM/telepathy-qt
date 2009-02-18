@@ -154,46 +154,25 @@ public:
         // created, and that messageReceived will be emitted. If not enabled,
         // messageReceived will not be emitted.
         FeatureMessageQueue = 1,
-
-        // FeatureMessageCapabilities guarantees that messagePartSupport,
-        // supportedContentTypes and deliveryReportingSupport have been
-        // downloaded. This information is for people who'll send messages.
-        //
-        // Implementation detail: FeatureMessageQueue might as
-        // well imply this as a side-effect (it doesn't take any more round
-        // trips).
         FeatureMessageCapabilities = 2,
-
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
 
     bool hasMessagesInterface() const;
+    bool canInviteContacts() const;
 
     bool isReady(Channel::Features channelFeatures = 0,
             Features textFeatures = 0) const;
-
     PendingReadyChannel *becomeReady(Channel::Features channelFeatures = 0,
             Features textFeatures = 0);
 
-#if 0
-    inline bool canInviteContacts() const
-    {
-        return groupCanAddContacts();
-    }
-
     // requires FeatureMessageCapabilities
-    //
-    // ["text/plain"] if hasMessagesInterface() is false
-    // ["*/*"] if all content types are allowed
     QStringList supportedContentTypes() const;
-
-    // requires FeatureMessageCapabilities
     MessagePartSupportFlags messagePartSupport() const;
-
-    // requires FeatureMessageCapabilities
     DeliveryReportingSupportFlags deliveryReportingSupport() const;
 
+#if 0
     // requires FeatureMessageQueue
     QList<ReceivedMessage> messageQueue() const;
 #endif
