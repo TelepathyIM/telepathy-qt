@@ -76,6 +76,15 @@ TextChannel::Private::~Private()
  */
 
 /**
+ * \enum TextChannel::Features
+ *
+ * Features that can be enabled on a TextChannel using becomeReady().
+ *
+ * \value FeatureMessageQueue Doesn't do anything yet
+ * \value FeatureMessageCapabilities Doesn't do anything yet
+ */
+
+/**
  * Creates a TextChannel associated with the given object on the same service
  * as the given connection.
  *
