@@ -45,7 +45,8 @@ TESTS += \
     test-conn-requests \
     test-contacts \
     test-handles \
-    test-stateful-proxy
+    test-stateful-proxy \
+    test-text-chan
 
 BUILT_SOURCES += \
     _gen/chan-basics.cpp.moc.hpp \
@@ -55,7 +56,8 @@ BUILT_SOURCES += \
     _gen/conn-requests.cpp.moc.hpp \
     _gen/contacts.cpp.moc.hpp \
     _gen/handles.cpp.moc.hpp \
-    _gen/stateful-proxy.cpp.moc.hpp
+    _gen/stateful-proxy.cpp.moc.hpp \
+    _gen/text-chan.cpp.moc.hpp
 
 MOC_INCLUDES += $(TP_GLIB_CFLAGS)
 
@@ -82,6 +84,11 @@ test_handles_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_stateful_proxy_SOURCES = stateful-proxy.cpp
 test_stateful_proxy_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+
+test_text_chan_SOURCES = text-chan.cpp
+test_text_chan_LDADD = $(LDADD) \
+                       $(top_builddir)/tests/lib/libtp-glib-tests.la \
+                       $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
 endif
 
 LDADD = \
