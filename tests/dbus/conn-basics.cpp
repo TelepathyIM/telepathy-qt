@@ -7,7 +7,7 @@
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingChannel>
-#include <TelepathyQt4/Client/PendingReadyConnection>
+#include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
@@ -148,12 +148,13 @@ void TestConnBasics::init()
 
 void TestConnBasics::testSimplePresence()
 {
-    QCOMPARE(mConn->isReady(Connection::FeatureSimplePresence), false);
-    QVERIFY(connect(mConn->becomeReady(Connection::FeatureSimplePresence),
+    QSet<uint> features = QSet<uint>() << Connection::FeatureSimplePresence;
+    QCOMPARE(mConn->isReady(features), false);
+    QVERIFY(connect(mConn->becomeReady(features),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(Connection::FeatureSimplePresence), true);
+    QCOMPARE(mConn->isReady(features), true);
 
     qDebug() << "mConn->status:" << mConn->status();
 }

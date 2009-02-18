@@ -7,7 +7,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
-#include <TelepathyQt4/Client/PendingReadyConnection>
+#include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/PendingReadyConnectionManager>
 
 #include <tests/pinocchio/lib.h>
@@ -167,18 +167,14 @@ void TestConnBasics::testConnect()
         QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
     }
 
-    QVERIFY(connect(mConn->becomeReady(Connection::FeatureSimplePresence),
+    QSet<uint> features = QSet<uint>() << Connection::FeatureSimplePresence;
+    QVERIFY(connect(mConn->becomeReady(features),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             this,
             SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-
-    QVERIFY(connect(mConn->becomeReady(Connection::FeatureSimplePresence),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(Connection::FeatureSimplePresence), false);
+    QCOMPARE(mConn->isReady(features), true);
+    QVERIFY(mConn->missingFeatures() == features);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Connection::StatusConnected));

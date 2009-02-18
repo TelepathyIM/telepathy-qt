@@ -11,7 +11,7 @@
 #include <TelepathyQt4/Client/PendingChannel>
 #include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingHandles>
-#include <TelepathyQt4/Client/PendingReadyConnection>
+#include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/PendingReadyChannel>
 #include <TelepathyQt4/Client/ReferencedHandles>
 #include <TelepathyQt4/Debug>
