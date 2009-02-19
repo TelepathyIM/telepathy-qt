@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Client/DBusProxy>
+
 #include <QMap>
 #include <QSet>
 #include <QStringList>
@@ -75,7 +77,8 @@ public:
         void *introspectFuncData;
     };
 
-    ReadinessHelper(uint currentStatus,
+    ReadinessHelper(DBusProxy *proxy,
+            uint currentStatus,
             const QMap<uint, Introspectable> &introspectables,
             QObject *parent = 0);
     ~ReadinessHelper();
@@ -100,6 +103,9 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void iterateIntrospection();
+
+    void onProxyInvalidated(Telepathy::Client::DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage);
 
 private:
     struct Private;

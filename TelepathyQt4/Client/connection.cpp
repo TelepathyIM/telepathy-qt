@@ -191,7 +191,7 @@ Connection::Private::Private(Connection *parent)
         this);
     introspectables[FeatureSimplePresence] = introspectableSimplePresence;
 
-    readinessHelper = new ReadinessHelper(status,
+    readinessHelper = new ReadinessHelper(parent, status,
             introspectables, parent);
     parent->connect(readinessHelper,
             SIGNAL(statusReady(uint)),

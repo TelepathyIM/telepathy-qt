@@ -26,6 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Constants>
 
 #include <QTimer>
 
@@ -37,6 +38,7 @@ namespace Client
 struct ReadinessHelper::Private
 {
     Private(ReadinessHelper *parent,
+            DBusProxy *proxy,
             uint currentStatus,
             const QMap<uint, Introspectable> &introspectables);
     ~Private();
@@ -46,7 +48,10 @@ struct ReadinessHelper::Private
     void setIntrospectCompleted(uint feature, bool success);
     void iterateIntrospection();
 
+    void abortOperations(const QString &errorName, const QString &errorMessage);
+
     ReadinessHelper *parent;
+    DBusProxy *proxy;
     uint currentStatus;
     QStringList interfaces;
     QMap<uint, Introspectable> introspectables;
@@ -64,9 +69,11 @@ struct ReadinessHelper::Private
 
 ReadinessHelper::Private::Private(
         ReadinessHelper *parent,
+        DBusProxy *proxy,
         uint currentStatus,
         const QMap<uint, Introspectable> &introspectables)
     : parent(parent),
+      proxy(proxy),
       currentStatus(currentStatus),
       introspectables(introspectables),
       pendingStatusChange(false),
@@ -87,7 +94,7 @@ ReadinessHelper::Private::Private(
 
 ReadinessHelper::Private::~Private()
 {
-    // TODO finish all pending operations
+    abortOperations(TELEPATHY_ERROR_CANCELLED, "Destroyed");
 }
 
 void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
@@ -157,6 +164,10 @@ void ReadinessHelper::Private::setIntrospectCompleted(uint feature, bool success
 
 void ReadinessHelper::Private::iterateIntrospection()
 {
+    if (!proxy->isValid()) {
+        return;
+    }
+
     if (!supportedStatuses.contains(currentStatus)) {
         debug() << "ignoring iterate introspection for status" << currentStatus;
         // don't do anything just now to avoid spurious becomeReady finishes
@@ -245,12 +256,24 @@ void ReadinessHelper::Private::iterateIntrospection()
     }
 }
 
-ReadinessHelper::ReadinessHelper(uint currentStatus,
+void ReadinessHelper::Private::abortOperations(const QString &errorName,
+        const QString &errorMessage)
+{
+    foreach (PendingReady *operation, pendingOperations) {
+        operation->setFinishedWithError(errorName, errorMessage);
+    }
+}
+
+ReadinessHelper::ReadinessHelper(DBusProxy *proxy,
+        uint currentStatus,
         const QMap<uint, Introspectable> &introspectables,
         QObject *parent)
     : QObject(parent),
-      mPriv(new Private(this, currentStatus, introspectables))
+      mPriv(new Private(this, proxy, currentStatus, introspectables))
 {
+    connect(proxy,
+            SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
+            SLOT(onProxyInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
 }
 
 ReadinessHelper::~ReadinessHelper()
@@ -295,6 +318,10 @@ QSet<uint> ReadinessHelper::missingFeatures() const
 
 bool ReadinessHelper::isReady(QSet<uint> features) const
 {
+    if (!mPriv->proxy->isValid()) {
+        return false;
+    }
+
     if (features.isEmpty()) {
         features << 0; // it is empty, consider core
     }
@@ -310,11 +337,17 @@ bool ReadinessHelper::isReady(QSet<uint> features) const
 PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
 {
     // TODO check if requestedFeatures does not contain any invalid feature
-    //      check if parent object is valid - this would need the parent object
-    //      to be of type DBusProxy
 
     if (requestedFeatures.isEmpty()) {
         requestedFeatures << 0; // it is empty, consider core
+    }
+
+    if (!mPriv->proxy->isValid()) {
+        PendingReady *operation =
+            new PendingReady(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Proxy is invalid");
+        return operation;
     }
 
     PendingReady *operation;
@@ -338,12 +371,22 @@ PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
 
 void ReadinessHelper::setIntrospectCompleted(uint feature, bool success)
 {
+    if (!mPriv->proxy->isValid()) {
+        // proxy became invalid, ignore here
+        return;
+    }
     mPriv->setIntrospectCompleted(feature, success);
 }
 
 void ReadinessHelper::iterateIntrospection()
 {
     mPriv->iterateIntrospection();
+}
+
+void ReadinessHelper::onProxyInvalidated(Telepathy::Client::DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage)
+{
+    mPriv->abortOperations(errorName, errorMessage);
 }
 
 }
