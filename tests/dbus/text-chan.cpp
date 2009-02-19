@@ -19,6 +19,17 @@
 
 using namespace Telepathy::Client;
 
+struct SentMessageDetails
+{
+    SentMessageDetails(const Message &message,
+            const Telepathy::MessageSendingFlags flags,
+            const QString &token)
+        : message(message), flags(flags), token(token) { }
+    Message message;
+    Telepathy::MessageSendingFlags flags;
+    QString token;
+};
+
 class TestTextChan : public Test
 {
     Q_OBJECT
@@ -33,6 +44,14 @@ public:
           mConn(0), mChan(0)
     { }
 
+protected:
+    QList<SentMessageDetails> sent;
+    QList<ReceivedMessage> received;
+
+protected Q_SLOTS:
+    void onMessageSent(const Telepathy::Client::Message &,
+            Telepathy::MessageSendingFlags, const QString &);
+
 private Q_SLOTS:
     void initTestCase();
     void init();
@@ -44,6 +63,8 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
+    void sendText(const char *text);
+
     SimpleConnection *mConnService;
     TpBaseConnection *mBaseConnService;
     TpHandleRepoIface *mContactRepo;
@@ -57,6 +78,26 @@ private:
     QString mConnName;
     QString mConnPath;
 };
+
+void TestTextChan::onMessageSent(const Telepathy::Client::Message &message,
+        Telepathy::MessageSendingFlags flags, const QString &token)
+{
+    sent << SentMessageDetails(message, flags, token);
+}
+
+void TestTextChan::sendText(const char *text)
+{
+    // FIXME: there's no high-level API for Send() yet, so...
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            mChan->textInterface()->Send(
+                Telepathy::ChannelTextMessageTypeNormal,
+                QLatin1String(text)));
+    QVERIFY(connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+    QCOMPARE(mLoop->exec(), 0);
+    delete watcher;
+}
 
 void TestTextChan::initTestCase()
 {
@@ -152,27 +193,54 @@ void TestTextChan::testMessages()
 
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
+    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
+    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
+    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
 
+    QVERIFY(connect(mChan,
+                SIGNAL(messageSent(const Telepathy::Client::Message &,
+                        Telepathy::MessageSendingFlags,
+                        const QString &)),
+                SLOT(onMessageSent(const Telepathy::Client::Message &,
+                        Telepathy::MessageSendingFlags,
+                        const QString &))));
+    QCOMPARE(sent.size(), 0);
+
+    sendText("One");
+
+    // Make the Sent signal become ready
+    QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageSentSignal),
+                SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(asChannel->isReady());
+    QVERIFY(mChan->isReady());
+    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
 
-    // we get Sent signals even if FeatureMessageQueue is disabled (starting
-    // from the point at which we become Ready)
-    //
-    // FIXME: there's no high-level API for Send() yet
+    sendText("Two");
 
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            mChan->textInterface()->Send(
-                Telepathy::ChannelTextMessageTypeNormal,
-                QLatin1String("Hello, world!")));
-    QVERIFY(connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
-    QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
+    // We should have received "Two", but not "One"
+    QCOMPARE(sent.size(), 1);
+    QCOMPARE(static_cast<uint>(sent.at(0).flags), 0U);
+    QCOMPARE(sent.at(0).token, QString::fromAscii(""));
 
-    // FIXME: when the messageSent signal is implemented, assert that we got
-    // it and that the message looks like we expect
+    Message m = sent.at(0).message;
+    QCOMPARE(static_cast<uint>(m.messageType()),
+            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+    QVERIFY(!m.isTruncated());
+    QVERIFY(!m.hasNonTextContent());
+    QCOMPARE(m.messageToken(), QString::fromAscii(""));
+    QVERIFY(!m.isSpecificToDBusInterface());
+    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(m.size(), 2);
+    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
+            0U);
+    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
+            QString::fromAscii("text/plain"));
+    QCOMPARE(m.text(), QString::fromAscii("Two"));
 
     // Make capabilities become ready
     QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageCapabilities),
@@ -203,7 +271,7 @@ void TestTextChan::testMessages()
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
 
     // FIXME: when the message queue is implemented, assert that it contains
-    // our "hello world" message
+    // the echo of our messages
 }
 
 void TestTextChan::testLegacyText()
@@ -220,23 +288,48 @@ void TestTextChan::testLegacyText()
     // implementation detail: legacy text channels get capabilities as soon
     // as the Channel basics are ready
 
-    // we get Sent signals even if FeatureMessageQueue is disabled (starting
-    // from the point at which we become Ready)
-    //
-    // FIXME: there's no high-level API for Send() yet
+    QVERIFY(connect(mChan,
+                SIGNAL(messageSent(const Telepathy::Client::Message &,
+                        Telepathy::MessageSendingFlags,
+                        const QString &)),
+                SLOT(onMessageSent(const Telepathy::Client::Message &,
+                        Telepathy::MessageSendingFlags,
+                        const QString &))));
+    QCOMPARE(sent.size(), 0);
 
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            mChan->textInterface()->Send(
-                Telepathy::ChannelTextMessageTypeNormal,
-                QLatin1String("Hello, world!")));
-    QVERIFY(connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+    sendText("One");
+
+    // Make the Sent signal become ready
+    QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageSentSignal),
+                SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
 
-    // FIXME: when the messageSent signal is implemented, assert that we got
-    // it and that the message looks like we expect
+    QVERIFY(mChan->isReady());
+    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
+    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
+
+    sendText("Two");
+
+    // We should have received "Two", but not "One"
+    QCOMPARE(sent.size(), 1);
+    QCOMPARE(static_cast<uint>(sent.at(0).flags), 0U);
+    QCOMPARE(sent.at(0).token, QString::fromAscii(""));
+
+    Message m = sent.at(0).message;
+    QCOMPARE(static_cast<uint>(m.messageType()),
+            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+    QVERIFY(!m.isTruncated());
+    QVERIFY(!m.hasNonTextContent());
+    QCOMPARE(m.messageToken(), QString::fromAscii(""));
+    QVERIFY(!m.isSpecificToDBusInterface());
+    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(m.size(), 2);
+    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
+            0U);
+    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
+            QString::fromAscii("text/plain"));
+    QCOMPARE(m.text(), QString::fromAscii("Two"));
 
     // Make capabilities become ready
     QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageCapabilities),
@@ -263,7 +356,7 @@ void TestTextChan::testLegacyText()
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
 
     // FIXME: when the message queue is implemented, assert that it contains
-    // our "hello world" message
+    // the echo of our messages
 }
 
 void TestTextChan::cleanup()
@@ -272,6 +365,8 @@ void TestTextChan::cleanup()
         delete mChan;
         mChan = 0;
     }
+    received.clear();
+    sent.clear();
 
     cleanupImpl();
 }
