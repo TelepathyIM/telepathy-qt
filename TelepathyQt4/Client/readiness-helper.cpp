@@ -180,7 +180,8 @@ void ReadinessHelper::Private::iterateIntrospection()
     while (i != introspectables.constEnd()) {
         uint feature = i.key();
         Introspectable introspectable = i.value();
-        if (!introspectable.dependsOnFeatures.intersect(missingFeatures).isEmpty()) {
+        QSet<uint> dependsOnFeatures = introspectable.dependsOnFeatures;
+        if (!dependsOnFeatures.intersect(missingFeatures).isEmpty()) {
             missingFeatures += feature;
         }
         ++i;
