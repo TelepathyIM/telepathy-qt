@@ -524,6 +524,30 @@ TextChannel::Private::~Private()
  *                                   messagePartSupport and
  *                                   deliveryReportingSupport methods can
  *                                   be called
+ * \value FeatureMessageSentSignal The messageSent signal will be emitted
+ *                                 when a message is sent
+ */
+
+/**
+ * \fn void messageSent(Telepathy::Client::Message message,
+ *                      Telepathy::MessageSendingFlags flags,
+ *                      const QString &sentMessageToken)
+ *
+ * Emitted when a message is sent, if the FeatureMessageSentSignal Feature
+ * has been enabled.
+ *
+ * This signal is emitted regardless of whether the message is sent by this
+ * client, or another client using the same Channel via D-Bus.
+ *
+ * \param message A message. This may differ slightly from what the client
+ *                requested to send, for instance if it has been altered due
+ *                to limitations of the instant messaging protocol used.
+ * \param flags MessageSendingFlags that were in effect when the message was
+ *              sent. Clients can use these in conjunction with
+ *              deliveryReportingSupport to determine whether delivery
+ *              reporting can be expected.
+ * \param sentMessageToken Either an empty QString, or an opaque token used
+ *                         to match the message to any delivery reports.
  */
 
 /**
@@ -686,7 +710,9 @@ PendingReadyChannel *TextChannel::becomeReady(
         return textReady;
     }
 
-    if ((textFeatures & (FeatureMessageQueue | FeatureMessageCapabilities))
+    if ((textFeatures & (FeatureMessageQueue |
+                    FeatureMessageCapabilities |
+                    FeatureMessageSentSignal))
             != textFeatures) {
         textReady = new PendingReadyChannel(channelFeatures, this);
         textReady->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
@@ -723,14 +749,27 @@ void TextChannel::onChannelReady(Telepathy::Client::PendingOperation *op)
 
     // Now that the basic Channel stuff is ready, we can know whether we have
     // the Messages interface.
-    if (hasMessagesInterface()) {
-        connect(messagesInterface(),
-                SIGNAL(MessageSent(const Telepathy::MessagePartList &,
-                        uint, const QString &)),
-                this,
-                SLOT(onMessageSent(const Telepathy::MessagePartList &,
-                        uint, const QString &)));
-    } else {
+
+    if ((mPriv->desiredFeatures & FeatureMessageSentSignal) &&
+            !(mPriv->features & FeatureMessageSentSignal)) {
+        if (hasMessagesInterface()) {
+            connect(messagesInterface(),
+                    SIGNAL(MessageSent(const Telepathy::MessagePartList &,
+                            uint, const QString &)),
+                    this,
+                    SLOT(onMessageSent(const Telepathy::MessagePartList &,
+                            uint, const QString &)));
+        } else {
+            connect(textInterface(),
+                    SIGNAL(Sent(uint, uint, const QString &)),
+                    this,
+                    SLOT(onTextSent(uint, uint, const QString &)));
+        }
+
+        mPriv->features |= FeatureMessageSentSignal;
+    }
+
+    if (!hasMessagesInterface()) {
         // For plain Text channels, FeatureMessageCapabilities is trivial to
         // implement - we don't do anything special at all - so we might as
         // well set it up even if the library user didn't actually care.
@@ -739,11 +778,6 @@ void TextChannel::onChannelReady(Telepathy::Client::PendingOperation *op)
         mPriv->messagePartSupport = 0;
         mPriv->deliveryReportingSupport = 0;
         mPriv->features |= FeatureMessageCapabilities;
-
-        connect(textInterface(),
-                SIGNAL(Sent(uint, uint, const QString &)),
-                this,
-                SLOT(onTextSent(uint, uint, const QString &)));
     }
 
     mPriv->continueReadying(this);
@@ -779,6 +813,7 @@ void TextChannel::Private::continueReadying(TextChannel *channel)
         // FeatureMessageQueue needs signal connections + Get (but we
         //  might as well do GetAll and reduce the number of code paths)
         // FeatureMessageCapabilities needs GetAll
+        // FeatureMessageSentSignal already done
 
         if (desiredFeatures & TextChannel::FeatureMessageQueue) {
             channel->connect(channel->messagesInterface(),
@@ -801,9 +836,7 @@ void TextChannel::Private::continueReadying(TextChannel *channel)
         // FeatureMessageQueue needs signal connections +
         //  ListPendingMessages
         // FeatureMessageCapabilities already done
-
-        // this is all we can have right now
-        Q_ASSERT(desiredFeatures == TextChannel::FeatureMessageQueue);
+        // FeatureMessageSentSignal already done
 
         channel->connect(channel->textInterface(),
                 SIGNAL(Received(uint, uint, uint, uint, uint,
@@ -829,6 +862,8 @@ void TextChannel::onMessageSent(const Telepathy::MessagePartList &parts,
         uint flags,
         const QString &sentMessageToken)
 {
+    emit messageSent(Message(parts), Telepathy::MessageSendingFlag(flags),
+            sentMessageToken);
 }
 
 void TextChannel::onMessageReceived(const Telepathy::MessagePartList &parts)
@@ -841,6 +876,8 @@ void TextChannel::onPendingMessagesRemoved(const Telepathy::UIntList &ids)
 
 void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
 {
+    emit messageSent(Message(timestamp, type, text), 0,
+            QString::fromAscii(""));
 }
 
 void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,

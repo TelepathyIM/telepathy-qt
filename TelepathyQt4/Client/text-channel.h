@@ -114,6 +114,7 @@ public:
         // messageReceived will not be emitted.
         FeatureMessageQueue = 1,
         FeatureMessageCapabilities = 2,
+        FeatureMessageSentSignal = 4,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -179,7 +180,6 @@ public Q_SLOTS:
     }
 #endif
 
-#if 0
 Q_SIGNALS:
 
     // If hasMessagesInterface() is false, then flags is always 0 and
@@ -189,9 +189,11 @@ Q_SIGNALS:
     // You might get a delivery report later, though.
     //
     // Always emitted.
-    void messageSent(Message message, MessageSendingFlags flags,
+    void messageSent(const Telepathy::Client::Message &message,
+            Telepathy::MessageSendingFlags flags,
             const QString &sentMessageToken);
 
+#if 0
     // Change notification for messageQueue()
     //
     // Only emitted when FeatureMessageQueue is enabled.
