@@ -56,6 +56,7 @@ struct ReadinessHelper::Private
     QStringList interfaces;
     QMap<uint, Introspectable> introspectables;
     QSet<uint> supportedStatuses;
+    QSet<uint> supportedFeatures;
     QSet<uint> satisfiedFeatures;
     QSet<uint> requestedFeatures;
     QSet<uint> missingFeatures;
@@ -82,10 +83,18 @@ ReadinessHelper::Private::Private(
     // we must have an introspectable for core
     Q_ASSERT(introspectables.contains(0));
 
-    foreach (const ReadinessHelper::Introspectable &introspectable, introspectables) {
+    QMap<uint, Introspectable>::const_iterator i = introspectables.constBegin();
+    while (i != introspectables.constEnd()) {
+        uint feature = i.key();
+        Introspectable introspectable = i.value();
         Q_ASSERT(introspectable.introspectFunc != 0);
         supportedStatuses += introspectable.makesSenseForStatuses;
+        supportedFeatures += feature;
+        ++i;
     }
+
+    debug() << "ReadinessHelper: supportedStatuses =" << supportedStatuses;
+    debug() << "ReadinessHelper: supportedFeatures =" << supportedFeatures;
 
     if (supportedStatuses.contains(currentStatus)) {
         introspectCore();
@@ -192,7 +201,6 @@ void ReadinessHelper::Private::iterateIntrospection()
     // satisfiedFeatures + missingFeatures has
     foreach (PendingReady *operation, pendingOperations) {
         if ((operation->requestedFeatures() - (satisfiedFeatures + missingFeatures)).isEmpty()) {
-            // TODO should we finish with error if requestedFeatures is on missingFeatures?
             operation->setFinished();
             pendingOperations.removeOne(operation);
         }
@@ -337,10 +345,19 @@ bool ReadinessHelper::isReady(QSet<uint> features) const
 
 PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
 {
-    // TODO check if requestedFeatures does not contain any invalid feature
-
     if (requestedFeatures.isEmpty()) {
         requestedFeatures << 0; // it is empty, consider core
+    }
+
+    QSet<uint> supportedFeatures = mPriv->supportedFeatures;
+    if (supportedFeatures.intersect(requestedFeatures) != requestedFeatures) {
+        debug() << "ReadinessHelper::becomeReady called with invalid features: requestedFeatures =" <<
+            requestedFeatures << "- supportedFeatures =" << mPriv->supportedFeatures;
+        PendingReady *operation =
+            new PendingReady(requestedFeatures, this);
+        operation->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Requested features contains invalid feature");
+        return operation;
     }
 
     if (!mPriv->proxy->isValid()) {
