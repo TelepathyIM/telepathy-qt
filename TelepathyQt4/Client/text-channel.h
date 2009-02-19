@@ -25,6 +25,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <QSharedDataPointer>
+
 #include <TelepathyQt4/Client/Channel>
 
 namespace Telepathy
@@ -39,103 +41,60 @@ class Message
 {
 public:
 
-#if 0
-    // shared data, like QString
     Message(const Message &other);
     Message &operator=(const Message &other);
     ~Message();
 
     // Convenient access to headers
 
-    // QDateTime() if unknown (e.g. on Text interface)
-    QDateTime sent() const; // QDateTime() if unknown
+    QDateTime sent() const;
 
-    // always known (the default is ChannelTextMessageTypeNormal)
     ChannelTextMessageType messageType() const;
 
-    // for Text, Channel_Text_Message_Flag_Truncated; for Messages, at least
-    // one part has { 'truncated': True }
     bool isTruncated() const;
 
-    // for Text, Channel_Text_Message_Flag_Non_Text_Content; for Messages,
-    // at least one part has no text/plain alternative
     bool hasNonTextContent() const;
 
-    // QString() if there is no token
     QString messageToken() const;
 
-    // false for most messages. If true, and a client doesn't understand
-    // the particular message, it should not display it (but it should still
-    // acknowledge it, if appropriate)
     bool isSpecificToDBusInterface() const;
-    // QString() if isSpecificToDBusInterface() returns false,
-    // an interface name if it returns true
     QString dbusInterface() const;
 
-    // Basic access to body
-    // For Text: the text
-    // For Messages: all text parts except lower-priority alternatives,
-    // concatenated (see telepathy-glib's TpMessageMixin for a good algorithm)
     QString text() const;
 
     // Direct access to the whole message (header and body)
 
-    inline const QVariantMap &header() const
-    {
-        return messagePart(0);
-    }
+    MessagePart header() const;
 
-    // Part 0 is the header, which has a different interpretation
-    const QVariantMap &messagePart(uint index) const;
-#endif
+    int size() const;
+    MessagePart part(uint index) const;
 
 protected:
     friend class TextChannel;
-#if 0
-    Message(QList<QVariantMap> parts);
-#endif
 
-    struct Private;
-    friend struct Private;
-    QSharedPointer<Private> mPriv;
+    Message(const MessagePartList &parts);
+    Message(uint, uint, const QString &);
+
+    class Private;
+    QSharedDataPointer<Private> mPriv;
 };
 
 class ReceivedMessage : public Message
 {
 public:
-#if 0
-    // shared data, like QString
     ReceivedMessage(const ReceivedMessage &other);
     ReceivedMessage &operator=(const ReceivedMessage &other);
+    ~ReceivedMessage();
 
-    // should always be known - use QDateTime::currentDateTime() while
-    // initially parsing the incoming message, if necessary
     QDateTime received() const;
-
-    // QSharedPointer<Contact>(null) if unknown
     QSharedPointer<Contact> sender() const;
-
-    // The incoming message was part of a replay of message history
-    //
-    // This is indicated so that loggers can use better heuristics when
-    // eliminating duplicates (a simple implementation would be to not log
-    // these messages at all).
     bool isScrollback() const;
-
-    // The incoming message has been seen in a previous channel during the
-    // lifetime of the Connection, but had not been acknowledged when that
-    // channel closed, causing an identical channel (the channel in which
-    // the message now appears) to open
-    //
-    // practical effect: loggers shouldn't log it again
     bool isRescued() const;
-#endif
 
 private:
     friend class TextChannel;
-#if 0
-    ReceivedMessage(QList<QVariantMap> parts, const TextChannel *channel);
-#endif
+    ReceivedMessage(const MessagePartList &parts, const TextChannel *channel,
+            QSharedPointer<Contact> sender);
 };
 
 class TextChannel : public Channel
