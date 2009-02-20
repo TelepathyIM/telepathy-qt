@@ -402,18 +402,39 @@ void TestTextChan::commonTest(bool withMessages)
     delete watcher;
 
     // on a channel with Messages, we're notified; on a channel with only Text,
-    // we're not notified
-    if (withMessages) {
-        QCOMPARE(mChan->messageQueue().size(), 1);
-        QVERIFY(mChan->messageQueue().at(0) == received.at(1));
-        QCOMPARE(removed.size(), 1);
-        QVERIFY(removed.at(0) == received.at(0));
-    } else {
+    // we're not notified, so exercise forget() instead to get back to the
+    // same state
+    if (!withMessages) {
         QCOMPARE(mChan->messageQueue().size(), 2);
         QVERIFY(mChan->messageQueue().at(0) == received.at(0));
         QVERIFY(mChan->messageQueue().at(1) == received.at(1));
         QCOMPARE(removed.size(), 0);
+
+        mChan->forget(QList<ReceivedMessage>() << received.at(0));
     }
+
+    QCOMPARE(mChan->messageQueue().size(), 1);
+    QVERIFY(mChan->messageQueue().at(0) == received.at(1));
+    QCOMPARE(removed.size(), 1);
+    QVERIFY(removed.at(0) == received.at(0));
+
+    // In the Messages case this will ack one message, successfully. In the
+    // Text case it will fail to ack two messages, fall back to one call
+    // per message, and fail one while succeeding with the other.
+    mChan->acknowledge(mChan->messageQueue());
+
+    // wait for everything to settle down
+    while (tp_text_mixin_has_pending_messages(
+                G_OBJECT(mTextChanService), 0)
+            || tp_message_mixin_has_pending_messages(
+                G_OBJECT(mMessagesChanService), 0)) {
+        QTest::qWait(100);
+    }
+
+    QVERIFY(!tp_text_mixin_has_pending_messages(
+                G_OBJECT(mTextChanService), 0));
+    QVERIFY(!tp_message_mixin_has_pending_messages(
+                G_OBJECT(mMessagesChanService), 0));
 }
 
 void TestTextChan::testMessages()
