@@ -62,6 +62,7 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
+    void commonTest(bool withMessages);
     void sendText(const char *text);
 
     QList<SentMessageDetails> sent;
@@ -232,9 +233,9 @@ void TestTextChan::init()
     mChan = 0;
 }
 
-void TestTextChan::testMessages()
+void TestTextChan::commonTest(bool withMessages)
 {
-    mChan = new TextChannel(mConn, mMessagesChanPath, QVariantMap(), this);
+    Q_ASSERT(mChan != 0);
     Channel *asChannel = mChan;
 
     QVERIFY(connect(asChannel->becomeReady(),
@@ -245,7 +246,8 @@ void TestTextChan::testMessages()
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
+    // Implementation detail: in legacy text channels, capabilities arrive
+    // early, so don't assert about that
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
 
     QVERIFY(connect(mChan,
@@ -265,6 +267,14 @@ void TestTextChan::testMessages()
                         Telepathy::MessageSendingFlags,
                         const QString &))));
     QCOMPARE(sent.size(), 0);
+}
+
+void TestTextChan::testMessages()
+{
+    mChan = new TextChannel(mConn, mMessagesChanPath, QVariantMap(), this);
+    Channel *asChannel = mChan;
+
+    commonTest(true);
 
     sendText("One");
 
@@ -373,33 +383,7 @@ void TestTextChan::testLegacyText()
 {
     mChan = new TextChannel(mConn, mTextChanPath, QVariantMap(), this);
 
-    QVERIFY(connect(mChan->becomeReady(),
-                SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    QVERIFY(mChan->isReady());
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
-    // implementation detail: legacy text channels get capabilities as soon
-    // as the Channel basics are ready
-
-    QVERIFY(connect(mChan,
-                SIGNAL(messageReceived(const Telepathy::Client::ReceivedMessage &)),
-                SLOT(onMessageReceived(const Telepathy::Client::ReceivedMessage &))));
-    QCOMPARE(received.size(), 0);
-    QVERIFY(connect(mChan,
-                SIGNAL(pendingMessageRemoved(const Telepathy::Client::ReceivedMessage &)),
-                SLOT(onMessageRemoved(const Telepathy::Client::ReceivedMessage &))));
-    QCOMPARE(removed.size(), 0);
-
-    QVERIFY(connect(mChan,
-                SIGNAL(messageSent(const Telepathy::Client::Message &,
-                        Telepathy::MessageSendingFlags,
-                        const QString &)),
-                SLOT(onMessageSent(const Telepathy::Client::Message &,
-                        Telepathy::MessageSendingFlags,
-                        const QString &))));
-    QCOMPARE(sent.size(), 0);
+    commonTest(false);
 
     sendText("One");
 
