@@ -72,6 +72,7 @@ public:
 protected:
     friend class TextChannel;
 
+    Message();
     Message(const MessagePartList &parts);
     Message(uint, uint, const QString &);
 
@@ -95,6 +96,7 @@ private:
     friend class TextChannel;
     ReceivedMessage(const MessagePartList &parts, const TextChannel *channel,
             QSharedPointer<Contact> sender);
+    ReceivedMessage();
 };
 
 class TextChannel : public Channel

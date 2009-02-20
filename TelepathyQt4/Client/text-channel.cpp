@@ -127,6 +127,13 @@ void Message::Private::clearSenderHandle()
  */
 
 /**
+ * Default constructor, only used internally.
+ */
+Message::Message()
+{
+}
+
+/**
  * Constructor.
  *
  * \param parts The parts of a message as defined by the Telepathy D-Bus
@@ -390,6 +397,13 @@ MessagePart Message::part(uint index) const
  * Subclass of Message, with additional information that's generally only
  * available on received messages.
  */
+
+/**
+ * Default constructor, only used internally.
+ */
+ReceivedMessage::ReceivedMessage()
+{
+}
 
 /**
  * Constructor.
