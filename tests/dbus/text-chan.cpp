@@ -325,14 +325,6 @@ void TestTextChan::commonTest(bool withMessages)
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);
         QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
     }
-}
-
-void TestTextChan::testMessages()
-{
-    mChan = new TextChannel(mConn, mMessagesChanPath, QVariantMap(), this);
-    Channel *asChannel = mChan;
-
-    commonTest(true);
 
     // Make the message queue become ready too
     QCOMPARE(received.size(), 0);
@@ -353,7 +345,7 @@ void TestTextChan::testMessages()
     QVERIFY(mChan->messageQueue().at(0) == received.at(0));
     QVERIFY(mChan->messageQueue().at(1) == received.at(1));
 
-    Message m(received.at(0));
+    m = received.at(0);
     QCOMPARE(static_cast<uint>(m.messageType()),
             static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
     QVERIFY(!m.isTruncated());
@@ -366,7 +358,14 @@ void TestTextChan::testMessages()
             0U);
     QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
             QString::fromAscii("text/plain"));
-    QCOMPARE(m.text(), QString::fromAscii("One"));
+
+    // one "echo" implementation echoes the message literally, the other edits
+    // it slightly
+    if (withMessages) {
+        QCOMPARE(m.text(), QString::fromAscii("One"));
+    } else {
+        QCOMPARE(m.text(), QString::fromAscii("You said: One"));
+    }
 
     m = received.at(1);
     QCOMPARE(static_cast<uint>(m.messageType()),
@@ -381,7 +380,19 @@ void TestTextChan::testMessages()
             0U);
     QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
             QString::fromAscii("text/plain"));
-    QCOMPARE(m.text(), QString::fromAscii("Two"));
+
+    if (withMessages) {
+        QCOMPARE(m.text(), QString::fromAscii("Two"));
+    } else {
+        QCOMPARE(m.text(), QString::fromAscii("You said: Two"));
+    }
+}
+
+void TestTextChan::testMessages()
+{
+    mChan = new TextChannel(mConn, mMessagesChanPath, QVariantMap(), this);
+
+    commonTest(true);
 }
 
 void TestTextChan::testLegacyText()
@@ -389,54 +400,6 @@ void TestTextChan::testLegacyText()
     mChan = new TextChannel(mConn, mTextChanPath, QVariantMap(), this);
 
     commonTest(false);
-
-    // Make the message queue become ready too
-    QCOMPARE(received.size(), 0);
-    QCOMPARE(mChan->messageQueue().size(), 0);
-    QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageQueue),
-                SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    QVERIFY(mChan->isReady());
-    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageQueue));
-    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
-
-    // Assert that both our sent messages were echoed by the remote contact
-    QCOMPARE(received.size(), 2);
-    QCOMPARE(mChan->messageQueue().size(), 2);
-    QVERIFY(mChan->messageQueue().at(0) == received.at(0));
-    QVERIFY(mChan->messageQueue().at(1) == received.at(1));
-
-    Message m(received.at(0));
-    QCOMPARE(static_cast<uint>(m.messageType()),
-            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
-    QVERIFY(!m.isTruncated());
-    QVERIFY(!m.hasNonTextContent());
-    QCOMPARE(m.messageToken(), QString::fromAscii(""));
-    QVERIFY(!m.isSpecificToDBusInterface());
-    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
-    QCOMPARE(m.size(), 2);
-    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
-            0U);
-    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
-            QString::fromAscii("text/plain"));
-    QCOMPARE(m.text(), QString::fromAscii("You said: One"));
-
-    m = received.at(1);
-    QCOMPARE(static_cast<uint>(m.messageType()),
-            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
-    QVERIFY(!m.isTruncated());
-    QVERIFY(!m.hasNonTextContent());
-    QCOMPARE(m.messageToken(), QString::fromAscii(""));
-    QVERIFY(!m.isSpecificToDBusInterface());
-    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
-    QCOMPARE(m.size(), 2);
-    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
-            0U);
-    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
-            QString::fromAscii("text/plain"));
-    QCOMPARE(m.text(), QString::fromAscii("You said: Two"));
 }
 
 void TestTextChan::cleanup()
