@@ -249,12 +249,12 @@ void TestTextChan::testMessages()
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
 
     QVERIFY(connect(mChan,
-                SIGNAL(messageReceived(const Telepathy::Client::Message &)),
-                SLOT(onMessageReceived(const Telepathy::Client::Message &))));
+                SIGNAL(messageReceived(const Telepathy::Client::ReceivedMessage &)),
+                SLOT(onMessageReceived(const Telepathy::Client::ReceivedMessage &))));
     QCOMPARE(received.size(), 0);
     QVERIFY(connect(mChan,
-                SIGNAL(pendingMessageRemoved(const Telepathy::Client::Message &)),
-                SLOT(onMessageRemoved(const Telepathy::Client::Message &))));
+                SIGNAL(pendingMessageRemoved(const Telepathy::Client::ReceivedMessage &)),
+                SLOT(onMessageRemoved(const Telepathy::Client::ReceivedMessage &))));
     QCOMPARE(removed.size(), 0);
 
     QVERIFY(connect(mChan,
@@ -351,7 +351,7 @@ void TestTextChan::testMessages()
             0U);
     QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
             QString::fromAscii("text/plain"));
-    QCOMPARE(m.text(), QString::fromAscii("You said: One"));
+    QCOMPARE(m.text(), QString::fromAscii("One"));
 
     m = received.at(1);
     QCOMPARE(static_cast<uint>(m.messageType()),
@@ -366,7 +366,7 @@ void TestTextChan::testMessages()
             0U);
     QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
             QString::fromAscii("text/plain"));
-    QCOMPARE(m.text(), QString::fromAscii("You said: Two"));
+    QCOMPARE(m.text(), QString::fromAscii("Two"));
 }
 
 void TestTextChan::testLegacyText()
@@ -384,12 +384,12 @@ void TestTextChan::testLegacyText()
     // as the Channel basics are ready
 
     QVERIFY(connect(mChan,
-                SIGNAL(messageReceived(const Telepathy::Client::Message &)),
-                SLOT(onMessageReceived(const Telepathy::Client::Message &))));
+                SIGNAL(messageReceived(const Telepathy::Client::ReceivedMessage &)),
+                SLOT(onMessageReceived(const Telepathy::Client::ReceivedMessage &))));
     QCOMPARE(received.size(), 0);
     QVERIFY(connect(mChan,
-                SIGNAL(pendingMessageRemoved(const Telepathy::Client::Message &)),
-                SLOT(onMessageRemoved(const Telepathy::Client::Message &))));
+                SIGNAL(pendingMessageRemoved(const Telepathy::Client::ReceivedMessage &)),
+                SLOT(onMessageRemoved(const Telepathy::Client::ReceivedMessage &))));
     QCOMPARE(removed.size(), 0);
 
     QVERIFY(connect(mChan,
