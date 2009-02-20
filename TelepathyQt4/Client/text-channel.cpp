@@ -50,9 +50,13 @@ public:
     QSharedPointer<Contact> sender;
 
     inline QVariant value(uint index, const char *key) const;
+    inline uint getUIntOrZero(uint index, const char *key) const;
     inline QString getStringOrEmpty(uint index, const char *key) const;
     inline bool getBoolean(uint index, const char *key,
             bool assumeIfAbsent) const;
+    inline uint senderHandle() const;
+    inline uint pendingId() const;
+    void clearSenderHandle();
 };
 
 Message::Private::Private(const MessagePartList &parts)
@@ -82,6 +86,12 @@ inline QString Message::Private::getStringOrEmpty(uint index, const char *key)
     return s;
 }
 
+inline uint Message::Private::getUIntOrZero(uint index, const char *key)
+    const
+{
+    return value(index, key).toUInt();
+}
+
 inline bool Message::Private::getBoolean(uint index, const char *key,
         bool assumeIfAbsent) const
 {
@@ -90,6 +100,21 @@ inline bool Message::Private::getBoolean(uint index, const char *key,
         return v.toBool();
     }
     return assumeIfAbsent;
+}
+
+inline uint Message::Private::senderHandle() const
+{
+    return getUIntOrZero(0, "message-sender");
+}
+
+inline uint Message::Private::pendingId() const
+{
+    return getUIntOrZero(0, "pending-message-id");
+}
+
+void Message::Private::clearSenderHandle()
+{
+    parts[0].remove(QLatin1String("message-sender"));
 }
 
 /**
