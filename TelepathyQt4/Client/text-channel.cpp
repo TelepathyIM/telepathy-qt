@@ -26,8 +26,10 @@
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ContactManager>
+#include <TelepathyQt4/Client/Message>
 #include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingReadyChannel>
+#include <TelepathyQt4/Client/ReceivedMessage>
 #include <TelepathyQt4/Client/ReferencedHandles>
 
 #include "TelepathyQt4/debug-internal.h"
