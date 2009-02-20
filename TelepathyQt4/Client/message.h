@@ -65,8 +65,9 @@ public:
     int size() const;
     MessagePart part(uint index) const;
 
-protected:
+private:
     friend class TextChannel;
+    friend class ReceivedMessage;
 
     Message();
     Message(const MessagePartList &parts);
