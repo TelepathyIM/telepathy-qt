@@ -18,6 +18,7 @@
 #include <tests/lib/test.h>
 
 using namespace Telepathy::Client;
+using Telepathy::UIntList;
 
 struct SentMessageDetails
 {
@@ -385,6 +386,33 @@ void TestTextChan::commonTest(bool withMessages)
         QCOMPARE(m.text(), QString::fromAscii("Two"));
     } else {
         QCOMPARE(m.text(), QString::fromAscii("You said: Two"));
+    }
+
+    uint id = received.at(0).header().value(
+            QLatin1String("pending-message-id")).variant().toUInt();
+    // go behind the TextChannel's back to acknowledge the first message:
+    // this emulates another client doing so
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            mChan->textInterface()->AcknowledgePendingMessages(
+                UIntList() << id));
+    QVERIFY(connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+    QCOMPARE(mLoop->exec(), 0);
+    delete watcher;
+
+    // on a channel with Messages, we're notified; on a channel with only Text,
+    // we're not notified
+    if (withMessages) {
+        QCOMPARE(mChan->messageQueue().size(), 1);
+        QVERIFY(mChan->messageQueue().at(0) == received.at(1));
+        QCOMPARE(removed.size(), 1);
+        QVERIFY(removed.at(0) == received.at(0));
+    } else {
+        QCOMPARE(mChan->messageQueue().size(), 2);
+        QVERIFY(mChan->messageQueue().at(0) == received.at(0));
+        QVERIFY(mChan->messageQueue().at(1) == received.at(1));
+        QCOMPARE(removed.size(), 0);
     }
 }
 
