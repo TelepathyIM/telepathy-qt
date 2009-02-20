@@ -190,6 +190,14 @@ Message &Message::operator=(const Message &other)
 }
 
 /**
+ * Equality operator.
+ */
+bool Message::operator==(const Message &other) const
+{
+    return this->mPriv == other.mPriv;
+}
+
+/**
  * Destructor.
  */
 Message::~Message()

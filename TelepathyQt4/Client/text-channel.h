@@ -43,6 +43,7 @@ public:
 
     Message(const Message &other);
     Message &operator=(const Message &other);
+    bool operator==(const Message &other) const;
     ~Message();
 
     // Convenient access to headers
