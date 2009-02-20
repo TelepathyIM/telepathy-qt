@@ -346,46 +346,52 @@ void TestTextChan::commonTest(bool withMessages)
     QVERIFY(mChan->messageQueue().at(0) == received.at(0));
     QVERIFY(mChan->messageQueue().at(1) == received.at(1));
 
-    m = received.at(0);
-    QCOMPARE(static_cast<uint>(m.messageType()),
+    ReceivedMessage r(received.at(0));
+    QCOMPARE(static_cast<uint>(r.messageType()),
             static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
-    QVERIFY(!m.isTruncated());
-    QVERIFY(!m.hasNonTextContent());
-    QCOMPARE(m.messageToken(), QString::fromAscii(""));
-    QVERIFY(!m.isSpecificToDBusInterface());
-    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
-    QCOMPARE(m.size(), 2);
-    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
+    QVERIFY(!r.isTruncated());
+    QVERIFY(!r.hasNonTextContent());
+    QCOMPARE(r.messageToken(), QString::fromAscii(""));
+    QVERIFY(!r.isSpecificToDBusInterface());
+    QCOMPARE(r.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(r.size(), 2);
+    QCOMPARE(r.header().value(QLatin1String("message-type")).variant().toUInt(),
             0U);
-    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
+    QCOMPARE(r.part(1).value(QLatin1String("content-type")).variant().toString(),
             QString::fromAscii("text/plain"));
+    QCOMPARE(r.sender()->id(), QString::fromAscii("someone@localhost"));
+    QVERIFY(!r.isScrollback());
+    QVERIFY(!r.isRescued());
 
     // one "echo" implementation echoes the message literally, the other edits
     // it slightly
     if (withMessages) {
-        QCOMPARE(m.text(), QString::fromAscii("One"));
+        QCOMPARE(r.text(), QString::fromAscii("One"));
     } else {
-        QCOMPARE(m.text(), QString::fromAscii("You said: One"));
+        QCOMPARE(r.text(), QString::fromAscii("You said: One"));
     }
 
-    m = received.at(1);
-    QCOMPARE(static_cast<uint>(m.messageType()),
+    r = received.at(1);
+    QCOMPARE(static_cast<uint>(r.messageType()),
             static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
-    QVERIFY(!m.isTruncated());
-    QVERIFY(!m.hasNonTextContent());
-    QCOMPARE(m.messageToken(), QString::fromAscii(""));
-    QVERIFY(!m.isSpecificToDBusInterface());
-    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
-    QCOMPARE(m.size(), 2);
-    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
+    QVERIFY(!r.isTruncated());
+    QVERIFY(!r.hasNonTextContent());
+    QCOMPARE(r.messageToken(), QString::fromAscii(""));
+    QVERIFY(!r.isSpecificToDBusInterface());
+    QCOMPARE(r.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(r.size(), 2);
+    QCOMPARE(r.header().value(QLatin1String("message-type")).variant().toUInt(),
             0U);
-    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
+    QCOMPARE(r.part(1).value(QLatin1String("content-type")).variant().toString(),
             QString::fromAscii("text/plain"));
+    QCOMPARE(r.sender()->id(), QString::fromAscii("someone@localhost"));
+    QVERIFY(!r.isScrollback());
+    QVERIFY(!r.isRescued());
 
     if (withMessages) {
-        QCOMPARE(m.text(), QString::fromAscii("Two"));
+        QCOMPARE(r.text(), QString::fromAscii("Two"));
     } else {
-        QCOMPARE(m.text(), QString::fromAscii("You said: Two"));
+        QCOMPARE(r.text(), QString::fromAscii("You said: Two"));
     }
 
     uint id = received.at(0).header().value(
