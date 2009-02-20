@@ -514,7 +514,7 @@ struct TextChannel::Private
     inline ~Private();
 
     TextChannel::Features features;
-    TextChannel::Features desiredFeatures;
+    TextChannel::Features pendingFeatures;
     QList<PendingReadyChannel *> pendingReady;
     void continueReadying(TextChannel *channel);
     void failReadying(TextChannel *channel, const QString &error,
@@ -528,7 +528,7 @@ struct TextChannel::Private
 
 TextChannel::Private::Private()
     : features(0),
-      desiredFeatures(0),
+      pendingFeatures(0),
       pendingReady(),
       supportedContentTypes(),
       messagePartSupport(0),
@@ -768,7 +768,7 @@ PendingReadyChannel *TextChannel::becomeReady(
             SLOT(onChannelReady(Telepathy::Client::PendingOperation *)));
 
     mPriv->pendingReady.append(textReady);
-    mPriv->desiredFeatures |= textFeatures;
+    mPriv->pendingFeatures |= (textFeatures & ~mPriv->features);
     return textReady;
 }
 
@@ -788,8 +788,7 @@ void TextChannel::onChannelReady(Telepathy::Client::PendingOperation *op)
     // Now that the basic Channel stuff is ready, we can know whether we have
     // the Messages interface.
 
-    if ((mPriv->desiredFeatures & FeatureMessageSentSignal) &&
-            !(mPriv->features & FeatureMessageSentSignal)) {
+    if (mPriv->pendingFeatures & FeatureMessageSentSignal) {
         if (hasMessagesInterface()) {
             connect(messagesInterface(),
                     SIGNAL(MessageSent(const Telepathy::MessagePartList &,
@@ -805,6 +804,7 @@ void TextChannel::onChannelReady(Telepathy::Client::PendingOperation *op)
         }
 
         mPriv->features |= FeatureMessageSentSignal;
+        mPriv->pendingFeatures &= ~FeatureMessageSentSignal;
     }
 
     if (!hasMessagesInterface()) {
@@ -816,6 +816,7 @@ void TextChannel::onChannelReady(Telepathy::Client::PendingOperation *op)
         mPriv->messagePartSupport = 0;
         mPriv->deliveryReportingSupport = 0;
         mPriv->features |= FeatureMessageCapabilities;
+        mPriv->pendingFeatures &= ~FeatureMessageCapabilities;
     }
 
     mPriv->continueReadying(this);
@@ -835,7 +836,9 @@ void TextChannel::Private::failReadying(TextChannel *channel,
 
 void TextChannel::Private::continueReadying(TextChannel *channel)
 {
-    if ((desiredFeatures & features) == desiredFeatures) {
+    Q_ASSERT ((pendingFeatures & features) == 0);
+
+    if (pendingFeatures == 0) {
         // everything we wanted is ready
         QList<PendingReadyChannel *> ops = pendingReady;
         pendingReady.clear();
@@ -853,7 +856,7 @@ void TextChannel::Private::continueReadying(TextChannel *channel)
         // FeatureMessageCapabilities needs GetAll
         // FeatureMessageSentSignal already done
 
-        if (desiredFeatures & TextChannel::FeatureMessageQueue) {
+        if (pendingFeatures & TextChannel::FeatureMessageQueue) {
             channel->connect(channel->messagesInterface(),
                     SIGNAL(MessageReceived(const Telepathy::MessagePartList &)),
                     SLOT(onMessageReceived(const Telepathy::MessagePartList &)));
@@ -943,10 +946,11 @@ void TextChannel::onGetAllMessagesReply(QDBusPendingCallWatcher *watcher)
         // ... and act as though props had been empty
     }
 
-    if (mPriv->desiredFeatures & FeatureMessageQueue) {
+    if (mPriv->pendingFeatures & FeatureMessageQueue) {
         // FIXME: actually put the messages in the queue
 
         mPriv->features |= FeatureMessageQueue;
+        mPriv->pendingFeatures &= ~FeatureMessageQueue;
     }
 
     mPriv->supportedContentTypes = qdbus_cast<QStringList>(
@@ -960,6 +964,7 @@ void TextChannel::onGetAllMessagesReply(QDBusPendingCallWatcher *watcher)
             qdbus_cast<uint>(props["DeliveryReportingSupport"]));
 
     mPriv->features |= FeatureMessageCapabilities;
+    mPriv->pendingFeatures &= ~FeatureMessageCapabilities;
     mPriv->continueReadying(this);
 }
 
@@ -968,6 +973,7 @@ void TextChannel::onListPendingMessagesReply(QDBusPendingCallWatcher *watcher)
     // FIXME: actually put the messages in the queue
 
     mPriv->features |= FeatureMessageQueue;
+    mPriv->pendingFeatures &= ~FeatureMessageQueue;
     mPriv->continueReadying(this);
 }
 
