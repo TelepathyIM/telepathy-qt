@@ -133,10 +133,8 @@ public:
     MessagePartSupportFlags messagePartSupport() const;
     DeliveryReportingSupportFlags deliveryReportingSupport() const;
 
-#if 0
     // requires FeatureMessageQueue
     QList<ReceivedMessage> messageQueue() const;
-#endif
 
 #if 0
 public Q_SLOTS:
@@ -188,21 +186,14 @@ Q_SIGNALS:
             Telepathy::MessageSendingFlags flags,
             const QString &sentMessageToken);
 
-#if 0
-    // Change notification for messageQueue()
-    //
-    // Only emitted when FeatureMessageQueue is enabled.
-    void messageReceived(ReceivedMessage message);
-
-    // Change notification for messageQueue()
-    //
-    // Only emitted when FeatureMessageQueue is enabled and
-    // hasMessagesInterface() returns true.
-    void pendingMessagesRemoved(QList<ReceivedMessage> messages);
-#endif
+    // FeatureMessageQueue
+    void messageReceived(const Telepathy::Client::ReceivedMessage &message);
+    void pendingMessageRemoved(
+            const Telepathy::Client::ReceivedMessage &message);
 
 private Q_SLOTS:
     void onChannelReady(Telepathy::Client::PendingOperation *);
+    void onContactsFinished(Telepathy::Client::PendingOperation *);
 
     void onMessageSent(const Telepathy::MessagePartList &, uint,
             const QString &);
@@ -216,11 +207,11 @@ private Q_SLOTS:
     void onListPendingMessagesReply(QDBusPendingCallWatcher *);
 
 private:
+    void processQueue();
+
     struct Private;
     friend struct Private;
     Private *mPriv;
-    // Implementation: messageQueue should probably be implemented as a
-    // QMap<uint,ReceivedMessage>
 };
 
 } // Telepathy::Client
