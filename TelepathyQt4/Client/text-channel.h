@@ -36,68 +36,8 @@ namespace Client
 
 class TextChannel;
 class PendingReadyChannel;
-
-class Message
-{
-public:
-
-    Message(const Message &other);
-    Message &operator=(const Message &other);
-    bool operator==(const Message &other) const;
-    ~Message();
-
-    // Convenient access to headers
-
-    QDateTime sent() const;
-
-    ChannelTextMessageType messageType() const;
-
-    bool isTruncated() const;
-
-    bool hasNonTextContent() const;
-
-    QString messageToken() const;
-
-    bool isSpecificToDBusInterface() const;
-    QString dbusInterface() const;
-
-    QString text() const;
-
-    // Direct access to the whole message (header and body)
-
-    MessagePart header() const;
-
-    int size() const;
-    MessagePart part(uint index) const;
-
-protected:
-    friend class TextChannel;
-
-    Message();
-    Message(const MessagePartList &parts);
-    Message(uint, uint, const QString &);
-
-    class Private;
-    QSharedDataPointer<Private> mPriv;
-};
-
-class ReceivedMessage : public Message
-{
-public:
-    ReceivedMessage(const ReceivedMessage &other);
-    ReceivedMessage &operator=(const ReceivedMessage &other);
-    ~ReceivedMessage();
-
-    QDateTime received() const;
-    QSharedPointer<Contact> sender() const;
-    bool isScrollback() const;
-    bool isRescued() const;
-
-private:
-    friend class TextChannel;
-    ReceivedMessage(const MessagePartList &parts, const TextChannel *channel);
-    ReceivedMessage();
-};
+class Message;
+class ReceivedMessage;
 
 class TextChannel : public Channel
 {
