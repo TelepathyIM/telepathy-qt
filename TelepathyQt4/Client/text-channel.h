@@ -183,13 +183,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
 
-    // If hasMessagesInterface() is false, then flags is always 0 and
-    // sentMessageToken is always "".
-    //
-    // If you miss the signal, it's gone forever - there's no queue of these.
-    // You might get a delivery report later, though.
-    //
-    // Always emitted.
+    // FeatureMessageSentSignal
     void messageSent(const Telepathy::Client::Message &message,
             Telepathy::MessageSendingFlags flags,
             const QString &sentMessageToken);
