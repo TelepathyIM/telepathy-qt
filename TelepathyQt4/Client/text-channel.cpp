@@ -480,6 +480,27 @@ PendingSendMessage *TextChannel::send(const QString &text,
     return op;
 }
 
+PendingSendMessage *TextChannel::send(const MessagePartList &parts)
+{
+    Message m(parts);
+    PendingSendMessage *op = new PendingSendMessage(m, this);
+
+    if (hasMessagesInterface()) {
+        connect(new QDBusPendingCallWatcher(
+                    messagesInterface()->SendMessage(m.parts(), 0)),
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                op,
+                SLOT(onMessageSent(QDBusPendingCallWatcher *)));
+    } else {
+        connect(new QDBusPendingCallWatcher(textInterface()->Send(
+                        m.messageType(), m.text())),
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                op,
+                SLOT(onTextSent(QDBusPendingCallWatcher *)));
+    }
+    return op;
+}
+
 /**
  * Return whether the desired features are ready for use.
  *

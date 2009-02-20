@@ -109,11 +109,7 @@ public Q_SLOTS:
     PendingSendMessage *send(const QString &text,
             ChannelTextMessageType type = ChannelTextMessageTypeNormal);
 
-#if 0
-    // For advanced users.
-    //
-    // Returns a sent-message token (as in messageSent), or "".
-    QString send(QList<QVariantMap> message);
+    PendingSendMessage *send(const MessagePartList &parts);
 
     inline PendingOperation *inviteContacts(
             const QList<QSharedPointer<Contact> > &contacts,
@@ -121,7 +117,6 @@ public Q_SLOTS:
     {
         return groupAddContacts(contacts, message);
     }
-#endif
 
 Q_SIGNALS:
 
