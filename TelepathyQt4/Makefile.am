@@ -50,6 +50,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/file-transfer.cpp \
     Client/media-session-handler.cpp \
     Client/media-stream-handler.cpp \
+    Client/message.cpp \
     Client/optional-interface-factory.cpp \
     Client/pending-account.cpp \
     Client/pending-channel.cpp \

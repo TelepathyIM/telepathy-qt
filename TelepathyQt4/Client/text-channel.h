@@ -32,7 +32,6 @@ namespace Telepathy
 namespace Client
 {
 
-class TextChannel;
 class PendingReadyChannel;
 class Message;
 class ReceivedMessage;

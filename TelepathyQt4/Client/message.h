@@ -26,11 +26,19 @@
 #endif
 
 #include <QSharedDataPointer>
+#include <QSharedPointer>
+
+#include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Types>
+
+class QDateTime;
 
 namespace Telepathy
 {
 namespace Client
 {
+class Contact;
+class TextChannel;
 
 class Message
 {
@@ -89,10 +97,18 @@ public:
     bool isScrollback() const;
     bool isRescued() const;
 
+    bool isFromChannel(const TextChannel *channel) const;
+
 private:
     friend class TextChannel;
-    ReceivedMessage(const MessagePartList &parts, const TextChannel *channel);
+    ReceivedMessage(const MessagePartList &parts, TextChannel *channel);
     ReceivedMessage();
+    uint senderHandle() const;
+    uint pendingId() const;
+
+    void setForceNonText();
+    void clearSenderHandle();
+    void setSender(const QSharedPointer<Contact> &sender);
 };
 
 } // Telepathy::Client
