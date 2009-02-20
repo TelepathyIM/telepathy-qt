@@ -44,11 +44,9 @@ public:
           mConn(0), mChan(0)
     { }
 
-protected:
-    QList<SentMessageDetails> sent;
-    QList<ReceivedMessage> received;
-
 protected Q_SLOTS:
+    void onMessageReceived(const Telepathy::Client::ReceivedMessage &);
+    void onMessageRemoved(const Telepathy::Client::ReceivedMessage &);
     void onMessageSent(const Telepathy::Client::Message &,
             Telepathy::MessageSendingFlags, const QString &);
     void expectConnReady(uint, uint);
@@ -66,6 +64,10 @@ private Q_SLOTS:
 private:
     void sendText(const char *text);
 
+    QList<SentMessageDetails> sent;
+    QList<ReceivedMessage> received;
+    QList<ReceivedMessage> removed;
+
     ContactsConnection *mConnService;
     TpBaseConnection *mBaseConnService;
     TpHandleRepoIface *mContactRepo;
@@ -79,6 +81,16 @@ private:
     QString mConnName;
     QString mConnPath;
 };
+
+void TestTextChan::onMessageReceived(const ReceivedMessage &message)
+{
+    received << message;
+}
+
+void TestTextChan::onMessageRemoved(const ReceivedMessage &message)
+{
+    removed << message;
+}
 
 void TestTextChan::onMessageSent(const Telepathy::Client::Message &message,
         Telepathy::MessageSendingFlags flags, const QString &token)
@@ -237,6 +249,15 @@ void TestTextChan::testMessages()
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
 
     QVERIFY(connect(mChan,
+                SIGNAL(messageReceived(const Telepathy::Client::Message &)),
+                SLOT(onMessageReceived(const Telepathy::Client::Message &))));
+    QCOMPARE(received.size(), 0);
+    QVERIFY(connect(mChan,
+                SIGNAL(pendingMessageRemoved(const Telepathy::Client::Message &)),
+                SLOT(onMessageRemoved(const Telepathy::Client::Message &))));
+    QCOMPARE(removed.size(), 0);
+
+    QVERIFY(connect(mChan,
                 SIGNAL(messageSent(const Telepathy::Client::Message &,
                         Telepathy::MessageSendingFlags,
                         const QString &)),
@@ -299,6 +320,8 @@ void TestTextChan::testMessages()
     QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
 
     // Make the message queue become ready too
+    QCOMPARE(received.size(), 0);
+    QCOMPARE(mChan->messageQueue().size(), 0);
     QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageQueue),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
@@ -309,8 +332,41 @@ void TestTextChan::testMessages()
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageQueue));
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
 
-    // FIXME: when the message queue is implemented, assert that it contains
-    // the echo of our messages
+    // Assert that both our sent messages were echoed by the remote contact
+    QCOMPARE(received.size(), 2);
+    QCOMPARE(mChan->messageQueue().size(), 2);
+    QVERIFY(mChan->messageQueue().at(0) == received.at(0));
+    QVERIFY(mChan->messageQueue().at(1) == received.at(1));
+
+    m = received.at(0);
+    QCOMPARE(static_cast<uint>(m.messageType()),
+            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+    QVERIFY(!m.isTruncated());
+    QVERIFY(!m.hasNonTextContent());
+    QCOMPARE(m.messageToken(), QString::fromAscii(""));
+    QVERIFY(!m.isSpecificToDBusInterface());
+    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(m.size(), 2);
+    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
+            0U);
+    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
+            QString::fromAscii("text/plain"));
+    QCOMPARE(m.text(), QString::fromAscii("You said: One"));
+
+    m = received.at(1);
+    QCOMPARE(static_cast<uint>(m.messageType()),
+            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+    QVERIFY(!m.isTruncated());
+    QVERIFY(!m.hasNonTextContent());
+    QCOMPARE(m.messageToken(), QString::fromAscii(""));
+    QVERIFY(!m.isSpecificToDBusInterface());
+    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(m.size(), 2);
+    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
+            0U);
+    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
+            QString::fromAscii("text/plain"));
+    QCOMPARE(m.text(), QString::fromAscii("You said: Two"));
 }
 
 void TestTextChan::testLegacyText()
@@ -326,6 +382,15 @@ void TestTextChan::testLegacyText()
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
     // implementation detail: legacy text channels get capabilities as soon
     // as the Channel basics are ready
+
+    QVERIFY(connect(mChan,
+                SIGNAL(messageReceived(const Telepathy::Client::Message &)),
+                SLOT(onMessageReceived(const Telepathy::Client::Message &))));
+    QCOMPARE(received.size(), 0);
+    QVERIFY(connect(mChan,
+                SIGNAL(pendingMessageRemoved(const Telepathy::Client::Message &)),
+                SLOT(onMessageRemoved(const Telepathy::Client::Message &))));
+    QCOMPARE(removed.size(), 0);
 
     QVERIFY(connect(mChan,
                 SIGNAL(messageSent(const Telepathy::Client::Message &,
@@ -385,6 +450,8 @@ void TestTextChan::testLegacyText()
     QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
 
     // Make the message queue become ready too
+    QCOMPARE(received.size(), 0);
+    QCOMPARE(mChan->messageQueue().size(), 0);
     QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageQueue),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
@@ -394,8 +461,41 @@ void TestTextChan::testLegacyText()
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageQueue));
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
 
-    // FIXME: when the message queue is implemented, assert that it contains
-    // the echo of our messages
+    // Assert that both our sent messages were echoed by the remote contact
+    QCOMPARE(received.size(), 2);
+    QCOMPARE(mChan->messageQueue().size(), 2);
+    QVERIFY(mChan->messageQueue().at(0) == received.at(0));
+    QVERIFY(mChan->messageQueue().at(1) == received.at(1));
+
+    m = received.at(0);
+    QCOMPARE(static_cast<uint>(m.messageType()),
+            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+    QVERIFY(!m.isTruncated());
+    QVERIFY(!m.hasNonTextContent());
+    QCOMPARE(m.messageToken(), QString::fromAscii(""));
+    QVERIFY(!m.isSpecificToDBusInterface());
+    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(m.size(), 2);
+    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
+            0U);
+    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
+            QString::fromAscii("text/plain"));
+    QCOMPARE(m.text(), QString::fromAscii("You said: One"));
+
+    m = received.at(1);
+    QCOMPARE(static_cast<uint>(m.messageType()),
+            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+    QVERIFY(!m.isTruncated());
+    QVERIFY(!m.hasNonTextContent());
+    QCOMPARE(m.messageToken(), QString::fromAscii(""));
+    QVERIFY(!m.isSpecificToDBusInterface());
+    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(m.size(), 2);
+    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
+            0U);
+    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
+            QString::fromAscii("text/plain"));
+    QCOMPARE(m.text(), QString::fromAscii("You said: Two"));
 }
 
 void TestTextChan::cleanup()
@@ -405,6 +505,7 @@ void TestTextChan::cleanup()
         mChan = 0;
     }
     received.clear();
+    removed.clear();
     sent.clear();
 
     cleanupImpl();
