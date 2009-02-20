@@ -267,14 +267,6 @@ void TestTextChan::commonTest(bool withMessages)
                         Telepathy::MessageSendingFlags,
                         const QString &))));
     QCOMPARE(sent.size(), 0);
-}
-
-void TestTextChan::testMessages()
-{
-    mChan = new TextChannel(mConn, mMessagesChanPath, QVariantMap(), this);
-    Channel *asChannel = mChan;
-
-    commonTest(true);
 
     sendText("One");
 
@@ -288,7 +280,6 @@ void TestTextChan::testMessages()
     QVERIFY(mChan->isReady());
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
 
     sendText("Two");
 
@@ -297,7 +288,7 @@ void TestTextChan::testMessages()
     QCOMPARE(static_cast<uint>(sent.at(0).flags), 0U);
     QCOMPARE(sent.at(0).token, QString::fromAscii(""));
 
-    Message m = sent.at(0).message;
+    Message m(sent.at(0).message);
     QCOMPARE(static_cast<uint>(m.messageType()),
             static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
     QVERIFY(!m.isTruncated());
@@ -323,11 +314,25 @@ void TestTextChan::testMessages()
     QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
     QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
 
-    QCOMPARE(mChan->supportedContentTypes(), QStringList() << "*/*");
-    QCOMPARE(static_cast<uint>(mChan->messagePartSupport()),
-            static_cast<uint>(Telepathy::MessagePartSupportFlagOneAttachment |
-                Telepathy::MessagePartSupportFlagMultipleAttachments));
-    QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
+    if (withMessages) {
+        QCOMPARE(mChan->supportedContentTypes(), QStringList() << "*/*");
+        QCOMPARE(static_cast<uint>(mChan->messagePartSupport()),
+                static_cast<uint>(Telepathy::MessagePartSupportFlagOneAttachment |
+                    Telepathy::MessagePartSupportFlagMultipleAttachments));
+        QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
+    } else {
+        QCOMPARE(mChan->supportedContentTypes(), QStringList() << "text/plain");
+        QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);
+        QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
+    }
+}
+
+void TestTextChan::testMessages()
+{
+    mChan = new TextChannel(mConn, mMessagesChanPath, QVariantMap(), this);
+    Channel *asChannel = mChan;
+
+    commonTest(true);
 
     // Make the message queue become ready too
     QCOMPARE(received.size(), 0);
@@ -348,7 +353,7 @@ void TestTextChan::testMessages()
     QVERIFY(mChan->messageQueue().at(0) == received.at(0));
     QVERIFY(mChan->messageQueue().at(1) == received.at(1));
 
-    m = received.at(0);
+    Message m(received.at(0));
     QCOMPARE(static_cast<uint>(m.messageType()),
             static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
     QVERIFY(!m.isTruncated());
@@ -385,54 +390,6 @@ void TestTextChan::testLegacyText()
 
     commonTest(false);
 
-    sendText("One");
-
-    // Make the Sent signal become ready
-    QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageSentSignal),
-                SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    QVERIFY(mChan->isReady());
-    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
-
-    sendText("Two");
-
-    // We should have received "Two", but not "One"
-    QCOMPARE(sent.size(), 1);
-    QCOMPARE(static_cast<uint>(sent.at(0).flags), 0U);
-    QCOMPARE(sent.at(0).token, QString::fromAscii(""));
-
-    Message m = sent.at(0).message;
-    QCOMPARE(static_cast<uint>(m.messageType()),
-            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
-    QVERIFY(!m.isTruncated());
-    QVERIFY(!m.hasNonTextContent());
-    QCOMPARE(m.messageToken(), QString::fromAscii(""));
-    QVERIFY(!m.isSpecificToDBusInterface());
-    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
-    QCOMPARE(m.size(), 2);
-    QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
-            0U);
-    QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
-            QString::fromAscii("text/plain"));
-    QCOMPARE(m.text(), QString::fromAscii("Two"));
-
-    // Make capabilities become ready
-    QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageCapabilities),
-                SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    QVERIFY(mChan->isReady());
-    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
-
-    QCOMPARE(mChan->supportedContentTypes(), QStringList() << "text/plain");
-    QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);
-    QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
-
     // Make the message queue become ready too
     QCOMPARE(received.size(), 0);
     QCOMPARE(mChan->messageQueue().size(), 0);
@@ -451,7 +408,7 @@ void TestTextChan::testLegacyText()
     QVERIFY(mChan->messageQueue().at(0) == received.at(0));
     QVERIFY(mChan->messageQueue().at(1) == received.at(1));
 
-    m = received.at(0);
+    Message m(received.at(0));
     QCOMPARE(static_cast<uint>(m.messageType()),
             static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
     QVERIFY(!m.isTruncated());
