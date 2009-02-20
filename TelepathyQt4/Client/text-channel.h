@@ -137,32 +137,13 @@ public:
     // requires FeatureMessageQueue
     QList<ReceivedMessage> messageQueue() const;
 
-#if 0
 public Q_SLOTS:
 
-    // Asynchronously acknowledge incoming messages, if not already acked, and
-    // remove them from messageQueue.
-    //
-    // Docs must say that only the primary channel handler can do this.
-    //
-    // I don't think we need to bother with a PendingOperation here.
-    //
-    // Implementation: on InvalidArgument, the QList form should fall back to
-    // acknowledging each message individually
-    //
-    // The messages must have come from this channel, therefore this makes no
-    // sense if FeatureMessageQueue isn't enabled.
-    void acknowledge(ReceivedMessage message);
-    void acknowledge(QList<ReceivedMessage> messages);
+    void acknowledge(const QList<ReceivedMessage> &messages);
 
-    // Remove the objects representing incoming messages from messageQueue,
-    // without acknowledging (appropriate for Observers like loggers)
-    //
-    // The messages must have come from this channel, therefore this makes
-    // no sense if FeatureMessageQueue isn't enabled.
-    void forget(ReceivedMessage message);
-    void forget(QList<ReceivedMessage> messages);
+    void forget(const QList<ReceivedMessage> &messages);
 
+#if 0
     // Returns a sent-message token (as in messageSent), or "".
     QString send(const QString &text,
             ChannelTextMessageType type = ChannelTextMessageTypeNormal);
@@ -195,6 +176,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onChannelReady(Telepathy::Client::PendingOperation *);
     void onContactsFinished(Telepathy::Client::PendingOperation *);
+    void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
 
     void onMessageSent(const Telepathy::MessagePartList &, uint,
             const QString &);

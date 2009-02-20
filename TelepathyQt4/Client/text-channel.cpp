@@ -559,6 +559,7 @@ struct TextChannel::Private
     QList<ReceivedMessage> messages;
     QList<QueuedEvent *> incompleteMessages;
     QSet<uint> awaitingContacts;
+    QHash<QDBusPendingCallWatcher *, UIntList> acknowledgeBatches;
     void contactLost(uint handle);
     void contactFound(QSharedPointer<Contact> contact);
 };
@@ -791,6 +792,95 @@ DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
 QList<ReceivedMessage> TextChannel::messageQueue() const
 {
     return mPriv->messages;
+}
+
+void TextChannel::onAcknowledgePendingMessagesReply(
+        QDBusPendingCallWatcher *watcher)
+{
+    UIntList ids = mPriv->acknowledgeBatches.value(watcher);
+    QDBusPendingReply<> reply = *watcher;
+
+    if (reply.isError()) {
+        // One of the IDs was bad, and we can't know which one. Recover by
+        // doing as much as possible, and hope for the best...
+        debug() << "Recovering from AcknowledgePendingMessages failure for: "
+            << ids;
+        foreach (uint id, ids) {
+            textInterface()->AcknowledgePendingMessages(UIntList() << id);
+        }
+    }
+
+    mPriv->acknowledgeBatches.remove(watcher);
+    watcher->deleteLater();
+}
+
+/**
+ * Acknowledge that received messages have been displayed to the user.
+ *
+ * This method should only be called by the main handler of a Channel, usually
+ * meaning the user interface process that displays the Channel to the user
+ * (when a ChannelDispatcher is used, the Handler must acknowledge messages,
+ * and other Approvers or Observers must not acknowledge messages).
+ *
+ * Processes other than the main handler of a Channel can free memory used
+ * in Telepathy-Qt4 by calling forget() instead.
+ *
+ * The messages must have come from this channel, therefore this method does
+ * not make sense if FeatureMessageQueue has not been enabled.
+ *
+ * \param messages A list of received messages that have now been displayed.
+ */
+void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
+{
+    UIntList ids;
+
+    foreach (const ReceivedMessage &m, messages) {
+        if (m.mPriv->textChannel != this) {
+            warning() << "message did not come from this channel, ignoring";
+        } else {
+            ids << m.mPriv->getUIntOrZero(0, "pending-message-id");
+        }
+    }
+
+    if (ids.isEmpty()) {
+        return;
+    }
+
+    // we're going to acknowledge these messages (or as many as possible, if
+    // we lose a race with another acknowledging process), so let's remove
+    // them from the list immediately
+    forget(messages);
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            textInterface()->AcknowledgePendingMessages(ids));
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *)));
+    mPriv->acknowledgeBatches[watcher] = ids;
+}
+
+/**
+ * Remove messages from messageQueue without acknowledging them.
+ *
+ * This method frees memory inside the Telepathy-Qt4 TextChannel proxy, but
+ * does not free the corresponding memory in the Connection Manager process.
+ * It should be used by clients that are not the main handler for a Channel;
+ * the main handler for a Channel should use acknowledge instead.
+ *
+ * The messages must have come from this channel, therefore this method does
+ * not make sense if FeatureMessageQueue has not been enabled.
+ *
+ * \param messages A list of received messages that have now been processed.
+ */
+void TextChannel::forget(const QList<ReceivedMessage> &messages)
+{
+    foreach (const ReceivedMessage &m, messages) {
+        if (m.mPriv->textChannel != this) {
+            warning() << "message did not come from this channel, ignoring";
+        } else if (mPriv->messages.removeOne(m)) {
+            emit pendingMessageRemoved(m);
+        }
+    }
 }
 
 /**
