@@ -167,6 +167,23 @@ Message::Message(uint timestamp, uint type, const QString &text)
 }
 
 /**
+ * Constructor, from the parameters of the old Send method.
+ *
+ * \param type The message type
+ * \param text The text of the message
+ */
+Message::Message(uint type, const QString &text)
+    : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
+{
+    mPriv->parts[0].insert(QString::fromAscii("message-type"),
+            QDBusVariant(type));
+
+    mPriv->parts[1].insert(QString::fromAscii("content-type"),
+            QDBusVariant(QString::fromAscii("text/plain")));
+    mPriv->parts[1].insert(QString::fromAscii("content"), QDBusVariant(text));
+}
+
+/**
  * Copy constructor.
  */
 Message::Message(const Message &other)
@@ -396,6 +413,11 @@ int Message::size() const
 MessagePart Message::part(uint index) const
 {
     return mPriv->parts.at(index);
+}
+
+MessagePartList Message::parts() const
+{
+    return mPriv->parts;
 }
 
 /**

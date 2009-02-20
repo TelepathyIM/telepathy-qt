@@ -72,6 +72,7 @@ public:
 
     int size() const;
     MessagePart part(uint index) const;
+    MessagePartList parts() const;
 
 private:
     friend class TextChannel;
@@ -79,6 +80,7 @@ private:
 
     Message();
     Message(const MessagePartList &parts);
+    Message(uint, const QString &);
     Message(uint, uint, const QString &);
 
     class Private;

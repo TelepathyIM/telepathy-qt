@@ -26,6 +26,7 @@
 #endif
 
 #include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Client/PendingOperation>
 
 namespace Telepathy
 {
@@ -35,6 +36,31 @@ namespace Client
 class PendingReadyChannel;
 class Message;
 class ReceivedMessage;
+class TextChannel;
+
+class PendingSendMessage : public PendingOperation
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(PendingSendMessage)
+
+public:
+    PendingSendMessage(const Message &message, QObject *parent = 0);
+    ~PendingSendMessage();
+
+    QString sentMessageToken() const;
+    Message message() const;
+
+private Q_SLOTS:
+    void onTextSent(QDBusPendingCallWatcher *);
+    void onMessageSent(QDBusPendingCallWatcher *);
+
+private:
+    friend class TextChannel;
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
 
 class TextChannel : public Channel
 {
@@ -80,11 +106,10 @@ public Q_SLOTS:
 
     void forget(const QList<ReceivedMessage> &messages);
 
-#if 0
-    // Returns a sent-message token (as in messageSent), or "".
-    QString send(const QString &text,
+    PendingSendMessage *send(const QString &text,
             ChannelTextMessageType type = ChannelTextMessageTypeNormal);
 
+#if 0
     // For advanced users.
     //
     // Returns a sent-message token (as in messageSent), or "".

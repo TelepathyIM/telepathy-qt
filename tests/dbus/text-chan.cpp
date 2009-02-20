@@ -127,16 +127,11 @@ void TestTextChan::expectConnReady(uint newStatus, uint newStatusReason)
 
 void TestTextChan::sendText(const char *text)
 {
-    // FIXME: there's no high-level API for Send() yet, so...
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            mChan->textInterface()->Send(
-                Telepathy::ChannelTextMessageTypeNormal,
-                QLatin1String(text)));
-    QVERIFY(connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+    QVERIFY(connect(mChan->send(QLatin1String(text),
+                    Telepathy::ChannelTextMessageTypeNormal),
+                SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
 }
 
 void TestTextChan::initTestCase()

@@ -39,6 +39,63 @@ namespace Telepathy
 namespace Client
 {
 
+struct PendingSendMessage::Private
+{
+    inline Private(const Message &message);
+    QString token;
+    Message message;
+};
+
+inline PendingSendMessage::Private::Private(const Message &message)
+    : token(QString::fromAscii("")), message(message)
+{
+}
+
+PendingSendMessage::PendingSendMessage(const Message &message, QObject *parent)
+    : PendingOperation(parent), mPriv(new Private(message))
+{
+}
+
+PendingSendMessage::~PendingSendMessage()
+{
+    delete mPriv;
+}
+
+QString PendingSendMessage::sentMessageToken() const
+{
+    return mPriv->token;
+}
+
+Message PendingSendMessage::message() const
+{
+    return mPriv->message;
+}
+
+void PendingSendMessage::onTextSent(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<> reply = *watcher;
+
+    if (reply.isError()) {
+        setFinishedWithError(reply.error());
+    } else {
+        setFinished();
+    }
+    watcher->deleteLater();
+}
+
+void PendingSendMessage::onMessageSent(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QString> reply = *watcher;
+
+    if (reply.isError()) {
+        setFinishedWithError(reply.error());
+    } else {
+        mPriv->token = reply.value();
+        setFinished();
+    }
+    watcher->deleteLater();
+}
+
 struct TextChannel::Private
 {
     inline Private();
@@ -400,6 +457,27 @@ void TextChannel::forget(const QList<ReceivedMessage> &messages)
             emit pendingMessageRemoved(m);
         }
     }
+}
+
+PendingSendMessage *TextChannel::send(const QString &text,
+        ChannelTextMessageType type)
+{
+    Message m(type, text);
+    PendingSendMessage *op = new PendingSendMessage(m, this);
+
+    if (hasMessagesInterface()) {
+        connect(new QDBusPendingCallWatcher(
+                    messagesInterface()->SendMessage(m.parts(), 0)),
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                op,
+                SLOT(onMessageSent(QDBusPendingCallWatcher *)));
+    } else {
+        connect(new QDBusPendingCallWatcher(textInterface()->Send(type, text)),
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                op,
+                SLOT(onTextSent(QDBusPendingCallWatcher *)));
+    }
+    return op;
 }
 
 /**
