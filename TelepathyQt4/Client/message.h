@@ -44,6 +44,7 @@ class Message
 {
 public:
 
+    Message(ChannelTextMessageType, const QString &);
     Message(const Message &other);
     Message &operator=(const Message &other);
     bool operator==(const Message &other) const;
@@ -80,7 +81,6 @@ private:
 
     Message();
     Message(const MessagePartList &parts);
-    Message(uint, const QString &);
     Message(uint, uint, const QString &);
 
     class Private;

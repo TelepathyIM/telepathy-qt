@@ -172,11 +172,11 @@ Message::Message(uint timestamp, uint type, const QString &text)
  * \param type The message type
  * \param text The text of the message
  */
-Message::Message(uint type, const QString &text)
+Message::Message(ChannelTextMessageType type, const QString &text)
     : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
 {
     mPriv->parts[0].insert(QString::fromAscii("message-type"),
-            QDBusVariant(type));
+            QDBusVariant(static_cast<uint>(type)));
 
     mPriv->parts[1].insert(QString::fromAscii("content-type"),
             QDBusVariant(QString::fromAscii("text/plain")));
