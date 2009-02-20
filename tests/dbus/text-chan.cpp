@@ -12,7 +12,7 @@
 
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/simple-conn.h>
+#include <tests/lib/contacts-conn.h>
 #include <tests/lib/echo/chan.h>
 #include <tests/lib/echo2/chan.h>
 #include <tests/lib/test.h>
@@ -66,7 +66,7 @@ private Q_SLOTS:
 private:
     void sendText(const char *text);
 
-    SimpleConnection *mConnService;
+    ContactsConnection *mConnService;
     TpBaseConnection *mBaseConnService;
     TpHandleRepoIface *mContactRepo;
     ExampleEchoChannel *mTextChanService;
@@ -136,8 +136,8 @@ void TestTextChan::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = SIMPLE_CONNECTION(g_object_new(
-            SIMPLE_TYPE_CONNECTION,
+    mConnService = CONTACTS_CONNECTION(g_object_new(
+            CONTACTS_TYPE_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
             0));
