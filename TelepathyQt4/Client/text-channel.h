@@ -25,8 +25,6 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QSharedDataPointer>
-
 #include <TelepathyQt4/Client/Channel>
 
 namespace Telepathy
