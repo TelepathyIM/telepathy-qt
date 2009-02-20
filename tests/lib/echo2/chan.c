@@ -134,7 +134,7 @@ send_message (GObject *object,
 
       /* in this example we ignore interface-specific parts */
 
-      s = tp_asv_get_string (input, "type");
+      s = tp_asv_get_string (input, "content-type");
 
       if (s == NULL)
         continue;
@@ -148,9 +148,9 @@ send_message (GObject *object,
 
       j = tp_message_append_part (received);
 
-      s = tp_asv_get_string (input, "type");
+      s = tp_asv_get_string (input, "content-type");
       g_assert (s != NULL);   /* already checked */
-      tp_message_set_string (received, j, "type", s);
+      tp_message_set_string (received, j, "content-type", s);
 
       s = tp_asv_get_string (input, "identifier");
 
