@@ -412,7 +412,7 @@ ReceivedMessage::ReceivedMessage()
  *              specification. This list must have length at least 1.
  */
 ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
-        const TextChannel *channel, QSharedPointer<Contact> sender)
+        const TextChannel *channel)
     : Message(parts)
 {
     if (!mPriv->parts[0].contains(QLatin1String("message-received"))) {
@@ -421,7 +421,6 @@ ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
                         QDateTime::currentDateTime().toTime_t())));
     }
     mPriv->textChannel = channel;
-    mPriv->sender = sender;
 }
 
 /**

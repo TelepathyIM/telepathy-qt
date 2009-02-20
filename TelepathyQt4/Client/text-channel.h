@@ -94,8 +94,7 @@ public:
 
 private:
     friend class TextChannel;
-    ReceivedMessage(const MessagePartList &parts, const TextChannel *channel,
-            QSharedPointer<Contact> sender);
+    ReceivedMessage(const MessagePartList &parts, const TextChannel *channel);
     ReceivedMessage();
 };
 
