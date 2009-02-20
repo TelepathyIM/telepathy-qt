@@ -524,6 +524,12 @@ struct TextChannel::Private
     QStringList supportedContentTypes;
     MessagePartSupportFlags messagePartSupport;
     DeliveryReportingSupportFlags deliveryReportingSupport;
+
+    // FeatureMessageQueue
+    bool connectedMessageQueueSignals;
+    bool getAllMessagesInFlight;
+    bool listPendingMessagesCalled;
+    bool initialMessagesReceived;
 };
 
 TextChannel::Private::Private()
@@ -532,7 +538,11 @@ TextChannel::Private::Private()
       pendingReady(),
       supportedContentTypes(),
       messagePartSupport(0),
-      deliveryReportingSupport(0)
+      deliveryReportingSupport(0),
+      connectedMessageQueueSignals(false),
+      getAllMessagesInFlight(false),
+      listPendingMessagesCalled(false),
+      initialMessagesReceived(false)
 {
 }
 
@@ -856,46 +866,72 @@ void TextChannel::Private::continueReadying(TextChannel *channel)
         // FeatureMessageCapabilities needs GetAll
         // FeatureMessageSentSignal already done
 
-        if (pendingFeatures & TextChannel::FeatureMessageQueue) {
-            channel->connect(channel->messagesInterface(),
-                    SIGNAL(MessageReceived(const Telepathy::MessagePartList &)),
-                    SLOT(onMessageReceived(const Telepathy::MessagePartList &)));
+        bool getAll = false;
 
-            channel->connect(channel->messagesInterface(),
-                    SIGNAL(PendingMessagesRemoved(const Telepathy::UIntList &)),
-                    SLOT(onPendingMessagesRemoved(const Telepathy::UIntList &)));
+        if (pendingFeatures & TextChannel::FeatureMessageQueue) {
+            if (!connectedMessageQueueSignals) {
+                connectedMessageQueueSignals = true;
+                channel->connect(channel->messagesInterface(),
+                        SIGNAL(MessageReceived(const Telepathy::MessagePartList &)),
+                        SLOT(onMessageReceived(const Telepathy::MessagePartList &)));
+
+                channel->connect(channel->messagesInterface(),
+                        SIGNAL(PendingMessagesRemoved(const Telepathy::UIntList &)),
+                        SLOT(onPendingMessagesRemoved(const Telepathy::UIntList &)));
+            }
+
+            if (!initialMessagesReceived) {
+                getAll = true;
+            }
         }
 
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                channel->propertiesInterface()->GetAll(
-                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
-                    channel);
-        channel->connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(onGetAllMessagesReply(QDBusPendingCallWatcher *)));
+        if (pendingFeatures & TextChannel::FeatureMessageCapabilities) {
+            getAll = true;
+        }
+
+        if (getAll && !getAllMessagesInFlight) {
+            getAllMessagesInFlight = true;
+            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                    channel->propertiesInterface()->GetAll(
+                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
+                        channel);
+            channel->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher *)),
+                    SLOT(onGetAllMessagesReply(QDBusPendingCallWatcher *)));
+        }
     } else {
         // FeatureMessageQueue needs signal connections +
         //  ListPendingMessages
         // FeatureMessageCapabilities already done
         // FeatureMessageSentSignal already done
 
-        channel->connect(channel->textInterface(),
-                SIGNAL(Received(uint, uint, uint, uint, uint,
-                        const QString &)),
-                SLOT(onTextReceived(uint, uint, uint, uint, uint,
-                        const QString &)));
+        if (pendingFeatures & TextChannel::FeatureMessageQueue) {
+            if (!connectedMessageQueueSignals) {
+                connectedMessageQueueSignals = true;
 
-        // we present SendError signals as if they were incoming messages,
-        // to be consistent with Messages
-        channel->connect(channel->textInterface(),
-                SIGNAL(SendError(uint, uint, uint, const QString &)),
-                SLOT(onTextSendError(uint, uint, uint, const QString &)));
+                channel->connect(channel->textInterface(),
+                        SIGNAL(Received(uint, uint, uint, uint, uint,
+                                const QString &)),
+                        SLOT(onTextReceived(uint, uint, uint, uint, uint,
+                                const QString &)));
 
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                channel->textInterface()->ListPendingMessages(false), channel);
-        channel->connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(onListPendingMessagesReply(QDBusPendingCallWatcher *)));
+                // we present SendError signals as if they were incoming
+                // messages, to be consistent with Messages
+                channel->connect(channel->textInterface(),
+                        SIGNAL(SendError(uint, uint, uint, const QString &)),
+                        SLOT(onTextSendError(uint, uint, uint, const QString &)));
+            }
+
+            if (!listPendingMessagesCalled) {
+                listPendingMessagesCalled = true;
+
+                QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                        channel->textInterface()->ListPendingMessages(false), channel);
+                channel->connect(watcher,
+                        SIGNAL(finished(QDBusPendingCallWatcher *)),
+                        SLOT(onListPendingMessagesReply(QDBusPendingCallWatcher *)));
+            }
+        }
     }
 }
 
@@ -909,10 +945,16 @@ void TextChannel::onMessageSent(const Telepathy::MessagePartList &parts,
 
 void TextChannel::onMessageReceived(const Telepathy::MessagePartList &parts)
 {
+    if (!mPriv->initialMessagesReceived) {
+        return;
+    }
 }
 
 void TextChannel::onPendingMessagesRemoved(const Telepathy::UIntList &ids)
 {
+    if (!mPriv->initialMessagesReceived) {
+        return;
+    }
 }
 
 void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
@@ -924,15 +966,24 @@ void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
 void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
         uint type, uint flags, const QString &text)
 {
+    if (!mPriv->initialMessagesReceived) {
+        return;
+    }
 }
 
 void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
         const QString &text)
 {
+    if (!mPriv->initialMessagesReceived) {
+        return;
+    }
 }
 
 void TextChannel::onGetAllMessagesReply(QDBusPendingCallWatcher *watcher)
 {
+    Q_ASSERT(mPriv->getAllMessagesInFlight);
+    mPriv->getAllMessagesInFlight = false;
+
     QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
 
@@ -946,7 +997,10 @@ void TextChannel::onGetAllMessagesReply(QDBusPendingCallWatcher *watcher)
         // ... and act as though props had been empty
     }
 
-    if (mPriv->pendingFeatures & FeatureMessageQueue) {
+    if (!mPriv->initialMessagesReceived &&
+        (mPriv->pendingFeatures & FeatureMessageQueue)) {
+        mPriv->initialMessagesReceived = true;
+
         // FIXME: actually put the messages in the queue
 
         mPriv->features |= FeatureMessageQueue;
@@ -970,6 +1024,11 @@ void TextChannel::onGetAllMessagesReply(QDBusPendingCallWatcher *watcher)
 
 void TextChannel::onListPendingMessagesReply(QDBusPendingCallWatcher *watcher)
 {
+    Q_ASSERT(!mPriv->initialMessagesReceived);
+    Q_ASSERT(mPriv->listPendingMessagesCalled);
+
+    mPriv->initialMessagesReceived = true;
+
     // FIXME: actually put the messages in the queue
 
     mPriv->features |= FeatureMessageQueue;
