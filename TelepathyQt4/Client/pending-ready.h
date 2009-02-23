@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,15 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_cli_connection_internal_h_HEADER_GUARD_
-#define _TelepathyQt4_cli_connection_internal_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_cli_pending_ready_h_HEADER_GUARD_
+#define _TelepathyQt4_cli_pending_ready_h_HEADER_GUARD_
 
-#include <TelepathyQt4/Client/Connection>
+#ifndef IN_TELEPATHY_QT4_HEADER
+#error IN_TELEPATHY_QT4_HEADER
+#endif
 
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/ReadinessHelper>
 
 #include <QSet>
 
@@ -33,19 +36,24 @@ namespace Telepathy
 namespace Client
 {
 
-class Connection::PendingConnect : public PendingOperation
+class PendingReady: public PendingOperation
 {
     Q_OBJECT
 
 public:
-    PendingConnect(Connection *parent, const QSet<uint> &requestedFeatures);
+    ~PendingReady();
 
-private Q_SLOTS:
-    void onConnectReply(QDBusPendingCallWatcher *);
-    void onBecomeReadyReply(Telepathy::Client::PendingOperation *);
+    QObject *object() const;
+    QSet<uint> requestedFeatures() const;
 
 private:
-    QSet<uint> requestedFeatures;
+    Q_DISABLE_COPY(PendingReady);
+    PendingReady(const QSet<uint> &requestedFeatures, QObject *object);
+
+    struct Private;
+    friend struct Private;
+    friend class ReadinessHelper;
+    Private *mPriv;
 };
 
 } // Telepathy::Client

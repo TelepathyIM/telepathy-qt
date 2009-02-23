@@ -58,6 +58,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-contacts.cpp \
     Client/pending-handles.cpp \
     Client/pending-operation.cpp \
+    Client/pending-ready.cpp \
     Client/pending-ready-account.cpp \
     Client/pending-ready-account-manager.cpp \
     Client/pending-ready-channel.cpp \
@@ -65,6 +66,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-ready-connection-manager.cpp \
     Client/pending-string-list.cpp \
     Client/properties.cpp \
+    Client/readiness-helper.cpp \
     Client/referenced-handles.cpp \
     Client/room-list.cpp \
     Client/streamed-media-channel.cpp \
@@ -115,12 +117,14 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     Client/_gen/pending-contacts.moc.hpp \
     Client/_gen/pending-handles.moc.hpp \
     Client/_gen/pending-operation.moc.hpp \
+    Client/_gen/pending-ready.moc.hpp \
     Client/_gen/pending-ready-account.moc.hpp \
     Client/_gen/pending-ready-account-manager.moc.hpp \
     Client/_gen/pending-ready-channel.moc.hpp \
     Client/_gen/pending-ready-connection.moc.hpp \
     Client/_gen/pending-ready-connection-manager.moc.hpp \
     Client/_gen/pending-string-list.moc.hpp \
+    Client/_gen/readiness-helper.moc.hpp \
     Client/_gen/room-list.moc.hpp \
     Client/_gen/simple-pending-operations.moc.hpp \
     Client/_gen/streamed-media-channel.moc.hpp \
@@ -160,6 +164,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingContactAttributes \
     Client/PendingFailure \
     Client/PendingOperation \
+    Client/PendingReady \
     Client/PendingReadyAccount \
     Client/PendingReadyAccountManager \
     Client/PendingReadyChannel \
@@ -169,6 +174,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingStringList \
     Client/PendingVoidMethodCall \
     Client/Properties \
+    Client/ReadinessHelper \
     Client/ReferencedHandles \
     Client/ReferencedHandlesIterator \
     Client/RoomList \
@@ -228,6 +234,7 @@ tpqt4clientinclude_HEADERS = \
     Client/pending-contacts.h \
     Client/pending-handles.h \
     Client/pending-operation.h \
+    Client/pending-ready.h \
     Client/pending-ready-account.h \
     Client/pending-ready-account-manager.h \
     Client/pending-ready-channel.h \
@@ -235,6 +242,7 @@ tpqt4clientinclude_HEADERS = \
     Client/pending-ready-connection-manager.h \
     Client/pending-string-list.h \
     Client/properties.h \
+    Client/readiness-helper.h \
     Client/referenced-handles.h \
     Client/room-list.h \
     Client/simple-pending-operations.h \

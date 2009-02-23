@@ -9,7 +9,7 @@
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingChannel>
 #include <TelepathyQt4/Client/PendingHandles>
-#include <TelepathyQt4/Client/PendingReadyConnection>
+#include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/PendingReadyChannel>
 #include <TelepathyQt4/Client/ReferencedHandles>
 #include <TelepathyQt4/Debug>
@@ -204,11 +204,12 @@ void TestChanBasics::initTestCase()
 
     mConn->requestConnect();
 
-    QVERIFY(connect(mConn->becomeReady(),
+    QSet<uint> features = QSet<uint>() << Connection::FeatureSelfContact;
+    QVERIFY(connect(mConn->becomeReady(features),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mConn->isReady(), true);
+    QCOMPARE(mConn->isReady(features), true);
 
     if (mConn->status() != Connection::StatusConnected) {
         QVERIFY(connect(mConn,

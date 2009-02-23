@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2008, 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008, 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,7 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
+#include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -51,7 +52,7 @@ class PendingChannel;
 class PendingContactAttributes;
 class PendingHandles;
 class PendingOperation;
-class PendingReadyConnection;
+class PendingReady;
 
 class Connection : public StatefulDBusProxy,
                    private OptionalInterfaceFactory<Connection>
@@ -62,7 +63,9 @@ class Connection : public StatefulDBusProxy,
 
 public:
     enum Feature {
-        FeatureSimplePresence = 1,
+        FeatureCore = 0,
+        FeatureSelfContact = 1,
+        FeatureSimplePresence = 2,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -156,7 +159,7 @@ public:
 
     PendingChannel *ensureChannel(const QVariantMap &request);
 
-    PendingOperation *requestConnect(Features features = 0);
+    PendingOperation *requestConnect(const QSet<uint> &requestedFeatures = QSet<uint>());
 
     PendingOperation *requestDisconnect();
 
@@ -169,9 +172,13 @@ public:
     QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
 
-    bool isReady(Features features = 0) const;
+    bool isReady(const QSet<uint> &features = QSet<uint>()) const;
 
-    PendingReadyConnection *becomeReady(Features features = 0);
+    PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
+
+    QSet<uint> requestedFeatures() const;
+    QSet<uint> actualFeatures() const;
+    QSet<uint> missingFeatures() const;
 
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
@@ -183,6 +190,7 @@ protected:
     ConnectionInterface *baseInterface() const;
 
 private Q_SLOTS:
+    void onStatusReady(uint);
     void onStatusChanged(uint, uint);
     void gotStatus(QDBusPendingCallWatcher *watcher);
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
@@ -192,8 +200,6 @@ private Q_SLOTS:
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
 
     void doReleaseSweep(uint type);
-
-    void continueIntrospection();
 
     void onSelfHandleChanged(uint);
 
