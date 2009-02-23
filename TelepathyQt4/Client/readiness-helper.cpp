@@ -363,8 +363,8 @@ PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
     if (!mPriv->proxy->isValid()) {
         PendingReady *operation =
             new PendingReady(requestedFeatures, this);
-        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Proxy is invalid");
+        operation->setFinishedWithError(mPriv->proxy->invalidationReason(),
+                mPriv->proxy->invalidationMessage());
         return operation;
     }
 
