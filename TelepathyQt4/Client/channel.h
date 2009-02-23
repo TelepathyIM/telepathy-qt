@@ -206,6 +206,12 @@ public:
         return optionalInterface<ChannelInterfaceMediaSignallingInterface>(check);
     }
 
+    inline ChannelInterfaceMessagesInterface *messagesInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<ChannelInterfaceMessagesInterface>(check);
+    }
+
     inline ChannelInterfacePasswordInterface *passwordInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
