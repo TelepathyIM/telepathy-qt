@@ -25,6 +25,7 @@
 /depcomp
 /doc/*
 /doxygen.cfg
+/examples/accounts/accounts
 /install-sh
 /lcov.info
 /lcov.info.tmp
