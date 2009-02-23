@@ -19,6 +19,7 @@ EXTRA_DIST = \
 
 BUILT_SOURCES = \
     _gen/test.h.moc.hpp
+CLEANFILES = $(BUILT_SOURCES)
 
 libtp_qt4_tests_la_SOURCES = \
     test.cpp \
