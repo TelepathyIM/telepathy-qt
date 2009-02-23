@@ -1,6 +1,8 @@
 SUBDIRS =
 
-AM_CFLAGS = $(ERROR_CFLAGS)
+AM_CFLAGS = \
+    $(ERROR_CFLAGS) \
+    -I$(top_builddir) -I$(top_srcdir)
 
 MOC_INCLUDES = \
     $(QTCORE_CFLAGS) \
