@@ -30,7 +30,6 @@ public:
     { }
 
 protected Q_SLOTS:
-    void expectConnReady(uint, uint);
     void expectConnInvalidated();
     void expectPendingHandleFinished(Telepathy::Client::PendingOperation*);
     void expectCreateChannelFinished(Telepathy::Client::PendingOperation *);
@@ -54,29 +53,6 @@ private:
     QString mChanObjectPath;
     uint mHandle;
 };
-
-void TestConnRequests::expectConnReady(uint newStatus, uint newStatusReason)
-{
-    qDebug() << "connection changed to status" << newStatus;
-    switch (newStatus) {
-    case Connection::StatusDisconnected:
-        qWarning() << "Disconnected";
-        mLoop->exit(1);
-        break;
-    case Connection::StatusConnecting:
-        /* do nothing */
-        break;
-    case Connection::StatusConnected:
-        qDebug() << "Ready";
-        mLoop->exit(0);
-        break;
-    default:
-        qWarning().nospace() << "What sort of status is "
-            << newStatus << "?!";
-        mLoop->exit(2);
-        break;
-    }
-}
 
 void TestConnRequests::expectConnInvalidated()
 {
@@ -200,25 +176,13 @@ void TestConnRequests::initTestCase()
     mConn = new Connection(mConnName, mConnPath);
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->requestConnect();
-
-    QVERIFY(connect(mConn->becomeReady(),
+    QVERIFY(connect(mConn->requestConnect(),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
 
-    if (mConn->status() != Connection::StatusConnected) {
-        QVERIFY(connect(mConn,
-                        SIGNAL(statusChanged(uint, uint)),
-                        SLOT(expectConnReady(uint, uint))));
-        QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn,
-                           SIGNAL(statusChanged(uint, uint)),
-                           this,
-                           SLOT(expectConnReady(uint, uint))));
-        QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
-    }
+    QCOMPARE(mConn->status(), static_cast<uint>(Connection::StatusConnected));
 
     QVERIFY(mConn->requestsInterface() != 0);
 }
