@@ -46,9 +46,14 @@ public:
 
     Message(ChannelTextMessageType, const QString &);
     Message(const Message &other);
+    ~Message();
+
     Message &operator=(const Message &other);
     bool operator==(const Message &other) const;
-    ~Message();
+    inline bool operator!=(const Message &other) const
+    {
+        return !(*this == other);
+    }
 
     // Convenient access to headers
 
