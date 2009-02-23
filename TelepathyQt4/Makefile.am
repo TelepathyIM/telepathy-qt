@@ -50,6 +50,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/file-transfer.cpp \
     Client/media-session-handler.cpp \
     Client/media-stream-handler.cpp \
+    Client/message.cpp \
     Client/optional-interface-factory.cpp \
     Client/pending-account.cpp \
     Client/pending-channel.cpp \
@@ -152,6 +153,7 @@ tpqt4clientinclude_HEADERS = \
     Client/FileTransfer \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
+    Client/Message \
     Client/OptionalInterfaceFactory \
     Client/PendingAccount \
     Client/PendingChannel \
@@ -169,6 +171,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingStringList \
     Client/PendingVoidMethodCall \
     Client/Properties \
+    Client/ReceivedMessage \
     Client/ReferencedHandles \
     Client/ReferencedHandlesIterator \
     Client/RoomList \
@@ -220,6 +223,7 @@ tpqt4clientinclude_HEADERS = \
     Client/file-transfer.h \
     Client/media-session-handler.h \
     Client/media-stream-handler.h \
+    Client/message.h \
     Client/optional-interface-factory.h \
     Client/pending-account.h \
     Client/pending-channel.h \

@@ -53,6 +53,7 @@ private:
     struct Private;
     friend struct Private;
     friend class Channel;
+    friend class TextChannel;
     Private *mPriv;
 };
 

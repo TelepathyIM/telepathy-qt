@@ -1,4 +1,4 @@
-SUBDIRS = . csh echo2
+SUBDIRS =
 
 AM_CFLAGS = $(ERROR_CFLAGS)
 
@@ -25,6 +25,7 @@ libtp_qt4_tests_la_LIBADD = $(top_builddir)/TelepathyQt4/libtelepathy-qt4.la
 
 if ENABLE_TP_GLIB_TESTS
 
+SUBDIRS += echo
 AM_CFLAGS += $(TP_GLIB_CFLAGS)
 AM_CXXFLAGS += $(TP_GLIB_CFLAGS)
 
@@ -39,7 +40,14 @@ libtp_glib_tests_la_SOURCES = \
     simple-manager.c \
     simple-manager.h
 libtp_glib_tests_la_LIBADD = \
-    $(TP_GLIB_LIBS)
+    $(TP_GLIB_LIBS) \
+    echo/libexample-cm-echo.la
+
+# Currently, the csh and echo2 subdirectories contain hacked-up versions of
+# the telepathy-glib examples. In future we should fix this divergence and
+# make them behave like the echo subdirectory instead. However, until then,
+# we need to compile this directory before those subdirectories.
+SUBDIRS += . csh echo2
 
 endif
 

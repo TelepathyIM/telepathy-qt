@@ -16,24 +16,21 @@
 #include <telepathy-glib/base-connection.h>
 #include <telepathy-glib/channel-iface.h>
 #include <telepathy-glib/dbus.h>
-#include <telepathy-glib/gtypes.h>
 #include <telepathy-glib/interfaces.h>
 #include <telepathy-glib/svc-channel.h>
 #include <telepathy-glib/svc-generic.h>
 
+static void text_iface_init (gpointer iface, gpointer data);
 static void channel_iface_init (gpointer iface, gpointer data);
 static void destroyable_iface_init (gpointer iface, gpointer data);
 
-G_DEFINE_TYPE_WITH_CODE (ExampleEcho2Channel,
-    example_echo_2_channel,
+G_DEFINE_TYPE_WITH_CODE (ExampleEchoChannel,
+    example_echo_channel,
     G_TYPE_OBJECT,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_DBUS_PROPERTIES,
       tp_dbus_properties_mixin_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL, channel_iface_init);
-    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_TYPE_TEXT,
-      tp_message_mixin_text_iface_init);
-    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_MESSAGES,
-      tp_message_mixin_messages_iface_init);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_TYPE_TEXT, text_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_DESTROYABLE,
       destroyable_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL);
@@ -58,7 +55,7 @@ enum
   N_PROPS
 };
 
-struct _ExampleEcho2ChannelPrivate
+struct _ExampleEchoChannelPrivate
 {
   TpBaseConnection *conn;
   gchar *object_path;
@@ -70,122 +67,17 @@ struct _ExampleEcho2ChannelPrivate
   unsigned disposed:1;
 };
 
-static const char * example_echo_2_channel_interfaces[] = {
-    TP_IFACE_CHANNEL_INTERFACE_MESSAGES,
-    NULL };
-/* FIXME: when supported, add TP_IFACE_CHANNEL_INTERFACE_DESTROYABLE */
+static const char * example_echo_channel_interfaces[] = {
+    TP_IFACE_CHANNEL_INTERFACE_DESTROYABLE,
+    NULL
+};
 
 static void
-example_echo_2_channel_init (ExampleEcho2Channel *self)
+example_echo_channel_init (ExampleEchoChannel *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, EXAMPLE_TYPE_ECHO_2_CHANNEL,
-      ExampleEcho2ChannelPrivate);
+  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, EXAMPLE_TYPE_ECHO_CHANNEL,
+      ExampleEchoChannelPrivate);
 }
-
-
-static void
-send_message (GObject *object,
-              TpMessage *message,
-              TpMessageSendingFlags flags)
-{
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
-  time_t timestamp = time (NULL);
-  guint len = tp_message_count_parts (message);
-  TpMessage *received = NULL;
-  guint i;
-
-  if (tp_asv_get_string (tp_message_peek (message, 0), "interface") != NULL)
-    {
-      /* this message is interface-specific - let's not echo it */
-      goto finally;
-    }
-
-  received = tp_message_new (self->priv->conn, 1, len);
-
-  /* Copy/modify the headers for the "received" message */
-    {
-      TpChannelTextMessageType message_type;
-      gboolean valid;
-
-      tp_message_set_handle (received, 0, "message-sender",
-          TP_HANDLE_TYPE_CONTACT, self->priv->handle);
-
-      message_type = tp_asv_get_uint32 (tp_message_peek (message, 0),
-          "message-type", &valid);
-
-      /* The check for 'valid' means that if message-type is missing or of the
-       * wrong type, fall back to NORMAL (this is in fact a no-op, since
-       * NORMAL == 0 and tp_asv_get_uint32 returns 0 on missing or wrongly
-       * typed values) */
-      if (valid && message_type != TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL)
-        tp_message_set_uint32 (received, 0, "message-type", message_type);
-
-      tp_message_set_uint32 (received, 0, "message-sent", timestamp);
-      tp_message_set_uint32 (received, 0, "message-received", timestamp);
-    }
-
-  /* Copy the content for the "received" message */
-  for (i = 1; i < len; i++)
-    {
-      const GHashTable *input = tp_message_peek (message, i);
-      const gchar *s;
-      const GValue *value;
-      guint j;
-
-      /* in this example we ignore interface-specific parts */
-
-      s = tp_asv_get_string (input, "content-type");
-
-      if (s == NULL)
-        continue;
-
-      s = tp_asv_get_string (input, "interface");
-
-      if (s != NULL)
-        continue;
-
-      /* OK, we want to copy this part */
-
-      j = tp_message_append_part (received);
-
-      s = tp_asv_get_string (input, "content-type");
-      g_assert (s != NULL);   /* already checked */
-      tp_message_set_string (received, j, "content-type", s);
-
-      s = tp_asv_get_string (input, "identifier");
-
-      if (s != NULL)
-        tp_message_set_string (received, j, "identifier", s);
-
-      s = tp_asv_get_string (input, "alternative");
-
-      if (s != NULL)
-        tp_message_set_string (received, j, "alternative", s);
-
-      s = tp_asv_get_string (input, "lang");
-
-      if (s != NULL)
-        tp_message_set_string (received, j, "lang", s);
-
-      value = tp_asv_lookup (input, "content");
-
-      if (value != NULL)
-        tp_message_set (received, j, "content", value);
-    }
-
-finally:
-  /* "OK, we've sent the message" (after calling this, message must not be
-   * dereferenced) */
-  tp_message_mixin_sent (object, message, flags, "", NULL);
-
-  if (received != NULL)
-    {
-      /* Pretend the other user sent us back the same message. After this call,
-       * the received message is owned by the mixin */
-      tp_message_mixin_take_received (object, received);
-    }
-}
-
 
 static GObject *
 constructor (GType type,
@@ -193,18 +85,12 @@ constructor (GType type,
              GObjectConstructParam *props)
 {
   GObject *object =
-      G_OBJECT_CLASS (example_echo_2_channel_parent_class)->constructor (type,
+      G_OBJECT_CLASS (example_echo_channel_parent_class)->constructor (type,
           n_props, props);
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
   DBusGConnection *bus;
-  static TpChannelTextMessageType const types[] = {
-      TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL,
-      TP_CHANNEL_TEXT_MESSAGE_TYPE_ACTION,
-      TP_CHANNEL_TEXT_MESSAGE_TYPE_NOTICE
-  };
-  static const char * const content_types[] = { "*/*", NULL };
 
   tp_handle_ref (contact_repo, self->priv->handle);
 
@@ -214,15 +100,14 @@ constructor (GType type,
   bus = tp_get_bus ();
   dbus_g_connection_register_g_object (bus, self->priv->object_path, object);
 
-  tp_message_mixin_init (object, G_STRUCT_OFFSET (ExampleEcho2Channel, text),
-      self->priv->conn);
+  tp_text_mixin_init (object, G_STRUCT_OFFSET (ExampleEchoChannel, text),
+      contact_repo);
 
-  tp_message_mixin_implement_sending (object, send_message,
-      (sizeof (types) / sizeof (types[0])), types,
-      TP_MESSAGE_PART_SUPPORT_FLAG_ONE_ATTACHMENT |
-      TP_MESSAGE_PART_SUPPORT_FLAG_MULTIPLE_ATTACHMENTS,
-      0, /* aka no TpDeliveryReportingSupportFlags */
-      content_types);
+  tp_text_mixin_set_message_types (object,
+      TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL,
+      TP_CHANNEL_TEXT_MESSAGE_TYPE_ACTION,
+      TP_CHANNEL_TEXT_MESSAGE_TYPE_NOTICE,
+      G_MAXUINT);
 
   return object;
 }
@@ -233,7 +118,7 @@ get_property (GObject *object,
               GValue *value,
               GParamSpec *pspec)
 {
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (object);
 
   switch (property_id)
     {
@@ -280,7 +165,7 @@ get_property (GObject *object,
       g_value_set_object (value, self->priv->conn);
       break;
     case PROP_INTERFACES:
-      g_value_set_boxed (value, example_echo_2_channel_interfaces);
+      g_value_set_boxed (value, example_echo_channel_interfaces);
       break;
     case PROP_CHANNEL_DESTROYED:
       g_value_set_boolean (value, self->priv->closed);
@@ -310,7 +195,7 @@ set_property (GObject *object,
               const GValue *value,
               GParamSpec *pspec)
 {
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (object);
 
   switch (property_id)
     {
@@ -345,7 +230,7 @@ set_property (GObject *object,
 static void
 dispose (GObject *object)
 {
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (object);
 
   if (self->priv->disposed)
     return;
@@ -358,13 +243,13 @@ dispose (GObject *object)
       tp_svc_channel_emit_closed (self);
     }
 
-  ((GObjectClass *) example_echo_2_channel_parent_class)->dispose (object);
+  ((GObjectClass *) example_echo_channel_parent_class)->dispose (object);
 }
 
 static void
 finalize (GObject *object)
 {
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (object);
   TpHandleRepoIface *contact_handles = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
 
@@ -375,13 +260,13 @@ finalize (GObject *object)
 
   g_free (self->priv->object_path);
 
-  tp_message_mixin_finalize (object);
+  tp_text_mixin_finalize (object);
 
-  ((GObjectClass *) example_echo_2_channel_parent_class)->finalize (object);
+  ((GObjectClass *) example_echo_channel_parent_class)->finalize (object);
 }
 
 static void
-example_echo_2_channel_class_init (ExampleEcho2ChannelClass *klass)
+example_echo_channel_class_init (ExampleEchoChannelClass *klass)
 {
   static TpDBusPropertiesMixinPropImpl channel_props[] = {
       { "TargetHandleType", "handle-type", NULL },
@@ -405,7 +290,7 @@ example_echo_2_channel_class_init (ExampleEcho2ChannelClass *klass)
   GObjectClass *object_class = (GObjectClass *) klass;
   GParamSpec *param_spec;
 
-  g_type_class_add_private (klass, sizeof (ExampleEcho2ChannelPrivate));
+  g_type_class_add_private (klass, sizeof (ExampleEchoChannelPrivate));
 
   object_class->constructor = constructor;
   object_class->set_property = set_property;
@@ -464,15 +349,16 @@ example_echo_2_channel_class_init (ExampleEcho2ChannelClass *klass)
       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_REQUESTED, param_spec);
 
+  tp_text_mixin_class_init (object_class,
+      G_STRUCT_OFFSET (ExampleEchoChannelClass, text_class));
+
   klass->dbus_properties_class.interfaces = prop_interfaces;
   tp_dbus_properties_mixin_class_init (object_class,
-      G_STRUCT_OFFSET (ExampleEcho2ChannelClass, dbus_properties_class));
-
-  tp_message_mixin_init_dbus_properties (object_class);
+      G_STRUCT_OFFSET (ExampleEchoChannelClass, dbus_properties_class));
 }
 
 static void
-example_echo_2_channel_close (ExampleEcho2Channel *self)
+example_echo_channel_close (ExampleEchoChannel *self)
 {
   GObject *object = (GObject *) self;
 
@@ -485,7 +371,7 @@ example_echo_2_channel_close (ExampleEcho2Channel *self)
        * to the contact who sent us those messages (if it isn't already),
        * and the messages must be marked as having been rescued so they
        * don't get logged twice. */
-      if (tp_message_mixin_has_pending_messages (object, &first_sender))
+      if (tp_text_mixin_has_pending_messages (object, &first_sender))
         {
           if (self->priv->initiator != first_sender)
             {
@@ -502,7 +388,7 @@ example_echo_2_channel_close (ExampleEcho2Channel *self)
                 tp_handle_unref (contact_repo, old_initiator);
             }
 
-          tp_message_mixin_set_rescued (object);
+          tp_text_mixin_set_rescued (object);
         }
       else
         {
@@ -518,9 +404,9 @@ static void
 channel_close (TpSvcChannel *iface,
                DBusGMethodInvocation *context)
 {
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (iface);
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (iface);
 
-  example_echo_2_channel_close (self);
+  example_echo_channel_close (self);
   tp_svc_channel_return_from_close (context);
 }
 
@@ -536,7 +422,7 @@ static void
 channel_get_handle (TpSvcChannel *iface,
                     DBusGMethodInvocation *context)
 {
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (iface);
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (iface);
 
   tp_svc_channel_return_from_get_handle (context, TP_HANDLE_TYPE_CONTACT,
       self->priv->handle);
@@ -547,7 +433,7 @@ channel_get_interfaces (TpSvcChannel *iface,
                         DBusGMethodInvocation *context)
 {
   tp_svc_channel_return_from_get_interfaces (context,
-      example_echo_2_channel_interfaces);
+      example_echo_channel_interfaces);
 }
 
 static void
@@ -565,13 +451,69 @@ channel_iface_init (gpointer iface,
 }
 
 static void
+text_send (TpSvcChannelTypeText *iface,
+           guint type,
+           const gchar *text,
+           DBusGMethodInvocation *context)
+{
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (iface);
+  time_t timestamp = time (NULL);
+  gchar *echo;
+  guint echo_type = type;
+
+  /* Send should return just before Sent is emitted. */
+  tp_svc_channel_type_text_return_from_send (context);
+
+  /* Tell the client that the message was submitted for sending */
+  tp_svc_channel_type_text_emit_sent ((GObject *) self, timestamp, type, text);
+
+  /* Pretend that the remote contact has replied. Normally, you'd
+   * call tp_text_mixin_receive or tp_text_mixin_receive_with_flags
+   * in response to network events */
+
+  switch (type)
+    {
+    case TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL:
+      echo = g_strdup_printf ("You said: %s", text);
+      break;
+    case TP_CHANNEL_TEXT_MESSAGE_TYPE_ACTION:
+      echo = g_strdup_printf ("notices that the user %s", text);
+      break;
+    case TP_CHANNEL_TEXT_MESSAGE_TYPE_NOTICE:
+      echo = g_strdup_printf ("You sent a notice: %s", text);
+      break;
+    default:
+      echo = g_strdup_printf ("You sent some weird message type, %u: \"%s\"",
+          type, text);
+      echo_type = TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL;
+    }
+
+  tp_text_mixin_receive ((GObject *) self, echo_type, self->priv->handle,
+      timestamp, echo);
+
+  g_free (echo);
+}
+
+static void
+text_iface_init (gpointer iface,
+                 gpointer data)
+{
+  TpSvcChannelTypeTextClass *klass = iface;
+
+  tp_text_mixin_iface_init (iface, data);
+#define IMPLEMENT(x) tp_svc_channel_type_text_implement_##x (klass, text_##x)
+  IMPLEMENT (send);
+#undef IMPLEMENT
+}
+
+static void
 destroyable_destroy (TpSvcChannelInterfaceDestroyable *iface,
                      DBusGMethodInvocation *context)
 {
-  ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (iface);
+  ExampleEchoChannel *self = EXAMPLE_ECHO_CHANNEL (iface);
 
-  tp_message_mixin_clear ((GObject *) self);
-  example_echo_2_channel_close (self);
+  tp_text_mixin_clear ((GObject *) self);
+  example_echo_channel_close (self);
   g_assert (self->priv->closed);
   tp_svc_channel_interface_destroyable_return_from_destroy (context);
 }
