@@ -765,8 +765,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "GetStatus() failed with " <<
             reply.error().name() << ":" << reply.error().message();
 
-        invalidate(QLatin1String(TELEPATHY_ERROR_DISCONNECTED),
-                QString("ConnectionStatusReason = %1").arg(uint(mPriv->pendingStatusReason)));
+        invalidate(reply.error());
 
         // introspect core failed
         mPriv->readinessHelper->setIntrospectCompleted(0, false);
