@@ -52,7 +52,6 @@ protected Q_SLOTS:
     void onMessageRemoved(const Telepathy::Client::ReceivedMessage &);
     void onMessageSent(const Telepathy::Client::Message &,
             Telepathy::MessageSendingFlags, const QString &);
-    void expectConnReady(uint, uint);
 
 private Q_SLOTS:
     void initTestCase();
@@ -100,29 +99,6 @@ void TestTextChan::onMessageSent(const Telepathy::Client::Message &message,
         Telepathy::MessageSendingFlags flags, const QString &token)
 {
     sent << SentMessageDetails(message, flags, token);
-}
-
-void TestTextChan::expectConnReady(uint newStatus, uint newStatusReason)
-{
-    qDebug() << "connection changed to status" << newStatus;
-    switch (newStatus) {
-    case Connection::StatusDisconnected:
-        qWarning() << "Disconnected";
-        mLoop->exit(1);
-        break;
-    case Connection::StatusConnecting:
-        /* do nothing */
-        break;
-    case Connection::StatusConnected:
-        qDebug() << "Ready";
-        mLoop->exit(0);
-        break;
-    default:
-        qWarning().nospace() << "What sort of status is "
-            << newStatus << "?!";
-        mLoop->exit(2);
-        break;
-    }
 }
 
 void TestTextChan::sendText(const char *text)
@@ -179,23 +155,8 @@ void TestTextChan::initTestCase()
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
-#if 0
-    // should be able to do this, when Connection is no longer broken
     QCOMPARE(static_cast<uint>(mConn->status()),
             static_cast<uint>(Connection::StatusConnected));
-#else
-    if (mConn->status() != Connection::StatusConnected) {
-        QVERIFY(connect(mConn,
-                        SIGNAL(statusChanged(uint, uint)),
-                        SLOT(expectConnReady(uint, uint))));
-        QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn,
-                           SIGNAL(statusChanged(uint, uint)),
-                           this,
-                           SLOT(expectConnReady(uint, uint))));
-        QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
-    }
-#endif
 
     // create a Channel by magic, rather than doing D-Bus round-trips for it
 
