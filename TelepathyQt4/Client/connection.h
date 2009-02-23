@@ -63,6 +63,7 @@ class Connection : public StatefulDBusProxy,
 
 public:
     enum Feature {
+        FeatureCore = 0,
         FeatureSelfContact = 1,
         FeatureSimplePresence = 2,
         _Padding = 0xFFFFFFFF

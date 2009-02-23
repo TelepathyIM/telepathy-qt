@@ -173,11 +173,11 @@ Connection::Private::Private(Connection *parent)
         QStringList(),                                                                 // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
         this);
-    introspectables[0] = introspectableCore;
+    introspectables[FeatureCore] = introspectableCore;
 
     ReadinessHelper::Introspectable introspectableSelfContact(
         QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
-        QSet<uint>() << 0,                                                             // dependsOnFeatures (core)
+        QSet<uint>() << FeatureCore,                                                   // dependsOnFeatures (core)
         QStringList() << TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS,            // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSelfContact,
         this);
@@ -185,7 +185,7 @@ Connection::Private::Private(Connection *parent)
 
     ReadinessHelper::Introspectable introspectableSimplePresence(
         QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
-        QSet<uint>() << 0,                                                             // dependsOnFeatures (core)
+        QSet<uint>() << FeatureCore,                                                   // dependsOnFeatures (core)
         QStringList() << TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,     // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
         this);
@@ -768,7 +768,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
         invalidate(reply.error());
 
         // introspect core failed
-        mPriv->readinessHelper->setIntrospectCompleted(0, false);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
         return;
     }
 
@@ -800,7 +800,7 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     if (mPriv->pendingStatus == StatusConnected) {
         mPriv->introspectSelfHandle();
     } else {
-        mPriv->readinessHelper->setIntrospectCompleted(0, true);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
 
     watcher->deleteLater();
@@ -822,7 +822,7 @@ void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
             "can't be retrieved";
     }
 
-    mPriv->readinessHelper->setIntrospectCompleted(0, true);
+    mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
 
     watcher->deleteLater();
 }
@@ -886,12 +886,12 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
         if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
             mPriv->introspectContacts();
         } else {
-            mPriv->readinessHelper->setIntrospectCompleted(0, true);
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
         }
     } else {
         warning().nospace() << "Getting self handle failed with " <<
             reply.error().name() << ":" << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(0, false);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
     }
 
     watcher->deleteLater();
@@ -1152,6 +1152,9 @@ bool Connection::isReady(const QSet<uint> &features) const
  * Return a pending operation which will succeed when this object finishes
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
+ *
+ * If an empty set is used FeatureCore will be considered as the requested
+ * feature.
  *
  * \param requestedFeatures Which features should be tested.
  * \return A PendingReady object which will emit finished
