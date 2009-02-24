@@ -241,6 +241,9 @@ TextChannel::Private::~Private()
  * \param connection  Connection owning this TextChannel, and specifying the
  *                    service.
  * \param objectPath  Path to the object on the service.
+ * \param immutableProperties The immutable D-Bus properties of the channel
+ *                    (as announced in the NewChannels D-Bus signal), used to
+ *                    reduce D-Bus round trips
  * \param parent      Passed to the parent class constructor.
  */
 TextChannel::TextChannel(Connection *connection,
