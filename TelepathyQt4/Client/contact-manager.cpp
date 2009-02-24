@@ -74,6 +74,8 @@ struct ContactManager::Private
     void ensureTracking(Contact::Feature feature);
 
     QSet<Contact::Feature> supportedFeatures;
+
+    QMap<uint, ContactListChannel> contactListsChannels;
 };
 
 Connection *ContactManager::connection() const
@@ -138,6 +140,22 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
     }
 
     return mPriv->supportedFeatures;
+}
+
+PendingContacts *ContactManager::allKnownContacts(
+        const QSet<Contact::Feature> &features)
+{
+    QSet<QSharedPointer<Contact> > contacts;
+    foreach (const ContactListChannel &contactListChannel, mPriv->contactListsChannels) {
+        QSharedPointer<Channel> channel = contactListChannel.channel;
+        if (!channel) {
+            continue;
+        }
+        contacts.unite(channel->groupContacts().toSet());
+        contacts.unite(channel->groupLocalPendingContacts().toSet());
+        contacts.unite(channel->groupRemotePendingContacts().toSet());
+    }
+    return upgradeContacts(contacts.toList(), features);
 }
 
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
@@ -294,6 +312,16 @@ QSharedPointer<Contact> ContactManager::ensureContact(const ReferencedHandles &h
     }
 
     return contact;
+}
+
+void ContactManager::setContactListChannels(
+        const QMap<uint, ContactListChannel> &contactListsChannels)
+{
+    Q_ASSERT(mPriv->contactListsChannels.isEmpty());
+    mPriv->contactListsChannels = contactListsChannels;
+
+    // TODO update contacts subscription, publish state
+    //      connect to groupMembersChanged signal
 }
 
 QSharedPointer<Contact> ContactManager::Private::lookupContactByHandle(uint handle)

@@ -34,6 +34,7 @@
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Client/Channel>
 
 namespace Telepathy
 {
@@ -55,6 +56,9 @@ class ContactManager : public QObject
         bool isSupported() const;
         QSet<Contact::Feature> supportedFeatures() const;
 
+        PendingContacts *allKnownContacts(
+                const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+
         PendingContacts *contactsForHandles(const UIntList &handles,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
         PendingContacts *contactsForHandles(const ReferencedHandles &handles,
@@ -72,11 +76,50 @@ class ContactManager : public QObject
         void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
     private:
+        struct ContactListChannel
+        {
+            enum Type {
+                TypeSubscribe = 0,
+                TypePublish,
+                TypeStored,
+                LastType
+            };
+
+            ContactListChannel()
+                : type((Type) -1), handle(0)
+            {
+            }
+
+            ContactListChannel(Type type, uint handle = 0)
+                : type(type), handle(handle)
+            {
+            }
+
+            ~ContactListChannel()
+            {
+                channel.clear();
+            }
+
+            static QString identifierForType(Type type)
+            {
+                static QString identifiers[LastType] = {
+                    "subscribe", "publish", "stored"
+                };
+                return identifiers[type];
+            }
+
+            Type type;
+            uint handle;
+            QSharedPointer<Channel> channel;
+        };
+
         ContactManager(Connection *parent);
         ~ContactManager();
 
         QSharedPointer<Contact> ensureContact(const ReferencedHandles &handle,
                 const QSet<Contact::Feature> &features, const QVariantMap &attributes);
+
+        void setContactListChannels(const QMap<uint, ContactListChannel> &contactListsChannels);
 
         struct Private;
         friend struct Private;
