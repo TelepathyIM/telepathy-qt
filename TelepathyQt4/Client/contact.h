@@ -28,6 +28,7 @@
 
 #include <QObject>
 #include <QSet>
+#include <QSharedPointer>
 #include <QVariantMap>
 
 #include <TelepathyQt4/Types>
@@ -98,6 +99,11 @@ private:
     friend struct Private;
     Private *mPriv;
 };
+
+inline uint qHash(const QSharedPointer<Contact> &contact)
+{
+    return qHash(contact.data());
+}
 
 } // Telepathy::Client
 } // Telepathy
