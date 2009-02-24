@@ -167,7 +167,7 @@ public:
 
     PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
 
-    PendingContactAttributes *getContactAttributes(const UIntList &contacts,
+    PendingContactAttributes *getContactAttributes(const UIntList &handles,
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
