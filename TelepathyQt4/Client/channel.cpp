@@ -725,9 +725,9 @@ void Channel::Private::processMembersChanged()
 
 void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &contacts)
 {
-    QList<QSharedPointer<Contact> > groupContactsAdded;
-    QList<QSharedPointer<Contact> > groupLocalPendingContactsAdded;
-    QList<QSharedPointer<Contact> > groupRemotePendingContactsAdded;
+    QSet<QSharedPointer<Contact> > groupContactsAdded;
+    QSet<QSharedPointer<Contact> > groupLocalPendingContactsAdded;
+    QSet<QSharedPointer<Contact> > groupRemotePendingContactsAdded;
     QSharedPointer<Contact> actorContact;
     bool selfContactUpdated = false;
 
@@ -737,15 +737,15 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     foreach (QSharedPointer<Contact> contact, contacts) {
         uint handle = contact->handle()[0];
         if (pendingGroupMembers.contains(handle)) {
-            groupContactsAdded.append(contact);
+            groupContactsAdded.insert(contact);
             groupContacts[handle] = contact;
         } else if (pendingGroupLocalPendingMembers.contains(handle)) {
-            groupLocalPendingContactsAdded.append(contact);
+            groupLocalPendingContactsAdded.insert(contact);
             groupLocalPendingContacts[handle] = contact;
             // FIXME: should set the details and actor here too
             groupLocalPendingContactsChangeInfo[handle] = GroupMemberChangeDetails();
         } else if (pendingGroupRemotePendingMembers.contains(handle)) {
-            groupRemotePendingContactsAdded.append(contact);
+            groupRemotePendingContactsAdded.insert(contact);
             groupRemotePendingContacts[handle] = contact;
         }
 
@@ -787,7 +787,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
 
     // FIXME: use QSet to make the code somewhat easier to comprehend and change
 
-    QList<QSharedPointer<Contact> > groupContactsRemoved;
+    QSet<QSharedPointer<Contact> > groupContactsRemoved;
     QSharedPointer<Contact> contactToRemove;
     foreach (uint handle, groupMembersToRemove) {
         if (groupContacts.contains(handle)) {
@@ -806,7 +806,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         }
 
         if (contactToRemove) {
-            groupContactsRemoved.append(contactToRemove);
+            groupContactsRemoved.insert(contactToRemove);
         }
     }
     groupMembersToRemove.clear();
@@ -1403,13 +1403,13 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
  *
  * \return List of contact objects.
  */
-QList<QSharedPointer<Contact> > Channel::groupContacts() const
+QSet<QSharedPointer<Contact> > Channel::groupContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupMembers() used channel not ready";
     }
 
-    return mPriv->groupContacts.values();
+    return mPriv->groupContacts.values().toSet();
 }
 
 /**
@@ -1418,7 +1418,7 @@ QList<QSharedPointer<Contact> > Channel::groupContacts() const
  *
  * \return List of contacts.
  */
-QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
+QSet<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupLocalPending() used channel not ready";
@@ -1427,7 +1427,7 @@ QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
         warning() << "Channel::groupLocalPending() used with no group interface";
     }
 
-    return mPriv->groupLocalPendingContacts.values();
+    return mPriv->groupLocalPendingContacts.values().toSet();
 }
 
 /**
@@ -1436,7 +1436,7 @@ QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
  *
  * \return List of contacts.
  */
-QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
+QSet<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupRemotePending() used channel not ready";
@@ -1446,7 +1446,7 @@ QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
             "group interface";
     }
 
-    return mPriv->groupRemotePendingContacts.values();
+    return mPriv->groupRemotePendingContacts.values().toSet();
 }
 
 /**
@@ -1618,10 +1618,10 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 
 /**
  * \fn void Channel::groupMembersChanged(
- *     const QList<QSharedPointer<Contact> > &groupMembersAdded,
- *     const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
- *     const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
- *     const QList<QSharedPointer<Contact> > &groupMembersRemoved,
+ *     const QSet<QSharedPointer<Contact> > &groupMembersAdded,
+ *     const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+ *     const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
+ *     const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
  *     const Channel::GroupMemberChangeDetails &details);
  *
  * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
