@@ -20,7 +20,8 @@
  */
 
 #include <TelepathyQt4/Client/PendingHandles>
-#include "_gen/pending-handles.moc.hpp"
+
+#include "TelepathyQt4/Client/_gen/pending-handles.moc.hpp"
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ReferencedHandles>
