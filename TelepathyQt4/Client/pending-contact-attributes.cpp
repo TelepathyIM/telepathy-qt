@@ -19,8 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "pending-contact-attributes.h"
-#include "_gen/pending-contact-attributes.moc.hpp"
+#include <TelepathyQt4/Client/PendingContactAttributes>
+
+#include "TelepathyQt4/Client/_gen/pending-contact-attributes.moc.hpp"
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ReferencedHandles>
