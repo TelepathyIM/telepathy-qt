@@ -174,19 +174,23 @@ TextChannel::Private::~Private()
  */
 
 /**
- * \enum TextChannel::Features
+ * \enum TextChannel::Feature
  *
  * Features that can be enabled on a TextChannel using becomeReady().
- *
- * \value FeatureMessageQueue The messageQueue method can be called, and the
- *                            messageReceived and pendingMessageRemoved methods
- *                            can be called
- * \value FeatureMessageCapabilities The supportedContentTypes,
- *                                   messagePartSupport and
- *                                   deliveryReportingSupport methods can
- *                                   be called
- * \value FeatureMessageSentSignal The messageSent signal will be emitted
- *                                 when a message is sent
+ */
+/**
+ * \var TextChannel::Feature TextChannel::FeatureMessageQueue
+ * The messageQueue method can be called, and the messageReceived and
+ * pendingMessageRemoved methods can be called
+ */
+/**
+ * \var TextChannel::Feature TextChannel::FeatureMessageCapabilities
+ * The supportedContentTypes, messagePartSupport and deliveryReportingSupport
+ * methods can be called
+ */
+/**
+ * \var TextChannel::Feature TextChannel::FeatureMessageSentSignal
+ * The messageSent signal will be emitted when a message is sent
  */
 
 /**
