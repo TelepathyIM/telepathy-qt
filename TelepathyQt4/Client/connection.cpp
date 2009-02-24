@@ -1140,8 +1140,9 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
  * until the object is ready. To wait for the object to be ready, call
  * becomeReady() and connect to the finished signal on the result.
  *
- * \param features Which features should be tested.
- * \return \c true if the object has finished initial setup.
+ * \param features The features which should be tested
+ * \return \c true if the object has finished its initial setup for basic
+ *         functionality plus the given features
  */
 bool Connection::isReady(const QSet<uint> &features) const
 {
@@ -1156,9 +1157,10 @@ bool Connection::isReady(const QSet<uint> &features) const
  * If an empty set is used FeatureCore will be considered as the requested
  * feature.
  *
- * \param requestedFeatures Which features should be tested.
+ * \param requestedFeatures The features which should be enabled
  * \return A PendingReady object which will emit finished
- *         when this object has finished or failed its initial setup.
+ *         when this object has finished or failed initial setup for basic
+ *         functionality plus the given features
  */
 PendingReady *Connection::becomeReady(const QSet<uint> &requestedFeatures)
 {
@@ -1187,9 +1189,11 @@ QSet<uint> Connection::missingFeatures() const
  * has reached StatusConnected and the requested \a features are all ready, or
  * finish with an error if a fatal error occurs during that process.
  *
- * \param requestedFeatures Which features should be tested.
- * \return A %PendingOperation, which will emit finished when the
- *         request finishes.
+ * \param requestedFeatures The features which should be enabled
+ * \return A PendingReady object which will emit finished
+ *         when the Connection has reached StatusConnected, and initial setup
+ *         for basic functionality, plus the given features, has succeeded or
+ *         failed
  */
 PendingOperation *Connection::requestConnect(const QSet<uint> &requestedFeatures)
 {
@@ -1232,8 +1236,8 @@ PendingOperation *Connection::requestDisconnect()
  *
  * \sa PendingContactAttributes
  *
- * \param contacts Passed to ConnectionInterfaceContactsInterface::GetContactAttributes().
- * \param interfaces Passed to ConnectionInterfaceContactsInterface::GetContactAttributes().
+ * \param handles A list of handles of type HandleTypeContact
+ * \param interfaces D-Bus interfaces for which the client requires information
  * \param reference Whether the handles should additionally be referenced.
  * \return Pointer to a newly constructed PendingContactAttributes, tracking the progress of the
  *         request.
