@@ -37,7 +37,9 @@ namespace Telepathy
 {
 namespace Client
 {
+
 class ContactManager;
+class PendingOperation;
 class ReferencedHandles;
 
 class Contact : public QObject
@@ -77,6 +79,10 @@ public:
 
     PresenceState subscriptionState() const;
     PresenceState publishState() const;
+
+    PendingOperation *requestPresenceSubscription(const QString &message);
+    PendingOperation *authorizePresencePublication(const QString &message);
+    PendingOperation *denyPresencePublication(const QString &message);
 
     ~Contact();
 

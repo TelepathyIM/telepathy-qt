@@ -30,6 +30,7 @@
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingContactAttributes>
 #include <TelepathyQt4/Client/PendingContacts>
+#include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/ReferencedHandles>
 
@@ -68,7 +69,6 @@ struct ContactManager::Private
 {
     Connection *conn;
     QMap<uint, QWeakPointer<Contact> > contacts;
-    QSharedPointer<Contact> lookupContactByHandle(uint handle);
 
     QMap<Contact::Feature, bool> tracking;
     void ensureTracking(Contact::Feature feature);
@@ -150,6 +150,72 @@ PendingContacts *ContactManager::allKnownContacts(
     return upgradeContacts(mPriv->allKnownContacts().toList(), features);
 }
 
+bool ContactManager::canRequestContactsPresenceSubscription() const
+{
+    QSharedPointer<Channel> subscribeChannel;
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
+        subscribeChannel = mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
+    }
+    return subscribeChannel && subscribeChannel->groupCanAddContacts();
+}
+
+PendingOperation *ContactManager::requestContactsPresenceSubscription(
+        const QList<QSharedPointer<Contact> > &contacts, const QString &message)
+{
+    if (!canRequestContactsPresenceSubscription()) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot request contacts presence subscription");
+    }
+
+    QSharedPointer<Channel> subscribeChannel =
+        mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
+    return subscribeChannel->groupAddContacts(contacts);
+}
+
+bool ContactManager::canAuthorizeContactsPresencePublication() const
+{
+    QSharedPointer<Channel> publishChannel;
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
+        publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
+    }
+    return publishChannel && publishChannel->groupCanAddContacts();
+}
+
+PendingOperation *ContactManager::authorizeContactsPresencePublication(
+        const QList<QSharedPointer<Contact> > &contacts, const QString &message)
+{
+    if (!canAuthorizeContactsPresencePublication()) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot authorize contacts presence publication");
+    }
+
+    QSharedPointer<Channel> publishChannel =
+        mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
+    return publishChannel->groupAddContacts(contacts);
+}
+
+bool ContactManager::canDenyContactsPresencePublication() const
+{
+    QSharedPointer<Channel> publishChannel;
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
+        publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
+    }
+    return publishChannel && publishChannel->groupCanRescindContacts();
+}
+
+PendingOperation *ContactManager::denyContactsPresencePublication(
+        const QList<QSharedPointer<Contact> > &contacts, const QString &message)
+{
+    if (!canDenyContactsPresencePublication()) {
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot deny contacts presence publication");
+    }
+
+    QSharedPointer<Channel> publishChannel =
+        mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
+    return publishChannel->groupRemoveContacts(contacts);
+}
+
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         const QSet<Contact::Feature> &features)
 {
@@ -161,7 +227,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<Contact::Feature> missingFeatures;
 
     foreach (uint handle, handles) {
-        QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(handle);
+        QSharedPointer<Contact> contact = lookupContactByHandle(handle);
         if (contact) {
             if ((features - contact->requestedFeatures()).isEmpty()) {
                 // Contact exists and has all the requested features
@@ -249,7 +315,7 @@ void ContactManager::onAliasesChanged(const Telepathy::AliasPairList &aliases)
     debug() << "Got AliasesChanged for" << aliases.size() << "contacts";
 
     foreach (AliasPair pair, aliases) {
-        QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(pair.handle);
+        QSharedPointer<Contact> contact = lookupContactByHandle(pair.handle);
 
         if (contact) {
             contact->receiveAlias(pair.alias);
@@ -261,7 +327,7 @@ void ContactManager::onAvatarUpdated(uint handle, const QString &token)
 {
     debug() << "Got AvatarUpdate for contact with handle" << handle;
 
-    QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(handle);
+    QSharedPointer<Contact> contact = lookupContactByHandle(handle);
     if (contact) {
         contact->receiveAvatarToken(token);
     }
@@ -272,7 +338,7 @@ void ContactManager::onPresencesChanged(const Telepathy::SimpleContactPresences 
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
 
     foreach (uint handle, presences.keys()) {
-        QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(handle);
+        QSharedPointer<Contact> contact = lookupContactByHandle(handle);
 
         if (contact) {
             contact->receiveSimplePresence(presences[handle]);
@@ -326,7 +392,7 @@ void ContactManager::onPublishChannelMembersChanged(
     }
 
     if (!groupRemotePendingMembersAdded.isEmpty()) {
-        emit presencePublishRequested(groupRemotePendingMembersAdded);
+        emit presencePublicationRequested(groupRemotePendingMembersAdded);
     }
 }
 
@@ -344,7 +410,7 @@ ContactManager::~ContactManager()
 QSharedPointer<Contact> ContactManager::ensureContact(const ReferencedHandles &handle,
         const QSet<Contact::Feature> &features, const QVariantMap &attributes) {
     uint bareHandle = handle[0];
-    QSharedPointer<Contact> contact = mPriv->lookupContactByHandle(bareHandle);
+    QSharedPointer<Contact> contact = lookupContactByHandle(bareHandle);
 
     if (!contact) {
         contact = QSharedPointer<Contact>(new Contact(this, handle, features, attributes));
@@ -407,15 +473,15 @@ void ContactManager::setContactListChannels(
     }
 }
 
-QSharedPointer<Contact> ContactManager::Private::lookupContactByHandle(uint handle)
+QSharedPointer<Contact> ContactManager::lookupContactByHandle(uint handle)
 {
     QSharedPointer<Contact> contact;
 
-    if (contacts.contains(handle)) {
-        contact = contacts.value(handle).toStrongRef();
+    if (mPriv->contacts.contains(handle)) {
+        contact = mPriv->contacts.value(handle).toStrongRef();
         if (!contact) {
             // Dangling weak pointer, remove it
-            contacts.remove(handle);
+            mPriv->contacts.remove(handle);
         }
     }
 

@@ -163,6 +163,33 @@ Contact::PresenceState Contact::publishState() const
     return mPriv->publishState;
 }
 
+PendingOperation *Contact::requestPresenceSubscription(const QString &message)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->requestContactsPresenceSubscription(
+            QList<QSharedPointer<Contact> >() << self,
+            message);
+}
+
+PendingOperation *Contact::authorizePresencePublication(const QString &message)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->authorizeContactsPresencePublication(
+            QList<QSharedPointer<Contact> >() << self,
+            message);
+}
+
+PendingOperation *Contact::denyPresencePublication(const QString &message)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->denyContactsPresencePublication(
+            QList<QSharedPointer<Contact> >() << self,
+            message);
+}
+
 Contact::~Contact()
 {
     delete mPriv;

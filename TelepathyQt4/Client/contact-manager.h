@@ -59,6 +59,16 @@ class ContactManager : public QObject
         PendingContacts *allKnownContacts(
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
 
+        bool canRequestContactsPresenceSubscription() const;
+        PendingOperation *requestContactsPresenceSubscription(
+                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+        bool canAuthorizeContactsPresencePublication() const;
+        PendingOperation *authorizeContactsPresencePublication(
+                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+        bool canDenyContactsPresencePublication() const;
+        PendingOperation *denyContactsPresencePublication(
+                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+
         PendingContacts *contactsForHandles(const UIntList &handles,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
         PendingContacts *contactsForHandles(const ReferencedHandles &handles,
@@ -71,7 +81,7 @@ class ContactManager : public QObject
                 const QSet<Contact::Feature> &features);
 
     Q_SIGNALS:
-        void presencePublishRequested(const QSet<QSharedPointer<Contact> > &contacts);
+        void presencePublicationRequested(const QSet<QSharedPointer<Contact> > &contacts);
 
     private Q_SLOTS:
         void onAliasesChanged(const Telepathy::AliasPairList &);
@@ -137,10 +147,13 @@ class ContactManager : public QObject
 
         void setContactListChannels(const QMap<uint, ContactListChannel> &contactListsChannels);
 
+        QSharedPointer<Contact> lookupContactByHandle(uint handle);
+
         struct Private;
         friend struct Private;
         friend class Connection;
         friend class PendingContacts;
+        friend class Contact;
         Private *mPriv;
 };
 
