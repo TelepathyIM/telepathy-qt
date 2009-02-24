@@ -1666,7 +1666,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 //@{
 
 /**
- * \fn template <class Interface> Interface *optionalInterface(InterfaceSupportedChecking check) const
+ * \fn template <class Interface> Interface *Channel::optionalInterface(InterfaceSupportedChecking check) const
  *
  * Return a pointer to a valid instance of a given %Channel optional
  * interface class, associated with the same remote object the Channel is
@@ -1693,7 +1693,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceCallStateInterface *callStateInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceCallStateInterface *Channel::callStateInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a CallState interface proxy.
  *
@@ -1702,7 +1702,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceChatStateInterface *chatStateInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceChatStateInterface *Channel::chatStateInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a ChatState interface proxy.
  *
@@ -1711,7 +1711,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceDTMFInterface *DTMFInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceDTMFInterface *Channel::DTMFInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a DTMF interface proxy.
  *
@@ -1720,7 +1720,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceGroupInterface *groupInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceGroupInterface *Channel::groupInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Group interface proxy.
  *
@@ -1729,7 +1729,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceHoldInterface *holdInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceHoldInterface *Channel::holdInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Hold interface proxy.
  *
@@ -1738,7 +1738,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceMediaSignallingInterface *mediaSignallingInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceMediaSignallingInterface *Channel::mediaSignallingInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a MediaSignalling interface proxy.
  *
@@ -1747,7 +1747,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfacePasswordInterface *passwordInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfacePasswordInterface *Channel::passwordInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Password interface proxy.
  *
@@ -1756,7 +1756,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn DBus::PropertiesInterface *propertiesInterface() const
+ * \fn DBus::PropertiesInterface *Channel::propertiesInterface() const
  *
  * Convenience function for getting a Properties interface proxy. The
  * Properties interface is not necessarily reported by the services, so a
@@ -1768,7 +1768,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn template <class Interface> Interface *typeInterface(InterfaceSupportedChecking check) const
+ * \fn template <class Interface> Interface *Channel::typeInterface(InterfaceSupportedChecking check) const
  *
  * Return a pointer to a valid instance of a given %Channel type interface
  * class, associated with the same remote object the Channel is
@@ -1794,7 +1794,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelTypeRoomListInterface *roomListInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeRoomListInterface *Channel::roomListInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeRoomList interface proxy.
  *
@@ -1803,7 +1803,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelTypeStreamedMediaInterface *streamedMediaInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeStreamedMediaInterface *Channel::streamedMediaInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeStreamedMedia interface proxy.
  *
@@ -1812,7 +1812,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelTypeTextInterface *textInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeTextInterface *Channel::textInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeText interface proxy.
  *
@@ -1821,7 +1821,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelTypeTubesInterface *tubesInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeTubesInterface *Channel::tubesInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeTubes interface proxy.
  *
