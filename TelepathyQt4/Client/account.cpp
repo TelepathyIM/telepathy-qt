@@ -620,8 +620,9 @@ PendingOperation *Account::remove()
  * until the object is ready. To wait for the object to be ready, call
  * becomeReady() and connect to the finished signal on the result.
  *
- * \param features Which features should be tested.
- * \return \c true if the object has finished initial setup.
+ * \param features The features which should be tested
+ * \return \c true if the object has finished its initial setup for basic
+ *         functionality plus the given features
  */
 bool Account::isReady(Features features) const
 {
@@ -634,7 +635,7 @@ bool Account::isReady(Features features) const
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
  *
- * \param features Which features should be tested.
+ * \param requestedFeatures The features which should be enabled.
  * \return A PendingReadyAccount object which will emit finished
  *         when this object has finished or failed its initial setup.
  */
