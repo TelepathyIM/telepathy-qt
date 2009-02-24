@@ -324,6 +324,10 @@ void ContactManager::onPublishChannelMembersChanged(
     foreach (QSharedPointer<Contact> contact, groupMembersRemoved) {
         contact->setPublishState(Contact::PresenceStateNo);
     }
+
+    if (!groupRemotePendingMembersAdded.isEmpty()) {
+        emit presencePublishRequested(groupRemotePendingMembersAdded);
+    }
 }
 
 ContactManager::ContactManager(Connection *parent)

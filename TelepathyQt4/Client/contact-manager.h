@@ -70,6 +70,9 @@ class ContactManager : public QObject
         PendingContacts *upgradeContacts(const QList<QSharedPointer<Contact> > &contacts,
                 const QSet<Contact::Feature> &features);
 
+    Q_SIGNALS:
+        void presencePublishRequested(const QSet<QSharedPointer<Contact> > &contacts);
+
     private Q_SLOTS:
         void onAliasesChanged(const Telepathy::AliasPairList &);
         void onAvatarUpdated(uint, const QString &);
