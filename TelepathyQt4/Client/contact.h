@@ -52,6 +52,12 @@ public:
         _Padding = 0xFFFFFFFF
     };
 
+    enum PresenceState {
+         PresenceStateNo,
+         PresenceStateAsk,
+         PresenceStateYes
+    };
+
     ContactManager *manager() const;
 
     ReferencedHandles handle() const;
@@ -69,12 +75,18 @@ public:
     uint presenceType() const;
     QString presenceMessage() const;
 
+    PresenceState subscriptionState() const;
+    PresenceState publishState() const;
+
     ~Contact();
 
 Q_SIGNALS:
     void aliasChanged(const QString &alias);
     void avatarTokenChanged(const QString &avatarToken);
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
+
+    void subscriptionStateChanged(PresenceState state);
+    void publishStateChanged(PresenceState state);
 
     // TODO: consider how the Renaming interface should work and map to Contacts
     // I guess it would be something like:
@@ -93,6 +105,9 @@ private:
     void receiveAlias(const QString &alias);
     void receiveAvatarToken(const QString &avatarToken);
     void receiveSimplePresence(const SimplePresence &presence);
+
+    void setSubscriptionState(PresenceState state);
+    void setPublishState(PresenceState state);
 
     struct Private;
     friend class ContactManager;
