@@ -146,7 +146,7 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
         splitted = ''.join([el.toxml() for el in docstring_el.childNodes]).strip(' ').strip('\n').split('\n')
         level = min([not match and maxint or match.end() - 1 for match in [re.match('^ *[^ ]', line) for line in splitted]])
         assert level != maxint
-        lines = [line[level:] for line in splitted]
+        lines = [line[level:].replace('\\', '\\\\') for line in splitted]
     else:
         content = xml_escape(get_descendant_text(docstring_el).replace('\n', ' ').strip())
 
@@ -169,7 +169,7 @@ def format_docstring(el, indent=' * ', brackets=None, maxwidth=80):
             content = content[step:]
 
         if line:
-            lines.append(line)
+            lines.append(line.replace('\\', '\\\\'))
 
     output = []
 
