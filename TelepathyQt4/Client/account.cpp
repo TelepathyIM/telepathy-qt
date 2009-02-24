@@ -361,8 +361,7 @@ const Telepathy::Avatar &Account::avatar() const
 /**
  * Set this account avatar.
  *
- * \param data Avatar data.
- * \param mimeType Avatar mimetype.
+ * \param avatar The avatar's MIME type and data.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
