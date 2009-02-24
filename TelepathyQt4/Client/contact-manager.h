@@ -75,6 +75,19 @@ class ContactManager : public QObject
         void onAvatarUpdated(uint, const QString &);
         void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
+        void onSubscribeChannelMembersChanged(
+            const QSet<QSharedPointer<Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
+            const Channel::GroupMemberChangeDetails &details);
+        void onPublishChannelMembersChanged(
+            const QSet<QSharedPointer<Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
+            const Channel::GroupMemberChangeDetails &details);
+
     private:
         struct ContactListChannel
         {
