@@ -1415,7 +1415,7 @@ QList<QSharedPointer<Contact> > Channel::groupContacts() const
  * Return the contacts currently waiting for local approval to join the
  * group.
  *
- * \Return List of contacts.
+ * \return List of contacts.
  */
 QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
 {
@@ -1433,7 +1433,7 @@ QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
  * Return the contacts currently waiting for remote approval to join the
  * group.
  *
- * \Return List of contacts.
+ * \return List of contacts.
  */
 QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
 {
