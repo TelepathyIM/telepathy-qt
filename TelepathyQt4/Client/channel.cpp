@@ -1217,7 +1217,8 @@ PendingOperation *Channel::requestClose()
  *
  * Change notification is via groupFlagsChanged().
  *
- * \return Bitfield combination of flags, as defined in #ChannelGroupFlag.
+ * \return Bitfield combination of flags, as defined in
+ *         #ChannelGroupFlag
  */
 uint Channel::groupFlags() const
 {
@@ -1331,7 +1332,7 @@ bool Channel::groupCanRemoveContacts() const
  * \param contacts Contacts to be removed.
  * \param message A string message, which can be blank if desired.
  * \param reason Reason of the change, as specified in
- *               #ChannelGroupChangeReason.
+ *               #ChannelGroupChangeReason
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa groupCanRemoveContacts()
