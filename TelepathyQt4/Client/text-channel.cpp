@@ -194,9 +194,9 @@ TextChannel::Private::~Private()
  */
 
 /**
- * \fn void messageSent(Telepathy::Client::Message message,
- *                      Telepathy::MessageSendingFlags flags,
- *                      const QString &sentMessageToken)
+ * \fn void TextChannel::messageSent(const Telepathy::Client::Message &message,
+ *     Telepathy::MessageSendingFlags flags,
+ *     const QString &sentMessageToken)
  *
  * Emitted when a message is sent, if the FeatureMessageSentSignal Feature
  * has been enabled.
@@ -216,7 +216,7 @@ TextChannel::Private::~Private()
  */
 
 /**
- * \fn void messageReceived(const Telepathy::Client::ReceivedMessage &message)
+ * \fn void TextChannel::messageReceived(const Telepathy::Client::ReceivedMessage &message)
  *
  * Emitted when a message is added to messageQueue(), if the
  * FeatureMessageQueue Feature has been enabled.
@@ -226,7 +226,7 @@ TextChannel::Private::~Private()
  */
 
 /**
- * \fn void pendingMessageRemoved(
+ * \fn void TextChannel::pendingMessageRemoved(
  *      const Telepathy::Client::ReceivedMessage &message)
  *
  * Emitted when a message is removed from messageQueue(), if the
