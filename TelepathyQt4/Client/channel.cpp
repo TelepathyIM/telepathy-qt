@@ -1107,8 +1107,9 @@ QSharedPointer<Contact> Channel::initiatorContact() const
  * until the object is ready. To wait for the object to be ready, call
  * becomeReady() and connect to the finished signal on the result.
  *
- * \param features Which features should be tested.
- * \return \c true if the object has finished initial setup.
+ * \param features The features which should be tested
+ * \return \c true if the object has finished its initial setup for basic
+ *         functionality plus the given features
  */
 bool Channel::isReady(Features features) const
 {
@@ -1121,9 +1122,10 @@ bool Channel::isReady(Features features) const
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
  *
- * \param features Which features should be tested.
+ * \param requestedFeatures The features which should be enabled
  * \return A PendingReadyChannel object which will emit finished
- *         when this object has finished or failed its initial setup.
+ *         when this object has finished or failed initial setup for basic
+ *         functionality plus the given features
  */
 PendingReadyChannel *Channel::becomeReady(Features requestedFeatures)
 {
