@@ -200,7 +200,8 @@ QString DBusProxy::invalidationMessage() const
 }
 
 /**
- * \signal invalidated
+ * \fn void DBusProxy::invalidated (Telepathy::Client::DBusProxy *proxy,
+ *      const QString &errorName, const QString &errorMessage)
  *
  * Emitted when this object is no longer usable.
  *
@@ -219,6 +220,10 @@ QString DBusProxy::invalidationMessage() const
  *
  * This method takes care of setting the invalidationReason,
  * invalidationMessage, and emitting the invalidated signal.
+ *
+ * \param reason A D-Bus error name (a string in a subset of ASCII,
+ *               prefixed with a reversed domain name)
+ * \param message A debugging message associated with the error
  */
 void DBusProxy::invalidate(const QString &reason, const QString &message)
 {
