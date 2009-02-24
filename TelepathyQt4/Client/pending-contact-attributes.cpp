@@ -55,7 +55,7 @@ namespace Client
 /**
  * \class PendingContactAttributes
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/cli-pending-contact-attributes.h> <TelepathyQt4/Client/PendingContactAttributes>
+ * \headerfile <TelepathyQt4/Client/pending-contact-attributes.h> <TelepathyQt4/Client/PendingContactAttributes>
  *
  * Class containing the parameters of and the reply to an asynchronous request for raw contact
  * attributes, as used in the Connection::getContactAttributes() low-level convenience method

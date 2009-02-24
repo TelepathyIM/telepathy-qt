@@ -70,7 +70,7 @@ class ReferencedHandles;
 /**
  * \class PendingHandles
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/cli-pending-handles.h> <TelepathyQt4/Client/Connection>
+ * \headerfile <TelepathyQt4/Client/pending-handles.h> <TelepathyQt4/Client/Connection>
  *
  * Class containing the parameters of and the reply to an asynchronous handle
  * request/hold. Instances of this class cannot be constructed directly; the
