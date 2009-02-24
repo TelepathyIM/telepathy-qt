@@ -1451,10 +1451,10 @@ QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
 /**
  * Return information of a local pending contact change. If
  * no information is available, an object for which
- * GroupMemberChangeInfo::isValid() Return <code>false</code> is returned.
+ * GroupMemberChangeDetails::isValid() returns <code>false</code> is returned.
  *
- * \param A Contact object that is on the local pending contacts list.
- * \return The change info in a GroupMemberChangeInfo object.
+ * \param contact A Contact object that is on the local pending contacts list.
+ * \return The change info in a GroupMemberChangeDetails object.
  */
 Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
         const QSharedPointer<Contact> &contact) const
@@ -1477,7 +1477,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
 /**
  * Return information on the removal of the local user from the group. If
  * the user hasn't been removed from the group, an object for which
- * GroupMemberChangeInfo::isValid() Return <code>false</code> is returned.
+ * GroupMemberChangeDetails::isValid() Return <code>false</code> is returned.
  *
  * This method should be called only after the channel has been closed.
  * This is useful for getting the remove information after missing the
@@ -1488,7 +1488,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  * groupIsSelfHandleTracked() Return false and a self handle change has
  * occurred on the remote object.
  *
- * \return The remove info in a GroupMemberChangeInfo object.
+ * \return The remove info in a GroupMemberChangeDetails object.
  */
 Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
 {
