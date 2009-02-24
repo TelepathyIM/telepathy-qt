@@ -1606,7 +1606,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 }
 
 /**
- * \fn void groupFlagsChanged(uint flags, uint added, uint removed)
+ * \fn void Channel::groupFlagsChanged(uint flags, uint added, uint removed)
  *
  * Emitted when the value returned by groupFlags() changes.
  *
@@ -1616,7 +1616,12 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn void groupMembersChanged(const QList<QSharedPointer<Contact> > &groupMembersAdded, const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded, const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved, const QList<QSharedPointer<Contact> > &groupMembersRemoved, QSharedPointer<Contact> actor, uint reason, const QString &message);
+ * \fn void Channel::groupMembersChanged(
+ *     const QList<QSharedPointer<Contact> > &groupMembersAdded,
+ *     const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+ *     const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
+ *     const QList<QSharedPointer<Contact> > &groupMembersRemoved,
+ *     const Channel::GroupMemberChangeDetails &details);
  *
  * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
  * groupRemotePendingContacts() changes.
@@ -1627,15 +1632,12 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  * \param groupRemotePendingMembersAdded The remote pending contacts that were
  *                                       added to this channel.
  * \param groupMembersRemoved The contacts removed from this channel.
- * \param actor The contact requesting or causing the change.
- * \param reason Reason of the change, as specified in
- *               #ChannelGroupChangeReason.
- * \param message Message specified by the actor related to the change, such
- *                as the part message in IRC.
+ * \param details Additional details such as the contact requesting or causing
+ *                the change.
  */
 
 /**
- * \fn void groupHandleOwnersChanged(const HandleOwnerMap &owners, const Telepathy::UIntList &added, const Telepathy::UIntList &removed)
+ * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners, const Telepathy::UIntList &added, const Telepathy::UIntList &removed)
  *
  * Emitted when the value returned by groupHandleOwners() changes.
  *
@@ -1647,7 +1649,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn void groupSelfContactChanged()
+ * \fn void Channel::groupSelfContactChanged()
  *
  * Emitted when the value returned by groupSelfContact() changes.
  */
