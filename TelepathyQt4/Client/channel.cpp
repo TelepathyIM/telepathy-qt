@@ -2255,7 +2255,7 @@ void Channel::continueIntrospection()
 }
 
 /**
- * \class Channel::GroupMemberChangeInfo
+ * \class Channel::GroupMemberChangeDetails
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/Client/channel.h <TelepathyQt4/Client/Channel>
  *
@@ -2267,19 +2267,20 @@ void Channel::continueIntrospection()
  */
 
 /**
- * \fn GroupMemberChangeInfo()
+ * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()
  *
  * \internal
  */
 
 /**
- * \fn GroupMemberChangeInfo(uint actor, uint reason, const QString &message)
+ * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(
+ *     const QSharedPointer<Contact> &actor, const QVariantMap &details)
  *
  * \internal
  */
 
 /**
- * \fn bool isValid() const;
+ * \fn bool Channel::GroupMemberChangeDetails::isValid() const;
  *
  * Return whether or not this object actually contains valid
  * information received from the service. If the returned value is
@@ -2290,7 +2291,7 @@ void Channel::continueIntrospection()
  */
 
 /**
- * \fn uint actor() const
+ * \fn uint Channel::GroupMemberChangeDetails::actor() const
  *
  * Return the contact requesting or causing the change.
  *
@@ -2298,7 +2299,7 @@ void Channel::continueIntrospection()
  */
 
 /**
- * \fn uint reason() const
+ * \fn uint Channel::GroupMemberChangeDetails::reason() const
  *
  * Return the reason for the change.
  *
@@ -2306,7 +2307,7 @@ void Channel::continueIntrospection()
  */
 
 /**
- * \fn const QString &message() const
+ * \fn const QString &Channel::GroupMemberChangeDetails::message() const
  * Return a human-readable message from the contact represented by
  * actor() pertaining to the change, or an empty string if there is no
  * message.
