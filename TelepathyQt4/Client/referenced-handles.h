@@ -71,7 +71,7 @@ class Connection;
 /**
  * \class ReferencedHandles
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/cli-referenced-handles.h> <TelepathyQt4/Client/ReferencedHandles>
+ * \headerfile <TelepathyQt4/Client/referenced-handles.h> <TelepathyQt4/Client/ReferencedHandles>
  *
  * Helper container for safe management of handle lifetimes. Every handle in a
  * ReferencedHandles container is guaranteed to be valid (and stay valid, as

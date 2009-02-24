@@ -1107,8 +1107,9 @@ QSharedPointer<Contact> Channel::initiatorContact() const
  * until the object is ready. To wait for the object to be ready, call
  * becomeReady() and connect to the finished signal on the result.
  *
- * \param features Which features should be tested.
- * \return \c true if the object has finished initial setup.
+ * \param features The features which should be tested
+ * \return \c true if the object has finished its initial setup for basic
+ *         functionality plus the given features
  */
 bool Channel::isReady(Features features) const
 {
@@ -1121,9 +1122,10 @@ bool Channel::isReady(Features features) const
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
  *
- * \param features Which features should be tested.
+ * \param requestedFeatures The features which should be enabled
  * \return A PendingReadyChannel object which will emit finished
- *         when this object has finished or failed its initial setup.
+ *         when this object has finished or failed initial setup for basic
+ *         functionality plus the given features
  */
 PendingReadyChannel *Channel::becomeReady(Features requestedFeatures)
 {
@@ -1215,7 +1217,8 @@ PendingOperation *Channel::requestClose()
  *
  * Change notification is via groupFlagsChanged().
  *
- * \return Bitfield combination of flags, as defined in #ChannelGroupFlag.
+ * \return Bitfield combination of flags, as defined in
+ *         #ChannelGroupFlag
  */
 uint Channel::groupFlags() const
 {
@@ -1329,7 +1332,7 @@ bool Channel::groupCanRemoveContacts() const
  * \param contacts Contacts to be removed.
  * \param message A string message, which can be blank if desired.
  * \param reason Reason of the change, as specified in
- *               #ChannelGroupChangeReason.
+ *               #ChannelGroupChangeReason
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa groupCanRemoveContacts()
@@ -1413,7 +1416,7 @@ QList<QSharedPointer<Contact> > Channel::groupContacts() const
  * Return the contacts currently waiting for local approval to join the
  * group.
  *
- * \Return List of contacts.
+ * \return List of contacts.
  */
 QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
 {
@@ -1431,7 +1434,7 @@ QList<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
  * Return the contacts currently waiting for remote approval to join the
  * group.
  *
- * \Return List of contacts.
+ * \return List of contacts.
  */
 QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
 {
@@ -1449,10 +1452,10 @@ QList<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
 /**
  * Return information of a local pending contact change. If
  * no information is available, an object for which
- * GroupMemberChangeInfo::isValid() Return <code>false</code> is returned.
+ * GroupMemberChangeDetails::isValid() returns <code>false</code> is returned.
  *
- * \param A Contact object that is on the local pending contacts list.
- * \return The change info in a GroupMemberChangeInfo object.
+ * \param contact A Contact object that is on the local pending contacts list.
+ * \return The change info in a GroupMemberChangeDetails object.
  */
 Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
         const QSharedPointer<Contact> &contact) const
@@ -1475,7 +1478,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
 /**
  * Return information on the removal of the local user from the group. If
  * the user hasn't been removed from the group, an object for which
- * GroupMemberChangeInfo::isValid() Return <code>false</code> is returned.
+ * GroupMemberChangeDetails::isValid() Return <code>false</code> is returned.
  *
  * This method should be called only after the channel has been closed.
  * This is useful for getting the remove information after missing the
@@ -1486,7 +1489,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  * groupIsSelfHandleTracked() Return false and a self handle change has
  * occurred on the remote object.
  *
- * \return The remove info in a GroupMemberChangeInfo object.
+ * \return The remove info in a GroupMemberChangeDetails object.
  */
 Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
 {
@@ -1604,7 +1607,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 }
 
 /**
- * \fn void groupFlagsChanged(uint flags, uint added, uint removed)
+ * \fn void Channel::groupFlagsChanged(uint flags, uint added, uint removed)
  *
  * Emitted when the value returned by groupFlags() changes.
  *
@@ -1614,7 +1617,12 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn void groupMembersChanged(const QList<QSharedPointer<Contact> > &groupMembersAdded, const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded, const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved, const QList<QSharedPointer<Contact> > &groupMembersRemoved, QSharedPointer<Contact> actor, uint reason, const QString &message);
+ * \fn void Channel::groupMembersChanged(
+ *     const QList<QSharedPointer<Contact> > &groupMembersAdded,
+ *     const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+ *     const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
+ *     const QList<QSharedPointer<Contact> > &groupMembersRemoved,
+ *     const Channel::GroupMemberChangeDetails &details);
  *
  * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
  * groupRemotePendingContacts() changes.
@@ -1625,15 +1633,12 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  * \param groupRemotePendingMembersAdded The remote pending contacts that were
  *                                       added to this channel.
  * \param groupMembersRemoved The contacts removed from this channel.
- * \param actor The contact requesting or causing the change.
- * \param reason Reason of the change, as specified in
- *               #ChannelGroupChangeReason.
- * \param message Message specified by the actor related to the change, such
- *                as the part message in IRC.
+ * \param details Additional details such as the contact requesting or causing
+ *                the change.
  */
 
 /**
- * \fn void groupHandleOwnersChanged(const HandleOwnerMap &owners, const Telepathy::UIntList &added, const Telepathy::UIntList &removed)
+ * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners, const Telepathy::UIntList &added, const Telepathy::UIntList &removed)
  *
  * Emitted when the value returned by groupHandleOwners() changes.
  *
@@ -1645,7 +1650,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn void groupSelfContactChanged()
+ * \fn void Channel::groupSelfContactChanged()
  *
  * Emitted when the value returned by groupSelfContact() changes.
  */
@@ -1662,7 +1667,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 //@{
 
 /**
- * \fn template <class Interface> Interface *optionalInterface(InterfaceSupportedChecking check) const
+ * \fn template <class Interface> Interface *Channel::optionalInterface(InterfaceSupportedChecking check) const
  *
  * Return a pointer to a valid instance of a given %Channel optional
  * interface class, associated with the same remote object the Channel is
@@ -1689,7 +1694,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceCallStateInterface *callStateInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceCallStateInterface *Channel::callStateInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a CallState interface proxy.
  *
@@ -1698,7 +1703,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceChatStateInterface *chatStateInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceChatStateInterface *Channel::chatStateInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a ChatState interface proxy.
  *
@@ -1707,7 +1712,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceDTMFInterface *DTMFInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceDTMFInterface *Channel::DTMFInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a DTMF interface proxy.
  *
@@ -1716,7 +1721,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceGroupInterface *groupInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceGroupInterface *Channel::groupInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Group interface proxy.
  *
@@ -1725,7 +1730,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceHoldInterface *holdInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceHoldInterface *Channel::holdInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Hold interface proxy.
  *
@@ -1734,7 +1739,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfaceMediaSignallingInterface *mediaSignallingInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfaceMediaSignallingInterface *Channel::mediaSignallingInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a MediaSignalling interface proxy.
  *
@@ -1743,7 +1748,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelInterfacePasswordInterface *passwordInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelInterfacePasswordInterface *Channel::passwordInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a Password interface proxy.
  *
@@ -1752,7 +1757,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn DBus::PropertiesInterface *propertiesInterface() const
+ * \fn DBus::PropertiesInterface *Channel::propertiesInterface() const
  *
  * Convenience function for getting a Properties interface proxy. The
  * Properties interface is not necessarily reported by the services, so a
@@ -1764,7 +1769,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn template <class Interface> Interface *typeInterface(InterfaceSupportedChecking check) const
+ * \fn template <class Interface> Interface *Channel::typeInterface(InterfaceSupportedChecking check) const
  *
  * Return a pointer to a valid instance of a given %Channel type interface
  * class, associated with the same remote object the Channel is
@@ -1790,7 +1795,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelTypeRoomListInterface *roomListInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeRoomListInterface *Channel::roomListInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeRoomList interface proxy.
  *
@@ -1799,7 +1804,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelTypeStreamedMediaInterface *streamedMediaInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeStreamedMediaInterface *Channel::streamedMediaInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeStreamedMedia interface proxy.
  *
@@ -1808,7 +1813,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelTypeTextInterface *textInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeTextInterface *Channel::textInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeText interface proxy.
  *
@@ -1817,7 +1822,7 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
  */
 
 /**
- * \fn ChannelTypeTubesInterface *tubesInterface(InterfaceSupportedChecking check) const
+ * \fn ChannelTypeTubesInterface *Channel::tubesInterface(InterfaceSupportedChecking check) const
  *
  * Convenience function for getting a TypeTubes interface proxy.
  *
@@ -2251,7 +2256,7 @@ void Channel::continueIntrospection()
 }
 
 /**
- * \class Channel::GroupMemberChangeInfo
+ * \class Channel::GroupMemberChangeDetails
  * \ingroup clientchannel
  * \headerfile TelepathyQt4/Client/channel.h <TelepathyQt4/Client/Channel>
  *
@@ -2263,19 +2268,20 @@ void Channel::continueIntrospection()
  */
 
 /**
- * \fn GroupMemberChangeInfo()
+ * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()
  *
  * \internal
  */
 
 /**
- * \fn GroupMemberChangeInfo(uint actor, uint reason, const QString &message)
+ * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(
+ *     const QSharedPointer<Contact> &actor, const QVariantMap &details)
  *
  * \internal
  */
 
 /**
- * \fn bool isValid() const;
+ * \fn bool Channel::GroupMemberChangeDetails::isValid() const;
  *
  * Return whether or not this object actually contains valid
  * information received from the service. If the returned value is
@@ -2286,7 +2292,7 @@ void Channel::continueIntrospection()
  */
 
 /**
- * \fn uint actor() const
+ * \fn uint Channel::GroupMemberChangeDetails::actor() const
  *
  * Return the contact requesting or causing the change.
  *
@@ -2294,7 +2300,7 @@ void Channel::continueIntrospection()
  */
 
 /**
- * \fn uint reason() const
+ * \fn uint Channel::GroupMemberChangeDetails::reason() const
  *
  * Return the reason for the change.
  *
@@ -2302,7 +2308,7 @@ void Channel::continueIntrospection()
  */
 
 /**
- * \fn const QString &message() const
+ * \fn const QString &Channel::GroupMemberChangeDetails::message() const
  * Return a human-readable message from the contact represented by
  * actor() pertaining to the change, or an empty string if there is no
  * message.

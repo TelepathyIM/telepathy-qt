@@ -45,7 +45,7 @@ StreamedMediaChannel::Private::~Private()
 /**
  * \class StreamedMediaChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/Client/streamed-media.h <TelepathyQt4/Client/StreamedMediaChannel>
+ * \headerfile TelepathyQt4/Client/streamed-media-channel.h <TelepathyQt4/Client/StreamedMediaChannel>
  *
  * High-level proxy object for accessing remote %Channel objects of the
  * StreamedMedia channel type.

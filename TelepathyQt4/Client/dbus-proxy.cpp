@@ -59,13 +59,17 @@ namespace Client
  * Specifies if the interface being supported by the remote object should be
  * checked by optionalInterface() and the convenience functions for it.
  *
- * \value CheckInterfaceSupported Don't return an interface instance unless it
- *                                can be guaranteed that the remote object
- *                                actually implements the interface.
- * \value BypassInterfaceCheck Return an interface instance even if it can't
- *                             be verified that the remote object supports the
- *                             interface.
  * \sa optionalInterface()
+ */
+/**
+ * \var DBusProxy::InterfaceSupportedChecking DBusProxy::CheckInterfaceSupported
+ * Don't return an interface instance unless it can be guaranteed that the
+ * remote object actually implements the interface.
+ */
+/**
+ * \var DBusProxy::InterfaceSupportedChecking DBusProxy::BypassInterfaceCheck
+ * Return an interface instance even if it can't be verified that the remote
+ * object supports the interface.
  */
 
 // Features in TpProxy but not here:
@@ -196,7 +200,8 @@ QString DBusProxy::invalidationMessage() const
 }
 
 /**
- * \signal invalidated
+ * \fn void DBusProxy::invalidated (Telepathy::Client::DBusProxy *proxy,
+ *      const QString &errorName, const QString &errorMessage)
  *
  * Emitted when this object is no longer usable.
  *
@@ -215,6 +220,10 @@ QString DBusProxy::invalidationMessage() const
  *
  * This method takes care of setting the invalidationReason,
  * invalidationMessage, and emitting the invalidated signal.
+ *
+ * \param reason A D-Bus error name (a string in a subset of ASCII,
+ *               prefixed with a reversed domain name)
+ * \param message A debugging message associated with the error
  */
 void DBusProxy::invalidate(const QString &reason, const QString &message)
 {

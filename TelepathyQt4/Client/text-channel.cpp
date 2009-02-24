@@ -174,25 +174,29 @@ TextChannel::Private::~Private()
  */
 
 /**
- * \enum TextChannel::Features
+ * \enum TextChannel::Feature
  *
  * Features that can be enabled on a TextChannel using becomeReady().
- *
- * \value FeatureMessageQueue The messageQueue method can be called, and the
- *                            messageReceived and pendingMessageRemoved methods
- *                            can be called
- * \value FeatureMessageCapabilities The supportedContentTypes,
- *                                   messagePartSupport and
- *                                   deliveryReportingSupport methods can
- *                                   be called
- * \value FeatureMessageSentSignal The messageSent signal will be emitted
- *                                 when a message is sent
+ */
+/**
+ * \var TextChannel::Feature TextChannel::FeatureMessageQueue
+ * The messageQueue method can be called, and the messageReceived and
+ * pendingMessageRemoved methods can be called
+ */
+/**
+ * \var TextChannel::Feature TextChannel::FeatureMessageCapabilities
+ * The supportedContentTypes, messagePartSupport and deliveryReportingSupport
+ * methods can be called
+ */
+/**
+ * \var TextChannel::Feature TextChannel::FeatureMessageSentSignal
+ * The messageSent signal will be emitted when a message is sent
  */
 
 /**
- * \fn void messageSent(Telepathy::Client::Message message,
- *                      Telepathy::MessageSendingFlags flags,
- *                      const QString &sentMessageToken)
+ * \fn void TextChannel::messageSent(const Telepathy::Client::Message &message,
+ *     Telepathy::MessageSendingFlags flags,
+ *     const QString &sentMessageToken)
  *
  * Emitted when a message is sent, if the FeatureMessageSentSignal Feature
  * has been enabled.
@@ -212,7 +216,7 @@ TextChannel::Private::~Private()
  */
 
 /**
- * \fn void messageReceived(const Telepathy::Client::ReceivedMessage &message)
+ * \fn void TextChannel::messageReceived(const Telepathy::Client::ReceivedMessage &message)
  *
  * Emitted when a message is added to messageQueue(), if the
  * FeatureMessageQueue Feature has been enabled.
@@ -222,7 +226,7 @@ TextChannel::Private::~Private()
  */
 
 /**
- * \fn void pendingMessageRemoved(
+ * \fn void TextChannel::pendingMessageRemoved(
  *      const Telepathy::Client::ReceivedMessage &message)
  *
  * Emitted when a message is removed from messageQueue(), if the
@@ -237,6 +241,9 @@ TextChannel::Private::~Private()
  * \param connection  Connection owning this TextChannel, and specifying the
  *                    service.
  * \param objectPath  Path to the object on the service.
+ * \param immutableProperties The immutable D-Bus properties of the channel
+ *                    (as announced in the NewChannels D-Bus signal), used to
+ *                    reduce D-Bus round trips
  * \param parent      Passed to the parent class constructor.
  */
 TextChannel::TextChannel(Connection *connection,

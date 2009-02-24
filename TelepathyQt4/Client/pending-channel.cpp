@@ -229,13 +229,12 @@ QVariantMap PendingChannel::immutableProperties() const
 }
 
 /**
- * Returns a newly constructed Channel high-level proxy object associated
+ * Returns a shared pointer to a Channel high-level proxy object associated
  * with the remote channel resulting from the channel request. If isValid()
  * returns <code>false</code>, the request has not (at least yet) completed
- * successfully, and 0 will be returned.
+ * successfully, and a null QSharedPointer will be returned.
  *
- * \param parent Passed to the Channel constructor.
- * \return Pointer to the new Channel object, 0 if an error occurred.
+ * \return Shared pointer to the new Channel object, 0 if an error occurred.
  */
 QSharedPointer<Channel> PendingChannel::channel() const
 {

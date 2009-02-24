@@ -19,8 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "pending-contact-attributes.h"
-#include "_gen/pending-contact-attributes.moc.hpp"
+#include <TelepathyQt4/Client/PendingContactAttributes>
+
+#include "TelepathyQt4/Client/_gen/pending-contact-attributes.moc.hpp"
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ReferencedHandles>
@@ -54,7 +55,7 @@ namespace Client
 /**
  * \class PendingContactAttributes
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/cli-pending-contact-attributes.h> <TelepathyQt4/Client/PendingContactAttributes>
+ * \headerfile <TelepathyQt4/Client/pending-contact-attributes.h> <TelepathyQt4/Client/PendingContactAttributes>
  *
  * Class containing the parameters of and the reply to an asynchronous request for raw contact
  * attributes, as used in the Connection::getContactAttributes() low-level convenience method
