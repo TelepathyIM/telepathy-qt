@@ -38,11 +38,21 @@ class TpPrototype::ChatChannelPrivate
 public:
     ChatChannelPrivate()
     { init(); }
+
+    ~ChatChannelPrivate()
+    {
+        // Close channel before deleting objects
+        if ( m_pChannelInterface )
+        { m_pChannelInterface->Close(); }
+        delete m_pTextChannel;
+        delete m_pChannelInterface;
+    }
     
-    QPointer<TpPrototype::Contact>                          m_pContact;
+    QPointer<TpPrototype::Contact>                        m_pContact;
     Telepathy::Client::ChannelTypeTextInterface*          m_pTextChannel;
     QPointer<Telepathy::Client::ConnectionInterface>      m_pConnectionInterface;
-
+    Telepathy::Client::ChannelInterface*                  m_pChannelInterface;
+            
     bool m_isValid;
     bool m_areSignalsConnected;
 
@@ -52,6 +62,7 @@ private:
         m_pContact              = NULL;
         m_pConnectionInterface  = NULL;
         m_pTextChannel          = NULL;
+        m_pChannelInterface     = NULL;
         m_isValid               = true;
         m_areSignalsConnected   = false;
     }
@@ -70,7 +81,7 @@ ChatChannel::ChatChannel( Contact* contact, Telepathy::Client::ConnectionInterfa
 }
 
 ChatChannel::~ChatChannel()
-        { delete d; }
+{ delete d; }
 
 bool ChatChannel::isValid() const
 { return d->m_isValid; }
@@ -153,11 +164,18 @@ void ChatChannel::openTextChannel(uint handle, uint handleType, const QString& c
     d->m_pTextChannel = new Telepathy::Client::ChannelTypeTextInterface( channel_service_name,
                                                                      channel_path,
                                                                      this );
-    if (!d->m_pTextChannel->isValid())
+    d->m_pChannelInterface = new Telepathy::Client::ChannelInterface( channel_service_name,
+                                                                      channel_path,
+                                                                      this );
+    Q_ASSERT( d->m_pChannelInterface->isValid() );
+    Q_ASSERT( d->m_pTextChannel->isValid() );
+    if (!d->m_pTextChannel->isValid() || !d->m_pChannelInterface->isValid())
     {
-        qDebug() << "Failed to connect channel interface class to D-Bus object.";
+        qDebug() << "Failed to connect channel interface classes to D-Bus object.";
         delete d->m_pTextChannel;
+        delete d->m_pChannelInterface;
         d->m_pTextChannel = NULL;
+        d->m_pChannelInterface = NULL;
         d->m_isValid = false;
         return;
     }
