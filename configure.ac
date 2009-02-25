@@ -242,6 +242,7 @@ AC_OUTPUT([
     examples/Makefile
     examples/extensions/Makefile
     examples/accounts/Makefile
+    examples/roster/Makefile
     m4/Makefile
     spec/Makefile
     tests/Makefile
