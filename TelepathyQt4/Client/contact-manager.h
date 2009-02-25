@@ -35,6 +35,7 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Client/ReferencedHandles>
 
 namespace Telepathy
 {
@@ -111,12 +112,12 @@ class ContactManager : public QObject
             };
 
             ContactListChannel()
-                : type((Type) -1), handle(0)
+                : type((Type) -1)
             {
             }
 
-            ContactListChannel(Type type, uint handle = 0)
-                : type(type), handle(handle)
+            ContactListChannel(Type type)
+                : type(type)
             {
             }
 
@@ -148,7 +149,7 @@ class ContactManager : public QObject
             }
 
             Type type;
-            uint handle;
+            ReferencedHandles handle;
             QSharedPointer<Channel> channel;
         };
 

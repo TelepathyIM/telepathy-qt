@@ -958,12 +958,12 @@ void Connection::gotContactListsHandles(PendingOperation *op)
 
     Q_ASSERT(pending->handles().size() == 1);
     Q_ASSERT(pending->namesRequested().size() == 1);
-    uint handle = pending->handles()[0];
+    ReferencedHandles handle = pending->handles();
     uint type = ContactManager::ContactListChannel::typeForIdentifier(
             pending->namesRequested().first());
     Q_ASSERT(type != (uint) -1 && type < ContactManager::ContactListChannel::LastType);
     mPriv->contactListsChannels[type].handle = handle;
-    request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle;
+    request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle[0];
     connect(ensureChannel(request),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(gotContactListChannel(Telepathy::Client::PendingOperation*)));
@@ -982,7 +982,8 @@ void Connection::gotContactListChannel(PendingOperation *op)
     Q_ASSERT(!channel.isNull());
     Q_ASSERT(handle);
     for (int i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
-        if (mPriv->contactListsChannels[i].handle == handle) {
+        if (mPriv->contactListsChannels[i].handle.size() > 0 &&
+            mPriv->contactListsChannels[i].handle[0] == handle) {
             Q_ASSERT(mPriv->contactListsChannels[i].channel.isNull());
             mPriv->contactListsChannels[i].channel = channel;
             connect(channel->becomeReady(),
