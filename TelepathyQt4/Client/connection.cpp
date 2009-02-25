@@ -949,19 +949,21 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    Telepathy::HandleTypeList);
 
+    // FIXME check for handles in pending->invalidHandles() when
+    //       invalidHandles is implemented
+    // for handle in invalidHandles {
+    //     debug() << "Unable to request handle for contact list" <<
+    //         ContactManager::ContactListChannel::identifierForType(
+    //                 (ContactManager::ContactListChannel::Type) i);
+    //     // let's not fail, because the contact lists are not supported
+    //     contactListChannelReady();
+    //     continue;
+    // }
+
     ReferencedHandles handles = pending->handles();
     uint handle;
     for (int i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
         handle = handles[i];
-
-        if (handle == 0) {
-            debug() << "Unable to request handle for contact list" <<
-                ContactManager::ContactListChannel::identifierForType(
-                        (ContactManager::ContactListChannel::Type) i);
-            // let's not fail, because the contact lists are not supported
-            contactListChannelReady();
-            continue;
-        }
 
         mPriv->contactListsChannels[i].handle = handle;
         request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle;
