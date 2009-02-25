@@ -1048,7 +1048,7 @@ ConnectionInterface *Connection::baseInterface() const
  */
 PendingChannel *Connection::createChannel(const QVariantMap &request)
 {
-    if (mPriv->status != StatusConnected) {
+    if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
         return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Connection not yet connected");
@@ -1099,7 +1099,7 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
  */
 PendingChannel *Connection::ensureChannel(const QVariantMap &request)
 {
-    if (mPriv->status != StatusConnected) {
+    if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
         return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Connection not yet connected");
@@ -1393,9 +1393,7 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
 
 QStringList Connection::contactAttributeInterfaces() const
 {
-    if (!isReady()) {
-        warning() << "Connection::contactAttributeInterfaces() used when not ready";
-    } else if (status() != StatusConnected) {
+    if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Connection::contactAttributeInterfaces() used with status"
             << status() << "!= StatusConnected";
     } else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
