@@ -144,10 +144,9 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
     return mPriv->supportedFeatures;
 }
 
-PendingContacts *ContactManager::allKnownContacts(
-        const QSet<Contact::Feature> &features)
+QSet<QSharedPointer<Contact> > ContactManager::allKnownContacts() const
 {
-    return upgradeContacts(mPriv->allKnownContacts().toList(), features);
+    return mPriv->allKnownContacts();
 }
 
 bool ContactManager::canRequestContactsPresenceSubscription() const

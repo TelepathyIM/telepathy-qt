@@ -56,8 +56,7 @@ class ContactManager : public QObject
         bool isSupported() const;
         QSet<Contact::Feature> supportedFeatures() const;
 
-        PendingContacts *allKnownContacts(
-                const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+        QSet<QSharedPointer<Contact> > allKnownContacts() const;
 
         bool canRequestContactsPresenceSubscription() const;
         PendingOperation *requestContactsPresenceSubscription(
