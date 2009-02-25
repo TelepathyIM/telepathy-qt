@@ -80,9 +80,9 @@ public:
     PresenceState subscriptionState() const;
     PresenceState publishState() const;
 
-    PendingOperation *requestPresenceSubscription(const QString &message);
-    PendingOperation *authorizePresencePublication(const QString &message);
-    PendingOperation *denyPresencePublication(const QString &message);
+    PendingOperation *requestPresenceSubscription(const QString &message = QString());
+    PendingOperation *authorizePresencePublication(const QString &message = QString());
+    PendingOperation *denyPresencePublication(const QString &message = QString());
 
     ~Contact();
 
