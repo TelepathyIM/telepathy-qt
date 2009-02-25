@@ -437,6 +437,7 @@ void ContactManager::setContactListChannels(
     while (i != end) {
         type = i.key();
         channel = i.value().channel;
+        ++i;
         if (!channel) {
             continue;
         }
@@ -467,8 +468,6 @@ void ContactManager::setContactListChannels(
                         const QSet<QSharedPointer<Contact> > &,
                         const Channel::GroupMemberChangeDetails &)),
                 method);
-
-        ++i;
     }
 }
 
