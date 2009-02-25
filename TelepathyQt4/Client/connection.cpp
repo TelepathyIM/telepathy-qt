@@ -371,20 +371,19 @@ void Connection::Private::introspectRoster(Connection::Private *self)
 {
     debug() << "Requesting handles for contact lists";
 
-    QStringList ids;
     for (uint i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
         self->contactListsChannels.insert(i,
                 ContactManager::ContactListChannel(
                     (ContactManager::ContactListChannel::Type) i));
-        ids << ContactManager::ContactListChannel::identifierForType(
-                (ContactManager::ContactListChannel::Type) i);
-    }
 
-    PendingHandles *pending = self->parent->requestHandles(
-            Telepathy::HandleTypeList, ids);
-    self->parent->connect(pending,
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            SLOT(gotContactListsHandles(Telepathy::Client::PendingOperation*)));
+        PendingHandles *pending = self->parent->requestHandles(
+                Telepathy::HandleTypeList,
+                QStringList() << ContactManager::ContactListChannel::identifierForType(
+                    (ContactManager::ContactListChannel::Type) i));
+        self->parent->connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(gotContactListsHandles(Telepathy::Client::PendingOperation*)));
+    }
 }
 
 Connection::PendingConnect::PendingConnect(Connection *parent, const QSet<uint> &requestedFeatures)
@@ -935,12 +934,20 @@ void Connection::gotContactListsHandles(PendingOperation *op)
 {
     if (op->isError()) {
         // let's not fail, because the contact lists are not supported
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
+        debug() << "Unable to retrieve contact list handle, ignoring";
+        contactListChannelReady();
         return;
     }
 
     debug() << "Got handles for contact lists";
     PendingHandles *pending = qobject_cast<PendingHandles*>(op);
+
+    // FIXME check for handles in pending->invalidHandles() when
+    //       invalidHandles is implemented
+    // if (pending->invalidHandles().size() == 1) {
+    //     contactListChannelReady();
+    //     return;
+    // }
 
     debug() << "Requesting channels for contact lists";
     QVariantMap request;
@@ -949,29 +956,17 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    Telepathy::HandleTypeList);
 
-    // FIXME check for handles in pending->invalidHandles() when
-    //       invalidHandles is implemented
-    // for handle in invalidHandles {
-    //     debug() << "Unable to request handle for contact list" <<
-    //         ContactManager::ContactListChannel::identifierForType(
-    //                 (ContactManager::ContactListChannel::Type) i);
-    //     // let's not fail, because the contact lists are not supported
-    //     contactListChannelReady();
-    //     continue;
-    // }
-
-    ReferencedHandles handles = pending->handles();
-    uint handle;
-    for (int i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
-        handle = handles[i];
-
-        mPriv->contactListsChannels[i].handle = handle;
-        request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle;
-
-        connect(ensureChannel(request),
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(gotContactListChannel(Telepathy::Client::PendingOperation*)));
-    }
+    Q_ASSERT(pending->handles().size() == 1);
+    Q_ASSERT(pending->namesRequested().size() == 1);
+    uint handle = pending->handles()[0];
+    uint type = ContactManager::ContactListChannel::typeForIdentifier(
+            pending->namesRequested().first());
+    Q_ASSERT(type != (uint) -1 && type < ContactManager::ContactListChannel::LastType);
+    mPriv->contactListsChannels[type].handle = handle;
+    request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle;
+    connect(ensureChannel(request),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(gotContactListChannel(Telepathy::Client::PendingOperation*)));
 }
 
 void Connection::gotContactListChannel(PendingOperation *op)
@@ -1001,6 +996,7 @@ void Connection::contactListChannelReady()
 {
     if (++mPriv->contactListsChannelsReady ==
             ContactManager::ContactListChannel::LastType) {
+        debug() << "FeatureRoster ready";
         mPriv->contactManager->setContactListChannels(mPriv->contactListsChannels);
         mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
     }
