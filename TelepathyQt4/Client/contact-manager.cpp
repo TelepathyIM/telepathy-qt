@@ -199,7 +199,7 @@ bool ContactManager::canDenyContactsPresencePublication() const
     if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
         publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
     }
-    return publishChannel && publishChannel->groupCanRescindContacts();
+    return publishChannel && publishChannel->groupCanRemoveContacts();
 }
 
 PendingOperation *ContactManager::denyContactsPresencePublication(
@@ -352,15 +352,15 @@ void ContactManager::onSubscribeChannelMembersChanged(
         const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(groupRemotePendingMembersAdded);
+    Q_UNUSED(groupLocalPendingMembersAdded);
     Q_UNUSED(details);
 
     foreach (QSharedPointer<Contact> contact, groupMembersAdded) {
         contact->setSubscriptionState(Contact::PresenceStateYes);
     }
 
-    foreach (QSharedPointer<Contact> contact, groupLocalPendingMembersAdded) {
-        contact->setSubscriptionState(Contact::PresenceStateYes);
+    foreach (QSharedPointer<Contact> contact, groupRemotePendingMembersAdded) {
+        contact->setSubscriptionState(Contact::PresenceStateAsk);
     }
 
     foreach (QSharedPointer<Contact> contact, groupMembersRemoved) {
@@ -375,23 +375,23 @@ void ContactManager::onPublishChannelMembersChanged(
         const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(groupLocalPendingMembersAdded);
+    Q_UNUSED(groupRemotePendingMembersAdded);
     Q_UNUSED(details);
 
     foreach (QSharedPointer<Contact> contact, groupMembersAdded) {
         contact->setPublishState(Contact::PresenceStateYes);
     }
 
-    foreach (QSharedPointer<Contact> contact, groupRemotePendingMembersAdded) {
-        contact->setPublishState(Contact::PresenceStateYes);
+    foreach (QSharedPointer<Contact> contact, groupLocalPendingMembersAdded) {
+        contact->setPublishState(Contact::PresenceStateAsk);
     }
 
     foreach (QSharedPointer<Contact> contact, groupMembersRemoved) {
         contact->setPublishState(Contact::PresenceStateNo);
     }
 
-    if (!groupRemotePendingMembersAdded.isEmpty()) {
-        emit presencePublicationRequested(groupRemotePendingMembersAdded);
+    if (!groupLocalPendingMembersAdded.isEmpty()) {
+        emit presencePublicationRequested(groupLocalPendingMembersAdded);
     }
 }
 
@@ -545,23 +545,23 @@ void ContactManager::Private::updateContactsPresenceState()
 {
     QSharedPointer<Channel> subscribeChannel;
     QSet<QSharedPointer<Contact> > subscribeContacts;
-    QSet<QSharedPointer<Contact> > subscribeContactsLP;
+    QSet<QSharedPointer<Contact> > subscribeContactsRP;
     if (contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
         subscribeChannel = contactListsChannels[ContactListChannel::TypeSubscribe].channel;
         if (subscribeChannel) {
             subscribeContacts = subscribeChannel->groupContacts();
-            subscribeContactsLP = subscribeChannel->groupLocalPendingContacts();
+            subscribeContactsRP = subscribeChannel->groupRemotePendingContacts();
         }
     }
 
     QSharedPointer<Channel> publishChannel;
     QSet<QSharedPointer<Contact> > publishContacts;
-    QSet<QSharedPointer<Contact> > publishContactsRP;
+    QSet<QSharedPointer<Contact> > publishContactsLP;
     if (contactListsChannels.contains(ContactListChannel::TypePublish)) {
         publishChannel = contactListsChannels[ContactListChannel::TypePublish].channel;
         if (publishChannel) {
             publishContacts = publishChannel->groupContacts();
-            publishContactsRP = publishChannel->groupLocalPendingContacts();
+            publishContactsLP = publishChannel->groupLocalPendingContacts();
         }
     }
 
@@ -575,7 +575,7 @@ void ContactManager::Private::updateContactsPresenceState()
             // not in "subscribe" -> No, in "subscribe" lp -> Ask, in "subscribe" current -> Yes
             if (subscribeContacts.contains(contact)) {
                 contact->setSubscriptionState(Contact::PresenceStateYes);
-            } else if (subscribeContactsLP.contains(contact)) {
+            } else if (subscribeContactsRP.contains(contact)) {
                 contact->setSubscriptionState(Contact::PresenceStateAsk);
             } else {
                 contact->setSubscriptionState(Contact::PresenceStateNo);
@@ -586,7 +586,7 @@ void ContactManager::Private::updateContactsPresenceState()
             // not in "publish" -> No, in "subscribe" rp -> Ask, in "publish" current -> Yes
             if (publishContacts.contains(contact)) {
                 contact->setPublishState(Contact::PresenceStateYes);
-            } else if (publishContactsRP.contains(contact)) {
+            } else if (publishContactsLP.contains(contact)) {
                 contact->setPublishState(Contact::PresenceStateAsk);
             } else {
                 contact->setPublishState(Contact::PresenceStateNo);
