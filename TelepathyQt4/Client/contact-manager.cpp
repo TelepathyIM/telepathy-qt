@@ -177,7 +177,10 @@ bool ContactManager::canAuthorizeContactsPresencePublication() const
     if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
         publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
     }
-    return publishChannel && publishChannel->groupCanAddContacts();
+    // do not check for Channel::groupCanAddContacts as all contacts in local
+    // pending can be added, even if the Channel::groupFlags() does not contain
+    // the flag CanAdd
+    return (bool) publishChannel;
 }
 
 PendingOperation *ContactManager::authorizeContactsPresencePublication(
