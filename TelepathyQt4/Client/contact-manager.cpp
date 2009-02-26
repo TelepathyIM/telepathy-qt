@@ -162,6 +162,8 @@ PendingOperation *ContactManager::requestContactsPresenceSubscription(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
     if (!canRequestContactsPresenceSubscription()) {
+        warning() << "Contact subscription requested, "
+            "but unable to add contacts";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Cannot request contacts presence subscription");
     }
@@ -211,6 +213,8 @@ PendingOperation *ContactManager::authorizeContactsPresencePublication(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
     if (!canAuthorizeContactsPresencePublication()) {
+        warning() << "Contact publication authorization requested, "
+            "but unable to authorize contacts";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Cannot authorize contacts presence publication");
     }
@@ -388,14 +392,17 @@ void ContactManager::onSubscribeChannelMembersChanged(
     }
 
     foreach (QSharedPointer<Contact> contact, groupMembersAdded) {
+        debug() << "Contact" << contact->id() << "on subscribe list";
         contact->setSubscriptionState(Contact::PresenceStateYes);
     }
 
     foreach (QSharedPointer<Contact> contact, groupRemotePendingMembersAdded) {
+        debug() << "Contact" << contact->id() << "added to subscribe list";
         contact->setSubscriptionState(Contact::PresenceStateAsk);
     }
 
     foreach (QSharedPointer<Contact> contact, groupMembersRemoved) {
+        debug() << "Contact" << contact->id() << "removed from subscribe list";
         contact->setSubscriptionState(Contact::PresenceStateNo);
     }
 }
@@ -414,14 +421,17 @@ void ContactManager::onPublishChannelMembersChanged(
     }
 
     foreach (QSharedPointer<Contact> contact, groupMembersAdded) {
+        debug() << "Contact" << contact->id() << "on publish list";
         contact->setPublishState(Contact::PresenceStateYes);
     }
 
     foreach (QSharedPointer<Contact> contact, groupLocalPendingMembersAdded) {
+        debug() << "Contact" << contact->id() << "added to publish list";
         contact->setPublishState(Contact::PresenceStateAsk);
     }
 
     foreach (QSharedPointer<Contact> contact, groupMembersRemoved) {
+        debug() << "Contact" << contact->id() << "removed from publish list";
         contact->setPublishState(Contact::PresenceStateNo);
     }
 
