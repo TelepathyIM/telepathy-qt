@@ -151,13 +151,13 @@ Q_SIGNALS:
     void groupCanRescindContactsChanged(bool canRescindContacts);
 
     void groupMembersChanged(
-            const QSet<QSharedPointer<Contact> > &groupMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
-            const Channel::GroupMemberChangeDetails &details);
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
 
-    void groupHandleOwnersChanged(const HandleOwnerMap &owners,
+    void groupHandleOwnersChanged(const Telepathy::HandleOwnerMap &owners,
             const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
 
     void groupSelfContactChanged();

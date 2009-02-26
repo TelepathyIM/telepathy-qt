@@ -81,7 +81,7 @@ class ContactManager : public QObject
                 const QSet<Contact::Feature> &features);
 
     Q_SIGNALS:
-        void presencePublicationRequested(const QSet<QSharedPointer<Contact> > &contacts);
+        void presencePublicationRequested(const QSet<QSharedPointer<Telepathy::Client::Contact> > &contacts);
 
     private Q_SLOTS:
         void onAliasesChanged(const Telepathy::AliasPairList &);
@@ -89,17 +89,17 @@ class ContactManager : public QObject
         void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
         void onSubscribeChannelMembersChanged(
-            const QSet<QSharedPointer<Contact> > &groupMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
-            const Channel::GroupMemberChangeDetails &details);
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
         void onPublishChannelMembersChanged(
-            const QSet<QSharedPointer<Contact> > &groupMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-            const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
-            const Channel::GroupMemberChangeDetails &details);
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
 
     private:
         struct ContactListChannel

@@ -444,29 +444,29 @@ void ContactManager::setContactListChannels(
 
         if (type == ContactListChannel::TypeSubscribe) {
             method = SLOT(onSubscribeChannelMembersChanged(
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const Channel::GroupMemberChangeDetails &));
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const Telepathy::Client::Channel::GroupMemberChangeDetails &));
         } else if (type == ContactListChannel::TypePublish) {
             method = SLOT(onPublishChannelMembersChanged(
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const Channel::GroupMemberChangeDetails &));
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const Telepathy::Client::Channel::GroupMemberChangeDetails &));
         } else {
             continue;
         }
 
         connect(channel.data(),
                 SIGNAL(groupMembersChanged(
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const QSet<QSharedPointer<Contact> > &,
-                        const Channel::GroupMemberChangeDetails &)),
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
                 method);
     }
 }
