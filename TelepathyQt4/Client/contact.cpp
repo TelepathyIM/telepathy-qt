@@ -190,11 +190,11 @@ PendingOperation *Contact::authorizePresencePublication(const QString &message)
             message);
 }
 
-PendingOperation *Contact::denyPresencePublication(const QString &message)
+PendingOperation *Contact::removePresencePublication(const QString &message)
 {
     QSharedPointer<Contact> self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->denyContactsPresencePublication(
+    return mPriv->manager->removeContactsPresencePublication(
             QList<QSharedPointer<Contact> >() << self,
             message);
 }

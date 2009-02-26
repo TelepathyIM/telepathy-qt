@@ -220,7 +220,7 @@ PendingOperation *ContactManager::authorizeContactsPresencePublication(
     return publishChannel->groupAddContacts(contacts);
 }
 
-bool ContactManager::canDenyContactsPresencePublication() const
+bool ContactManager::canRemoveContactsPresencePublication() const
 {
     QSharedPointer<Channel> publishChannel;
     if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
@@ -229,12 +229,14 @@ bool ContactManager::canDenyContactsPresencePublication() const
     return publishChannel && publishChannel->groupCanRemoveContacts();
 }
 
-PendingOperation *ContactManager::denyContactsPresencePublication(
+PendingOperation *ContactManager::removeContactsPresencePublication(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
-    if (!canDenyContactsPresencePublication()) {
+    if (!canRemoveContactsPresencePublication()) {
+        warning() << "Contact publication remove requested, "
+            "but unable to remove contacts";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot deny contacts presence publication");
+                "Cannot remove contacts presence publication");
     }
 
     QSharedPointer<Channel> publishChannel =
