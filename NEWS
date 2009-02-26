@@ -1,0 +1,35 @@
+telepathy-qt4 0.1.0 (2009-02-26)
+================================
+
+The "pending operation" release.
+
+This first release of telepathy-qt4 features high-level API for the following:
+
+* Manipulating accounts on a Telepathy AccountManager implementation as
+  described by telepathy-spec 0.17.x, such as Mission Control 5 (beta versions
+  currently available)
+
+* Manipulating Telepathy connection managers via the ConnectionManager and
+  Connection core API
+
+* Setting your own presence on a connection manager supporting the
+  SimplePresence interface
+
+* Requesting channels from a connection manager supporting the Requests
+  interface
+
+* Reading contacts' aliases etc. on a connection manager supporting the
+  Contacts interface
+
+* Sending and receiving messages on Text channels, with or without the
+  Messages interface
+
+In addition, lower-level auto-generated accessors are provided for all the
+functionality of telepathy-spec version 0.17.19.
+
+Notable functionality that is currently missing, but will be added soon,
+includes:
+
+* Manipulating a server-stored contact list
+
+* Controlling VoIP calls in StreamedMedia channels
