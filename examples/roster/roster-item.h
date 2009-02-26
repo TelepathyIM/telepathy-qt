@@ -37,10 +37,10 @@ public:
             QListWidget *parent = 0);
     ~RosterItem();
 
+    QSharedPointer<Telepathy::Client::Contact> contact() const { return mContact; }
+
 private Q_SLOTS:
-    void onSimplePresenceChanged(const QString &status,
-            uint type,
-            const QString &presenceMessage);
+    void onPresenceStateChanged();
 
 private:
     QSharedPointer<Telepathy::Client::Contact> mContact;

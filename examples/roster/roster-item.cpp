@@ -29,17 +29,36 @@ RosterItem::RosterItem(const QSharedPointer<Contact> &contact,
       QListWidgetItem(parent),
       mContact(contact)
 {
-    setText(QString("%1 (%2)").arg(contact->id()).arg(contact->presenceStatus()));
+    onPresenceStateChanged();
+
     connect(contact.data(),
             SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
-            SLOT(onSimplePresenceChanged(const QString &, uint, const QString &)));
+            SLOT(onPresenceStateChanged()));
+    connect(contact.data(),
+            SIGNAL(subscriptionStateChanged(PresenceState)),
+            SLOT(onPresenceStateChanged()));
+    connect(contact.data(),
+            SIGNAL(publishStateChanged(PresenceState)),
+            SLOT(onPresenceStateChanged()));
 }
 
 RosterItem::~RosterItem()
 {
 }
 
-void RosterItem::onSimplePresenceChanged(const QString &status, uint type, const QString &presenceMessage)
+void RosterItem::onPresenceStateChanged()
 {
-    setText(QString("%1 (%2)").arg(mContact->id()).arg(status));
+    QString status = mContact->presenceStatus();
+    // I've asked to see the contact presence
+    if (mContact->subscriptionState() == Contact::PresenceStateAsk) {
+        setText(QString("%1 (%2) (awaiting approval)").arg(mContact->id()).arg(status));
+    // The contact asked to see my presence
+    } else if (mContact->publishState() == Contact::PresenceStateAsk) {
+        setText(QString("%1 (%2) (pending approval)").arg(mContact->id()).arg(status));
+    } else if (mContact->subscriptionState() == Contact::PresenceStateNo &&
+               mContact->publishState() == Contact::PresenceStateNo) {
+        setText(QString("%1 (unknown)").arg(mContact->id()));
+    } else {
+        setText(QString("%1 (%2)").arg(mContact->id()).arg(status));
+    }
 }

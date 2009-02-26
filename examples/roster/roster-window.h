@@ -28,11 +28,15 @@ namespace Telepathy {
 namespace Client {
 class Connection;
 class ConnectionManager;
+class Contact;
 class PendingOperation;
 }
 }
 
+class QDialog;
+class QLineEdit;
 class QListWidget;
+class QPushButton;
 
 class RosterWindow : public QMainWindow
 {
@@ -47,6 +51,12 @@ private Q_SLOTS:
     void onCMReady(Telepathy::Client::PendingOperation *);
     void onConnectionCreated(Telepathy::Client::PendingOperation *);
     void onConnectionReady(Telepathy::Client::PendingOperation *);
+    void onPresencePublicationRequested(const QSet<QSharedPointer<Telepathy::Client::Contact> > &);
+    void onAddButtonClicked();
+    void onAuthButtonClicked();
+    void onRemoveButtonClicked();
+    void onDenyButtonClicked();
+    void onContactRetrieved(Telepathy::Client::PendingOperation *op);
 
 private:
     void setupGui();
@@ -56,6 +66,12 @@ private:
     QString mUsername;
     QString mPassword;
     QListWidget *mList;
+    QPushButton *mAddBtn;
+    QPushButton *mAuthBtn;
+    QPushButton *mRemoveBtn;
+    QPushButton *mDenyBtn;
+    QDialog *mAddDlg;
+    QLineEdit *mAddDlgEdt;
 };
 
 #endif
