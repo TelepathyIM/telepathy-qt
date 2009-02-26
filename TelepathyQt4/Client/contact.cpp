@@ -172,6 +172,15 @@ PendingOperation *Contact::requestPresenceSubscription(const QString &message)
             message);
 }
 
+PendingOperation *Contact::removePresenceSubscription(const QString &message)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->removeContactsPresenceSubscription(
+            QList<QSharedPointer<Contact> >() << self,
+            message);
+}
+
 PendingOperation *Contact::authorizePresencePublication(const QString &message)
 {
     QSharedPointer<Contact> self =
