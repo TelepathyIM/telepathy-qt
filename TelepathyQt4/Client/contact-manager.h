@@ -62,6 +62,9 @@ class ContactManager : public QObject
         bool canRequestContactsPresenceSubscription() const;
         PendingOperation *requestContactsPresenceSubscription(
                 const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+        bool canRemoveContactsPresenceSubscription() const;
+        PendingOperation *removeContactsPresenceSubscription(
+                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
         bool canAuthorizeContactsPresencePublication() const;
         PendingOperation *authorizeContactsPresencePublication(
                 const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());

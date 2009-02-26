@@ -171,6 +171,30 @@ PendingOperation *ContactManager::requestContactsPresenceSubscription(
     return subscribeChannel->groupAddContacts(contacts);
 }
 
+bool ContactManager::canRemoveContactsPresenceSubscription() const
+{
+    QSharedPointer<Channel> subscribeChannel;
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
+        subscribeChannel = mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
+    }
+    return subscribeChannel && subscribeChannel->groupCanRemoveContacts();
+}
+
+PendingOperation *ContactManager::removeContactsPresenceSubscription(
+        const QList<QSharedPointer<Contact> > &contacts, const QString &message)
+{
+    if (!canRemoveContactsPresenceSubscription()) {
+        warning() << "Contact subscription removal requested, "
+            "but unable to remove contacts";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot remove contacts presence subscription");
+    }
+
+    QSharedPointer<Channel> subscribeChannel =
+        mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
+    return subscribeChannel->groupRemoveContacts(contacts);
+}
+
 bool ContactManager::canAuthorizeContactsPresencePublication() const
 {
     QSharedPointer<Channel> publishChannel;
