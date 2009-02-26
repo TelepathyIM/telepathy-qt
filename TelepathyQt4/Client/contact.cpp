@@ -201,6 +201,7 @@ PendingOperation *Contact::removePresencePublication(const QString &message)
 
 Contact::~Contact()
 {
+    debug() << "Contact" << id() << "destroyed";
     delete mPriv;
 }
 
