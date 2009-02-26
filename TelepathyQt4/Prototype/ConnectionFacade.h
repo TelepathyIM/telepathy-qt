@@ -46,9 +46,15 @@ namespace TpPrototype
 {
 
 /**
- * @defgroup qt_style_api Qt-Style Client API
- * This API provides a high level client side API that enables developer to access to Telepathy on a high level of abstraction.
- * These classes encapsulate all the D-Bus communication, error handling and Telepathy-Channel handling.
+ * @defgroup qt_style_api Prototype Qt-Style Client API
+ *
+ * This API provides a high level client side API that enables developers
+ * to access to Telepathy on a high level of abstraction. However, the
+ * implementation is problematic in places.
+ *
+ * Work is in progress to merge the functionality of this prototype API into
+ * the main part of telepathy-qt4 while converting it to asynchronous
+ * operation. Using it for new code is not recommended.
  */
 
 /**
