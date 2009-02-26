@@ -1247,6 +1247,9 @@ bool Channel::groupCanAddContacts() const
 /**
  * Add contacts to this channel.
  *
+ * Note that Contacts on local pending list can always be added even if
+ * groupCanAddContacts() returns false.
+ *
  * \param contacts Contacts to be added.
  * \param message A string message, which can be blank if desired.
  * \return A PendingOperation which will emit PendingOperation::finished
@@ -1261,9 +1264,14 @@ PendingOperation *Channel::groupAddContacts(const QList<QSharedPointer<Contact> 
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Channel not ready");
     } else if (!groupCanAddContacts()) {
-        warning() << "Channel::groupAddContacts() used but adding contacts is not supported";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support adding contacts");
+        foreach (const QSharedPointer<Contact> &contact, contacts) {
+            if (!mPriv->groupLocalPendingContacts.contains(contact->handle()[0])) {
+                warning() << "Channel::groupAddContacts() used but adding contacts "
+                    "that are not in local pending list is not supported";
+                return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                        "Channel does not support adding contacts not in local pending list");
+            }
+        }
     } else if (contacts.isEmpty()) {
         warning() << "Channel::groupAddContacts() used with empty contacts param";
         return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
