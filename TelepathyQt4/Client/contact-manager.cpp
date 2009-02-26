@@ -381,8 +381,11 @@ void ContactManager::onSubscribeChannelMembersChanged(
         const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(groupLocalPendingMembersAdded);
     Q_UNUSED(details);
+
+    if (!groupLocalPendingMembersAdded.isEmpty()) {
+        warning() << "Found local pending contacts on subscribe list";
+    }
 
     foreach (QSharedPointer<Contact> contact, groupMembersAdded) {
         contact->setSubscriptionState(Contact::PresenceStateYes);
@@ -404,8 +407,11 @@ void ContactManager::onPublishChannelMembersChanged(
         const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
-    Q_UNUSED(groupRemotePendingMembersAdded);
     Q_UNUSED(details);
+
+    if (!groupRemotePendingMembersAdded.isEmpty()) {
+        warning() << "Found remote pending contacts on publish list";
+    }
 
     foreach (QSharedPointer<Contact> contact, groupMembersAdded) {
         contact->setPublishState(Contact::PresenceStateYes);
