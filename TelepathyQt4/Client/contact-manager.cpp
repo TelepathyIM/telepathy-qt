@@ -653,7 +653,7 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
     if (types.isEmpty()) {
         types.insert("subscribe", TypeSubscribe);
         types.insert("publish", TypePublish);
-        types.insert("Stored", TypeStored);
+        types.insert("stored", TypeStored);
     }
     if (types.contains(identifier)) {
         return types[identifier];
