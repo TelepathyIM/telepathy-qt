@@ -316,12 +316,18 @@ void Contact::receiveSimplePresence(const SimplePresence &presence)
 
 void Contact::setSubscriptionState(Contact::PresenceState state)
 {
+    if (mPriv->subscriptionState == state) {
+        return;
+    }
     mPriv->subscriptionState = state;
     emit subscriptionStateChanged(state);
 }
 
 void Contact::setPublishState(Contact::PresenceState state)
 {
+    if (mPriv->publishState == state) {
+        return;
+    }
     mPriv->publishState = state;
     emit publishStateChanged(state);
 }
