@@ -639,5 +639,28 @@ void ContactManager::Private::updateContactsPresenceState()
     }
 }
 
+QString ContactManager::ContactListChannel::identifierForType(Type type)
+{
+    static QString identifiers[LastType] = {
+        "subscribe", "publish", "stored"
+    };
+    return identifiers[type];
+}
+
+uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identifier)
+{
+    static QHash<QString, uint> types;
+    if (types.isEmpty()) {
+        types.insert("subscribe", TypeSubscribe);
+        types.insert("publish", TypePublish);
+        types.insert("Stored", TypeStored);
+    }
+    if (types.contains(identifier)) {
+        return types[identifier];
+    }
+    return (uint) -1;
+}
+
+
 }
 }
