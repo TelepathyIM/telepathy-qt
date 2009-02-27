@@ -39,8 +39,11 @@ public:
 
     QSharedPointer<Telepathy::Client::Contact> contact() const { return mContact; }
 
+Q_SIGNALS:
+    void changed();
+
 private Q_SLOTS:
-    void onPresenceStateChanged();
+    void onContactChanged();
 
 private:
     QSharedPointer<Telepathy::Client::Contact> mContact;

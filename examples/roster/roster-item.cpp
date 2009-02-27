@@ -29,24 +29,27 @@ RosterItem::RosterItem(const QSharedPointer<Contact> &contact,
       QListWidgetItem(parent),
       mContact(contact)
 {
-    onPresenceStateChanged();
+    onContactChanged();
 
     connect(contact.data(),
             SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
-            SLOT(onPresenceStateChanged()));
+            SLOT(onContactChanged()));
     connect(contact.data(),
             SIGNAL(subscriptionStateChanged(PresenceState)),
-            SLOT(onPresenceStateChanged()));
+            SLOT(onContactChanged()));
     connect(contact.data(),
             SIGNAL(publishStateChanged(PresenceState)),
-            SLOT(onPresenceStateChanged()));
+            SLOT(onContactChanged()));
+    connect(contact.data(),
+            SIGNAL(blockStatusChanged(bool)),
+            SLOT(onContactChanged()));
 }
 
 RosterItem::~RosterItem()
 {
 }
 
-void RosterItem::onPresenceStateChanged()
+void RosterItem::onContactChanged()
 {
     QString status = mContact->presenceStatus();
     // I've asked to see the contact presence
@@ -59,6 +62,12 @@ void RosterItem::onPresenceStateChanged()
                mContact->publishState() == Contact::PresenceStateNo) {
         setText(QString("%1 (unknown)").arg(mContact->id()));
     } else {
-        setText(QString("%1 (%2)").arg(mContact->id()).arg(status));
+        if (mContact->isBlocked()) {
+            setText(QString("%1 (%2) (blocked)").arg(mContact->id()).arg(status));
+        } else {
+            setText(QString("%1 (%2)").arg(mContact->id()).arg(status));
+        }
     }
+
+    emit changed();
 }

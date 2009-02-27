@@ -33,9 +33,11 @@ class PendingOperation;
 }
 }
 
+class QAction;
 class QDialog;
 class QLineEdit;
 class QListWidget;
+class QListWidgetItem;
 class QPushButton;
 
 class RosterWindow : public QMainWindow
@@ -52,24 +54,31 @@ private Q_SLOTS:
     void onConnectionCreated(Telepathy::Client::PendingOperation *);
     void onConnectionReady(Telepathy::Client::PendingOperation *);
     void onPresencePublicationRequested(const QSet<QSharedPointer<Telepathy::Client::Contact> > &);
+    void onItemSelectionChanged();
     void onAddButtonClicked();
-    void onAuthButtonClicked();
-    void onRemoveButtonClicked();
-    void onDenyButtonClicked();
+    void onAuthActionTriggered(bool);
+    void onDenyActionTriggered(bool);
+    void onRemoveActionTriggered(bool);
+    void onBlockActionTriggered(bool);
     void onContactRetrieved(Telepathy::Client::PendingOperation *op);
+    void updateActions();
 
 private:
+    void createActions();
     void setupGui();
+    void createItemForContact(const QSharedPointer<Telepathy::Client::Contact> &contact,
+            bool checkExists = false);
 
     Telepathy::Client::ConnectionManager *mCM;
     QSharedPointer<Telepathy::Client::Connection> mConn;
     QString mUsername;
     QString mPassword;
+    QAction *mAuthAction;
+    QAction *mRemoveAction;
+    QAction *mDenyAction;
+    QAction *mBlockAction;
     QListWidget *mList;
     QPushButton *mAddBtn;
-    QPushButton *mAuthBtn;
-    QPushButton *mRemoveBtn;
-    QPushButton *mDenyBtn;
     QDialog *mAddDlg;
     QLineEdit *mAddDlgEdt;
 };

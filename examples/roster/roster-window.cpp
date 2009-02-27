@@ -34,6 +34,7 @@
 #include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/PendingReadyConnectionManager>
 
+#include <QAction>
 #include <QDebug>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -54,16 +55,46 @@ RosterWindow::RosterWindow(const QString &username, const QString &password,
       mUsername(username),
       mPassword(password)
 {
+    setWindowTitle("Roster");
+
+    createActions();
     setupGui();
 
     mCM = new ConnectionManager("gabble", this);
     connect(mCM->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onCMReady(Telepathy::Client::PendingOperation *)));
+
+    resize(240, 320);
 }
 
 RosterWindow::~RosterWindow()
 {
+}
+
+void RosterWindow::createActions()
+{
+    mAuthAction = new QAction(QLatin1String("Authorize Contact"), this);
+    mAuthAction->setEnabled(false);
+    connect(mAuthAction,
+            SIGNAL(triggered(bool)),
+            SLOT(onAuthActionTriggered(bool)));
+    mDenyAction = new QAction(QLatin1String("Deny Contact"), this);
+    mDenyAction->setEnabled(false);
+    connect(mDenyAction,
+            SIGNAL(triggered(bool)),
+            SLOT(onDenyActionTriggered(bool)));
+    mRemoveAction = new QAction(QLatin1String("Remove Contact"), this);
+    mRemoveAction->setEnabled(false);
+    connect(mRemoveAction,
+            SIGNAL(triggered(bool)),
+            SLOT(onRemoveActionTriggered(bool)));
+    mBlockAction = new QAction(QLatin1String("Block Contact"), this);
+    mBlockAction->setEnabled(false);
+    mBlockAction->setCheckable(true);
+    connect(mBlockAction,
+            SIGNAL(triggered(bool)),
+            SLOT(onBlockActionTriggered(bool)));
 }
 
 void RosterWindow::setupGui()
@@ -73,37 +104,26 @@ void RosterWindow::setupGui()
     QVBoxLayout *vbox = new QVBoxLayout;
 
     mList = new QListWidget;
+    connect(mList,
+            SIGNAL(itemSelectionChanged()),
+            SLOT(onItemSelectionChanged()));
     vbox->addWidget(mList);
+
+    mList->setContextMenuPolicy(Qt::ActionsContextMenu);
+    mList->addAction(mAuthAction);
+    mList->addAction(mDenyAction);
+    mList->addAction(mRemoveAction);
+    mList->addAction(mBlockAction);
 
     QHBoxLayout *hbox = new QHBoxLayout;
 
-    mAddBtn = new QPushButton("Add contact");
+    mAddBtn = new QPushButton("+");
     mAddBtn->setEnabled(false);
     connect(mAddBtn,
             SIGNAL(clicked(bool)),
             SLOT(onAddButtonClicked()));
     hbox->addWidget(mAddBtn);
-
-    mAuthBtn = new QPushButton("Authorize contact");
-    mAuthBtn->setEnabled(false);
-    connect(mAuthBtn,
-            SIGNAL(clicked(bool)),
-            SLOT(onAuthButtonClicked()));
-    hbox->addWidget(mAuthBtn);
-
-    mRemoveBtn = new QPushButton("Remove contact");
-    mRemoveBtn->setEnabled(false);
-    connect(mRemoveBtn,
-            SIGNAL(clicked(bool)),
-            SLOT(onRemoveButtonClicked()));
-    hbox->addWidget(mRemoveBtn);
-
-    mDenyBtn = new QPushButton("Deny contact");
-    mDenyBtn->setEnabled(false);
-    connect(mDenyBtn,
-            SIGNAL(clicked(bool)),
-            SLOT(onDenyButtonClicked()));
-    hbox->addWidget(mDenyBtn);
+    hbox->addStretch(1);
 
     vbox->addLayout(hbox);
 
@@ -112,6 +132,7 @@ void RosterWindow::setupGui()
     setCentralWidget(frame);
 
     mAddDlg = new QDialog(this);
+    mAddDlg->setWindowTitle("Add Contact");
     QVBoxLayout *addDlgVBox = new QVBoxLayout;
 
     QHBoxLayout *addDlgEntryHBox = new QHBoxLayout;
@@ -128,6 +149,25 @@ void RosterWindow::setupGui()
     addDlgVBox->addWidget(addDlgBtnBox);
 
     mAddDlg->setLayout(addDlgVBox);
+}
+
+void RosterWindow::createItemForContact(const QSharedPointer<Contact> &contact,
+        bool checkExists)
+{
+    bool found = false;
+    if (checkExists) {
+        for (int i = 0; i < mList->count(); ++i) {
+            RosterItem *item = dynamic_cast<RosterItem*>(mList->item(i));
+            if (item->contact() == contact) {
+                found = true;
+            }
+        }
+    }
+
+    if (!found) {
+        RosterItem *item = new RosterItem(contact, mList);
+        connect(item, SIGNAL(changed()), SLOT(updateActions()));
+    }
 }
 
 void RosterWindow::onCMReady(Telepathy::Client::PendingOperation *op)
@@ -177,21 +217,23 @@ void RosterWindow::onConnectionReady(Telepathy::Client::PendingOperation *op)
 
     qDebug() << "Connection ready";
     foreach (const QSharedPointer<Contact> &contact, mConn->contactManager()->allKnownContacts()) {
-        (void) new RosterItem(contact, mList);
+        createItemForContact(contact);
     }
 
     mAddBtn->setEnabled(true);
-    mAuthBtn->setEnabled(true);
-    mRemoveBtn->setEnabled(true);
-    mDenyBtn->setEnabled(true);
 }
 
 void RosterWindow::onPresencePublicationRequested(const QSet<QSharedPointer<Contact> > &contacts)
 {
     qDebug() << "Presence publication requested";
     foreach (const QSharedPointer<Contact> &contact, contacts) {
-        (void) new RosterItem(contact, mList);
+        createItemForContact(contact, true);
     }
+}
+
+void RosterWindow::onItemSelectionChanged()
+{
+    updateActions();
 }
 
 void RosterWindow::onAddButtonClicked()
@@ -210,8 +252,10 @@ void RosterWindow::onAddButtonClicked()
             SLOT(onContactRetrieved(Telepathy::Client::PendingOperation *)));
 }
 
-void RosterWindow::onAuthButtonClicked()
+void RosterWindow::onAuthActionTriggered(bool checked)
 {
+    Q_UNUSED(checked);
+
     QList<QListWidgetItem *> selectedItems = mList->selectedItems();
     if (selectedItems.isEmpty()) {
         return;
@@ -224,8 +268,27 @@ void RosterWindow::onAuthButtonClicked()
     }
 }
 
-void RosterWindow::onRemoveButtonClicked()
+void RosterWindow::onDenyActionTriggered(bool checked)
 {
+    Q_UNUSED(checked);
+
+    QList<QListWidgetItem *> selectedItems = mList->selectedItems();
+    if (selectedItems.isEmpty()) {
+        return;
+    }
+
+    Q_ASSERT(selectedItems.size() == 1);
+    RosterItem *item = dynamic_cast<RosterItem*>(selectedItems.first());
+    if (item->contact()->publishState() != Contact::PresenceStateNo) {
+        // The contact can't see my presence
+        item->contact()->removePresencePublication();
+    }
+}
+
+void RosterWindow::onRemoveActionTriggered(bool checked)
+{
+    Q_UNUSED(checked);
+
     QList<QListWidgetItem *> selectedItems = mList->selectedItems();
     if (selectedItems.isEmpty()) {
         return;
@@ -240,7 +303,7 @@ void RosterWindow::onRemoveButtonClicked()
     }
 }
 
-void RosterWindow::onDenyButtonClicked()
+void RosterWindow::onBlockActionTriggered(bool checked)
 {
     QList<QListWidgetItem *> selectedItems = mList->selectedItems();
     if (selectedItems.isEmpty()) {
@@ -249,10 +312,7 @@ void RosterWindow::onDenyButtonClicked()
 
     Q_ASSERT(selectedItems.size() == 1);
     RosterItem *item = dynamic_cast<RosterItem*>(selectedItems.first());
-    if (item->contact()->publishState() != Contact::PresenceStateNo) {
-        // The contact can't see my presence
-        item->contact()->removePresencePublication();
-    }
+    item->contact()->block(checked);
 }
 
 void RosterWindow::onContactRetrieved(Telepathy::Client::PendingOperation *op)
@@ -272,16 +332,58 @@ void RosterWindow::onContactRetrieved(Telepathy::Client::PendingOperation *op)
     qDebug() << "Request presence subscription for contact" << username;
     // TODO should we have a signal on ContactManager to signal that a contact was
     //      added to subscribe list?
-    //
-    bool found = false;
-    for (int i = 0; i < mList->count(); ++i) {
-        RosterItem *item = dynamic_cast<RosterItem*>(mList->item(i));
-        if (item->contact() == contact) {
-            found = true;
-        }
-    }
-    if (!found) {
-        (void) new RosterItem(contact, mList);
-    }
+    createItemForContact(contact, true);
     contact->requestPresenceSubscription();
+}
+
+void RosterWindow::updateActions()
+{
+    QList<QListWidgetItem *> selectedItems = mList->selectedItems();
+    if (selectedItems.isEmpty()) {
+        mAuthAction->setEnabled(false);
+        mDenyAction->setEnabled(false);
+        mRemoveAction->setEnabled(false);
+        mBlockAction->setEnabled(false);
+        return;
+    }
+    Q_ASSERT(selectedItems.size() == 1);
+
+    RosterItem *item = dynamic_cast<RosterItem*>(selectedItems.first());
+    QSharedPointer<Contact> contact = item->contact();
+
+    ContactManager *manager = contact->manager();
+    qDebug() << "Contact" << contact->id() << "selected";
+    qDebug() << " subscription state:" << contact->subscriptionState();
+    qDebug() << " publish state     :" << contact->publishState();
+    qDebug() << " blocked           :" << contact->isBlocked();
+
+    if (manager->canAuthorizeContactsPresencePublication() &&
+        contact->publishState() == Contact::PresenceStateAsk) {
+        mAuthAction->setEnabled(true);
+    } else {
+        mAuthAction->setEnabled(false);
+    }
+
+    if (manager->canRemoveContactsPresencePublication() &&
+        contact->publishState() != Contact::PresenceStateNo) {
+        mDenyAction->setEnabled(true);
+    } else {
+        mDenyAction->setEnabled(false);
+    }
+
+    if (manager->canRemoveContactsPresenceSubscription() &&
+        contact->subscriptionState() != Contact::PresenceStateNo) {
+        mRemoveAction->setEnabled(true);
+    } else {
+        mRemoveAction->setEnabled(false);
+    }
+
+    if (manager->canBlockContacts() &&
+        contact->publishState() == Contact::PresenceStateYes) {
+        mBlockAction->setEnabled(true);
+    } else {
+        mBlockAction->setEnabled(false);
+    }
+
+    mBlockAction->setChecked(contact->isBlocked());
 }
