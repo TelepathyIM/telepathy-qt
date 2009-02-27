@@ -248,6 +248,35 @@ PendingOperation *ContactManager::removeContactsPresencePublication(
     return publishChannel->groupRemoveContacts(contacts);
 }
 
+bool ContactManager::canBlockContacts() const
+{
+    QSharedPointer<Channel> denyChannel;
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeDeny)) {
+        denyChannel = mPriv->contactListsChannels[ContactListChannel::TypeDeny].channel;
+    }
+    return (bool) denyChannel;
+}
+
+PendingOperation *ContactManager::blockContacts(
+        const QList<QSharedPointer<Contact> > &contacts, bool value)
+{
+    if (!canBlockContacts()) {
+        warning() << "Contact blocking requested, "
+            "but unable to block contacts";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot block contacts");
+    }
+
+    QSharedPointer<Channel> denyChannel =
+        mPriv->contactListsChannels[ContactListChannel::TypeDeny].channel;
+    if (value) {
+        return denyChannel->groupAddContacts(contacts);
+    }
+    else {
+        return denyChannel->groupRemoveContacts(contacts);
+    }
+}
+
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         const QSet<Contact::Feature> &features)
 {
@@ -440,6 +469,34 @@ void ContactManager::onPublishChannelMembersChanged(
     }
 }
 
+void ContactManager::onDenyChannelMembersChanged(
+        const QSet<QSharedPointer<Contact> > &groupMembersAdded,
+        const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+        const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
+        const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
+        const Channel::GroupMemberChangeDetails &details)
+{
+    Q_UNUSED(details);
+
+    if (!groupLocalPendingMembersAdded.isEmpty()) {
+        warning() << "Found local pending contacts on deny list";
+    }
+
+    if (!groupRemotePendingMembersAdded.isEmpty()) {
+        warning() << "Found remote pending contacts on deny list";
+    }
+
+    foreach (QSharedPointer<Contact> contact, groupMembersAdded) {
+        debug() << "Contact" << contact->id() << "added to deny list";
+        contact->setBlocked(true);
+    }
+
+    foreach (QSharedPointer<Contact> contact, groupMembersRemoved) {
+        debug() << "Contact" << contact->id() << "removed from deny list";
+        contact->setBlocked(false);
+    }
+}
+
 ContactManager::ContactManager(Connection *parent)
     : QObject(parent), mPriv(new Private)
 {
@@ -496,6 +553,13 @@ void ContactManager::setContactListChannels(
                         const Telepathy::Client::Channel::GroupMemberChangeDetails &));
         } else if (type == ContactListChannel::TypePublish) {
             method = SLOT(onPublishChannelMembersChanged(
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const Telepathy::Client::Channel::GroupMemberChangeDetails &));
+        } else if (type == ContactListChannel::TypeDeny) {
+            method = SLOT(onDenyChannelMembersChanged(
                         const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
                         const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
                         const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
@@ -609,7 +673,16 @@ void ContactManager::Private::updateContactsPresenceState()
         }
     }
 
-    if (!subscribeChannel && !publishChannel) {
+    QSharedPointer<Channel> denyChannel;
+    QSet<QSharedPointer<Contact> > denyContacts;
+    if (contactListsChannels.contains(ContactListChannel::TypeDeny)) {
+        denyChannel = contactListsChannels[ContactListChannel::TypeDeny].channel;
+        if (denyChannel) {
+            denyContacts = denyChannel->groupContacts();
+        }
+    }
+
+    if (!subscribeChannel && !publishChannel && !denyChannel) {
         return;
     }
 
@@ -636,6 +709,12 @@ void ContactManager::Private::updateContactsPresenceState()
                 contact->setPublishState(Contact::PresenceStateNo);
             }
         }
+
+        if (denyChannel) {
+            if (denyContacts.contains(contact)) {
+                contact->setBlocked(true);
+            }
+        }
     }
 }
 
@@ -645,6 +724,7 @@ QString ContactManager::ContactListChannel::identifierForType(Type type)
         QLatin1String("subscribe"),
         QLatin1String("publish"),
         QLatin1String("stored"),
+        QLatin1String("deny"),
     };
     return identifiers[type];
 }
@@ -656,6 +736,7 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
         types.insert(QLatin1String("subscribe"), TypeSubscribe);
         types.insert(QLatin1String("publish"), TypePublish);
         types.insert(QLatin1String("stored"), TypeStored);
+        types.insert(QLatin1String("deny"), TypeDeny);
     }
     if (types.contains(identifier)) {
         return types[identifier];

@@ -85,6 +85,9 @@ public:
     PendingOperation *authorizePresencePublication(const QString &message = QString());
     PendingOperation *removePresencePublication(const QString &message = QString());
 
+    bool isBlocked() const;
+    PendingOperation *block(bool value = true);
+
     ~Contact();
 
 Q_SIGNALS:
@@ -94,6 +97,7 @@ Q_SIGNALS:
 
     void subscriptionStateChanged(PresenceState state);
     void publishStateChanged(PresenceState state);
+    void blockStatusChanged(bool blocked);
 
     // TODO: consider how the Renaming interface should work and map to Contacts
     // I guess it would be something like:
@@ -115,6 +119,7 @@ private:
 
     void setSubscriptionState(PresenceState state);
     void setPublishState(PresenceState state);
+    void setBlocked(bool value);
 
     struct Private;
     friend class ContactManager;

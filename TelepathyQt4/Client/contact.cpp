@@ -38,7 +38,8 @@ struct Contact::Private
 {
     Private(ContactManager *manager, const ReferencedHandles &handle)
         : manager(manager), handle(handle), isAvatarTokenKnown(false),
-          subscriptionState(PresenceStateNo), publishState(PresenceStateNo)
+          subscriptionState(PresenceStateNo), publishState(PresenceStateNo),
+          blocked(false)
     {
     }
 
@@ -56,6 +57,7 @@ struct Contact::Private
 
     PresenceState subscriptionState;
     PresenceState publishState;
+    bool blocked;
 };
 
 ContactManager *Contact::manager() const
@@ -199,6 +201,20 @@ PendingOperation *Contact::removePresencePublication(const QString &message)
             message);
 }
 
+bool Contact::isBlocked() const
+{
+    return mPriv->blocked;
+}
+
+PendingOperation *Contact::block(bool value)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->blockContacts(
+            QList<QSharedPointer<Contact> >() << self,
+            value);
+}
+
 Contact::~Contact()
 {
     debug() << "Contact" << id() << "destroyed";
@@ -330,6 +346,15 @@ void Contact::setPublishState(Contact::PresenceState state)
     }
     mPriv->publishState = state;
     emit publishStateChanged(state);
+}
+
+void Contact::setBlocked(bool value)
+{
+    if (mPriv->blocked == value) {
+        return;
+    }
+    mPriv->blocked = value;
+    emit blockStatusChanged(value);
 }
 
 } // Telepathy::Client

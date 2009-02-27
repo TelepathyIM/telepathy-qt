@@ -72,6 +72,10 @@ class ContactManager : public QObject
         PendingOperation *removeContactsPresencePublication(
                 const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
 
+        bool canBlockContacts() const;
+        PendingOperation *blockContacts(
+                const QList<QSharedPointer<Contact> > &contacts, bool value = true);
+
         PendingContacts *contactsForHandles(const UIntList &handles,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
         PendingContacts *contactsForHandles(const ReferencedHandles &handles,
@@ -103,6 +107,12 @@ class ContactManager : public QObject
             const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
             const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
             const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+        void onDenyChannelMembersChanged(
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
 
     private:
         struct ContactListChannel
@@ -111,6 +121,7 @@ class ContactManager : public QObject
                 TypeSubscribe = 0,
                 TypePublish,
                 TypeStored,
+                TypeDeny,
                 LastType
             };
 
@@ -126,7 +137,6 @@ class ContactManager : public QObject
 
             ~ContactListChannel()
             {
-                channel.clear();
             }
 
             static QString identifierForType(Type type);
