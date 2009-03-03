@@ -280,8 +280,10 @@ void TestChanBasics::testCreateChannel()
         foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
             ids << contact->id();
         }
-        QCOMPARE(ids, QStringList() <<
-                "me@example.com" << "alice");
+        ids.sort();
+        QStringList toCheck = QStringList() << "me@example.com" << "alice";
+        toCheck.sort();
+        QCOMPARE(ids, toCheck);
 
         mChan.clear();
     }
@@ -318,8 +320,10 @@ void TestChanBasics::testEnsureChannel()
         foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
             ids << contact->id();
         }
-        QCOMPARE(ids, QStringList() <<
-                "me@example.com" << "alice");
+        ids.sort();
+        QStringList toCheck = QStringList() << "me@example.com" << "alice";
+        toCheck.sort();
+        QCOMPARE(ids, toCheck);
 
         QVERIFY(connect(mChan->requestClose(),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
