@@ -33,6 +33,7 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 
 #include <QDBusObjectPath>
+#include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
@@ -45,7 +46,7 @@ namespace Client
 class Account;
 class AccountManager;
 class PendingAccount;
-class PendingReadyAccountManager;
+class PendingReady;
 
 class AccountManager : public StatelessDBusProxy,
                        private OptionalInterfaceFactory<AccountManager>
@@ -55,6 +56,7 @@ class AccountManager : public StatelessDBusProxy,
 
 public:
     enum Feature {
+        FeatureCore = 0,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -88,9 +90,9 @@ public:
 
     // TODO: enabledAccounts(), accountsByProtocol(), ... ?
 
-    bool isReady(Features features = 0) const;
+    bool isReady(const QSet<uint> &features = QSet<uint>()) const;
 
-    PendingReadyAccountManager *becomeReady(Features features = 0);
+    PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
 
 Q_SIGNALS:
     void accountCreated(const QString &path);
@@ -101,15 +103,11 @@ protected:
     AccountManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
-    void onGetAllAccountManagerReturn(QDBusPendingCallWatcher *);
+    void gotMainProperties(QDBusPendingCallWatcher *);
     void onAccountValidityChanged(const QDBusObjectPath &, bool);
     void onAccountRemoved(const QDBusObjectPath &);
-    void continueIntrospection();
 
 private:
-    void init();
-    void callGetAll();
-
     struct Private;
     friend struct Private;
     friend class PendingAccount;

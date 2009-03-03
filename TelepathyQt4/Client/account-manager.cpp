@@ -29,7 +29,8 @@
 
 #include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/PendingAccount>
-#include <TelepathyQt4/Client/PendingReadyAccountManager>
+#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Constants>
 
 #include <QQueue>
@@ -65,27 +66,49 @@ struct AccountManager::Private
     Private(AccountManager *parent);
     ~Private();
 
+    void init();
+
+    static void introspectMain(Private *self);
+
     void setAccountPaths(QSet<QString> &set, const QVariant &variant);
 
+    // Public object
+    AccountManager *parent;
+
+    // Instance of generated interface class
     AccountManagerInterface *baseInterface;
-    bool ready;
-    PendingReadyAccountManager *pendingReady;
-    QQueue<void (AccountManager::*)()> introspectQueue;
+
+    ReadinessHelper *readinessHelper;
+
+    // Introspection
     QStringList interfaces;
-    AccountManager::Features features;
     QSet<QString> validAccountPaths;
     QSet<QString> invalidAccountPaths;
     QMap<QString, QSharedPointer<Account> > accounts;
 };
 
 AccountManager::Private::Private(AccountManager *parent)
-    : baseInterface(new AccountManagerInterface(parent->dbusConnection(),
-                            parent->busName(), parent->objectPath(), parent)),
-      ready(false),
-      pendingReady(0),
-      features(0)
+    : parent(parent),
+      baseInterface(new AccountManagerInterface(parent->dbusConnection(),
+                    parent->busName(), parent->objectPath(), parent))
 {
     debug() << "Creating new AccountManager:" << parent->busName();
+
+    QMap<uint, ReadinessHelper::Introspectable> introspectables;
+
+    // As AccountManager does not have predefined statuses let's simulate one (0)
+    ReadinessHelper::Introspectable introspectableCore(
+        QSet<uint>() << 0,                                           // makesSenseForStatuses
+        QSet<uint>(),                                                // dependsOnFeatures
+        QStringList(),                                               // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
+        this);
+    introspectables[FeatureCore] = introspectableCore;
+
+    readinessHelper = new ReadinessHelper(parent, 0 /* status */,
+            introspectables, parent);
+
+    init();
 }
 
 AccountManager::Private::~Private()
@@ -139,9 +162,6 @@ AccountManager::AccountManager(QObject* parent)
       OptionalInterfaceFactory<AccountManager>(this),
       mPriv(new Private(this))
 {
-    if (isValid()) {
-        init();
-    }
 }
 
 /**
@@ -158,9 +178,6 @@ AccountManager::AccountManager(const QDBusConnection& bus,
       OptionalInterfaceFactory<AccountManager>(this),
       mPriv(new Private(this))
 {
-    if (isValid()) {
-        init();
-    }
 }
 
 /**
@@ -352,10 +369,9 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
  * \return \c true if the object has finished its initial setup for basic
  *         functionality plus the given features
  */
-bool AccountManager::isReady(Features features) const
+bool AccountManager::isReady(const QSet<uint> &features) const
 {
-    return mPriv->ready
-        && ((mPriv->features & features) == features);
+    return mPriv->readinessHelper->isReady(features);
 }
 
 /**
@@ -363,41 +379,17 @@ bool AccountManager::isReady(Features features) const
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
  *
+ * If an empty set is used FeatureCore will be considered as the requested
+ * feature.
+ *
  * \param requestedFeatures The features which should be enabled
- * \return A PendingReadyAccountManager object which will emit finished
+ * \return A PendingReady object which will emit finished
  *         when this object has finished or failed initial setup for basic
  *         functionality plus the given features
  */
-PendingReadyAccountManager *AccountManager::becomeReady(Features requestedFeatures)
+PendingReady *AccountManager::becomeReady(const QSet<uint> &requestedFeatures)
 {
-    if (!isValid()) {
-        PendingReadyAccountManager *operation =
-            new PendingReadyAccountManager(requestedFeatures, this);
-        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
-                "AccountManager is invalid");
-        return operation;
-    }
-
-    if (isReady(requestedFeatures)) {
-        PendingReadyAccountManager *operation =
-            new PendingReadyAccountManager(requestedFeatures, this);
-        operation->setFinished();
-        return operation;
-    }
-
-    if (requestedFeatures != 0) {
-        PendingReadyAccountManager *operation =
-            new PendingReadyAccountManager(requestedFeatures, this);
-        operation->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid features argument");
-        return operation;
-    }
-
-    if (!mPriv->pendingReady) {
-        mPriv->pendingReady =
-            new PendingReadyAccountManager(requestedFeatures, this);
-    }
-    return mPriv->pendingReady;
+    return mPriv->readinessHelper->becomeReady(requestedFeatures);
 }
 
 /**
@@ -414,33 +406,36 @@ AccountManagerInterface *AccountManager::baseInterface() const
     return mPriv->baseInterface;
 }
 
-void AccountManager::init()
+/**** Private ****/
+void AccountManager::Private::init()
 {
-    connect(mPriv->baseInterface,
+    if (!parent->isValid()) {
+        return;
+    }
+
+    parent->connect(baseInterface,
             SIGNAL(AccountValidityChanged(const QDBusObjectPath &, bool)),
             SLOT(onAccountValidityChanged(const QDBusObjectPath &, bool)));
-    connect(mPriv->baseInterface,
+    parent->connect(baseInterface,
             SIGNAL(AccountRemoved(const QDBusObjectPath &)),
             SLOT(onAccountRemoved(const QDBusObjectPath &)));
-
-    mPriv->introspectQueue.enqueue(&AccountManager::callGetAll);
-    QTimer::singleShot(0, this, SLOT(continueIntrospection()));
 }
 
-/**** Private ****/
-void AccountManager::callGetAll()
+void AccountManager::Private::introspectMain(AccountManager::Private *self)
 {
+    DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
+    Q_ASSERT(properties != 0);
+
     debug() << "Calling Properties::GetAll(AccountManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            propertiesInterface()->GetAll(
-                TELEPATHY_INTERFACE_ACCOUNT_MANAGER), this);
-    connect(watcher,
+            properties->GetAll(
+                TELEPATHY_INTERFACE_ACCOUNT_MANAGER), self->parent);
+    self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onGetAllAccountManagerReturn(QDBusPendingCallWatcher *)));
+            SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
 }
 
-void AccountManager::onGetAllAccountManagerReturn(
-        QDBusPendingCallWatcher *watcher)
+void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
@@ -466,7 +461,7 @@ void AccountManager::onGetAllAccountManagerReturn(
             reply.error().name() << ": " << reply.error().message();
     }
 
-    continueIntrospection();
+    mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
 
     watcher->deleteLater();
 }
@@ -517,25 +512,6 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
         mPriv->accounts.remove(path);
     }
     Q_EMIT accountRemoved(path);
-}
-
-void AccountManager::continueIntrospection()
-{
-    if (!mPriv->ready) {
-        if (mPriv->introspectQueue.isEmpty()) {
-            debug() << "AccountManager is ready";
-            mPriv->ready = true;
-
-            if (mPriv->pendingReady) {
-                mPriv->pendingReady->setFinished();
-                // it will delete itself later
-                mPriv->pendingReady = 0;
-            }
-        }
-        else {
-            (this->*(mPriv->introspectQueue.dequeue()))();
-        }
-    }
 }
 
 } // Telepathy::Client

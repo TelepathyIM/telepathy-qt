@@ -851,7 +851,7 @@ void Connection::gotSelfContact(PendingOperation *op)
 
         // check if the feature is already there, and for some reason introspectSelfContact
         // failed when called the second time
-        if (!mPriv->readinessHelper->actualFeatures().contains(FeatureSelfContact)) {
+        if (!mPriv->readinessHelper->missingFeatures().contains(FeatureSelfContact)) {
             mPriv->readinessHelper->setIntrospectCompleted(FeatureSelfContact, false);
         }
     }
