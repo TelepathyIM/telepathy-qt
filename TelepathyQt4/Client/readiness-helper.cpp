@@ -354,7 +354,7 @@ PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
         debug() << "ReadinessHelper::becomeReady called with invalid features: requestedFeatures =" <<
             requestedFeatures << "- supportedFeatures =" << mPriv->supportedFeatures;
         PendingReady *operation =
-            new PendingReady(requestedFeatures, this);
+            new PendingReady(requestedFeatures, mPriv->proxy);
         operation->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Requested features contains invalid feature");
         return operation;
@@ -362,7 +362,7 @@ PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
 
     if (!mPriv->proxy->isValid()) {
         PendingReady *operation =
-            new PendingReady(requestedFeatures, this);
+            new PendingReady(requestedFeatures, mPriv->proxy);
         operation->setFinishedWithError(mPriv->proxy->invalidationReason(),
                 mPriv->proxy->invalidationMessage());
         return operation;
@@ -379,7 +379,7 @@ PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
     // it will be updated on iterateIntrospection
     mPriv->pendingFeatures += requestedFeatures;
 
-    operation = new PendingReady(requestedFeatures, parent());
+    operation = new PendingReady(requestedFeatures, mPriv->proxy);
     mPriv->pendingOperations.append(operation);
 
     QTimer::singleShot(0, this, SLOT(iterateIntrospection()));
