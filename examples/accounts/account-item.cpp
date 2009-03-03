@@ -22,7 +22,7 @@
 #include "_gen/account-item.moc.hpp"
 
 #include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/PendingReadyAccount>
+#include <TelepathyQt4/Client/PendingReady>
 
 #include <QDebug>
 #include <QComboBox>

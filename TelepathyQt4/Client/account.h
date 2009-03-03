@@ -33,6 +33,7 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Constants>
 
+#include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -48,17 +49,18 @@ class AccountManager;
 class Connection;
 class PendingConnection;
 class PendingOperation;
-class PendingReadyAccount;
+class PendingReady;
 class ProtocolInfo;
 
 class Account : public StatelessDBusProxy,
                 private OptionalInterfaceFactory<Account>
 {
     Q_OBJECT
+    Q_DISABLE_COPY(Account)
 
 public:
     enum Feature {
-        /** Get the avatar data */
+        FeatureCore = 0,
         FeatureAvatar = 1,
         FeatureProtocolInfo = 2,
         _Padding = 0xFFFFFFFF
@@ -128,9 +130,9 @@ public:
 
     PendingOperation *remove();
 
-    bool isReady(Features features = 0) const;
+    bool isReady(const QSet<uint> &features = QSet<uint>()) const;
 
-    PendingReadyAccount *becomeReady(Features features = 0);
+    PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
 
     QStringList interfaces() const;
 
@@ -180,21 +182,14 @@ protected:
     AccountInterface *baseInterface() const;
 
 private Q_SLOTS:
-    void onGetAllAccountReturn(QDBusPendingCallWatcher *);
-    void onGetAvatarReturn(QDBusPendingCallWatcher *);
+    void gotMainProperties(QDBusPendingCallWatcher *);
+    void gotAvatar(QDBusPendingCallWatcher *);
     void onAvatarChanged();
     void onConnectionManagerReady(Telepathy::Client::PendingOperation *);
     void onPropertyChanged(const QVariantMap &delta);
     void onRemoved();
-    void continueIntrospection();
 
 private:
-    Q_DISABLE_COPY(Account);
-
-    void checkForAvatarInterface();
-    void callGetAll();
-    void callGetAvatar();
-    void callGetProtocolInfo();
     void updateProperties(const QVariantMap &props);
     void retrieveAvatar();
 
