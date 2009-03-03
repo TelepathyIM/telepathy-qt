@@ -9,7 +9,7 @@
 #include <TelepathyQt4/Client/PendingAccount>
 #include <TelepathyQt4/Client/PendingOperation>
 #include <TelepathyQt4/Client/PendingReadyAccount>
-#include <TelepathyQt4/Client/PendingReadyAccountManager>
+#include <TelepathyQt4/Client/PendingReady>
 
 #include <tests/lib/test.h>
 
