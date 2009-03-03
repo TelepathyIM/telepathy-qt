@@ -28,7 +28,7 @@ libtp_qt4_tests_la_LIBADD = $(top_builddir)/TelepathyQt4/libtelepathy-qt4.la
 
 if ENABLE_TP_GLIB_TESTS
 
-SUBDIRS += echo
+SUBDIRS += contactlist echo
 AM_CFLAGS += $(TP_GLIB_CFLAGS)
 AM_CXXFLAGS += $(TP_GLIB_CFLAGS)
 
@@ -44,7 +44,8 @@ libtp_glib_tests_la_SOURCES = \
     simple-manager.h
 libtp_glib_tests_la_LIBADD = \
     $(TP_GLIB_LIBS) \
-    echo/libexample-cm-echo.la
+    echo/libexample-cm-echo.la \
+    contactlist/libexample-cm-contactlist.la
 
 # Currently, the csh and echo2 subdirectories contain hacked-up versions of
 # the telepathy-glib examples. In future we should fix this divergence and

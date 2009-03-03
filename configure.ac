@@ -248,6 +248,7 @@ AC_OUTPUT([
     tests/dbus/Makefile
     tests/dbus-1/services/account-manager.service
     tests/lib/Makefile
+    tests/lib/contactlist/Makefile
     tests/lib/csh/Makefile
     tests/lib/echo/Makefile
     tests/lib/echo2/Makefile
