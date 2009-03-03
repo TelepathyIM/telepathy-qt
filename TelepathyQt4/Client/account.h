@@ -190,9 +190,6 @@ private Q_SLOTS:
     void onRemoved();
 
 private:
-    void updateProperties(const QVariantMap &props);
-    void retrieveAvatar();
-
     struct Private;
     friend struct Private;
     Private *mPriv;
