@@ -33,13 +33,15 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Constants>
 
+#include <QSet>
+
 namespace Telepathy
 {
 namespace Client
 {
 
 class PendingConnection;
-class PendingReadyConnectionManager;
+class PendingReady;
 class PendingStringList;
 class ProtocolParameter;
 class ProtocolInfo;
@@ -119,6 +121,7 @@ class ConnectionManager : public StatelessDBusProxy,
 
 public:
     enum Feature {
+        FeatureCore = 0,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -144,9 +147,9 @@ public:
         return OptionalInterfaceFactory<ConnectionManager>::interface<DBus::PropertiesInterface>();
     }
 
-    bool isReady(Features features = 0) const;
+    bool isReady(const QSet<uint> &features = QSet<uint>()) const;
 
-    PendingReadyConnectionManager *becomeReady(Features features = 0);
+    PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
 
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
@@ -154,19 +157,12 @@ protected:
     ConnectionManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
-    void onGetParametersReturn(QDBusPendingCallWatcher *);
-    void onListProtocolsReturn(QDBusPendingCallWatcher *);
-    void onGetAllConnectionManagerReturn(QDBusPendingCallWatcher *);
-    void continueIntrospection();
+    void gotMainProperties(QDBusPendingCallWatcher *);
+    void gotProtocols(QDBusPendingCallWatcher *);
+    void gotParameters(QDBusPendingCallWatcher *);
 
 private:
     Q_DISABLE_COPY(ConnectionManager);
-
-    bool checkConfigFile();
-    void callReadConfig();
-    void callGetAll();
-    void callGetParameters();
-    void callListProtocols();
 
     struct Private;
     friend struct Private;
