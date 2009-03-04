@@ -170,7 +170,7 @@ PendingOperation *ContactManager::requestContactsPresenceSubscription(
 
     QSharedPointer<Channel> subscribeChannel =
         mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
-    return subscribeChannel->groupAddContacts(contacts);
+    return subscribeChannel->groupAddContacts(contacts, message);
 }
 
 bool ContactManager::canRemoveContactsPresenceSubscription() const
@@ -194,7 +194,7 @@ PendingOperation *ContactManager::removeContactsPresenceSubscription(
 
     QSharedPointer<Channel> subscribeChannel =
         mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
-    return subscribeChannel->groupRemoveContacts(contacts);
+    return subscribeChannel->groupRemoveContacts(contacts, message);
 }
 
 bool ContactManager::canAuthorizeContactsPresencePublication() const
@@ -221,7 +221,7 @@ PendingOperation *ContactManager::authorizeContactsPresencePublication(
 
     QSharedPointer<Channel> publishChannel =
         mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
-    return publishChannel->groupAddContacts(contacts);
+    return publishChannel->groupAddContacts(contacts, message);
 }
 
 bool ContactManager::canRemoveContactsPresencePublication() const
@@ -245,7 +245,7 @@ PendingOperation *ContactManager::removeContactsPresencePublication(
 
     QSharedPointer<Channel> publishChannel =
         mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
-    return publishChannel->groupRemoveContacts(contacts);
+    return publishChannel->groupRemoveContacts(contacts, message);
 }
 
 bool ContactManager::canBlockContacts() const
