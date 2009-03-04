@@ -1150,7 +1150,7 @@ receive_authorized (gpointer p)
   ExampleContactDetails *d;
   TpIntSet *set;
   ExampleContactList *subscribe = s->self->priv->lists[
-    EXAMPLE_CONTACT_LIST_STORED];
+    EXAMPLE_CONTACT_LIST_SUBSCRIBE];
 
   /* A remote contact has accepted our request to see their presence.
    *
