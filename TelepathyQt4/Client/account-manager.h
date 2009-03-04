@@ -94,6 +94,10 @@ public:
 
     PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
 
+    QSet<uint> requestedFeatures() const;
+    QSet<uint> actualFeatures() const;
+    QSet<uint> missingFeatures() const;
+
 Q_SIGNALS:
     void accountCreated(const QString &path);
     void accountRemoved(const QString &path);

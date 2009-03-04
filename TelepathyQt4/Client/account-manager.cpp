@@ -392,6 +392,21 @@ PendingReady *AccountManager::becomeReady(const QSet<uint> &requestedFeatures)
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
 }
 
+QSet<uint> AccountManager::requestedFeatures() const
+{
+    return mPriv->readinessHelper->requestedFeatures();
+}
+
+QSet<uint> AccountManager::actualFeatures() const
+{
+    return mPriv->readinessHelper->actualFeatures();
+}
+
+QSet<uint> AccountManager::missingFeatures() const
+{
+    return mPriv->readinessHelper->missingFeatures();
+}
+
 /**
  * Get the AccountManagerInterface for this AccountManager. This
  * method is protected since the convenience methods provided by this
