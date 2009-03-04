@@ -130,13 +130,13 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
         if (wronglyTypedPaths.size() > 0) {
             warning() << "AccountManager returned wrong type "
                 "(expected 'ao', got 'as'); working around it";
-            Q_FOREACH (QString path, wronglyTypedPaths) {
+            foreach (QString path, wronglyTypedPaths) {
                 set << path;
             }
         }
     }
     else {
-        Q_FOREACH (const QDBusObjectPath &path, paths) {
+        foreach (const QDBusObjectPath &path, paths) {
             set << path.path();
         }
     }
@@ -331,7 +331,7 @@ QSharedPointer<Account> AccountManager::accountForPath(const QString &path)
 QList<QSharedPointer<Account> > AccountManager::accountsForPaths(const QStringList &paths)
 {
     QList<QSharedPointer<Account> > result;
-    Q_FOREACH (const QString &path, paths) {
+    foreach (const QString &path, paths) {
         result << accountForPath(path);
     }
     return result;
@@ -489,15 +489,15 @@ void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
     }
 
     if (newAccount) {
-        Q_EMIT accountCreated(path);
+        emit accountCreated(path);
         // if the newly created account is invalid (shouldn't be the case)
         // emit also accountValidityChanged indicating this
         if (!nowValid) {
-            Q_EMIT accountValidityChanged(path, nowValid);
+            emit accountValidityChanged(path, nowValid);
         }
     }
     else {
-        Q_EMIT accountValidityChanged(path, nowValid);
+        emit accountValidityChanged(path, nowValid);
     }
 }
 
@@ -511,7 +511,7 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
     if (mPriv->accounts.contains(path)) {
         mPriv->accounts.remove(path);
     }
-    Q_EMIT accountRemoved(path);
+    emit accountRemoved(path);
 }
 
 } // Telepathy::Client
