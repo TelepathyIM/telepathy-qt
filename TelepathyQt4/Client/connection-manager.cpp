@@ -491,6 +491,21 @@ PendingReady *ConnectionManager::becomeReady(const QSet<uint> &requestedFeatures
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
 }
 
+QSet<uint> ConnectionManager::requestedFeatures() const
+{
+    return mPriv->readinessHelper->requestedFeatures();
+}
+
+QSet<uint> ConnectionManager::actualFeatures() const
+{
+    return mPriv->readinessHelper->actualFeatures();
+}
+
+QSet<uint> ConnectionManager::missingFeatures() const
+{
+    return mPriv->readinessHelper->missingFeatures();
+}
+
 /**
  * Return a pending operation from which a list of all installed connection
  * manager short names (such as "gabble" or "haze") can be retrieved if it
