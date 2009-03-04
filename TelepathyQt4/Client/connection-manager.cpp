@@ -137,7 +137,7 @@ ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
  */
 ProtocolInfo::~ProtocolInfo()
 {
-    Q_FOREACH (ProtocolParameter *param, mPriv->params) {
+    foreach (ProtocolParameter *param, mPriv->params) {
         delete param;
     }
 }
@@ -184,7 +184,7 @@ const ProtocolParameterList &ProtocolInfo::parameters() const
  */
 bool ProtocolInfo::hasParameter(const QString &name) const
 {
-    Q_FOREACH (ProtocolParameter *param, mPriv->params) {
+    foreach (ProtocolParameter *param, mPriv->params) {
         if (param->name() == name) {
             return true;
         }
@@ -275,7 +275,7 @@ void ConnectionManager::Private::PendingNames::invokeMethod(const QLatin1String 
 
 void ConnectionManager::Private::PendingNames::parseResult(const QStringList &names)
 {
-    Q_FOREACH (const QString name, names) {
+    foreach (const QString name, names) {
         if (name.startsWith("org.freedesktop.Telepathy.ConnectionManager.")) {
             mResult << name.right(name.length() - 44);
         }
@@ -307,7 +307,7 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
 
 ConnectionManager::Private::~Private()
 {
-    Q_FOREACH (ProtocolInfo *info, protocols) {
+    foreach (ProtocolInfo *info, protocols) {
         delete info;
     }
     delete baseInterface;
@@ -327,7 +327,7 @@ QString ConnectionManager::Private::makeObjectPath(const QString &name)
 
 ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
 {
-    Q_FOREACH (ProtocolInfo *info, protocols) {
+    foreach (ProtocolInfo *info, protocols) {
         if (info->name() == protocolName) {
             return info;
         }
@@ -415,7 +415,7 @@ QStringList ConnectionManager::interfaces() const
 QStringList ConnectionManager::supportedProtocols() const
 {
     QStringList protocols;
-    Q_FOREACH (const ProtocolInfo *info, mPriv->protocols) {
+    foreach (const ProtocolInfo *info, mPriv->protocols) {
         protocols.append(info->name());
     }
     return protocols;
@@ -527,20 +527,20 @@ bool ConnectionManager::Private::parseConfigFile()
         return false;
     }
 
-    Q_FOREACH (QString protocol, f.protocols()) {
+    foreach (QString protocol, f.protocols()) {
         ProtocolInfo *info = new ProtocolInfo(name, protocol);
         protocols.append(info);
 
-        Q_FOREACH (ParamSpec spec, f.parameters(protocol)) {
+        foreach (ParamSpec spec, f.parameters(protocol)) {
             info->addParameter(spec);
         }
     }
 
 #if 0
-    Q_FOREACH (ProtocolInfo *info, protocols) {
+    foreach (ProtocolInfo *info, protocols) {
         qDebug() << "protocol name   :" << info->name();
         qDebug() << "protocol cn name:" << info->cmName();
-        Q_FOREACH (ProtocolParameter *param, info->parameters()) {
+        foreach (ProtocolParameter *param, info->parameters()) {
             qDebug() << "\tparam name:       " << param->name();
             qDebug() << "\tparam is required:" << param->isRequired();
             qDebug() << "\tparam is secret:  " << param->isSecret();
@@ -631,7 +631,7 @@ void ConnectionManager::gotProtocols(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to ConnectionManager.ListProtocols";
         protocolsNames = reply.value();
 
-        Q_FOREACH (const QString &protocolName, protocolsNames) {
+        foreach (const QString &protocolName, protocolsNames) {
             mPriv->protocols.append(new ProtocolInfo(mPriv->name,
                         protocolName));
             mPriv->parametersQueue.enqueue(protocolName);
@@ -659,7 +659,7 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
         debug() << QString("Got reply to ConnectionManager.GetParameters(%1)").arg(protocolName);
         ParamSpecList parameters = reply.value();
         ProtocolInfo *info = mPriv->protocol(protocolName);
-        Q_FOREACH (const ParamSpec &spec, parameters) {
+        foreach (const ParamSpec &spec, parameters) {
             debug() << "Parameter" << spec.name << "has flags" << spec.flags
                 << "and signature" << spec.signature;
 
@@ -677,10 +677,10 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
 
 #if 0
-        Q_FOREACH (ProtocolInfo *info, mPriv->protocols) {
+        foreach (ProtocolInfo *info, mPriv->protocols) {
             qDebug() << "protocol name   :" << info->name();
             qDebug() << "protocol cn name:" << info->cmName();
-            Q_FOREACH (ProtocolParameter *param, info->parameters()) {
+            foreach (ProtocolParameter *param, info->parameters()) {
                 qDebug() << "\tparam name:       " << param->name();
                 qDebug() << "\tparam is required:" << param->isRequired();
                 qDebug() << "\tparam is secret:  " << param->isSecret();
