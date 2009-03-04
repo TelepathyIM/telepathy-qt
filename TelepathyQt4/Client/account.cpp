@@ -673,6 +673,21 @@ PendingReady *Account::becomeReady(const QSet<uint> &requestedFeatures)
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
 }
 
+QSet<uint> Account::requestedFeatures() const
+{
+    return mPriv->readinessHelper->requestedFeatures();
+}
+
+QSet<uint> Account::actualFeatures() const
+{
+    return mPriv->readinessHelper->actualFeatures();
+}
+
+QSet<uint> Account::missingFeatures() const
+{
+    return mPriv->readinessHelper->missingFeatures();
+}
+
 QStringList Account::interfaces() const
 {
     return mPriv->interfaces;

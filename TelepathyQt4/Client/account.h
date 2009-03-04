@@ -134,6 +134,10 @@ public:
 
     PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
 
+    QSet<uint> requestedFeatures() const;
+    QSet<uint> actualFeatures() const;
+    QSet<uint> missingFeatures() const;
+
     QStringList interfaces() const;
 
     template <class Interface>
