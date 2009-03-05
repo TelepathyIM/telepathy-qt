@@ -76,6 +76,11 @@ struct ContactManager::Private
     QSet<Contact::Feature> supportedFeatures;
 
     QMap<uint, ContactListChannel> contactListsChannels;
+    QSharedPointer<Channel> subscribeChannel;
+    QSharedPointer<Channel> publishChannel;
+    QSharedPointer<Channel> storedChannel;
+    QSharedPointer<Channel> denyChannel;
+
     Contacts allKnownContacts() const;
     void updateContactsPresenceState();
 };
@@ -151,11 +156,8 @@ Contacts ContactManager::allKnownContacts() const
 
 bool ContactManager::canRequestContactsPresenceSubscription() const
 {
-    QSharedPointer<Channel> subscribeChannel;
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
-        subscribeChannel = mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
-    }
-    return subscribeChannel && subscribeChannel->groupCanAddContacts();
+    return mPriv->subscribeChannel &&
+        mPriv->subscribeChannel->groupCanAddContacts();
 }
 
 PendingOperation *ContactManager::requestContactsPresenceSubscription(
@@ -168,18 +170,14 @@ PendingOperation *ContactManager::requestContactsPresenceSubscription(
                 "Cannot request contacts presence subscription");
     }
 
-    QSharedPointer<Channel> subscribeChannel =
-        mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
-    return subscribeChannel->groupAddContacts(contacts, message);
+    Q_ASSERT(mPriv->subscribeChannel);
+    return mPriv->subscribeChannel->groupAddContacts(contacts, message);
 }
 
 bool ContactManager::canRemoveContactsPresenceSubscription() const
 {
-    QSharedPointer<Channel> subscribeChannel;
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
-        subscribeChannel = mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
-    }
-    return subscribeChannel && subscribeChannel->groupCanRemoveContacts();
+    return mPriv->subscribeChannel &&
+        mPriv->subscribeChannel->groupCanRemoveContacts();
 }
 
 PendingOperation *ContactManager::removeContactsPresenceSubscription(
@@ -192,21 +190,16 @@ PendingOperation *ContactManager::removeContactsPresenceSubscription(
                 "Cannot remove contacts presence subscription");
     }
 
-    QSharedPointer<Channel> subscribeChannel =
-        mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
-    return subscribeChannel->groupRemoveContacts(contacts, message);
+    Q_ASSERT(mPriv->subscribeChannel);
+    return mPriv->subscribeChannel->groupRemoveContacts(contacts, message);
 }
 
 bool ContactManager::canAuthorizeContactsPresencePublication() const
 {
-    QSharedPointer<Channel> publishChannel;
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
-        publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
-    }
     // do not check for Channel::groupCanAddContacts as all contacts in local
     // pending can be added, even if the Channel::groupFlags() does not contain
     // the flag CanAdd
-    return (bool) publishChannel;
+    return (bool) mPriv->publishChannel;
 }
 
 PendingOperation *ContactManager::authorizeContactsPresencePublication(
@@ -219,18 +212,14 @@ PendingOperation *ContactManager::authorizeContactsPresencePublication(
                 "Cannot authorize contacts presence publication");
     }
 
-    QSharedPointer<Channel> publishChannel =
-        mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
-    return publishChannel->groupAddContacts(contacts, message);
+    Q_ASSERT(mPriv->publishChannel);
+    return mPriv->publishChannel->groupAddContacts(contacts, message);
 }
 
 bool ContactManager::canRemoveContactsPresencePublication() const
 {
-    QSharedPointer<Channel> publishChannel;
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
-        publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
-    }
-    return publishChannel && publishChannel->groupCanRemoveContacts();
+    return mPriv->publishChannel &&
+        mPriv->publishChannel->groupCanRemoveContacts();
 }
 
 PendingOperation *ContactManager::removeContactsPresencePublication(
@@ -243,18 +232,13 @@ PendingOperation *ContactManager::removeContactsPresencePublication(
                 "Cannot remove contacts presence publication");
     }
 
-    QSharedPointer<Channel> publishChannel =
-        mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
-    return publishChannel->groupRemoveContacts(contacts, message);
+    Q_ASSERT(mPriv->publishChannel);
+    return mPriv->publishChannel->groupRemoveContacts(contacts, message);
 }
 
 bool ContactManager::canBlockContacts() const
 {
-    QSharedPointer<Channel> denyChannel;
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeDeny)) {
-        denyChannel = mPriv->contactListsChannels[ContactListChannel::TypeDeny].channel;
-    }
-    return (bool) denyChannel;
+    return (bool) mPriv->denyChannel;
 }
 
 PendingOperation *ContactManager::blockContacts(
@@ -267,13 +251,12 @@ PendingOperation *ContactManager::blockContacts(
                 "Cannot block contacts");
     }
 
-    QSharedPointer<Channel> denyChannel =
-        mPriv->contactListsChannels[ContactListChannel::TypeDeny].channel;
+    Q_ASSERT(mPriv->denyChannel);
     if (value) {
-        return denyChannel->groupAddContacts(contacts);
+        return mPriv->denyChannel->groupAddContacts(contacts);
     }
     else {
-        return denyChannel->groupRemoveContacts(contacts);
+        return mPriv->denyChannel->groupRemoveContacts(contacts);
     }
 }
 
@@ -529,6 +512,22 @@ void ContactManager::setContactListChannels(
     Q_ASSERT(mPriv->contactListsChannels.isEmpty());
     mPriv->contactListsChannels = contactListsChannels;
 
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
+        mPriv->subscribeChannel = mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
+    }
+
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
+        mPriv->publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
+    }
+
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeStored)) {
+        mPriv->storedChannel = mPriv->contactListsChannels[ContactListChannel::TypeStored].channel;
+    }
+
+    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeDeny)) {
+        mPriv->denyChannel = mPriv->contactListsChannels[ContactListChannel::TypeDeny].channel;
+    }
+
     mPriv->updateContactsPresenceState();
 
     QMap<uint, ContactListChannel>::const_iterator i = contactListsChannels.constBegin();
@@ -651,35 +650,24 @@ Contacts ContactManager::Private::allKnownContacts() const
 
 void ContactManager::Private::updateContactsPresenceState()
 {
-    QSharedPointer<Channel> subscribeChannel;
     Contacts subscribeContacts;
     Contacts subscribeContactsRP;
-    if (contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
-        subscribeChannel = contactListsChannels[ContactListChannel::TypeSubscribe].channel;
-        if (subscribeChannel) {
-            subscribeContacts = subscribeChannel->groupContacts();
-            subscribeContactsRP = subscribeChannel->groupRemotePendingContacts();
-        }
+
+    if (subscribeChannel) {
+        subscribeContacts = subscribeChannel->groupContacts();
+        subscribeContactsRP = subscribeChannel->groupRemotePendingContacts();
     }
 
-    QSharedPointer<Channel> publishChannel;
     Contacts publishContacts;
     Contacts publishContactsLP;
-    if (contactListsChannels.contains(ContactListChannel::TypePublish)) {
-        publishChannel = contactListsChannels[ContactListChannel::TypePublish].channel;
-        if (publishChannel) {
-            publishContacts = publishChannel->groupContacts();
-            publishContactsLP = publishChannel->groupLocalPendingContacts();
-        }
+    if (publishChannel) {
+        publishContacts = publishChannel->groupContacts();
+        publishContactsLP = publishChannel->groupLocalPendingContacts();
     }
 
-    QSharedPointer<Channel> denyChannel;
     Contacts denyContacts;
-    if (contactListsChannels.contains(ContactListChannel::TypeDeny)) {
-        denyChannel = contactListsChannels[ContactListChannel::TypeDeny].channel;
-        if (denyChannel) {
-            denyContacts = denyChannel->groupContacts();
-        }
+    if (denyChannel) {
+        denyContacts = denyChannel->groupContacts();
     }
 
     if (!subscribeChannel && !publishChannel && !denyChannel) {
