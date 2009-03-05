@@ -149,6 +149,24 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
     return mPriv->supportedFeatures;
 }
 
+/**
+ * Return a list of relevant contacts (a reasonable guess as to what should
+ * be displayed as "the contact list").
+ *
+ * This may include any or all of: contacts whose presence the user receives,
+ * contacts who are allowed to see the user's presence, contacts stored in
+ * some persistent contact list on the server, contacts who the user
+ * has blocked from communicating with them, or contacts who are relevant
+ * in some other way.
+ *
+ * User interfaces displaying a contact list will probably want to filter this
+ * list and display some suitable subset of it.
+ *
+ * On protocols where there is no concept of presence or a centrally-stored
+ * contact list (like IRC), this method may return an empty list.
+ *
+ * \return Some contacts
+ */
 Contacts ContactManager::allKnownContacts() const
 {
     return mPriv->allKnownContacts();
@@ -160,6 +178,28 @@ bool ContactManager::canRequestContactsPresenceSubscription() const
         mPriv->subscribeChannel->groupCanAddContacts();
 }
 
+/**
+ * Attempt to subscribe to the presence of the given contacts.
+ *
+ * This operation is sometimes called "adding contacts to the buddy
+ * list" or "requesting authorization".
+ *
+ * On most protocols, the contacts will need to give permission
+ * before the user will be able to receive their presence: if so, they will
+ * be in presence state Contact::PresenceStateAsk until they authorize
+ * or deny the request.
+ *
+ * The returned PendingOperation will return successfully when a request to
+ * subscribe to the contacts' presence has been submitted, or fail if this
+ * cannot happen. In particular, it does not wait for the contacts to give
+ * permission for the presence subscription.
+ *
+ * \param contacts Contacts whose presence is desired
+ * \param message A message from the user which is either transmitted to the
+ *                contacts, or ignored, depending on the protocol
+ * \return A pending operation which will return when an attempt has been made
+ *         to subscribe to the contacts' presence
+ */
 PendingOperation *ContactManager::requestContactsPresenceSubscription(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
@@ -180,6 +220,16 @@ bool ContactManager::canRemoveContactsPresenceSubscription() const
         mPriv->subscribeChannel->groupCanRemoveContacts();
 }
 
+/**
+ * Attempt to stop receiving the presence of the given contacts, or cancel
+ * a request to subscribe to their presence that was previously sent.
+ *
+ * \param contacts Contacts whose presence is no longer required
+ * \message A message from the user which is either transmitted to the
+ *          contacts, or ignored, depending on the protocol
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove any subscription to the contacts' presence
+ */
 PendingOperation *ContactManager::removeContactsPresenceSubscription(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
@@ -202,6 +252,17 @@ bool ContactManager::canAuthorizeContactsPresencePublication() const
     return (bool) mPriv->publishChannel;
 }
 
+/**
+ * If the given contacts have asked the user to publish presence to them,
+ * grant permission for this publication to take place.
+ *
+ * \param contacts Contacts who should be allowed to receive the user's
+ *                 presence
+ * \message A message from the user which is either transmitted to the
+ *          contacts, or ignored, depending on the protocol
+ * \return A pending operation which will return when an attempt has been made
+ *         to authorize publication of the user's presence to the contacts
+ */
 PendingOperation *ContactManager::authorizeContactsPresencePublication(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
@@ -222,6 +283,20 @@ bool ContactManager::canRemoveContactsPresencePublication() const
         mPriv->publishChannel->groupCanRemoveContacts();
 }
 
+/**
+ * If the given contacts have asked the user to publish presence to them,
+ * deny this request.
+ *
+ * If the given contacts already have permission to receive
+ * the user's presence, attempt to revoke that permission.
+ *
+ * \param contacts Contacts who should no longer be allowed to receive the
+ *                 user's presence
+ * \message A message from the user which is either transmitted to the
+ *          contacts, or ignored, depending on the protocol
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove any publication of the user's presence to the contacts
+ */
 PendingOperation *ContactManager::removeContactsPresencePublication(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
@@ -241,6 +316,18 @@ bool ContactManager::canBlockContacts() const
     return (bool) mPriv->denyChannel;
 }
 
+/**
+ * Set whether the given contacts are blocked. Blocked contacts cannot send
+ * messages to the user; depending on the protocol, blocking a contact may
+ * have other effects.
+ *
+ * \param contacts Contacts who should be added to, or removed from, the list
+ *                 of blocked contacts
+ * \param value If true, add the contacts to the list of blocked contacts;
+ *              if false, remove them from the list
+ * \return A pending operation which will return when an attempt has been made
+ *         to take the requested action
+ */
 PendingOperation *ContactManager::blockContacts(
         const QList<QSharedPointer<Contact> > &contacts, bool value)
 {
