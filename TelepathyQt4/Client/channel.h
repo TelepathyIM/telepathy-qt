@@ -94,9 +94,9 @@ public:
             const QString &message = QString(),
             uint reason = Telepathy::ChannelGroupChangeReasonNone);
 
-    QList<QSharedPointer<Contact> > groupContacts() const;
-    QList<QSharedPointer<Contact> > groupLocalPendingContacts() const;
-    QList<QSharedPointer<Contact> > groupRemotePendingContacts() const;
+    QSet<QSharedPointer<Contact> > groupContacts() const;
+    QSet<QSharedPointer<Contact> > groupLocalPendingContacts() const;
+    QSet<QSharedPointer<Contact> > groupRemotePendingContacts() const;
 
     class GroupMemberChangeDetails
     {
@@ -151,13 +151,13 @@ Q_SIGNALS:
     void groupCanRescindContactsChanged(bool canRescindContacts);
 
     void groupMembersChanged(
-            const QList<QSharedPointer<Contact> > &groupMembersAdded,
-            const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-            const QList<QSharedPointer<Contact> > &groupLocalPendingMembersRemoved,
-            const QList<QSharedPointer<Contact> > &groupMembersRemoved,
-            const Channel::GroupMemberChangeDetails &details);
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
 
-    void groupHandleOwnersChanged(const HandleOwnerMap &owners,
+    void groupHandleOwnersChanged(const Telepathy::HandleOwnerMap &owners,
             const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
 
     void groupSelfContactChanged();

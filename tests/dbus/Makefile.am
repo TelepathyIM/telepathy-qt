@@ -43,6 +43,7 @@ TESTS += \
     test-cm-basics \
     test-conn-basics \
     test-conn-requests \
+    test-conn-roster \
     test-contacts \
     test-handles \
     test-stateful-proxy \
@@ -54,6 +55,7 @@ BUILT_SOURCES += \
     _gen/cm-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
     _gen/conn-requests.cpp.moc.hpp \
+    _gen/conn-roster.cpp.moc.hpp \
     _gen/contacts.cpp.moc.hpp \
     _gen/handles.cpp.moc.hpp \
     _gen/stateful-proxy.cpp.moc.hpp \
@@ -75,6 +77,9 @@ test_conn_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_conn_requests_SOURCES = conn-requests.cpp
 test_conn_requests_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
+
+test_conn_roster_SOURCES = conn-roster.cpp
+test_conn_roster_LDADD = $(LDADD) $(top_builddir)/tests/lib/contactlist/libexample-cm-contactlist.la
 
 test_contacts_SOURCES = contacts.cpp
 test_contacts_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la

@@ -1,1 +1,1 @@
-SUBDIRS = extensions accounts
+SUBDIRS = extensions accounts roster

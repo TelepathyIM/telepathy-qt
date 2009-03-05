@@ -9,6 +9,7 @@ EXTRA_DIST = \
     qt4-client-gen.py \
     qt4-constants-gen.py \
     qt4-types-gen.py \
+    manager-file.py \
     telepathy.am \
     with-session-bus.sh \
     xincludator.py

@@ -37,7 +37,9 @@ namespace Client
 struct Contact::Private
 {
     Private(ContactManager *manager, const ReferencedHandles &handle)
-        : manager(manager), handle(handle), isAvatarTokenKnown(false)
+        : manager(manager), handle(handle), isAvatarTokenKnown(false),
+          subscriptionState(PresenceStateNo), publishState(PresenceStateNo),
+          blocked(false)
     {
     }
 
@@ -52,6 +54,10 @@ struct Contact::Private
     bool isAvatarTokenKnown;
     QString avatarToken;
     SimplePresence simplePresence;
+
+    PresenceState subscriptionState;
+    PresenceState publishState;
+    bool blocked;
 };
 
 ContactManager *Contact::manager() const
@@ -149,8 +155,69 @@ QString Contact::presenceMessage() const
     return mPriv->simplePresence.statusMessage;
 }
 
+Contact::PresenceState Contact::subscriptionState() const
+{
+    return mPriv->subscriptionState;
+}
+
+Contact::PresenceState Contact::publishState() const
+{
+    return mPriv->publishState;
+}
+
+PendingOperation *Contact::requestPresenceSubscription(const QString &message)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->requestContactsPresenceSubscription(
+            QList<QSharedPointer<Contact> >() << self,
+            message);
+}
+
+PendingOperation *Contact::removePresenceSubscription(const QString &message)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->removeContactsPresenceSubscription(
+            QList<QSharedPointer<Contact> >() << self,
+            message);
+}
+
+PendingOperation *Contact::authorizePresencePublication(const QString &message)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->authorizeContactsPresencePublication(
+            QList<QSharedPointer<Contact> >() << self,
+            message);
+}
+
+PendingOperation *Contact::removePresencePublication(const QString &message)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->removeContactsPresencePublication(
+            QList<QSharedPointer<Contact> >() << self,
+            message);
+}
+
+bool Contact::isBlocked() const
+{
+    return mPriv->blocked;
+}
+
+PendingOperation *Contact::block(bool value)
+{
+    QSharedPointer<Contact> self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->blockContacts(
+            QList<QSharedPointer<Contact> >() << self,
+            value);
+}
+
 Contact::~Contact()
 {
+    debug() << "Contact" << id() << "destroyed";
     delete mPriv;
 }
 
@@ -261,6 +328,33 @@ void Contact::receiveSimplePresence(const SimplePresence &presence)
         mPriv->simplePresence = presence;
         emit simplePresenceChanged(presenceStatus(), presenceType(), presenceMessage());
     }
+}
+
+void Contact::setSubscriptionState(Contact::PresenceState state)
+{
+    if (mPriv->subscriptionState == state) {
+        return;
+    }
+    mPriv->subscriptionState = state;
+    emit subscriptionStateChanged(state);
+}
+
+void Contact::setPublishState(Contact::PresenceState state)
+{
+    if (mPriv->publishState == state) {
+        return;
+    }
+    mPriv->publishState = state;
+    emit publishStateChanged(state);
+}
+
+void Contact::setBlocked(bool value)
+{
+    if (mPriv->blocked == value) {
+        return;
+    }
+    mPriv->blocked = value;
+    emit blockStatusChanged(value);
 }
 
 } // Telepathy::Client

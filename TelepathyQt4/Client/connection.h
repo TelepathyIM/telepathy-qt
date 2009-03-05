@@ -66,6 +66,7 @@ public:
         FeatureCore = 0,
         FeatureSelfContact = 1,
         FeatureSimplePresence = 2,
+        FeatureRoster = 4,
         _Padding = 0xFFFFFFFF
     };
     Q_DECLARE_FLAGS(Features, Feature)
@@ -198,6 +199,9 @@ private Q_SLOTS:
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
     void gotSelfContact(Telepathy::Client::PendingOperation *);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
+    void gotContactListsHandles(Telepathy::Client::PendingOperation *);
+    void gotContactListChannel(Telepathy::Client::PendingOperation *);
+    void contactListChannelReady();
 
     void doReleaseSweep(uint type);
 

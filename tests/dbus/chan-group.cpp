@@ -42,11 +42,11 @@ protected Q_SLOTS:
     void expectPendingContactsFinished(Telepathy::Client::PendingOperation *);
     void onChannelGroupFlagsChanged(uint, uint, uint);
     void onGroupMembersChanged(
-            const QList<QSharedPointer<Contact> > &groupMembersAdded,
-            const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-            const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-            const QList<QSharedPointer<Contact> > &groupMembersRemoved,
-            const Channel::GroupMemberChangeDetails &details);
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
     void initTestCase();
@@ -62,7 +62,7 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    void checkExpectedIds(const QList<QSharedPointer<Contact> > &contacts,
+    void checkExpectedIds(const QSet<QSharedPointer<Contact> > &contacts,
         const QStringList &expectedIds);
     void debugContacts();
     void doTestCreateChannel();
@@ -77,10 +77,10 @@ private:
     ReferencedHandles mRoomHandles;
     ReferencedHandles mContactHandles;
     QList<QSharedPointer<Contact> > mContacts;
-    QList<QSharedPointer<Contact> > mChangedCurrent;
-    QList<QSharedPointer<Contact> > mChangedLP;
-    QList<QSharedPointer<Contact> > mChangedRP;
-    QList<QSharedPointer<Contact> > mChangedRemoved;
+    QSet<QSharedPointer<Contact> > mChangedCurrent;
+    QSet<QSharedPointer<Contact> > mChangedLP;
+    QSet<QSharedPointer<Contact> > mChangedRP;
+    QSet<QSharedPointer<Contact> > mChangedRemoved;
     Channel::GroupMemberChangeDetails mDetails;
     bool mRequested;
 };
@@ -229,10 +229,10 @@ void TestChanGroup::onChannelGroupFlagsChanged(uint flags, uint added, uint remo
 }
 
 void TestChanGroup::onGroupMembersChanged(
-        const QList<QSharedPointer<Contact> > &groupMembersAdded,
-        const QList<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-        const QList<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-        const QList<QSharedPointer<Contact> > &groupMembersRemoved,
+        const QSet<QSharedPointer<Contact> > &groupMembersAdded,
+        const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
+        const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
+        const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
     qDebug() << "group members changed";
@@ -245,7 +245,7 @@ void TestChanGroup::onGroupMembersChanged(
     mLoop->exit(0);
 }
 
-void TestChanGroup::checkExpectedIds(const QList<QSharedPointer<Contact> > &contacts,
+void TestChanGroup::checkExpectedIds(const QSet<QSharedPointer<Contact> > &contacts,
         const QStringList &expectedIds)
 {
     QStringList ids;
@@ -437,17 +437,17 @@ void TestChanGroup::doTestCreateChannel()
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
-                            const QList<QSharedPointer<Contact> > &,
-                            const QList<QSharedPointer<Contact> > &,
-                            const QList<QSharedPointer<Contact> > &,
-                            const QList<QSharedPointer<Contact> > &,
-                            const Channel::GroupMemberChangeDetails &)),
+                            const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                            const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                            const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                            const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                            const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
                     SLOT(onGroupMembersChanged(
-                            const QList<QSharedPointer<Contact> > &,
-                            const QList<QSharedPointer<Contact> > &,
-                            const QList<QSharedPointer<Contact> > &,
-                            const QList<QSharedPointer<Contact> > &,
-                            const Channel::GroupMemberChangeDetails &))));
+                            const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                            const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                            const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                            const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                            const Telepathy::Client::Channel::GroupMemberChangeDetails &))));
 
     if (mChan->groupContacts().count() != 5) {
         // wait the initial contacts to be added to the group
@@ -484,7 +484,7 @@ void TestChanGroup::doTestCreateChannel()
 
     QCOMPARE(mContacts.size(), 3);
     ids.sort();
-    checkExpectedIds(mContacts, ids);
+    checkExpectedIds(QSet<QSharedPointer<Contact> >::fromList(mContacts), ids);
 
     QString message("I want to add them");
     mChan->groupAddContacts(mContacts, message);

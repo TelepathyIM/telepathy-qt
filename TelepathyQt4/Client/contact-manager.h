@@ -34,6 +34,8 @@
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Client/ReferencedHandles>
 
 namespace Telepathy
 {
@@ -55,6 +57,25 @@ class ContactManager : public QObject
         bool isSupported() const;
         QSet<Contact::Feature> supportedFeatures() const;
 
+        QSet<QSharedPointer<Contact> > allKnownContacts() const;
+
+        bool canRequestContactsPresenceSubscription() const;
+        PendingOperation *requestContactsPresenceSubscription(
+                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+        bool canRemoveContactsPresenceSubscription() const;
+        PendingOperation *removeContactsPresenceSubscription(
+                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+        bool canAuthorizeContactsPresencePublication() const;
+        PendingOperation *authorizeContactsPresencePublication(
+                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+        bool canRemoveContactsPresencePublication() const;
+        PendingOperation *removeContactsPresencePublication(
+                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+
+        bool canBlockContacts() const;
+        PendingOperation *blockContacts(
+                const QList<QSharedPointer<Contact> > &contacts, bool value = true);
+
         PendingContacts *contactsForHandles(const UIntList &handles,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
         PendingContacts *contactsForHandles(const ReferencedHandles &handles,
@@ -66,22 +87,81 @@ class ContactManager : public QObject
         PendingContacts *upgradeContacts(const QList<QSharedPointer<Contact> > &contacts,
                 const QSet<Contact::Feature> &features);
 
+    Q_SIGNALS:
+        void presencePublicationRequested(const QSet<QSharedPointer<Telepathy::Client::Contact> > &contacts);
+
     private Q_SLOTS:
         void onAliasesChanged(const Telepathy::AliasPairList &);
         void onAvatarUpdated(uint, const QString &);
         void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
+        void onSubscribeChannelMembersChanged(
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+        void onPublishChannelMembersChanged(
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+        void onDenyChannelMembersChanged(
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
+            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+
     private:
+        struct ContactListChannel
+        {
+            enum Type {
+                TypeSubscribe = 0,
+                TypePublish,
+                TypeStored,
+                TypeDeny,
+                LastType
+            };
+
+            ContactListChannel()
+                : type((Type) -1)
+            {
+            }
+
+            ContactListChannel(Type type)
+                : type(type)
+            {
+            }
+
+            ~ContactListChannel()
+            {
+            }
+
+            static QString identifierForType(Type type);
+            static uint typeForIdentifier(const QString &identifier);
+
+            Type type;
+            ReferencedHandles handle;
+            QSharedPointer<Channel> channel;
+        };
+
         ContactManager(Connection *parent);
         ~ContactManager();
 
         QSharedPointer<Contact> ensureContact(const ReferencedHandles &handle,
                 const QSet<Contact::Feature> &features, const QVariantMap &attributes);
 
+        void setContactListChannels(const QMap<uint, ContactListChannel> &contactListsChannels);
+
+        QSharedPointer<Contact> lookupContactByHandle(uint handle);
+
         struct Private;
         friend struct Private;
         friend class Connection;
         friend class PendingContacts;
+        friend class Contact;
         Private *mPriv;
 };
 

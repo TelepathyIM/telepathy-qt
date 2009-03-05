@@ -36,8 +36,10 @@
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Client/PendingReadyChannel>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
 #include <TelepathyQt4/Client/ReadinessHelper>
+#include <TelepathyQt4/Client/ReferencedHandles>
 
 #include <QMap>
 #include <QMetaObject>
@@ -85,6 +87,7 @@ struct Connection::Private
     void introspectContacts();
     static void introspectSelfContact(Private *self);
     static void introspectSimplePresence(Private *self);
+    static void introspectRoster(Private *self);
 
     struct HandleContext;
 
@@ -115,6 +118,8 @@ struct Connection::Private
     QSharedPointer<Contact> selfContact;
     QStringList contactAttributeInterfaces;
     uint selfHandle;
+    QMap<uint, ContactManager::ContactListChannel> contactListsChannels;
+    uint contactListsChannelsReady;
 
     // (Bus connection name, service name) -> HandleContext
     static QMap<QPair<QString, QString>, HandleContext *> handleContexts;
@@ -162,6 +167,7 @@ Connection::Private::Private(Connection *parent)
       status(Connection::StatusUnknown),
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
+      contactListsChannelsReady(0),
       handleContext(0),
       contactManager(new ContactManager(parent))
 {
@@ -190,6 +196,14 @@ Connection::Private::Private(Connection *parent)
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
         this);
     introspectables[FeatureSimplePresence] = introspectableSimplePresence;
+
+    ReadinessHelper::Introspectable introspectableRoster(
+        QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
+        QSet<uint>() << 0,                                                             // dependsOnFeatures (core)
+        QStringList() << TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS,            // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectRoster,
+        this);
+    introspectables[FeatureRoster] = introspectableRoster;
 
     readinessHelper = new ReadinessHelper(parent, status,
             introspectables, parent);
@@ -351,6 +365,25 @@ void Connection::Private::introspectSelfHandle()
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher *)),
                     SLOT(gotSelfHandle(QDBusPendingCallWatcher *)));
+}
+
+void Connection::Private::introspectRoster(Connection::Private *self)
+{
+    debug() << "Requesting handles for contact lists";
+
+    for (uint i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
+        self->contactListsChannels.insert(i,
+                ContactManager::ContactListChannel(
+                    (ContactManager::ContactListChannel::Type) i));
+
+        PendingHandles *pending = self->parent->requestHandles(
+                Telepathy::HandleTypeList,
+                QStringList() << ContactManager::ContactListChannel::identifierForType(
+                    (ContactManager::ContactListChannel::Type) i));
+        self->parent->connect(pending,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(gotContactListsHandles(Telepathy::Client::PendingOperation*)));
+    }
 }
 
 Connection::PendingConnect::PendingConnect(Connection *parent, const QSet<uint> &requestedFeatures)
@@ -897,6 +930,79 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
+void Connection::gotContactListsHandles(PendingOperation *op)
+{
+    if (op->isError()) {
+        // let's not fail, because the contact lists are not supported
+        debug() << "Unable to retrieve contact list handle, ignoring";
+        contactListChannelReady();
+        return;
+    }
+
+    debug() << "Got handles for contact lists";
+    PendingHandles *pending = qobject_cast<PendingHandles*>(op);
+
+    // FIXME check for handles in pending->invalidHandles() when
+    //       invalidHandles is implemented
+    // if (pending->invalidHandles().size() == 1) {
+    //     contactListChannelReady();
+    //     return;
+    // }
+
+    debug() << "Requesting channels for contact lists";
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Telepathy::HandleTypeList);
+
+    Q_ASSERT(pending->handles().size() == 1);
+    Q_ASSERT(pending->namesRequested().size() == 1);
+    ReferencedHandles handle = pending->handles();
+    uint type = ContactManager::ContactListChannel::typeForIdentifier(
+            pending->namesRequested().first());
+    Q_ASSERT(type != (uint) -1 && type < ContactManager::ContactListChannel::LastType);
+    mPriv->contactListsChannels[type].handle = handle;
+    request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle[0];
+    connect(ensureChannel(request),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(gotContactListChannel(Telepathy::Client::PendingOperation*)));
+}
+
+void Connection::gotContactListChannel(PendingOperation *op)
+{
+    if (op->isError()) {
+        contactListChannelReady();
+        return;
+    }
+
+    PendingChannel *pending = qobject_cast<PendingChannel*>(op);
+    QSharedPointer<Channel> channel = pending->channel();
+    uint handle = pending->handle();
+    Q_ASSERT(!channel.isNull());
+    Q_ASSERT(handle);
+    for (int i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
+        if (mPriv->contactListsChannels[i].handle.size() > 0 &&
+            mPriv->contactListsChannels[i].handle[0] == handle) {
+            Q_ASSERT(mPriv->contactListsChannels[i].channel.isNull());
+            mPriv->contactListsChannels[i].channel = channel;
+            connect(channel->becomeReady(),
+                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+                    SLOT(contactListChannelReady()));
+        }
+    }
+}
+
+void Connection::contactListChannelReady()
+{
+    if (++mPriv->contactListsChannelsReady ==
+            ContactManager::ContactListChannel::LastType) {
+        debug() << "FeatureRoster ready";
+        mPriv->contactManager->setContactListChannels(mPriv->contactListsChannels);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
+    }
+}
+
 /**
  * Get the ConnectionInterface for this Connection. This
  * method is protected since the convenience methods provided by this
@@ -939,7 +1045,7 @@ ConnectionInterface *Connection::baseInterface() const
  */
 PendingChannel *Connection::createChannel(const QVariantMap &request)
 {
-    if (mPriv->status != StatusConnected) {
+    if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
         return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Connection not yet connected");
@@ -990,7 +1096,7 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
  */
 PendingChannel *Connection::ensureChannel(const QVariantMap &request)
 {
-    if (mPriv->status != StatusConnected) {
+    if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
         return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Connection not yet connected");
@@ -1284,9 +1390,7 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
 
 QStringList Connection::contactAttributeInterfaces() const
 {
-    if (!isReady()) {
-        warning() << "Connection::contactAttributeInterfaces() used when not ready";
-    } else if (status() != StatusConnected) {
+    if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Connection::contactAttributeInterfaces() used with status"
             << status() << "!= StatusConnected";
     } else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {

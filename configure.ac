@@ -242,12 +242,14 @@ AC_OUTPUT([
     examples/Makefile
     examples/extensions/Makefile
     examples/accounts/Makefile
+    examples/roster/Makefile
     m4/Makefile
     spec/Makefile
     tests/Makefile
     tests/dbus/Makefile
     tests/dbus-1/services/account-manager.service
     tests/lib/Makefile
+    tests/lib/contactlist/Makefile
     tests/lib/csh/Makefile
     tests/lib/echo/Makefile
     tests/lib/echo2/Makefile
