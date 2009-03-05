@@ -356,21 +356,21 @@ void RosterWindow::updateActions()
     qDebug() << " publish state     :" << contact->publishState();
     qDebug() << " blocked           :" << contact->isBlocked();
 
-    if (manager->canAuthorizeContactsPresencePublication() &&
+    if (manager->canAuthorizePresencePublication() &&
         contact->publishState() == Contact::PresenceStateAsk) {
         mAuthAction->setEnabled(true);
     } else {
         mAuthAction->setEnabled(false);
     }
 
-    if (manager->canRemoveContactsPresencePublication() &&
+    if (manager->canRemovePresencePublication() &&
         contact->publishState() != Contact::PresenceStateNo) {
         mDenyAction->setEnabled(true);
     } else {
         mDenyAction->setEnabled(false);
     }
 
-    if (manager->canRemoveContactsPresenceSubscription() &&
+    if (manager->canRemovePresenceSubscription() &&
         contact->subscriptionState() != Contact::PresenceStateNo) {
         mRemoveAction->setEnabled(true);
     } else {

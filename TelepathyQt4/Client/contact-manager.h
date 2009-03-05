@@ -59,17 +59,24 @@ class ContactManager : public QObject
 
         Contacts allKnownContacts() const;
 
-        bool canRequestContactsPresenceSubscription() const;
-        PendingOperation *requestContactsPresenceSubscription(
+        bool canRequestPresenceSubscription() const;
+        bool subscriptionRequestHasMessage() const;
+        PendingOperation *requestPresenceSubscription(
                 const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
-        bool canRemoveContactsPresenceSubscription() const;
-        PendingOperation *removeContactsPresenceSubscription(
+        bool canRemovePresenceSubscription() const;
+        bool subscriptionRemovalHasMessage() const;
+        bool canRescindPresenceSubscriptionRequest() const;
+        bool subscriptionRescindingHasMessage() const;
+        PendingOperation *removePresenceSubscription(
                 const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
-        bool canAuthorizeContactsPresencePublication() const;
-        PendingOperation *authorizeContactsPresencePublication(
+        bool canAuthorizePresencePublication() const;
+        bool publicationAuthorizationHasMessage() const;
+        PendingOperation *authorizePresencePublication(
                 const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
-        bool canRemoveContactsPresencePublication() const;
-        PendingOperation *removeContactsPresencePublication(
+        bool publicationRejectionHasMessage() const;
+        bool canRemovePresencePublication() const;
+        bool publicationRemovalHasMessage() const;
+        PendingOperation *removePresencePublication(
                 const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
 
         bool canBlockContacts() const;

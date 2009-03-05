@@ -169,7 +169,7 @@ PendingOperation *Contact::requestPresenceSubscription(const QString &message)
 {
     QSharedPointer<Contact> self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->requestContactsPresenceSubscription(
+    return mPriv->manager->requestPresenceSubscription(
             QList<QSharedPointer<Contact> >() << self,
             message);
 }
@@ -178,7 +178,7 @@ PendingOperation *Contact::removePresenceSubscription(const QString &message)
 {
     QSharedPointer<Contact> self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->removeContactsPresenceSubscription(
+    return mPriv->manager->removePresenceSubscription(
             QList<QSharedPointer<Contact> >() << self,
             message);
 }
@@ -187,7 +187,7 @@ PendingOperation *Contact::authorizePresencePublication(const QString &message)
 {
     QSharedPointer<Contact> self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->authorizeContactsPresencePublication(
+    return mPriv->manager->authorizePresencePublication(
             QList<QSharedPointer<Contact> >() << self,
             message);
 }
@@ -196,7 +196,7 @@ PendingOperation *Contact::removePresencePublication(const QString &message)
 {
     QSharedPointer<Contact> self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->removeContactsPresencePublication(
+    return mPriv->manager->removePresencePublication(
             QList<QSharedPointer<Contact> >() << self,
             message);
 }

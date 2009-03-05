@@ -172,10 +172,41 @@ Contacts ContactManager::allKnownContacts() const
     return mPriv->allKnownContacts();
 }
 
-bool ContactManager::canRequestContactsPresenceSubscription() const
+/**
+ * Return whether subscribing to additional contacts' presence is supported
+ * on this channel.
+ *
+ * In some protocols, the list of contacts whose presence can be seen is
+ * fixed, so we can't subscribe to the presence of additional contacts.
+ *
+ * Notably, in link-local XMPP, you can see the presence of everyone on the
+ * local network, and trying to add more subscriptions would be meaningless.
+ *
+ * \return Whether Contact::requestPresenceSubscription and
+ *         requestPresenceSubscription are likely to succeed
+ */
+bool ContactManager::canRequestPresenceSubscription() const
 {
     return mPriv->subscribeChannel &&
         mPriv->subscribeChannel->groupCanAddContacts();
+}
+
+/**
+ * Return whether a message can be sent when subscribing to contacts'
+ * presence.
+ *
+ * If no message will actually be sent, user interfaces should avoid prompting
+ * the user for a message, and use an empty string for the message argument.
+ *
+ * \return Whether the message argument to
+ *         Contact::requestPresenceSubscription and
+ *         requestPresenceSubscription is actually used
+ */
+bool ContactManager::subscriptionRequestHasMessage() const
+{
+    return mPriv->subscribeChannel &&
+        (mPriv->subscribeChannel->groupFlags() &
+         Telepathy::ChannelGroupFlagMessageAdd);
 }
 
 /**
@@ -200,7 +231,7 @@ bool ContactManager::canRequestContactsPresenceSubscription() const
  * \return A pending operation which will return when an attempt has been made
  *         to subscribe to the contacts' presence
  */
-PendingOperation *ContactManager::requestContactsPresenceSubscription(
+PendingOperation *ContactManager::requestPresenceSubscription(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
     if (!mPriv->subscribeChannel) {
@@ -211,10 +242,70 @@ PendingOperation *ContactManager::requestContactsPresenceSubscription(
     return mPriv->subscribeChannel->groupAddContacts(contacts, message);
 }
 
-bool ContactManager::canRemoveContactsPresenceSubscription() const
+/**
+ * Return whether the user can stop receiving the presence of a contact
+ * whose presence they have subscribed to.
+ *
+ * \return Whether removePresenceSubscription and
+ *         Contact::removePresenceSubscription are likely to succeed
+ *         for contacts with subscription state Contact::PresenceStateYes
+ */
+bool ContactManager::canRemovePresenceSubscription() const
 {
     return mPriv->subscribeChannel &&
         mPriv->subscribeChannel->groupCanRemoveContacts();
+}
+
+/**
+ * Return whether a message can be sent when removing an existing subscription
+ * to the presence of a contact.
+ *
+ * If no message will actually be sent, user interfaces should avoid prompting
+ * the user for a message, and use an empty string for the message argument.
+ *
+ * \return Whether the message argument to
+ *         Contact::removePresenceSubscription and
+ *         removePresenceSubscription is actually used,
+ *         for contacts with subscription state Contact::PresenceStateYes
+ */
+bool ContactManager::subscriptionRemovalHasMessage() const
+{
+    return mPriv->subscribeChannel &&
+        (mPriv->subscribeChannel->groupFlags() &
+         Telepathy::ChannelGroupFlagMessageRemove);
+}
+
+/**
+ * Return whether the user can cancel a request to subscribe to a contact's
+ * presence before that contact has responded.
+ *
+ * \return Whether removePresenceSubscription and
+ *         Contact::removePresenceSubscription are likely to succeed
+ *         for contacts with subscription state Contact::PresenceStateAsk
+ */
+bool ContactManager::canRescindPresenceSubscriptionRequest() const
+{
+    return mPriv->subscribeChannel &&
+        mPriv->subscribeChannel->groupCanRescindContacts();
+}
+
+/**
+ * Return whether a message can be sent when cancelling a request to
+ * subscribe to the presence of a contact.
+ *
+ * If no message will actually be sent, user interfaces should avoid prompting
+ * the user for a message, and use an empty string for the message argument.
+ *
+ * \return Whether the message argument to
+ *         Contact::removePresenceSubscription and
+ *         removePresenceSubscription is actually used,
+ *         for contacts with subscription state Contact::PresenceStateAsk
+ */
+bool ContactManager::subscriptionRescindingHasMessage() const
+{
+    return mPriv->subscribeChannel &&
+        (mPriv->subscribeChannel->groupFlags() &
+         Telepathy::ChannelGroupFlagMessageRescind);
 }
 
 /**
@@ -227,7 +318,7 @@ bool ContactManager::canRemoveContactsPresenceSubscription() const
  * \return A pending operation which will return when an attempt has been made
  *         to remove any subscription to the contacts' presence
  */
-PendingOperation *ContactManager::removeContactsPresenceSubscription(
+PendingOperation *ContactManager::removePresenceSubscription(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
     if (!mPriv->subscribeChannel) {
@@ -238,12 +329,39 @@ PendingOperation *ContactManager::removeContactsPresenceSubscription(
     return mPriv->subscribeChannel->groupRemoveContacts(contacts, message);
 }
 
-bool ContactManager::canAuthorizeContactsPresencePublication() const
+/**
+ * Return true if the publication of the user's presence to contacts can be
+ * authorized.
+ *
+ * This is always true, unless the protocol has no concept of authorizing
+ * publication (in which case contacts' publication status can never be
+ * Contact::PresenceStateAsk).
+ */
+bool ContactManager::canAuthorizePresencePublication() const
 {
     // do not check for Channel::groupCanAddContacts as all contacts in local
     // pending can be added, even if the Channel::groupFlags() does not contain
     // the flag CanAdd
     return (bool) mPriv->publishChannel;
+}
+
+/**
+ * Return whether a message can be sent when authorizing a request from a
+ * contact that the user's presence is published to them.
+ *
+ * If no message will actually be sent, user interfaces should avoid prompting
+ * the user for a message, and use an empty string for the message argument.
+ *
+ * \return Whether the message argument to
+ *         Contact::authorizePresencePublication and
+ *         authorizePresencePublication is actually used,
+ *         for contacts with subscription state Contact::PresenceStateAsk
+ */
+bool ContactManager::publicationAuthorizationHasMessage() const
+{
+    return mPriv->subscribeChannel &&
+        (mPriv->subscribeChannel->groupFlags() &
+         Telepathy::ChannelGroupFlagMessageAccept);
 }
 
 /**
@@ -257,7 +375,7 @@ bool ContactManager::canAuthorizeContactsPresencePublication() const
  * \return A pending operation which will return when an attempt has been made
  *         to authorize publication of the user's presence to the contacts
  */
-PendingOperation *ContactManager::authorizeContactsPresencePublication(
+PendingOperation *ContactManager::authorizePresencePublication(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
     if (!mPriv->publishChannel) {
@@ -268,18 +386,69 @@ PendingOperation *ContactManager::authorizeContactsPresencePublication(
     return mPriv->publishChannel->groupAddContacts(contacts, message);
 }
 
-bool ContactManager::canRemoveContactsPresencePublication() const
+/**
+ * Return whether a message can be sent when rejecting a request from a
+ * contact that the user's presence is published to them.
+ *
+ * If no message will actually be sent, user interfaces should avoid prompting
+ * the user for a message, and use an empty string for the message argument.
+ *
+ * \return Whether the message argument to
+ *         Contact::removePresencePublication and
+ *         removePresencePublication is actually used,
+ *         for contacts with subscription state Contact::PresenceStateAsk
+ */
+bool ContactManager::publicationRejectionHasMessage() const
+{
+    return mPriv->subscribeChannel &&
+        (mPriv->subscribeChannel->groupFlags() &
+         Telepathy::ChannelGroupFlagMessageReject);
+}
+
+/**
+ * Return true if the publication of the user's presence to contacts can be
+ * removed, even after permission has been given.
+ *
+ * (Rejecting requests for presence to be published is always allowed.)
+ *
+ * \return Whether removePresencePublication and
+ *         Contact::removePresencePublication are likely to succeed
+ *         for contacts with subscription state Contact::PresenceStateYes
+ */
+bool ContactManager::canRemovePresencePublication() const
 {
     return mPriv->publishChannel &&
         mPriv->publishChannel->groupCanRemoveContacts();
 }
 
 /**
+ * Return whether a message can be sent when revoking earlier permission
+ * that the user's presence is published to a contact.
+ *
+ * If no message will actually be sent, user interfaces should avoid prompting
+ * the user for a message, and use an empty string for the message argument.
+ *
+ * \return Whether the message argument to
+ *         Contact::removePresencePublication and
+ *         removePresencePublication is actually used,
+ *         for contacts with subscription state Contact::PresenceStateYes
+ */
+bool ContactManager::publicationRemovalHasMessage() const
+{
+    return mPriv->subscribeChannel &&
+        (mPriv->subscribeChannel->groupFlags() &
+         Telepathy::ChannelGroupFlagMessageRemove);
+}
+
+/**
  * If the given contacts have asked the user to publish presence to them,
- * deny this request.
+ * deny this request (this should always succeed, unless a network error
+ * occurs).
  *
  * If the given contacts already have permission to receive
- * the user's presence, attempt to revoke that permission.
+ * the user's presence, attempt to revoke that permission (this might not
+ * be supported by the protocol - canRemovePresencePublication
+ * indicates whether it is likely to succeed).
  *
  * \param contacts Contacts who should no longer be allowed to receive the
  *                 user's presence
@@ -288,7 +457,7 @@ bool ContactManager::canRemoveContactsPresencePublication() const
  * \return A pending operation which will return when an attempt has been made
  *         to remove any publication of the user's presence to the contacts
  */
-PendingOperation *ContactManager::removeContactsPresencePublication(
+PendingOperation *ContactManager::removePresencePublication(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
     if (!mPriv->publishChannel) {
@@ -299,6 +468,11 @@ PendingOperation *ContactManager::removeContactsPresencePublication(
     return mPriv->publishChannel->groupRemoveContacts(contacts, message);
 }
 
+/**
+ * Return whether this protocol has a list of blocked contacts.
+ *
+ * \return Whether blockContacts is likely to succeed
+ */
 bool ContactManager::canBlockContacts() const
 {
     return (bool) mPriv->denyChannel;
