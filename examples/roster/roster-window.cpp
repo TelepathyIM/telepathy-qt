@@ -197,7 +197,7 @@ void RosterWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
     PendingConnection *pconn =
         qobject_cast<PendingConnection *>(op);
     mConn = pconn->connection();
-    QSet<uint> features = QSet<uint>() << Connection::FeatureRoster;
+    Features features = Features() << Connection::FeatureRoster;
     connect(mConn->requestConnect(features),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onConnectionReady(Telepathy::Client::PendingOperation *)));
