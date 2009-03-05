@@ -6,7 +6,7 @@
 #include <QtTest/QtTest>
 
 #include <TelepathyQt4/Client/ConnectionManager>
-#include <TelepathyQt4/Client/PendingReadyConnectionManager>
+#include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/PendingStringList>
 #include <TelepathyQt4/Debug>
 

@@ -36,12 +36,18 @@ namespace Client
 
 class ConnectionManager;
 class ConnectionManagerInterface;
-class PendingReadyConnectionManager;
+class ReadinessHelper;
 
 struct ConnectionManager::Private
 {
-    Private(const QString &name, ConnectionManager *parent);
+    Private(ConnectionManager *parent, const QString &name);
     ~Private();
+
+    bool parseConfigFile();
+
+    static void introspectMain(Private *self);
+    void introspectProtocols();
+    void introspectParameters();
 
     static QString makeBusName(const QString &name);
     static QString makeObjectPath(const QString &name);
@@ -50,16 +56,20 @@ struct ConnectionManager::Private
 
     class PendingNames;
 
-    ConnectionManagerInterface *baseInterface;
+    // Public object
+    ConnectionManager *parent;
+
     QString name;
-    bool ready;
-    QQueue<void (ConnectionManager::*)()> introspectQueue;
-    QQueue<QString> getParametersQueue;
-    QQueue<QString> protocolQueue;
+
+    // Instance of generated interface class
+    ConnectionManagerInterface *baseInterface;
+
+    ReadinessHelper *readinessHelper;
+
+    // Introspection
     QStringList interfaces;
+    QQueue<QString> parametersQueue;
     ProtocolInfoList protocols;
-    PendingReadyConnectionManager *pendingReady;
-    ConnectionManager::Features features;
 };
 
 class ConnectionManager::Private::PendingNames : public PendingStringList
