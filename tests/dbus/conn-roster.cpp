@@ -137,7 +137,7 @@ void TestConnRoster::init()
 
 void TestConnRoster::testRoster()
 {
-    QSet<uint> features = QSet<uint>() << Connection::FeatureRoster;
+    Features features = Features() << Connection::FeatureRoster;
     QVERIFY(connect(mConn->becomeReady(features),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             this,

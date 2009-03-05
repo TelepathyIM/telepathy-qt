@@ -98,7 +98,7 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->displayName(), QString("foobar (account 0)"));
 
-    QSet<uint> features = QSet<uint>() << Account::FeatureAvatar;
+    Features features = Features() << Account::FeatureAvatar;
     QVERIFY(connect(acc->becomeReady(features),
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
@@ -117,7 +117,7 @@ void TestAccountBasics::testBasics()
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    features = QSet<uint>() << Account::FeatureAvatar;
+    features = Features() << Account::FeatureAvatar;
     QVERIFY(connect(acc->becomeReady(features),
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
@@ -143,7 +143,7 @@ void TestAccountBasics::testBasics()
 
     acc = mAM->accountForPath(
             "/org/freedesktop/Telepathy/Account/spurious/normal/Account0");
-    features = QSet<uint>() << Account::FeatureProtocolInfo;
+    features = Features() << Account::FeatureProtocolInfo;
     QVERIFY(connect(acc->becomeReady(features),
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
@@ -156,7 +156,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(protocolInfo->hasParameter("password"), true);
     QCOMPARE(protocolInfo->hasParameter("register"), true);
 
-    features = QSet<uint>() << Account::FeatureAvatar;
+    features = Features() << Account::FeatureAvatar;
     QVERIFY(connect(acc->becomeReady(features),
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
@@ -165,7 +165,7 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
 
-    features = QSet<uint>() << Account::FeatureAvatar << Account::FeatureProtocolInfo;
+    features = Features() << Account::FeatureAvatar << Account::FeatureProtocolInfo;
     QVERIFY(connect(acc->becomeReady(features),
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));

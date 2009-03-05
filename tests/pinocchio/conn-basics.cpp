@@ -15,6 +15,7 @@ using Telepathy::Client::Connection;
 using Telepathy::Client::ConnectionManagerInterface;
 using Telepathy::Client::DBus::PeerInterface;
 using Telepathy::Client::DBus::PropertiesInterface;
+using Telepathy::Client::Features;
 
 class TestConnBasics : public PinocchioTest
 {
@@ -166,7 +167,7 @@ void TestConnBasics::testConnect()
         QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
     }
 
-    QSet<uint> features = QSet<uint>() << Connection::FeatureSimplePresence;
+    Features features = Features() << Connection::FeatureSimplePresence;
     QVERIFY(connect(mConn->becomeReady(features),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             this,

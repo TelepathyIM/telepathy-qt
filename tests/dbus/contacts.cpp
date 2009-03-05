@@ -157,7 +157,7 @@ void TestContacts::initTestCase()
 
     mConn->requestConnect();
 
-    QSet<uint> features = QSet<uint>() << Connection::FeatureSelfContact;
+    Features features = Features() << Connection::FeatureSelfContact;
     QVERIFY(connect(mConn->becomeReady(features),
                 SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));

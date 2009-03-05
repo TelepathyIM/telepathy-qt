@@ -148,7 +148,7 @@ void TestConnBasics::init()
 
 void TestConnBasics::testSimplePresence()
 {
-    QSet<uint> features = QSet<uint>() << Connection::FeatureSimplePresence;
+    Features features = Features() << Connection::FeatureSimplePresence;
     QCOMPARE(mConn->isReady(features), false);
     QVERIFY(connect(mConn->becomeReady(features),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
