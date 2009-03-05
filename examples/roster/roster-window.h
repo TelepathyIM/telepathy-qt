@@ -24,11 +24,12 @@
 #include <QMainWindow>
 #include <QSharedPointer>
 
+#include <TelepathyQt4/Client/Contact>
+
 namespace Telepathy {
 namespace Client {
 class Connection;
 class ConnectionManager;
-class Contact;
 class PendingOperation;
 }
 }
