@@ -203,14 +203,11 @@ bool ContactManager::canRequestContactsPresenceSubscription() const
 PendingOperation *ContactManager::requestContactsPresenceSubscription(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
-    if (!canRequestContactsPresenceSubscription()) {
-        warning() << "Contact subscription requested, "
-            "but unable to add contacts";
+    if (!mPriv->subscribeChannel) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot request contacts presence subscription");
+                "Cannot subscribe to contacts' presence on this protocol");
     }
 
-    Q_ASSERT(mPriv->subscribeChannel);
     return mPriv->subscribeChannel->groupAddContacts(contacts, message);
 }
 
@@ -233,14 +230,11 @@ bool ContactManager::canRemoveContactsPresenceSubscription() const
 PendingOperation *ContactManager::removeContactsPresenceSubscription(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
-    if (!canRemoveContactsPresenceSubscription()) {
-        warning() << "Contact subscription removal requested, "
-            "but unable to remove contacts";
+    if (!mPriv->subscribeChannel) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot remove contacts presence subscription");
+                "Cannot subscribe to contacts' presence on this protocol");
     }
 
-    Q_ASSERT(mPriv->subscribeChannel);
     return mPriv->subscribeChannel->groupRemoveContacts(contacts, message);
 }
 
@@ -266,14 +260,11 @@ bool ContactManager::canAuthorizeContactsPresencePublication() const
 PendingOperation *ContactManager::authorizeContactsPresencePublication(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
-    if (!canAuthorizeContactsPresencePublication()) {
-        warning() << "Contact publication authorization requested, "
-            "but unable to authorize contacts";
+    if (!mPriv->publishChannel) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot authorize contacts presence publication");
+                "Cannot control publication of presence on this protocol");
     }
 
-    Q_ASSERT(mPriv->publishChannel);
     return mPriv->publishChannel->groupAddContacts(contacts, message);
 }
 
@@ -300,14 +291,11 @@ bool ContactManager::canRemoveContactsPresencePublication() const
 PendingOperation *ContactManager::removeContactsPresencePublication(
         const QList<QSharedPointer<Contact> > &contacts, const QString &message)
 {
-    if (!canRemoveContactsPresencePublication()) {
-        warning() << "Contact publication remove requested, "
-            "but unable to remove contacts";
+    if (!mPriv->publishChannel) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot remove contacts presence publication");
+                "Cannot control publication of presence on this protocol");
     }
 
-    Q_ASSERT(mPriv->publishChannel);
     return mPriv->publishChannel->groupRemoveContacts(contacts, message);
 }
 
@@ -331,14 +319,11 @@ bool ContactManager::canBlockContacts() const
 PendingOperation *ContactManager::blockContacts(
         const QList<QSharedPointer<Contact> > &contacts, bool value)
 {
-    if (!canBlockContacts()) {
-        warning() << "Contact blocking requested, "
-            "but unable to block contacts";
+    if (!mPriv->denyChannel) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot block contacts");
+                "Cannot block contacts on this protocol");
     }
 
-    Q_ASSERT(mPriv->denyChannel);
     if (value) {
         return mPriv->denyChannel->groupAddContacts(contacts);
     }
