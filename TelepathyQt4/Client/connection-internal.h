@@ -38,14 +38,14 @@ class Connection::PendingConnect : public PendingOperation
     Q_OBJECT
 
 public:
-    PendingConnect(Connection *parent, const QSet<uint> &requestedFeatures);
+    PendingConnect(Connection *parent, const Features &requestedFeatures);
 
 private Q_SLOTS:
     void onConnectReply(QDBusPendingCallWatcher *);
     void onBecomeReadyReply(Telepathy::Client::PendingOperation *);
 
 private:
-    QSet<uint> requestedFeatures;
+    Features requestedFeatures;
 };
 
 } // Telepathy::Client

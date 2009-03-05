@@ -31,6 +31,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+#include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Constants>
 
 #include <QSet>
@@ -120,11 +121,7 @@ class ConnectionManager : public StatelessDBusProxy,
     Q_OBJECT
 
 public:
-    enum Feature {
-        FeatureCore = 0,
-        _Padding = 0xFFFFFFFF
-    };
-    Q_DECLARE_FLAGS(Features, Feature)
+    static const Feature FeatureCore;
 
     ConnectionManager(const QString &name, QObject *parent = 0);
     ConnectionManager(const QDBusConnection &bus,
@@ -147,18 +144,19 @@ public:
         return OptionalInterfaceFactory<ConnectionManager>::interface<DBus::PropertiesInterface>();
     }
 
-    bool isReady(const QSet<uint> &features = QSet<uint>()) const;
+    virtual bool isReady(const Features &features = Features()) const;
+    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
 
-    PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
-
-    QSet<uint> requestedFeatures() const;
-    QSet<uint> actualFeatures() const;
-    QSet<uint> missingFeatures() const;
+    virtual Features requestedFeatures() const;
+    virtual Features actualFeatures() const;
+    virtual Features missingFeatures() const;
 
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
 protected:
     ConnectionManagerInterface *baseInterface() const;
+
+    ReadinessHelper *readinessHelper() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);

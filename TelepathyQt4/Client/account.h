@@ -31,6 +31,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+#include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Constants>
 
 #include <QSet>
@@ -59,13 +60,9 @@ class Account : public StatelessDBusProxy,
     Q_DISABLE_COPY(Account)
 
 public:
-    enum Feature {
-        FeatureCore = 0,
-        FeatureAvatar = 1,
-        FeatureProtocolInfo = 2,
-        _Padding = 0xFFFFFFFF
-    };
-    Q_DECLARE_FLAGS(Features, Feature)
+    static const Feature FeatureCore;
+    static const Feature FeatureAvatar;
+    static const Feature FeatureProtocolInfo;
 
     Account(AccountManager *am, const QString &objectPath,
             QObject *parent = 0);
@@ -130,13 +127,12 @@ public:
 
     PendingOperation *remove();
 
-    bool isReady(const QSet<uint> &features = QSet<uint>()) const;
+    virtual bool isReady(const Features &features = Features()) const;
+    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
 
-    PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
-
-    QSet<uint> requestedFeatures() const;
-    QSet<uint> actualFeatures() const;
-    QSet<uint> missingFeatures() const;
+    virtual Features requestedFeatures() const;
+    virtual Features actualFeatures() const;
+    virtual Features missingFeatures() const;
 
     QStringList interfaces() const;
 
@@ -185,6 +181,8 @@ Q_SIGNALS:
 protected:
     AccountInterface *baseInterface() const;
 
+    ReadinessHelper *readinessHelper() const;
+
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
     void gotAvatar(QDBusPendingCallWatcher *);
@@ -198,8 +196,6 @@ private:
     friend struct Private;
     Private *mPriv;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(Account::Features)
 
 } // Telepathy::Client
 } // Telepathy

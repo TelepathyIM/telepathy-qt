@@ -30,7 +30,6 @@
 #include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/PendingAccount>
 #include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Constants>
 
 #include <QQueue>
@@ -94,12 +93,12 @@ AccountManager::Private::Private(AccountManager *parent)
 {
     debug() << "Creating new AccountManager:" << parent->busName();
 
-    QMap<uint, ReadinessHelper::Introspectable> introspectables;
+    ReadinessHelper::Introspectables introspectables;
 
     // As AccountManager does not have predefined statuses let's simulate one (0)
     ReadinessHelper::Introspectable introspectableCore(
         QSet<uint>() << 0,                                           // makesSenseForStatuses
-        QSet<uint>(),                                                // dependsOnFeatures
+        Features(),                                                  // dependsOnFeatures
         QStringList(),                                               // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
         this);
@@ -107,6 +106,7 @@ AccountManager::Private::Private(AccountManager *parent)
 
     readinessHelper = new ReadinessHelper(parent, 0 /* status */,
             introspectables, parent);
+    readinessHelper->becomeReady(Features() << FeatureCore);
 
     init();
 }
@@ -149,6 +149,8 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  *
  * Object representing a Telepathy account manager.
  */
+
+const Feature AccountManager::FeatureCore = Feature(AccountManager::staticMetaObject.className(), 0);
 
 /**
  * Construct a new AccountManager object.
@@ -369,9 +371,12 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
  * \return \c true if the object has finished its initial setup for basic
  *         functionality plus the given features
  */
-bool AccountManager::isReady(const QSet<uint> &features) const
+bool AccountManager::isReady(const Features &features) const
 {
-    return mPriv->readinessHelper->isReady(features);
+    if (features.isEmpty()) {
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+    }
+    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
 }
 
 /**
@@ -387,22 +392,26 @@ bool AccountManager::isReady(const QSet<uint> &features) const
  *         when this object has finished or failed initial setup for basic
  *         functionality plus the given features
  */
-PendingReady *AccountManager::becomeReady(const QSet<uint> &requestedFeatures)
+PendingReady *AccountManager::becomeReady(const Features &requestedFeatures)
 {
+    if (requestedFeatures.isEmpty()) {
+        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
+    }
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
+
 }
 
-QSet<uint> AccountManager::requestedFeatures() const
+Features AccountManager::requestedFeatures() const
 {
     return mPriv->readinessHelper->requestedFeatures();
 }
 
-QSet<uint> AccountManager::actualFeatures() const
+Features AccountManager::actualFeatures() const
 {
     return mPriv->readinessHelper->actualFeatures();
 }
 
-QSet<uint> AccountManager::missingFeatures() const
+Features AccountManager::missingFeatures() const
 {
     return mPriv->readinessHelper->missingFeatures();
 }
@@ -419,6 +428,11 @@ QSet<uint> AccountManager::missingFeatures() const
 AccountManagerInterface *AccountManager::baseInterface() const
 {
     return mPriv->baseInterface;
+}
+
+ReadinessHelper *AccountManager::readinessHelper() const
+{
+    return mPriv->readinessHelper;
 }
 
 /**** Private ****/

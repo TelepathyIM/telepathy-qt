@@ -38,7 +38,6 @@
 #include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/PendingReadyChannel>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
-#include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Client/ReferencedHandles>
 
 #include <QMap>
@@ -171,19 +170,19 @@ Connection::Private::Private(Connection *parent)
       handleContext(0),
       contactManager(new ContactManager(parent))
 {
-    QMap<uint, ReadinessHelper::Introspectable> introspectables;
+    ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableCore(
         QSet<uint>() << Connection::StatusDisconnected << Connection::StatusConnected, // makesSenseForStatuses
-        QSet<uint>(),                                                                  // dependsOnFeatures
-        QStringList(),                                                                 // dependsOnInterfaces
+        Features(),                                                                    // dependsOnFeatures (none)
+        QStringList(),                                                                 // dependsOnInterfaces (none)
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
         this);
     introspectables[FeatureCore] = introspectableCore;
 
     ReadinessHelper::Introspectable introspectableSelfContact(
         QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
-        QSet<uint>() << FeatureCore,                                                   // dependsOnFeatures (core)
+        Features() << FeatureCore,                                                     // dependsOnFeatures (core)
         QStringList() << TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS,            // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSelfContact,
         this);
@@ -191,7 +190,7 @@ Connection::Private::Private(Connection *parent)
 
     ReadinessHelper::Introspectable introspectableSimplePresence(
         QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
-        QSet<uint>() << FeatureCore,                                                   // dependsOnFeatures (core)
+        Features() << FeatureCore,                                                     // dependsOnFeatures (core)
         QStringList() << TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,     // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
         this);
@@ -199,7 +198,7 @@ Connection::Private::Private(Connection *parent)
 
     ReadinessHelper::Introspectable introspectableRoster(
         QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
-        QSet<uint>() << 0,                                                             // dependsOnFeatures (core)
+        Features() << FeatureCore,                                                     // dependsOnFeatures (core)
         QStringList() << TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS,            // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectRoster,
         this);
@@ -210,6 +209,7 @@ Connection::Private::Private(Connection *parent)
     parent->connect(readinessHelper,
             SIGNAL(statusReady(uint)),
             SLOT(onStatusReady(uint)));
+    readinessHelper->becomeReady(Features() << FeatureCore);
 
     init();
 }
@@ -386,7 +386,7 @@ void Connection::Private::introspectRoster(Connection::Private *self)
     }
 }
 
-Connection::PendingConnect::PendingConnect(Connection *parent, const QSet<uint> &requestedFeatures)
+Connection::PendingConnect::PendingConnect(Connection *parent, const Features &requestedFeatures)
     : PendingOperation(parent),
       requestedFeatures(requestedFeatures)
 {
@@ -449,6 +449,11 @@ QMutex Connection::Private::handleContextsLock;
  * individual accessor descriptions for details on which functions can be used
  * in the different states.
  */
+
+const Feature Connection::FeatureCore = Feature(Connection::staticMetaObject.className(), 0);
+const Feature Connection::FeatureSelfContact = Feature(Connection::staticMetaObject.className(), 1);
+const Feature Connection::FeatureSimplePresence = Feature(Connection::staticMetaObject.className(), 2);
+const Feature Connection::FeatureRoster = Feature(Connection::staticMetaObject.className(), 3);
 
 /**
  * Construct a new Connection object.
@@ -565,7 +570,7 @@ uint Connection::selfHandle() const
  */
 SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
 {
-    if (!isReady(QSet<uint>() << FeatureSimplePresence)) {
+    if (!isReady(Features() << FeatureSimplePresence)) {
         warning() << "Trying to retrieve simple presence from connection, but "
                      "simple presence is not supported or was not requested. "
                      "Use becomeReady(FeatureSimplePresence)";
@@ -1017,6 +1022,11 @@ ConnectionInterface *Connection::baseInterface() const
     return mPriv->baseInterface;
 }
 
+ReadinessHelper *Connection::readinessHelper() const
+{
+    return mPriv->readinessHelper;
+}
+
 /**
  * Asynchronously creates a channel satisfying the given request.
  *
@@ -1250,9 +1260,12 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
  * \return \c true if the object has finished its initial setup for basic
  *         functionality plus the given features
  */
-bool Connection::isReady(const QSet<uint> &features) const
+bool Connection::isReady(const Features &features) const
 {
-    return mPriv->readinessHelper->isReady(features);
+    if (features.isEmpty()) {
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+    }
+    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
 }
 
 /**
@@ -1268,22 +1281,25 @@ bool Connection::isReady(const QSet<uint> &features) const
  *         when this object has finished or failed initial setup for basic
  *         functionality plus the given features
  */
-PendingReady *Connection::becomeReady(const QSet<uint> &requestedFeatures)
+PendingReady *Connection::becomeReady(const Features &requestedFeatures)
 {
+    if (requestedFeatures.isEmpty()) {
+        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
+    }
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
 }
 
-QSet<uint> Connection::requestedFeatures() const
+Features Connection::requestedFeatures() const
 {
     return mPriv->readinessHelper->requestedFeatures();
 }
 
-QSet<uint> Connection::actualFeatures() const
+Features Connection::actualFeatures() const
 {
     return mPriv->readinessHelper->actualFeatures();
 }
 
-QSet<uint> Connection::missingFeatures() const
+Features Connection::missingFeatures() const
 {
     return mPriv->readinessHelper->missingFeatures();
 }
@@ -1301,7 +1317,7 @@ QSet<uint> Connection::missingFeatures() const
  *         for basic functionality, plus the given features, has succeeded or
  *         failed
  */
-PendingOperation *Connection::requestConnect(const QSet<uint> &requestedFeatures)
+PendingOperation *Connection::requestConnect(const Features &requestedFeatures)
 {
     return new PendingConnect(this, requestedFeatures);
 }

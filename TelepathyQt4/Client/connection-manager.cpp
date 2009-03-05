@@ -32,7 +32,6 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/PendingConnection>
 #include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
@@ -290,12 +289,12 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();
 
-    QMap<uint, ReadinessHelper::Introspectable> introspectables;
+    ReadinessHelper::Introspectables introspectables;
 
     // As ConnectionManager does not have predefined statuses let's simulate one (0)
     ReadinessHelper::Introspectable introspectableCore(
         QSet<uint>() << 0,                                           // makesSenseForStatuses
-        QSet<uint>(),                                                // dependsOnFeatures
+        Features(),                                                  // dependsOnFeatures
         QStringList(),                                               // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
         this);
@@ -303,6 +302,7 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
 
     readinessHelper = new ReadinessHelper(parent, 0 /* status */,
             introspectables, parent);
+    readinessHelper->becomeReady(Features() << FeatureCore);
 }
 
 ConnectionManager::Private::~Private()
@@ -347,6 +347,8 @@ ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
  * %AccountManager, to allow connections to be shared between client
  * applications.
  */
+
+const Feature ConnectionManager::FeatureCore = Feature(ConnectionManager::staticMetaObject.className(), 0);
 
 /**
  * Construct a new ConnectionManager object.
@@ -468,9 +470,12 @@ PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
  * \param features The features which should be tested
  * \return \c true if the object has finished initial setup.
  */
-bool ConnectionManager::isReady(const QSet<uint> &features) const
+bool ConnectionManager::isReady(const Features &features) const
 {
-    return mPriv->readinessHelper->isReady(features);
+    if (features.isEmpty()) {
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+    }
+    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
 }
 
 /**
@@ -486,22 +491,25 @@ bool ConnectionManager::isReady(const QSet<uint> &features) const
  *         when this object has finished or failed initial setup for basic
  *         functionality plus the given features
  */
-PendingReady *ConnectionManager::becomeReady(const QSet<uint> &requestedFeatures)
+PendingReady *ConnectionManager::becomeReady(const Features &requestedFeatures)
 {
+    if (requestedFeatures.isEmpty()) {
+        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
+    }
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
 }
 
-QSet<uint> ConnectionManager::requestedFeatures() const
+Features ConnectionManager::requestedFeatures() const
 {
     return mPriv->readinessHelper->requestedFeatures();
 }
 
-QSet<uint> ConnectionManager::actualFeatures() const
+Features ConnectionManager::actualFeatures() const
 {
     return mPriv->readinessHelper->actualFeatures();
 }
 
-QSet<uint> ConnectionManager::missingFeatures() const
+Features ConnectionManager::missingFeatures() const
 {
     return mPriv->readinessHelper->missingFeatures();
 }
@@ -532,6 +540,11 @@ PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
 ConnectionManagerInterface *ConnectionManager::baseInterface() const
 {
     return mPriv->baseInterface;
+}
+
+ReadinessHelper *ConnectionManager::readinessHelper() const
+{
+    return mPriv->readinessHelper;
 }
 
 /**** Private ****/

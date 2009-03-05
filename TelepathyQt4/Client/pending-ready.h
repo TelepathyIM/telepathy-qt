@@ -44,11 +44,12 @@ public:
     ~PendingReady();
 
     QObject *object() const;
-    QSet<uint> requestedFeatures() const;
+
+    Features requestedFeatures() const;
 
 private:
     Q_DISABLE_COPY(PendingReady);
-    PendingReady(const QSet<uint> &requestedFeatures, QObject *object);
+    PendingReady(const Features &requestedFeatures, QObject *object);
 
     struct Private;
     friend struct Private;

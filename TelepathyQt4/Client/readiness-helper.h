@@ -39,6 +39,9 @@ namespace Client
 
 class PendingReady;
 
+typedef QPair<QString, uint> Feature;
+typedef QSet<Feature> Features;
+
 class ReadinessHelper : public QObject
 {
     Q_OBJECT
@@ -55,7 +58,7 @@ public:
         }
 
         Introspectable(const QSet<uint> &makesSenseForStatuses,
-                const QSet<uint> &dependsOnFeatures,
+                const Features &dependsOnFeatures,
                 const QStringList &dependsOnInterfaces,
                 IntrospectFunc introspectFunc,
                 void *introspectFuncData)
@@ -71,17 +74,20 @@ public:
         friend class ReadinessHelper;
 
         QSet<uint> makesSenseForStatuses;
-        QSet<uint> dependsOnFeatures;
+        Features dependsOnFeatures;
         QStringList dependsOnInterfaces;
         IntrospectFunc introspectFunc;
         void *introspectFuncData;
     };
+    typedef QMap<Feature, Introspectable> Introspectables;
 
     ReadinessHelper(DBusProxy *proxy,
             uint currentStatus,
-            const QMap<uint, Introspectable> &introspectables,
+            const Introspectables &introspectables,
             QObject *parent = 0);
     ~ReadinessHelper();
+
+    void addIntrospectables(const Introspectables &introspectables);
 
     uint currentStatus() const;
     void setCurrentStatus(uint currentStatus);
@@ -89,14 +95,14 @@ public:
     QStringList interfaces() const;
     void setInterfaces(const QStringList &interfaces);
 
-    QSet<uint> requestedFeatures() const;
-    QSet<uint> actualFeatures() const;
-    QSet<uint> missingFeatures() const;
+    Features requestedFeatures() const;
+    Features actualFeatures() const;
+    Features missingFeatures() const;
 
-    bool isReady(QSet<uint> features) const;
-    PendingReady *becomeReady(QSet<uint> requestedFeatures);
+    bool isReady(const Features &features, bool onlySatisfied) const;
+    PendingReady *becomeReady(const Features &requestedFeatures);
 
-    void setIntrospectCompleted(uint feature, bool success);
+    void setIntrospectCompleted(Feature feature, bool success);
 
 Q_SIGNALS:
     void statusReady(uint status);

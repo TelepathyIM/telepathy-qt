@@ -33,7 +33,6 @@
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
-#include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
 
@@ -146,12 +145,12 @@ Account::Private::Private(Account *parent, AccountManager *am)
         }
     }
 
-    QMap<uint, ReadinessHelper::Introspectable> introspectables;
+    ReadinessHelper::Introspectables introspectables;
 
     // As Account does not have predefined statuses let's simulate one (0)
     ReadinessHelper::Introspectable introspectableCore(
         QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        QSet<uint>(),                                                           // dependsOnFeatures
+        Features(),                                                             // dependsOnFeatures
         QStringList(),                                                          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
         this);
@@ -159,7 +158,7 @@ Account::Private::Private(Account *parent, AccountManager *am)
 
     ReadinessHelper::Introspectable introspectableAvatar(
         QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        QSet<uint>() << FeatureCore,                                            // dependsOnFeatures (core)
+        Features() << FeatureCore,                                              // dependsOnFeatures (core)
         QStringList() << TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectAvatar,
         this);
@@ -167,7 +166,7 @@ Account::Private::Private(Account *parent, AccountManager *am)
 
     ReadinessHelper::Introspectable introspectableProtocolInfo(
         QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        QSet<uint>() << FeatureCore,                                            // dependsOnFeatures (core)
+        Features() << FeatureCore,                                              // dependsOnFeatures (core)
         QStringList(),                                                          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectProtocolInfo,
         this);
@@ -175,6 +174,7 @@ Account::Private::Private(Account *parent, AccountManager *am)
 
     readinessHelper = new ReadinessHelper(parent, 0 /* status */,
             introspectables, parent);
+    readinessHelper->becomeReady(Features() << FeatureCore);
 
     init();
 }
@@ -194,6 +194,10 @@ Account::Private::~Private()
  * will not be deleted automatically; however, it will emit invalidated()
  * and will cease to be useful.
  */
+
+const Feature Account::FeatureCore = Feature(Account::staticMetaObject.className(), 0);
+const Feature Account::FeatureAvatar = Feature(Account::staticMetaObject.className(), 1);
+const Feature Account::FeatureProtocolInfo = Feature(Account::staticMetaObject.className(), 2);
 
 /**
  * Construct a new Account object.
@@ -374,7 +378,7 @@ PendingOperation *Account::setNickname(const QString &value)
  */
 const Telepathy::Avatar &Account::avatar() const
 {
-    if (!isReady(QSet<uint>() << FeatureAvatar)) {
+    if (!isReady(Features() << FeatureAvatar)) {
         warning() << "Trying to retrieve avatar from account, but "
                      "avatar is not supported or was not requested. "
                      "Use becomeReady(FeatureAvatar)";
@@ -439,7 +443,7 @@ PendingOperation *Account::updateParameters(const QVariantMap &set,
  */
 ProtocolInfo *Account::protocolInfo() const
 {
-    if (!isReady(QSet<uint>() << FeatureProtocolInfo)) {
+    if (!isReady(Features() << FeatureProtocolInfo)) {
         warning() << "Trying to retrieve protocol info from account, but "
                      "protocol info is not supported or was not requested. "
                      "Use becomeReady(FeatureProtocolInfo)";
@@ -651,9 +655,12 @@ PendingOperation *Account::remove()
  * \return \c true if the object has finished its initial setup for basic
  *         functionality plus the given features
  */
-bool Account::isReady(const QSet<uint> &features) const
+bool Account::isReady(const Features &features) const
 {
-    return mPriv->readinessHelper->isReady(features);
+    if (features.isEmpty()) {
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+    }
+    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
 }
 
 /**
@@ -668,22 +675,25 @@ bool Account::isReady(const QSet<uint> &features) const
  * \return A PendingReady object which will emit finished
  *         when this object has finished or failed its initial setup.
  */
-PendingReady *Account::becomeReady(const QSet<uint> &requestedFeatures)
+PendingReady *Account::becomeReady(const Features &requestedFeatures)
 {
+    if (requestedFeatures.isEmpty()) {
+        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
+    }
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
 }
 
-QSet<uint> Account::requestedFeatures() const
+Features Account::requestedFeatures() const
 {
     return mPriv->readinessHelper->requestedFeatures();
 }
 
-QSet<uint> Account::actualFeatures() const
+Features Account::actualFeatures() const
 {
     return mPriv->readinessHelper->actualFeatures();
 }
 
-QSet<uint> Account::missingFeatures() const
+Features Account::missingFeatures() const
 {
     return mPriv->readinessHelper->missingFeatures();
 }
@@ -748,6 +758,11 @@ QStringList Account::interfaces() const
 AccountInterface *Account::baseInterface() const
 {
     return mPriv->baseInterface;
+}
+
+ReadinessHelper *Account::readinessHelper() const
+{
+    return mPriv->readinessHelper;
 }
 
 /**** Private ****/

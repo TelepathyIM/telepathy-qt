@@ -43,13 +43,13 @@ namespace Client
 
 struct PendingReady::Private
 {
-    Private(const QSet<uint> &requestedFeatures, QObject *object) :
+    Private(const Features &requestedFeatures, QObject *object) :
         requestedFeatures(requestedFeatures),
         object(object)
     {
     }
 
-    QSet<uint> requestedFeatures;
+    Features requestedFeatures;
     QObject *object;
 };
 
@@ -67,7 +67,8 @@ struct PendingReady::Private
  *
  * \param object The object that will become ready.
  */
-PendingReady::PendingReady(const QSet<uint> &requestedFeatures, QObject *object)
+PendingReady::PendingReady(const Features &requestedFeatures,
+        QObject *object)
     : PendingOperation(object),
       mPriv(new Private(requestedFeatures, object))
 {
@@ -97,7 +98,7 @@ QObject *PendingReady::object() const
  *
  * \return Features.
  */
-QSet<uint> PendingReady::requestedFeatures() const
+Features PendingReady::requestedFeatures() const
 {
     return mPriv->requestedFeatures;
 }

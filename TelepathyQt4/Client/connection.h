@@ -31,6 +31,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+#include <TelepathyQt4/Client/ReadinessHelper>
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
@@ -62,14 +63,10 @@ class Connection : public StatefulDBusProxy,
     Q_ENUMS(Status)
 
 public:
-    enum Feature {
-        FeatureCore = 0,
-        FeatureSelfContact = 1,
-        FeatureSimplePresence = 2,
-        FeatureRoster = 4,
-        _Padding = 0xFFFFFFFF
-    };
-    Q_DECLARE_FLAGS(Features, Feature)
+    static const Feature FeatureCore;
+    static const Feature FeatureSelfContact;
+    static const Feature FeatureSimplePresence;
+    static const Feature FeatureRoster;
 
     enum Status {
         StatusDisconnected = Telepathy::ConnectionStatusDisconnected,
@@ -160,7 +157,7 @@ public:
 
     PendingChannel *ensureChannel(const QVariantMap &request);
 
-    PendingOperation *requestConnect(const QSet<uint> &requestedFeatures = QSet<uint>());
+    PendingOperation *requestConnect(const Features &requestedFeatures = Features());
 
     PendingOperation *requestDisconnect();
 
@@ -173,13 +170,12 @@ public:
     QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
 
-    bool isReady(const QSet<uint> &features = QSet<uint>()) const;
+    virtual bool isReady(const Features &features = Features()) const;
+    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
 
-    PendingReady *becomeReady(const QSet<uint> &requestedFeatures = QSet<uint>());
-
-    QSet<uint> requestedFeatures() const;
-    QSet<uint> actualFeatures() const;
-    QSet<uint> missingFeatures() const;
+    virtual Features requestedFeatures() const;
+    virtual Features actualFeatures() const;
+    virtual Features missingFeatures() const;
 
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
@@ -189,6 +185,8 @@ Q_SIGNALS:
 
 protected:
     ConnectionInterface *baseInterface() const;
+
+    ReadinessHelper *readinessHelper() const;
 
 private Q_SLOTS:
     void onStatusReady(uint);
@@ -222,8 +220,6 @@ private:
     friend class ReferencedHandles;
     Private *mPriv;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(Connection::Features)
 
 } // Telepathy::Client
 } // Telepathy

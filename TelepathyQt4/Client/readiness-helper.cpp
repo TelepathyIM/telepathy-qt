@@ -40,12 +40,11 @@ struct ReadinessHelper::Private
     Private(ReadinessHelper *parent,
             DBusProxy *proxy,
             uint currentStatus,
-            const QMap<uint, Introspectable> &introspectables);
+            const Introspectables &introspectables);
     ~Private();
 
     void setCurrentStatus(uint newStatus);
-    void introspectCore();
-    void setIntrospectCompleted(uint feature, bool success);
+    void setIntrospectCompleted(Feature feature, bool success);
     void iterateIntrospection();
 
     void abortOperations(const QString &errorName, const QString &errorMessage);
@@ -54,14 +53,14 @@ struct ReadinessHelper::Private
     DBusProxy *proxy;
     uint currentStatus;
     QStringList interfaces;
-    QMap<uint, Introspectable> introspectables;
+    Introspectables introspectables;
     QSet<uint> supportedStatuses;
-    QSet<uint> supportedFeatures;
-    QSet<uint> satisfiedFeatures;
-    QSet<uint> requestedFeatures;
-    QSet<uint> missingFeatures;
-    QSet<uint> pendingFeatures;
-    QSet<uint> inFlightFeatures;
+    Features supportedFeatures;
+    Features satisfiedFeatures;
+    Features requestedFeatures;
+    Features missingFeatures;
+    Features pendingFeatures;
+    Features inFlightFeatures;
     QList<PendingReady *> pendingOperations;
 
     bool pendingStatusChange;
@@ -72,7 +71,7 @@ ReadinessHelper::Private::Private(
         ReadinessHelper *parent,
         DBusProxy *proxy,
         uint currentStatus,
-        const QMap<uint, Introspectable> &introspectables)
+        const Introspectables &introspectables)
     : parent(parent),
       proxy(proxy),
       currentStatus(currentStatus),
@@ -80,12 +79,10 @@ ReadinessHelper::Private::Private(
       pendingStatusChange(false),
       pendingStatus(-1)
 {
-    // we must have an introspectable for core
-    Q_ASSERT(introspectables.contains(0));
-
-    QMap<uint, Introspectable>::const_iterator i = introspectables.constBegin();
-    while (i != introspectables.constEnd()) {
-        uint feature = i.key();
+    Introspectables::const_iterator i = introspectables.constBegin();
+    Introspectables::const_iterator end = introspectables.constEnd();
+    while (i != end) {
+        Feature feature = i.key();
         Introspectable introspectable = i.value();
         Q_ASSERT(introspectable.introspectFunc != 0);
         supportedStatuses += introspectable.makesSenseForStatuses;
@@ -95,10 +92,6 @@ ReadinessHelper::Private::Private(
 
     debug() << "ReadinessHelper: supportedStatuses =" << supportedStatuses;
     debug() << "ReadinessHelper: supportedFeatures =" << supportedFeatures;
-
-    if (supportedStatuses.contains(currentStatus)) {
-        introspectCore();
-    }
 }
 
 ReadinessHelper::Private::~Private()
@@ -117,7 +110,7 @@ void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
         pendingFeatures = requestedFeatures;
 
         if (supportedStatuses.contains(currentStatus)) {
-            introspectCore();
+            QTimer::singleShot(0, parent, SLOT(iterateIntrospection()));
         } else {
             emit parent->statusReady(currentStatus);
         }
@@ -128,15 +121,7 @@ void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
     }
 }
 
-void ReadinessHelper::Private::introspectCore()
-{
-    debug() << "Status changed to" << currentStatus << "- introspecting core";
-    requestedFeatures += 0;
-    pendingFeatures += 0;
-    QTimer::singleShot(0, parent, SLOT(iterateIntrospection()));
-}
-
-void ReadinessHelper::Private::setIntrospectCompleted(uint feature, bool success)
+void ReadinessHelper::Private::setIntrospectCompleted(Feature feature, bool success)
 {
     debug() << "ReadinessHelper::setIntrospectCompleted: feature:" << feature <<
         "- success:" << success;
@@ -185,11 +170,12 @@ void ReadinessHelper::Private::iterateIntrospection()
 
     // take care to flag anything with dependencies in missing, and the
     // stuff depending on them, as missing
-    QMap<uint, Introspectable>::const_iterator i = introspectables.constBegin();
-    while (i != introspectables.constEnd()) {
-        uint feature = i.key();
+    Introspectables::const_iterator i = introspectables.constBegin();
+    Introspectables::const_iterator end = introspectables.constEnd();
+    while (i != end) {
+        Feature feature = i.key();
         Introspectable introspectable = i.value();
-        QSet<uint> dependsOnFeatures = introspectable.dependsOnFeatures;
+        Features dependsOnFeatures = introspectable.dependsOnFeatures;
         if (!dependsOnFeatures.intersect(missingFeatures).isEmpty()) {
             missingFeatures += feature;
         }
@@ -217,8 +203,8 @@ void ReadinessHelper::Private::iterateIntrospection()
     pendingFeatures -= (satisfiedFeatures + missingFeatures);
 
     // find out which features don't have dependencies that are still pending
-    QSet<uint> readyToIntrospect;
-    foreach (uint feature, pendingFeatures) {
+    Features readyToIntrospect;
+    foreach (Feature feature, pendingFeatures) {
         // missing doesn't have to be considered here anymore
         if ((introspectables[feature].dependsOnFeatures - satisfiedFeatures).isEmpty()) {
             readyToIntrospect.insert(feature);
@@ -227,7 +213,7 @@ void ReadinessHelper::Private::iterateIntrospection()
 
     // now readyToIntrospect should contain all the features which have
     // all their feature dependencies satisfied
-    foreach (uint feature, readyToIntrospect) {
+    foreach (Feature feature, readyToIntrospect) {
         if (inFlightFeatures.contains(feature)) {
             continue;
         }
@@ -243,18 +229,15 @@ void ReadinessHelper::Private::iterateIntrospection()
             return; // will be called with a single-shot soon again
         }
 
-        if (feature != 0) {
-            foreach (const QString &interface, introspectable.dependsOnInterfaces) {
-                if (!interfaces.contains(interface)) {
-                    // Core is a dependency for everything, so interfaces are
-                    // introspected - if not all of them are present, the feature can't
-                    // possibly be satisfied
-                    debug() << "feature" << feature << "depends on interfaces" <<
-                        introspectable.dependsOnInterfaces << ", but interface" << interface <<
-                        "is not present";
-                    setIntrospectCompleted(feature, false);
-                    return; // will be called with a single-shot soon again
-                }
+        foreach (const QString &interface, introspectable.dependsOnInterfaces) {
+            if (!interfaces.contains(interface)) {
+                // If a feature is ready to introspect and depends on a interface
+                // that is not present the feature can't possibly be satisfied
+                debug() << "feature" << feature << "depends on interfaces" <<
+                    introspectable.dependsOnInterfaces << ", but interface" << interface <<
+                    "is not present";
+                setIntrospectCompleted(feature, false);
+                return; // will be called with a single-shot soon again
             }
         }
 
@@ -275,7 +258,7 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
 
 ReadinessHelper::ReadinessHelper(DBusProxy *proxy,
         uint currentStatus,
-        const QMap<uint, Introspectable> &introspectables,
+        const Introspectables &introspectables,
         QObject *parent)
     : QObject(parent),
       mPriv(new Private(this, proxy, currentStatus, introspectables))
@@ -288,6 +271,25 @@ ReadinessHelper::ReadinessHelper(DBusProxy *proxy,
 ReadinessHelper::~ReadinessHelper()
 {
     delete mPriv;
+}
+
+void ReadinessHelper::addIntrospectables(const Introspectables &introspectables)
+{
+    // QMap::unite will create multiple items if the key is already in the map
+    // so let's make sure we don't duplicate keys
+    Introspectables::const_iterator i = introspectables.constBegin();
+    Introspectables::const_iterator end = introspectables.constEnd();
+    while (i != end) {
+        Feature feature = i.key();
+        if (mPriv->introspectables.contains(feature)) {
+            warning() << "ReadinessHelper::addIntrospectables: trying to add an "
+                "introspectable for feature" << feature << "but introspectable "
+                "for this feature already exists";
+        } else {
+            mPriv->introspectables.insert(feature, i.value());
+        }
+        ++i;
+    }
 }
 
 uint ReadinessHelper::currentStatus() const
@@ -310,46 +312,41 @@ void ReadinessHelper::setInterfaces(const QStringList &interfaces)
     mPriv->interfaces = interfaces;
 }
 
-QSet<uint> ReadinessHelper::requestedFeatures() const
+Features ReadinessHelper::requestedFeatures() const
 {
     return mPriv->requestedFeatures;
 }
 
-QSet<uint> ReadinessHelper::actualFeatures() const
+Features ReadinessHelper::actualFeatures() const
 {
     return mPriv->satisfiedFeatures;
 }
 
-QSet<uint> ReadinessHelper::missingFeatures() const
+Features ReadinessHelper::missingFeatures() const
 {
     return mPriv->missingFeatures;
 }
 
-bool ReadinessHelper::isReady(QSet<uint> features) const
+bool ReadinessHelper::isReady(const Features &features, bool onlySatisfied) const
 {
     if (!mPriv->proxy->isValid()) {
         return false;
     }
 
-    if (features.isEmpty()) {
-        features << 0; // it is empty, consider core
-    }
+    Q_ASSERT(!features.isEmpty());
 
-    // if we ask if core is ready, core should be on satisfiedFeatures
-    if (features.contains(0)) {
+    if (onlySatisfied) {
         return (features - mPriv->satisfiedFeatures).isEmpty();
     } else {
         return (features - (mPriv->satisfiedFeatures + mPriv->missingFeatures)).isEmpty();
     }
 }
 
-PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
+PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
 {
-    if (requestedFeatures.isEmpty()) {
-        requestedFeatures << 0; // it is empty, consider core
-    }
+    Q_ASSERT(!requestedFeatures.isEmpty());
 
-    QSet<uint> supportedFeatures = mPriv->supportedFeatures;
+    Features supportedFeatures = mPriv->supportedFeatures;
     if (supportedFeatures.intersect(requestedFeatures) != requestedFeatures) {
         debug() << "ReadinessHelper::becomeReady called with invalid features: requestedFeatures =" <<
             requestedFeatures << "- supportedFeatures =" << mPriv->supportedFeatures;
@@ -387,7 +384,7 @@ PendingReady *ReadinessHelper::becomeReady(QSet<uint> requestedFeatures)
     return operation;
 }
 
-void ReadinessHelper::setIntrospectCompleted(uint feature, bool success)
+void ReadinessHelper::setIntrospectCompleted(Feature feature, bool success)
 {
     if (!mPriv->proxy->isValid()) {
         // proxy became invalid, ignore here
