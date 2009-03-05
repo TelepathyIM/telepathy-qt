@@ -35,10 +35,10 @@ RosterItem::RosterItem(const QSharedPointer<Contact> &contact,
             SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(subscriptionStateChanged(PresenceState)),
+            SIGNAL(subscriptionStateChanged(Telepathy::Client::Contact::PresenceState)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(publishStateChanged(PresenceState)),
+            SIGNAL(publishStateChanged(Telepathy::Client::Contact::PresenceState)),
             SLOT(onContactChanged()));
     connect(contact.data(),
             SIGNAL(blockStatusChanged(bool)),
