@@ -32,6 +32,61 @@ namespace Telepathy
 namespace Client
 {
 
+class StreamedMediaChannel;
+
+class MediaStream : public QObject
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(MediaStream)
+
+#if 0
+public:
+    StreamedMediaChannel *channel() const;
+    uint streamId() const;
+
+    QSharedPointer<Contact> contact() const;
+    Telepathy::MediaStreamState state() const;
+    Telepathy::MediaStreamType type() const;
+
+    bool sending() const;
+    bool receiving() const;
+    bool localSendingRequested() const;
+    bool remoteSendingRequested() const;
+
+    Telepathy::MediaStreamDirection direction() const;
+    Telepathy::MediaStreamPendingSend pendingSend() const;
+
+public Q_SLOTS:
+    PendingOperation *remove();
+    PendingOperation *requestStreamDirection(bool send, bool receive);
+    PendingOperation *requestStreamDirection(
+            Telepathy::MediaStreamDirection direction);
+
+Q_SIGNALS:
+    void directionChanged(Telepathy::Client::MediaStream *stream,
+            bool sending, bool receiving, bool localSendingRequested,
+            bool remoteSendingRequested);
+    void error(Telepathy::Client::MediaStream *stream,
+            Telepathy::MediaStreamError code, const QString &debugMessage);
+    void stateChanged(Telepathy::Client::MediaStream *stream);
+    void removed(Telepathy::Client::MediaStream *stream);
+
+private:
+    friend class StreamedMediaChannel;
+
+    MediaStream(StreamedMediaChannel *parent, uint streamId, uint
+            contactHandle, MediaStreamType type,
+            MediaStreamState state, MediaStreamDirection direction,
+            MediaStreamPendingSend pendingSend) const;
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+#endif
+};
+
+typedef QSet<QSharedPointer<MediaStream> > MediaStreams;
+
 class StreamedMediaChannel : public Channel
 {
     Q_OBJECT
@@ -41,6 +96,23 @@ public:
     StreamedMediaChannel(Connection *connection, const QString &objectPath,
             const QVariantMap &immutableProperties, QObject *parent = 0);
     ~StreamedMediaChannel();
+
+#if 0
+public:
+    MediaStreams streams() const;
+    bool awaitingLocalAnswer() const;
+    bool awaitingRemoteAnswer() const;
+
+public Q_SLOTS:
+    PendingOperation *acceptCall();
+
+    PendingOperation *removeStreams(MediaStreams streams);
+    PendingOperation *removeStreams(QSet<uint> streams);
+
+    PendingOperation *requestStreams(
+            QSharedPointer<Telepathy::Client::Contact> contact,
+            QList<Telepathy::MediaStreamType> types);
+#endif
 
 private:
     struct Private;
