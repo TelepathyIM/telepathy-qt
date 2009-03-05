@@ -654,8 +654,7 @@ void ConnectionManager::gotProtocols(QDBusPendingCallWatcher *watcher)
 
         mPriv->introspectParameters();
     } else {
-        // TODO should we fail here, or finish silently?
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
 
         warning().nospace() <<
             "ConnectionManager.ListProtocols failed: " <<
@@ -669,11 +668,11 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<ParamSpecList> reply = *watcher;
     QString protocolName = mPriv->parametersQueue.dequeue();
+    ProtocolInfo *info = mPriv->protocol(protocolName);
 
     if (!reply.isError()) {
         debug() << QString("Got reply to ConnectionManager.GetParameters(%1)").arg(protocolName);
         ParamSpecList parameters = reply.value();
-        ProtocolInfo *info = mPriv->protocol(protocolName);
         foreach (const ParamSpec &spec, parameters) {
             debug() << "Parameter" << spec.name << "has flags" << spec.flags
                 << "and signature" << spec.signature;
@@ -681,15 +680,21 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
             info->addParameter(spec);
         }
     } else {
+        // let's remove this protocol as we can't get the params
+        mPriv->protocols.removeOne(info);
+
         warning().nospace() <<
             QString("ConnectionManager.GetParameters(%1) failed: ").arg(protocolName) <<
             reply.error().name() << ": " << reply.error().message();
     }
 
     if (mPriv->parametersQueue.isEmpty()) {
-        // TODO should we fail if any of the protocols parameters could not be
-        //      retrieved?
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        if (!mPriv->protocols.isEmpty()) {
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        } else {
+            // we could not retrieve the params for any protocol, fail core.
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
+        }
 
 #if 0
         foreach (ProtocolInfo *info, mPriv->protocols) {
