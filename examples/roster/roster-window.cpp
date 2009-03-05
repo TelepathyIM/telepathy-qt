@@ -32,7 +32,6 @@
 #include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingOperation>
 #include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/PendingReadyConnectionManager>
 
 #include <QAction>
 #include <QDebug>
