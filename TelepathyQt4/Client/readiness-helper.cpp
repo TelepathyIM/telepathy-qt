@@ -286,10 +286,17 @@ void ReadinessHelper::addIntrospectables(const Introspectables &introspectables)
                 "introspectable for feature" << feature << "but introspectable "
                 "for this feature already exists";
         } else {
-            mPriv->introspectables.insert(feature, i.value());
+            Introspectable introspectable = i.value();
+            mPriv->introspectables.insert(feature, introspectable);
+            mPriv->supportedStatuses += introspectable.makesSenseForStatuses;
+            mPriv->supportedFeatures += feature;
         }
+
         ++i;
     }
+
+    debug() << "ReadinessHelper: new supportedStatuses =" << mPriv->supportedStatuses;
+    debug() << "ReadinessHelper: new supportedFeatures =" << mPriv->supportedFeatures;
 }
 
 uint ReadinessHelper::currentStatus() const
