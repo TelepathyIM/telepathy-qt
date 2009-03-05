@@ -1,7 +1,44 @@
-telepathy-qt4 0.1.1 (UNRELEASED)
+telepathy-qt4 0.1.1 (2009-03-05)
 ================================
 
-...
+The "PresencePublicationAuthorizationRequestRejection" release.
+
+API changes:
+
+* PendingReadyAccount, PendingReadyAccountManager, PendingReadyConnection,
+  PendingReadyConnectionManager have all been replaced by the PendingReady
+  class
+
+* Account, AccountManager, Connection and ConnectionManager features are now
+  QSet<uint>, not bitfields
+
+* Plural contacts are generally represented by a QSet<QSharedPointer<Contact> >
+  instead of a QList<QSharedPointer<Contact> > (with a new typedef,
+  Telepathy::Client::Contacts, which must be used in signal/slot connections)
+
+Enhancements:
+
+* Added Connection::FeatureRoster, which, when enabled, adds contact list
+  (a.k.a. roster/buddy list) functionality to the ContactManager and
+  Contact objects
+
+* Improved maintainability of Account, AccountManager, Connection and
+  ConnectionManager becoming ready
+
+* A QSharedPointer<Contact> is now hashable with qHash, meaning contacts can
+  be QSet or QHash members
+
+* Added a trivial contact list user interface, examples/roster/roster
+
+Fixes:
+
+* The client library no longer attempts to enforce group add/remove flags:
+  whatever change the user requests is passed on to the connection manager
+  (which might reject it)
+
+* PendingReady objects returned by Connection::becomeReady() have the
+  Connection as parent, rather than an internal object that isn't useful
+  to library users
 
 telepathy-qt4 0.1.0 (2009-02-26)
 ================================
