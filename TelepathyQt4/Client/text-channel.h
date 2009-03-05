@@ -68,29 +68,16 @@ class TextChannel : public Channel
     Q_DISABLE_COPY(TextChannel)
 
 public:
+    static const Feature FeatureMessageQueue;
+    static const Feature FeatureMessageCapabilities;
+    static const Feature FeatureMessageSentSignal;
+
     TextChannel(Connection *connection, const QString &objectPath,
             const QVariantMap &immutableProperties, QObject *parent = 0);
     ~TextChannel();
 
-    enum Feature {
-        // FeatureMessageQueue guarantees that incoming messages go in
-        // messageQueue when their corresponding contact objects have been
-        // created, and that messageReceived will be emitted. If not enabled,
-        // messageReceived will not be emitted.
-        FeatureMessageQueue = 1,
-        FeatureMessageCapabilities = 2,
-        FeatureMessageSentSignal = 4,
-        _Padding = 0xFFFFFFFF
-    };
-    Q_DECLARE_FLAGS(Features, Feature)
-
     bool hasMessagesInterface() const;
     bool canInviteContacts() const;
-
-    bool isReady(Channel::Features channelFeatures = 0,
-            Features textFeatures = 0) const;
-    PendingReadyChannel *becomeReady(Channel::Features channelFeatures = 0,
-            Features textFeatures = 0);
 
     // requires FeatureMessageCapabilities
     QStringList supportedContentTypes() const;
@@ -101,7 +88,6 @@ public:
     QList<ReceivedMessage> messageQueue() const;
 
 public Q_SLOTS:
-
     void acknowledge(const QList<ReceivedMessage> &messages);
 
     void forget(const QList<ReceivedMessage> &messages);
@@ -119,7 +105,6 @@ public Q_SLOTS:
     }
 
 Q_SIGNALS:
-
     // FeatureMessageSentSignal
     void messageSent(const Telepathy::Client::Message &message,
             Telepathy::MessageSendingFlags flags,
@@ -131,7 +116,6 @@ Q_SIGNALS:
             const Telepathy::Client::ReceivedMessage &message);
 
 private Q_SLOTS:
-    void onChannelReady(Telepathy::Client::PendingOperation *);
     void onContactsFinished(Telepathy::Client::PendingOperation *);
     void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
 
@@ -139,12 +123,13 @@ private Q_SLOTS:
             const QString &);
     void onMessageReceived(const Telepathy::MessagePartList &);
     void onPendingMessagesRemoved(const Telepathy::UIntList &);
-    void onGetAllMessagesReply(QDBusPendingCallWatcher *);
 
     void onTextSent(uint, uint, const QString &);
     void onTextReceived(uint, uint, uint, uint, uint, const QString &);
     void onTextSendError(uint, uint, uint, const QString &);
-    void onListPendingMessagesReply(QDBusPendingCallWatcher *);
+
+    void gotProperties(QDBusPendingCallWatcher *);
+    void gotPendingMessages(QDBusPendingCallWatcher *);
 
 private:
     void processQueue();

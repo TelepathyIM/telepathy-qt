@@ -28,7 +28,7 @@
 #include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/Message>
 #include <TelepathyQt4/Client/PendingContacts>
-#include <TelepathyQt4/Client/PendingReadyChannel>
+#include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/ReceivedMessage>
 #include <TelepathyQt4/Client/ReferencedHandles>
 
@@ -98,15 +98,25 @@ void PendingSendMessage::onMessageSent(QDBusPendingCallWatcher *watcher)
 
 struct TextChannel::Private
 {
-    inline Private();
-    inline ~Private();
+    Private(TextChannel *parent);
+    ~Private();
 
-    TextChannel::Features features;
-    TextChannel::Features pendingFeatures;
-    QList<PendingReadyChannel *> pendingReady;
-    void continueReadying(TextChannel *channel);
-    void failReadying(TextChannel *channel, const QString &error,
-            const QString &message);
+    static void introspectMessageQueue(Private *self);
+    static void introspectMessageCapabilities(Private *self);
+    static void introspectMessageSentSignal(Private *self);
+
+    void updateInitialMessages();
+    void updateCapabilities();
+
+    // Public object
+    TextChannel *parent;
+
+    ReadinessHelper *readinessHelper;
+
+    // FeatureMessageCapabilities and FeatureMessageQueue
+    QVariantMap props;
+    bool getAllInFlight;
+    bool gotProperties;
 
     // requires FeatureMessageCapabilities
     QStringList supportedContentTypes;
@@ -114,9 +124,6 @@ struct TextChannel::Private
     DeliveryReportingSupportFlags deliveryReportingSupport;
 
     // FeatureMessageQueue
-    bool connectedMessageQueueSignals;
-    bool getAllMessagesInFlight;
-    bool listPendingMessagesCalled;
     bool initialMessagesReceived;
     struct QueuedEvent
     {
@@ -140,25 +147,175 @@ struct TextChannel::Private
     void contactFound(QSharedPointer<Contact> contact);
 };
 
-TextChannel::Private::Private()
-    : features(0),
-      pendingFeatures(0),
-      pendingReady(),
-      supportedContentTypes(),
+TextChannel::Private::Private(TextChannel *parent)
+    : parent(parent),
+      readinessHelper(parent->readinessHelper()),
+      getAllInFlight(false),
+      gotProperties(false),
       messagePartSupport(0),
       deliveryReportingSupport(0),
-      connectedMessageQueueSignals(false),
-      getAllMessagesInFlight(false),
-      listPendingMessagesCalled(false),
-      initialMessagesReceived(false),
-      messages(),
-      incompleteMessages(),
-      awaitingContacts()
+      initialMessagesReceived(false)
 {
+    ReadinessHelper::Introspectables introspectables;
+
+    ReadinessHelper::Introspectable introspectableMessageQueue(
+        QSet<uint>() << 0,                                                      // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
+        QStringList(),                                                          // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMessageQueue,
+        this);
+    introspectables[FeatureMessageQueue] = introspectableMessageQueue;
+
+    ReadinessHelper::Introspectable introspectableMessageCapabilities(
+        QSet<uint>() << 0,                                                      // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
+        QStringList(),                                                          // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMessageCapabilities,
+        this);
+    introspectables[FeatureMessageCapabilities] = introspectableMessageCapabilities;
+
+    ReadinessHelper::Introspectable introspectableMessageSentSignal(
+        QSet<uint>() << 0,                                                      // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
+        QStringList(),                                                          // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMessageSentSignal,
+        this);
+    introspectables[FeatureMessageSentSignal] = introspectableMessageSentSignal;
+
+    readinessHelper->addIntrospectables(introspectables);
 }
 
 TextChannel::Private::~Private()
 {
+}
+
+void TextChannel::Private::introspectMessageQueue(
+        TextChannel::Private *self)
+{
+    TextChannel *parent = self->parent;
+
+    if (parent->hasMessagesInterface()) {
+        // FeatureMessageQueue needs signal connections + Get (but we
+        // might as well do GetAll and reduce the number of code paths)
+        parent->connect(parent->messagesInterface(),
+                SIGNAL(MessageReceived(const Telepathy::MessagePartList &)),
+                SLOT(onMessageReceived(const Telepathy::MessagePartList &)));
+        parent->connect(parent->messagesInterface(),
+                SIGNAL(PendingMessagesRemoved(const Telepathy::UIntList &)),
+                SLOT(onPendingMessagesRemoved(const Telepathy::UIntList &)));
+
+        if (!self->gotProperties && !self->getAllInFlight) {
+            self->getAllInFlight = true;
+            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                    parent->propertiesInterface()->GetAll(
+                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
+                        parent);
+            parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher *)),
+                    SLOT(gotProperties(QDBusPendingCallWatcher *)));
+        } else if (self->gotProperties) {
+            self->updateInitialMessages();
+        }
+    } else {
+        // FeatureMessageQueue needs signal connections + ListPendingMessages
+        parent->connect(parent->textInterface(),
+                SIGNAL(Received(uint, uint, uint, uint, uint, const QString &)),
+                SLOT(onTextReceived(uint, uint, uint, uint, uint, const QString &)));
+
+        // we present SendError signals as if they were incoming
+        // messages, to be consistent with Messages
+        parent->connect(parent->textInterface(),
+                SIGNAL(SendError(uint, uint, uint, const QString &)),
+                SLOT(onTextSendError(uint, uint, uint, const QString &)));
+
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                parent->textInterface()->ListPendingMessages(false), parent);
+        parent->connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(gotPendingMessages(QDBusPendingCallWatcher *)));
+    }
+}
+
+void TextChannel::Private::introspectMessageCapabilities(
+        TextChannel::Private *self)
+{
+    TextChannel *parent = self->parent;
+
+    if (parent->hasMessagesInterface()) {
+        if (!self->gotProperties && !self->getAllInFlight) {
+            self->getAllInFlight = true;
+            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+                    parent->propertiesInterface()->GetAll(
+                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
+                        parent);
+            parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher *)),
+                    SLOT(gotProperties(QDBusPendingCallWatcher *)));
+        } else if (self->gotProperties) {
+            self->updateCapabilities();
+        }
+    } else {
+        self->supportedContentTypes =
+            (QStringList(QLatin1String("text/plain")));
+        parent->readinessHelper()->setIntrospectCompleted(
+                FeatureMessageCapabilities, true);
+    }
+}
+
+void TextChannel::Private::introspectMessageSentSignal(
+        TextChannel::Private *self)
+{
+    TextChannel *parent = self->parent;
+
+    if (parent->hasMessagesInterface()) {
+        parent->connect(parent->messagesInterface(),
+                SIGNAL(MessageSent(const Telepathy::MessagePartList &,
+                                   uint, const QString &)),
+                SLOT(onMessageSent(const Telepathy::MessagePartList &,
+                                   uint, const QString &)));
+    } else {
+        parent->connect(parent->textInterface(),
+                SIGNAL(Sent(uint, uint, const QString &)),
+                SLOT(onTextSent(uint, uint, const QString &)));
+    }
+
+    self->readinessHelper->setIntrospectCompleted(FeatureMessageSentSignal, true);
+}
+
+void TextChannel::Private::updateInitialMessages()
+{
+    if (!readinessHelper->requestedFeatures().contains(FeatureMessageQueue) ||
+        readinessHelper->isReady(Features() << FeatureMessageQueue, false)) {
+        return;
+    }
+
+    Q_ASSERT(!initialMessagesReceived);
+    initialMessagesReceived = true;
+
+    MessagePartListList messages = qdbus_cast<MessagePartListList>(
+            props["PendingMessages"]);
+    foreach (const MessagePartList &message, messages) {
+        parent->onMessageReceived(message);
+    }
+}
+
+void TextChannel::Private::updateCapabilities()
+{
+    if (!readinessHelper->requestedFeatures().contains(FeatureMessageCapabilities) ||
+        readinessHelper->isReady(Features() << FeatureMessageQueue, false)) {
+        return;
+    }
+
+    supportedContentTypes = qdbus_cast<QStringList>(
+            props["SupportedContentTypes"]);
+    if (supportedContentTypes.isEmpty()) {
+        supportedContentTypes << QLatin1String("text/plain");
+    }
+    messagePartSupport = MessagePartSupportFlags(qdbus_cast<uint>(
+            props["MessagePartSupportFlags"]));
+    deliveryReportingSupport = DeliveryReportingSupportFlags(
+            qdbus_cast<uint>(props["DeliveryReportingSupport"]));
+    readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, true);
 }
 
 /**
@@ -174,24 +331,23 @@ TextChannel::Private::~Private()
  */
 
 /**
- * \enum TextChannel::Feature
- *
- * Features that can be enabled on a TextChannel using becomeReady().
- */
-/**
- * \var TextChannel::Feature TextChannel::FeatureMessageQueue
+ * \var Feature TextChannel::FeatureMessageQueue
  * The messageQueue method can be called, and the messageReceived and
  * pendingMessageRemoved methods can be called
  */
 /**
- * \var TextChannel::Feature TextChannel::FeatureMessageCapabilities
+ * \var Feature TextChannel::FeatureMessageCapabilities
  * The supportedContentTypes, messagePartSupport and deliveryReportingSupport
  * methods can be called
  */
 /**
- * \var TextChannel::Feature TextChannel::FeatureMessageSentSignal
+ * \var Feature TextChannel::FeatureMessageSentSignal
  * The messageSent signal will be emitted when a message is sent
  */
+
+const Feature TextChannel::FeatureMessageQueue = Feature(TextChannel::staticMetaObject.className(), 0);
+const Feature TextChannel::FeatureMessageCapabilities = Feature(TextChannel::staticMetaObject.className(), 1);
+const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::staticMetaObject.className(), 2);
 
 /**
  * \fn void TextChannel::messageSent(const Telepathy::Client::Message &message,
@@ -251,7 +407,7 @@ TextChannel::TextChannel(Connection *connection,
         const QVariantMap &immutableProperties,
         QObject *parent)
     : Channel(connection, objectPath, immutableProperties, parent),
-      mPriv(new Private())
+      mPriv(new Private(this))
 {
 }
 
@@ -508,228 +664,6 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts)
     return op;
 }
 
-/**
- * Return whether the desired features are ready for use.
- *
- * \param channelFeatures Features of the Channel class
- * \param textFeatures Features of the TextChannel class
- * \return true if basic Channel functionality, and all the requested features
- *         (if any), are ready for use
- */
-bool TextChannel::isReady(Channel::Features channelFeatures,
-        Features textFeatures) const
-{
-    debug() << "Checking whether ready:" << channelFeatures << textFeatures;
-    debug() << "Am I ready? mPriv->features =" << mPriv->features;
-    return Channel::isReady(channelFeatures) &&
-        ((mPriv->features & textFeatures) == textFeatures);
-}
-
-/**
- * Gather the necessary information to use the requested features.
- *
- * \param channelFeatures Features of the Channel class
- * \param textFeatures Features of the TextChannel class
- * \return A pending operation which will finish when basic Channel
- *         functionality, and all the requested features (if any), are ready
- *         for use
- */
-PendingReadyChannel *TextChannel::becomeReady(
-        Channel::Features channelFeatures,
-        Features textFeatures)
-{
-    PendingReadyChannel *textReady;
-
-    if (!isValid()) {
-        textReady = new PendingReadyChannel(channelFeatures, this);
-        textReady->setFinishedWithError(invalidationReason(),
-                invalidationMessage());
-        return textReady;
-    }
-
-    if (isReady(channelFeatures, textFeatures)) {
-        textReady = new PendingReadyChannel(channelFeatures, this);
-        textReady->setFinished();
-        return textReady;
-    }
-
-    if ((textFeatures & (FeatureMessageQueue |
-                    FeatureMessageCapabilities |
-                    FeatureMessageSentSignal))
-            != textFeatures) {
-        textReady = new PendingReadyChannel(channelFeatures, this);
-        textReady->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid features argument");
-        return textReady;
-    }
-
-    PendingReadyChannel *channelReady = Channel::becomeReady(channelFeatures);
-
-    textReady = new PendingReadyChannel(channelFeatures, this);
-
-    connect(channelReady,
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            this,
-            SLOT(onChannelReady(Telepathy::Client::PendingOperation *)));
-
-    mPriv->pendingReady.append(textReady);
-    mPriv->pendingFeatures |= (textFeatures & ~mPriv->features);
-    return textReady;
-}
-
-void TextChannel::onChannelReady(Telepathy::Client::PendingOperation *op)
-{
-    // Handle the error and insanity cases
-    if (op->isError()) {
-        mPriv->failReadying(this, op->errorName(), op->errorMessage());
-    }
-    if (channelType() != QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)) {
-        mPriv->failReadying(this,
-                QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                QLatin1String("TextChannel object with non-Text channel"));
-        return;
-    }
-
-    // Now that the basic Channel stuff is ready, we can know whether we have
-    // the Messages interface.
-
-    if (mPriv->pendingFeatures & FeatureMessageSentSignal) {
-        if (hasMessagesInterface()) {
-            connect(messagesInterface(),
-                    SIGNAL(MessageSent(const Telepathy::MessagePartList &,
-                            uint, const QString &)),
-                    this,
-                    SLOT(onMessageSent(const Telepathy::MessagePartList &,
-                            uint, const QString &)));
-        } else {
-            connect(textInterface(),
-                    SIGNAL(Sent(uint, uint, const QString &)),
-                    this,
-                    SLOT(onTextSent(uint, uint, const QString &)));
-        }
-
-        mPriv->features |= FeatureMessageSentSignal;
-        mPriv->pendingFeatures &= ~FeatureMessageSentSignal;
-    }
-
-    if (!hasMessagesInterface()) {
-        // For plain Text channels, FeatureMessageCapabilities is trivial to
-        // implement - we don't do anything special at all - so we might as
-        // well set it up even if the library user didn't actually care.
-        mPriv->supportedContentTypes =
-            (QStringList(QLatin1String("text/plain")));
-        mPriv->messagePartSupport = 0;
-        mPriv->deliveryReportingSupport = 0;
-        mPriv->features |= FeatureMessageCapabilities;
-        mPriv->pendingFeatures &= ~FeatureMessageCapabilities;
-    }
-
-    mPriv->continueReadying(this);
-}
-
-void TextChannel::Private::failReadying(TextChannel *channel,
-        const QString &error, const QString &message)
-{
-    QList<PendingReadyChannel *> ops = pendingReady;
-    pendingReady.clear();
-
-    foreach (PendingReadyChannel *op, ops) {
-        op->setFinishedWithError(error, message);
-    }
-    channel->invalidate(error, message);
-}
-
-void TextChannel::Private::continueReadying(TextChannel *channel)
-{
-    Q_ASSERT ((pendingFeatures & features) == 0);
-
-    if (pendingFeatures == 0) {
-        // everything we wanted is ready
-        QList<PendingReadyChannel *> ops = pendingReady;
-        pendingReady.clear();
-        foreach (PendingReadyChannel *op, ops) {
-            op->setFinished();
-        }
-        return;
-    }
-
-    // else there's more work to do yet
-
-    if (channel->hasMessagesInterface()) {
-        // FeatureMessageQueue needs signal connections + Get (but we
-        //  might as well do GetAll and reduce the number of code paths)
-        // FeatureMessageCapabilities needs GetAll
-        // FeatureMessageSentSignal already done
-
-        bool getAll = false;
-
-        if (pendingFeatures & TextChannel::FeatureMessageQueue) {
-            if (!connectedMessageQueueSignals) {
-                connectedMessageQueueSignals = true;
-                channel->connect(channel->messagesInterface(),
-                        SIGNAL(MessageReceived(const Telepathy::MessagePartList &)),
-                        SLOT(onMessageReceived(const Telepathy::MessagePartList &)));
-
-                channel->connect(channel->messagesInterface(),
-                        SIGNAL(PendingMessagesRemoved(const Telepathy::UIntList &)),
-                        SLOT(onPendingMessagesRemoved(const Telepathy::UIntList &)));
-            }
-
-            if (!initialMessagesReceived) {
-                getAll = true;
-            }
-        }
-
-        if (pendingFeatures & TextChannel::FeatureMessageCapabilities) {
-            getAll = true;
-        }
-
-        if (getAll && !getAllMessagesInFlight) {
-            getAllMessagesInFlight = true;
-            QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                    channel->propertiesInterface()->GetAll(
-                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
-                        channel);
-            channel->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(onGetAllMessagesReply(QDBusPendingCallWatcher *)));
-        }
-    } else {
-        // FeatureMessageQueue needs signal connections +
-        //  ListPendingMessages
-        // FeatureMessageCapabilities already done
-        // FeatureMessageSentSignal already done
-
-        if (pendingFeatures & TextChannel::FeatureMessageQueue) {
-            if (!connectedMessageQueueSignals) {
-                connectedMessageQueueSignals = true;
-
-                channel->connect(channel->textInterface(),
-                        SIGNAL(Received(uint, uint, uint, uint, uint,
-                                const QString &)),
-                        SLOT(onTextReceived(uint, uint, uint, uint, uint,
-                                const QString &)));
-
-                // we present SendError signals as if they were incoming
-                // messages, to be consistent with Messages
-                channel->connect(channel->textInterface(),
-                        SIGNAL(SendError(uint, uint, uint, const QString &)),
-                        SLOT(onTextSendError(uint, uint, uint, const QString &)));
-            }
-
-            if (!listPendingMessagesCalled) {
-                listPendingMessagesCalled = true;
-
-                QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-                        channel->textInterface()->ListPendingMessages(false), channel);
-                channel->connect(watcher,
-                        SIGNAL(finished(QDBusPendingCallWatcher *)),
-                        SLOT(onListPendingMessagesReply(QDBusPendingCallWatcher *)));
-            }
-        }
-    }
-}
-
 void TextChannel::onMessageSent(const Telepathy::MessagePartList &parts,
         uint flags,
         const QString &sentMessageToken)
@@ -780,12 +714,11 @@ void TextChannel::processQueue()
     }
 
     if (mPriv->incompleteMessages.isEmpty()) {
-        if (mPriv->pendingFeatures & FeatureMessageQueue) {
+        if (mPriv->readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
+            !mPriv->readinessHelper->isReady(Features() << FeatureMessageQueue, false)) {
             debug() << "incompleteMessages empty for the first time: "
                 "FeatureMessageQueue is now ready";
-            mPriv->features |= FeatureMessageQueue;
-            mPriv->pendingFeatures &= ~FeatureMessageQueue;
-            mPriv->continueReadying(this);
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
         }
         return;
     }
@@ -1005,80 +938,61 @@ void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
     parts << header;
 }
 
-void TextChannel::onGetAllMessagesReply(QDBusPendingCallWatcher *watcher)
+void TextChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 {
-    Q_ASSERT(mPriv->getAllMessagesInFlight);
-    mPriv->getAllMessagesInFlight = false;
+    Q_ASSERT(mPriv->getAllInFlight);
+    mPriv->getAllInFlight = false;
+    mPriv->gotProperties = true;
 
     QDBusPendingReply<QVariantMap> reply = *watcher;
-    QVariantMap props;
-
-    if (!reply.isError()) {
-        debug() << "Properties::GetAll(Channel.Interface.Messages) returned";
-        props = reply.value();
-    } else {
+    if (reply.isError()) {
         warning().nospace() << "Properties::GetAll(Channel.Interface.Messages)"
             " failed with " << reply.error().name() << ": " <<
             reply.error().message();
-        // ... and act as though props had been empty
-    }
 
-    if (!mPriv->initialMessagesReceived &&
-        (mPriv->pendingFeatures & FeatureMessageQueue)) {
-        mPriv->initialMessagesReceived = true;
-
-        MessagePartListList messages = qdbus_cast<MessagePartListList>(
-                props["PendingMessages"]);
-        foreach (const MessagePartList &message, messages) {
-            onMessageReceived(message);
+        ReadinessHelper *readinessHelper = mPriv->readinessHelper;
+        if (readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
+            !readinessHelper->isReady(Features() << FeatureMessageQueue, false)) {
+            readinessHelper->setIntrospectCompleted(FeatureMessageQueue, false);
         }
+
+        if (readinessHelper->requestedFeatures().contains(FeatureMessageCapabilities) &&
+            !readinessHelper->isReady(Features() << FeatureMessageCapabilities, false)) {
+            readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, false);
+        }
+        return;
     }
 
-    // Since we have the capabilities, we might as well set them - doing this
-    // multiple times is a no-op
+    debug() << "Properties::GetAll(Channel.Interface.Messages) returned";
+    mPriv->props = reply.value();
 
-    mPriv->supportedContentTypes = qdbus_cast<QStringList>(
-            props["SupportedContentTypes"]);
-    if (mPriv->supportedContentTypes.isEmpty()) {
-        mPriv->supportedContentTypes << QLatin1String("text/plain");
-    }
-    mPriv->messagePartSupport = MessagePartSupportFlags(qdbus_cast<uint>(
-            props["MessagePartSupportFlags"]));
-    mPriv->deliveryReportingSupport = DeliveryReportingSupportFlags(
-            qdbus_cast<uint>(props["DeliveryReportingSupport"]));
-
-    mPriv->features |= FeatureMessageCapabilities;
-    mPriv->pendingFeatures &= ~FeatureMessageCapabilities;
-    mPriv->continueReadying(this);
+    mPriv->updateInitialMessages();
+    mPriv->updateCapabilities();
 }
 
-void TextChannel::onListPendingMessagesReply(QDBusPendingCallWatcher *watcher)
+void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
 {
     Q_ASSERT(!mPriv->initialMessagesReceived);
-    Q_ASSERT(mPriv->listPendingMessagesCalled);
-
     mPriv->initialMessagesReceived = true;
 
     QDBusPendingReply<PendingTextMessageList> reply = *watcher;
-    PendingTextMessageList list;
-
-    if (!reply.isError()) {
-        debug() << "Text::ListPendingMessages returned";
-        list = reply.value();
-    } else {
+    if (reply.isError()) {
         warning().nospace() << "Properties::GetAll(Channel.Interface.Messages)"
             " failed with " << reply.error().name() << ": " <<
             reply.error().message();
-        // ... and act as though list was empty
+
+        // TODO should we fail here?
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, false);
+        return;
     }
 
+    debug() << "Text::ListPendingMessages returned";
+    PendingTextMessageList list = reply.value();
     foreach (const PendingTextMessage &message, list) {
         onTextReceived(message.identifier, message.unixTimestamp,
                 message.sender, message.messageType, message.flags,
                 message.text);
     }
-
-    mPriv->continueReadying(this);
 }
 
 } // Telepathy::Client

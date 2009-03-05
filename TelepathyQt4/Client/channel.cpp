@@ -31,7 +31,7 @@
 #include <TelepathyQt4/Client/PendingContacts>
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/PendingReadyChannel>
+#include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/PendingSuccess>
 #include <TelepathyQt4/Client/ReferencedHandles>
 #include <TelepathyQt4/Constants>
@@ -69,7 +69,7 @@ struct Channel::Private
     Private(Channel *parent, Connection *connection);
     ~Private();
 
-    void introspectMain();
+    static void introspectMain(Private *self);
     void introspectMainFallbackChannelType();
     void introspectMainFallbackHandle();
     void introspectMainFallbackInterfaces();
@@ -109,14 +109,11 @@ struct Channel::Private
     ChannelInterfaceGroupInterface *group;
     DBus::PropertiesInterface *properties;
 
-    bool ready;
-    PendingReadyChannel *pendingReady;
+    ReadinessHelper *readinessHelper;
 
     // Introspection
     QStringList interfaces;
     QQueue<void (Private::*)()> introspectQueue;
-
-    Channel::Features features;
 
     // Introspected properties
 
@@ -207,9 +204,6 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       connection(connection),
       group(0),
       properties(0),
-      ready(false),
-      pendingReady(0),
-      features(0),
       targetHandleType(0),
       targetHandle(0),
       requested(false),
@@ -224,7 +218,7 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       groupIsSelfHandleTracked(false),
       groupSelfHandle(0)
 {
-    debug() << "Creating new Channel";
+    debug() << "Creating new Channel:" << parent->busName();
 
     if (connection->isValid()) {
         debug() << " Connecting to Channel::Closed() signal";
@@ -248,6 +242,21 @@ Channel::Private::Private(Channel *parent, Connection *connection)
         parent->invalidate(TELEPATHY_ERROR_INVALID_ARGUMENT,
                    "Connection given as the owner of this channel was invalid");
     }
+
+    ReadinessHelper::Introspectables introspectables;
+
+    // As Channel does not have predefined statuses let's simulate one (0)
+    ReadinessHelper::Introspectable introspectableCore(
+        QSet<uint>() << 0,                                           // makesSenseForStatuses
+        Features(),                                                  // dependsOnFeatures
+        QStringList(),                                               // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
+        this);
+    introspectables[FeatureCore] = introspectableCore;
+
+    readinessHelper = new ReadinessHelper(parent, 0 /* status */,
+            introspectables, parent);
+    readinessHelper->becomeReady(Features() << FeatureCore);
 }
 
 Channel::Private::~Private()
@@ -258,20 +267,21 @@ Channel::Private::~Private()
     }
 }
 
-void Channel::Private::introspectMain()
+void Channel::Private::introspectMain(Channel::Private *self)
 {
-    if (!properties) {
-        properties = parent->propertiesInterface();
-        Q_ASSERT(properties != 0);
+    if (!self->properties) {
+        self->properties = self->parent->propertiesInterface();
+        Q_ASSERT(self->properties != 0);
     }
 
     debug() << "Calling Properties::GetAll(Channel)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                properties->GetAll(TELEPATHY_INTERFACE_CHANNEL), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+                self->properties->GetAll(TELEPATHY_INTERFACE_CHANNEL),
+                self->parent);
+    self->parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void Channel::Private::introspectMainFallbackChannelType()
@@ -492,7 +502,7 @@ void Channel::Private::nowHaveInterfaces()
 void Channel::Private::nowHaveInitialMembers()
 {
     // Must be called with no contacts anywhere in the first place
-    Q_ASSERT(!ready);
+    Q_ASSERT(!parent->isReady());
     Q_ASSERT(!buildingContacts);
 
     Q_ASSERT(pendingGroupMembers.isEmpty());
@@ -626,7 +636,7 @@ void Channel::Private::buildContacts()
     if (toBuild.isEmpty()) {
         if (!groupSelfHandle && groupSelfContact) {
             groupSelfContact.clear();
-            if (ready) {
+            if (parent->isReady()) {
                 emit parent->groupSelfContactChanged();
             }
         }
@@ -655,7 +665,7 @@ void Channel::Private::processMembersChanged()
             return;
         }
 
-        if (!ready) {
+        if (!parent->isReady()) {
             if (introspectQueue.isEmpty()) {
                 debug() << "Both the MCD and the introspect queue empty for the first time. Ready!";
 
@@ -827,7 +837,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         GroupMemberChangeDetails details(
                 actorContact,
                 currentGroupMembersChangedInfo->details);
-        if (ready) {
+        if (parent->isReady()) {
             // Channel is ready, we can signal membership changes to the outside world without
             // confusing anyone's fragile logic.
             emit parent->groupMembersChanged(
@@ -841,7 +851,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     delete currentGroupMembersChangedInfo;
     currentGroupMembersChangedInfo = 0;
 
-    if (selfContactUpdated && ready) {
+    if (selfContactUpdated && parent->isReady()) {
         emit parent->groupSelfContactChanged();
     }
 
@@ -876,15 +886,7 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
 
 void Channel::Private::setReady()
 {
-    Q_ASSERT(!ready);
-
-    ready = true;
-
-    if (pendingReady) {
-        pendingReady->setFinished();
-        // it will delete itself later
-        pendingReady = 0;
-    }
+    Q_ASSERT(!parent->isReady());
 
     debug() << "Channel fully ready";
     debug() << " Channel type" << channelType;
@@ -909,6 +911,8 @@ void Channel::Private::setReady()
         debug() << " Group: Self handle" << groupSelfHandle <<
             "tracked:" << (groupIsSelfHandleTracked ? "yes" : "no");
     }
+
+    readinessHelper->setIntrospectCompleted(FeatureCore, true);
 }
 
 /**
@@ -945,6 +949,8 @@ void Channel::Private::setReady()
  * will transition to closed too.
  */
 
+const Feature Channel::FeatureCore = Feature(Channel::staticMetaObject.className(), 0);
+
 /**
  * Construct a new Channel object.
  *
@@ -968,11 +974,6 @@ Channel::Channel(Connection *connection,
     // FIXME: remember the immutableProperties, and use them to reduce the
     // number of D-Bus calls we need to make (but we should make at least
     // one, to check that the channel does in fact exist)
-    // no need to start introspection if channel is invalid
-    if (isValid()) {
-        mPriv->introspectQueue.enqueue(&Private::introspectMain);
-        QTimer::singleShot(0, this, SLOT(continueIntrospection()));
-    }
 }
 
 /**
@@ -1109,10 +1110,12 @@ QSharedPointer<Contact> Channel::initiatorContact() const
  * \return \c true if the object has finished its initial setup for basic
  *         functionality plus the given features
  */
-bool Channel::isReady(Features features) const
+bool Channel::isReady(const Features &features) const
 {
-    return mPriv->ready
-        && ((mPriv->features & features) == features);
+    if (features.isEmpty()) {
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+    }
+    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
 }
 
 /**
@@ -1120,41 +1123,35 @@ bool Channel::isReady(Features features) const
  * its initial setup, or will fail if a fatal error occurs during this
  * initial setup.
  *
+ * If an empty set is used FeatureCore will be considered as the requested
+ * feature.
+ *
  * \param requestedFeatures The features which should be enabled
- * \return A PendingReadyChannel object which will emit finished
+ * \return A PendingReady object which will emit finished
  *         when this object has finished or failed initial setup for basic
  *         functionality plus the given features
  */
-PendingReadyChannel *Channel::becomeReady(Features requestedFeatures)
+PendingReady *Channel::becomeReady(const Features &requestedFeatures)
 {
-    if (!isValid()) {
-        PendingReadyChannel *operation =
-            new PendingReadyChannel(requestedFeatures, this);
-        operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel is invalid");
-        return operation;
+    if (requestedFeatures.isEmpty()) {
+        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
     }
+    return mPriv->readinessHelper->becomeReady(requestedFeatures);
+}
 
-    if (isReady(requestedFeatures)) {
-        PendingReadyChannel *operation =
-            new PendingReadyChannel(requestedFeatures, this);
-        operation->setFinished();
-        return operation;
-    }
+Features Channel::requestedFeatures() const
+{
+    return mPriv->readinessHelper->requestedFeatures();
+}
 
-    if (requestedFeatures != 0) {
-        PendingReadyChannel *operation =
-            new PendingReadyChannel(requestedFeatures, this);
-        operation->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid features argument");
-        return operation;
-    }
+Features Channel::actualFeatures() const
+{
+    return mPriv->readinessHelper->actualFeatures();
+}
 
-    if (!mPriv->pendingReady) {
-        mPriv->pendingReady =
-            new PendingReadyChannel(requestedFeatures, this);
-    }
-    return mPriv->pendingReady;
+Features Channel::missingFeatures() const
+{
+    return mPriv->readinessHelper->missingFeatures();
 }
 
 /**
@@ -1839,6 +1836,11 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
     continueIntrospection();
 }
 
+ReadinessHelper *Channel::readinessHelper() const
+{
+    return mPriv->readinessHelper;
+}
+
 void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QString> reply = *watcher;
@@ -2216,7 +2218,8 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
 void Channel::continueIntrospection()
 {
     if (mPriv->introspectQueue.isEmpty()) {
-        if (!mPriv->ready) {
+        // this should always be true, but let's make sure
+        if (!isReady()) {
             if (mPriv->groupMembersChangedQueue.isEmpty() && !mPriv->buildingContacts) {
                 debug() << "Both the IS and the MCD queue empty for the first time. Ready.";
                 mPriv->setReady();

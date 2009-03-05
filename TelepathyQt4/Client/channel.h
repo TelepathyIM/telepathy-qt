@@ -33,6 +33,7 @@
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
+#include <TelepathyQt4/Client/ReadinessHelper>
 
 #include <QSet>
 #include <QSharedPointer>
@@ -47,7 +48,7 @@ namespace Client
 
 class Connection;
 class PendingOperation;
-class PendingReadyChannel;
+class PendingReady;
 
 class Channel : public StatefulDBusProxy,
                 private OptionalInterfaceFactory<Channel>
@@ -56,10 +57,7 @@ class Channel : public StatefulDBusProxy,
     Q_DISABLE_COPY(Channel)
 
 public:
-    enum Feature {
-        _Paddding = 0xFFFFFFFF
-    };
-    Q_DECLARE_FLAGS(Features, Feature)
+    static const Feature FeatureCore;
 
     Channel(Connection *connection,
             const QString &objectPath,
@@ -78,8 +76,12 @@ public:
     bool isRequested() const;
     QSharedPointer<Contact> initiatorContact() const;
 
-    bool isReady(Features features = 0) const;
-    PendingReadyChannel *becomeReady(Features features = 0);
+    virtual bool isReady(const Features &features = Features()) const;
+    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
+
+    virtual Features requestedFeatures() const;
+    virtual Features actualFeatures() const;
+    virtual Features missingFeatures() const;
 
     PendingOperation *requestClose();
 
@@ -268,6 +270,8 @@ protected:
     {
         return optionalInterface<ChannelInterfaceGroupInterface>(check);
     }
+
+    ReadinessHelper *readinessHelper() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);

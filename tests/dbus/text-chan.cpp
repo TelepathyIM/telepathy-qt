@@ -7,7 +7,7 @@
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/Message>
-#include <TelepathyQt4/Client/PendingReadyChannel>
+#include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Client/ReceivedMessage>
 #include <TelepathyQt4/Client/TextChannel>
 #include <TelepathyQt4/Debug>
@@ -204,10 +204,12 @@ void TestTextChan::commonTest(bool withMessages)
 
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
+
+    Features features = Features() << TextChannel::FeatureMessageQueue;
+    QVERIFY(!mChan->isReady(features));
     // Implementation detail: in legacy text channels, capabilities arrive
     // early, so don't assert about that
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
+    QVERIFY(!mChan->isReady(features));
 
     QVERIFY(connect(mChan,
                 SIGNAL(messageReceived(const Telepathy::Client::ReceivedMessage &)),
@@ -230,15 +232,18 @@ void TestTextChan::commonTest(bool withMessages)
     sendText("One");
 
     // Make the Sent signal become ready
-    QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageSentSignal),
+    features = Features() << TextChannel::FeatureMessageSentSignal;
+    QVERIFY(connect(mChan->becomeReady(features),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
-    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageSentSignal));
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
+    features = Features() << TextChannel::FeatureMessageSentSignal;
+    QVERIFY(mChan->isReady(features));
+    features = Features() << TextChannel::FeatureMessageQueue;
+    QVERIFY(!mChan->isReady(features));
 
     sendText("Two");
 
@@ -263,15 +268,18 @@ void TestTextChan::commonTest(bool withMessages)
     QCOMPARE(m.text(), QString::fromAscii("Two"));
 
     // Make capabilities become ready
-    QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageCapabilities),
+    features = Features() << TextChannel::FeatureMessageCapabilities;
+    QVERIFY(connect(mChan->becomeReady(features),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
-    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
-    QVERIFY(!mChan->isReady(0, TextChannel::FeatureMessageQueue));
+    features = Features() << TextChannel::FeatureMessageCapabilities;
+    QVERIFY(mChan->isReady(features));
+    features = Features() << TextChannel::FeatureMessageQueue;
+    QVERIFY(!mChan->isReady(features));
 
     if (withMessages) {
         QCOMPARE(mChan->supportedContentTypes(), QStringList() << "*/*");
@@ -288,15 +296,16 @@ void TestTextChan::commonTest(bool withMessages)
     // Make the message queue become ready too
     QCOMPARE(received.size(), 0);
     QCOMPARE(mChan->messageQueue().size(), 0);
-    QVERIFY(connect(mChan->becomeReady(0, TextChannel::FeatureMessageQueue),
+    features = Features() << TextChannel::FeatureMessageQueue;
+    QVERIFY(connect(mChan->becomeReady(features),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(asChannel->isReady());
     QVERIFY(mChan->isReady());
-    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageQueue));
-    QVERIFY(mChan->isReady(0, TextChannel::FeatureMessageCapabilities));
+    features = Features() << TextChannel::FeatureMessageQueue << TextChannel::FeatureMessageCapabilities;
+    QVERIFY(mChan->isReady(features));
 
     // Assert that both our sent messages were echoed by the remote contact
     QCOMPARE(received.size(), 2);

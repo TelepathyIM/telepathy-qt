@@ -36,7 +36,6 @@
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingHandles>
 #include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/PendingReadyChannel>
 #include <TelepathyQt4/Client/PendingVoidMethodCall>
 #include <TelepathyQt4/Client/ReferencedHandles>
 
