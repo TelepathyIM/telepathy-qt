@@ -83,5 +83,20 @@ StreamedMediaChannel::~StreamedMediaChannel()
     delete mPriv;
 }
 
+bool StreamedMediaChannel::awaitingLocalAnswer() const
+{
+    return groupSelfHandleIsLocalPending();
+}
+
+bool StreamedMediaChannel::awaitingRemoteAnswer() const
+{
+    return !groupRemotePendingContacts().isEmpty();
+}
+
+PendingOperation *StreamedMediaChannel::acceptCall()
+{
+    return groupAddSelfHandle();
+}
+
 } // Telepathy::Client
 } // Telepathy

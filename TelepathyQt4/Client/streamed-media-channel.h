@@ -100,12 +100,17 @@ public:
 #if 0
 public:
     MediaStreams streams() const;
+#endif
+
+public:
     bool awaitingLocalAnswer() const;
     bool awaitingRemoteAnswer() const;
 
 public Q_SLOTS:
     PendingOperation *acceptCall();
 
+#if 0
+public Q_SLOTS:
     PendingOperation *removeStreams(MediaStreams streams);
     PendingOperation *removeStreams(QSet<uint> streams);
 
