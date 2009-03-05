@@ -1261,15 +1261,6 @@ PendingOperation *Channel::groupAddContacts(const QList<QSharedPointer<Contact> 
         warning() << "Channel::groupAddContacts() used channel not ready";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Channel not ready");
-    } else if (!groupCanAddContacts()) {
-        foreach (const QSharedPointer<Contact> &contact, contacts) {
-            if (!mPriv->groupLocalPendingContacts.contains(contact->handle()[0])) {
-                warning() << "Channel::groupAddContacts() used but adding contacts "
-                    "that are not in local pending list is not supported";
-                return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                        "Channel does not support adding contacts not in local pending list");
-            }
-        }
     } else if (contacts.isEmpty()) {
         warning() << "Channel::groupAddContacts() used with empty contacts param";
         return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
@@ -1364,29 +1355,6 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
                 "invalid contact:";
             return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
                     "Unable to remove invalid contacts");
-        }
-    }
-
-    if (!groupCanRemoveContacts()) {
-        foreach (const QSharedPointer<Contact> &contact, contacts) {
-            if (mPriv->groupContacts.contains(contact->handle()[0])) {
-                warning() << "Channel::groupRemoveContacts() used but remove a contact "
-                    "in groupContacts() but contacts in groupContacts() can't be removed "
-                    "on this channel";
-                return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                        "Channel does not support removing contacts in groupContacts()");
-            }
-        }
-    }
-
-    if (!groupCanRescindContacts()) {
-        foreach (const QSharedPointer<Contact> &contact, contacts) {
-            if (mPriv->groupRemotePendingContacts.contains(contact->handle()[0])) {
-                warning() << "Channel::groupRemoveContacts() used to rescind a contact "
-                    "but contacts can't be rescinded on this channel";
-                return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                        "Channel does not support rescinding contacts");
-            }
         }
     }
 
