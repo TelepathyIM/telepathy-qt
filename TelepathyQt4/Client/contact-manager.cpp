@@ -76,7 +76,7 @@ struct ContactManager::Private
     QSet<Contact::Feature> supportedFeatures;
 
     QMap<uint, ContactListChannel> contactListsChannels;
-    QSet<QSharedPointer<Contact> > allKnownContacts() const;
+    Contacts allKnownContacts() const;
     void updateContactsPresenceState();
 };
 
@@ -144,7 +144,7 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
     return mPriv->supportedFeatures;
 }
 
-QSet<QSharedPointer<Contact> > ContactManager::allKnownContacts() const
+Contacts ContactManager::allKnownContacts() const
 {
     return mPriv->allKnownContacts();
 }
@@ -408,10 +408,10 @@ void ContactManager::onPresencesChanged(const Telepathy::SimpleContactPresences 
 }
 
 void ContactManager::onSubscribeChannelMembersChanged(
-        const QSet<QSharedPointer<Contact> > &groupMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
+        const Contacts &groupMembersAdded,
+        const Contacts &groupLocalPendingMembersAdded,
+        const Contacts &groupRemotePendingMembersAdded,
+        const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
     Q_UNUSED(details);
@@ -437,10 +437,10 @@ void ContactManager::onSubscribeChannelMembersChanged(
 }
 
 void ContactManager::onPublishChannelMembersChanged(
-        const QSet<QSharedPointer<Contact> > &groupMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
+        const Contacts &groupMembersAdded,
+        const Contacts &groupLocalPendingMembersAdded,
+        const Contacts &groupRemotePendingMembersAdded,
+        const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
     Q_UNUSED(details);
@@ -470,10 +470,10 @@ void ContactManager::onPublishChannelMembersChanged(
 }
 
 void ContactManager::onDenyChannelMembersChanged(
-        const QSet<QSharedPointer<Contact> > &groupMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
-        const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
+        const Contacts &groupMembersAdded,
+        const Contacts &groupLocalPendingMembersAdded,
+        const Contacts &groupRemotePendingMembersAdded,
+        const Contacts &groupMembersRemoved,
         const Channel::GroupMemberChangeDetails &details)
 {
     Q_UNUSED(details);
@@ -546,24 +546,24 @@ void ContactManager::setContactListChannels(
 
         if (type == ContactListChannel::TypeSubscribe) {
             method = SLOT(onSubscribeChannelMembersChanged(
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
                         const Telepathy::Client::Channel::GroupMemberChangeDetails &));
         } else if (type == ContactListChannel::TypePublish) {
             method = SLOT(onPublishChannelMembersChanged(
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
                         const Telepathy::Client::Channel::GroupMemberChangeDetails &));
         } else if (type == ContactListChannel::TypeDeny) {
             method = SLOT(onDenyChannelMembersChanged(
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
                         const Telepathy::Client::Channel::GroupMemberChangeDetails &));
         } else {
             continue;
@@ -571,10 +571,10 @@ void ContactManager::setContactListChannels(
 
         connect(channel.data(),
                 SIGNAL(groupMembersChanged(
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
-                        const QSet<QSharedPointer<Telepathy::Client::Contact> > &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
+                        const Telepathy::Client::Contacts &,
                         const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
                 method);
     }
@@ -634,9 +634,9 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
     tracking[feature] = true;
 }
 
-QSet<QSharedPointer<Contact> > ContactManager::Private::allKnownContacts() const
+Contacts ContactManager::Private::allKnownContacts() const
 {
-    QSet<QSharedPointer<Contact> > contacts;
+    Contacts contacts;
     foreach (const ContactListChannel &contactListChannel, contactListsChannels) {
         QSharedPointer<Channel> channel = contactListChannel.channel;
         if (!channel) {
@@ -652,8 +652,8 @@ QSet<QSharedPointer<Contact> > ContactManager::Private::allKnownContacts() const
 void ContactManager::Private::updateContactsPresenceState()
 {
     QSharedPointer<Channel> subscribeChannel;
-    QSet<QSharedPointer<Contact> > subscribeContacts;
-    QSet<QSharedPointer<Contact> > subscribeContactsRP;
+    Contacts subscribeContacts;
+    Contacts subscribeContactsRP;
     if (contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
         subscribeChannel = contactListsChannels[ContactListChannel::TypeSubscribe].channel;
         if (subscribeChannel) {
@@ -663,8 +663,8 @@ void ContactManager::Private::updateContactsPresenceState()
     }
 
     QSharedPointer<Channel> publishChannel;
-    QSet<QSharedPointer<Contact> > publishContacts;
-    QSet<QSharedPointer<Contact> > publishContactsLP;
+    Contacts publishContacts;
+    Contacts publishContactsLP;
     if (contactListsChannels.contains(ContactListChannel::TypePublish)) {
         publishChannel = contactListsChannels[ContactListChannel::TypePublish].channel;
         if (publishChannel) {
@@ -674,7 +674,7 @@ void ContactManager::Private::updateContactsPresenceState()
     }
 
     QSharedPointer<Channel> denyChannel;
-    QSet<QSharedPointer<Contact> > denyContacts;
+    Contacts denyContacts;
     if (contactListsChannels.contains(ContactListChannel::TypeDeny)) {
         denyChannel = contactListsChannels[ContactListChannel::TypeDeny].channel;
         if (denyChannel) {
@@ -686,7 +686,7 @@ void ContactManager::Private::updateContactsPresenceState()
         return;
     }
 
-    QSet<QSharedPointer<Contact> > contacts = allKnownContacts();
+    Contacts contacts = allKnownContacts();
     foreach (QSharedPointer<Contact> contact, contacts) {
         if (subscribeChannel) {
             // not in "subscribe" -> No, in "subscribe" lp -> Ask, in "subscribe" current -> Yes

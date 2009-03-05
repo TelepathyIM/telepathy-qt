@@ -211,8 +211,8 @@ void RosterWindow::onConnectionReady(Telepathy::Client::PendingOperation *op)
     }
 
     connect(mConn->contactManager(),
-            SIGNAL(presencePublicationRequested(const QSet<QSharedPointer<Telepathy::Client::Contact> > &)),
-            SLOT(onPresencePublicationRequested(const QSet<QSharedPointer<Telepathy::Client::Contact> > &)));
+            SIGNAL(presencePublicationRequested(const Telepathy::Client::Contacts &)),
+            SLOT(onPresencePublicationRequested(const Telepathy::Client::Contacts &)));
 
     qDebug() << "Connection ready";
     foreach (const QSharedPointer<Contact> &contact, mConn->contactManager()->allKnownContacts()) {
@@ -222,7 +222,7 @@ void RosterWindow::onConnectionReady(Telepathy::Client::PendingOperation *op)
     mAddBtn->setEnabled(true);
 }
 
-void RosterWindow::onPresencePublicationRequested(const QSet<QSharedPointer<Contact> > &contacts)
+void RosterWindow::onPresencePublicationRequested(const Contacts &contacts)
 {
     qDebug() << "Presence publication requested";
     foreach (const QSharedPointer<Contact> &contact, contacts) {

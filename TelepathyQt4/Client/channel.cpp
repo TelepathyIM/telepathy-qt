@@ -725,9 +725,9 @@ void Channel::Private::processMembersChanged()
 
 void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &contacts)
 {
-    QSet<QSharedPointer<Contact> > groupContactsAdded;
-    QSet<QSharedPointer<Contact> > groupLocalPendingContactsAdded;
-    QSet<QSharedPointer<Contact> > groupRemotePendingContactsAdded;
+    Contacts groupContactsAdded;
+    Contacts groupLocalPendingContactsAdded;
+    Contacts groupRemotePendingContactsAdded;
     QSharedPointer<Contact> actorContact;
     bool selfContactUpdated = false;
 
@@ -785,9 +785,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
         }
     }
 
-    // FIXME: use QSet to make the code somewhat easier to comprehend and change
-
-    QSet<QSharedPointer<Contact> > groupContactsRemoved;
+    Contacts groupContactsRemoved;
     QSharedPointer<Contact> contactToRemove;
     foreach (uint handle, groupMembersToRemove) {
         if (groupContacts.contains(handle)) {
@@ -1411,7 +1409,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
  *
  * \return List of contact objects.
  */
-QSet<QSharedPointer<Contact> > Channel::groupContacts() const
+Contacts Channel::groupContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupMembers() used channel not ready";
@@ -1426,7 +1424,7 @@ QSet<QSharedPointer<Contact> > Channel::groupContacts() const
  *
  * \return List of contacts.
  */
-QSet<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
+Contacts Channel::groupLocalPendingContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupLocalPending() used channel not ready";
@@ -1444,7 +1442,7 @@ QSet<QSharedPointer<Contact> > Channel::groupLocalPendingContacts() const
  *
  * \return List of contacts.
  */
-QSet<QSharedPointer<Contact> > Channel::groupRemotePendingContacts() const
+Contacts Channel::groupRemotePendingContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupRemotePending() used channel not ready";
@@ -1626,10 +1624,10 @@ QSharedPointer<Contact> Channel::groupSelfContact() const
 
 /**
  * \fn void Channel::groupMembersChanged(
- *     const QSet<QSharedPointer<Contact> > &groupMembersAdded,
- *     const QSet<QSharedPointer<Contact> > &groupLocalPendingMembersAdded,
- *     const QSet<QSharedPointer<Contact> > &groupRemotePendingMembersAdded,
- *     const QSet<QSharedPointer<Contact> > &groupMembersRemoved,
+ *     const Telepathy::Client::Contacts &groupMembersAdded,
+ *     const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
+ *     const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
+ *     const Telepathy::Client::Contacts &groupMembersRemoved,
  *     const Channel::GroupMemberChangeDetails &details);
  *
  * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or

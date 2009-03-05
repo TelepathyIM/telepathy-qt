@@ -57,7 +57,7 @@ class ContactManager : public QObject
         bool isSupported() const;
         QSet<Contact::Feature> supportedFeatures() const;
 
-        QSet<QSharedPointer<Contact> > allKnownContacts() const;
+        Contacts allKnownContacts() const;
 
         bool canRequestContactsPresenceSubscription() const;
         PendingOperation *requestContactsPresenceSubscription(
@@ -88,7 +88,7 @@ class ContactManager : public QObject
                 const QSet<Contact::Feature> &features);
 
     Q_SIGNALS:
-        void presencePublicationRequested(const QSet<QSharedPointer<Telepathy::Client::Contact> > &contacts);
+        void presencePublicationRequested(const Telepathy::Client::Contacts &contacts);
 
     private Q_SLOTS:
         void onAliasesChanged(const Telepathy::AliasPairList &);
@@ -96,22 +96,22 @@ class ContactManager : public QObject
         void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
         void onSubscribeChannelMembersChanged(
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Contacts &groupMembersAdded,
+            const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
+            const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
+            const Telepathy::Client::Contacts &groupMembersRemoved,
             const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
         void onPublishChannelMembersChanged(
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Contacts &groupMembersAdded,
+            const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
+            const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
+            const Telepathy::Client::Contacts &groupMembersRemoved,
             const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
         void onDenyChannelMembersChanged(
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupLocalPendingMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupRemotePendingMembersAdded,
-            const QSet<QSharedPointer<Telepathy::Client::Contact> > &groupMembersRemoved,
+            const Telepathy::Client::Contacts &groupMembersAdded,
+            const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
+            const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
+            const Telepathy::Client::Contacts &groupMembersRemoved,
             const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
 
     private:

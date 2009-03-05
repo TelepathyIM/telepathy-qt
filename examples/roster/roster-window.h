@@ -53,7 +53,7 @@ private Q_SLOTS:
     void onCMReady(Telepathy::Client::PendingOperation *);
     void onConnectionCreated(Telepathy::Client::PendingOperation *);
     void onConnectionReady(Telepathy::Client::PendingOperation *);
-    void onPresencePublicationRequested(const QSet<QSharedPointer<Telepathy::Client::Contact> > &);
+    void onPresencePublicationRequested(const Telepathy::Client::Contacts &);
     void onItemSelectionChanged();
     void onAddButtonClicked();
     void onAuthActionTriggered(bool);

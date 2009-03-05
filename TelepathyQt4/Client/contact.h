@@ -127,6 +127,8 @@ private:
     Private *mPriv;
 };
 
+typedef QSet<QSharedPointer<Contact> > Contacts;
+
 inline uint qHash(const QSharedPointer<Contact> &contact)
 {
     return qHash(contact.data());
