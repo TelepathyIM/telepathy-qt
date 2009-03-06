@@ -449,7 +449,7 @@ QMutex Connection::Private::handleContextsLock;
  * in the different states.
  */
 
-const Feature Connection::FeatureCore = Feature(Connection::staticMetaObject.className(), 0);
+const Feature Connection::FeatureCore = Feature(Connection::staticMetaObject.className(), 0, true);
 const Feature Connection::FeatureSelfContact = Feature(Connection::staticMetaObject.className(), 1);
 const Feature Connection::FeatureSimplePresence = Feature(Connection::staticMetaObject.className(), 2);
 const Feature Connection::FeatureRoster = Feature(Connection::staticMetaObject.className(), 3);
@@ -1262,9 +1262,9 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
 bool Connection::isReady(const Features &features) const
 {
     if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
     }
-    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
+    return mPriv->readinessHelper->isReady(features);
 }
 
 /**

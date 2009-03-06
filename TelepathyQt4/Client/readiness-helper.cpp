@@ -44,7 +44,7 @@ struct ReadinessHelper::Private
     ~Private();
 
     void setCurrentStatus(uint newStatus);
-    void setIntrospectCompleted(Feature feature, bool success);
+    void setIntrospectCompleted(const Feature &feature, bool success);
     void iterateIntrospection();
 
     void abortOperations(const QString &errorName, const QString &errorMessage);
@@ -121,7 +121,7 @@ void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
     }
 }
 
-void ReadinessHelper::Private::setIntrospectCompleted(Feature feature, bool success)
+void ReadinessHelper::Private::setIntrospectCompleted(const Feature &feature, bool success)
 {
     debug() << "ReadinessHelper::setIntrospectCompleted: feature:" << feature <<
         "- success:" << success;
@@ -187,7 +187,14 @@ void ReadinessHelper::Private::iterateIntrospection()
     // satisfiedFeatures + missingFeatures has
     foreach (PendingReady *operation, pendingOperations) {
         if ((operation->requestedFeatures() - (satisfiedFeatures + missingFeatures)).isEmpty()) {
-            operation->setFinished();
+            if (parent->isReady(operation->requestedFeatures())) {
+                operation->setFinished();
+            } else {
+                // TODO get the error from somewhere, maybe add an error param
+                //      to setIntrospectCompleted
+                operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
+                        "Some features not available");
+            }
             pendingOperations.removeOne(operation);
         }
     }
@@ -204,7 +211,7 @@ void ReadinessHelper::Private::iterateIntrospection()
 
     // find out which features don't have dependencies that are still pending
     Features readyToIntrospect;
-    foreach (Feature feature, pendingFeatures) {
+    foreach (const Feature &feature, pendingFeatures) {
         // missing doesn't have to be considered here anymore
         if ((introspectables[feature].dependsOnFeatures - satisfiedFeatures).isEmpty()) {
             readyToIntrospect.insert(feature);
@@ -213,7 +220,7 @@ void ReadinessHelper::Private::iterateIntrospection()
 
     // now readyToIntrospect should contain all the features which have
     // all their feature dependencies satisfied
-    foreach (Feature feature, readyToIntrospect) {
+    foreach (const Feature &feature, readyToIntrospect) {
         if (inFlightFeatures.contains(feature)) {
             continue;
         }
@@ -334,7 +341,28 @@ Features ReadinessHelper::missingFeatures() const
     return mPriv->missingFeatures;
 }
 
-bool ReadinessHelper::isReady(const Features &features, bool onlySatisfied) const
+bool ReadinessHelper::isReady(const Feature &feature) const
+{
+    if (!mPriv->proxy->isValid()) {
+        return false;
+    }
+
+    if (feature.isCritical()) {
+        if (!mPriv->satisfiedFeatures.contains(feature)) {
+            debug() << "ReadinessHelper::isReady: critical feature" << feature << "not ready";
+            return false;
+        }
+    } else {
+        if (!mPriv->satisfiedFeatures.contains(feature) &&
+            !mPriv->missingFeatures.contains(feature)) {
+            debug() << "ReadinessHelper::isReady: feature" << feature << "not ready";
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ReadinessHelper::isReady(const Features &features) const
 {
     if (!mPriv->proxy->isValid()) {
         return false;
@@ -342,11 +370,12 @@ bool ReadinessHelper::isReady(const Features &features, bool onlySatisfied) cons
 
     Q_ASSERT(!features.isEmpty());
 
-    if (onlySatisfied) {
-        return (features - mPriv->satisfiedFeatures).isEmpty();
-    } else {
-        return (features - (mPriv->satisfiedFeatures + mPriv->missingFeatures)).isEmpty();
+    foreach (const Feature &feature, features) {
+        if (!isReady(feature)) {
+            return false;
+        }
     }
+    return true;
 }
 
 PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
@@ -391,7 +420,7 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     return operation;
 }
 
-void ReadinessHelper::setIntrospectCompleted(Feature feature, bool success)
+void ReadinessHelper::setIntrospectCompleted(const Feature &feature, bool success)
 {
     if (!mPriv->proxy->isValid()) {
         // proxy became invalid, ignore here

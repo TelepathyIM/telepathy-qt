@@ -195,7 +195,7 @@ Account::Private::~Private()
  * and will cease to be useful.
  */
 
-const Feature Account::FeatureCore = Feature(Account::staticMetaObject.className(), 0);
+const Feature Account::FeatureCore = Feature(Account::staticMetaObject.className(), 0, true);
 const Feature Account::FeatureAvatar = Feature(Account::staticMetaObject.className(), 1);
 const Feature Account::FeatureProtocolInfo = Feature(Account::staticMetaObject.className(), 2);
 
@@ -658,9 +658,9 @@ PendingOperation *Account::remove()
 bool Account::isReady(const Features &features) const
 {
     if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
     }
-    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
+    return mPriv->readinessHelper->isReady(features);
 }
 
 /**

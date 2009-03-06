@@ -150,7 +150,7 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  * Object representing a Telepathy account manager.
  */
 
-const Feature AccountManager::FeatureCore = Feature(AccountManager::staticMetaObject.className(), 0);
+const Feature AccountManager::FeatureCore = Feature(AccountManager::staticMetaObject.className(), 0, true);
 
 /**
  * Construct a new AccountManager object.
@@ -374,9 +374,9 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
 bool AccountManager::isReady(const Features &features) const
 {
     if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
     }
-    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
+    return mPriv->readinessHelper->isReady(features);
 }
 
 /**

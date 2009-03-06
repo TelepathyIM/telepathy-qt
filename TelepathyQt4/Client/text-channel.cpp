@@ -285,7 +285,7 @@ void TextChannel::Private::introspectMessageSentSignal(
 void TextChannel::Private::updateInitialMessages()
 {
     if (!readinessHelper->requestedFeatures().contains(FeatureMessageQueue) ||
-        readinessHelper->isReady(Features() << FeatureMessageQueue, false)) {
+        readinessHelper->isReady(Features() << FeatureMessageQueue)) {
         return;
     }
 
@@ -302,7 +302,7 @@ void TextChannel::Private::updateInitialMessages()
 void TextChannel::Private::updateCapabilities()
 {
     if (!readinessHelper->requestedFeatures().contains(FeatureMessageCapabilities) ||
-        readinessHelper->isReady(Features() << FeatureMessageQueue, false)) {
+        readinessHelper->isReady(Features() << FeatureMessageQueue)) {
         return;
     }
 
@@ -715,7 +715,7 @@ void TextChannel::processQueue()
 
     if (mPriv->incompleteMessages.isEmpty()) {
         if (mPriv->readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
-            !mPriv->readinessHelper->isReady(Features() << FeatureMessageQueue, false)) {
+            !mPriv->readinessHelper->isReady(Features() << FeatureMessageQueue)) {
             debug() << "incompleteMessages empty for the first time: "
                 "FeatureMessageQueue is now ready";
             mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
@@ -952,12 +952,12 @@ void TextChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 
         ReadinessHelper *readinessHelper = mPriv->readinessHelper;
         if (readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
-            !readinessHelper->isReady(Features() << FeatureMessageQueue, false)) {
+            !readinessHelper->isReady(Features() << FeatureMessageQueue)) {
             readinessHelper->setIntrospectCompleted(FeatureMessageQueue, false);
         }
 
         if (readinessHelper->requestedFeatures().contains(FeatureMessageCapabilities) &&
-            !readinessHelper->isReady(Features() << FeatureMessageCapabilities, false)) {
+            !readinessHelper->isReady(Features() << FeatureMessageCapabilities)) {
             readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, false);
         }
         return;

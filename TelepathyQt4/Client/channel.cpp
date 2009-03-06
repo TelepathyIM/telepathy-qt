@@ -949,7 +949,7 @@ void Channel::Private::setReady()
  * will transition to closed too.
  */
 
-const Feature Channel::FeatureCore = Feature(Channel::staticMetaObject.className(), 0);
+const Feature Channel::FeatureCore = Feature(Channel::staticMetaObject.className(), 0, true);
 
 /**
  * Construct a new Channel object.
@@ -1113,9 +1113,9 @@ QSharedPointer<Contact> Channel::initiatorContact() const
 bool Channel::isReady(const Features &features) const
 {
     if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
     }
-    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
+    return mPriv->readinessHelper->isReady(features);
 }
 
 /**

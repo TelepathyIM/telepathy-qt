@@ -348,7 +348,7 @@ ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
  * applications.
  */
 
-const Feature ConnectionManager::FeatureCore = Feature(ConnectionManager::staticMetaObject.className(), 0);
+const Feature ConnectionManager::FeatureCore = Feature(ConnectionManager::staticMetaObject.className(), 0, true);
 
 /**
  * Construct a new ConnectionManager object.
@@ -473,9 +473,9 @@ PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
 bool ConnectionManager::isReady(const Features &features) const
 {
     if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore, true);
+        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
     }
-    return mPriv->readinessHelper->isReady(features, features.contains(FeatureCore));
+    return mPriv->readinessHelper->isReady(features);
 }
 
 /**

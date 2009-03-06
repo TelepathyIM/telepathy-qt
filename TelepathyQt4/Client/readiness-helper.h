@@ -39,7 +39,20 @@ namespace Client
 
 class PendingReady;
 
-typedef QPair<QString, uint> Feature;
+class Feature : public QPair<QString, uint>
+{
+public:
+    Feature(const QString &className, uint id, bool critical = false)
+        : QPair<QString, uint>(className, id), critical(critical)
+    {
+    }
+
+    bool isCritical() const { return critical; }
+
+private:
+    bool critical;
+};
+
 typedef QSet<Feature> Features;
 
 class ReadinessHelper : public QObject
@@ -61,12 +74,14 @@ public:
                 const Features &dependsOnFeatures,
                 const QStringList &dependsOnInterfaces,
                 IntrospectFunc introspectFunc,
-                void *introspectFuncData)
+                void *introspectFuncData,
+                bool critical = false)
             : makesSenseForStatuses(makesSenseForStatuses),
               dependsOnFeatures(dependsOnFeatures),
               dependsOnInterfaces(dependsOnInterfaces),
               introspectFunc(introspectFunc),
-              introspectFuncData(introspectFuncData)
+              introspectFuncData(introspectFuncData),
+              critical(critical)
         {
         }
 
@@ -78,6 +93,7 @@ public:
         QStringList dependsOnInterfaces;
         IntrospectFunc introspectFunc;
         void *introspectFuncData;
+        bool critical;
     };
     typedef QMap<Feature, Introspectable> Introspectables;
 
@@ -99,10 +115,11 @@ public:
     Features actualFeatures() const;
     Features missingFeatures() const;
 
-    bool isReady(const Features &features, bool onlySatisfied) const;
+    bool isReady(const Feature &feature) const;
+    bool isReady(const Features &features) const;
     PendingReady *becomeReady(const Features &requestedFeatures);
 
-    void setIntrospectCompleted(Feature feature, bool success);
+    void setIntrospectCompleted(const Feature &feature, bool success);
 
 Q_SIGNALS:
     void statusReady(uint status);
