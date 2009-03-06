@@ -53,7 +53,13 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
-typedef QSet<Feature> Features;
+class Features : public QSet<Feature>
+{
+public:
+    Features() { }
+    Features(const Feature &feature) { insert(feature); }
+    Features(const QSet<Feature> &s) : QSet<Feature>(s) { }
+};
 
 inline Features operator|(const Feature &feature1, const Feature &feature2)
 {
