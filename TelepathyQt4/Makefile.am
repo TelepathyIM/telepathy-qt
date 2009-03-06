@@ -47,6 +47,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/contact-manager.cpp \
     Client/dbus.cpp \
     Client/dbus-proxy.cpp \
+    Client/feature.cpp \
     Client/file-transfer.cpp \
     Client/media-session-handler.cpp \
     Client/media-stream-handler.cpp \
@@ -144,6 +145,7 @@ tpqt4clientinclude_HEADERS = \
     Client/ContactManager \
     Client/DBus \
     Client/DBusProxy \
+    Client/Feature \
     Client/FileTransfer \
     Client/MediaSessionHandler \
     Client/MediaStreamHandler \
@@ -212,6 +214,7 @@ tpqt4clientinclude_HEADERS = \
     Client/contact-manager.h \
     Client/dbus.h \
     Client/dbus-proxy.h \
+    Client/feature.h \
     Client/file-transfer.h \
     Client/media-session-handler.h \
     Client/media-stream-handler.h \

@@ -27,6 +27,7 @@
 #endif
 
 #include <TelepathyQt4/Client/DBusProxy>
+#include <TelepathyQt4/Client/Feature>
 
 #include <QMap>
 #include <QSet>
@@ -38,22 +39,6 @@ namespace Client
 {
 
 class PendingReady;
-
-class Feature : public QPair<QString, uint>
-{
-public:
-    Feature(const QString &className, uint id, bool critical = false)
-        : QPair<QString, uint>(className, id), critical(critical)
-    {
-    }
-
-    bool isCritical() const { return critical; }
-
-private:
-    bool critical;
-};
-
-typedef QSet<Feature> Features;
 
 class ReadinessHelper : public QObject
 {
