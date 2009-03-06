@@ -667,7 +667,7 @@ void ConnectionManager::gotProtocols(QDBusPendingCallWatcher *watcher)
 
         mPriv->introspectParameters();
     } else {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
 
         warning().nospace() <<
             "ConnectionManager.ListProtocols failed: " <<
@@ -706,7 +706,7 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
             mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
         } else {
             // we could not retrieve the params for any protocol, fail core.
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
         }
 
 #if 0

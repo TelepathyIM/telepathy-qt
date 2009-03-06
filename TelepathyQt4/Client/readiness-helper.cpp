@@ -28,6 +28,7 @@
 #include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Constants>
 
+#include <QDBusError>
 #include <QTimer>
 
 namespace Telepathy
@@ -44,7 +45,9 @@ struct ReadinessHelper::Private
     ~Private();
 
     void setCurrentStatus(uint newStatus);
-    void setIntrospectCompleted(const Feature &feature, bool success);
+    void setIntrospectCompleted(const Feature &feature, bool success,
+            const QString &errorName = QString(),
+            const QString &errorMessage = QString());
     void iterateIntrospection();
 
     void abortOperations(const QString &errorName, const QString &errorMessage);
@@ -61,6 +64,7 @@ struct ReadinessHelper::Private
     Features missingFeatures;
     Features pendingFeatures;
     Features inFlightFeatures;
+    QHash<Feature, QPair<QString, QString> > missingFeaturesErrors;
     QList<PendingReady *> pendingOperations;
 
     bool pendingStatusChange;
@@ -121,7 +125,8 @@ void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
     }
 }
 
-void ReadinessHelper::Private::setIntrospectCompleted(const Feature &feature, bool success)
+void ReadinessHelper::Private::setIntrospectCompleted(const Feature &feature,
+        bool success, const QString &errorName, const QString &errorMessage)
 {
     debug() << "ReadinessHelper::setIntrospectCompleted: feature:" << feature <<
         "- success:" << success;
@@ -148,6 +153,12 @@ void ReadinessHelper::Private::setIntrospectCompleted(const Feature &feature, bo
     }
     else {
         missingFeatures.insert(feature);
+        missingFeaturesErrors.insert(feature,
+                QPair<QString, QString>(errorName, errorMessage));
+        if (errorName.isEmpty()) {
+            warning() << "ReadinessHelper::setIntrospectCompleted: Feature" <<
+                feature << "introspection failed but no error message was given";
+        }
     }
 
     pendingFeatures.remove(feature);
@@ -177,7 +188,10 @@ void ReadinessHelper::Private::iterateIntrospection()
         Introspectable introspectable = i.value();
         Features dependsOnFeatures = introspectable.dependsOnFeatures;
         if (!dependsOnFeatures.intersect(missingFeatures).isEmpty()) {
-            missingFeatures += feature;
+            missingFeatures.insert(feature);
+            missingFeaturesErrors.insert(feature,
+                    QPair<QString, QString>(TELEPATHY_ERROR_NOT_AVAILABLE,
+                        "Feature depend on other features that are not available"));
         }
         ++i;
     }
@@ -185,15 +199,14 @@ void ReadinessHelper::Private::iterateIntrospection()
     // check if any pending operations for becomeReady should finish now
     // based on their requested features having nothing more than what
     // satisfiedFeatures + missingFeatures has
+    QString errorName;
+    QString errorMessage;
     foreach (PendingReady *operation, pendingOperations) {
         if ((operation->requestedFeatures() - (satisfiedFeatures + missingFeatures)).isEmpty()) {
-            if (parent->isReady(operation->requestedFeatures())) {
+            if (parent->isReady(operation->requestedFeatures(), &errorName, &errorMessage)) {
                 operation->setFinished();
             } else {
-                // TODO get the error from somewhere, maybe add an error param
-                //      to setIntrospectCompleted
-                operation->setFinishedWithError(TELEPATHY_ERROR_NOT_AVAILABLE,
-                        "Some features not available");
+                operation->setFinishedWithError(errorName, errorMessage);
             }
             pendingOperations.removeOne(operation);
         }
@@ -243,7 +256,9 @@ void ReadinessHelper::Private::iterateIntrospection()
                 debug() << "feature" << feature << "depends on interfaces" <<
                     introspectable.dependsOnInterfaces << ", but interface" << interface <<
                     "is not present";
-                setIntrospectCompleted(feature, false);
+                setIntrospectCompleted(feature, false,
+                        QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                        QLatin1String("Feature depend on interfaces that are not available"));
                 return; // will be called with a single-shot soon again
             }
         }
@@ -260,6 +275,7 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
 {
     foreach (PendingReady *operation, pendingOperations) {
         operation->setFinishedWithError(errorName, errorMessage);
+        pendingOperations.removeOne(operation);
     }
 }
 
@@ -341,37 +357,73 @@ Features ReadinessHelper::missingFeatures() const
     return mPriv->missingFeatures;
 }
 
-bool ReadinessHelper::isReady(const Feature &feature) const
+bool ReadinessHelper::isReady(const Feature &feature,
+        QString *errorName, QString *errorMessage) const
 {
     if (!mPriv->proxy->isValid()) {
+        if (errorName) {
+            *errorName = mPriv->proxy->invalidationReason();
+        }
+        if (errorMessage) {
+            *errorMessage = mPriv->proxy->invalidationMessage();
+        }
         return false;
     }
+
+    if (!mPriv->supportedFeatures.contains(feature)) {
+        if (errorName) {
+            *errorName = QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT);
+        }
+        if (errorMessage) {
+            *errorMessage = QLatin1String("Unsupported feature");
+        }
+        return false;
+    }
+
+    bool ret = true;
 
     if (feature.isCritical()) {
         if (!mPriv->satisfiedFeatures.contains(feature)) {
             debug() << "ReadinessHelper::isReady: critical feature" << feature << "not ready";
-            return false;
+            ret = false;
         }
     } else {
         if (!mPriv->satisfiedFeatures.contains(feature) &&
             !mPriv->missingFeatures.contains(feature)) {
             debug() << "ReadinessHelper::isReady: feature" << feature << "not ready";
-            return false;
+            ret = false;
         }
     }
-    return true;
+
+    if (!ret) {
+        QPair<QString, QString> error = mPriv->missingFeaturesErrors[feature];
+        if (errorName) {
+            *errorName = error.first;
+        }
+        if (errorMessage) {
+            *errorMessage = error.second;
+        }
+    }
+
+    return ret;
 }
 
-bool ReadinessHelper::isReady(const Features &features) const
+bool ReadinessHelper::isReady(const Features &features, QString *errorName, QString *errorMessage) const
 {
     if (!mPriv->proxy->isValid()) {
+        if (errorName) {
+            *errorName = mPriv->proxy->invalidationReason();
+        }
+        if (errorMessage) {
+            *errorMessage = mPriv->proxy->invalidationMessage();
+        }
         return false;
     }
 
     Q_ASSERT(!features.isEmpty());
 
     foreach (const Feature &feature, features) {
-        if (!isReady(feature)) {
+        if (!isReady(feature, errorName, errorMessage)) {
             return false;
         }
     }
@@ -388,8 +440,9 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
             requestedFeatures << "- supportedFeatures =" << mPriv->supportedFeatures;
         PendingReady *operation =
             new PendingReady(requestedFeatures, mPriv->proxy);
-        operation->setFinishedWithError(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Requested features contains invalid feature");
+        operation->setFinishedWithError(
+                QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Requested features contains unsupported feature"));
         return operation;
     }
 
@@ -420,13 +473,20 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     return operation;
 }
 
-void ReadinessHelper::setIntrospectCompleted(const Feature &feature, bool success)
+void ReadinessHelper::setIntrospectCompleted(const Feature &feature, bool success,
+        const QString &errorName, const QString &errorMessage)
 {
     if (!mPriv->proxy->isValid()) {
         // proxy became invalid, ignore here
         return;
     }
-    mPriv->setIntrospectCompleted(feature, success);
+    mPriv->setIntrospectCompleted(feature, success, errorName, errorMessage);
+}
+
+void ReadinessHelper::setIntrospectCompleted(const Feature &feature, bool success,
+        const QDBusError &error)
+{
+    setIntrospectCompleted(feature, success, error.name(), error.message());
 }
 
 void ReadinessHelper::iterateIntrospection()
@@ -437,6 +497,10 @@ void ReadinessHelper::iterateIntrospection()
 void ReadinessHelper::onProxyInvalidated(Telepathy::Client::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
+    // clear satisfied and missing features as we have public methods to get them
+    mPriv->satisfiedFeatures.clear();
+    mPriv->missingFeatures.clear();
+
     mPriv->abortOperations(errorName, errorMessage);
 }
 

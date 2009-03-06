@@ -953,12 +953,12 @@ void TextChannel::gotProperties(QDBusPendingCallWatcher *watcher)
         ReadinessHelper *readinessHelper = mPriv->readinessHelper;
         if (readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
             !readinessHelper->isReady(Features() << FeatureMessageQueue)) {
-            readinessHelper->setIntrospectCompleted(FeatureMessageQueue, false);
+            readinessHelper->setIntrospectCompleted(FeatureMessageQueue, false, reply.error());
         }
 
         if (readinessHelper->requestedFeatures().contains(FeatureMessageCapabilities) &&
             !readinessHelper->isReady(Features() << FeatureMessageCapabilities)) {
-            readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, false);
+            readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, false, reply.error());
         }
         return;
     }
@@ -982,7 +982,7 @@ void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
             reply.error().message();
 
         // TODO should we fail here?
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, false);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, false, reply.error());
         return;
     }
 

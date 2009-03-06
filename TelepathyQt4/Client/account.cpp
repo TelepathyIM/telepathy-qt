@@ -993,7 +993,7 @@ void Account::gotMainProperties(QDBusPendingCallWatcher *watcher)
         debug() << "Account basic functionality is ready";
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     } else {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
 
         warning().nospace() <<
             "GetAll(Account) failed: " <<
@@ -1021,7 +1021,7 @@ void Account::gotAvatar(QDBusPendingCallWatcher *watcher)
         // check if the feature is already there, and for some reason retrieveAvatar
         // failed when called the second time
         if (!mPriv->readinessHelper->missingFeatures().contains(FeatureAvatar)) {
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureAvatar, false);
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureAvatar, false, reply.error());
         }
 
         warning().nospace() <<
@@ -1056,7 +1056,8 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
         mPriv->readinessHelper->setIntrospectCompleted(FeatureProtocolInfo, true);
     }
     else {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureProtocolInfo, false);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureProtocolInfo, false,
+                operation->errorName(), operation->errorMessage());
     }
 }
 

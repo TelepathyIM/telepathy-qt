@@ -803,9 +803,6 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ":" << reply.error().message();
 
         invalidate(reply.error());
-
-        // introspect core failed
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
         return;
     }
 
@@ -889,7 +886,8 @@ void Connection::gotSelfContact(PendingOperation *op)
         // check if the feature is already there, and for some reason introspectSelfContact
         // failed when called the second time
         if (!mPriv->readinessHelper->missingFeatures().contains(FeatureSelfContact)) {
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureSelfContact, false);
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureSelfContact, false,
+                    op->errorName(), op->errorMessage());
         }
     }
 }
@@ -906,7 +904,7 @@ void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
     else {
         warning().nospace() << "Getting simple presence statuses failed with " <<
             reply.error().name() << ":" << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, false);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, false, reply.error());
     }
 
     watcher->deleteLater();
@@ -928,7 +926,7 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
     } else {
         warning().nospace() << "Getting self handle failed with " <<
             reply.error().name() << ":" << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
     }
 
     watcher->deleteLater();

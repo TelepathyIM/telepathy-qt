@@ -33,6 +33,8 @@
 #include <QSet>
 #include <QStringList>
 
+class QDBusError;
+
 namespace Telepathy
 {
 namespace Client
@@ -100,11 +102,17 @@ public:
     Features actualFeatures() const;
     Features missingFeatures() const;
 
-    bool isReady(const Feature &feature) const;
-    bool isReady(const Features &features) const;
+    bool isReady(const Feature &feature,
+            QString *errorName = 0, QString *errorMessage = 0) const;
+    bool isReady(const Features &features,
+            QString *errorName = 0, QString *errorMessage = 0) const;
     PendingReady *becomeReady(const Features &requestedFeatures);
 
-    void setIntrospectCompleted(const Feature &feature, bool success);
+    void setIntrospectCompleted(const Feature &feature, bool success,
+            const QString &errorName = QString(),
+            const QString &errorMessage = QString());
+    void setIntrospectCompleted(const Feature &feature, bool success,
+            const QDBusError &error);
 
 Q_SIGNALS:
     void statusReady(uint status);
