@@ -199,6 +199,19 @@ fi
 AM_CONDITIONAL([ENABLE_TP_GLIB_TESTS],
   [test yes = "$have_tp_glib" && test yes = "$have_qt_glib_main_loop"])
 
+dnl Check for telepathy-farsight... if we have that too, we can build an
+dnl audio/video calling example
+PKG_CHECK_MODULES(TP_FARSIGHT, [telepathy-farsight >= 0.0.4], [have_tp_fs=yes],
+                  [have_tp_fs=no])
+AC_SUBST(TP_FARSIGHT_CFLAGS)
+AC_SUBST(TP_FARSIGHT_LIBS)
+if test no = "$have_tp_fs"; then
+  AC_MSG_WARN([telepathy-farsight not found: not all examples will be built])
+fi
+AM_CONDITIONAL([ENABLE_TP_FARSIGHT_EXAMPLES],
+  [test yes = "$have_tp_glib" && test yes = "$have_tp_fs" &&
+   test yes = "$have_qt_glib_main_loop"])
+
 AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
   [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
 AC_PATH_PROGS([PINOCCHIO_CTL], [pinocchio-ctl], [none])
@@ -240,8 +253,9 @@ AC_OUTPUT([
     TelepathyQt4/TelepathyQt4.pc
     doxygen.cfg
     examples/Makefile
-    examples/extensions/Makefile
     examples/accounts/Makefile
+    examples/call/Makefile
+    examples/extensions/Makefile
     examples/roster/Makefile
     m4/Makefile
     spec/Makefile
