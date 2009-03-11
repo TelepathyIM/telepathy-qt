@@ -35,6 +35,88 @@ namespace Telepathy
 namespace Client
 {
 
+struct PendingMediaStreams::Private
+{
+    Private(StreamedMediaChannel *channel)
+        : channel(channel)
+    {
+    }
+
+    StreamedMediaChannel *channel;
+    MediaStreams streams;
+};
+
+PendingMediaStreams::PendingMediaStreams(StreamedMediaChannel *channel,
+        QSharedPointer<Telepathy::Client::Contact> contact,
+        QList<Telepathy::MediaStreamType> types,
+        QObject *parent)
+    : PendingOperation(parent),
+      mPriv(new Private(channel))
+{
+    Telepathy::UIntList l;
+    foreach (Telepathy::MediaStreamType type, types) {
+        l << type;
+    }
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+            channel->streamedMediaInterface()->RequestStreams(
+                contact->handle()[0], l), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotStreams(QDBusPendingCallWatcher*)));
+}
+
+PendingMediaStreams::~PendingMediaStreams()
+{
+    delete mPriv;
+}
+
+MediaStreams PendingMediaStreams::streams() const
+{
+    if (!isFinished()) {
+        warning() << "PendingMediaStreams::streams called before finished";
+    } else if (!isValid()) {
+        warning() << "PendingMediaStreams::streams called when not valid";
+    }
+
+    return mPriv->streams;
+}
+
+void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "StreamedMedia::RequestStreams()"
+            " failed with " << reply.error().name() << ": " <<
+            reply.error().message();
+        setFinishedWithError(reply.error());
+        return;
+    }
+
+    debug() << "Got reply to StreamedMedia::RequestStreams()";
+
+    Telepathy::MediaStreamInfoList list =
+        qdbus_cast<Telepathy::MediaStreamInfoList>(reply.value());
+    QSharedPointer<MediaStream> stream;
+    foreach (const MediaStreamInfo &streamInfo, list) {
+        // TODO retrieve the contact object
+        stream = QSharedPointer<MediaStream>(
+                new MediaStream(mPriv->channel,
+                    streamInfo.identifier,
+                    streamInfo.contact,
+                    (Telepathy::MediaStreamType) streamInfo.type,
+                    (Telepathy::MediaStreamState) streamInfo.state,
+                    (Telepathy::MediaStreamDirection) streamInfo.direction,
+                    (Telepathy::MediaStreamPendingSend) streamInfo.pendingSendFlags));
+        mPriv->streams.append(stream);
+        mPriv->channel->addStream(stream);
+    }
+
+    setFinished();
+
+    watcher->deleteLater();
+}
+
 struct MediaStream::Private
 {
     Private(StreamedMediaChannel *channel, uint id,
@@ -392,17 +474,11 @@ PendingOperation *StreamedMediaChannel::removeStreams(const Telepathy::UIntList 
             streamedMediaInterface()->RemoveStreams(ids));
 }
 
-PendingOperation *StreamedMediaChannel::requestStreams(
+PendingMediaStreams *StreamedMediaChannel::requestStreams(
         QSharedPointer<Telepathy::Client::Contact> contact,
         QList<Telepathy::MediaStreamType> types)
 {
-    Telepathy::UIntList l;
-    foreach (Telepathy::MediaStreamType type, types) {
-        l << type;
-    }
-    return new PendingVoidMethodCall(this,
-            streamedMediaInterface()->RequestStreams(
-                contact->handle()[0], l));
+    return new PendingMediaStreams(this, contact, types, this);
 }
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
@@ -421,8 +497,10 @@ void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
     debug() << "Got reply to StreamedMedia::ListStreams()";
     mPriv->initialStreamsReceived = true;
 
-    MediaStreamInfoList list = qdbus_cast<MediaStreamInfoList>(reply.value());
+    Telepathy::MediaStreamInfoList list =
+        qdbus_cast<Telepathy::MediaStreamInfoList>(reply.value());
     foreach (const MediaStreamInfo &streamInfo, list) {
+        // TODO retrieve the contact object
         mPriv->streams.insert(streamInfo.identifier,
                 QSharedPointer<MediaStream>(
                     new MediaStream(this,
@@ -514,6 +592,15 @@ void StreamedMediaChannel::onStreamError(uint streamId,
         emit stream->error(stream.data(),
                 (Telepathy::MediaStreamError) errorCode,
                 errorMessage);
+    }
+}
+
+void StreamedMediaChannel::addStream(const QSharedPointer<MediaStream> &stream)
+{
+    mPriv->streams.insert(stream->id(), stream);
+
+    if (mPriv->initialStreamsReceived) {
+        emit streamAdded(stream);
     }
 }
 

@@ -26,6 +26,7 @@
 #endif
 
 #include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Client/PendingOperation>
 
 namespace Telepathy
 {
@@ -33,6 +34,35 @@ namespace Client
 {
 
 class StreamedMediaChannel;
+class MediaStream;
+
+typedef QList<QSharedPointer<MediaStream> > MediaStreams;
+
+class PendingMediaStreams : public PendingOperation
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(PendingMediaStreams)
+
+public:
+    ~PendingMediaStreams();
+
+    MediaStreams streams() const;
+
+private Q_SLOTS:
+    void gotStreams(QDBusPendingCallWatcher *);
+
+private:
+    friend class StreamedMediaChannel;
+
+    PendingMediaStreams(StreamedMediaChannel *channel,
+            QSharedPointer<Telepathy::Client::Contact> contact,
+            QList<Telepathy::MediaStreamType> types,
+            QObject *parent = 0);
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
 
 class MediaStream : public QObject
 {
@@ -73,6 +103,7 @@ Q_SIGNALS:
             const QString &errorMessage);
 
 private:
+    friend class PendingMediaStreams;
     friend class StreamedMediaChannel;
 
     MediaStream(StreamedMediaChannel *channel, uint id,
@@ -88,8 +119,6 @@ private:
     friend struct Private;
     Private *mPriv;
 };
-
-typedef QList<QSharedPointer<MediaStream> > MediaStreams;
 
 class StreamedMediaChannel : public Channel
 {
@@ -113,7 +142,7 @@ public:
     PendingOperation *removeStreams(MediaStreams streams);
     PendingOperation *removeStreams(const Telepathy::UIntList &ids);
 
-    PendingOperation *requestStreams(
+    PendingMediaStreams *requestStreams(
             QSharedPointer<Telepathy::Client::Contact> contact,
             QList<Telepathy::MediaStreamType> types);
 
@@ -129,6 +158,10 @@ private Q_SLOTS:
     void onStreamError(uint, uint, const QString &);
 
 private:
+    friend class PendingMediaStreams;
+
+    void addStream(const QSharedPointer<MediaStream> &stream);
+
     struct Private;
     friend struct Private;
     Private *mPriv;
