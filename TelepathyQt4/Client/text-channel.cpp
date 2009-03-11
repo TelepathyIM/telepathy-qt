@@ -321,7 +321,7 @@ void TextChannel::Private::updateCapabilities()
 /**
  * \class TextChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/Client/text-channel.h <TelepathyQt4/Client/TextChannel>
+ * \headerfile <TelepathyQt4/Client/text-channel.h> <TelepathyQt4/Client/TextChannel>
  *
  * High-level proxy object for accessing remote %Channel objects of the Text
  * channel type.
