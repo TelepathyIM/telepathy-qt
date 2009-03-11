@@ -131,8 +131,7 @@ Telepathy::MediaStreamPendingSend MediaStream::pendingSend() const
 
 PendingOperation *MediaStream::remove()
 {
-    return new PendingVoidMethodCall(this,
-            mPriv->channel->streamedMediaInterface()->RemoveStreams(Telepathy::UIntList() << mPriv->id));
+    return mPriv->channel->removeStreams(Telepathy::UIntList() << mPriv->id);
 }
 
 PendingOperation *MediaStream::requestStreamDirection(
@@ -287,6 +286,34 @@ bool StreamedMediaChannel::awaitingRemoteAnswer() const
 PendingOperation *StreamedMediaChannel::acceptCall()
 {
     return groupAddSelfHandle();
+}
+
+PendingOperation *StreamedMediaChannel::removeStreams(MediaStreams streams)
+{
+    Telepathy::UIntList ids;
+    foreach (const QSharedPointer<MediaStream> &stream, streams) {
+        ids << stream->id();
+    }
+    return removeStreams(ids);
+}
+
+PendingOperation *StreamedMediaChannel::removeStreams(const Telepathy::UIntList &ids)
+{
+    return new PendingVoidMethodCall(this,
+            streamedMediaInterface()->RemoveStreams(ids));
+}
+
+PendingOperation *StreamedMediaChannel::requestStreams(
+        QSharedPointer<Telepathy::Client::Contact> contact,
+        QList<Telepathy::MediaStreamType> types)
+{
+    Telepathy::UIntList l;
+    foreach (Telepathy::MediaStreamType type, types) {
+        l << type;
+    }
+    return new PendingVoidMethodCall(this,
+            streamedMediaInterface()->RequestStreams(
+                contact->handle()[0], l));
 }
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)

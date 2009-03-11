@@ -107,14 +107,12 @@ public:
 
     PendingOperation *acceptCall();
 
-#if 0
     PendingOperation *removeStreams(MediaStreams streams);
-    PendingOperation *removeStreams(QSet<uint> streams);
+    PendingOperation *removeStreams(const Telepathy::UIntList &ids);
 
     PendingOperation *requestStreams(
             QSharedPointer<Telepathy::Client::Contact> contact,
             QList<Telepathy::MediaStreamType> types);
-#endif
 
 Q_SIGNALS:
     void streamAdded(const QSharedPointer<Telepathy::Client::MediaStream> &stream);
