@@ -266,8 +266,7 @@ Telepathy::MediaStreamType MediaStream::type() const
  */
 bool MediaStream::sending() const
 {
-    return (mPriv->direction & Telepathy::MediaStreamDirectionSend ||
-            mPriv->direction & Telepathy::MediaStreamDirectionBidirectional);
+    return mPriv->direction & Telepathy::MediaStreamDirectionSend;
 }
 
 /**
@@ -277,8 +276,7 @@ bool MediaStream::sending() const
  */
 bool MediaStream::receiving() const
 {
-    return (mPriv->direction & Telepathy::MediaStreamDirectionReceive ||
-            mPriv->direction & Telepathy::MediaStreamDirectionBidirectional);
+    return mPriv->direction & Telepathy::MediaStreamDirectionReceive;
 }
 
 /**
