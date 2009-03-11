@@ -968,6 +968,8 @@ void TextChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 
     mPriv->updateInitialMessages();
     mPriv->updateCapabilities();
+
+    watcher->deleteLater();
 }
 
 void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
@@ -993,6 +995,8 @@ void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
                 message.sender, message.messageType, message.flags,
                 message.text);
     }
+
+    watcher->deleteLater();
 }
 
 } // Telepathy::Client
