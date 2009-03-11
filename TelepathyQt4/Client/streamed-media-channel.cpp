@@ -381,7 +381,7 @@ void StreamedMediaChannel::onStreamRemoved(uint streamId)
     if (mPriv->streams.contains(streamId)) {
         QSharedPointer<MediaStream> stream = mPriv->streams[streamId];
         emit stream->removed();
-        stream.clear();
+        mPriv->streams.remove(streamId);
     }
 }
 
