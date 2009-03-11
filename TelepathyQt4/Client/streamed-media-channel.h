@@ -117,7 +117,7 @@ public:
 #endif
 
 Q_SIGNALS:
-    void streamAdded(const QSharedPointer<MediaStream> &stream);
+    void streamAdded(const QSharedPointer<Telepathy::Client::MediaStream> &stream);
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
