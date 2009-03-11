@@ -212,13 +212,13 @@ void MediaStream::setDirection(Telepathy::MediaStreamDirection direction,
 {
     mPriv->direction = direction;
     mPriv->pendingSend = pendingSend;
-    emit directionChanged(direction, pendingSend);
+    emit directionChanged(this, direction, pendingSend);
 }
 
 void MediaStream::setState(Telepathy::MediaStreamState state)
 {
     mPriv->state = state;
-    emit stateChanged(state);
+    emit stateChanged(this, state);
 }
 
 
@@ -469,7 +469,7 @@ void StreamedMediaChannel::onStreamRemoved(uint streamId)
 
     if (mPriv->streams.contains(streamId)) {
         QSharedPointer<MediaStream> stream = mPriv->streams[streamId];
-        emit stream->removed();
+        emit stream->removed(stream.data());
         mPriv->streams.remove(streamId);
     }
 }
@@ -511,7 +511,8 @@ void StreamedMediaChannel::onStreamError(uint streamId,
 
     if (mPriv->streams.contains(streamId)) {
         QSharedPointer<MediaStream> stream = mPriv->streams[streamId];
-        emit stream->error((Telepathy::MediaStreamError) errorCode,
+        emit stream->error(stream.data(),
+                (Telepathy::MediaStreamError) errorCode,
                 errorMessage);
     }
 }

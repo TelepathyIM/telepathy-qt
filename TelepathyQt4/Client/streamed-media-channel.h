@@ -62,11 +62,14 @@ public:
             Telepathy::MediaStreamDirection direction);
 
 Q_SIGNALS:
-    void removed();
-    void directionChanged(Telepathy::MediaStreamDirection direction,
+    void removed(Telepathy::Client::MediaStream *stream);
+    void directionChanged(Telepathy::Client::MediaStream *stream,
+            Telepathy::MediaStreamDirection direction,
             Telepathy::MediaStreamPendingSend pendingSend);
-    void stateChanged(Telepathy::MediaStreamState);
-    void error(Telepathy::MediaStreamError errorCode,
+    void stateChanged(Telepathy::Client::MediaStream *stream,
+            Telepathy::MediaStreamState);
+    void error(Telepathy::Client::MediaStream *stream,
+            Telepathy::MediaStreamError errorCode,
             const QString &errorMessage);
 
 private:
