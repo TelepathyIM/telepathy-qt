@@ -41,15 +41,16 @@ struct MediaStream::Private
             uint contactHandle, MediaStreamType type,
             MediaStreamState state, MediaStreamDirection direction,
             MediaStreamPendingSend pendingSend)
-        : id(id), contactHandle(contactHandle),
-          type(type), state(state), direction(direction),
-          pendingSend(pendingSend)
+        : id(id), type(type), state(state),
+          direction(direction), pendingSend(pendingSend)
     {
+        ContactManager *contactManager = channel->connection()->contactManager();
+        contact = contactManager->lookupContactByHandle(contactHandle);
     }
 
     StreamedMediaChannel *channel;
     uint id;
-    uint contactHandle;
+    QSharedPointer<Contact> contact;
     MediaStreamType type;
     MediaStreamState state;
     MediaStreamDirection direction;
@@ -83,8 +84,7 @@ uint MediaStream::id() const
 
 QSharedPointer<Contact> MediaStream::contact() const
 {
-    ContactManager *contactManager = mPriv->channel->connection()->contactManager();
-    return contactManager->lookupContactByHandle(mPriv->contactHandle);
+    return mPriv->contact;
 }
 
 Telepathy::MediaStreamState MediaStream::state() const
