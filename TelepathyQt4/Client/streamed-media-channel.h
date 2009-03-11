@@ -57,11 +57,9 @@ public:
     Telepathy::MediaStreamDirection direction() const;
     Telepathy::MediaStreamPendingSend pendingSend() const;
 
-#if 0
     PendingOperation *remove();
     PendingOperation *requestStreamDirection(
             Telepathy::MediaStreamDirection direction);
-#endif
 
 Q_SIGNALS:
     void removed();

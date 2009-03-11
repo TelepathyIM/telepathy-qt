@@ -129,6 +129,19 @@ Telepathy::MediaStreamPendingSend MediaStream::pendingSend() const
     return mPriv->pendingSend;
 }
 
+PendingOperation *MediaStream::remove()
+{
+    return new PendingVoidMethodCall(this,
+            mPriv->channel->streamedMediaInterface()->RemoveStreams(Telepathy::UIntList() << mPriv->id));
+}
+
+PendingOperation *MediaStream::requestStreamDirection(
+        Telepathy::MediaStreamDirection direction)
+{
+    return new PendingVoidMethodCall(this,
+            mPriv->channel->streamedMediaInterface()->RequestStreamDirection(mPriv->id, direction));
+}
+
 void MediaStream::setDirection(Telepathy::MediaStreamDirection direction,
         Telepathy::MediaStreamPendingSend pendingSend)
 {
