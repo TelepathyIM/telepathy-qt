@@ -77,63 +77,129 @@ StreamedMediaChannel *MediaStream::channel() const
     return mPriv->channel;
 }
 
+/**
+ * Return the stream id.
+ *
+ * \return An integer representing the stream id.
+ */
 uint MediaStream::id() const
 {
     return mPriv->id;
 }
 
+/**
+ * Return the contact who the stream is with.
+ *
+ * \return The contact who the stream is with.
+ */
 QSharedPointer<Contact> MediaStream::contact() const
 {
     return mPriv->contact;
 }
 
+/**
+ * Return the stream state.
+ *
+ * \return The stream state.
+ */
 Telepathy::MediaStreamState MediaStream::state() const
 {
     return mPriv->state;
 }
 
+/**
+ * Return the stream type.
+ *
+ * \return The stream type.
+ */
 Telepathy::MediaStreamType MediaStream::type() const
 {
     return mPriv->type;
 }
 
+/**
+ * Return whether media is being sent on this stream.
+ *
+ * \return A boolean indicating whether media is being sent on this stream.
+ */
 bool MediaStream::sending() const
 {
     return (mPriv->direction & Telepathy::MediaStreamDirectionSend ||
             mPriv->direction & Telepathy::MediaStreamDirectionBidirectional);
 }
 
+/**
+ * Return whether media is being received on this stream.
+ *
+ * \return A boolean indicating whether media is being received on this stream.
+ */
 bool MediaStream::receiving() const
 {
     return (mPriv->direction & Telepathy::MediaStreamDirectionReceive ||
             mPriv->direction & Telepathy::MediaStreamDirectionBidirectional);
 }
 
+/**
+ * Return whether the local user has been asked to send media by the remote user.
+ *
+ * \return A boolean indicating whether the local user has been asked to
+ *         send media by the remote user.
+ */
 bool MediaStream::localSendingRequested() const
 {
     return mPriv->pendingSend & MediaStreamPendingLocalSend;
 }
 
+/**
+ * Return whether the remote user has been asked to send media by the local user.
+ *
+ * \return A boolean indicating whether the remote user has been asked to
+ *         send media by the local user.
+ */
 bool MediaStream::remoteSendingRequested() const
 {
     return mPriv->pendingSend & MediaStreamPendingRemoteSend;
 }
 
+/**
+ * Return the stream direction.
+ *
+ * \return The stream direction.
+ */
 Telepathy::MediaStreamDirection MediaStream::direction() const
 {
     return mPriv->direction;
 }
 
+/**
+ * Return the stream pending send flags.
+ *
+ * \return The stream pending send flags.
+ */
 Telepathy::MediaStreamPendingSend MediaStream::pendingSend() const
 {
     return mPriv->pendingSend;
 }
 
+/**
+ * Request this stream to be removed.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *MediaStream::remove()
 {
     return mPriv->channel->removeStreams(Telepathy::UIntList() << mPriv->id);
 }
 
+/**
+ * Request a change in the direction of this stream. In particular, this
+ * might be useful to stop sending media of a particular type, or inform the
+ * peer that you are no longer using media that is being sent to you.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *MediaStream::requestStreamDirection(
         Telepathy::MediaStreamDirection direction)
 {
@@ -228,7 +294,7 @@ void StreamedMediaChannel::Private::introspectStreams(StreamedMediaChannel::Priv
 /**
  * \class StreamedMediaChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/Client/streamed-media-channel.h <TelepathyQt4/Client/StreamedMediaChannel>
+ * \headerfile <TelepathyQt4/Client/streamed-media-channel.h> <TelepathyQt4/Client/StreamedMediaChannel>
  *
  * High-level proxy object for accessing remote %Channel objects of the
  * StreamedMedia channel type.
@@ -268,6 +334,15 @@ StreamedMediaChannel::~StreamedMediaChannel()
     delete mPriv;
 }
 
+/**
+ * Return a list of streams in this channel. This list is empty unless
+ * the FeatureStreams Feature has been enabled.
+ *
+ * Streams are added to the list when they are received; the streamAdded signal
+ * is emitted.
+ *
+ * \return The streams in this channel.
+ */
 MediaStreams StreamedMediaChannel::streams() const
 {
     return mPriv->streams.values();
@@ -288,6 +363,13 @@ PendingOperation *StreamedMediaChannel::acceptCall()
     return groupAddSelfHandle();
 }
 
+/**
+ * Remove the specified streams from this channel.
+ *
+ * \param streams List of streams to remove.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *StreamedMediaChannel::removeStreams(MediaStreams streams)
 {
     Telepathy::UIntList ids;
@@ -297,6 +379,13 @@ PendingOperation *StreamedMediaChannel::removeStreams(MediaStreams streams)
     return removeStreams(ids);
 }
 
+/**
+ * Remove the specified streams from this channel.
+ *
+ * \param streams List of ids corresponding to the streams to remove.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *StreamedMediaChannel::removeStreams(const Telepathy::UIntList &ids)
 {
     return new PendingVoidMethodCall(this,
