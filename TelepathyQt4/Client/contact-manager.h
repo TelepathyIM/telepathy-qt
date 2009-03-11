@@ -93,6 +93,8 @@ class ContactManager : public QObject
         PendingContacts *upgradeContacts(const QList<ContactPtr> &contacts,
                 const QSet<Contact::Feature> &features);
 
+        ContactPtr lookupContactByHandle(uint handle);
+
     Q_SIGNALS:
         void presencePublicationRequested(const Telepathy::Client::Contacts &contacts);
 
@@ -161,13 +163,10 @@ class ContactManager : public QObject
 
         void setContactListChannels(const QMap<uint, ContactListChannel> &contactListsChannels);
 
-        ContactPtr lookupContactByHandle(uint handle);
-
         struct Private;
         friend struct Private;
         friend class Connection;
         friend class PendingContacts;
-        friend class Contact;
         Private *mPriv;
 };
 
