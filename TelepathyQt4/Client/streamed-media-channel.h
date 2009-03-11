@@ -94,6 +94,8 @@ public:
     PendingOperation *remove();
     PendingOperation *requestStreamDirection(
             Telepathy::MediaStreamDirection direction);
+    PendingOperation *requestStreamDirection(
+            bool send, bool receive);
 
 Q_SIGNALS:
     void removed(Telepathy::Client::MediaStream *stream);

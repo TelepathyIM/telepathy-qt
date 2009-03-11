@@ -347,6 +347,27 @@ PendingOperation *MediaStream::requestStreamDirection(
             mPriv->channel->streamedMediaInterface()->RequestStreamDirection(mPriv->id, direction));
 }
 
+/**
+ * Request a change in the direction of this stream. In particular, this
+ * might be useful to stop sending media of a particular type, or inform the
+ * peer that you are no longer using media that is being sent to you.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa requestStreamDirection(Telepathy::MediaStreamDirection direction)
+ */
+PendingOperation *MediaStream::requestStreamDirection(bool send, bool receive)
+{
+    uint dir = Telepathy::MediaStreamDirectionNone;
+    if (send) {
+        dir |= Telepathy::MediaStreamDirectionSend;
+    }
+    if (receive) {
+        dir |= Telepathy::MediaStreamDirectionReceive;
+    }
+    return requestStreamDirection((Telepathy::MediaStreamDirection) dir);
+}
+
 uint MediaStream::contactHandle() const
 {
     return mPriv->contactHandle;
