@@ -50,6 +50,7 @@ public:
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
+    void gotContacts(Telepathy::Client::PendingOperation *);
 
 private:
     friend class StreamedMediaChannel;
@@ -57,6 +58,9 @@ private:
     PendingMediaStreams(StreamedMediaChannel *channel,
             QSharedPointer<Telepathy::Client::Contact> contact,
             QList<Telepathy::MediaStreamType> types,
+            QObject *parent = 0);
+    PendingMediaStreams(StreamedMediaChannel *channel,
+            const MediaStreams &streams,
             QObject *parent = 0);
 
     struct Private;
@@ -111,6 +115,8 @@ private:
             MediaStreamState state, MediaStreamDirection direction,
             MediaStreamPendingSend pendingSend);
 
+    uint contactHandle() const;
+    void setContact(const QSharedPointer<Contact> &contact);
     void setDirection(Telepathy::MediaStreamDirection direction,
             Telepathy::MediaStreamPendingSend pendingSend);
     void setState(Telepathy::MediaStreamState state);
@@ -151,6 +157,8 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
+    void onStreamsReady(Telepathy::Client::PendingOperation *);
+    void onNewStreamReady(Telepathy::Client::PendingOperation *);
     void onStreamAdded(uint, uint, uint);
     void onStreamRemoved(uint);
     void onStreamDirectionChanged(uint, uint, uint);
@@ -159,8 +167,6 @@ private Q_SLOTS:
 
 private:
     friend class PendingMediaStreams;
-
-    void addStream(const QSharedPointer<MediaStream> &stream);
 
     struct Private;
     friend struct Private;
