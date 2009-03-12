@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_roster_roster_window_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_roster_roster_window_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_roster_roster_widget_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_roster_roster_widget_h_HEADER_GUARD_
 
-#include <QMainWindow>
+#include <QWidget>
 
 #include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/Connection>
@@ -40,14 +40,14 @@ class QListWidget;
 class QListWidgetItem;
 class QPushButton;
 
-class RosterWindow : public QMainWindow
+class RosterWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    RosterWindow(const QString &username, const QString &password,
+    RosterWidget(const QString &username, const QString &password,
             QWidget *parent = 0);
-    virtual ~RosterWindow();
+    virtual ~RosterWidget();
 
 private Q_SLOTS:
     void onCMReady(Telepathy::Client::PendingOperation *);

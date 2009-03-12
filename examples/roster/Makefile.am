@@ -16,12 +16,12 @@ roster_SOURCES = \
 	main.cpp \
 	roster-item.cpp \
 	roster-item.h \
-	roster-window.cpp \
-	roster-window.h
+	roster-widget.cpp \
+	roster-widget.h
 
 nodist_roster_SOURCES = \
 	_gen/roster-item.moc.hpp \
-	_gen/roster-window.moc.hpp
+	_gen/roster-widget.moc.hpp
 
 BUILT_SOURCES = \
 	$(nodist_roster_SOURCES)

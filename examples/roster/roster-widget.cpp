@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "roster-window.h"
-#include "_gen/roster-window.moc.hpp"
+#include "roster-widget.h"
+#include "_gen/roster-widget.moc.hpp"
 
 #include "roster-item.h"
 
@@ -48,9 +48,9 @@
 
 using namespace Telepathy::Client;
 
-RosterWindow::RosterWindow(const QString &username, const QString &password,
+RosterWidget::RosterWidget(const QString &username, const QString &password,
         QWidget *parent)
-    : QMainWindow(parent),
+    : QWidget(parent),
       mUsername(username),
       mPassword(password)
 {
@@ -67,11 +67,11 @@ RosterWindow::RosterWindow(const QString &username, const QString &password,
     resize(240, 320);
 }
 
-RosterWindow::~RosterWindow()
+RosterWidget::~RosterWidget()
 {
 }
 
-void RosterWindow::createActions()
+void RosterWidget::createActions()
 {
     mAuthAction = new QAction(QLatin1String("Authorize Contact"), this);
     mAuthAction->setEnabled(false);
@@ -96,10 +96,8 @@ void RosterWindow::createActions()
             SLOT(onBlockActionTriggered(bool)));
 }
 
-void RosterWindow::setupGui()
+void RosterWidget::setupGui()
 {
-    QWidget *frame = new QWidget;
-
     QVBoxLayout *vbox = new QVBoxLayout;
 
     mList = new QListWidget;
@@ -126,9 +124,7 @@ void RosterWindow::setupGui()
 
     vbox->addLayout(hbox);
 
-    frame->setLayout(vbox);
-
-    setCentralWidget(frame);
+    setLayout(vbox);
 
     mAddDlg = new QDialog(this);
     mAddDlg->setWindowTitle("Add Contact");
@@ -169,7 +165,7 @@ void RosterWindow::createItemForContact(const ContactPtr &contact,
     }
 }
 
-void RosterWindow::onCMReady(Telepathy::Client::PendingOperation *op)
+void RosterWidget::onCMReady(Telepathy::Client::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "CM cannot become ready";
@@ -186,7 +182,7 @@ void RosterWindow::onCMReady(Telepathy::Client::PendingOperation *op)
             SLOT(onConnectionCreated(Telepathy::Client::PendingOperation *)));
 }
 
-void RosterWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
+void RosterWidget::onConnectionCreated(Telepathy::Client::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Unable to create connection";
@@ -203,7 +199,7 @@ void RosterWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
             SLOT(onConnectionReady(Telepathy::Client::PendingOperation *)));
 }
 
-void RosterWindow::onConnectionReady(Telepathy::Client::PendingOperation *op)
+void RosterWidget::onConnectionReady(Telepathy::Client::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Connection cannot become ready";
@@ -222,7 +218,7 @@ void RosterWindow::onConnectionReady(Telepathy::Client::PendingOperation *op)
     mAddBtn->setEnabled(true);
 }
 
-void RosterWindow::onPresencePublicationRequested(const Contacts &contacts)
+void RosterWidget::onPresencePublicationRequested(const Contacts &contacts)
 {
     qDebug() << "Presence publication requested";
     foreach (const ContactPtr &contact, contacts) {
@@ -230,12 +226,12 @@ void RosterWindow::onPresencePublicationRequested(const Contacts &contacts)
     }
 }
 
-void RosterWindow::onItemSelectionChanged()
+void RosterWidget::onItemSelectionChanged()
 {
     updateActions();
 }
 
-void RosterWindow::onAddButtonClicked()
+void RosterWidget::onAddButtonClicked()
 {
     mAddDlgEdt->clear();
     int ret = mAddDlg->exec();
@@ -251,7 +247,7 @@ void RosterWindow::onAddButtonClicked()
             SLOT(onContactRetrieved(Telepathy::Client::PendingOperation *)));
 }
 
-void RosterWindow::onAuthActionTriggered(bool checked)
+void RosterWidget::onAuthActionTriggered(bool checked)
 {
     Q_UNUSED(checked);
 
@@ -267,7 +263,7 @@ void RosterWindow::onAuthActionTriggered(bool checked)
     }
 }
 
-void RosterWindow::onDenyActionTriggered(bool checked)
+void RosterWidget::onDenyActionTriggered(bool checked)
 {
     Q_UNUSED(checked);
 
@@ -284,7 +280,7 @@ void RosterWindow::onDenyActionTriggered(bool checked)
     }
 }
 
-void RosterWindow::onRemoveActionTriggered(bool checked)
+void RosterWidget::onRemoveActionTriggered(bool checked)
 {
     Q_UNUSED(checked);
 
@@ -302,7 +298,7 @@ void RosterWindow::onRemoveActionTriggered(bool checked)
     }
 }
 
-void RosterWindow::onBlockActionTriggered(bool checked)
+void RosterWidget::onBlockActionTriggered(bool checked)
 {
     QList<QListWidgetItem *> selectedItems = mList->selectedItems();
     if (selectedItems.isEmpty()) {
@@ -314,7 +310,7 @@ void RosterWindow::onBlockActionTriggered(bool checked)
     item->contact()->block(checked);
 }
 
-void RosterWindow::onContactRetrieved(Telepathy::Client::PendingOperation *op)
+void RosterWidget::onContactRetrieved(Telepathy::Client::PendingOperation *op)
 {
     PendingContacts *pcontacts = qobject_cast<PendingContacts *>(op);
     QList<ContactPtr> contacts = pcontacts->contacts();
@@ -335,7 +331,7 @@ void RosterWindow::onContactRetrieved(Telepathy::Client::PendingOperation *op)
     contact->requestPresenceSubscription();
 }
 
-void RosterWindow::updateActions()
+void RosterWidget::updateActions()
 {
     QList<QListWidgetItem *> selectedItems = mList->selectedItems();
     if (selectedItems.isEmpty()) {
