@@ -386,8 +386,7 @@ void Connection::Private::introspectRoster(Connection::Private *self)
 }
 
 Connection::PendingConnect::PendingConnect(Connection *parent, const Features &requestedFeatures)
-    : PendingOperation(parent),
-      requestedFeatures(requestedFeatures)
+    : PendingReady(requestedFeatures, parent)
 {
     QDBusPendingCall call = parent->baseInterface()->Connect();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, parent);
@@ -403,7 +402,7 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
         setFinishedWithError(watcher->error());
     }
     else {
-        connect(qobject_cast<Connection*>(parent())->becomeReady(requestedFeatures),
+        connect(qobject_cast<Connection*>(parent())->becomeReady(requestedFeatures()),
                 SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                 SLOT(onBecomeReadyReply(Telepathy::Client::PendingOperation*)));
     }
@@ -1257,7 +1256,7 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
  *         for basic functionality, plus the given features, has succeeded or
  *         failed
  */
-PendingOperation *Connection::requestConnect(const Features &requestedFeatures)
+PendingReady *Connection::requestConnect(const Features &requestedFeatures)
 {
     return new PendingConnect(this, requestedFeatures);
 }

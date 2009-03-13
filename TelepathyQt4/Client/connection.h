@@ -162,7 +162,7 @@ public:
 
     PendingChannel *ensureChannel(const QVariantMap &request);
 
-    PendingOperation *requestConnect(const Features &requestedFeatures = Features());
+    PendingReady *requestConnect(const Features &requestedFeatures = Features());
 
     PendingOperation *requestDisconnect();
 

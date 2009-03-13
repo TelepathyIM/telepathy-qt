@@ -41,6 +41,7 @@ class PendingReady: public PendingOperation
     Q_OBJECT
 
 public:
+    PendingReady(const Features &requestedFeatures, QObject *object);
     ~PendingReady();
 
     QObject *object() const;
@@ -49,7 +50,6 @@ public:
 
 private:
     Q_DISABLE_COPY(PendingReady);
-    PendingReady(const Features &requestedFeatures, QObject *object);
 
     struct Private;
     friend struct Private;

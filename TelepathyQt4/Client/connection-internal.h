@@ -24,7 +24,7 @@
 
 #include <TelepathyQt4/Client/Connection>
 
-#include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/PendingReady>
 
 #include <QSet>
 
@@ -33,7 +33,7 @@ namespace Telepathy
 namespace Client
 {
 
-class Connection::PendingConnect : public PendingOperation
+class Connection::PendingConnect : public PendingReady
 {
     Q_OBJECT
 
@@ -43,9 +43,6 @@ public:
 private Q_SLOTS:
     void onConnectReply(QDBusPendingCallWatcher *);
     void onBecomeReadyReply(Telepathy::Client::PendingOperation *);
-
-private:
-    Features requestedFeatures;
 };
 
 } // Telepathy::Client
