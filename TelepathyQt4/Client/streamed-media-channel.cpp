@@ -570,6 +570,14 @@ PendingOperation *StreamedMediaChannel::removeStreams(const Telepathy::UIntList 
             streamedMediaInterface()->RemoveStreams(ids));
 }
 
+PendingMediaStreams *StreamedMediaChannel::requestStream(
+        QSharedPointer<Telepathy::Client::Contact> contact,
+        Telepathy::MediaStreamType type)
+{
+    return new PendingMediaStreams(this, contact,
+            QList<Telepathy::MediaStreamType>() << type, this);
+}
+
 PendingMediaStreams *StreamedMediaChannel::requestStreams(
         QSharedPointer<Telepathy::Client::Contact> contact,
         QList<Telepathy::MediaStreamType> types)

@@ -150,6 +150,9 @@ public:
     PendingOperation *removeStreams(MediaStreams streams);
     PendingOperation *removeStreams(const Telepathy::UIntList &ids);
 
+    PendingMediaStreams *requestStream(
+            QSharedPointer<Telepathy::Client::Contact> contact,
+            Telepathy::MediaStreamType type);
     PendingMediaStreams *requestStreams(
             QSharedPointer<Telepathy::Client::Contact> contact,
             QList<Telepathy::MediaStreamType> types);
