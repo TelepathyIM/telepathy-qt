@@ -24,8 +24,6 @@
 #include "roster-item.h"
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/ConnectionManager>
 #include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/PendingConnection>
@@ -48,27 +46,32 @@
 
 using namespace Telepathy::Client;
 
-RosterWidget::RosterWidget(const QString &username, const QString &password,
-        QWidget *parent)
-    : QWidget(parent),
-      mUsername(username),
-      mPassword(password)
+RosterWidget::RosterWidget(QWidget *parent)
+    : QWidget(parent)
 {
     setWindowTitle("Roster");
 
     createActions();
     setupGui();
-
-    mCM = new ConnectionManager("gabble", this);
-    connect(mCM->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onCMReady(Telepathy::Client::PendingOperation *)));
-
-    resize(240, 320);
 }
 
 RosterWidget::~RosterWidget()
 {
+}
+
+void RosterWidget::addConnection(Connection *conn)
+{
+    mConns.append(conn);
+    connect(conn->becomeReady(Connection::FeatureRoster),
+            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
+            SLOT(onConnectionReady(Telepathy::Client::PendingOperation *)));
+}
+
+void RosterWidget::removeConnection(Connection *conn)
+{
+    // TODO remove all contacts from this connection
+    //      if there is only one connection left, disable all actions/buttons
+    mConns.removeOne(conn);
 }
 
 void RosterWidget::createActions()
@@ -146,57 +149,20 @@ void RosterWidget::setupGui()
     mAddDlg->setLayout(addDlgVBox);
 }
 
-void RosterWindow::createItemForContact(const ContactPtr &contact,
-        bool checkExists)
+RosterItem *RosterWidget::createItemForContact(const ContactPtr &contact,
+        bool &exists)
 {
-    bool found = false;
-    if (checkExists) {
-        for (int i = 0; i < mList->count(); ++i) {
-            RosterItem *item = dynamic_cast<RosterItem*>(mList->item(i));
-            if (item->contact() == contact) {
-                found = true;
-            }
+    RosterItem *item;
+    exists = false;
+    for (int i = 0; i < mList->count(); ++i) {
+        item = dynamic_cast<RosterItem*>(mList->item(i));
+        if (item->contact() == contact) {
+            exists = true;
+            return item;
         }
     }
 
-    if (!found) {
-        RosterItem *item = new RosterItem(contact, mList);
-        connect(item, SIGNAL(changed()), SLOT(updateActions()));
-    }
-}
-
-void RosterWidget::onCMReady(Telepathy::Client::PendingOperation *op)
-{
-    if (op->isError()) {
-        qWarning() << "CM cannot become ready";
-        return;
-    }
-
-    qDebug() << "CM ready";
-    QVariantMap params;
-    params.insert("account", QVariant(mUsername));
-    params.insert("password", QVariant(mPassword));
-    PendingConnection *pconn = mCM->requestConnection("jabber", params);
-    connect(pconn,
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onConnectionCreated(Telepathy::Client::PendingOperation *)));
-}
-
-void RosterWidget::onConnectionCreated(Telepathy::Client::PendingOperation *op)
-{
-    if (op->isError()) {
-        qWarning() << "Unable to create connection";
-        return;
-    }
-
-    qDebug() << "Connection created";
-    PendingConnection *pconn =
-        qobject_cast<PendingConnection *>(op);
-    mConn = pconn->connection();
-    Features features = Features() << Connection::FeatureRoster;
-    connect(mConn->requestConnect(features),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onConnectionReady(Telepathy::Client::PendingOperation *)));
+    return new RosterItem(contact, mList);
 }
 
 void RosterWidget::onConnectionReady(Telepathy::Client::PendingOperation *op)
@@ -206,13 +172,21 @@ void RosterWidget::onConnectionReady(Telepathy::Client::PendingOperation *op)
         return;
     }
 
-    connect(mConn->contactManager(),
+    PendingReady *pr = qobject_cast<PendingReady *>(op);
+    Connection *conn = qobject_cast<Connection *>(pr->object());
+    connect(conn->contactManager(),
             SIGNAL(presencePublicationRequested(const Telepathy::Client::Contacts &)),
             SLOT(onPresencePublicationRequested(const Telepathy::Client::Contacts &)));
 
     qDebug() << "Connection ready";
-    foreach (const ContactPtr &contact, mConn->contactManager()->allKnownContacts()) {
-        createItemForContact(contact);
+    RosterItem *item;
+    bool exists;
+    foreach (const ContactPtr &contact, conn->contactManager()->allKnownContacts()) {
+        exists = false;
+        item = createItemForContact(contact, exists);
+        if (!exists) {
+            connect(item, SIGNAL(changed()), SLOT(updateActions()));
+        }
     }
 
     mAddBtn->setEnabled(true);
@@ -221,8 +195,14 @@ void RosterWidget::onConnectionReady(Telepathy::Client::PendingOperation *op)
 void RosterWidget::onPresencePublicationRequested(const Contacts &contacts)
 {
     qDebug() << "Presence publication requested";
+    RosterItem *item;
+    bool exists;
     foreach (const ContactPtr &contact, contacts) {
-        createItemForContact(contact, true);
+        exists = false;
+        item = createItemForContact(contact, exists);
+        if (!exists) {
+            connect(item, SIGNAL(changed()), SLOT(updateActions()));
+        }
     }
 }
 
@@ -240,7 +220,8 @@ void RosterWidget::onAddButtonClicked()
     }
 
     QString username = mAddDlgEdt->text();
-    PendingContacts *pcontacts = mConn->contactManager()->contactsForIdentifiers(
+    // TODO which connection to use?
+    PendingContacts *pcontacts = mConns.first()->contactManager()->contactsForIdentifiers(
             QStringList() << username);
     connect(pcontacts,
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
@@ -327,7 +308,11 @@ void RosterWidget::onContactRetrieved(Telepathy::Client::PendingOperation *op)
     qDebug() << "Request presence subscription for contact" << username;
     // TODO should we have a signal on ContactManager to signal that a contact was
     //      added to subscribe list?
-    createItemForContact(contact, true);
+    bool exists = false;
+    RosterItem *item = createItemForContact(contact, exists);
+    if (!exists) {
+        connect(item, SIGNAL(changed()), SLOT(updateActions()));
+    }
     contact->requestPresenceSubscription();
 }
 
@@ -339,6 +324,7 @@ void RosterWidget::updateActions()
         mDenyAction->setEnabled(false);
         mRemoveAction->setEnabled(false);
         mBlockAction->setEnabled(false);
+        updateActions(0);
         return;
     }
     Q_ASSERT(selectedItems.size() == 1);
@@ -381,4 +367,6 @@ void RosterWidget::updateActions()
     }
 
     mBlockAction->setChecked(contact->isBlocked());
+
+    updateActions(item);
 }

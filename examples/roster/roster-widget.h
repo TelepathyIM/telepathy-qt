@@ -28,7 +28,7 @@
 
 namespace Telepathy {
 namespace Client {
-class ConnectionManager;
+class Connection;
 class PendingOperation;
 }
 }
@@ -40,18 +40,29 @@ class QListWidget;
 class QListWidgetItem;
 class QPushButton;
 
+class RosterItem;
+
 class RosterWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    RosterWidget(const QString &username, const QString &password,
-            QWidget *parent = 0);
+    RosterWidget(QWidget *parent = 0);
     virtual ~RosterWidget();
 
+    QList<Telepathy::Client::Connection *> connections() const { return mConns; }
+    void addConnection(Telepathy::Client::Connection *conn);
+    void removeConnection(Telepathy::Client::Connection *conn);
+
+    QListWidget *listWidget() const { return mList; }
+
+protected:
+    virtual RosterItem *createItemForContact(
+            const Telepathy::Client::ContactPtr &contact,
+            bool &exists);
+    virtual void updateActions(RosterItem *item) { }
+
 private Q_SLOTS:
-    void onCMReady(Telepathy::Client::PendingOperation *);
-    void onConnectionCreated(Telepathy::Client::PendingOperation *);
     void onConnectionReady(Telepathy::Client::PendingOperation *);
     void onPresencePublicationRequested(const Telepathy::Client::Contacts &);
     void onItemSelectionChanged();
@@ -66,13 +77,8 @@ private Q_SLOTS:
 private:
     void createActions();
     void setupGui();
-    void createItemForContact(const Telepathy::Client::ContactPtr &contact,
-            bool checkExists = false);
 
-    Telepathy::Client::ConnectionManager *mCM;
-    Telepathy::Client::ConnectionPtr mConn;
-    QString mUsername;
-    QString mPassword;
+    QList<Telepathy::Client::Connection *> mConns;
     QAction *mAuthAction;
     QAction *mRemoveAction;
     QAction *mDenyAction;

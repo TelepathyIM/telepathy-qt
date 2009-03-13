@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QtGui>
 
-#include "roster-widget.h"
+#include "roster-window.h"
 
 int main(int argc, char **argv)
 {
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     Telepathy::enableDebug(true);
     Telepathy::enableWarnings(true);
 
-    RosterWidget w(argv[1], argv[2]);
+    RosterWindow w(argv[1], argv[2]);
     w.show();
 
     return app.exec();
