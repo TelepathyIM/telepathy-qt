@@ -120,7 +120,7 @@ MediaStreams PendingMediaStreams::streams() const
 
 void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QDBusPendingReply<Telepathy::MediaStreamInfoList> reply = *watcher;
     if (reply.isError()) {
         warning().nospace() << "StreamedMedia::RequestStreams()"
             " failed with " << reply.error().name() << ": " <<
@@ -131,8 +131,7 @@ void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
 
     debug() << "Got reply to StreamedMedia::RequestStreams()";
 
-    Telepathy::MediaStreamInfoList list =
-        qdbus_cast<Telepathy::MediaStreamInfoList>(reply.value());
+    Telepathy::MediaStreamInfoList list = reply.value();
     QSharedPointer<MediaStream> stream;
     foreach (const Telepathy::MediaStreamInfo &streamInfo, list) {
         stream = QSharedPointer<MediaStream>(
@@ -580,7 +579,7 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QDBusPendingReply<Telepathy::MediaStreamInfoList> reply = *watcher;
     if (reply.isError()) {
         warning().nospace() << "StreamedMedia::ListStreams()"
             " failed with " << reply.error().name() << ": " <<
@@ -593,8 +592,7 @@ void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
 
     debug() << "Got reply to StreamedMedia::ListStreams()";
 
-    Telepathy::MediaStreamInfoList list =
-        qdbus_cast<Telepathy::MediaStreamInfoList>(reply.value());
+    Telepathy::MediaStreamInfoList list = reply.value();
     foreach (const Telepathy::MediaStreamInfo &streamInfo, list) {
         mPriv->streams.insert(streamInfo.identifier,
                 QSharedPointer<MediaStream>(
