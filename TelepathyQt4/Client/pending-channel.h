@@ -55,9 +55,9 @@ public:
 
     const QString &channelType() const;
 
-    uint handleType() const;
+    uint targetHandleType() const;
 
-    uint handle() const;
+    uint targetHandle() const;
 
     QVariantMap immutableProperties() const;
 

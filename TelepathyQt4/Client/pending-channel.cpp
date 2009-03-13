@@ -186,7 +186,7 @@ const QString &PendingChannel::channelType() const
  *
  * \return The handle type, as specified in #HandleType.
  */
-uint PendingChannel::handleType() const
+uint PendingChannel::targetHandleType() const
 {
     return mPriv->handleType;
 }
@@ -194,11 +194,11 @@ uint PendingChannel::handleType() const
 /**
  * If the channel request has finished, return the target handle of the
  * resulting channel. Otherwise, return the target handle that was requested
- * (which might be different in some situations - see handleType).
+ * (which might be different in some situations - see targetHandleType).
  *
  * \return The handle.
  */
-uint PendingChannel::handle() const
+uint PendingChannel::targetHandle() const
 {
     return mPriv->handle;
 }

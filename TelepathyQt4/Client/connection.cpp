@@ -982,7 +982,7 @@ void Connection::gotContactListChannel(PendingOperation *op)
 
     PendingChannel *pending = qobject_cast<PendingChannel*>(op);
     ChannelPtr channel = pending->channel();
-    uint handle = pending->handle();
+    uint handle = pending->targetHandle();
     Q_ASSERT(channel);
     Q_ASSERT(handle);
     for (int i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
