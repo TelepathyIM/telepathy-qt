@@ -19,19 +19,48 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_call_farsight_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_call_farsight_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_call_farsight_glue_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_call_farsight_glue_h_HEADER_GUARD_
+
+#include <QObject>
 
 #include <telepathy-farsight/channel.h>
 
 namespace Telepathy {
 namespace Client {
-    class Connection;
-    class StreamedMediaChannel;
-} // Client
-} // Telepathy
 
-TfChannel *tfChannelFromQt(const Telepathy::Client::Connection *connection,
-        const Telepathy::Client::StreamedMediaChannel *channel);
+class Connection;
+class StreamedMediaChannel;
+
+class FarsightChannel : public QObject
+{
+    Q_OBJECT
+
+public:
+    enum Status {
+        StatusDisconnected = 0,
+        StatusConnecting = 1,
+        StatusConnected = 2
+    };
+
+    FarsightChannel(StreamedMediaChannel *channel, QObject *parent = 0);
+    virtual ~FarsightChannel();
+
+    Status status() const;
+
+    // TODO add a way to change input and output devices
+    //      add video support
+
+Q_SIGNALS:
+    void statusChanged(Telepathy::Client::FarsightChannel::Status status);
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+}
+}
 
 #endif

@@ -12,14 +12,28 @@ call_LDADD = \
 	$(QTGUI_LIBS) \
 	$(QTDBUS_LIBS) \
 	$(TP_FARSIGHT_LIBS) \
-	$(top_builddir)/TelepathyQt4/libtelepathy-qt4.la
+	$(top_builddir)/TelepathyQt4/libtelepathy-qt4.la \
+	$(top_builddir)/examples/roster/libtelepathy-qt4-examples-roster.la
 
 call_SOURCES = \
 	main.cpp \
+	call-handler.cpp \
+	call-handler.h \
+	call-roster-widget.cpp \
+	call-roster-widget.h \
+	call-widget.cpp \
+	call-widget.h \
+	call-window.cpp \
+	call-window.h \
 	farsight-glue.cpp \
 	farsight-glue.h
 
-nodist_call_SOURCES =
+nodist_call_SOURCES = \
+	_gen/call-handler.moc.hpp \
+	_gen/call-roster-widget.moc.hpp \
+	_gen/call-widget.moc.hpp \
+	_gen/call-window.moc.hpp \
+	_gen/farsight-glue.moc.hpp
 
 BUILT_SOURCES = \
 	$(nodist_call_SOURCES)
