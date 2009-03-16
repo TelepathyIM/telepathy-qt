@@ -26,7 +26,7 @@
 
 #include <TelepathyQt4/Client/Channel>
 
-#include "farsight-glue.h"
+#include "farsight-channel.h"
 
 namespace Telepathy {
 namespace Client {

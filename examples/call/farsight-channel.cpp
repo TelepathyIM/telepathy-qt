@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "farsight-glue.h"
-#include "_gen/farsight-glue.moc.hpp"
+#include "farsight-channel.h"
+#include "_gen/farsight-channel.moc.hpp"
 
 #include <QDebug>
 

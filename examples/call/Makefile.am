@@ -25,15 +25,15 @@ call_SOURCES = \
 	call-widget.h \
 	call-window.cpp \
 	call-window.h \
-	farsight-glue.cpp \
-	farsight-glue.h
+	farsight-channel.cpp \
+	farsight-channel.h
 
 nodist_call_SOURCES = \
 	_gen/call-handler.moc.hpp \
 	_gen/call-roster-widget.moc.hpp \
 	_gen/call-widget.moc.hpp \
 	_gen/call-window.moc.hpp \
-	_gen/farsight-glue.moc.hpp
+	_gen/farsight-channel.moc.hpp
 
 BUILT_SOURCES = \
 	$(nodist_call_SOURCES)
