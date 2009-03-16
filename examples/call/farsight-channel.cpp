@@ -59,8 +59,8 @@ struct FarsightChannel::Private
     TfChannel *tfChannel;
     GstBus *bus;
     GstElement *pipeline;
-    GstElement *audio_input;
-    GstElement *audio_output;
+    GstElement *audioInput;
+    GstElement *audioOutput;
 };
 
 FarsightChannel::Private::Private(FarsightChannel *parent,
@@ -71,8 +71,8 @@ FarsightChannel::Private::Private(FarsightChannel *parent,
       tfChannel(0),
       bus(0),
       pipeline(0),
-      audio_input(0),
-      audio_output(0)
+      audioInput(0),
+      audioOutput(0)
 {
     TpDBusDaemon *dbus = tp_dbus_daemon_dup(0);
     if (!dbus) {
@@ -125,24 +125,24 @@ FarsightChannel::Private::Private(FarsightChannel *parent,
     g_signal_connect(tfChannel, "stream-created",
         G_CALLBACK(&FarsightChannel::Private::onStreamCreated), this);
 
-    pipeline = gst_pipeline_new (NULL);
+    pipeline = gst_pipeline_new(NULL);
     bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
 
-    audio_input = gst_element_factory_make("gconfaudiosrc", NULL);
-    gst_object_ref(audio_input);
-    gst_object_sink(audio_input);
+    audioInput = gst_element_factory_make("gconfaudiosrc", NULL);
+    gst_object_ref(audioInput);
+    gst_object_sink(audioInput);
 
-    audio_output = gst_bin_new("bin");
+    audioOutput = gst_bin_new("bin");
     GstElement *resample = gst_element_factory_make("audioresample", NULL);
-    GstElement *audio_sink = gst_element_factory_make("gconfaudiosink", NULL);
-    gst_bin_add_many(GST_BIN(audio_output), resample, audio_sink, NULL);
-    gst_element_link_many(resample, audio_sink, NULL);
+    GstElement *audioSink = gst_element_factory_make("gconfaudiosink", NULL);
+    gst_bin_add_many(GST_BIN(audioOutput), resample, audioSink, NULL);
+    gst_element_link_many(resample, audioSink, NULL);
     GstPad *sink = gst_element_get_static_pad(resample, "sink");
     GstPad *ghost = gst_ghost_pad_new("sink", sink);
-    gst_element_add_pad(GST_ELEMENT(audio_output), ghost);
+    gst_element_add_pad(GST_ELEMENT(audioOutput), ghost);
     gst_object_unref(G_OBJECT(sink));
-    gst_object_ref(audio_output);
-    gst_object_sink(audio_output);
+    gst_object_ref(audioOutput);
+    gst_object_sink(audioOutput);
 
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
@@ -169,14 +169,14 @@ FarsightChannel::Private::~Private()
         pipeline = 0;
     }
 
-    if (audio_input) {
-        g_object_unref(audio_input);
-        audio_input = 0;
+    if (audioInput) {
+        g_object_unref(audioInput);
+        audioInput = 0;
     }
 
-    if (audio_output) {
-        g_object_unref(audio_output);
-        audio_output = 0;
+    if (audioOutput) {
+        g_object_unref(audioOutput);
+        audioOutput = 0;
     }
 }
 
@@ -222,10 +222,10 @@ void FarsightChannel::Private::onStreamCreated(TfChannel *tfChannel,
     GstPad *pad;
     switch (media_type) {
     case TP_MEDIA_STREAM_TYPE_AUDIO:
-        gst_bin_add(GST_BIN(self->pipeline), self->audio_input);
-        gst_element_set_state(self->audio_input, GST_STATE_PLAYING);
+        gst_bin_add(GST_BIN(self->pipeline), self->audioInput);
+        gst_element_set_state(self->audioInput, GST_STATE_PLAYING);
 
-        pad = gst_element_get_static_pad(self->audio_input, "src");
+        pad = gst_element_get_static_pad(self->audioInput, "src");
         gst_pad_link(pad, sink);
         break;
     case TP_MEDIA_STREAM_TYPE_VIDEO:
@@ -250,7 +250,7 @@ void FarsightChannel::Private::onSrcPadAdded(TfStream *stream,
 
     switch (media_type) {
     case TP_MEDIA_STREAM_TYPE_AUDIO:
-        element = self->audio_output;
+        element = self->audioOutput;
         g_object_ref(element);
         break;
     case TP_MEDIA_STREAM_TYPE_VIDEO:
