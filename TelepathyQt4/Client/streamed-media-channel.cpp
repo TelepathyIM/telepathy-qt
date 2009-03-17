@@ -183,8 +183,8 @@ struct MediaStream::Private
             uint contactHandle, MediaStreamType type,
             MediaStreamState state, MediaStreamDirection direction,
             MediaStreamPendingSend pendingSend)
-        : id(id), contactHandle(contactHandle), type(type), state(state),
-          direction(direction), pendingSend(pendingSend)
+        : channel(channel), id(id), contactHandle(contactHandle), type(type),
+          state(state), direction(direction), pendingSend(pendingSend)
     {
     }
 
