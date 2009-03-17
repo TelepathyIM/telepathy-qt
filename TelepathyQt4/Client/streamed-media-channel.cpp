@@ -679,6 +679,9 @@ void StreamedMediaChannel::onStreamAdded(uint streamId,
 
 void StreamedMediaChannel::onStreamRemoved(uint streamId)
 {
+    debug() << "StreamedMediaChannel::onStreamRemoved: stream" <<
+        streamId << "removed";
+
     if (mPriv->initialStreamsReceived) {
         Q_ASSERT(mPriv->streams.contains(streamId));
     }
@@ -693,6 +696,9 @@ void StreamedMediaChannel::onStreamRemoved(uint streamId)
 void StreamedMediaChannel::onStreamDirectionChanged(uint streamId,
         uint streamDirection, uint pendingFlags)
 {
+    debug() << "StreamedMediaChannel::onStreamDirectionChanged: stream" <<
+        streamId << "direction changed to" << streamDirection;
+
     if (mPriv->initialStreamsReceived) {
         Q_ASSERT(mPriv->streams.contains(streamId));
     }
@@ -708,6 +714,9 @@ void StreamedMediaChannel::onStreamDirectionChanged(uint streamId,
 void StreamedMediaChannel::onStreamStateChanged(uint streamId,
         uint streamState)
 {
+    debug() << "StreamedMediaChannel::onStreamStateChanged: stream" <<
+        streamId << "state changed to" << streamState;
+
     if (mPriv->initialStreamsReceived) {
         Q_ASSERT(mPriv->streams.contains(streamId));
     }
@@ -721,6 +730,9 @@ void StreamedMediaChannel::onStreamStateChanged(uint streamId,
 void StreamedMediaChannel::onStreamError(uint streamId,
         uint errorCode, const QString &errorMessage)
 {
+    debug() << "StreamedMediaChannel::onStreamError: stream" <<
+        streamId << "error:" << errorCode << "-" << errorMessage;
+
     if (mPriv->initialStreamsReceived) {
         Q_ASSERT(mPriv->streams.contains(streamId));
     }
