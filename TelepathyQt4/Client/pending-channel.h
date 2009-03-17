@@ -63,6 +63,8 @@ public:
 
     ChannelPtr channel() const;
 
+    QString objectPath() const;
+
 private Q_SLOTS:
     void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);
     void onCallEnsureChannelFinished(QDBusPendingCallWatcher *watcher);

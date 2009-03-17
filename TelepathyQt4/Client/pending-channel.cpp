@@ -280,6 +280,26 @@ ChannelPtr PendingChannel::channel() const
     return mPriv->channel;
 }
 
+/**
+ * Returns the channel object path or an empty string on error.
+ *
+ * This method is useful for creating custom Channel objects, so instead of using
+ * PendingChannel::channel, one could construct a new custom channel with
+ * the object path.
+ *
+ * \return Channel object path.
+ */
+QString PendingChannel::objectPath() const
+{
+    if (!isFinished()) {
+        warning() << "PendingChannel::channel called before finished";
+    } else if (!isValid()) {
+        warning() << "PendingChannel::channel called when not valid";
+    }
+
+    return mPriv->objectPath.path();
+}
+
 void PendingChannel::onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusObjectPath, QVariantMap> reply = *watcher;
