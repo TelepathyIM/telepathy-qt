@@ -666,8 +666,8 @@ void StreamedMediaChannel::onStreamAdded(uint streamId,
                 contactHandle,
                 (Telepathy::MediaStreamType) streamType,
                 // TODO where to get this info from?
-                Telepathy::MediaStreamStateDisconnected,
-                Telepathy::MediaStreamDirectionNone,
+                Telepathy::MediaStreamStateConnected,
+                (Telepathy::MediaStreamDirection) (Telepathy::MediaStreamDirectionSend | Telepathy::MediaStreamDirectionReceive),
                 (Telepathy::MediaStreamPendingSend) 0));
     mPriv->streams.insert(streamId, stream);
     PendingMediaStreams *pms = new PendingMediaStreams(this,
