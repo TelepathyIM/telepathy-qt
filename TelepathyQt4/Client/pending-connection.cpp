@@ -51,13 +51,14 @@ namespace Client
 struct PendingConnection::Private
 {
     Private(ConnectionManager *manager) :
-        manager(manager),
-        connection(0)
+        manager(manager)
     {
     }
 
     ConnectionManager *manager;
     QSharedPointer<Connection> connection;
+    QString serviceName;
+    QDBusObjectPath objectPath;
 };
 
 /**
@@ -123,7 +124,55 @@ QSharedPointer<Connection> PendingConnection::connection() const
         return QSharedPointer<Connection>();
     }
 
+    if (!mPriv->connection) {
+        mPriv->connection = QSharedPointer<Connection>(
+                new Connection(mPriv->manager->dbusConnection(),
+                    mPriv->serviceName, mPriv->objectPath.path()));
+    }
+
     return mPriv->connection;
+}
+
+/**
+ * Returns the connection service name or an empty string on error.
+ *
+ * This method is useful for creating custom Connection objects, so instead of using
+ * PendingConnection::connection, one could construct a new custom connection with
+ * the service name and object path.
+ *
+ * \return Connection service name.
+ * \sa objectPath()
+ */
+QString PendingConnection::serviceName() const
+{
+    if (!isFinished()) {
+        warning() << "PendingConnection::serviceName called before finished";
+    } else if (!isValid()) {
+        warning() << "PendingConnection::serviceName called when not valid";
+    }
+
+    return mPriv->serviceName;
+}
+
+/**
+ * Returns the connection object path or an empty string on error.
+ *
+ * This method is useful for creating custom Connection objects, so instead of using
+ * PendingConnection::connection, one could construct a new custom connection with
+ * the service name and object path.
+ *
+ * \return Connection object path.
+ * \sa serviceName()
+ */
+QString PendingConnection::objectPath() const
+{
+    if (!isFinished()) {
+        warning() << "PendingConnection::connection called before finished";
+    } else if (!isValid()) {
+        warning() << "PendingConnection::connection called when not valid";
+    }
+
+    return mPriv->objectPath.path();
 }
 
 void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
@@ -131,13 +180,10 @@ void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QString, QDBusObjectPath> reply = *watcher;
 
     if (!reply.isError()) {
-        debug() << "Got reply to ConnectionManager.CreateConnection";
-        QString serviceName = reply.argumentAt<0>();
-        QDBusObjectPath objectPath = reply.argumentAt<1>();
-        debug() << "Creating connection for objectPath: " << objectPath.path();
-        mPriv->connection = QSharedPointer<Connection>(
-                new Connection(mPriv->manager->dbusConnection(),
-                    serviceName, objectPath.path()));
+        mPriv->serviceName = reply.argumentAt<0>();
+        mPriv->objectPath = reply.argumentAt<1>();
+        debug() << "Got reply to ConnectionManager.CreateConnection - service name:" <<
+            mPriv->serviceName << "- object path:" << mPriv->objectPath.path();
         setFinished();
     } else {
         debug().nospace() <<
