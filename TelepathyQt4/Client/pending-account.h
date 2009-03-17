@@ -50,7 +50,10 @@ public:
     ~PendingAccount();
 
     AccountManager *manager() const;
+
     QSharedPointer<Account> account() const;
+
+    QString objectPath() const;
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
