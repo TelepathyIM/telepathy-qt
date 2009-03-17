@@ -51,13 +51,13 @@ namespace Client
 struct PendingAccount::Private
 {
     Private(AccountManager *manager) :
-        manager(manager),
-        account(0)
+        manager(manager)
     {
     }
 
     AccountManager *manager;
     QSharedPointer<Account> account;
+    QDBusObjectPath objectPath;
 };
 
 /**
@@ -126,7 +126,32 @@ QSharedPointer<Account> PendingAccount::account() const
         return QSharedPointer<Account>();
     }
 
+    if (!mPriv->account) {
+        mPriv->account = QSharedPointer<Account>(
+                new Account(mPriv->manager, mPriv->objectPath.path()));
+    }
+
     return mPriv->account;
+}
+
+/**
+ * Returns the account object path or an empty string on error.
+ *
+ * This method is useful for creating custom Account objects, so instead of using
+ * PendingAccount::account, one could construct a new custom account with
+ * the object path.
+ *
+ * \return Account object path.
+ */
+QString PendingAccount::objectPath() const
+{
+    if (!isFinished()) {
+        warning() << "PendingAccount::account called before finished";
+    } else if (!isValid()) {
+        warning() << "PendingAccount::account called when not valid";
+    }
+
+    return mPriv->objectPath.path();
 }
 
 void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
@@ -134,11 +159,9 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
 
     if (!reply.isError()) {
-        debug() << "Got reply to AccountManager.CreateAccount";
-        QDBusObjectPath objectPath = reply.value();
-        debug() << "Creating account for objectPath: " << objectPath.path();
-        mPriv->account = QSharedPointer<Account>(
-                new Account(mPriv->manager, objectPath.path()));
+        mPriv->objectPath = reply.value();
+        debug() << "Got reply to AccountManager.CreateAccount - object path:" <<
+            mPriv->objectPath.path();
         setFinished();
     } else {
         debug().nospace() <<
