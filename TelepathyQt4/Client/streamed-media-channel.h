@@ -173,6 +173,8 @@ private Q_SLOTS:
 private:
     friend class PendingMediaStreams;
 
+    void addStream(const QSharedPointer<MediaStream> &stream);
+
     struct Private;
     friend struct Private;
     Private *mPriv;

@@ -158,7 +158,6 @@ void PendingMediaStreams::gotContacts(PendingOperation *op)
     if (pc->isError()) {
         warning().nospace() << "Gathering contacts failed: "
             << pc->errorName() << ": " << pc->errorMessage();
-        // TODO should we setFinishedWithError here?
     }
 
     QHash<uint, QSharedPointer<Contact> > contactsForHandles;
@@ -172,6 +171,9 @@ void PendingMediaStreams::gotContacts(PendingOperation *op)
 
     foreach (const QSharedPointer<MediaStream> &stream, mPriv->streams) {
         stream->setContact(contactsForHandles[stream->contactHandle()]);
+        // make sure the channel has all streams even if StreamAdded was not
+        // emitted
+        mPriv->channel->addStream(stream);
     }
 
     setFinished();
@@ -728,6 +730,19 @@ void StreamedMediaChannel::onStreamError(uint streamId,
         emit stream->error(stream.data(),
                 (Telepathy::MediaStreamError) errorCode,
                 errorMessage);
+    }
+}
+
+void StreamedMediaChannel::addStream(const QSharedPointer<MediaStream> &stream)
+{
+    if (mPriv->streams.contains(stream->id())) {
+        return;
+    }
+
+    mPriv->streams.insert(stream->id(), stream);
+
+    if (mPriv->initialStreamsReceived) {
+        emit streamAdded(stream);
     }
 }
 
