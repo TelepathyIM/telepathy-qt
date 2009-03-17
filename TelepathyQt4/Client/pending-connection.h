@@ -50,7 +50,12 @@ public:
     ~PendingConnection();
 
     ConnectionManager *manager() const;
+
     QSharedPointer<Connection> connection() const;
+
+    QString serviceName() const;
+
+    QString objectPath() const;
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);

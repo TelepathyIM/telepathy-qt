@@ -321,7 +321,7 @@ void TextChannel::Private::updateCapabilities()
 /**
  * \class TextChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/Client/text-channel.h <TelepathyQt4/Client/TextChannel>
+ * \headerfile <TelepathyQt4/Client/text-channel.h> <TelepathyQt4/Client/TextChannel>
  *
  * High-level proxy object for accessing remote %Channel objects of the Text
  * channel type.
@@ -968,6 +968,8 @@ void TextChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 
     mPriv->updateInitialMessages();
     mPriv->updateCapabilities();
+
+    watcher->deleteLater();
 }
 
 void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
@@ -993,6 +995,8 @@ void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
                 message.sender, message.messageType, message.flags,
                 message.text);
     }
+
+    watcher->deleteLater();
 }
 
 } // Telepathy::Client
