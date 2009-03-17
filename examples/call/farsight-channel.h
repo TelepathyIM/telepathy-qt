@@ -23,6 +23,7 @@
 #define _TelepathyQt4_examples_call_farsight_channel_h_HEADER_GUARD_
 
 #include <QObject>
+#include <QMetaType>
 
 #include <telepathy-farsight/channel.h>
 
@@ -31,10 +32,12 @@ namespace Client {
 
 class Connection;
 class StreamedMediaChannel;
+class VideoWidget;
 
 class FarsightChannel : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(Status)
 
 public:
     enum Status {
@@ -48,8 +51,10 @@ public:
 
     Status status() const;
 
+    VideoWidget *videoPreview() const;
+    VideoWidget *videoWidget() const;
+
     // TODO add a way to change input and output devices
-    //      add video support
 
 Q_SIGNALS:
     void statusChanged(Telepathy::Client::FarsightChannel::Status status);
@@ -62,5 +67,7 @@ private:
 
 }
 }
+
+Q_DECLARE_METATYPE(Telepathy::Client::FarsightChannel::Status)
 
 #endif

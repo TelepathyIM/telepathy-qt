@@ -1,5 +1,6 @@
 AM_CXXFLAGS = \
 	$(ERROR_CXXFLAGS) \
+	$(GST_CFLAGS) \
 	$(QTCORE_CFLAGS) \
 	$(QTGUI_CFLAGS) \
 	$(QTDBUS_CFLAGS) \
@@ -9,6 +10,7 @@ AM_CXXFLAGS = \
 noinst_PROGRAMS = call
 
 call_LDADD = \
+	$(GST_LIBS) \
 	$(QTGUI_LIBS) \
 	$(QTDBUS_LIBS) \
 	$(TP_FARSIGHT_LIBS) \
@@ -26,14 +28,17 @@ call_SOURCES = \
 	call-window.cpp \
 	call-window.h \
 	farsight-channel.cpp \
-	farsight-channel.h
+	farsight-channel.h \
+	video-widget.cpp \
+	video-widget.h
 
 nodist_call_SOURCES = \
 	_gen/call-handler.moc.hpp \
 	_gen/call-roster-widget.moc.hpp \
 	_gen/call-widget.moc.hpp \
 	_gen/call-window.moc.hpp \
-	_gen/farsight-channel.moc.hpp
+	_gen/farsight-channel.moc.hpp \
+	_gen/video-widget.moc.hpp
 
 BUILT_SOURCES = \
 	$(nodist_call_SOURCES)

@@ -24,9 +24,16 @@
 #include "call-widget.h"
 
 #include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Client/ContactManager>
+#include <TelepathyQt4/Client/PendingChannel>
+#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Client/ReferencedHandles>
+#include <TelepathyQt4/Client/StreamedMediaChannel>
 
 #include <QDebug>
+#include <QMessageBox>
 
 using namespace Telepathy::Client;
 
@@ -44,7 +51,72 @@ CallHandler::~CallHandler()
 
 void CallHandler::addOutgoingCall(const QSharedPointer<Contact> &contact)
 {
-    CallWidget *call = new CallWidget(contact);
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Telepathy::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact->handle()[0]);
+
+    Connection *conn = contact->manager()->connection();
+    connect(conn->ensureChannel(request),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onOutgoingChannelCreated(Telepathy::Client::PendingOperation*)));
+}
+
+void CallHandler::addIncomingCall(StreamedMediaChannel *chan)
+{
+    mChannels.append(chan);
+    connect(chan->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onIncomingChannelReady(Telepathy::Client::PendingOperation*)));
+}
+
+void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
+{
+    if (op->isError()) {
+        qWarning() << "CallHandler::onOutgoingChannelCreated: channel cannot be created:" <<
+            op->errorName() << "-" << op->errorMessage();
+
+        QMessageBox msgBox;
+        msgBox.setText(QString("Unable to call (%1)").arg(op->errorMessage()));
+        msgBox.exec();
+        return;
+    }
+
+    PendingChannel *pc = qobject_cast<PendingChannel *>(op);
+
+    StreamedMediaChannel *chan = new StreamedMediaChannel(pc->connection(),
+            pc->objectPath(), pc->immutableProperties());
+    mChannels.append(chan);
+    connect(chan->becomeReady(),
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onOutgoingChannelReady(Telepathy::Client::PendingOperation*)));
+}
+
+void CallHandler::onOutgoingChannelReady(PendingOperation *op)
+{
+    PendingReady *pr = qobject_cast<PendingReady *>(op);
+    StreamedMediaChannel *chan = qobject_cast<StreamedMediaChannel *>(pr->object());
+
+    if (op->isError()) {
+        qWarning() << "CallHandler::onOutgoingChannelReady: channel cannot become ready:" <<
+            op->errorName() << "-" << op->errorMessage();
+
+        mChannels.removeOne(chan);
+
+        QMessageBox msgBox;
+        msgBox.setText(QString("Unable to call (%1)").arg(op->errorMessage()));
+        msgBox.exec();
+        return;
+    }
+
+    ContactManager *cm = chan->connection()->contactManager();
+    QSharedPointer<Contact> contact = cm->lookupContactByHandle(chan->targetHandle());
+    Q_ASSERT(contact);
+
+    CallWidget *call = new CallWidget(chan, contact);
     mCalls.append(call);
     connect(call,
             SIGNAL(destroyed(QObject *)),
@@ -52,9 +124,37 @@ void CallHandler::addOutgoingCall(const QSharedPointer<Contact> &contact)
     call->show();
 }
 
-void CallHandler::addIncomingCall(const ChannelPtr &chan)
+void CallHandler::onIncomingChannelReady(PendingOperation *op)
 {
-    CallWidget *call = new CallWidget(chan);
+    PendingReady *pr = qobject_cast<PendingReady *>(op);
+    StreamedMediaChannel *chan = qobject_cast<StreamedMediaChannel *>(pr->object());
+
+    if (op->isError()) {
+        // ignore - channel cannot be ready
+        qWarning() << "CallHandler::onIncomingChannelReady: channel cannot become ready:" <<
+            op->errorName() << "-" << op->errorMessage();
+
+        mChannels.removeOne(chan);
+        return;
+    }
+
+    QSharedPointer<Contact> contact = chan->initiatorContact();
+
+    QMessageBox msgBox;
+    msgBox.setText("Incoming call");
+    msgBox.setInformativeText(QString("%1 is calling you, do you want to answer?").arg(contact->id()));
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+    int ret = msgBox.exec();
+
+    if (ret == QMessageBox::No) {
+        chan->requestClose();
+        return;
+    }
+
+    chan->acceptCall();
+
+    CallWidget *call = new CallWidget(chan, contact);
     mCalls.append(call);
     connect(call,
             SIGNAL(destroyed(QObject *)),
@@ -64,6 +164,9 @@ void CallHandler::addIncomingCall(const ChannelPtr &chan)
 
 void CallHandler::onCallTerminated(QObject *obj)
 {
-    // Why does obj comes 0x0?
-    mCalls.removeOne((CallWidget *) sender());
+    CallWidget *call = (CallWidget *) obj;
+    StreamedMediaChannel *chan = call->channel();
+    mCalls.removeOne(call);
+    mChannels.removeOne(chan);
+    delete chan;
 }

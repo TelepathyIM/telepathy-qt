@@ -18,44 +18,40 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_call_call_handler_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_call_call_handler_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_call_video_widget_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_call_video_widget_h_HEADER_GUARD_
 
-#include <QObject>
-#include <QSharedPointer>
+#include <QWidget>
 
-#include <TelepathyQt4/Client/Channel>
+#include <gst/gst.h>
 
 namespace Telepathy {
 namespace Client {
-class Contact;
-class PendingOperation;
-class StreamedMediaChannel;
-}
-}
 
-class CallWidget;
-
-class CallHandler : public QObject
+class VideoWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    CallHandler(QObject *parent = 0);
-    virtual ~CallHandler();
+    VideoWidget(GstBus *bus, QWidget *parent = 0);
+    virtual ~VideoWidget();
 
-    void addOutgoingCall(const QSharedPointer<Telepathy::Client::Contact> &contact);
-    void addIncomingCall(Telepathy::Client::StreamedMediaChannel *chan);
+    GstElement *element() const;
+
+protected:
+    bool eventFilter(QEvent *ev);
 
 private Q_SLOTS:
-    void onOutgoingChannelCreated(Telepathy::Client::PendingOperation *);
-    void onOutgoingChannelReady(Telepathy::Client::PendingOperation *);
-    void onIncomingChannelReady(Telepathy::Client::PendingOperation *);
-    void onCallTerminated(QObject *);
+    void setOverlay();
+    void windowExposed();
 
 private:
-    QList<Telepathy::Client::StreamedMediaChannel *> mChannels;
-    QList<CallWidget *> mCalls;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
 };
+
+} // Telepathy::Client
+} // Telepathy
 
 #endif

@@ -22,6 +22,8 @@
 #include "farsight-channel.h"
 #include "_gen/farsight-channel.moc.hpp"
 
+#include "video-widget.h"
+
 #include <QDebug>
 
 #include <telepathy-farsight/channel.h>
@@ -61,6 +63,10 @@ struct FarsightChannel::Private
     GstElement *pipeline;
     GstElement *audioInput;
     GstElement *audioOutput;
+    GstElement *videoInput;
+    GstElement *videoTee;
+    VideoWidget *videoPreview;
+    VideoWidget *videoOutput;
 };
 
 FarsightChannel::Private::Private(FarsightChannel *parent,
@@ -72,7 +78,11 @@ FarsightChannel::Private::Private(FarsightChannel *parent,
       bus(0),
       pipeline(0),
       audioInput(0),
-      audioOutput(0)
+      audioOutput(0),
+      videoInput(0),
+      videoTee(0),
+      videoPreview(0),
+      videoOutput(0)
 {
     TpDBusDaemon *dbus = tp_dbus_daemon_dup(0);
     if (!dbus) {
@@ -128,13 +138,13 @@ FarsightChannel::Private::Private(FarsightChannel *parent,
     pipeline = gst_pipeline_new(NULL);
     bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
 
-    audioInput = gst_element_factory_make("gconfaudiosrc", NULL);
+    audioInput = gst_element_factory_make("autoaudiosrc", NULL);
     gst_object_ref(audioInput);
     gst_object_sink(audioInput);
 
-    audioOutput = gst_bin_new("bin");
+    audioOutput = gst_bin_new("audio-output-bin");
     GstElement *resample = gst_element_factory_make("audioresample", NULL);
-    GstElement *audioSink = gst_element_factory_make("gconfaudiosink", NULL);
+    GstElement *audioSink = gst_element_factory_make("autoaudiosink", NULL);
     gst_bin_add_many(GST_BIN(audioOutput), resample, audioSink, NULL);
     gst_element_link_many(resample, audioSink, NULL);
     GstPad *sink = gst_element_get_static_pad(resample, "sink");
@@ -143,6 +153,42 @@ FarsightChannel::Private::Private(FarsightChannel *parent,
     gst_object_unref(G_OBJECT(sink));
     gst_object_ref(audioOutput);
     gst_object_sink(audioOutput);
+
+    videoInput = gst_bin_new("video-input-bin");
+    GstElement *scale = gst_element_factory_make("videoscale", NULL);
+    GstElement *rate = gst_element_factory_make("videorate", NULL);
+    GstElement *colorspace = gst_element_factory_make("ffmpegcolorspace", NULL);
+    GstElement *capsfilter = gst_element_factory_make("capsfilter", NULL);
+    GstCaps *caps = gst_caps_new_simple("video/x-raw-yuv",
+            "width", G_TYPE_INT, 320,
+            "height", G_TYPE_INT, 240,
+            NULL);
+    g_object_set(G_OBJECT(capsfilter), "caps", caps, NULL);
+    GstElement *videoSrc = gst_element_factory_make("autovideosrc", NULL);
+    // GstElement *videoSrc = gst_element_factory_make("videotestsrc", NULL);
+    gst_bin_add_many(GST_BIN(videoInput), videoSrc, scale, rate,
+            colorspace, capsfilter, NULL);
+    gst_element_link_many(videoSrc, scale, rate, colorspace, capsfilter, NULL);
+    GstPad *src = gst_element_get_static_pad(capsfilter, "src");
+    ghost = gst_ghost_pad_new("src", src);
+    Q_ASSERT(gst_element_add_pad(GST_ELEMENT(videoInput), ghost));
+    gst_object_unref(G_OBJECT(src));
+    gst_object_ref(audioInput);
+    gst_object_sink(audioInput);
+
+    videoTee = gst_element_factory_make("tee", NULL);
+    gst_object_ref(videoTee);
+    gst_object_sink(videoTee);
+
+    videoPreview = new VideoWidget(bus);
+    GstElement *videoPreviewElement = videoPreview->element();
+
+    gst_bin_add_many(GST_BIN(pipeline), videoInput, videoTee,
+            videoPreviewElement, NULL);
+    gst_element_link_many(videoInput, videoTee,
+            videoPreviewElement, NULL);
+
+    videoOutput = new VideoWidget(bus);
 
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
@@ -229,7 +275,8 @@ void FarsightChannel::Private::onStreamCreated(TfChannel *tfChannel,
         gst_pad_link(pad, sink);
         break;
     case TP_MEDIA_STREAM_TYPE_VIDEO:
-        // TODO
+        pad = gst_element_get_request_pad(self->videoTee, "src%d");
+        gst_pad_link(pad, sink);
         break;
     default:
         Q_ASSERT(false);
@@ -254,8 +301,7 @@ void FarsightChannel::Private::onSrcPadAdded(TfStream *stream,
         g_object_ref(element);
         break;
     case TP_MEDIA_STREAM_TYPE_VIDEO:
-        // TODO
-        return;
+        element = self->videoOutput->element();
         break;
     default:
         Q_ASSERT(false);
@@ -287,6 +333,16 @@ FarsightChannel::FarsightChannel(StreamedMediaChannel *channel, QObject *parent)
 FarsightChannel::~FarsightChannel()
 {
     delete mPriv;
+}
+
+VideoWidget *FarsightChannel::videoPreview() const
+{
+    return mPriv->videoPreview;
+}
+
+VideoWidget *FarsightChannel::videoWidget() const
+{
+    return mPriv->videoOutput;
 }
 
 }

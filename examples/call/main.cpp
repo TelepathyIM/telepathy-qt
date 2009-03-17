@@ -9,6 +9,7 @@
 #include <QtGui>
 
 #include "call-window.h"
+#include "farsight-channel.h"
 
 int main(int argc, char **argv)
 {
@@ -22,9 +23,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    app.setAttribute(Qt::AA_NativeWindows);
+
     Telepathy::registerTypes();
     Telepathy::enableDebug(true);
     Telepathy::enableWarnings(true);
+    qRegisterMetaType<Telepathy::Client::FarsightChannel::Status>();
 
     CallWindow w(argv[1], argv[2]);
     w.show();

@@ -120,6 +120,7 @@ void CallWindow::onConnectionConnected(Telepathy::Client::PendingOperation *op)
         Telepathy::CapabilityPair capability = {
             TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
             Telepathy::ChannelMediaCapabilityAudio |
+            Telepathy::ChannelMediaCapabilityVideo |
                 Telepathy::ChannelMediaCapabilityNATTraversalSTUN |
                 Telepathy::ChannelMediaCapabilityNATTraversalGTalkP2P
         };
@@ -159,10 +160,9 @@ void CallWindow::onNewChannels(const Telepathy::ChannelDetailsList &channels)
 
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             !requested) {
-            ChannelPtr channel = ChannelPtr(
-                    new StreamedMediaChannel(mConn.data(),
+            StreamedMediaChannel *channel = new StreamedMediaChannel(mConn.data(),
                         details.channel.path(),
-                        details.properties));
+                        details.properties);
             mCallHandler->addIncomingCall(channel);
             qDebug() << "CallWindow::onNewChannels: new call received";
         }
