@@ -108,6 +108,8 @@ private:
     Private *mPriv;
 };
 
+typedef QExplicitlySharedDataPointer<AccountManager> AccountManagerPtr;
+
 } // Telepathy::Client
 } // Telepathy
 
