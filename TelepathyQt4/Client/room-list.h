@@ -48,6 +48,8 @@ private:
     Private *mPriv;
 };
 
+typedef QExplicitlySharedDataPointer<RoomList> RoomListPtr;
+
 } // Telepathy::Client
 } // Telepathy
 
