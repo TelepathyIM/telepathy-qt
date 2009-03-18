@@ -37,7 +37,6 @@
 #include <TelepathyQt4/Client/ReadyObject>
 
 #include <QSet>
-#include <QSharedPointer>
 #include <QVariantMap>
 
 class QDBusPendingCallWatcher;
@@ -76,18 +75,18 @@ public:
     uint targetHandle() const;
 
     bool isRequested() const;
-    QSharedPointer<Contact> initiatorContact() const;
+    ContactPtr initiatorContact() const;
 
     PendingOperation *requestClose();
 
     uint groupFlags() const;
 
     bool groupCanAddContacts() const;
-    PendingOperation *groupAddContacts(const QList<QSharedPointer<Contact> > &contacts,
+    PendingOperation *groupAddContacts(const QList<ContactPtr> &contacts,
             const QString &message = QString());
     bool groupCanRescindContacts() const;
     bool groupCanRemoveContacts() const;
-    PendingOperation *groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
+    PendingOperation *groupRemoveContacts(const QList<ContactPtr> &contacts,
             const QString &message = QString(),
             uint reason = Telepathy::ChannelGroupChangeReasonNone);
 
@@ -104,7 +103,7 @@ public:
         bool isValid() const { return mIsValid; }
 
         bool hasActor() const { return !mActor.isNull(); }
-        QSharedPointer<Contact> actor() const { return mActor; }
+        ContactPtr actor() const { return mActor; }
 
         bool hasReason() const { return mDetails.contains("change-reason"); }
         uint reason() const { return qdbus_cast<uint>(mDetails.value("change-reason")); }
@@ -123,22 +122,22 @@ public:
     private:
         friend class Channel;
 
-        GroupMemberChangeDetails(const QSharedPointer<Contact> &actor, const QVariantMap &details)
+        GroupMemberChangeDetails(const ContactPtr &actor, const QVariantMap &details)
             : mActor(actor), mDetails(details), mIsValid(true) {}
 
-        QSharedPointer<Contact> mActor;
+        ContactPtr mActor;
         QVariantMap mDetails;
         bool mIsValid;
     };
 
-    GroupMemberChangeDetails groupLocalPendingContactChangeInfo(const QSharedPointer<Contact> &contact) const;
+    GroupMemberChangeDetails groupLocalPendingContactChangeInfo(const ContactPtr &contact) const;
     GroupMemberChangeDetails groupSelfContactRemoveInfo() const;
 
     bool groupAreHandleOwnersAvailable() const;
     HandleOwnerMap groupHandleOwners() const;
 
     bool groupIsSelfContactTracked() const;
-    QSharedPointer<Contact> groupSelfContact() const;
+    ContactPtr groupSelfContact() const;
 
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);

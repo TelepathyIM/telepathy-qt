@@ -89,8 +89,8 @@ struct Channel::Private
 
     void buildContacts();
     void processMembersChanged();
-    void updateContacts(const QList<QSharedPointer<Contact> > &contacts =
-            QList<QSharedPointer<Contact> >());
+    void updateContacts(const QList<ContactPtr> &contacts =
+            QList<ContactPtr>());
     bool fakeGroupInterfaceIfNeeded();
     void setReady();
 
@@ -123,7 +123,7 @@ struct Channel::Private
     uint targetHandle;
     bool requested;
     uint initiatorHandle;
-    QSharedPointer<Contact> initiatorContact;
+    ContactPtr initiatorContact;
 
     // Group flags
     uint groupFlags;
@@ -151,9 +151,9 @@ struct Channel::Private
     UIntList groupInitialRP;
 
     // Current members
-    QHash<uint, QSharedPointer<Contact> > groupContacts;
-    QHash<uint, QSharedPointer<Contact> > groupLocalPendingContacts;
-    QHash<uint, QSharedPointer<Contact> > groupRemotePendingContacts;
+    QHash<uint, ContactPtr> groupContacts;
+    QHash<uint, ContactPtr> groupLocalPendingContacts;
+    QHash<uint, ContactPtr> groupRemotePendingContacts;
 
     // Stored change info
     QHash<uint, GroupMemberChangeDetails> groupLocalPendingContactsChangeInfo;
@@ -167,7 +167,7 @@ struct Channel::Private
     bool pendingRetrieveGroupSelfContact;
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
-    QSharedPointer<Contact> groupSelfContact;
+    ContactPtr groupSelfContact;
 };
 
 struct Channel::Private::GroupMembersChangedInfo
@@ -733,18 +733,18 @@ void Channel::Private::processMembersChanged()
     buildContacts();
 }
 
-void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &contacts)
+void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
 {
     Contacts groupContactsAdded;
     Contacts groupLocalPendingContactsAdded;
     Contacts groupRemotePendingContactsAdded;
-    QSharedPointer<Contact> actorContact;
+    ContactPtr actorContact;
     bool selfContactUpdated = false;
 
     debug() << "Entering Chan::Priv::updateContacts() with" << contacts.size() << "contacts";
 
     // FIXME: simplify. Some duplication of logic present.
-    foreach (QSharedPointer<Contact> contact, contacts) {
+    foreach (ContactPtr contact, contacts) {
         uint handle = contact->handle()[0];
         if (pendingGroupMembers.contains(handle)) {
             groupContactsAdded.insert(contact);
@@ -787,7 +787,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
 
     // FIXME: This shouldn't be needed. Clearer would be to first scan for the actor being present
     // in the contacts supplied.
-    foreach (QSharedPointer<Contact> contact, contacts) {
+    foreach (ContactPtr contact, contacts) {
         uint handle = contact->handle()[0];
         if (groupLocalPendingContactsChangeInfo.contains(handle)) {
             groupLocalPendingContactsChangeInfo[handle] =
@@ -796,7 +796,7 @@ void Channel::Private::updateContacts(const QList<QSharedPointer<Contact> > &con
     }
 
     Contacts groupContactsRemoved;
-    QSharedPointer<Contact> contactToRemove;
+    ContactPtr contactToRemove;
     foreach (uint handle, groupMembersToRemove) {
         if (groupContacts.contains(handle)) {
             contactToRemove = groupContacts[handle];
@@ -1089,9 +1089,9 @@ bool Channel::isRequested() const
  * Note that the value is undefined until the channel is ready.
  *
  * \return A Contact object representing the contact who initiated the channel,
- *         or QSharedPointer that points to null(0) if it can't be retrieved.
+ *         or ContactPtr that points to null(0) if it can't be retrieved.
  */
-QSharedPointer<Contact> Channel::initiatorContact() const
+ContactPtr Channel::initiatorContact() const
 {
     if (!isReady()) {
         warning() << "Channel::initiatorContact() used channel not ready";
@@ -1197,7 +1197,7 @@ bool Channel::groupCanAddContacts() const
  *         when the call has finished.
  * \sa groupCanAddContacts()
  */
-PendingOperation *Channel::groupAddContacts(const QList<QSharedPointer<Contact> > &contacts,
+PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
         const QString &message)
 {
     if (!isReady()) {
@@ -1210,7 +1210,7 @@ PendingOperation *Channel::groupAddContacts(const QList<QSharedPointer<Contact> 
                 "contacts cannot be an empty list");
     }
 
-    foreach (const QSharedPointer<Contact> &contact, contacts) {
+    foreach (const ContactPtr &contact, contacts) {
         if (!contact) {
             warning() << "Channel::groupAddContacts() used but contacts param contains "
                 "invalid contact";
@@ -1226,7 +1226,7 @@ PendingOperation *Channel::groupAddContacts(const QList<QSharedPointer<Contact> 
     }
 
     UIntList handles;
-    foreach (const QSharedPointer<Contact> &contact, contacts) {
+    foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle()[0];
     }
     return new PendingVoidMethodCall(this,
@@ -1277,7 +1277,7 @@ bool Channel::groupCanRemoveContacts() const
  *         when the call has finished.
  * \sa groupCanRemoveContacts()
  */
-PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
+PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts,
         const QString &message, uint reason)
 {
     if (!isReady()) {
@@ -1292,7 +1292,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
                 "contacts param cannot be an empty list");
     }
 
-    foreach (const QSharedPointer<Contact> &contact, contacts) {
+    foreach (const ContactPtr &contact, contacts) {
         if (!contact) {
             warning() << "Channel::groupRemoveContacts() used but contacts param contains "
                 "invalid contact:";
@@ -1308,7 +1308,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<QSharedPointer<Contac
     }
 
     UIntList handles;
-    foreach (const QSharedPointer<Contact> &contact, contacts) {
+    foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle()[0];
     }
     return new PendingVoidMethodCall(this,
@@ -1375,7 +1375,7 @@ Contacts Channel::groupRemotePendingContacts() const
  * \return The change info in a GroupMemberChangeDetails object.
  */
 Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
-        const QSharedPointer<Contact> &contact) const
+        const ContactPtr &contact) const
 {
     if (!isReady()) {
         warning() << "Channel::groupLocalPending() used channel not ready";
@@ -1514,7 +1514,7 @@ bool Channel::groupIsSelfContactTracked() const
  *
  * \return A contact handle representing the user, if possible.
  */
-QSharedPointer<Contact> Channel::groupSelfContact() const
+ContactPtr Channel::groupSelfContact() const
 {
     if (!isReady()) {
         warning() << "Channel::groupSelfContact() used channel not ready";
@@ -1968,7 +1968,7 @@ void Channel::gotContacts(PendingOperation *op)
 
     mPriv->buildingContacts = false;
 
-    QList<QSharedPointer<Contact> > contacts;
+    QList<ContactPtr> contacts;
     if (pending->isValid()) {
         contacts = pending->contacts();
 
@@ -2193,7 +2193,7 @@ void Channel::continueIntrospection()
 
 /**
  * \fn Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(
- *     const QSharedPointer<Contact> &actor, const QVariantMap &details)
+ *     const ContactPtr &actor, const QVariantMap &details)
  *
  * \internal
  */
