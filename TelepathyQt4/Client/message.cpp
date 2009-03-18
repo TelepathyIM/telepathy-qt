@@ -48,7 +48,7 @@ public:
 
     // for received messages only
     QPointer<TextChannel> textChannel;
-    QSharedPointer<Contact> sender;
+    ContactPtr sender;
 
     inline QVariant value(uint index, const char *key) const;
     inline uint getUIntOrZero(uint index, const char *key) const;
@@ -501,11 +501,11 @@ QDateTime ReceivedMessage::received() const
 
 /**
  * Return the Contact who sent the message, or
- * QSharedPointer<Contact>(0) if unknown.
+ * ContactPtr(0) if unknown.
  *
- * \return The sender or QSharedPointer<Contact>(0)
+ * \return The sender or ContactPtr(0)
  */
-QSharedPointer<Contact> ReceivedMessage::sender() const
+ContactPtr ReceivedMessage::sender() const
 {
     return mPriv->sender;
 }
@@ -564,7 +564,7 @@ void ReceivedMessage::clearSenderHandle()
     mPriv->clearSenderHandle();
 }
 
-void ReceivedMessage::setSender(const QSharedPointer<Contact> &sender)
+void ReceivedMessage::setSender(const ContactPtr &sender)
 {
     mPriv->sender = sender;
 }

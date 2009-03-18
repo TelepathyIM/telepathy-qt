@@ -26,8 +26,8 @@
 #endif
 
 #include <QSharedDataPointer>
-#include <QSharedPointer>
 
+#include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
@@ -100,7 +100,7 @@ public:
     ~ReceivedMessage();
 
     QDateTime received() const;
-    QSharedPointer<Contact> sender() const;
+    ContactPtr sender() const;
     bool isScrollback() const;
     bool isRescued() const;
 
@@ -115,7 +115,7 @@ private:
 
     void setForceNonText();
     void clearSenderHandle();
-    void setSender(const QSharedPointer<Contact> &sender);
+    void setSender(const ContactPtr &sender);
 };
 
 } // Telepathy::Client
