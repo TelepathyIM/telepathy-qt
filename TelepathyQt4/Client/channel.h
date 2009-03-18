@@ -36,10 +36,10 @@
 #include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Client/ReadyObject>
 
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
+#include <QSharedData>
 #include <QVariantMap>
-
-class QDBusPendingCallWatcher;
 
 namespace Telepathy
 {
@@ -52,7 +52,8 @@ class PendingReady;
 
 class Channel : public StatefulDBusProxy,
                 private OptionalInterfaceFactory<Channel>,
-                public ReadyObject
+                public ReadyObject,
+                public QSharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(Channel)

@@ -38,7 +38,9 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
+#include <QSharedData>
 #include <QString>
 #include <QStringList>
 
@@ -58,7 +60,8 @@ class PendingReady;
 
 class Connection : public StatefulDBusProxy,
                    private OptionalInterfaceFactory<Connection>,
-                   public ReadyObject
+                   public ReadyObject,
+                   public QSharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(Connection)

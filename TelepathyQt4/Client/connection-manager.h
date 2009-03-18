@@ -35,7 +35,9 @@
 #include <TelepathyQt4/Client/ReadyObject>
 #include <TelepathyQt4/Constants>
 
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
+#include <QSharedData>
 
 namespace Telepathy
 {
@@ -118,7 +120,8 @@ private:
 
 class ConnectionManager : public StatelessDBusProxy,
                           private OptionalInterfaceFactory<ConnectionManager>,
-                          public ReadyObject
+                          public ReadyObject,
+                          public QSharedData
 {
     Q_OBJECT
 

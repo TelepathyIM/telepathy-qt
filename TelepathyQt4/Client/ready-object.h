@@ -28,8 +28,6 @@
 
 #include <TelepathyQt4/Client/Feature>
 
-#include <QSharedData>
-
 namespace Telepathy
 {
 namespace Client
@@ -39,7 +37,7 @@ class DBusProxy;
 class PendingReady;
 class ReadinessHelper;
 
-class ReadyObject : public QSharedData
+class ReadyObject
 {
     Q_DISABLE_COPY(ReadyObject)
 

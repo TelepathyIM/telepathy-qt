@@ -38,6 +38,7 @@
 
 #include <QExplicitlySharedDataPointer>
 #include <QSet>
+#include <QSharedData>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -57,7 +58,9 @@ class ProtocolInfo;
 
 class Account : public StatelessDBusProxy,
                 private OptionalInterfaceFactory<Account>,
-                public ReadyObject
+                public ReadyObject,
+                public QSharedData
+
 {
     Q_OBJECT
     Q_DISABLE_COPY(Account)

@@ -36,7 +36,9 @@
 #include <TelepathyQt4/Client/ReadyObject>
 
 #include <QDBusObjectPath>
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
+#include <QSharedData>
 #include <QString>
 #include <QVariantMap>
 
@@ -51,7 +53,8 @@ class PendingReady;
 
 class AccountManager : public StatelessDBusProxy,
                        private OptionalInterfaceFactory<AccountManager>,
-                       public ReadyObject
+                       public ReadyObject,
+                       public QSharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(AccountManager)
