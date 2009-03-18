@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/_gen/cli-account.h>
 
+#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
@@ -37,7 +38,6 @@
 
 #include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -109,7 +109,7 @@ public:
     Telepathy::ConnectionStatus connectionStatus() const;
     Telepathy::ConnectionStatusReason connectionStatusReason() const;
     bool haveConnection() const;
-    QSharedPointer<Connection> connection() const;
+    ConnectionPtr connection() const;
 
     Telepathy::SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(

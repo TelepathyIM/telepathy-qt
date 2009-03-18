@@ -28,7 +28,6 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingReady>
@@ -100,7 +99,7 @@ struct Account::Private
     Telepathy::SimplePresence automaticPresence;
     Telepathy::SimplePresence currentPresence;
     Telepathy::SimplePresence requestedPresence;
-    QSharedPointer<Connection> connection;
+    ConnectionPtr connection;
 };
 
 Account::Private::Private(Account *parent, AccountManager *am)
@@ -520,15 +519,15 @@ bool Account::haveConnection() const
  *
  * \return Connection object, or 0 if an error occurred.
  */
-QSharedPointer<Connection> Account::connection() const
+ConnectionPtr Account::connection() const
 {
     if (mPriv->connectionObjectPath.isEmpty()) {
-        return QSharedPointer<Connection>();
+        return ConnectionPtr();
     }
     QString objectPath = mPriv->connectionObjectPath;
     QString serviceName = objectPath.mid(1).replace('/', '.');
     if (!mPriv->connection) {
-        mPriv->connection = QSharedPointer<Connection>(
+        mPriv->connection = ConnectionPtr(
                 new Connection(dbusConnection(), serviceName, objectPath));
     }
     return mPriv->connection;
@@ -877,7 +876,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         }
 
         if (connectionObjectPath != path) {
-            connection.clear();
+            connection.reset();
             connectionObjectPath = path;
             emit parent->haveConnectionChanged(!path.isEmpty());
         }

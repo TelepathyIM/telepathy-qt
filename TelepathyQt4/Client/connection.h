@@ -214,6 +214,8 @@ private:
     Private *mPriv;
 };
 
+typedef QExplicitlySharedDataPointer<Connection> ConnectionPtr;
+
 } // Telepathy::Client
 } // Telepathy
 
