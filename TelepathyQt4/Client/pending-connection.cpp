@@ -130,12 +130,6 @@ ConnectionPtr PendingConnection::connection() const
                     mPriv->serviceName, mPriv->objectPath.path()));
     }
 
-    if (!mPriv->connection) {
-        mPriv->connection = QSharedPointer<Connection>(
-                new Connection(mPriv->manager->dbusConnection(),
-                    mPriv->serviceName, mPriv->objectPath.path()));
-    }
-
     return mPriv->connection;
 }
 

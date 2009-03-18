@@ -130,11 +130,6 @@ AccountPtr PendingAccount::account() const
                 new Account(mPriv->manager, mPriv->objectPath.path()));
     }
 
-    if (!mPriv->account) {
-        mPriv->account = QSharedPointer<Account>(
-                new Account(mPriv->manager, mPriv->objectPath.path()));
-    }
-
     return mPriv->account;
 }
 
