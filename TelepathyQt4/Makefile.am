@@ -64,6 +64,7 @@ libtelepathy_qt4_la_SOURCES = \
     Client/pending-string-list.cpp \
     Client/properties.cpp \
     Client/readiness-helper.cpp \
+    Client/ready-object.cpp \
     Client/referenced-handles.cpp \
     Client/room-list.cpp \
     Client/streamed-media-channel.cpp \
@@ -165,6 +166,7 @@ tpqt4clientinclude_HEADERS = \
     Client/PendingVoidMethodCall \
     Client/Properties \
     Client/ReadinessHelper \
+    Client/ReadyObject \
     Client/ReceivedMessage \
     Client/ReferencedHandles \
     Client/ReferencedHandlesIterator \
@@ -231,6 +233,7 @@ tpqt4clientinclude_HEADERS = \
     Client/pending-string-list.h \
     Client/properties.h \
     Client/readiness-helper.h \
+    Client/ready-object.h \
     Client/referenced-handles.h \
     Client/room-list.h \
     Client/simple-pending-operations.h \
