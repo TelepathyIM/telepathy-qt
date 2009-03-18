@@ -1,6 +1,5 @@
 #include <QDebug>
 #include <QList>
-#include <QSharedPointer>
 #include <QTimer>
 
 #include <QtDBus>
@@ -57,7 +56,7 @@ private:
     QString mConnName, mConnPath;
     ContactsConnection *mConnService;
     Connection *mConn;
-    QList<QSharedPointer<Contact> > mContacts;
+    QList<ContactPtr> mContacts;
     Telepathy::UIntList mInvalidHandles;
 };
 
@@ -206,7 +205,7 @@ void TestContacts::testSupport()
 
 void TestContacts::testSelfContact()
 {
-    QSharedPointer<Contact> selfContact = mConn->selfContact();
+    ContactPtr selfContact = mConn->selfContact();
     QVERIFY(selfContact != 0);
 
     QCOMPARE(selfContact->handle()[0], mConn->selfHandle());
@@ -287,7 +286,7 @@ void TestContacts::testForHandles()
 
     // Save the contacts, and make a new request, replacing one of the invalid handles with a valid
     // one
-    QList<QSharedPointer<Contact> > saveContacts = mContacts;
+    QList<ContactPtr> saveContacts = mContacts;
     handles[2] = tp_handle_ensure(serviceRepo, "dora", NULL, NULL);
     QVERIFY(handles[2] != 0);
 
@@ -579,7 +578,7 @@ void TestContacts::testFeaturesNotRequested()
     // intentional - however, I'm not quite sure if they should be just debug (like in tp-glib))
     QCOMPARE(mContacts.size(), 3);
     for (int i = 0; i < 3; i++) {
-        QSharedPointer<Contact> contact = mContacts[i];
+        ContactPtr contact = mContacts[i];
 
         QVERIFY(contact->requestedFeatures().isEmpty());
         QVERIFY(contact->actualFeatures().isEmpty());
@@ -654,7 +653,7 @@ void TestContacts::testUpgrade()
 
     // There should be 3 resulting contacts - save them for future reference
     QCOMPARE(mContacts.size(), 3);
-    QList<QSharedPointer<Contact> > saveContacts = mContacts;
+    QList<ContactPtr> saveContacts = mContacts;
 
     // Upgrade them
     QSet<Contact::Feature> features = QSet<Contact::Feature>()

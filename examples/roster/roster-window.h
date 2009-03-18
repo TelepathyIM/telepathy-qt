@@ -22,13 +22,12 @@
 #define _TelepathyQt4_examples_roster_roster_window_h_HEADER_GUARD_
 
 #include <QMainWindow>
-#include <QSharedPointer>
 
 #include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Client/Connection>
 
 namespace Telepathy {
 namespace Client {
-class Connection;
 class ConnectionManager;
 class PendingOperation;
 }
@@ -67,11 +66,11 @@ private Q_SLOTS:
 private:
     void createActions();
     void setupGui();
-    void createItemForContact(const QSharedPointer<Telepathy::Client::Contact> &contact,
+    void createItemForContact(const Telepathy::Client::ContactPtr &contact,
             bool checkExists = false);
 
     Telepathy::Client::ConnectionManager *mCM;
-    QSharedPointer<Telepathy::Client::Connection> mConn;
+    Telepathy::Client::ConnectionPtr mConn;
     QString mUsername;
     QString mPassword;
     QAction *mAuthAction;

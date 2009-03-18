@@ -108,7 +108,7 @@ void TestConnRequests::expectCreateChannelFinished(PendingOperation* op)
     }
 
     PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    QSharedPointer<Channel> chan = pc->channel();
+    ChannelPtr chan = pc->channel();
     mChanObjectPath = chan->objectPath();
     mLoop->exit(0);
 }
@@ -135,7 +135,7 @@ void TestConnRequests::expectEnsureChannelFinished(PendingOperation* op)
     }
 
     PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    QSharedPointer<Channel> chan = pc->channel();
+    ChannelPtr chan = pc->channel();
     QCOMPARE(pc->yours(), false);
     QCOMPARE(chan->objectPath(), mChanObjectPath);
     mLoop->exit(0);

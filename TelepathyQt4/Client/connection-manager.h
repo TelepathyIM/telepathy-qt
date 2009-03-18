@@ -32,9 +32,12 @@
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
+#include <TelepathyQt4/Client/ReadyObject>
 #include <TelepathyQt4/Constants>
 
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
+#include <QSharedData>
 
 namespace Telepathy
 {
@@ -116,7 +119,9 @@ private:
 
 
 class ConnectionManager : public StatelessDBusProxy,
-                          private OptionalInterfaceFactory<ConnectionManager>
+                          private OptionalInterfaceFactory<ConnectionManager>,
+                          public ReadyObject,
+                          public QSharedData
 {
     Q_OBJECT
 
@@ -144,19 +149,10 @@ public:
         return OptionalInterfaceFactory<ConnectionManager>::interface<DBus::PropertiesInterface>();
     }
 
-    virtual bool isReady(const Features &features = Features()) const;
-    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
-
-    virtual Features requestedFeatures() const;
-    virtual Features actualFeatures() const;
-    virtual Features missingFeatures() const;
-
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
 protected:
     ConnectionManagerInterface *baseInterface() const;
-
-    ReadinessHelper *readinessHelper() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
@@ -171,6 +167,8 @@ private:
     friend class PendingConnection;
     Private *mPriv;
 };
+
+typedef QExplicitlySharedDataPointer<ConnectionManager> ConnectionManagerPtr;
 
 }
 }

@@ -51,7 +51,7 @@ private:
     QString mConnName, mConnPath;
     ExampleEcho2Connection *mConnService;
     Connection *mConn;
-    QSharedPointer<Channel> mChan;
+    ChannelPtr mChan;
     QString mChanObjectPath;
     uint mHandle;
 };
@@ -276,7 +276,7 @@ void TestChanBasics::testCreateChannel()
         QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
 
         QStringList ids;
-        foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
+        foreach (const ContactPtr &contact, mChan->groupContacts()) {
             ids << contact->id();
         }
         ids.sort();
@@ -284,7 +284,7 @@ void TestChanBasics::testCreateChannel()
         toCheck.sort();
         QCOMPARE(ids, toCheck);
 
-        mChan.clear();
+        mChan.reset();
     }
 }
 
@@ -316,7 +316,7 @@ void TestChanBasics::testEnsureChannel()
         QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
 
         QStringList ids;
-        foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
+        foreach (const ContactPtr &contact, mChan->groupContacts()) {
             ids << contact->id();
         }
         ids.sort();
@@ -330,7 +330,7 @@ void TestChanBasics::testEnsureChannel()
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isValid(), false);
 
-        mChan.clear();
+        mChan.reset();
     }
 }
 

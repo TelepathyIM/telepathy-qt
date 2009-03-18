@@ -26,7 +26,6 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/Account>
 
 #include <QDBusObjectPath>
 #include <QDBusPendingCallWatcher>
@@ -56,7 +55,7 @@ struct PendingAccount::Private
     }
 
     AccountManager *manager;
-    QSharedPointer<Account> account;
+    AccountPtr account;
     QDBusObjectPath objectPath;
 };
 
@@ -116,14 +115,19 @@ AccountManager *PendingAccount::manager() const
  *
  * \return Account object.
  */
-QSharedPointer<Account> PendingAccount::account() const
+AccountPtr PendingAccount::account() const
 {
     if (!isFinished()) {
         warning() << "PendingAccount::account called before finished, returning 0";
-        return QSharedPointer<Account>();
+        return AccountPtr();
     } else if (!isValid()) {
         warning() << "PendingAccount::account called when not valid, returning 0";
-        return QSharedPointer<Account>();
+        return AccountPtr();
+    }
+
+    if (!mPriv->account) {
+        mPriv->account = AccountPtr(
+                new Account(mPriv->manager, mPriv->objectPath.path()));
     }
 
     if (!mPriv->account) {

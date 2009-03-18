@@ -31,7 +31,6 @@
 #include <QList>
 #include <QMap>
 #include <QSet>
-#include <QSharedPointer>
 #include <QStringList>
 
 #include <TelepathyQt4/Types>
@@ -61,9 +60,9 @@ public:
     QStringList identifiers() const;
 
     bool isUpgrade() const;
-    QList<QSharedPointer<Contact> > contactsToUpgrade() const;
+    QList<ContactPtr> contactsToUpgrade() const;
 
-    QList<QSharedPointer<Contact> > contacts() const;
+    QList<ContactPtr> contacts() const;
     UIntList invalidHandles() const;
 
 private Q_SLOTS:
@@ -76,10 +75,10 @@ private:
 
     PendingContacts(ContactManager *manager, const UIntList &handles,
             const QSet<Contact::Feature> &features,
-            const QMap<uint, QSharedPointer<Contact> > &satisfyingContacts);
+            const QMap<uint, ContactPtr> &satisfyingContacts);
     PendingContacts(ContactManager *manager, const QStringList &identifiers,
             const QSet<Contact::Feature> &features);
-    PendingContacts(ContactManager *manager, const QList<QSharedPointer<Contact> > &contacts,
+    PendingContacts(ContactManager *manager, const QList<ContactPtr> &contacts,
             const QSet<Contact::Feature> &features);
 
     void allAttributesFetched();

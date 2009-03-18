@@ -27,7 +27,6 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-#include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/PendingAccount>
 #include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Constants>
@@ -83,13 +82,14 @@ struct AccountManager::Private
     QStringList interfaces;
     QSet<QString> validAccountPaths;
     QSet<QString> invalidAccountPaths;
-    QMap<QString, QSharedPointer<Account> > accounts;
+    QMap<QString, AccountPtr> accounts;
 };
 
 AccountManager::Private::Private(AccountManager *parent)
     : parent(parent),
       baseInterface(new AccountManagerInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent))
+                    parent->busName(), parent->objectPath(), parent)),
+      readinessHelper(parent->readinessHelper())
 {
     debug() << "Creating new AccountManager:" << parent->busName();
 
@@ -104,8 +104,7 @@ AccountManager::Private::Private(AccountManager *parent)
         this);
     introspectables[FeatureCore] = introspectableCore;
 
-    readinessHelper = new ReadinessHelper(parent, 0 /* status */,
-            introspectables, parent);
+    readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
 
     init();
@@ -162,6 +161,7 @@ AccountManager::AccountManager(QObject* parent)
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), parent),
       OptionalInterfaceFactory<AccountManager>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
 }
@@ -178,6 +178,7 @@ AccountManager::AccountManager(const QDBusConnection& bus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), parent),
       OptionalInterfaceFactory<AccountManager>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
 }
@@ -248,7 +249,7 @@ QStringList AccountManager::allAccountPaths() const
  * \return A list of Account objects
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
  */
-QList<QSharedPointer<Account> > AccountManager::validAccounts()
+QList<AccountPtr> AccountManager::validAccounts()
 {
     return accountsForPaths(validAccountPaths());
 }
@@ -265,7 +266,7 @@ QList<QSharedPointer<Account> > AccountManager::validAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), allAccounts(), accountsForPaths()
  */
-QList<QSharedPointer<Account> > AccountManager::invalidAccounts()
+QList<AccountPtr> AccountManager::invalidAccounts()
 {
     return accountsForPaths(invalidAccountPaths());
 }
@@ -282,7 +283,7 @@ QList<QSharedPointer<Account> > AccountManager::invalidAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
-QList<QSharedPointer<Account> > AccountManager::allAccounts()
+QList<AccountPtr> AccountManager::allAccounts()
 {
     return accountsForPaths(allAccountPaths());
 }
@@ -300,7 +301,7 @@ QList<QSharedPointer<Account> > AccountManager::allAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
-QSharedPointer<Account> AccountManager::accountForPath(const QString &path)
+AccountPtr AccountManager::accountForPath(const QString &path)
 {
     if (mPriv->accounts.contains(path)) {
         return mPriv->accounts[path];
@@ -308,10 +309,10 @@ QSharedPointer<Account> AccountManager::accountForPath(const QString &path)
 
     if (!mPriv->validAccountPaths.contains(path) &&
         !mPriv->invalidAccountPaths.contains(path)) {
-        return QSharedPointer<Account>();
+        return AccountPtr();
     }
 
-    QSharedPointer<Account> account = QSharedPointer<Account>(
+    AccountPtr account = AccountPtr(
             new Account(this, path));
     mPriv->accounts[path] = account;
     return account;
@@ -330,9 +331,9 @@ QSharedPointer<Account> AccountManager::accountForPath(const QString &path)
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), allAccounts()
  */
-QList<QSharedPointer<Account> > AccountManager::accountsForPaths(const QStringList &paths)
+QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
 {
-    QList<QSharedPointer<Account> > result;
+    QList<AccountPtr> result;
     foreach (const QString &path, paths) {
         result << accountForPath(path);
     }
@@ -361,62 +362,6 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
 }
 
 /**
- * Return whether this object has finished its initial setup.
- *
- * This is mostly useful as a sanity check, in code that shouldn't be run
- * until the object is ready. To wait for the object to be ready, call
- * becomeReady() and connect to the finished signal on the result.
- *
- * \param features The features which should be tested
- * \return \c true if the object has finished its initial setup for basic
- *         functionality plus the given features
- */
-bool AccountManager::isReady(const Features &features) const
-{
-    if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->isReady(features);
-}
-
-/**
- * Return a pending operation which will succeed when this object finishes
- * its initial setup, or will fail if a fatal error occurs during this
- * initial setup.
- *
- * If an empty set is used FeatureCore will be considered as the requested
- * feature.
- *
- * \param requestedFeatures The features which should be enabled
- * \return A PendingReady object which will emit finished
- *         when this object has finished or failed initial setup for basic
- *         functionality plus the given features
- */
-PendingReady *AccountManager::becomeReady(const Features &requestedFeatures)
-{
-    if (requestedFeatures.isEmpty()) {
-        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->becomeReady(requestedFeatures);
-
-}
-
-Features AccountManager::requestedFeatures() const
-{
-    return mPriv->readinessHelper->requestedFeatures();
-}
-
-Features AccountManager::actualFeatures() const
-{
-    return mPriv->readinessHelper->actualFeatures();
-}
-
-Features AccountManager::missingFeatures() const
-{
-    return mPriv->readinessHelper->missingFeatures();
-}
-
-/**
  * Get the AccountManagerInterface for this AccountManager. This
  * method is protected since the convenience methods provided by this
  * class should generally be used instead of calling D-Bus methods
@@ -428,11 +373,6 @@ Features AccountManager::missingFeatures() const
 AccountManagerInterface *AccountManager::baseInterface() const
 {
     return mPriv->baseInterface;
-}
-
-ReadinessHelper *AccountManager::readinessHelper() const
-{
-    return mPriv->readinessHelper;
 }
 
 /**** Private ****/

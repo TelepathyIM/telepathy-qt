@@ -150,7 +150,7 @@ void RosterWindow::setupGui()
     mAddDlg->setLayout(addDlgVBox);
 }
 
-void RosterWindow::createItemForContact(const QSharedPointer<Contact> &contact,
+void RosterWindow::createItemForContact(const ContactPtr &contact,
         bool checkExists)
 {
     bool found = false;
@@ -215,7 +215,7 @@ void RosterWindow::onConnectionReady(Telepathy::Client::PendingOperation *op)
             SLOT(onPresencePublicationRequested(const Telepathy::Client::Contacts &)));
 
     qDebug() << "Connection ready";
-    foreach (const QSharedPointer<Contact> &contact, mConn->contactManager()->allKnownContacts()) {
+    foreach (const ContactPtr &contact, mConn->contactManager()->allKnownContacts()) {
         createItemForContact(contact);
     }
 
@@ -225,7 +225,7 @@ void RosterWindow::onConnectionReady(Telepathy::Client::PendingOperation *op)
 void RosterWindow::onPresencePublicationRequested(const Contacts &contacts)
 {
     qDebug() << "Presence publication requested";
-    foreach (const QSharedPointer<Contact> &contact, contacts) {
+    foreach (const ContactPtr &contact, contacts) {
         createItemForContact(contact, true);
     }
 }
@@ -317,7 +317,7 @@ void RosterWindow::onBlockActionTriggered(bool checked)
 void RosterWindow::onContactRetrieved(Telepathy::Client::PendingOperation *op)
 {
     PendingContacts *pcontacts = qobject_cast<PendingContacts *>(op);
-    QList<QSharedPointer<Contact> > contacts = pcontacts->contacts();
+    QList<ContactPtr> contacts = pcontacts->contacts();
     Q_ASSERT(pcontacts->identifiers().size() == 1);
     QString username = pcontacts->identifiers().first();
     if (contacts.size() != 1 || !contacts.first()) {
@@ -327,7 +327,7 @@ void RosterWindow::onContactRetrieved(Telepathy::Client::PendingOperation *op)
         return;
     }
 
-    QSharedPointer<Contact> contact = contacts.first();
+    ContactPtr contact = contacts.first();
     qDebug() << "Request presence subscription for contact" << username;
     // TODO should we have a signal on ContactManager to signal that a contact was
     //      added to subscribe list?
@@ -348,7 +348,7 @@ void RosterWindow::updateActions()
     Q_ASSERT(selectedItems.size() == 1);
 
     RosterItem *item = dynamic_cast<RosterItem*>(selectedItems.first());
-    QSharedPointer<Contact> contact = item->contact();
+    ContactPtr contact = item->contact();
 
     ContactManager *manager = contact->manager();
     qDebug() << "Contact" << contact->id() << "selected";

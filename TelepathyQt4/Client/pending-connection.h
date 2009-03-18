@@ -29,7 +29,6 @@
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/PendingOperation>
 
-#include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -51,7 +50,7 @@ public:
 
     ConnectionManager *manager() const;
 
-    QSharedPointer<Connection> connection() const;
+    ConnectionPtr connection() const;
 
     QString serviceName() const;
 

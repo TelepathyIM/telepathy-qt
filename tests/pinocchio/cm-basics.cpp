@@ -137,7 +137,7 @@ void TestCmBasics::testBasics()
             SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *)));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(!pconn->connection().isNull());
+    QVERIFY(pconn->connection());
 }
 
 

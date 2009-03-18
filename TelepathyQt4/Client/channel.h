@@ -34,12 +34,12 @@
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
+#include <TelepathyQt4/Client/ReadyObject>
 
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedPointer>
+#include <QSharedData>
 #include <QVariantMap>
-
-class QDBusPendingCallWatcher;
 
 namespace Telepathy
 {
@@ -51,7 +51,9 @@ class PendingOperation;
 class PendingReady;
 
 class Channel : public StatefulDBusProxy,
-                private OptionalInterfaceFactory<Channel>
+                private OptionalInterfaceFactory<Channel>,
+                public ReadyObject,
+                public QSharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(Channel)
@@ -74,25 +76,18 @@ public:
     uint targetHandle() const;
 
     bool isRequested() const;
-    QSharedPointer<Contact> initiatorContact() const;
-
-    virtual bool isReady(const Features &features = Features()) const;
-    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
-
-    virtual Features requestedFeatures() const;
-    virtual Features actualFeatures() const;
-    virtual Features missingFeatures() const;
+    ContactPtr initiatorContact() const;
 
     PendingOperation *requestClose();
 
     uint groupFlags() const;
 
     bool groupCanAddContacts() const;
-    PendingOperation *groupAddContacts(const QList<QSharedPointer<Contact> > &contacts,
+    PendingOperation *groupAddContacts(const QList<ContactPtr> &contacts,
             const QString &message = QString());
     bool groupCanRescindContacts() const;
     bool groupCanRemoveContacts() const;
-    PendingOperation *groupRemoveContacts(const QList<QSharedPointer<Contact> > &contacts,
+    PendingOperation *groupRemoveContacts(const QList<ContactPtr> &contacts,
             const QString &message = QString(),
             uint reason = Telepathy::ChannelGroupChangeReasonNone);
 
@@ -109,7 +104,7 @@ public:
         bool isValid() const { return mIsValid; }
 
         bool hasActor() const { return !mActor.isNull(); }
-        QSharedPointer<Contact> actor() const { return mActor; }
+        ContactPtr actor() const { return mActor; }
 
         bool hasReason() const { return mDetails.contains("change-reason"); }
         uint reason() const { return qdbus_cast<uint>(mDetails.value("change-reason")); }
@@ -128,22 +123,22 @@ public:
     private:
         friend class Channel;
 
-        GroupMemberChangeDetails(const QSharedPointer<Contact> &actor, const QVariantMap &details)
+        GroupMemberChangeDetails(const ContactPtr &actor, const QVariantMap &details)
             : mActor(actor), mDetails(details), mIsValid(true) {}
 
-        QSharedPointer<Contact> mActor;
+        ContactPtr mActor;
         QVariantMap mDetails;
         bool mIsValid;
     };
 
-    GroupMemberChangeDetails groupLocalPendingContactChangeInfo(const QSharedPointer<Contact> &contact) const;
+    GroupMemberChangeDetails groupLocalPendingContactChangeInfo(const ContactPtr &contact) const;
     GroupMemberChangeDetails groupSelfContactRemoveInfo() const;
 
     bool groupAreHandleOwnersAvailable() const;
     HandleOwnerMap groupHandleOwners() const;
 
     bool groupIsSelfContactTracked() const;
-    QSharedPointer<Contact> groupSelfContact() const;
+    ContactPtr groupSelfContact() const;
 
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
@@ -271,8 +266,6 @@ protected:
         return optionalInterface<ChannelInterfaceGroupInterface>(check);
     }
 
-    ReadinessHelper *readinessHelper() const;
-
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void gotChannelType(QDBusPendingCallWatcher *watcher);
@@ -308,6 +301,8 @@ private:
     friend struct Private;
     Private *mPriv;
 };
+
+typedef QExplicitlySharedDataPointer<Channel> ChannelPtr;
 
 } // Telepathy::Client
 } // Telepathy

@@ -47,7 +47,7 @@ private:
     QString mConnName, mConnPath;
     ExampleContactListConnection *mConnService;
     Connection *mConn;
-    QList<QSharedPointer<Contact> > mContacts;
+    QList<ContactPtr> mContacts;
 };
 
 void TestConnRoster::expectConnInvalidated()
@@ -155,9 +155,9 @@ void TestConnRoster::testRoster()
         "guillaume@example.com" <<
         "christian@example.com";
     QStringList ids;
-    QList<QSharedPointer<Contact> > pendingSubscription;
-    QList<QSharedPointer<Contact> > pendingPublish;
-    foreach (const QSharedPointer<Contact> &contact,
+    QList<ContactPtr> pendingSubscription;
+    QList<ContactPtr> pendingPublish;
+    foreach (const ContactPtr &contact,
             mConn->contactManager()->allKnownContacts()) {
         qDebug() << " contact:" << contact->id() <<
             "- subscription:" << contact->subscriptionState() <<
@@ -183,7 +183,7 @@ void TestConnRoster::testRoster()
     QCOMPARE(mLoop->exec(), 0);
 
     int i = 0;
-    foreach (const QSharedPointer<Contact> &contact, mContacts) {
+    foreach (const ContactPtr &contact, mContacts) {
         QVERIFY(connect(contact.data(),
                         SIGNAL(subscriptionStateChanged(Telepathy::Client::Contact::PresenceState)),
                         SLOT(expectPresenceStateChanged(Telepathy::Client::Contact::PresenceState))));
@@ -232,7 +232,7 @@ void TestConnRoster::testRoster()
 
     i = 0;
     Contact::PresenceState expectedPresenceState;
-    foreach (const QSharedPointer<Contact> &contact, pendingPublish) {
+    foreach (const ContactPtr &contact, pendingPublish) {
         QVERIFY(connect(contact.data(),
                         SIGNAL(publishStateChanged(Telepathy::Client::Contact::PresenceState)),
                         SLOT(expectPresenceStateChanged(Telepathy::Client::Contact::PresenceState))));

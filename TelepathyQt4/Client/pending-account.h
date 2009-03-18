@@ -29,7 +29,6 @@
 #include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/PendingOperation>
 
-#include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -51,7 +50,7 @@ public:
 
     AccountManager *manager() const;
 
-    QSharedPointer<Account> account() const;
+    AccountPtr account() const;
 
     QString objectPath() const;
 

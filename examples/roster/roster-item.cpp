@@ -23,7 +23,7 @@
 
 using namespace Telepathy::Client;
 
-RosterItem::RosterItem(const QSharedPointer<Contact> &contact,
+RosterItem::RosterItem(const ContactPtr &contact,
         QListWidget *parent)
     : QObject(parent),
       QListWidgetItem(parent),

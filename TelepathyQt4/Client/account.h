@@ -28,14 +28,17 @@
 
 #include <TelepathyQt4/_gen/cli-account.h>
 
+#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
+#include <TelepathyQt4/Client/ReadyObject>
 #include <TelepathyQt4/Constants>
 
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedPointer>
+#include <QSharedData>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -54,7 +57,10 @@ class PendingReady;
 class ProtocolInfo;
 
 class Account : public StatelessDBusProxy,
-                private OptionalInterfaceFactory<Account>
+                private OptionalInterfaceFactory<Account>,
+                public ReadyObject,
+                public QSharedData
+
 {
     Q_OBJECT
     Q_DISABLE_COPY(Account)
@@ -106,7 +112,7 @@ public:
     Telepathy::ConnectionStatus connectionStatus() const;
     Telepathy::ConnectionStatusReason connectionStatusReason() const;
     bool haveConnection() const;
-    QSharedPointer<Connection> connection() const;
+    ConnectionPtr connection() const;
 
     Telepathy::SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(
@@ -126,13 +132,6 @@ public:
     QString normalizedName() const;
 
     PendingOperation *remove();
-
-    virtual bool isReady(const Features &features = Features()) const;
-    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
-
-    virtual Features requestedFeatures() const;
-    virtual Features actualFeatures() const;
-    virtual Features missingFeatures() const;
 
     QStringList interfaces() const;
 
@@ -181,8 +180,6 @@ Q_SIGNALS:
 protected:
     AccountInterface *baseInterface() const;
 
-    ReadinessHelper *readinessHelper() const;
-
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
     void gotAvatar(QDBusPendingCallWatcher *);
@@ -196,6 +193,8 @@ private:
     friend struct Private;
     Private *mPriv;
 };
+
+typedef QExplicitlySharedDataPointer<Account> AccountPtr;
 
 } // Telepathy::Client
 } // Telepathy

@@ -167,37 +167,37 @@ Contact::PresenceState Contact::publishState() const
 
 PendingOperation *Contact::requestPresenceSubscription(const QString &message)
 {
-    QSharedPointer<Contact> self =
+    ContactPtr self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
     return mPriv->manager->requestPresenceSubscription(
-            QList<QSharedPointer<Contact> >() << self,
+            QList<ContactPtr >() << self,
             message);
 }
 
 PendingOperation *Contact::removePresenceSubscription(const QString &message)
 {
-    QSharedPointer<Contact> self =
+    ContactPtr self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
     return mPriv->manager->removePresenceSubscription(
-            QList<QSharedPointer<Contact> >() << self,
+            QList<ContactPtr>() << self,
             message);
 }
 
 PendingOperation *Contact::authorizePresencePublication(const QString &message)
 {
-    QSharedPointer<Contact> self =
+    ContactPtr self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
     return mPriv->manager->authorizePresencePublication(
-            QList<QSharedPointer<Contact> >() << self,
+            QList<ContactPtr>() << self,
             message);
 }
 
 PendingOperation *Contact::removePresencePublication(const QString &message)
 {
-    QSharedPointer<Contact> self =
+    ContactPtr self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
     return mPriv->manager->removePresencePublication(
-            QList<QSharedPointer<Contact> >() << self,
+            QList<ContactPtr>() << self,
             message);
 }
 
@@ -208,10 +208,10 @@ bool Contact::isBlocked() const
 
 PendingOperation *Contact::block(bool value)
 {
-    QSharedPointer<Contact> self =
+    ContactPtr self =
         mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
     return mPriv->manager->blockContacts(
-            QList<QSharedPointer<Contact> >() << self,
+            QList<ContactPtr>() << self,
             value);
 }
 

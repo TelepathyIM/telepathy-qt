@@ -28,14 +28,17 @@
 
 #include <TelepathyQt4/_gen/cli-account-manager.h>
 
+#include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
+#include <TelepathyQt4/Client/ReadyObject>
 
 #include <QDBusObjectPath>
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedPointer>
+#include <QSharedData>
 #include <QString>
 #include <QVariantMap>
 
@@ -44,13 +47,14 @@ namespace Telepathy
 namespace Client
 {
 
-class Account;
 class AccountManager;
 class PendingAccount;
 class PendingReady;
 
 class AccountManager : public StatelessDBusProxy,
-                       private OptionalInterfaceFactory<AccountManager>
+                       private OptionalInterfaceFactory<AccountManager>,
+                       public ReadyObject,
+                       public QSharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(AccountManager)
@@ -74,25 +78,18 @@ public:
     QStringList invalidAccountPaths() const;
     QStringList allAccountPaths() const;
 
-    QList<QSharedPointer<Account> > validAccounts();
-    QList<QSharedPointer<Account> > invalidAccounts();
-    QList<QSharedPointer<Account> > allAccounts();
+    QList<AccountPtr> validAccounts();
+    QList<AccountPtr> invalidAccounts();
+    QList<AccountPtr> allAccounts();
 
-    QSharedPointer<Account> accountForPath(const QString &path);
-    QList<QSharedPointer<Account> > accountsForPaths(const QStringList &paths);
+    AccountPtr accountForPath(const QString &path);
+    QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
     PendingAccount *createAccount(const QString &connectionManager,
             const QString &protocol, const QString &displayName,
             const QVariantMap &parameters);
 
     // TODO: enabledAccounts(), accountsByProtocol(), ... ?
-
-    virtual bool isReady(const Features &features = Features()) const;
-    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
-
-    virtual Features requestedFeatures() const;
-    virtual Features actualFeatures() const;
-    virtual Features missingFeatures() const;
 
 Q_SIGNALS:
     void accountCreated(const QString &path);
@@ -101,8 +98,6 @@ Q_SIGNALS:
 
 protected:
     AccountManagerInterface *baseInterface() const;
-
-    ReadinessHelper *readinessHelper() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
@@ -115,6 +110,8 @@ private:
     friend class PendingAccount;
     Private *mPriv;
 };
+
+typedef QExplicitlySharedDataPointer<AccountManager> AccountManagerPtr;
 
 } // Telepathy::Client
 } // Telepathy

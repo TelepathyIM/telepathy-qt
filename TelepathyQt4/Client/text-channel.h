@@ -98,7 +98,7 @@ public Q_SLOTS:
     PendingSendMessage *send(const MessagePartList &parts);
 
     inline PendingOperation *inviteContacts(
-            const QList<QSharedPointer<Contact> > &contacts,
+            const QList<ContactPtr> &contacts,
             const QString &message = QString())
     {
         return groupAddContacts(contacts, message);
@@ -138,6 +138,8 @@ private:
     friend struct Private;
     Private *mPriv;
 };
+
+typedef QExplicitlySharedDataPointer<TextChannel> TextChannelPtr;
 
 } // Telepathy::Client
 } // Telepathy

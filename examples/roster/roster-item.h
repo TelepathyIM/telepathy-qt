@@ -25,7 +25,6 @@
 #include <TelepathyQt4/Client/Contact>
 
 #include <QListWidgetItem>
-#include <QSharedPointer>
 #include <QString>
 
 class RosterItem : public QObject, public QListWidgetItem
@@ -33,11 +32,11 @@ class RosterItem : public QObject, public QListWidgetItem
     Q_OBJECT
 
 public:
-    RosterItem(const QSharedPointer<Telepathy::Client::Contact> &contact,
+    RosterItem(const Telepathy::Client::ContactPtr &contact,
             QListWidget *parent = 0);
     ~RosterItem();
 
-    QSharedPointer<Telepathy::Client::Contact> contact() const { return mContact; }
+    Telepathy::Client::ContactPtr contact() const { return mContact; }
 
 Q_SIGNALS:
     void changed();
@@ -46,7 +45,7 @@ private Q_SLOTS:
     void onContactChanged();
 
 private:
-    QSharedPointer<Telepathy::Client::Contact> mContact;
+    Telepathy::Client::ContactPtr mContact;
 };
 
 #endif

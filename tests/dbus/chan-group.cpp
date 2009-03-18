@@ -69,13 +69,13 @@ private:
     QString mConnName, mConnPath;
     ExampleCSHConnection *mConnService;
     Connection *mConn;
-    QSharedPointer<Channel> mChan;
+    ChannelPtr mChan;
     QString mChanObjectPath;
     uint mRoomNumber;
     uint mRoomCount;
     ReferencedHandles mRoomHandles;
     ReferencedHandles mContactHandles;
-    QList<QSharedPointer<Contact> > mContacts;
+    QList<ContactPtr> mContacts;
     Contacts mChangedCurrent;
     Contacts mChangedLP;
     Contacts mChangedRP;
@@ -248,7 +248,7 @@ void TestChanGroup::checkExpectedIds(const Contacts &contacts,
         const QStringList &expectedIds)
 {
     QStringList ids;
-    foreach (const QSharedPointer<Contact> &contact, contacts) {
+    foreach (const ContactPtr &contact, contacts) {
         ids << contact->id();
     }
 
@@ -259,17 +259,17 @@ void TestChanGroup::checkExpectedIds(const Contacts &contacts,
 void TestChanGroup::debugContacts()
 {
     qDebug() << "contacts on group:";
-    foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
+    foreach (const ContactPtr &contact, mChan->groupContacts()) {
         qDebug() << " " << contact->id();
     }
 
     qDebug() << "local pending contacts on group:";
-    foreach (const QSharedPointer<Contact> &contact, mChan->groupLocalPendingContacts()) {
+    foreach (const ContactPtr &contact, mChan->groupLocalPendingContacts()) {
         qDebug() << " " << contact->id();
     }
 
     qDebug() << "remote pending contacts on group:";
-    foreach (const QSharedPointer<Contact> &contact, mChan->groupRemotePendingContacts()) {
+    foreach (const ContactPtr &contact, mChan->groupRemotePendingContacts()) {
         qDebug() << " " << contact->id();
     }
 }
@@ -408,7 +408,7 @@ void TestChanGroup::doTestCreateChannel()
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(mChan != 0);
+    QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -507,7 +507,7 @@ void TestChanGroup::doTestCreateChannel()
     expectedIds.sort();
     checkExpectedIds(mChan->groupRemotePendingContacts(), expectedIds);
 
-    QList<QSharedPointer<Contact> > toRemove;
+    QList<ContactPtr> toRemove;
     toRemove.append(mContacts[1]);
     toRemove.append(mContacts[2]);
     mChan->groupRemoveContacts(toRemove, "I want to remove some of them");
@@ -547,7 +547,7 @@ void TestChanGroup::doTestCreateChannel()
 
     toRemove.clear();
     ids.clear();
-    foreach (const QSharedPointer<Contact> &contact, mChan->groupContacts()) {
+    foreach (const ContactPtr &contact, mChan->groupContacts()) {
         ids << contact->id();
         if (contact != mChan->groupSelfContact() && toRemove.isEmpty()) {
             toRemove.append(contact);
@@ -560,7 +560,7 @@ void TestChanGroup::doTestCreateChannel()
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
 
-    mChan.clear();
+    mChan.reset();
 }
 
 void TestChanGroup::cleanup()

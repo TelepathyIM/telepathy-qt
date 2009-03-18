@@ -28,7 +28,6 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
 #include <TelepathyQt4/Client/PendingFailure>
 #include <TelepathyQt4/Client/PendingReady>
@@ -100,7 +99,7 @@ struct Account::Private
     Telepathy::SimplePresence automaticPresence;
     Telepathy::SimplePresence currentPresence;
     Telepathy::SimplePresence requestedPresence;
-    QSharedPointer<Connection> connection;
+    ConnectionPtr connection;
 };
 
 Account::Private::Private(Account *parent, AccountManager *am)
@@ -108,6 +107,7 @@ Account::Private::Private(Account *parent, AccountManager *am)
       am(am),
       baseInterface(new AccountInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
+      readinessHelper(parent->readinessHelper()),
       valid(false),
       enabled(false),
       connectsAutomatically(false),
@@ -172,8 +172,7 @@ Account::Private::Private(Account *parent, AccountManager *am)
         this);
     introspectables[FeatureProtocolInfo] = introspectableProtocolInfo;
 
-    readinessHelper = new ReadinessHelper(parent, 0 /* status */,
-            introspectables, parent);
+    readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
 
     init();
@@ -211,6 +210,7 @@ Account::Account(AccountManager *am, const QString &objectPath,
     : StatelessDBusProxy(am->dbusConnection(),
             am->busName(), objectPath, parent),
       OptionalInterfaceFactory<Account>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, am))
 {
 }
@@ -519,15 +519,15 @@ bool Account::haveConnection() const
  *
  * \return Connection object, or 0 if an error occurred.
  */
-QSharedPointer<Connection> Account::connection() const
+ConnectionPtr Account::connection() const
 {
     if (mPriv->connectionObjectPath.isEmpty()) {
-        return QSharedPointer<Connection>();
+        return ConnectionPtr();
     }
     QString objectPath = mPriv->connectionObjectPath;
     QString serviceName = objectPath.mid(1).replace('/', '.');
     if (!mPriv->connection) {
-        mPriv->connection = QSharedPointer<Connection>(
+        mPriv->connection = ConnectionPtr(
                 new Connection(dbusConnection(), serviceName, objectPath));
     }
     return mPriv->connection;
@@ -644,60 +644,6 @@ PendingOperation *Account::remove()
     return new PendingVoidMethodCall(this, baseInterface()->Remove());
 }
 
-/**
- * Return whether this object has finished its initial setup.
- *
- * This is mostly useful as a sanity check, in code that shouldn't be run
- * until the object is ready. To wait for the object to be ready, call
- * becomeReady() and connect to the finished signal on the result.
- *
- * \param features The features which should be tested
- * \return \c true if the object has finished its initial setup for basic
- *         functionality plus the given features
- */
-bool Account::isReady(const Features &features) const
-{
-    if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->isReady(features);
-}
-
-/**
- * Return a pending ready account which will succeed when this object finishes
- * its initial setup, or will fail if a fatal error occurs during this
- * initial setup.
- *
- * If an empty set is used FeatureCore will be considered as the requested
- * feature.
- *
- * \param requestedFeatures The features which should be enabled.
- * \return A PendingReady object which will emit finished
- *         when this object has finished or failed its initial setup.
- */
-PendingReady *Account::becomeReady(const Features &requestedFeatures)
-{
-    if (requestedFeatures.isEmpty()) {
-        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->becomeReady(requestedFeatures);
-}
-
-Features Account::requestedFeatures() const
-{
-    return mPriv->readinessHelper->requestedFeatures();
-}
-
-Features Account::actualFeatures() const
-{
-    return mPriv->readinessHelper->actualFeatures();
-}
-
-Features Account::missingFeatures() const
-{
-    return mPriv->readinessHelper->missingFeatures();
-}
-
 QStringList Account::interfaces() const
 {
     return mPriv->interfaces;
@@ -758,11 +704,6 @@ QStringList Account::interfaces() const
 AccountInterface *Account::baseInterface() const
 {
     return mPriv->baseInterface;
-}
-
-ReadinessHelper *Account::readinessHelper() const
-{
-    return mPriv->readinessHelper;
 }
 
 /**** Private ****/
@@ -935,7 +876,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         }
 
         if (connectionObjectPath != path) {
-            connection.clear();
+            connection.reset();
             connectionObjectPath = path;
             emit parent->haveConnectionChanged(!path.isEmpty());
         }
