@@ -101,7 +101,7 @@ Q_SIGNALS:
 
     // TODO: consider how the Renaming interface should work and map to Contacts
     // I guess it would be something like:
-    // void renamedTo(QSharedPointer<Telepathy::Client::Contact>)
+    // void renamedTo(Telepathy::Client::ContactPtr)
     // with that contact getting the same features requested as the current one. Or would we rather
     // want to signal that change right away with a handle?
 
@@ -127,9 +127,10 @@ private:
     Private *mPriv;
 };
 
-typedef QSet<QSharedPointer<Contact> > Contacts;
+typedef QSharedPointer<Contact> ContactPtr;
+typedef QSet<ContactPtr> Contacts;
 
-inline uint qHash(const QSharedPointer<Contact> &contact)
+inline uint qHash(const ContactPtr &contact)
 {
     return qHash(contact.data());
 }
