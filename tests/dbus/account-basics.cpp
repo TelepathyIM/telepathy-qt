@@ -76,7 +76,7 @@ void TestAccountBasics::testBasics()
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(!pacc->account().isNull());
+    QVERIFY(pacc->account());
 
     QCOMPARE(mAM->interfaces(), QStringList());
 
