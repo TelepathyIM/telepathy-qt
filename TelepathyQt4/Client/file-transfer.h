@@ -48,6 +48,8 @@ private:
     Private *mPriv;
 };
 
+typedef QExplicitlySharedDataPointer<FileTransfer> FileTransferPtr;
+
 } // Telepathy::Client
 } // Telepathy
 
