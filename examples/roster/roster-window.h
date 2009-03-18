@@ -66,7 +66,7 @@ private Q_SLOTS:
 private:
     void createActions();
     void setupGui();
-    void createItemForContact(const QSharedPointer<Telepathy::Client::Contact> &contact,
+    void createItemForContact(const Telepathy::Client::ContactPtr &contact,
             bool checkExists = false);
 
     Telepathy::Client::ConnectionManager *mCM;
