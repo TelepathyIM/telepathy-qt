@@ -32,6 +32,7 @@
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
+#include <TelepathyQt4/Client/ReadyObject>
 
 #include <QDBusObjectPath>
 #include <QSet>
@@ -50,7 +51,8 @@ class PendingAccount;
 class PendingReady;
 
 class AccountManager : public StatelessDBusProxy,
-                       private OptionalInterfaceFactory<AccountManager>
+                       private OptionalInterfaceFactory<AccountManager>,
+                       public ReadyObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(AccountManager)
@@ -87,13 +89,6 @@ public:
 
     // TODO: enabledAccounts(), accountsByProtocol(), ... ?
 
-    virtual bool isReady(const Features &features = Features()) const;
-    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
-
-    virtual Features requestedFeatures() const;
-    virtual Features actualFeatures() const;
-    virtual Features missingFeatures() const;
-
 Q_SIGNALS:
     void accountCreated(const QString &path);
     void accountRemoved(const QString &path);
@@ -101,8 +96,6 @@ Q_SIGNALS:
 
 protected:
     AccountManagerInterface *baseInterface() const;
-
-    ReadinessHelper *readinessHelper() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);

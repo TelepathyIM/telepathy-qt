@@ -89,7 +89,8 @@ struct AccountManager::Private
 AccountManager::Private::Private(AccountManager *parent)
     : parent(parent),
       baseInterface(new AccountManagerInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent))
+                    parent->busName(), parent->objectPath(), parent)),
+      readinessHelper(parent->readinessHelper())
 {
     debug() << "Creating new AccountManager:" << parent->busName();
 
@@ -104,8 +105,7 @@ AccountManager::Private::Private(AccountManager *parent)
         this);
     introspectables[FeatureCore] = introspectableCore;
 
-    readinessHelper = new ReadinessHelper(parent, 0 /* status */,
-            introspectables, parent);
+    readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
 
     init();
@@ -162,6 +162,7 @@ AccountManager::AccountManager(QObject* parent)
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), parent),
       OptionalInterfaceFactory<AccountManager>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
 }
@@ -178,6 +179,7 @@ AccountManager::AccountManager(const QDBusConnection& bus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), parent),
       OptionalInterfaceFactory<AccountManager>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
 }
@@ -361,62 +363,6 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
 }
 
 /**
- * Return whether this object has finished its initial setup.
- *
- * This is mostly useful as a sanity check, in code that shouldn't be run
- * until the object is ready. To wait for the object to be ready, call
- * becomeReady() and connect to the finished signal on the result.
- *
- * \param features The features which should be tested
- * \return \c true if the object has finished its initial setup for basic
- *         functionality plus the given features
- */
-bool AccountManager::isReady(const Features &features) const
-{
-    if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->isReady(features);
-}
-
-/**
- * Return a pending operation which will succeed when this object finishes
- * its initial setup, or will fail if a fatal error occurs during this
- * initial setup.
- *
- * If an empty set is used FeatureCore will be considered as the requested
- * feature.
- *
- * \param requestedFeatures The features which should be enabled
- * \return A PendingReady object which will emit finished
- *         when this object has finished or failed initial setup for basic
- *         functionality plus the given features
- */
-PendingReady *AccountManager::becomeReady(const Features &requestedFeatures)
-{
-    if (requestedFeatures.isEmpty()) {
-        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->becomeReady(requestedFeatures);
-
-}
-
-Features AccountManager::requestedFeatures() const
-{
-    return mPriv->readinessHelper->requestedFeatures();
-}
-
-Features AccountManager::actualFeatures() const
-{
-    return mPriv->readinessHelper->actualFeatures();
-}
-
-Features AccountManager::missingFeatures() const
-{
-    return mPriv->readinessHelper->missingFeatures();
-}
-
-/**
  * Get the AccountManagerInterface for this AccountManager. This
  * method is protected since the convenience methods provided by this
  * class should generally be used instead of calling D-Bus methods
@@ -428,11 +374,6 @@ Features AccountManager::missingFeatures() const
 AccountManagerInterface *AccountManager::baseInterface() const
 {
     return mPriv->baseInterface;
-}
-
-ReadinessHelper *AccountManager::readinessHelper() const
-{
-    return mPriv->readinessHelper;
 }
 
 /**** Private ****/
