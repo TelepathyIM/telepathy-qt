@@ -56,7 +56,7 @@ struct PendingConnection::Private
     }
 
     ConnectionManager *manager;
-    QSharedPointer<Connection> connection;
+    ConnectionPtr connection;
     QString serviceName;
     QDBusObjectPath objectPath;
 };
@@ -114,18 +114,18 @@ ConnectionManager *PendingConnection::manager() const
  *
  * \return Connection object.
  */
-QSharedPointer<Connection> PendingConnection::connection() const
+ConnectionPtr PendingConnection::connection() const
 {
     if (!isFinished()) {
         warning() << "PendingConnection::connection called before finished, returning 0";
-        return QSharedPointer<Connection>();
+        return ConnectionPtr();
     } else if (!isValid()) {
         warning() << "PendingConnection::connection called when not valid, returning 0";
-        return QSharedPointer<Connection>();
+        return ConnectionPtr();
     }
 
     if (!mPriv->connection) {
-        mPriv->connection = QSharedPointer<Connection>(
+        mPriv->connection = ConnectionPtr(
                 new Connection(mPriv->manager->dbusConnection(),
                     mPriv->serviceName, mPriv->objectPath.path()));
     }
