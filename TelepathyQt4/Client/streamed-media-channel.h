@@ -48,6 +48,8 @@ private:
     Private *mPriv;
 };
 
+typedef QExplicitlySharedDataPointer<StreamedMediaChannel> StreamedMediaChannelPtr;
+
 } // Telepathy::Client
 } // Telepathy
 
