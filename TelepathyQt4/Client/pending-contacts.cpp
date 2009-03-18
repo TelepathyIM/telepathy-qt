@@ -45,7 +45,7 @@ struct PendingContacts::Private
 
     Private(ContactManager *manager, const UIntList &handles,
             const QSet<Contact::Feature> &features,
-            const QMap<uint, QSharedPointer<Contact> > &satisfyingContacts)
+            const QMap<uint, ContactPtr> &satisfyingContacts)
         : manager(manager),
           features(features),
           satisfyingContacts(satisfyingContacts),
@@ -65,7 +65,7 @@ struct PendingContacts::Private
     {
     }
 
-    Private(ContactManager *manager, const QList<QSharedPointer<Contact> > &contactsToUpgrade,
+    Private(ContactManager *manager, const QList<ContactPtr> &contactsToUpgrade,
             const QSet<Contact::Feature> &features)
         : manager(manager),
           features(features),
@@ -78,17 +78,17 @@ struct PendingContacts::Private
     // Generic parameters
     ContactManager *manager;
     QSet<Contact::Feature> features;
-    QMap<uint, QSharedPointer<Contact> > satisfyingContacts;
+    QMap<uint, ContactPtr> satisfyingContacts;
 
     // Request type specific parameters
     RequestType requestType;
     UIntList handles;
     QStringList identifiers;
-    QList<QSharedPointer<Contact> > contactsToUpgrade;
+    QList<ContactPtr> contactsToUpgrade;
     PendingContacts *nested;
 
     // Results
-    QList<QSharedPointer<Contact> > contacts;
+    QList<ContactPtr> contacts;
     UIntList invalidHandles;
 };
 
@@ -138,7 +138,7 @@ QStringList PendingContacts::identifiers() const
     return mPriv->identifiers;
 }
 
-QList<QSharedPointer<Contact> > PendingContacts::contactsToUpgrade() const
+QList<ContactPtr> PendingContacts::contactsToUpgrade() const
 {
     if (!isUpgrade()) {
         warning() << "Tried to get contacts to upgrade from" << this << "which is not an upgrade!";
@@ -152,7 +152,7 @@ bool PendingContacts::isUpgrade() const
     return mPriv->requestType == Private::Upgrade;
 }
 
-QList<QSharedPointer<Contact> > PendingContacts::contacts() const
+QList<ContactPtr> PendingContacts::contacts() const
 {
     if (!isFinished()) {
         warning() << "PendingContacts::contacts() called before finished";
@@ -254,7 +254,7 @@ void PendingContacts::onNestedFinished(PendingOperation *operation)
 
 PendingContacts::PendingContacts(ContactManager *manager,
         const UIntList &handles, const QSet<Contact::Feature> &features,
-        const QMap<uint, QSharedPointer<Contact> > &satisfyingContacts)
+        const QMap<uint, ContactPtr> &satisfyingContacts)
     : PendingOperation(manager),
       mPriv(new Private(manager, handles, features, satisfyingContacts))
 {
@@ -267,11 +267,11 @@ PendingContacts::PendingContacts(ContactManager *manager,
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,
-        const QList<QSharedPointer<Contact> > &contacts, const QSet<Contact::Feature> &features)
+        const QList<ContactPtr> &contacts, const QSet<Contact::Feature> &features)
     : PendingOperation(manager), mPriv(new Private(manager, contacts, features))
 {
     UIntList handles;
-    foreach (QSharedPointer<Contact> contact, contacts) {
+    foreach (const ContactPtr &contact, contacts) {
         handles.push_back(contact->handle()[0]);
     }
 
