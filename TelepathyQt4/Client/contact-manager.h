@@ -30,7 +30,6 @@
 
 #include <QList>
 #include <QSet>
-#include <QSharedPointer>
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Client/Contact>
@@ -62,26 +61,26 @@ class ContactManager : public QObject
         bool canRequestPresenceSubscription() const;
         bool subscriptionRequestHasMessage() const;
         PendingOperation *requestPresenceSubscription(
-                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+                const QList<ContactPtr> &contacts, const QString &message = QString());
         bool canRemovePresenceSubscription() const;
         bool subscriptionRemovalHasMessage() const;
         bool canRescindPresenceSubscriptionRequest() const;
         bool subscriptionRescindingHasMessage() const;
         PendingOperation *removePresenceSubscription(
-                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+                const QList<ContactPtr> &contacts, const QString &message = QString());
         bool canAuthorizePresencePublication() const;
         bool publicationAuthorizationHasMessage() const;
         PendingOperation *authorizePresencePublication(
-                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+                const QList<ContactPtr> &contacts, const QString &message = QString());
         bool publicationRejectionHasMessage() const;
         bool canRemovePresencePublication() const;
         bool publicationRemovalHasMessage() const;
         PendingOperation *removePresencePublication(
-                const QList<QSharedPointer<Contact> > &contacts, const QString &message = QString());
+                const QList<ContactPtr> &contacts, const QString &message = QString());
 
         bool canBlockContacts() const;
         PendingOperation *blockContacts(
-                const QList<QSharedPointer<Contact> > &contacts, bool value = true);
+                const QList<ContactPtr> &contacts, bool value = true);
 
         PendingContacts *contactsForHandles(const UIntList &handles,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
@@ -91,7 +90,7 @@ class ContactManager : public QObject
         PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
                 const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
 
-        PendingContacts *upgradeContacts(const QList<QSharedPointer<Contact> > &contacts,
+        PendingContacts *upgradeContacts(const QList<ContactPtr> &contacts,
                 const QSet<Contact::Feature> &features);
 
     Q_SIGNALS:
@@ -157,12 +156,12 @@ class ContactManager : public QObject
         ContactManager(Connection *parent);
         ~ContactManager();
 
-        QSharedPointer<Contact> ensureContact(const ReferencedHandles &handle,
+        ContactPtr ensureContact(const ReferencedHandles &handle,
                 const QSet<Contact::Feature> &features, const QVariantMap &attributes);
 
         void setContactListChannels(const QMap<uint, ContactListChannel> &contactListsChannels);
 
-        QSharedPointer<Contact> lookupContactByHandle(uint handle);
+        ContactPtr lookupContactByHandle(uint handle);
 
         struct Private;
         friend struct Private;
