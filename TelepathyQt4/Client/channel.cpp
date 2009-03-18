@@ -204,6 +204,7 @@ Channel::Private::Private(Channel *parent, Connection *connection)
       connection(connection),
       group(0),
       properties(0),
+      readinessHelper(parent->readinessHelper()),
       targetHandleType(0),
       targetHandle(0),
       requested(false),
@@ -254,8 +255,7 @@ Channel::Private::Private(Channel *parent, Connection *connection)
         this);
     introspectables[FeatureCore] = introspectableCore;
 
-    readinessHelper = new ReadinessHelper(parent, 0 /* status */,
-            introspectables, parent);
+    readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
 }
 
@@ -969,6 +969,7 @@ Channel::Channel(Connection *connection,
     : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
             objectPath, parent),
       OptionalInterfaceFactory<Channel>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, connection))
 {
     // FIXME: remember the immutableProperties, and use them to reduce the
@@ -1097,61 +1098,6 @@ QSharedPointer<Contact> Channel::initiatorContact() const
     }
 
     return mPriv->initiatorContact;
-}
-
-/**
- * Return whether this object has finished its initial setup.
- *
- * This is mostly useful as a sanity check, in code that shouldn't be run
- * until the object is ready. To wait for the object to be ready, call
- * becomeReady() and connect to the finished signal on the result.
- *
- * \param features The features which should be tested
- * \return \c true if the object has finished its initial setup for basic
- *         functionality plus the given features
- */
-bool Channel::isReady(const Features &features) const
-{
-    if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->isReady(features);
-}
-
-/**
- * Return a pending operation which will succeed when this object finishes
- * its initial setup, or will fail if a fatal error occurs during this
- * initial setup.
- *
- * If an empty set is used FeatureCore will be considered as the requested
- * feature.
- *
- * \param requestedFeatures The features which should be enabled
- * \return A PendingReady object which will emit finished
- *         when this object has finished or failed initial setup for basic
- *         functionality plus the given features
- */
-PendingReady *Channel::becomeReady(const Features &requestedFeatures)
-{
-    if (requestedFeatures.isEmpty()) {
-        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->becomeReady(requestedFeatures);
-}
-
-Features Channel::requestedFeatures() const
-{
-    return mPriv->readinessHelper->requestedFeatures();
-}
-
-Features Channel::actualFeatures() const
-{
-    return mPriv->readinessHelper->actualFeatures();
-}
-
-Features Channel::missingFeatures() const
-{
-    return mPriv->readinessHelper->missingFeatures();
 }
 
 /**
@@ -1834,11 +1780,6 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
     // called from here
 
     continueIntrospection();
-}
-
-ReadinessHelper *Channel::readinessHelper() const
-{
-    return mPriv->readinessHelper;
 }
 
 void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
