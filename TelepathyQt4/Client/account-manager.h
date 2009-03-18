@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/_gen/cli-account-manager.h>
 
+#include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
@@ -36,7 +37,6 @@
 
 #include <QDBusObjectPath>
 #include <QSet>
-#include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -45,7 +45,6 @@ namespace Telepathy
 namespace Client
 {
 
-class Account;
 class AccountManager;
 class PendingAccount;
 class PendingReady;
@@ -76,12 +75,12 @@ public:
     QStringList invalidAccountPaths() const;
     QStringList allAccountPaths() const;
 
-    QList<QSharedPointer<Account> > validAccounts();
-    QList<QSharedPointer<Account> > invalidAccounts();
-    QList<QSharedPointer<Account> > allAccounts();
+    QList<AccountPtr> validAccounts();
+    QList<AccountPtr> invalidAccounts();
+    QList<AccountPtr> allAccounts();
 
-    QSharedPointer<Account> accountForPath(const QString &path);
-    QList<QSharedPointer<Account> > accountsForPaths(const QStringList &paths);
+    AccountPtr accountForPath(const QString &path);
+    QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
     PendingAccount *createAccount(const QString &connectionManager,
             const QString &protocol, const QString &displayName,

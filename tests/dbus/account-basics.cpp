@@ -89,7 +89,7 @@ void TestAccountBasics::testBasics()
              QStringList() <<
                "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
 
-    QSharedPointer<Account> acc = mAM->accountForPath(
+    AccountPtr acc = mAM->accountForPath(
             "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),

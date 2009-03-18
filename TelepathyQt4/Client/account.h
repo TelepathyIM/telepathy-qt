@@ -35,6 +35,7 @@
 #include <TelepathyQt4/Client/ReadyObject>
 #include <TelepathyQt4/Constants>
 
+#include <QExplicitlySharedDataPointer>
 #include <QSet>
 #include <QSharedPointer>
 #include <QString>
@@ -189,6 +190,8 @@ private:
     friend struct Private;
     Private *mPriv;
 };
+
+typedef QExplicitlySharedDataPointer<Account> AccountPtr;
 
 } // Telepathy::Client
 } // Telepathy

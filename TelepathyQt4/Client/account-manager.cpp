@@ -27,7 +27,6 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-#include <TelepathyQt4/Client/Account>
 #include <TelepathyQt4/Client/PendingAccount>
 #include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Constants>
@@ -83,7 +82,7 @@ struct AccountManager::Private
     QStringList interfaces;
     QSet<QString> validAccountPaths;
     QSet<QString> invalidAccountPaths;
-    QMap<QString, QSharedPointer<Account> > accounts;
+    QMap<QString, AccountPtr> accounts;
 };
 
 AccountManager::Private::Private(AccountManager *parent)
@@ -250,7 +249,7 @@ QStringList AccountManager::allAccountPaths() const
  * \return A list of Account objects
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
  */
-QList<QSharedPointer<Account> > AccountManager::validAccounts()
+QList<AccountPtr> AccountManager::validAccounts()
 {
     return accountsForPaths(validAccountPaths());
 }
@@ -267,7 +266,7 @@ QList<QSharedPointer<Account> > AccountManager::validAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), allAccounts(), accountsForPaths()
  */
-QList<QSharedPointer<Account> > AccountManager::invalidAccounts()
+QList<AccountPtr> AccountManager::invalidAccounts()
 {
     return accountsForPaths(invalidAccountPaths());
 }
@@ -284,7 +283,7 @@ QList<QSharedPointer<Account> > AccountManager::invalidAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
-QList<QSharedPointer<Account> > AccountManager::allAccounts()
+QList<AccountPtr> AccountManager::allAccounts()
 {
     return accountsForPaths(allAccountPaths());
 }
@@ -302,7 +301,7 @@ QList<QSharedPointer<Account> > AccountManager::allAccounts()
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
-QSharedPointer<Account> AccountManager::accountForPath(const QString &path)
+AccountPtr AccountManager::accountForPath(const QString &path)
 {
     if (mPriv->accounts.contains(path)) {
         return mPriv->accounts[path];
@@ -310,10 +309,10 @@ QSharedPointer<Account> AccountManager::accountForPath(const QString &path)
 
     if (!mPriv->validAccountPaths.contains(path) &&
         !mPriv->invalidAccountPaths.contains(path)) {
-        return QSharedPointer<Account>();
+        return AccountPtr();
     }
 
-    QSharedPointer<Account> account = QSharedPointer<Account>(
+    AccountPtr account = AccountPtr(
             new Account(this, path));
     mPriv->accounts[path] = account;
     return account;
@@ -332,9 +331,9 @@ QSharedPointer<Account> AccountManager::accountForPath(const QString &path)
  * \return A list of Account objects
  * \sa validAccounts(), invalidAccounts(), allAccounts()
  */
-QList<QSharedPointer<Account> > AccountManager::accountsForPaths(const QStringList &paths)
+QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
 {
-    QList<QSharedPointer<Account> > result;
+    QList<AccountPtr> result;
     foreach (const QString &path, paths) {
         result << accountForPath(path);
     }
