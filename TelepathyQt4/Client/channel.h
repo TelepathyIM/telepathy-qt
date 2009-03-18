@@ -302,6 +302,8 @@ private:
     Private *mPriv;
 };
 
+typedef QExplicitlySharedDataPointer<Channel> ChannelPtr;
+
 } // Telepathy::Client
 } // Telepathy
 
