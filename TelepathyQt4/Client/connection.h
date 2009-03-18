@@ -32,6 +32,7 @@
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
+#include <TelepathyQt4/Client/ReadyObject>
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
@@ -56,7 +57,8 @@ class PendingOperation;
 class PendingReady;
 
 class Connection : public StatefulDBusProxy,
-                   private OptionalInterfaceFactory<Connection>
+                   private OptionalInterfaceFactory<Connection>,
+                   public ReadyObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(Connection)
@@ -170,13 +172,6 @@ public:
     QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
 
-    virtual bool isReady(const Features &features = Features()) const;
-    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
-
-    virtual Features requestedFeatures() const;
-    virtual Features actualFeatures() const;
-    virtual Features missingFeatures() const;
-
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
     void selfHandleChanged(uint newHandle);
@@ -185,8 +180,6 @@ Q_SIGNALS:
 
 protected:
     ConnectionInterface *baseInterface() const;
-
-    ReadinessHelper *readinessHelper() const;
 
 private Q_SLOTS:
     void onStatusReady(uint);

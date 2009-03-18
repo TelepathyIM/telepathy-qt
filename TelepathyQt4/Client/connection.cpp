@@ -160,6 +160,7 @@ Connection::Private::Private(Connection *parent)
                     parent->busName(), parent->objectPath(), parent)),
       properties(0),
       simplePresence(0),
+      readinessHelper(parent->readinessHelper()),
       pendingStatus(Connection::StatusUnknown),
       pendingStatusReason(ConnectionStatusReasonNoneSpecified),
       status(Connection::StatusUnknown),
@@ -203,8 +204,8 @@ Connection::Private::Private(Connection *parent)
         this);
     introspectables[FeatureRoster] = introspectableRoster;
 
-    readinessHelper = new ReadinessHelper(parent, status,
-            introspectables, parent);
+    readinessHelper->addIntrospectables(introspectables);
+    readinessHelper->setCurrentStatus(status);
     parent->connect(readinessHelper,
             SIGNAL(statusReady(uint)),
             SLOT(onStatusReady(uint)));
@@ -467,6 +468,7 @@ Connection::Connection(const QString &serviceName,
     : StatefulDBusProxy(QDBusConnection::sessionBus(),
             serviceName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
 }
@@ -485,6 +487,7 @@ Connection::Connection(const QDBusConnection &bus,
                        QObject *parent)
     : StatefulDBusProxy(bus, serviceName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
 }
@@ -706,6 +709,7 @@ QSharedPointer<Contact> Connection::selfContact() const
 
 void Connection::onStatusReady(uint status)
 {
+    qDebug() << "status=" << status << "- pendingStatus=" << mPriv->pendingStatus;
     Q_ASSERT(status == mPriv->pendingStatus);
 
     mPriv->status = status;
@@ -1019,11 +1023,6 @@ ConnectionInterface *Connection::baseInterface() const
     return mPriv->baseInterface;
 }
 
-ReadinessHelper *Connection::readinessHelper() const
-{
-    return mPriv->readinessHelper;
-}
-
 /**
  * Asynchronously creates a channel satisfying the given request.
  *
@@ -1244,61 +1243,6 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
     }
 
     return pending;
-}
-
-/**
- * Return whether this object has finished its initial setup.
- *
- * This is mostly useful as a sanity check, in code that shouldn't be run
- * until the object is ready. To wait for the object to be ready, call
- * becomeReady() and connect to the finished signal on the result.
- *
- * \param features The features which should be tested
- * \return \c true if the object has finished its initial setup for basic
- *         functionality plus the given features
- */
-bool Connection::isReady(const Features &features) const
-{
-    if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->isReady(features);
-}
-
-/**
- * Return a pending operation which will succeed when this object finishes
- * its initial setup, or will fail if a fatal error occurs during this
- * initial setup.
- *
- * If an empty set is used FeatureCore will be considered as the requested
- * feature.
- *
- * \param requestedFeatures The features which should be enabled
- * \return A PendingReady object which will emit finished
- *         when this object has finished or failed initial setup for basic
- *         functionality plus the given features
- */
-PendingReady *Connection::becomeReady(const Features &requestedFeatures)
-{
-    if (requestedFeatures.isEmpty()) {
-        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->becomeReady(requestedFeatures);
-}
-
-Features Connection::requestedFeatures() const
-{
-    return mPriv->readinessHelper->requestedFeatures();
-}
-
-Features Connection::actualFeatures() const
-{
-    return mPriv->readinessHelper->actualFeatures();
-}
-
-Features Connection::missingFeatures() const
-{
-    return mPriv->readinessHelper->missingFeatures();
 }
 
 /**
