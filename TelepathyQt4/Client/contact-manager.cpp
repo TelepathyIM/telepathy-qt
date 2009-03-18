@@ -76,10 +76,10 @@ struct ContactManager::Private
     QSet<Contact::Feature> supportedFeatures;
 
     QMap<uint, ContactListChannel> contactListsChannels;
-    QSharedPointer<Channel> subscribeChannel;
-    QSharedPointer<Channel> publishChannel;
-    QSharedPointer<Channel> storedChannel;
-    QSharedPointer<Channel> denyChannel;
+    ChannelPtr subscribeChannel;
+    ChannelPtr publishChannel;
+    ChannelPtr storedChannel;
+    ChannelPtr denyChannel;
 
     Contacts allKnownContacts() const;
     void updateContactsPresenceState();
@@ -779,7 +779,7 @@ void ContactManager::setContactListChannels(
     QMap<uint, ContactListChannel>::const_iterator i = contactListsChannels.constBegin();
     QMap<uint, ContactListChannel>::const_iterator end = contactListsChannels.constEnd();
     uint type;
-    QSharedPointer<Channel> channel;
+    ChannelPtr channel;
     const char *method;
     while (i != end) {
         type = i.key();
@@ -883,7 +883,7 @@ Contacts ContactManager::Private::allKnownContacts() const
 {
     Contacts contacts;
     foreach (const ContactListChannel &contactListChannel, contactListsChannels) {
-        QSharedPointer<Channel> channel = contactListChannel.channel;
+        ChannelPtr channel = contactListChannel.channel;
         if (!channel) {
             continue;
         }

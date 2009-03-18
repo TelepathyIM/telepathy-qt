@@ -69,7 +69,7 @@ private:
     QString mConnName, mConnPath;
     ExampleCSHConnection *mConnService;
     Connection *mConn;
-    QSharedPointer<Channel> mChan;
+    ChannelPtr mChan;
     QString mChanObjectPath;
     uint mRoomNumber;
     uint mRoomCount;
@@ -408,7 +408,7 @@ void TestChanGroup::doTestCreateChannel()
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                     SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(mChan != 0);
+    QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -560,7 +560,7 @@ void TestChanGroup::doTestCreateChannel()
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
 
-    mChan.clear();
+    mChan.reset();
 }
 
 void TestChanGroup::cleanup()

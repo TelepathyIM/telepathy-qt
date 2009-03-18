@@ -983,14 +983,14 @@ void Connection::gotContactListChannel(PendingOperation *op)
     }
 
     PendingChannel *pending = qobject_cast<PendingChannel*>(op);
-    QSharedPointer<Channel> channel = pending->channel();
+    ChannelPtr channel = pending->channel();
     uint handle = pending->handle();
-    Q_ASSERT(!channel.isNull());
+    Q_ASSERT(channel);
     Q_ASSERT(handle);
     for (int i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
         if (mPriv->contactListsChannels[i].handle.size() > 0 &&
             mPriv->contactListsChannels[i].handle[0] == handle) {
-            Q_ASSERT(mPriv->contactListsChannels[i].channel.isNull());
+            Q_ASSERT(!mPriv->contactListsChannels[i].channel);
             mPriv->contactListsChannels[i].channel = channel;
             connect(channel->becomeReady(),
                     SIGNAL(finished(Telepathy::Client::PendingOperation *)),

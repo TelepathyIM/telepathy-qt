@@ -29,7 +29,6 @@
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/PendingOperation>
 
-#include <QSharedPointer>
 #include <QString>
 #include <QVariantMap>
 
@@ -62,7 +61,7 @@ public:
 
     QVariantMap immutableProperties() const;
 
-    QSharedPointer<Channel> channel() const;
+    ChannelPtr channel() const;
 
 private Q_SLOTS:
     void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);

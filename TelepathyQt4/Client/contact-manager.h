@@ -151,7 +151,7 @@ class ContactManager : public QObject
 
             Type type;
             ReferencedHandles handle;
-            QSharedPointer<Channel> channel;
+            ChannelPtr channel;
         };
 
         ContactManager(Connection *parent);

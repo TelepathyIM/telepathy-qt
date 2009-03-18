@@ -57,7 +57,7 @@ struct PendingChannel::Private
     uint handle;
     QDBusObjectPath objectPath;
     QVariantMap immutableProperties;
-    QSharedPointer<Channel> channel;
+    ChannelPtr channel;
 };
 
 /**
@@ -232,18 +232,18 @@ QVariantMap PendingChannel::immutableProperties() const
  * Returns a shared pointer to a Channel high-level proxy object associated
  * with the remote channel resulting from the channel request. If isValid()
  * returns <code>false</code>, the request has not (at least yet) completed
- * successfully, and a null QSharedPointer will be returned.
+ * successfully, and a null ChannelPtr will be returned.
  *
  * \return Shared pointer to the new Channel object, 0 if an error occurred.
  */
-QSharedPointer<Channel> PendingChannel::channel() const
+ChannelPtr PendingChannel::channel() const
 {
     if (!isFinished()) {
         warning() << "PendingChannel::channel called before finished, returning 0";
-        return QSharedPointer<Channel>();
+        return ChannelPtr();
     } else if (!isValid()) {
         warning() << "PendingChannel::channel called when not valid, returning 0";
-        return QSharedPointer<Channel>();
+        return ChannelPtr();
     }
 
     if (mPriv->channel) {
@@ -251,29 +251,29 @@ QSharedPointer<Channel> PendingChannel::channel() const
     }
 
     if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
-        mPriv->channel = QSharedPointer<Channel>(
+        mPriv->channel = ChannelPtr(
                 new TextChannel(connection(), mPriv->objectPath.path(),
                     mPriv->immutableProperties));
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
-        mPriv->channel = QSharedPointer<Channel>(
+        mPriv->channel = ChannelPtr(
                 new StreamedMediaChannel(connection(), mPriv->objectPath.path(),
                     mPriv->immutableProperties));
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
-        mPriv->channel = QSharedPointer<Channel>(
+        mPriv->channel = ChannelPtr(
                 new RoomList(connection(), mPriv->objectPath.path(),
                     mPriv->immutableProperties));
     }
     // FIXME: update spec so we can do this properly
     else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
-        mPriv->channel = QSharedPointer<Channel>(
+        mPriv->channel = ChannelPtr(
                 new FileTransfer(connection(), mPriv->objectPath.path(),
                     mPriv->immutableProperties));
     }
     else {
         // ContactList, old-style Tubes, or a future channel type
-        mPriv->channel = QSharedPointer<Channel>(
+        mPriv->channel = ChannelPtr(
                 new Channel(connection(), mPriv->objectPath.path(),
                     mPriv->immutableProperties));
     }
