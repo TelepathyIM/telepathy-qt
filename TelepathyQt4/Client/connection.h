@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/_gen/cli-connection.h>
 
+#include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Client/DBus>
 #include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
@@ -38,7 +39,6 @@
 #include <TelepathyQt4/Types>
 
 #include <QSet>
-#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 
@@ -98,7 +98,7 @@ public:
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 
-    QSharedPointer<Contact> selfContact() const;
+    ContactPtr selfContact() const;
 
     template <class Interface>
     inline Interface *optionalInterface(

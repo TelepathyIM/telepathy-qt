@@ -45,7 +45,6 @@
 #include <QMutexLocker>
 #include <QPair>
 #include <QQueue>
-#include <QSharedPointer>
 #include <QString>
 #include <QTimer>
 #include <QtGlobal>
@@ -113,7 +112,7 @@ struct Connection::Private
     uint statusReason;
 
     SimpleStatusSpecMap simplePresenceStatuses;
-    QSharedPointer<Contact> selfContact;
+    ContactPtr selfContact;
     QStringList contactAttributeInterfaces;
     uint selfHandle;
     QMap<uint, ContactManager::ContactListChannel> contactListsChannels;
@@ -609,7 +608,7 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
             simplePresenceInterface()->SetPresence(status, statusMessage));
 }
 
-QSharedPointer<Contact> Connection::selfContact() const
+ContactPtr Connection::selfContact() const
 {
     if (!isReady()) {
         warning() << "Connection::selfContact() used before the connection is ready!";
@@ -871,7 +870,7 @@ void Connection::gotSelfContact(PendingOperation *op)
 
     if (pending->isValid()) {
         Q_ASSERT(pending->contacts().size() == 1);
-        QSharedPointer<Contact> contact = pending->contacts()[0];
+        ContactPtr contact = pending->contacts()[0];
 
         if (mPriv->selfContact != contact) {
             mPriv->selfContact = contact;
