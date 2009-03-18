@@ -144,7 +144,7 @@ struct TextChannel::Private
     QSet<uint> awaitingContacts;
     QHash<QDBusPendingCallWatcher *, UIntList> acknowledgeBatches;
     void contactLost(uint handle);
-    void contactFound(QSharedPointer<Contact> contact);
+    void contactFound(ContactPtr contact);
 };
 
 TextChannel::Private::Private(TextChannel *parent)
@@ -756,7 +756,7 @@ void TextChannel::Private::contactLost(uint handle)
     }
 }
 
-void TextChannel::Private::contactFound(QSharedPointer<Contact> contact)
+void TextChannel::Private::contactFound(ContactPtr contact)
 {
     uint handle = contact->handle().at(0);
 
@@ -786,7 +786,7 @@ void TextChannel::onContactsFinished(PendingOperation *op)
             mPriv->contactLost(handle);
         }
     } else {
-        foreach (const QSharedPointer<Contact> &contact, pc->contacts()) {
+        foreach (const ContactPtr &contact, pc->contacts()) {
             mPriv->contactFound(contact);
         }
         foreach (uint handle, pc->invalidHandles()) {
