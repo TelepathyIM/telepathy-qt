@@ -285,7 +285,8 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
     : parent(parent),
       name(name),
       baseInterface(new ConnectionManagerInterface(parent->dbusConnection(),
-                    parent->busName(), parent->objectPath(), parent))
+                    parent->busName(), parent->objectPath(), parent)),
+      readinessHelper(parent->readinessHelper())
 {
     debug() << "Creating new ConnectionManager:" << parent->busName();
 
@@ -300,8 +301,7 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
         this);
     introspectables[FeatureCore] = introspectableCore;
 
-    readinessHelper = new ReadinessHelper(parent, 0 /* status */,
-            introspectables, parent);
+    readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
 }
 
@@ -361,6 +361,7 @@ ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
             Private::makeBusName(name), Private::makeObjectPath(name),
             parent),
       OptionalInterfaceFactory<ConnectionManager>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, name))
 {
 }
@@ -377,6 +378,7 @@ ConnectionManager::ConnectionManager(const QDBusConnection &bus,
     : StatelessDBusProxy(bus, Private::makeBusName(name),
             Private::makeObjectPath(name), parent),
       OptionalInterfaceFactory<ConnectionManager>(this),
+      ReadyObject(this, FeatureCore),
       mPriv(new Private(this, name))
 {
 }
@@ -461,60 +463,6 @@ PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
  */
 
 /**
- * Return whether this object has finished its initial setup.
- *
- * This is mostly useful as a sanity check, in code that shouldn't be run
- * until the object is ready. To wait for the object to be ready, call
- * becomeReady() and connect to the finished signal on the result.
- *
- * \param features The features which should be tested
- * \return \c true if the object has finished initial setup.
- */
-bool ConnectionManager::isReady(const Features &features) const
-{
-    if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->isReady(features);
-}
-
-/**
- * Return a pending operation which will succeed when this object finishes
- * its initial setup, or will fail if a fatal error occurs during this
- * initial setup.
- *
- * If an empty set is used FeatureCore will be considered as the requested
- * feature.
- *
- * \param requestedFeatures The features which should be enabled
- * \return A PendingReady object which will emit finished
- *         when this object has finished or failed initial setup for basic
- *         functionality plus the given features
- */
-PendingReady *ConnectionManager::becomeReady(const Features &requestedFeatures)
-{
-    if (requestedFeatures.isEmpty()) {
-        return mPriv->readinessHelper->becomeReady(Features() << FeatureCore);
-    }
-    return mPriv->readinessHelper->becomeReady(requestedFeatures);
-}
-
-Features ConnectionManager::requestedFeatures() const
-{
-    return mPriv->readinessHelper->requestedFeatures();
-}
-
-Features ConnectionManager::actualFeatures() const
-{
-    return mPriv->readinessHelper->actualFeatures();
-}
-
-Features ConnectionManager::missingFeatures() const
-{
-    return mPriv->readinessHelper->missingFeatures();
-}
-
-/**
  * Return a pending operation from which a list of all installed connection
  * manager short names (such as "gabble" or "haze") can be retrieved if it
  * succeeds.
@@ -540,11 +488,6 @@ PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
 ConnectionManagerInterface *ConnectionManager::baseInterface() const
 {
     return mPriv->baseInterface;
-}
-
-ReadinessHelper *ConnectionManager::readinessHelper() const
-{
-    return mPriv->readinessHelper;
 }
 
 /**** Private ****/
