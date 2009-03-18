@@ -165,6 +165,8 @@ private:
     Private *mPriv;
 };
 
+typedef QExplicitlySharedDataPointer<ConnectionManager> ConnectionManagerPtr;
+
 }
 }
 
