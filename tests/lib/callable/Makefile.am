@@ -5,6 +5,16 @@
 # copy-and-modify (moving it to a better namespace), or make changes in the
 # copy in telepathy-glib first.
 
+AM_CFLAGS = \
+	$(ERROR_CFLAGS) \
+	-I$(top_builddir) -I$(top_srcdir)
+AM_CXXFLAGS = $(ERROR_CXXFLAGS)
+
+if ENABLE_TP_GLIB_TESTS
+
+AM_CFLAGS += $(TP_GLIB_CFLAGS)
+AM_CXXFLAGS += $(TP_GLIB_CFLAGS)
+
 noinst_LTLIBRARIES = libexample-cm-callable.la
 
 libexample_cm_callable_la_SOURCES = \
@@ -19,11 +29,8 @@ libexample_cm_callable_la_SOURCES = \
     media-stream.c \
     media-stream.h
 
-libexample_cm_callable_la_LIBADD = $(TP_GLIB_LIBS)
-
-AM_CFLAGS = \
-    $(ERROR_CFLAGS) \
-    $(TP_GLIB_CFLAGS)
+libexample_cm_callable_la_LIBADD = \
+	$(TP_GLIB_LIBS)
 
 EXTRA_DIST = manager-file.py
 
@@ -37,3 +44,5 @@ CLEANFILES = $(BUILT_SOURCES)
 
 clean-local:
 	rm -rf _gen
+
+endif
