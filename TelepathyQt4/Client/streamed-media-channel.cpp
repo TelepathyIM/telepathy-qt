@@ -71,7 +71,7 @@ void PendingMediaStreams::Private::getContacts()
 }
 
 PendingMediaStreams::PendingMediaStreams(StreamedMediaChannel *channel,
-        QSharedPointer<Telepathy::Client::Contact> contact,
+        ContactPtr contact,
         QList<Telepathy::MediaStreamType> types,
         QObject *parent)
     : PendingOperation(parent),
@@ -160,13 +160,13 @@ void PendingMediaStreams::gotContacts(PendingOperation *op)
             << pc->errorName() << ": " << pc->errorMessage();
     }
 
-    QHash<uint, QSharedPointer<Contact> > contactsForHandles;
-    foreach (const QSharedPointer<Contact> &contact, pc->contacts()) {
+    QHash<uint, ContactPtr> contactsForHandles;
+    foreach (const ContactPtr &contact, pc->contacts()) {
         contactsForHandles.insert(contact->handle()[0], contact);
     }
 
     foreach (uint handle, pc->invalidHandles()) {
-        contactsForHandles.insert(handle, QSharedPointer<Contact>());
+        contactsForHandles.insert(handle, ContactPtr());
     }
 
     foreach (const QSharedPointer<MediaStream> &stream, mPriv->streams) {
@@ -193,7 +193,7 @@ struct MediaStream::Private
     StreamedMediaChannel *channel;
     uint id;
     uint contactHandle;
-    QSharedPointer<Contact> contact;
+    ContactPtr contact;
     MediaStreamType type;
     MediaStreamState state;
     MediaStreamDirection direction;
@@ -235,7 +235,7 @@ uint MediaStream::id() const
  *
  * \return The contact who the stream is with.
  */
-QSharedPointer<Contact> MediaStream::contact() const
+ContactPtr MediaStream::contact() const
 {
     return mPriv->contact;
 }
@@ -374,7 +374,7 @@ uint MediaStream::contactHandle() const
     return mPriv->contactHandle;
 }
 
-void MediaStream::setContact(const QSharedPointer<Contact> &contact)
+void MediaStream::setContact(const ContactPtr &contact)
 {
     Q_ASSERT(!mPriv->contact || mPriv->contact == contact);
     mPriv->contact = contact;
@@ -573,7 +573,7 @@ PendingOperation *StreamedMediaChannel::removeStreams(const Telepathy::UIntList 
 }
 
 PendingMediaStreams *StreamedMediaChannel::requestStream(
-        QSharedPointer<Telepathy::Client::Contact> contact,
+        const ContactPtr &contact,
         Telepathy::MediaStreamType type)
 {
     return new PendingMediaStreams(this, contact,
@@ -581,7 +581,7 @@ PendingMediaStreams *StreamedMediaChannel::requestStream(
 }
 
 PendingMediaStreams *StreamedMediaChannel::requestStreams(
-        QSharedPointer<Telepathy::Client::Contact> contact,
+        const ContactPtr &contact,
         QList<Telepathy::MediaStreamType> types)
 {
     return new PendingMediaStreams(this, contact, types, this);

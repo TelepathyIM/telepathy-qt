@@ -56,7 +56,7 @@ private:
     friend class StreamedMediaChannel;
 
     PendingMediaStreams(StreamedMediaChannel *channel,
-            QSharedPointer<Telepathy::Client::Contact> contact,
+            ContactPtr contact,
             QList<Telepathy::MediaStreamType> types,
             QObject *parent = 0);
     PendingMediaStreams(StreamedMediaChannel *channel,
@@ -79,7 +79,7 @@ public:
     StreamedMediaChannel *channel() const;
     uint id() const;
 
-    QSharedPointer<Contact> contact() const;
+    ContactPtr contact() const;
     Telepathy::MediaStreamState state() const;
     Telepathy::MediaStreamType type() const;
 
@@ -118,7 +118,7 @@ private:
             MediaStreamPendingSend pendingSend);
 
     uint contactHandle() const;
-    void setContact(const QSharedPointer<Contact> &contact);
+    void setContact(const ContactPtr &contact);
     void setDirection(Telepathy::MediaStreamDirection direction,
             Telepathy::MediaStreamPendingSend pendingSend);
     void setState(Telepathy::MediaStreamState state);
@@ -151,10 +151,10 @@ public:
     PendingOperation *removeStreams(const Telepathy::UIntList &ids);
 
     PendingMediaStreams *requestStream(
-            QSharedPointer<Telepathy::Client::Contact> contact,
+            const ContactPtr &contact,
             Telepathy::MediaStreamType type);
     PendingMediaStreams *requestStreams(
-            QSharedPointer<Telepathy::Client::Contact> contact,
+            const ContactPtr &contact,
             QList<Telepathy::MediaStreamType> types);
 
 Q_SIGNALS:
