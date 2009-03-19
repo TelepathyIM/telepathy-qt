@@ -25,13 +25,13 @@
 #include <QWidget>
 
 #include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Client/Contact>
 #include <TelepathyQt4/Constants>
 
 #include "farsight-channel.h"
 
 namespace Telepathy {
 namespace Client {
-class Contact;
 class DBusProxy;
 class MediaStream;
 class PendingMediaStreams;
@@ -50,12 +50,12 @@ class CallWidget : public QWidget
 
 public:
     CallWidget(Telepathy::Client::StreamedMediaChannel *channel,
-               const QSharedPointer<Telepathy::Client::Contact> &contact,
+               const Telepathy::Client::ContactPtr &contact,
                QWidget *parent = 0);
     virtual ~CallWidget();
 
     Telepathy::Client::StreamedMediaChannel *channel() const { return mChan; }
-    QSharedPointer<Telepathy::Client::Contact> contact() const { return mContact; }
+    Telepathy::Client::ContactPtr contact() const { return mContact; }
 
 private Q_SLOTS:
     void onChannelReady(Telepathy::Client::PendingOperation *);
@@ -86,7 +86,7 @@ private:
     void callEnded(const QString &message);
 
     Telepathy::Client::StreamedMediaChannel *mChan;
-    QSharedPointer<Telepathy::Client::Contact> mContact;
+    Telepathy::Client::ContactPtr mContact;
     Telepathy::Client::FarsightChannel *mTfChan;
 
     Telepathy::Client::PendingMediaStreams *mPmsAudio;

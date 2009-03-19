@@ -49,7 +49,7 @@ CallHandler::~CallHandler()
     }
 }
 
-void CallHandler::addOutgoingCall(const QSharedPointer<Contact> &contact)
+void CallHandler::addOutgoingCall(const ContactPtr &contact)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -113,7 +113,7 @@ void CallHandler::onOutgoingChannelReady(PendingOperation *op)
     }
 
     ContactManager *cm = chan->connection()->contactManager();
-    QSharedPointer<Contact> contact = cm->lookupContactByHandle(chan->targetHandle());
+    ContactPtr contact = cm->lookupContactByHandle(chan->targetHandle());
     Q_ASSERT(contact);
 
     CallWidget *call = new CallWidget(chan, contact);
@@ -138,7 +138,7 @@ void CallHandler::onIncomingChannelReady(PendingOperation *op)
         return;
     }
 
-    QSharedPointer<Contact> contact = chan->initiatorContact();
+    ContactPtr contact = chan->initiatorContact();
 
     QMessageBox msgBox;
     msgBox.setText("Incoming call");

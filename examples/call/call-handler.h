@@ -22,13 +22,12 @@
 #define _TelepathyQt4_examples_call_call_handler_h_HEADER_GUARD_
 
 #include <QObject>
-#include <QSharedPointer>
 
 #include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Client/Contact>
 
 namespace Telepathy {
 namespace Client {
-class Contact;
 class PendingOperation;
 class StreamedMediaChannel;
 }
@@ -44,7 +43,7 @@ public:
     CallHandler(QObject *parent = 0);
     virtual ~CallHandler();
 
-    void addOutgoingCall(const QSharedPointer<Telepathy::Client::Contact> &contact);
+    void addOutgoingCall(const Telepathy::Client::ContactPtr &contact);
     void addIncomingCall(Telepathy::Client::StreamedMediaChannel *chan);
 
 private Q_SLOTS:

@@ -21,6 +21,8 @@
 #ifndef _TelepathyQt4_examples_call_call_roster_widget_h_HEADER_GUARD_
 #define _TelepathyQt4_examples_call_call_roster_widget_h_HEADER_GUARD_
 
+#include <TelepathyQt4/Client/Contact>
+
 #include <examples/roster/roster-widget.h>
 
 namespace Telepathy {
@@ -42,7 +44,7 @@ public:
 
 protected:
     virtual RosterItem *createItemForContact(
-            const QSharedPointer<Telepathy::Client::Contact> &contact,
+            const Telepathy::Client::ContactPtr &contact,
             bool &exists);
     virtual void updateActions(RosterItem *item);
 

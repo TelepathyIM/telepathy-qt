@@ -22,7 +22,6 @@
 #define _TelepathyQt4_examples_call_call_window_h_HEADER_GUARD_
 
 #include <QMainWindow>
-#include <QSharedPointer>
 
 #include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Types>

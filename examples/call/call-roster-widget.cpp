@@ -50,7 +50,7 @@ CallRosterWidget::~CallRosterWidget()
 {
 }
 
-RosterItem *CallRosterWidget::createItemForContact(const QSharedPointer<Contact> &contact,
+RosterItem *CallRosterWidget::createItemForContact(const ContactPtr &contact,
         bool &exists)
 {
     return RosterWidget::createItemForContact(contact, exists);
@@ -85,6 +85,6 @@ void CallRosterWidget::onCallActionTriggered(bool checked)
 
     Q_ASSERT(selectedItems.size() == 1);
     RosterItem *item = dynamic_cast<RosterItem*>(selectedItems.first());
-    QSharedPointer<Contact> contact = item->contact();
+    ContactPtr contact = item->contact();
     mCallHandler->addOutgoingCall(contact);
 }

@@ -41,7 +41,7 @@
 using namespace Telepathy::Client;
 
 CallWidget::CallWidget(StreamedMediaChannel *chan,
-        const QSharedPointer<Contact> &contact,
+        const ContactPtr &contact,
         QWidget *parent)
     : QWidget(parent),
       mChan(chan),
