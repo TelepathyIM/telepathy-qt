@@ -139,6 +139,7 @@ public:
     ~StreamedMediaChannel();
 
     MediaStreams streams() const;
+    MediaStreams streamsForType(Telepathy::MediaStreamType type) const;
 
     bool awaitingLocalAnswer() const;
     bool awaitingRemoteAnswer() const;

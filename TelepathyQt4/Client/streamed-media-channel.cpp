@@ -563,6 +563,25 @@ MediaStreams StreamedMediaChannel::streams() const
     return mPriv->streams.values();
 }
 
+MediaStreams StreamedMediaChannel::streamsForType(Telepathy::MediaStreamType type) const
+{
+    if (!isReady(FeatureStreams)) {
+        warning() << "Trying to retrieve streams from streamed media channel, but "
+                     "streams was not requested or the request did not finish yet. "
+                     "Use becomeReady(FeatureStreams)";
+        return MediaStreams();
+    }
+
+    QHash<uint, MediaStreamPtr> allStreams = mPriv->streams;
+    MediaStreams streams;
+    foreach (const MediaStreamPtr &stream, allStreams) {
+        if (stream->type() == type) {
+            streams.append(stream);
+        }
+    }
+    return streams;
+}
+
 bool StreamedMediaChannel::awaitingLocalAnswer() const
 {
     return groupSelfHandleIsLocalPending();
