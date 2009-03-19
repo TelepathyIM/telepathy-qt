@@ -50,6 +50,14 @@ enum
   N_PROPS
 };
 
+enum
+{
+  SIGNAL_AVAILABLE,
+  N_SIGNALS
+};
+
+static guint signals[N_SIGNALS] = { 0 };
+
 struct _ExampleCallableConnectionPrivate
 {
   gchar *account;
@@ -333,6 +341,12 @@ set_own_status (GObject *object,
       (gpointer) status);
   tp_presence_mixin_emit_presence_update (object, presences);
   g_hash_table_destroy (presences);
+
+  if (!self->priv->away)
+    {
+      g_signal_emit (self, signals[SIGNAL_AVAILABLE], 0, message);
+    }
+
   return TRUE;
 }
 
@@ -391,6 +405,13 @@ example_callable_connection_class_init (
       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_SIMULATION_DELAY,
       param_spec);
+
+  /* Used in the media manager, to simulate an incoming call when we become
+   * available */
+  signals[SIGNAL_AVAILABLE] = g_signal_new ("available",
+      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+      g_cclosure_marshal_VOID__STRING,
+      G_TYPE_NONE, 1, G_TYPE_STRING);
 
   tp_contacts_mixin_class_init (object_class,
       G_STRUCT_OFFSET (ExampleCallableConnectionClass, contacts_mixin));

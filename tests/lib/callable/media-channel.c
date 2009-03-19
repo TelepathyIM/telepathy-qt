@@ -37,6 +37,8 @@
 
 #include "media-stream.h"
 
+#include <string.h>
+
 #include <telepathy-glib/base-connection.h>
 #include <telepathy-glib/channel-iface.h>
 #include <telepathy-glib/dbus.h>
@@ -75,6 +77,8 @@ enum
   PROP_CHANNEL_DESTROYED,
   PROP_CHANNEL_PROPERTIES,
   PROP_SIMULATION_DELAY,
+  PROP_INITIAL_AUDIO,
+  PROP_INITIAL_VIDEO,
   N_PROPS
 };
 
@@ -108,6 +112,8 @@ struct _ExampleCallableMediaChannelPrivate
   GHashTable *streams;
 
   gboolean locally_requested;
+  gboolean initial_audio;
+  gboolean initial_video;
   gboolean disposed;
 };
 
@@ -127,6 +133,10 @@ example_callable_media_channel_init (ExampleCallableMediaChannel *self)
   self->priv->streams = g_hash_table_new_full (g_direct_hash, g_direct_equal,
       NULL, g_object_unref);
 }
+
+static ExampleCallableMediaStream *example_callable_media_channel_add_stream (
+    ExampleCallableMediaChannel *self, TpMediaStreamType media_type,
+    gboolean locally_requested);
 
 static void
 constructed (GObject *object)
@@ -206,9 +216,32 @@ constructed (GObject *object)
    */
   tp_group_mixin_change_flags (object, TP_CHANNEL_GROUP_FLAG_PROPERTIES, 0);
 
+  /* Future versions of telepathy-spec will allow a channel request to
+   * say "initially include an audio stream" and/or "initially include a video
+   * stream", which would be represented like this; we don't support this
+   * usage yet, though, so ExampleCallableMediaManager will never invoke
+   * our constructor in this way. */
+  g_assert (!(self->priv->locally_requested && self->priv->initial_audio));
+  g_assert (!(self->priv->locally_requested && self->priv->initial_video));
+
   if (!self->priv->locally_requested)
     {
-      /* FIXME: act on any streams that the remote peer has already enabled */
+      /* the caller has almost certainly asked us for some streams - there's
+       * not much point in having a call otherwise */
+
+      if (self->priv->initial_audio)
+        {
+          g_message ("Channel initially has an audio stream");
+          example_callable_media_channel_add_stream (self,
+              TP_MEDIA_STREAM_TYPE_AUDIO, FALSE);
+        }
+
+      if (self->priv->initial_video)
+        {
+          g_message ("Channel initially has a video stream");
+          example_callable_media_channel_add_stream (self,
+              TP_MEDIA_STREAM_TYPE_VIDEO, FALSE);
+        }
     }
 }
 
@@ -296,6 +329,14 @@ get_property (GObject *object,
       g_value_set_uint (value, self->priv->simulation_delay);
       break;
 
+    case PROP_INITIAL_AUDIO:
+      g_value_set_boolean (value, self->priv->initial_audio);
+      break;
+
+    case PROP_INITIAL_VIDEO:
+      g_value_set_boolean (value, self->priv->initial_video);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -347,6 +388,14 @@ set_property (GObject *object,
       self->priv->simulation_delay = g_value_get_uint (value);
       break;
 
+    case PROP_INITIAL_AUDIO:
+      self->priv->initial_audio = g_value_get_boolean (value);
+      break;
+
+    case PROP_INITIAL_VIDEO:
+      self->priv->initial_video = g_value_get_boolean (value);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -361,24 +410,30 @@ example_callable_media_channel_close (ExampleCallableMediaChannel *self,
   if (self->priv->progress != PROGRESS_ENDED)
     {
       TpIntSet *everyone;
-      const gchar *send_reason;
 
       self->priv->progress = PROGRESS_ENDED;
 
-      /* In a real protocol these would be some sort of real protocol construct,
-       * like an XMPP error stanza or a SIP error code */
-      switch (reason)
+      if (actor == self->group.self_handle)
         {
-        case TP_CHANNEL_GROUP_CHANGE_REASON_BUSY:
-          send_reason = "<user-is-busy/>";
-          break;
+          const gchar *send_reason;
 
-        case TP_CHANNEL_GROUP_CHANGE_REASON_NO_ANSWER:
-          send_reason = "<no-answer/>";
-          break;
+          /* In a real protocol these would be some sort of real protocol
+           * construct, like an XMPP error stanza or a SIP error code */
+          switch (reason)
+            {
+            case TP_CHANNEL_GROUP_CHANGE_REASON_BUSY:
+              send_reason = "<user-is-busy/>";
+              break;
 
-        default:
-          send_reason = "<call-terminated/>";
+            case TP_CHANNEL_GROUP_CHANGE_REASON_NO_ANSWER:
+              send_reason = "<no-answer/>";
+              break;
+
+            default:
+              send_reason = "<call-terminated/>";
+            }
+
+          g_message ("SIGNALLING: send: Terminating call: %s", send_reason);
         }
 
       everyone = tp_intset_new_containing (self->priv->handle);
@@ -392,7 +447,6 @@ example_callable_media_channel_close (ExampleCallableMediaChannel *self,
           reason);
       tp_intset_destroy (everyone);
 
-      g_message ("SIGNALLING: send: Terminating call: %s", send_reason);
       g_signal_emit (self, signals[SIGNAL_CALL_TERMINATED], 0);
       tp_svc_channel_emit_closed (self);
     }
@@ -408,7 +462,7 @@ dispose (GObject *object)
 
   self->priv->disposed = TRUE;
 
-  example_callable_media_channel_close (self, 0,
+  example_callable_media_channel_close (self, self->group.self_handle,
       TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
 
   ((GObjectClass *) example_callable_media_channel_parent_class)->dispose (object);
@@ -453,9 +507,15 @@ add_member (GObject *object,
     {
       /* We're in local-pending, move to members to accept. */
       TpIntSet *set = tp_intset_new_containing (member);
+      GHashTableIter iter;
+      gpointer v;
+
+      g_assert (self->priv->progress == PROGRESS_CALLING);
 
       g_message ("SIGNALLING: send: Accepting incoming call from %s",
           tp_handle_inspect (contact_repo, self->priv->handle));
+
+      self->priv->progress = PROGRESS_ACTIVE;
 
       tp_group_mixin_change_members (object, "",
           set /* added */,
@@ -463,6 +523,16 @@ add_member (GObject *object,
           NULL /* nobody added to local pending */,
           NULL /* nobody added to remote pending */,
           member /* actor */, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+
+      g_hash_table_iter_init (&iter, self->priv->streams);
+
+      while (g_hash_table_iter_next (&iter, NULL, &v))
+        {
+          /* we accept the proposed stream direction... */
+          example_callable_media_stream_accept_proposed_direction (v);
+          /* ... and the stream tries to connect */
+          example_callable_media_stream_connect (v);
+        }
 
       return TRUE;
     }
@@ -583,6 +653,20 @@ example_callable_media_channel_class_init (ExampleCallableMediaChannelClass *kla
       0, G_MAXUINT32, 1000,
       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_SIMULATION_DELAY,
+      param_spec);
+
+  param_spec = g_param_spec_boolean ("initial-audio", "Initial audio?",
+      "True if this channel had an audio stream when first announced",
+      FALSE,
+      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_INITIAL_AUDIO,
+      param_spec);
+
+  param_spec = g_param_spec_boolean ("initial-video", "Initial video?",
+      "True if this channel had a video stream when first announced",
+      FALSE,
+      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_INITIAL_VIDEO,
       param_spec);
 
   signals[SIGNAL_CALL_TERMINATED] = g_signal_new ("call-terminated",
@@ -833,12 +917,32 @@ stream_state_changed_cb (ExampleCallableMediaStream *stream,
 }
 
 static gboolean
+simulate_contact_ended_cb (gpointer p)
+{
+  ExampleCallableMediaChannel *self = p;
+
+  /* if the call has been cancelled while we were waiting for the
+   * contact to do so, do nothing! */
+  if (self->priv->progress == PROGRESS_ENDED)
+    return FALSE;
+
+  g_message ("SIGNALLING: receive: call terminated: <call-terminated/>");
+
+  example_callable_media_channel_close (self, self->priv->handle,
+      TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+
+  return FALSE;
+}
+
+static gboolean
 simulate_contact_answered_cb (gpointer p)
 {
   ExampleCallableMediaChannel *self = p;
   TpIntSet *peer_set;
   GHashTableIter iter;
   gpointer v;
+  TpHandleRepoIface *contact_repo;
+  const gchar *peer;
 
   /* if the call has been cancelled while we were waiting for the
    * contact to answer, do nothing */
@@ -873,7 +977,99 @@ simulate_contact_answered_cb (gpointer p)
       example_callable_media_stream_connect (v);
     }
 
+  contact_repo = tp_base_connection_get_handles
+      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
+  peer = tp_handle_inspect (contact_repo, self->priv->handle);
+
+  /* If the contact's ID contains the magic string "(terminate)", simulate
+   * them hanging up after a moment. */
+  if (strstr (peer, "(terminate)") != NULL)
+    {
+      g_timeout_add_full (G_PRIORITY_DEFAULT,
+          self->priv->simulation_delay,
+          simulate_contact_ended_cb, g_object_ref (self),
+          g_object_unref);
+    }
+
   return FALSE;
+}
+
+static gboolean
+simulate_contact_busy_cb (gpointer p)
+{
+  ExampleCallableMediaChannel *self = p;
+
+  /* if the call has been cancelled while we were waiting for the
+   * contact to answer, do nothing */
+  if (self->priv->progress == PROGRESS_ENDED)
+    return FALSE;
+
+  /* otherwise, we're waiting for a response from the contact, which now
+   * arrives */
+  g_assert (self->priv->progress == PROGRESS_CALLING);
+
+  g_message ("SIGNALLING: receive: call terminated: <user-is-busy/>");
+
+  example_callable_media_channel_close (self, self->priv->handle,
+      TP_CHANNEL_GROUP_CHANGE_REASON_BUSY);
+
+  return FALSE;
+}
+
+static ExampleCallableMediaStream *
+example_callable_media_channel_add_stream (ExampleCallableMediaChannel *self,
+                                           TpMediaStreamType media_type,
+                                           gboolean locally_requested)
+{
+  ExampleCallableMediaStream *stream;
+  guint id = self->priv->next_stream_id++;
+
+  if (locally_requested)
+    {
+      g_message ("SIGNALLING: send: new %s stream",
+          media_type == TP_MEDIA_STREAM_TYPE_AUDIO ? "audio" : "video");
+    }
+
+  stream = g_object_new (EXAMPLE_TYPE_CALLABLE_MEDIA_STREAM,
+      "channel", self,
+      "id", id,
+      "handle", self->priv->handle,
+      "type", media_type,
+      NULL);
+
+  g_hash_table_insert (self->priv->streams, GUINT_TO_POINTER (id), stream);
+
+  tp_svc_channel_type_streamed_media_emit_stream_added (self, id,
+      self->priv->handle, media_type);
+
+  g_signal_connect (stream, "removed", G_CALLBACK (stream_removed_cb),
+      self);
+  g_signal_connect (stream, "notify::state",
+      G_CALLBACK (stream_state_changed_cb), self);
+  g_signal_connect (stream, "direction-changed",
+      G_CALLBACK (stream_direction_changed_cb), self);
+
+  if (locally_requested)
+    {
+      /* the local user wants this stream to be bidirectional (which
+       * requires remote acknowledgement */
+      example_callable_media_stream_change_direction (stream,
+          TP_MEDIA_STREAM_DIRECTION_BIDIRECTIONAL, NULL);
+    }
+  else
+    {
+      /* the remote user wants this stream to be bidirectional (which
+       * requires local acknowledgement) */
+      example_callable_media_stream_receive_direction_request (stream,
+          TP_MEDIA_STREAM_DIRECTION_BIDIRECTIONAL);
+    }
+
+  if (self->priv->progress == PROGRESS_ACTIVE)
+    {
+      example_callable_media_stream_connect (stream);
+    }
+
+  return stream;
 }
 
 static void
@@ -930,11 +1126,11 @@ media_request_streams (TpSvcChannelTypeStreamedMedia *iface,
       guint media_type = g_array_index (media_types, guint, i);
       ExampleCallableMediaStream *stream;
       GValueArray *info;
-      guint id = self->priv->next_stream_id++;
 
       if (self->priv->progress < PROGRESS_CALLING)
         {
           TpIntSet *peer_set = tp_intset_new_containing (self->priv->handle);
+          const gchar *peer;
 
           g_message ("SIGNALLING: send: new streamed media call");
           self->priv->progress = PROGRESS_CALLING;
@@ -950,45 +1146,33 @@ media_request_streams (TpSvcChannelTypeStreamedMedia *iface,
           tp_intset_destroy (peer_set);
 
           /* In this example there is no real contact, so just simulate them
-           * answering after a short time */
-          /* FIXME: define a special contact who never answers, and if it's
-           * that contact, don't add this timeout */
-          g_timeout_add_full (G_PRIORITY_DEFAULT, self->priv->simulation_delay,
-              simulate_contact_answered_cb, g_object_ref (self),
-              g_object_unref);
+           * answering after a short time - unless the contact's name
+           * contains "(no answer)" or "(busy)" */
+
+          peer = tp_handle_inspect (contact_repo, self->priv->handle);
+
+          if (strstr (peer, "(busy)") != NULL)
+            {
+              g_timeout_add_full (G_PRIORITY_DEFAULT,
+                  self->priv->simulation_delay,
+                  simulate_contact_busy_cb, g_object_ref (self),
+                  g_object_unref);
+            }
+          else if (strstr (peer, "(no answer)") != NULL)
+            {
+              /* do nothing - the call just rings forever */
+            }
+          else
+            {
+              g_timeout_add_full (G_PRIORITY_DEFAULT,
+                  self->priv->simulation_delay,
+                  simulate_contact_answered_cb, g_object_ref (self),
+                  g_object_unref);
+            }
         }
 
-      g_message ("SIGNALLING: send: new %s stream",
-          media_type == TP_MEDIA_STREAM_TYPE_AUDIO ? "audio" : "video");
-
-      stream = g_object_new (EXAMPLE_TYPE_CALLABLE_MEDIA_STREAM,
-          "channel", self,
-          "id", id,
-          "handle", self->priv->handle,
-          "type", media_type,
-          NULL);
-
-      g_hash_table_insert (self->priv->streams, GUINT_TO_POINTER (id), stream);
-
-      tp_svc_channel_type_streamed_media_emit_stream_added (self, id,
-          self->priv->handle, media_type);
-
-      g_signal_connect (stream, "removed", G_CALLBACK (stream_removed_cb),
-          self);
-      g_signal_connect (stream, "notify::state",
-          G_CALLBACK (stream_state_changed_cb), self);
-      g_signal_connect (stream, "direction-changed",
-          G_CALLBACK (stream_direction_changed_cb), self);
-
-      /* newly requested streams start off in a "we want to be bidirectional"
-       * state */
-      example_callable_media_stream_change_direction (stream,
-          TP_MEDIA_STREAM_DIRECTION_BIDIRECTIONAL, NULL);
-
-      if (self->priv->progress == PROGRESS_ACTIVE)
-        {
-          example_callable_media_stream_connect (stream);
-        }
+      stream = example_callable_media_channel_add_stream (self, media_type,
+          TRUE);
 
       g_object_get (stream,
           "stream-info", &info,

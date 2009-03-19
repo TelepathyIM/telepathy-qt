@@ -71,12 +71,17 @@ void example_callable_media_stream_close (ExampleCallableMediaStream *self);
 gboolean example_callable_media_stream_change_direction (
     ExampleCallableMediaStream *self, TpMediaStreamDirection direction,
     GError **error);
+void example_callable_media_stream_accept_proposed_direction (
+    ExampleCallableMediaStream *self);
 void example_callable_media_stream_connect (ExampleCallableMediaStream *self);
 
 /* This controls receiving emulated network events, so it wouldn't exist in
  * a real connection manager */
 void example_callable_media_stream_simulate_contact_agreed_to_send (
     ExampleCallableMediaStream *self);
+
+void example_callable_media_stream_receive_direction_request (
+    ExampleCallableMediaStream *self, TpMediaStreamDirection direction);
 
 G_END_DECLS
 

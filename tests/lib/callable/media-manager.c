@@ -62,6 +62,7 @@ struct _ExampleCallableMediaManagerPrivate
   guint next_channel_index;
 
   gulong status_changed_id;
+  gulong available_id;
 };
 
 static void
@@ -74,6 +75,7 @@ example_callable_media_manager_init (ExampleCallableMediaManager *self)
   self->priv->conn = NULL;
   self->priv->channels = NULL;
   self->priv->status_changed_id = 0;
+  self->priv->available_id = 0;
 }
 
 static void
@@ -87,6 +89,13 @@ example_callable_media_manager_close_all (ExampleCallableMediaManager *self)
 
       g_list_foreach (tmp, (GFunc) g_object_unref, NULL);
       g_list_free (tmp);
+    }
+
+  if (self->priv->available_id != 0)
+    {
+      g_signal_handler_disconnect (self->priv->conn,
+          self->priv->available_id);
+      self->priv->available_id = 0;
     }
 
   if (self->priv->status_changed_id != 0)
@@ -177,6 +186,44 @@ status_changed_cb (TpBaseConnection *conn,
     }
 }
 
+static ExampleCallableMediaChannel *new_channel (
+    ExampleCallableMediaManager *self, TpHandle handle, TpHandle initiator,
+    gpointer request_token, gboolean initial_audio, gboolean initial_video);
+
+static gboolean
+simulate_incoming_call_cb (gpointer p)
+{
+  ExampleCallableMediaManager *self = p;
+  TpHandleRepoIface *contact_repo;
+  TpHandle caller;
+
+  /* do nothing if we've been disconnected while waiting for the contact to
+   * call us */
+  if (self->priv->available_id == 0)
+    return FALSE;
+
+  /* We're called by someone whose ID on the IM service is "caller" */
+  contact_repo = tp_base_connection_get_handles (self->priv->conn,
+      TP_HANDLE_TYPE_CONTACT);
+  caller = tp_handle_ensure (contact_repo, "caller", NULL, NULL);
+
+  new_channel (self, caller, caller, NULL, TRUE, FALSE);
+
+  return FALSE;
+}
+
+/* Whenever our presence changes from away to available, and whenever our
+ * presence message changes while remaining available, simulate a call from
+ * a contact */
+static void
+available_cb (GObject *conn G_GNUC_UNUSED,
+              const gchar *message,
+              ExampleCallableMediaManager *self)
+{
+  g_timeout_add_full (G_PRIORITY_DEFAULT, self->priv->simulation_delay,
+      simulate_incoming_call_cb, g_object_ref (self), g_object_unref);
+}
+
 static void
 constructed (GObject *object)
 {
@@ -191,6 +238,9 @@ constructed (GObject *object)
 
   self->priv->status_changed_id = g_signal_connect (self->priv->conn,
       "status-changed", (GCallback) status_changed_cb, self);
+
+  self->priv->available_id = g_signal_connect (self->priv->conn,
+      "available", (GCallback) available_cb, self);
 }
 
 static void
@@ -250,7 +300,9 @@ static ExampleCallableMediaChannel *
 new_channel (ExampleCallableMediaManager *self,
              TpHandle handle,
              TpHandle initiator,
-             gpointer request_token)
+             gpointer request_token,
+             gboolean initial_audio,
+             gboolean initial_video)
 {
   ExampleCallableMediaChannel *chan;
   gchar *object_path;
@@ -268,6 +320,8 @@ new_channel (ExampleCallableMediaManager *self,
       "initiator-handle", initiator,
       "requested", (self->priv->conn->self_handle == initiator),
       "simulation-delay", self->priv->simulation_delay,
+      "initial-audio", initial_audio,
+      "initial-video", initial_video,
       NULL);
 
   g_free (object_path);
@@ -387,7 +441,7 @@ example_callable_media_manager_request (ExampleCallableMediaManager *self,
     }
 
   new_channel (self, handle, self->priv->conn->self_handle,
-      request_token);
+      request_token, FALSE, FALSE);
   return TRUE;
 
 error:
