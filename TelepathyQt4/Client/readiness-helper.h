@@ -84,7 +84,8 @@ public:
     };
     typedef QMap<Feature, Introspectable> Introspectables;
 
-    ReadinessHelper(DBusProxy *proxy,
+    ReadinessHelper(QObject *object,
+            DBusProxy *proxy,
             uint currentStatus = 0,
             const Introspectables &introspectables = Introspectables(),
             QObject *parent = 0);

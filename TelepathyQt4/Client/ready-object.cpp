@@ -33,22 +33,20 @@ namespace Client
 
 struct ReadyObject::Private
 {
-    Private(ReadyObject *parent, DBusProxy *proxy,
+    Private(ReadyObject *parent, QObject *object, DBusProxy *proxy,
             Feature featureCore);
     ~Private();
 
     ReadyObject *parent;
-    DBusProxy *proxy;
     Feature featureCore;
     ReadinessHelper *readinessHelper;
 };
 
-ReadyObject::Private::Private(ReadyObject *parent, DBusProxy *proxy,
-        Feature featureCore)
+ReadyObject::Private::Private(ReadyObject *parent, QObject *object,
+        DBusProxy *proxy, Feature featureCore)
     : parent(parent),
-      proxy(proxy),
       featureCore(featureCore),
-      readinessHelper(new ReadinessHelper(proxy))
+      readinessHelper(new ReadinessHelper(object, proxy))
 {
 }
 
@@ -66,11 +64,26 @@ ReadyObject::Private::~Private()
 /**
  * Construct a new ReadyObject object.
  *
+ * \param object The QObject the object refers to.
+ * \param proxy The DBusProxy the object refers to.
+ * \param featureCore The core feature of the object.
+ */
+ReadyObject::ReadyObject(QObject *object, DBusProxy *proxy,
+        const Feature &featureCore)
+    : mPriv(new Private(this, object, proxy, featureCore))
+{
+}
+
+/**
+ * Construct a new ReadyObject object.
+ *
+ * The object will be same as proxy.
+ *
  * \param proxy The DBusProxy the object refers to.
  * \param featureCore The core feature of the object.
  */
 ReadyObject::ReadyObject(DBusProxy *proxy, const Feature &featureCore)
-    : mPriv(new Private(this, proxy, featureCore))
+    : mPriv(new Private(this, proxy, proxy, featureCore))
 {
 }
 
