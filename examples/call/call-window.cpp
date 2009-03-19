@@ -155,8 +155,8 @@ void CallWindow::onNewChannels(const Telepathy::ChannelDetailsList &channels)
     foreach (const Telepathy::ChannelDetails &details, channels) {
         QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
-        qDebug() << "CallWindow::onNewChannels: channelType:" << channelType;
-        qDebug() << "CallWindow::onNewChannels: requested:" << requested;
+        qDebug() << " channelType:" << channelType;
+        qDebug() << " requested  :" << requested;
 
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             !requested) {
@@ -164,7 +164,6 @@ void CallWindow::onNewChannels(const Telepathy::ChannelDetailsList &channels)
                         details.channel.path(),
                         details.properties);
             mCallHandler->addIncomingCall(channel);
-            qDebug() << "CallWindow::onNewChannels: new call received";
         }
     }
 }

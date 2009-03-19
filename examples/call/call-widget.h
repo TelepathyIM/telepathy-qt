@@ -21,11 +21,11 @@
 #ifndef _TelepathyQt4_examples_call_call_widget_h_HEADER_GUARD_
 #define _TelepathyQt4_examples_call_call_widget_h_HEADER_GUARD_
 
-#include <QSharedPointer>
 #include <QWidget>
 
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Client/StreamedMediaChannel>
 #include <TelepathyQt4/Constants>
 
 #include "farsight-channel.h"
@@ -36,7 +36,6 @@ class DBusProxy;
 class MediaStream;
 class PendingMediaStreams;
 class PendingOperation;
-class StreamedMediaChannel;
 }
 }
 
@@ -62,12 +61,12 @@ private Q_SLOTS:
     void onChannelInvalidated(Telepathy::Client::DBusProxy *,
             const QString &, const QString &);
     void onStreamCreated(Telepathy::Client::PendingOperation *);
-    void onStreamAdded(const QSharedPointer<Telepathy::Client::MediaStream> &);
-    void onStreamRemoved(Telepathy::Client::MediaStream *);
-    void onStreamDirectionChanged(Telepathy::Client::MediaStream *,
+    void onStreamAdded(const Telepathy::Client::MediaStreamPtr &);
+    void onStreamRemoved(const Telepathy::Client::MediaStreamPtr &);
+    void onStreamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
             Telepathy::MediaStreamDirection,
             Telepathy::MediaStreamPendingSend);
-    void onStreamStateChanged(Telepathy::Client::MediaStream *,
+    void onStreamStateChanged(const Telepathy::Client::MediaStreamPtr &,
             Telepathy::MediaStreamState);
     void onTfChannelStatusChanged(Telepathy::Client::FarsightChannel::Status);
 
@@ -79,9 +78,8 @@ private:
     void createActions();
     void setupGui();
 
-    QSharedPointer<Telepathy::Client::MediaStream> streamForType(Telepathy::MediaStreamType type) const;
-    void connectStreamSignals(const QSharedPointer<Telepathy::Client::MediaStream> &stream);
-    void updateStreamDirection(const QSharedPointer<Telepathy::Client::MediaStream> &stream);
+    Telepathy::Client::MediaStreamPtr streamForType(Telepathy::MediaStreamType type) const;
+    void updateStreamDirection(const Telepathy::Client::MediaStreamPtr &stream);
 
     void callEnded(const QString &message);
 

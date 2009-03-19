@@ -176,26 +176,38 @@ void CallWidget::onChannelReady(PendingOperation *op)
         return;
     }
 
-#if 1
+    connect(mChan,
+            SIGNAL(streamAdded(const Telepathy::Client::MediaStreamPtr &)),
+            SLOT(onStreamAdded(const Telepathy::Client::MediaStreamPtr &)));
+    connect(mChan,
+            SIGNAL(streamRemoved(const Telepathy::Client::MediaStreamPtr &)),
+            SLOT(onStreamRemoved(const Telepathy::Client::MediaStreamPtr &)));
+    connect(mChan,
+            SIGNAL(streamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
+                                          Telepathy::MediaStreamDirection,
+                                          Telepathy::MediaStreamPendingSend)),
+            SLOT(onStreamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
+                                          Telepathy::MediaStreamDirection,
+                                          Telepathy::MediaStreamPendingSend)));
+    connect(mChan,
+            SIGNAL(streamStateChanged(const Telepathy::Client::MediaStreamPtr &,
+                                      Telepathy::MediaStreamState)),
+            SLOT(onStreamStateChanged(const Telepathy::Client::MediaStreamPtr &,
+                                      Telepathy::MediaStreamState)));
+
     MediaStreams streams = mChan->streams();
     qDebug() << "CallWidget::onChannelReady: number of streams:" << streams.size();
-    qDebug() << " streams:";
-    foreach (const QSharedPointer<MediaStream> &stream, streams) {
-        qDebug() << "  " <<
-            (stream->type() == Telepathy::MediaStreamTypeAudio ? "Audio" : "Video");
-    }
-#endif
+    if (streams.size() > 0) {
+        foreach (const MediaStreamPtr &stream, streams) {
+            qDebug() << "  type:" <<
+                (stream->type() == Telepathy::MediaStreamTypeAudio ? "Audio" : "Video");
+            qDebug() << "  direction:" << stream->direction();
+            qDebug() << "  state:" << stream->state();
 
-    connect(mChan,
-            SIGNAL(streamAdded(const QSharedPointer<Telepathy::Client::MediaStream> &)),
-            SLOT(onStreamAdded(const QSharedPointer<Telepathy::Client::MediaStream> &)));
-
-    QSharedPointer<MediaStream> stream = streamForType(Telepathy::MediaStreamTypeAudio);
-    if (stream) {
-        connectStreamSignals(stream);
-        onStreamDirectionChanged(stream.data(), stream->direction(),
-                stream->pendingSend());
-        onStreamStateChanged(stream.data(), stream->state());
+            onStreamDirectionChanged(stream, stream->direction(),
+                    stream->pendingSend());
+            onStreamStateChanged(stream, stream->state());
+        }
     }
 
     mBtnSendAudio->setEnabled(true);
@@ -224,57 +236,78 @@ void CallWidget::onStreamCreated(PendingOperation *op)
         qWarning() << "CallWidget::onStreamCreated: unable to create stream:" <<
             op->errorName() << "-" << op->errorMessage();
 
+        QPushButton *btn = 0;
+
         // we cannot create the stream for some reason, update buttons
         if (!streamForType(Telepathy::MediaStreamTypeAudio)) {
-            mBtnSendAudio->setChecked(false);
+            btn = mBtnSendAudio;
+        } else if (!streamForType(Telepathy::MediaStreamTypeVideo)) {
+            btn = mBtnSendVideo;
+        } else {
+            Q_ASSERT(false);
         }
-        if (!streamForType(Telepathy::MediaStreamTypeVideo)) {
-            mBtnSendVideo->setChecked(false);
-        }
+
+        btn->blockSignals(true);
+        btn->setChecked(false);
+        btn->blockSignals(false);
         return;
     }
 
-    PendingMediaStreams *pms = qobject_cast<PendingMediaStreams *>(op);
-    Q_ASSERT(pms->streams().size() == 1);
-    QSharedPointer<MediaStream> stream = pms->streams().first();
-    connectStreamSignals(stream);
-    updateStreamDirection(stream);
-    onStreamDirectionChanged(stream.data(), stream->direction(),
-            stream->pendingSend());
-    onStreamStateChanged(stream.data(), stream->state());
+    // do nothing as streamAdded signal will be emitted
 }
 
-void CallWidget::onStreamAdded(const QSharedPointer<MediaStream> &stream)
+void CallWidget::onStreamAdded(const MediaStreamPtr &stream)
 {
-    connectStreamSignals(stream);
+    qDebug() << "CallWidget::onStreamAdded:" <<
+        (stream->type() == Telepathy::MediaStreamTypeAudio ? "Audio" : "Video") <<
+        "stream created";
+    qDebug() << " direction:" << stream->direction();
+    qDebug() << " state:" << stream->state();
+
     updateStreamDirection(stream);
-    onStreamDirectionChanged(stream.data(), stream->direction(),
+    onStreamDirectionChanged(stream, stream->direction(),
             stream->pendingSend());
-    onStreamStateChanged(stream.data(), stream->state());
+    onStreamStateChanged(stream, stream->state());
 }
 
-void CallWidget::onStreamRemoved(MediaStream *stream)
+void CallWidget::onStreamRemoved(const MediaStreamPtr &stream)
 {
+    qDebug() << "CallWidget::onStreamRemoved:" <<
+        (stream->type() == Telepathy::MediaStreamTypeAudio ? "Audio" : "Video") <<
+        "stream removed";
     if (stream->type() == Telepathy::MediaStreamTypeAudio) {
+        mBtnSendAudio->blockSignals(true);
         mBtnSendAudio->setChecked(false);
+        mBtnSendAudio->blockSignals(false);
+        mLblAudioDirection->setText(QLatin1String("Direction: None"));
+        mLblAudioState->setText(QLatin1String("State: Disconnected"));
     } else if (stream->type() == Telepathy::MediaStreamTypeVideo) {
+        mBtnSendVideo->blockSignals(true);
         mBtnSendVideo->setChecked(false);
+        mBtnSendVideo->blockSignals(false);
+        mLblVideoDirection->setText(QLatin1String("Direction: None"));
+        mLblVideoState->setText(QLatin1String("State: Disconnected"));
     }
 }
 
-void CallWidget::onStreamDirectionChanged(MediaStream *stream,
+void CallWidget::onStreamDirectionChanged(const MediaStreamPtr &stream,
         Telepathy::MediaStreamDirection direction,
         Telepathy::MediaStreamPendingSend pendingSend)
 {
-    qDebug() << "CallWidget::onStreamDirectionChanged: stream " <<
+    qDebug() << "CallWidget::onStreamDirectionChanged:" <<
         (stream->type() == Telepathy::MediaStreamTypeAudio ? "Audio" : "Video") <<
-        "direction changed to" << direction;
+        "stream direction changed to" << direction;
 
-    QLabel *lbl;
+    QLabel *lbl = 0;
+    QPushButton *btn = 0;
     if (stream->type() == Telepathy::MediaStreamTypeAudio) {
         lbl = mLblAudioDirection;
-    } else {
+        btn = mBtnSendAudio;
+    } else if (stream->type() == Telepathy::MediaStreamTypeVideo) {
         lbl = mLblVideoDirection;
+        btn = mBtnSendVideo;
+    } else {
+        Q_ASSERT(false);
     }
 
     if (direction == Telepathy::MediaStreamDirectionSend) {
@@ -286,22 +319,27 @@ void CallWidget::onStreamDirectionChanged(MediaStream *stream,
     } else {
         lbl->setText(QLatin1String("Direction: None"));
     }
+
+    btn->blockSignals(true);
+    btn->setChecked(direction & Telepathy::MediaStreamDirectionSend);
+    btn->blockSignals(false);
 }
 
-void CallWidget::onStreamStateChanged(MediaStream *stream,
+void CallWidget::onStreamStateChanged(const MediaStreamPtr &stream,
         Telepathy::MediaStreamState state)
 {
-    qDebug() << "CallWidget::onStreamStateChanged: stream " <<
+    qDebug() << "CallWidget::onStreamStateChanged:" <<
         (stream->type() == Telepathy::MediaStreamTypeAudio ? "Audio" : "Video") <<
-        "state changed to" << state;
+        "stream state changed to" << state;
 
-    QLabel *lbl;
+    QLabel *lbl = 0;
     if (stream->type() == Telepathy::MediaStreamTypeAudio) {
         lbl = mLblAudioState;
-    } else {
+    } else if (stream->type() == Telepathy::MediaStreamTypeVideo) {
         lbl = mLblVideoState;
+    } else {
+        Q_ASSERT(false);
     }
-
     if (state == Telepathy::MediaStreamStateDisconnected) {
         lbl->setText(QLatin1String("State: Disconnected"));
     } else if (state == Telepathy::MediaStreamStateConnecting) {
@@ -335,7 +373,7 @@ void CallWidget::onBtnHangupClicked()
 
 void CallWidget::onBtnSendAudioToggled(bool checked)
 {
-    QSharedPointer<MediaStream> stream =
+    MediaStreamPtr stream =
         streamForType(Telepathy::MediaStreamTypeAudio);
     qDebug() << "CallWidget::onBtnSendAudioToggled: checked:" << checked;
     if (!stream) {
@@ -354,7 +392,7 @@ void CallWidget::onBtnSendAudioToggled(bool checked)
 
 void CallWidget::onBtnSendVideoToggled(bool checked)
 {
-    QSharedPointer<MediaStream> stream =
+    MediaStreamPtr stream =
         streamForType(Telepathy::MediaStreamTypeVideo);
     qDebug() << "CallWidget::onBtnSendVideoToggled: checked:" << checked;
     if (!stream) {
@@ -371,54 +409,42 @@ void CallWidget::onBtnSendVideoToggled(bool checked)
     }
 }
 
-QSharedPointer<MediaStream> CallWidget::streamForType(Telepathy::MediaStreamType type) const
+MediaStreamPtr CallWidget::streamForType(Telepathy::MediaStreamType type) const
 {
     MediaStreams streams = mChan->streams();
-    foreach (const QSharedPointer<MediaStream> &stream, streams) {
+    foreach (const MediaStreamPtr &stream, streams) {
         if (stream->type() == type) {
             return stream;
         }
     }
-    return QSharedPointer<MediaStream>();
+    return MediaStreamPtr();
 }
 
-void CallWidget::connectStreamSignals(const QSharedPointer<MediaStream> &stream)
-{
-    connect(stream.data(),
-            SIGNAL(removed(Telepathy::Client::MediaStream *)),
-            SLOT(onStreamRemoved(Telepathy::Client::MediaStream *)));
-    connect(stream.data(),
-            SIGNAL(directionChanged(Telepathy::Client::MediaStream *,
-                                    Telepathy::MediaStreamDirection,
-                                    Telepathy::MediaStreamPendingSend)),
-            SLOT(onStreamDirectionChanged(Telepathy::Client::MediaStream *,
-                                          Telepathy::MediaStreamDirection,
-                                          Telepathy::MediaStreamPendingSend)));
-    connect(stream.data(),
-            SIGNAL(stateChanged(Telepathy::Client::MediaStream *,
-                                Telepathy::MediaStreamState)),
-            SLOT(onStreamStateChanged(Telepathy::Client::MediaStream *,
-                                      Telepathy::MediaStreamState)));
-}
-
-void CallWidget::updateStreamDirection(const QSharedPointer<MediaStream> &stream)
+void CallWidget::updateStreamDirection(const MediaStreamPtr &stream)
 {
     bool checked = false;
     if (stream->type() == Telepathy::MediaStreamTypeAudio) {
         checked = mBtnSendAudio->isChecked();
     } else if (stream->type() == Telepathy::MediaStreamTypeVideo) {
         checked = mBtnSendVideo->isChecked();
+    } else {
+        Q_ASSERT(false);
     }
 
-    qDebug() << "CallWidget::updateStreamDirection: current stream direction:" <<
-        stream->direction() << "- checked:" << checked;
+    qDebug() << "CallWidget::updateStreamDirection: updating" <<
+        (stream->type() == Telepathy::MediaStreamTypeAudio ? "audio" : "video") <<
+        "stream direction";
 
     if (checked) {
         if (!(stream->direction() & Telepathy::MediaStreamDirectionSend)) {
             int dir = stream->direction() | Telepathy::MediaStreamDirectionSend;
             stream->requestStreamDirection((Telepathy::MediaStreamDirection) dir);
-            qDebug() << "CallWidget::updateStreamDirection: start sending " <<
+            qDebug() << "CallWidget::updateStreamDirection: start sending" <<
                 (stream->type() == Telepathy::MediaStreamTypeAudio ? "audio" : "video");
+        } else {
+            qDebug() << "CallWidget::updateStreamDirection:" <<
+                (stream->type() == Telepathy::MediaStreamTypeAudio ? "audio" : "video") <<
+                "stream updated";
         }
     } else {
         if (stream->direction() & Telepathy::MediaStreamDirectionSend) {
@@ -426,6 +452,10 @@ void CallWidget::updateStreamDirection(const QSharedPointer<MediaStream> &stream
             qDebug() << "CallWidget::updateStreamDirection: stop sending " <<
                 (stream->type() == Telepathy::MediaStreamTypeAudio ? "audio" : "video");
             stream->requestStreamDirection((Telepathy::MediaStreamDirection) dir);
+        } else {
+            qDebug() << "CallWidget::updateStreamDirection:" <<
+                (stream->type() == Telepathy::MediaStreamTypeAudio ? "audio" : "video") <<
+                "stream updated";
         }
     }
 }

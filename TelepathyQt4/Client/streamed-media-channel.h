@@ -36,7 +36,8 @@ namespace Client
 class StreamedMediaChannel;
 class MediaStream;
 
-typedef QList<QSharedPointer<MediaStream> > MediaStreams;
+typedef QExplicitlySharedDataPointer<MediaStream> MediaStreamPtr;
+typedef QList<MediaStreamPtr> MediaStreams;
 
 class PendingMediaStreams : public PendingOperation
 {
@@ -50,7 +51,8 @@ public:
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
-    void gotContacts(Telepathy::Client::PendingOperation *);
+    void onStreamRemoved(Telepathy::Client::MediaStreamPtr);
+    void onStreamReady(Telepathy::Client::PendingOperation *);
 
 private:
     friend class StreamedMediaChannel;
@@ -68,7 +70,9 @@ private:
     Private *mPriv;
 };
 
-class MediaStream : public QObject
+class MediaStream : public QObject,
+                    private ReadyObject,
+                    public QSharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(MediaStream)
@@ -97,20 +101,14 @@ public:
     PendingOperation *requestStreamDirection(
             bool send, bool receive);
 
-Q_SIGNALS:
-    void removed(Telepathy::Client::MediaStream *stream);
-    void directionChanged(Telepathy::Client::MediaStream *stream,
-            Telepathy::MediaStreamDirection direction,
-            Telepathy::MediaStreamPendingSend pendingSend);
-    void stateChanged(Telepathy::Client::MediaStream *stream,
-            Telepathy::MediaStreamState);
-    void error(Telepathy::Client::MediaStream *stream,
-            Telepathy::MediaStreamError errorCode,
-            const QString &errorMessage);
+private Q_SLOTS:
+    void gotContact(Telepathy::Client::PendingOperation *op);
 
 private:
     friend class PendingMediaStreams;
     friend class StreamedMediaChannel;
+
+    static const Feature FeatureContact;
 
     MediaStream(StreamedMediaChannel *channel, uint id,
             uint contactHandle, MediaStreamType type,
@@ -158,12 +156,20 @@ public:
             QList<Telepathy::MediaStreamType> types);
 
 Q_SIGNALS:
-    void streamAdded(const QSharedPointer<Telepathy::Client::MediaStream> &stream);
+    void streamAdded(const Telepathy::Client::MediaStreamPtr &stream);
+    void streamRemoved(const Telepathy::Client::MediaStreamPtr &stream);
+    void streamDirectionChanged(const Telepathy::Client::MediaStreamPtr &stream,
+            Telepathy::MediaStreamDirection direction,
+            Telepathy::MediaStreamPendingSend pendingSend);
+    void streamStateChanged(const Telepathy::Client::MediaStreamPtr &stream,
+            Telepathy::MediaStreamState);
+    void streamError(const Telepathy::Client::MediaStreamPtr &stream,
+            Telepathy::MediaStreamError errorCode,
+            const QString &errorMessage);
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
-    void onStreamsReady(Telepathy::Client::PendingOperation *);
-    void onNewStreamReady(Telepathy::Client::PendingOperation *);
+    void onStreamReady(Telepathy::Client::PendingOperation *);
     void onStreamAdded(uint, uint, uint);
     void onStreamRemoved(uint);
     void onStreamDirectionChanged(uint, uint, uint);
@@ -173,7 +179,8 @@ private Q_SLOTS:
 private:
     friend class PendingMediaStreams;
 
-    void addStream(const QSharedPointer<MediaStream> &stream);
+    void addStream(const MediaStreamPtr &stream);
+    MediaStreamPtr lookupStreamById(uint streamId);
 
     struct Private;
     friend struct Private;
