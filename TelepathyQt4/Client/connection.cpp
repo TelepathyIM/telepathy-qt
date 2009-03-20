@@ -707,7 +707,6 @@ ContactPtr Connection::selfContact() const
 
 void Connection::onStatusReady(uint status)
 {
-    qDebug() << "status=" << status << "- pendingStatus=" << mPriv->pendingStatus;
     Q_ASSERT(status == mPriv->pendingStatus);
 
     mPriv->status = status;

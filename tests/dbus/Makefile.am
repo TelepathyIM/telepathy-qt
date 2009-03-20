@@ -47,6 +47,7 @@ TESTS += \
     test-contacts \
     test-handles \
     test-stateful-proxy \
+    test-streamed-media-chan \
     test-text-chan
 
 BUILT_SOURCES += \
@@ -59,6 +60,7 @@ BUILT_SOURCES += \
     _gen/contacts.cpp.moc.hpp \
     _gen/handles.cpp.moc.hpp \
     _gen/stateful-proxy.cpp.moc.hpp \
+    _gen/streamed-media-chan.cpp.moc.hpp \
     _gen/text-chan.cpp.moc.hpp
 
 MOC_INCLUDES += $(TP_GLIB_CFLAGS)
@@ -89,6 +91,9 @@ test_handles_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_stateful_proxy_SOURCES = stateful-proxy.cpp
 test_stateful_proxy_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+
+test_streamed_media_chan_SOURCES = streamed-media-chan.cpp
+test_streamed_media_chan_LDADD = $(LDADD) $(top_builddir)/tests/lib/callable/libexample-cm-callable.la
 
 test_text_chan_SOURCES = text-chan.cpp
 test_text_chan_LDADD = $(LDADD) \
