@@ -93,7 +93,7 @@ test_stateful_proxy_SOURCES = stateful-proxy.cpp
 test_stateful_proxy_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_streamed_media_chan_SOURCES = streamed-media-chan.cpp
-test_streamed_media_chan_LDADD = $(LDADD) $(top_builddir)/tests/lib/callable/libexample-cm-callable.la
+test_streamed_media_chan_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_text_chan_SOURCES = text-chan.cpp
 test_text_chan_LDADD = $(LDADD) \
