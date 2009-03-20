@@ -145,8 +145,8 @@ public:
 
     PendingOperation *acceptCall();
 
-    PendingOperation *removeStreams(MediaStreams streams);
-    PendingOperation *removeStreams(const Telepathy::UIntList &ids);
+    PendingOperation *removeStream(const MediaStreamPtr &stream);
+    PendingOperation *removeStreams(const MediaStreams &streams);
 
     PendingMediaStreams *requestStream(
             const ContactPtr &contact,

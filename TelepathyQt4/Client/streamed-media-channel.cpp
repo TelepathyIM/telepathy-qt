@@ -587,30 +587,31 @@ PendingOperation *StreamedMediaChannel::acceptCall()
 }
 
 /**
+ * Remove the specified stream from this channel.
+ *
+ * \param stream Stream to remove.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &stream)
+{
+    return new PendingVoidMethodCall(this,
+            streamedMediaInterface()->RemoveStreams(UIntList() << stream->id()));
+}
+
+/**
  * Remove the specified streams from this channel.
  *
  * \param streams List of streams to remove.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
-PendingOperation *StreamedMediaChannel::removeStreams(MediaStreams streams)
+PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &streams)
 {
     Telepathy::UIntList ids;
     foreach (const MediaStreamPtr &stream, streams) {
         ids << stream->id();
     }
-    return removeStreams(ids);
-}
-
-/**
- * Remove the specified streams from this channel.
- *
- * \param streams List of ids corresponding to the streams to remove.
- * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
- */
-PendingOperation *StreamedMediaChannel::removeStreams(const Telepathy::UIntList &ids)
-{
     return new PendingVoidMethodCall(this,
             streamedMediaInterface()->RemoveStreams(ids));
 }
