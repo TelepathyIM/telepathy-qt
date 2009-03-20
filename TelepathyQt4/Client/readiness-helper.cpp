@@ -25,6 +25,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Constants>
 
@@ -40,7 +41,6 @@ struct ReadinessHelper::Private
 {
     Private(ReadinessHelper *parent,
             QObject *object,
-            DBusProxy *proxy,
             uint currentStatus,
             const Introspectables &introspectables);
     ~Private();
@@ -76,12 +76,11 @@ struct ReadinessHelper::Private
 ReadinessHelper::Private::Private(
         ReadinessHelper *parent,
         QObject *object,
-        DBusProxy *proxy,
         uint currentStatus,
         const Introspectables &introspectables)
     : parent(parent),
       object(object),
-      proxy(proxy),
+      proxy(qobject_cast<DBusProxy*>(object)),
       currentStatus(currentStatus),
       introspectables(introspectables),
       pendingStatusChange(false),
@@ -96,6 +95,12 @@ ReadinessHelper::Private::Private(
         supportedStatuses += introspectable.makesSenseForStatuses;
         supportedFeatures += feature;
         ++i;
+    }
+
+    if (proxy) {
+        parent->connect(proxy,
+                SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
+                SLOT(onProxyInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
     }
 
     debug() << "ReadinessHelper: supportedStatuses =" << supportedStatuses;
@@ -284,18 +289,12 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
 }
 
 ReadinessHelper::ReadinessHelper(QObject *object,
-        DBusProxy *proxy,
         uint currentStatus,
         const Introspectables &introspectables,
         QObject *parent)
     : QObject(parent),
-      mPriv(new Private(this, object, proxy, currentStatus, introspectables))
+      mPriv(new Private(this, object, currentStatus, introspectables))
 {
-    if (proxy) {
-        connect(proxy,
-                SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
-                SLOT(onProxyInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
-    }
 }
 
 ReadinessHelper::~ReadinessHelper()

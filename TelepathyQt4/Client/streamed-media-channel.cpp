@@ -225,7 +225,7 @@ MediaStream::MediaStream(StreamedMediaChannel *channel, uint id,
         MediaStreamState state, MediaStreamDirection direction,
         MediaStreamPendingSend pendingSend)
     : QObject(),
-      ReadyObject(this, 0, FeatureContact),
+      ReadyObject(this, FeatureContact),
       mPriv(new Private(this, channel, id, contactHandle, type,
                   state, direction, pendingSend))
 {

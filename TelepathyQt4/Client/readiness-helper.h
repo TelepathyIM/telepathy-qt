@@ -26,7 +26,6 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/Feature>
 
 #include <QMap>
@@ -40,6 +39,7 @@ namespace Telepathy
 namespace Client
 {
 
+class DBusProxy;
 class PendingReady;
 
 class ReadinessHelper : public QObject
@@ -85,7 +85,6 @@ public:
     typedef QMap<Feature, Introspectable> Introspectables;
 
     ReadinessHelper(QObject *object,
-            DBusProxy *proxy,
             uint currentStatus = 0,
             const Introspectables &introspectables = Introspectables(),
             QObject *parent = 0);
