@@ -96,9 +96,9 @@ public:
     Telepathy::MediaStreamPendingSend pendingSend() const;
 
     PendingOperation *remove();
-    PendingOperation *requestStreamDirection(
+    PendingOperation *requestDirection(
             Telepathy::MediaStreamDirection direction);
-    PendingOperation *requestStreamDirection(
+    PendingOperation *requestDirection(
             bool send, bool receive);
 
 private Q_SLOTS:

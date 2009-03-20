@@ -362,7 +362,7 @@ PendingOperation *MediaStream::remove()
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
-PendingOperation *MediaStream::requestStreamDirection(
+PendingOperation *MediaStream::requestDirection(
         Telepathy::MediaStreamDirection direction)
 {
     return new PendingVoidMethodCall(this,
@@ -376,9 +376,9 @@ PendingOperation *MediaStream::requestStreamDirection(
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa requestStreamDirection(Telepathy::MediaStreamDirection direction)
+ * \sa requestDirection(Telepathy::MediaStreamDirection direction)
  */
-PendingOperation *MediaStream::requestStreamDirection(bool send, bool receive)
+PendingOperation *MediaStream::requestDirection(bool send, bool receive)
 {
     uint dir = Telepathy::MediaStreamDirectionNone;
     if (send) {
@@ -387,7 +387,7 @@ PendingOperation *MediaStream::requestStreamDirection(bool send, bool receive)
     if (receive) {
         dir |= Telepathy::MediaStreamDirectionReceive;
     }
-    return requestStreamDirection((Telepathy::MediaStreamDirection) dir);
+    return requestDirection((Telepathy::MediaStreamDirection) dir);
 }
 
 uint MediaStream::contactHandle() const

@@ -438,7 +438,7 @@ void CallWidget::updateStreamDirection(const MediaStreamPtr &stream)
     if (checked) {
         if (!(stream->direction() & Telepathy::MediaStreamDirectionSend)) {
             int dir = stream->direction() | Telepathy::MediaStreamDirectionSend;
-            stream->requestStreamDirection((Telepathy::MediaStreamDirection) dir);
+            stream->requestDirection((Telepathy::MediaStreamDirection) dir);
             qDebug() << "CallWidget::updateStreamDirection: start sending" <<
                 (stream->type() == Telepathy::MediaStreamTypeAudio ? "audio" : "video");
         } else {
@@ -451,7 +451,7 @@ void CallWidget::updateStreamDirection(const MediaStreamPtr &stream)
             int dir = stream->direction() & ~Telepathy::MediaStreamDirectionSend;
             qDebug() << "CallWidget::updateStreamDirection: stop sending " <<
                 (stream->type() == Telepathy::MediaStreamTypeAudio ? "audio" : "video");
-            stream->requestStreamDirection((Telepathy::MediaStreamDirection) dir);
+            stream->requestDirection((Telepathy::MediaStreamDirection) dir);
         } else {
             qDebug() << "CallWidget::updateStreamDirection:" <<
                 (stream->type() == Telepathy::MediaStreamTypeAudio ? "audio" : "video") <<
