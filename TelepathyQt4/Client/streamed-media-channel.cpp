@@ -216,6 +216,11 @@ MediaStream::Private::Private(MediaStream *parent,
 
 void MediaStream::Private::introspectContact(MediaStream::Private *self)
 {
+    if (self->contactHandle == 0) {
+        self->readinessHelper->setIntrospectCompleted(FeatureContact, true);
+        return;
+    }
+
     ContactManager *contactManager = self->channel->connection()->contactManager();
     self->parent->connect(
             contactManager->contactsForHandles(UIntList() << self->contactHandle),
