@@ -727,7 +727,9 @@ void StreamedMediaChannel::onStreamRemoved(uint streamId)
         streamId << "removed";
 
     MediaStreamPtr stream = lookupStreamById(streamId);
-    Q_ASSERT(stream);
+    if (!stream) {
+        return;
+    }
     bool incomplete = mPriv->incompleteStreams.contains(streamId);
     if (incomplete) {
         mPriv->incompleteStreams.remove(streamId);
@@ -754,7 +756,9 @@ void StreamedMediaChannel::onStreamDirectionChanged(uint streamId,
         streamId << "direction changed to" << streamDirection;
 
     MediaStreamPtr stream = lookupStreamById(streamId);
-    Q_ASSERT(stream);
+    if (!stream) {
+        return;
+    }
     stream->setDirection(
             (Telepathy::MediaStreamDirection) streamDirection,
             (Telepathy::MediaStreamPendingSend) streamPendingFlags);
@@ -773,7 +777,9 @@ void StreamedMediaChannel::onStreamStateChanged(uint streamId,
         streamId << "state changed to" << streamState;
 
     MediaStreamPtr stream = lookupStreamById(streamId);
-    Q_ASSERT(stream);
+    if (!stream) {
+        return;
+    }
     stream->setState((Telepathy::MediaStreamState) streamState);
     if (isReady(FeatureStreams) &&
         !mPriv->incompleteStreams.contains(stream->id())) {
@@ -789,7 +795,9 @@ void StreamedMediaChannel::onStreamError(uint streamId,
         streamId << "error:" << errorCode << "-" << errorMessage;
 
     MediaStreamPtr stream = lookupStreamById(streamId);
-    Q_ASSERT(stream);
+    if (!stream) {
+        return;
+    }
     if (isReady(FeatureStreams) &&
         !mPriv->incompleteStreams.contains(stream->id())) {
         emit streamError(stream,
