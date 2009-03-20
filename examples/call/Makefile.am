@@ -1,6 +1,5 @@
 AM_CXXFLAGS = \
 	$(ERROR_CXXFLAGS) \
-	$(GST_CFLAGS) \
 	$(QTCORE_CFLAGS) \
 	$(QTGUI_CFLAGS) \
 	$(QTDBUS_CFLAGS) \
@@ -10,7 +9,6 @@ AM_CXXFLAGS = \
 noinst_PROGRAMS = call
 
 call_LDADD = \
-	$(GST_LIBS) \
 	$(QTGUI_LIBS) \
 	$(QTDBUS_LIBS) \
 	$(TP_FARSIGHT_LIBS) \

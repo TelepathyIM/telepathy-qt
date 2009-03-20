@@ -199,21 +199,10 @@ fi
 AM_CONDITIONAL([ENABLE_TP_GLIB_TESTS],
   [test yes = "$have_tp_glib" && test yes = "$have_qt_glib_main_loop"])
 
-dnl Check for gstreamer... we need it to build an audio/video calling example
-PKG_CHECK_MODULES(GST, [gstreamer-0.10 gstreamer-interfaces-0.10], [have_gst=yes],
-                  [have_gst=no])
-AC_SUBST(GST_CFLAGS)
-AC_SUBST(GST_LIBS)
-if test no = "$have_gst"; then
-  AC_MSG_WARN([gstreamer not found: not all examples will be built])
-fi
-AM_CONDITIONAL([ENABLE_GST_EXAMPLES],
-  [test yes = "$have_gst" &&
-   test yes = "$have_qt_glib_main_loop"])
-
 dnl Check for telepathy-farsight... if we have that too, we can build an
 dnl audio/video calling example
-PKG_CHECK_MODULES(TP_FARSIGHT, [telepathy-farsight >= 0.0.4], [have_tp_fs=yes],
+PKG_CHECK_MODULES(TP_FARSIGHT, [telepathy-farsight >= 0.0.4 gstreamer-0.10 gstreamer-interfaces-0.10],
+                  [have_tp_fs=yes],
                   [have_tp_fs=no])
 AC_SUBST(TP_FARSIGHT_CFLAGS)
 AC_SUBST(TP_FARSIGHT_LIBS)
@@ -222,7 +211,6 @@ if test no = "$have_tp_fs"; then
 fi
 AM_CONDITIONAL([ENABLE_TP_FARSIGHT_EXAMPLES],
   [test yes = "$have_tp_glib" && test yes = "$have_tp_fs" &&
-   test yes = "$have_gst" &&
    test yes = "$have_qt_glib_main_loop"])
 
 AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
