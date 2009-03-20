@@ -95,7 +95,6 @@ public:
     Telepathy::MediaStreamDirection direction() const;
     Telepathy::MediaStreamPendingSend pendingSend() const;
 
-    PendingOperation *remove();
     PendingOperation *requestDirection(
             Telepathy::MediaStreamDirection direction);
     PendingOperation *requestDirection(

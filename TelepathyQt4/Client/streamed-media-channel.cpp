@@ -344,17 +344,6 @@ Telepathy::MediaStreamPendingSend MediaStream::pendingSend() const
 }
 
 /**
- * Request this stream to be removed.
- *
- * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
- */
-PendingOperation *MediaStream::remove()
-{
-    return mPriv->channel->removeStreams(Telepathy::UIntList() << mPriv->id);
-}
-
-/**
  * Request a change in the direction of this stream. In particular, this
  * might be useful to stop sending media of a particular type, or inform the
  * peer that you are no longer using media that is being sent to you.
