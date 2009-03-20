@@ -364,7 +364,6 @@ void TestStreamedMediaChan::testOutgoingCall()
     QCOMPARE(mChan->groupContacts().size(), 2);
     QCOMPARE(mChan->awaitingRemoteAnswer(), false);
     QVERIFY(mChan->groupContacts().contains(otherContact));
-    QCOMPARE(stream->direction(), Telepathy::MediaStreamDirectionBidirectional);
 
     // Request video stream
     QVERIFY(connect(mChan->requestStream(otherContact, Telepathy::MediaStreamTypeVideo),
