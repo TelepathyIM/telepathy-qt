@@ -117,6 +117,11 @@ void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
                         (Telepathy::MediaStreamDirection) streamInfo.direction,
                         (Telepathy::MediaStreamPendingSend) streamInfo.pendingSendFlags));
             mPriv->channel->addStream(stream);
+        } else {
+            mPriv->channel->onStreamDirectionChanged(streamInfo.identifier,
+                    streamInfo.direction, streamInfo.pendingSendFlags);
+            mPriv->channel->onStreamStateChanged(streamInfo.identifier,
+                    streamInfo.state);
         }
         mPriv->streams.append(stream);
         connect(mPriv->channel,
@@ -649,7 +654,8 @@ void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
     Telepathy::MediaStreamInfoList list = reply.value();
     if (list.size() > 0) {
         foreach (const Telepathy::MediaStreamInfo &streamInfo, list) {
-            if (!lookupStreamById(streamInfo.identifier)) {
+            MediaStreamPtr stream = lookupStreamById(streamInfo.identifier);
+            if (!stream) {
                 addStream(MediaStreamPtr(
                             new MediaStream(this,
                                 streamInfo.identifier,
@@ -658,6 +664,11 @@ void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
                                 (Telepathy::MediaStreamState) streamInfo.state,
                                 (Telepathy::MediaStreamDirection) streamInfo.direction,
                                 (Telepathy::MediaStreamPendingSend) streamInfo.pendingSendFlags)));
+            } else {
+                onStreamDirectionChanged(streamInfo.identifier,
+                        streamInfo.direction, streamInfo.pendingSendFlags);
+                onStreamStateChanged(streamInfo.identifier,
+                        streamInfo.state);
             }
         }
     } else {
@@ -759,6 +770,12 @@ void StreamedMediaChannel::onStreamDirectionChanged(uint streamId,
     if (!stream) {
         return;
     }
+
+    if ((uint) stream->direction() == streamDirection &&
+        (uint) stream->pendingSend() == streamPendingFlags) {
+        return;
+    }
+
     stream->setDirection(
             (Telepathy::MediaStreamDirection) streamDirection,
             (Telepathy::MediaStreamPendingSend) streamPendingFlags);
@@ -780,6 +797,11 @@ void StreamedMediaChannel::onStreamStateChanged(uint streamId,
     if (!stream) {
         return;
     }
+
+    if ((uint) stream->state() == streamState) {
+        return;
+    }
+
     stream->setState((Telepathy::MediaStreamState) streamState);
     if (isReady(FeatureStreams) &&
         !mPriv->incompleteStreams.contains(stream->id())) {
