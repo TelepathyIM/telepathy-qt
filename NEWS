@@ -1,6 +1,13 @@
 telepathy-qt4 0.1.2 (UNRELEASED)
 ================================
 
+Dependencies:
+
+* Full regression tests now require telepathy-glib >= 0.7.27 (telepathy-glib
+  is still optional)
+
+* telepathy-farsight >= 0.0.4 is a new optional dependency
+
 API changes:
 
 * AccountManager, Account, ConnectionManager, Connection, Channel
@@ -10,6 +17,35 @@ API changes:
   instead of doing hacks to find the shared pointer related to a given object.
   See http://lists.freedesktop.org/archives/telepathy/2009-March/003168.html for
   more details.
+
+* Channel Features are now Feature objects, not integers
+
+* The Feature class is now in its own header, <TelepathyQt4/Client/Feature>
+
+Enhancements:
+
+* The skeletal StreamedMediaChannel class from 0.1.0 has been expanded to
+  cover all the functionality of the Telepathy StreamedMedia interface
+
+* PendingConnection, PendingAccount etc. have serviceName and objectPath
+  methods where necessary, so that objects of custom classes can be
+  constructed
+
+* Features can now be considered critical, meaning that failure to set them up
+  leads to failure of becomeReady() - this should only be used for features
+  that should never fail unless the service is buggy, like Connection and
+  Channel core functionality
+
+* examples/call/ is an example of how to use StreamedMediaChannel, which can
+  make and receive XMPP Jingle calls using telepathy-gabble
+  (this feature requires telepathy-farsight and GStreamer)
+
+Fixes:
+
+* When introspection of a Feature fails, the D-Bus error is propagated as the
+  failure reason of becomeReady()
+
+* Fix a memory leak in TextChannel
 
 telepathy-qt4 0.1.1 (2009-03-05)
 ================================

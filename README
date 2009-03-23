@@ -33,6 +33,11 @@ For the full set of regression tests to run, you'll also need:
   telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
   telepathy-pinocchio <http://telepathy.freedesktop.org/releases/telepathy-pinocchio/>
 
+and to build the example VoIP call UI (examples/call), you'll need:
+  telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+  telepathy-farsight <http://telepathy.freedesktop.org/releases/telepathy-farsight/>
+  GStreamer <http://gstreamer.freedesktop.org/>
+
 See configure.ac for full details, including versions required.
 Of the packages listed above, only QtCore and QtDBus are required at runtime.
 
