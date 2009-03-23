@@ -1,16 +1,19 @@
 AM_CXXFLAGS = \
+	$(TP_QT4_CFLAGS) \
 	$(ERROR_CXXFLAGS) \
 	$(QTCORE_CFLAGS) \
 	$(QTGUI_CFLAGS) \
 	$(QTDBUS_CFLAGS) \
-	$(TP_FARSIGHT_CFLAGS) \
-	$(TP_QT4_CFLAGS)
+	$(TP_GLIB_CFLAGS) \
+	$(TP_FARSIGHT_CFLAGS)
 
 noinst_PROGRAMS = call
 
 call_LDADD = \
+	$(QTCORE_LIBS) \
 	$(QTGUI_LIBS) \
 	$(QTDBUS_LIBS) \
+	$(TP_GLIB_LIBS) \
 	$(TP_FARSIGHT_LIBS) \
 	$(top_builddir)/TelepathyQt4/libtelepathy-qt4.la \
 	$(top_builddir)/examples/roster/libtelepathy-qt4-examples-roster.la
