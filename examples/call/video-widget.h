@@ -2,7 +2,6 @@
  * This file is part of TelepathyQt4
  *
  * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,41 +18,36 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_cli_pending_ready_h_HEADER_GUARD_
-#define _TelepathyQt4_cli_pending_ready_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_call_video_widget_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_call_video_widget_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_HEADER
-#error IN_TELEPATHY_QT4_HEADER
-#endif
+#include <QWidget>
 
-#include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/ReadinessHelper>
+#include <gst/gst.h>
 
-#include <QSet>
+namespace Telepathy {
+namespace Client {
 
-namespace Telepathy
-{
-namespace Client
-{
-
-class PendingReady: public PendingOperation
+class VideoWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    PendingReady(const Features &requestedFeatures, QObject *object);
-    ~PendingReady();
+    VideoWidget(GstBus *bus, QWidget *parent = 0);
+    virtual ~VideoWidget();
 
-    QObject *object() const;
+    GstElement *element() const;
 
-    Features requestedFeatures() const;
+protected:
+    bool eventFilter(QEvent *ev);
+
+private Q_SLOTS:
+    void setOverlay();
+    void windowExposed();
 
 private:
-    Q_DISABLE_COPY(PendingReady);
-
     struct Private;
     friend struct Private;
-    friend class ReadinessHelper;
     Private *mPriv;
 };
 

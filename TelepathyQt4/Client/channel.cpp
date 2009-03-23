@@ -1524,6 +1524,59 @@ ContactPtr Channel::groupSelfContact() const
 }
 
 /**
+ * Return whether the local user is in the "local pending" state. This
+ * indicates that the local user needs to take action to accept an invitation,
+ * an incoming call, etc.
+ *
+ * \return Whether the local user is in this channel's local-pending set.
+ */
+bool Channel::groupSelfHandleIsLocalPending() const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupSelfHandleIsLocalPending() used when "
+            "channel not ready";
+        return false;
+    }
+
+    uint selfHandle = mPriv->groupSelfHandle;
+
+    if (selfHandle == 0) {
+        selfHandle = mPriv->connection->selfHandle();
+    }
+
+    return mPriv->groupLocalPendingContacts.contains(selfHandle);
+}
+
+/**
+ * Attempt to add the local user to this channel. In some channel types,
+ * such as Text and StreamedMedia, this is used to accept an invitation or an
+ * incoming call.
+ *
+ * \return A pending operation which will emit finished on success or failure
+ */
+PendingOperation *Channel::groupAddSelfHandle()
+{
+    if (!isReady()) {
+        warning() << "Channel::groupAddSelfHandle() used when channel not "
+            "ready";
+        return new PendingFailure(this,
+                TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Telepathy-Qt4: Channel object not ready");
+    }
+
+    UIntList handles;
+
+    if (mPriv->groupSelfHandle == 0) {
+        handles << mPriv->connection->selfHandle();
+    } else {
+        handles << mPriv->groupSelfHandle;
+    }
+
+    return new PendingVoidMethodCall(this,
+            mPriv->group->AddMembers(handles, ""));
+}
+
+/**
  * \fn void Channel::groupFlagsChanged(uint flags, uint added, uint removed)
  *
  * Emitted when the value returned by groupFlags() changes.

@@ -18,13 +18,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_roster_roster_window_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_roster_roster_window_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_call_call_window_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_call_call_window_h_HEADER_GUARD_
 
 #include <QMainWindow>
-#include <QSharedPointer>
 
 #include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Types>
 
 namespace Telepathy {
 namespace Client {
@@ -34,16 +34,17 @@ class PendingOperation;
 }
 }
 
-class RosterWidget;
+class CallHandler;
+class CallRosterWidget;
 
-class RosterWindow : public QMainWindow
+class CallWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    RosterWindow(const QString &username, const QString &password,
+    CallWindow(const QString &username, const QString &password,
             QWidget *parent = 0);
-    virtual ~RosterWindow();
+    virtual ~CallWindow();
 
 private Q_SLOTS:
     void onCMReady(Telepathy::Client::PendingOperation *);
@@ -51,15 +52,17 @@ private Q_SLOTS:
     void onConnectionConnected(Telepathy::Client::PendingOperation *);
     void onConnectionInvalidated(Telepathy::Client::DBusProxy *,
             const QString &, const QString &);
+    void onNewChannels(const Telepathy::ChannelDetailsList &);
 
 private:
     void setupGui();
 
     Telepathy::Client::ConnectionManager *mCM;
-    QList<Telepathy::Client::ConnectionPtr> mConns;
+    Telepathy::Client::ConnectionPtr mConn;
     QString mUsername;
     QString mPassword;
-    RosterWidget *mRoster;
+    CallHandler *mCallHandler;
+    CallRosterWidget *mRoster;
 };
 
 #endif

@@ -18,48 +18,43 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_roster_roster_window_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_roster_roster_window_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_call_call_handler_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_call_call_handler_h_HEADER_GUARD_
 
-#include <QMainWindow>
-#include <QSharedPointer>
+#include <QObject>
 
-#include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Client/Contact>
 
 namespace Telepathy {
 namespace Client {
-class ConnectionManager;
-class DBusProxy;
 class PendingOperation;
+class StreamedMediaChannel;
 }
 }
 
-class RosterWidget;
+class CallWidget;
 
-class RosterWindow : public QMainWindow
+class CallHandler : public QObject
 {
     Q_OBJECT
 
 public:
-    RosterWindow(const QString &username, const QString &password,
-            QWidget *parent = 0);
-    virtual ~RosterWindow();
+    CallHandler(QObject *parent = 0);
+    virtual ~CallHandler();
+
+    void addOutgoingCall(const Telepathy::Client::ContactPtr &contact);
+    void addIncomingCall(Telepathy::Client::StreamedMediaChannel *chan);
 
 private Q_SLOTS:
-    void onCMReady(Telepathy::Client::PendingOperation *);
-    void onConnectionCreated(Telepathy::Client::PendingOperation *);
-    void onConnectionConnected(Telepathy::Client::PendingOperation *);
-    void onConnectionInvalidated(Telepathy::Client::DBusProxy *,
-            const QString &, const QString &);
+    void onOutgoingChannelCreated(Telepathy::Client::PendingOperation *);
+    void onOutgoingChannelReady(Telepathy::Client::PendingOperation *);
+    void onIncomingChannelReady(Telepathy::Client::PendingOperation *);
+    void onCallTerminated(QObject *);
 
 private:
-    void setupGui();
-
-    Telepathy::Client::ConnectionManager *mCM;
-    QList<Telepathy::Client::ConnectionPtr> mConns;
-    QString mUsername;
-    QString mPassword;
-    RosterWidget *mRoster;
+    QList<Telepathy::Client::StreamedMediaChannel *> mChannels;
+    QList<CallWidget *> mCalls;
 };
 
 #endif

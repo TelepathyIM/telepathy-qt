@@ -2,7 +2,6 @@
  * This file is part of TelepathyQt4
  *
  * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,45 +18,45 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_cli_pending_ready_h_HEADER_GUARD_
-#define _TelepathyQt4_cli_pending_ready_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_call_call_roster_widget_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_call_call_roster_widget_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_HEADER
-#error IN_TELEPATHY_QT4_HEADER
-#endif
+#include <TelepathyQt4/Client/Contact>
 
-#include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/ReadinessHelper>
+#include <examples/roster/roster-widget.h>
 
-#include <QSet>
+namespace Telepathy {
+namespace Client {
+class Channel;
+}
+}
 
-namespace Telepathy
-{
-namespace Client
-{
+class CallHandler;
+class CallWidget;
 
-class PendingReady: public PendingOperation
+class CallRosterWidget : public RosterWidget
 {
     Q_OBJECT
 
 public:
-    PendingReady(const Features &requestedFeatures, QObject *object);
-    ~PendingReady();
+    CallRosterWidget(CallHandler *callHandler, QWidget *parent = 0);
+    virtual ~CallRosterWidget();
 
-    QObject *object() const;
+protected:
+    virtual RosterItem *createItemForContact(
+            const Telepathy::Client::ContactPtr &contact,
+            bool &exists);
+    virtual void updateActions(RosterItem *item);
 
-    Features requestedFeatures() const;
+private Q_SLOTS:
+    void onCallActionTriggered(bool);
 
 private:
-    Q_DISABLE_COPY(PendingReady);
+    void createActions();
+    void setupGui();
 
-    struct Private;
-    friend struct Private;
-    friend class ReadinessHelper;
-    Private *mPriv;
+    CallHandler *mCallHandler;
+    QAction *mCallAction;
 };
-
-} // Telepathy::Client
-} // Telepathy
 
 #endif

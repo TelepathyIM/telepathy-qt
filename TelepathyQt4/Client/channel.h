@@ -159,6 +159,12 @@ Q_SIGNALS:
 
     void groupSelfContactChanged();
 
+protected:
+    bool groupSelfHandleIsLocalPending() const;
+
+protected Q_SLOTS:
+    PendingOperation *groupAddSelfHandle();
+
 public:
     template <class Interface>
     inline Interface *optionalInterface(

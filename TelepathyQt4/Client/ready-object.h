@@ -28,6 +28,8 @@
 
 #include <TelepathyQt4/Client/Feature>
 
+#include <QObject>
+
 namespace Telepathy
 {
 namespace Client
@@ -42,7 +44,7 @@ class ReadyObject
     Q_DISABLE_COPY(ReadyObject)
 
 public:
-    ReadyObject(DBusProxy *proxy, const Feature &featureCore);
+    ReadyObject(QObject *object, const Feature &featureCore);
     ~ReadyObject();
 
     virtual bool isReady(const Features &features = Features()) const;

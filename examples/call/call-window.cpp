@@ -18,22 +18,25 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "roster-window.h"
-#include "_gen/roster-window.moc.hpp"
+#include "call-window.h"
+#include "_gen/call-window.moc.hpp"
 
-#include "roster-widget.h"
+#include "call-handler.h"
+#include "call-roster-widget.h"
 
 #include <TelepathyQt4/Types>
+#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ConnectionManager>
 #include <TelepathyQt4/Client/PendingConnection>
 #include <TelepathyQt4/Client/PendingOperation>
 #include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Client/StreamedMediaChannel>
 
 #include <QDebug>
 
 using namespace Telepathy::Client;
 
-RosterWindow::RosterWindow(const QString &username, const QString &password,
+CallWindow::CallWindow(const QString &username, const QString &password,
         QWidget *parent)
     : QMainWindow(parent),
       mUsername(username),
@@ -41,30 +44,32 @@ RosterWindow::RosterWindow(const QString &username, const QString &password,
 {
     setWindowTitle("Roster");
 
-    setupGui();
-
     mCM = new ConnectionManager("gabble", this);
     connect(mCM->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onCMReady(Telepathy::Client::PendingOperation *)));
 
+    mCallHandler = new CallHandler(this);
+
+    setupGui();
+
     resize(240, 320);
 }
 
-RosterWindow::~RosterWindow()
+CallWindow::~CallWindow()
 {
-    foreach (const ConnectionPtr &conn, mConns) {
-        conn->requestDisconnect();
+    if (mConn) {
+        mConn->requestDisconnect();
     }
 }
 
-void RosterWindow::setupGui()
+void CallWindow::setupGui()
 {
-    mRoster = new RosterWidget();
+    mRoster = new CallRosterWidget(mCallHandler);
     setCentralWidget(mRoster);
 }
 
-void RosterWindow::onCMReady(Telepathy::Client::PendingOperation *op)
+void CallWindow::onCMReady(Telepathy::Client::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "CM cannot become ready";
@@ -81,7 +86,7 @@ void RosterWindow::onCMReady(Telepathy::Client::PendingOperation *op)
             SLOT(onConnectionCreated(Telepathy::Client::PendingOperation *)));
 }
 
-void RosterWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
+void CallWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Unable to create connection";
@@ -92,8 +97,8 @@ void RosterWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
     PendingConnection *pconn =
         qobject_cast<PendingConnection *>(op);
     ConnectionPtr conn = pconn->connection();
-    mConns.append(conn);
-    connect(conn->requestConnect(),
+    mConn = conn;
+    connect(conn->requestConnect(Connection::FeatureSelfContact),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onConnectionConnected(Telepathy::Client::PendingOperation *)));
     connect(conn.data(),
@@ -101,7 +106,7 @@ void RosterWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
             SLOT(onConnectionInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
 }
 
-void RosterWindow::onConnectionConnected(Telepathy::Client::PendingOperation *op)
+void CallWindow::onConnectionConnected(Telepathy::Client::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Connection cannot become connected";
@@ -110,18 +115,55 @@ void RosterWindow::onConnectionConnected(Telepathy::Client::PendingOperation *op
 
     PendingReady *pr = qobject_cast<PendingReady *>(op);
     Connection *conn = qobject_cast<Connection *>(pr->object());
+
+    if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)) {
+        Telepathy::CapabilityPair capability = {
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            Telepathy::ChannelMediaCapabilityAudio |
+            Telepathy::ChannelMediaCapabilityVideo |
+                Telepathy::ChannelMediaCapabilityNATTraversalSTUN |
+                Telepathy::ChannelMediaCapabilityNATTraversalGTalkP2P
+        };
+        qDebug() << "CallWindow::onConnectionConnected: advertising capabilities";
+        conn->capabilitiesInterface()->AdvertiseCapabilities(
+                Telepathy::CapabilityPairList() << capability,
+                QStringList());
+    }
+
+    if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+        qDebug() << "CallWindow::onConnectionConnected: connecting to Connection.Interface.NewChannels";
+        connect(conn->requestsInterface(),
+                SIGNAL(NewChannels(const Telepathy::ChannelDetailsList&)),
+                SLOT(onNewChannels(const Telepathy::ChannelDetailsList&)));
+    }
+
     mRoster->addConnection(conn);
 }
 
-void RosterWindow::onConnectionInvalidated(DBusProxy *proxy,
+void CallWindow::onConnectionInvalidated(DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
-    qDebug() << "RosterWindow::onConnectionInvalidated: connection became invalid:" <<
+    qDebug() << "CallWindow::onConnectionInvalidated: connection became invalid:" <<
         errorName << "-" << errorMessage;
-    foreach (const ConnectionPtr &conn, mConns) {
-        if (conn.data() == proxy) {
-            mRoster->removeConnection(conn.data());
-            mConns.removeOne(conn);
+    mRoster->removeConnection(mConn.data());
+    mConn.reset();
+}
+
+void CallWindow::onNewChannels(const Telepathy::ChannelDetailsList &channels)
+{
+    qDebug() << "CallWindow::onNewChannels";
+    foreach (const Telepathy::ChannelDetails &details, channels) {
+        QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
+        bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
+        qDebug() << " channelType:" << channelType;
+        qDebug() << " requested  :" << requested;
+
+        if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+            !requested) {
+            StreamedMediaChannel *channel = new StreamedMediaChannel(mConn.data(),
+                        details.channel.path(),
+                        details.properties);
+            mCallHandler->addIncomingCall(channel);
         }
     }
 }

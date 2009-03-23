@@ -25,6 +25,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Client/DBusProxy>
 #include <TelepathyQt4/Client/PendingReady>
 #include <TelepathyQt4/Constants>
 
@@ -39,7 +40,7 @@ namespace Client
 struct ReadinessHelper::Private
 {
     Private(ReadinessHelper *parent,
-            DBusProxy *proxy,
+            QObject *object,
             uint currentStatus,
             const Introspectables &introspectables);
     ~Private();
@@ -53,6 +54,7 @@ struct ReadinessHelper::Private
     void abortOperations(const QString &errorName, const QString &errorMessage);
 
     ReadinessHelper *parent;
+    QObject *object;
     DBusProxy *proxy;
     uint currentStatus;
     QStringList interfaces;
@@ -73,11 +75,12 @@ struct ReadinessHelper::Private
 
 ReadinessHelper::Private::Private(
         ReadinessHelper *parent,
-        DBusProxy *proxy,
+        QObject *object,
         uint currentStatus,
         const Introspectables &introspectables)
     : parent(parent),
-      proxy(proxy),
+      object(object),
+      proxy(qobject_cast<DBusProxy*>(object)),
       currentStatus(currentStatus),
       introspectables(introspectables),
       pendingStatusChange(false),
@@ -92,6 +95,12 @@ ReadinessHelper::Private::Private(
         supportedStatuses += introspectable.makesSenseForStatuses;
         supportedFeatures += feature;
         ++i;
+    }
+
+    if (proxy) {
+        parent->connect(proxy,
+                SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
+                SLOT(onProxyInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
     }
 
     debug() << "ReadinessHelper: supportedStatuses =" << supportedStatuses;
@@ -169,7 +178,7 @@ void ReadinessHelper::Private::setIntrospectCompleted(const Feature &feature,
 
 void ReadinessHelper::Private::iterateIntrospection()
 {
-    if (!proxy->isValid()) {
+    if (proxy && !proxy->isValid()) {
         return;
     }
 
@@ -279,16 +288,13 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
     }
 }
 
-ReadinessHelper::ReadinessHelper(DBusProxy *proxy,
+ReadinessHelper::ReadinessHelper(QObject *object,
         uint currentStatus,
         const Introspectables &introspectables,
         QObject *parent)
     : QObject(parent),
-      mPriv(new Private(this, proxy, currentStatus, introspectables))
+      mPriv(new Private(this, object, currentStatus, introspectables))
 {
-    connect(proxy,
-            SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
-            SLOT(onProxyInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
 }
 
 ReadinessHelper::~ReadinessHelper()
@@ -360,7 +366,7 @@ Features ReadinessHelper::missingFeatures() const
 bool ReadinessHelper::isReady(const Feature &feature,
         QString *errorName, QString *errorMessage) const
 {
-    if (!mPriv->proxy->isValid()) {
+    if (mPriv->proxy && !mPriv->proxy->isValid()) {
         if (errorName) {
             *errorName = mPriv->proxy->invalidationReason();
         }
@@ -410,7 +416,7 @@ bool ReadinessHelper::isReady(const Feature &feature,
 
 bool ReadinessHelper::isReady(const Features &features, QString *errorName, QString *errorMessage) const
 {
-    if (!mPriv->proxy->isValid()) {
+    if (mPriv->proxy && !mPriv->proxy->isValid()) {
         if (errorName) {
             *errorName = mPriv->proxy->invalidationReason();
         }
@@ -439,16 +445,16 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
         debug() << "ReadinessHelper::becomeReady called with invalid features: requestedFeatures =" <<
             requestedFeatures << "- supportedFeatures =" << mPriv->supportedFeatures;
         PendingReady *operation =
-            new PendingReady(requestedFeatures, mPriv->proxy);
+            new PendingReady(requestedFeatures, mPriv->object);
         operation->setFinishedWithError(
                 QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Requested features contains unsupported feature"));
         return operation;
     }
 
-    if (!mPriv->proxy->isValid()) {
+    if (mPriv->proxy && !mPriv->proxy->isValid()) {
         PendingReady *operation =
-            new PendingReady(requestedFeatures, mPriv->proxy);
+            new PendingReady(requestedFeatures, mPriv->object);
         operation->setFinishedWithError(mPriv->proxy->invalidationReason(),
                 mPriv->proxy->invalidationMessage());
         return operation;
@@ -465,7 +471,7 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     // it will be updated on iterateIntrospection
     mPriv->pendingFeatures += requestedFeatures;
 
-    operation = new PendingReady(requestedFeatures, mPriv->proxy);
+    operation = new PendingReady(requestedFeatures, mPriv->object);
     mPriv->pendingOperations.append(operation);
 
     QTimer::singleShot(0, this, SLOT(iterateIntrospection()));
@@ -476,7 +482,7 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
 void ReadinessHelper::setIntrospectCompleted(const Feature &feature, bool success,
         const QString &errorName, const QString &errorMessage)
 {
-    if (!mPriv->proxy->isValid()) {
+    if (mPriv->proxy && !mPriv->proxy->isValid()) {
         // proxy became invalid, ignore here
         return;
     }

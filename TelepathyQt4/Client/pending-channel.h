@@ -55,13 +55,15 @@ public:
 
     const QString &channelType() const;
 
-    uint handleType() const;
+    uint targetHandleType() const;
 
-    uint handle() const;
+    uint targetHandle() const;
 
     QVariantMap immutableProperties() const;
 
     ChannelPtr channel() const;
+
+    QString objectPath() const;
 
 private Q_SLOTS:
     void onCallCreateChannelFinished(QDBusPendingCallWatcher *watcher);

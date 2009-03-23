@@ -26,6 +26,7 @@
 /doc/*
 /doxygen.cfg
 /examples/accounts/accounts
+/examples/call/call
 /examples/roster/roster
 /install-sh
 /lcov.info
