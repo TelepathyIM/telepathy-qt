@@ -1,8 +1,8 @@
 /*
  * Very basic Telepathy-Qt <-> Telepathy-Farsight integration.
  *
- * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2009 Nokia Corporation
+ * Copyright © 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright © 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

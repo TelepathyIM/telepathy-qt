@@ -1,7 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (call) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright © 2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright © 2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
