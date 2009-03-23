@@ -167,12 +167,12 @@ public:
     /**
      * Creates a %(name)s associated with the given object on the session bus.
      *
-     * \\param serviceName Name of the service the object is on.
+     * \\param busName Name of the service the object is on.
      * \\param objectPath Path to the object on the service.
      * \\param parent Passed to the parent class constructor.
      */
     %(name)s(
-        const QString& serviceName,
+        const QString& busName,
         const QString& objectPath,
         QObject* parent = 0
     );
@@ -181,13 +181,13 @@ public:
      * Creates a %(name)s associated with the given object on the given bus.
      *
      * \\param connection The bus via which the object can be reached.
-     * \\param serviceName Name of the service the object is on.
+     * \\param busName Name of the service the object is on.
      * \\param objectPath Path to the object on the service.
      * \\param parent Passed to the parent class constructor.
      */
     %(name)s(
         const QDBusConnection& connection,
-        const QString& serviceName,
+        const QString& busName,
         const QString& objectPath,
         QObject* parent = 0
     );
@@ -197,13 +197,13 @@ public:
        'dbusname' : dbusname})
 
         self.b("""
-%(name)s::%(name)s(const QString& serviceName, const QString& objectPath, QObject *parent)
-    : Telepathy::Client::AbstractInterface(serviceName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent)
+%(name)s::%(name)s(const QString& busName, const QString& objectPath, QObject *parent)
+    : Telepathy::Client::AbstractInterface(busName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent)
 {
 }
 
-%(name)s::%(name)s(const QDBusConnection& connection, const QString& serviceName, const QString& objectPath, QObject *parent)
-    : Telepathy::Client::AbstractInterface(serviceName, objectPath, staticInterfaceName(), connection, parent)
+%(name)s::%(name)s(const QDBusConnection& connection, const QString& busName, const QString& objectPath, QObject *parent)
+    : Telepathy::Client::AbstractInterface(busName, objectPath, staticInterfaceName(), connection, parent)
 {
 }
 """ % {'name' : name})

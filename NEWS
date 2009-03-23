@@ -27,7 +27,7 @@ Enhancements:
 * The skeletal StreamedMediaChannel class from 0.1.0 has been expanded to
   cover all the functionality of the Telepathy StreamedMedia interface
 
-* PendingConnection, PendingAccount etc. have serviceName and objectPath
+* PendingConnection, PendingAccount etc. have busName and objectPath
   methods where necessary, so that objects of custom classes can be
   constructed
 

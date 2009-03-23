@@ -57,7 +57,7 @@ struct PendingConnection::Private
 
     ConnectionManager *manager;
     ConnectionPtr connection;
-    QString serviceName;
+    QString busName;
     QDBusObjectPath objectPath;
 };
 
@@ -127,42 +127,43 @@ ConnectionPtr PendingConnection::connection() const
     if (!mPriv->connection) {
         mPriv->connection = ConnectionPtr(
                 new Connection(mPriv->manager->dbusConnection(),
-                    mPriv->serviceName, mPriv->objectPath.path()));
+                    mPriv->busName, mPriv->objectPath.path()));
     }
 
     return mPriv->connection;
 }
 
 /**
- * Returns the connection service name or an empty string on error.
+ * Returns the connection's bus name ("service name"), or an empty string on
+ * error.
  *
- * This method is useful for creating custom Connection objects, so instead of using
- * PendingConnection::connection, one could construct a new custom connection with
- * the service name and object path.
+ * This method is useful for creating custom Connection objects: instead
+ * of using PendingConnection::connection, one could construct a new custom
+ * connection from the bus name and object path.
  *
- * \return Connection service name.
+ * \return Connection bus name
  * \sa objectPath()
  */
-QString PendingConnection::serviceName() const
+QString PendingConnection::busName() const
 {
     if (!isFinished()) {
-        warning() << "PendingConnection::serviceName called before finished";
+        warning() << "PendingConnection::busName called before finished";
     } else if (!isValid()) {
-        warning() << "PendingConnection::serviceName called when not valid";
+        warning() << "PendingConnection::busName called when not valid";
     }
 
-    return mPriv->serviceName;
+    return mPriv->busName;
 }
 
 /**
- * Returns the connection object path or an empty string on error.
+ * Returns the connection's object path or an empty string on error.
  *
- * This method is useful for creating custom Connection objects, so instead of using
- * PendingConnection::connection, one could construct a new custom connection with
- * the service name and object path.
+ * This method is useful for creating custom Connection objects: instead
+ * of using PendingConnection::connection, one could construct a new custom
+ * connection with the bus name and object path.
  *
- * \return Connection object path.
- * \sa serviceName()
+ * \return Connection object path
+ * \sa busName()
  */
 QString PendingConnection::objectPath() const
 {
@@ -180,10 +181,10 @@ void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QString, QDBusObjectPath> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->serviceName = reply.argumentAt<0>();
+        mPriv->busName = reply.argumentAt<0>();
         mPriv->objectPath = reply.argumentAt<1>();
-        debug() << "Got reply to ConnectionManager.CreateConnection - service name:" <<
-            mPriv->serviceName << "- object path:" << mPriv->objectPath.path();
+        debug() << "Got reply to ConnectionManager.CreateConnection - bus name:" <<
+            mPriv->busName << "- object path:" << mPriv->objectPath.path();
         setFinished();
     } else {
         debug().nospace() <<

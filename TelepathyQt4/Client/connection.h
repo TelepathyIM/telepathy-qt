@@ -80,12 +80,12 @@ public:
         StatusUnknown = 0xFFFFFFFF
     };
 
-    Connection(const QString &serviceName,
+    Connection(const QString &busName,
                const QString &objectPath,
                QObject *parent = 0);
 
     Connection(const QDBusConnection &bus,
-               const QString &serviceName,
+               const QString &busName,
                const QString &objectPath,
                QObject *parent = 0);
 

@@ -525,10 +525,10 @@ ConnectionPtr Account::connection() const
         return ConnectionPtr();
     }
     QString objectPath = mPriv->connectionObjectPath;
-    QString serviceName = objectPath.mid(1).replace('/', '.');
+    QString busName = objectPath.mid(1).replace('/', '.');
     if (!mPriv->connection) {
         mPriv->connection = ConnectionPtr(
-                new Connection(dbusConnection(), serviceName, objectPath));
+                new Connection(dbusConnection(), busName, objectPath));
     }
     return mPriv->connection;
 }

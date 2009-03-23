@@ -271,16 +271,16 @@ void Connection::Private::init()
 
     QMutexLocker locker(&handleContextsLock);
     QString busConnectionName = baseInterface->connection().name();
-    QString serviceName = baseInterface->service();
+    QString busName = baseInterface->service();
 
-    if (handleContexts.contains(qMakePair(busConnectionName, serviceName))) {
+    if (handleContexts.contains(qMakePair(busConnectionName, busName))) {
         debug() << "Reusing existing HandleContext";
-        handleContext = handleContexts[qMakePair(busConnectionName, serviceName)];
+        handleContext = handleContexts[qMakePair(busConnectionName, busName)];
     }
     else {
         debug() << "Creating new HandleContext";
         handleContext = new HandleContext;
-        handleContexts[qMakePair(busConnectionName, serviceName)] = handleContext;
+        handleContexts[qMakePair(busConnectionName, busName)] = handleContext;
     }
 
     // All handle contexts locked, so safe
@@ -456,15 +456,16 @@ const Feature Connection::FeatureRoster = Feature(Connection::staticMetaObject.c
 /**
  * Construct a new Connection object.
  *
- * \param serviceName Connection service name.
- * \param objectPath Connection object path.
- * \param parent Object parent.
+ * \param busName The connection's well-known or unique bus name
+ *                (sometimes called a "service name")
+ * \param objectPath The connection's object path
+ * \param parent Object parent
  */
-Connection::Connection(const QString &serviceName,
+Connection::Connection(const QString &busName,
                        const QString &objectPath,
                        QObject *parent)
     : StatefulDBusProxy(QDBusConnection::sessionBus(),
-            serviceName, objectPath, parent),
+            busName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
@@ -474,16 +475,17 @@ Connection::Connection(const QString &serviceName,
 /**
  * Construct a new Connection object.
  *
- * \param bus QDBusConnection to use.
- * \param serviceName Connection service name.
- * \param objectPath Connection object path.
- * \param parent Object parent.
+ * \param bus QDBusConnection to use
+ * \param busName The connection's well-known or unique bus name
+ *                (sometimes called a "service name")
+ * \param objectPath The connection's object path
+ * \param parent Object parent
  */
 Connection::Connection(const QDBusConnection &bus,
-                       const QString &serviceName,
+                       const QString &busName,
                        const QString &objectPath,
                        QObject *parent)
-    : StatefulDBusProxy(bus, serviceName, objectPath, parent),
+    : StatefulDBusProxy(bus, busName, objectPath, parent),
       OptionalInterfaceFactory<Connection>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))

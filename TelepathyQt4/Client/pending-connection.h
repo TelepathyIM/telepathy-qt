@@ -52,7 +52,7 @@ public:
 
     ConnectionPtr connection() const;
 
-    QString serviceName() const;
+    QString busName() const;
 
     QString objectPath() const;
 
