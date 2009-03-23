@@ -1,13 +1,17 @@
-AM_CXXFLAGS = \
-	$(ERROR_CXXFLAGS) \
+AM_CPPFLAGS = \
+	-I$(top_srcdir) -I$(top_builddir) \
 	$(QTCORE_CFLAGS) \
 	$(QTGUI_CFLAGS) \
 	$(QTDBUS_CFLAGS) \
 	$(TP_QT4_CFLAGS)
 
+AM_CXXFLAGS = \
+	$(ERROR_CXXFLAGS)
+
 noinst_PROGRAMS = accounts
 
 accounts_LDADD = \
+	$(QTCORE_LIBS) \
 	$(QTGUI_LIBS) \
 	$(QTDBUS_LIBS) \
 	$(top_builddir)/TelepathyQt4/libtelepathy-qt4.la
@@ -31,4 +35,4 @@ CLEANFILES = \
 
 _gen/%.moc.hpp: %.h
 	$(mkdir_p) _gen
-	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@

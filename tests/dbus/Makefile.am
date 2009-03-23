@@ -8,19 +8,17 @@ BUILT_SOURCES = \
 
 _gen/%.moc.hpp: %
 	$(mkdir_p) _gen
-	$(MOC) $(MOC_INCLUDES) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
 
 test_do_nothing_SOURCES = do-nothing.cpp
 
-# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
-# argument to moc but -Wstuff is not
-MOC_INCLUDES = \
+AM_CPPFLAGS = \
+    -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
-    $(QTTEST_CFLAGS) \
-    $(TP_QT4_CFLAGS)
+    $(QTTEST_CFLAGS)
 
 if HAVE_TEST_PYTHON
 # Tests which can only be run if we have suitable versions of Python and
@@ -63,7 +61,7 @@ BUILT_SOURCES += \
     _gen/streamed-media-chan.cpp.moc.hpp \
     _gen/text-chan.cpp.moc.hpp
 
-MOC_INCLUDES += $(TP_GLIB_CFLAGS)
+AM_CPPFLAGS += $(TP_GLIB_CFLAGS)
 
 test_chan_basics_SOURCES = chan-basics.cpp
 test_chan_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
@@ -109,8 +107,7 @@ LDADD = \
     ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
 AM_CXXFLAGS = \
-    $(ERROR_CXXFLAGS) \
-    $(MOC_INCLUDES)
+    $(ERROR_CXXFLAGS)
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \

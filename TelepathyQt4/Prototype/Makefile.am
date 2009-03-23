@@ -104,17 +104,17 @@ include $(top_srcdir)/tools/check-coding-style.mk
 check-local: check-coding-style
 
 AM_CXXFLAGS = \
-    $(ERROR_CXXFLAGS) \
+    $(ERROR_CXXFLAGS)
+
+AM_CPPFLAGS = \
+    -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
-    $(QTDBUS_CFLAGS) \
-    $(TP_QT4_CFLAGS) \
-    -I$(top_builddir) \
-    -I$(top_srcdir)
+    $(QTDBUS_CFLAGS)
 
 ALL_LIBS = \
     $(QTCORE_LIBS) \
     $(QTDBUS_LIBS) \
-    $(TP_QT4_LIBS)
+    $(top_builddir)/TelepathyQt4/libtelepathy-qt4.la
 
 # Generated stuff
 
@@ -192,7 +192,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		$$mainiface
 
 _gen/%.moc: % _gen/constants.h _gen/types.h
-	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 _gen/%.moc.hpp: _gen/%.h _gen/constants.h _gen/types.h
-	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@

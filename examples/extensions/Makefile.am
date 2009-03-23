@@ -17,7 +17,10 @@
 tools_dir = $(top_srcdir)/tools
 
 AM_CXXFLAGS = \
-    $(ERROR_CXXFLAGS) \
+    $(ERROR_CXXFLAGS)
+
+AM_CPPFLAGS = \
+    -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(TP_QT4_CFLAGS)
@@ -103,4 +106,4 @@ _gen/cli-connection-body.hpp _gen/cli-connection.h: _gen/connection.xml \
 		--mainiface='Telepathy::Client::ConnectionInterface'
 
 %.moc.hpp: %.h _gen/constants.h _gen/types.h
-	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@

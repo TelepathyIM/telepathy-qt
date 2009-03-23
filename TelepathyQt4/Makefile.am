@@ -269,16 +269,17 @@ distclean-local:
 include $(top_srcdir)/tools/check-coding-style.mk
 check-local: check-coding-style
 
+AM_CPPFLAGS = \
+    -I$(top_srcdir) -I$(top_builddir) \
+    $(QTCORE_CFLAGS) \
+    $(QTDBUS_CFLAGS)
+
 AM_CXXFLAGS = \
-    $(ERROR_CXXFLAGS) \
-    @QTCORE_CFLAGS@ \
-    @QTDBUS_CFLAGS@ \
-    -I$(top_builddir) \
-    -I$(top_srcdir)
+    $(ERROR_CXXFLAGS)
 
 ALL_LIBS = \
-    @QTCORE_LIBS@ \
-    @QTDBUS_LIBS@
+    $(QTCORE_LIBS) \
+    $(QTDBUS_LIBS)
 
 # Generated stuff
 
@@ -389,7 +390,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 
 Client/_gen/%.moc.hpp: $(srcdir)/Client/%.h _gen/constants.h _gen/types.h
 	$(mkdir_p) Client/_gen
-	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 _gen/%.moc.hpp: _gen/%.h _gen/constants.h _gen/types.h
-	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@

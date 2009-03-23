@@ -20,15 +20,12 @@ test_prototype_SOURCES = prototype.cpp prototype.h
 
 EXTRA_DIST = avatar.png
 
-# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
-# argument to moc but -Wstuff is not
-MOC_INCLUDES = \
+AM_CPPFLAGS = \
+    -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(QTGUI_CFLAGS) \
-    $(QTTEST_CFLAGS) \
-    $(TP_QT4_CFLAGS) \
-    $(PROTO_CFLAGS)
+    $(QTTEST_CFLAGS)
 
 LDADD = \
     $(QTCORE_LIBS) \
@@ -39,8 +36,7 @@ LDADD = \
     $(top_builddir)/TelepathyQt4/Prototype/libtpqt4-prototype.la
 
 AM_CXXFLAGS = \
-    $(ERROR_CXXFLAGS) \
-    $(MOC_INCLUDES)
+    $(ERROR_CXXFLAGS)
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \
@@ -57,7 +53,7 @@ CLEANFILES = \
 
 _gen/%.moc: %
 	$(mkdir_p) _gen
-	$(MOC) $(MOC_INCLUDES) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 distclean-local:
 	rm -rf _gen

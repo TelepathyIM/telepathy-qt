@@ -28,17 +28,14 @@ LDADD = \
     $(QTTEST_LIBS) \
     ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
-# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
-# argument to moc but -Wstuff is not
-MOC_INCLUDES = \
+AM_CPPFLAGS = \
+    -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
-    $(QTTEST_CFLAGS) \
-    $(TP_QT4_CFLAGS)
+    $(QTTEST_CFLAGS)
 
 AM_CXXFLAGS = \
-    $(ERROR_CXXFLAGS) \
-    $(MOC_INCLUDES)
+    $(ERROR_CXXFLAGS)
 
 TESTS_ENV = \
     abs_top_builddir=@abs_top_builddir@ \
@@ -64,7 +61,7 @@ EXTRA_DIST = \
 
 _gen/%.moc.hpp: %
 	$(mkdir_p) _gen
-	$(MOC) $(MOC_INCLUDES) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 distclean-local:
 	rm -rf _gen

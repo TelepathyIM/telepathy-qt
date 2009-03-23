@@ -1,11 +1,14 @@
-AM_CXXFLAGS = \
-	$(TP_QT4_CFLAGS) \
-	$(ERROR_CXXFLAGS) \
+AM_CPPFLAGS = \
+	-I$(top_srcdir) -I$(top_builddir) \
 	$(QTCORE_CFLAGS) \
 	$(QTGUI_CFLAGS) \
 	$(QTDBUS_CFLAGS) \
 	$(TP_GLIB_CFLAGS) \
-	$(TP_FARSIGHT_CFLAGS)
+	$(TP_FARSIGHT_CFLAGS) \
+	$(TP_QT4_CFLAGS)
+
+AM_CXXFLAGS = \
+	$(ERROR_CXXFLAGS)
 
 noinst_PROGRAMS = call
 
@@ -49,4 +52,4 @@ CLEANFILES = \
 
 _gen/%.moc.hpp: %.h
 	$(mkdir_p) _gen
-	$(MOC) @QTCORE_CFLAGS@ @QTDBUS_CFLAGS@ @TP_FARSIGHT_CFLAGS@ -I$(top_builddir) -I$(top_srcdir) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@

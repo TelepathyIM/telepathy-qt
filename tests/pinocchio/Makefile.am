@@ -21,7 +21,7 @@ BUILT_SOURCES = \
 
 _gen/%.moc.hpp: %
 	$(mkdir_p) _gen
-	$(MOC) $(MOC_INCLUDES) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
 
@@ -33,13 +33,11 @@ test_do_nothing_SOURCES = do-nothing.cpp lib.cpp
 
 test_handles_SOURCES = handles.cpp lib.cpp
 
-# A subset of the CXXFLAGS sufficient to run moc - -Istuff is a valid
-# argument to moc but -Wstuff is not
-MOC_INCLUDES = \
+AM_CPPFLAGS = \
+    -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
-    $(QTTEST_CFLAGS) \
-    $(TP_QT4_CFLAGS)
+    $(QTTEST_CFLAGS)
 
 LDADD = \
     $(QTCORE_LIBS) \
@@ -49,8 +47,7 @@ LDADD = \
     ${top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 
 AM_CXXFLAGS = \
-    $(ERROR_CXXFLAGS) \
-    $(MOC_INCLUDES)
+    $(ERROR_CXXFLAGS)
 
 # FIXME: XDG_DATA_DIRS should not depend on external setup
 TESTS_ENV = \

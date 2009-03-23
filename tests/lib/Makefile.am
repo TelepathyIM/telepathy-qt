@@ -1,16 +1,14 @@
 SUBDIRS =
 
-AM_CFLAGS = \
-    $(ERROR_CFLAGS) \
-    -I$(top_builddir) -I$(top_srcdir)
-
-MOC_INCLUDES = \
+AM_CPPFLAGS = \
+    -I$(top_builddir) -I$(top_srcdir) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \
     $(QTTEST_CFLAGS) \
     $(TP_QT4_CFLAGS)
 
-AM_CXXFLAGS = $(ERROR_CXXFLAGS) $(MOC_INCLUDES)
+AM_CFLAGS = $(ERROR_CFLAGS)
+AM_CXXFLAGS = $(ERROR_CXXFLAGS)
 
 noinst_LTLIBRARIES = libtp-qt4-tests.la
 
@@ -29,8 +27,7 @@ libtp_qt4_tests_la_LIBADD = $(top_builddir)/TelepathyQt4/libtelepathy-qt4.la
 if ENABLE_TP_GLIB_TESTS
 
 SUBDIRS += callable contactlist echo
-AM_CFLAGS += $(TP_GLIB_CFLAGS)
-AM_CXXFLAGS += $(TP_GLIB_CFLAGS)
+AM_CPPFLAGS += $(TP_GLIB_CFLAGS)
 
 noinst_LTLIBRARIES += libtp-glib-tests.la
 
@@ -58,4 +55,4 @@ endif
 
 _gen/%.moc.hpp: %
 	$(mkdir_p) _gen
-	$(MOC) $(MOC_INCLUDES) -i $< -o $@
+	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
