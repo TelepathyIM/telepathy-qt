@@ -502,6 +502,10 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
                     SLOT(onChanInvalidated(Telepathy::Client::DBusProxy *,
                                            const QString &, const QString &))));
     QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->groupContacts().size(), 0);
+    QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
+    QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
+    QCOMPARE(mChan->streams().size(), 0);
 }
 
 void TestStreamedMediaChan::testOutgoingCallNoAnswer()
@@ -562,6 +566,10 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
                     SLOT(onChanInvalidated(Telepathy::Client::DBusProxy *,
                                            const QString &, const QString &))));
     QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->groupContacts().size(), 0);
+    QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
+    QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
+    QCOMPARE(mChan->streams().size(), 0);
 }
 
 void TestStreamedMediaChan::testOutgoingCallTerminate()
