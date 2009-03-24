@@ -265,15 +265,30 @@ void PendingHandles::onFastPathFinished(QDBusPendingCallWatcher *watcher)
         QDBusPendingReply<UIntList> reply = *watcher;
 
         if (reply.isError()) {
+            QDBusError error = reply.error();
             if (mPriv->namesRequested.size() == 1) {
                 debug().nospace() << " Failure: error " <<
                     reply.error().name() << ": " <<
                     reply.error().message();
 
                 mPriv->invalidNames.insert(mPriv->namesRequested.first(),
-                        QPair<QString, QString>(reply.error().name(),
-                            reply.error().message()));
-                setFinishedWithError(reply.error());
+                        QPair<QString, QString>(error.name(),
+                            error.message()));
+                setFinishedWithError(error);
+                connection()->handleRequestLanded(mPriv->handleType);
+                return;
+            }
+
+            if (error.name() != TELEPATHY_ERROR_INVALID_HANDLE &&
+                error.name() != TELEPATHY_ERROR_INVALID_ARGUMENT &&
+                error.name() != TELEPATHY_ERROR_NOT_AVAILABLE) {
+                // do not fallback
+                foreach (const QString &name, mPriv->namesRequested) {
+                    mPriv->invalidNames.insert(name,
+                            QPair<QString, QString>(error.name(),
+                                error.message()));
+                }
+                setFinishedWithError(error);
                 connection()->handleRequestLanded(mPriv->handleType);
                 return;
             }
