@@ -193,8 +193,6 @@ QHash<QString, QPair<QString, QString> > PendingContacts::invalidIdentifiers() c
 {
     if (!isFinished()) {
         warning() << "PendingContacts::invalidIdentifiers called before finished";
-    } else if (!isValid()) {
-        warning() << "PendingContacts::invalidIdentifiers called when not valid";
     }
 
     return mPriv->invalidIds;

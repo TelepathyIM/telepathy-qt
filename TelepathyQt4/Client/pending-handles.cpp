@@ -213,9 +213,6 @@ QHash<QString, QPair<QString, QString> > PendingHandles::invalidNames() const
     if (!isFinished()) {
         warning() << "PendingHandles::invalidNames called before finished";
         return QHash<QString, QPair<QString, QString> >();
-    } else if (!isValid()) {
-        warning() << "PendingHandles::invalidNames called when not valid";
-        return QHash<QString, QPair<QString, QString> >();
     }
 
     return mPriv->invalidNames;
@@ -266,19 +263,6 @@ void PendingHandles::onFastPathFinished(QDBusPendingCallWatcher *watcher)
 
         if (reply.isError()) {
             QDBusError error = reply.error();
-            if (mPriv->namesRequested.size() == 1) {
-                debug().nospace() << " Failure: error " <<
-                    reply.error().name() << ": " <<
-                    reply.error().message();
-
-                mPriv->invalidNames.insert(mPriv->namesRequested.first(),
-                        QPair<QString, QString>(error.name(),
-                            error.message()));
-                setFinishedWithError(error);
-                connection()->handleRequestLanded(mPriv->handleType);
-                return;
-            }
-
             if (error.name() != TELEPATHY_ERROR_INVALID_HANDLE &&
                 error.name() != TELEPATHY_ERROR_INVALID_ARGUMENT &&
                 error.name() != TELEPATHY_ERROR_NOT_AVAILABLE) {
@@ -290,6 +274,21 @@ void PendingHandles::onFastPathFinished(QDBusPendingCallWatcher *watcher)
                 }
                 setFinishedWithError(error);
                 connection()->handleRequestLanded(mPriv->handleType);
+                watcher->deleteLater();
+                return;
+            }
+
+            if (mPriv->namesRequested.size() == 1) {
+                debug().nospace() << " Failure: error " <<
+                    reply.error().name() << ": " <<
+                    reply.error().message();
+
+                mPriv->invalidNames.insert(mPriv->namesRequested.first(),
+                        QPair<QString, QString>(error.name(),
+                            error.message()));
+                setFinished();
+                connection()->handleRequestLanded(mPriv->handleType);
+                watcher->deleteLater();
                 return;
             }
 
@@ -346,6 +345,23 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
     if (reply.isError()) {
         debug().nospace() << " Failure: error " << reply.error().name() << ": "
             << reply.error().message();
+
+        // if the error is disconnected for example, fail immediately
+        QDBusError error = reply.error();
+        if (error.name() != TELEPATHY_ERROR_INVALID_HANDLE &&
+            error.name() != TELEPATHY_ERROR_INVALID_ARGUMENT &&
+            error.name() != TELEPATHY_ERROR_NOT_AVAILABLE) {
+            foreach (const QString &name, mPriv->namesRequested) {
+                mPriv->invalidNames.insert(name,
+                        QPair<QString, QString>(error.name(),
+                            error.message()));
+            }
+            setFinishedWithError(error);
+            connection()->handleRequestLanded(mPriv->handleType);
+            watcher->deleteLater();
+            return;
+        }
+
         mPriv->invalidNames.insert(id,
                 QPair<QString, QString>(reply.error().name(),
                     reply.error().message()));
@@ -358,7 +374,7 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
     if (++mPriv->requestsFinished == mPriv->namesRequested.size()) {
         if (mPriv->handlesForIds.size() == 0) {
             // all requests failed
-            setFinishedWithError(reply.error());
+            setFinished();
         } else {
             // all requests either failed or finished successfully
 
