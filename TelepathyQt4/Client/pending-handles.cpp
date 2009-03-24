@@ -180,7 +180,7 @@ bool PendingHandles::isRequest() const
  */
 bool PendingHandles::isReference() const
 {
-    return !isRequest();
+    return !mPriv->isRequest;
 }
 
 /**
@@ -285,11 +285,11 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher *watcher)
             }
         } else {
             debug() << "Received reply to RequestHandles";
-            mPriv->handles = ReferencedHandles(connection(),
+            mPriv->handles = ReferencedHandles(mPriv->connection,
                     mPriv->handleType, reply.value());
             mPriv->validNames.append(mPriv->namesRequested);
             setFinished();
-            connection()->handleRequestLanded(mPriv->handleType);
+            mPriv->connection->handleRequestLanded(mPriv->handleType);
         }
     } else {
         QDBusPendingReply<void> reply = *watcher;
@@ -302,8 +302,8 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher *watcher)
                 reply.error().message();
             setFinishedWithError(reply.error());
         } else {
-            mPriv->handles = ReferencedHandles(connection(),
-                    mPriv->handleType, handlesToReference());
+            mPriv->handles = ReferencedHandles(mPriv->connection,
+                    mPriv->handleType, mPriv->handlesToReference);
             setFinished();
         }
     }
@@ -348,7 +348,7 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
                     mPriv->validNames.append(name);
                 }
             }
-            mPriv->handles = ReferencedHandles(connection(),
+            mPriv->handles = ReferencedHandles(mPriv->connection,
                     mPriv->handleType, handles);
 
             setFinished();
@@ -358,7 +358,7 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
         debug() << " invalidNames  :" << mPriv->invalidNames;
         debug() << " validNames    :" << mPriv->validNames;
 
-        connection()->handleRequestLanded(handleType());
+        mPriv->connection->handleRequestLanded(mPriv->handleType);
     }
 
     watcher->deleteLater();
