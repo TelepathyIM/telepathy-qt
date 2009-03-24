@@ -247,6 +247,14 @@ const UIntList &PendingHandles::handlesToReference() const
  */
 ReferencedHandles PendingHandles::handles() const
 {
+    if (!isFinished()) {
+        warning() << "PendingHandles::handles() called before finished";
+        return ReferencedHandles();
+    } else if (!isValid()) {
+        warning() << "PendingHandles::handles() called when not valid";
+        return ReferencedHandles();
+    }
+
     return mPriv->handles;
 }
 
