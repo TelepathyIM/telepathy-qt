@@ -90,6 +90,8 @@ struct PendingContacts::Private
     // Results
     QList<ContactPtr> contacts;
     UIntList invalidHandles;
+    QStringList validIds;
+    QHash<QString, QPair<QString, QString> > invalidIds;
 };
 
 /**
@@ -176,6 +178,28 @@ UIntList PendingContacts::invalidHandles() const
     return mPriv->invalidHandles;
 }
 
+QStringList PendingContacts::validIdentifiers() const
+{
+    if (!isFinished()) {
+        warning() << "PendingContacts::validIdentifiers called before finished";
+    } else if (!isValid()) {
+        warning() << "PendingContacts::validIdentifiers called when not valid";
+    }
+
+    return mPriv->validIds;
+}
+
+QHash<QString, QPair<QString, QString> > PendingContacts::invalidIdentifiers() const
+{
+    if (!isFinished()) {
+        warning() << "PendingContacts::invalidIdentifiers called before finished";
+    } else if (!isValid()) {
+        warning() << "PendingContacts::invalidIdentifiers called when not valid";
+    }
+
+    return mPriv->invalidIds;
+}
+
 void PendingContacts::onAttributesFinished(PendingOperation *operation)
 {
     PendingContactAttributes *pendingAttributes =
@@ -218,6 +242,9 @@ void PendingContacts::onHandlesFinished(PendingOperation *operation)
     PendingHandles *pendingHandles = qobject_cast<PendingHandles *>(operation);
 
     debug() << "Handles finished for" << this;
+
+    mPriv->validIds = pendingHandles->validNames();
+    mPriv->invalidIds = pendingHandles->invalidNames();
 
     if (pendingHandles->isError()) {
         debug() << " error" << operation->errorName()
