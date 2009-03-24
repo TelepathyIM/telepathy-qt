@@ -46,7 +46,7 @@ namespace Client
 
 struct PendingHandles::Private
 {
-    Connection* connection;
+    Connection *connection;
     uint handleType;
     bool isRequest;
     QStringList namesRequested;
@@ -74,8 +74,10 @@ struct PendingHandles::Private
  * Connection::referenceHandles().
  */
 
-PendingHandles::PendingHandles(Connection* connection, uint handleType, const QStringList& names)
-    : PendingOperation(connection), mPriv(new Private)
+PendingHandles::PendingHandles(Connection *connection, uint handleType,
+        const QStringList &names)
+    : PendingOperation(connection),
+      mPriv(new Private)
 {
     debug() << "PendingHandles(request)";
 
@@ -98,7 +100,8 @@ PendingHandles::PendingHandles(Connection* connection, uint handleType, const QS
 PendingHandles::PendingHandles(Connection *connection, uint handleType,
         const UIntList &handles, const UIntList &alreadyHeld,
         const UIntList &notYetHeld)
-    : PendingOperation(connection), mPriv(new Private)
+    : PendingOperation(connection),
+      mPriv(new Private)
 {
     debug() << "PendingHandles(reference)";
 
@@ -139,7 +142,7 @@ PendingHandles::~PendingHandles()
  *
  * \return Pointer to the Connection.
  */
-Connection* PendingHandles::connection() const
+Connection *PendingHandles::connection() const
 {
     return mPriv->connection;
 }
@@ -187,7 +190,7 @@ bool PendingHandles::isReference() const
  *
  * \return Reference to a list of the names of the entities.
  */
-const QStringList& PendingHandles::namesRequested() const
+const QStringList &PendingHandles::namesRequested() const
 {
     return mPriv->namesRequested;
 }
@@ -225,7 +228,7 @@ QHash<QString, QPair<QString, QString> > PendingHandles::invalidNames() const
  *
  * \return Reference to a list of the handles specified to be referenced.
  */
-const UIntList& PendingHandles::handlesToReference() const
+const UIntList &PendingHandles::handlesToReference() const
 {
     return mPriv->handlesToReference;
 }
@@ -247,7 +250,7 @@ ReferencedHandles PendingHandles::handles() const
     return mPriv->handles;
 }
 
-void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
+void PendingHandles::onCallFinished(QDBusPendingCallWatcher *watcher)
 {
     // Thanks QDBus for this the need for this error-handling code duplication
     if (mPriv->isRequest) {
@@ -294,7 +297,9 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
         debug() << "Received reply to HoldHandles";
 
         if (reply.isError()) {
-            debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+            debug().nospace() << " Failure: error " <<
+                reply.error().name() << ": " <<
+                reply.error().message();
             setFinishedWithError(reply.error());
         } else {
             mPriv->handles = ReferencedHandles(connection(),

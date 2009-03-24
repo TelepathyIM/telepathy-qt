@@ -52,7 +52,7 @@ class PendingHandles : public PendingOperation
 public:
     ~PendingHandles();
 
-    Connection* connection() const;
+    Connection *connection() const;
 
     uint handleType() const;
 
@@ -60,24 +60,24 @@ public:
 
     bool isReference() const;
 
-    const QStringList& namesRequested() const;
+    const QStringList &namesRequested() const;
 
     QStringList validNames() const;
 
     QHash<QString, QPair<QString, QString> > invalidNames() const;
 
-    const UIntList& handlesToReference() const;
+    const UIntList &handlesToReference() const;
 
     ReferencedHandles handles() const;
 
 private Q_SLOTS:
-    void onCallFinished(QDBusPendingCallWatcher* watcher);
+    void onCallFinished(QDBusPendingCallWatcher *watcher);
     void onRequestHandlesFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class Connection;
 
-    PendingHandles(Connection* connection, uint handleType, const QStringList& names);
+    PendingHandles(Connection *connection, uint handleType, const QStringList &names);
     PendingHandles(Connection *connection, uint handleType, const UIntList &handles,
             const UIntList &alreadyHeld, const UIntList &notYetHeld);
 
