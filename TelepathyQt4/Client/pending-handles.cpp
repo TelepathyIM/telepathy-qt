@@ -60,7 +60,7 @@ struct PendingHandles::Private
     // one to one requests (ids)
     QHash<QDBusPendingCallWatcher *, QString> idsForWatchers;
     QHash<QString, uint> handlesForIds;
-    int requests;
+    int requestsFinished;
 };
 
 /**
@@ -85,7 +85,7 @@ PendingHandles::PendingHandles(Connection *connection, uint handleType,
     mPriv->handleType = handleType;
     mPriv->isRequest = true;
     mPriv->namesRequested = names;
-    mPriv->requests = 0;
+    mPriv->requestsFinished = 0;
 
     // try to request all handles at once
     QDBusPendingCallWatcher *watcher =
@@ -110,7 +110,7 @@ PendingHandles::PendingHandles(Connection *connection, uint handleType,
     mPriv->isRequest = false;
     mPriv->handlesToReference = handles;
     mPriv->alreadyHeld = ReferencedHandles(connection, handleType, alreadyHeld);
-    mPriv->requests = 0;
+    mPriv->requestsFinished = 0;
 
     if (notYetHeld.isEmpty()) {
         debug() << " All handles already held, finishing up instantly";
@@ -340,7 +340,7 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
         mPriv->handlesForIds.insert(id, handle);
     }
 
-    if (++mPriv->requests == mPriv->namesRequested.size()) {
+    if (++mPriv->requestsFinished == mPriv->namesRequested.size()) {
         if (mPriv->handlesForIds.size() == 0) {
             // all requests failed
             setFinishedWithError(reply.error());
