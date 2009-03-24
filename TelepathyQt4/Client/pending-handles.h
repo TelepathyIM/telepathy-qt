@@ -71,7 +71,8 @@ public:
     ReferencedHandles handles() const;
 
 private Q_SLOTS:
-    void onFastPathFinished(QDBusPendingCallWatcher *watcher);
+    void onRequestHandlesFinished(QDBusPendingCallWatcher *watcher);
+    void onHoldHandlesFinished(QDBusPendingCallWatcher *watcher);
     void onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
 
 private:
