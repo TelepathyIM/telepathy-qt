@@ -94,7 +94,7 @@ PendingHandles::PendingHandles(Connection *connection, uint handleType,
                 this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onCallFinished(QDBusPendingCallWatcher *)));
+            SLOT(onFastPathFinished(QDBusPendingCallWatcher *)));
 }
 
 PendingHandles::PendingHandles(Connection *connection, uint handleType,
@@ -125,7 +125,7 @@ PendingHandles::PendingHandles(Connection *connection, uint handleType,
                     this);
         connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(onCallFinished(QDBusPendingCallWatcher *)));
+                SLOT(onFastPathFinished(QDBusPendingCallWatcher *)));
     }
 }
 
@@ -258,7 +258,7 @@ ReferencedHandles PendingHandles::handles() const
     return mPriv->handles;
 }
 
-void PendingHandles::onCallFinished(QDBusPendingCallWatcher *watcher)
+void PendingHandles::onFastPathFinished(QDBusPendingCallWatcher *watcher)
 {
     // Thanks QDBus for this the need for this error-handling code duplication
     if (mPriv->isRequest) {
@@ -288,7 +288,7 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher *watcher)
                             this);
                 connect(watcher,
                         SIGNAL(finished(QDBusPendingCallWatcher *)),
-                        SLOT(onRequestHandlesFinished(QDBusPendingCallWatcher *)));
+                        SLOT(onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *)));
                 mPriv->idsForWatchers.insert(watcher, name);
             }
         } else {
@@ -319,7 +319,7 @@ void PendingHandles::onCallFinished(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
+void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<UIntList> reply = *watcher;
 
