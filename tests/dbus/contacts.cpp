@@ -340,12 +340,12 @@ void TestContacts::testForIdentifiers()
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 1);
 
-    // A request with both valid and invalid IDs should also fail
+    // A request with both valid and invalid IDs should succeed
     fails = mConn->contactManager()->contactsForIdentifiers(invalidIDs + validIDs + invalidIDs);
     QVERIFY(connect(fails,
                 SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 1);
+    QCOMPARE(mLoop->exec(), 0);
 
     // Go on to the meat: valid IDs
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(validIDs);

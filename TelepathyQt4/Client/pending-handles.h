@@ -131,6 +131,10 @@ public:
      */
     const QStringList& namesRequested() const;
 
+    QStringList validNames() const;
+
+    QHash<QString, QPair<QString, QString> > invalidNames() const;
+
     /**
      * If the operation was a reference (as returned by isReference()), returns
      * the handles which were to be referenced. Otherwise, returns an empty
@@ -156,12 +160,14 @@ public:
 
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher* watcher);
+    void onRequestHandlesFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class Connection;
 
     PendingHandles(Connection* connection, uint handleType, const QStringList& names);
-    PendingHandles(Connection* connection, uint handleType, const UIntList& handles, const UIntList& alreadyHeld);
+    PendingHandles(Connection *connection, uint handleType, const UIntList &handles,
+            const UIntList &alreadyHeld, const UIntList &notYetHeld);
 
     struct Private;
     friend struct Private;
