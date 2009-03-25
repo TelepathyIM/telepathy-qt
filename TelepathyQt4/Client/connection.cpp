@@ -947,12 +947,12 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     debug() << "Got handles for contact lists";
     PendingHandles *pending = qobject_cast<PendingHandles*>(op);
 
-    // FIXME check for handles in pending->invalidHandles() when
-    //       invalidHandles is implemented
-    // if (pending->invalidHandles().size() == 1) {
-    //     contactListChannelReady();
-    //     return;
-    // }
+    if (pending->invalidNames().size() == 1) {
+        // let's not fail, because the contact lists are not supported
+        debug() << "Unable to retrieve contact list handle, ignoring";
+        contactListChannelReady();
+        return;
+    }
 
     debug() << "Requesting channels for contact lists";
     QVariantMap request;

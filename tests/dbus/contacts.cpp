@@ -340,27 +340,23 @@ void TestContacts::testForIdentifiers()
     QVERIFY(connect(fails,
                 SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    // FIXME replace this when spec is fixed, Error.NotAvailable should be Errors.NotAvailable
-    QCOMPARE(mLoop->exec(), 1);
-    // QCOMPARE(mLoop->exec(), 0);
-    // QStringList toCheck = fails->invalidIdentifiers().keys();
-    // toCheck.sort();
-    // invalidIDs.sort();
-    // QCOMPARE(toCheck, invalidIDs);
+    QCOMPARE(mLoop->exec(), 0);
+    toCheck = fails->invalidIdentifiers().keys();
+    toCheck.sort();
+    invalidIDs.sort();
+    QCOMPARE(toCheck, invalidIDs);
 
     // A request with both valid and invalid IDs should succeed
     fails = mConn->contactManager()->contactsForIdentifiers(invalidIDs + validIDs + invalidIDs);
     QVERIFY(connect(fails,
                 SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
-    // FIXME replace this when spec is fixed, Error.NotAvailable should be Errors.NotAvailable
-    QCOMPARE(mLoop->exec(), 1);
-    // QCOMPARE(mLoop->exec(), 0);
-    // QCOMPARE(fails->validIdentifiers(), validIDs);
-    // toCheck = fails->invalidIdentifiers().keys();
-    // toCheck.sort();
-    // invalidIDs.sort();
-    // QCOMPARE(toCheck, invalidIDs);
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(fails->validIdentifiers(), validIDs);
+    toCheck = fails->invalidIdentifiers().keys();
+    toCheck.sort();
+    invalidIDs.sort();
+    QCOMPARE(toCheck, invalidIDs);
 
     // Go on to the meat: valid IDs
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(validIDs);
