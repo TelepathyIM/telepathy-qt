@@ -95,12 +95,9 @@ bool ContactManager::isSupported() const
     if (!connection()->isReady()) {
         warning() << "ContactManager::isSupported() used before the connection is ready!";
         return false;
-    } /* FIXME: readd this check when Connection is no longer a steaming pile of junk: else if (connection()->status() != Connection::StatusConnected) {
-        warning() << "ContactManager::isSupported() used before the connection is connected!";
-        return false;
-    } */
+    }
 
-    return connection()->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS);
+    return true;
 }
 
 namespace
@@ -135,7 +132,18 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
             << Contact::FeatureSimplePresence;
-        QStringList interfaces = mPriv->conn->contactAttributeInterfaces();
+        QStringList interfaces;
+        if (mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+            interfaces = mPriv->conn->contactAttributeInterfaces();
+        } else {
+            if (mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)) {
+                interfaces.append(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING);
+            } else if (mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)) {
+                interfaces.append(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
+            } else if (mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+                interfaces.append(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
+            }
+        }
 
         foreach (Contact::Feature feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
@@ -550,22 +558,8 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     }
 
     PendingContacts *contacts =
-        new PendingContacts(this, handles, features, satisfyingContacts);
-
-    if (!otherContacts.isEmpty()) {
-        debug() << " Fetching" << interfaces.size() << "interfaces for"
-                               << otherContacts.size() << "contacts";
-
-        PendingContactAttributes *attributes =
-            mPriv->conn->getContactAttributes(otherContacts.toList(), interfaces.toList(), true);
-
-        contacts->connect(attributes,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(onAttributesFinished(Telepathy::Client::PendingOperation*)));
-    } else {
-        contacts->allAttributesFetched();
-    }
-
+        new PendingContacts(this, handles, features, interfaces.toList(),
+                satisfyingContacts, otherContacts);
     return contacts;
 }
 
@@ -581,13 +575,7 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
     debug() << "Building contacts for" << identifiers.size() << "identifiers" << "with" << features.size()
         << "features";
 
-    PendingHandles *handles = mPriv->conn->requestHandles(HandleTypeContact, identifiers);
-
     PendingContacts *contacts = new PendingContacts(this, identifiers, features);
-    contacts->connect(handles,
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            SLOT(onHandlesFinished(Telepathy::Client::PendingOperation*)));
-
     return contacts;
 }
 
@@ -978,7 +966,6 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
     }
     return (uint) -1;
 }
-
 
 }
 }

@@ -182,7 +182,7 @@ Connection::Private::Private(Connection *parent)
     ReadinessHelper::Introspectable introspectableSelfContact(
         QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
         Features() << FeatureCore,                                                     // dependsOnFeatures (core)
-        QStringList() << TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS,            // dependsOnInterfaces
+        QStringList(),                                                                 // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectSelfContact,
         this);
     introspectables[FeatureSelfContact] = introspectableSelfContact;

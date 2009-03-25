@@ -212,6 +212,7 @@ private:
     friend class PendingChannel;
     friend class PendingConnect;
     friend class PendingContactAttributes;
+    friend class PendingContacts;
     friend class PendingHandles;
     friend class ReferencedHandles;
     Private *mPriv;
