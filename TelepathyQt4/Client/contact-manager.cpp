@@ -90,16 +90,6 @@ Connection *ContactManager::connection() const
     return mPriv->conn;
 }
 
-bool ContactManager::isSupported() const
-{
-    if (!connection()->isReady()) {
-        warning() << "ContactManager::isSupported() used before the connection is ready!";
-        return false;
-    }
-
-    return true;
-}
-
 namespace
 {
 QString featureToInterface(Contact::Feature feature)
@@ -121,12 +111,6 @@ QString featureToInterface(Contact::Feature feature)
 
 QSet<Contact::Feature> ContactManager::supportedFeatures() const
 {
-    if (!isSupported()) {
-        warning() << "ContactManager::supportedFeatures() used with the entire ContactManager"
-            << "functionality being unsupported, returning an empty set";
-        return QSet<Contact::Feature>();
-    }
-
     if (mPriv->supportedFeatures.isEmpty()) {
         QList<Contact::Feature> allFeatures = QList<Contact::Feature>()
             << Contact::FeatureAlias

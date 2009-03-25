@@ -186,7 +186,6 @@ void TestContacts::init()
 void TestContacts::testSupport()
 {
     QCOMPARE(mConn->contactManager()->connection(), mConn);
-    QVERIFY(mConn->contactManager()->isSupported());
 
     QVERIFY(!mConn->contactAttributeInterfaces().isEmpty());
 
