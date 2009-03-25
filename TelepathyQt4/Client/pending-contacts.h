@@ -70,15 +70,19 @@ public:
 
 private Q_SLOTS:
     void onAttributesFinished(Telepathy::Client::PendingOperation *);
-    void onHandlesFinished(Telepathy::Client::PendingOperation *);
+    void onRequestHandlesFinished(Telepathy::Client::PendingOperation *);
+    void onReferenceHandlesFinished(Telepathy::Client::PendingOperation *);
     void onNestedFinished(Telepathy::Client::PendingOperation *);
+    void onInspectHandlesFinished(QDBusPendingCallWatcher *);
 
 private:
     Q_DISABLE_COPY(PendingContacts);
 
     PendingContacts(ContactManager *manager, const UIntList &handles,
             const QSet<Contact::Feature> &features,
-            const QMap<uint, ContactPtr> &satisfyingContacts);
+            const QStringList &interfaces,
+            const QMap<uint, ContactPtr> &satisfyingContacts,
+            const QSet<uint> &otherContacts);
     PendingContacts(ContactManager *manager, const QStringList &identifiers,
             const QSet<Contact::Feature> &features);
     PendingContacts(ContactManager *manager, const QList<ContactPtr> &contacts,

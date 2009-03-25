@@ -9,11 +9,13 @@ Dependencies:
 API changes:
 
 * PendingHandles now finish successfully on non fatal errors (InvalidArgument,
-  InvalidHandle, NotAvailable). PendingHandles::invalidNames should be used to
-  check if a non-fatal error occurred and some handle could not be acquired.
+  InvalidHandle, NotAvailable). PendingHandles::invalidNames/invalidHandles should
+  be used to check if a non-fatal error occurred and some handle could not be
+  acquired.
 
 Fixes:
 
+* Fixed bug 20583: Contact objects don't work without the Contacts interface.
 * Fixed bug 20584: Contact object creation doesn't survive bad IDs or handles.
 
 telepathy-qt4 0.1.2 (2009-03-23)

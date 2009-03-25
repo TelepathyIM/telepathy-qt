@@ -53,11 +53,12 @@ struct PendingHandles::Private
     UIntList handlesToReference;
     ReferencedHandles handles;
     ReferencedHandles alreadyHeld;
-
+    UIntList invalidHandles;
     QStringList validNames;
     QHash<QString, QPair<QString, QString> > invalidNames;
 
     // one to one requests (ids)
+    QHash<QDBusPendingCallWatcher *, uint> handlesForWatchers;
     QHash<QDBusPendingCallWatcher *, QString> idsForWatchers;
     QHash<QString, uint> handlesForIds;
     int requestsFinished;
@@ -255,6 +256,15 @@ ReferencedHandles PendingHandles::handles() const
     return mPriv->handles;
 }
 
+UIntList PendingHandles::invalidHandles() const
+{
+    if (!isFinished()) {
+        warning() << "PendingHandles::invalidHandles called before finished";
+    }
+
+    return mPriv->invalidHandles;
+}
+
 void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<UIntList> reply = *watcher;
@@ -323,7 +333,42 @@ void PendingHandles::onHoldHandlesFinished(QDBusPendingCallWatcher *watcher)
         debug().nospace() << " Failure: error " <<
             reply.error().name() << ": " <<
             reply.error().message();
-        setFinishedWithError(reply.error());
+
+        QDBusError error = reply.error();
+        if (error.name() != TELEPATHY_ERROR_INVALID_HANDLE &&
+            error.name() != TELEPATHY_ERROR_INVALID_ARGUMENT &&
+            error.name() != TELEPATHY_ERROR_NOT_AVAILABLE) {
+            // do not fallback
+            mPriv->invalidHandles = mPriv->handlesToReference;
+            setFinishedWithError(error);
+            watcher->deleteLater();
+            return;
+        }
+
+        if (mPriv->handlesToReference.size() == 1) {
+            debug().nospace() << " Failure: error " <<
+                reply.error().name() << ": " <<
+                reply.error().message();
+
+            mPriv->invalidHandles = mPriv->handlesToReference;
+            setFinished();
+            watcher->deleteLater();
+            return;
+        }
+
+        // try to request one handles at a time
+        foreach (uint handle, mPriv->handlesToReference) {
+            QDBusPendingCallWatcher *watcher =
+                new QDBusPendingCallWatcher(
+                        mPriv->connection->baseInterface()->HoldHandles(
+                            mPriv->handleType,
+                            UIntList() << handle),
+                        this);
+            connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher *)),
+                    SLOT(onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *)));
+            mPriv->handlesForWatchers.insert(watcher, handle);
+        }
     } else {
         mPriv->handles = ReferencedHandles(mPriv->connection,
                 mPriv->handleType, mPriv->handlesToReference);
@@ -398,6 +443,53 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
         debug() << " validNames    :" << mPriv->validNames;
 
         mPriv->connection->handleRequestLanded(mPriv->handleType);
+    }
+
+    watcher->deleteLater();
+}
+
+void PendingHandles::onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<void> reply = *watcher;
+
+    Q_ASSERT(mPriv->handlesForWatchers.contains(watcher));
+    uint handle = mPriv->handlesForWatchers.value(watcher);
+
+    debug() << "Received reply to HoldHandles(" << handle << ")";
+
+    if (reply.isError()) {
+        debug().nospace() << " Failure: error " << reply.error().name() << ": "
+            << reply.error().message();
+
+        // if the error is disconnected for example, fail immediately
+        QDBusError error = reply.error();
+        if (error.name() != TELEPATHY_ERROR_INVALID_HANDLE &&
+            error.name() != TELEPATHY_ERROR_INVALID_ARGUMENT &&
+            error.name() != TELEPATHY_ERROR_NOT_AVAILABLE) {
+            mPriv->invalidHandles = mPriv->handlesToReference;
+            setFinishedWithError(error);
+            watcher->deleteLater();
+            return;
+        }
+
+        mPriv->invalidHandles.append(handle);
+    }
+
+    if (++mPriv->requestsFinished == mPriv->namesRequested.size()) {
+        // we need to return the handles in the same order as requested
+        UIntList handles;
+        foreach (uint handle, mPriv->handlesToReference) {
+            if (!mPriv->invalidHandles.contains(handle)) {
+                handles.append(handle);
+            }
+        }
+
+        if (handles.size() != 0) {
+            mPriv->handles = ReferencedHandles(mPriv->connection,
+                    mPriv->handleType, handles);
+        }
+
+        setFinished();
     }
 
     watcher->deleteLater();

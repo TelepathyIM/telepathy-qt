@@ -22,6 +22,7 @@
 #include <TelepathyQt4/Client/PendingContacts>
 #include "TelepathyQt4/Client/_gen/pending-contacts.moc.hpp"
 
+#include <TelepathyQt4/Client/Connection>
 #include <TelepathyQt4/Client/ContactManager>
 #include <TelepathyQt4/Client/PendingContactAttributes>
 #include <TelepathyQt4/Client/PendingHandles>
@@ -92,6 +93,8 @@ struct PendingContacts::Private
     UIntList invalidHandles;
     QStringList validIds;
     QHash<QString, QPair<QString, QString> > invalidIds;
+
+    ReferencedHandles handlesToInspect;
 };
 
 /**
@@ -235,7 +238,7 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
     allAttributesFetched();
 }
 
-void PendingContacts::onHandlesFinished(PendingOperation *operation)
+void PendingContacts::onRequestHandlesFinished(PendingOperation *operation)
 {
     PendingHandles *pendingHandles = qobject_cast<PendingHandles *>(operation);
 
@@ -259,6 +262,45 @@ void PendingContacts::onHandlesFinished(PendingOperation *operation)
             SLOT(onNestedFinished(Telepathy::Client::PendingOperation*)));
 }
 
+void PendingContacts::onReferenceHandlesFinished(PendingOperation *operation)
+{
+    PendingHandles *pendingHandles = qobject_cast<PendingHandles *>(operation);
+
+    debug() << "Reference Handles finished for" << this;
+
+    if (pendingHandles->isError()) {
+        debug() << " error" << operation->errorName()
+                << "message" << operation->errorMessage();
+        setFinishedWithError(operation->errorName(), operation->errorMessage());
+        return;
+    }
+
+    ReferencedHandles validHandles = pendingHandles->handles();
+    UIntList invalidHandles = pendingHandles->invalidHandles();
+    Connection *conn = mPriv->manager->connection();
+    mPriv->handlesToInspect = ReferencedHandles(conn, HandleTypeContact, UIntList());
+    foreach (uint handle, mPriv->handles) {
+        if (!mPriv->satisfyingContacts.contains(handle)) {
+            int indexInValid = validHandles.indexOf(handle);
+            if (indexInValid >= 0) {
+                ReferencedHandles referencedHandle = validHandles.mid(indexInValid, 1);
+                mPriv->handlesToInspect.append(referencedHandle);
+            } else {
+                mPriv->invalidHandles.push_back(handle);
+            }
+        }
+    }
+
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                conn->baseInterface()->InspectHandles(HandleTypeContact,
+                    mPriv->handlesToInspect.toList()),
+                this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onInspectHandlesFinished(QDBusPendingCallWatcher *)));
+}
+
 void PendingContacts::onNestedFinished(PendingOperation *operation)
 {
     Q_ASSERT(operation == mPriv->nested);
@@ -277,18 +319,82 @@ void PendingContacts::onNestedFinished(PendingOperation *operation)
     setFinished();
 }
 
+void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QStringList> reply = *watcher;
+
+    debug() << "Received reply to InspectHandles";
+
+    if (reply.isError()) {
+        debug().nospace() << " Failure: error " << reply.error().name() << ": "
+            << reply.error().message();
+        setFinishedWithError(reply.error());
+        return;
+    }
+
+    QStringList names = reply.value();
+    int i = 0;
+    Connection *conn = mPriv->manager->connection();
+    foreach (uint handle, mPriv->handlesToInspect) {
+        QVariantMap handleAttributes;
+        handleAttributes.insert(TELEPATHY_INTERFACE_CONNECTION "/contact-id", names[i++]);
+        ReferencedHandles referencedHandle(conn, HandleTypeContact,
+                UIntList() << handle);
+        mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
+                    features(), handleAttributes));
+    }
+
+    allAttributesFetched();
+
+    watcher->deleteLater();
+}
+
 PendingContacts::PendingContacts(ContactManager *manager,
         const UIntList &handles, const QSet<Contact::Feature> &features,
-        const QMap<uint, ContactPtr> &satisfyingContacts)
+        const QStringList &interfaces,
+        const QMap<uint, ContactPtr> &satisfyingContacts,
+        const QSet<uint> &otherContacts)
     : PendingOperation(manager),
       mPriv(new Private(manager, handles, features, satisfyingContacts))
 {
+    if (!otherContacts.isEmpty()) {
+        debug() << " Fetching" << interfaces.size() << "interfaces for"
+                               << otherContacts.size() << "contacts";
+
+        Connection *conn = manager->connection();
+        if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+            debug() << " Building contacts using contact attributes";
+            PendingContactAttributes *attributes =
+                conn->getContactAttributes(otherContacts.toList(),
+                        interfaces, true);
+
+            connect(attributes,
+                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                    SLOT(onAttributesFinished(Telepathy::Client::PendingOperation*)));
+        } else {
+            debug() << " Falling back to inspect contact handles";
+            // fallback to just create the contacts
+            PendingHandles *handles = conn->referenceHandles(HandleTypeContact,
+                    otherContacts.toList());
+            connect(handles,
+                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                    SLOT(onReferenceHandlesFinished(Telepathy::Client::PendingOperation*)));
+        }
+    } else {
+        allAttributesFetched();
+    }
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,
         const QStringList &identifiers, const QSet<Contact::Feature> &features)
     : PendingOperation(manager), mPriv(new Private(manager, identifiers, features))
 {
+    Connection *conn = manager->connection();
+    PendingHandles *handles = conn->requestHandles(HandleTypeContact, identifiers);
+
+    connect(handles,
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onRequestHandlesFinished(Telepathy::Client::PendingOperation*)));
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,

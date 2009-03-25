@@ -53,7 +53,6 @@ class ContactManager : public QObject
 
         Connection *connection() const;
 
-        bool isSupported() const;
         QSet<Contact::Feature> supportedFeatures() const;
 
         Contacts allKnownContacts() const;

@@ -18,6 +18,7 @@
 #include <telepathy-glib/debug.h>
 
 #include <tests/lib/contacts-conn.h>
+#include <tests/lib/simple-conn.h>
 #include <tests/lib/test.h>
 
 using namespace Telepathy::Client;
@@ -48,6 +49,7 @@ private Q_SLOTS:
     void testFeatures();
     void testFeaturesNotRequested();
     void testUpgrade();
+    void testSelfContactFallback();
 
     void cleanup();
     void cleanupTestCase();
@@ -138,7 +140,7 @@ void TestContacts::initTestCase()
             "protocol", "simple",
             0));
     QVERIFY(mConnService != 0);
-    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService), "simple", &name,
+    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService), "contacts", &name,
                 &connPath, &error));
     QVERIFY(error == 0);
 
@@ -184,7 +186,6 @@ void TestContacts::init()
 void TestContacts::testSupport()
 {
     QCOMPARE(mConn->contactManager()->connection(), mConn);
-    QVERIFY(mConn->contactManager()->isSupported());
 
     QVERIFY(!mConn->contactAttributeInterfaces().isEmpty());
 
@@ -731,6 +732,51 @@ void TestContacts::testUpgrade()
     QVERIFY(!tp_handle_is_valid(serviceRepo, handles[1], NULL));
     tp_handle_unref(serviceRepo, handles[2]);
     QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
+}
+
+void TestContacts::testSelfContactFallback()
+{
+    gchar *name;
+    gchar *connPath;
+    GError *error = 0;
+
+    SimpleConnection *connService;
+    connService = SIMPLE_CONNECTION(g_object_new(
+            SIMPLE_TYPE_CONNECTION,
+            "account", "me@example.com",
+            "protocol", "simple",
+            0));
+    QVERIFY(connService != 0);
+    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(connService), "simple", &name,
+                &connPath, &error));
+    QVERIFY(error == 0);
+
+    QVERIFY(name != 0);
+    QVERIFY(connPath != 0);
+
+    Connection *conn = new Connection(name, connPath);
+    g_free(name);
+    g_free(connPath);
+
+    QCOMPARE(conn->isReady(), false);
+
+    conn->requestConnect();
+
+    Features features = Features() << Connection::FeatureSelfContact;
+    QVERIFY(connect(conn->becomeReady(features),
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(conn->isReady(features), true);
+
+    ContactPtr selfContact = conn->selfContact();
+    QVERIFY(selfContact != 0);
+
+    QCOMPARE(selfContact->handle()[0], conn->selfHandle());
+    QCOMPARE(selfContact->id(), QString("me@example.com"));
+    QCOMPARE(selfContact->alias(), QString("me@example.com"));
+    QVERIFY(!selfContact->isAvatarTokenKnown());
+    QCOMPARE(selfContact->presenceStatus(), QString("unknown"));
 }
 
 void TestContacts::cleanup()
