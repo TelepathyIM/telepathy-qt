@@ -70,10 +70,13 @@ public:
 
     ReferencedHandles handles() const;
 
+    UIntList invalidHandles() const;
+
 private Q_SLOTS:
     void onRequestHandlesFinished(QDBusPendingCallWatcher *watcher);
     void onHoldHandlesFinished(QDBusPendingCallWatcher *watcher);
     void onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
+    void onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class Connection;
