@@ -111,24 +111,13 @@ QString featureToInterface(Contact::Feature feature)
 
 QSet<Contact::Feature> ContactManager::supportedFeatures() const
 {
-    if (mPriv->supportedFeatures.isEmpty()) {
+    if (mPriv->supportedFeatures.isEmpty() &&
+        mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
         QList<Contact::Feature> allFeatures = QList<Contact::Feature>()
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
             << Contact::FeatureSimplePresence;
-        QStringList interfaces;
-        if (mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
-            interfaces = mPriv->conn->contactAttributeInterfaces();
-        } else {
-            if (mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)) {
-                interfaces.append(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING);
-            } else if (mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)) {
-                interfaces.append(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
-            } else if (mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
-                interfaces.append(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
-            }
-        }
-
+        QStringList interfaces = mPriv->conn->contactAttributeInterfaces();
         foreach (Contact::Feature feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
                 mPriv->supportedFeatures.insert(feature);
