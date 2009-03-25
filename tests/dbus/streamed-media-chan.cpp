@@ -171,7 +171,6 @@ void TestStreamedMediaChan::onGroupMembersChanged(
     mChangedRP = groupRemotePendingMembersAdded;
     mChangedRemoved = groupMembersRemoved;
     mDetails = details;
-    mLoop->exit(0);
 }
 
 void TestStreamedMediaChan::onStreamRemoved(const MediaStreamPtr &stream)
@@ -364,16 +363,15 @@ void TestStreamedMediaChan::testOutgoingCall()
     QVERIFY(mChan->streams().contains(stream));
 
     // wait the contact to appear on RP
-    if (mChan->groupRemotePendingContacts().size() == 0) {
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChangedRP.size(), 1);
-        QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
-        QCOMPARE(mChan->awaitingRemoteAnswer(), true);
+    while (mChan->groupRemotePendingContacts().size() == 0) {
+        mLoop->processEvents();
     }
+    QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
+    QCOMPARE(mChan->awaitingRemoteAnswer(), true);
+
     // wait the contact to accept the call
-    if (mChan->groupContacts().size() == 1) {
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChangedCurrent.size(), 1);
+    while (mChan->groupContacts().size() != 2) {
+        mLoop->processEvents();
     }
     QCOMPARE(mChan->groupContacts().size(), 2);
     QCOMPARE(mChan->awaitingRemoteAnswer(), false);
@@ -570,12 +568,11 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
                             const Telepathy::Client::Contacts &,
                             const Telepathy::Client::Channel::GroupMemberChangeDetails &))));
     // wait the contact to appear on RP
-    if (mChan->groupRemotePendingContacts().size() == 0) {
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChangedRP.size(), 1);
-        QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
-        QCOMPARE(mChan->awaitingRemoteAnswer(), true);
+    while (mChan->groupRemotePendingContacts().size() == 0) {
+        mLoop->processEvents();
     }
+    QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
+    QCOMPARE(mChan->awaitingRemoteAnswer(), true);
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 1);
 
     /* assume we're never going to get an answer, and hang up */
@@ -653,16 +650,15 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
     QCOMPARE(mLoop->exec(), 0);
 
     // wait the contact to appear on RP
-    if (mChan->groupRemotePendingContacts().size() == 0) {
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChangedRP.size(), 1);
-        QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
-        QCOMPARE(mChan->awaitingRemoteAnswer(), true);
+    while (mChan->groupRemotePendingContacts().size() == 0) {
+        mLoop->processEvents();
     }
+    QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
+    QCOMPARE(mChan->awaitingRemoteAnswer(), true);
+
     // wait the contact to accept the call
-    if (mChan->groupContacts().size() == 1) {
-        QCOMPARE(mLoop->exec(), 0);
-        QCOMPARE(mChangedCurrent.size(), 1);
+    while (mChan->groupContacts().size() != 2) {
+        mLoop->processEvents();
     }
     QCOMPARE(mChan->groupContacts().size(), 2);
     QCOMPARE(mChan->awaitingRemoteAnswer(), false);
