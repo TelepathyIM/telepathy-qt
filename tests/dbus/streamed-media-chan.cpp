@@ -555,6 +555,27 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
 
     /* After the initial flurry of D-Bus messages, alice still hasn't answered */
     processDBusQueue(mConn);
+
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(groupMembersChanged(
+                            const Telepathy::Client::Contacts &,
+                            const Telepathy::Client::Contacts &,
+                            const Telepathy::Client::Contacts &,
+                            const Telepathy::Client::Contacts &,
+                            const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
+                    SLOT(onGroupMembersChanged(
+                            const Telepathy::Client::Contacts &,
+                            const Telepathy::Client::Contacts &,
+                            const Telepathy::Client::Contacts &,
+                            const Telepathy::Client::Contacts &,
+                            const Telepathy::Client::Channel::GroupMemberChangeDetails &))));
+    // wait the contact to appear on RP
+    if (mChan->groupRemotePendingContacts().size() == 0) {
+        QCOMPARE(mLoop->exec(), 0);
+        QCOMPARE(mChangedRP.size(), 1);
+        QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
+        QCOMPARE(mChan->awaitingRemoteAnswer(), true);
+    }
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 1);
 
     /* assume we're never going to get an answer, and hang up */
