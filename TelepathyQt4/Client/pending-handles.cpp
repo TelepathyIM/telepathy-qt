@@ -28,6 +28,17 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+/**
+ * \addtogroup clientsideproxies Client-side proxies
+ *
+ * Proxy objects representing remote service objects accessed via D-Bus.
+ *
+ * In addition to providing direct access to methods, signals and properties
+ * exported by the remote objects, some of these proxies offer features like
+ * automatic inspection of remote object capabilities, property tracking,
+ * backwards compatibility helpers for older services and other utilities.
+ */
+
 namespace Telepathy
 {
 namespace Client
@@ -35,17 +46,38 @@ namespace Client
 
 struct PendingHandles::Private
 {
-    Connection* connection;
+    Connection *connection;
     uint handleType;
     bool isRequest;
     QStringList namesRequested;
     UIntList handlesToReference;
     ReferencedHandles handles;
     ReferencedHandles alreadyHeld;
+
+    QStringList validNames;
+    QHash<QString, QPair<QString, QString> > invalidNames;
+
+    // one to one requests (ids)
+    QHash<QDBusPendingCallWatcher *, QString> idsForWatchers;
+    QHash<QString, uint> handlesForIds;
+    int requestsFinished;
 };
 
-PendingHandles::PendingHandles(Connection* connection, uint handleType, const QStringList& names)
-    : PendingOperation(connection), mPriv(new Private)
+/**
+ * \class PendingHandles
+ * \ingroup clientconn
+ * \headerfile <TelepathyQt4/Client/pending-handles.h>  <TelepathyQt4/Client/PendingHandles>
+ *
+ * Class containing the parameters of and the reply to an asynchronous handle
+ * request/hold. Instances of this class cannot be constructed directly; the
+ * only ways to get one are to use Connection::requestHandles() or
+ * Connection::referenceHandles().
+ */
+
+PendingHandles::PendingHandles(Connection *connection, uint handleType,
+        const QStringList &names)
+    : PendingOperation(connection),
+      mPriv(new Private)
 {
     debug() << "PendingHandles(request)";
 
@@ -53,10 +85,23 @@ PendingHandles::PendingHandles(Connection* connection, uint handleType, const QS
     mPriv->handleType = handleType;
     mPriv->isRequest = true;
     mPriv->namesRequested = names;
+    mPriv->requestsFinished = 0;
+
+    // try to request all handles at once
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                connection->baseInterface()->RequestHandles(handleType, names),
+                this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(onRequestHandlesFinished(QDBusPendingCallWatcher *)));
 }
 
-PendingHandles::PendingHandles(Connection* connection, uint handleType, const UIntList& handles, const UIntList& alreadyHeld)
-    : PendingOperation(connection), mPriv(new Private)
+PendingHandles::PendingHandles(Connection *connection, uint handleType,
+        const UIntList &handles, const UIntList &alreadyHeld,
+        const UIntList &notYetHeld)
+    : PendingOperation(connection),
+      mPriv(new Private)
 {
     debug() << "PendingHandles(reference)";
 
@@ -65,83 +110,294 @@ PendingHandles::PendingHandles(Connection* connection, uint handleType, const UI
     mPriv->isRequest = false;
     mPriv->handlesToReference = handles;
     mPriv->alreadyHeld = ReferencedHandles(connection, handleType, alreadyHeld);
+    mPriv->requestsFinished = 0;
 
-    if (alreadyHeld == handles) {
+    if (notYetHeld.isEmpty()) {
         debug() << " All handles already held, finishing up instantly";
         mPriv->handles = mPriv->alreadyHeld;
         setFinished();
+    } else {
+        debug() << " Calling HoldHandles";
+
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(
+                    connection->baseInterface()->HoldHandles(handleType, notYetHeld),
+                    this);
+        connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(onHoldHandlesFinished(QDBusPendingCallWatcher *)));
     }
 }
 
+/**
+ * Class destructor.
+ */
 PendingHandles::~PendingHandles()
 {
     delete mPriv;
 }
 
-Connection* PendingHandles::connection() const
+/**
+ * Returns the Connection object through which the operation was made.
+ *
+ * \return Pointer to the Connection.
+ */
+Connection *PendingHandles::connection() const
 {
     return mPriv->connection;
 }
 
+/**
+ * Returns the handle type specified in the operation.
+ *
+ * \return The handle type, as specified in #HandleType.
+ */
 uint PendingHandles::handleType() const
 {
     return mPriv->handleType;
 }
 
+/**
+ * Returns whether the operation was a handle request (as opposed to a
+ * reference of existing handles).
+ *
+ * \sa isReference()
+ *
+ * \return Whether the operation was a request (== !isReference()).
+ */
 bool PendingHandles::isRequest() const
 {
     return mPriv->isRequest;
 }
 
+/**
+ * Returns whether the operation was a handle reference (as opposed to a
+ * request for new handles).
+ *
+ * \sa isRequest()
+ *
+ * \return Whether the operation was a reference (== !isRequest()).
+ */
 bool PendingHandles::isReference() const
 {
-    return !isRequest();
+    return !mPriv->isRequest;
 }
 
-const QStringList& PendingHandles::namesRequested() const
+/**
+ * If the operation was a request (as returned by isRequest()), returns the
+ * names of the entities for which handles were requested for. Otherwise,
+ * returns an empty list.
+ *
+ * \return Reference to a list of the names of the entities.
+ */
+const QStringList &PendingHandles::namesRequested() const
 {
     return mPriv->namesRequested;
 }
 
-const UIntList& PendingHandles::handlesToReference() const
+QStringList PendingHandles::validNames() const
+{
+    if (!isFinished()) {
+        warning() << "PendingHandles::validNames called before finished";
+        return QStringList();
+    } else if (!isValid()) {
+        warning() << "PendingHandles::validNames called when not valid";
+        return QStringList();
+    }
+
+    return mPriv->validNames;
+}
+
+QHash<QString, QPair<QString, QString> > PendingHandles::invalidNames() const
+{
+    if (!isFinished()) {
+        warning() << "PendingHandles::invalidNames called before finished";
+        return QHash<QString, QPair<QString, QString> >();
+    }
+
+    return mPriv->invalidNames;
+}
+
+/**
+ * If the operation was a reference (as returned by isReference()), returns
+ * the handles which were to be referenced. Otherwise, returns an empty
+ * list.
+ *
+ * \return Reference to a list of the handles specified to be referenced.
+ */
+const UIntList &PendingHandles::handlesToReference() const
 {
     return mPriv->handlesToReference;
 }
 
+/**
+ * Returns the now-referenced handles resulting from the operation. If the
+ * operation has not (yet) finished successfully (isFinished() returns
+ * <code>false</code>), the return value is undefined.
+ *
+ * For requests of new handles, <code>handles()[i]</code> will be the handle
+ * corresponding to the entity name <code>namesToRequest()[i]</code>. For
+ * references of existing handles, <code>handles()[i] ==
+ * handlesToReference()[i]</code> will be true for any <code>i</code>.
+ *
+ * \return ReferencedHandles instance containing the handles.
+ */
 ReferencedHandles PendingHandles::handles() const
 {
+    if (!isFinished()) {
+        warning() << "PendingHandles::handles() called before finished";
+        return ReferencedHandles();
+    } else if (!isValid()) {
+        warning() << "PendingHandles::handles() called when not valid";
+        return ReferencedHandles();
+    }
+
     return mPriv->handles;
 }
 
-void PendingHandles::onCallFinished(QDBusPendingCallWatcher* watcher)
+void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
 {
-    // Thanks QDBus for this the need for this error-handling code duplication
-    if (mPriv->isRequest) {
-        QDBusPendingReply<UIntList> reply = *watcher;
+    QDBusPendingReply<UIntList> reply = *watcher;
 
-        debug() << "Received reply to RequestHandles";
-
-        if (reply.isError()) {
-            debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
-            setFinishedWithError(reply.error());
-        } else {
-            mPriv->handles = ReferencedHandles(connection(), handleType(), reply.value());
-            setFinished();
+    if (reply.isError()) {
+        QDBusError error = reply.error();
+        if (error.name() != TELEPATHY_ERROR_INVALID_HANDLE &&
+            error.name() != TELEPATHY_ERROR_INVALID_ARGUMENT &&
+            error.name() != TELEPATHY_ERROR_NOT_AVAILABLE) {
+            // do not fallback
+            foreach (const QString &name, mPriv->namesRequested) {
+                mPriv->invalidNames.insert(name,
+                        QPair<QString, QString>(error.name(),
+                            error.message()));
+            }
+            setFinishedWithError(error);
+            connection()->handleRequestLanded(mPriv->handleType);
+            watcher->deleteLater();
+            return;
         }
 
-        connection()->handleRequestLanded(handleType());
+        if (mPriv->namesRequested.size() == 1) {
+            debug().nospace() << " Failure: error " <<
+                reply.error().name() << ": " <<
+                reply.error().message();
+
+            mPriv->invalidNames.insert(mPriv->namesRequested.first(),
+                    QPair<QString, QString>(error.name(),
+                        error.message()));
+            setFinished();
+            connection()->handleRequestLanded(mPriv->handleType);
+            watcher->deleteLater();
+            return;
+        }
+
+        // try to request one handles at a time
+        foreach (const QString &name, mPriv->namesRequested) {
+            QDBusPendingCallWatcher *watcher =
+                new QDBusPendingCallWatcher(
+                        mPriv->connection->baseInterface()->RequestHandles(
+                            mPriv->handleType,
+                            QStringList() << name),
+                        this);
+            connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher *)),
+                    SLOT(onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *)));
+            mPriv->idsForWatchers.insert(watcher, name);
+        }
     } else {
-        QDBusPendingReply<void> reply = *watcher;
+        debug() << "Received reply to RequestHandles";
+        mPriv->handles = ReferencedHandles(mPriv->connection,
+                mPriv->handleType, reply.value());
+        mPriv->validNames.append(mPriv->namesRequested);
+        setFinished();
+        mPriv->connection->handleRequestLanded(mPriv->handleType);
+    }
+}
 
-        debug() << "Received reply to HoldHandles";
+void PendingHandles::onHoldHandlesFinished(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<void> reply = *watcher;
 
-        if (reply.isError()) {
-            debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
-            setFinishedWithError(reply.error());
+    debug() << "Received reply to HoldHandles";
+
+    if (reply.isError()) {
+        debug().nospace() << " Failure: error " <<
+            reply.error().name() << ": " <<
+            reply.error().message();
+        setFinishedWithError(reply.error());
+    } else {
+        mPriv->handles = ReferencedHandles(mPriv->connection,
+                mPriv->handleType, mPriv->handlesToReference);
+        setFinished();
+    }
+
+    watcher->deleteLater();
+}
+
+void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<UIntList> reply = *watcher;
+
+    Q_ASSERT(mPriv->idsForWatchers.contains(watcher));
+    QString id = mPriv->idsForWatchers.value(watcher);
+
+    debug() << "Received reply to RequestHandles(" << id << ")";
+
+    if (reply.isError()) {
+        debug().nospace() << " Failure: error " << reply.error().name() << ": "
+            << reply.error().message();
+
+        // if the error is disconnected for example, fail immediately
+        QDBusError error = reply.error();
+        if (error.name() != TELEPATHY_ERROR_INVALID_HANDLE &&
+            error.name() != TELEPATHY_ERROR_INVALID_ARGUMENT &&
+            error.name() != TELEPATHY_ERROR_NOT_AVAILABLE) {
+            foreach (const QString &name, mPriv->namesRequested) {
+                mPriv->invalidNames.insert(name,
+                        QPair<QString, QString>(error.name(),
+                            error.message()));
+            }
+            setFinishedWithError(error);
+            connection()->handleRequestLanded(mPriv->handleType);
+            watcher->deleteLater();
+            return;
+        }
+
+        mPriv->invalidNames.insert(id,
+                QPair<QString, QString>(reply.error().name(),
+                    reply.error().message()));
+    } else {
+        Q_ASSERT(reply.value().size() == 1);
+        uint handle = reply.value().first();
+        mPriv->handlesForIds.insert(id, handle);
+    }
+
+    if (++mPriv->requestsFinished == mPriv->namesRequested.size()) {
+        if (mPriv->handlesForIds.size() == 0) {
+            // all requests failed
+            setFinished();
         } else {
-            mPriv->handles = ReferencedHandles(connection(), handleType(), handlesToReference());
+            // all requests either failed or finished successfully
+
+            // we need to return the handles in the same order as requested
+            UIntList handles;
+            foreach (const QString &name, mPriv->namesRequested) {
+                if (!mPriv->invalidNames.contains(name)) {
+                    Q_ASSERT(mPriv->handlesForIds.contains(name));
+                    handles.append(mPriv->handlesForIds.value(name));
+                    mPriv->validNames.append(name);
+                }
+            }
+            mPriv->handles = ReferencedHandles(mPriv->connection,
+                    mPriv->handleType, handles);
+
             setFinished();
         }
+
+        debug() << " namesRequested:" << mPriv->namesRequested;
+        debug() << " invalidNames  :" << mPriv->invalidNames;
+        debug() << " validNames    :" << mPriv->validNames;
+
+        mPriv->connection->handleRequestLanded(mPriv->handleType);
     }
 
     watcher->deleteLater();

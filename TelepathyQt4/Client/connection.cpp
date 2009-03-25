@@ -947,12 +947,12 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     debug() << "Got handles for contact lists";
     PendingHandles *pending = qobject_cast<PendingHandles*>(op);
 
-    // FIXME check for handles in pending->invalidHandles() when
-    //       invalidHandles is implemented
-    // if (pending->invalidHandles().size() == 1) {
-    //     contactListChannelReady();
-    //     return;
-    // }
+    if (pending->invalidNames().size() == 1) {
+        // let's not fail, because the contact lists are not supported
+        debug() << "Unable to retrieve contact list handle, ignoring";
+        contactListChannelReady();
+        return;
+    }
 
     debug() << "Requesting channels for contact lists";
     QVariantMap request;
@@ -1161,15 +1161,6 @@ PendingHandles *Connection::requestHandles(uint handleType, const QStringList &n
 
     PendingHandles *pending =
         new PendingHandles(this, handleType, names);
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                mPriv->baseInterface->RequestHandles(handleType, names),
-                pending);
-
-    pending->connect(watcher,
-                     SIGNAL(finished(QDBusPendingCallWatcher *)),
-                     SLOT(onCallFinished(QDBusPendingCallWatcher *)));
-
     return pending;
 }
 
@@ -1223,24 +1214,8 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
         "of the handles -" << notYetHeld.size() << "to go";
 
     PendingHandles *pending =
-        new PendingHandles(this, handleType, handles, alreadyHeld);
-
-    if (!notYetHeld.isEmpty()) {
-        debug() << " Calling HoldHandles";
-
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(
-                    mPriv->baseInterface->HoldHandles(handleType, notYetHeld),
-                    pending);
-
-        pending->connect(watcher,
-                         SIGNAL(finished(QDBusPendingCallWatcher *)),
-                         SLOT(onCallFinished(QDBusPendingCallWatcher *)));
-    }
-    else {
-        debug() << " All handles already held, not calling HoldHandles";
-    }
-
+        new PendingHandles(this, handleType, handles,
+                alreadyHeld, notYetHeld);
     return pending;
 }
 

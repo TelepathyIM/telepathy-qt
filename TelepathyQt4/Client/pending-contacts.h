@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/Client/PendingOperation>
 
+#include <QHash>
 #include <QList>
 #include <QMap>
 #include <QSet>
@@ -64,6 +65,8 @@ public:
 
     QList<ContactPtr> contacts() const;
     UIntList invalidHandles() const;
+    QStringList validIdentifiers() const;
+    QHash<QString, QPair<QString, QString> > invalidIdentifiers() const;
 
 private Q_SLOTS:
     void onAttributesFinished(Telepathy::Client::PendingOperation *);

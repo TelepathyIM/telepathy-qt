@@ -26,35 +26,11 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientconn Connection proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Connections and their optional
- * interfaces.
- */
-
-namespace Telepathy
-{
-namespace Client
-{
-class PendingHandles;
-}
-}
-
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Types>
 
+#include <QHash>
+#include <QString>
 #include <QStringList>
 
 #include <TelepathyQt4/Types>
@@ -65,103 +41,46 @@ namespace Client
 {
 
 class Connection;
+class PendingHandles;
 class ReferencedHandles;
 
-/**
- * \class PendingHandles
- * \ingroup clientconn
- * \headerfile <TelepathyQt4/Client/pending-handles.h> <TelepathyQt4/Client/Connection>
- *
- * Class containing the parameters of and the reply to an asynchronous handle
- * request/hold. Instances of this class cannot be constructed directly; the
- * only ways to get one are to use Connection::requestHandles() or
- * Connection::referenceHandles().
- */
 class PendingHandles : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingHandles)
 
 public:
-    /**
-     * Class destructor.
-     */
     ~PendingHandles();
 
-    /**
-     * Returns the Connection object through which the operation was made.
-     *
-     * \return Pointer to the Connection.
-     */
-    Connection* connection() const;
+    Connection *connection() const;
 
-    /**
-     * Returns the handle type specified in the operation.
-     *
-     * \return The handle type, as specified in #HandleType.
-     */
     uint handleType() const;
 
-    /**
-     * Returns whether the operation was a handle request (as opposed to a
-     * reference of existing handles).
-     *
-     * \sa isReference()
-     *
-     * \return Whether the operation was a request (== !isReference()).
-     */
     bool isRequest() const;
 
-    /**
-     * Returns whether the operation was a handle reference (as opposed to a
-     * request for new handles).
-     *
-     * \sa isRequest()
-     *
-     * \return Whether the operation was a reference (== !isRequest()).
-     */
     bool isReference() const;
 
-    /**
-     * If the operation was a request (as returned by isRequest()), returns the
-     * names of the entities for which handles were requested for. Otherwise,
-     * returns an empty list.
-     *
-     * \return Reference to a list of the names of the entities.
-     */
-    const QStringList& namesRequested() const;
+    const QStringList &namesRequested() const;
 
-    /**
-     * If the operation was a reference (as returned by isReference()), returns
-     * the handles which were to be referenced. Otherwise, returns an empty
-     * list.
-     *
-     * \return Reference to a list of the handles specified to be referenced.
-     */
-    const UIntList& handlesToReference() const;
+    QStringList validNames() const;
 
-    /**
-     * Returns the now-referenced handles resulting from the operation. If the
-     * operation has not (yet) finished successfully (isFinished() returns
-     * <code>false</code>), the return value is undefined.
-     *
-     * For requests of new handles, <code>handles()[i]</code> will be the handle
-     * corresponding to the entity name <code>namesToRequest()[i]</code>. For
-     * references of existing handles, <code>handles()[i] ==
-     * handlesToReference()[i]</code> will be true for any <code>i</code>.
-     *
-     * \return ReferencedHandles instance containing the handles.
-     */
+    QHash<QString, QPair<QString, QString> > invalidNames() const;
+
+    const UIntList &handlesToReference() const;
+
     ReferencedHandles handles() const;
 
 private Q_SLOTS:
-    void onCallFinished(QDBusPendingCallWatcher* watcher);
+    void onRequestHandlesFinished(QDBusPendingCallWatcher *watcher);
+    void onHoldHandlesFinished(QDBusPendingCallWatcher *watcher);
+    void onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *watcher);
 
 private:
     friend class Connection;
 
-    PendingHandles(Connection* connection, uint handleType, const QStringList& names);
-    PendingHandles(Connection* connection, uint handleType, const UIntList& handles, const UIntList& alreadyHeld);
+    PendingHandles(Connection *connection, uint handleType, const QStringList &names);
+    PendingHandles(Connection *connection, uint handleType, const UIntList &handles,
+            const UIntList &alreadyHeld, const UIntList &notYetHeld);
 
     struct Private;
     friend struct Private;
