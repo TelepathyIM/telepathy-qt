@@ -128,11 +128,13 @@ tpqt4include_HEADERS = \
     Debug \
     KeyFile \
     ManagerFile \
+    SharedPtr \
     Types \
     constants.h \
     debug.h \
     key-file.h \
     manager-file.h \
+    shared-ptr.h \
     types.h
 
 tpqt4clientinclude_HEADERS = \
