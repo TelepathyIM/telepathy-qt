@@ -109,7 +109,7 @@ void RosterWindow::onConnectionConnected(Telepathy::Client::PendingOperation *op
     }
 
     PendingReady *pr = qobject_cast<PendingReady *>(op);
-    Connection *conn = qobject_cast<Connection *>(pr->object());
+    ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(pr->object()));
     mRoster->addConnection(conn);
 }
 
@@ -120,7 +120,7 @@ void RosterWindow::onConnectionInvalidated(DBusProxy *proxy,
         errorName << "-" << errorMessage;
     foreach (const ConnectionPtr &conn, mConns) {
         if (conn.data() == proxy) {
-            mRoster->removeConnection(conn.data());
+            mRoster->removeConnection(conn);
             mConns.removeOne(conn);
         }
     }

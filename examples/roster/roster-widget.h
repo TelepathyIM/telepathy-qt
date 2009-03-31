@@ -50,9 +50,9 @@ public:
     RosterWidget(QWidget *parent = 0);
     virtual ~RosterWidget();
 
-    QList<Telepathy::Client::Connection *> connections() const { return mConns; }
-    void addConnection(Telepathy::Client::Connection *conn);
-    void removeConnection(Telepathy::Client::Connection *conn);
+    QList<Telepathy::Client::ConnectionPtr> connections() const { return mConns; }
+    void addConnection(const Telepathy::Client::ConnectionPtr &conn);
+    void removeConnection(const Telepathy::Client::ConnectionPtr &conn);
 
     QListWidget *listWidget() const { return mList; }
 
@@ -78,7 +78,7 @@ private:
     void createActions();
     void setupGui();
 
-    QList<Telepathy::Client::Connection *> mConns;
+    QList<Telepathy::Client::ConnectionPtr> mConns;
     QAction *mAuthAction;
     QAction *mRemoveAction;
     QAction *mDenyAction;

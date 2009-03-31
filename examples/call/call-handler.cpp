@@ -99,7 +99,7 @@ void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
 void CallHandler::onOutgoingChannelReady(PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady *>(op);
-    StreamedMediaChannel *chan = qobject_cast<StreamedMediaChannel *>(pr->object());
+    StreamedMediaChannelPtr chan = StreamedMediaChannelPtr(qobject_cast<StreamedMediaChannel *>(pr->object()));
 
     if (op->isError()) {
         qWarning() << "CallHandler::onOutgoingChannelReady: channel cannot become ready:" <<
@@ -128,7 +128,7 @@ void CallHandler::onOutgoingChannelReady(PendingOperation *op)
 void CallHandler::onIncomingChannelReady(PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady *>(op);
-    StreamedMediaChannel *chan = qobject_cast<StreamedMediaChannel *>(pr->object());
+    StreamedMediaChannelPtr chan = StreamedMediaChannelPtr(qobject_cast<StreamedMediaChannel *>(pr->object()));
 
     if (op->isError()) {
         // ignore - channel cannot be ready

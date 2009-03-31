@@ -59,7 +59,7 @@ RosterWidget::~RosterWidget()
 {
 }
 
-void RosterWidget::addConnection(Connection *conn)
+void RosterWidget::addConnection(const ConnectionPtr &conn)
 {
     mConns.append(conn);
     connect(conn->becomeReady(Connection::FeatureRoster),
@@ -67,11 +67,23 @@ void RosterWidget::addConnection(Connection *conn)
             SLOT(onConnectionReady(Telepathy::Client::PendingOperation *)));
 }
 
-void RosterWidget::removeConnection(Connection *conn)
+void RosterWidget::removeConnection(const ConnectionPtr &conn)
 {
-    // TODO remove all contacts from this connection
-    //      if there is only one connection left, disable all actions/buttons
+    int i = 0;
+    while (i < mList->count()) {
+        RosterItem *item = (RosterItem *) mList->item(i);
+        if (item->contact()->manager()->connection() == conn) {
+            mList->takeItem(i);
+            delete item;
+            continue;
+        }
+        ++i;
+    }
     mConns.removeOne(conn);
+    if (mConns.count() == 0) {
+        updateActions();
+        mAddBtn->setEnabled(false);
+    }
 }
 
 void RosterWidget::createActions()
@@ -173,7 +185,7 @@ void RosterWidget::onConnectionReady(Telepathy::Client::PendingOperation *op)
     }
 
     PendingReady *pr = qobject_cast<PendingReady *>(op);
-    Connection *conn = qobject_cast<Connection *>(pr->object());
+    ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(pr->object()));
     connect(conn->contactManager(),
             SIGNAL(presencePublicationRequested(const Telepathy::Client::Contacts &)),
             SLOT(onPresencePublicationRequested(const Telepathy::Client::Contacts &)));
