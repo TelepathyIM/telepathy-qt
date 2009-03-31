@@ -30,15 +30,16 @@ class PendingContactAttributes;
 }
 }
 
+#include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/Types>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/PendingOperation>
 
 namespace Telepathy
 {
 namespace Client
 {
-class Connection;
+
 class ReferencedHandles;
 
 class PendingContactAttributes : public PendingOperation
@@ -48,7 +49,7 @@ class PendingContactAttributes : public PendingOperation
 public:
     ~PendingContactAttributes();
 
-    Connection *connection() const;
+    ConnectionPtr connection() const;
 
     const UIntList &contactsRequested() const;
     const QStringList &interfacesRequested() const;
@@ -64,7 +65,7 @@ private Q_SLOTS:
 private:
     friend class Connection;
 
-    PendingContactAttributes(Connection *connection, const UIntList &handles,
+    PendingContactAttributes(const ConnectionPtr &connection, const UIntList &handles,
             const QStringList &interfaces, bool reference);
     void failImmediately(const QString &error, const QString &errorMessage);
 
