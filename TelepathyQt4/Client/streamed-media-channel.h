@@ -27,6 +27,8 @@
 
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/SharedPtr>
 
 namespace Telepathy
 {
@@ -34,9 +36,7 @@ namespace Client
 {
 
 class StreamedMediaChannel;
-class MediaStream;
 
-typedef QExplicitlySharedDataPointer<MediaStream> MediaStreamPtr;
 typedef QList<MediaStreamPtr> MediaStreams;
 
 class PendingMediaStreams : public PendingOperation
@@ -72,7 +72,7 @@ private:
 
 class MediaStream : public QObject,
                     private ReadyObject,
-                    public QSharedData
+                    public SharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(MediaStream)
@@ -186,8 +186,6 @@ private:
     friend struct Private;
     Private *mPriv;
 };
-
-typedef QExplicitlySharedDataPointer<StreamedMediaChannel> StreamedMediaChannelPtr;
 
 } // Telepathy::Client
 } // Telepathy

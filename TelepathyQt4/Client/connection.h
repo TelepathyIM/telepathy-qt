@@ -34,13 +34,13 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Client/ReadyObject>
+#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/SharedPtr>
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
-#include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedData>
 #include <QString>
 #include <QStringList>
 
@@ -61,7 +61,7 @@ class PendingReady;
 class Connection : public StatefulDBusProxy,
                    private OptionalInterfaceFactory<Connection>,
                    public ReadyObject,
-                   public QSharedData
+                   public SharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(Connection)
@@ -217,8 +217,6 @@ private:
     friend class ReferencedHandles;
     Private *mPriv;
 };
-
-typedef QExplicitlySharedDataPointer<Connection> ConnectionPtr;
 
 } // Telepathy::Client
 } // Telepathy

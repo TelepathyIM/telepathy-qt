@@ -35,10 +35,10 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Client/ReadyObject>
+#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/SharedPtr>
 
-#include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedData>
 #include <QVariantMap>
 
 namespace Telepathy
@@ -53,7 +53,7 @@ class PendingReady;
 class Channel : public StatefulDBusProxy,
                 private OptionalInterfaceFactory<Channel>,
                 public ReadyObject,
-                public QSharedData
+                public SharedData
 {
     Q_OBJECT
     Q_DISABLE_COPY(Channel)
@@ -307,8 +307,6 @@ private:
     friend struct Private;
     Private *mPriv;
 };
-
-typedef QExplicitlySharedDataPointer<Channel> ChannelPtr;
 
 } // Telepathy::Client
 } // Telepathy

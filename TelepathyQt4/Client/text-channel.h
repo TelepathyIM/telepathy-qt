@@ -139,8 +139,6 @@ private:
     Private *mPriv;
 };
 
-typedef QExplicitlySharedDataPointer<TextChannel> TextChannelPtr;
-
 } // Telepathy::Client
 } // Telepathy
 
