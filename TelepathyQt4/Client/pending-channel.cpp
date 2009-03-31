@@ -56,7 +56,7 @@ struct PendingChannel::Private
     {
     }
 
-    ConnectionPtr connection;
+    WeakPtr<Connection> connection;
     bool yours;
     QString channelType;
     uint handleType;
