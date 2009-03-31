@@ -46,7 +46,7 @@ namespace Client
 
 struct PendingHandles::Private
 {
-    Connection *connection;
+    ConnectionPtr connection;
     uint handleType;
     bool isRequest;
     QStringList namesRequested;
@@ -75,9 +75,9 @@ struct PendingHandles::Private
  * Connection::referenceHandles().
  */
 
-PendingHandles::PendingHandles(Connection *connection, uint handleType,
+PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
         const QStringList &names)
-    : PendingOperation(connection),
+    : PendingOperation(connection.data()),
       mPriv(new Private)
 {
     debug() << "PendingHandles(request)";
@@ -98,10 +98,10 @@ PendingHandles::PendingHandles(Connection *connection, uint handleType,
             SLOT(onRequestHandlesFinished(QDBusPendingCallWatcher *)));
 }
 
-PendingHandles::PendingHandles(Connection *connection, uint handleType,
+PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
         const UIntList &handles, const UIntList &alreadyHeld,
         const UIntList &notYetHeld)
-    : PendingOperation(connection),
+    : PendingOperation(connection.data()),
       mPriv(new Private)
 {
     debug() << "PendingHandles(reference)";
@@ -143,7 +143,7 @@ PendingHandles::~PendingHandles()
  *
  * \return Pointer to the Connection.
  */
-Connection *PendingHandles::connection() const
+ConnectionPtr PendingHandles::connection() const
 {
     return mPriv->connection;
 }
@@ -281,7 +281,7 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
                             error.message()));
             }
             setFinishedWithError(error);
-            connection()->handleRequestLanded(mPriv->handleType);
+            mPriv->connection->handleRequestLanded(mPriv->handleType);
             watcher->deleteLater();
             return;
         }
@@ -295,7 +295,7 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
                     QPair<QString, QString>(error.name(),
                         error.message()));
             setFinished();
-            connection()->handleRequestLanded(mPriv->handleType);
+            mPriv->connection->handleRequestLanded(mPriv->handleType);
             watcher->deleteLater();
             return;
         }
@@ -402,7 +402,7 @@ void PendingHandles::onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *w
                             error.message()));
             }
             setFinishedWithError(error);
-            connection()->handleRequestLanded(mPriv->handleType);
+            mPriv->connection->handleRequestLanded(mPriv->handleType);
             watcher->deleteLater();
             return;
         }

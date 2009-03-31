@@ -183,7 +183,7 @@ void TestHandles::testBasics()
     // Check that the closure is consistent with what we asked for
     QVERIFY(pending->isRequest());
     QCOMPARE(pending->namesRequested(), ids);
-    QCOMPARE(pending->connection(), mConn1a.data());
+    QCOMPARE(pending->connection(), mConn1a);
     QCOMPARE(pending->handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
 
     // Finish the request and extract the resulting ReferencedHandles

@@ -27,6 +27,7 @@
 #endif
 
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/Types>
 #include <TelepathyQt4/Types>
 
 #include <QHash>
@@ -40,7 +41,6 @@ namespace Telepathy
 namespace Client
 {
 
-class Connection;
 class PendingHandles;
 class ReferencedHandles;
 
@@ -52,7 +52,7 @@ class PendingHandles : public PendingOperation
 public:
     ~PendingHandles();
 
-    Connection *connection() const;
+    ConnectionPtr connection() const;
 
     uint handleType() const;
 
@@ -81,8 +81,8 @@ private Q_SLOTS:
 private:
     friend class Connection;
 
-    PendingHandles(Connection *connection, uint handleType, const QStringList &names);
-    PendingHandles(Connection *connection, uint handleType, const UIntList &handles,
+    PendingHandles(const ConnectionPtr &connection, uint handleType, const QStringList &names);
+    PendingHandles(const ConnectionPtr &connection, uint handleType, const UIntList &handles,
             const UIntList &alreadyHeld, const UIntList &notYetHeld);
 
     struct Private;
