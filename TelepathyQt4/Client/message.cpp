@@ -47,7 +47,7 @@ public:
     bool forceNonText;
 
     // for received messages only
-    QPointer<TextChannel> textChannel;
+    WeakPtr<TextChannel> textChannel;
     ContactPtr sender;
 
     inline QVariant value(uint index, const char *key) const;
@@ -121,7 +121,7 @@ void Message::Private::clearSenderHandle()
 /**
  * \class Message
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/Client/text-channel.h <TelepathyQt4/Client/TextChannel>
+ * \headerfile <TelepathyQt4/Client/text-channel.h> <TelepathyQt4/Client/TextChannel>
  *
  * Object representing a message. These objects are implicitly shared, like
  * QString.
@@ -423,7 +423,7 @@ MessagePartList Message::parts() const
 /**
  * \class ReceivedMessage
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/Client/text-channel.h <TelepathyQt4/Client/TextChannel>
+ * \headerfile <TelepathyQt4/Client/text-channel.h> <TelepathyQt4/Client/TextChannel>
  *
  * Subclass of Message, with additional information that's generally only
  * available on received messages.
@@ -443,7 +443,7 @@ ReceivedMessage::ReceivedMessage()
  *              specification. This list must have length at least 1.
  */
 ReceivedMessage::ReceivedMessage(const MessagePartList &parts,
-        TextChannel *channel)
+        const TextChannelPtr &channel)
     : Message(parts)
 {
     if (!mPriv->parts[0].contains(QLatin1String("message-received"))) {
@@ -539,9 +539,9 @@ bool ReceivedMessage::isRescued() const
     return mPriv->getBoolean(0, "rescued", false);
 }
 
-bool ReceivedMessage::isFromChannel(const TextChannel *channel) const
+bool ReceivedMessage::isFromChannel(const TextChannelPtr &channel) const
 {
-    return mPriv->textChannel == channel;
+    return TextChannelPtr(mPriv->textChannel) == channel;
 }
 
 uint ReceivedMessage::pendingId() const

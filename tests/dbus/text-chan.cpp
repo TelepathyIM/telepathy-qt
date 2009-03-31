@@ -78,7 +78,7 @@ private:
     ExampleEcho2Channel *mMessagesChanService;
 
     ConnectionPtr mConn;
-    TextChannel *mChan;
+    TextChannelPtr mChan;
     QString mTextChanPath;
     QString mMessagesChanPath;
     QString mConnName;
@@ -194,8 +194,8 @@ void TestTextChan::init()
 
 void TestTextChan::commonTest(bool withMessages)
 {
-    Q_ASSERT(mChan != 0);
-    Channel *asChannel = mChan;
+    Q_ASSERT(mChan);
+    ChannelPtr asChannel = mChan;
 
     QVERIFY(connect(asChannel->becomeReady(),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),
@@ -211,16 +211,16 @@ void TestTextChan::commonTest(bool withMessages)
     // early, so don't assert about that
     QVERIFY(!mChan->isReady(features));
 
-    QVERIFY(connect(mChan,
+    QVERIFY(connect(mChan.data(),
                 SIGNAL(messageReceived(const Telepathy::Client::ReceivedMessage &)),
                 SLOT(onMessageReceived(const Telepathy::Client::ReceivedMessage &))));
     QCOMPARE(received.size(), 0);
-    QVERIFY(connect(mChan,
+    QVERIFY(connect(mChan.data(),
                 SIGNAL(pendingMessageRemoved(const Telepathy::Client::ReceivedMessage &)),
                 SLOT(onMessageRemoved(const Telepathy::Client::ReceivedMessage &))));
     QCOMPARE(removed.size(), 0);
 
-    QVERIFY(connect(mChan,
+    QVERIFY(connect(mChan.data(),
                 SIGNAL(messageSent(const Telepathy::Client::Message &,
                         Telepathy::MessageSendingFlags,
                         const QString &)),
@@ -412,24 +412,20 @@ void TestTextChan::commonTest(bool withMessages)
 
 void TestTextChan::testMessages()
 {
-    mChan = new TextChannel(mConn.data(), mMessagesChanPath, QVariantMap(), this);
+    mChan = TextChannel::create(mConn.data(), mMessagesChanPath, QVariantMap());
 
     commonTest(true);
 }
 
 void TestTextChan::testLegacyText()
 {
-    mChan = new TextChannel(mConn.data(), mTextChanPath, QVariantMap(), this);
+    mChan = TextChannel::create(mConn.data(), mTextChanPath, QVariantMap());
 
     commonTest(false);
 }
 
 void TestTextChan::cleanup()
 {
-    if (mChan != 0) {
-        delete mChan;
-        mChan = 0;
-    }
     received.clear();
     removed.clear();
     sent.clear();

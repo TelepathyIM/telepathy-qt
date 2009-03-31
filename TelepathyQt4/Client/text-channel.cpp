@@ -390,6 +390,13 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
  * circumstances in which this happens.
  */
 
+TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
+        const QString &objectPath, const QVariantMap &immutableProperties)
+{
+    return TextChannelPtr(new TextChannel(connection, objectPath,
+                immutableProperties));
+}
+
 /**
  * Creates a TextChannel associated with the given object on the same service
  * as the given connection.
@@ -400,12 +407,10 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
  * \param immutableProperties The immutable D-Bus properties of the channel
  *                    (as announced in the NewChannels D-Bus signal), used to
  *                    reduce D-Bus round trips
- * \param parent      Passed to the parent class constructor.
  */
-TextChannel::TextChannel(Connection *connection,
+TextChannel::TextChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties,
-        QObject *parent)
+        const QVariantMap &immutableProperties)
     : Channel(connection, objectPath, immutableProperties),
       mPriv(new Private(this))
 {

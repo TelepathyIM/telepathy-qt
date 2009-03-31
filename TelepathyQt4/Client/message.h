@@ -28,6 +28,7 @@
 #include <QSharedDataPointer>
 
 #include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Client/Types>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
@@ -104,11 +105,12 @@ public:
     bool isScrollback() const;
     bool isRescued() const;
 
-    bool isFromChannel(const TextChannel *channel) const;
+    bool isFromChannel(const TextChannelPtr &channel) const;
 
 private:
     friend class TextChannel;
-    ReceivedMessage(const MessagePartList &parts, TextChannel *channel);
+    ReceivedMessage(const MessagePartList &parts,
+            const TextChannelPtr &channel);
     ReceivedMessage();
     uint senderHandle() const;
     uint pendingId() const;

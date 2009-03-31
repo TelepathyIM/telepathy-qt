@@ -257,9 +257,8 @@ ChannelPtr PendingChannel::channel() const
     }
 
     if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
-        mPriv->channel = ChannelPtr(
-                new TextChannel(mPriv->connection.data(), mPriv->objectPath.path(),
-                    mPriv->immutableProperties));
+        mPriv->channel = TextChannel::create(mPriv->connection,
+                mPriv->objectPath.path(), mPriv->immutableProperties);
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
         mPriv->channel = StreamedMediaChannel::create(mPriv->connection,
