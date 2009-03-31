@@ -43,9 +43,9 @@ CallWindow::CallWindow(const QString &username, const QString &password,
       mUsername(username),
       mPassword(password)
 {
-    setWindowTitle("Roster");
+    setWindowTitle("Call");
 
-    mCM = new ConnectionManager("gabble", this);
+    mCM = ConnectionManager::create("gabble");
     connect(mCM->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onCMReady(Telepathy::Client::PendingOperation *)));

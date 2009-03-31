@@ -128,9 +128,9 @@ class ConnectionManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    ConnectionManager(const QString &name, QObject *parent = 0);
-    ConnectionManager(const QDBusConnection &bus,
-            const QString &name, QObject *parent = 0);
+    static ConnectionManagerPtr create(const QString &name);
+    static ConnectionManagerPtr create(const QDBusConnection &bus,
+            const QString &name);
 
     virtual ~ConnectionManager();
 
@@ -152,6 +152,9 @@ public:
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
 protected:
+    ConnectionManager(const QString &name);
+    ConnectionManager(const QDBusConnection &bus, const QString &name);
+
     ConnectionManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
@@ -168,7 +171,7 @@ private:
     Private *mPriv;
 };
 
-}
-}
+} // Telepathy::Client
+} // Telepathy
 
 #endif

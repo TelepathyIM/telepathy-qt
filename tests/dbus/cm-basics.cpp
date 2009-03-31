@@ -38,7 +38,7 @@ private Q_SLOTS:
 
 private:
     TpBaseConnectionManager *mCMService;
-    Telepathy::Client::ConnectionManager *mCM;
+    Telepathy::Client::ConnectionManagerPtr mCM;
 };
 
 void TestCmBasics::initTestCase()
@@ -66,7 +66,7 @@ void TestCmBasics::init()
 {
     initImpl();
 
-    mCM = new ConnectionManager("simple");
+    mCM = ConnectionManager::create("simple");
     QCOMPARE(mCM->isReady(), false);
 }
 
@@ -111,11 +111,6 @@ void TestCmBasics::testBasics()
 
 void TestCmBasics::cleanup()
 {
-    if (mCM) {
-        delete mCM;
-        mCM = 0;
-    }
-
     cleanupImpl();
 }
 

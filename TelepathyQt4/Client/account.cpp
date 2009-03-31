@@ -92,7 +92,7 @@ struct Account::Private
     QString connectionObjectPath;
     QString normalizedName;
     Telepathy::Avatar avatar;
-    ConnectionManager *cm;
+    ConnectionManagerPtr cm;
     ProtocolInfo *protocolInfo;
     Telepathy::ConnectionStatus connectionStatus;
     Telepathy::ConnectionStatusReason connectionStatusReason;
@@ -759,11 +759,11 @@ void Account::Private::introspectAvatar(Account::Private *self)
 
 void Account::Private::introspectProtocolInfo(Account::Private *self)
 {
-    Q_ASSERT(self->cm == 0);
+    Q_ASSERT(!self->cm);
 
-    self->cm = new ConnectionManager(
+    self->cm = ConnectionManager::create(
             self->parent->dbusConnection(),
-            self->cmName, self->parent);
+            self->cmName);
     self->parent->connect(self->cm->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onConnectionManagerReady(Telepathy::Client::PendingOperation *)));

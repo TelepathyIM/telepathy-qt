@@ -350,16 +350,25 @@ ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
 
 const Feature ConnectionManager::FeatureCore = Feature(ConnectionManager::staticMetaObject.className(), 0, true);
 
+ConnectionManagerPtr ConnectionManager::create(const QString &name)
+{
+    return ConnectionManagerPtr(new ConnectionManager(name));
+}
+
+ConnectionManagerPtr ConnectionManager::create(const QDBusConnection &bus,
+        const QString &name)
+{
+    return ConnectionManagerPtr(new ConnectionManager(bus, name));
+}
+
 /**
  * Construct a new ConnectionManager object.
  *
  * \param name Name of the connection manager.
- * \param parent Object parent.
  */
-ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
+ConnectionManager::ConnectionManager(const QString &name)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
-            Private::makeBusName(name), Private::makeObjectPath(name),
-            parent),
+            Private::makeBusName(name), Private::makeObjectPath(name)),
       OptionalInterfaceFactory<ConnectionManager>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, name))
@@ -371,12 +380,11 @@ ConnectionManager::ConnectionManager(const QString &name, QObject *parent)
  *
  * \param bus QDBusConnection to use.
  * \param name Name of the connection manager.
- * \param parent Object parent.
  */
 ConnectionManager::ConnectionManager(const QDBusConnection &bus,
-        const QString &name, QObject *parent)
+        const QString &name)
     : StatelessDBusProxy(bus, Private::makeBusName(name),
-            Private::makeObjectPath(name), parent),
+            Private::makeObjectPath(name)),
       OptionalInterfaceFactory<ConnectionManager>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, name))

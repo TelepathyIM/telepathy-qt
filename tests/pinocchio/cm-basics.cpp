@@ -17,10 +17,9 @@ class TestCmBasics : public PinocchioTest
     Q_OBJECT
 
 private:
-    Telepathy::Client::ConnectionManager* mCM;
+    Telepathy::Client::ConnectionManagerPtr mCM;
 
 protected Q_SLOTS:
-    void onCmReady(ConnectionManager*);
     void onListNames(Telepathy::Client::PendingOperation*);
 
 private Q_SLOTS:
@@ -48,19 +47,6 @@ void TestCmBasics::init()
     initImpl();
 }
 
-
-void TestCmBasics::onCmReady(ConnectionManager* it)
-{
-    if (mCM != it) {
-        qWarning() << "Got the wrong CM pointer";
-        mLoop->exit(1);
-        return;
-    }
-
-    mLoop->exit(0);
-}
-
-
 void TestCmBasics::onListNames(Telepathy::Client::PendingOperation *operation)
 {
     Telepathy::Client::PendingStringList *p = static_cast<Telepathy::Client::PendingStringList*>(operation);
@@ -77,7 +63,7 @@ void TestCmBasics::testBasics()
             SLOT(onListNames(Telepathy::Client::PendingOperation *)));
     QCOMPARE(mLoop->exec(), 0);
 
-    mCM = new ConnectionManager("pinocchio");
+    mCM = ConnectionManager::create("pinocchio");
     QCOMPARE(mCM->isReady(), false);
 
     connect(mCM->becomeReady(),
@@ -143,10 +129,6 @@ void TestCmBasics::testBasics()
 
 void TestCmBasics::cleanup()
 {
-    if (mCM != NULL) {
-        delete mCM;
-        mCM = NULL;
-    }
     cleanupImpl();
 }
 
