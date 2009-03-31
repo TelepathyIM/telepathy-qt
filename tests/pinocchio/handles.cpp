@@ -196,14 +196,14 @@ void TestHandles::testBasics()
     mHandles = ReferencedHandles();
 
     // Check that the ReferencedHandles are what we asked for
-    QCOMPARE(handles.connection(), mConn1a.data());
+    QCOMPARE(handles.connection(), mConn1a);
     QCOMPARE(handles.handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
     QVERIFY(handles == shouldBe);
 
     // Check that a copy of the received ReferencedHandles is also what we asked for (it's supposed
     // to be equivalent with one that we already verified as being that)
     ReferencedHandles copy = handles;
-    QCOMPARE(copy.connection(), mConn1a.data());
+    QCOMPARE(copy.connection(), mConn1a);
     QCOMPARE(copy.handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
 
     QVERIFY(copy == handles);

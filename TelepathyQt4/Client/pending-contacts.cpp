@@ -278,7 +278,7 @@ void PendingContacts::onReferenceHandlesFinished(PendingOperation *operation)
     ReferencedHandles validHandles = pendingHandles->handles();
     UIntList invalidHandles = pendingHandles->invalidHandles();
     ConnectionPtr conn = mPriv->manager->connection();
-    mPriv->handlesToInspect = ReferencedHandles(conn.data(), HandleTypeContact, UIntList());
+    mPriv->handlesToInspect = ReferencedHandles(conn, HandleTypeContact, UIntList());
     foreach (uint handle, mPriv->handles) {
         if (!mPriv->satisfyingContacts.contains(handle)) {
             int indexInValid = validHandles.indexOf(handle);
@@ -338,7 +338,7 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
     foreach (uint handle, mPriv->handlesToInspect) {
         QVariantMap handleAttributes;
         handleAttributes.insert(TELEPATHY_INTERFACE_CONNECTION "/contact-id", names[i++]);
-        ReferencedHandles referencedHandle(conn.data(), HandleTypeContact,
+        ReferencedHandles referencedHandle(conn, HandleTypeContact,
                 UIntList() << handle);
         mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
                     features(), handleAttributes));

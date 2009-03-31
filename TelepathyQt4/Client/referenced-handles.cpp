@@ -35,7 +35,7 @@ namespace Client
 
 struct ReferencedHandles::Private : public QSharedData
 {
-    QPointer<Connection> connection;
+    WeakPtr<Connection> connection;
     uint handleType;
     UIntList handles;
 
@@ -44,10 +44,11 @@ struct ReferencedHandles::Private : public QSharedData
         handleType = 0;
     }
 
-    Private(Connection* connection, uint handleType, const UIntList& handles)
+    Private(const ConnectionPtr &connection, uint handleType,
+            const UIntList& handles)
         : connection(connection), handleType(handleType), handles(handles)
     {
-        Q_ASSERT(connection != 0);
+        Q_ASSERT(connection);
         Q_ASSERT(handleType != 0);
 
         foreach (uint handle, handles)
@@ -66,10 +67,12 @@ struct ReferencedHandles::Private : public QSharedData
                 return;
             }
 
+            ConnectionPtr conn(connection);
             for (const_iterator i = handles.begin();
                                 i != handles.end();
-                                ++i)
-                connection->refHandle(handleType, *i);
+                                ++i) {
+                conn->refHandle(handleType, *i);
+            }
         }
     }
 
@@ -81,10 +84,12 @@ struct ReferencedHandles::Private : public QSharedData
                 return;
             }
 
+            ConnectionPtr conn(connection);
             for (const_iterator i = handles.begin();
                                 i != handles.end();
-                                ++i)
-                connection->unrefHandle(handleType, *i);
+                                ++i) {
+                conn->unrefHandle(handleType, *i);
+            }
         }
     }
 
@@ -106,7 +111,7 @@ ReferencedHandles::~ReferencedHandles()
 {
 }
 
-Connection* ReferencedHandles::connection() const
+ConnectionPtr ReferencedHandles::connection() const
 {
     return mPriv->connection;
 }
@@ -175,8 +180,10 @@ void ReferencedHandles::clear()
 {
     if (!mPriv->handles.empty()) {
         if (mPriv->connection) {
-            foreach (uint handle, mPriv->handles)
-                mPriv->connection->unrefHandle(handleType(), handle);
+            ConnectionPtr conn(mPriv->connection);
+            foreach (uint handle, mPriv->handles) {
+                conn->unrefHandle(handleType(), handle);
+            }
         } else {
             warning() << "Connection already destroyed in ReferencedHandles::clear() so can't unref!";
         }
@@ -196,8 +203,10 @@ int ReferencedHandles::removeAll(uint handle)
 
     if (count > 0) {
         if (mPriv->connection) {
-            for (int i = 0; i < count; i++)
-                mPriv->connection->unrefHandle(handleType(), handle);
+            ConnectionPtr conn(mPriv->connection);
+            for (int i = 0; i < count; i++) {
+                conn->unrefHandle(handleType(), handle);
+            }
         } else {
             warning() << "Connection already destroyed in ReferencedHandles::removeAll() with handle ==" << handle << "so can't unref!";
         }
@@ -208,8 +217,10 @@ int ReferencedHandles::removeAll(uint handle)
 
 void ReferencedHandles::removeAt(int i)
 {
-    if (mPriv->connection)
-        mPriv->connection->unrefHandle(handleType(), at(i));
+    if (mPriv->connection) {
+        ConnectionPtr conn(mPriv->connection);
+        conn->unrefHandle(handleType(), at(i));
+    }
     else
         warning() << "Connection already destroyed in ReferencedHandles::removeAt() with i ==" << i << "so can't unref!";
 
@@ -221,8 +232,10 @@ bool ReferencedHandles::removeOne(uint handle)
     bool wasThere = mPriv->handles.removeOne(handle);
 
     if (wasThere) {
-        if (mPriv->connection)
-            mPriv->connection->unrefHandle(handleType(), handle);
+        if (mPriv->connection) {
+            ConnectionPtr conn(mPriv->connection);
+            conn->unrefHandle(handleType(), handle);
+        }
         else
             warning() << "Connection already destroyed in ReferencedHandles::removeOne() with handle ==" << handle << "so can't unref!";
     }
@@ -237,8 +250,10 @@ void ReferencedHandles::swap(int i, int j)
 
 uint ReferencedHandles::takeAt(int i)
 {
-    if (mPriv->connection)
-        mPriv->connection->unrefHandle(handleType(), at(i));
+    if (mPriv->connection) {
+        ConnectionPtr conn(mPriv->connection);
+        conn->unrefHandle(handleType(), at(i));
+    }
     else
         warning() << "Connection already destroyed in ReferencedHandles::takeAt() with i ==" << i << "so can't unref!";
 
@@ -278,7 +293,8 @@ UIntList ReferencedHandles::toList() const
     return mPriv->handles;
 }
 
-ReferencedHandles::ReferencedHandles(Connection* connection, uint handleType, const UIntList& handles)
+ReferencedHandles::ReferencedHandles(const ConnectionPtr &connection,
+        uint handleType, const UIntList& handles)
     : mPriv(new Private(connection, handleType, handles))
 {
 }
