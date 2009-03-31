@@ -54,7 +54,7 @@ struct PendingAccount::Private
     {
     }
 
-    AccountManagerPtr manager;
+    WeakPtr<AccountManager> manager;
     AccountPtr account;
     QDBusObjectPath objectPath;
 };
