@@ -715,7 +715,7 @@ void TestStreamedMediaChan::testIncomingCall()
 
     QCOMPARE(mChan->streams().size(), 1);
     MediaStreamPtr stream = mChan->streams().first();
-    QCOMPARE(stream->channel(), mChan.data());
+    QCOMPARE(stream->channel(), mChan);
     QCOMPARE(stream->type(), Telepathy::MediaStreamTypeAudio);
 
     // RequestStreams with bad type must fail

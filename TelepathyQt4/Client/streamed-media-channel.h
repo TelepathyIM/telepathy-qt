@@ -57,13 +57,9 @@ private Q_SLOTS:
 private:
     friend class StreamedMediaChannel;
 
-    PendingMediaStreams(StreamedMediaChannel *channel,
+    PendingMediaStreams(const StreamedMediaChannelPtr &channel,
             ContactPtr contact,
-            QList<Telepathy::MediaStreamType> types,
-            QObject *parent = 0);
-    PendingMediaStreams(StreamedMediaChannel *channel,
-            const MediaStreams &streams,
-            QObject *parent = 0);
+            QList<Telepathy::MediaStreamType> types);
 
     struct Private;
     friend struct Private;
@@ -80,7 +76,7 @@ class MediaStream : public QObject,
 public:
     ~MediaStream();
 
-    StreamedMediaChannel *channel() const;
+    StreamedMediaChannelPtr channel() const;
     uint id() const;
 
     ContactPtr contact() const;
@@ -109,7 +105,7 @@ private:
 
     static const Feature FeatureContact;
 
-    MediaStream(StreamedMediaChannel *channel, uint id,
+    MediaStream(const StreamedMediaChannelPtr &channel, uint id,
             uint contactHandle, MediaStreamType type,
             MediaStreamState state, MediaStreamDirection direction,
             MediaStreamPendingSend pendingSend);
