@@ -55,7 +55,7 @@ struct PendingConnection::Private
     {
     }
 
-    ConnectionManagerPtr manager;
+    WeakPtr<ConnectionManager> manager;
     ConnectionPtr connection;
     QString busName;
     QDBusObjectPath objectPath;
@@ -125,7 +125,8 @@ ConnectionPtr PendingConnection::connection() const
     }
 
     if (!mPriv->connection) {
-        mPriv->connection = Connection::create(mPriv->manager->dbusConnection(),
+        ConnectionManagerPtr manager(mPriv->manager);
+        mPriv->connection = Connection::create(manager->dbusConnection(),
                 mPriv->busName, mPriv->objectPath.path());
     }
 
