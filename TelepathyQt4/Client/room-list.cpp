@@ -23,6 +23,8 @@
 #include "TelepathyQt4/Client/_gen/room-list.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Client/Connection>
+
 namespace Telepathy
 {
 namespace Client
@@ -70,7 +72,7 @@ RoomList::RoomList(Connection *connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties,
         QObject *parent)
-    : Channel(connection, objectPath, immutableProperties, parent),
+    : Channel(connection, objectPath, immutableProperties),
       mPriv(new Private())
 {
 }

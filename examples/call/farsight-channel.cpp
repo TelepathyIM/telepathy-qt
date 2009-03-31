@@ -90,7 +90,7 @@ FarsightChannel::Private::Private(FarsightChannel *parent,
         return;
     }
 
-    Connection *connection = channel->connection();
+    ConnectionPtr connection = channel->connection();
 
     TpConnection *gconnection = tp_connection_new(dbus,
             connection->busName().toAscii(),

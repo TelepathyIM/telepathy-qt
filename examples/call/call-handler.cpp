@@ -88,7 +88,7 @@ void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
 
     PendingChannel *pc = qobject_cast<PendingChannel *>(op);
 
-    StreamedMediaChannel *chan = new StreamedMediaChannel(pc->connection(),
+    StreamedMediaChannel *chan = new StreamedMediaChannel(pc->connection().data(),
             pc->objectPath(), pc->immutableProperties());
     mChannels.append(chan);
     connect(chan->becomeReady(),

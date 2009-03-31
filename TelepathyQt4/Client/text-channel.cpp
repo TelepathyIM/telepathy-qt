@@ -406,7 +406,7 @@ TextChannel::TextChannel(Connection *connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties,
         QObject *parent)
-    : Channel(connection, objectPath, immutableProperties, parent),
+    : Channel(connection, objectPath, immutableProperties),
       mPriv(new Private(this))
 {
 }

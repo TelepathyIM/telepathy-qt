@@ -61,13 +61,12 @@ class Channel : public StatefulDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    Channel(Connection *connection,
-            const QString &objectPath,
-            const QVariantMap &immutableProperties,
-            QObject *parent = 0);
+    static ChannelPtr create(const ConnectionPtr &connection,
+            const QString &objectPath, const QVariantMap &immutableProperties);
+
     ~Channel();
 
-    Connection *connection() const;
+    ConnectionPtr connection() const;
 
     QString channelType() const;
     QStringList interfaces() const;
@@ -264,6 +263,9 @@ public:
     }
 
 protected:
+    Channel(const ConnectionPtr &connection,const QString &objectPath,
+            const QVariantMap &immutableProperties);
+
     ChannelInterface *baseInterface() const;
 
     inline ChannelInterfaceGroupInterface *groupInterface(
