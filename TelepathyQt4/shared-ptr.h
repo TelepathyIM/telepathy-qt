@@ -152,6 +152,7 @@ template <class T>
 class WeakPtr
 {
 public:
+    inline WeakPtr() : wd(0) { }
     inline WeakPtr(const WeakPtr<T> &o) : wd(o.wd) { if (wd) { wd->weakref.ref(); } }
     inline WeakPtr(const SharedPtr<T> &o)
     {
@@ -199,7 +200,7 @@ public:
     inline WeakPtr<T> &operator=(const SharedPtr<T> &o)
     {
         if (o.d) {
-            if (o.d->wd != wd) {
+            if (o.d->wd != wd || o.d->wd == 0) {
                 if (!o.d->wd) {
                     o.d->wd = new WeakData(o.d);
                 }
