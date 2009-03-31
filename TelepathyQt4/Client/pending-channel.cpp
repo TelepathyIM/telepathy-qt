@@ -265,9 +265,8 @@ ChannelPtr PendingChannel::channel() const
                 mPriv->objectPath.path(), mPriv->immutableProperties);
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
-        mPriv->channel = ChannelPtr(
-                new RoomList(mPriv->connection.data(), mPriv->objectPath.path(),
-                    mPriv->immutableProperties));
+        mPriv->channel = RoomList::create(mPriv->connection,
+                mPriv->objectPath.path(), mPriv->immutableProperties);
     }
     // FIXME: update spec so we can do this properly
     else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
