@@ -412,14 +412,14 @@ void TestTextChan::commonTest(bool withMessages)
 
 void TestTextChan::testMessages()
 {
-    mChan = TextChannel::create(mConn.data(), mMessagesChanPath, QVariantMap());
+    mChan = TextChannel::create(mConn, mMessagesChanPath, QVariantMap());
 
     commonTest(true);
 }
 
 void TestTextChan::testLegacyText()
 {
-    mChan = TextChannel::create(mConn.data(), mTextChanPath, QVariantMap());
+    mChan = TextChannel::create(mConn, mTextChanPath, QVariantMap());
 
     commonTest(false);
 }
