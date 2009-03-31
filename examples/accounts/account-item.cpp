@@ -31,7 +31,8 @@
 AccountItem::AccountItem(Telepathy::Client::AccountManagerPtr am,
         const QString &objectPath, QTableWidget *table, int row, QObject *parent)
     : QObject(parent),
-      mAcc(Telepathy::Client::Account::create(am, objectPath)),
+      mAcc(Telepathy::Client::Account::create(am->dbusConnection(),
+                  am->busName(), objectPath)),
       mTable(table),
       mRow(row)
 {

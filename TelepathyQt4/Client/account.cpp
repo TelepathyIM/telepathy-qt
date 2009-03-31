@@ -57,7 +57,7 @@ namespace Client
 
 struct Account::Private
 {
-    Private(Account *parent, const AccountManagerPtr &am);
+    Private(Account *parent);
     ~Private();
 
     void init();
@@ -71,7 +71,6 @@ struct Account::Private
 
     // Public object
     Account *parent;
-    WeakPtr<AccountManager> am;
 
     // Instance of generated interface class
     AccountInterface *baseInterface;
@@ -102,9 +101,8 @@ struct Account::Private
     ConnectionPtr connection;
 };
 
-Account::Private::Private(Account *parent, const AccountManagerPtr &am)
+Account::Private::Private(Account *parent)
     : parent(parent),
-      am(am),
       baseInterface(new AccountInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
@@ -198,24 +196,49 @@ const Feature Account::FeatureCore = Feature(Account::staticMetaObject.className
 const Feature Account::FeatureAvatar = Feature(Account::staticMetaObject.className(), 1);
 const Feature Account::FeatureProtocolInfo = Feature(Account::staticMetaObject.className(), 2);
 
-AccountPtr Account::create(const AccountManagerPtr &am,
+AccountPtr Account::create(const QString &busName,
         const QString &objectPath)
 {
-    return AccountPtr(new Account(am, objectPath));
+    return AccountPtr(new Account(busName, objectPath));
+}
+
+AccountPtr Account::create(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath)
+{
+    return AccountPtr(new Account(bus, busName, objectPath));
+}
+
+
+/**
+ * Construct a new Account object.
+ *
+ * \param busName The account's well-known bus name
+ *                (sometimes called a "service name").
+ * \param objectPath Account object path.
+ */
+Account::Account(const QString &busName, const QString &objectPath)
+    : StatelessDBusProxy(QDBusConnection::sessionBus(),
+            busName, objectPath),
+      OptionalInterfaceFactory<Account>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this))
+{
 }
 
 /**
  * Construct a new Account object.
  *
- * \param am Account manager.
+ * \param bus QDBusConnection to use
+ * \param busName The account's well-known bus name
+ *                (sometimes called a "service name").
  * \param objectPath Account object path.
  */
-Account::Account(const AccountManagerPtr &am, const QString &objectPath)
-    : StatelessDBusProxy(am->dbusConnection(),
-            am->busName(), objectPath),
+Account::Account(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath)
+    : StatelessDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, am))
+      mPriv(new Private(this))
 {
 }
 
@@ -225,16 +248,6 @@ Account::Account(const AccountManagerPtr &am, const QString &objectPath)
 Account::~Account()
 {
     delete mPriv;
-}
-
-/**
- * Get the AccountManager from which this Account was created.
- *
- * \return A pointer to the AccountManager object that owns this Account.
- */
-AccountManagerPtr Account::manager() const
-{
-    return mPriv->am;
 }
 
 /**

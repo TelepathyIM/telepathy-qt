@@ -49,7 +49,6 @@ namespace Client
 {
 
 class Account;
-class AccountManager;
 class Connection;
 class PendingConnection;
 class PendingOperation;
@@ -70,12 +69,12 @@ public:
     static const Feature FeatureAvatar;
     static const Feature FeatureProtocolInfo;
 
-    static AccountPtr create(const AccountManagerPtr &am,
+    static AccountPtr create(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath);
+    static AccountPtr create(const QString &busName,
             const QString &objectPath);
 
     virtual ~Account();
-
-    AccountManagerPtr manager() const;
 
     bool isValidAccount() const;
 
@@ -178,7 +177,9 @@ Q_SIGNALS:
     void haveConnectionChanged(bool haveConnection);
 
 protected:
-    Account(const AccountManagerPtr &am, const QString &objectPath);
+    Account(const QString &busName, const QString &objectPath);
+    Account(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath);
 
     AccountInterface *baseInterface() const;
 
