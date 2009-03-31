@@ -60,7 +60,7 @@ void CallHandler::addOutgoingCall(const ContactPtr &contact)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact->handle()[0]);
 
-    Connection *conn = contact->manager()->connection();
+    ConnectionPtr conn = contact->manager()->connection();
     connect(conn->ensureChannel(request),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(onOutgoingChannelCreated(Telepathy::Client::PendingOperation*)));
