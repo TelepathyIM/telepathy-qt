@@ -128,7 +128,9 @@ tpqt4include_HEADERS = \
     Debug \
     KeyFile \
     ManagerFile \
+    SharedData \
     SharedPtr \
+    WeakPtr \
     Types \
     constants.h \
     debug.h \
