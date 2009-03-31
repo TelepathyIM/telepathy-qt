@@ -81,7 +81,7 @@ private Q_SLOTS:
 private:
     void setupGui();
 
-    Telepathy::Client::Account *acc;
+    Telepathy::Client::AccountPtr mAcc;
     QTableWidget *mTable;
     int mRow;
 };

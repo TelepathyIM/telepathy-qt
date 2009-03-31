@@ -318,8 +318,7 @@ AccountPtr AccountManager::accountForPath(const QString &path)
         return AccountPtr();
     }
 
-    AccountPtr account = AccountPtr(
-            new Account(this, path));
+    AccountPtr account = Account::create(this, path);
     mPriv->accounts[path] = account;
     return account;
 }

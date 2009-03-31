@@ -31,11 +31,11 @@
 AccountItem::AccountItem(Telepathy::Client::AccountManagerPtr am,
         const QString &objectPath, QTableWidget *table, int row, QObject *parent)
     : QObject(parent),
-      acc(new Telepathy::Client::Account(am.data(), objectPath, this)),
+      mAcc(Telepathy::Client::Account::create(am, objectPath)),
       mTable(table),
       mRow(row)
 {
-    connect(acc->becomeReady(),
+    connect(mAcc->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onReady(Telepathy::Client::PendingOperation *)));
 }
@@ -46,24 +46,25 @@ AccountItem::~AccountItem()
 
 void AccountItem::setupGui()
 {
-    mTable->setItem(mRow, ColumnValid, new QTableWidgetItem(acc->isValid() ? "true" : "false"));
-    mTable->setItem(mRow, ColumnEnabled, new QTableWidgetItem(acc->isEnabled() ? "true" : "false"));
-    mTable->setItem(mRow, ColumnConnectionManager, new QTableWidgetItem(acc->cmName()));
-    mTable->setItem(mRow, ColumnProtocol, new QTableWidgetItem(acc->protocol()));
-    mTable->setItem(mRow, ColumnDisplayName, new QTableWidgetItem(acc->displayName()));
-    mTable->setItem(mRow, ColumnNickname, new QTableWidgetItem(acc->nickname()));
-    mTable->setItem(mRow, ColumnConnectsAutomatically, new QTableWidgetItem(acc->connectsAutomatically() ? "true" : "false"));
-    mTable->setItem(mRow, ColumnAutomaticPresence, new QTableWidgetItem(acc->automaticPresence().status));
-    mTable->setItem(mRow, ColumnCurrentPresence, new QTableWidgetItem(acc->currentPresence().status));
-    mTable->setItem(mRow, ColumnRequestedPresence, new QTableWidgetItem(acc->requestedPresence().status));
-    mTable->setItem(mRow, ColumnConnectionStatus, new QTableWidgetItem(QString::number(acc->connectionStatus())));
-    mTable->setItem(mRow, ColumnConnection, new QTableWidgetItem(acc->connectionObjectPath()));
+    mTable->setItem(mRow, ColumnValid, new QTableWidgetItem(mAcc->isValid() ? "true" : "false"));
+    mTable->setItem(mRow, ColumnEnabled, new QTableWidgetItem(mAcc->isEnabled() ? "true" : "false"));
+    mTable->setItem(mRow, ColumnConnectionManager, new QTableWidgetItem(mAcc->cmName()));
+    mTable->setItem(mRow, ColumnProtocol, new QTableWidgetItem(mAcc->protocol()));
+    mTable->setItem(mRow, ColumnDisplayName, new QTableWidgetItem(mAcc->displayName()));
+    mTable->setItem(mRow, ColumnNickname, new QTableWidgetItem(mAcc->nickname()));
+    mTable->setItem(mRow, ColumnConnectsAutomatically, new QTableWidgetItem(mAcc->connectsAutomatically() ? "true" : "false"));
+    mTable->setItem(mRow, ColumnAutomaticPresence, new QTableWidgetItem(mAcc->automaticPresence().status));
+    mTable->setItem(mRow, ColumnCurrentPresence, new QTableWidgetItem(mAcc->currentPresence().status));
+    mTable->setItem(mRow, ColumnRequestedPresence, new QTableWidgetItem(mAcc->requestedPresence().status));
+    mTable->setItem(mRow, ColumnConnectionStatus, new QTableWidgetItem(QString::number(mAcc->connectionStatus())));
+    mTable->setItem(mRow, ColumnConnection, new QTableWidgetItem(mAcc->connectionObjectPath()));
 }
 
 void AccountItem::onReady(Telepathy::Client::PendingOperation *op)
 {
     setupGui();
 
+    Telepathy::Client::Account *acc = mAcc.data();
     connect(acc,
             SIGNAL(validityChanged(bool)),
             SLOT(onValidityChanged(bool)));
@@ -154,5 +155,5 @@ void AccountItem::onConnectionStatusChanged(Telepathy::ConnectionStatus status,
 void AccountItem::onHaveConnectionChanged(bool haveConnection)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnConnection);
-    item->setText(acc->connectionObjectPath());
+    item->setText(mAcc->connectionObjectPath());
 }

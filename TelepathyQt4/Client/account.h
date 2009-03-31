@@ -70,12 +70,12 @@ public:
     static const Feature FeatureAvatar;
     static const Feature FeatureProtocolInfo;
 
-    Account(AccountManager *am, const QString &objectPath,
-            QObject *parent = 0);
+    static AccountPtr create(const AccountManagerPtr &am,
+            const QString &objectPath);
 
     virtual ~Account();
 
-    AccountManager *manager() const;
+    AccountManagerPtr manager() const;
 
     bool isValidAccount() const;
 
@@ -178,6 +178,8 @@ Q_SIGNALS:
     void haveConnectionChanged(bool haveConnection);
 
 protected:
+    Account(const AccountManagerPtr &am, const QString &objectPath);
+
     AccountInterface *baseInterface() const;
 
 private Q_SLOTS:

@@ -57,7 +57,7 @@ namespace Client
 
 struct Account::Private
 {
-    Private(Account *parent, AccountManager *am);
+    Private(Account *parent, const AccountManagerPtr &am);
     ~Private();
 
     void init();
@@ -71,7 +71,7 @@ struct Account::Private
 
     // Public object
     Account *parent;
-    AccountManager *am;
+    WeakPtr<AccountManager> am;
 
     // Instance of generated interface class
     AccountInterface *baseInterface;
@@ -102,7 +102,7 @@ struct Account::Private
     ConnectionPtr connection;
 };
 
-Account::Private::Private(Account *parent, AccountManager *am)
+Account::Private::Private(Account *parent, const AccountManagerPtr &am)
     : parent(parent),
       am(am),
       baseInterface(new AccountInterface(parent->dbusConnection(),
@@ -198,17 +198,21 @@ const Feature Account::FeatureCore = Feature(Account::staticMetaObject.className
 const Feature Account::FeatureAvatar = Feature(Account::staticMetaObject.className(), 1);
 const Feature Account::FeatureProtocolInfo = Feature(Account::staticMetaObject.className(), 2);
 
+AccountPtr Account::create(const AccountManagerPtr &am,
+        const QString &objectPath)
+{
+    return AccountPtr(new Account(am, objectPath));
+}
+
 /**
  * Construct a new Account object.
  *
  * \param am Account manager.
  * \param objectPath Account object path.
- * \param parent Object parent.
  */
-Account::Account(AccountManager *am, const QString &objectPath,
-        QObject *parent)
+Account::Account(const AccountManagerPtr &am, const QString &objectPath)
     : StatelessDBusProxy(am->dbusConnection(),
-            am->busName(), objectPath, parent),
+            am->busName(), objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, am))
@@ -228,7 +232,7 @@ Account::~Account()
  *
  * \return A pointer to the AccountManager object that owns this Account.
  */
-AccountManager *Account::manager() const
+AccountManagerPtr Account::manager() const
 {
     return mPriv->am;
 }
