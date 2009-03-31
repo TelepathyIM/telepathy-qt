@@ -218,9 +218,9 @@ void TestStreamedMediaChan::onNewChannels(const Telepathy::ChannelDetailsList &c
 
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             !requested) {
-            mChan = StreamedMediaChannelPtr(new StreamedMediaChannel(mConn.data(),
+            mChan = StreamedMediaChannel::create(mConn.data(),
                         details.channel.path(),
-                        details.properties));
+                        details.properties);
             mLoop->exit(0);
         }
     }

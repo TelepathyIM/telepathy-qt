@@ -512,6 +512,13 @@ void StreamedMediaChannel::Private::introspectStreams(StreamedMediaChannel::Priv
 
 const Feature StreamedMediaChannel::FeatureStreams = Feature(StreamedMediaChannel::staticMetaObject.className(), 0);
 
+StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connection,
+        const QString &objectPath, const QVariantMap &immutableProperties)
+{
+    return StreamedMediaChannelPtr(new StreamedMediaChannel(connection,
+                objectPath, immutableProperties));
+}
+
 /**
  * Creates a StreamedMediaChannel associated with the given object on the same
  * service as the given connection.
@@ -522,12 +529,10 @@ const Feature StreamedMediaChannel::FeatureStreams = Feature(StreamedMediaChanne
  * \param immutableProperties  The immutable properties of the channel, as
  *                             signalled by NewChannels or returned by
  *                             CreateChannel or EnsureChannel
- * \param parent      Passed to the parent class constructor.
  */
-StreamedMediaChannel::StreamedMediaChannel(Connection *connection,
+StreamedMediaChannel::StreamedMediaChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties,
-        QObject *parent)
+        const QVariantMap &immutableProperties)
     : Channel(connection, objectPath, immutableProperties),
       mPriv(new Private(this))
 {

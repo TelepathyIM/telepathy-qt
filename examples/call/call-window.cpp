@@ -161,7 +161,7 @@ void CallWindow::onNewChannels(const Telepathy::ChannelDetailsList &channels)
 
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             !requested) {
-            StreamedMediaChannel *channel = new StreamedMediaChannel(mConn.data(),
+            StreamedMediaChannelPtr channel = StreamedMediaChannel::create(mConn,
                         details.channel.path(),
                         details.properties);
             mCallHandler->addIncomingCall(channel);

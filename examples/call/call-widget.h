@@ -49,12 +49,12 @@ class CallWidget : public QWidget
     Q_OBJECT
 
 public:
-    CallWidget(Telepathy::Client::StreamedMediaChannel *channel,
+    CallWidget(const Telepathy::Client::StreamedMediaChannelPtr &channel,
                const Telepathy::Client::ContactPtr &contact,
                QWidget *parent = 0);
     virtual ~CallWidget();
 
-    Telepathy::Client::StreamedMediaChannel *channel() const { return mChan; }
+    Telepathy::Client::StreamedMediaChannelPtr channel() const { return mChan; }
     Telepathy::Client::ContactPtr contact() const { return mContact; }
 
 private Q_SLOTS:
@@ -84,7 +84,7 @@ private:
 
     void callEnded(const QString &message);
 
-    Telepathy::Client::StreamedMediaChannel *mChan;
+    Telepathy::Client::StreamedMediaChannelPtr mChan;
     Telepathy::Client::ContactPtr mContact;
     Telepathy::Client::FarsightChannel *mTfChan;
 

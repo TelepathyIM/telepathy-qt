@@ -133,8 +133,9 @@ class StreamedMediaChannel : public Channel
 public:
     static const Feature FeatureStreams;
 
-    StreamedMediaChannel(Connection *connection, const QString &objectPath,
-            const QVariantMap &immutableProperties, QObject *parent = 0);
+    static StreamedMediaChannelPtr create(const ConnectionPtr &connection,
+            const QString &objectPath, const QVariantMap &immutableProperties);
+
     ~StreamedMediaChannel();
 
     MediaStreams streams() const;
@@ -166,6 +167,10 @@ Q_SIGNALS:
     void streamError(const Telepathy::Client::MediaStreamPtr &stream,
             Telepathy::MediaStreamError errorCode,
             const QString &errorMessage);
+
+protected:
+    StreamedMediaChannel(const ConnectionPtr &connection,
+            const QString &objectPath, const QVariantMap &immutableProperties);
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);

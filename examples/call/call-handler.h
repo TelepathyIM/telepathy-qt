@@ -45,7 +45,7 @@ public:
     virtual ~CallHandler();
 
     void addOutgoingCall(const Telepathy::Client::ContactPtr &contact);
-    void addIncomingCall(Telepathy::Client::StreamedMediaChannel *chan);
+    void addIncomingCall(const Telepathy::Client::StreamedMediaChannelPtr &chan);
 
 private Q_SLOTS:
     void onOutgoingChannelCreated(Telepathy::Client::PendingOperation *);
@@ -54,7 +54,7 @@ private Q_SLOTS:
     void onCallTerminated(QObject *);
 
 private:
-    QList<Telepathy::Client::StreamedMediaChannel *> mChannels;
+    QList<Telepathy::Client::StreamedMediaChannelPtr> mChannels;
     QList<CallWidget *> mCalls;
 };
 

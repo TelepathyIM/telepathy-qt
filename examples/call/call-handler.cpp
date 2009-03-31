@@ -66,7 +66,7 @@ void CallHandler::addOutgoingCall(const ContactPtr &contact)
             SLOT(onOutgoingChannelCreated(Telepathy::Client::PendingOperation*)));
 }
 
-void CallHandler::addIncomingCall(StreamedMediaChannel *chan)
+void CallHandler::addIncomingCall(const StreamedMediaChannelPtr &chan)
 {
     mChannels.append(chan);
     connect(chan->becomeReady(),
@@ -88,7 +88,7 @@ void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
 
     PendingChannel *pc = qobject_cast<PendingChannel *>(op);
 
-    StreamedMediaChannel *chan = new StreamedMediaChannel(pc->connection().data(),
+    StreamedMediaChannelPtr chan = StreamedMediaChannel::create(pc->connection(),
             pc->objectPath(), pc->immutableProperties());
     mChannels.append(chan);
     connect(chan->becomeReady(),
@@ -166,8 +166,7 @@ void CallHandler::onIncomingChannelReady(PendingOperation *op)
 void CallHandler::onCallTerminated(QObject *obj)
 {
     CallWidget *call = (CallWidget *) obj;
-    StreamedMediaChannel *chan = call->channel();
+    StreamedMediaChannelPtr chan = call->channel();
     mCalls.removeOne(call);
     mChannels.removeOne(chan);
-    delete chan;
 }

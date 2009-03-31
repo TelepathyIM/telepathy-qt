@@ -22,6 +22,8 @@
 #ifndef _TelepathyQt4_examples_call_farsight_channel_h_HEADER_GUARD_
 #define _TelepathyQt4_examples_call_farsight_channel_h_HEADER_GUARD_
 
+#include <TelepathyQt4/Client/Types>
+
 #include <QObject>
 #include <QMetaType>
 
@@ -31,7 +33,6 @@ namespace Telepathy {
 namespace Client {
 
 class Connection;
-class StreamedMediaChannel;
 class VideoWidget;
 
 class FarsightChannel : public QObject
@@ -46,7 +47,7 @@ public:
         StatusConnected = 2
     };
 
-    FarsightChannel(StreamedMediaChannel *channel, QObject *parent = 0);
+    FarsightChannel(const StreamedMediaChannelPtr &channel, QObject *parent = 0);
     virtual ~FarsightChannel();
 
     Status status() const;

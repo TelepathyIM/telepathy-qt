@@ -41,7 +41,7 @@
 
 using namespace Telepathy::Client;
 
-CallWidget::CallWidget(StreamedMediaChannel *chan,
+CallWidget::CallWidget(const StreamedMediaChannelPtr &chan,
         const ContactPtr &contact,
         QWidget *parent)
     : QWidget(parent),
@@ -60,7 +60,7 @@ CallWidget::CallWidget(StreamedMediaChannel *chan,
     connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(onChannelReady(Telepathy::Client::PendingOperation*)));
-    connect(mChan,
+    connect(mChan.data(),
             SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
             SLOT(onChannelInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
 
@@ -177,20 +177,20 @@ void CallWidget::onChannelReady(PendingOperation *op)
         return;
     }
 
-    connect(mChan,
+    connect(mChan.data(),
             SIGNAL(streamAdded(const Telepathy::Client::MediaStreamPtr &)),
             SLOT(onStreamAdded(const Telepathy::Client::MediaStreamPtr &)));
-    connect(mChan,
+    connect(mChan.data(),
             SIGNAL(streamRemoved(const Telepathy::Client::MediaStreamPtr &)),
             SLOT(onStreamRemoved(const Telepathy::Client::MediaStreamPtr &)));
-    connect(mChan,
+    connect(mChan.data(),
             SIGNAL(streamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
                                           Telepathy::MediaStreamDirection,
                                           Telepathy::MediaStreamPendingSend)),
             SLOT(onStreamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
                                           Telepathy::MediaStreamDirection,
                                           Telepathy::MediaStreamPendingSend)));
-    connect(mChan,
+    connect(mChan.data(),
             SIGNAL(streamStateChanged(const Telepathy::Client::MediaStreamPtr &,
                                       Telepathy::MediaStreamState)),
             SLOT(onStreamStateChanged(const Telepathy::Client::MediaStreamPtr &,
@@ -220,7 +220,7 @@ void CallWidget::onChannelReady(PendingOperation *op)
 void CallWidget::onChannelInvalidated(DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
-    qDebug() << "CallWindow::onChannelInvalidated: channel became invalid:" <<
+    qDebug() << "CallWidget::onChannelInvalidated: channel became invalid:" <<
         errorName << "-" << errorMessage;
     callEnded(errorMessage);
 }
@@ -464,7 +464,7 @@ void CallWidget::updateStreamDirection(const MediaStreamPtr &stream)
 void CallWidget::callEnded(const QString &message)
 {
     mStatusBar->showMessage(message);
-    disconnect(mChan,
+    disconnect(mChan.data(),
                SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
                this,
                SLOT(onChannelInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));

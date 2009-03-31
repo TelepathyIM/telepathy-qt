@@ -38,7 +38,7 @@ namespace Client {
 
 struct FarsightChannel::Private
 {
-    Private(FarsightChannel *parent, StreamedMediaChannel *channel);
+    Private(FarsightChannel *parent, const StreamedMediaChannelPtr &channel);
     ~Private();
 
     static gboolean busWatch(GstBus *bus,
@@ -56,7 +56,7 @@ struct FarsightChannel::Private
             guint direction, gpointer data);
 
     FarsightChannel *parent;
-    StreamedMediaChannel *channel;
+    StreamedMediaChannelPtr channel;
     Status status;
     TfChannel *tfChannel;
     GstBus *bus;
@@ -70,7 +70,7 @@ struct FarsightChannel::Private
 };
 
 FarsightChannel::Private::Private(FarsightChannel *parent,
-        StreamedMediaChannel *channel)
+        const StreamedMediaChannelPtr &channel)
     : parent(parent),
       channel(channel),
       status(StatusDisconnected),
@@ -324,7 +324,8 @@ gboolean FarsightChannel::Private::onRequestResource(TfStream *stream,
     return TRUE;
 }
 
-FarsightChannel::FarsightChannel(StreamedMediaChannel *channel, QObject *parent)
+FarsightChannel::FarsightChannel(const StreamedMediaChannelPtr &channel,
+        QObject *parent)
     : QObject(parent),
       mPriv(new Private(this, channel))
 {
