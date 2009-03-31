@@ -531,8 +531,8 @@ ConnectionPtr Account::connection() const
     QString objectPath = mPriv->connectionObjectPath;
     QString busName = objectPath.mid(1).replace('/', '.');
     if (!mPriv->connection) {
-        mPriv->connection = ConnectionPtr(
-                new Connection(dbusConnection(), busName, objectPath));
+        mPriv->connection = Connection::create(dbusConnection(),
+                busName, objectPath);
     }
     return mPriv->connection;
 }

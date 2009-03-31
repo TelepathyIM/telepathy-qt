@@ -80,14 +80,10 @@ public:
         StatusUnknown = 0xFFFFFFFF
     };
 
-    Connection(const QString &busName,
-               const QString &objectPath,
-               QObject *parent = 0);
-
-    Connection(const QDBusConnection &bus,
-               const QString &busName,
-               const QString &objectPath,
-               QObject *parent = 0);
+    static ConnectionPtr create(const QString &busName,
+            const QString &objectPath);
+    static ConnectionPtr create(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath);
 
     ~Connection();
 
@@ -182,6 +178,10 @@ Q_SIGNALS:
     void selfContactChanged();
 
 protected:
+    Connection(const QString &busName, const QString &objectPath);
+    Connection(const QDBusConnection &bus, const QString &busName,
+            const QString &objectPath);
+
     ConnectionInterface *baseInterface() const;
 
 private Q_SLOTS:

@@ -453,19 +453,29 @@ const Feature Connection::FeatureSelfContact = Feature(Connection::staticMetaObj
 const Feature Connection::FeatureSimplePresence = Feature(Connection::staticMetaObject.className(), 2);
 const Feature Connection::FeatureRoster = Feature(Connection::staticMetaObject.className(), 3);
 
+ConnectionPtr Connection::create(const QString &busName,
+        const QString &objectPath)
+{
+    return ConnectionPtr(new Connection(busName, objectPath));
+}
+
+ConnectionPtr Connection::create(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath)
+{
+    return ConnectionPtr(new Connection(bus, busName, objectPath));
+}
+
 /**
  * Construct a new Connection object.
  *
  * \param busName The connection's well-known or unique bus name
  *                (sometimes called a "service name")
  * \param objectPath The connection's object path
- * \param parent Object parent
  */
 Connection::Connection(const QString &busName,
-                       const QString &objectPath,
-                       QObject *parent)
+                       const QString &objectPath)
     : StatefulDBusProxy(QDBusConnection::sessionBus(),
-            busName, objectPath, parent),
+            busName, objectPath),
       OptionalInterfaceFactory<Connection>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
@@ -479,13 +489,11 @@ Connection::Connection(const QString &busName,
  * \param busName The connection's well-known or unique bus name
  *                (sometimes called a "service name")
  * \param objectPath The connection's object path
- * \param parent Object parent
  */
 Connection::Connection(const QDBusConnection &bus,
                        const QString &busName,
-                       const QString &objectPath,
-                       QObject *parent)
-    : StatefulDBusProxy(bus, busName, objectPath, parent),
+                       const QString &objectPath)
+    : StatefulDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Connection>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))

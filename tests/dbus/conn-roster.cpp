@@ -46,7 +46,7 @@ private Q_SLOTS:
 private:
     QString mConnName, mConnPath;
     ExampleContactListConnection *mConnService;
-    Connection *mConn;
+    ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
 };
 
@@ -125,7 +125,7 @@ void TestConnRoster::init()
 {
     initImpl();
 
-    mConn = new Connection(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath);
 
     QVERIFY(connect(mConn->requestConnect(),
                     SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -255,7 +255,7 @@ void TestConnRoster::testRoster()
 
 void TestConnRoster::cleanup()
 {
-    if (mConn != 0) {
+    if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -263,15 +263,12 @@ void TestConnRoster::cleanup()
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
-            QVERIFY(connect(mConn,
+            QVERIFY(connect(mConn.data(),
                             SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }
-
-        delete mConn;
-        mConn = 0;
     }
 
     cleanupImpl();

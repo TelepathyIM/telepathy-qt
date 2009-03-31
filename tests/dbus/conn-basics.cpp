@@ -43,7 +43,7 @@ private Q_SLOTS:
 private:
     QString mConnName, mConnPath;
     ContactsConnection *mConnService;
-    Connection *mConn;
+    ConnectionPtr mConn;
 };
 
 void TestConnBasics::expectConnReady(uint newStatus, uint newStatusReason)
@@ -120,7 +120,7 @@ void TestConnBasics::init()
 {
     initImpl();
 
-    mConn = new Connection(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath);
     QCOMPARE(mConn->isReady(), false);
 
     mConn->requestConnect();
@@ -134,11 +134,11 @@ void TestConnBasics::init()
     qDebug() << "connection is now ready";
 
     if (mConn->status() != Connection::StatusConnected) {
-        QVERIFY(connect(mConn,
+        QVERIFY(connect(mConn.data(),
                         SIGNAL(statusChanged(uint, uint)),
                         SLOT(expectConnReady(uint, uint))));
         QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn,
+        QVERIFY(disconnect(mConn.data(),
                            SIGNAL(statusChanged(uint, uint)),
                            this,
                            SLOT(expectConnReady(uint, uint))));
@@ -161,7 +161,7 @@ void TestConnBasics::testSimplePresence()
 
 void TestConnBasics::cleanup()
 {
-    if (mConn != 0) {
+    if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -169,15 +169,12 @@ void TestConnBasics::cleanup()
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
-            QVERIFY(connect(mConn,
+            QVERIFY(connect(mConn.data(),
                             SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }
-
-        delete mConn;
-        mConn = 0;
     }
 
     cleanupImpl();

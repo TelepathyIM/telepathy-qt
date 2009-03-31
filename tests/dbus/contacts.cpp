@@ -57,7 +57,7 @@ private Q_SLOTS:
 private:
     QString mConnName, mConnPath;
     ContactsConnection *mConnService;
-    Connection *mConn;
+    ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
     Telepathy::UIntList mInvalidHandles;
 };
@@ -153,7 +153,7 @@ void TestContacts::initTestCase()
     g_free(name);
     g_free(connPath);
 
-    mConn = new Connection(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath);
     QCOMPARE(mConn->isReady(), false);
 
     mConn->requestConnect();
@@ -166,11 +166,11 @@ void TestContacts::initTestCase()
     QCOMPARE(mConn->isReady(features), true);
 
     if (mConn->status() != Connection::StatusConnected) {
-        QVERIFY(connect(mConn,
+        QVERIFY(connect(mConn.data(),
                         SIGNAL(statusChanged(uint, uint)),
                         SLOT(expectConnReady(uint, uint))));
         QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn,
+        QVERIFY(disconnect(mConn.data(),
                            SIGNAL(statusChanged(uint, uint)),
                            this,
                            SLOT(expectConnReady(uint, uint))));
@@ -185,7 +185,7 @@ void TestContacts::init()
 
 void TestContacts::testSupport()
 {
-    QCOMPARE(mConn->contactManager()->connection(), mConn);
+    QCOMPARE(mConn->contactManager()->connection(), mConn.data());
 
     QVERIFY(!mConn->contactAttributeInterfaces().isEmpty());
 
@@ -314,7 +314,7 @@ void TestContacts::testForHandles()
     saveContacts.clear();
     mContacts.clear();
     mLoop->processEvents();
-    processDBusQueue(mConn);
+    processDBusQueue(mConn.data());
 
     // Unref the handles we created service-side
     tp_handle_unref(serviceRepo, handles[0]);
@@ -400,7 +400,7 @@ void TestContacts::testForIdentifiers()
                                                             << mContacts[2]->handle()[0];
     mContacts.clear();
     mLoop->processEvents();
-    processDBusQueue(mConn);
+    processDBusQueue(mConn.data());
 
     // Check that their handles are in fact released
     foreach (uint handle, saveHandles) {
@@ -517,7 +517,7 @@ void TestContacts::testFeatures()
     contacts_connection_change_presences(mConnService, 2, handles.toVector().constData(),
             latterStatuses, latterMessages);
     mLoop->processEvents();
-    processDBusQueue(mConn);
+    processDBusQueue(mConn.data());
 
     // Check that the attributes were updated in the Contact objects
     for (int i = 0; i < 3; i++) {
@@ -556,7 +556,7 @@ void TestContacts::testFeatures()
     // Make the contacts go out of scope, starting releasing their handles, and finish that
     mContacts.clear();
     mLoop->processEvents();
-    processDBusQueue(mConn);
+    processDBusQueue(mConn.data());
 
     // Unref the handles we created service-side
     tp_handle_unref(serviceRepo, handles[0]);
@@ -608,7 +608,7 @@ void TestContacts::testFeaturesNotRequested()
     // Make the contacts go out of scope, starting releasing their handles, and finish that
     mContacts.clear();
     mLoop->processEvents();
-    processDBusQueue(mConn);
+    processDBusQueue(mConn.data());
 
     // Unref the handles we created service-side
     tp_handle_unref(serviceRepo, handles[0]);
@@ -723,7 +723,7 @@ void TestContacts::testUpgrade()
     saveContacts.clear();
     mContacts.clear();
     mLoop->processEvents();
-    processDBusQueue(mConn);
+    processDBusQueue(mConn.data());
 
     // Unref the handles we created service-side
     tp_handle_unref(serviceRepo, handles[0]);
@@ -754,7 +754,7 @@ void TestContacts::testSelfContactFallback()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    Connection *conn = new Connection(name, connPath);
+    ConnectionPtr conn = Connection::create(name, connPath);
     g_free(name);
     g_free(connPath);
 
@@ -802,14 +802,11 @@ void TestContacts::cleanupTestCase()
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
-            QVERIFY(connect(mConn,
+            QVERIFY(connect(mConn.data(),
                         SIGNAL(invalidated(Telepathy::Client::DBusProxy *, QString, QString)),
                         SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }
-
-        delete mConn;
-        mConn = 0;
     }
 
     if (mConnService != 0) {
