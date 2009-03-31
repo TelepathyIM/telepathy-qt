@@ -28,10 +28,10 @@
 #include <QComboBox>
 #include <QTableWidget>
 
-AccountItem::AccountItem(Telepathy::Client::AccountManager *am,
+AccountItem::AccountItem(Telepathy::Client::AccountManagerPtr am,
         const QString &objectPath, QTableWidget *table, int row, QObject *parent)
     : QObject(parent),
-      acc(new Telepathy::Client::Account(am, objectPath, this)),
+      acc(new Telepathy::Client::Account(am.data(), objectPath, this)),
       mTable(table),
       mRow(row)
 {

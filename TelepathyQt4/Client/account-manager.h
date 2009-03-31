@@ -62,8 +62,8 @@ class AccountManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    AccountManager(QObject *parent = 0);
-    AccountManager(const QDBusConnection &bus, QObject *parent = 0);
+    static AccountManagerPtr create();
+    static AccountManagerPtr create(const QDBusConnection &bus);
 
     virtual ~AccountManager();
 
@@ -97,6 +97,9 @@ Q_SIGNALS:
     void accountValidityChanged(const QString &path, bool valid);
 
 protected:
+    AccountManager();
+    AccountManager(const QDBusConnection &bus);
+
     AccountManagerInterface *baseInterface() const;
 
 private Q_SLOTS:

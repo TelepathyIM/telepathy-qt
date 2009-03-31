@@ -23,6 +23,7 @@
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Client/Account>
+#include <TelepathyQt4/Client/Types>
 
 #include <QString>
 
@@ -57,7 +58,7 @@ public:
     };
     Q_ENUMS(Columns)
 
-    AccountItem(Telepathy::Client::AccountManager *am, const QString &objectPath,
+    AccountItem(Telepathy::Client::AccountManagerPtr am, const QString &objectPath,
                 QTableWidget *table, int row, QObject *parent = 0);
     virtual ~AccountItem();
 

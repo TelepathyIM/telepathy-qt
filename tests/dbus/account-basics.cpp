@@ -36,7 +36,7 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    AccountManager *mAM;
+    AccountManagerPtr mAM;
 };
 
 void TestAccountBasics::onAvatarChanged(const Telepathy::Avatar &avatar)
@@ -51,7 +51,7 @@ void TestAccountBasics::initTestCase()
 {
     initTestCaseImpl();
 
-    mAM = new AccountManager();
+    mAM = AccountManager::create();
     QCOMPARE(mAM->isReady(), false);
 }
 
@@ -179,11 +179,6 @@ void TestAccountBasics::cleanup()
 
 void TestAccountBasics::cleanupTestCase()
 {
-    if (mAM) {
-        delete mAM;
-        mAM = 0;
-    }
-
     cleanupTestCaseImpl();
 }
 

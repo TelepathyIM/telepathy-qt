@@ -23,9 +23,10 @@
 
 #include <QMainWindow>
 
+#include <TelepathyQt4/Client/Types>
+
 namespace Telepathy {
 namespace Client {
-class AccountManager;
 class PendingOperation;
 }
 }
@@ -48,7 +49,7 @@ private Q_SLOTS:
 private:
     void setupGui();
 
-    Telepathy::Client::AccountManager *mAM;
+    Telepathy::Client::AccountManagerPtr mAM;
     QTableWidget *mTable;
 };
 
