@@ -251,6 +251,11 @@ void CallWidget::onStreamCreated(PendingOperation *op)
         btn->blockSignals(true);
         btn->setChecked(false);
         btn->blockSignals(false);
+
+        MediaStreams streams = mChan->streams();
+        if (streams.size() == 0) {
+            callEnded(op->errorMessage());
+        }
         return;
     }
 
