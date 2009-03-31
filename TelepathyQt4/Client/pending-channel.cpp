@@ -270,9 +270,8 @@ ChannelPtr PendingChannel::channel() const
     }
     // FIXME: update spec so we can do this properly
     else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
-        mPriv->channel = ChannelPtr(
-                new FileTransfer(mPriv->connection.data(), mPriv->objectPath.path(),
-                    mPriv->immutableProperties));
+        mPriv->channel = FileTransfer::create(mPriv->connection,
+                mPriv->objectPath.path(), mPriv->immutableProperties);
     }
     else {
         // ContactList, old-style Tubes, or a future channel type

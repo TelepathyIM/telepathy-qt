@@ -38,9 +38,14 @@ class FileTransfer : public Channel
     Q_DISABLE_COPY(FileTransfer)
 
 public:
-    FileTransfer(Connection *connection, const QString &objectPath,
-            const QVariantMap &immutableProperties, QObject *parent = 0);
+    static FileTransferPtr create(const ConnectionPtr &connection,
+            const QString &objectPath, const QVariantMap &immutableProperties);
+
     ~FileTransfer();
+
+protected:
+    FileTransfer(const ConnectionPtr &connection, const QString &objectPath,
+            const QVariantMap &immutableProperties);
 
 private:
     struct Private;
