@@ -12,6 +12,13 @@ API changes:
   InvalidHandle, NotAvailable). PendingHandles::invalidNames/invalidHandles should
   be used to check if a non-fatal error occurred and some handle could not be
   acquired.
+* AccountManager, Account, ConnectionManager, Connection, Channel and Channel
+  subclasses now inherit SharedData and are used together with
+  SharedPtr/WeakPtr. The constructor is now protected (in order to support
+  custom classes) and a public create method that returns a SharedPtr was added.
+  This is an attempt to avoid memory leaks as hard as possible, see
+  http://lists.freedesktop.org/archives/telepathy/2009-March/003218.html for
+  more details.
 
 Fixes:
 
