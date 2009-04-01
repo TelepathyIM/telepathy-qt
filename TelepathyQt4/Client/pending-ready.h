@@ -41,7 +41,8 @@ class PendingReady: public PendingOperation
     Q_OBJECT
 
 public:
-    PendingReady(const Features &requestedFeatures, QObject *object);
+    PendingReady(const Features &requestedFeatures, QObject *object,
+            QObject *parent = 0);
     ~PendingReady();
 
     QObject *object() const;

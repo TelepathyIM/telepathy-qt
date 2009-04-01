@@ -40,6 +40,7 @@ namespace Client
 {
 
 class DBusProxy;
+class PendingOperation;
 class PendingReady;
 
 class ReadinessHelper : public QObject
@@ -122,6 +123,8 @@ private Q_SLOTS:
 
     void onProxyInvalidated(Telepathy::Client::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage);
+    void onOperationFinished(Telepathy::Client::PendingOperation *op);
+    void onOperationDestroyed(QObject *obj);
 
 private:
     struct Private;

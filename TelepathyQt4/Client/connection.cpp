@@ -390,7 +390,7 @@ void Connection::Private::introspectRoster(Connection::Private *self)
 }
 
 Connection::PendingConnect::PendingConnect(Connection *parent, const Features &requestedFeatures)
-    : PendingReady(requestedFeatures, parent)
+    : PendingReady(requestedFeatures, parent, parent)
 {
     QDBusPendingCall call = parent->baseInterface()->Connect();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, parent);

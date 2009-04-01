@@ -68,8 +68,8 @@ struct PendingReady::Private
  * \param object The object that will become ready.
  */
 PendingReady::PendingReady(const Features &requestedFeatures,
-        QObject *object)
-    : PendingOperation(object),
+        QObject *object, QObject *parent)
+    : PendingOperation(parent),
       mPriv(new Private(requestedFeatures, object))
 {
 }
