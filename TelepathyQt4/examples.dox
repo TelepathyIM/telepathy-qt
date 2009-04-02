@@ -1,0 +1,199 @@
+/*
+ * This file is part of TelepathyQt4
+ *
+ * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008 Nokia Corporation
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+/**
+ * \page examples Examples
+ *
+ * This is the list of examples in Telepathy-Qt4's examples directory.
+ * The examples demonstrate Telepathy-Qt4 features in small, self-contained
+ * programs. They are not all designed to be impressive when you run them,
+ * but their source code is carefully written to show good Telepathy-Qt4
+ * programming practices.
+ *
+ * \li \subpage accounts_example
+ * \li \subpage roster_example
+ * \li \subpage call_example
+ */
+
+/**
+ * \page accounts_example Accounts Example
+ *
+ * \li \subpage accounts_example_account_item_cpp
+ * \li \subpage accounts_example_account_item_h
+ * \li \subpage accounts_example_accounts_window_cpp
+ * \li \subpage accounts_example_accounts_window_h
+ * \li \subpage accounts_example_main
+ */
+
+/**
+ * \page accounts_example_account_item_cpp accounts/account-item.cpp
+ * \include examples/accounts/account-item.cpp
+ */
+
+/**
+ * \page accounts_example_account_item_h accounts/account-item.h
+ * \include examples/accounts/account-item.h
+ */
+
+/**
+ * \page accounts_example_accounts_window_cpp accounts/accounts-window.cpp
+ * \include examples/accounts/accounts-window.cpp
+ */
+
+/**
+ * \page accounts_example_accounts_window_h accounts/accounts-window.h
+ * \include examples/accounts/accounts-window.h
+ */
+
+/**
+ * \page accounts_example_main accounts/main.cpp
+ * \include examples/accounts/main.cpp
+ */
+
+/**
+ * \page roster_example Roster Example
+ *
+ * \li \subpage roster_example_main
+ * \li \subpage roster_example_roster_item_cpp
+ * \li \subpage roster_example_roster_item_h
+ * \li \subpage roster_example_roster_widget_cpp
+ * \li \subpage roster_example_roster_widget_h
+ * \li \subpage roster_example_roster_window_cpp
+ * \li \subpage roster_example_roster_window_h
+ */
+
+/**
+ * \page roster_example_main roster/main.cpp
+ * \include examples/roster/main.cpp
+ */
+
+/**
+ * \page roster_example_roster_item_cpp roster/roster-item.cpp
+ * \include examples/roster/roster-item.cpp
+ */
+
+/**
+ * \page roster_example_roster_item_h roster/roster-item.h
+ * \include examples/roster/roster-item.h
+ */
+
+/**
+ * \page roster_example_roster_widget_cpp roster/roster-widget.cpp
+ * \include examples/roster/roster-widget.cpp
+ */
+
+/**
+ * \page roster_example_roster_widget_h roster/roster-widget.h
+ * \include examples/roster/roster-widget.h
+ */
+
+/**
+ * \page roster_example_roster_window_cpp roster/roster-window.cpp
+ * \include examples/roster/roster-window.cpp
+ */
+
+/**
+ * \page roster_example_roster_window_h roster/roster-window.h
+ * \include examples/roster/roster-window.h
+ */
+
+/**
+ * \page call_example Call Example
+ *
+ * \li \subpage call_example_call_handler_cpp
+ * \li \subpage call_example_call_handler_h
+ * \li \subpage call_example_call_roster_widget_cpp
+ * \li \subpage call_example_call_roster_widget_h
+ * \li \subpage call_example_call_widget_cpp
+ * \li \subpage call_example_call_widget_h
+ * \li \subpage call_example_call_window_cpp
+ * \li \subpage call_example_call_window_h
+ * \li \subpage call_example_farsight_channel_cpp
+ * \li \subpage call_example_farsight_channel_h
+ * \li \subpage call_example_main
+ * \li \subpage call_example_video_widget_cpp
+ * \li \subpage call_example_video_widget_h
+ */
+
+/**
+ * \page call_example_call_handler_cpp call/call-handler.cpp
+ * \include examples/call/call-handler.cpp
+ */
+
+/**
+ * \page call_example_call_handler_h call/call-handler.h
+ * \include examples/call/call-handler.h
+ */
+
+/**
+ * \page call_example_call_roster_widget_cpp call/call-roster-widget.cpp
+ * \include examples/call/call-roster-widget.cpp
+ */
+
+/**
+ * \page call_example_call_roster_widget_h call/call-roster-widget.h
+ * \include examples/call/call-roster-widget.h
+ */
+
+/**
+ * \page call_example_call_widget_cpp call/call-widget.cpp
+ * \include examples/call/call-widget.cpp
+ */
+
+/**
+ * \page call_example_call_widget_h call/call-widget.h
+ * \include examples/call/call-widget.h
+ */
+
+/**
+ * \page call_example_call_window_cpp call/call-window.cpp
+ * \include examples/call/call-window.cpp
+ */
+
+/**
+ * \page call_example_call_window_h call/call-window.h
+ * \include examples/call/call-window.h
+ */
+
+/**
+ * \page call_example_farsight_channel_cpp call/farsight-channel.cpp
+ * \include examples/call/farsight-channel.cpp
+ */
+
+/**
+ * \page call_example_farsight_channel_h call/farsight-channel.h
+ * \include examples/call/farsight-channel.h
+ */
+
+/**
+ * \page call_example_main call/main.cpp
+ * \include examples/call/main.cpp
+ */
+
+/**
+ * \page call_example_video_widget_cpp call/video-widget.cpp
+ * \include examples/call/video-widget.cpp
+ */
+
+/**
+ * \page call_example_video_widget_h call/video-widget.h
+ * \include examples/call/video-widget.h
+ */
