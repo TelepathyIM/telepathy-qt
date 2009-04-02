@@ -11,6 +11,7 @@ pkgconfig_DATA = TelepathyQt4.pc
 EXTRA_DIST = \
     account.xml \
     account-manager.xml \
+    async-model.dox \
     channel.xml \
     connection.xml \
     connection-manager.xml \
