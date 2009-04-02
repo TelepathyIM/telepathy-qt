@@ -25,6 +25,7 @@ EXTRA_DIST = \
     media-session-handler.xml \
     media-stream-handler.xml \
     properties.xml \
+    shared-ptr.dox \
     stable-interfaces.xml
 
 lib_LTLIBRARIES = libtelepathy-qt4.la

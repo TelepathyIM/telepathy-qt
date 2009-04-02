@@ -39,6 +39,7 @@
  *
  * \section related_pages Related Pages
  * \li \subpage async_model
+ * \li \subpage shared_ptr
  */
 
 /**

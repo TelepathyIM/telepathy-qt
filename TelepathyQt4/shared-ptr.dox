@@ -1,0 +1,57 @@
+/*
+ * This file is part of TelepathyQt4
+ *
+ * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008 Nokia Corporation
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+/**
+ * \page shared_ptr Shared Pointer Usage
+ *
+ * \section shared_ptr_overview Overview
+ *
+ * The Qt parent/child object model does not fit well with Telepathy-Qt4 object
+ * model, where in some places we either don't know the object parent or we
+ * can't use a parent, as the object can stay alive without it.
+ *
+ * To avoid memory leaks, caused by objects that got instantiated and don't have
+ * any parent, we decided to make some of our objects reference counted, by
+ * making them inherit SharedData.
+ *
+ * Making the object reference counted, does not guarantee that it will get
+ * deleted when nobody is referencing it.
+ *
+ * When instantiating new classes that inherits SharedData the reference count
+ * is 0, this is referred to as the floating state. Again this may lead to
+ * memory leaks, caused by objects in the floating state that never get deleted.
+ *
+ * So the solution is to put the object in a SharedPtr as soon as possible,
+ * letting the SharedPtr manage the object lifetime.
+ *
+ * The pattern used is that classes inherit SharedData and are used
+ * together with SharedPtr. When the reference count hits 0, the object
+ * is deleted.
+ *
+ * In order to assure that the object is put in a SharedPtr as soon as possible,
+ * our objects inheriting SharedData will have the constructor either private
+ * or protected, in case we want to support custom classes, and will have a
+ * public static create method that will return a SharedPtr pointing to the
+ * object instance.
+ *
+ * Note that when developing custom classes, this pattern should be followed,
+ * to avoid objects in floating state, avoiding memory leaks.
+ */
