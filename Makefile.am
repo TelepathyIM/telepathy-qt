@@ -8,6 +8,7 @@ EXTRA_DIST = \
     autogen.sh \
     doc/html \
     doxygen.css \
+    doxygen-header.html \
     $(DX_CONFIG)
 
 CLEANFILES = FIXME.out
