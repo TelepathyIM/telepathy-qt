@@ -7,6 +7,7 @@ DISTCHECK_CONFIGURE_FLAGS = --disable-debug
 EXTRA_DIST = \
     autogen.sh \
     doc/html \
+    doxygen.css \
     $(DX_CONFIG)
 
 CLEANFILES = FIXME.out
