@@ -1408,3 +1408,9 @@ DOT_CLEANUP            = YES
 # used. If set to NO the values of all tags below this one will be ignored.
 
 SEARCHENGINE           = NO
+
+GENERATE_QHP           = YES
+QHP_NAMESPACE          = "org.freedesktop.Telepathy.Qt4"
+QHP_VIRTUAL_FOLDER     = "$(PROJECT)"
+QCH_FILE               = "../$(PROJECT).qch"
+QHG_LOCATION           = "qhelpgenerator"
