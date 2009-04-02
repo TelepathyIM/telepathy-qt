@@ -47,11 +47,12 @@
  */
 
 /**
- * \defgroup clientaccount Account and Account Manager proxies
+ * \defgroup clientaccount Account proxies
  * \ingroup clientsideproxies
  *
- * Proxy objects representing the Telepathy Account Manager and the Accounts
- * that it manages, and their optional interfaces.
+ * Proxy objects representing the <a href="http://telepathy.freedesktop.org">
+ * Telepathy</a> account manager and the accounts that it manages,
+ * and their optional interfaces.
  */
 
 namespace Telepathy
@@ -144,25 +145,139 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
 /**
  * \class AccountManager
  * \ingroup clientaccount
- * \headerfile TelepathyQt4/Client/account-manager.h> <TelepathyQt4/Client/AccountManager>
+ * \headerfile <TelepathyQt4/Client/account-manager.h> <TelepathyQt4/Client/AccountManager>
  *
- * Object representing a Telepathy account manager.
+ * \brief The AccountManager class provides an object representing a
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> account manager.
+ *
+ * AccountManager is a high-level class representing a
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> account manager.
+ *
+ * It adds the following features compared to using AccountManagerInterface
+ * directly:
+ * <ul>
+ *  <li>Account status tracking</li>
+ *  <li>Getting the list of supported interfaces automatically</li>
+ *  <li>Cache account objects when they are requested the first time</li>
+ * </ul>
+ *
+ * The remote object accessor functions on this object (allAccountPaths(),
+ * allAccounts(), and so on) don't make any D-Bus calls; instead, they return/use
+ * values cached from a previous introspection run. The introspection process
+ * populates their values in the most efficient way possible based on what the
+ * service implements. Their return value is mostly undefined until the
+ * introspection process is completed; isReady() returns true. See the
+ * individual accessor descriptions for more details.
+ *
+ * Signals are emitted to indicate that accounts are added/removed and when
+ * accounts validity changes. See accountCreated(), accountRemoved(),
+ * accountValidityChanged().
+ *
+ * \section usage_sec Usage
+ *
+ * \subsection create_sec Creating an account manager object
+ *
+ * One way to create an AccountManager object is to just call the create method.
+ * For example:
+ *
+ * \code AccountManagerPtr am = AccountManager::create(); \endcode
+ *
+ * An AccountManagerPtr object is returned, which will automatically keeps
+ * track of object lifetime.
+ *
+ * You can also provide a D-Bus Connection as a QDBusConnection:
+ *
+ * \code AccountManagerPtr am = AccountManager::create(QDBusConnection::sessionBus()); \endcode
+ *
+ * \subsection ready_sec Making account manager ready to use
+ *
+ * An AccountManager object needs to become ready before usage, meaning that the
+ * introspection process finished and the object accessors can be used.
+ *
+ * To make the object ready, use becomeReady() and wait for the
+ * PendingOperation::finish() signal to be emitted.
+ *
+ * \code
+ *
+ * class MyClass : public QObject
+ * {
+ *     QOBJECT
+ *
+ * public:
+ *     MyClass(QObject *parent = 0);
+ *     ~MyClass() { }
+ *
+ * private Q_SLOTS:
+ *     void onAccountManagerReady(Telepathy::Client::PendingOperation*);
+ *
+ * private:
+ *     AccountManagerPtr am;
+ * };
+ *
+ * MyClass::MyClass(QObject *parent)
+ *     : QObject(parent)
+ *       am(AccountManager::create())
+ * {
+ *     connect(am->becomeReady(),
+ *             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+ *             SLOT(onAccountManagerReady(Telepathy::Client::PendingOperation*)));
+ * }
+ *
+ * void MyClass::onAccountManagerReady(Telepathy::Client::PendingOperation *op)
+ * {
+ *     if (op->isError()) {
+ *         qWarning() << "Account manager cannot become ready:" <<
+ *             error->errorName() << "-" << error->errorMessage();
+ *         return;
+ *     }
+ *
+ *     // AccountManager is now ready
+ *     qDebug() << "Valid accounts:";
+ *     foreach (const QString &path, am->validAccountPaths()) {
+ *         qDebug() << " path:" << path;
+ *     }
+ * }
+ *
+ * \endcode
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * AccountManager object usable.
+ *
+ * Note that this Feature must be enabled in order to use any AccountManager
+ * method.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature AccountManager::FeatureCore = Feature(AccountManager::staticMetaObject.className(), 0, true);
 
+/**
+ * Create a new account manager object using QDBusConnection::sessionBus().
+ *
+ * \return An AccountManagerPtr pointing to the newly created AccountManager.
+ */
 AccountManagerPtr AccountManager::create()
 {
     return AccountManagerPtr(new AccountManager());
 }
 
+/**
+ * Create a new account manager object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \return An AccountManagerPtr pointing to the newly created AccountManager.
+ */
 AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
 {
     return AccountManagerPtr(new AccountManager(bus));
 }
 
 /**
- * Construct a new AccountManager object.
+ * Construct a new account manager object using QDBusConnection::sessionBus().
  */
 AccountManager::AccountManager()
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
@@ -175,7 +290,7 @@ AccountManager::AccountManager()
 }
 
 /**
- * Construct a new AccountManager object.
+ * Construct a new account manager object using the given \a bus.
  *
  * \param bus QDBusConnection to use.
  */
@@ -197,17 +312,24 @@ AccountManager::~AccountManager()
     delete mPriv;
 }
 
+/**
+ * Return a list of interfaces supported by this account manager.
+ *
+ * \return List of supported interfaces.
+ */
 QStringList AccountManager::interfaces() const
 {
     return mPriv->interfaces;
 }
 
 /**
- * \fn DBus::propertiesInterface *AccountManager::propertiesInterface() const
+ * \fn DBus::PropertiesInterface *AccountManager::propertiesInterface() const
  *
- * Convenience function for getting a Properties interface proxy. The
- * AccountManager interface relies on properties, so this interface is
- * always assumed to be present.
+ * Return the properties interface proxy object for this account manager. The
+ * AccountManager interface relies on properties, so this interface is always
+ * assumed to be present.
+ *
+ * \return DBus::PropertiesInterface proxy object.
  */
 
 /**
@@ -244,15 +366,12 @@ QStringList AccountManager::allAccountPaths() const
 }
 
 /**
- * Return a list of Account objects for all valid accounts.
- *
- * Note that the Account objects won't be cached by account manager, and
- * should be done by the application itself.
+ * Return a list of AccountPtr objects for all valid accounts.
  *
  * Remember to call Account::becomeReady on the new accounts, to
- * make sure they are ready before using it.
+ * make sure they are ready before using them.
  *
- * \return A list of Account objects
+ * \return A list of AccountPtr objects.
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
  */
 QList<AccountPtr> AccountManager::validAccounts()
@@ -261,15 +380,12 @@ QList<AccountPtr> AccountManager::validAccounts()
 }
 
 /**
- * Return a list of Account objects for all invalid accounts.
- *
- * Note that the Account objects won't be cached by account manager, and
- * should be done by the application itself.
+ * Return a list of AccountPtr objects for all invalid accounts.
  *
  * Remember to call Account::becomeReady on the new accounts, to
- * make sure they are ready before using it.
+ * make sure they are ready before using them.
  *
- * \return A list of Account objects
+ * \return A list of AccountPtr objects.
  * \sa validAccounts(), allAccounts(), accountsForPaths()
  */
 QList<AccountPtr> AccountManager::invalidAccounts()
@@ -278,15 +394,12 @@ QList<AccountPtr> AccountManager::invalidAccounts()
 }
 
 /**
- * Return a list of Account objects for all accounts.
- *
- * Note that the Account objects won't be cached by account manager, and
- * should be done by the application itself.
+ * Return a list of AccountPtr objects for all accounts.
  *
  * Remember to call Account::becomeReady on the new accounts, to
- * make sure they are ready before using it.
+ * make sure they are ready before using them.
  *
- * \return A list of Account objects
+ * \return A list of AccountPtr objects.
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
 QList<AccountPtr> AccountManager::allAccounts()
@@ -295,16 +408,16 @@ QList<AccountPtr> AccountManager::allAccounts()
 }
 
 /**
- * Return an Account object for the given \a path.
+ * Return an AccountPtr object for the given \a path.
  *
- * Note that the Account object won't be cached by account manager, and
- * should be done by the application itself.
+ * If \a path is invalid the returned AccountPtr object will point to 0.
+ * AccountPtr::isNull() will return true.
  *
  * Remember to call Account::becomeReady on the new account, to
  * make sure it is ready before using it.
  *
- * \param path The object path to create account for.
- * \return A list of Account objects
+ * \param path The account object path.
+ * \return An AccountPtr object.
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
 AccountPtr AccountManager::accountForPath(const QString &path)
@@ -324,17 +437,18 @@ AccountPtr AccountManager::accountForPath(const QString &path)
 }
 
 /**
- * Return a list of Account objects for the given \a paths.
+ * Return a list of AccountPtr objects for the given \a paths.
  *
- * Note that the Account objects won't be cached by account manager, and
- * should be done by the application itself.
+ * The returned list will have one AccountPtr object for each given path. If
+ * a given path is invalid the returned AccountPtr object will point to 0.
+ * AccountPtr::isNull() will return true.
  *
  * Remember to call Account::becomeReady on the new accounts, to
- * make sure they are ready before using it.
+ * make sure they are ready before using them.
  *
- * \param paths List of object paths to create accounts for.
- * \return A list of Account objects
- * \sa validAccounts(), invalidAccounts(), allAccounts()
+ * \param paths List of accounts object paths.
+ * \return A liist of AccountPtr objects.
+ * \sa validAccounts(), invalidAccounts(), allAccounts(), accountForPath()
  */
 QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
 {
@@ -346,16 +460,16 @@ QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
 }
 
 /**
- * Create an Account with the given parameters.
+ * Create an account with the given parameters.
  *
  * Return a pending operation representing the Account object which will succeed
  * when the account has been created or fail if an error occurred.
  *
  * \param connectionManager Name of the connection manager to create the account for.
  * \param protocol Name of the protocol to create the account for.
- * \param displayName Account display name.
- * \param parameters Account parameters.
- * \return A PendingOperation which will emit PendingAccount::finished
+ * \param displayName The account display name.
+ * \param parameters The account parameters.
+ * \return A PendingAccount object which will emit PendingAccount::finished
  *         when the account has been created of failed its creation process.
  */
 PendingAccount *AccountManager::createAccount(const QString &connectionManager,
@@ -379,6 +493,33 @@ AccountManagerInterface *AccountManager::baseInterface() const
 {
     return mPriv->baseInterface;
 }
+
+/**
+ * \fn void AccountManager::accountCreated(const QString &path)
+ *
+ * Signal emitted when a new account is created.
+ *
+ * \param path The object path of the newly created account.
+ * \sa accountForPath()
+ */
+
+/**
+ * \fn void AccountManager::accountRemoved(const QString &path)
+ *
+ * Signal emitted when an account gets removed.
+ *
+ * \param path The object path of the removed account.
+ * \sa accountForPath()
+ */
+
+/**
+ * \fn void AccountManager::accountValidityChanged(const QString &path, bool valid)
+ *
+ * Signal emitted when an account validity changes.
+ *
+ * \param path The object path of the account in which the validity changed.
+ * \param valid Whether the account is valid or not.
+ */
 
 /**** Private ****/
 void AccountManager::Private::init()
