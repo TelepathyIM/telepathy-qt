@@ -19,6 +19,7 @@ EXTRA_DIST = \
     dbus-introspectable.xml \
     dbus-peer.xml \
     dbus-properties.xml \
+    main.dox \
     media-session-handler.xml \
     media-stream-handler.xml \
     properties.xml \
