@@ -24,14 +24,14 @@
 
 #include "call-widget.h"
 
-#include <TelepathyQt4/Client/Channel>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/Contact>
-#include <TelepathyQt4/Client/ContactManager>
-#include <TelepathyQt4/Client/PendingChannel>
-#include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/ReferencedHandles>
-#include <TelepathyQt4/Client/StreamedMediaChannel>
+#include <TelepathyQt4/Channel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingChannel>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/ReferencedHandles>
+#include <TelepathyQt4/StreamedMediaChannel>
 
 #include <QDebug>
 #include <QMessageBox>

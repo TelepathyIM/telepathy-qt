@@ -23,8 +23,8 @@
 
 #include <QWidget>
 
-#include <TelepathyQt4/Client/Contact>
-#include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/Connection>
 
 namespace Telepathy {
 namespace Client {

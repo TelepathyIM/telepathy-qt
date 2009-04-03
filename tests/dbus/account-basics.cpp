@@ -3,12 +3,12 @@
 
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Account>
-#include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/ConnectionManager>
-#include <TelepathyQt4/Client/PendingAccount>
-#include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/PendingAccount>
+#include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingReady>
 
 #include <tests/lib/test.h>
 

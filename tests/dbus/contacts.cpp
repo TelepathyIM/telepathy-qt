@@ -5,13 +5,13 @@
 #include <QtDBus>
 #include <QtTest>
 
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/Contact>
-#include <TelepathyQt4/Client/ContactManager>
-#include <TelepathyQt4/Client/PendingContacts>
-#include <TelepathyQt4/Client/PendingVoidMethodCall>
-#include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/ReferencedHandles>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
 

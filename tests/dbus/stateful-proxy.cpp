@@ -25,8 +25,8 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/DBus>
-#include <TelepathyQt4/Client/StatefulDBusProxy>
+#include <TelepathyQt4/DBus>
+#include <TelepathyQt4/StatefulDBusProxy>
 
 #include "tests/lib/test.h"
 

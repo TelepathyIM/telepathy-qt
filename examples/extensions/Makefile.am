@@ -102,7 +102,7 @@ _gen/cli-connection-body.hpp _gen/cli-connection.h: _gen/connection.xml \
 		--realinclude='../cli-connection.h' \
 		--specxml=_gen/all.xml \
 		--ifacexml=$< \
-		--extraincludes='<TelepathyQt4/Client/Connection>,"types.h"' \
+		--extraincludes='<TelepathyQt4/Connection>,"types.h"' \
 		--mainiface='Telepathy::Client::ConnectionInterface'
 
 %.moc.hpp: %.h _gen/constants.h _gen/types.h

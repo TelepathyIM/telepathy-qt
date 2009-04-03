@@ -30,8 +30,8 @@
 #include <telepathy-glib/channel.h>
 #include <telepathy-glib/connection.h>
 #include <telepathy-glib/dbus.h>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/StreamedMediaChannel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/StreamedMediaChannel>
 
 namespace Telepathy {
 namespace Client {

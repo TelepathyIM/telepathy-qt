@@ -6,8 +6,8 @@
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Client/DBus>
-#include <TelepathyQt4/Client/PendingVoidMethodCall>
+#include <TelepathyQt4/DBus>
+#include <TelepathyQt4/PendingVoidMethodCall>
 
 using Telepathy::Client::PendingOperation;
 

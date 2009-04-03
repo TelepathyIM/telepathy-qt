@@ -22,8 +22,8 @@
 #ifndef TelepathyQt4_Prototype_StreamedMediaChannel_H_
 #define TelepathyQt4_Prototype_StreamedMediaChannel_H_
 
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Channel>
 
 #include <QObject>
 #include <QVariantMap>

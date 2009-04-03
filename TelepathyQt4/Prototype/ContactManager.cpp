@@ -32,7 +32,7 @@
 #include <QPointer>
 #include <QString>
 
-#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Channel>
 
 #include <TelepathyQt4/Prototype/ChatChannel.h>
 #include <TelepathyQt4/Prototype/ConnectionFacade.h>

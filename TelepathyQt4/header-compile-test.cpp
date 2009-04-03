@@ -3,16 +3,16 @@
  * in the library to verify the generation machinery generates valid C++.
  */
 
-#include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/Account>
-#include <TelepathyQt4/Client/Channel>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/ConnectionManager>
-#include <TelepathyQt4/Client/DBus>
-#include <TelepathyQt4/Client/MediaSessionHandler>
-#include <TelepathyQt4/Client/MediaStreamHandler>
-#include <TelepathyQt4/Client/OptionalInterfaceFactory>
-#include <TelepathyQt4/Client/Properties>
-#include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/Channel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/DBus>
+#include <TelepathyQt4/MediaSessionHandler>
+#include <TelepathyQt4/MediaStreamHandler>
+#include <TelepathyQt4/OptionalInterfaceFactory>
+#include <TelepathyQt4/Properties>
+#include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>

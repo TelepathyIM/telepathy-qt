@@ -17,7 +17,7 @@ MOSTLYCLEANFILES = $(DX_CLEANFILES)
 
 check-local::
 	egrep -A 5 '[F]IXME|[T]ODO|[X]XX' $(srcdir)/TelepathyQt4/*.[ch]* \
-		$(srcdir)/TelepathyQt4/Client/*.[ch]* \
+		$(srcdir)/TelepathyQt4/*.[ch]* \
 		> FIXME.out || true
 
 doc/html: doxygen-doc

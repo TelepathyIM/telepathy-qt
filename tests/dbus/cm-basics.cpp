@@ -5,9 +5,9 @@
 
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Client/ConnectionManager>
-#include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/PendingStringList>
+#include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/dbus.h>

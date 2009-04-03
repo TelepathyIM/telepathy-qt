@@ -21,8 +21,8 @@
 #include "account-item.h"
 #include "_gen/account-item.moc.hpp"
 
-#include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/PendingReady>
 
 #include <QDebug>
 #include <QComboBox>

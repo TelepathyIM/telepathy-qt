@@ -22,7 +22,7 @@
 #ifndef _TelepathyQt4_examples_call_farsight_channel_h_HEADER_GUARD_
 #define _TelepathyQt4_examples_call_farsight_channel_h_HEADER_GUARD_
 
-#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/Types>
 
 #include <QObject>
 #include <QMetaType>

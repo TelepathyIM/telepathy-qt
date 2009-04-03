@@ -4,10 +4,10 @@
 #include <QtDBus/QtDBus>
 
 #include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Client/DBus>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/ConnectionManager>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/DBus>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/PendingReady>
 
 #include <tests/pinocchio/lib.h>
 

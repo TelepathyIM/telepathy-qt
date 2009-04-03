@@ -27,7 +27,7 @@
 #include <QPointer>
 #include <QVariantMap>
 
-#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Channel>
 
 #include <TelepathyQt4/Prototype/AvatarManager.h>
 

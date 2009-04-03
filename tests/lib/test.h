@@ -2,7 +2,7 @@
 
 #include <QtTest>
 
-#include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/Constants>
 
 namespace Telepathy

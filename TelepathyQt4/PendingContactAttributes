@@ -1,0 +1,6 @@
+#ifndef _TelepathyQt4_Client_PendingContactAttributes_HEADER_GUARD_
+#define _TelepathyQt4_Client_PendingContactAttributes_HEADER_GUARD_
+
+#include <TelepathyQt4/pending-contact-attributes.h>
+
+#endif

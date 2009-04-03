@@ -49,7 +49,7 @@ API changes:
 
 * Channel Features are now Feature objects, not integers
 
-* The Feature class is now in its own header, <TelepathyQt4/Client/Feature>
+* The Feature class is now in its own header, <TelepathyQt4/Feature>
 
 Enhancements:
 

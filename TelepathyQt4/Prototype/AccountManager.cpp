@@ -29,8 +29,8 @@
 #include <QMap>
 #include <QPointer>
 
-#include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/DBus>
 #include <TelepathyQt4/Types>
 
 #include <TelepathyQt4/Prototype/Account.h>

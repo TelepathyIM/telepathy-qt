@@ -24,8 +24,8 @@
 #include <QDebug>
 #include <QMetaProperty>
 
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Channel>
 
 // ChannelHandlerInterface and StreamEngineInterface from stream-engine
 // 0.5.x, which is currently used as the only media streaming backend.

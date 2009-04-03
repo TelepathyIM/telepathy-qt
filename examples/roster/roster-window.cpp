@@ -24,10 +24,10 @@
 #include "roster-widget.h"
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/ConnectionManager>
-#include <TelepathyQt4/Client/PendingConnection>
-#include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/PendingConnection>
+#include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingReady>
 
 #include <QDebug>
 

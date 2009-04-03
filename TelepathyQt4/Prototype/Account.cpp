@@ -25,8 +25,8 @@
 #include <QDebug>
 #include <QMetaProperty>
 
-#include <TelepathyQt4/Client/Account>
-#include <TelepathyQt4/Client/AccountManager>
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountManager>
 
 #include <TelepathyQt4/Prototype/Connection.h>
 #include <TelepathyQt4/Prototype/PresenceManager.h>

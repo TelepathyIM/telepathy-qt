@@ -22,8 +22,8 @@
 #define _TelepathyQt4_examples_accounts_account_item_h_HEADER_GUARD_
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Account>
-#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/Types>
 
 #include <QString>
 

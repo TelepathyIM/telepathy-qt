@@ -23,7 +23,7 @@
 
 #include <QMainWindow>
 
-#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/Types>
 
 namespace Telepathy {
 namespace Client {

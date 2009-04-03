@@ -5,11 +5,11 @@
 
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/PendingHandles>
-#include <TelepathyQt4/Client/PendingVoidMethodCall>
-#include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/ReferencedHandles>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/PendingHandles>
+#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>

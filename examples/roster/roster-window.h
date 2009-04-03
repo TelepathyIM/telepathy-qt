@@ -24,7 +24,7 @@
 #include <QMainWindow>
 #include <QSharedPointer>
 
-#include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Connection>
 
 namespace Telepathy {
 namespace Client {

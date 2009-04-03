@@ -5,11 +5,11 @@
 
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/Message>
-#include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/ReceivedMessage>
-#include <TelepathyQt4/Client/TextChannel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Message>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/ReceivedMessage>
+#include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>

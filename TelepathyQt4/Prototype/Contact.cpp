@@ -25,7 +25,7 @@
 #include <QDebug>
 #include <QMetaProperty>
 
-#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Constants>
 
 #include <TelepathyQt4/Prototype/ChatChannel.h>

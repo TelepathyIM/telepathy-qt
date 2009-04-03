@@ -24,8 +24,8 @@
 
 #include <QObject>
 
-#include <TelepathyQt4/Client/Channel>
-#include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Channel>
+#include <TelepathyQt4/Contact>
 
 namespace Telepathy {
 namespace Client {

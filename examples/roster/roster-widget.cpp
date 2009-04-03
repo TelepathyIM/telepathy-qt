@@ -24,12 +24,12 @@
 #include "roster-item.h"
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Contact>
-#include <TelepathyQt4/Client/ContactManager>
-#include <TelepathyQt4/Client/PendingConnection>
-#include <TelepathyQt4/Client/PendingContacts>
-#include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingConnection>
+#include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingReady>
 
 #include <QAction>
 #include <QDebug>

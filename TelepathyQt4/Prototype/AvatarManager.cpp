@@ -29,7 +29,7 @@
 #include <QMap>
 #include <QPointer>
 
-#include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Connection>
 
 #include <TelepathyQt4/Prototype/Account.h>
 #include <TelepathyQt4/Prototype/AccountManager.h>

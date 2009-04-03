@@ -2,7 +2,6 @@
 SUBDIRS = . Prototype
 
 tpqt4includedir=$(includedir)/telepathy-1.0/TelepathyQt4
-tpqt4clientincludedir=$(tpqt4includedir)/Client
 genincludedir=$(tpqt4includedir)/_gen
 
 pkgconfigdir = ${libdir}/pkgconfig
@@ -39,44 +38,44 @@ libtelepathy_qt4_la_LIBADD = $(ALL_LIBS)
 libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
-    Client/abstract-interface.cpp \
-    Client/account.cpp \
-    Client/account-manager.cpp \
-    Client/channel.cpp \
-    Client/connection.cpp \
-    Client/connection-manager.cpp \
-    Client/connection-internal.h \
-    Client/connection-manager-internal.h \
-    Client/contact.cpp \
-    Client/contact-manager.cpp \
-    Client/dbus.cpp \
-    Client/dbus-proxy.cpp \
-    Client/feature.cpp \
-    Client/file-transfer.cpp \
-    Client/media-session-handler.cpp \
-    Client/media-stream-handler.cpp \
-    Client/message.cpp \
-    Client/optional-interface-factory.cpp \
-    Client/pending-account.cpp \
-    Client/pending-channel.cpp \
-    Client/pending-connection.cpp \
-    Client/pending-contact-attributes.cpp \
-    Client/pending-contacts.cpp \
-    Client/pending-handles.cpp \
-    Client/pending-operation.cpp \
-    Client/pending-ready.cpp \
-    Client/pending-string-list.cpp \
-    Client/properties.cpp \
-    Client/readiness-helper.cpp \
-    Client/ready-object.cpp \
-    Client/referenced-handles.cpp \
-    Client/room-list.cpp \
-    Client/streamed-media-channel.cpp \
-    Client/text-channel.cpp \
+    abstract-interface.cpp \
+    account.cpp \
+    account-manager.cpp \
+    channel.cpp \
+    connection.cpp \
+    connection-manager.cpp \
+    connection-internal.h \
+    connection-manager-internal.h \
+    contact.cpp \
+    contact-manager.cpp \
+    dbus.cpp \
+    dbus-proxy.cpp \
     debug.cpp \
     debug-internal.h \
+    feature.cpp \
+    file-transfer.cpp \
     key-file.cpp \
     manager-file.cpp \
+    media-session-handler.cpp \
+    media-stream-handler.cpp \
+    message.cpp \
+    optional-interface-factory.cpp \
+    pending-account.cpp \
+    pending-channel.cpp \
+    pending-connection.cpp \
+    pending-contact-attributes.cpp \
+    pending-contacts.cpp \
+    pending-handles.cpp \
+    pending-operation.cpp \
+    pending-ready.cpp \
+    pending-string-list.cpp \
+    properties.cpp \
+    readiness-helper.cpp \
+    ready-object.cpp \
+    referenced-handles.cpp \
+    room-list.cpp \
+    streamed-media-channel.cpp \
+    text-channel.cpp \
     types.cpp \
     header-compile-test.cpp
 
@@ -100,155 +99,151 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-properties-body.hpp \
     _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp \
-    Client/_gen/abstract-interface.moc.hpp \
-    Client/_gen/account.moc.hpp \
-    Client/_gen/account-manager.moc.hpp \
-    Client/_gen/channel.moc.hpp \
-    Client/_gen/connection.moc.hpp \
-    Client/_gen/connection-manager.moc.hpp \
-    Client/_gen/connection-internal.moc.hpp \
-    Client/_gen/connection-manager-internal.moc.hpp \
-    Client/_gen/contact.moc.hpp \
-    Client/_gen/contact-manager.moc.hpp \
-    Client/_gen/dbus-proxy.moc.hpp \
-    Client/_gen/file-transfer.moc.hpp \
-    Client/_gen/pending-account.moc.hpp \
-    Client/_gen/pending-channel.moc.hpp \
-    Client/_gen/pending-connection.moc.hpp \
-    Client/_gen/pending-contact-attributes.moc.hpp \
-    Client/_gen/pending-contacts.moc.hpp \
-    Client/_gen/pending-handles.moc.hpp \
-    Client/_gen/pending-operation.moc.hpp \
-    Client/_gen/pending-ready.moc.hpp \
-    Client/_gen/pending-string-list.moc.hpp \
-    Client/_gen/readiness-helper.moc.hpp \
-    Client/_gen/room-list.moc.hpp \
-    Client/_gen/simple-pending-operations.moc.hpp \
-    Client/_gen/streamed-media-channel.moc.hpp \
-    Client/_gen/text-channel.moc.hpp
+    _gen/abstract-interface.moc.hpp \
+    _gen/account.moc.hpp \
+    _gen/account-manager.moc.hpp \
+    _gen/channel.moc.hpp \
+    _gen/connection.moc.hpp \
+    _gen/connection-manager.moc.hpp \
+    _gen/connection-internal.moc.hpp \
+    _gen/connection-manager-internal.moc.hpp \
+    _gen/contact.moc.hpp \
+    _gen/contact-manager.moc.hpp \
+    _gen/dbus-proxy.moc.hpp \
+    _gen/file-transfer.moc.hpp \
+    _gen/pending-account.moc.hpp \
+    _gen/pending-channel.moc.hpp \
+    _gen/pending-connection.moc.hpp \
+    _gen/pending-contact-attributes.moc.hpp \
+    _gen/pending-contacts.moc.hpp \
+    _gen/pending-handles.moc.hpp \
+    _gen/pending-operation.moc.hpp \
+    _gen/pending-ready.moc.hpp \
+    _gen/pending-string-list.moc.hpp \
+    _gen/readiness-helper.moc.hpp \
+    _gen/room-list.moc.hpp \
+    _gen/simple-pending-operations.moc.hpp \
+    _gen/streamed-media-channel.moc.hpp \
+    _gen/text-channel.moc.hpp
 
 tpqt4include_HEADERS = \
+    AbstractInterface \
+    Account \
+    AccountManager \
+    Channel \
+    Connection \
+    ConnectionManager \
     Constants \
+    Contact \
+    ContactManager \
     Debug \
+    DBus \
+    DBusProxy \
+    Feature \
+    FileTransfer \
     KeyFile \
     ManagerFile \
+    MediaSessionHandler \
+    MediaStreamHandler \
+    Message \
+    OptionalInterfaceFactory \
+    PendingAccount \
+    PendingChannel \
+    PendingConnection \
+    PendingContacts \
+    PendingContactAttributes \
+    PendingFailure \
+    PendingHandles \
+    PendingOperation \
+    PendingReady \
+    PendingSuccess \
+    PendingStringList \
+    PendingVoidMethodCall \
+    Properties \
+    ReadinessHelper \
+    ReadyObject \
+    ReceivedMessage \
+    ReferencedHandles \
+    ReferencedHandlesIterator \
+    RoomList \
     SharedData \
     SharedPtr \
-    WeakPtr \
+    StatelessDBusProxy \
+    StatefulDBusProxy \
+    StreamedMediaChannel \
+    TextChannel \
     Types \
+    WeakPtr \
+    AccountInterface \
+    AccountManagerInterface \
+    ChannelInterface \
+    ChannelInterfaceCallStateInterface \
+    ChannelInterfaceChatStateInterface \
+    ChannelInterfaceDTMFInterface \
+    ChannelInterfaceGroupInterface \
+    ChannelInterfaceHoldInterface \
+    ChannelInterfaceMediaSignallingInterface \
+    ChannelInterfacePasswordInterface \
+    ChannelTypeContactListInterface \
+    ChannelTypeRoomListInterface \
+    ChannelTypeStreamedMediaInterface \
+    ChannelTypeTextInterface \
+    ChannelTypeTubesInterface \
+    ConnectionInterface \
+    ConnectionInterfaceAliasingInterface \
+    ConnectionInterfaceAvatarsInterface \
+    ConnectionInterfaceCapabilitiesInterface \
+    ConnectionInterfaceContactsInterface \
+    ConnectionInterfacePresenceInterface \
+    ConnectionInterfaceRequestsInterface \
+    ConnectionInterfaceSimplePresenceInterface \
+    ConnectionManagerInterface \
+    DBusDaemonInterface \
+    IntrospectableInterface \
+    MediaSessionHandlerInterface \
+    MediaStreamHandlerInterface \
+    PeerInterface \
+    PropertiesInterface \
+    PropertiesInterfaceInterface \
+    abstract-interface.h \
+    account.h \
+    account-manager.h \
+    channel.h \
+    connection.h \
+    connection-manager.h \
     constants.h \
+    contact.h \
+    contact-manager.h \
+    dbus.h \
+    dbus-proxy.h \
     debug.h \
+    feature.h \
+    file-transfer.h \
     key-file.h \
     manager-file.h \
+    media-session-handler.h \
+    media-stream-handler.h \
+    message.h \
+    optional-interface-factory.h \
+    pending-account.h \
+    pending-channel.h \
+    pending-connection.h \
+    pending-contact-attributes.h \
+    pending-contacts.h \
+    pending-handles.h \
+    pending-operation.h \
+    pending-ready.h \
+    pending-string-list.h \
+    properties.h \
+    readiness-helper.h \
+    ready-object.h \
+    referenced-handles.h \
+    room-list.h \
     shared-ptr.h \
+    simple-pending-operations.h \
+    streamed-media-channel.h \
+    text-channel.h \
     types.h
-
-tpqt4clientinclude_HEADERS = \
-    Client/AbstractInterface \
-    Client/Account \
-    Client/AccountManager \
-    Client/Channel \
-    Client/Connection \
-    Client/ConnectionManager \
-    Client/Contact \
-    Client/ContactManager \
-    Client/DBus \
-    Client/DBusProxy \
-    Client/Feature \
-    Client/FileTransfer \
-    Client/MediaSessionHandler \
-    Client/MediaStreamHandler \
-    Client/Message \
-    Client/OptionalInterfaceFactory \
-    Client/PendingAccount \
-    Client/PendingChannel \
-    Client/PendingConnection \
-    Client/PendingContacts \
-    Client/PendingContactAttributes \
-    Client/PendingFailure \
-    Client/PendingHandles \
-    Client/PendingOperation \
-    Client/PendingReady \
-    Client/PendingSuccess \
-    Client/PendingStringList \
-    Client/PendingVoidMethodCall \
-    Client/Properties \
-    Client/ReadinessHelper \
-    Client/ReadyObject \
-    Client/ReceivedMessage \
-    Client/ReferencedHandles \
-    Client/ReferencedHandlesIterator \
-    Client/RoomList \
-    Client/StatelessDBusProxy \
-    Client/StatefulDBusProxy \
-    Client/StreamedMediaChannel \
-    Client/TextChannel \
-    Client/Types \
-    Client/AccountInterface \
-    Client/AccountManagerInterface \
-    Client/ChannelInterface \
-    Client/ChannelInterfaceCallStateInterface \
-    Client/ChannelInterfaceChatStateInterface \
-    Client/ChannelInterfaceDTMFInterface \
-    Client/ChannelInterfaceGroupInterface \
-    Client/ChannelInterfaceHoldInterface \
-    Client/ChannelInterfaceMediaSignallingInterface \
-    Client/ChannelInterfacePasswordInterface \
-    Client/ChannelTypeContactListInterface \
-    Client/ChannelTypeRoomListInterface \
-    Client/ChannelTypeStreamedMediaInterface \
-    Client/ChannelTypeTextInterface \
-    Client/ChannelTypeTubesInterface \
-    Client/ConnectionInterface \
-    Client/ConnectionInterfaceAliasingInterface \
-    Client/ConnectionInterfaceAvatarsInterface \
-    Client/ConnectionInterfaceCapabilitiesInterface \
-    Client/ConnectionInterfaceContactsInterface \
-    Client/ConnectionInterfacePresenceInterface \
-    Client/ConnectionInterfaceRequestsInterface \
-    Client/ConnectionInterfaceSimplePresenceInterface \
-    Client/ConnectionManagerInterface \
-    Client/DBusDaemonInterface \
-    Client/IntrospectableInterface \
-    Client/MediaSessionHandlerInterface \
-    Client/MediaStreamHandlerInterface \
-    Client/PeerInterface \
-    Client/PropertiesInterface \
-    Client/PropertiesInterfaceInterface \
-    Client/abstract-interface.h \
-    Client/account.h \
-    Client/account-manager.h \
-    Client/channel.h \
-    Client/connection.h \
-    Client/connection-manager.h \
-    Client/contact.h \
-    Client/contact-manager.h \
-    Client/dbus.h \
-    Client/dbus-proxy.h \
-    Client/feature.h \
-    Client/file-transfer.h \
-    Client/media-session-handler.h \
-    Client/media-stream-handler.h \
-    Client/message.h \
-    Client/optional-interface-factory.h \
-    Client/pending-account.h \
-    Client/pending-channel.h \
-    Client/pending-connection.h \
-    Client/pending-contact-attributes.h \
-    Client/pending-contacts.h \
-    Client/pending-handles.h \
-    Client/pending-operation.h \
-    Client/pending-ready.h \
-    Client/pending-string-list.h \
-    Client/properties.h \
-    Client/readiness-helper.h \
-    Client/ready-object.h \
-    Client/referenced-handles.h \
-    Client/room-list.h \
-    Client/simple-pending-operations.h \
-    Client/streamed-media-channel.h \
-    Client/text-channel.h \
-    Client/types.h
 
 nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
@@ -390,17 +385,16 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--typesnamespace='Telepathy' \
 		--headerfile=_gen/cli-$*.h \
 		--implfile=_gen/cli-$*-body.hpp \
-		--realinclude='TelepathyQt4/Client/$*.h' \
-		--prettyinclude='TelepathyQt4/Client/'$$prettyinclude \
+		--realinclude='TelepathyQt4/$*.h' \
+		--prettyinclude='TelepathyQt4/'$$prettyinclude \
 		--specxml=_gen/stable-spec.xml \
 		--ifacexml=$< \
 		--extraincludes='<TelepathyQt4/Types>' \
 		--must-define='IN_TELEPATHY_QT4_HEADER' \
 		$$mainiface
 
-Client/_gen/%.moc.hpp: $(srcdir)/Client/%.h _gen/constants.h _gen/types.h
-	$(mkdir_p) Client/_gen
+_gen/%.moc.hpp: %.h _gen/constants.h _gen/types.h
 	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
-_gen/%.moc.hpp: _gen/%.h _gen/constants.h _gen/types.h
+_gen/cli-%.moc.hpp: _gen/cli-%.h _gen/constants.h _gen/types.h
 	$(MOC) $(AM_CPPFLAGS) -i $< -o $@

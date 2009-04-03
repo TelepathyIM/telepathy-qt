@@ -22,7 +22,7 @@
 #define _TelepathyQt4_examples_roster_roster_item_h_HEADER_GUARD_
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Contact>
 
 #include <QListWidgetItem>
 #include <QString>

@@ -24,9 +24,9 @@
 
 #include <QWidget>
 
-#include <TelepathyQt4/Client/Channel>
-#include <TelepathyQt4/Client/Contact>
-#include <TelepathyQt4/Client/StreamedMediaChannel>
+#include <TelepathyQt4/Channel>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/StreamedMediaChannel>
 #include <TelepathyQt4/Constants>
 
 #include "farsight-channel.h"
