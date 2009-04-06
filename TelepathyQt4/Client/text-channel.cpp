@@ -579,7 +579,7 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
     UIntList ids;
 
     foreach (const ReceivedMessage &m, messages) {
-        if (m.isFromChannel(this)) {
+        if (m.isFromChannel(TextChannelPtr(this))) {
             ids << m.pendingId();
         } else {
             warning() << "message did not come from this channel, ignoring";
@@ -619,7 +619,7 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
 void TextChannel::forget(const QList<ReceivedMessage> &messages)
 {
     foreach (const ReceivedMessage &m, messages) {
-        if (!m.isFromChannel(this)) {
+        if (!m.isFromChannel(TextChannelPtr(this))) {
             warning() << "message did not come from this channel, ignoring";
         } else if (mPriv->messages.removeOne(m)) {
             emit pendingMessageRemoved(m);
@@ -809,7 +809,7 @@ void TextChannel::onMessageReceived(const Telepathy::MessagePartList &parts)
     }
 
     mPriv->incompleteMessages << new Private::QueuedEvent(
-            ReceivedMessage(parts, this));
+            ReceivedMessage(parts, TextChannelPtr(this)));
     processQueue();
 }
 
@@ -870,7 +870,7 @@ void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
     parts << header;
     parts << body;
 
-    ReceivedMessage m(parts, this);
+    ReceivedMessage m(parts, TextChannelPtr(this));
 
     if (flags & ChannelTextMessageFlagNonTextContent) {
         // set the "you are not expected to understand this" flag

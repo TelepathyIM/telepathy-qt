@@ -637,7 +637,8 @@ PendingMediaStreams *StreamedMediaChannel::requestStream(
         const ContactPtr &contact,
         Telepathy::MediaStreamType type)
 {
-    return new PendingMediaStreams(this, contact,
+    return new PendingMediaStreams(StreamedMediaChannelPtr(this),
+            contact,
             QList<Telepathy::MediaStreamType>() << type);
 }
 
@@ -645,7 +646,8 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
         const ContactPtr &contact,
         QList<Telepathy::MediaStreamType> types)
 {
-    return new PendingMediaStreams(this, contact, types);
+    return new PendingMediaStreams(StreamedMediaChannelPtr(this),
+            contact, types);
 }
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
@@ -669,7 +671,7 @@ void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
             MediaStreamPtr stream = lookupStreamById(streamInfo.identifier);
             if (!stream) {
                 addStream(MediaStreamPtr(
-                            new MediaStream(this,
+                            new MediaStream(StreamedMediaChannelPtr(this),
                                 streamInfo.identifier,
                                 streamInfo.contact,
                                 (Telepathy::MediaStreamType) streamInfo.type,
@@ -734,7 +736,7 @@ void StreamedMediaChannel::onStreamAdded(uint streamId,
     }
 
     MediaStreamPtr stream = MediaStreamPtr(
-            new MediaStream(this, streamId,
+            new MediaStream(StreamedMediaChannelPtr(this), streamId,
                 contactHandle,
                 (Telepathy::MediaStreamType) streamType,
                 // TODO where to get this info from?

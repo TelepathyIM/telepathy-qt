@@ -63,7 +63,6 @@ public:
 Message::Private::Private(const MessagePartList &parts)
     : parts(parts),
       forceNonText(false),
-      textChannel(0),
       sender(0)
 {
 }

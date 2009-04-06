@@ -189,7 +189,7 @@ void TestTextChan::init()
 {
     initImpl();
 
-    mChan = 0;
+    mChan.reset();
 }
 
 void TestTextChan::commonTest(bool withMessages)

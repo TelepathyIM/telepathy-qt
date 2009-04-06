@@ -290,7 +290,8 @@ void Connection::Private::init()
 void Connection::Private::introspectMain(Connection::Private *self)
 {
     if (!self->contactManager) {
-        self->contactManager = new ContactManager(self->parent);
+        self->contactManager = new ContactManager(
+                ConnectionPtr(self->parent));
     }
 
     // Introspecting the main interface is currently just calling
@@ -1064,24 +1065,28 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
 {
     if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Connection not yet connected");
     }
 
     if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
         warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Connection does not support Requests Interface");
     }
 
     if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
-        return new PendingChannel(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid 'request' argument");
     }
 
     debug() << "Creating a Channel";
     PendingChannel *channel =
-        new PendingChannel(this, request, true);
+        new PendingChannel(ConnectionPtr(this),
+                request, true);
     return channel;
 }
 
@@ -1115,24 +1120,27 @@ PendingChannel *Connection::ensureChannel(const QVariantMap &request)
 {
     if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Connection not yet connected");
     }
 
     if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
         warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Connection does not support Requests Interface");
     }
 
     if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
-        return new PendingChannel(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid 'request' argument");
     }
 
     debug() << "Creating a Channel";
     PendingChannel *channel =
-        new PendingChannel(this, request, false);
+        new PendingChannel(ConnectionPtr(this), request, false);
     return channel;
 }
 
@@ -1172,7 +1180,7 @@ PendingHandles *Connection::requestHandles(uint handleType, const QStringList &n
     }
 
     PendingHandles *pending =
-        new PendingHandles(this, handleType, names);
+        new PendingHandles(ConnectionPtr(this), handleType, names);
     return pending;
 }
 
@@ -1226,7 +1234,7 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
         "of the handles -" << notYetHeld.size() << "to go";
 
     PendingHandles *pending =
-        new PendingHandles(this, handleType, handles,
+        new PendingHandles(ConnectionPtr(this), handleType, handles,
                 alreadyHeld, notYetHeld);
     return pending;
 }
@@ -1297,7 +1305,8 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
     debug() << "Request for attributes for" << handles.size() << "contacts";
 
     PendingContactAttributes *pending =
-        new PendingContactAttributes(this, handles, interfaces, reference);
+        new PendingContactAttributes(ConnectionPtr(this),
+                handles, interfaces, reference);
     if (!isReady()) {
         warning() << "Connection::getContactAttributes() used when not ready";
         pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE, "The connection isn't ready");

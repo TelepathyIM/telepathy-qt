@@ -362,7 +362,7 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
         const QString &protocol, const QString &displayName,
         const QVariantMap &parameters)
 {
-    return new PendingAccount(this, connectionManager,
+    return new PendingAccount(AccountManagerPtr(this), connectionManager,
             protocol, displayName, parameters);
 }
 

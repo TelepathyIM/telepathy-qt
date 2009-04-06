@@ -1914,7 +1914,7 @@ void Channel::onConnectionInvalidated()
 void Channel::onConnectionDestroyed()
 {
     debug() << "Owning connection destroyed, cutting off dangling pointer";
-    mPriv->connection = 0;
+    mPriv->connection.reset();
     invalidate(TELEPATHY_ERROR_CANCELLED,
                "Connection given as the owner of this channel was destroyed");
 }

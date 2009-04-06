@@ -458,7 +458,8 @@ const ProtocolInfoList &ConnectionManager::protocols() const
 PendingConnection *ConnectionManager::requestConnection(const QString &protocol,
         const QVariantMap &parameters)
 {
-    return new PendingConnection(this, protocol, parameters);
+    return new PendingConnection(ConnectionManagerPtr(this),
+            protocol, parameters);
 }
 
 /**
