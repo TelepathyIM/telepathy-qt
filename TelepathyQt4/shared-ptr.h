@@ -168,12 +168,7 @@ public:
     }
     inline ~WeakPtr()
     {
-        if (wd && !wd->weakref.deref()) {
-            if (wd->d) {
-                wd->d->wd = 0;
-            }
-            delete wd;
-        }
+        deref();
     }
 
     inline bool isNull() const { return !wd || !wd->d || wd->d->strongref == 0; }
@@ -186,12 +181,7 @@ public:
             if (o.wd) {
                 o.wd->weakref.ref();
             }
-            if (wd && !wd->weakref.deref()) {
-                if (wd->d) {
-                    wd->d->wd = 0;
-                }
-                delete wd;
-            }
+            deref();
             wd = o.wd;
         }
         return *this;
@@ -205,15 +195,11 @@ public:
                     o.d->wd = new WeakData(o.d);
                 }
                 o.d->wd->weakref.ref();
-                if (wd && !wd->weakref.deref()) {
-                    if (wd->d) {
-                        wd->d->wd = 0;
-                    }
-                    delete wd;
-                }
+                deref();
                 wd = o.d->wd;
             }
         } else {
+            deref();
             wd = 0;
         }
         return *this;
@@ -221,6 +207,16 @@ public:
 
 private:
     friend class SharedPtr<T>;
+
+    inline void deref()
+    {
+        if (wd && !wd->weakref.deref()) {
+            if (wd->d) {
+                wd->d->wd = 0;
+            }
+            delete wd;
+        }
+    }
 
     WeakData *wd;
 };
