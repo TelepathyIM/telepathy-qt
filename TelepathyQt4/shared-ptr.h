@@ -171,8 +171,8 @@ public:
         if (wd && !wd->weakref.deref()) {
             if (wd->d) {
                 wd->d->wd = 0;
-                delete wd;
             }
+            delete wd;
         }
     }
 
@@ -189,8 +189,8 @@ public:
             if (wd && !wd->weakref.deref()) {
                 if (wd->d) {
                     wd->d->wd = 0;
-                    delete wd;
                 }
+                delete wd;
             }
             wd = o.wd;
         }
@@ -208,8 +208,8 @@ public:
                 if (wd && !wd->weakref.deref()) {
                     if (wd->d) {
                         wd->d->wd = 0;
-                        delete wd;
                     }
+                    delete wd;
                 }
                 wd = o.d->wd;
             }
