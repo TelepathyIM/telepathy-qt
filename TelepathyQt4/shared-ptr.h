@@ -88,10 +88,7 @@ public:
 
     inline void reset()
     {
-        if (d && !d->deref()) {
-            delete d;
-        }
-        d = 0;
+        SharedPtr<T>().swap(*this);
     }
 
     inline T *data() const { return d; }
@@ -110,16 +107,15 @@ public:
 
     inline SharedPtr<T> &operator=(const SharedPtr<T> &o)
     {
-        if (o.d != d) {
-            if (o.d) {
-                o.d->ref();
-            }
-            if (d && !d->deref()) {
-                delete d;
-            }
-            d = o.d;
-        }
+        SharedPtr<T>(o).swap(*this);
         return *this;
+    }
+
+    inline void swap(SharedPtr<T> &o)
+    {
+        T *tmp = d;
+        d = o.d;
+        o.d = tmp;
     }
 
 private:
@@ -148,7 +144,12 @@ public:
     }
     inline ~WeakPtr()
     {
-        deref();
+        if (wd && !wd->weakref.deref()) {
+            if (wd->d) {
+                wd->d->wd = 0;
+            }
+            delete wd;
+        }
     }
 
     inline bool isNull() const { return !wd || !wd->d || wd->d->strongref == 0; }
@@ -157,48 +158,27 @@ public:
 
     inline WeakPtr<T> &operator=(const WeakPtr<T> &o)
     {
-        if (o.wd != wd) {
-            if (o.wd) {
-                o.wd->weakref.ref();
-            }
-            deref();
-            wd = o.wd;
-        }
+        WeakPtr<T>(o).swap(*this);
         return *this;
     }
 
     inline WeakPtr<T> &operator=(const SharedPtr<T> &o)
     {
-        if (o.d) {
-            if (o.d->wd != wd || o.d->wd == 0) {
-                if (!o.d->wd) {
-                    o.d->wd = new WeakData(o.d);
-                }
-                o.d->wd->weakref.ref();
-                deref();
-                wd = o.d->wd;
-            }
-        } else {
-            deref();
-            wd = 0;
-        }
+        WeakPtr<T>(o).swap(*this);
         return *this;
+    }
+
+    inline void swap(WeakPtr<T> &o)
+    {
+        WeakData *tmp = wd;
+        wd = o.wd;
+        o.wd = tmp;
     }
 
     SharedPtr<T> toStrongRef() const { return SharedPtr<T>(*this); }
 
 private:
     friend class SharedPtr<T>;
-
-    inline void deref()
-    {
-        if (wd && !wd->weakref.deref()) {
-            if (wd->d) {
-                wd->d->wd = 0;
-            }
-            delete wd;
-        }
-    }
 
     WeakData *wd;
 };
