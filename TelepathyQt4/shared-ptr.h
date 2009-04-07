@@ -31,7 +31,7 @@
 namespace Telepathy
 {
 
-class SharedData;
+class RefCounted;
 class WeakData;
 template <class T> class SharedPtr;
 template <class T> class WeakPtr;
@@ -41,19 +41,19 @@ class WeakData
     Q_DISABLE_COPY(WeakData)
 
 public:
-    WeakData(SharedData *d) : d(d), weakref(0) { }
+    WeakData(RefCounted *d) : d(d), weakref(0) { }
 
-    SharedData *d;
+    RefCounted *d;
     mutable QAtomicInt weakref;
 };
 
-class SharedData
+class RefCounted
 {
-    Q_DISABLE_COPY(SharedData)
+    Q_DISABLE_COPY(RefCounted)
 
 public:
-    inline SharedData() : strongref(0), wd(0) { }
-    inline virtual ~SharedData() { if (wd) { wd->d = 0; } }
+    inline RefCounted() : strongref(0), wd(0) { }
+    inline virtual ~RefCounted() { if (wd) { wd->d = 0; } }
 
     inline void ref() { strongref.ref(); }
     inline bool deref() { return strongref.deref(); }

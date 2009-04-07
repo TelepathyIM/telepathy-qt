@@ -61,7 +61,7 @@ class PendingReady;
 class Connection : public StatefulDBusProxy,
                    private OptionalInterfaceFactory<Connection>,
                    public ReadyObject,
-                   public SharedData
+                   public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(Connection)

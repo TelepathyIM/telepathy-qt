@@ -53,7 +53,7 @@ class PendingReady;
 class Channel : public StatefulDBusProxy,
                 private OptionalInterfaceFactory<Channel>,
                 public ReadyObject,
-                public SharedData
+                public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(Channel)

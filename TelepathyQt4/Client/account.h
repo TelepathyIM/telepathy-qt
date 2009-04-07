@@ -58,7 +58,7 @@ class ProtocolInfo;
 class Account : public StatelessDBusProxy,
                 private OptionalInterfaceFactory<Account>,
                 public ReadyObject,
-                public SharedData
+                public RefCounted
 
 {
     Q_OBJECT

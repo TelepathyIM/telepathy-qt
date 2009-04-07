@@ -121,7 +121,7 @@ private:
 class ConnectionManager : public StatelessDBusProxy,
                           private OptionalInterfaceFactory<ConnectionManager>,
                           public ReadyObject,
-                          public SharedData
+                          public RefCounted
 {
     Q_OBJECT
 

@@ -54,7 +54,7 @@ class PendingReady;
 class AccountManager : public StatelessDBusProxy,
                        private OptionalInterfaceFactory<AccountManager>,
                        public ReadyObject,
-                       public SharedData
+                       public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(AccountManager)

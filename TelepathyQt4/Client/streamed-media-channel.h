@@ -68,7 +68,7 @@ private:
 
 class MediaStream : public QObject,
                     private ReadyObject,
-                    public SharedData
+                    public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(MediaStream)
