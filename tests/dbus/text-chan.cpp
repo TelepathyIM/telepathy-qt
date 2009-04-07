@@ -193,7 +193,7 @@ void TestTextChan::init()
 void TestTextChan::commonTest(bool withMessages)
 {
     Q_ASSERT(mChan);
-    ChannelPtr asChannel = mChan;
+    ChannelPtr asChannel = ChannelPtr(dynamic_cast<Channel*>(mChan.data()));
 
     QVERIFY(connect(asChannel->becomeReady(),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),

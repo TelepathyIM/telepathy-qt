@@ -257,21 +257,25 @@ ChannelPtr PendingChannel::channel() const
     }
 
     if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
-        mPriv->channel = TextChannel::create(mPriv->connection,
-                mPriv->objectPath.path(), mPriv->immutableProperties);
+        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
+                    TextChannel::create(mPriv->connection,
+                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
-        mPriv->channel = StreamedMediaChannel::create(mPriv->connection,
-                mPriv->objectPath.path(), mPriv->immutableProperties);
+        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
+                    StreamedMediaChannel::create(mPriv->connection,
+                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
-        mPriv->channel = RoomList::create(mPriv->connection,
-                mPriv->objectPath.path(), mPriv->immutableProperties);
+        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
+                    RoomList::create(mPriv->connection,
+                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     // FIXME: update spec so we can do this properly
     else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
-        mPriv->channel = FileTransfer::create(mPriv->connection,
-                mPriv->objectPath.path(), mPriv->immutableProperties);
+        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
+                    FileTransfer::create(mPriv->connection,
+                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else {
         // ContactList, old-style Tubes, or a future channel type
