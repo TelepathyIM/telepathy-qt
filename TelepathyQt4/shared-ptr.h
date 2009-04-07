@@ -53,7 +53,7 @@ class SharedData
 
 public:
     inline SharedData() : strongref(0), wd(0) { }
-    inline ~SharedData() { if (wd) { wd->d = 0; } }
+    inline virtual ~SharedData() { if (wd) { wd->d = 0; } }
 
     inline void ref() { strongref.ref(); }
     inline bool deref() { return strongref.deref(); }
