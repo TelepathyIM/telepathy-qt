@@ -109,7 +109,6 @@ Account::Private::Private(Account *parent)
       valid(false),
       enabled(false),
       connectsAutomatically(false),
-      cm(0),
       protocolInfo(0),
       connectionStatus(Telepathy::ConnectionStatusDisconnected),
       connectionStatusReason(Telepathy::ConnectionStatusReasonNoneSpecified)

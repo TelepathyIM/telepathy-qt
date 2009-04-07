@@ -29,7 +29,7 @@ class TestContacts : public Test
 
 public:
     TestContacts(QObject *parent = 0)
-        : Test(parent), mConnService(0), mConn(0)
+        : Test(parent), mConnService(0)
     {
     }
 

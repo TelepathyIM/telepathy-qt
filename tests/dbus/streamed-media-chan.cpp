@@ -22,7 +22,7 @@ class TestStreamedMediaChan : public Test
 
 public:
     TestStreamedMediaChan(QObject *parent = 0)
-        : Test(parent), mConnService(0), mConn(0)
+        : Test(parent), mConnService(0)
     { }
 
 protected Q_SLOTS:

@@ -42,9 +42,7 @@ public:
         : Test(parent),
           // service side (telepathy-glib)
           mConnService(0), mBaseConnService(0), mContactRepo(0),
-            mTextChanService(0), mMessagesChanService(0),
-          // client side (Telepathy-Qt4)
-          mConn(0), mChan(0)
+            mTextChanService(0), mMessagesChanService(0)
     { }
 
 protected Q_SLOTS:

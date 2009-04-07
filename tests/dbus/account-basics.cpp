@@ -20,7 +20,7 @@ class TestAccountBasics : public Test
 
 public:
     TestAccountBasics(QObject *parent = 0)
-        : Test(parent), mAM(0)
+        : Test(parent)
     { }
 
 protected Q_SLOTS:

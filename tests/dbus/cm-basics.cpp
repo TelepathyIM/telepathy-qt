@@ -24,7 +24,7 @@ class TestCmBasics : public Test
 
 public:
     TestCmBasics(QObject *parent = 0)
-        : Test(parent), mCMService(0), mCM(0)
+        : Test(parent), mCMService(0)
     { }
 
 private Q_SLOTS:

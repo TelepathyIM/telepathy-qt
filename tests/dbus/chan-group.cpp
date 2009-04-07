@@ -28,7 +28,7 @@ class TestChanGroup : public Test
 
 public:
     TestChanGroup(QObject *parent = 0)
-        : Test(parent), mConnService(0), mConn(0), mChan(0),
+        : Test(parent), mConnService(0),
           mRoomNumber(0), mRoomCount(4), mRequested(false)
     { }
 

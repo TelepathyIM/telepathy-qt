@@ -26,7 +26,7 @@ class TestConnRequests : public Test
 
 public:
     TestConnRequests(QObject *parent = 0)
-        : Test(parent), mConnService(0), mConn(0), mHandle(0)
+        : Test(parent), mConnService(0), mHandle(0)
     { }
 
 protected Q_SLOTS:
