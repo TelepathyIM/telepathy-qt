@@ -249,7 +249,7 @@ MediaStream::~MediaStream()
 
 StreamedMediaChannelPtr MediaStream::channel() const
 {
-    return mPriv->channel;
+    return StreamedMediaChannelPtr(mPriv->channel);
 }
 
 /**

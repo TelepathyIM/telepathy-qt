@@ -70,7 +70,7 @@ public:
     template <class Y>
     explicit inline SharedPtr(Y *d) : d(dynamic_cast<T*>(d)) { if (d) { d->ref(); } }
     inline SharedPtr(const SharedPtr<T> &o) : d(o.d) { if (d) { d->ref(); } }
-    inline SharedPtr(const WeakPtr<T> &o)
+    explicit inline SharedPtr(const WeakPtr<T> &o)
     {
         if (o.wd && o.wd->d) {
             d = static_cast<T*>(o.wd->d);
@@ -121,25 +121,6 @@ public:
         }
         return *this;
     }
-
-    inline SharedPtr<T> &operator=(const WeakPtr<T> &o)
-    {
-        if (o.wd) {
-            if (o.wd->d != d) {
-                if (d && !d->deref()) {
-                    delete d;
-                }
-                if (o.wd->d) {
-                    o.wd->d->ref();
-                }
-                d = static_cast<T*>(o.wd->d);
-            }
-        } else {
-            d = 0;
-        }
-        return *this;
-    }
-
 
 private:
     friend class WeakPtr<T>;

@@ -106,7 +106,7 @@ PendingConnection::~PendingConnection()
  */
 ConnectionManagerPtr PendingConnection::manager() const
 {
-    return mPriv->manager;
+    return ConnectionManagerPtr(mPriv->manager);
 }
 
 /**

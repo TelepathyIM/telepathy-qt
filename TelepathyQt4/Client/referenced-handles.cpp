@@ -113,7 +113,7 @@ ReferencedHandles::~ReferencedHandles()
 
 ConnectionPtr ReferencedHandles::connection() const
 {
-    return mPriv->connection;
+    return ConnectionPtr(mPriv->connection);
 }
 
 uint ReferencedHandles::handleType() const

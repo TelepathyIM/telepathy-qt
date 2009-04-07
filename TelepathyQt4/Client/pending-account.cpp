@@ -107,7 +107,7 @@ PendingAccount::~PendingAccount()
  */
 AccountManagerPtr PendingAccount::manager() const
 {
-    return mPriv->manager;
+    return AccountManagerPtr(mPriv->manager);
 }
 
 /**

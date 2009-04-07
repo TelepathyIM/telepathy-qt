@@ -143,7 +143,7 @@ PendingChannel::~PendingChannel()
  */
 ConnectionPtr PendingChannel::connection() const
 {
-    return mPriv->connection;
+    return ConnectionPtr(mPriv->connection);
 }
 
 /**
@@ -256,30 +256,31 @@ ChannelPtr PendingChannel::channel() const
         return mPriv->channel;
     }
 
+    SharedPtr<Connection> conn(mPriv->connection);
     if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
         mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
-                    TextChannel::create(mPriv->connection,
+                    TextChannel::create(conn,
                         mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
         mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
-                    StreamedMediaChannel::create(mPriv->connection,
+                    StreamedMediaChannel::create(conn,
                         mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
         mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
-                    RoomList::create(mPriv->connection,
+                    RoomList::create(conn,
                         mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     // FIXME: update spec so we can do this properly
     else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
         mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
-                    FileTransfer::create(mPriv->connection,
+                    FileTransfer::create(conn,
                         mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else {
         // ContactList, old-style Tubes, or a future channel type
-        mPriv->channel = Channel::create(mPriv->connection,
+        mPriv->channel = Channel::create(conn,
                 mPriv->objectPath.path(), mPriv->immutableProperties);
     }
     return mPriv->channel;

@@ -92,7 +92,7 @@ struct ContactManager::Private
 
 ConnectionPtr ContactManager::connection() const
 {
-    return mPriv->connection;
+    return ConnectionPtr(mPriv->connection);
 }
 
 namespace
