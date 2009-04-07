@@ -185,6 +185,8 @@ public:
         return *this;
     }
 
+    SharedPtr<T> toStrongRef() const { return SharedPtr<T>(*this); }
+
 private:
     friend class SharedPtr<T>;
 
