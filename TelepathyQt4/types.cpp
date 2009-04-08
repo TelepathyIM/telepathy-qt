@@ -21,5 +21,4 @@
 
 #include <TelepathyQt4/Types>
 
-#define IN_TELEPATHY_QT4_HEADER
-#include "_gen/types-body.hpp"
+#include "TelepathyQt4/_gen/types-body.hpp"

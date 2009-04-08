@@ -2,8 +2,8 @@
 # Typically this would be in a top-level extensions/ directory.
 
 # In this example we build an optional interface for Telepathy Connections,
-# so we specify Telepathy::Client::Connection as the main interface for the
-# generated proxies with "--mainiface=Telepathy::Client::Connection'. The
+# so we specify Telepathy::Client::ConnectionInterface as the main interface for the
+# generated proxies with "--mainiface=Telepathy::Client::ConnectionInterface'. The
 # generated proxies will have a convenience constructors for associating the
 # proxy with the same remote object an instance of the main interface class
 # is associated with. We could instead have made an optional interface for any

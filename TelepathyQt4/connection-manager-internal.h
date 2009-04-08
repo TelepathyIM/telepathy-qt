@@ -31,11 +31,8 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class ConnectionManager;
-class ConnectionManagerInterface;
 class ReadinessHelper;
 
 struct ConnectionManager::Private
@@ -62,7 +59,7 @@ struct ConnectionManager::Private
     QString name;
 
     // Instance of generated interface class
-    ConnectionManagerInterface *baseInterface;
+    Client::ConnectionManagerInterface *baseInterface;
 
     ReadinessHelper *readinessHelper;
 
@@ -93,7 +90,6 @@ private:
     QDBusConnection mBus;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

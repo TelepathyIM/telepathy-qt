@@ -57,8 +57,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct AccountManager::Private
 {
@@ -75,7 +73,7 @@ struct AccountManager::Private
     AccountManager *parent;
 
     // Instance of generated interface class
-    AccountManagerInterface *baseInterface;
+    Client::AccountManagerInterface *baseInterface;
 
     ReadinessHelper *readinessHelper;
 
@@ -88,7 +86,7 @@ struct AccountManager::Private
 
 AccountManager::Private::Private(AccountManager *parent)
     : parent(parent),
-      baseInterface(new AccountManagerInterface(parent->dbusConnection(),
+      baseInterface(new Client::AccountManagerInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper())
 {
@@ -208,7 +206,7 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  *     ~MyClass() { }
  *
  * private Q_SLOTS:
- *     void onAccountManagerReady(Telepathy::Client::PendingOperation*);
+ *     void onAccountManagerReady(Telepathy::PendingOperation*);
  *
  * private:
  *     AccountManagerPtr am;
@@ -219,11 +217,11 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  *       am(AccountManager::create())
  * {
  *     connect(am->becomeReady(),
- *             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
- *             SLOT(onAccountManagerReady(Telepathy::Client::PendingOperation*)));
+ *             SIGNAL(finished(Telepathy::PendingOperation*)),
+ *             SLOT(onAccountManagerReady(Telepathy::PendingOperation*)));
  * }
  *
- * void MyClass::onAccountManagerReady(Telepathy::Client::PendingOperation *op)
+ * void MyClass::onAccountManagerReady(Telepathy::PendingOperation *op)
  * {
  *     if (op->isError()) {
  *         qWarning() << "Account manager cannot become ready:" <<
@@ -489,7 +487,7 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
  * \return A pointer to the existing AccountManagerInterface for this
  *         AccountManager.
  */
-AccountManagerInterface *AccountManager::baseInterface() const
+Client::AccountManagerInterface *AccountManager::baseInterface() const
 {
     return mPriv->baseInterface;
 }
@@ -538,7 +536,7 @@ void AccountManager::Private::init()
 
 void AccountManager::Private::introspectMain(AccountManager::Private *self)
 {
-    DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
+    Client::DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
     Q_ASSERT(properties != 0);
 
     debug() << "Calling Properties::GetAll(AccountManager)";
@@ -629,5 +627,4 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
     emit accountRemoved(path);
 }
 
-} // Telepathy::Client
 } // Telepathy

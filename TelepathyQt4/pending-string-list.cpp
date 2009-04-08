@@ -28,8 +28,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct PendingStringList::Private
 {
@@ -65,5 +63,4 @@ void PendingStringList::setResult(const QStringList &result)
     mPriv->result = result;
 }
 
-} // Telepathy::Client
 } // Telepathy

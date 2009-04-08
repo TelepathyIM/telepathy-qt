@@ -28,10 +28,8 @@
 #include <QString>
 
 namespace Telepathy {
-namespace Client {
 class AccountManager;
 class PendingOperation;
-}
 }
 
 class QTableWidget;
@@ -58,14 +56,14 @@ public:
     };
     Q_ENUMS(Columns)
 
-    AccountItem(Telepathy::Client::AccountManagerPtr am, const QString &objectPath,
+    AccountItem(Telepathy::AccountManagerPtr am, const QString &objectPath,
                 QTableWidget *table, int row, QObject *parent = 0);
     virtual ~AccountItem();
 
     int row() const { return mRow; }
 
 private Q_SLOTS:
-    void onReady(Telepathy::Client::PendingOperation *);
+    void onReady(Telepathy::PendingOperation *);
     void onValidityChanged(bool);
     void onStateChanged(bool);
     void onDisplayNameChanged(const QString &);
@@ -81,7 +79,7 @@ private Q_SLOTS:
 private:
     void setupGui();
 
-    Telepathy::Client::AccountPtr mAcc;
+    Telepathy::AccountPtr mAcc;
     QTableWidget *mTable;
     int mRow;
 };

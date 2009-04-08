@@ -7,10 +7,7 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 class DBusProxy;
-}
 }
 
 class Test : public QObject
@@ -24,11 +21,11 @@ public:
     virtual ~Test();
 
     QEventLoop *mLoop;
-    void processDBusQueue(Telepathy::Client::DBusProxy *proxy);
+    void processDBusQueue(Telepathy::DBusProxy *proxy);
 
 protected Q_SLOTS:
     void expectSuccessfulCall(QDBusPendingCallWatcher*);
-    void expectSuccessfulCall(Telepathy::Client::PendingOperation*);
+    void expectSuccessfulCall(Telepathy::PendingOperation*);
 
     virtual void initTestCaseImpl();
     virtual void initImpl();

@@ -35,8 +35,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 // ==== DBusProxy ======================================================
 
@@ -200,7 +198,7 @@ QString DBusProxy::invalidationMessage() const
 }
 
 /**
- * \fn void DBusProxy::invalidated (Telepathy::Client::DBusProxy *proxy,
+ * \fn void DBusProxy::invalidated (Telepathy::DBusProxy *proxy,
  *      const QString &errorName, const QString &errorMessage)
  *
  * Emitted when this object is no longer usable.
@@ -351,5 +349,4 @@ StatelessDBusProxy::~StatelessDBusProxy()
 {
 }
 
-}
-}
+} // Telepathy

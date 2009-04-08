@@ -32,8 +32,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class StreamedMediaChannel;
 
@@ -51,8 +49,8 @@ public:
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
-    void onStreamRemoved(Telepathy::Client::MediaStreamPtr);
-    void onStreamReady(Telepathy::Client::PendingOperation *);
+    void onStreamRemoved(Telepathy::MediaStreamPtr);
+    void onStreamReady(Telepathy::PendingOperation *);
 
 private:
     friend class StreamedMediaChannel;
@@ -97,7 +95,7 @@ public:
             bool send, bool receive);
 
 private Q_SLOTS:
-    void gotContact(Telepathy::Client::PendingOperation *op);
+    void gotContact(Telepathy::PendingOperation *op);
 
 private:
     friend class PendingMediaStreams;
@@ -153,14 +151,14 @@ public:
             QList<Telepathy::MediaStreamType> types);
 
 Q_SIGNALS:
-    void streamAdded(const Telepathy::Client::MediaStreamPtr &stream);
-    void streamRemoved(const Telepathy::Client::MediaStreamPtr &stream);
-    void streamDirectionChanged(const Telepathy::Client::MediaStreamPtr &stream,
+    void streamAdded(const Telepathy::MediaStreamPtr &stream);
+    void streamRemoved(const Telepathy::MediaStreamPtr &stream);
+    void streamDirectionChanged(const Telepathy::MediaStreamPtr &stream,
             Telepathy::MediaStreamDirection direction,
             Telepathy::MediaStreamPendingSend pendingSend);
-    void streamStateChanged(const Telepathy::Client::MediaStreamPtr &stream,
+    void streamStateChanged(const Telepathy::MediaStreamPtr &stream,
             Telepathy::MediaStreamState);
-    void streamError(const Telepathy::Client::MediaStreamPtr &stream,
+    void streamError(const Telepathy::MediaStreamPtr &stream,
             Telepathy::MediaStreamError errorCode,
             const QString &errorMessage);
 
@@ -170,7 +168,7 @@ protected:
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
-    void onStreamReady(Telepathy::Client::PendingOperation *);
+    void onStreamReady(Telepathy::PendingOperation *);
     void onStreamAdded(uint, uint, uint);
     void onStreamRemoved(uint);
     void onStreamDirectionChanged(uint, uint, uint);
@@ -188,7 +186,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

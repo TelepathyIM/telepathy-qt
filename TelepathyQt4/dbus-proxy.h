@@ -33,8 +33,6 @@ class QDBusError;
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class DBusProxy : public QObject
 {
@@ -67,7 +65,7 @@ protected:
     void invalidate(const QDBusError &error);
 
 Q_SIGNALS:
-    void invalidated(Telepathy::Client::DBusProxy *proxy,
+    void invalidated(Telepathy::DBusProxy *proxy,
             const QString &errorName, const QString &errorMessage);
 
 private Q_SLOTS:
@@ -117,7 +115,6 @@ private:
     Private *mPriv;
 };
 
-}
 }
 
 #endif

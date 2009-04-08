@@ -29,8 +29,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class RoomList : public Channel
 {
@@ -53,7 +51,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

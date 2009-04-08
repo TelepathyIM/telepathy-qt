@@ -44,8 +44,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class AccountManager;
 class PendingAccount;
@@ -69,9 +67,9 @@ public:
 
     QStringList interfaces() const;
 
-    inline DBus::PropertiesInterface *propertiesInterface() const
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
-        return OptionalInterfaceFactory<AccountManager>::interface<DBus::PropertiesInterface>();
+        return OptionalInterfaceFactory<AccountManager>::interface<Client::DBus::PropertiesInterface>();
     }
 
     QStringList validAccountPaths() const;
@@ -100,7 +98,7 @@ protected:
     AccountManager();
     AccountManager(const QDBusConnection &bus);
 
-    AccountManagerInterface *baseInterface() const;
+    Client::AccountManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
@@ -114,7 +112,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

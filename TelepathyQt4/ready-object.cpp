@@ -28,8 +28,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct ReadyObject::Private
 {
@@ -141,5 +139,4 @@ ReadinessHelper *ReadyObject::readinessHelper() const
     return mPriv->readinessHelper;
 }
 
-} // Telepathy::Client
 } // Telepathy

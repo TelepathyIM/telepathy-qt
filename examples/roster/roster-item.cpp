@@ -21,7 +21,7 @@
 #include "roster-item.h"
 #include "_gen/roster-item.moc.hpp"
 
-using namespace Telepathy::Client;
+using namespace Telepathy;
 
 RosterItem::RosterItem(const ContactPtr &contact,
         QListWidget *parent)
@@ -35,10 +35,10 @@ RosterItem::RosterItem(const ContactPtr &contact,
             SIGNAL(simplePresenceChanged(const QString &, uint, const QString &)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(subscriptionStateChanged(Telepathy::Client::Contact::PresenceState)),
+            SIGNAL(subscriptionStateChanged(Telepathy::Contact::PresenceState)),
             SLOT(onContactChanged()));
     connect(contact.data(),
-            SIGNAL(publishStateChanged(Telepathy::Client::Contact::PresenceState)),
+            SIGNAL(publishStateChanged(Telepathy::Contact::PresenceState)),
             SLOT(onContactChanged()));
     connect(contact.data(),
             SIGNAL(blockStatusChanged(bool)),

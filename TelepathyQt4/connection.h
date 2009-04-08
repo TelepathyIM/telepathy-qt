@@ -46,8 +46,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Channel;
 class Contact;
@@ -113,45 +111,45 @@ public:
         return OptionalInterfaceFactory<Connection>::interface<Interface>();
     }
 
-    inline ConnectionInterfaceAliasingInterface *aliasingInterface(
+    inline Client::ConnectionInterfaceAliasingInterface *aliasingInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceAliasingInterface>(check);
+        return optionalInterface<Client::ConnectionInterfaceAliasingInterface>(check);
     }
 
-    inline ConnectionInterfaceAvatarsInterface *avatarsInterface(
+    inline Client::ConnectionInterfaceAvatarsInterface *avatarsInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceAvatarsInterface>(check);
+        return optionalInterface<Client::ConnectionInterfaceAvatarsInterface>(check);
     }
 
-    inline ConnectionInterfaceCapabilitiesInterface *capabilitiesInterface(
+    inline Client::ConnectionInterfaceCapabilitiesInterface *capabilitiesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceCapabilitiesInterface>(check);
+        return optionalInterface<Client::ConnectionInterfaceCapabilitiesInterface>(check);
     }
 
-    inline ConnectionInterfacePresenceInterface *presenceInterface(
+    inline Client::ConnectionInterfacePresenceInterface *presenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfacePresenceInterface>(check);
+        return optionalInterface<Client::ConnectionInterfacePresenceInterface>(check);
     }
 
-    inline ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface(
+    inline Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceSimplePresenceInterface>(check);
+        return optionalInterface<Client::ConnectionInterfaceSimplePresenceInterface>(check);
     }
 
-    inline ConnectionInterfaceRequestsInterface *requestsInterface(
+    inline Client::ConnectionInterfaceRequestsInterface *requestsInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ConnectionInterfaceRequestsInterface>(check);
+        return optionalInterface<Client::ConnectionInterfaceRequestsInterface>(check);
     }
 
-    inline DBus::PropertiesInterface *propertiesInterface() const
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
-        return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
+        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
     PendingChannel *createChannel(const QVariantMap &request);
@@ -182,7 +180,7 @@ protected:
     Connection(const QDBusConnection &bus, const QString &busName,
             const QString &objectPath);
 
-    ConnectionInterface *baseInterface() const;
+    Client::ConnectionInterface *baseInterface() const;
 
 private Q_SLOTS:
     void onStatusReady(uint);
@@ -191,10 +189,10 @@ private Q_SLOTS:
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
     void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
-    void gotSelfContact(Telepathy::Client::PendingOperation *);
+    void gotSelfContact(Telepathy::PendingOperation *);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
-    void gotContactListsHandles(Telepathy::Client::PendingOperation *);
-    void gotContactListChannel(Telepathy::Client::PendingOperation *);
+    void gotContactListsHandles(Telepathy::PendingOperation *);
+    void gotContactListChannel(Telepathy::PendingOperation *);
     void contactListChannelReady();
 
     void doReleaseSweep(uint type);
@@ -218,7 +216,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

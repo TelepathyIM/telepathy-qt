@@ -45,8 +45,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Account;
 class Connection;
@@ -148,15 +146,15 @@ public:
         return OptionalInterfaceFactory<Account>::interface<Interface>();
     }
 
-    inline DBus::PropertiesInterface *propertiesInterface() const
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
-        return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
+        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
-    inline AccountInterfaceAvatarInterface *avatarInterface(
+    inline Client::AccountInterfaceAvatarInterface *avatarInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<AccountInterfaceAvatarInterface>(check);
+        return optionalInterface<Client::AccountInterfaceAvatarInterface>(check);
     }
 
 Q_SIGNALS:
@@ -181,13 +179,13 @@ protected:
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
 
-    AccountInterface *baseInterface() const;
+    Client::AccountInterface *baseInterface() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
     void gotAvatar(QDBusPendingCallWatcher *);
     void onAvatarChanged();
-    void onConnectionManagerReady(Telepathy::Client::PendingOperation *);
+    void onConnectionManagerReady(Telepathy::PendingOperation *);
     void onPropertyChanged(const QVariantMap &delta);
     void onRemoved();
 
@@ -197,7 +195,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

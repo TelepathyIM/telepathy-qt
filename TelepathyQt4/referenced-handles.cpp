@@ -30,8 +30,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct ReferencedHandles::Private : public QSharedData
 {
@@ -299,5 +297,4 @@ ReferencedHandles::ReferencedHandles(const ConnectionPtr &connection,
 {
 }
 
-}
-}
+} // Telepathy

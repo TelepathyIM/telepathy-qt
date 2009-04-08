@@ -61,8 +61,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct Channel::Private
 {
@@ -100,15 +98,15 @@ struct Channel::Private
     Channel *parent;
 
     // Instance of generated interface class
-    ChannelInterface *baseInterface;
+    Client::ChannelInterface *baseInterface;
 
     // Owning connection - it can be a SharedPtr as Connection does not cache
     // channels
     ConnectionPtr connection;
 
     // Optional interface proxies
-    ChannelInterfaceGroupInterface *group;
-    DBus::PropertiesInterface *properties;
+    Client::ChannelInterfaceGroupInterface *group;
+    Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
 
@@ -200,7 +198,7 @@ struct Channel::Private::GroupMembersChangedInfo
 
 Channel::Private::Private(Channel *parent, const ConnectionPtr &connection)
     : parent(parent),
-      baseInterface(new ChannelInterface(parent->dbusConnection(),
+      baseInterface(new Client::ChannelInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       connection(connection),
       group(0),
@@ -230,7 +228,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection)
 
         debug() << " Connection to owning connection's lifetime signals";
         parent->connect(connection.data(),
-                        SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                        SIGNAL(invalidated(Telepathy::DBusProxy *,
                                            const QString &, const QString &)),
                         SLOT(onConnectionInvalidated()));
 
@@ -650,8 +648,8 @@ void Channel::Private::buildContacts()
                                      << Contact::FeatureAvatarToken
                                      << Contact::FeatureSimplePresence);
     parent->connect(pendingContacts,
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(gotContacts(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SLOT(gotContacts(Telepathy::PendingOperation *)));
 }
 
 void Channel::Private::processMembersChanged()
@@ -1593,10 +1591,10 @@ PendingOperation *Channel::groupAddSelfHandle()
 
 /**
  * \fn void Channel::groupMembersChanged(
- *     const Telepathy::Client::Contacts &groupMembersAdded,
- *     const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
- *     const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
- *     const Telepathy::Client::Contacts &groupMembersRemoved,
+ *     const Telepathy::Contacts &groupMembersAdded,
+ *     const Telepathy::Contacts &groupLocalPendingMembersAdded,
+ *     const Telepathy::Contacts &groupRemotePendingMembersAdded,
+ *     const Telepathy::Contacts &groupMembersRemoved,
  *     const Channel::GroupMemberChangeDetails &details);
  *
  * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
@@ -1812,7 +1810,7 @@ PendingOperation *Channel::groupAddSelfHandle()
  *
  * \return A pointer to the existing ChannelInterface for this Channel
  */
-ChannelInterface *Channel::baseInterface() const
+Client::ChannelInterface *Channel::baseInterface() const
 {
     return mPriv->baseInterface;
 }
@@ -2292,5 +2290,4 @@ void Channel::continueIntrospection()
  * \return The message as a string.
  */
 
-}
-}
+} // Telepathy

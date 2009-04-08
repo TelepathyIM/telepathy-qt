@@ -42,8 +42,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class AbstractInterface;
 
@@ -154,7 +152,6 @@ template <typename DBusProxySubclass> class OptionalInterfaceFactory
         }
 };
 
-}
-}
+} // Telepathy
 
 #endif

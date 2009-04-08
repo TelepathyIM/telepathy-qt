@@ -32,12 +32,10 @@
 #include "farsight-channel.h"
 
 namespace Telepathy {
-namespace Client {
 class DBusProxy;
 class MediaStream;
 class PendingMediaStreams;
 class PendingOperation;
-}
 }
 
 class QLabel;
@@ -49,27 +47,27 @@ class CallWidget : public QWidget
     Q_OBJECT
 
 public:
-    CallWidget(const Telepathy::Client::StreamedMediaChannelPtr &channel,
-               const Telepathy::Client::ContactPtr &contact,
+    CallWidget(const Telepathy::StreamedMediaChannelPtr &channel,
+               const Telepathy::ContactPtr &contact,
                QWidget *parent = 0);
     virtual ~CallWidget();
 
-    Telepathy::Client::StreamedMediaChannelPtr channel() const { return mChan; }
-    Telepathy::Client::ContactPtr contact() const { return mContact; }
+    Telepathy::StreamedMediaChannelPtr channel() const { return mChan; }
+    Telepathy::ContactPtr contact() const { return mContact; }
 
 private Q_SLOTS:
-    void onChannelReady(Telepathy::Client::PendingOperation *);
-    void onChannelInvalidated(Telepathy::Client::DBusProxy *,
+    void onChannelReady(Telepathy::PendingOperation *);
+    void onChannelInvalidated(Telepathy::DBusProxy *,
             const QString &, const QString &);
-    void onStreamCreated(Telepathy::Client::PendingOperation *);
-    void onStreamAdded(const Telepathy::Client::MediaStreamPtr &);
-    void onStreamRemoved(const Telepathy::Client::MediaStreamPtr &);
-    void onStreamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
+    void onStreamCreated(Telepathy::PendingOperation *);
+    void onStreamAdded(const Telepathy::MediaStreamPtr &);
+    void onStreamRemoved(const Telepathy::MediaStreamPtr &);
+    void onStreamDirectionChanged(const Telepathy::MediaStreamPtr &,
             Telepathy::MediaStreamDirection,
             Telepathy::MediaStreamPendingSend);
-    void onStreamStateChanged(const Telepathy::Client::MediaStreamPtr &,
+    void onStreamStateChanged(const Telepathy::MediaStreamPtr &,
             Telepathy::MediaStreamState);
-    void onTfChannelStatusChanged(Telepathy::Client::FarsightChannel::Status);
+    void onTfChannelStatusChanged(Telepathy::FarsightChannel::Status);
 
     void onBtnHangupClicked();
     void onBtnSendAudioToggled(bool);
@@ -79,17 +77,17 @@ private:
     void createActions();
     void setupGui();
 
-    Telepathy::Client::MediaStreamPtr streamForType(Telepathy::MediaStreamType type) const;
-    void updateStreamDirection(const Telepathy::Client::MediaStreamPtr &stream);
+    Telepathy::MediaStreamPtr streamForType(Telepathy::MediaStreamType type) const;
+    void updateStreamDirection(const Telepathy::MediaStreamPtr &stream);
 
     void callEnded(const QString &message);
 
-    Telepathy::Client::StreamedMediaChannelPtr mChan;
-    Telepathy::Client::ContactPtr mContact;
-    Telepathy::Client::FarsightChannel *mTfChan;
+    Telepathy::StreamedMediaChannelPtr mChan;
+    Telepathy::ContactPtr mContact;
+    Telepathy::FarsightChannel *mTfChan;
 
-    Telepathy::Client::PendingMediaStreams *mPmsAudio;
-    Telepathy::Client::PendingMediaStreams *mPmsVideo;
+    Telepathy::PendingMediaStreams *mPmsAudio;
+    Telepathy::PendingMediaStreams *mPmsVideo;
 
     QPushButton *mBtnHangup;
     QPushButton *mBtnSendAudio;

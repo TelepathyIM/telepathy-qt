@@ -36,8 +36,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct PendingSendMessage::Private
 {
@@ -350,7 +348,7 @@ const Feature TextChannel::FeatureMessageCapabilities = Feature(TextChannel::sta
 const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::staticMetaObject.className(), 2);
 
 /**
- * \fn void TextChannel::messageSent(const Telepathy::Client::Message &message,
+ * \fn void TextChannel::messageSent(const Telepathy::Message &message,
  *     Telepathy::MessageSendingFlags flags,
  *     const QString &sentMessageToken)
  *
@@ -372,7 +370,7 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
  */
 
 /**
- * \fn void TextChannel::messageReceived(const Telepathy::Client::ReceivedMessage &message)
+ * \fn void TextChannel::messageReceived(const Telepathy::ReceivedMessage &message)
  *
  * Emitted when a message is added to messageQueue(), if the
  * FeatureMessageQueue Feature has been enabled.
@@ -383,7 +381,7 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
 
 /**
  * \fn void TextChannel::pendingMessageRemoved(
- *      const Telepathy::Client::ReceivedMessage &message)
+ *      const Telepathy::ReceivedMessage &message)
  *
  * Emitted when a message is removed from messageQueue(), if the
  * FeatureMessageQueue Feature has been enabled. See messageQueue() for the
@@ -743,8 +741,8 @@ void TextChannel::processQueue()
 
     connect(connection()->contactManager()->contactsForHandles(
                 contactsRequired.toList()),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onContactsFinished(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SLOT(onContactsFinished(Telepathy::PendingOperation *)));
 
     mPriv->awaitingContacts |= contactsRequired;
 }
@@ -1004,5 +1002,4 @@ void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-} // Telepathy::Client
 } // Telepathy

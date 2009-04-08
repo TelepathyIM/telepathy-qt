@@ -36,7 +36,7 @@
 #include <QDebug>
 #include <QMessageBox>
 
-using namespace Telepathy::Client;
+using namespace Telepathy;
 
 CallHandler::CallHandler(QObject *parent)
     : QObject(parent)
@@ -62,16 +62,16 @@ void CallHandler::addOutgoingCall(const ContactPtr &contact)
 
     ConnectionPtr conn = contact->manager()->connection();
     connect(conn->ensureChannel(request),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            SLOT(onOutgoingChannelCreated(Telepathy::Client::PendingOperation*)));
+            SIGNAL(finished(Telepathy::PendingOperation*)),
+            SLOT(onOutgoingChannelCreated(Telepathy::PendingOperation*)));
 }
 
 void CallHandler::addIncomingCall(const StreamedMediaChannelPtr &chan)
 {
     mChannels.append(chan);
     connect(chan->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            SLOT(onIncomingChannelReady(Telepathy::Client::PendingOperation*)));
+            SIGNAL(finished(Telepathy::PendingOperation*)),
+            SLOT(onIncomingChannelReady(Telepathy::PendingOperation*)));
 }
 
 void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
@@ -92,8 +92,8 @@ void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
             pc->objectPath(), pc->immutableProperties());
     mChannels.append(chan);
     connect(chan->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            SLOT(onOutgoingChannelReady(Telepathy::Client::PendingOperation*)));
+            SIGNAL(finished(Telepathy::PendingOperation*)),
+            SLOT(onOutgoingChannelReady(Telepathy::PendingOperation*)));
 }
 
 void CallHandler::onOutgoingChannelReady(PendingOperation *op)

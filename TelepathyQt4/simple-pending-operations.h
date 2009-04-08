@@ -32,9 +32,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
-
 
 /**
  * A %PendingOperation that is always successful.
@@ -51,7 +48,6 @@ public:
         setFinished();
     }
 };
-
 
 /**
  * A %PendingOperation that always fails with the error passed to the
@@ -76,7 +72,6 @@ public:
         setFinishedWithError(error);
     }
 };
-
 
 /**
  * Generic subclass of %PendingOperation representing a pending D-Bus method
@@ -111,8 +106,6 @@ private:
     Private *mPriv;
 };
 
-
-} // Telepathy::Client
 } // Telepathy
 
 #endif

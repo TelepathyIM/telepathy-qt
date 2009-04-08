@@ -360,4 +360,4 @@ QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signatur
     return type;
 }
 
-}
+} // Telepathy

@@ -28,17 +28,17 @@
 #include <QComboBox>
 #include <QTableWidget>
 
-AccountItem::AccountItem(Telepathy::Client::AccountManagerPtr am,
+AccountItem::AccountItem(Telepathy::AccountManagerPtr am,
         const QString &objectPath, QTableWidget *table, int row, QObject *parent)
     : QObject(parent),
-      mAcc(Telepathy::Client::Account::create(am->dbusConnection(),
+      mAcc(Telepathy::Account::create(am->dbusConnection(),
                   am->busName(), objectPath)),
       mTable(table),
       mRow(row)
 {
     connect(mAcc->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onReady(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SLOT(onReady(Telepathy::PendingOperation *)));
 }
 
 AccountItem::~AccountItem()
@@ -61,11 +61,11 @@ void AccountItem::setupGui()
     mTable->setItem(mRow, ColumnConnection, new QTableWidgetItem(mAcc->connectionObjectPath()));
 }
 
-void AccountItem::onReady(Telepathy::Client::PendingOperation *op)
+void AccountItem::onReady(Telepathy::PendingOperation *op)
 {
     setupGui();
 
-    Telepathy::Client::Account *acc = mAcc.data();
+    Telepathy::Account *acc = mAcc.data();
     connect(acc,
             SIGNAL(validityChanged(bool)),
             SLOT(onValidityChanged(bool)));

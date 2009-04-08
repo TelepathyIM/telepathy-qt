@@ -23,8 +23,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct Feature::Private : public QSharedData
 {
@@ -61,5 +59,4 @@ bool Feature::isCritical() const
     return mPriv->critical;
 }
 
-} // Telepathy::Client
 } // Telepathy

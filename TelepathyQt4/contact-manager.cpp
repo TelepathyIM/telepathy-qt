@@ -56,8 +56,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 /**
  * \class ContactManager
@@ -759,36 +757,36 @@ void ContactManager::setContactListChannels(
 
         if (type == ContactListChannel::TypeSubscribe) {
             method = SLOT(onSubscribeChannelMembersChanged(
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Channel::GroupMemberChangeDetails &));
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Channel::GroupMemberChangeDetails &));
         } else if (type == ContactListChannel::TypePublish) {
             method = SLOT(onPublishChannelMembersChanged(
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Channel::GroupMemberChangeDetails &));
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Channel::GroupMemberChangeDetails &));
         } else if (type == ContactListChannel::TypeDeny) {
             method = SLOT(onDenyChannelMembersChanged(
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Channel::GroupMemberChangeDetails &));
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Channel::GroupMemberChangeDetails &));
         } else {
             continue;
         }
 
         connect(channel.data(),
                 SIGNAL(groupMembersChanged(
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Contacts &,
-                        const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Contacts &,
+                        const Telepathy::Channel::GroupMemberChangeDetails &)),
                 method);
     }
 }
@@ -948,5 +946,4 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
     return (uint) -1;
 }
 
-}
-}
+} // Telepathy

@@ -21,7 +21,7 @@
 #include <tests/lib/simple-conn.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy::Client;
+using namespace Telepathy;
 
 class TestContacts : public Test
 {
@@ -36,7 +36,7 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint newStatus, uint newStatusReason);
     void expectConnInvalidated();
-    void expectPendingContactsFinished(Telepathy::Client::PendingOperation *);
+    void expectPendingContactsFinished(Telepathy::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
@@ -160,8 +160,8 @@ void TestContacts::initTestCase()
 
     Features features = Features() << Connection::FeatureSelfContact;
     QVERIFY(connect(mConn->becomeReady(features),
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
@@ -258,8 +258,8 @@ void TestContacts::testForHandles()
 
     // Wait for the contacts to be built
     QVERIFY(connect(pending,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // There should be 3 resulting contacts and 2 handles found to be invalid
@@ -293,8 +293,8 @@ void TestContacts::testForHandles()
 
     pending = mConn->contactManager()->contactsForHandles(handles);
     QVERIFY(connect(pending,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // Check that we got the correct number of contacts back
@@ -339,8 +339,8 @@ void TestContacts::testForIdentifiers()
     // Check that a request with just the invalid IDs fails
     PendingContacts *fails = mConn->contactManager()->contactsForIdentifiers(invalidIDs);
     QVERIFY(connect(fails,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     toCheck = fails->invalidIdentifiers().keys();
     toCheck.sort();
@@ -350,8 +350,8 @@ void TestContacts::testForIdentifiers()
     // A request with both valid and invalid IDs should succeed
     fails = mConn->contactManager()->contactsForIdentifiers(invalidIDs + validIDs + invalidIDs);
     QVERIFY(connect(fails,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(fails->validIdentifiers(), validIDs);
     toCheck = fails->invalidIdentifiers().keys();
@@ -374,8 +374,8 @@ void TestContacts::testForIdentifiers()
 
     // Finish it
     QVERIFY(connect(pending,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // Check that there are 3 contacts consistent with the request
@@ -471,8 +471,8 @@ void TestContacts::testFeatures()
     // Build contacts
     PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles, features);
     QVERIFY(connect(pending,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // Check the contact contents
@@ -582,8 +582,8 @@ void TestContacts::testFeaturesNotRequested()
     // Build contacts (note: no features)
     PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
     QVERIFY(connect(pending,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // Check that the feature accessors return sensible fallback values (note: the warnings are
@@ -659,8 +659,8 @@ void TestContacts::testUpgrade()
 
     // Wait for the contacts to be built
     QVERIFY(connect(pending,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // There should be 3 resulting contacts - save them for future reference
@@ -686,8 +686,8 @@ void TestContacts::testUpgrade()
 
     // Wait for the contacts to be built
     QVERIFY(connect(pending,
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // Check that we got the correct contacts back
@@ -764,8 +764,8 @@ void TestContacts::testSelfContactFallback()
 
     Features features = Features() << Connection::FeatureSelfContact;
     QVERIFY(connect(conn->becomeReady(features),
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(conn->isReady(features), true);
 
@@ -797,13 +797,13 @@ void TestContacts::cleanupTestCase()
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Telepathy::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                        SIGNAL(invalidated(Telepathy::Client::DBusProxy *, QString, QString)),
+                        SIGNAL(invalidated(Telepathy::DBusProxy *, QString, QString)),
                         SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }

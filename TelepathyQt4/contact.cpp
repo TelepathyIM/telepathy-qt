@@ -31,8 +31,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct Contact::Private
 {
@@ -357,5 +355,4 @@ void Contact::setBlocked(bool value)
     emit blockStatusChanged(value);
 }
 
-} // Telepathy::Client
 } // Telepathy

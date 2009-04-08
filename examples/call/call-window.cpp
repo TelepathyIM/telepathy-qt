@@ -35,7 +35,7 @@
 
 #include <QDebug>
 
-using namespace Telepathy::Client;
+using namespace Telepathy;
 
 CallWindow::CallWindow(const QString &username, const QString &password,
         QWidget *parent)
@@ -47,8 +47,8 @@ CallWindow::CallWindow(const QString &username, const QString &password,
 
     mCM = ConnectionManager::create("gabble");
     connect(mCM->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onCMReady(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SLOT(onCMReady(Telepathy::PendingOperation *)));
 
     mCallHandler = new CallHandler(this);
 
@@ -70,7 +70,7 @@ void CallWindow::setupGui()
     setCentralWidget(mRoster);
 }
 
-void CallWindow::onCMReady(Telepathy::Client::PendingOperation *op)
+void CallWindow::onCMReady(Telepathy::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "CM cannot become ready";
@@ -83,11 +83,11 @@ void CallWindow::onCMReady(Telepathy::Client::PendingOperation *op)
     params.insert("password", QVariant(mPassword));
     PendingConnection *pconn = mCM->requestConnection("jabber", params);
     connect(pconn,
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onConnectionCreated(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SLOT(onConnectionCreated(Telepathy::PendingOperation *)));
 }
 
-void CallWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
+void CallWindow::onConnectionCreated(Telepathy::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Unable to create connection";
@@ -100,14 +100,14 @@ void CallWindow::onConnectionCreated(Telepathy::Client::PendingOperation *op)
     ConnectionPtr conn = pconn->connection();
     mConn = conn;
     connect(conn->requestConnect(Connection::FeatureSelfContact),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onConnectionConnected(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SLOT(onConnectionConnected(Telepathy::PendingOperation *)));
     connect(conn.data(),
-            SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
-            SLOT(onConnectionInvalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
+            SIGNAL(invalidated(Telepathy::DBusProxy *, const QString &, const QString &)),
+            SLOT(onConnectionInvalidated(Telepathy::DBusProxy *, const QString &, const QString &)));
 }
 
-void CallWindow::onConnectionConnected(Telepathy::Client::PendingOperation *op)
+void CallWindow::onConnectionConnected(Telepathy::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Connection cannot become connected";

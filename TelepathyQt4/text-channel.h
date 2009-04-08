@@ -30,8 +30,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class PendingReadyChannel;
 class Message;
@@ -107,21 +105,21 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     // FeatureMessageSentSignal
-    void messageSent(const Telepathy::Client::Message &message,
+    void messageSent(const Telepathy::Message &message,
             Telepathy::MessageSendingFlags flags,
             const QString &sentMessageToken);
 
     // FeatureMessageQueue
-    void messageReceived(const Telepathy::Client::ReceivedMessage &message);
+    void messageReceived(const Telepathy::ReceivedMessage &message);
     void pendingMessageRemoved(
-            const Telepathy::Client::ReceivedMessage &message);
+            const Telepathy::ReceivedMessage &message);
 
 protected:
     TextChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
 private Q_SLOTS:
-    void onContactsFinished(Telepathy::Client::PendingOperation *);
+    void onContactsFinished(Telepathy::PendingOperation *);
     void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
 
     void onMessageSent(const Telepathy::MessagePartList &, uint,
@@ -144,7 +142,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

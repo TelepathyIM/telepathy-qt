@@ -34,8 +34,6 @@ class QDBusPendingCallWatcher;
 
 namespace Telepathy
 {
-namespace Client
-{
 
 /**
  * Abstract base class for pending asynchronous operations.
@@ -133,7 +131,7 @@ Q_SIGNALS:
      * \param operation This operation object, from which further information
      *    may be obtained
      */
-    void finished(Telepathy::Client::PendingOperation* operation);
+    void finished(Telepathy::PendingOperation* operation);
 
 protected:
     /**
@@ -174,8 +172,6 @@ private:
     Private *mPriv;
 };
 
-
-} // Telepathy::Client
 } // Telepathy
 
 #endif

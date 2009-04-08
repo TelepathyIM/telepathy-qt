@@ -32,8 +32,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class PendingStringList : public PendingOperation
 {
@@ -56,7 +54,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

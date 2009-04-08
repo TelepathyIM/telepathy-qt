@@ -552,4 +552,4 @@ QStringList KeyFile::valueAsStringList(const QString &key) const
     return mPriv->valueAsStringList(key);
 }
 
-}
+} // Telepathy

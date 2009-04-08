@@ -27,8 +27,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct RoomList::Private
 {
@@ -90,5 +88,4 @@ RoomList::~RoomList()
     delete mPriv;
 }
 
-} // Telepathy::Client
 } // Telepathy

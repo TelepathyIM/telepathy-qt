@@ -36,8 +36,6 @@ class QDBusPendingCallWatcher;
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class ConnectionManager;
 
@@ -70,7 +68,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

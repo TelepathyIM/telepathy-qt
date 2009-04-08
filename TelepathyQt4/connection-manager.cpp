@@ -61,8 +61,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 ProtocolParameter::ProtocolParameter(const QString &name,
                                      const QDBusSignature &dbusSignature,
@@ -284,7 +282,7 @@ void ConnectionManager::Private::PendingNames::parseResult(const QStringList &na
 ConnectionManager::Private::Private(ConnectionManager *parent, const QString &name)
     : parent(parent),
       name(name),
-      baseInterface(new ConnectionManagerInterface(parent->dbusConnection(),
+      baseInterface(new Client::ConnectionManagerInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper())
 {
@@ -494,7 +492,7 @@ PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
  * \return A pointer to the existing ConnectionManagerInterface for this
  *         ConnectionManager.
  */
-ConnectionManagerInterface *ConnectionManager::baseInterface() const
+Client::ConnectionManagerInterface *ConnectionManager::baseInterface() const
 {
     return mPriv->baseInterface;
 }
@@ -542,7 +540,7 @@ void ConnectionManager::Private::introspectMain(ConnectionManager::Private *self
     warning() << "Error parsing config file for connection manager"
         << self->name << "- introspecting";
 
-    DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
+    Client::DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
     Q_ASSERT(properties != 0);
 
     debug() << "Calling Properties::GetAll(ConnectionManager)";
@@ -678,5 +676,4 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-} // Telepathy::Client
 } // Telepathy

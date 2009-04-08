@@ -31,8 +31,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Message::Private : public QSharedData
 {
@@ -568,5 +566,4 @@ void ReceivedMessage::setSender(const ContactPtr &sender)
     mPriv->sender = sender;
 }
 
-} // Telepathy::Client
 } // Telepathy

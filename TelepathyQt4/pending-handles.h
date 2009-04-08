@@ -38,8 +38,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class PendingHandles;
 class ReferencedHandles;
@@ -90,7 +88,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

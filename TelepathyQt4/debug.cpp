@@ -86,4 +86,4 @@ void enableWarnings(bool enable)
 
 #endif /* #ifdef ENABLE_DEBUG */
 
-} /* namespace Telepathy */
+} // Telepathy

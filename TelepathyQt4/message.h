@@ -36,8 +36,7 @@ class QDateTime;
 
 namespace Telepathy
 {
-namespace Client
-{
+
 class Contact;
 class TextChannel;
 
@@ -120,7 +119,6 @@ private:
     void setSender(const ContactPtr &sender);
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

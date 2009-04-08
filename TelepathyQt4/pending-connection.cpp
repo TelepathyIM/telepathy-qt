@@ -45,8 +45,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct PendingConnection::Private
 {
@@ -196,5 +194,4 @@ void PendingConnection::onCallFinished(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-} // Telepathy::Client
 } // Telepathy

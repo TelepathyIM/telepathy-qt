@@ -43,8 +43,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Connection;
 class PendingOperation;
@@ -147,11 +145,11 @@ Q_SIGNALS:
     void groupCanRescindContactsChanged(bool canRescindContacts);
 
     void groupMembersChanged(
-            const Telepathy::Client::Contacts &groupMembersAdded,
-            const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
-            const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
-            const Telepathy::Client::Contacts &groupMembersRemoved,
-            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+            const Telepathy::Contacts &groupMembersAdded,
+            const Telepathy::Contacts &groupLocalPendingMembersAdded,
+            const Telepathy::Contacts &groupRemotePendingMembersAdded,
+            const Telepathy::Contacts &groupMembersRemoved,
+            const Telepathy::Channel::GroupMemberChangeDetails &details);
 
     void groupHandleOwnersChanged(const Telepathy::HandleOwnerMap &owners,
             const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
@@ -178,51 +176,51 @@ public:
         return OptionalInterfaceFactory<Channel>::interface<Interface>();
     }
 
-    inline ChannelInterfaceCallStateInterface *callStateInterface(
+    inline Client::ChannelInterfaceCallStateInterface *callStateInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceCallStateInterface>(check);
+        return optionalInterface<Client::ChannelInterfaceCallStateInterface>(check);
     }
 
-    inline ChannelInterfaceChatStateInterface *chatStateInterface(
+    inline Client::ChannelInterfaceChatStateInterface *chatStateInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceChatStateInterface>(check);
+        return optionalInterface<Client::ChannelInterfaceChatStateInterface>(check);
     }
 
-    inline ChannelInterfaceDTMFInterface *DTMFInterface(
+    inline Client::ChannelInterfaceDTMFInterface *DTMFInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceDTMFInterface>(check);
+        return optionalInterface<Client::ChannelInterfaceDTMFInterface>(check);
     }
 
-    inline ChannelInterfaceHoldInterface *holdInterface(
+    inline Client::ChannelInterfaceHoldInterface *holdInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceHoldInterface>(check);
+        return optionalInterface<Client::ChannelInterfaceHoldInterface>(check);
     }
 
-    inline ChannelInterfaceMediaSignallingInterface *mediaSignallingInterface(
+    inline Client::ChannelInterfaceMediaSignallingInterface *mediaSignallingInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceMediaSignallingInterface>(check);
+        return optionalInterface<Client::ChannelInterfaceMediaSignallingInterface>(check);
     }
 
-    inline ChannelInterfaceMessagesInterface *messagesInterface(
+    inline Client::ChannelInterfaceMessagesInterface *messagesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceMessagesInterface>(check);
+        return optionalInterface<Client::ChannelInterfaceMessagesInterface>(check);
     }
 
-    inline ChannelInterfacePasswordInterface *passwordInterface(
+    inline Client::ChannelInterfacePasswordInterface *passwordInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfacePasswordInterface>(check);
+        return optionalInterface<Client::ChannelInterfacePasswordInterface>(check);
     }
 
-    inline DBus::PropertiesInterface *propertiesInterface() const
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
-        return optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck);
+        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
     template <class Interface>
@@ -238,40 +236,40 @@ public:
         return OptionalInterfaceFactory<Channel>::interface<Interface>();
     }
 
-    inline ChannelTypeRoomListInterface *roomListInterface(
+    inline Client::ChannelTypeRoomListInterface *roomListInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return typeInterface<ChannelTypeRoomListInterface>(check);
+        return typeInterface<Client::ChannelTypeRoomListInterface>(check);
     }
 
-    inline ChannelTypeStreamedMediaInterface *streamedMediaInterface(
+    inline Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return typeInterface<ChannelTypeStreamedMediaInterface>(check);
+        return typeInterface<Client::ChannelTypeStreamedMediaInterface>(check);
     }
 
-    inline ChannelTypeTextInterface *textInterface(
+    inline Client::ChannelTypeTextInterface *textInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return typeInterface<ChannelTypeTextInterface>(check);
+        return typeInterface<Client::ChannelTypeTextInterface>(check);
     }
 
-    inline ChannelTypeTubesInterface *tubesInterface(
+    inline Client::ChannelTypeTubesInterface *tubesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return typeInterface<ChannelTypeTubesInterface>(check);
+        return typeInterface<Client::ChannelTypeTubesInterface>(check);
     }
 
 protected:
     Channel(const ConnectionPtr &connection,const QString &objectPath,
             const QVariantMap &immutableProperties);
 
-    ChannelInterface *baseInterface() const;
+    Client::ChannelInterface *baseInterface() const;
 
-    inline ChannelInterfaceGroupInterface *groupInterface(
+    inline Client::ChannelInterfaceGroupInterface *groupInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<ChannelInterfaceGroupInterface>(check);
+        return optionalInterface<Client::ChannelInterfaceGroupInterface>(check);
     }
 
 private Q_SLOTS:
@@ -289,7 +287,7 @@ private Q_SLOTS:
     void gotAllMembers(QDBusPendingCallWatcher *watcher);
     void gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
-    void gotContacts(Telepathy::Client::PendingOperation *op);
+    void gotContacts(Telepathy::PendingOperation *op);
 
     void onGroupFlagsChanged(uint, uint);
     void onMembersChanged(const QString&,
@@ -310,9 +308,8 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
-Q_DECLARE_METATYPE(Telepathy::Client::Channel::GroupMemberChangeDetails);
+Q_DECLARE_METATYPE(Telepathy::Channel::GroupMemberChangeDetails);
 
 #endif

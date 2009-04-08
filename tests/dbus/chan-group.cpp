@@ -20,7 +20,7 @@
 #include <tests/lib/csh/conn.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy::Client;
+using namespace Telepathy;
 
 class TestChanGroup : public Test
 {
@@ -35,17 +35,17 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint, uint);
     void expectConnInvalidated();
-    void expectPendingRoomHandlesFinished(Telepathy::Client::PendingOperation*);
-    void expectPendingContactHandlesFinished(Telepathy::Client::PendingOperation*);
-    void expectCreateChannelFinished(Telepathy::Client::PendingOperation *);
-    void expectPendingContactsFinished(Telepathy::Client::PendingOperation *);
+    void expectPendingRoomHandlesFinished(Telepathy::PendingOperation*);
+    void expectPendingContactHandlesFinished(Telepathy::PendingOperation*);
+    void expectCreateChannelFinished(Telepathy::PendingOperation *);
+    void expectPendingContactsFinished(Telepathy::PendingOperation *);
     void onChannelGroupFlagsChanged(uint, uint, uint);
     void onGroupMembersChanged(
-            const Telepathy::Client::Contacts &groupMembersAdded,
-            const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
-            const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
-            const Telepathy::Client::Contacts &groupMembersRemoved,
-            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+            const Telepathy::Contacts &groupMembersAdded,
+            const Telepathy::Contacts &groupLocalPendingMembersAdded,
+            const Telepathy::Contacts &groupRemotePendingMembersAdded,
+            const Telepathy::Contacts &groupMembersRemoved,
+            const Telepathy::Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
     void initTestCase();
@@ -312,8 +312,8 @@ void TestChanGroup::initTestCase()
     mConn->requestConnect();
 
     QVERIFY(connect(mConn->becomeReady(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Telepathy::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
 
@@ -348,13 +348,13 @@ void TestChanGroup::testRequestHandle()
     // Request handles for the identifiers and wait for the request to process
     PendingHandles *pending = mConn->requestHandles(Telepathy::HandleTypeRoom, ids);
     QVERIFY(connect(pending,
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectPendingRoomHandlesFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Telepathy::PendingOperation*)),
+                    SLOT(expectPendingRoomHandlesFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(pending,
-                       SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                       SIGNAL(finished(Telepathy::PendingOperation*)),
                        this,
-                       SLOT(expectPendingRoomHandlesFinished(Telepathy::Client::PendingOperation*))));
+                       SLOT(expectPendingRoomHandlesFinished(Telepathy::PendingOperation*))));
 }
 
 void TestChanGroup::testCreateChannel()
@@ -405,14 +405,14 @@ void TestChanGroup::doTestCreateChannel()
                    mRoomHandles[mRoomNumber]);
 
     QVERIFY(connect(mConn->createChannel(request),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Telepathy::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Telepathy::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
@@ -436,17 +436,17 @@ void TestChanGroup::doTestCreateChannel()
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
+                            const Telepathy::Contacts &,
+                            const Telepathy::Contacts &,
+                            const Telepathy::Contacts &,
+                            const Telepathy::Contacts &,
+                            const Telepathy::Channel::GroupMemberChangeDetails &)),
                     SLOT(onGroupMembersChanged(
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Channel::GroupMemberChangeDetails &))));
+                            const Telepathy::Contacts &,
+                            const Telepathy::Contacts &,
+                            const Telepathy::Contacts &,
+                            const Telepathy::Contacts &,
+                            const Telepathy::Channel::GroupMemberChangeDetails &))));
 
     if (mChan->groupContacts().count() != 5) {
         // wait the initial contacts to be added to the group
@@ -471,14 +471,14 @@ void TestChanGroup::doTestCreateChannel()
         QString("mary@#room%1").arg(mRoomNumber) <<
         QString("another anonymous coward@#room%1").arg(mRoomNumber);
     QVERIFY(connect(mConn->requestHandles(Telepathy::HandleTypeContact, ids),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectPendingContactHandlesFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Telepathy::PendingOperation*)),
+                    SLOT(expectPendingContactHandlesFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // Wait for the contacts to be built
     QVERIFY(connect(mConn->contactManager()->contactsForHandles(mContactHandles),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectPendingContactsFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Telepathy::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mContacts.size(), 3);
@@ -573,13 +573,13 @@ void TestChanGroup::cleanupTestCase()
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                        SIGNAL(finished(Telepathy::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                            SIGNAL(invalidated(Telepathy::DBusProxy *,
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);

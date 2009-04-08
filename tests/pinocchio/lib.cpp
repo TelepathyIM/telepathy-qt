@@ -9,7 +9,7 @@
 #include <TelepathyQt4/DBus>
 
 using Telepathy::Client::DBus::DBusDaemonInterface;
-using Telepathy::Client::PendingOperation;
+using Telepathy::PendingOperation;
 
 PinocchioTest::PinocchioTest(QObject *parent)
     : Test(parent)

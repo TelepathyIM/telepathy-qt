@@ -38,8 +38,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Connection;
 class PendingContacts;
@@ -95,7 +93,7 @@ class ContactManager : public QObject
         ContactPtr lookupContactByHandle(uint handle);
 
     Q_SIGNALS:
-        void presencePublicationRequested(const Telepathy::Client::Contacts &contacts);
+        void presencePublicationRequested(const Telepathy::Contacts &contacts);
 
     private Q_SLOTS:
         void onAliasesChanged(const Telepathy::AliasPairList &);
@@ -103,23 +101,23 @@ class ContactManager : public QObject
         void onPresencesChanged(const Telepathy::SimpleContactPresences &);
 
         void onSubscribeChannelMembersChanged(
-            const Telepathy::Client::Contacts &groupMembersAdded,
-            const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
-            const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
-            const Telepathy::Client::Contacts &groupMembersRemoved,
-            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+            const Telepathy::Contacts &groupMembersAdded,
+            const Telepathy::Contacts &groupLocalPendingMembersAdded,
+            const Telepathy::Contacts &groupRemotePendingMembersAdded,
+            const Telepathy::Contacts &groupMembersRemoved,
+            const Telepathy::Channel::GroupMemberChangeDetails &details);
         void onPublishChannelMembersChanged(
-            const Telepathy::Client::Contacts &groupMembersAdded,
-            const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
-            const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
-            const Telepathy::Client::Contacts &groupMembersRemoved,
-            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+            const Telepathy::Contacts &groupMembersAdded,
+            const Telepathy::Contacts &groupLocalPendingMembersAdded,
+            const Telepathy::Contacts &groupRemotePendingMembersAdded,
+            const Telepathy::Contacts &groupMembersRemoved,
+            const Telepathy::Channel::GroupMemberChangeDetails &details);
         void onDenyChannelMembersChanged(
-            const Telepathy::Client::Contacts &groupMembersAdded,
-            const Telepathy::Client::Contacts &groupLocalPendingMembersAdded,
-            const Telepathy::Client::Contacts &groupRemotePendingMembersAdded,
-            const Telepathy::Client::Contacts &groupMembersRemoved,
-            const Telepathy::Client::Channel::GroupMemberChangeDetails &details);
+            const Telepathy::Contacts &groupMembersAdded,
+            const Telepathy::Contacts &groupLocalPendingMembersAdded,
+            const Telepathy::Contacts &groupRemotePendingMembersAdded,
+            const Telepathy::Contacts &groupMembersRemoved,
+            const Telepathy::Channel::GroupMemberChangeDetails &details);
 
     private:
         struct ContactListChannel
@@ -169,7 +167,6 @@ class ContactManager : public QObject
         Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

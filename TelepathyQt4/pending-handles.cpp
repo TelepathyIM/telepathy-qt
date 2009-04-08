@@ -41,8 +41,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct PendingHandles::Private
 {
@@ -495,5 +493,4 @@ void PendingHandles::onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watc
     watcher->deleteLater();
 }
 
-} // Telepathy::Client
 } // Telepathy

@@ -35,8 +35,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class ContactManager;
 class PendingOperation;
@@ -95,13 +93,13 @@ Q_SIGNALS:
     void avatarTokenChanged(const QString &avatarToken);
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
 
-    void subscriptionStateChanged(Telepathy::Client::Contact::PresenceState state);
-    void publishStateChanged(Telepathy::Client::Contact::PresenceState state);
+    void subscriptionStateChanged(Telepathy::Contact::PresenceState state);
+    void publishStateChanged(Telepathy::Contact::PresenceState state);
     void blockStatusChanged(bool blocked);
 
     // TODO: consider how the Renaming interface should work and map to Contacts
     // I guess it would be something like:
-    // void renamedTo(Telepathy::Client::ContactPtr)
+    // void renamedTo(Telepathy::ContactPtr)
     // with that contact getting the same features requested as the current one. Or would we rather
     // want to signal that change right away with a handle?
 
@@ -135,7 +133,6 @@ inline uint qHash(const ContactPtr &contact)
     return qHash(contact.data());
 }
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

@@ -32,8 +32,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Account;
 class AccountManager;
@@ -57,7 +55,6 @@ typedef SharedPtr<MediaStream> MediaStreamPtr;
 typedef SharedPtr<StreamedMediaChannel> StreamedMediaChannelPtr;
 typedef SharedPtr<TextChannel> TextChannelPtr;
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

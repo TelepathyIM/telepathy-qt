@@ -29,8 +29,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class DBusProxy;
 
@@ -47,7 +45,7 @@ public:
     QString invalidationMessage() const;
 
 protected Q_SLOTS:
-    virtual void invalidate(Telepathy::Client::DBusProxy *proxy,
+    virtual void invalidate(Telepathy::DBusProxy *proxy,
             const QString &error, const QString &message);
 
 protected:
@@ -61,7 +59,6 @@ private:
     Private *mPriv;
 };
 
-} // Client
 } // Telepathy
 
 #endif

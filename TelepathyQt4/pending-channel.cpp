@@ -46,8 +46,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct PendingChannel::Private
 {
@@ -358,5 +356,4 @@ void PendingChannel::onCallEnsureChannelFinished(QDBusPendingCallWatcher *watche
     watcher->deleteLater();
 }
 
-} // Telepathy::Client
 } // Telepathy

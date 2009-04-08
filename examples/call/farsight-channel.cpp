@@ -34,7 +34,6 @@
 #include <TelepathyQt4/StreamedMediaChannel>
 
 namespace Telepathy {
-namespace Client {
 
 struct FarsightChannel::Private
 {
@@ -346,5 +345,4 @@ VideoWidget *FarsightChannel::videoWidget() const
     return mPriv->videoOutput;
 }
 
-}
-}
+} // Telepathy

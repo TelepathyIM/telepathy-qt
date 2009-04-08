@@ -33,7 +33,6 @@
 extern void qt_x11_set_global_double_buffer(bool);
 
 namespace Telepathy {
-namespace Client {
 
 struct VideoWidget::Private {
     Private(VideoWidget *parent, GstBus *bus);
@@ -163,5 +162,4 @@ void VideoWidget::windowExposed()
     }
 }
 
-}
-}
+} // Telepathy

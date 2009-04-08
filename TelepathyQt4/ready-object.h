@@ -32,8 +32,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class DBusProxy;
 class PendingReady;
@@ -63,7 +61,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

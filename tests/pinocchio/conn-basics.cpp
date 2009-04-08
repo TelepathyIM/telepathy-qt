@@ -11,19 +11,19 @@
 
 #include <tests/pinocchio/lib.h>
 
-using Telepathy::Client::Connection;
-using Telepathy::Client::ConnectionPtr;
+using Telepathy::Connection;
+using Telepathy::ConnectionPtr;
 using Telepathy::Client::ConnectionManagerInterface;
 using Telepathy::Client::DBus::PeerInterface;
 using Telepathy::Client::DBus::PropertiesInterface;
-using Telepathy::Client::Features;
+using Telepathy::Features;
 
 class TestConnBasics : public PinocchioTest
 {
     Q_OBJECT
 
 private:
-    Telepathy::Client::ConnectionManagerInterface* mCM;
+    ConnectionManagerInterface* mCM;
     QString mConnBusName;
     QString mConnObjectPath;
     ConnectionPtr mConn;
@@ -143,15 +143,15 @@ void TestConnBasics::testConnect()
 
     qDebug() << "calling Connect()";
     QVERIFY(connect(mConn->requestConnect(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SIGNAL(finished(Telepathy::PendingOperation*)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+            SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(connect(mConn->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SIGNAL(finished(Telepathy::PendingOperation*)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+            SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
 
@@ -169,9 +169,9 @@ void TestConnBasics::testConnect()
 
     Features features = Features() << Connection::FeatureSimplePresence;
     QVERIFY(connect(mConn->becomeReady(features),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SIGNAL(finished(Telepathy::PendingOperation*)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+            SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
     QVERIFY(mConn->missingFeatures() == features);
@@ -190,9 +190,9 @@ void TestConnBasics::testConnect()
             TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)));
 
     QVERIFY(connect(mConn->requestDisconnect(),
-          SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          SIGNAL(finished(Telepathy::PendingOperation*)),
           this,
-          SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+          SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
@@ -210,15 +210,15 @@ void TestConnBasics::testAlreadyConnected()
 
     qDebug() << "calling Connect()";
     QVERIFY(connect(mConn->requestConnect(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SIGNAL(finished(Telepathy::PendingOperation*)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+            SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(connect(mConn->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SIGNAL(finished(Telepathy::PendingOperation*)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+            SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
 
@@ -246,9 +246,9 @@ void TestConnBasics::testAlreadyConnected()
           this, SLOT(expectReady(uint, uint))));
 
     QVERIFY(connect(mConn->requestDisconnect(),
-          SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+          SIGNAL(finished(Telepathy::PendingOperation*)),
           this,
-          SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+          SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     mConn.reset();

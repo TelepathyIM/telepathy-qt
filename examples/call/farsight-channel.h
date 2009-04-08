@@ -30,7 +30,6 @@
 #include <telepathy-farsight/channel.h>
 
 namespace Telepathy {
-namespace Client {
 
 class Connection;
 class VideoWidget;
@@ -58,7 +57,7 @@ public:
     // TODO add a way to change input and output devices
 
 Q_SIGNALS:
-    void statusChanged(Telepathy::Client::FarsightChannel::Status status);
+    void statusChanged(Telepathy::FarsightChannel::Status status);
 
 private:
     struct Private;
@@ -66,9 +65,8 @@ private:
     Private *mPriv;
 };
 
-}
-}
+} // Telepathy
 
-Q_DECLARE_METATYPE(Telepathy::Client::FarsightChannel::Status)
+Q_DECLARE_METATYPE(Telepathy::FarsightChannel::Status)
 
 #endif

@@ -27,8 +27,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct AbstractInterface::Private
 {
@@ -55,8 +53,8 @@ AbstractInterface::AbstractInterface(DBusProxy *parent, const char *interface)
             interface, parent->dbusConnection(), parent),
       mPriv(new Private())
 {
-    connect(parent, SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
-            this, SLOT(invalidate(Telepathy::Client::DBusProxy *, const QString &, const QString &)));
+    connect(parent, SIGNAL(invalidated(Telepathy::DBusProxy *, const QString &, const QString &)),
+            this, SLOT(invalidate(Telepathy::DBusProxy *, const QString &, const QString &)));
 }
 
 AbstractInterface::~AbstractInterface()
@@ -79,7 +77,7 @@ QString AbstractInterface::invalidationMessage() const
     return mPriv->mMessage;
 }
 
-void AbstractInterface::invalidate(Telepathy::Client::DBusProxy *proxy,
+void AbstractInterface::invalidate(Telepathy::DBusProxy *proxy,
         const QString &error, const QString &message)
 {
     Q_ASSERT(!error.isEmpty());
@@ -90,5 +88,4 @@ void AbstractInterface::invalidate(Telepathy::Client::DBusProxy *proxy,
     }
 }
 
-} // Client
 } // Telepathy

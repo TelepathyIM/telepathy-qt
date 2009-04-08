@@ -27,8 +27,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct FileTransfer::Private
 {
@@ -91,5 +89,4 @@ FileTransfer::~FileTransfer()
     delete mPriv;
 }
 
-} // Telepathy::Client
 } // Telepathy

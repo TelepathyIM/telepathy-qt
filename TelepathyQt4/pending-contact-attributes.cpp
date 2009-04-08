@@ -49,8 +49,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 /**
  * \class PendingContactAttributes
@@ -241,5 +239,4 @@ void PendingContactAttributes::failImmediately(const QString &error, const QStri
     setFinishedWithError(error, errorMessage);
 }
 
-} // Telepathy::Client
 } // Telepathy

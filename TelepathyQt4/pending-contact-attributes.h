@@ -22,13 +22,9 @@
 #ifndef _TelepathyQt4_cli_pending_contact_attributes_h_HEADER_GUARD_
 #define _TelepathyQt4_cli_pending_contact_attributes_h_HEADER_GUARD_
 
-namespace Telepathy
-{
-namespace Client
-{
-class PendingContactAttributes;
-}
-}
+#ifndef IN_TELEPATHY_QT4_HEADER
+#error IN_TELEPATHY_QT4_HEADER
+#endif
 
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/Types>
@@ -36,8 +32,6 @@ class PendingContactAttributes;
 #include <TelepathyQt4/Types>
 
 namespace Telepathy
-{
-namespace Client
 {
 
 class ReferencedHandles;
@@ -74,7 +68,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

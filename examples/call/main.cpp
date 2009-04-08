@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     Telepathy::registerTypes();
     Telepathy::enableDebug(true);
     Telepathy::enableWarnings(true);
-    qRegisterMetaType<Telepathy::Client::FarsightChannel::Status>();
+    qRegisterMetaType<Telepathy::FarsightChannel::Status>();
 
     CallWindow w(argv[1], argv[2]);
     w.show();

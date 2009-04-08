@@ -27,11 +27,9 @@
 #include <TelepathyQt4/Connection>
 
 namespace Telepathy {
-namespace Client {
 class ConnectionManager;
 class DBusProxy;
 class PendingOperation;
-}
 }
 
 class RosterWidget;
@@ -46,17 +44,17 @@ public:
     virtual ~RosterWindow();
 
 private Q_SLOTS:
-    void onCMReady(Telepathy::Client::PendingOperation *);
-    void onConnectionCreated(Telepathy::Client::PendingOperation *);
-    void onConnectionConnected(Telepathy::Client::PendingOperation *);
-    void onConnectionInvalidated(Telepathy::Client::DBusProxy *,
+    void onCMReady(Telepathy::PendingOperation *);
+    void onConnectionCreated(Telepathy::PendingOperation *);
+    void onConnectionConnected(Telepathy::PendingOperation *);
+    void onConnectionInvalidated(Telepathy::DBusProxy *,
             const QString &, const QString &);
 
 private:
     void setupGui();
 
-    Telepathy::Client::ConnectionManagerPtr mCM;
-    QList<Telepathy::Client::ConnectionPtr> mConns;
+    Telepathy::ConnectionManagerPtr mCM;
+    QList<Telepathy::ConnectionPtr> mConns;
     QString mUsername;
     QString mPassword;
     RosterWidget *mRoster;

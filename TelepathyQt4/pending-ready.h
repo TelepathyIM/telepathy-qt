@@ -33,8 +33,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class PendingReady: public PendingOperation
 {
@@ -58,7 +56,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

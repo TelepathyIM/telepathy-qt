@@ -34,8 +34,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct PendingMediaStreams::Private
 {
@@ -125,11 +123,11 @@ void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
         }
         mPriv->streams.append(stream);
         connect(channel.data(),
-                SIGNAL(streamRemoved(Telepathy::Client::MediaStreamPtr)),
-                SLOT(onStreamRemoved(Telepathy::Client::MediaStreamPtr)));
+                SIGNAL(streamRemoved(Telepathy::MediaStreamPtr)),
+                SLOT(onStreamRemoved(Telepathy::MediaStreamPtr)));
         connect(stream->becomeReady(),
-                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                SLOT(onStreamReady(Telepathy::Client::PendingOperation*)));
+                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SLOT(onStreamReady(Telepathy::PendingOperation*)));
     }
 
     watcher->deleteLater();
@@ -225,8 +223,8 @@ void MediaStream::Private::introspectContact(MediaStream::Private *self)
     ContactManager *contactManager = chan->connection()->contactManager();
     self->parent->connect(
             contactManager->contactsForHandles(UIntList() << self->contactHandle),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(gotContact(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SLOT(gotContact(Telepathy::PendingOperation *)));
 }
 
 const Feature MediaStream::FeatureContact = Feature(MediaStream::staticMetaObject.className(), 0);
@@ -474,7 +472,7 @@ StreamedMediaChannel::Private::~Private()
 void StreamedMediaChannel::Private::introspectStreams(StreamedMediaChannel::Private *self)
 {
     StreamedMediaChannel *parent = self->parent;
-    ChannelTypeStreamedMediaInterface *streamedMediaInterface =
+    Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface =
         parent->streamedMediaInterface();
 
     parent->connect(streamedMediaInterface,
@@ -846,8 +844,8 @@ void StreamedMediaChannel::addStream(const MediaStreamPtr &stream)
 {
     mPriv->incompleteStreams.insert(stream->id(), stream);
     connect(stream->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-            SLOT(onStreamReady(Telepathy::Client::PendingOperation*)));
+            SIGNAL(finished(Telepathy::PendingOperation*)),
+            SLOT(onStreamReady(Telepathy::PendingOperation*)));
 }
 
 MediaStreamPtr StreamedMediaChannel::lookupStreamById(uint streamId)
@@ -860,5 +858,4 @@ MediaStreamPtr StreamedMediaChannel::lookupStreamById(uint streamId)
     return MediaStreamPtr();
 }
 
-} // Telepathy::Client
 } // Telepathy

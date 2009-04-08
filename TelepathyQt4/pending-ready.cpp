@@ -38,8 +38,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct PendingReady::Private
 {
@@ -103,5 +101,4 @@ Features PendingReady::requestedFeatures() const
     return mPriv->requestedFeatures;
 }
 
-} // Telepathy::Client
 } // Telepathy

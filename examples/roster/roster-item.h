@@ -32,11 +32,11 @@ class RosterItem : public QObject, public QListWidgetItem
     Q_OBJECT
 
 public:
-    RosterItem(const Telepathy::Client::ContactPtr &contact,
+    RosterItem(const Telepathy::ContactPtr &contact,
             QListWidget *parent = 0);
     ~RosterItem();
 
-    Telepathy::Client::ContactPtr contact() const { return mContact; }
+    Telepathy::ContactPtr contact() const { return mContact; }
 
 Q_SIGNALS:
     void changed();
@@ -45,7 +45,7 @@ private Q_SLOTS:
     void onContactChanged();
 
 private:
-    Telepathy::Client::ContactPtr mContact;
+    Telepathy::ContactPtr mContact;
 };
 
 #endif

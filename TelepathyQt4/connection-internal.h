@@ -30,8 +30,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Connection::PendingConnect : public PendingReady
 {
@@ -42,10 +40,9 @@ public:
 
 private Q_SLOTS:
     void onConnectReply(QDBusPendingCallWatcher *);
-    void onBecomeReadyReply(Telepathy::Client::PendingOperation *);
+    void onBecomeReadyReply(Telepathy::PendingOperation *);
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

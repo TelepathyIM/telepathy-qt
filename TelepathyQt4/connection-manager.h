@@ -41,8 +41,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class PendingConnection;
 class PendingReady;
@@ -144,9 +142,9 @@ public:
     PendingConnection *requestConnection(const QString &protocol,
             const QVariantMap &parameters);
 
-    inline DBus::PropertiesInterface *propertiesInterface() const
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
-        return OptionalInterfaceFactory<ConnectionManager>::interface<DBus::PropertiesInterface>();
+        return OptionalInterfaceFactory<ConnectionManager>::interface<Client::DBus::PropertiesInterface>();
     }
 
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
@@ -155,7 +153,7 @@ protected:
     ConnectionManager(const QString &name);
     ConnectionManager(const QDBusConnection &bus, const QString &name);
 
-    ConnectionManagerInterface *baseInterface() const;
+    Client::ConnectionManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
@@ -171,7 +169,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

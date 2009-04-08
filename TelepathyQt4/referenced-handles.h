@@ -57,8 +57,7 @@
 
 namespace Telepathy
 {
-namespace Client
-{
+
 class Connection;
 
 /**
@@ -288,7 +287,6 @@ class ReferencedHandles
 
 typedef QListIterator<uint> ReferencedHandlesIterator;
 
-}
-}
+} // Telepathy
 
 #endif

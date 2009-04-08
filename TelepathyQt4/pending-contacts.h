@@ -39,8 +39,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class ContactManager;
 
@@ -69,10 +67,10 @@ public:
     QHash<QString, QPair<QString, QString> > invalidIdentifiers() const;
 
 private Q_SLOTS:
-    void onAttributesFinished(Telepathy::Client::PendingOperation *);
-    void onRequestHandlesFinished(Telepathy::Client::PendingOperation *);
-    void onReferenceHandlesFinished(Telepathy::Client::PendingOperation *);
-    void onNestedFinished(Telepathy::Client::PendingOperation *);
+    void onAttributesFinished(Telepathy::PendingOperation *);
+    void onRequestHandlesFinished(Telepathy::PendingOperation *);
+    void onReferenceHandlesFinished(Telepathy::PendingOperation *);
+    void onNestedFinished(Telepathy::PendingOperation *);
     void onInspectHandlesFinished(QDBusPendingCallWatcher *);
 
 private:
@@ -96,7 +94,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

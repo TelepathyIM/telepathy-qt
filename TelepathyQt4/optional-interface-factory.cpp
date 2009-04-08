@@ -30,8 +30,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct OptionalInterfaceCache::Private
 {
@@ -81,5 +79,4 @@ void OptionalInterfaceCache::cache(AbstractInterface *interface) const
     mPriv->interfaces[name] = interface;
 }
 
-}
-}
+} // Telepathy

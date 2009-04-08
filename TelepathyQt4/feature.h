@@ -33,8 +33,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Feature : public QPair<QString, uint>
 {
@@ -66,7 +64,6 @@ inline Features operator|(const Feature &feature1, const Feature &feature2)
     return Features() << feature1 << feature2;
 }
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif

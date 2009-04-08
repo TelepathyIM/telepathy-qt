@@ -52,8 +52,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 struct Account::Private
 {
@@ -73,7 +71,7 @@ struct Account::Private
     Account *parent;
 
     // Instance of generated interface class
-    AccountInterface *baseInterface;
+    Client::AccountInterface *baseInterface;
 
     ReadinessHelper *readinessHelper;
 
@@ -103,7 +101,7 @@ struct Account::Private
 
 Account::Private::Private(Account *parent)
     : parent(parent),
-      baseInterface(new AccountInterface(parent->dbusConnection(),
+      baseInterface(new Client::AccountInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
       valid(false),
@@ -717,7 +715,7 @@ QStringList Account::interfaces() const
  * \return A pointer to the existing AccountInterface for this
  *         Account.
  */
-AccountInterface *Account::baseInterface() const
+Client::AccountInterface *Account::baseInterface() const
 {
     return mPriv->baseInterface;
 }
@@ -739,7 +737,7 @@ void Account::Private::init()
 
 void Account::Private::introspectMain(Account::Private *self)
 {
-    DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
+    Client::DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
     Q_ASSERT(properties != 0);
 
     debug() << "Calling Properties::GetAll(Account)";
@@ -756,7 +754,7 @@ void Account::Private::introspectAvatar(Account::Private *self)
     debug() << "Calling GetAvatar(Account)";
     // we already checked if avatar interface exists, so bypass avatar interface
     // checking
-    AccountInterfaceAvatarInterface *iface =
+    Client::AccountInterfaceAvatarInterface *iface =
         self->parent->avatarInterface(BypassInterfaceCheck);
 
     // If we are here it means the user cares about avatar, so
@@ -777,8 +775,8 @@ void Account::Private::introspectProtocolInfo(Account::Private *self)
             self->parent->dbusConnection(),
             self->cmName);
     self->parent->connect(self->cm->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onConnectionManagerReady(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SLOT(onConnectionManagerReady(Telepathy::PendingOperation *)));
 }
 
 void Account::Private::updateProperties(const QVariantMap &props)
@@ -1032,5 +1030,4 @@ void Account::onRemoved()
             QLatin1String("Account removed from AccountManager"));
 }
 
-} // Telepathy::Client
 } // Telepathy

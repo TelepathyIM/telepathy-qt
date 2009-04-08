@@ -36,8 +36,6 @@
 
 namespace Telepathy
 {
-namespace Client
-{
 
 class Connection;
 
@@ -82,7 +80,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
 } // Telepathy
 
 #endif
