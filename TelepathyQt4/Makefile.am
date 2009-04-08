@@ -76,8 +76,7 @@ libtelepathy_qt4_la_SOURCES = \
     room-list.cpp \
     streamed-media-channel.cpp \
     text-channel.cpp \
-    types.cpp \
-    header-compile-test.cpp
+    types.cpp
 
 nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-account-body.hpp \
