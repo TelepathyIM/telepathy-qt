@@ -38,7 +38,7 @@ public:
      */
     void testMissionControlBindings();
 
-    /** Connects and disconnects to jabber server. Uses and testing of Qt bindings for Telepathy */
+    /** Connects and disconnects to jabber server. Uses and testing of Qt bindings for Tp */
     void testConnectToJabberServer();
 
     /** Tests whether the existing connection managers can be discovered. */

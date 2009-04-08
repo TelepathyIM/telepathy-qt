@@ -54,7 +54,7 @@
  * Proxy objects representing remote Telepathy Connection objects.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 /**
@@ -191,7 +191,7 @@ bool ContactManager::subscriptionRequestHasMessage() const
 {
     return mPriv->subscribeChannel &&
         (mPriv->subscribeChannel->groupFlags() &
-         Telepathy::ChannelGroupFlagMessageAdd);
+         ChannelGroupFlagMessageAdd);
 }
 
 /**
@@ -257,7 +257,7 @@ bool ContactManager::subscriptionRemovalHasMessage() const
 {
     return mPriv->subscribeChannel &&
         (mPriv->subscribeChannel->groupFlags() &
-         Telepathy::ChannelGroupFlagMessageRemove);
+         ChannelGroupFlagMessageRemove);
 }
 
 /**
@@ -290,7 +290,7 @@ bool ContactManager::subscriptionRescindingHasMessage() const
 {
     return mPriv->subscribeChannel &&
         (mPriv->subscribeChannel->groupFlags() &
-         Telepathy::ChannelGroupFlagMessageRescind);
+         ChannelGroupFlagMessageRescind);
 }
 
 /**
@@ -346,7 +346,7 @@ bool ContactManager::publicationAuthorizationHasMessage() const
 {
     return mPriv->subscribeChannel &&
         (mPriv->subscribeChannel->groupFlags() &
-         Telepathy::ChannelGroupFlagMessageAccept);
+         ChannelGroupFlagMessageAccept);
 }
 
 /**
@@ -387,7 +387,7 @@ bool ContactManager::publicationRejectionHasMessage() const
 {
     return mPriv->subscribeChannel &&
         (mPriv->subscribeChannel->groupFlags() &
-         Telepathy::ChannelGroupFlagMessageReject);
+         ChannelGroupFlagMessageReject);
 }
 
 /**
@@ -422,7 +422,7 @@ bool ContactManager::publicationRemovalHasMessage() const
 {
     return mPriv->subscribeChannel &&
         (mPriv->subscribeChannel->groupFlags() &
-         Telepathy::ChannelGroupFlagMessageRemove);
+         ChannelGroupFlagMessageRemove);
 }
 
 /**
@@ -565,7 +565,7 @@ PendingContacts *ContactManager::upgradeContacts(const QList<ContactPtr> &contac
     return new PendingContacts(this, contacts, features);
 }
 
-void ContactManager::onAliasesChanged(const Telepathy::AliasPairList &aliases)
+void ContactManager::onAliasesChanged(const AliasPairList &aliases)
 {
     debug() << "Got AliasesChanged for" << aliases.size() << "contacts";
 
@@ -588,7 +588,7 @@ void ContactManager::onAvatarUpdated(uint handle, const QString &token)
     }
 }
 
-void ContactManager::onPresencesChanged(const Telepathy::SimpleContactPresences &presences)
+void ContactManager::onPresencesChanged(const SimpleContactPresences &presences)
 {
     debug() << "Got PresencesChanged for" << presences.size() << "contacts";
 
@@ -757,36 +757,36 @@ void ContactManager::setContactListChannels(
 
         if (type == ContactListChannel::TypeSubscribe) {
             method = SLOT(onSubscribeChannelMembersChanged(
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Channel::GroupMemberChangeDetails &));
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Channel::GroupMemberChangeDetails &));
         } else if (type == ContactListChannel::TypePublish) {
             method = SLOT(onPublishChannelMembersChanged(
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Channel::GroupMemberChangeDetails &));
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Channel::GroupMemberChangeDetails &));
         } else if (type == ContactListChannel::TypeDeny) {
             method = SLOT(onDenyChannelMembersChanged(
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Channel::GroupMemberChangeDetails &));
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Channel::GroupMemberChangeDetails &));
         } else {
             continue;
         }
 
         connect(channel.data(),
                 SIGNAL(groupMembersChanged(
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Contacts &,
-                        const Telepathy::Channel::GroupMemberChangeDetails &)),
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Contacts &,
+                        const Tp::Channel::GroupMemberChangeDetails &)),
                 method);
     }
 }
@@ -817,9 +817,9 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
         case Contact::FeatureAlias:
             QObject::connect(
                     conn->aliasingInterface(),
-                    SIGNAL(AliasesChanged(const Telepathy::AliasPairList &)),
+                    SIGNAL(AliasesChanged(const Tp::AliasPairList &)),
                     conn->contactManager(),
-                    SLOT(onAliasesChanged(const Telepathy::AliasPairList &)));
+                    SLOT(onAliasesChanged(const Tp::AliasPairList &)));
             break;
 
         case Contact::FeatureAvatarToken:
@@ -833,9 +833,9 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
         case Contact::FeatureSimplePresence:
             QObject::connect(
                     conn->simplePresenceInterface(),
-                    SIGNAL(PresencesChanged(const Telepathy::SimpleContactPresences &)),
+                    SIGNAL(PresencesChanged(const Tp::SimpleContactPresences &)),
                     conn->contactManager(),
-                    SLOT(onPresencesChanged(const Telepathy::SimpleContactPresences &)));
+                    SLOT(onPresencesChanged(const Tp::SimpleContactPresences &)));
             break;
 
         default:
@@ -946,4 +946,4 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
     return (uint) -1;
 }
 
-} // Telepathy
+} // Tp

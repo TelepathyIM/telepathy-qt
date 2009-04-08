@@ -29,7 +29,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-namespace Telepathy
+namespace Tp
 {
 
 struct KeyFile::Private
@@ -552,4 +552,4 @@ QStringList KeyFile::valueAsStringList(const QString &key) const
     return mPriv->valueAsStringList(key);
 }
 
-} // Telepathy
+} // Tp

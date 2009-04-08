@@ -52,12 +52,12 @@ public:
     ~ContactManagerPrivate()
     { }
 
-    Telepathy::Client::ConnectionInterface* m_pInterface;
-    Telepathy::Client::ChannelInterfaceGroupInterface*  m_groupSubscribedChannel;
-    Telepathy::Client::ChannelInterfaceGroupInterface*  m_groupKnownChannel;
-    Telepathy::Client::ChannelInterfaceGroupInterface*  m_groupPublishedChannel;
-    Telepathy::Client::ChannelInterfaceGroupInterface*  m_groupDeniedChannel;
-    Telepathy::Client::ChannelTypeTextInterface*  m_groupTextChannel;
+    Tp::Client::ConnectionInterface* m_pInterface;
+    Tp::Client::ChannelInterfaceGroupInterface*  m_groupSubscribedChannel;
+    Tp::Client::ChannelInterfaceGroupInterface*  m_groupKnownChannel;
+    Tp::Client::ChannelInterfaceGroupInterface*  m_groupPublishedChannel;
+    Tp::Client::ChannelInterfaceGroupInterface*  m_groupDeniedChannel;
+    Tp::Client::ChannelTypeTextInterface*  m_groupTextChannel;
 
     QHash<uint, QPointer<Contact> > m_members;
     QHash<uint, QPointer<Contact> > m_subscribed;
@@ -79,7 +79,7 @@ public:
     }
 
     // Returns a list of all <i>handles</i> already <i>contained</i> in <i>list</i>
-    QList<uint> handlesToLookUp( const QHash<uint, QPointer<Contact> >& list, const Telepathy::UIntList& handles, bool contained )
+    QList<uint> handlesToLookUp( const QHash<uint, QPointer<Contact> >& list, const Tp::UIntList& handles, bool contained )
     {
         QList<uint> to_look_up;
         foreach(uint handle, handles)
@@ -90,37 +90,37 @@ public:
         return to_look_up;
     }
 
-    QList<uint> subscribedHandlesToLookUp(const Telepathy::UIntList& handles)
+    QList<uint> subscribedHandlesToLookUp(const Tp::UIntList& handles)
     {
         return handlesToLookUp( m_subscribed, handles, false );
     }
 
-    QList<uint> newKnownHandlesToLookUp(const Telepathy::UIntList& handles)
+    QList<uint> newKnownHandlesToLookUp(const Tp::UIntList& handles)
     {
         return handlesToLookUp( m_members, handles, false );
     }
 
-    QList<uint> removedHandlesToLookUp(const Telepathy::UIntList& handles)
+    QList<uint> removedHandlesToLookUp(const Tp::UIntList& handles)
     {
         return handlesToLookUp( m_members, handles, true );
     }
 
-    QList<uint> localPendingHandlesToLookUp(const Telepathy::UIntList& handles)
+    QList<uint> localPendingHandlesToLookUp(const Tp::UIntList& handles)
     {
         return handlesToLookUp( m_localPending, handles, false );
     }
 
-    QList<uint> remotePendingHandlesToLookUp(const Telepathy::UIntList& handles)
+    QList<uint> remotePendingHandlesToLookUp(const Tp::UIntList& handles)
     {
         return handlesToLookUp( m_remotePending, handles, false );
     }
 
-    QList<uint> newDeniedHandles( const Telepathy::UIntList& handles )
+    QList<uint> newDeniedHandles( const Tp::UIntList& handles )
     {
         return handlesToLookUp( m_denied, handles, false );
     }
 
-    QList<uint> removedDeniedHandles( const Telepathy::UIntList& handles )
+    QList<uint> removedDeniedHandles( const Tp::UIntList& handles )
     {
         return handlesToLookUp( m_denied, handles, true );
     }
@@ -143,7 +143,7 @@ public:
 
 };
 
-ContactManager::ContactManager( Telepathy::Client::ConnectionInterface* connection,
+ContactManager::ContactManager( Tp::Client::ConnectionInterface* connection,
                                 QObject* parent ):
     QObject( parent ),
     d( new ContactManagerPrivate )
@@ -184,10 +184,10 @@ QList<QPointer<Contact> > ContactManager::remoteAuthorizationPendingList()
 QList<QPointer<Contact> > ContactManager::blockedContacts()
 { return d->m_denied.values(); }
 
-void ContactManager::init( Telepathy::Client::ConnectionInterface* connection )
+void ContactManager::init( Tp::Client::ConnectionInterface* connection )
 {
     Q_ASSERT(0 != connection);
-    Telepathy::registerTypes();
+    Tp::registerTypes();
     d->m_pInterface = connection;
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "ContactManager up and running... waiting for signals.";
@@ -200,7 +200,7 @@ bool ContactManager::requestContact( const QString& id )
     QStringList contact_ids;
     contact_ids.append(id);
     
-    QList<uint> contact_handles=d->m_pInterface->RequestHandles( Telepathy::HandleTypeContact,contact_ids);
+    QList<uint> contact_handles=d->m_pInterface->RequestHandles( Tp::HandleTypeContact,contact_ids);
     if (!contact_handles.empty())
     {
         if ( d->m_groupSubscribedChannel)
@@ -293,14 +293,14 @@ uint ContactManager::localHandle()
 
 
 /*
-    inline QDBusPendingReply<> AcknowledgePendingMessages(const Telepathy::UIntList& IDs)
+    inline QDBusPendingReply<> AcknowledgePendingMessages(const Tp::UIntList& IDs)
 {
     QList<QVariant> argumentList;
     argumentList << QVariant::fromValue(IDs);
     return asyncCallWithArgumentList(QLatin1String("AcknowledgePendingMessages"), argumentList);
 }
 
-    inline QDBusPendingReply<Telepathy::UIntList> GetMessageTypes()
+    inline QDBusPendingReply<Tp::UIntList> GetMessageTypes()
 {
     return asyncCall(QLatin1String("GetMessageTypes"));
 }
@@ -316,7 +316,7 @@ void ContactManager::openSubscribedContactsChannel(uint handle, const QDBusObjec
     qDebug() << "ContactManager Channel Path" << channelPath.path();
 #endif
     // This channel may never be closed!
-    d->m_groupSubscribedChannel = new Telepathy::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
+    d->m_groupSubscribedChannel = new Tp::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
             this);
     if (!d->m_groupSubscribedChannel->isValid())
     {
@@ -327,13 +327,13 @@ void ContactManager::openSubscribedContactsChannel(uint handle, const QDBusObjec
         d->m_groupSubscribedChannel = 0;
         return;
     }
-    QDBusPendingReply<Telepathy::UIntList, Telepathy::UIntList, Telepathy::UIntList> reply2=d->m_groupSubscribedChannel->GetAllMembers();
+    QDBusPendingReply<Tp::UIntList, Tp::UIntList, Tp::UIntList> reply2=d->m_groupSubscribedChannel->GetAllMembers();
     reply2.waitForFinished();
 
-    const Telepathy::UIntList mlist1= QList< quint32 > (reply2.argumentAt<0>());
-    const Telepathy::UIntList mlist2;
-    const Telepathy::UIntList mlist3= QList< quint32 > (reply2.argumentAt<1>());
-    const Telepathy::UIntList mlist4= QList< quint32 > (reply2.argumentAt<2>());
+    const Tp::UIntList mlist1= QList< quint32 > (reply2.argumentAt<0>());
+    const Tp::UIntList mlist2;
+    const Tp::UIntList mlist3= QList< quint32 > (reply2.argumentAt<1>());
+    const Tp::UIntList mlist4= QList< quint32 > (reply2.argumentAt<2>());
 #ifdef ENABLE_DEBUG_OUTPUT_    
     qDebug() << "Number of current members" << mlist1.size();
     qDebug() << "Number of local pending members" << mlist2.size();
@@ -350,16 +350,16 @@ void ContactManager::openSubscribedContactsChannel(uint handle, const QDBusObjec
     // All lists are empty when the channel is created, so it suffices to connect
     // the MembersChanged signal.
     connect(d->m_groupSubscribedChannel, SIGNAL(MembersChanged(const QString&,
-            const Telepathy::UIntList&, // added to members list
-            const Telepathy::UIntList&, // removed from members list
-            const Telepathy::UIntList&, // local pending list
-            const Telepathy::UIntList&, // remote pending list
+            const Tp::UIntList&, // added to members list
+            const Tp::UIntList&, // removed from members list
+            const Tp::UIntList&, // local pending list
+            const Tp::UIntList&, // remote pending list
             uint, uint)),
             this, SLOT(slotSubscribedMembersChanged(const QString&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
                        uint, uint)));
    
 }
@@ -372,7 +372,7 @@ void ContactManager::openKnownContactsChannel(uint handle, const QDBusObjectPath
     qDebug() << "ContactManager Channel Path" << channelPath.path();
 #endif         
     // This channel may never be closed!
-    d->m_groupKnownChannel = new Telepathy::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
+    d->m_groupKnownChannel = new Tp::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
                                this);
     if (!d->m_groupKnownChannel->isValid())
     {
@@ -383,13 +383,13 @@ void ContactManager::openKnownContactsChannel(uint handle, const QDBusObjectPath
         d->m_groupKnownChannel = 0;
         return;
     }
-    QDBusPendingReply<Telepathy::UIntList, Telepathy::UIntList, Telepathy::UIntList> reply2=d->m_groupKnownChannel->GetAllMembers();
+    QDBusPendingReply<Tp::UIntList, Tp::UIntList, Tp::UIntList> reply2=d->m_groupKnownChannel->GetAllMembers();
     reply2.waitForFinished();
 
-    const Telepathy::UIntList mlist1= QList< quint32 > (reply2.argumentAt<0>());
-    const Telepathy::UIntList mlist2;
-    const Telepathy::UIntList mlist3= QList< quint32 > (reply2.argumentAt<1>());
-    const Telepathy::UIntList mlist4= QList< quint32 > (reply2.argumentAt<2>());
+    const Tp::UIntList mlist1= QList< quint32 > (reply2.argumentAt<0>());
+    const Tp::UIntList mlist2;
+    const Tp::UIntList mlist3= QList< quint32 > (reply2.argumentAt<1>());
+    const Tp::UIntList mlist4= QList< quint32 > (reply2.argumentAt<2>());
 #ifdef ENABLE_DEBUG_OUTPUT_    
     qDebug() << "Number of current members" << mlist1.size();
     qDebug() << "Number of local pending members" << mlist2.size();
@@ -406,16 +406,16 @@ void ContactManager::openKnownContactsChannel(uint handle, const QDBusObjectPath
     // All lists are empty when the channel is created, so it suffices to connect
     // the MembersChanged signal.
     connect(d->m_groupKnownChannel, SIGNAL(MembersChanged(const QString&,
-            const Telepathy::UIntList&, // added to members list
-            const Telepathy::UIntList&, // removed from members list
-            const Telepathy::UIntList&, // local pending list
-            const Telepathy::UIntList&, // remote pending list
+            const Tp::UIntList&, // added to members list
+            const Tp::UIntList&, // removed from members list
+            const Tp::UIntList&, // local pending list
+            const Tp::UIntList&, // remote pending list
             uint, uint)),
             this, SLOT(slotKnownMembersChanged(const QString&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
                        uint, uint)));
 
 }
@@ -428,7 +428,7 @@ void ContactManager::openDenyContactsChannel(uint handle, const QDBusObjectPath&
     qDebug() << "ContactManager Channel Path" << channelPath.path();
 #endif
     // This channel may never be closed!
-    d->m_groupDeniedChannel = new Telepathy::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
+    d->m_groupDeniedChannel = new Tp::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
                                                                                     this);
     if (!d->m_groupDeniedChannel->isValid())
     {
@@ -440,12 +440,12 @@ void ContactManager::openDenyContactsChannel(uint handle, const QDBusObjectPath&
         return;
     }
 
-    QDBusPendingReply<Telepathy::UIntList, Telepathy::UIntList, Telepathy::UIntList> reply2=d->m_groupKnownChannel->GetAllMembers();
+    QDBusPendingReply<Tp::UIntList, Tp::UIntList, Tp::UIntList> reply2=d->m_groupKnownChannel->GetAllMembers();
     reply2.waitForFinished();
 
-    const Telepathy::UIntList current        = QList< quint32 > (reply2.argumentAt<0>());
-    const Telepathy::UIntList local_pending  = QList< quint32 > (reply2.argumentAt<1>());
-    const Telepathy::UIntList remote_pending = QList< quint32 > (reply2.argumentAt<2>());
+    const Tp::UIntList current        = QList< quint32 > (reply2.argumentAt<0>());
+    const Tp::UIntList local_pending  = QList< quint32 > (reply2.argumentAt<1>());
+    const Tp::UIntList remote_pending = QList< quint32 > (reply2.argumentAt<2>());
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "Denied-Members: Number of current members" << current.size();
     qDebug() << "Denied-Members: Number of local pending members" << local_pending.size();
@@ -454,7 +454,7 @@ void ContactManager::openDenyContactsChannel(uint handle, const QDBusObjectPath&
     if (( current.size()>0) || ( local_pending.size()>0) || ( remote_pending.size()>0))
         slotDeniedMembersChanged("",
                                 current,
-                                Telepathy::UIntList(),
+                                Tp::UIntList(),
                                 local_pending,
                                 remote_pending,
                                 0, 0);
@@ -462,17 +462,17 @@ void ContactManager::openDenyContactsChannel(uint handle, const QDBusObjectPath&
     // All lists are empty when the channel is created, so it suffices to connect
     // the MembersChanged signal.
     connect(d->m_groupDeniedChannel, SIGNAL(MembersChanged(const QString&,
-                                                            const Telepathy::UIntList&, // added to members list
-                                                            const Telepathy::UIntList&, // removed from members list
-                                                            const Telepathy::UIntList&, // local pending list
-                                                            const Telepathy::UIntList&, // remote pending list
+                                                            const Tp::UIntList&, // added to members list
+                                                            const Tp::UIntList&, // removed from members list
+                                                            const Tp::UIntList&, // local pending list
+                                                            const Tp::UIntList&, // remote pending list
                                                             uint,                       // actor
                                                             uint)),                     // reason
             this, SLOT(slotDeniedMembersChanged(const QString&,
-                                                const Telepathy::UIntList&,
-                                                const Telepathy::UIntList&,
-                                                const Telepathy::UIntList&,
-                                                const Telepathy::UIntList&,
+                                                const Tp::UIntList&,
+                                                const Tp::UIntList&,
+                                                const Tp::UIntList&,
+                                                const Tp::UIntList&,
                                                 uint, uint)));
 
 }
@@ -543,7 +543,7 @@ void ContactManager::openPublishContactsChannel(uint handle, const QDBusObjectPa
     qDebug() << "ContactManager Channel Path" << channelPath.path();
 #endif        
     // This channel may never be closed!
-    d->m_groupPublishedChannel = new Telepathy::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
+    d->m_groupPublishedChannel = new Tp::Client::ChannelInterfaceGroupInterface(channel_service_name,channelPath.path(),
             this);
     if (!d->m_groupPublishedChannel->isValid())
     {
@@ -554,13 +554,13 @@ void ContactManager::openPublishContactsChannel(uint handle, const QDBusObjectPa
         d->m_groupPublishedChannel = 0;
         return;
     }
-    QDBusPendingReply<Telepathy::UIntList, Telepathy::UIntList, Telepathy::UIntList> reply2=d->m_groupPublishedChannel->GetAllMembers();
+    QDBusPendingReply<Tp::UIntList, Tp::UIntList, Tp::UIntList> reply2=d->m_groupPublishedChannel->GetAllMembers();
     reply2.waitForFinished();
 
-    const Telepathy::UIntList mlist1= QList< quint32 > (reply2.argumentAt<0>());
-    const Telepathy::UIntList mlist2;
-    const Telepathy::UIntList mlist3= QList< quint32 > (reply2.argumentAt<1>());
-    const Telepathy::UIntList mlist4= QList< quint32 > (reply2.argumentAt<2>());
+    const Tp::UIntList mlist1= QList< quint32 > (reply2.argumentAt<0>());
+    const Tp::UIntList mlist2;
+    const Tp::UIntList mlist3= QList< quint32 > (reply2.argumentAt<1>());
+    const Tp::UIntList mlist4= QList< quint32 > (reply2.argumentAt<2>());
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "Number of current members" << mlist1.size();
     qDebug() << "Number of local pending members" << mlist2.size();
@@ -580,16 +580,16 @@ void ContactManager::openPublishContactsChannel(uint handle, const QDBusObjectPa
     // All lists are empty when the channel is created, so it suffices to connect
     // the MembersChanged signal.
     connect(d->m_groupPublishedChannel, SIGNAL(MembersChanged(const QString&,
-            const Telepathy::UIntList&, // added to members list
-            const Telepathy::UIntList&, // removed from members list
-            const Telepathy::UIntList&, // local pending list
-            const Telepathy::UIntList&, // remote pending list
+            const Tp::UIntList&, // added to members list
+            const Tp::UIntList&, // removed from members list
+            const Tp::UIntList&, // local pending list
+            const Tp::UIntList&, // remote pending list
             uint, uint)),
             this, SLOT(slotPublishedMembersChanged(const QString&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
-                       const Telepathy::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
+                       const Tp::UIntList&,
                        uint, uint)));
 
 }
@@ -597,10 +597,10 @@ void ContactManager::openPublishContactsChannel(uint handle, const QDBusObjectPa
 
 
 void ContactManager::slotKnownMembersChanged(const QString& message,
-                                        const Telepathy::UIntList& members_added,
-                                        const Telepathy::UIntList& members_removed,
-                                        const Telepathy::UIntList& local_pending,
-                                        const Telepathy::UIntList& remote_pending,
+                                        const Tp::UIntList& members_added,
+                                        const Tp::UIntList& members_removed,
+                                        const Tp::UIntList& local_pending,
+                                        const Tp::UIntList& remote_pending,
                                         uint actor, uint reason)
 {
     slotMembersChanged("Known",
@@ -611,10 +611,10 @@ void ContactManager::slotKnownMembersChanged(const QString& message,
                        actor, reason);
 }
 void ContactManager::slotPublishedMembersChanged(const QString& message,
-                                             const Telepathy::UIntList& members_added,
-                                             const Telepathy::UIntList& members_removed,
-                                             const Telepathy::UIntList& local_pending,
-                                             const Telepathy::UIntList& remote_pending,
+                                             const Tp::UIntList& members_added,
+                                             const Tp::UIntList& members_removed,
+                                             const Tp::UIntList& local_pending,
+                                             const Tp::UIntList& remote_pending,
                                              uint actor, uint reason)
 {
     slotMembersChanged("Published",
@@ -626,10 +626,10 @@ void ContactManager::slotPublishedMembersChanged(const QString& message,
 }
 
 void ContactManager::slotSubscribedMembersChanged(const QString& message,
-                                             const Telepathy::UIntList& members_added,
-                                             const Telepathy::UIntList& members_removed,
-                                             const Telepathy::UIntList& local_pending,
-                                             const Telepathy::UIntList& remote_pending,
+                                             const Tp::UIntList& members_added,
+                                             const Tp::UIntList& members_removed,
+                                             const Tp::UIntList& local_pending,
+                                             const Tp::UIntList& remote_pending,
                                              uint actor, uint reason)
 {
     slotMembersChanged("Subscribed",
@@ -641,10 +641,10 @@ void ContactManager::slotSubscribedMembersChanged(const QString& message,
 }
 
 void ContactManager::slotDeniedMembersChanged(const QString& message,
-                                                const Telepathy::UIntList& members_added,
-                                                const Telepathy::UIntList& members_removed,
-                                                const Telepathy::UIntList& local_pending,
-                                                const Telepathy::UIntList& remote_pending,
+                                                const Tp::UIntList& members_added,
+                                                const Tp::UIntList& members_removed,
+                                                const Tp::UIntList& local_pending,
+                                                const Tp::UIntList& remote_pending,
                                                 uint actor,
                                                 uint reason)
 {
@@ -663,7 +663,7 @@ void ContactManager::slotDeniedMembersChanged(const QString& message,
     }
 
     // Members that are not already known (in list of members): create new contact.
-    QDBusPendingReply<QStringList> handle_names_reply = d->m_pInterface->InspectHandles( Telepathy::HandleTypeContact, new_members );
+    QDBusPendingReply<QStringList> handle_names_reply = d->m_pInterface->InspectHandles( Tp::HandleTypeContact, new_members );
     handle_names_reply.waitForFinished();
     if ( !handle_names_reply.isValid() )
     {
@@ -711,10 +711,10 @@ void ContactManager::slotDeniedMembersChanged(const QString& message,
 // TODO: This function is a real beast. It should be split into separate functions. Rethink whether it is a good idea
 //       to map all slots to this functions!?
 void ContactManager::slotMembersChanged(const QString& message,
-                                        const Telepathy::UIntList& members_added,
-                                        const Telepathy::UIntList& members_removed,
-                                        const Telepathy::UIntList& local_pending,
-                                        const Telepathy::UIntList& remote_pending,
+                                        const Tp::UIntList& members_added,
+                                        const Tp::UIntList& members_removed,
+                                        const Tp::UIntList& local_pending,
+                                        const Tp::UIntList& remote_pending,
                                         uint actor, uint reason)
 {
     static bool is_already_in = false; // FIXME: Remove this until RTCHM-329 
@@ -741,7 +741,7 @@ void ContactManager::slotMembersChanged(const QString& message,
             QList<uint> known_to_look_up(d->newKnownHandlesToLookUp(members_added));
         // look up 'missing' handles:
             QDBusPendingReply<QStringList> handle_names =
-                    d->m_pInterface->InspectHandles(Telepathy::HandleTypeContact, known_to_look_up);
+                    d->m_pInterface->InspectHandles(Tp::HandleTypeContact, known_to_look_up);
             handle_names.waitForFinished();
             if (!handle_names.isValid())
             {
@@ -811,7 +811,7 @@ void ContactManager::slotMembersChanged(const QString& message,
     
         // look up 'missing' handles:
             QDBusPendingReply<QStringList> handle_names =
-                    d->m_pInterface->InspectHandles(Telepathy::HandleTypeContact, subscribed_to_look_up);
+                    d->m_pInterface->InspectHandles(Tp::HandleTypeContact, subscribed_to_look_up);
             handle_names.waitForFinished();
             if (!handle_names.isValid())
             {
@@ -911,7 +911,7 @@ void ContactManager::slotMembersChanged(const QString& message,
         QList<uint> localPending_to_look_up(d->localPendingHandlesToLookUp(local_pending));
     // look up 'missing' handles:
         QDBusPendingReply<QStringList> handle_names =
-                d->m_pInterface->InspectHandles(Telepathy::HandleTypeContact, localPending_to_look_up);
+                d->m_pInterface->InspectHandles(Tp::HandleTypeContact, localPending_to_look_up);
         handle_names.waitForFinished();
         if (!handle_names.isValid())
         {
@@ -983,7 +983,7 @@ void ContactManager::slotMembersChanged(const QString& message,
 
     // look up 'missing' handles:
         QDBusPendingReply<QStringList> handle_names =
-                d->m_pInterface->InspectHandles(Telepathy::HandleTypeContact, remotePending_to_look_up);
+                d->m_pInterface->InspectHandles(Tp::HandleTypeContact, remotePending_to_look_up);
         handle_names.waitForFinished();
 
         if (!handle_names.isValid())
@@ -1068,7 +1068,7 @@ void ContactManager::slotMembersChanged(const QString& message,
         QList<uint> removed_to_look_up(d->removedHandlesToLookUp(members_removed));
     // look up 'missing' handles:
         QDBusPendingReply<QStringList> handle_names =
-                d->m_pInterface->InspectHandles(Telepathy::HandleTypeContact, removed_to_look_up);
+                d->m_pInterface->InspectHandles(Tp::HandleTypeContact, removed_to_look_up);
         handle_names.waitForFinished();
         if (!handle_names.isValid())
         {
@@ -1139,7 +1139,7 @@ void ContactManager::slotMembersChanged(const QString& message,
                                d->mapHashToList( d->m_localPending ),
                                d->mapHashToList( d->m_remotePending ),
                                contactForHandle( actor ),
-                               static_cast<Telepathy::ChannelGroupChangeReason>( reason ) );
+                               static_cast<Tp::ChannelGroupChangeReason>( reason ) );
 }
 
 #include "_gen/ContactManager.h.moc"

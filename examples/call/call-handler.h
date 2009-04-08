@@ -27,7 +27,7 @@
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Contact>
 
-namespace Telepathy {
+namespace Tp {
 class PendingOperation;
 class StreamedMediaChannel;
 }
@@ -42,17 +42,17 @@ public:
     CallHandler(QObject *parent = 0);
     virtual ~CallHandler();
 
-    void addOutgoingCall(const Telepathy::ContactPtr &contact);
-    void addIncomingCall(const Telepathy::StreamedMediaChannelPtr &chan);
+    void addOutgoingCall(const Tp::ContactPtr &contact);
+    void addIncomingCall(const Tp::StreamedMediaChannelPtr &chan);
 
 private Q_SLOTS:
-    void onOutgoingChannelCreated(Telepathy::PendingOperation *);
-    void onOutgoingChannelReady(Telepathy::PendingOperation *);
-    void onIncomingChannelReady(Telepathy::PendingOperation *);
+    void onOutgoingChannelCreated(Tp::PendingOperation *);
+    void onOutgoingChannelReady(Tp::PendingOperation *);
+    void onIncomingChannelReady(Tp::PendingOperation *);
     void onCallTerminated(QObject *);
 
 private:
-    QList<Telepathy::StreamedMediaChannelPtr> mChannels;
+    QList<Tp::StreamedMediaChannelPtr> mChannels;
     QList<CallWidget *> mCalls;
 };
 

@@ -69,7 +69,7 @@ namespace
 
     /** Workaround for varying strictness of object path <-> string conversion
      * in different Qt 4.5 snapshots */
-    QStringList objectPathListToStringList(Telepathy::ObjectPathList list)
+    QStringList objectPathListToStringList(Tp::ObjectPathList list)
     {
         QStringList ret;
         // qDebug() << __PRETTY_FUNCTION__ << "ListCount: " << list.count();
@@ -82,10 +82,10 @@ namespace
 
     QStringList validAccounts()
     {
-        Telepathy::registerTypes();
-        Telepathy::Client::DBus::PropertiesInterface* m_propertiesInterface = new Telepathy::Client::DBus::PropertiesInterface(
+        Tp::registerTypes();
+        Tp::Client::DBus::PropertiesInterface* m_propertiesInterface = new Tp::Client::DBus::PropertiesInterface(
                 "org.freedesktop.Telepathy.AccountManager",
-                "/org/freedesktop/Telepathy/AccountManager",
+                "/org.freedesktop.Telepathy/AccountManager",
                 NULL );
         QDBusPendingReply<QDBusVariant> get = m_propertiesInterface->Get( "org.freedesktop.Telepathy.AccountManager", "ValidAccounts");
         get.waitForFinished();
@@ -97,7 +97,7 @@ namespace
             return QStringList();
         }
 
-        Telepathy::ObjectPathList object_path_list_valid = qdbus_cast<Telepathy::ObjectPathList>( get.value().variant());
+        Tp::ObjectPathList object_path_list_valid = qdbus_cast<Tp::ObjectPathList>( get.value().variant());
 
         if (object_path_list_valid.size() == 0)
         {
@@ -131,7 +131,7 @@ void UnitTests::testMissionControlBindings()
 {
     QSKIP( "The interface NMC4Interface is not included and therefore cannot be tested!", SkipAll );
 #if 0 // The interface is currently not created. We don't use it anywhere..
-    Telepathy::Client::NMC4Interface mission_control( "org.freedesktop.Telepathy.MissionControl", "/org/freedesktop/Telepathy/MissionControl", this );
+    Tp::Client::NMC4Interface mission_control( "org.freedesktop.Telepathy.MissionControl", "/org.freedesktop.Telepathy/MissionControl", this );
 
     QDBusPendingReply<uint> reply = mission_control.GetPresenceActual();
     reply.waitForFinished();
@@ -175,10 +175,10 @@ void UnitTests::testMissionControlBindings()
 
 void UnitTests::testConnectToJabberServer()
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
     // 1. Connect to connection manager
-    Telepathy::Client::ConnectionManagerInterface cm_interface( "org.freedesktop.Telepathy.ConnectionManager.gabble",
-                                                                "/org/freedesktop/Telepathy/ConnectionManager/gabble",
+    Tp::Client::ConnectionManagerInterface cm_interface( "org.freedesktop.Telepathy.ConnectionManager.gabble",
+                                                                "/org.freedesktop.Telepathy/ConnectionManager/gabble",
                                                                 this );
                                              
 
@@ -186,7 +186,7 @@ void UnitTests::testConnectToJabberServer()
     parameter_map.insert( "account", "basyskom@localhost" );
     parameter_map.insert( "password", "basyskom" );
     parameter_map.insert( "server", "localhost" );
-    parameter_map.insert( "resource", "Telepathy" );
+    parameter_map.insert( "resource", "Tp" );
     parameter_map.insert( "port", static_cast<uint>(5222) );
     
     // 2. Request a connection to the Jabber server
@@ -214,7 +214,7 @@ void UnitTests::testConnectToJabberServer()
     qDebug() << "Connection object path : " << connection_object_path.path();
 #endif
     
-    Telepathy::Client::ConnectionInterface connection_interface( connection_service_name,
+    Tp::Client::ConnectionInterface connection_interface( connection_service_name,
                                                                  connection_object_path.path(),
                                                                  this );
 
@@ -235,7 +235,7 @@ void UnitTests::testConnectToJabberServer()
                                               
     QTest::qWait( 1000 );
 
-    QDBusPendingReply<Telepathy::ChannelInfoList> channel_info_list_reply = connection_interface.ListChannels();
+    QDBusPendingReply<Tp::ChannelInfoList> channel_info_list_reply = connection_interface.ListChannels();
     channel_info_list_reply.waitForFinished();
     
     if ( !channel_info_list_reply.isValid() )
@@ -251,8 +251,8 @@ void UnitTests::testConnectToJabberServer()
 
 #if 0
     qDebug() << "Available channels:";
-    Telepathy::ChannelInfoList channel_list = channel_info_list_reply.value();
-    foreach( Telepathy::ChannelInfo channel, channel_list )
+    Tp::ChannelInfoList channel_list = channel_info_list_reply.value();
+    foreach( Tp::ChannelInfo channel, channel_list )
     {
         qDebug() << "Channel: " << channel.channel.path();
         qDebug() << "Type   : " << channel.channelType;
@@ -298,12 +298,12 @@ void UnitTests::testAccountManager_createAccount()
     parameter_map.insert( "account", "basyskom@localhost" );
     parameter_map.insert( "password", "basyskom" );
     parameter_map.insert( "server", "localhost" );
-    parameter_map.insert( "resource", "Telepathy" );
+    parameter_map.insert( "resource", "Tp" );
     parameter_map.insert( "port", static_cast<uint>(5222) );
 
-    Telepathy::registerTypes();
-    Telepathy::Client::AccountManagerInterface accountmanager_interface( "org.freedesktop.Telepathy.AccountManager",
-                                                                              "/org/freedesktop/Telepathy/AccountManager",
+    Tp::registerTypes();
+    Tp::Client::AccountManagerInterface accountmanager_interface( "org.freedesktop.Telepathy.AccountManager",
+                                                                              "/org.freedesktop.Telepathy/AccountManager",
                                                                               this );
                                                       
     QSignalSpy spy_validity_changed( &accountmanager_interface, SIGNAL( AccountValidityChanged( const QDBusObjectPath&, bool ) ) );
@@ -361,13 +361,13 @@ void UnitTests::testAccountManager_listAccount()
 
 void UnitTests::testAccountManager_showProperties()
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
     QStringList object_path_list_valid = validAccounts();
     QVERIFY2( object_path_list_valid.count() > 0, "No accounts found. Possible reason: testAcountManager_createAccount() was not called before!" );
     bool found_correct_display_name = false;
     foreach( QString path, object_path_list_valid )
     {
-        Telepathy::Client::AccountInterface account_interface( "org.freedesktop.Telepathy.AccountManager",
+        Tp::Client::AccountInterface account_interface( "org.freedesktop.Telepathy.AccountManager",
                                                                     path,
                                                                     this );
 #ifdef ENABLE_DEBUG_OUTPUT_
@@ -377,17 +377,17 @@ void UnitTests::testAccountManager_showProperties()
         qDebug() << "Account Enabled :" << account_interface.Enabled();
         qDebug() << "Nickname        :" << account_interface.Nickname();
         qDebug() << "Parameters      :" << account_interface.Parameters();
-        Telepathy::SimplePresence automatic_presence = account_interface.AutomaticPresence();
+        Tp::SimplePresence automatic_presence = account_interface.AutomaticPresence();
         qDebug() << "* Auto Presence type   :" << automatic_presence.type;
         qDebug() << "* Auto Presence status :" << automatic_presence.status;
         qDebug() << "Connection      :" << account_interface.Connection().path();
         qDebug() << "ConnectionStatus:" << account_interface.ConnectionStatus();
         qDebug() << "Connect. Reason :" << account_interface.ConnectionStatusReason();
-        Telepathy::SimplePresence current_presence = account_interface.CurrentPresence();
+        Tp::SimplePresence current_presence = account_interface.CurrentPresence();
         qDebug() << "* Current Presence type   :" << current_presence.type;
         qDebug() << "* Current Presence status :" << current_presence.status;
         qDebug() << "Auto Connect    :" << account_interface.ConnectAutomatically();
-        Telepathy::SimplePresence requested_presence = account_interface.RequestedPresence();
+        Tp::SimplePresence requested_presence = account_interface.RequestedPresence();
         qDebug() << "* Requested Presence type   :" << requested_presence.type;
         qDebug() << "* Requested Presence status :" << requested_presence.status;
         qDebug() << "Normalized Name :" << account_interface.NormalizedName();
@@ -404,16 +404,16 @@ void UnitTests::testAccountManager_showProperties()
 void UnitTests::testAccountManager_removeAccount()
 {
     {
-        Telepathy::Client::AccountManagerInterface accountmanager_interface( "org.freedesktop.Telepathy.AccountManager",
-                                                                                  "/org/freedesktop/Telepathy/AccountManager",
+        Tp::Client::AccountManagerInterface accountmanager_interface( "org.freedesktop.Telepathy.AccountManager",
+                                                                                  "/org.freedesktop.Telepathy/AccountManager",
                                                                                   this );
-        Telepathy::registerTypes();
+        Tp::registerTypes();
         QStringList object_path_list_valid = objectPathListToStringList(accountmanager_interface.ValidAccounts());
         QVERIFY2( object_path_list_valid.count() > 0, "No accounts found. Possible reason: testAcountManager_createAccount() was not called before!" );
         
         foreach( QString path, object_path_list_valid )
         {
-            Telepathy::Client::AccountInterface account_interface( "org.freedesktop.Telepathy.AccountManager",
+            Tp::Client::AccountInterface account_interface( "org.freedesktop.Telepathy.AccountManager",
                                                                         path,
                                                                         this );
 
@@ -448,15 +448,15 @@ void UnitTests::testAccountManager_removeAccount()
     }
     {
         // Check whether there are really no accounts left..
-        Telepathy::Client::AccountManagerInterface accountmanager_interface( "org.freedesktop.Telepathy.AccountManager",
-                                                                                  "/org/freedesktop/Telepathy/AccountManager",
+        Tp::Client::AccountManagerInterface accountmanager_interface( "org.freedesktop.Telepathy.AccountManager",
+                                                                                  "/org.freedesktop.Telepathy/AccountManager",
                                                                                   this );
-        Telepathy::registerTypes();
+        Tp::registerTypes();
         QStringList object_path_list_valid = objectPathListToStringList(accountmanager_interface.ValidAccounts());
         int accounts_left = 0;
         foreach( QString path, object_path_list_valid )
         {
-            Telepathy::Client::AccountInterface account_interface( "org.freedesktop.Telepathy.AccountManager",
+            Tp::Client::AccountInterface account_interface( "org.freedesktop.Telepathy.AccountManager",
                                                                         path,
                                                                         this );
             if ( account_interface.DisplayName() != g_displayName )
@@ -478,7 +478,7 @@ void UnitTests::testPrototypeAccountManager()
     parameter_map.insert( "account", "basyskom@localhost" );
     parameter_map.insert( "password", "basyskom" );
     parameter_map.insert( "server", "localhost" );
-    parameter_map.insert( "resource", "Telepathy" );
+    parameter_map.insert( "resource", "Tp" );
     parameter_map.insert( "port", static_cast<uint>(5222) );
 #if 1// Disable this temporarily if the accounts were not deleted properly
     if ( 0 != account_manager->count() )
@@ -579,7 +579,7 @@ void UnitTests::testPrototype_ContactHandling()
     qDebug() << "testPrototypeContactHandling Create First Connection";
 #endif // ENABLE_DEBUG_OUTPUT_
     
-    QSignalSpy spy_status_changed( connection, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Telepathy::ConnectionStatus, Telepathy::ConnectionStatus ) ) );
+    QSignalSpy spy_status_changed( connection, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Tp::ConnectionStatus, Tp::ConnectionStatus ) ) );
     QCOMPARE( spy_status_changed.isValid(), true );
     QVERIFY( connection->requestConnect() == true );
 
@@ -604,7 +604,7 @@ void UnitTests::testPrototype_ContactHandling()
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "testPrototypeContactHandling Creation Second Connection";
 #endif// ENABLE_DEBUG_OUTPUT_
-    //spy_status_changed( connection2, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Telepathy::ConnectionStatus, Telepathy::ConnectionStatus  ) );
+    //spy_status_changed( connection2, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Tp::ConnectionStatus, Tp::ConnectionStatus  ) );
     QCOMPARE( spy_status_changed.isValid(), true );
     QVERIFY( connection2->requestConnect() == true );
 
@@ -674,7 +674,7 @@ void UnitTests::testPrototype_OwnPresenceChanged()
     qDebug() << "testPrototypeContactHandling Create First Connection";
 #endif
 
-    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Telepathy::ConnectionStatus, Telepathy::ConnectionStatus ) ) );
+    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Tp::ConnectionStatus, Tp::ConnectionStatus ) ) );
     QVERIFY( connection->requestConnect() == true );
     QVERIFY2( waitForSignal( &spyConnectionStatusChanged, 2 ), "Received no signal after connectRequest ");
 
@@ -684,7 +684,7 @@ void UnitTests::testPrototype_OwnPresenceChanged()
     // The presence manager is invalid if no valid presence interface is available
     QVERIFY2( true == presence_manager->isValid(), "No compatible presence interface found!" );
 
-    Telepathy::SimpleStatusSpecMap status_map = presence_manager->statuses();
+    Tp::SimpleStatusSpecMap status_map = presence_manager->statuses();
     QVERIFY2( status_map.count() != 0, "No presence information returned!" );
     
     QStringList keys = status_map.keys();
@@ -702,7 +702,7 @@ void UnitTests::testPrototype_OwnPresenceChanged()
     QVERIFY( keys.contains( "away" ) );
     QVERIFY( keys.contains( "offline" ) );
 
-    QSignalSpy spy_state_changed( presence_manager, SIGNAL( signalOwnPresenceUpdated( const TpPrototype::Account*, const Telepathy::SimplePresence& ) ) );
+    QSignalSpy spy_state_changed( presence_manager, SIGNAL( signalOwnPresenceUpdated( const TpPrototype::Account*, const Tp::SimplePresence& ) ) );
     QCOMPARE( spy_state_changed.isValid(), true );
 
 
@@ -737,7 +737,7 @@ void UnitTests::testPrototype_OwnPresenceChanged()
 
             QCOMPARE( firstSignalEmited.count(), 2 );
 
-            Telepathy::SimplePresence emitedPresence = firstSignalEmited.at(1).value<Telepathy::SimplePresence>() ;
+            Tp::SimplePresence emitedPresence = firstSignalEmited.at(1).value<Tp::SimplePresence>() ;
             QCOMPARE( emitedPresence.status , testDataPresenceChangeStatus.at(count) );
             QCOMPARE( emitedPresence.statusMessage , testDataPresenceChangeStatusMessage.at(count) );
 
@@ -775,13 +775,13 @@ void UnitTests::testTextChatFunction()
     TpPrototype::Connection* conn_1 = acc_1->connection();
     QVERIFY( conn_1 );
 
-    QSignalSpy spy_conn_1_status_changed( conn_1, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Telepathy::ConnectionStatus, Telepathy::ConnectionStatus  ) ) );
+    QSignalSpy spy_conn_1_status_changed( conn_1, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Tp::ConnectionStatus, Tp::ConnectionStatus  ) ) );
     QCOMPARE( spy_conn_1_status_changed.isValid(), true );
 
     QTest::qWait( 1000 );
     QVERIFY( conn_1->requestConnect() == true );
     
-    QSignalSpy spy_conn_2_status_changed( conn_2, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Telepathy::ConnectionStatus, Telepathy::ConnectionStatus  ) ) );
+    QSignalSpy spy_conn_2_status_changed( conn_2, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Tp::ConnectionStatus, Tp::ConnectionStatus  ) ) );
     QCOMPARE( spy_conn_2_status_changed.isValid(), true );
 
     QTest::qWait( 1000 );
@@ -829,7 +829,7 @@ void UnitTests::testTextChatFunction()
 
 
     // Send message to account2 from account1
-    QString message("get in touch with Telepathy QT4");
+    QString message("get in touch with Tp QT4");
 
     QSignalSpy spy_message(contact_manager_2 , SIGNAL( signalTextChannelOpenedForContact( TpPrototype::Contact* contact ) ));
 
@@ -907,7 +907,7 @@ void UnitTests::testReconnect()
     QVERIFY( connection );
     
     qDebug() << "testPrototypeContactHandling Create First Connection";
-    QSignalSpy spy_status_changed( connection, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Telepathy::ConnectionStatus, Telepathy::ConnectionStatus  ) ) );
+    QSignalSpy spy_status_changed( connection, SIGNAL( signalStatusChanged( TpPrototype::Connection*, Tp::ConnectionStatus, Tp::ConnectionStatus  ) ) );
     QCOMPARE( spy_status_changed.isValid(), true );
 
     QTest::qWait( 1000 );
@@ -964,7 +964,7 @@ void UnitTests::testCapabilityManager()
     QVERIFY( connection->capabilitiesManager() == NULL );
 
     QVERIFY( connection->requestConnect() == true );
-    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Telepathy::ConnectionStatus, Telepathy::ConnectionStatus ) ) );
+    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Tp::ConnectionStatus, Tp::ConnectionStatus ) ) );
     QVERIFY2( waitForSignal( &spyConnectionStatusChanged, 2 ), "Received no signal after connectRequest ");
     
     TpPrototype::CapabilitiesManager* cap_manager = connection->capabilitiesManager();
@@ -984,7 +984,7 @@ void UnitTests::testCapabilityManager()
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug() << "Contact: " << contact->name();
 #endif
-        foreach( Telepathy::ContactCapability cap, contact->capabilities() )
+        foreach( Tp::ContactCapability cap, contact->capabilities() )
         {
 #ifdef ENABLE_DEBUG_OUTPUT_
             qDebug() << "capabilitiesChannelType:" << cap.channelType << "capabilitiesGenericFlags:" << cap.genericFlags << "capabilitiesTypeSpecificFlags:" << cap.typeSpecificFlags;
@@ -994,7 +994,7 @@ void UnitTests::testCapabilityManager()
         }
     }
 
-    foreach( Telepathy::ContactCapability cap, cap_manager->capabilities() )
+    foreach( Tp::ContactCapability cap, cap_manager->capabilities() )
     {
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug() << "My capabilities: capabilitiesChannelType:" << cap.channelType << "capabilitiesGenericFlags:" << cap.genericFlags << "capabilitiesTypeSpecificFlags:" << cap.typeSpecificFlags;
@@ -1005,18 +1005,18 @@ void UnitTests::testCapabilityManager()
         
 
     // Now checking setting of capabilities and whether we receive a signal after that..
-    QSignalSpy spy_own_capability_changed( cap_manager, SIGNAL( signalOwnCapabilityChanged( const Telepathy::CapabilityChange& ) ) );
+    QSignalSpy spy_own_capability_changed( cap_manager, SIGNAL( signalOwnCapabilityChanged( const Tp::CapabilityChange& ) ) );
     QCOMPARE( spy_own_capability_changed.isValid(), true );
 
-    Telepathy::CapabilityPair new_capability = { "org.freedesktop.Telepathy.Channel.Type.StreamedMedia", 15 }; // See Telepathy D-Bus spec section "Channel_Media_Capabilities"
-    Telepathy::CapabilityPairList capability_list;
+    Tp::CapabilityPair new_capability = { "org.freedesktop.Telepathy.Channel.Type.StreamedMedia", 15 }; // See Tp D-Bus spec section "Channel_Media_Capabilities"
+    Tp::CapabilityPairList capability_list;
     capability_list << new_capability;
     QVERIFY( cap_manager->setCapabilities( capability_list ) );
 
     QVERIFY2( waitForSignal( &spy_own_capability_changed ), "Received no signal after changing my capability! ");
 
     bool found_media_stream_channel = false;
-    foreach( Telepathy::ContactCapability cap, cap_manager->capabilities() )
+    foreach( Tp::ContactCapability cap, cap_manager->capabilities() )
     {
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug() << "My changed capabilities: capabilitiesChannelType:" << cap.channelType << "capabilitiesGenericFlags:" << cap.genericFlags << "capabilitiesTypeSpecificFlags:" << cap.typeSpecificFlags;
@@ -1059,7 +1059,7 @@ void UnitTests::testAvatarManager()
     TpPrototype::Connection* connection = account->connection();
     QVERIFY( connection );
 
-    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Telepathy::ConnectionStatus, Telepathy::ConnectionStatus ) ) );
+    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Tp::ConnectionStatus, Tp::ConnectionStatus ) ) );
     QVERIFY( connection->requestConnect() == true );
     QVERIFY2( waitForSignal( &spyConnectionStatusChanged, 2 ), "Received no signal after connectRequest ");
     
@@ -1156,7 +1156,7 @@ void UnitTests::testStreamedMedia_receiveCall()
     TpPrototype::Connection* connection = account->connection();
     QVERIFY( connection );
 
-    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Telepathy::ConnectionStatus, Telepathy::ConnectionStatus ) ) );
+    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Tp::ConnectionStatus, Tp::ConnectionStatus ) ) );
     QVERIFY( connection->requestConnect() == true );
     QVERIFY2( waitForSignal( &spyConnectionStatusChanged, 2 ), "Received no signal after connectRequest ");
 
@@ -1168,11 +1168,11 @@ void UnitTests::testStreamedMedia_receiveCall()
     TpPrototype::CapabilitiesManager* capabilities_manager = connection->capabilitiesManager();
     QVERIFY( NULL != capabilities_manager );
 
-    Telepathy::CapabilityPair new_capability = { "org.freedesktop.Telepathy.Channel.Type.StreamedMedia",
-        Telepathy::ChannelMediaCapabilityAudio
-        | Telepathy::ChannelMediaCapabilityVideo
-        | Telepathy::ChannelMediaCapabilityNATTraversalGTalkP2P  }; // See Telepathy D-Bus spec section "Channel_Media_Capabilities"
-    Telepathy::CapabilityPairList capability_list;
+    Tp::CapabilityPair new_capability = { "org.freedesktop.Telepathy.Channel.Type.StreamedMedia",
+        Tp::ChannelMediaCapabilityAudio
+        | Tp::ChannelMediaCapabilityVideo
+        | Tp::ChannelMediaCapabilityNATTraversalGTalkP2P  }; // See Tp D-Bus spec section "Channel_Media_Capabilities"
+    Tp::CapabilityPairList capability_list;
     capability_list << new_capability;
     capabilities_manager->setCapabilities( capability_list );
     
@@ -1250,7 +1250,7 @@ void UnitTests::testStreamedMedia_outgoingCall()
     TpPrototype::Connection* connection = account->connection();
     QVERIFY( connection );
 
-    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Telepathy::ConnectionStatus, Telepathy::ConnectionStatus ) ) );
+    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Tp::ConnectionStatus, Tp::ConnectionStatus ) ) );
     QVERIFY( connection->requestConnect() == true );
     QVERIFY2( waitForSignal( &spyConnectionStatusChanged, 2 ), "Received no signal after connectRequest ");
 
@@ -1267,7 +1267,7 @@ void UnitTests::testStreamedMedia_outgoingCall()
                                                                                     QList<QPointer<TpPrototype::Contact> > ,
                                                                                     QList<QPointer<TpPrototype::Contact> > ,
                                                                                     TpPrototype::Contact* ,
-                                                                                    Telepathy::ChannelGroupChangeReason )
+                                                                                    Tp::ChannelGroupChangeReason )
                                                             ) );
         QCOMPARE( spy_for_contacts.isValid(), true );
         waitForSignal( &spy_for_contacts );
@@ -1283,12 +1283,12 @@ void UnitTests::testStreamedMedia_outgoingCall()
     TpPrototype::StreamedMediaChannel* media_channel = contact->streamedMediaChannel();
     QVERIFY( NULL != media_channel );
    
-    media_channel->requestChannel( QList<Telepathy::MediaStreamType>() << Telepathy::MediaStreamTypeAudio );
+    media_channel->requestChannel( QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio );
 
     QTest::qWait( 50000 );
 
 #if 0
-    media_channel->requestChannel( QList<Telepathy::MediaStreamType>() << Telepathy::MediaStreamTypeAudio );
+    media_channel->requestChannel( QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio );
 
     QTest::qWait( 10000 );
 #endif
@@ -1322,7 +1322,7 @@ void UnitTests::testBlockingSupport()
     TpPrototype::Connection* connection = account->connection();
     QVERIFY( connection );
 
-    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Telepathy::ConnectionStatus, Telepathy::ConnectionStatus ) ) );
+    QSignalSpy spyConnectionStatusChanged( connection, SIGNAL(signalStatusChanged (TpPrototype::Connection* , Tp::ConnectionStatus, Tp::ConnectionStatus ) ) );
     QVERIFY( connection->requestConnect() == true );
     QVERIFY2( waitForSignal( &spyConnectionStatusChanged, 2 ), "Received no signal after connectRequest ");
 
@@ -1339,7 +1339,7 @@ void UnitTests::testBlockingSupport()
                                      QList<QPointer<TpPrototype::Contact> > ,
                                      QList<QPointer<TpPrototype::Contact> > ,
                                      TpPrototype::Contact* ,
-                                     Telepathy::ChannelGroupChangeReason )
+                                     Tp::ChannelGroupChangeReason )
                                                             ) );
         QCOMPARE( spy_for_contacts.isValid(), true );
         waitForSignal( &spy_for_contacts );

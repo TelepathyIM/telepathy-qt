@@ -32,7 +32,7 @@
 #include <QDBusError>
 #include <QTimer>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct ReadinessHelper::Private
@@ -97,8 +97,8 @@ ReadinessHelper::Private::Private(
 
     if (proxy) {
         parent->connect(proxy,
-                SIGNAL(invalidated(Telepathy::DBusProxy *, const QString &, const QString &)),
-                SLOT(onProxyInvalidated(Telepathy::DBusProxy *, const QString &, const QString &)));
+                SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+                SLOT(onProxyInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
     }
 
     debug() << "ReadinessHelper: supportedStatuses =" << supportedStatuses;
@@ -281,9 +281,9 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
 {
     foreach (PendingReady *operation, pendingOperations) {
         parent->disconnect(operation,
-                SIGNAL(finished(Telepathy::PendingOperation*)),
+                SIGNAL(finished(Tp::PendingOperation*)),
                 parent,
-                SLOT(onOperationFinished(Telepathy::PendingOperation*)));
+                SLOT(onOperationFinished(Tp::PendingOperation*)));
         parent->disconnect(operation,
                 SIGNAL(destroyed(QObject*)),
                 parent,
@@ -478,8 +478,8 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
 
     operation = new PendingReady(requestedFeatures, mPriv->object, this);
     connect(operation,
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(onOperationFinished(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onOperationFinished(Tp::PendingOperation*)));
     connect(operation,
             SIGNAL(destroyed(QObject*)),
             SLOT(onOperationDestroyed(QObject*)));
@@ -535,4 +535,4 @@ void ReadinessHelper::onOperationDestroyed(QObject *obj)
     mPriv->pendingOperations.removeOne(qobject_cast<PendingReady*>(obj));
 }
 
-} // Telepathy
+} // Tp

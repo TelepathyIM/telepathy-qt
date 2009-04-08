@@ -309,7 +309,7 @@ _gen/constants.h: _gen/stable-spec.xml \
 		$(top_srcdir)/tools/qt4-constants-gen.py \
 		Makefile.am
 	$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
-		--namespace='Telepathy' \
+		--namespace='Tp' \
 		--str-constant-prefix='TELEPATHY_' \
 		--must-define='IN_TELEPATHY_QT4_HEADER' \
 		--specxml=$< \
@@ -319,7 +319,7 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		$(top_srcdir)/tools/qt4-types-gen.py \
 		Makefile.am
 	$(PYTHON) $(top_srcdir)/tools/qt4-types-gen.py \
-		--namespace='Telepathy' \
+		--namespace='Tp' \
 		--declfile='_gen/types.h' \
 		--implfile='_gen/types-body.hpp' \
 		--realinclude='TelepathyQt4/types.h' \
@@ -338,7 +338,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		$(top_srcdir)/tools/qt4-client-gen.py \
 		Makefile.am
 	set -e; \
-	namespace='Telepathy::Client'; \
+	namespace='Tp::Client'; \
 	group= ; \
 	prettyinclude= ; \
 	mainiface= ; \
@@ -346,35 +346,35 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		channel) \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
-			mainiface='--mainiface=Telepathy::Client::ChannelInterface';; \
+			mainiface='--mainiface=Tp::Client::ChannelInterface';; \
 		account) \
 			group='clientaccount'; \
 			prettyinclude='AccountManager'; \
-			mainiface='--mainiface=Telepathy::Client::AccountInterface';; \
+			mainiface='--mainiface=Tp::Client::AccountInterface';; \
 		account-manager) \
 			group='clientam'; \
 			prettyinclude='AccountManager'; \
-			mainiface='--mainiface=Telepathy::Client::AccountManagerInterface';; \
+			mainiface='--mainiface=Tp::Client::AccountManagerInterface';; \
 		connection) \
 			group='clientconn'; \
 			prettyinclude='Connection'; \
-			mainiface='--mainiface=Telepathy::Client::ConnectionInterface';; \
+			mainiface='--mainiface=Tp::Client::ConnectionInterface';; \
 		connection-manager) \
 			group='clientcm'; \
 			prettyinclude='ConnectionManager'; \
-			mainiface='--mainiface=Telepathy::Client::ConnectionManagerInterface';; \
+			mainiface='--mainiface=Tp::Client::ConnectionManagerInterface';; \
 		dbus) \
 			group='clientdbus'; \
-			namespace='Telepathy::Client::DBus'; \
+			namespace='Tp::Client::DBus'; \
 			prettyinclude='DBus';; \
 		media-session-handler) \
 			group='clientmsesh'; \
 			prettyinclude='MediaSessionHandler'; \
-			mainiface='--mainiface=Telepathy::Client::MediaSessionHandlerInterface';; \
+			mainiface='--mainiface=Tp::Client::MediaSessionHandlerInterface';; \
 		media-stream-handler) \
 			group='clientmstrh'; \
 			prettyinclude='MediaStreamHandler'; \
-			mainiface='--mainiface=Telepathy::Client::MediaStreamHandlerInterface';; \
+			mainiface='--mainiface=Tp::Client::MediaStreamHandlerInterface';; \
 		properties) \
 			group='clientprops'; \
 			prettyinclude='Properties';; \
@@ -382,7 +382,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 	$(PYTHON) $(top_srcdir)/tools/qt4-client-gen.py \
 		--group=$$group \
 		--namespace=$$namespace \
-		--typesnamespace='Telepathy' \
+		--typesnamespace='Tp' \
 		--headerfile=_gen/cli-$*.h \
 		--implfile=_gen/cli-$*-body.hpp \
 		--realinclude='TelepathyQt4/$*.h' \

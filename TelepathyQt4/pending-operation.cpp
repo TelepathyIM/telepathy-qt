@@ -34,7 +34,7 @@
 #include <QDBusPendingCallWatcher>
 #include <QTimer>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct PendingOperation::Private
@@ -185,4 +185,4 @@ void PendingVoidMethodCall::watcherFinished(QDBusPendingCallWatcher* watcher)
     }
 }
 
-} // Telepathy
+} // Tp

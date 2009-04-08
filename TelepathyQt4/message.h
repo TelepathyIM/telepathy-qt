@@ -34,7 +34,7 @@
 
 class QDateTime;
 
-namespace Telepathy
+namespace Tp
 {
 
 class Contact;
@@ -119,6 +119,6 @@ private:
     void setSender(const ContactPtr &sender);
 };
 
-} // Telepathy
+} // Tp
 
 #endif

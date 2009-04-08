@@ -63,7 +63,7 @@ class Account;
  * @endcode
  * Request a channel (in this case an audio channel):
  * @code
- * media_channel->requestChannel( QList<Telepathy::MediaStreamType>() << Telepathy::MediaStreamTypeAudio );
+ * media_channel->requestChannel( QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio );
  * @endcode
  * Whether the call was accepted or rejected is signalled by the following signals:
  * @code
@@ -129,9 +129,9 @@ public:
      * @param types The stream types that should be opened for this channel
      * @return Returns true if request call was successful.
      */
-    bool requestChannel( QList<Telepathy::MediaStreamType> types );
+    bool requestChannel( QList<Tp::MediaStreamType> types );
 
-    bool requestStreams( TpPrototype::Contact* contact, QList<Telepathy::MediaStreamType> types );
+    bool requestStreams( TpPrototype::Contact* contact, QList<Tp::MediaStreamType> types );
     
     /**
      * Add contacts to the group.
@@ -198,7 +198,7 @@ public:
      *     The returned list is empty if an error occured.
      * 
      */
-     Telepathy::MediaStreamInfoList requestStreams( QList<Telepathy::MediaStreamType> types );
+     Tp::MediaStreamInfoList requestStreams( QList<Tp::MediaStreamType> types );
      
     /**
       * Begins a call to the D-Bus method "ListStreams" on the remote object.
@@ -220,7 +220,7 @@ public:
       *     </ul>
       *  The returned list is empty if an error occured.
      */
-     Telepathy::MediaStreamInfoList listStreams();
+     Tp::MediaStreamInfoList listStreams();
 
 signals:
     /**
@@ -241,7 +241,7 @@ signals:
      * @param streamId The id of the stream.
      * @param streamType The type of the stream.
      */
-    void signalStreamAdded( TpPrototype::StreamedMediaChannel* channel, uint streamId, Telepathy::MediaStreamType streamType );
+    void signalStreamAdded( TpPrototype::StreamedMediaChannel* channel, uint streamId, Tp::MediaStreamType streamType );
     
     /**
      * Stream was removed.
@@ -275,9 +275,9 @@ signals:
     /**
      * A stream changed its state
      * @param streamId The ID of the stream as returned by listStreams()
-     * @param streamState The state as provided by Telepathy::MediaStreamInfo
+     * @param streamState The state as provided by Tp::MediaStreamInfo
      */
-    void signalStreamStateChanged( TpPrototype::StreamedMediaChannel* channel, uint streamID, Telepathy::MediaStreamState streamState );
+    void signalStreamStateChanged( TpPrototype::StreamedMediaChannel* channel, uint streamID, Tp::MediaStreamState streamState );
 
     /**
      * Emitted when the direction or pending flags of a stream are changed.
@@ -367,7 +367,7 @@ protected:
      * Constructor.
      * Use Contact::streamedMediaChannel() to obtain an object of StreamedMediaChannel.
      */
-    StreamedMediaChannel( Contact* contact, Telepathy::Client::ConnectionInterface* connectionInterface , QObject* parent = NULL );
+    StreamedMediaChannel( Contact* contact, Tp::Client::ConnectionInterface* connectionInterface , QObject* parent = NULL );
 
     /**
      * Request a new streamed media channel.
@@ -419,10 +419,10 @@ protected slots:
      * Represents the signal "MembersChanged" on the remote object.
      */
     void slotMembersChanged(const QString& message,
-                            const Telepathy::UIntList& added,
-                            const Telepathy::UIntList& removed,
-                            const Telepathy::UIntList& localPending,
-                            const Telepathy::UIntList& remotePending,
+                            const Tp::UIntList& added,
+                            const Tp::UIntList& removed,
+                            const Tp::UIntList& localPending,
+                            const Tp::UIntList& remotePending,
                             uint actor,
                             uint reason);
 private:

@@ -18,7 +18,7 @@
 #include <tests/lib/contactlist/conn.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy;
+using namespace Tp;
 
 class TestConnRoster : public Test
 {
@@ -31,8 +31,8 @@ public:
 
 protected Q_SLOTS:
     void expectConnInvalidated();
-    void expectPendingContactsFinished(Telepathy::PendingOperation *);
-    void expectPresenceStateChanged(Telepathy::Contact::PresenceState);
+    void expectPendingContactsFinished(Tp::PendingOperation *);
+    void expectPresenceStateChanged(Tp::Contact::PresenceState);
 
 private Q_SLOTS:
     void initTestCase();
@@ -128,8 +128,8 @@ void TestConnRoster::init()
     mConn = Connection::create(mConnName, mConnPath);
 
     QVERIFY(connect(mConn->requestConnect(),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
     QCOMPARE(mConn->status(), static_cast<uint>(Connection::StatusConnected));
@@ -139,9 +139,9 @@ void TestConnRoster::testRoster()
 {
     Features features = Features() << Connection::FeatureRoster;
     QVERIFY(connect(mConn->becomeReady(features),
-            SIGNAL(finished(Telepathy::PendingOperation*)),
+            SIGNAL(finished(Tp::PendingOperation*)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+            SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
@@ -178,18 +178,18 @@ void TestConnRoster::testRoster()
     // Wait for the contacts to be built
     ids = QStringList() << QString("john@example.com") << QString("mary@example.com");
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     int i = 0;
     foreach (const ContactPtr &contact, mContacts) {
         QVERIFY(connect(contact.data(),
-                        SIGNAL(subscriptionStateChanged(Telepathy::Contact::PresenceState)),
-                        SLOT(expectPresenceStateChanged(Telepathy::Contact::PresenceState))));
+                        SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
+                        SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
         QVERIFY(connect(contact.data(),
-                        SIGNAL(publishStateChanged(Telepathy::Contact::PresenceState)),
-                        SLOT(expectPresenceStateChanged(Telepathy::Contact::PresenceState))));
+                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
+                        SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
         if ((i % 2) == 0) {
             contact->requestPresenceSubscription("please add me");
         } else {
@@ -234,8 +234,8 @@ void TestConnRoster::testRoster()
     Contact::PresenceState expectedPresenceState;
     foreach (const ContactPtr &contact, pendingPublish) {
         QVERIFY(connect(contact.data(),
-                        SIGNAL(publishStateChanged(Telepathy::Contact::PresenceState)),
-                        SLOT(expectPresenceStateChanged(Telepathy::Contact::PresenceState))));
+                        SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
+                        SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
 
         if ((i % 2) == 0) {
             expectedPresenceState = Contact::PresenceStateYes;
@@ -258,13 +258,13 @@ void TestConnRoster::cleanup()
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Telepathy::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Telepathy::DBusProxy *,
+                            SIGNAL(invalidated(Tp::DBusProxy *,
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);

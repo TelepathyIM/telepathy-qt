@@ -37,7 +37,7 @@
 #include <QAction>
 #include <QDebug>
 
-using namespace Telepathy;
+using namespace Tp;
 
 CallRosterWidget::CallRosterWidget(CallHandler *callHandler, QWidget *parent)
     : RosterWidget(parent),

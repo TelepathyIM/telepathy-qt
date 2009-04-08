@@ -49,7 +49,7 @@ public:
     
     QString m_handle;
     bool m_isValid;
-    Telepathy::Client::AccountInterface* m_pInterface;
+    Tp::Client::AccountInterface* m_pInterface;
     QVariantMap                     m_parameters;
     QVariantMap                     m_properties;
     QString                         m_connectionManagerName;
@@ -205,10 +205,10 @@ QString Account::currentPresence()
         return g_offline;
     }
 #if 1
-    disconnect ( connection()->presenceManager(), SIGNAL( signalOwnPresenceUpdated( const TpPrototype::Account* , const Telepathy::SimplePresence& ) ),
+    disconnect ( connection()->presenceManager(), SIGNAL( signalOwnPresenceUpdated( const TpPrototype::Account* , const Tp::SimplePresence& ) ),
             this, SIGNAL( signalPresenceChanged() ) );
 
-    connect ( connection()->presenceManager(), SIGNAL( signalOwnPresenceUpdated( const TpPrototype::Account* , const Telepathy::SimplePresence& ) ),
+    connect ( connection()->presenceManager(), SIGNAL( signalOwnPresenceUpdated( const TpPrototype::Account* , const Tp::SimplePresence& ) ),
                 this, SIGNAL( signalPresenceChanged() ) );
 #endif
 
@@ -220,7 +220,7 @@ QString Account::handle() const
     return d->m_handle;
 }
 
-Telepathy::Client::AccountInterface* Account::interface()
+Tp::Client::AccountInterface* Account::interface()
 {
     return d->m_pInterface;
 }
@@ -251,7 +251,7 @@ void Account::init( const QString handle )
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "Handle:" << d->m_handle;
 #endif
-    d->m_pInterface = new Telepathy::Client::AccountInterface( "org.freedesktop.Telepathy.AccountManager",
+    d->m_pInterface = new Tp::Client::AccountInterface( "org.freedesktop.Telepathy.AccountManager",
                                                                     d->m_handle,
                                                                     this );
 

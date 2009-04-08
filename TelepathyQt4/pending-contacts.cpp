@@ -30,7 +30,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-namespace Telepathy
+namespace Tp
 {
 
 struct PendingContacts::Private
@@ -256,8 +256,8 @@ void PendingContacts::onRequestHandlesFinished(PendingOperation *operation)
 
     mPriv->nested = manager()->contactsForHandles(pendingHandles->handles(), features());
     connect(mPriv->nested,
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(onNestedFinished(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onNestedFinished(Tp::PendingOperation*)));
 }
 
 void PendingContacts::onReferenceHandlesFinished(PendingOperation *operation)
@@ -367,16 +367,16 @@ PendingContacts::PendingContacts(ContactManager *manager,
                         interfaces, true);
 
             connect(attributes,
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(onAttributesFinished(Telepathy::PendingOperation*)));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onAttributesFinished(Tp::PendingOperation*)));
         } else {
             debug() << " Falling back to inspect contact handles";
             // fallback to just create the contacts
             PendingHandles *handles = conn->referenceHandles(HandleTypeContact,
                     otherContacts.toList());
             connect(handles,
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(onReferenceHandlesFinished(Telepathy::PendingOperation*)));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onReferenceHandlesFinished(Tp::PendingOperation*)));
         }
     } else {
         allAttributesFetched();
@@ -391,8 +391,8 @@ PendingContacts::PendingContacts(ContactManager *manager,
     PendingHandles *handles = conn->requestHandles(HandleTypeContact, identifiers);
 
     connect(handles,
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(onRequestHandlesFinished(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onRequestHandlesFinished(Tp::PendingOperation*)));
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,
@@ -406,8 +406,8 @@ PendingContacts::PendingContacts(ContactManager *manager,
 
     mPriv->nested = manager->contactsForHandles(handles, features);
     connect(mPriv->nested,
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(onNestedFinished(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onNestedFinished(Tp::PendingOperation*)));
 }
 
 void PendingContacts::allAttributesFetched()
@@ -421,4 +421,4 @@ void PendingContacts::allAttributesFetched()
     setFinished();
 }
 
-} // Telepathy
+} // Tp

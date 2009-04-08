@@ -31,7 +31,7 @@
 
 #include <QDebug>
 
-using namespace Telepathy;
+using namespace Tp;
 
 RosterWindow::RosterWindow(const QString &username, const QString &password,
         QWidget *parent)
@@ -45,8 +45,8 @@ RosterWindow::RosterWindow(const QString &username, const QString &password,
 
     mCM = ConnectionManager::create("gabble");
     connect(mCM->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onCMReady(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onCMReady(Tp::PendingOperation *)));
 
     resize(240, 320);
 }
@@ -64,7 +64,7 @@ void RosterWindow::setupGui()
     setCentralWidget(mRoster);
 }
 
-void RosterWindow::onCMReady(Telepathy::PendingOperation *op)
+void RosterWindow::onCMReady(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "CM cannot become ready";
@@ -77,11 +77,11 @@ void RosterWindow::onCMReady(Telepathy::PendingOperation *op)
     params.insert("password", QVariant(mPassword));
     PendingConnection *pconn = mCM->requestConnection("jabber", params);
     connect(pconn,
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onConnectionCreated(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onConnectionCreated(Tp::PendingOperation *)));
 }
 
-void RosterWindow::onConnectionCreated(Telepathy::PendingOperation *op)
+void RosterWindow::onConnectionCreated(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Unable to create connection";
@@ -94,14 +94,14 @@ void RosterWindow::onConnectionCreated(Telepathy::PendingOperation *op)
     ConnectionPtr conn = pconn->connection();
     mConns.append(conn);
     connect(conn->requestConnect(),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onConnectionConnected(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onConnectionConnected(Tp::PendingOperation *)));
     connect(conn.data(),
-            SIGNAL(invalidated(Telepathy::DBusProxy *, const QString &, const QString &)),
-            SLOT(onConnectionInvalidated(Telepathy::DBusProxy *, const QString &, const QString &)));
+            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+            SLOT(onConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 }
 
-void RosterWindow::onConnectionConnected(Telepathy::PendingOperation *op)
+void RosterWindow::onConnectionConnected(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Connection cannot become connected";

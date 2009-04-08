@@ -32,7 +32,7 @@ class QDBusError;
 class QDBusPendingCall;
 class QDBusPendingCallWatcher;
 
-namespace Telepathy
+namespace Tp
 {
 
 /**
@@ -131,7 +131,7 @@ Q_SIGNALS:
      * \param operation This operation object, from which further information
      *    may be obtained
      */
-    void finished(Telepathy::PendingOperation* operation);
+    void finished(Tp::PendingOperation* operation);
 
 protected:
     /**
@@ -172,6 +172,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

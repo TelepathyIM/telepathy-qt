@@ -44,7 +44,7 @@
 #include <QString>
 #include <QStringList>
 
-namespace Telepathy
+namespace Tp
 {
 
 class Channel;
@@ -72,9 +72,9 @@ public:
     static const Feature FeatureRoster;
 
     enum Status {
-        StatusDisconnected = Telepathy::ConnectionStatusDisconnected,
-        StatusConnecting = Telepathy::ConnectionStatusConnecting,
-        StatusConnected = Telepathy::ConnectionStatusConnected,
+        StatusDisconnected = ConnectionStatusDisconnected,
+        StatusConnecting = ConnectionStatusConnecting,
+        StatusConnected = ConnectionStatusConnected,
         StatusUnknown = 0xFFFFFFFF
     };
 
@@ -189,10 +189,10 @@ private Q_SLOTS:
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
     void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
-    void gotSelfContact(Telepathy::PendingOperation *);
+    void gotSelfContact(Tp::PendingOperation *);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
-    void gotContactListsHandles(Telepathy::PendingOperation *);
-    void gotContactListChannel(Telepathy::PendingOperation *);
+    void gotContactListsHandles(Tp::PendingOperation *);
+    void gotContactListChannel(Tp::PendingOperation *);
     void contactListChannelReady();
 
     void doReleaseSweep(uint type);
@@ -216,6 +216,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

@@ -43,7 +43,7 @@
 #include <QStringList>
 #include <QVariantMap>
 
-namespace Telepathy
+namespace Tp
 {
 
 class Account;
@@ -93,8 +93,8 @@ public:
     PendingOperation *setNickname(const QString &value);
 
     // requires spec 0.17.16
-    const Telepathy::Avatar &avatar() const;
-    PendingOperation *setAvatar(const Telepathy::Avatar &avatar);
+    const Avatar &avatar() const;
+    PendingOperation *setAvatar(const Avatar &avatar);
 
     QVariantMap parameters() const;
     PendingOperation *updateParameters(const QVariantMap &set,
@@ -106,20 +106,20 @@ public:
     bool connectsAutomatically() const;
     PendingOperation *setConnectsAutomatically(bool value);
 
-    Telepathy::ConnectionStatus connectionStatus() const;
-    Telepathy::ConnectionStatusReason connectionStatusReason() const;
+    ConnectionStatus connectionStatus() const;
+    ConnectionStatusReason connectionStatusReason() const;
     bool haveConnection() const;
     ConnectionPtr connection() const;
 
-    Telepathy::SimplePresence automaticPresence() const;
+    SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(
-            const Telepathy::SimplePresence &value);
+            const SimplePresence &value);
 
-    Telepathy::SimplePresence currentPresence() const;
+    SimplePresence currentPresence() const;
 
-    Telepathy::SimplePresence requestedPresence() const;
+    SimplePresence requestedPresence() const;
     PendingOperation *setRequestedPresence(
-            const Telepathy::SimplePresence &value);
+            const SimplePresence &value);
 
     QString uniqueIdentifier() const;
 
@@ -166,12 +166,12 @@ Q_SIGNALS:
     void stateChanged(bool);
     void connectsAutomaticallyPropertyChanged(bool);
     void parametersChanged(const QVariantMap &);
-    void automaticPresenceChanged(const Telepathy::SimplePresence &) const;
-    void currentPresenceChanged(const Telepathy::SimplePresence &) const;
-    void requestedPresenceChanged(const Telepathy::SimplePresence &) const;
-    void avatarChanged(const Telepathy::Avatar &);
-    void connectionStatusChanged(Telepathy::ConnectionStatus,
-            Telepathy::ConnectionStatusReason);
+    void automaticPresenceChanged(const Tp::SimplePresence &) const;
+    void currentPresenceChanged(const Tp::SimplePresence &) const;
+    void requestedPresenceChanged(const Tp::SimplePresence &) const;
+    void avatarChanged(const Tp::Avatar &);
+    void connectionStatusChanged(Tp::ConnectionStatus,
+            Tp::ConnectionStatusReason);
     void haveConnectionChanged(bool haveConnection);
 
 protected:
@@ -185,7 +185,7 @@ private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
     void gotAvatar(QDBusPendingCallWatcher *);
     void onAvatarChanged();
-    void onConnectionManagerReady(Telepathy::PendingOperation *);
+    void onConnectionManagerReady(Tp::PendingOperation *);
     void onPropertyChanged(const QVariantMap &delta);
     void onRemoved();
 
@@ -195,6 +195,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

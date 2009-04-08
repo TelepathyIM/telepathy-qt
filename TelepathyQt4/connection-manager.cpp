@@ -59,13 +59,13 @@
  * Proxy objects representing remote Telepathy ConnectionManager objects.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 ProtocolParameter::ProtocolParameter(const QString &name,
                                      const QDBusSignature &dbusSignature,
                                      QVariant defaultValue,
-                                     Telepathy::ConnMgrParamFlag flags)
+                                     ConnMgrParamFlag flags)
     : mName(name),
       mDBusSignature(dbusSignature),
       mType(ManagerFile::variantTypeFromDBusSignature(dbusSignature.signature())),
@@ -191,7 +191,7 @@ bool ProtocolInfo::hasParameter(const QString &name) const
 
 /**
  * Return whether it might be possible to register new accounts on this
- * protocol via Telepathy, by setting the special parameter named
+ * protocol, by setting the special parameter named
  * <code>register</code> to <code>true</code>.
  *
  * \return The same thing as hasParameter("register").
@@ -211,13 +211,13 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
 
     uint flags = spec.flags;
     if (spec.name.endsWith("password")) {
-        flags |= Telepathy::ConnMgrParamFlagSecret;
+        flags |= ConnMgrParamFlagSecret;
     }
 
     ProtocolParameter *param = new ProtocolParameter(spec.name,
             QDBusSignature(spec.signature),
             defaultValue,
-            (Telepathy::ConnMgrParamFlag) flags);
+            (ConnMgrParamFlag) flags);
 
     mPriv->params.append(param);
 }
@@ -676,4 +676,4 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-} // Telepathy
+} // Tp

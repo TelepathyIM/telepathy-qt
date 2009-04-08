@@ -32,7 +32,7 @@
 
 #include <QHash>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct PendingMediaStreams::Private
@@ -50,12 +50,12 @@ struct PendingMediaStreams::Private
 
 PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
         ContactPtr contact,
-        QList<Telepathy::MediaStreamType> types)
+        QList<MediaStreamType> types)
     : PendingOperation(channel.data()),
       mPriv(new Private(this, channel))
 {
-    Telepathy::UIntList l;
-    foreach (Telepathy::MediaStreamType type, types) {
+    UIntList l;
+    foreach (MediaStreamType type, types) {
         l << type;
     }
     QDBusPendingCallWatcher *watcher =
@@ -89,7 +89,7 @@ MediaStreams PendingMediaStreams::streams() const
 
 void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<Telepathy::MediaStreamInfoList> reply = *watcher;
+    QDBusPendingReply<MediaStreamInfoList> reply = *watcher;
     if (reply.isError()) {
         warning().nospace() << "StreamedMedia::RequestStreams()"
             " failed with " << reply.error().name() << ": " <<
@@ -100,20 +100,20 @@ void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
 
     debug() << "Got reply to StreamedMedia::RequestStreams()";
 
-    Telepathy::MediaStreamInfoList list = reply.value();
+    MediaStreamInfoList list = reply.value();
     MediaStreamPtr stream;
     StreamedMediaChannelPtr channel(mPriv->channel);
-    foreach (const Telepathy::MediaStreamInfo &streamInfo, list) {
+    foreach (const MediaStreamInfo &streamInfo, list) {
         stream = channel->lookupStreamById(streamInfo.identifier);
         if (!stream) {
             stream = MediaStreamPtr(
                     new MediaStream(channel,
                         streamInfo.identifier,
                         streamInfo.contact,
-                        (Telepathy::MediaStreamType) streamInfo.type,
-                        (Telepathy::MediaStreamState) streamInfo.state,
-                        (Telepathy::MediaStreamDirection) streamInfo.direction,
-                        (Telepathy::MediaStreamPendingSend) streamInfo.pendingSendFlags));
+                        (MediaStreamType) streamInfo.type,
+                        (MediaStreamState) streamInfo.state,
+                        (MediaStreamDirection) streamInfo.direction,
+                        (MediaStreamPendingSend) streamInfo.pendingSendFlags));
             channel->addStream(stream);
         } else {
             channel->onStreamDirectionChanged(streamInfo.identifier,
@@ -123,11 +123,11 @@ void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
         }
         mPriv->streams.append(stream);
         connect(channel.data(),
-                SIGNAL(streamRemoved(Telepathy::MediaStreamPtr)),
-                SLOT(onStreamRemoved(Telepathy::MediaStreamPtr)));
+                SIGNAL(streamRemoved(Tp::MediaStreamPtr)),
+                SLOT(onStreamRemoved(Tp::MediaStreamPtr)));
         connect(stream->becomeReady(),
-                SIGNAL(finished(Telepathy::PendingOperation*)),
-                SLOT(onStreamReady(Telepathy::PendingOperation*)));
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onStreamReady(Tp::PendingOperation*)));
     }
 
     watcher->deleteLater();
@@ -223,8 +223,8 @@ void MediaStream::Private::introspectContact(MediaStream::Private *self)
     ContactManager *contactManager = chan->connection()->contactManager();
     self->parent->connect(
             contactManager->contactsForHandles(UIntList() << self->contactHandle),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(gotContact(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(gotContact(Tp::PendingOperation *)));
 }
 
 const Feature MediaStream::FeatureContact = Feature(MediaStream::staticMetaObject.className(), 0);
@@ -275,7 +275,7 @@ ContactPtr MediaStream::contact() const
  *
  * \return The stream state.
  */
-Telepathy::MediaStreamState MediaStream::state() const
+MediaStreamState MediaStream::state() const
 {
     return mPriv->state;
 }
@@ -285,7 +285,7 @@ Telepathy::MediaStreamState MediaStream::state() const
  *
  * \return The stream type.
  */
-Telepathy::MediaStreamType MediaStream::type() const
+MediaStreamType MediaStream::type() const
 {
     return mPriv->type;
 }
@@ -297,7 +297,7 @@ Telepathy::MediaStreamType MediaStream::type() const
  */
 bool MediaStream::sending() const
 {
-    return mPriv->direction & Telepathy::MediaStreamDirectionSend;
+    return mPriv->direction & MediaStreamDirectionSend;
 }
 
 /**
@@ -307,7 +307,7 @@ bool MediaStream::sending() const
  */
 bool MediaStream::receiving() const
 {
-    return mPriv->direction & Telepathy::MediaStreamDirectionReceive;
+    return mPriv->direction & MediaStreamDirectionReceive;
 }
 
 /**
@@ -337,7 +337,7 @@ bool MediaStream::remoteSendingRequested() const
  *
  * \return The stream direction.
  */
-Telepathy::MediaStreamDirection MediaStream::direction() const
+MediaStreamDirection MediaStream::direction() const
 {
     return mPriv->direction;
 }
@@ -347,7 +347,7 @@ Telepathy::MediaStreamDirection MediaStream::direction() const
  *
  * \return The stream pending send flags.
  */
-Telepathy::MediaStreamPendingSend MediaStream::pendingSend() const
+MediaStreamPendingSend MediaStream::pendingSend() const
 {
     return mPriv->pendingSend;
 }
@@ -361,7 +361,7 @@ Telepathy::MediaStreamPendingSend MediaStream::pendingSend() const
  *         when the call has finished.
  */
 PendingOperation *MediaStream::requestDirection(
-        Telepathy::MediaStreamDirection direction)
+        MediaStreamDirection direction)
 {
     StreamedMediaChannelPtr chan(mPriv->channel);
     return new PendingVoidMethodCall(this,
@@ -375,18 +375,18 @@ PendingOperation *MediaStream::requestDirection(
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa requestDirection(Telepathy::MediaStreamDirection direction)
+ * \sa requestDirection(Tp::MediaStreamDirection direction)
  */
 PendingOperation *MediaStream::requestDirection(bool send, bool receive)
 {
-    uint dir = Telepathy::MediaStreamDirectionNone;
+    uint dir = MediaStreamDirectionNone;
     if (send) {
-        dir |= Telepathy::MediaStreamDirectionSend;
+        dir |= MediaStreamDirectionSend;
     }
     if (receive) {
-        dir |= Telepathy::MediaStreamDirectionReceive;
+        dir |= MediaStreamDirectionReceive;
     }
-    return requestDirection((Telepathy::MediaStreamDirection) dir);
+    return requestDirection((MediaStreamDirection) dir);
 }
 
 uint MediaStream::contactHandle() const
@@ -394,14 +394,14 @@ uint MediaStream::contactHandle() const
     return mPriv->contactHandle;
 }
 
-void MediaStream::setDirection(Telepathy::MediaStreamDirection direction,
-        Telepathy::MediaStreamPendingSend pendingSend)
+void MediaStream::setDirection(MediaStreamDirection direction,
+        MediaStreamPendingSend pendingSend)
 {
     mPriv->direction = direction;
     mPriv->pendingSend = pendingSend;
 }
 
-void MediaStream::setState(Telepathy::MediaStreamState state)
+void MediaStream::setState(MediaStreamState state)
 {
     mPriv->state = state;
 }
@@ -567,7 +567,7 @@ MediaStreams StreamedMediaChannel::streams() const
     return mPriv->streams.values();
 }
 
-MediaStreams StreamedMediaChannel::streamsForType(Telepathy::MediaStreamType type) const
+MediaStreams StreamedMediaChannel::streamsForType(MediaStreamType type) const
 {
     if (!isReady(FeatureStreams)) {
         warning() << "Trying to retrieve streams from streamed media channel, but "
@@ -623,7 +623,7 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
  */
 PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &streams)
 {
-    Telepathy::UIntList ids;
+    UIntList ids;
     foreach (const MediaStreamPtr &stream, streams) {
         ids << stream->id();
     }
@@ -633,16 +633,16 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
 
 PendingMediaStreams *StreamedMediaChannel::requestStream(
         const ContactPtr &contact,
-        Telepathy::MediaStreamType type)
+        MediaStreamType type)
 {
     return new PendingMediaStreams(StreamedMediaChannelPtr(this),
             contact,
-            QList<Telepathy::MediaStreamType>() << type);
+            QList<MediaStreamType>() << type);
 }
 
 PendingMediaStreams *StreamedMediaChannel::requestStreams(
         const ContactPtr &contact,
-        QList<Telepathy::MediaStreamType> types)
+        QList<MediaStreamType> types)
 {
     return new PendingMediaStreams(StreamedMediaChannelPtr(this),
             contact, types);
@@ -650,7 +650,7 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<Telepathy::MediaStreamInfoList> reply = *watcher;
+    QDBusPendingReply<MediaStreamInfoList> reply = *watcher;
     if (reply.isError()) {
         warning().nospace() << "StreamedMedia::ListStreams()"
             " failed with " << reply.error().name() << ": " <<
@@ -663,19 +663,19 @@ void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
 
     debug() << "Got reply to StreamedMedia::ListStreams()";
 
-    Telepathy::MediaStreamInfoList list = reply.value();
+    MediaStreamInfoList list = reply.value();
     if (list.size() > 0) {
-        foreach (const Telepathy::MediaStreamInfo &streamInfo, list) {
+        foreach (const MediaStreamInfo &streamInfo, list) {
             MediaStreamPtr stream = lookupStreamById(streamInfo.identifier);
             if (!stream) {
                 addStream(MediaStreamPtr(
                             new MediaStream(StreamedMediaChannelPtr(this),
                                 streamInfo.identifier,
                                 streamInfo.contact,
-                                (Telepathy::MediaStreamType) streamInfo.type,
-                                (Telepathy::MediaStreamState) streamInfo.state,
-                                (Telepathy::MediaStreamDirection) streamInfo.direction,
-                                (Telepathy::MediaStreamPendingSend) streamInfo.pendingSendFlags)));
+                                (MediaStreamType) streamInfo.type,
+                                (MediaStreamState) streamInfo.state,
+                                (MediaStreamDirection) streamInfo.direction,
+                                (MediaStreamPendingSend) streamInfo.pendingSendFlags)));
             } else {
                 onStreamDirectionChanged(streamInfo.identifier,
                         streamInfo.direction, streamInfo.pendingSendFlags);
@@ -736,11 +736,11 @@ void StreamedMediaChannel::onStreamAdded(uint streamId,
     MediaStreamPtr stream = MediaStreamPtr(
             new MediaStream(StreamedMediaChannelPtr(this), streamId,
                 contactHandle,
-                (Telepathy::MediaStreamType) streamType,
+                (MediaStreamType) streamType,
                 // TODO where to get this info from?
-                Telepathy::MediaStreamStateDisconnected,
-                Telepathy::MediaStreamDirectionNone,
-                (Telepathy::MediaStreamPendingSend) 0));
+                MediaStreamStateDisconnected,
+                MediaStreamDirectionNone,
+                (MediaStreamPendingSend) 0));
     addStream(stream);
 }
 
@@ -789,13 +789,13 @@ void StreamedMediaChannel::onStreamDirectionChanged(uint streamId,
     }
 
     stream->setDirection(
-            (Telepathy::MediaStreamDirection) streamDirection,
-            (Telepathy::MediaStreamPendingSend) streamPendingFlags);
+            (MediaStreamDirection) streamDirection,
+            (MediaStreamPendingSend) streamPendingFlags);
     if (isReady(FeatureStreams) &&
         !mPriv->incompleteStreams.contains(stream->id())) {
         emit streamDirectionChanged(stream,
-                (Telepathy::MediaStreamDirection) streamDirection,
-                (Telepathy::MediaStreamPendingSend) streamPendingFlags);
+                (MediaStreamDirection) streamDirection,
+                (MediaStreamPendingSend) streamPendingFlags);
     }
 }
 
@@ -814,11 +814,11 @@ void StreamedMediaChannel::onStreamStateChanged(uint streamId,
         return;
     }
 
-    stream->setState((Telepathy::MediaStreamState) streamState);
+    stream->setState((MediaStreamState) streamState);
     if (isReady(FeatureStreams) &&
         !mPriv->incompleteStreams.contains(stream->id())) {
         emit streamStateChanged(stream,
-                (Telepathy::MediaStreamState) streamState);
+                (MediaStreamState) streamState);
     }
 }
 
@@ -835,7 +835,7 @@ void StreamedMediaChannel::onStreamError(uint streamId,
     if (isReady(FeatureStreams) &&
         !mPriv->incompleteStreams.contains(stream->id())) {
         emit streamError(stream,
-            (Telepathy::MediaStreamError) errorCode,
+            (MediaStreamError) errorCode,
             errorMessage);
     }
 }
@@ -844,8 +844,8 @@ void StreamedMediaChannel::addStream(const MediaStreamPtr &stream)
 {
     mPriv->incompleteStreams.insert(stream->id(), stream);
     connect(stream->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(onStreamReady(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onStreamReady(Tp::PendingOperation*)));
 }
 
 MediaStreamPtr StreamedMediaChannel::lookupStreamById(uint streamId)
@@ -858,4 +858,4 @@ MediaStreamPtr StreamedMediaChannel::lookupStreamById(uint streamId)
     return MediaStreamPtr();
 }
 
-} // Telepathy
+} // Tp

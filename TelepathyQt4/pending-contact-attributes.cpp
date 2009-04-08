@@ -47,7 +47,7 @@
  * interfaces.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 /**
@@ -239,4 +239,4 @@ void PendingContactAttributes::failImmediately(const QString &error, const QStri
     setFinishedWithError(error, errorMessage);
 }
 
-} // Telepathy
+} // Tp

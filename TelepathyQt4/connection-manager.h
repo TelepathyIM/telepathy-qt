@@ -39,7 +39,7 @@
 
 #include <QSet>
 
-namespace Telepathy
+namespace Tp
 {
 
 class PendingConnection;
@@ -57,7 +57,7 @@ public:
     ProtocolParameter(const QString &name,
                       const QDBusSignature &dbusSignature,
                       QVariant defaultValue,
-                      Telepathy::ConnMgrParamFlag flags);
+                      ConnMgrParamFlag flags);
     ~ProtocolParameter();
 
     QString name() const { return mName; }
@@ -82,7 +82,7 @@ private:
     QDBusSignature mDBusSignature;
     QVariant::Type mType;
     QVariant mDefaultValue;
-    Telepathy::ConnMgrParamFlag mFlags;
+    ConnMgrParamFlag mFlags;
 };
 
 
@@ -169,6 +169,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

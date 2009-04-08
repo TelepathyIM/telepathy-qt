@@ -27,7 +27,7 @@
 
 #include <QDBusAbstractInterface>
 
-namespace Telepathy
+namespace Tp
 {
 
 class DBusProxy;
@@ -45,7 +45,7 @@ public:
     QString invalidationMessage() const;
 
 protected Q_SLOTS:
-    virtual void invalidate(Telepathy::DBusProxy *proxy,
+    virtual void invalidate(Tp::DBusProxy *proxy,
             const QString &error, const QString &message);
 
 protected:
@@ -59,6 +59,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

@@ -25,7 +25,7 @@
 
 #include <TelepathyQt4/Connection>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct RoomList::Private
@@ -88,4 +88,4 @@ RoomList::~RoomList()
     delete mPriv;
 }
 
-} // Telepathy
+} // Tp

@@ -37,7 +37,7 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Contact>
 
-namespace Telepathy
+namespace Tp
 {
 
 class ContactManager;
@@ -67,10 +67,10 @@ public:
     QHash<QString, QPair<QString, QString> > invalidIdentifiers() const;
 
 private Q_SLOTS:
-    void onAttributesFinished(Telepathy::PendingOperation *);
-    void onRequestHandlesFinished(Telepathy::PendingOperation *);
-    void onReferenceHandlesFinished(Telepathy::PendingOperation *);
-    void onNestedFinished(Telepathy::PendingOperation *);
+    void onAttributesFinished(Tp::PendingOperation *);
+    void onRequestHandlesFinished(Tp::PendingOperation *);
+    void onReferenceHandlesFinished(Tp::PendingOperation *);
+    void onNestedFinished(Tp::PendingOperation *);
     void onInspectHandlesFinished(QDBusPendingCallWatcher *);
 
 private:
@@ -94,6 +94,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

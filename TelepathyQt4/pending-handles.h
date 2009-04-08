@@ -36,7 +36,7 @@
 
 #include <TelepathyQt4/Types>
 
-namespace Telepathy
+namespace Tp
 {
 
 class PendingHandles;
@@ -88,6 +88,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

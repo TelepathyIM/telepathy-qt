@@ -27,7 +27,7 @@
 
 #include <TelepathyQt4/Channel>
 
-namespace Telepathy
+namespace Tp
 {
 
 class RoomList : public Channel
@@ -51,6 +51,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

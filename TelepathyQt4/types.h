@@ -30,7 +30,7 @@
 
 #include <TelepathyQt4/SharedPtr>
 
-namespace Telepathy
+namespace Tp
 {
 
 class Account;
@@ -55,6 +55,6 @@ typedef SharedPtr<MediaStream> MediaStreamPtr;
 typedef SharedPtr<StreamedMediaChannel> StreamedMediaChannelPtr;
 typedef SharedPtr<TextChannel> TextChannelPtr;
 
-} // Telepathy
+} // Tp
 
 #endif

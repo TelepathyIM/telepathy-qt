@@ -33,7 +33,7 @@
 #define ATTRIBUTE_DEPRECATED
 #endif
 
-namespace Telepathy {
+namespace Tp {
 namespace Client{
     class ConnectionInterface;
 }
@@ -98,7 +98,7 @@ protected:
     * Constructor.
     * Use Contact::chatChannel() to obtain an object of ChatChannel.
     */
-    ChatChannel( Contact* contact, Telepathy::Client::ConnectionInterface* connectionInterface , QObject* parent = NULL );
+    ChatChannel( Contact* contact, Tp::Client::ConnectionInterface* connectionInterface , QObject* parent = NULL );
     
     void requestTextChannel(uint handle);
     void openTextChannel(uint handle, uint handleType, const QString& channelPath, const QString& channelType );

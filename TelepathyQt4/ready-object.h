@@ -30,7 +30,7 @@
 
 #include <QObject>
 
-namespace Telepathy
+namespace Tp
 {
 
 class DBusProxy;
@@ -61,6 +61,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

@@ -35,7 +35,7 @@
 
 #include <QDebug>
 
-using namespace Telepathy;
+using namespace Tp;
 
 CallWindow::CallWindow(const QString &username, const QString &password,
         QWidget *parent)
@@ -47,8 +47,8 @@ CallWindow::CallWindow(const QString &username, const QString &password,
 
     mCM = ConnectionManager::create("gabble");
     connect(mCM->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onCMReady(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onCMReady(Tp::PendingOperation *)));
 
     mCallHandler = new CallHandler(this);
 
@@ -70,7 +70,7 @@ void CallWindow::setupGui()
     setCentralWidget(mRoster);
 }
 
-void CallWindow::onCMReady(Telepathy::PendingOperation *op)
+void CallWindow::onCMReady(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "CM cannot become ready";
@@ -83,11 +83,11 @@ void CallWindow::onCMReady(Telepathy::PendingOperation *op)
     params.insert("password", QVariant(mPassword));
     PendingConnection *pconn = mCM->requestConnection("jabber", params);
     connect(pconn,
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onConnectionCreated(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onConnectionCreated(Tp::PendingOperation *)));
 }
 
-void CallWindow::onConnectionCreated(Telepathy::PendingOperation *op)
+void CallWindow::onConnectionCreated(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Unable to create connection";
@@ -100,14 +100,14 @@ void CallWindow::onConnectionCreated(Telepathy::PendingOperation *op)
     ConnectionPtr conn = pconn->connection();
     mConn = conn;
     connect(conn->requestConnect(Connection::FeatureSelfContact),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onConnectionConnected(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onConnectionConnected(Tp::PendingOperation *)));
     connect(conn.data(),
-            SIGNAL(invalidated(Telepathy::DBusProxy *, const QString &, const QString &)),
-            SLOT(onConnectionInvalidated(Telepathy::DBusProxy *, const QString &, const QString &)));
+            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+            SLOT(onConnectionInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
 }
 
-void CallWindow::onConnectionConnected(Telepathy::PendingOperation *op)
+void CallWindow::onConnectionConnected(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Connection cannot become connected";
@@ -118,24 +118,24 @@ void CallWindow::onConnectionConnected(Telepathy::PendingOperation *op)
     ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(pr->object()));
 
     if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)) {
-        Telepathy::CapabilityPair capability = {
+        Tp::CapabilityPair capability = {
             TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
-            Telepathy::ChannelMediaCapabilityAudio |
-            Telepathy::ChannelMediaCapabilityVideo |
-                Telepathy::ChannelMediaCapabilityNATTraversalSTUN |
-                Telepathy::ChannelMediaCapabilityNATTraversalGTalkP2P
+            Tp::ChannelMediaCapabilityAudio |
+            Tp::ChannelMediaCapabilityVideo |
+                Tp::ChannelMediaCapabilityNATTraversalSTUN |
+                Tp::ChannelMediaCapabilityNATTraversalGTalkP2P
         };
         qDebug() << "CallWindow::onConnectionConnected: advertising capabilities";
         conn->capabilitiesInterface()->AdvertiseCapabilities(
-                Telepathy::CapabilityPairList() << capability,
+                Tp::CapabilityPairList() << capability,
                 QStringList());
     }
 
     if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
         qDebug() << "CallWindow::onConnectionConnected: connecting to Connection.Interface.NewChannels";
         connect(conn->requestsInterface(),
-                SIGNAL(NewChannels(const Telepathy::ChannelDetailsList&)),
-                SLOT(onNewChannels(const Telepathy::ChannelDetailsList&)));
+                SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
+                SLOT(onNewChannels(const Tp::ChannelDetailsList&)));
     }
 
     mRoster->addConnection(conn);
@@ -150,10 +150,10 @@ void CallWindow::onConnectionInvalidated(DBusProxy *proxy,
     mConn.reset();
 }
 
-void CallWindow::onNewChannels(const Telepathy::ChannelDetailsList &channels)
+void CallWindow::onNewChannels(const Tp::ChannelDetailsList &channels)
 {
     qDebug() << "CallWindow::onNewChannels";
-    foreach (const Telepathy::ChannelDetails &details, channels) {
+    foreach (const Tp::ChannelDetails &details, channels) {
         QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
         qDebug() << " channelType:" << channelType;

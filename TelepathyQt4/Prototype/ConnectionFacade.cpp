@@ -74,7 +74,7 @@ ConnectionFacade::~ConnectionFacade()
 
 QStringList ConnectionFacade::listOfConnectionManagers()
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
 
     QStringList ret_list;
     
@@ -116,7 +116,7 @@ QStringList ConnectionFacade::listOfConnectionManagers()
 
 QStringList ConnectionFacade::listOfProtocolsForConnectionManager( const QString& connectionManager )
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
 
     QStringList empty_list;
 
@@ -124,7 +124,7 @@ QStringList ConnectionFacade::listOfProtocolsForConnectionManager( const QString
     if ( !list_of_connection_managers.contains( connectionManager ) )
     { return empty_list; } // return empty list
 
-    Telepathy::Client::ConnectionManagerInterface connection_manager_interface( "org.freedesktop.Telepathy.ConnectionManager." + connectionManager,
+    Tp::Client::ConnectionManagerInterface connection_manager_interface( "org.freedesktop.Telepathy.ConnectionManager." + connectionManager,
                                                                                 "/org/freedesktop/Telepathy/ConnectionManager/" + connectionManager );
     
     QDBusPendingReply<QStringList> list_protocols_reply = connection_manager_interface.ListProtocols();
@@ -146,14 +146,14 @@ QStringList ConnectionFacade::listOfProtocolsForConnectionManager( const QString
 
 // TODO: Return the parameter list with all flags as we receive it from telepathy. This solution hides the flags and is unable
 //       to handle all required types..
-Telepathy::ParamSpecList ConnectionFacade::paramSpecListForConnectionManagerAndProtocol( const QString& connectionManager, const QString& protocol )
+Tp::ParamSpecList ConnectionFacade::paramSpecListForConnectionManagerAndProtocol( const QString& connectionManager, const QString& protocol )
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
 
-    Telepathy::Client::ConnectionManagerInterface connection_manager_interface( "org.freedesktop.Telepathy.ConnectionManager." + connectionManager,
+    Tp::Client::ConnectionManagerInterface connection_manager_interface( "org.freedesktop.Telepathy.ConnectionManager." + connectionManager,
                                                                                 "/org/freedesktop/Telepathy/ConnectionManager/" + connectionManager );
     
-    QDBusPendingReply<Telepathy::ParamSpecList> get_parameters_reply = connection_manager_interface.GetParameters( protocol );
+    QDBusPendingReply<Tp::ParamSpecList> get_parameters_reply = connection_manager_interface.GetParameters( protocol );
     get_parameters_reply.waitForFinished();
 
     if ( !get_parameters_reply.isValid() )
@@ -164,10 +164,10 @@ Telepathy::ParamSpecList ConnectionFacade::paramSpecListForConnectionManagerAndP
                 << "error name:" << error.name()
                 << "error message:" << error.message();
                    
-        return Telepathy::ParamSpecList() ; // returns empty list
+        return Tp::ParamSpecList() ; // returns empty list
     }
 
-    Telepathy::ParamSpecList param_spec_list = get_parameters_reply.value();
+    Tp::ParamSpecList param_spec_list = get_parameters_reply.value();
 
     return param_spec_list;
 }
@@ -176,7 +176,7 @@ QVariantMap ConnectionFacade::parameterListForConnectionManagerAndProtocol( cons
 {
     QVariantMap ret_map;
             
-    foreach( const Telepathy::ParamSpec& item, paramSpecListForConnectionManagerAndProtocol(connectionManager, protocol)  )
+    foreach( const Tp::ParamSpec& item, paramSpecListForConnectionManagerAndProtocol(connectionManager, protocol)  )
     {
         ret_map.insert( item.name, item.defaultValue.variant() );
 #ifdef ENABLE_DEBUG_OUTPUT_
@@ -198,7 +198,7 @@ QVariantMap ConnectionFacade::parameterListForConnectionManagerAndProtocol( cons
 
 QVariantMap ConnectionFacade::parameterListForProtocol( const QString& protocol, int account_number ) 
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
 
     QVariantMap ret_map;
     
@@ -212,7 +212,7 @@ QVariantMap ConnectionFacade::parameterListForProtocol( const QString& protocol,
     }
     ret_map.insert( "password", "basyskom" );
     ret_map.insert( "server", "localhost" );
-    ret_map.insert( "resource", "Telepathy" );
+    ret_map.insert( "resource", "Tp" );
     ret_map.insert( "port", static_cast<uint>(5222) );    
     return ret_map;
 }
@@ -220,7 +220,7 @@ QVariantMap ConnectionFacade::parameterListForProtocol( const QString& protocol,
 // account_number is used for test purposes only we have to delte this later
 TpPrototype::Connection* ConnectionFacade::connectionWithAccount( Account* account, int account_number )
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
 
     if ( !account )
     { return NULL; }
@@ -236,7 +236,7 @@ TpPrototype::Connection* ConnectionFacade::connectionWithAccount( Account* accou
     return account->connection();
 }
 
-int ConnectionFacade::selfHandleForConnectionInterface( Telepathy::Client::ConnectionInterface* connectionInterface )
+int ConnectionFacade::selfHandleForConnectionInterface( Tp::Client::ConnectionInterface* connectionInterface )
 {
     if ( !connectionInterface )
     {

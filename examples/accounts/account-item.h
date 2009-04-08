@@ -27,7 +27,7 @@
 
 #include <QString>
 
-namespace Telepathy {
+namespace Tp {
 class AccountManager;
 class PendingOperation;
 }
@@ -56,30 +56,30 @@ public:
     };
     Q_ENUMS(Columns)
 
-    AccountItem(Telepathy::AccountManagerPtr am, const QString &objectPath,
+    AccountItem(Tp::AccountManagerPtr am, const QString &objectPath,
                 QTableWidget *table, int row, QObject *parent = 0);
     virtual ~AccountItem();
 
     int row() const { return mRow; }
 
 private Q_SLOTS:
-    void onReady(Telepathy::PendingOperation *);
+    void onReady(Tp::PendingOperation *);
     void onValidityChanged(bool);
     void onStateChanged(bool);
     void onDisplayNameChanged(const QString &);
     void onNicknameChanged(const QString &);
     void onConnectsAutomaticallyPropertyChanged(bool);
-    void onAutomaticPresenceChanged(const Telepathy::SimplePresence &);
-    void onCurrentPresenceChanged(const Telepathy::SimplePresence &);
-    void onRequestedPresenceChanged(const Telepathy::SimplePresence &);
-    void onConnectionStatusChanged(Telepathy::ConnectionStatus,
-            Telepathy::ConnectionStatusReason);
+    void onAutomaticPresenceChanged(const Tp::SimplePresence &);
+    void onCurrentPresenceChanged(const Tp::SimplePresence &);
+    void onRequestedPresenceChanged(const Tp::SimplePresence &);
+    void onConnectionStatusChanged(Tp::ConnectionStatus,
+            Tp::ConnectionStatusReason);
     void onHaveConnectionChanged(bool);
 
 private:
     void setupGui();
 
-    Telepathy::AccountPtr mAcc;
+    Tp::AccountPtr mAcc;
     QTableWidget *mTable;
     int mRow;
 };

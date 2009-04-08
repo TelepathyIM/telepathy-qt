@@ -26,7 +26,7 @@
 
 #include <QDBusPendingReply>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct PendingStringList::Private
@@ -63,4 +63,4 @@ void PendingStringList::setResult(const QStringList &result)
     mPriv->result = result;
 }
 
-} // Telepathy
+} // Tp

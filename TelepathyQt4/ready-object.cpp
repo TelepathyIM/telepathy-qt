@@ -26,7 +26,7 @@
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReadinessHelper>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct ReadyObject::Private
@@ -139,4 +139,4 @@ ReadinessHelper *ReadyObject::readinessHelper() const
     return mPriv->readinessHelper;
 }
 
-} // Telepathy
+} // Tp

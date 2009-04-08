@@ -32,7 +32,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-namespace Telepathy
+namespace Tp
 {
 
 struct ManagerFile::Private
@@ -124,23 +124,23 @@ bool ManagerFile::Private::parse(const QString &fileName)
                     spec.name = param.right(param.length() - 6);
 
                     if (spec.name.endsWith("password")) {
-                        spec.flags |= Telepathy::ConnMgrParamFlagSecret;
+                        spec.flags |= ConnMgrParamFlagSecret;
                     }
 
                     QStringList values = keyFile.value(param).split(QChar(' '));
 
                     spec.signature = values[0];
                     if (values.contains("secret")) {
-                        spec.flags |= Telepathy::ConnMgrParamFlagSecret;
+                        spec.flags |= ConnMgrParamFlagSecret;
                     }
                     if (values.contains("dbus-property")) {
-                        spec.flags |= Telepathy::ConnMgrParamFlagDBusProperty;
+                        spec.flags |= ConnMgrParamFlagDBusProperty;
                     }
                     if (values.contains("required")) {
-                        spec.flags |= Telepathy::ConnMgrParamFlagRequired;
+                        spec.flags |= ConnMgrParamFlagRequired;
                     }
                     if (values.contains("register")) {
-                        spec.flags |= Telepathy::ConnMgrParamFlagRegister;
+                        spec.flags |= ConnMgrParamFlagRegister;
                     }
 
                     paramSpecList.append(spec);
@@ -162,7 +162,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
 
                     ParamSpec *spec = getParameter(protocol, paramName);
 
-                    spec->flags |= Telepathy::ConnMgrParamFlagHasDefault;
+                    spec->flags |= ConnMgrParamFlagHasDefault;
 
                     /* map based on the param dbus signature, otherwise use
                      * QString */
@@ -360,4 +360,4 @@ QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signatur
     return type;
 }
 
-} // Telepathy
+} // Tp

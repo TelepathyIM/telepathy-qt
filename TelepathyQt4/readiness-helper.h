@@ -34,7 +34,7 @@
 
 class QDBusError;
 
-namespace Telepathy
+namespace Tp
 {
 
 class DBusProxy;
@@ -119,9 +119,9 @@ Q_SIGNALS:
 private Q_SLOTS:
     void iterateIntrospection();
 
-    void onProxyInvalidated(Telepathy::DBusProxy *proxy,
+    void onProxyInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage);
-    void onOperationFinished(Telepathy::PendingOperation *op);
+    void onOperationFinished(Tp::PendingOperation *op);
     void onOperationDestroyed(QObject *obj);
 
 private:
@@ -130,6 +130,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

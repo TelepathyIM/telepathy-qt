@@ -29,7 +29,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-namespace Telepathy
+namespace Tp
 {
 
 struct Contact::Private
@@ -355,4 +355,4 @@ void Contact::setBlocked(bool value)
     emit blockStatusChanged(value);
 }
 
-} // Telepathy
+} // Tp

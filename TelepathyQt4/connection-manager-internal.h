@@ -29,7 +29,7 @@
 #include <QQueue>
 #include <QString>
 
-namespace Telepathy
+namespace Tp
 {
 
 class ConnectionManager;
@@ -90,6 +90,6 @@ private:
     QDBusConnection mBus;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

@@ -34,7 +34,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-namespace Telepathy
+namespace Tp
 {
 
 struct PendingSendMessage::Private
@@ -196,11 +196,11 @@ void TextChannel::Private::introspectMessageQueue(
         // FeatureMessageQueue needs signal connections + Get (but we
         // might as well do GetAll and reduce the number of code paths)
         parent->connect(parent->messagesInterface(),
-                SIGNAL(MessageReceived(const Telepathy::MessagePartList &)),
-                SLOT(onMessageReceived(const Telepathy::MessagePartList &)));
+                SIGNAL(MessageReceived(const Tp::MessagePartList &)),
+                SLOT(onMessageReceived(const Tp::MessagePartList &)));
         parent->connect(parent->messagesInterface(),
-                SIGNAL(PendingMessagesRemoved(const Telepathy::UIntList &)),
-                SLOT(onPendingMessagesRemoved(const Telepathy::UIntList &)));
+                SIGNAL(PendingMessagesRemoved(const Tp::UIntList &)),
+                SLOT(onPendingMessagesRemoved(const Tp::UIntList &)));
 
         if (!self->gotProperties && !self->getAllInFlight) {
             self->getAllInFlight = true;
@@ -267,9 +267,9 @@ void TextChannel::Private::introspectMessageSentSignal(
 
     if (parent->hasMessagesInterface()) {
         parent->connect(parent->messagesInterface(),
-                SIGNAL(MessageSent(const Telepathy::MessagePartList &,
+                SIGNAL(MessageSent(const Tp::MessagePartList &,
                                    uint, const QString &)),
-                SLOT(onMessageSent(const Telepathy::MessagePartList &,
+                SLOT(onMessageSent(const Tp::MessagePartList &,
                                    uint, const QString &)));
     } else {
         parent->connect(parent->textInterface(),
@@ -348,8 +348,8 @@ const Feature TextChannel::FeatureMessageCapabilities = Feature(TextChannel::sta
 const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::staticMetaObject.className(), 2);
 
 /**
- * \fn void TextChannel::messageSent(const Telepathy::Message &message,
- *     Telepathy::MessageSendingFlags flags,
+ * \fn void TextChannel::messageSent(const Tp::Message &message,
+ *     Tp::MessageSendingFlags flags,
  *     const QString &sentMessageToken)
  *
  * Emitted when a message is sent, if the FeatureMessageSentSignal Feature
@@ -370,7 +370,7 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
  */
 
 /**
- * \fn void TextChannel::messageReceived(const Telepathy::ReceivedMessage &message)
+ * \fn void TextChannel::messageReceived(const Tp::ReceivedMessage &message)
  *
  * Emitted when a message is added to messageQueue(), if the
  * FeatureMessageQueue Feature has been enabled.
@@ -381,7 +381,7 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
 
 /**
  * \fn void TextChannel::pendingMessageRemoved(
- *      const Telepathy::ReceivedMessage &message)
+ *      const Tp::ReceivedMessage &message)
  *
  * Emitted when a message is removed from messageQueue(), if the
  * FeatureMessageQueue Feature has been enabled. See messageQueue() for the
@@ -667,11 +667,11 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts)
     return op;
 }
 
-void TextChannel::onMessageSent(const Telepathy::MessagePartList &parts,
+void TextChannel::onMessageSent(const MessagePartList &parts,
         uint flags,
         const QString &sentMessageToken)
 {
-    emit messageSent(Message(parts), Telepathy::MessageSendingFlag(flags),
+    emit messageSent(Message(parts), MessageSendingFlag(flags),
             sentMessageToken);
 }
 
@@ -741,8 +741,8 @@ void TextChannel::processQueue()
 
     connect(connection()->contactManager()->contactsForHandles(
                 contactsRequired.toList()),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onContactsFinished(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onContactsFinished(Tp::PendingOperation *)));
 
     mPriv->awaitingContacts |= contactsRequired;
 }
@@ -800,7 +800,7 @@ void TextChannel::onContactsFinished(PendingOperation *op)
     processQueue();
 }
 
-void TextChannel::onMessageReceived(const Telepathy::MessagePartList &parts)
+void TextChannel::onMessageReceived(const MessagePartList &parts)
 {
     if (!mPriv->initialMessagesReceived) {
         return;
@@ -811,7 +811,7 @@ void TextChannel::onMessageReceived(const Telepathy::MessagePartList &parts)
     processQueue();
 }
 
-void TextChannel::onPendingMessagesRemoved(const Telepathy::UIntList &ids)
+void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
 {
     if (!mPriv->initialMessagesReceived) {
         return;
@@ -1002,4 +1002,4 @@ void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-} // Telepathy
+} // Tp

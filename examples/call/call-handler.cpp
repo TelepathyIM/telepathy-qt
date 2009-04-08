@@ -36,7 +36,7 @@
 #include <QDebug>
 #include <QMessageBox>
 
-using namespace Telepathy;
+using namespace Tp;
 
 CallHandler::CallHandler(QObject *parent)
     : QObject(parent)
@@ -56,22 +56,22 @@ void CallHandler::addOutgoingCall(const ContactPtr &contact)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeContact);
+                   HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact->handle()[0]);
 
     ConnectionPtr conn = contact->manager()->connection();
     connect(conn->ensureChannel(request),
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(onOutgoingChannelCreated(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onOutgoingChannelCreated(Tp::PendingOperation*)));
 }
 
 void CallHandler::addIncomingCall(const StreamedMediaChannelPtr &chan)
 {
     mChannels.append(chan);
     connect(chan->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(onIncomingChannelReady(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onIncomingChannelReady(Tp::PendingOperation*)));
 }
 
 void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
@@ -92,8 +92,8 @@ void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
             pc->objectPath(), pc->immutableProperties());
     mChannels.append(chan);
     connect(chan->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(onOutgoingChannelReady(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onOutgoingChannelReady(Tp::PendingOperation*)));
 }
 
 void CallHandler::onOutgoingChannelReady(PendingOperation *op)

@@ -41,10 +41,10 @@ AccountsWindow::AccountsWindow(QWidget *parent)
 {
     setupGui();
 
-    mAM = Telepathy::AccountManager::create();
+    mAM = Tp::AccountManager::create();
     connect(mAM->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onAMReady(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onAMReady(Tp::PendingOperation *)));
     connect(mAM.data(),
             SIGNAL(accountCreated(const QString &)),
             SLOT(onAccountCreated(const QString &)));
@@ -78,7 +78,7 @@ void AccountsWindow::setupGui()
     setCentralWidget(mTable);
 }
 
-void AccountsWindow::onAMReady(Telepathy::PendingOperation *op)
+void AccountsWindow::onAMReady(Tp::PendingOperation *op)
 {
     mTable->setRowCount(mAM->validAccountPaths().count());
 

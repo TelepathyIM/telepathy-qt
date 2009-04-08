@@ -25,7 +25,7 @@
 
 #include <TelepathyQt4/Connection>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct FileTransfer::Private
@@ -89,4 +89,4 @@ FileTransfer::~FileTransfer()
     delete mPriv;
 }
 
-} // Telepathy
+} // Tp

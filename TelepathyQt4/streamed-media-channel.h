@@ -30,7 +30,7 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/SharedPtr>
 
-namespace Telepathy
+namespace Tp
 {
 
 class StreamedMediaChannel;
@@ -49,15 +49,15 @@ public:
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
-    void onStreamRemoved(Telepathy::MediaStreamPtr);
-    void onStreamReady(Telepathy::PendingOperation *);
+    void onStreamRemoved(Tp::MediaStreamPtr);
+    void onStreamReady(Tp::PendingOperation *);
 
 private:
     friend class StreamedMediaChannel;
 
     PendingMediaStreams(const StreamedMediaChannelPtr &channel,
             ContactPtr contact,
-            QList<Telepathy::MediaStreamType> types);
+            QList<MediaStreamType> types);
 
     struct Private;
     friend struct Private;
@@ -78,24 +78,24 @@ public:
     uint id() const;
 
     ContactPtr contact() const;
-    Telepathy::MediaStreamState state() const;
-    Telepathy::MediaStreamType type() const;
+    MediaStreamState state() const;
+    MediaStreamType type() const;
 
     bool sending() const;
     bool receiving() const;
     bool localSendingRequested() const;
     bool remoteSendingRequested() const;
 
-    Telepathy::MediaStreamDirection direction() const;
-    Telepathy::MediaStreamPendingSend pendingSend() const;
+    MediaStreamDirection direction() const;
+    MediaStreamPendingSend pendingSend() const;
 
     PendingOperation *requestDirection(
-            Telepathy::MediaStreamDirection direction);
+            MediaStreamDirection direction);
     PendingOperation *requestDirection(
             bool send, bool receive);
 
 private Q_SLOTS:
-    void gotContact(Telepathy::PendingOperation *op);
+    void gotContact(Tp::PendingOperation *op);
 
 private:
     friend class PendingMediaStreams;
@@ -110,9 +110,9 @@ private:
 
     uint contactHandle() const;
     void setContact(const ContactPtr &contact);
-    void setDirection(Telepathy::MediaStreamDirection direction,
-            Telepathy::MediaStreamPendingSend pendingSend);
-    void setState(Telepathy::MediaStreamState state);
+    void setDirection(MediaStreamDirection direction,
+            MediaStreamPendingSend pendingSend);
+    void setState(MediaStreamState state);
 
     struct Private;
     friend struct Private;
@@ -133,7 +133,7 @@ public:
     ~StreamedMediaChannel();
 
     MediaStreams streams() const;
-    MediaStreams streamsForType(Telepathy::MediaStreamType type) const;
+    MediaStreams streamsForType(MediaStreamType type) const;
 
     bool awaitingLocalAnswer() const;
     bool awaitingRemoteAnswer() const;
@@ -145,21 +145,21 @@ public:
 
     PendingMediaStreams *requestStream(
             const ContactPtr &contact,
-            Telepathy::MediaStreamType type);
+            MediaStreamType type);
     PendingMediaStreams *requestStreams(
             const ContactPtr &contact,
-            QList<Telepathy::MediaStreamType> types);
+            QList<MediaStreamType> types);
 
 Q_SIGNALS:
-    void streamAdded(const Telepathy::MediaStreamPtr &stream);
-    void streamRemoved(const Telepathy::MediaStreamPtr &stream);
-    void streamDirectionChanged(const Telepathy::MediaStreamPtr &stream,
-            Telepathy::MediaStreamDirection direction,
-            Telepathy::MediaStreamPendingSend pendingSend);
-    void streamStateChanged(const Telepathy::MediaStreamPtr &stream,
-            Telepathy::MediaStreamState);
-    void streamError(const Telepathy::MediaStreamPtr &stream,
-            Telepathy::MediaStreamError errorCode,
+    void streamAdded(const Tp::MediaStreamPtr &stream);
+    void streamRemoved(const Tp::MediaStreamPtr &stream);
+    void streamDirectionChanged(const Tp::MediaStreamPtr &stream,
+            Tp::MediaStreamDirection direction,
+            Tp::MediaStreamPendingSend pendingSend);
+    void streamStateChanged(const Tp::MediaStreamPtr &stream,
+            Tp::MediaStreamState);
+    void streamError(const Tp::MediaStreamPtr &stream,
+            Tp::MediaStreamError errorCode,
             const QString &errorMessage);
 
 protected:
@@ -168,7 +168,7 @@ protected:
 
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
-    void onStreamReady(Telepathy::PendingOperation *);
+    void onStreamReady(Tp::PendingOperation *);
     void onStreamAdded(uint, uint, uint);
     void onStreamRemoved(uint);
     void onStreamDirectionChanged(uint, uint, uint);
@@ -186,6 +186,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

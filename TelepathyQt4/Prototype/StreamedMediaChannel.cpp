@@ -29,7 +29,7 @@
 
 // ChannelHandlerInterface and StreamEngineInterface from stream-engine
 // 0.5.x, which is currently used as the only media streaming backend.
-// These interfaces are not really part of the Telepathy spec
+// These interfaces are not really part of the Tp spec
 #include <TelepathyQt4/Prototype/Client/ChannelHandler>
 #include <TelepathyQt4/Prototype/Client/StreamEngine>
 
@@ -49,11 +49,11 @@ public:
     { init(); }
     
     QPointer<TpPrototype::Contact>                                 m_pContact;
-    QPointer<Telepathy::Client::ConnectionInterface>             m_pConnectionInterface;
-    Telepathy::Client::ChannelTypeStreamedMediaInterface*        m_pStreamedMediaInterface;
-    Telepathy::Client::ChannelInterfaceGroupInterface*           m_pGroupInterface;
-    Telepathy::Client::ChannelInterfaceMediaSignallingInterface* m_pMediaSignallingInterface;
-    Telepathy::Client::ChannelInterfaceCallStateInterface*       m_pCallStateInterface;
+    QPointer<Tp::Client::ConnectionInterface>             m_pConnectionInterface;
+    Tp::Client::ChannelTypeStreamedMediaInterface*        m_pStreamedMediaInterface;
+    Tp::Client::ChannelInterfaceGroupInterface*           m_pGroupInterface;
+    Tp::Client::ChannelInterfaceMediaSignallingInterface* m_pMediaSignallingInterface;
+    Tp::Client::ChannelInterfaceCallStateInterface*       m_pCallStateInterface;
 
     // Interfaces of the telepathy stream engine:
     TpPrototype::Client::ChannelHandlerInterface*                m_pStreamEngineHandlerInterface;
@@ -143,11 +143,11 @@ private:
 };
 
 
-StreamedMediaChannel::StreamedMediaChannel( Contact* contact, Telepathy::Client::ConnectionInterface* connectionInterface, QObject* parent ):
+StreamedMediaChannel::StreamedMediaChannel( Contact* contact, Tp::Client::ConnectionInterface* connectionInterface, QObject* parent ):
         QObject( parent ),
         d(new StreamedMediaChannelPrivate())
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
 
     d->m_pContact = contact;
     d->m_pConnectionInterface = connectionInterface;
@@ -177,7 +177,7 @@ bool StreamedMediaChannel::rejectIncomingStream()
     return removeMembers( reject_handles );
 }
 
-bool StreamedMediaChannel::requestChannel( QList<Telepathy::MediaStreamType> types )
+bool StreamedMediaChannel::requestChannel( QList<Tp::MediaStreamType> types )
 {
     Q_ASSERT( d->m_pConnectionInterface );
     Q_ASSERT( d->m_pContact );
@@ -187,8 +187,8 @@ bool StreamedMediaChannel::requestChannel( QList<Telepathy::MediaStreamType> typ
         return false;
     }
 
-    QDBusPendingReply<QDBusObjectPath> request_channel_reply = d->m_pConnectionInterface->RequestChannel( Telepathy::Client::ChannelTypeStreamedMediaInterface::staticInterfaceName(),
-                                          Telepathy::HandleTypeContact,
+    QDBusPendingReply<QDBusObjectPath> request_channel_reply = d->m_pConnectionInterface->RequestChannel( Tp::Client::ChannelTypeStreamedMediaInterface::staticInterfaceName(),
+                                          Tp::HandleTypeContact,
                                           d->m_pContact->telepathyHandle(),
                                           true );
     request_channel_reply.waitForFinished();
@@ -212,7 +212,7 @@ bool StreamedMediaChannel::requestChannel( QList<Telepathy::MediaStreamType> typ
     }
 
     QDBusObjectPath channel_path=request_channel_reply.value();
-    d->m_pStreamedMediaInterface = new Telepathy::Client::ChannelTypeStreamedMediaInterface( d->m_pConnectionInterface->service(), channel_path.path(), this );
+    d->m_pStreamedMediaInterface = new Tp::Client::ChannelTypeStreamedMediaInterface( d->m_pConnectionInterface->service(), channel_path.path(), this );
     connectSignals();
     
     if ( !d->m_pStreamedMediaInterface )
@@ -228,7 +228,7 @@ bool StreamedMediaChannel::requestChannel( QList<Telepathy::MediaStreamType> typ
     }
 
     
-    QDBusPendingReply<Telepathy::MediaStreamInfoList> request_streams_reply = d->m_pStreamedMediaInterface->RequestStreams( d->m_pContact->telepathyHandle(),
+    QDBusPendingReply<Tp::MediaStreamInfoList> request_streams_reply = d->m_pStreamedMediaInterface->RequestStreams( d->m_pContact->telepathyHandle(),
             stream_types );
     request_streams_reply.waitForFinished();
 
@@ -247,7 +247,7 @@ bool StreamedMediaChannel::requestChannel( QList<Telepathy::MediaStreamType> typ
     return true;
 }
 
-bool StreamedMediaChannel::requestStreams( TpPrototype::Contact* contact, QList<Telepathy::MediaStreamType> types )
+bool StreamedMediaChannel::requestStreams( TpPrototype::Contact* contact, QList<Tp::MediaStreamType> types )
 {
     Q_ASSERT( d->m_pStreamedMediaInterface );
 
@@ -263,7 +263,7 @@ bool StreamedMediaChannel::requestStreams( TpPrototype::Contact* contact, QList<
     }
 
     
-    QDBusPendingReply<Telepathy::MediaStreamInfoList> request_streams_reply = d->m_pStreamedMediaInterface->RequestStreams( d->m_pContact->telepathyHandle(),
+    QDBusPendingReply<Tp::MediaStreamInfoList> request_streams_reply = d->m_pStreamedMediaInterface->RequestStreams( d->m_pContact->telepathyHandle(),
             stream_types );
     request_streams_reply.waitForFinished();
 
@@ -302,7 +302,7 @@ QList<QPointer<TpPrototype::Contact> > StreamedMediaChannel::localPendingContact
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "Local Pending members : ";
 #endif
-    foreach( Telepathy::LocalPendingInfo local_pending_info, d->m_pGroupInterface->LocalPendingMembers() )
+    foreach( Tp::LocalPendingInfo local_pending_info, d->m_pGroupInterface->LocalPendingMembers() )
     {
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug() << "To be added: " << local_pending_info.toBeAdded;
@@ -317,7 +317,7 @@ QList<QPointer<TpPrototype::Contact> > StreamedMediaChannel::localPendingContact
 
 QList<QPointer<TpPrototype::Contact> > StreamedMediaChannel::members()
 {
-    Telepathy::UIntList member_handles = d->m_pGroupInterface->Members();
+    Tp::UIntList member_handles = d->m_pGroupInterface->Members();
 
     QList<QPointer<TpPrototype::Contact> > member_list;
 
@@ -346,16 +346,16 @@ bool StreamedMediaChannel::removeStreams( const QList<uint>& streamIds )
     return true;
 }
 
-Telepathy::MediaStreamInfoList StreamedMediaChannel::requestStreams( QList<Telepathy::MediaStreamType> _types )
+Tp::MediaStreamInfoList StreamedMediaChannel::requestStreams( QList<Tp::MediaStreamType> _types )
 {
-    Telepathy::UIntList types;
+    Tp::UIntList types;
 
     foreach( uint type, _types )
     {
         types.append( type );
     }
     
-    QDBusPendingReply<Telepathy::MediaStreamInfoList> request_streams_reply = d->m_pStreamedMediaInterface->RequestStreams( d->m_pContact->telepathyHandle(), types);
+    QDBusPendingReply<Tp::MediaStreamInfoList> request_streams_reply = d->m_pStreamedMediaInterface->RequestStreams( d->m_pContact->telepathyHandle(), types);
     
     request_streams_reply.waitForFinished();
     if ( !request_streams_reply.isValid() )
@@ -365,18 +365,18 @@ Telepathy::MediaStreamInfoList StreamedMediaChannel::requestStreams( QList<Telep
                    << "error name:" << error.name()
                    << "error message:" << error.message();
         
-        return QDBusPendingReply<Telepathy::MediaStreamInfoList>();
+        return QDBusPendingReply<Tp::MediaStreamInfoList>();
     }
 
     return request_streams_reply.value();
 }
 
-Telepathy::MediaStreamInfoList StreamedMediaChannel::listStreams()
+Tp::MediaStreamInfoList StreamedMediaChannel::listStreams()
 {
     if ( !d->m_pStreamedMediaInterface )
-    { return Telepathy::MediaStreamInfoList();}
+    { return Tp::MediaStreamInfoList();}
 
-    QDBusPendingReply<Telepathy::MediaStreamInfoList> reply = d->m_pStreamedMediaInterface->ListStreams();
+    QDBusPendingReply<Tp::MediaStreamInfoList> reply = d->m_pStreamedMediaInterface->ListStreams();
     reply.waitForFinished();
     if ( !reply.isValid() )
     {
@@ -385,7 +385,7 @@ Telepathy::MediaStreamInfoList StreamedMediaChannel::listStreams()
                 << "error name:" << error.name()
                 << "error message:" << error.message();
         
-        return Telepathy::MediaStreamInfoList();
+        return Tp::MediaStreamInfoList();
     }
     
     return reply.value();
@@ -481,7 +481,7 @@ void StreamedMediaChannel::requestStreamedMediaChannel( uint handle )
     }
     
     QDBusPendingReply<QDBusObjectPath> reply0 = d->m_pConnectionInterface->RequestChannel( "org.freedesktop.Telepathy.Channel.Type.StreamedMedia",
-                                                                                           Telepathy::HandleTypeContact,
+                                                                                           Tp::HandleTypeContact,
                                                                                            handle,
                                                                                            true );
     reply0.waitForFinished();
@@ -499,7 +499,7 @@ void StreamedMediaChannel::requestStreamedMediaChannel( uint handle )
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "StreamedMediaChannel new ChannelTypeStreamedMediaInterface(): Path:" << channel_path.path();
 #endif
-    d->m_pStreamedMediaInterface = new Telepathy::Client::ChannelTypeStreamedMediaInterface( d->m_pConnectionInterface->service(), channel_path.path(), this );
+    d->m_pStreamedMediaInterface = new Tp::Client::ChannelTypeStreamedMediaInterface( d->m_pConnectionInterface->service(), channel_path.path(), this );
     connectSignals();
 }
 
@@ -524,7 +524,7 @@ void StreamedMediaChannel::openStreamedMediaChannel( uint handle, uint handleTyp
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug() << "Create new ChannelTypeStreamedMediaInterface";
 #endif
-        d->m_pStreamedMediaInterface = new Telepathy::Client::ChannelTypeStreamedMediaInterface( channel_service_name, channelPath, this );
+        d->m_pStreamedMediaInterface = new Tp::Client::ChannelTypeStreamedMediaInterface( channel_service_name, channelPath, this );
         connectSignals();
     }
     if (!d->m_pStreamedMediaInterface->isValid())
@@ -552,22 +552,22 @@ void StreamedMediaChannel::openStreamedMediaChannel( uint handle, uint handleTyp
 #ifdef ENABLE_DEBUG_OUTPUT_
             qDebug() << "Initialize ChannelInterfaceGroupInterface..";
 #endif
-            d->m_pGroupInterface = new Telepathy::Client::ChannelInterfaceGroupInterface( streamed_media_service_name,
+            d->m_pGroupInterface = new Tp::Client::ChannelInterfaceGroupInterface( streamed_media_service_name,
                                                                                           channelPath );
 
             connect( d->m_pGroupInterface, SIGNAL( MembersChanged(const QString& ,
-                                                                  const Telepathy::UIntList& ,
-                                                                  const Telepathy::UIntList& ,
-                                                                  const Telepathy::UIntList& ,
-                                                                  const Telepathy::UIntList& ,
+                                                                  const Tp::UIntList& ,
+                                                                  const Tp::UIntList& ,
+                                                                  const Tp::UIntList& ,
+                                                                  const Tp::UIntList& ,
                                                                   uint ,
                                                                   uint )
                                                  ),
                      this, SLOT( slotMembersChanged(const QString& ,
-                                 const Telepathy::UIntList& ,
-                                 const Telepathy::UIntList& ,
-                                 const Telepathy::UIntList& ,
-                                 const Telepathy::UIntList& ,
+                                 const Tp::UIntList& ,
+                                 const Tp::UIntList& ,
+                                 const Tp::UIntList& ,
+                                 const Tp::UIntList& ,
                                  uint ,
                                  uint )
                                )
@@ -581,7 +581,7 @@ void StreamedMediaChannel::openStreamedMediaChannel( uint handle, uint handleTyp
 #ifdef ENABLE_DEBUG_OUTPUT_
             qDebug() << "Initialize ChannelInterfaceCallStateInterface..";
 #endif
-            d->m_pCallStateInterface = new Telepathy::Client::ChannelInterfaceCallStateInterface( streamed_media_service_name,
+            d->m_pCallStateInterface = new Tp::Client::ChannelInterfaceCallStateInterface( streamed_media_service_name,
                                                                                                   channelPath );
         }
 
@@ -590,7 +590,7 @@ void StreamedMediaChannel::openStreamedMediaChannel( uint handle, uint handleTyp
 #ifdef ENABLE_DEBUG_OUTPUT_
             qDebug() << "Initialize ChannelInterfaceMediaSignallingInterface..";
 #endif
-            d->m_pMediaSignallingInterface = new Telepathy::Client::ChannelInterfaceMediaSignallingInterface( streamed_media_service_name, channelPath );
+            d->m_pMediaSignallingInterface = new Tp::Client::ChannelInterfaceMediaSignallingInterface( streamed_media_service_name, channelPath );
         }
         
         if ( !d->m_pStreamEngineInterface )
@@ -624,21 +624,21 @@ void StreamedMediaChannel::openStreamedMediaChannel( uint handle, uint handleTyp
         // Cleanup if we were unable to establish interfaces..
         if ( d->m_pGroupInterface && !d->m_pGroupInterface->isValid() )
         {
-            qWarning() << "Could not establish interface:" << Telepathy::Client::ChannelInterfaceGroupInterface::staticInterfaceName();
+            qWarning() << "Could not establish interface:" << Tp::Client::ChannelInterfaceGroupInterface::staticInterfaceName();
             delete d->m_pGroupInterface;
             d->m_pGroupInterface = NULL;
         }
 
         if ( d->m_pCallStateInterface && !d->m_pCallStateInterface->isValid() )
         {
-            qWarning() << "Could not establish interface:" << Telepathy::Client::ChannelInterfaceCallStateInterface::staticInterfaceName();
+            qWarning() << "Could not establish interface:" << Tp::Client::ChannelInterfaceCallStateInterface::staticInterfaceName();
             delete d->m_pCallStateInterface;
             d->m_pCallStateInterface = NULL;
         }
 
         if ( d->m_pMediaSignallingInterface && !d->m_pMediaSignallingInterface->isValid() )
         {
-            qWarning() << "Could not establish interface:" << Telepathy::Client::ChannelInterfaceMediaSignallingInterface::staticInterfaceName();
+            qWarning() << "Could not establish interface:" << Tp::Client::ChannelInterfaceMediaSignallingInterface::staticInterfaceName();
             delete d->m_pMediaSignallingInterface;
             d->m_pMediaSignallingInterface = NULL;
         }
@@ -763,7 +763,7 @@ void StreamedMediaChannel::slotStreamAdded(uint streamID, uint contactHandle, ui
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << __PRETTY_FUNCTION__ << "streamID:" << streamID << "contactHandle: " << contactHandle << "streamType:" << streamType;
 #endif
-    emit signalStreamAdded( this, streamID, static_cast<Telepathy::MediaStreamType>(streamType) );
+    emit signalStreamAdded( this, streamID, static_cast<Tp::MediaStreamType>(streamType) );
 }
 
 void StreamedMediaChannel::slotStreamDirectionChanged(uint streamID, uint streamDirection, uint pendingFlags)
@@ -796,14 +796,14 @@ void StreamedMediaChannel::slotStreamStateChanged(uint streamID, uint streamStat
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << __PRETTY_FUNCTION__ << "streamID:" << streamID << "streamState: " << streamState;
 #endif
-    emit signalStreamStateChanged( this, streamID, static_cast<Telepathy::MediaStreamState>(streamState) );
+    emit signalStreamStateChanged( this, streamID, static_cast<Tp::MediaStreamState>(streamState) );
 }
 
 void StreamedMediaChannel::slotMembersChanged( const QString& message,
-                                               const Telepathy::UIntList& added,
-                                               const Telepathy::UIntList& removed,
-                                               const Telepathy::UIntList& localPending,
-                                               const Telepathy::UIntList& remotePending,
+                                               const Tp::UIntList& added,
+                                               const Tp::UIntList& removed,
+                                               const Tp::UIntList& localPending,
+                                               const Tp::UIntList& remotePending,
                                                uint actor,
                                                uint reason )
 {

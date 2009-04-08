@@ -33,7 +33,7 @@
 #include <QDBusConnectionInterface>
 #include <QDBusError>
 
-namespace Telepathy
+namespace Tp
 {
 
 // ==== DBusProxy ======================================================
@@ -198,7 +198,7 @@ QString DBusProxy::invalidationMessage() const
 }
 
 /**
- * \fn void DBusProxy::invalidated (Telepathy::DBusProxy *proxy,
+ * \fn void DBusProxy::invalidated (Tp::DBusProxy *proxy,
  *      const QString &errorName, const QString &errorMessage)
  *
  * Emitted when this object is no longer usable.
@@ -271,7 +271,7 @@ void DBusProxy::emitInvalidated()
  * objects do not remain useful if the service providing them exits or
  * crashes, so they emit #invalidated() if this happens.
  *
- * Examples in Telepathy include the Connection and Channel.
+ * Examples include the Connection and Channel.
  */
 
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
@@ -324,7 +324,7 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
  * These objects can remain valid even if the service providing them exits
  * and is restarted.
  *
- * Examples in Telepathy include the AccountManager, Account and
+ * Examples include the AccountManager, Account and
  * ConnectionManager.
  */
 
@@ -349,4 +349,4 @@ StatelessDBusProxy::~StatelessDBusProxy()
 {
 }
 
-} // Telepathy
+} // Tp

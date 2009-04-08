@@ -40,7 +40,7 @@
 #include <QtGlobal>
 #include <QObject>
 
-namespace Telepathy
+namespace Tp
 {
 
 class AbstractInterface;
@@ -152,6 +152,6 @@ template <typename DBusProxySubclass> class OptionalInterfaceFactory
         }
 };
 
-} // Telepathy
+} // Tp
 
 #endif

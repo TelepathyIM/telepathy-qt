@@ -28,7 +28,7 @@
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/PendingOperation>
 
-namespace Telepathy
+namespace Tp
 {
 
 class PendingReadyChannel;
@@ -105,27 +105,27 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     // FeatureMessageSentSignal
-    void messageSent(const Telepathy::Message &message,
-            Telepathy::MessageSendingFlags flags,
+    void messageSent(const Tp::Message &message,
+            Tp::MessageSendingFlags flags,
             const QString &sentMessageToken);
 
     // FeatureMessageQueue
-    void messageReceived(const Telepathy::ReceivedMessage &message);
+    void messageReceived(const Tp::ReceivedMessage &message);
     void pendingMessageRemoved(
-            const Telepathy::ReceivedMessage &message);
+            const Tp::ReceivedMessage &message);
 
 protected:
     TextChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
 private Q_SLOTS:
-    void onContactsFinished(Telepathy::PendingOperation *);
+    void onContactsFinished(Tp::PendingOperation *);
     void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
 
-    void onMessageSent(const Telepathy::MessagePartList &, uint,
+    void onMessageSent(const Tp::MessagePartList &, uint,
             const QString &);
-    void onMessageReceived(const Telepathy::MessagePartList &);
-    void onPendingMessagesRemoved(const Telepathy::UIntList &);
+    void onMessageReceived(const Tp::MessagePartList &);
+    void onPendingMessagesRemoved(const Tp::UIntList &);
 
     void onTextSent(uint, uint, const QString &);
     void onTextReceived(uint, uint, uint, uint, uint, const QString &);
@@ -142,6 +142,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

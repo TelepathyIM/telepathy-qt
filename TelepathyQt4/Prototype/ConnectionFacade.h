@@ -34,7 +34,7 @@
 #define ATTRIBUTE_DEPRECATED
 #endif
 
-namespace Telepathy
+namespace Tp
 {
     namespace Client
     {
@@ -49,7 +49,7 @@ namespace TpPrototype
  * @defgroup qt_style_api Prototype Qt-Style Client API
  *
  * This API provides a high level client side API that enables developers
- * to access to Telepathy on a high level of abstraction. However, the
+ * to access to Tp on a high level of abstraction. However, the
  * implementation is problematic in places.
  *
  * Work is in progress to merge the functionality of this prototype API into
@@ -69,8 +69,8 @@ class Account;
 
 /**
  * @ingroup qt_convenience
- * Class to access to Telepathy and Mission control services. This class is used to encapsulate the low level D-BUS Interface
- * to Telepathy and MissionControl. It provides a series of helper functions.<br>
+ * Class to access to Tp and Mission control services. This class is used to encapsulate the low level D-BUS Interface
+ * to Tp and MissionControl. It provides a series of helper functions.<br>
  * This class follows the <i>facade</i> pattern.
  * @todo Move as much functions as possible into adequate classes.
  */
@@ -92,12 +92,12 @@ public:
     QStringList listOfProtocolsForConnectionManager( const QString& connectionManager );
 
     /**
-     * Returns a Telepathy::ParamSpecList from the given protocol an connection manager.
+     * Returns a Tp::ParamSpecList from the given protocol an connection manager.
      * @param connectionManager The connection manager for the protocol.
      * @param protocol Name of the protocol that is supported by the connection manager.
      * @return A map with all supported parameters with default values. 
      */
-    Telepathy::ParamSpecList paramSpecListForConnectionManagerAndProtocol( const QString& connectionManager, const QString& protocol );
+    Tp::ParamSpecList paramSpecListForConnectionManagerAndProtocol( const QString& connectionManager, const QString& protocol );
     
     /**
      * Returns a list of parameters for the given protocol and connection manager.
@@ -128,7 +128,7 @@ public:
      *  @todo: This is more or less a local function and should not be part of a public API. But I don't have a better place right now!
      *  @return The local handle is usually 1 but may change on demand. -1 is returned on error.
      */
-    int selfHandleForConnectionInterface( Telepathy::Client::ConnectionInterface* connectionInterface );
+    int selfHandleForConnectionInterface( Tp::Client::ConnectionInterface* connectionInterface );
 
 private:
     ConnectionFacade( QObject* parent );

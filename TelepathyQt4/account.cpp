@@ -50,7 +50,7 @@
  * backwards compatibility helpers for older services and other utilities.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 struct Account::Private
@@ -88,14 +88,14 @@ struct Account::Private
     QString icon;
     QString connectionObjectPath;
     QString normalizedName;
-    Telepathy::Avatar avatar;
+    Avatar avatar;
     ConnectionManagerPtr cm;
     ProtocolInfo *protocolInfo;
-    Telepathy::ConnectionStatus connectionStatus;
-    Telepathy::ConnectionStatusReason connectionStatusReason;
-    Telepathy::SimplePresence automaticPresence;
-    Telepathy::SimplePresence currentPresence;
-    Telepathy::SimplePresence requestedPresence;
+    ConnectionStatus connectionStatus;
+    ConnectionStatusReason connectionStatusReason;
+    SimplePresence automaticPresence;
+    SimplePresence currentPresence;
+    SimplePresence requestedPresence;
     ConnectionPtr connection;
 };
 
@@ -108,8 +108,8 @@ Account::Private::Private(Account *parent)
       enabled(false),
       connectsAutomatically(false),
       protocolInfo(0),
-      connectionStatus(Telepathy::ConnectionStatusDisconnected),
-      connectionStatusReason(Telepathy::ConnectionStatusReasonNoneSpecified)
+      connectionStatus(ConnectionStatusDisconnected),
+      connectionStatusReason(ConnectionStatusReasonNoneSpecified)
 {
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
@@ -184,7 +184,7 @@ Account::Private::~Private()
  *
  * Object representing a Telepathy account.
  *
- * If the Telepathy account is deleted from the AccountManager, this object
+ * If the account is deleted from the AccountManager, this object
  * will not be deleted automatically; however, it will emit invalidated()
  * and will cease to be useful.
  */
@@ -390,7 +390,7 @@ PendingOperation *Account::setNickname(const QString &value)
  *
  * \return Account avatar.
  */
-const Telepathy::Avatar &Account::avatar() const
+const Avatar &Account::avatar() const
 {
     if (!isReady(Features() << FeatureAvatar)) {
         warning() << "Trying to retrieve avatar from account, but "
@@ -408,7 +408,7 @@ const Telepathy::Avatar &Account::avatar() const
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  */
-PendingOperation *Account::setAvatar(const Telepathy::Avatar &avatar)
+PendingOperation *Account::setAvatar(const Avatar &avatar)
 {
     if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR)) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
@@ -496,7 +496,7 @@ PendingOperation *Account::setConnectsAutomatically(bool value)
  *
  * \return Value indication the status of this account conneciton.
  */
-Telepathy::ConnectionStatus Account::connectionStatus() const
+ConnectionStatus Account::connectionStatus() const
 {
     return mPriv->connectionStatus;
 }
@@ -506,7 +506,7 @@ Telepathy::ConnectionStatus Account::connectionStatus() const
  *
  * \return Value indication the status reason of this account conneciton.
  */
-Telepathy::ConnectionStatusReason Account::connectionStatusReason() const
+ConnectionStatusReason Account::connectionStatusReason() const
 {
     return mPriv->connectionStatusReason;
 }
@@ -553,7 +553,7 @@ ConnectionPtr Account::connection() const
  *
  * \return Presence status that will be set when this account is put online.
  */
-Telepathy::SimplePresence Account::automaticPresence() const
+SimplePresence Account::automaticPresence() const
 {
     return mPriv->automaticPresence;
 }
@@ -568,7 +568,7 @@ Telepathy::SimplePresence Account::automaticPresence() const
  * \sa setRequestedPresence()
  */
 PendingOperation *Account::setAutomaticPresence(
-        const Telepathy::SimplePresence &value)
+        const SimplePresence &value)
 {
     return new PendingVoidMethodCall(this,
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
@@ -581,7 +581,7 @@ PendingOperation *Account::setAutomaticPresence(
  * \return The actual presence of this account.
  * \sa requestedPresence(), automaticPresence()
  */
-Telepathy::SimplePresence Account::currentPresence() const
+SimplePresence Account::currentPresence() const
 {
     return mPriv->currentPresence;
 }
@@ -596,7 +596,7 @@ Telepathy::SimplePresence Account::currentPresence() const
  * \return The requested presence of this account.
  * \sa currentPresence(), automaticPresence()
  */
-Telepathy::SimplePresence Account::requestedPresence() const
+SimplePresence Account::requestedPresence() const
 {
     return mPriv->requestedPresence;
 }
@@ -610,7 +610,7 @@ Telepathy::SimplePresence Account::requestedPresence() const
  * \sa setAutomaticPresence()
  */
 PendingOperation *Account::setRequestedPresence(
-        const Telepathy::SimplePresence &value)
+        const SimplePresence &value)
 {
     return new PendingVoidMethodCall(this,
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
@@ -775,8 +775,8 @@ void Account::Private::introspectProtocolInfo(Account::Private *self)
             self->parent->dbusConnection(),
             self->cmName);
     self->parent->connect(self->cm->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(onConnectionManagerReady(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onConnectionManagerReady(Tp::PendingOperation *)));
 }
 
 void Account::Private::updateProperties(const QVariantMap &props)
@@ -847,9 +847,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains("AutomaticPresence") &&
-        automaticPresence != qdbus_cast<Telepathy::SimplePresence>(
+        automaticPresence != qdbus_cast<SimplePresence>(
                 props["AutomaticPresence"])) {
-        automaticPresence = qdbus_cast<Telepathy::SimplePresence>(
+        automaticPresence = qdbus_cast<SimplePresence>(
                 props["AutomaticPresence"]);
         debug() << " Automatic Presence:" << automaticPresence.type <<
             "-" << automaticPresence.status;
@@ -857,9 +857,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains("CurrentPresence") &&
-        currentPresence != qdbus_cast<Telepathy::SimplePresence>(
+        currentPresence != qdbus_cast<SimplePresence>(
                 props["CurrentPresence"])) {
-        currentPresence = qdbus_cast<Telepathy::SimplePresence>(
+        currentPresence = qdbus_cast<SimplePresence>(
                 props["CurrentPresence"]);
         debug() << " Current Presence:" << currentPresence.type <<
             "-" << currentPresence.status;
@@ -867,9 +867,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains("RequestedPresence") &&
-        requestedPresence != qdbus_cast<Telepathy::SimplePresence>(
+        requestedPresence != qdbus_cast<SimplePresence>(
                 props["RequestedPresence"])) {
-        requestedPresence = qdbus_cast<Telepathy::SimplePresence>(
+        requestedPresence = qdbus_cast<SimplePresence>(
                 props["RequestedPresence"]);
         debug() << " Requested Presence:" << requestedPresence.type <<
             "-" << requestedPresence.status;
@@ -900,18 +900,18 @@ void Account::Private::updateProperties(const QVariantMap &props)
         bool changed = false;
 
         if (props.contains("ConnectionStatus") &&
-            connectionStatus != Telepathy::ConnectionStatus(
+            connectionStatus != ConnectionStatus(
                     qdbus_cast<uint>(props["ConnectionStatus"]))) {
-            connectionStatus = Telepathy::ConnectionStatus(
+            connectionStatus = ConnectionStatus(
                     qdbus_cast<uint>(props["ConnectionStatus"]));
             debug() << " Connection Status:" << connectionStatus;
             changed = true;
         }
 
         if (props.contains("ConnectionStatusReason") &&
-            connectionStatusReason != Telepathy::ConnectionStatusReason(
+            connectionStatusReason != ConnectionStatusReason(
                     qdbus_cast<uint>(props["ConnectionStatusReason"]))) {
-            connectionStatusReason = Telepathy::ConnectionStatusReason(
+            connectionStatusReason = ConnectionStatusReason(
                     qdbus_cast<uint>(props["ConnectionStatusReason"]));
             debug() << " Connection StatusReason:" << connectionStatusReason;
             changed = true;
@@ -964,7 +964,7 @@ void Account::gotAvatar(QDBusPendingCallWatcher *watcher)
 
     if (!reply.isError()) {
         debug() << "Got reply to GetAvatar(Account)";
-        mPriv->avatar = qdbus_cast<Telepathy::Avatar>(reply);
+        mPriv->avatar = qdbus_cast<Avatar>(reply);
 
         // first time
         if (!mPriv->readinessHelper->actualFeatures().contains(FeatureAvatar)) {
@@ -1030,4 +1030,4 @@ void Account::onRemoved()
             QLatin1String("Account removed from AccountManager"));
 }
 
-} // Telepathy
+} // Tp

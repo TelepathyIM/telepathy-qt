@@ -25,7 +25,7 @@
 #include "TelepathyQt4/_gen/abstract-interface.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
-namespace Telepathy
+namespace Tp
 {
 
 struct AbstractInterface::Private
@@ -53,8 +53,8 @@ AbstractInterface::AbstractInterface(DBusProxy *parent, const char *interface)
             interface, parent->dbusConnection(), parent),
       mPriv(new Private())
 {
-    connect(parent, SIGNAL(invalidated(Telepathy::DBusProxy *, const QString &, const QString &)),
-            this, SLOT(invalidate(Telepathy::DBusProxy *, const QString &, const QString &)));
+    connect(parent, SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+            this, SLOT(invalidate(Tp::DBusProxy *, const QString &, const QString &)));
 }
 
 AbstractInterface::~AbstractInterface()
@@ -77,7 +77,7 @@ QString AbstractInterface::invalidationMessage() const
     return mPriv->mMessage;
 }
 
-void AbstractInterface::invalidate(Telepathy::DBusProxy *proxy,
+void AbstractInterface::invalidate(DBusProxy *proxy,
         const QString &error, const QString &message)
 {
     Q_ASSERT(!error.isEmpty());
@@ -88,4 +88,4 @@ void AbstractInterface::invalidate(Telepathy::DBusProxy *proxy,
     }
 }
 
-} // Telepathy
+} // Tp

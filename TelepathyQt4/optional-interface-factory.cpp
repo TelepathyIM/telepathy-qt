@@ -28,7 +28,7 @@
 #include <QMap>
 #include <QString>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct OptionalInterfaceCache::Private
@@ -79,4 +79,4 @@ void OptionalInterfaceCache::cache(AbstractInterface *interface) const
     mPriv->interfaces[name] = interface;
 }
 
-} // Telepathy
+} // Tp

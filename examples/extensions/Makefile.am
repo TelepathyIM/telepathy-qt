@@ -2,8 +2,8 @@
 # Typically this would be in a top-level extensions/ directory.
 
 # In this example we build an optional interface for Telepathy Connections,
-# so we specify Telepathy::Client::ConnectionInterface as the main interface for the
-# generated proxies with "--mainiface=Telepathy::Client::ConnectionInterface'. The
+# so we specify Tp::Client::ConnectionInterface as the main interface for the
+# generated proxies with "--mainiface=Tp::Client::ConnectionInterface'. The
 # generated proxies will have a convenience constructors for associating the
 # proxy with the same remote object an instance of the main interface class
 # is associated with. We could instead have made an optional interface for any
@@ -103,7 +103,7 @@ _gen/cli-connection-body.hpp _gen/cli-connection.h: _gen/connection.xml \
 		--specxml=_gen/all.xml \
 		--ifacexml=$< \
 		--extraincludes='<TelepathyQt4/Connection>,"types.h"' \
-		--mainiface='Telepathy::Client::ConnectionInterface'
+		--mainiface='Tp::Client::ConnectionInterface'
 
 %.moc.hpp: %.h _gen/constants.h _gen/types.h
 	$(MOC) $(AM_CPPFLAGS) -i $< -o $@

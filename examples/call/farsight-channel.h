@@ -1,5 +1,5 @@
 /*
- * Very basic Telepathy-Qt <-> Telepathy-Farsight integration.
+ * Very basic Tp-Qt <-> Tp-Farsight integration.
  *
  * Copyright © 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright © 2009 Nokia Corporation
@@ -29,7 +29,7 @@
 
 #include <telepathy-farsight/channel.h>
 
-namespace Telepathy {
+namespace Tp {
 
 class Connection;
 class VideoWidget;
@@ -57,7 +57,7 @@ public:
     // TODO add a way to change input and output devices
 
 Q_SIGNALS:
-    void statusChanged(Telepathy::FarsightChannel::Status status);
+    void statusChanged(Tp::FarsightChannel::Status status);
 
 private:
     struct Private;
@@ -65,8 +65,8 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
-Q_DECLARE_METATYPE(Telepathy::FarsightChannel::Status)
+Q_DECLARE_METATYPE(Tp::FarsightChannel::Status)
 
 #endif

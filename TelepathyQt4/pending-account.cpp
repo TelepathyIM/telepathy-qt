@@ -42,7 +42,7 @@
  * backwards compatibility helpers for older services and other utilities.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 struct PendingAccount::Private
@@ -171,4 +171,4 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-} // Telepathy
+} // Tp

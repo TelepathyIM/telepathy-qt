@@ -28,7 +28,7 @@
 
 #include <TelepathyQt4/Types>
 
-namespace Telepathy
+namespace Tp
 {
     namespace Client
     {
@@ -74,7 +74,7 @@ public:
      * @return The list of supported statuses.
      * @see connection::status();
      */
-     Telepathy::SimpleStatusSpecMap statuses();
+     Tp::SimpleStatusSpecMap statuses();
 
     /**
     * Set Presence.
@@ -90,7 +90,7 @@ public:
      * The local presence is returned for the connection.
      * @return Returns my current local presence or an empty item on error.
      */
-    Telepathy::SimplePresence currentPresence();
+    Tp::SimplePresence currentPresence();
 
     /**
      * Request presences.
@@ -99,9 +99,9 @@ public:
      * @return List of presence information for contacts as <i>QMap<int,SimplePresence> </i>. The <i>int</i> represents the
      * identifier of the contact as returned by Contact::identifier(), An empty list is returned on error.
      * @todo Future: Use QList<Contact> instead QList<QPointer<Contact> > or introduce a class <i>ContactGroup</i> that handles all internally.
-     * @todo Future: Telepathy::SimpleContactPresences relies of an handle (the <i>int</i>). This should be encapsulated.
+     * @todo Future: Tp::SimpleContactPresences relies of an handle (the <i>int</i>). This should be encapsulated.
      */
-    Telepathy::SimpleContactPresences presencesForContacts( const QList<QPointer<TpPrototype::Contact> >& contacts );
+    Tp::SimpleContactPresences presencesForContacts( const QList<QPointer<TpPrototype::Contact> >& contacts );
 
     /**
      * Returns the connection that belongs to this presence information.
@@ -116,7 +116,7 @@ signals:
      * @param contact The contact that changes.
      * @param presence The presence information.
      */
-    void signalRemotePresencesUpdated( TpPrototype::Contact* contact, const Telepathy::SimplePresence& presence );
+    void signalRemotePresencesUpdated( TpPrototype::Contact* contact, const Tp::SimplePresence& presence );
 
     /**
      * Local presence changed.
@@ -124,20 +124,20 @@ signals:
      * @param account The account that changes.
      * @param presence The presence information.
      */
-    void signalOwnPresenceUpdated( const TpPrototype::Account* account, const Telepathy::SimplePresence& presence );
+    void signalOwnPresenceUpdated( const TpPrototype::Account* account, const Tp::SimplePresence& presence );
     
 protected:
     /**
      * Constructor. The presence manager cannot be instantiated directly. Use Connection::presenceManager() for it!
      */
     PresenceManager( TpPrototype::Connection* connection,
-                     Telepathy::Client::ConnectionInterface* interface,
+                     Tp::Client::ConnectionInterface* interface,
                      QObject* parent = NULL );
     ~PresenceManager();
 
 protected slots:
-    void slotPresencesChanged( const Telepathy::SimpleContactPresences& presences );
-    void slotPresencesUpdate( const Telepathy::ContactPresences& presences );
+    void slotPresencesChanged( const Tp::SimpleContactPresences& presences );
+    void slotPresencesUpdate( const Tp::ContactPresences& presences );
 private:
     void init();
     

@@ -39,7 +39,7 @@
  * backwards compatibility helpers for older services and other utilities.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 struct PendingHandles::Private
@@ -493,4 +493,4 @@ void PendingHandles::onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *watc
     watcher->deleteLater();
 }
 
-} // Telepathy
+} // Tp

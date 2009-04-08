@@ -28,7 +28,7 @@
 
 #include <QSet>
 
-namespace Telepathy
+namespace Tp
 {
 
 class Connection::PendingConnect : public PendingReady
@@ -40,9 +40,9 @@ public:
 
 private Q_SLOTS:
     void onConnectReply(QDBusPendingCallWatcher *);
-    void onBecomeReadyReply(Telepathy::PendingOperation *);
+    void onBecomeReadyReply(Tp::PendingOperation *);
 };
 
-} // Telepathy
+} // Tp
 
 #endif

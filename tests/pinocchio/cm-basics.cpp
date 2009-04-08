@@ -10,17 +10,17 @@
 
 #include <tests/pinocchio/lib.h>
 
-using namespace Telepathy;
+using namespace Tp;
 
 class TestCmBasics : public PinocchioTest
 {
     Q_OBJECT
 
 private:
-    Telepathy::ConnectionManagerPtr mCM;
+    Tp::ConnectionManagerPtr mCM;
 
 protected Q_SLOTS:
-    void onListNames(Telepathy::PendingOperation*);
+    void onListNames(Tp::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -47,9 +47,9 @@ void TestCmBasics::init()
     initImpl();
 }
 
-void TestCmBasics::onListNames(Telepathy::PendingOperation *operation)
+void TestCmBasics::onListNames(Tp::PendingOperation *operation)
 {
-    Telepathy::PendingStringList *p = static_cast<Telepathy::PendingStringList*>(operation);
+    Tp::PendingStringList *p = static_cast<Tp::PendingStringList*>(operation);
     QCOMPARE(p->result().contains("pinocchio"), QBool(true));
     mLoop->exit(0);
 }
@@ -58,27 +58,27 @@ void TestCmBasics::onListNames(Telepathy::PendingOperation *operation)
 void TestCmBasics::testBasics()
 {
     connect(ConnectionManager::listNames(),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SIGNAL(finished(Tp::PendingOperation *)),
             this,
-            SLOT(onListNames(Telepathy::PendingOperation *)));
+            SLOT(onListNames(Tp::PendingOperation *)));
     QCOMPARE(mLoop->exec(), 0);
 
     mCM = ConnectionManager::create("pinocchio");
     QCOMPARE(mCM->isReady(), false);
 
     connect(mCM->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SIGNAL(finished(Tp::PendingOperation *)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::PendingOperation *)));
+            SLOT(expectSuccessfulCall(Tp::PendingOperation *)));
     qDebug() << "enter main loop";
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mCM->isReady(), true);
 
     // calling becomeReady() twice is a no-op
     connect(mCM->becomeReady(),
-            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SIGNAL(finished(Tp::PendingOperation *)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::PendingOperation *)));
+            SLOT(expectSuccessfulCall(Tp::PendingOperation *)));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mCM->isReady(), true);
 
@@ -118,9 +118,9 @@ void TestCmBasics::testBasics()
 
     PendingConnection *pconn = mCM->requestConnection("dummy", parameters);
     connect(pconn,
-            SIGNAL(finished(Telepathy::PendingOperation *)),
+            SIGNAL(finished(Tp::PendingOperation *)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::PendingOperation *)));
+            SLOT(expectSuccessfulCall(Tp::PendingOperation *)));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(pconn->connection());

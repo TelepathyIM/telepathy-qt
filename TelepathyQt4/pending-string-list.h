@@ -30,7 +30,7 @@
 
 #include <QStringList>
 
-namespace Telepathy
+namespace Tp
 {
 
 class PendingStringList : public PendingOperation
@@ -54,6 +54,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

@@ -59,7 +59,7 @@
  * interfaces.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 struct Channel::Private
@@ -171,8 +171,8 @@ struct Channel::Private
 
 struct Channel::Private::GroupMembersChangedInfo
 {
-    GroupMembersChangedInfo(const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
-            const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
+    GroupMembersChangedInfo(const UIntList &added, const UIntList &removed,
+            const UIntList &localPending, const UIntList &remotePending,
             const QVariantMap &details)
         : added(added),
           removed(removed),
@@ -186,10 +186,10 @@ struct Channel::Private::GroupMembersChangedInfo
     {
     }
 
-    Telepathy::UIntList added;
-    Telepathy::UIntList removed;
-    Telepathy::UIntList localPending;
-    Telepathy::UIntList remotePending;
+    UIntList added;
+    UIntList removed;
+    UIntList localPending;
+    UIntList remotePending;
     QVariantMap details;
     uint actor;
     uint reason;
@@ -228,7 +228,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection)
 
         debug() << " Connection to owning connection's lifetime signals";
         parent->connect(connection.data(),
-                        SIGNAL(invalidated(Telepathy::DBusProxy *,
+                        SIGNAL(invalidated(Tp::DBusProxy *,
                                            const QString &, const QString &)),
                         SLOT(onConnectionInvalidated()));
 
@@ -329,19 +329,19 @@ void Channel::Private::introspectGroup()
 
     debug() << "Connecting to Channel.Interface.Group::MembersChanged";
     parent->connect(group,
-                    SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
-                            const Telepathy::UIntList&, const Telepathy::UIntList&,
-                            const Telepathy::UIntList&, uint, uint)),
-                    SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
-                            const Telepathy::UIntList&, const Telepathy::UIntList&,
-                            const Telepathy::UIntList&, uint, uint)));
+                    SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
+                            const Tp::UIntList&, const Tp::UIntList&,
+                            const Tp::UIntList&, uint, uint)),
+                    SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
+                            const Tp::UIntList&, const Tp::UIntList&,
+                            const Tp::UIntList&, uint, uint)));
 
     debug() << "Connecting to Channel.Interface.Group::HandleOwnersChanged";
     parent->connect(group,
-                    SIGNAL(HandleOwnersChanged(const Telepathy::HandleOwnerMap&,
-                            const Telepathy::UIntList&)),
-                    SLOT(onHandleOwnersChanged(const Telepathy::HandleOwnerMap&,
-                            const Telepathy::UIntList&)));
+                    SIGNAL(HandleOwnersChanged(const Tp::HandleOwnerMap&,
+                            const Tp::UIntList&)),
+                    SLOT(onHandleOwnersChanged(const Tp::HandleOwnerMap&,
+                            const Tp::UIntList&)));
 
     debug() << "Connecting to Channel.Interface.Group::SelfHandleChanged";
     parent->connect(group,
@@ -565,40 +565,40 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
         !usingMembersChangedDetailed) {
         usingMembersChangedDetailed = true;
         parent->disconnect(group,
-                           SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
-                                   const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                   const Telepathy::UIntList&, uint, uint)),
+                           SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
+                                   const Tp::UIntList&, const Tp::UIntList&,
+                                   const Tp::UIntList&, uint, uint)),
                            parent,
-                           SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
-                                   const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                   const Telepathy::UIntList&, uint, uint)));
+                           SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
+                                   const Tp::UIntList&, const Tp::UIntList&,
+                                   const Tp::UIntList&, uint, uint)));
         parent->connect(group,
-                        SIGNAL(MembersChangedDetailed(const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, const QVariantMap&)),
-                        SLOT(onMembersChangedDetailed(const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, const QVariantMap&)));
+                        SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
+                                const Tp::UIntList&, const Tp::UIntList&,
+                                const Tp::UIntList&, const QVariantMap&)),
+                        SLOT(onMembersChangedDetailed(const Tp::UIntList&,
+                                const Tp::UIntList&, const Tp::UIntList&,
+                                const Tp::UIntList&, const QVariantMap&)));
     } else if (!(groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
                usingMembersChangedDetailed) {
         warning() << " Channel service did spec-incompliant removal of MCD from GroupFlags";
         usingMembersChangedDetailed = false;
         parent->disconnect(group,
-                           SIGNAL(MembersChangedDetailed(const Telepathy::UIntList&,
-                                   const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                   const Telepathy::UIntList&, const QVariantMap&)),
+                           SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
+                                   const Tp::UIntList&, const Tp::UIntList&,
+                                   const Tp::UIntList&, const QVariantMap&)),
                            parent,
-                           SLOT(onMembersChangedDetailed(const Telepathy::UIntList&,
-                                   const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                   const Telepathy::UIntList&, const QVariantMap&)));
+                           SLOT(onMembersChangedDetailed(const Tp::UIntList&,
+                                   const Tp::UIntList&, const Tp::UIntList&,
+                                   const Tp::UIntList&, const QVariantMap&)));
         parent->connect(group,
-                        SIGNAL(MembersChanged(const QString&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, uint, uint)),
+                        SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
+                                const Tp::UIntList&, const Tp::UIntList&,
+                                const Tp::UIntList&, uint, uint)),
                         parent,
-                        SLOT(onMembersChanged(const QString&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, const Telepathy::UIntList&,
-                                const Telepathy::UIntList&, uint, uint)));
+                        SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
+                                const Tp::UIntList&, const Tp::UIntList&,
+                                const Tp::UIntList&, uint, uint)));
     }
 
     return true;
@@ -648,8 +648,8 @@ void Channel::Private::buildContacts()
                                      << Contact::FeatureAvatarToken
                                      << Contact::FeatureSimplePresence);
     parent->connect(pendingContacts,
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(gotContacts(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(gotContacts(Tp::PendingOperation *)));
 }
 
 void Channel::Private::processMembersChanged()
@@ -861,7 +861,7 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
 {
     if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         return false;
-    } else if (targetHandleType != Telepathy::HandleTypeContact) {
+    } else if (targetHandleType != HandleTypeContact) {
         return false;
     }
 
@@ -919,7 +919,7 @@ void Channel::Private::setReady()
  * \ingroup clientchannel
  * \headerfile <TelepathyQt4/channel.h> <TelepathyQt4/Channel>
  *
- * High-level proxy object for accessing remote %Telepathy %Channel objects.
+ * High-level proxy object for accessing remote Telepathy Channel objects.
  *
  * It adds the following features compared to using ChannelInterface directly:
  * <ul>
@@ -1185,7 +1185,7 @@ bool Channel::groupCanAddContacts() const
         warning() << "Channel::groupCanAddContacts() used channel not ready";
     }
 
-    return mPriv->groupFlags & Telepathy::ChannelGroupFlagCanAdd;
+    return mPriv->groupFlags & ChannelGroupFlagCanAdd;
 }
 
 /**
@@ -1248,7 +1248,7 @@ bool Channel::groupCanRescindContacts() const
         warning() << "Channel::groupCanRescindContacts() used channel not ready";
     }
 
-    return mPriv->groupFlags & Telepathy::ChannelGroupFlagCanRescind;
+    return mPriv->groupFlags & ChannelGroupFlagCanRescind;
 }
 
 /**
@@ -1266,7 +1266,7 @@ bool Channel::groupCanRemoveContacts() const
         warning() << "Channel::groupCanRemoveContacts() used channel not ready";
     }
 
-    return mPriv->groupFlags & Telepathy::ChannelGroupFlagCanRemove;
+    return mPriv->groupFlags & ChannelGroupFlagCanRemove;
 }
 
 /**
@@ -1564,7 +1564,7 @@ PendingOperation *Channel::groupAddSelfHandle()
             "ready";
         return new PendingFailure(this,
                 TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Telepathy-Qt4: Channel object not ready");
+                "Channel object not ready");
     }
 
     UIntList handles;
@@ -1591,10 +1591,10 @@ PendingOperation *Channel::groupAddSelfHandle()
 
 /**
  * \fn void Channel::groupMembersChanged(
- *     const Telepathy::Contacts &groupMembersAdded,
- *     const Telepathy::Contacts &groupLocalPendingMembersAdded,
- *     const Telepathy::Contacts &groupRemotePendingMembersAdded,
- *     const Telepathy::Contacts &groupMembersRemoved,
+ *     const Tp::Contacts &groupMembersAdded,
+ *     const Tp::Contacts &groupLocalPendingMembersAdded,
+ *     const Tp::Contacts &groupRemotePendingMembersAdded,
+ *     const Tp::Contacts &groupMembersRemoved,
  *     const Channel::GroupMemberChangeDetails &details);
  *
  * Emitted when the value returned by groupContacts(), groupLocalPendingContacts() or
@@ -1611,7 +1611,7 @@ PendingOperation *Channel::groupAddSelfHandle()
  */
 
 /**
- * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners, const Telepathy::UIntList &added, const Telepathy::UIntList &removed)
+ * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners, const Tp::UIntList &added, const Tp::UIntList &removed)
  *
  * Emitted when the value returned by groupHandleOwners() changes.
  *
@@ -2068,20 +2068,20 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
             "value" << added << "added" << removed << "removed";
         emit groupFlagsChanged(mPriv->groupFlags, added, removed);
 
-        if (added & Telepathy::ChannelGroupFlagCanAdd ||
-            removed & Telepathy::ChannelGroupFlagCanAdd) {
+        if (added & ChannelGroupFlagCanAdd ||
+            removed & ChannelGroupFlagCanAdd) {
             debug() << "Emitting groupCanAddContactsChanged";
             emit groupCanAddContactsChanged(groupCanAddContacts());
         }
 
-        if (added & Telepathy::ChannelGroupFlagCanRemove ||
-            removed & Telepathy::ChannelGroupFlagCanRemove) {
+        if (added & ChannelGroupFlagCanRemove ||
+            removed & ChannelGroupFlagCanRemove) {
             debug() << "Emitting groupCanRemoveContactsChanged";
             emit groupCanRemoveContactsChanged(groupCanRemoveContacts());
         }
 
-        if (added & Telepathy::ChannelGroupFlagCanRescind ||
-            removed & Telepathy::ChannelGroupFlagCanRescind) {
+        if (added & ChannelGroupFlagCanRescind ||
+            removed & ChannelGroupFlagCanRescind) {
             debug() << "Emitting groupCanRescindContactsChanged";
             emit groupCanRescindContactsChanged(groupCanRescindContacts());
         }
@@ -2089,8 +2089,8 @@ void Channel::onGroupFlagsChanged(uint added, uint removed)
 }
 
 void Channel::onMembersChanged(const QString &message,
-        const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
-        const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
+        const UIntList &added, const UIntList &removed,
+        const UIntList &localPending, const UIntList &remotePending,
         uint actor, uint reason)
 {
     debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() <<
@@ -2117,8 +2117,8 @@ void Channel::onMembersChanged(const QString &message,
 }
 
 void Channel::onMembersChangedDetailed(
-        const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
-        const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
+        const UIntList &added, const UIntList &removed,
+        const UIntList &localPending, const UIntList &remotePending,
         const QVariantMap &details)
 {
     debug() << "Got Channel.Interface.Group::MembersChangedDetailed with" << added.size() <<
@@ -2151,8 +2151,8 @@ void Channel::onMembersChangedDetailed(
     }
 }
 
-void Channel::onHandleOwnersChanged(const Telepathy::HandleOwnerMap &added,
-        const Telepathy::UIntList &removed)
+void Channel::onHandleOwnersChanged(const HandleOwnerMap &added,
+        const UIntList &removed)
 {
     debug() << "Got Channel.Interface.Group::HandleOwnersChanged with" <<
         added.size() << "added," << removed.size() << "removed";
@@ -2290,4 +2290,4 @@ void Channel::continueIntrospection()
  * \return The message as a string.
  */
 
-} // Telepathy
+} // Tp

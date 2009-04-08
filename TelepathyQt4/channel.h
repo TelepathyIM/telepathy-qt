@@ -41,7 +41,7 @@
 #include <QSet>
 #include <QVariantMap>
 
-namespace Telepathy
+namespace Tp
 {
 
 class Connection;
@@ -86,7 +86,7 @@ public:
     bool groupCanRemoveContacts() const;
     PendingOperation *groupRemoveContacts(const QList<ContactPtr> &contacts,
             const QString &message = QString(),
-            uint reason = Telepathy::ChannelGroupChangeReasonNone);
+            uint reason = ChannelGroupChangeReasonNone);
 
     Contacts groupContacts() const;
     Contacts groupLocalPendingContacts() const;
@@ -145,14 +145,14 @@ Q_SIGNALS:
     void groupCanRescindContactsChanged(bool canRescindContacts);
 
     void groupMembersChanged(
-            const Telepathy::Contacts &groupMembersAdded,
-            const Telepathy::Contacts &groupLocalPendingMembersAdded,
-            const Telepathy::Contacts &groupRemotePendingMembersAdded,
-            const Telepathy::Contacts &groupMembersRemoved,
-            const Telepathy::Channel::GroupMemberChangeDetails &details);
+            const Tp::Contacts &groupMembersAdded,
+            const Tp::Contacts &groupLocalPendingMembersAdded,
+            const Tp::Contacts &groupRemotePendingMembersAdded,
+            const Tp::Contacts &groupMembersRemoved,
+            const Tp::Channel::GroupMemberChangeDetails &details);
 
-    void groupHandleOwnersChanged(const Telepathy::HandleOwnerMap &owners,
-            const Telepathy::UIntList &added, const Telepathy::UIntList &removed);
+    void groupHandleOwnersChanged(const Tp::HandleOwnerMap &owners,
+            const Tp::UIntList &added, const Tp::UIntList &removed);
 
     void groupSelfContactChanged();
 
@@ -287,17 +287,17 @@ private Q_SLOTS:
     void gotAllMembers(QDBusPendingCallWatcher *watcher);
     void gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
-    void gotContacts(Telepathy::PendingOperation *op);
+    void gotContacts(Tp::PendingOperation *op);
 
     void onGroupFlagsChanged(uint, uint);
     void onMembersChanged(const QString&,
-            const Telepathy::UIntList&, const Telepathy::UIntList&,
-            const Telepathy::UIntList&, const Telepathy::UIntList&, uint, uint);
+            const Tp::UIntList&, const Tp::UIntList&,
+            const Tp::UIntList&, const Tp::UIntList&, uint, uint);
     void onMembersChangedDetailed(
-        const Telepathy::UIntList &added, const Telepathy::UIntList &removed,
-        const Telepathy::UIntList &localPending, const Telepathy::UIntList &remotePending,
+        const Tp::UIntList &added, const Tp::UIntList &removed,
+        const Tp::UIntList &localPending, const Tp::UIntList &remotePending,
         const QVariantMap &details);
-    void onHandleOwnersChanged(const Telepathy::HandleOwnerMap&, const Telepathy::UIntList&);
+    void onHandleOwnersChanged(const Tp::HandleOwnerMap&, const Tp::UIntList&);
     void onSelfHandleChanged(uint);
 
     void continueIntrospection();
@@ -308,8 +308,8 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
-Q_DECLARE_METATYPE(Telepathy::Channel::GroupMemberChangeDetails);
+Q_DECLARE_METATYPE(Tp::Channel::GroupMemberChangeDetails);
 
 #endif

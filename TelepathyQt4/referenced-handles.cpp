@@ -28,7 +28,7 @@
 #include <QPointer>
 #include <QSharedData>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct ReferencedHandles::Private : public QSharedData
@@ -297,4 +297,4 @@ ReferencedHandles::ReferencedHandles(const ConnectionPtr &connection,
 {
 }
 
-} // Telepathy
+} // Tp

@@ -31,7 +31,7 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
-namespace Telepathy
+namespace Tp
 {
 
 class ReferencedHandles;
@@ -68,6 +68,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

@@ -9,9 +9,9 @@
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/PendingVoidMethodCall>
 
-using Telepathy::PendingOperation;
-using Telepathy::PendingVoidMethodCall;
-using Telepathy::Client::DBus::PeerInterface;
+using Tp::PendingOperation;
+using Tp::PendingVoidMethodCall;
+using Tp::Client::DBus::PeerInterface;
 
 Test::Test(QObject *parent)
     : QObject(parent), mLoop(new QEventLoop(this))
@@ -25,9 +25,9 @@ Test::~Test()
 
 void Test::initTestCaseImpl()
 {
-    Telepathy::registerTypes();
-    Telepathy::enableDebug(true);
-    Telepathy::enableWarnings(true);
+    Tp::registerTypes();
+    Tp::enableDebug(true);
+    Tp::enableWarnings(true);
 
     QVERIFY(QDBusConnection::sessionBus().isConnected());
 }
@@ -68,7 +68,7 @@ void Test::expectSuccessfulCall(QDBusPendingCallWatcher *watcher)
     mLoop->exit(0);
 }
 
-void Test::processDBusQueue(Telepathy::DBusProxy *proxy)
+void Test::processDBusQueue(Tp::DBusProxy *proxy)
 {
     // Call method Ping on the D-Bus Peer interface
     PeerInterface peer(proxy);
@@ -76,8 +76,8 @@ void Test::processDBusQueue(Telepathy::DBusProxy *proxy)
 
     // Wait for the reply to the Ping call
     QVERIFY(connect(call,
-                SIGNAL(finished(Telepathy::PendingOperation*)),
-                SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 }
 

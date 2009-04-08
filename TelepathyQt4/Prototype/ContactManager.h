@@ -44,7 +44,7 @@
 
 
 
-namespace Telepathy
+namespace Tp
 {
     namespace Client
     {
@@ -273,13 +273,13 @@ signals:
                                QList<QPointer<TpPrototype ::Contact> > localPending,
                                QList<QPointer<TpPrototype ::Contact> > remotePending,
                                TpPrototype ::Contact* actor,
-                               Telepathy::ChannelGroupChangeReason reason );
+                               Tp::ChannelGroupChangeReason reason );
 
 protected:
     /**
      * Constructor. The contact manager cannot be instantiated directly. Use Connection::contactManager() for it!
      */
-    ContactManager( Telepathy::Client::ConnectionInterface* connection,
+    ContactManager( Tp::Client::ConnectionInterface* connection,
                     QObject* parent = NULL );
     ~ContactManager();
 
@@ -308,37 +308,37 @@ protected:
 protected slots:
 
     void slotMembersChanged(const QString& message,
-                            const Telepathy::UIntList& members_added,
-                            const Telepathy::UIntList& members_removed,
-                            const Telepathy::UIntList& local_pending,
-                            const Telepathy::UIntList& remote_pending,
+                            const Tp::UIntList& members_added,
+                            const Tp::UIntList& members_removed,
+                            const Tp::UIntList& local_pending,
+                            const Tp::UIntList& remote_pending,
                             uint actor, uint reason);
     void slotKnownMembersChanged(const QString& message,
-                            const Telepathy::UIntList& members_added,
-                            const Telepathy::UIntList& members_removed,
-                            const Telepathy::UIntList& local_pending,
-                            const Telepathy::UIntList& remote_pending,
+                            const Tp::UIntList& members_added,
+                            const Tp::UIntList& members_removed,
+                            const Tp::UIntList& local_pending,
+                            const Tp::UIntList& remote_pending,
                             uint actor, uint reason);
     void slotPublishedMembersChanged(const QString& message,
-                                 const Telepathy::UIntList& members_added,
-                                 const Telepathy::UIntList& members_removed,
-                                 const Telepathy::UIntList& local_pending,
-                                 const Telepathy::UIntList& remote_pending,
+                                 const Tp::UIntList& members_added,
+                                 const Tp::UIntList& members_removed,
+                                 const Tp::UIntList& local_pending,
+                                 const Tp::UIntList& remote_pending,
                                  uint actor, uint reason);
     void slotSubscribedMembersChanged(const QString& message,
-                                     const Telepathy::UIntList& members_added,
-                                     const Telepathy::UIntList& members_removed,
-                                     const Telepathy::UIntList& local_pending,
-                                     const Telepathy::UIntList& remote_pending,
+                                     const Tp::UIntList& members_added,
+                                     const Tp::UIntList& members_removed,
+                                     const Tp::UIntList& local_pending,
+                                     const Tp::UIntList& remote_pending,
                                      uint actor, uint reason);       
     void slotDeniedMembersChanged(const QString& message,
-                                      const Telepathy::UIntList& members_added,
-                                      const Telepathy::UIntList& members_removed,
-                                      const Telepathy::UIntList& local_pending,
-                                      const Telepathy::UIntList& remote_pending,
+                                      const Tp::UIntList& members_added,
+                                      const Tp::UIntList& members_removed,
+                                      const Tp::UIntList& local_pending,
+                                      const Tp::UIntList& remote_pending,
                                       uint actor, uint reason);
 private:
-    void init( Telepathy::Client::ConnectionInterface* connection );
+    void init( Tp::Client::ConnectionInterface* connection );
 
     ContactManagerPrivate * const d;
     friend class Connection;

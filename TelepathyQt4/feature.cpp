@@ -21,7 +21,7 @@
 
 #include <TelepathyQt4/Feature>
 
-namespace Telepathy
+namespace Tp
 {
 
 struct Feature::Private : public QSharedData
@@ -59,4 +59,4 @@ bool Feature::isCritical() const
     return mPriv->critical;
 }
 
-} // Telepathy
+} // Tp

@@ -46,16 +46,16 @@ class TpPrototype::AvatarManagerPrivate
 {
 public:
     AvatarManagerPrivate( Connection* connection,
-                          Telepathy::Client::ConnectionInterface* interface )
+                          Tp::Client::ConnectionInterface* interface )
     { init( connection, interface ); }
 
-    Telepathy::Client::ConnectionInterface* m_pConnectionInterface;
-    Telepathy::Client::ConnectionInterfaceAvatarsInterface* m_pAvatarsInterface;
+    Tp::Client::ConnectionInterface* m_pConnectionInterface;
+    Tp::Client::ConnectionInterfaceAvatarsInterface* m_pAvatarsInterface;
     QPointer<Connection> m_pConnection;
     
     bool m_isValid;
     void init( Connection* connection,
-               Telepathy::Client::ConnectionInterface* interface )
+               Tp::Client::ConnectionInterface* interface )
     {
         m_pConnection            = connection;
         m_pConnectionInterface   = interface;
@@ -66,7 +66,7 @@ public:
 };
 
 AvatarManager::AvatarManager( Connection* connection,
-                              Telepathy::Client::ConnectionInterface* interface,
+                              Tp::Client::ConnectionInterface* interface,
                               QObject* parent ):
     QObject( parent ),
     d( new AvatarManagerPrivate( connection, interface ) )
@@ -166,7 +166,7 @@ TpPrototype::AvatarManager::AvatarRequirements AvatarManager::avatarRequirements
 void AvatarManager::avatarForContactList( const QList<QPointer<Contact> >& contacts )
 {
     Q_ASSERT( d->m_pAvatarsInterface );
-    Telepathy::UIntList contact_ids;
+    Tp::UIntList contact_ids;
     foreach( Contact* contact, contacts )
     {
         if ( !contact )
@@ -259,7 +259,7 @@ void AvatarManager::slotAvatarRetrieved( uint contactHandle, const QString& toke
 }
 
 void AvatarManager::init( Connection* connection,
-                          Telepathy::Client::ConnectionInterface* interface )
+                          Tp::Client::ConnectionInterface* interface )
 {
     Q_ASSERT( interface );
 
@@ -269,7 +269,7 @@ void AvatarManager::init( Connection* connection,
         return;
     }
     
-    Telepathy::registerTypes();
+    Tp::registerTypes();
     qRegisterMetaType<TpPrototype::AvatarManager::Avatar>();
     
     QDBusPendingReply<QStringList> interfaces_reply = d->m_pConnectionInterface->GetInterfaces();
@@ -308,7 +308,7 @@ void AvatarManager::init( Connection* connection,
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "Interface Name: " << avatar_interface_name;
 #endif
-    d->m_pAvatarsInterface = new Telepathy::Client::ConnectionInterfaceAvatarsInterface( d->m_pConnectionInterface->service(), d->m_pConnectionInterface->path(), this );
+    d->m_pAvatarsInterface = new Tp::Client::ConnectionInterfaceAvatarsInterface( d->m_pConnectionInterface->service(), d->m_pConnectionInterface->path(), this );
     
     connect( d->m_pAvatarsInterface, SIGNAL( AvatarUpdated(uint, const QString&) ),
              this, SLOT( slotAvatarUpdated(uint, const QString&) ) );

@@ -20,7 +20,7 @@
 #include <tests/lib/csh/conn.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy;
+using namespace Tp;
 
 class TestChanGroup : public Test
 {
@@ -35,17 +35,17 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint, uint);
     void expectConnInvalidated();
-    void expectPendingRoomHandlesFinished(Telepathy::PendingOperation*);
-    void expectPendingContactHandlesFinished(Telepathy::PendingOperation*);
-    void expectCreateChannelFinished(Telepathy::PendingOperation *);
-    void expectPendingContactsFinished(Telepathy::PendingOperation *);
+    void expectPendingRoomHandlesFinished(Tp::PendingOperation*);
+    void expectPendingContactHandlesFinished(Tp::PendingOperation*);
+    void expectCreateChannelFinished(Tp::PendingOperation *);
+    void expectPendingContactsFinished(Tp::PendingOperation *);
     void onChannelGroupFlagsChanged(uint, uint, uint);
     void onGroupMembersChanged(
-            const Telepathy::Contacts &groupMembersAdded,
-            const Telepathy::Contacts &groupLocalPendingMembersAdded,
-            const Telepathy::Contacts &groupRemotePendingMembersAdded,
-            const Telepathy::Contacts &groupMembersRemoved,
-            const Telepathy::Channel::GroupMemberChangeDetails &details);
+            const Tp::Contacts &groupMembersAdded,
+            const Tp::Contacts &groupLocalPendingMembersAdded,
+            const Tp::Contacts &groupRemotePendingMembersAdded,
+            const Tp::Contacts &groupMembersRemoved,
+            const Tp::Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
     void initTestCase();
@@ -312,8 +312,8 @@ void TestChanGroup::initTestCase()
     mConn->requestConnect();
 
     QVERIFY(connect(mConn->becomeReady(),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
 
@@ -346,15 +346,15 @@ void TestChanGroup::testRequestHandle()
     }
 
     // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->requestHandles(Telepathy::HandleTypeRoom, ids);
+    PendingHandles *pending = mConn->requestHandles(Tp::HandleTypeRoom, ids);
     QVERIFY(connect(pending,
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectPendingRoomHandlesFinished(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingRoomHandlesFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(pending,
-                       SIGNAL(finished(Telepathy::PendingOperation*)),
+                       SIGNAL(finished(Tp::PendingOperation*)),
                        this,
-                       SLOT(expectPendingRoomHandlesFinished(Telepathy::PendingOperation*))));
+                       SLOT(expectPendingRoomHandlesFinished(Tp::PendingOperation*))));
 }
 
 void TestChanGroup::testCreateChannel()
@@ -400,19 +400,19 @@ void TestChanGroup::doTestCreateChannel()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeRoom);
+                   Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    mRoomHandles[mRoomNumber]);
 
     QVERIFY(connect(mConn->createChannel(request),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
@@ -436,17 +436,17 @@ void TestChanGroup::doTestCreateChannel()
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
-                            const Telepathy::Contacts &,
-                            const Telepathy::Contacts &,
-                            const Telepathy::Contacts &,
-                            const Telepathy::Contacts &,
-                            const Telepathy::Channel::GroupMemberChangeDetails &)),
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &)),
                     SLOT(onGroupMembersChanged(
-                            const Telepathy::Contacts &,
-                            const Telepathy::Contacts &,
-                            const Telepathy::Contacts &,
-                            const Telepathy::Contacts &,
-                            const Telepathy::Channel::GroupMemberChangeDetails &))));
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &))));
 
     if (mChan->groupContacts().count() != 5) {
         // wait the initial contacts to be added to the group
@@ -470,15 +470,15 @@ void TestChanGroup::doTestCreateChannel()
         QString("john@#room%1").arg(mRoomNumber) <<
         QString("mary@#room%1").arg(mRoomNumber) <<
         QString("another anonymous coward@#room%1").arg(mRoomNumber);
-    QVERIFY(connect(mConn->requestHandles(Telepathy::HandleTypeContact, ids),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectPendingContactHandlesFinished(Telepathy::PendingOperation*))));
+    QVERIFY(connect(mConn->requestHandles(Tp::HandleTypeContact, ids),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactHandlesFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // Wait for the contacts to be built
     QVERIFY(connect(mConn->contactManager()->contactsForHandles(mContactHandles),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectPendingContactsFinished(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(mContacts.size(), 3);
@@ -573,13 +573,13 @@ void TestChanGroup::cleanupTestCase()
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Telepathy::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Telepathy::DBusProxy *,
+                            SIGNAL(invalidated(Tp::DBusProxy *,
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);

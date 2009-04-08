@@ -31,7 +31,7 @@
 
 #include <QSet>
 
-namespace Telepathy
+namespace Tp
 {
 
 class PendingReady: public PendingOperation
@@ -56,6 +56,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

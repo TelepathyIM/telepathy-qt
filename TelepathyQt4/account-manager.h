@@ -42,7 +42,7 @@
 #include <QString>
 #include <QVariantMap>
 
-namespace Telepathy
+namespace Tp
 {
 
 class AccountManager;
@@ -112,6 +112,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

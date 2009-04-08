@@ -17,7 +17,7 @@
 #include <tests/lib/simple-conn.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy;
+using namespace Tp;
 
 class TestHandles : public Test
 {
@@ -31,7 +31,7 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint newStatus, uint newStatusReason);
     void expectConnInvalidated();
-    void expectPendingHandlesFinished(Telepathy::PendingOperation*);
+    void expectPendingHandlesFinished(Tp::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -141,8 +141,8 @@ void TestHandles::initTestCase()
     mConn->requestConnect();
 
     QVERIFY(connect(mConn->becomeReady(),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
 
@@ -170,15 +170,15 @@ void TestHandles::testRequestAndRelease()
     QStringList ids = QStringList() << "alice" << "bob" << "chris";
 
     // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->requestHandles(Telepathy::HandleTypeContact, ids);
+    PendingHandles *pending = mConn->requestHandles(Tp::HandleTypeContact, ids);
     QVERIFY(connect(pending,
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectPendingHandlesFinished(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(pending,
-                       SIGNAL(finished(Telepathy::PendingOperation*)),
+                       SIGNAL(finished(Tp::PendingOperation*)),
                        this,
-                       SLOT(expectPendingHandlesFinished(Telepathy::PendingOperation*))));
+                       SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
     ReferencedHandles handles = mHandles;
     mHandles = ReferencedHandles();
 
@@ -194,7 +194,7 @@ void TestHandles::testRequestAndRelease()
     }
 
     // Save the handles to a non-referenced normal container
-    Telepathy::UIntList saveHandles = handles.toList();
+    Tp::UIntList saveHandles = handles.toList();
 
     // Start releasing the handles, RAII style, and complete the asynchronous process doing that
     handles = ReferencedHandles();
@@ -218,13 +218,13 @@ void TestHandles::cleanupTestCase()
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Telepathy::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Telepathy::DBusProxy *, const QString &, const QString &)),
+                            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }

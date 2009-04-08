@@ -30,7 +30,7 @@
 
 #include <TelepathyQt4/PendingOperation>
 
-namespace Telepathy
+namespace Tp
 {
 
 /**
@@ -106,6 +106,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

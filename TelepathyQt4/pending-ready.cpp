@@ -36,7 +36,7 @@
  * backwards compatibility helpers for older services and other utilities.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 struct PendingReady::Private
@@ -101,4 +101,4 @@ Features PendingReady::requestedFeatures() const
     return mPriv->requestedFeatures;
 }
 
-} // Telepathy
+} // Tp

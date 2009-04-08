@@ -34,7 +34,7 @@
 
 class QDBusPendingCallWatcher;
 
-namespace Telepathy
+namespace Tp
 {
 
 class AccountManager;
@@ -67,6 +67,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

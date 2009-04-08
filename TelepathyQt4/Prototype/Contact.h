@@ -37,7 +37,7 @@
 #define ATTRIBUTE_DEPRECATED
 #endif
 
-namespace Telepathy
+namespace Tp
 {
     namespace Client
     {
@@ -124,7 +124,7 @@ public:
      * @todo Implement this!
      * @see PresenceManager
      */
-    Telepathy::SimplePresence presence() { return Telepathy::SimplePresence(); /* TODO: Implement me ! */ };
+    Tp::SimplePresence presence() { return Tp::SimplePresence(); /* TODO: Implement me ! */ };
     
     /**
      * @todo: Add Doc and get/setr in presence manager
@@ -158,7 +158,7 @@ public:
      * @todo: Add Doc and get/setr in presence manager
      *
      */
-    Telepathy::ContactCapabilityList capabilities() const;
+    Tp::ContactCapabilityList capabilities() const;
             
 
     /**
@@ -193,7 +193,7 @@ protected:
      * This object is never created directly. Use ContactManager to create or request a contact.
      * @see ContactManager
      */
-    Contact( const uint & handle, const QString & name, ContactTypes type, Telepathy::Client::ConnectionInterface* connectionInterface, TpPrototype::ContactManager* contactManager );
+    Contact( const uint & handle, const QString & name, ContactTypes type, Tp::Client::ConnectionInterface* connectionInterface, TpPrototype::ContactManager* contactManager );
 
     ~Contact();
 
@@ -215,7 +215,7 @@ protected:
     /**
      * @todo: Add Doc and get/setr in presence manager
      */
-    void setCapabilities( const Telepathy::ContactCapabilityList& capabilityList );
+    void setCapabilities( const Tp::ContactCapabilityList& capabilityList );
 
     /**
      * Set the avatar.
@@ -228,7 +228,7 @@ protected:
      * D-BUS interface.
      * This protected access to the D-BUS interface can be used to extend this class with special features.
      */
-    Telepathy::Client::ConnectionInterface* interface();
+    Tp::Client::ConnectionInterface* interface();
 
 
 private:

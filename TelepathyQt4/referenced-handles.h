@@ -55,7 +55,7 @@
 #include <QSharedDataPointer>
 #include <QVector>
 
-namespace Telepathy
+namespace Tp
 {
 
 class Connection;
@@ -287,6 +287,6 @@ class ReferencedHandles
 
 typedef QListIterator<uint> ReferencedHandlesIterator;
 
-} // Telepathy
+} // Tp
 
 #endif

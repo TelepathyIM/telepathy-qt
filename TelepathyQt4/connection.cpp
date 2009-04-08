@@ -67,7 +67,7 @@
  * Proxy objects representing remote Telepathy Connection objects.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 struct Connection::Private
@@ -350,8 +350,8 @@ void Connection::Private::introspectSelfContact(Connection::Private *self)
                                      << Contact::FeatureAvatarToken
                                      << Contact::FeatureSimplePresence);
     self->parent->connect(contacts,
-            SIGNAL(finished(Telepathy::PendingOperation *)),
-            SLOT(gotSelfContact(Telepathy::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(gotSelfContact(Tp::PendingOperation *)));
 }
 
 void Connection::Private::introspectSelfHandle()
@@ -379,12 +379,12 @@ void Connection::Private::introspectRoster(Connection::Private *self)
                     (ContactManager::ContactListChannel::Type) i));
 
         PendingHandles *pending = self->parent->requestHandles(
-                Telepathy::HandleTypeList,
+                HandleTypeList,
                 QStringList() << ContactManager::ContactListChannel::identifierForType(
                     (ContactManager::ContactListChannel::Type) i));
         self->parent->connect(pending,
-                SIGNAL(finished(Telepathy::PendingOperation*)),
-                SLOT(gotContactListsHandles(Telepathy::PendingOperation*)));
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(gotContactListsHandles(Tp::PendingOperation*)));
     }
 }
 
@@ -406,12 +406,12 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
     }
     else {
         connect(qobject_cast<Connection*>(parent())->becomeReady(requestedFeatures()),
-                SIGNAL(finished(Telepathy::PendingOperation*)),
-                SLOT(onBecomeReadyReply(Telepathy::PendingOperation*)));
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onBecomeReadyReply(Tp::PendingOperation*)));
     }
 }
 
-void Connection::PendingConnect::onBecomeReadyReply(Telepathy::PendingOperation *op)
+void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         setFinishedWithError(op->errorName(), op->errorMessage());
@@ -970,7 +970,7 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeList);
+                   HandleTypeList);
 
     Q_ASSERT(pending->handles().size() == 1);
     Q_ASSERT(pending->namesRequested().size() == 1);
@@ -981,8 +981,8 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     mPriv->contactListsChannels[type].handle = handle;
     request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle[0];
     connect(ensureChannel(request),
-            SIGNAL(finished(Telepathy::PendingOperation*)),
-            SLOT(gotContactListChannel(Telepathy::PendingOperation*)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotContactListChannel(Tp::PendingOperation*)));
 }
 
 void Connection::gotContactListChannel(PendingOperation *op)
@@ -1003,7 +1003,7 @@ void Connection::gotContactListChannel(PendingOperation *op)
             Q_ASSERT(!mPriv->contactListsChannels[i].channel);
             mPriv->contactListsChannels[i].channel = channel;
             connect(channel->becomeReady(),
-                    SIGNAL(finished(Telepathy::PendingOperation *)),
+                    SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(contactListChannelReady()));
         }
     }
@@ -1450,4 +1450,4 @@ void Connection::onSelfHandleChanged(uint handle)
     }
 }
 
-} // Telepathy
+} // Tp

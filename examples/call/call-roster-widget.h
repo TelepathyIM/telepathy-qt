@@ -26,7 +26,7 @@
 
 #include <examples/roster/roster-widget.h>
 
-namespace Telepathy {
+namespace Tp {
 class Channel;
 }
 
@@ -43,7 +43,7 @@ public:
 
 protected:
     virtual RosterItem *createItemForContact(
-            const Telepathy::ContactPtr &contact,
+            const Tp::ContactPtr &contact,
             bool &exists);
     virtual void updateActions(RosterItem *item);
 

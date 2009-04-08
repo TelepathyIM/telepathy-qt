@@ -29,7 +29,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-namespace Telepathy
+namespace Tp
 {
 
 class Message::Private : public QSharedData
@@ -566,4 +566,4 @@ void ReceivedMessage::setSender(const ContactPtr &sender)
     mPriv->sender = sender;
 }
 
-} // Telepathy
+} // Tp

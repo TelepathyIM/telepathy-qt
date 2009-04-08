@@ -31,7 +31,7 @@
 #include <QSharedDataPointer>
 #include <QString>
 
-namespace Telepathy
+namespace Tp
 {
 
 class Feature : public QPair<QString, uint>
@@ -64,6 +64,6 @@ inline Features operator|(const Feature &feature1, const Feature &feature2)
     return Features() << feature1 << feature2;
 }
 
-} // Telepathy
+} // Tp
 
 #endif

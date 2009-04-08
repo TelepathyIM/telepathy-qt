@@ -55,7 +55,7 @@
  * and their optional interfaces.
  */
 
-namespace Telepathy
+namespace Tp
 {
 
 struct AccountManager::Private
@@ -117,7 +117,7 @@ AccountManager::Private::~Private()
 void AccountManager::Private::setAccountPaths(QSet<QString> &set,
         const QVariant &variant)
 {
-    Telepathy::ObjectPathList paths = qdbus_cast<Telepathy::ObjectPathList>(variant);
+    ObjectPathList paths = qdbus_cast<ObjectPathList>(variant);
 
     if (paths.size() == 0) {
         // maybe the AccountManager is buggy, like Mission Control
@@ -206,7 +206,7 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  *     ~MyClass() { }
  *
  * private Q_SLOTS:
- *     void onAccountManagerReady(Telepathy::PendingOperation*);
+ *     void onAccountManagerReady(Tp::PendingOperation*);
  *
  * private:
  *     AccountManagerPtr am;
@@ -217,11 +217,11 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  *       am(AccountManager::create())
  * {
  *     connect(am->becomeReady(),
- *             SIGNAL(finished(Telepathy::PendingOperation*)),
- *             SLOT(onAccountManagerReady(Telepathy::PendingOperation*)));
+ *             SIGNAL(finished(Tp::PendingOperation*)),
+ *             SLOT(onAccountManagerReady(Tp::PendingOperation*)));
  * }
  *
- * void MyClass::onAccountManagerReady(Telepathy::PendingOperation *op)
+ * void MyClass::onAccountManagerReady(Tp::PendingOperation *op)
  * {
  *     if (op->isError()) {
  *         qWarning() << "Account manager cannot become ready:" <<
@@ -627,4 +627,4 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
     emit accountRemoved(path);
 }
 
-} // Telepathy
+} // Tp

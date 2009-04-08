@@ -36,7 +36,7 @@
 #define ATTRIBUTE_DEPRECATED
 #endif
 
-namespace Telepathy
+namespace Tp
 { 
     namespace Client
     {
@@ -84,20 +84,20 @@ public:
     /**
      * Connection Status.
      * @return The current connection status.
-     * @see Telepathy::ConnectionStatus defined in constants.h
+     * @see Tp::ConnectionStatus defined in constants.h
      */
-    Telepathy::ConnectionStatus status();
+    Tp::ConnectionStatus status();
 
     /**
      * Reason for last state change.
      * @return The reason.
-     * @see Telepathy::ConnectionStatusReason defined in constants.h
+     * @see Tp::ConnectionStatusReason defined in constants.h
      */
-    Telepathy::ConnectionStatusReason reason();
+    Tp::ConnectionStatusReason reason();
 
    /**
     * Connect to server.
-    * This call is asynchrous. Wait until signalStatusChanged() was emitted and the connection state is Telepathy::ConnectionStatusConnected
+    * This call is asynchrous. Wait until signalStatusChanged() was emitted and the connection state is Tp::ConnectionStatusConnected
     * before calling contactManager() or presenceManager() will succeed.
     * @see signalStatusChanged()
     */
@@ -170,11 +170,11 @@ signals:
      * @param connection The connection which changes its status.
      * @param newStatus The new status that is valid now.
      * @param oldStatus The old status that was valid before.
-     * @see Telepathy::ConnectionStatus
+     * @see Tp::ConnectionStatus
      */
     void signalStatusChanged( TpPrototype::Connection* connection,
-                              Telepathy::ConnectionStatus newStatus,
-                              Telepathy::ConnectionStatus oldStatus );
+                              Tp::ConnectionStatus newStatus,
+                              Tp::ConnectionStatus oldStatus );
 
 protected slots:
     void slotStatusChanged( uint status, uint reason );
@@ -199,7 +199,7 @@ protected:
      * D-BUS interface.
      * This protected access to the D-BUS interface can be used to extend this class with special features.
      */
-    Telepathy::Client::ConnectionInterface* interface();
+    Tp::Client::ConnectionInterface* interface();
 
     /**
      * Provides a generic handle.
@@ -207,7 +207,7 @@ protected:
      * @param handlestrings An array of names of entities to request handles for
      * @return An array of integer handle numbers in the same order as the given strings
      */
-    QList<uint> RequestHandles( Telepathy::HandleType handletype, QStringList& handlestrings);
+    QList<uint> RequestHandles( Tp::HandleType handletype, QStringList& handlestrings);
 
     /**
      * Check if manager is supported.
@@ -227,7 +227,7 @@ protected:
             pManager = NULL;
         }
 
-        if ( status() != Telepathy::ConnectionStatusConnected )
+        if ( status() != Tp::ConnectionStatusConnected )
         { return NULL; }
 
         pManager = new Manager( this, interface(), this );

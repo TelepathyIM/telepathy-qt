@@ -16,7 +16,7 @@
 #include <tests/lib/simple-manager.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy;
+using namespace Tp;
 
 class TestCmBasics : public Test
 {
@@ -38,7 +38,7 @@ private Q_SLOTS:
 
 private:
     TpBaseConnectionManager *mCMService;
-    Telepathy::ConnectionManagerPtr mCM;
+    Tp::ConnectionManagerPtr mCM;
 };
 
 void TestCmBasics::initTestCase()
@@ -73,15 +73,15 @@ void TestCmBasics::init()
 void TestCmBasics::testBasics()
 {
     QVERIFY(connect(mCM->becomeReady(),
-                    SIGNAL(finished(Telepathy::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation *))));
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mCM->isReady(), true);
 
     // calling becomeReady() twice is a no-op
     QVERIFY(connect(mCM->becomeReady(),
-                    SIGNAL(finished(Telepathy::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation *))));
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mCM->isReady(), true);
 

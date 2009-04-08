@@ -17,8 +17,8 @@
 
 #include <tests/pinocchio/lib.h>
 
-using namespace Telepathy;
-using namespace Telepathy::Client;
+using namespace Tp;
+using namespace Tp::Client;
 
 class TestHandles : public PinocchioTest
 {
@@ -42,7 +42,7 @@ protected Q_SLOTS:
     // these ought to be private, but if they were, QTest would think they
     // were test cases. So, they're protected instead
     void expectConnReady(uint, uint);
-    void expectPendingHandlesFinished(Telepathy::PendingOperation*);
+    void expectPendingHandlesFinished(Tp::PendingOperation*);
 
 private Q_SLOTS:
     void initTestCase();
@@ -117,9 +117,9 @@ void TestHandles::initTestCase()
 
     // Connecting one connects them all
     QVERIFY(connect(mConn1a->requestConnect(),
-            SIGNAL(finished(Telepathy::PendingOperation*)),
+            SIGNAL(finished(Tp::PendingOperation*)),
             this,
-            SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+            SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     ConnectionPtr connections[3] = {mConn1a, mConn1b, mConn2};
@@ -176,36 +176,36 @@ void TestHandles::testBasics()
     // Get a reference to compare against (synchronously, don't do this in real applications)
     QStringList ids = QStringList() << "friend" << "buddy" << "associate" << "dude" << "guy";
     ConnectionInterface iface(mConn1a->busName(), mConn1a->objectPath());
-    Telepathy::UIntList shouldBe = iface.RequestHandles(Telepathy::HandleTypeContact, ids);
+    Tp::UIntList shouldBe = iface.RequestHandles(Tp::HandleTypeContact, ids);
 
     // Try and get the same handles asynchronously using the convenience API
-    PendingHandles *pending = mConn1a->requestHandles(Telepathy::HandleTypeContact, ids);
+    PendingHandles *pending = mConn1a->requestHandles(Tp::HandleTypeContact, ids);
 
     // Check that the closure is consistent with what we asked for
     QVERIFY(pending->isRequest());
     QCOMPARE(pending->namesRequested(), ids);
     QCOMPARE(pending->connection(), mConn1a);
-    QCOMPARE(pending->handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
+    QCOMPARE(pending->handleType(), static_cast<uint>(Tp::HandleTypeContact));
 
     // Finish the request and extract the resulting ReferencedHandles
-    QVERIFY(connect(pending, SIGNAL(finished(Telepathy::PendingOperation*)),
-          this, SLOT(expectPendingHandlesFinished(Telepathy::PendingOperation*))));
+    QVERIFY(connect(pending, SIGNAL(finished(Tp::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(pending, SIGNAL(finished(Telepathy::PendingOperation*)),
-          this, SLOT(expectPendingHandlesFinished(Telepathy::PendingOperation*))));
+    QVERIFY(disconnect(pending, SIGNAL(finished(Tp::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
     ReferencedHandles handles = mHandles;
     mHandles = ReferencedHandles();
 
     // Check that the ReferencedHandles are what we asked for
     QCOMPARE(handles.connection(), mConn1a);
-    QCOMPARE(handles.handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
+    QCOMPARE(handles.handleType(), static_cast<uint>(Tp::HandleTypeContact));
     QVERIFY(handles == shouldBe);
 
     // Check that a copy of the received ReferencedHandles is also what we asked for (it's supposed
     // to be equivalent with one that we already verified as being that)
     ReferencedHandles copy = handles;
     QCOMPARE(copy.connection(), mConn1a);
-    QCOMPARE(copy.handleType(), static_cast<uint>(Telepathy::HandleTypeContact));
+    QCOMPARE(copy.handleType(), static_cast<uint>(Tp::HandleTypeContact));
 
     QVERIFY(copy == handles);
     QVERIFY(copy == shouldBe);
@@ -221,12 +221,12 @@ void TestHandles::testReferences()
     QStringList ids = QStringList() << "mate" << "contact" << "partner" << "bloke" << "fellow";
 
     // Get referenced handles for all 5 of the IDs
-    PendingHandles *allPending = mConn1a->requestHandles(Telepathy::HandleTypeContact, ids);
-    QVERIFY(connect(allPending, SIGNAL(finished(Telepathy::PendingOperation*)),
-          this, SLOT(expectPendingHandlesFinished(Telepathy::PendingOperation*))));
+    PendingHandles *allPending = mConn1a->requestHandles(Tp::HandleTypeContact, ids);
+    QVERIFY(connect(allPending, SIGNAL(finished(Tp::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(allPending, SIGNAL(finished(Telepathy::PendingOperation*)),
-          this, SLOT(expectPendingHandlesFinished(Telepathy::PendingOperation*))));
+    QVERIFY(disconnect(allPending, SIGNAL(finished(Tp::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
     ReferencedHandles allHandles = mHandles;
     mHandles = ReferencedHandles();
 
@@ -234,20 +234,20 @@ void TestHandles::testReferences()
     QCOMPARE(allHandles.size(), 5);
 
     // ... and that they're valid at this point by inspecting them
-    QDBusReply<QStringList> inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
-            Telepathy::UIntList::fromStdList(std::list<uint>(allHandles.begin(),
+    QDBusReply<QStringList> inspectReply = iface.InspectHandles(Tp::HandleTypeContact,
+            Tp::UIntList::fromStdList(std::list<uint>(allHandles.begin(),
                     allHandles.end())));
     QVERIFY(inspectReply.isValid());
     QCOMPARE(inspectReply.value().size(), 5);
 
     // Get another fresh reference to the middle three using the Connection
-    PendingHandles *middlePending = mConn1a->referenceHandles(Telepathy::HandleTypeContact,
-            Telepathy::UIntList() << allHandles[1] << allHandles[2] << allHandles[3]);
-    QVERIFY(connect(middlePending, SIGNAL(finished(Telepathy::PendingOperation*)),
-          this, SLOT(expectPendingHandlesFinished(Telepathy::PendingOperation*))));
+    PendingHandles *middlePending = mConn1a->referenceHandles(Tp::HandleTypeContact,
+            Tp::UIntList() << allHandles[1] << allHandles[2] << allHandles[3]);
+    QVERIFY(connect(middlePending, SIGNAL(finished(Tp::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(middlePending, SIGNAL(finished(Telepathy::PendingOperation*)),
-          this, SLOT(expectPendingHandlesFinished(Telepathy::PendingOperation*))));
+    QVERIFY(disconnect(middlePending, SIGNAL(finished(Tp::PendingOperation*)),
+          this, SLOT(expectPendingHandlesFinished(Tp::PendingOperation*))));
     ReferencedHandles middleHandles = mHandles;
     mHandles = ReferencedHandles();
 
@@ -276,14 +276,14 @@ void TestHandles::testReferences()
     mLoop->processEvents();
 
     // Now check that our middle and last handles can still be inspected
-    inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
-            Telepathy::UIntList::fromStdList(std::list<uint>(middleHandles.begin(),
+    inspectReply = iface.InspectHandles(Tp::HandleTypeContact,
+            Tp::UIntList::fromStdList(std::list<uint>(middleHandles.begin(),
                     middleHandles.end())));
     QVERIFY(inspectReply.isValid());
     QCOMPARE(inspectReply.value().size(), 3);
 
-    inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
-            Telepathy::UIntList::fromStdList(std::list<uint>(lastHandles.begin(),
+    inspectReply = iface.InspectHandles(Tp::HandleTypeContact,
+            Tp::UIntList::fromStdList(std::list<uint>(lastHandles.begin(),
                     lastHandles.end())));
     QVERIFY(inspectReply.isValid());
     QCOMPARE(inspectReply.value().size(), 3);
@@ -294,8 +294,8 @@ void TestHandles::testReferences()
     // However, the telepathy-python 0.15.3 ReleaseHandles implementation is made of cheese. I know
     // how to fix it, but until we've released tp-python with the fix, and added a dependency on
     // that new version of tp-python for the tests, we can't enable this.
-    // inspectReply = iface.InspectHandles(Telepathy::HandleTypeContact,
-    //        Telepathy::UIntList() << firstHandle);
+    // inspectReply = iface.InspectHandles(Tp::HandleTypeContact,
+    //        Tp::UIntList() << firstHandle);
     // QVERIFY(!inspectReply.isValid());
     Q_UNUSED(firstHandle);
 }
@@ -310,9 +310,9 @@ void TestHandles::cleanupTestCase()
     // Disconnecting one disconnects them all, because they all poke the same
     // remote Connection
     QVERIFY(connect(mConn1a->requestDisconnect(),
-          SIGNAL(finished(Telepathy::PendingOperation*)),
+          SIGNAL(finished(Tp::PendingOperation*)),
           this,
-          SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+          SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     delete mCM;

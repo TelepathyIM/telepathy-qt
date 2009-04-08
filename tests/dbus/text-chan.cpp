@@ -19,17 +19,17 @@
 #include <tests/lib/echo2/chan.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy;
-using Telepathy::UIntList;
+using namespace Tp;
+using Tp::UIntList;
 
 struct SentMessageDetails
 {
     SentMessageDetails(const Message &message,
-            const Telepathy::MessageSendingFlags flags,
+            const Tp::MessageSendingFlags flags,
             const QString &token)
         : message(message), flags(flags), token(token) { }
     Message message;
-    Telepathy::MessageSendingFlags flags;
+    Tp::MessageSendingFlags flags;
     QString token;
 };
 
@@ -46,10 +46,10 @@ public:
     { }
 
 protected Q_SLOTS:
-    void onMessageReceived(const Telepathy::ReceivedMessage &);
-    void onMessageRemoved(const Telepathy::ReceivedMessage &);
-    void onMessageSent(const Telepathy::Message &,
-            Telepathy::MessageSendingFlags, const QString &);
+    void onMessageReceived(const Tp::ReceivedMessage &);
+    void onMessageRemoved(const Tp::ReceivedMessage &);
+    void onMessageSent(const Tp::Message &,
+            Tp::MessageSendingFlags, const QString &);
 
 private Q_SLOTS:
     void initTestCase();
@@ -93,8 +93,8 @@ void TestTextChan::onMessageRemoved(const ReceivedMessage &message)
     removed << message;
 }
 
-void TestTextChan::onMessageSent(const Telepathy::Message &message,
-        Telepathy::MessageSendingFlags flags, const QString &token)
+void TestTextChan::onMessageSent(const Tp::Message &message,
+        Tp::MessageSendingFlags flags, const QString &token)
 {
     sent << SentMessageDetails(message, flags, token);
 }
@@ -102,9 +102,9 @@ void TestTextChan::onMessageSent(const Telepathy::Message &message,
 void TestTextChan::sendText(const char *text)
 {
     QVERIFY(connect(mChan->send(QLatin1String(text),
-                    Telepathy::ChannelTextMessageTypeNormal),
-                SIGNAL(finished(Telepathy::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::PendingOperation *))));
+                    Tp::ChannelTextMessageTypeNormal),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 }
 
@@ -149,8 +149,8 @@ void TestTextChan::initTestCase()
     mConn->requestConnect();
 
     QVERIFY(connect(mConn->requestConnect(),
-                    SIGNAL(finished(Telepathy::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
     QCOMPARE(static_cast<uint>(mConn->status()),
@@ -196,8 +196,8 @@ void TestTextChan::commonTest(bool withMessages)
     ChannelPtr asChannel = ChannelPtr(dynamic_cast<Channel*>(mChan.data()));
 
     QVERIFY(connect(asChannel->becomeReady(),
-                SIGNAL(finished(Telepathy::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::PendingOperation *))));
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(asChannel->isReady());
@@ -210,20 +210,20 @@ void TestTextChan::commonTest(bool withMessages)
     QVERIFY(!mChan->isReady(features));
 
     QVERIFY(connect(mChan.data(),
-                SIGNAL(messageReceived(const Telepathy::ReceivedMessage &)),
-                SLOT(onMessageReceived(const Telepathy::ReceivedMessage &))));
+                SIGNAL(messageReceived(const Tp::ReceivedMessage &)),
+                SLOT(onMessageReceived(const Tp::ReceivedMessage &))));
     QCOMPARE(received.size(), 0);
     QVERIFY(connect(mChan.data(),
-                SIGNAL(pendingMessageRemoved(const Telepathy::ReceivedMessage &)),
-                SLOT(onMessageRemoved(const Telepathy::ReceivedMessage &))));
+                SIGNAL(pendingMessageRemoved(const Tp::ReceivedMessage &)),
+                SLOT(onMessageRemoved(const Tp::ReceivedMessage &))));
     QCOMPARE(removed.size(), 0);
 
     QVERIFY(connect(mChan.data(),
-                SIGNAL(messageSent(const Telepathy::Message &,
-                        Telepathy::MessageSendingFlags,
+                SIGNAL(messageSent(const Tp::Message &,
+                        Tp::MessageSendingFlags,
                         const QString &)),
-                SLOT(onMessageSent(const Telepathy::Message &,
-                        Telepathy::MessageSendingFlags,
+                SLOT(onMessageSent(const Tp::Message &,
+                        Tp::MessageSendingFlags,
                         const QString &))));
     QCOMPARE(sent.size(), 0);
 
@@ -232,8 +232,8 @@ void TestTextChan::commonTest(bool withMessages)
     // Make the Sent signal become ready
     features = Features() << TextChannel::FeatureMessageSentSignal;
     QVERIFY(connect(mChan->becomeReady(features),
-                SIGNAL(finished(Telepathy::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::PendingOperation *))));
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(asChannel->isReady());
@@ -252,7 +252,7 @@ void TestTextChan::commonTest(bool withMessages)
 
     Message m(sent.at(0).message);
     QCOMPARE(static_cast<uint>(m.messageType()),
-            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+            static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!m.isTruncated());
     QVERIFY(!m.hasNonTextContent());
     QCOMPARE(m.messageToken(), QString::fromAscii(""));
@@ -268,8 +268,8 @@ void TestTextChan::commonTest(bool withMessages)
     // Make capabilities become ready
     features = Features() << TextChannel::FeatureMessageCapabilities;
     QVERIFY(connect(mChan->becomeReady(features),
-                SIGNAL(finished(Telepathy::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::PendingOperation *))));
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(asChannel->isReady());
@@ -282,8 +282,8 @@ void TestTextChan::commonTest(bool withMessages)
     if (withMessages) {
         QCOMPARE(mChan->supportedContentTypes(), QStringList() << "*/*");
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()),
-                static_cast<uint>(Telepathy::MessagePartSupportFlagOneAttachment |
-                    Telepathy::MessagePartSupportFlagMultipleAttachments));
+                static_cast<uint>(Tp::MessagePartSupportFlagOneAttachment |
+                    Tp::MessagePartSupportFlagMultipleAttachments));
         QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
     } else {
         QCOMPARE(mChan->supportedContentTypes(), QStringList() << "text/plain");
@@ -296,8 +296,8 @@ void TestTextChan::commonTest(bool withMessages)
     QCOMPARE(mChan->messageQueue().size(), 0);
     features = Features() << TextChannel::FeatureMessageQueue;
     QVERIFY(connect(mChan->becomeReady(features),
-                SIGNAL(finished(Telepathy::PendingOperation *)),
-                SLOT(expectSuccessfulCall(Telepathy::PendingOperation *))));
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(asChannel->isReady());
@@ -313,7 +313,7 @@ void TestTextChan::commonTest(bool withMessages)
 
     ReceivedMessage r(received.at(0));
     QCOMPARE(static_cast<uint>(r.messageType()),
-            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+            static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
     QVERIFY(!r.hasNonTextContent());
     QCOMPARE(r.messageToken(), QString::fromAscii(""));
@@ -338,7 +338,7 @@ void TestTextChan::commonTest(bool withMessages)
 
     r = received.at(1);
     QCOMPARE(static_cast<uint>(r.messageType()),
-            static_cast<uint>(Telepathy::ChannelTextMessageTypeNormal));
+            static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
     QVERIFY(!r.hasNonTextContent());
     QCOMPARE(r.messageToken(), QString::fromAscii(""));
@@ -436,13 +436,13 @@ void TestTextChan::cleanupTestCase()
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Telepathy::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Telepathy::DBusProxy *,
+                            SIGNAL(invalidated(Tp::DBusProxy *,
                                                const QString &, const QString &)),
                             mLoop,
                             SLOT(quit())));

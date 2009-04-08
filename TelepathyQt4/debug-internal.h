@@ -26,7 +26,7 @@
 
 #include <config.h>
 
-namespace Telepathy
+namespace Tp
 {
 #ifdef ENABLE_DEBUG
 
@@ -85,6 +85,6 @@ inline NoDebug warning()
 
 #endif /* #ifdef ENABLE_DEBUG */
 
-} /* namespace Telepathy */
+} // Tp
 
 #endif

@@ -25,10 +25,10 @@ int main(int argc, char **argv)
 
     app.setAttribute(Qt::AA_NativeWindows);
 
-    Telepathy::registerTypes();
-    Telepathy::enableDebug(true);
-    Telepathy::enableWarnings(true);
-    qRegisterMetaType<Telepathy::FarsightChannel::Status>();
+    Tp::registerTypes();
+    Tp::enableDebug(true);
+    Tp::enableWarnings(true);
+    qRegisterMetaType<Tp::FarsightChannel::Status>();
 
     CallWindow w(argv[1], argv[2]);
     w.show();
