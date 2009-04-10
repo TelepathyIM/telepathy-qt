@@ -37,6 +37,8 @@ class QDBusPendingCallWatcher;
 namespace Tp
 {
 
+class ReadinessHelper;
+
 class TELEPATHY_QT4_EXPORT PendingOperation : public QObject
 {
     Q_OBJECT
@@ -70,6 +72,7 @@ private Q_SLOTS:
 private:
     struct Private;
     friend struct Private;
+    friend class ReadinessHelper;
     Private *mPriv;
 };
 
