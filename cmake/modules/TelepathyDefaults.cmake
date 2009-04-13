@@ -33,8 +33,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_C_FLAGS_PROFILE          "-g3 -fno-inline -ftest-coverage -fprofile-arcs -DENABLE_DEBUG")
 
     if(CMAKE_SYSTEM_NAME MATCHES Linux)
-        set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -Wextra -Wdeclaration-after-statement -Wshadow -Wstrict-prototypes -Wmissing-prototypes -Wsign-compare -Wnested-externs -Wpointer-arith -Wformat-security -Winit-self")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wsign-compare -Wpointer-arith -Wformat-security -Winit-self -Wnon-virtual-dtor")
         add_definitions(-D_BSD_SOURCE)
     endif(CMAKE_SYSTEM_NAME MATCHES Linux)
 
@@ -58,5 +56,43 @@ endif(MSVC)
 set(LIB_SUFFIX "" CACHE STRING "Define suffix of library directory name (32/64)" )
 set(LIB_INSTALL_DIR     "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}"  CACHE PATH "The subdirectory relative to the install prefix where libraries will be installed (default is ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})" FORCE)
 set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include"           CACHE PATH "The subdirectory to the header prefix" FORCE)
+set(DISABLE_WERROR 0 CACHE BOOL "compile without -Werror (normally enabled in development builds)")
+
+include(CompilerWarnings)
+
+if(${CMAKE_BUILD_TYPE} STREQUAL Release)
+    set(NOT_RELEASE 0)
+else(${CMAKE_BUILD_TYPE} STREQUAL Release)
+    set(NOT_RELEASE 1)
+endif(${CMAKE_BUILD_TYPE} STREQUAL Release)
+
+set(desired 
+    all
+    extra
+    sign-compare
+    pointer-arith
+    format-security
+    init-self)
+set(undesired
+    missing-field-initializers
+    unused-parameter)
+compiler_warnings(CMAKE_CXX_FLAGS cxx ${NOT_RELEASE} "${desired}" "${undesired}")
+
+set(desired_c 
+    all 
+    extra 
+    declaration-after-statement 
+    shadow
+    strict-prototypes
+    missing-prototypes
+    sign-compare
+    nested-externs
+    pointer-arith
+    format-security
+    init-self)
+set(undesired_c
+    missing-field-initializers
+    unused-parameter )
+compiler_warnings(CMAKE_C_FLAGS c ${NOT_RELEASE} "${desired_c}" "${undesired_c}")
 
 include(TelepathyDist)
