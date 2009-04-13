@@ -29,7 +29,7 @@
 
 #include <TelepathyQt4/Types>
 
-namespace Telepathy
+namespace Tp
 {
     namespace Client
     {
@@ -75,18 +75,18 @@ public:
     /**
      * Set the capabilities.
      * This function sets the capabilites of the account that belongs to this connection.
-     * @param capabilities List of capabilities for a specific channel. See Telepathy D-Bus spec section "Channel_Media_Capabilities"
+     * @param capabilities List of capabilities for a specific channel. See Tp D-Bus spec section "Channel_Media_Capabilities"
      * @param removedChanels List of channels that are removed.
      * @return true if setting was successful
      */
-    bool setCapabilities( const Telepathy::CapabilityPairList& capabilities, const QStringList& removedChannels = QStringList() );
+    bool setCapabilities( const Tp::CapabilityPairList& capabilities, const QStringList& removedChannels = QStringList() );
     
     /**
      * Request capabilites.
      * Returns the capabilites of the account that belongs to this connection.
      * @return List of capabilities
      */
-    Telepathy::ContactCapabilityList capabilities();
+    Tp::ContactCapabilityList capabilities();
     
     /**
      * Gets the capabilities for a list of contacts and provides them to to specific contacts.
@@ -98,27 +98,27 @@ signals:
     /**
      * The capability of a contact has changed. This signal is emitted when any of the known contacts changed its capability.
      */
-    void signalCapabilitiesChanged( TpPrototype::Contact* contact, const Telepathy::CapabilityChange& changedCapability );
+    void signalCapabilitiesChanged( TpPrototype::Contact* contact, const Tp::CapabilityChange& changedCapability );
 
     /**
      * My capability was changed. This signal is emmitted if the capability of one of my channes was changed.
      */
-    void signalOwnCapabilityChanged( const Telepathy::CapabilityChange& changedCapability );
+    void signalOwnCapabilityChanged( const Tp::CapabilityChange& changedCapability );
  
 protected:
     /**
      * Constructor. The capabilities manager cannot be instantiated directly. Use Connection::CapabilitiesManager() for it!
      */
     CapabilitiesManager( TpPrototype::Connection* connection,
-                     Telepathy::Client::ConnectionInterface* interface,
+                     Tp::Client::ConnectionInterface* interface,
                      QObject* parent = NULL );
     ~CapabilitiesManager();
 
 protected slots:
-    void slotCapabilitiesChanged( const Telepathy::CapabilityChangeList& capabilities );
+    void slotCapabilitiesChanged( const Tp::CapabilityChangeList& capabilities );
  
 private:
-    void init( TpPrototype::Connection* connection, Telepathy::Client::ConnectionInterface* interface );
+    void init( TpPrototype::Connection* connection, Tp::Client::ConnectionInterface* interface );
     
     TpPrototype::CapabilitiesManagerPrivate * const d;
     friend class Connection;

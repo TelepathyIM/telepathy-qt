@@ -39,8 +39,9 @@
  * category can be invidually enabled.
  */
 
-namespace Telepathy
+namespace Tp
 {
+
 /**
  * \ingroup debug
  *
@@ -67,6 +68,6 @@ void enableDebug(bool enable);
  */
 void enableWarnings(bool enable);
 
-} /* namespace Telepathy */
+} // Tp
 
 #endif

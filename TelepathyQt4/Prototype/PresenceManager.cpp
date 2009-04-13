@@ -29,7 +29,7 @@
 #include <QMap>
 #include <QPointer>
 
-#include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Connection>
 
 #include <TelepathyQt4/Prototype/Account.h>
 #include <TelepathyQt4/Prototype/AccountManager.h>
@@ -52,18 +52,18 @@ class TpPrototype::PresenceManagerPrivate
 {
 public:
     PresenceManagerPrivate( Connection* connection,
-                            Telepathy::Client::ConnectionInterface* interface )
+                            Tp::Client::ConnectionInterface* interface )
     { init( connection, interface ); }
 
-    Telepathy::Client::ConnectionInterface* m_pConnectionInterface;
-    Telepathy::Client::ConnectionInterfaceSimplePresenceInterface* m_pSimplePresenceInterface;
-    Telepathy::Client::ConnectionInterfacePresenceInterface* m_pPresenceInterface;
+    Tp::Client::ConnectionInterface* m_pConnectionInterface;
+    Tp::Client::ConnectionInterfaceSimplePresenceInterface* m_pSimplePresenceInterface;
+    Tp::Client::ConnectionInterfacePresenceInterface* m_pPresenceInterface;
     QPointer<Connection> m_pConnection;
     bool m_isValid;
     QMap<QString,int> m_mapStatusStringToType;
     
     void init( Connection* connection,
-               Telepathy::Client::ConnectionInterface* interface )
+               Tp::Client::ConnectionInterface* interface )
     {
         m_pConnectionInterface     = interface;
         m_pConnection              = connection;
@@ -100,9 +100,9 @@ public:
         return m_mapStatusStringToType.value( status );
     }
 
-    Telepathy::SimplePresence convertToSimplePresence( const Telepathy::LastActivityAndStatuses& status ) const
+    Tp::SimplePresence convertToSimplePresence( const Tp::LastActivityAndStatuses& status ) const
     {
-        Telepathy::SimplePresence simple_presence;
+        Tp::SimplePresence simple_presence;
 
         QStringList status_list = status.statuses.keys();
 
@@ -117,9 +117,9 @@ public:
         return simple_presence;
     }
 
-    Telepathy::SimpleContactPresences convertToSimplePresences( const Telepathy::ContactPresences& presences ) const
+    Tp::SimpleContactPresences convertToSimplePresences( const Tp::ContactPresences& presences ) const
     {
-        Telepathy::SimpleContactPresences contact_presences;
+        Tp::SimpleContactPresences contact_presences;
 
         QList<uint> keys = presences.keys();
         foreach( uint key, keys )
@@ -130,9 +130,9 @@ public:
         return contact_presences;
     }
 
-    Telepathy::MultipleStatusMap convertToMultipleStatusMap( const QString& status, const QString& statusMessage ) const
+    Tp::MultipleStatusMap convertToMultipleStatusMap( const QString& status, const QString& statusMessage ) const
     {
-        Telepathy::MultipleStatusMap status_map;
+        Tp::MultipleStatusMap status_map;
 
         QVariantMap protocol_specif_parameters;
         if ( !statusMessage.isEmpty() )
@@ -145,7 +145,7 @@ public:
 };
 
 PresenceManager::PresenceManager( Connection* connection,
-                                  Telepathy::Client::ConnectionInterface* interface,
+                                  Tp::Client::ConnectionInterface* interface,
                                   QObject* parent ):
     QObject( parent ),
     d( new PresenceManagerPrivate( connection, interface ) )
@@ -166,7 +166,7 @@ bool PresenceManager::isValid()
     return d->m_isValid;
 }
 
-Telepathy::SimpleStatusSpecMap PresenceManager::statuses()
+Tp::SimpleStatusSpecMap PresenceManager::statuses()
 {
     Q_ASSERT( d->m_pSimplePresenceInterface || d->m_pPresenceInterface );
 
@@ -176,18 +176,18 @@ Telepathy::SimpleStatusSpecMap PresenceManager::statuses()
     if ( d->m_pPresenceInterface )
     {
         // We return a minimum set of states that should be provided by every contact manager and protocol
-        Telepathy::SimpleStatusSpecMap ret_status;
-        Telepathy::SimpleStatusSpec available = { 2, 2, true };
+        Tp::SimpleStatusSpecMap ret_status;
+        Tp::SimpleStatusSpec available = { 2, 2, true };
         ret_status.insert( "available", available );
-        Telepathy::SimpleStatusSpec away = { 3, 3, true };
+        Tp::SimpleStatusSpec away = { 3, 3, true };
         ret_status.insert( "away", away );
-        Telepathy::SimpleStatusSpec offline = { 1, 1, true };
+        Tp::SimpleStatusSpec offline = { 1, 1, true };
         ret_status.insert( "offline", offline );
         
         return ret_status;
     } 
 
-    return Telepathy::SimpleStatusSpecMap();
+    return Tp::SimpleStatusSpecMap();
 }
 
 bool PresenceManager::setPresence( const QString& status, const QString& statusMessage )
@@ -204,7 +204,7 @@ bool PresenceManager::setPresence( const QString& status, const QString& statusM
         Q_ASSERT( d->m_pConnection );
 
         // TODO: Think whether sending this signal here manually (and before disconnecting) is really a good idea!
-        const Telepathy::SimplePresence new_presence = { d->mapStatusStringToType( "offline" ), status, statusMessage };
+        const Tp::SimplePresence new_presence = { d->mapStatusStringToType( "offline" ), status, statusMessage };
         emit signalOwnPresenceUpdated( d->m_pConnection->account(), new_presence );
         
         d->m_pConnection->requestDisconnect();
@@ -249,7 +249,7 @@ bool PresenceManager::setPresence( const QString& status, const QString& statusM
 #if 0 // TODO: Exame further: At some point I received the signal. Don't know why..
         // The simple presence interface is emitting a signal if I changed the local presence here but the presence interface does not!
         // We simulate this behavior here..
-        const Telepathy::SimplePresence new_presence = { d->mapStatusStringToType( status ), status, statusMessage };
+        const Tp::SimplePresence new_presence = { d->mapStatusStringToType( status ), status, statusMessage };
         emit signalOwnPresenceUpdated( d->m_pConnection->account(), new_presence );
 #endif   
         return true;
@@ -260,21 +260,21 @@ bool PresenceManager::setPresence( const QString& status, const QString& statusM
 }
 
 // TODO: This function is doing the same as presencesForContacts() but just for one contact! Merge both functions to remove code duplication!
-Telepathy::SimplePresence PresenceManager::currentPresence()
+Tp::SimplePresence PresenceManager::currentPresence()
 {
     Q_ASSERT( d->m_pSimplePresenceInterface || d->m_pPresenceInterface );
 
     if ( !d->m_pConnection || ( !d->m_pSimplePresenceInterface && !d->m_pPresenceInterface ) )
     {
-        return Telepathy::SimplePresence();
+        return Tp::SimplePresence();
     }
 
-    Telepathy::UIntList uid_list;
+    Tp::UIntList uid_list;
     uid_list << d->localHandle();
 
     if ( d->m_pSimplePresenceInterface )
     {
-        QDBusPendingReply<Telepathy::SimpleContactPresences> get_presence_reply = d->m_pSimplePresenceInterface->GetPresences( uid_list );
+        QDBusPendingReply<Tp::SimpleContactPresences> get_presence_reply = d->m_pSimplePresenceInterface->GetPresences( uid_list );
         get_presence_reply.waitForFinished();
         
         if ( !get_presence_reply.isValid() )
@@ -286,21 +286,21 @@ Telepathy::SimplePresence PresenceManager::currentPresence()
                     << "error message:" << error.message();
 
             d->m_isValid = false;
-            return Telepathy::SimplePresence();
+            return Tp::SimplePresence();
         }
 
-        Telepathy::SimpleContactPresences presence_list = get_presence_reply.value();
-        QList<Telepathy::SimplePresence> value_list = presence_list.values();
+        Tp::SimpleContactPresences presence_list = get_presence_reply.value();
+        QList<Tp::SimplePresence> value_list = presence_list.values();
         
         if ( value_list.count() == 0 )
-        { return Telepathy::SimplePresence(); }
+        { return Tp::SimplePresence(); }
 
         return value_list.at( 0 );
     }
 
     if ( d->m_pPresenceInterface )
     {
-        QDBusPendingReply<Telepathy::ContactPresences> get_presence_reply = d->m_pPresenceInterface->GetPresence( uid_list );
+        QDBusPendingReply<Tp::ContactPresences> get_presence_reply = d->m_pPresenceInterface->GetPresence( uid_list );
         get_presence_reply.waitForFinished();
         
         if ( !get_presence_reply.isValid() )
@@ -312,31 +312,31 @@ Telepathy::SimplePresence PresenceManager::currentPresence()
                     << "error message:" << error.message();
 
             d->m_isValid = false;
-            return Telepathy::SimplePresence();
+            return Tp::SimplePresence();
         }
 
-        Telepathy::ContactPresences presence_list = get_presence_reply.value();
-        QList<Telepathy::LastActivityAndStatuses> value_list = presence_list.values();
+        Tp::ContactPresences presence_list = get_presence_reply.value();
+        QList<Tp::LastActivityAndStatuses> value_list = presence_list.values();
         
         if ( value_list.count() == 0 )
-        { return Telepathy::SimplePresence(); }
+        { return Tp::SimplePresence(); }
 
         return d->convertToSimplePresence( value_list.at( 0 ) );
     }
 
     // Fall through..
-    return Telepathy::SimplePresence();
+    return Tp::SimplePresence();
 }
 
 // TODO: See comment for currentPresence! Merge both to remove code duplication
-Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const QList<QPointer<Contact> >& contacts )
+Tp::SimpleContactPresences PresenceManager::presencesForContacts( const QList<QPointer<Contact> >& contacts )
 {
     Q_ASSERT( d->m_pSimplePresenceInterface || d->m_pPresenceInterface );
 
     if ( !d->m_pConnection || ( !d->m_pSimplePresenceInterface && !d->m_pPresenceInterface ) )
-    { return Telepathy::SimpleContactPresences(); }
+    { return Tp::SimpleContactPresences(); }
     
-    Telepathy::UIntList contact_ids;
+    Tp::UIntList contact_ids;
     foreach( Contact* contact, contacts )
     {
         if ( !contact )
@@ -346,7 +346,7 @@ Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const Q
 
     if ( d->m_pSimplePresenceInterface )
     {
-        QDBusPendingReply<Telepathy::SimpleContactPresences> get_presence_reply = d->m_pSimplePresenceInterface->GetPresences( contact_ids );
+        QDBusPendingReply<Tp::SimpleContactPresences> get_presence_reply = d->m_pSimplePresenceInterface->GetPresences( contact_ids );
         get_presence_reply.waitForFinished();
 
         if ( !get_presence_reply.isValid() )
@@ -357,10 +357,10 @@ Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const Q
                     << "error name:" << error.name()
                     << "error message:" << error.message();
 
-            return Telepathy::SimpleContactPresences();
+            return Tp::SimpleContactPresences();
         }
     
-        Telepathy::SimpleContactPresences presences=get_presence_reply.value();
+        Tp::SimpleContactPresences presences=get_presence_reply.value();
         QList<uint> keys = presences.keys();
         QPointer<TpPrototype::Contact> contact;
         foreach( uint key, keys )
@@ -389,7 +389,7 @@ Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const Q
     
     if ( d->m_pPresenceInterface )
     {
-        QDBusPendingReply<Telepathy::ContactPresences> get_presence_reply = d->m_pPresenceInterface->GetPresence( contact_ids );
+        QDBusPendingReply<Tp::ContactPresences> get_presence_reply = d->m_pPresenceInterface->GetPresence( contact_ids );
         get_presence_reply.waitForFinished();
         
         if ( !get_presence_reply.isValid() )
@@ -401,10 +401,10 @@ Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const Q
                     << "error message:" << error.message();
 
             d->m_isValid = false;
-            return Telepathy::SimpleContactPresences();
+            return Tp::SimpleContactPresences();
         }
 
-        Telepathy::ContactPresences presences = get_presence_reply.value();
+        Tp::ContactPresences presences = get_presence_reply.value();
         QList<uint> keys = presences.keys();
         QPointer<TpPrototype::Contact> contact;
         foreach( uint key, keys )
@@ -416,7 +416,7 @@ Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const Q
                 //qDebug() << "Contact "<< key << "Status" <<presences.value( key ).status;            
                 if (contact->telepathyHandle()==key)
                 {
-                    Telepathy::SimplePresence simple_presence = d->convertToSimplePresence( presences.value( key ) );
+                    Tp::SimplePresence simple_presence = d->convertToSimplePresence( presences.value( key ) );
                     contact->setPresenceType( simple_presence.type );
                     contact->setPresenceStatus( simple_presence.status );
                     contact->setPresenceMessage( simple_presence.statusMessage );
@@ -428,13 +428,13 @@ Telepathy::SimpleContactPresences PresenceManager::presencesForContacts( const Q
     }
 
     // Fall through..
-    return Telepathy::SimpleContactPresences();
+    return Tp::SimpleContactPresences();
 }
 
 // Protected slots
     
 // Called by the _simple_ presence interface if presence were updated
-void PresenceManager::slotPresencesChanged( const Telepathy::SimpleContactPresences& presences )
+void PresenceManager::slotPresencesChanged( const Tp::SimpleContactPresences& presences )
 {
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << __PRETTY_FUNCTION__;
@@ -448,7 +448,7 @@ void PresenceManager::slotPresencesChanged( const Telepathy::SimpleContactPresen
     QList<uint> keys = presences.keys();
     foreach( uint key, keys )
     {
-        Telepathy::SimplePresence changed_presence = presences.value( key );
+        Tp::SimplePresence changed_presence = presences.value( key );
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug() << "Contact ID: "  << key
                  << "Type: "        << changed_presence.type
@@ -502,7 +502,7 @@ void PresenceManager::slotPresencesChanged( const Telepathy::SimpleContactPresen
 }
 
 // Called by the presence interface (that one without "simple" prefix) if any presences were updated
-void PresenceManager::slotPresencesUpdate( const Telepathy::ContactPresences& presences )
+void PresenceManager::slotPresencesUpdate( const Tp::ContactPresences& presences )
 {
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "PresenceManager::slotPresencesUpdate()";
@@ -511,7 +511,7 @@ void PresenceManager::slotPresencesUpdate( const Telepathy::ContactPresences& pr
     {
         qDebug() << "Contact ID  : "  << key
                  << "LastActivity: "  << presences.value( key ).lastActivity;
-        Telepathy::MultipleStatusMap statuses = presences.value( key ).statuses; // QMap<QString, QVariantMap>
+        Tp::MultipleStatusMap statuses = presences.value( key ).statuses; // QMap<QString, QVariantMap>
         QList<QString> status_keys = statuses.keys();
         foreach( QString status_key, status_keys )
         {
@@ -537,7 +537,7 @@ void PresenceManager::init()
         return;
     }
     
-    Telepathy::registerTypes();
+    Tp::registerTypes();
     QDBusPendingReply<QStringList> interfaces_reply = d->m_pConnectionInterface->GetInterfaces();
     interfaces_reply.waitForFinished();
 
@@ -584,14 +584,14 @@ void PresenceManager::init()
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug( "PresenceManager::init(): Connection Manager provides the Interface \"SimplePresence\". I will use this one!" );
 #endif
-        d->m_pSimplePresenceInterface = new Telepathy::Client::ConnectionInterfaceSimplePresenceInterface( d->m_pConnectionInterface->service(),
+        d->m_pSimplePresenceInterface = new Tp::Client::ConnectionInterfaceSimplePresenceInterface( d->m_pConnectionInterface->service(),
                                                                                                            d->m_pConnectionInterface->path(),
                                                                                                            this );
         Q_ASSERT( d->m_pSimplePresenceInterface );
         Q_ASSERT( d->m_pSimplePresenceInterface->isValid() );
 
-        connect( d->m_pSimplePresenceInterface, SIGNAL( PresencesChanged( const Telepathy::SimpleContactPresences& ) ),
-                 this, SLOT( slotPresencesChanged( const Telepathy::SimpleContactPresences& ) ) );
+        connect( d->m_pSimplePresenceInterface, SIGNAL( PresencesChanged( const Tp::SimpleContactPresences& ) ),
+                 this, SLOT( slotPresencesChanged( const Tp::SimpleContactPresences& ) ) );
 
         return;
     }
@@ -601,14 +601,14 @@ void PresenceManager::init()
 #ifdef ENABLE_DEBUG_OUTPUT_
         qDebug( "PresenceManager::init(): Connection Manager provides the Interface \"Presence\". I will use this one!" );
 #endif
-        d->m_pPresenceInterface = new Telepathy::Client::ConnectionInterfacePresenceInterface( d->m_pConnectionInterface->service(),
+        d->m_pPresenceInterface = new Tp::Client::ConnectionInterfacePresenceInterface( d->m_pConnectionInterface->service(),
                                                                                                d->m_pConnectionInterface->path(),
                                                                                                this );
         Q_ASSERT( d->m_pPresenceInterface );
         Q_ASSERT( d->m_pPresenceInterface->isValid() );
 
-        connect( d->m_pPresenceInterface, SIGNAL( PresenceUpdate(const Telepathy::ContactPresences& ) ),
-                 this, SLOT( slotPresencesUpdate( const Telepathy::ContactPresences& ) ) );
+        connect( d->m_pPresenceInterface, SIGNAL( PresenceUpdate(const Tp::ContactPresences& ) ),
+                 this, SLOT( slotPresencesUpdate( const Tp::ContactPresences& ) ) );
 
         return;
 

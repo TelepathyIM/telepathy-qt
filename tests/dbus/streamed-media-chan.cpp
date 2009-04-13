@@ -1,12 +1,12 @@
 #include <QtCore/QDebug>
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/ContactManager>
-#include <TelepathyQt4/Client/PendingChannel>
-#include <TelepathyQt4/Client/PendingContacts>
-#include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/StreamedMediaChannel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingChannel>
+#include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/StreamedMediaChannel>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
@@ -14,7 +14,7 @@
 #include <tests/lib/callable/conn.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy::Client;
+using namespace Tp;
 
 class TestStreamedMediaChan : public Test
 {
@@ -26,24 +26,24 @@ public:
     { }
 
 protected Q_SLOTS:
-    void expectRequestContactsFinished(Telepathy::Client::PendingOperation *);
-    void expectCreateChannelFinished(Telepathy::Client::PendingOperation *);
-    void expectRequestStreamsFinished(Telepathy::Client::PendingOperation *);
+    void expectRequestContactsFinished(Tp::PendingOperation *);
+    void expectCreateChannelFinished(Tp::PendingOperation *);
+    void expectRequestStreamsFinished(Tp::PendingOperation *);
     void onGroupMembersChanged(
-            const Telepathy::Client::Contacts &,
-            const Telepathy::Client::Contacts &,
-            const Telepathy::Client::Contacts &,
-            const Telepathy::Client::Contacts &,
-            const Telepathy::Client::Channel::GroupMemberChangeDetails &);
-    void onStreamRemoved(const Telepathy::Client::MediaStreamPtr &);
-    void onStreamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
-            Telepathy::MediaStreamDirection,
-            Telepathy::MediaStreamPendingSend);
-    void onStreamStateChanged(const Telepathy::Client::MediaStreamPtr &,
-            Telepathy::MediaStreamState);
-    void onChanInvalidated(Telepathy::Client::DBusProxy *,
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Channel::GroupMemberChangeDetails &);
+    void onStreamRemoved(const Tp::MediaStreamPtr &);
+    void onStreamDirectionChanged(const Tp::MediaStreamPtr &,
+            Tp::MediaStreamDirection,
+            Tp::MediaStreamPendingSend);
+    void onStreamStateChanged(const Tp::MediaStreamPtr &,
+            Tp::MediaStreamState);
+    void onChanInvalidated(Tp::DBusProxy *,
             const QString &, const QString &);
-    void onNewChannels(const Telepathy::ChannelDetailsList &);
+    void onNewChannels(const Tp::ChannelDetailsList &);
 
 private Q_SLOTS:
     void initTestCase();
@@ -74,10 +74,10 @@ private:
     Channel::GroupMemberChangeDetails mDetails;
     MediaStreamPtr mStreamRemovedReturn;
     MediaStreamPtr mSDCStreamReturn;
-    Telepathy::MediaStreamDirection mSDCDirectionReturn;
-    Telepathy::MediaStreamPendingSend mSDCPendingReturn;
+    Tp::MediaStreamDirection mSDCDirectionReturn;
+    Tp::MediaStreamPendingSend mSDCPendingReturn;
     MediaStreamPtr mSSCStreamReturn;
-    Telepathy::MediaStreamState mSSCStateReturn;
+    Tp::MediaStreamState mSSCStateReturn;
 };
 
 void TestStreamedMediaChan::expectRequestContactsFinished(PendingOperation *op)
@@ -181,8 +181,8 @@ void TestStreamedMediaChan::onStreamRemoved(const MediaStreamPtr &stream)
 }
 
 void TestStreamedMediaChan::onStreamDirectionChanged(const MediaStreamPtr &stream,
-        Telepathy::MediaStreamDirection direction,
-        Telepathy::MediaStreamPendingSend pendingSend)
+        Tp::MediaStreamDirection direction,
+        Tp::MediaStreamPendingSend pendingSend)
 {
     qDebug() << "stream" << stream.data() << "direction changed to" << direction;
     mSDCStreamReturn = stream;
@@ -192,7 +192,7 @@ void TestStreamedMediaChan::onStreamDirectionChanged(const MediaStreamPtr &strea
 }
 
 void TestStreamedMediaChan::onStreamStateChanged(const MediaStreamPtr &stream,
-        Telepathy::MediaStreamState state)
+        Tp::MediaStreamState state)
 {
     qDebug() << "stream" << stream.data() << "state changed to" << state;
     mSSCStreamReturn = stream;
@@ -200,17 +200,17 @@ void TestStreamedMediaChan::onStreamStateChanged(const MediaStreamPtr &stream,
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::onChanInvalidated(Telepathy::Client::DBusProxy *proxy,
+void TestStreamedMediaChan::onChanInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
     qDebug() << "chan invalidated:" << errorName << "-" << errorMessage;
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::onNewChannels(const Telepathy::ChannelDetailsList &channels)
+void TestStreamedMediaChan::onNewChannels(const Tp::ChannelDetailsList &channels)
 {
     qDebug() << "new channels";
-    foreach (const Telepathy::ChannelDetails &details, channels) {
+    foreach (const Tp::ChannelDetails &details, channels) {
         QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
         qDebug() << " channelType:" << channelType;
@@ -262,8 +262,8 @@ void TestStreamedMediaChan::initTestCase()
     QCOMPARE(mConn->isReady(), false);
 
     QVERIFY(connect(mConn->requestConnect(Connection::FeatureSelfContact),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
     QCOMPARE(static_cast<uint>(mConn->status()),
@@ -282,17 +282,17 @@ void TestStreamedMediaChan::init()
     mChangedRemoved.clear();
     mStreamRemovedReturn.reset();
     mSDCStreamReturn.reset();
-    mSDCDirectionReturn = (Telepathy::MediaStreamDirection) -1;
-    mSDCPendingReturn = (Telepathy::MediaStreamPendingSend) -1;
-    mSSCStateReturn = (Telepathy::MediaStreamState) -1;
+    mSDCDirectionReturn = (Tp::MediaStreamDirection) -1;
+    mSDCPendingReturn = (Tp::MediaStreamPendingSend) -1;
+    mSSCStateReturn = (Tp::MediaStreamState) -1;
     mSSCStreamReturn.reset();
 }
 
 void TestStreamedMediaChan::testOutgoingCall()
 {
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "alice"),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
@@ -302,18 +302,18 @@ void TestStreamedMediaChan::testOutgoingCall()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeContact);
+                   Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureStreams));
 
@@ -326,38 +326,38 @@ void TestStreamedMediaChan::testOutgoingCall()
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &)),
                     SLOT(onGroupMembersChanged(
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Channel::GroupMemberChangeDetails &))));
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &))));
 
     // RequestStreams with bad type must fail
-    QVERIFY(connect(mChan->requestStream(otherContact, (Telepathy::MediaStreamType) -1),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Telepathy::Client::PendingOperation*))));
+    QVERIFY(connect(mChan->requestStream(otherContact, (Tp::MediaStreamType) -1),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 2);
     QCOMPARE(mRequestStreamsReturn.size(), 0);
 
     // Request audio stream
     QVERIFY(connect(mChan->requestStreams(otherContact,
-                        QList<Telepathy::MediaStreamType>() << Telepathy::MediaStreamTypeAudio),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Telepathy::Client::PendingOperation*))));
+                        QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mRequestStreamsReturn.size(), 1);
     MediaStreamPtr stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
-    QCOMPARE(stream->type(), Telepathy::MediaStreamTypeAudio);
-    QCOMPARE(stream->state(), Telepathy::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Telepathy::MediaStreamDirectionSend);
-    QCOMPARE(stream->pendingSend(), Telepathy::MediaStreamPendingRemoteSend);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
+    QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
+    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionSend);
+    QCOMPARE(stream->pendingSend(), Tp::MediaStreamPendingRemoteSend);
 
     QCOMPARE(mChan->streams().size(), 1);
     QVERIFY(mChan->streams().contains(stream));
@@ -378,34 +378,34 @@ void TestStreamedMediaChan::testOutgoingCall()
     QVERIFY(mChan->groupContacts().contains(otherContact));
 
     // Request video stream
-    QVERIFY(connect(mChan->requestStream(otherContact, Telepathy::MediaStreamTypeVideo),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Telepathy::Client::PendingOperation*))));
+    QVERIFY(connect(mChan->requestStream(otherContact, Tp::MediaStreamTypeVideo),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mRequestStreamsReturn.size(), 1);
     stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
-    QCOMPARE(stream->type(), Telepathy::MediaStreamTypeVideo);
-    QCOMPARE(stream->state(), Telepathy::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Telepathy::MediaStreamDirectionSend);
-    QCOMPARE(stream->pendingSend(), Telepathy::MediaStreamPendingRemoteSend);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeVideo);
+    QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
+    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionSend);
+    QCOMPARE(stream->pendingSend(), Tp::MediaStreamPendingRemoteSend);
 
     QCOMPARE(mChan->streams().size(), 2);
     QVERIFY(mChan->streams().contains(stream));
 
-    QCOMPARE(mChan->streamsForType(Telepathy::MediaStreamTypeAudio).size(), 1);
-    QCOMPARE(mChan->streamsForType(Telepathy::MediaStreamTypeVideo).size(), 1);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeAudio).size(), 1);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeVideo).size(), 1);
 
     // test stream removal
-    stream = mChan->streamsForType(Telepathy::MediaStreamTypeAudio).first();
+    stream = mChan->streamsForType(Tp::MediaStreamTypeAudio).first();
     QVERIFY(stream);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(streamRemoved(const Telepathy::Client::MediaStreamPtr &)),
-                    SLOT(onStreamRemoved(const Telepathy::Client::MediaStreamPtr &))));
+                    SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)),
+                    SLOT(onStreamRemoved(const Tp::MediaStreamPtr &))));
     QVERIFY(connect(mChan->removeStream(stream),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     if (mChan->streams().size() == 2) {
         // wait stream removed signal
@@ -413,28 +413,28 @@ void TestStreamedMediaChan::testOutgoingCall()
     }
     QCOMPARE(mStreamRemovedReturn, stream);
     QCOMPARE(mChan->streams().size(), 1);
-    QCOMPARE(mChan->streamsForType(Telepathy::MediaStreamTypeAudio).size(), 0);
-    QCOMPARE(mChan->streamsForType(Telepathy::MediaStreamTypeVideo).size(), 1);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeAudio).size(), 0);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeVideo).size(), 1);
 
     // test stream direction/state changed
-    stream = mChan->streamsForType(Telepathy::MediaStreamTypeVideo).first();
+    stream = mChan->streamsForType(Tp::MediaStreamTypeVideo).first();
     QVERIFY(stream);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(streamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
-                                                  Telepathy::MediaStreamDirection,
-                                                  Telepathy::MediaStreamPendingSend)),
-                    SLOT(onStreamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
-                                                  Telepathy::MediaStreamDirection,
-                                                  Telepathy::MediaStreamPendingSend))));
+                    SIGNAL(streamDirectionChanged(const Tp::MediaStreamPtr &,
+                                                  Tp::MediaStreamDirection,
+                                                  Tp::MediaStreamPendingSend)),
+                    SLOT(onStreamDirectionChanged(const Tp::MediaStreamPtr &,
+                                                  Tp::MediaStreamDirection,
+                                                  Tp::MediaStreamPendingSend))));
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(streamStateChanged(const Telepathy::Client::MediaStreamPtr &,
-                                              Telepathy::MediaStreamState)),
-                    SLOT(onStreamStateChanged(const Telepathy::Client::MediaStreamPtr &,
-                                              Telepathy::MediaStreamState))));
-    QVERIFY(connect(stream->requestDirection(Telepathy::MediaStreamDirectionReceive),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(streamStateChanged(const Tp::MediaStreamPtr &,
+                                              Tp::MediaStreamState)),
+                    SLOT(onStreamStateChanged(const Tp::MediaStreamPtr &,
+                                              Tp::MediaStreamState))));
+    QVERIFY(connect(stream->requestDirection(Tp::MediaStreamDirectionReceive),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     if (!mSDCStreamReturn) {
         // wait direction and state changed signal
@@ -442,11 +442,11 @@ void TestStreamedMediaChan::testOutgoingCall()
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mSDCStreamReturn, stream);
-    QVERIFY(mSDCDirectionReturn & Telepathy::MediaStreamDirectionReceive);
-    QVERIFY(stream->direction() & Telepathy::MediaStreamDirectionReceive);
+    QVERIFY(mSDCDirectionReturn & Tp::MediaStreamDirectionReceive);
+    QVERIFY(stream->direction() & Tp::MediaStreamDirectionReceive);
     QCOMPARE(stream->pendingSend(), mSDCPendingReturn);
     QCOMPARE(mSSCStreamReturn, stream);
-    QCOMPARE(mSSCStateReturn, Telepathy::MediaStreamStateConnected);
+    QCOMPARE(mSSCStateReturn, Tp::MediaStreamStateConnected);
 }
 
 void TestStreamedMediaChan::testOutgoingCallBusy()
@@ -454,8 +454,8 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
     // This identifier contains the magic string (busy), which means the example
     // will simulate rejection of the call as busy rather than accepting it.
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "alice (busy)"),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
@@ -465,18 +465,18 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeContact);
+                   Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureStreams));
 
@@ -489,15 +489,15 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
 
     // Request audio stream
     QVERIFY(connect(mChan->requestStreams(otherContact,
-                        QList<Telepathy::MediaStreamType>() << Telepathy::MediaStreamTypeAudio),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Telepathy::Client::PendingOperation*))));
+                        QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                    SIGNAL(invalidated(Tp::DBusProxy *,
                                        const QString &, const QString &)),
-                    SLOT(onChanInvalidated(Telepathy::Client::DBusProxy *,
+                    SLOT(onChanInvalidated(Tp::DBusProxy *,
                                            const QString &, const QString &))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->groupContacts().size(), 0);
@@ -511,8 +511,8 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     // This identifier contains the magic string (no answer), which means the example
     // will never answer.
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "alice (no answer)"),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
@@ -522,18 +522,18 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeContact);
+                   Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureStreams));
 
@@ -546,9 +546,9 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
 
     // Request audio stream
     QVERIFY(connect(mChan->requestStreams(otherContact,
-                        QList<Telepathy::MediaStreamType>() << Telepathy::MediaStreamTypeAudio),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Telepathy::Client::PendingOperation*))));
+                        QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     /* After the initial flurry of D-Bus messages, alice still hasn't answered */
@@ -556,17 +556,17 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &)),
                     SLOT(onGroupMembersChanged(
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Channel::GroupMemberChangeDetails &))));
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &))));
     // wait the contact to appear on RP
     while (mChan->groupRemotePendingContacts().size() == 0) {
         mLoop->processEvents();
@@ -579,9 +579,9 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     mChan->requestClose();
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                    SIGNAL(invalidated(Tp::DBusProxy *,
                                        const QString &, const QString &)),
-                    SLOT(onChanInvalidated(Telepathy::Client::DBusProxy *,
+                    SLOT(onChanInvalidated(Tp::DBusProxy *,
                                            const QString &, const QString &))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->groupContacts().size(), 0);
@@ -595,8 +595,8 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
     // This identifier contains the magic string (terminate), which means the example
     // will simulate answering the call but then terminating it.
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "alice (terminate)"),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestContactsFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
@@ -606,18 +606,18 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeContact);
+                   Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureStreams));
 
@@ -630,23 +630,23 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Channel::GroupMemberChangeDetails &)),
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &)),
                     SLOT(onGroupMembersChanged(
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Contacts &,
-                            const Telepathy::Client::Channel::GroupMemberChangeDetails &))));
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &))));
 
     // Request audio stream
     QVERIFY(connect(mChan->requestStreams(otherContact,
-                        QList<Telepathy::MediaStreamType>() << Telepathy::MediaStreamTypeAudio),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Telepathy::Client::PendingOperation*))));
+                        QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     // wait the contact to appear on RP
@@ -666,9 +666,9 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
 
     // wait the contact to terminate the call
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                    SIGNAL(invalidated(Tp::DBusProxy *,
                                        const QString &, const QString &)),
-                    SLOT(onChanInvalidated(Telepathy::Client::DBusProxy *,
+                    SLOT(onChanInvalidated(Tp::DBusProxy *,
                                            const QString &, const QString &))));
     QCOMPARE(mLoop->exec(), 0);
 }
@@ -678,8 +678,8 @@ void TestStreamedMediaChan::testIncomingCall()
 {
     mConn->setSelfPresence("away", "preparing for a test");
     QVERIFY(connect(mConn->requestsInterface(),
-                    SIGNAL(NewChannels(const Telepathy::ChannelDetailsList&)),
-                    SLOT(onNewChannels(const Telepathy::ChannelDetailsList&))));
+                    SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
+                    SLOT(onNewChannels(const Tp::ChannelDetailsList&))));
     mConn->setSelfPresence("available", "call me?");
     QCOMPARE(mLoop->exec(), 0);
 
@@ -687,8 +687,8 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(mChan->streams().size(), 0);
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureStreams));
 
@@ -704,8 +704,8 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(otherContact, mChan->initiatorContact());
 
     QVERIFY(connect(mChan->acceptCall(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->groupContacts().size(), 2);
     QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
@@ -716,44 +716,44 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(mChan->streams().size(), 1);
     MediaStreamPtr stream = mChan->streams().first();
     QCOMPARE(stream->channel(), mChan);
-    QCOMPARE(stream->type(), Telepathy::MediaStreamTypeAudio);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
 
     // RequestStreams with bad type must fail
-    QVERIFY(connect(mChan->requestStream(otherContact, (Telepathy::MediaStreamType) -1),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Telepathy::Client::PendingOperation*))));
+    QVERIFY(connect(mChan->requestStream(otherContact, (Tp::MediaStreamType) -1),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 2);
     QCOMPARE(mRequestStreamsReturn.size(), 0);
 
     // Request video stream
-    QVERIFY(connect(mChan->requestStream(otherContact, Telepathy::MediaStreamTypeVideo),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Telepathy::Client::PendingOperation*))));
+    QVERIFY(connect(mChan->requestStream(otherContact, Tp::MediaStreamTypeVideo),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mRequestStreamsReturn.size(), 1);
     stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
-    QCOMPARE(stream->type(), Telepathy::MediaStreamTypeVideo);
-    QCOMPARE(stream->state(), Telepathy::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Telepathy::MediaStreamDirectionSend);
-    QCOMPARE(stream->pendingSend(), Telepathy::MediaStreamPendingRemoteSend);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeVideo);
+    QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
+    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionSend);
+    QCOMPARE(stream->pendingSend(), Tp::MediaStreamPendingRemoteSend);
 
     QCOMPARE(mChan->streams().size(), 2);
     QVERIFY(mChan->streams().contains(stream));
 
-    QCOMPARE(mChan->streamsForType(Telepathy::MediaStreamTypeAudio).size(), 1);
-    QCOMPARE(mChan->streamsForType(Telepathy::MediaStreamTypeVideo).size(), 1);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeAudio).size(), 1);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeVideo).size(), 1);
 
     // test stream removal
-    stream = mChan->streamsForType(Telepathy::MediaStreamTypeAudio).first();
+    stream = mChan->streamsForType(Tp::MediaStreamTypeAudio).first();
     QVERIFY(stream);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(streamRemoved(const Telepathy::Client::MediaStreamPtr &)),
-                    SLOT(onStreamRemoved(const Telepathy::Client::MediaStreamPtr &))));
+                    SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)),
+                    SLOT(onStreamRemoved(const Tp::MediaStreamPtr &))));
     QVERIFY(connect(mChan->removeStreams(MediaStreams() << stream),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     if (mChan->streams().size() == 2) {
         // wait stream removed signal
@@ -761,28 +761,28 @@ void TestStreamedMediaChan::testIncomingCall()
     }
     QCOMPARE(mStreamRemovedReturn, stream);
     QCOMPARE(mChan->streams().size(), 1);
-    QCOMPARE(mChan->streamsForType(Telepathy::MediaStreamTypeAudio).size(), 0);
-    QCOMPARE(mChan->streamsForType(Telepathy::MediaStreamTypeVideo).size(), 1);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeAudio).size(), 0);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeVideo).size(), 1);
 
     // test stream direction/state changed
-    stream = mChan->streamsForType(Telepathy::MediaStreamTypeVideo).first();
+    stream = mChan->streamsForType(Tp::MediaStreamTypeVideo).first();
     QVERIFY(stream);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(streamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
-                                                  Telepathy::MediaStreamDirection,
-                                                  Telepathy::MediaStreamPendingSend)),
-                    SLOT(onStreamDirectionChanged(const Telepathy::Client::MediaStreamPtr &,
-                                                  Telepathy::MediaStreamDirection,
-                                                  Telepathy::MediaStreamPendingSend))));
+                    SIGNAL(streamDirectionChanged(const Tp::MediaStreamPtr &,
+                                                  Tp::MediaStreamDirection,
+                                                  Tp::MediaStreamPendingSend)),
+                    SLOT(onStreamDirectionChanged(const Tp::MediaStreamPtr &,
+                                                  Tp::MediaStreamDirection,
+                                                  Tp::MediaStreamPendingSend))));
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(streamStateChanged(const Telepathy::Client::MediaStreamPtr &,
-                                              Telepathy::MediaStreamState)),
-                    SLOT(onStreamStateChanged(const Telepathy::Client::MediaStreamPtr &,
-                                              Telepathy::MediaStreamState))));
+                    SIGNAL(streamStateChanged(const Tp::MediaStreamPtr &,
+                                              Tp::MediaStreamState)),
+                    SLOT(onStreamStateChanged(const Tp::MediaStreamPtr &,
+                                              Tp::MediaStreamState))));
     QVERIFY(connect(stream->requestDirection(false, true),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     if (!mSDCStreamReturn) {
         // wait direction and state changed signal
@@ -790,11 +790,11 @@ void TestStreamedMediaChan::testIncomingCall()
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mSDCStreamReturn, stream);
-    QVERIFY(mSDCDirectionReturn & Telepathy::MediaStreamDirectionSend);
-    QVERIFY(stream->direction() & Telepathy::MediaStreamDirectionSend);
+    QVERIFY(mSDCDirectionReturn & Tp::MediaStreamDirectionSend);
+    QVERIFY(stream->direction() & Tp::MediaStreamDirectionSend);
     QCOMPARE(stream->pendingSend(), mSDCPendingReturn);
     QCOMPARE(mSSCStreamReturn, stream);
-    QCOMPARE(mSSCStateReturn, Telepathy::MediaStreamStateConnected);
+    QCOMPARE(mSSCStateReturn, Tp::MediaStreamStateConnected);
 }
 
 void TestStreamedMediaChan::cleanup()
@@ -807,13 +807,13 @@ void TestStreamedMediaChan::cleanupTestCase()
 {
     if (mConn) {
         QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                            SIGNAL(invalidated(Tp::DBusProxy *,
                                                const QString &, const QString &)),
                             mLoop,
                             SLOT(quit())));

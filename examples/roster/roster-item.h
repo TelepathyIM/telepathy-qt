@@ -22,7 +22,7 @@
 #define _TelepathyQt4_examples_roster_roster_item_h_HEADER_GUARD_
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Contact>
 
 #include <QListWidgetItem>
 #include <QString>
@@ -32,11 +32,11 @@ class RosterItem : public QObject, public QListWidgetItem
     Q_OBJECT
 
 public:
-    RosterItem(const Telepathy::Client::ContactPtr &contact,
+    RosterItem(const Tp::ContactPtr &contact,
             QListWidget *parent = 0);
     ~RosterItem();
 
-    Telepathy::Client::ContactPtr contact() const { return mContact; }
+    Tp::ContactPtr contact() const { return mContact; }
 
 Q_SIGNALS:
     void changed();
@@ -45,7 +45,7 @@ private Q_SLOTS:
     void onContactChanged();
 
 private:
-    Telepathy::Client::ContactPtr mContact;
+    Tp::ContactPtr mContact;
 };
 
 #endif

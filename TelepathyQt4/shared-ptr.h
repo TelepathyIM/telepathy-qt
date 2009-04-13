@@ -28,7 +28,7 @@
 
 #include <QObject>
 
-namespace Telepathy
+namespace Tp
 {
 
 class RefCounted;
@@ -200,6 +200,6 @@ private:
     WeakData *wd;
 };
 
-} // Telepathy
+} // Tp
 
 #endif

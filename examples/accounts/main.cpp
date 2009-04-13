@@ -10,9 +10,9 @@ int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
 
-    Telepathy::registerTypes();
-    Telepathy::enableDebug(true);
-    Telepathy::enableWarnings(true);
+    Tp::registerTypes();
+    Tp::enableDebug(true);
+    Tp::enableWarnings(true);
 
     AccountsWindow w;
     w.show();

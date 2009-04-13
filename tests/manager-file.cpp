@@ -3,7 +3,7 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ManagerFile>
 
-using namespace Telepathy;
+using namespace Tp;
 
 bool containsParam(const ParamSpecList &params, const char *name);
 const ParamSpec *getParam(const ParamSpecList &params, const QString &name);

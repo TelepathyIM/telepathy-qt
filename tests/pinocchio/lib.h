@@ -4,7 +4,7 @@
 
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/Constants>
 
 #include "tests/lib/test.h"

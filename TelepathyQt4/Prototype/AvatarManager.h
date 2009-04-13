@@ -28,7 +28,7 @@
 
 #include <TelepathyQt4/Types>
 
-namespace Telepathy
+namespace Tp
 {
     namespace Client
     {
@@ -152,7 +152,7 @@ protected:
      * Constructor. The capabilities manager cannot be instantiated directly. Use Connection::AvatarManager() for it!
      */
     AvatarManager( TpPrototype::Connection* connection,
-                   Telepathy::Client::ConnectionInterface* interface,
+                   Tp::Client::ConnectionInterface* interface,
                    QObject* parent = NULL );
     ~AvatarManager();
 
@@ -161,7 +161,7 @@ protected slots:
     void slotAvatarRetrieved( uint contact, const QString& token, const QByteArray& avatar, const QString& type );
  
 private:
-    void init( TpPrototype::Connection* connection, Telepathy::Client::ConnectionInterface* interface );
+    void init( TpPrototype::Connection* connection, Tp::Client::ConnectionInterface* interface );
     
     TpPrototype::AvatarManagerPrivate * const d;
     friend class Connection;

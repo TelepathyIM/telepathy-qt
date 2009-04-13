@@ -24,10 +24,10 @@
 #include "account-item.h"
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Account>
-#include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingReady>
 
 #include <QCheckBox>
 #include <QDebug>
@@ -41,10 +41,10 @@ AccountsWindow::AccountsWindow(QWidget *parent)
 {
     setupGui();
 
-    mAM = Telepathy::Client::AccountManager::create();
+    mAM = Tp::AccountManager::create();
     connect(mAM->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onAMReady(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onAMReady(Tp::PendingOperation *)));
     connect(mAM.data(),
             SIGNAL(accountCreated(const QString &)),
             SLOT(onAccountCreated(const QString &)));
@@ -78,7 +78,7 @@ void AccountsWindow::setupGui()
     setCentralWidget(mTable);
 }
 
-void AccountsWindow::onAMReady(Telepathy::Client::PendingOperation *op)
+void AccountsWindow::onAMReady(Tp::PendingOperation *op)
 {
     mTable->setRowCount(mAM->validAccountPaths().count());
 

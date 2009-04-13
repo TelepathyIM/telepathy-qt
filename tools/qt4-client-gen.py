@@ -39,7 +39,7 @@ class Generator(object):
             self.mainiface = opts.get('--mainiface', None)
             self.must_define = opts.get('--must-define', None)
             self.dbus_proxy = opts.get('--dbus-proxy',
-                    'Telepathy::Client::DBusProxy')
+                    'Tp::DBusProxy')
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
@@ -84,8 +84,8 @@ class Generator(object):
 
 #include <QDBusPendingReply>
 
-#include <TelepathyQt4/Client/AbstractInterface>
-#include <TelepathyQt4/Client/DBusProxy>
+#include <TelepathyQt4/AbstractInterface>
+#include <TelepathyQt4/DBusProxy>
 
 // basically the same as GLib's G_GNUC_DEPRECATED
 #ifndef TELEPATHY_GNUC_DEPRECATED
@@ -148,7 +148,7 @@ namespace %s
  *
  * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
  */
-class %(name)s : public Telepathy::Client::AbstractInterface
+class %(name)s : public Tp::AbstractInterface
 {
     Q_OBJECT
 
@@ -198,12 +198,12 @@ public:
 
         self.b("""
 %(name)s::%(name)s(const QString& busName, const QString& objectPath, QObject *parent)
-    : Telepathy::Client::AbstractInterface(busName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent)
+    : Tp::AbstractInterface(busName, objectPath, staticInterfaceName(), QDBusConnection::sessionBus(), parent)
 {
 }
 
 %(name)s::%(name)s(const QDBusConnection& connection, const QString& busName, const QString& objectPath, QObject *parent)
-    : Telepathy::Client::AbstractInterface(busName, objectPath, staticInterfaceName(), connection, parent)
+    : Tp::AbstractInterface(busName, objectPath, staticInterfaceName(), connection, parent)
 {
 }
 """ % {'name' : name})
@@ -222,14 +222,14 @@ public:
 
         self.b("""
 %(name)s::%(name)s(%(dbus_proxy)s *proxy)
-    : Telepathy::Client::AbstractInterface(proxy, staticInterfaceName())
+    : Tp::AbstractInterface(proxy, staticInterfaceName())
 {
 }
 """ % {'name' : name,
        'dbus_proxy' : self.dbus_proxy})
 
         # Main interface
-        mainiface = self.mainiface or 'Telepathy::Client::AbstractInterface'
+        mainiface = self.mainiface or 'Tp::AbstractInterface'
 
         if mainiface != self.namespace + '::' + name:
             self.h("""
@@ -255,12 +255,12 @@ public:
 
             self.b("""
 %(name)s::%(name)s(const %(mainiface)s& mainInterface)
-    : Telepathy::Client::AbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), mainInterface.parent())
+    : Tp::AbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), mainInterface.parent())
 {
 }
 
 %(name)s::%(name)s(const %(mainiface)s& mainInterface, QObject *parent)
-    : Telepathy::Client::AbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), parent)
+    : Tp::AbstractInterface(mainInterface.service(), mainInterface.path(), staticInterfaceName(), mainInterface.connection(), parent)
 {
 }
 """ % {'name' : name,
@@ -301,11 +301,11 @@ Q_SIGNALS:\
         # specific signals in order to remove its signal match rules)
         self.h("""
 protected:
-    virtual void invalidate(Telepathy::Client::DBusProxy *, const QString &, const QString &);
+    virtual void invalidate(Tp::DBusProxy *, const QString &, const QString &);
 """)
 
         self.b("""
-void %(name)s::invalidate(Telepathy::Client::DBusProxy *proxy,
+void %(name)s::invalidate(Tp::DBusProxy *proxy,
         const QString &error, const QString &message)
 {
 """ % {'name' : name})
@@ -314,7 +314,7 @@ void %(name)s::invalidate(Telepathy::Client::DBusProxy *proxy,
             self.do_signal_disconnect(signal)
 
         self.b("""
-    Telepathy::Client::AbstractInterface::invalidate(proxy, error, message);
+    Tp::AbstractInterface::invalidate(proxy, error, message);
 }
 """)
 

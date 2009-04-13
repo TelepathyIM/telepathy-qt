@@ -24,15 +24,13 @@
 
 #include <QMainWindow>
 
-#include <TelepathyQt4/Client/Connection>
+#include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Types>
 
-namespace Telepathy {
-namespace Client {
+namespace Tp {
 class ConnectionManager;
 class DBusProxy;
 class PendingOperation;
-}
 }
 
 class CallHandler;
@@ -48,18 +46,18 @@ public:
     virtual ~CallWindow();
 
 private Q_SLOTS:
-    void onCMReady(Telepathy::Client::PendingOperation *);
-    void onConnectionCreated(Telepathy::Client::PendingOperation *);
-    void onConnectionConnected(Telepathy::Client::PendingOperation *);
-    void onConnectionInvalidated(Telepathy::Client::DBusProxy *,
+    void onCMReady(Tp::PendingOperation *);
+    void onConnectionCreated(Tp::PendingOperation *);
+    void onConnectionConnected(Tp::PendingOperation *);
+    void onConnectionInvalidated(Tp::DBusProxy *,
             const QString &, const QString &);
-    void onNewChannels(const Telepathy::ChannelDetailsList &);
+    void onNewChannels(const Tp::ChannelDetailsList &);
 
 private:
     void setupGui();
 
-    Telepathy::Client::ConnectionManagerPtr mCM;
-    Telepathy::Client::ConnectionPtr mConn;
+    Tp::ConnectionManagerPtr mCM;
+    Tp::ConnectionPtr mConn;
     QString mUsername;
     QString mPassword;
     CallHandler *mCallHandler;

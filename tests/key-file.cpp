@@ -2,7 +2,7 @@
 
 #include <TelepathyQt4/KeyFile>
 
-using namespace Telepathy;
+using namespace Tp;
 
 class TestKeyFile : public QObject
 {

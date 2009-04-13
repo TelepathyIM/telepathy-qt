@@ -6,10 +6,10 @@
 
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Debug>
-#include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/DBus>
 
-using Telepathy::Client::DBus::DBusDaemonInterface;
-using Telepathy::Client::PendingOperation;
+using Tp::Client::DBus::DBusDaemonInterface;
+using Tp::PendingOperation;
 
 PinocchioTest::PinocchioTest(QObject *parent)
     : Test(parent)

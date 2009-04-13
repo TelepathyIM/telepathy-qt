@@ -26,8 +26,8 @@
 #include <QMetaProperty>
 
 #include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Channel>
 
 #include <TelepathyQt4/Prototype/Contact.h>
 
@@ -49,9 +49,9 @@ public:
     }
     
     QPointer<TpPrototype::Contact>                        m_pContact;
-    Telepathy::Client::ChannelTypeTextInterface*          m_pTextChannel;
-    QPointer<Telepathy::Client::ConnectionInterface>      m_pConnectionInterface;
-    Telepathy::Client::ChannelInterface*                  m_pChannelInterface;
+    Tp::Client::ChannelTypeTextInterface*          m_pTextChannel;
+    QPointer<Tp::Client::ConnectionInterface>      m_pConnectionInterface;
+    Tp::Client::ChannelInterface*                  m_pChannelInterface;
             
     bool m_isValid;
     bool m_areSignalsConnected;
@@ -68,11 +68,11 @@ private:
     }
 };
 
-ChatChannel::ChatChannel( Contact* contact, Telepathy::Client::ConnectionInterface* connectionInterface, QObject* parent ):
+ChatChannel::ChatChannel( Contact* contact, Tp::Client::ConnectionInterface* connectionInterface, QObject* parent ):
         QObject( parent ),
         d(new ChatChannelPrivate())
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
 
     d->m_pContact = contact;
     d->m_pConnectionInterface = connectionInterface;
@@ -118,9 +118,9 @@ void ChatChannel::pendingTextMessages()
         qWarning() << "ChatChannel::pendingTextMessages: Action ignored due to missing text channel!";
     }
     
-    QDBusPendingReply<Telepathy::PendingTextMessageList> reply= d->m_pTextChannel->ListPendingMessages( true );
-    const Telepathy::PendingTextMessageList chatMessages = reply.value();
-    Telepathy::PendingTextMessage messageshandle;
+    QDBusPendingReply<Tp::PendingTextMessageList> reply= d->m_pTextChannel->ListPendingMessages( true );
+    const Tp::PendingTextMessageList chatMessages = reply.value();
+    Tp::PendingTextMessage messageshandle;
     for ( int i=0; i < chatMessages.size(); i++ )
     {
         messageshandle = chatMessages.at(i);
@@ -138,7 +138,7 @@ void ChatChannel::requestTextChannel( uint handle )
 {
     QDBusPendingReply<QDBusObjectPath> reply0 =
             d->m_pConnectionInterface->RequestChannel( "org.freedesktop.Telepathy.Channel.Type.Text",
-                                             Telepathy::HandleTypeContact, handle, true );
+                                             Tp::HandleTypeContact, handle, true );
     reply0.waitForFinished();
     if (!reply0.isValid())
     {
@@ -161,10 +161,10 @@ void ChatChannel::openTextChannel(uint handle, uint handleType, const QString& c
     qDebug() << "ContactManager Channel Services Name" << channel_service_name;
     qDebug() << "ContactManager Channel Path" << channel_path;
     // This channel may never be closed!
-    d->m_pTextChannel = new Telepathy::Client::ChannelTypeTextInterface( channel_service_name,
+    d->m_pTextChannel = new Tp::Client::ChannelTypeTextInterface( channel_service_name,
                                                                      channel_path,
                                                                      this );
-    d->m_pChannelInterface = new Telepathy::Client::ChannelInterface( channel_service_name,
+    d->m_pChannelInterface = new Tp::Client::ChannelInterface( channel_service_name,
                                                                       channel_path,
                                                                       this );
     Q_ASSERT( d->m_pChannelInterface->isValid() );
@@ -204,9 +204,9 @@ void ChatChannel::openTextChannel(uint handle, uint handleType, const QString& c
         connect(d->m_pTextChannel, SIGNAL(SendError(uint , uint , uint , const QString& )),
                 this, SLOT(slotSendError(uint , uint , uint , const QString& )));
 
-    /*  QDBusPendingReply<Telepathy::PendingTextMessageList>  reply= d->m_groupTextChannel->ListPendingMessages(false);
-                                const Telepathy::PendingTextMessageList chatMessages=reply.value();
-                                Telepathy::PendingTextMessage messageshandle;
+    /*  QDBusPendingReply<Tp::PendingTextMessageList>  reply= d->m_groupTextChannel->ListPendingMessages(false);
+                                const Tp::PendingTextMessageList chatMessages=reply.value();
+                                Tp::PendingTextMessage messageshandle;
                                 for (int i=0; i<chatMessages.size(); i++)
                                 {
                                 messageshandle= chatMessages.at(i);

@@ -29,8 +29,8 @@
 #include <QMap>
 #include <QPointer>
 
-#include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/DBus>
+#include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/DBus>
 #include <TelepathyQt4/Types>
 
 #include <TelepathyQt4/Prototype/Account.h>
@@ -47,8 +47,8 @@ public:
     AccountManagerPrivate()
     { init(); }
 
-    Telepathy::Client::AccountManagerInterface* m_pInterface;
-    Telepathy::Client::DBus::PropertiesInterface* m_propertiesInterface;
+    Tp::Client::AccountManagerInterface* m_pInterface;
+    Tp::Client::DBus::PropertiesInterface* m_propertiesInterface;
     QMap<QString, QPointer<Account> >  m_validAccountHandles;
 
     void init()
@@ -56,7 +56,7 @@ public:
         m_pInterface = NULL;
     }
 
-    Telepathy::ObjectPathList validAccounts()
+    Tp::ObjectPathList validAccounts()
     {
         Q_ASSERT(m_propertiesInterface);
 
@@ -68,10 +68,10 @@ public:
         {
             qWarning().nospace() << get.error().name() << ": "
                 << get.error().message();
-            return Telepathy::ObjectPathList();
+            return Tp::ObjectPathList();
         }
 
-        Telepathy::ObjectPathList paths = qdbus_cast<Telepathy::ObjectPathList>(
+        Tp::ObjectPathList paths = qdbus_cast<Tp::ObjectPathList>(
                 get.value().variant());
 
         if (paths.size() == 0)
@@ -345,8 +345,8 @@ void AccountManager::slotAccountRemoved()
 
 void AccountManager::init()
 {
-    Telepathy::registerTypes();
-    d->m_pInterface = new Telepathy::Client::AccountManagerInterface( "org.freedesktop.Telepathy.AccountManager",
+    Tp::registerTypes();
+    d->m_pInterface = new Tp::Client::AccountManagerInterface( "org.freedesktop.Telepathy.AccountManager",
                                                                            "/org/freedesktop/Telepathy/AccountManager",
                                                                            this );
     Q_ASSERT( d->m_pInterface );
@@ -359,14 +359,14 @@ void AccountManager::init()
     }
     //Q_ASSERT( d->m_pInterface->isValid() );
 
-    d->m_propertiesInterface = new Telepathy::Client::DBus::PropertiesInterface(
+    d->m_propertiesInterface = new Tp::Client::DBus::PropertiesInterface(
             "org.freedesktop.Telepathy.AccountManager",
             "/org/freedesktop/Telepathy/AccountManager",
             this);
     Q_ASSERT( d->m_propertiesInterface );
 
     // It might be better to use layzy initializing here.. (ses)
-    Telepathy::ObjectPathList account_handles = d->validAccounts();
+    Tp::ObjectPathList account_handles = d->validAccounts();
 
     foreach( const QDBusObjectPath& account_handle, account_handles )
     {

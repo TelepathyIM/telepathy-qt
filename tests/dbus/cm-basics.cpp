@@ -5,9 +5,9 @@
 
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Client/ConnectionManager>
-#include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/PendingStringList>
+#include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/dbus.h>
@@ -16,7 +16,7 @@
 #include <tests/lib/simple-manager.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy::Client;
+using namespace Tp;
 
 class TestCmBasics : public Test
 {
@@ -38,7 +38,7 @@ private Q_SLOTS:
 
 private:
     TpBaseConnectionManager *mCMService;
-    Telepathy::Client::ConnectionManagerPtr mCM;
+    Tp::ConnectionManagerPtr mCM;
 };
 
 void TestCmBasics::initTestCase()
@@ -73,15 +73,15 @@ void TestCmBasics::init()
 void TestCmBasics::testBasics()
 {
     QVERIFY(connect(mCM->becomeReady(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mCM->isReady(), true);
 
     // calling becomeReady() twice is a no-op
     QVERIFY(connect(mCM->becomeReady(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation *))));
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mCM->isReady(), true);
 

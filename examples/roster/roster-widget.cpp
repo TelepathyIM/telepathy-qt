@@ -24,12 +24,12 @@
 #include "roster-item.h"
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Contact>
-#include <TelepathyQt4/Client/ContactManager>
-#include <TelepathyQt4/Client/PendingConnection>
-#include <TelepathyQt4/Client/PendingContacts>
-#include <TelepathyQt4/Client/PendingOperation>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Contact>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingConnection>
+#include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingReady>
 
 #include <QAction>
 #include <QDebug>
@@ -44,7 +44,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-using namespace Telepathy::Client;
+using namespace Tp;
 
 RosterWidget::RosterWidget(QWidget *parent)
     : QWidget(parent)
@@ -63,8 +63,8 @@ void RosterWidget::addConnection(const ConnectionPtr &conn)
 {
     mConns.append(conn);
     connect(conn->becomeReady(Connection::FeatureRoster),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onConnectionReady(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onConnectionReady(Tp::PendingOperation *)));
 }
 
 void RosterWidget::removeConnection(const ConnectionPtr &conn)
@@ -177,7 +177,7 @@ RosterItem *RosterWidget::createItemForContact(const ContactPtr &contact,
     return new RosterItem(contact, mList);
 }
 
-void RosterWidget::onConnectionReady(Telepathy::Client::PendingOperation *op)
+void RosterWidget::onConnectionReady(Tp::PendingOperation *op)
 {
     if (op->isError()) {
         qWarning() << "Connection cannot become ready";
@@ -187,8 +187,8 @@ void RosterWidget::onConnectionReady(Telepathy::Client::PendingOperation *op)
     PendingReady *pr = qobject_cast<PendingReady *>(op);
     ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(pr->object()));
     connect(conn->contactManager(),
-            SIGNAL(presencePublicationRequested(const Telepathy::Client::Contacts &)),
-            SLOT(onPresencePublicationRequested(const Telepathy::Client::Contacts &)));
+            SIGNAL(presencePublicationRequested(const Tp::Contacts &)),
+            SLOT(onPresencePublicationRequested(const Tp::Contacts &)));
 
     qDebug() << "Connection ready";
     RosterItem *item;
@@ -236,8 +236,8 @@ void RosterWidget::onAddButtonClicked()
     PendingContacts *pcontacts = mConns.first()->contactManager()->contactsForIdentifiers(
             QStringList() << username);
     connect(pcontacts,
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onContactRetrieved(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onContactRetrieved(Tp::PendingOperation *)));
 }
 
 void RosterWidget::onAuthActionTriggered(bool checked)
@@ -303,7 +303,7 @@ void RosterWidget::onBlockActionTriggered(bool checked)
     item->contact()->block(checked);
 }
 
-void RosterWidget::onContactRetrieved(Telepathy::Client::PendingOperation *op)
+void RosterWidget::onContactRetrieved(Tp::PendingOperation *op)
 {
     PendingContacts *pcontacts = qobject_cast<PendingContacts *>(op);
     QList<ContactPtr> contacts = pcontacts->contacts();

@@ -32,7 +32,7 @@
 
 class QString;
 
-namespace Telepathy
+namespace Tp
 {
 
 class ManagerFile

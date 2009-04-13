@@ -5,9 +5,9 @@
 
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/PendingChannel>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/PendingChannel>
+#include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
@@ -15,7 +15,7 @@
 #include <tests/lib/contacts-conn.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy::Client;
+using namespace Tp;
 
 class TestConnBasics : public Test
 {
@@ -29,7 +29,7 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint, uint);
     void expectConnInvalidated();
-    void expectPresenceAvailable(const Telepathy::SimplePresence &);
+    void expectPresenceAvailable(const Tp::SimplePresence &);
 
 private Q_SLOTS:
     void initTestCase();
@@ -74,9 +74,9 @@ void TestConnBasics::expectConnInvalidated()
     mLoop->exit(0);
 }
 
-void TestConnBasics::expectPresenceAvailable(const Telepathy::SimplePresence &presence)
+void TestConnBasics::expectPresenceAvailable(const Tp::SimplePresence &presence)
 {
-    if (presence.type == Telepathy::ConnectionPresenceTypeAvailable) {
+    if (presence.type == Tp::ConnectionPresenceTypeAvailable) {
         mLoop->exit(0);
         return;
     }
@@ -127,8 +127,8 @@ void TestConnBasics::init()
 
     qDebug() << "waiting connection to become ready";
     QVERIFY(connect(mConn->becomeReady(),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
     qDebug() << "connection is now ready";
@@ -151,8 +151,8 @@ void TestConnBasics::testSimplePresence()
     Features features = Features() << Connection::FeatureSimplePresence;
     QCOMPARE(mConn->isReady(features), false);
     QVERIFY(connect(mConn->becomeReady(features),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
@@ -164,13 +164,13 @@ void TestConnBasics::cleanup()
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                            SIGNAL(invalidated(Tp::DBusProxy *,
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);

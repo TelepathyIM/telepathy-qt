@@ -2,15 +2,12 @@
 
 #include <QtTest>
 
-#include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/Constants>
 
-namespace Telepathy
-{
-namespace Client
+namespace Tp
 {
 class DBusProxy;
-}
 }
 
 class Test : public QObject
@@ -24,11 +21,11 @@ public:
     virtual ~Test();
 
     QEventLoop *mLoop;
-    void processDBusQueue(Telepathy::Client::DBusProxy *proxy);
+    void processDBusQueue(Tp::DBusProxy *proxy);
 
 protected Q_SLOTS:
     void expectSuccessfulCall(QDBusPendingCallWatcher*);
-    void expectSuccessfulCall(Telepathy::Client::PendingOperation*);
+    void expectSuccessfulCall(Tp::PendingOperation*);
 
     virtual void initTestCaseImpl();
     virtual void initImpl();

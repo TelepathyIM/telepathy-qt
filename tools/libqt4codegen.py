@@ -85,7 +85,7 @@ def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_n
         custom_type = True
 
         if external:
-            tptype = 'Telepathy::' + tptype
+            tptype = 'Tp::' + tptype
         elif explicit_own_ns:
             tptype = explicit_own_ns + '::' + tptype
 

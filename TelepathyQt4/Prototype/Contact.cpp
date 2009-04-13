@@ -25,7 +25,7 @@
 #include <QDebug>
 #include <QMetaProperty>
 
-#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Constants>
 
 #include <TelepathyQt4/Prototype/ChatChannel.h>
@@ -38,7 +38,7 @@ class TpPrototype::ContactPrivate
 {
 public:
     ContactPrivate( const uint & handle, const QString & name, Contact::ContactTypes type,
-                    Telepathy::Client::ConnectionInterface* connectionInterface, TpPrototype::ContactManager* contactManager )
+                    Tp::Client::ConnectionInterface* connectionInterface, TpPrototype::ContactManager* contactManager )
     { init(handle, name, type, connectionInterface, contactManager); }
     ~ContactPrivate()
     {}
@@ -50,16 +50,16 @@ public:
     uint                                      m_presenceType;
     QString                                   m_presenceStatus;
     QString                                   m_presenceMessage;
-    Telepathy::ContactCapabilityList          m_capabilityList;
+    Tp::ContactCapabilityList          m_capabilityList;
     TpPrototype::AvatarManager::Avatar          m_avatar;
-    Telepathy::Client::ConnectionInterface*   m_pConnectionInterface;
+    Tp::Client::ConnectionInterface*   m_pConnectionInterface;
     QPointer<TpPrototype::ChatChannel>          m_pChatChannel;
     QPointer<TpPrototype::StreamedMediaChannel> m_pStreamedMediaChannel;
     QPointer<TpPrototype::ContactManager>       m_pContactManager;
     
 private:
     void init( uint handle, const QString & name, Contact::ContactTypes type,
-               Telepathy::Client::ConnectionInterface* connectionInterface, TpPrototype::ContactManager* contactManager )
+               Tp::Client::ConnectionInterface* connectionInterface, TpPrototype::ContactManager* contactManager )
     {
         Q_ASSERT( connectionInterface );
         Q_ASSERT( contactManager );
@@ -87,7 +87,7 @@ uint Contact::telepathyHandle() const
 { return d->m_handle; }
 
 uint Contact::telepathyHandleType() const
-{ return Telepathy::HandleTypeContact; }
+{ return Tp::HandleTypeContact; }
 
 QString Contact::name() const
 { return d->m_name; }
@@ -130,10 +130,10 @@ void Contact::setPresenceMessage( QString _presenceMessage)
 QString Contact::presenceMessage()
 { return d->m_presenceMessage; }
 
-void Contact::setCapabilities( const Telepathy::ContactCapabilityList& capabilityList )
+void Contact::setCapabilities( const Tp::ContactCapabilityList& capabilityList )
 { d->m_capabilityList = capabilityList; }
 
-Telepathy::ContactCapabilityList Contact::capabilities() const
+Tp::ContactCapabilityList Contact::capabilities() const
 { return d->m_capabilityList; }
 
 void Contact::setAvatar( const TpPrototype::AvatarManager::Avatar& avatar )
@@ -141,7 +141,7 @@ void Contact::setAvatar( const TpPrototype::AvatarManager::Avatar& avatar )
     d->m_avatar = avatar;
 }
 
-Telepathy::Client::ConnectionInterface* Contact::interface()
+Tp::Client::ConnectionInterface* Contact::interface()
 {
     return d->m_pConnectionInterface;
 }
@@ -179,7 +179,7 @@ TpPrototype::ContactManager* Contact::contactManager()
 
 
 Contact::Contact( const uint & handle, const QString & url, ContactTypes type,
-                  Telepathy::Client::ConnectionInterface* connectionInterface, TpPrototype::ContactManager* contactManager ) :
+                  Tp::Client::ConnectionInterface* connectionInterface, TpPrototype::ContactManager* contactManager ) :
     QObject( contactManager ),
     d( new ContactPrivate( handle, url, type, connectionInterface, contactManager ) )
 {   

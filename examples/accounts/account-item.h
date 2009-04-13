@@ -22,16 +22,14 @@
 #define _TelepathyQt4_examples_accounts_account_item_h_HEADER_GUARD_
 
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Client/Account>
-#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/Types>
 
 #include <QString>
 
-namespace Telepathy {
-namespace Client {
+namespace Tp {
 class AccountManager;
 class PendingOperation;
-}
 }
 
 class QTableWidget;
@@ -58,30 +56,30 @@ public:
     };
     Q_ENUMS(Columns)
 
-    AccountItem(Telepathy::Client::AccountManagerPtr am, const QString &objectPath,
+    AccountItem(Tp::AccountManagerPtr am, const QString &objectPath,
                 QTableWidget *table, int row, QObject *parent = 0);
     virtual ~AccountItem();
 
     int row() const { return mRow; }
 
 private Q_SLOTS:
-    void onReady(Telepathy::Client::PendingOperation *);
+    void onReady(Tp::PendingOperation *);
     void onValidityChanged(bool);
     void onStateChanged(bool);
     void onDisplayNameChanged(const QString &);
     void onNicknameChanged(const QString &);
     void onConnectsAutomaticallyPropertyChanged(bool);
-    void onAutomaticPresenceChanged(const Telepathy::SimplePresence &);
-    void onCurrentPresenceChanged(const Telepathy::SimplePresence &);
-    void onRequestedPresenceChanged(const Telepathy::SimplePresence &);
-    void onConnectionStatusChanged(Telepathy::ConnectionStatus,
-            Telepathy::ConnectionStatusReason);
+    void onAutomaticPresenceChanged(const Tp::SimplePresence &);
+    void onCurrentPresenceChanged(const Tp::SimplePresence &);
+    void onRequestedPresenceChanged(const Tp::SimplePresence &);
+    void onConnectionStatusChanged(Tp::ConnectionStatus,
+            Tp::ConnectionStatusReason);
     void onHaveConnectionChanged(bool);
 
 private:
     void setupGui();
 
-    Telepathy::Client::AccountPtr mAcc;
+    Tp::AccountPtr mAcc;
     QTableWidget *mTable;
     int mRow;
 };

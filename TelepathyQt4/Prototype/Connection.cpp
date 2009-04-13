@@ -25,8 +25,8 @@
 #include <QDebug>
 #include <QMetaProperty>
 
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/ConnectionManager>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionManager>
 
 #include <TelepathyQt4/Prototype/Account.h>
 #include <TelepathyQt4/Prototype/AvatarManager.h>
@@ -47,9 +47,9 @@ public:
     QString                                 m_serviceName;
     QString                                 m_objectPath;
     bool                                    m_isValid;
-    Telepathy::ConnectionStatus             m_status;
-    Telepathy::ConnectionStatusReason       m_reason;
-    Telepathy::Client::ConnectionInterface* m_pInterface;
+    Tp::ConnectionStatus             m_status;
+    Tp::ConnectionStatusReason       m_reason;
+    Tp::Client::ConnectionInterface* m_pInterface;
     QPointer<ContactManager>                m_pContactManager;
     QPointer<PresenceManager>               m_pPresenceManager;
     QPointer<CapabilitiesManager>           m_pCapabilitiesManager;
@@ -60,8 +60,8 @@ public:
     void init()
     {
         m_isValid              = false; // Will be set on true after initial initialization.
-        m_status               = Telepathy::ConnectionStatusDisconnected;
-        m_reason               = Telepathy::ConnectionStatusReasonNoneSpecified;
+        m_status               = Tp::ConnectionStatusDisconnected;
+        m_reason               = Tp::ConnectionStatusReasonNoneSpecified;
         m_pInterface           = NULL;
         m_pContactManager      = NULL;
         m_pPresenceManager     = NULL;
@@ -73,8 +73,8 @@ public:
     void cleanup()
     {
         m_isValid              = true;
-        m_status               = Telepathy::ConnectionStatusDisconnected;
-        m_reason               = Telepathy::ConnectionStatusReasonNoneSpecified;
+        m_status               = Tp::ConnectionStatusDisconnected;
+        m_reason               = Tp::ConnectionStatusReasonNoneSpecified;
         delete m_pInterface;
         m_pInterface           = NULL;
         delete m_pContactManager;
@@ -96,7 +96,7 @@ public:
         Q_ASSERT( !m_connectionManager.isEmpty() );
         Q_ASSERT( !m_protocol.isEmpty() );
         
-        Telepathy::Client::ConnectionManagerInterface cm_interface( "org.freedesktop.Telepathy.ConnectionManager." + m_connectionManager,
+        Tp::Client::ConnectionManagerInterface cm_interface( "org.freedesktop.Telepathy.ConnectionManager." + m_connectionManager,
                                                                     "/org/freedesktop/Telepathy/ConnectionManager/" +  m_connectionManager,
                                                                     NULL );
 
@@ -133,7 +133,7 @@ public:
         m_serviceName = connection_service_name;
         m_objectPath  = connection_object_path.path();
         
-        m_pInterface  = new Telepathy::Client::ConnectionInterface( m_serviceName,
+        m_pInterface  = new Tp::Client::ConnectionInterface( m_serviceName,
                                                                     m_objectPath,
                                                                     NULL );
 
@@ -158,7 +158,7 @@ Connection::~Connection()
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "D'tor Connection:" << this;
 #endif
-    if ( Telepathy::ConnectionStatusDisconnected != d->m_status )
+    if ( Tp::ConnectionStatusDisconnected != d->m_status )
     { requestDisconnect(); }
     delete d;
 }
@@ -169,20 +169,20 @@ bool Connection::isValid()
     return d->m_isValid;
 }
 
-Telepathy::ConnectionStatus Connection::status()
+Tp::ConnectionStatus Connection::status()
 {
     return d->m_status;
 }
 
-Telepathy::ConnectionStatusReason Connection::reason()
+Tp::ConnectionStatusReason Connection::reason()
 {
     return d->m_reason;
 }
 
 bool Connection::requestConnect()
 {
-    if ( ( Telepathy::ConnectionStatusConnecting == d->m_status )
-           || ( Telepathy::ConnectionStatusConnected == d->m_status ) )
+    if ( ( Tp::ConnectionStatusConnecting == d->m_status )
+           || ( Tp::ConnectionStatusConnected == d->m_status ) )
     { return false; }
 
     startupInit();
@@ -190,7 +190,7 @@ bool Connection::requestConnect()
     if ( !d->m_pInterface )
     { return false; }
     
-    d->m_status = Telepathy::ConnectionStatusConnecting;
+    d->m_status = Tp::ConnectionStatusConnecting;
     QDBusPendingReply<> connection_connect_reply = d->m_pInterface->Connect();
     connection_connect_reply.waitForFinished();
    
@@ -202,7 +202,7 @@ bool Connection::requestConnect()
                 << "Connect: error name:" << error.name()
                 << "error message:" << error.message();
         
-        d->m_status      = Telepathy::ConnectionStatusDisconnected;
+        d->m_status      = Tp::ConnectionStatusDisconnected;
         d->m_isValid     = false;
 
         return false;
@@ -214,7 +214,7 @@ bool Connection::requestConnect()
 
 bool Connection::requestDisconnect()
 {
-    if ( ! d->m_pInterface || ! isValid() || ( Telepathy::ConnectionStatusDisconnected == d->m_status ) )
+    if ( ! d->m_pInterface || ! isValid() || ( Tp::ConnectionStatusDisconnected == d->m_status ) )
     { return false; }
     
     QDBusPendingReply<> connection_disconnect_reply = d->m_pInterface->Disconnect();
@@ -230,7 +230,7 @@ bool Connection::requestDisconnect()
     }
 
     // Always expect that we are disconnected after this point!
-    d->m_status = Telepathy::ConnectionStatusDisconnected;
+    d->m_status = Tp::ConnectionStatusDisconnected;
 
     // Get rid of the contact and presence manager
     delete d->m_pContactManager;
@@ -243,7 +243,7 @@ bool Connection::requestDisconnect()
 
 ContactManager* Connection::contactManager()
 {
-    if ( Telepathy::ConnectionStatusConnected != d->m_status )
+    if ( Tp::ConnectionStatusConnected != d->m_status )
     { return NULL; }
     if ( !d->m_pContactManager )
     { d->m_pContactManager = new ContactManager( d->m_pInterface, this ); }
@@ -280,7 +280,7 @@ QString Connection::handle() const
     return d->m_objectPath;
 }
 
-Telepathy::Client::ConnectionInterface* Connection::interface()
+Tp::Client::ConnectionInterface* Connection::interface()
 {
     return d->m_pInterface;
 }
@@ -290,9 +290,9 @@ void Connection::slotStatusChanged( uint status, uint reason )
 #ifdef ENABLE_DEBUG_OUTPUT_
     qDebug() << "Connection::slotStatusChanged() Status:" << status;
 #endif
-    Telepathy::ConnectionStatus old_status = d->m_status;
-    d->m_status = static_cast<Telepathy::ConnectionStatus>( status );
-    d->m_reason = static_cast<Telepathy::ConnectionStatusReason>( reason );
+    Tp::ConnectionStatus old_status = d->m_status;
+    d->m_status = static_cast<Tp::ConnectionStatus>( status );
+    d->m_reason = static_cast<Tp::ConnectionStatusReason>( reason );
 
     if ( d->m_status != old_status )
     {
@@ -327,7 +327,7 @@ void Connection::slotNewChannel(const QDBusObjectPath& objectPath, const QString
         return;
     }
     
-    if ( handleType == Telepathy::HandleTypeContact )
+    if ( handleType == Tp::HandleTypeContact )
     {
         contactManager()->openTextChannel(handle,handleType,objectPath.path(),channelType);
     }
@@ -372,9 +372,9 @@ void Connection::slotNewChannel(const QDBusObjectPath& objectPath, const QString
     }
 }
 
-QList<uint> Connection::RequestHandles( Telepathy::HandleType handletype, QStringList& handlestrings)
+QList<uint> Connection::RequestHandles( Tp::HandleType handletype, QStringList& handlestrings)
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
     return d->m_pInterface->RequestHandles( handletype,handlestrings);
 }
 
@@ -407,7 +407,7 @@ bool Connection::managerSupported( const QString& managerName )
 
 void Connection::init( TpPrototype::Account* account )
 {
-    Telepathy::registerTypes();
+    Tp::registerTypes();
 
     if ( !account )
     { return; }

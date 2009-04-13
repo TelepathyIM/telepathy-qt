@@ -22,14 +22,12 @@
 #ifndef _TelepathyQt4_examples_call_call_roster_widget_h_HEADER_GUARD_
 #define _TelepathyQt4_examples_call_call_roster_widget_h_HEADER_GUARD_
 
-#include <TelepathyQt4/Client/Contact>
+#include <TelepathyQt4/Contact>
 
 #include <examples/roster/roster-widget.h>
 
-namespace Telepathy {
-namespace Client {
+namespace Tp {
 class Channel;
-}
 }
 
 class CallHandler;
@@ -45,7 +43,7 @@ public:
 
 protected:
     virtual RosterItem *createItemForContact(
-            const Telepathy::Client::ContactPtr &contact,
+            const Tp::ContactPtr &contact,
             bool &exists);
     virtual void updateActions(RosterItem *item);
 

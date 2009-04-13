@@ -31,7 +31,7 @@
 class QString;
 class QStringList;
 
-namespace Telepathy
+namespace Tp
 {
 
 class KeyFile

@@ -16,9 +16,9 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    Telepathy::registerTypes();
-    Telepathy::enableDebug(true);
-    Telepathy::enableWarnings(true);
+    Tp::registerTypes();
+    Tp::enableDebug(true);
+    Tp::enableWarnings(true);
 
     RosterWindow w(argv[1], argv[2]);
     w.show();

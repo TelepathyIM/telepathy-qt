@@ -25,7 +25,7 @@
 
 #include <QIODevice>
 
-namespace Telepathy
+namespace Tp
 {
 #ifdef ENABLE_DEBUG
 
@@ -86,4 +86,4 @@ void enableWarnings(bool enable)
 
 #endif /* #ifdef ENABLE_DEBUG */
 
-} /* namespace Telepathy */
+} // Tp

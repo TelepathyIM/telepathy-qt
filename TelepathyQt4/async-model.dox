@@ -39,14 +39,14 @@
  *
  * In order to do this new classes so called PendingOperations were created,
  * and all methods that need to be asynchronous will return a \link
- * Telepathy::Client::PendingOperation \endlink which will emit a signal \link
- * Telepathy::Client::PendingOperation::finished() \endlink when the operation
+ * Tp::PendingOperation \endlink which will emit a signal \link
+ * Tp::PendingOperation::finished() \endlink when the operation
  * has ended. See PendingOperation documentation for more details.
  *
- * So when instantiating a new object (\link Telepathy::Client::Account \endlink,
- * \link Telepathy::Client::AccountManager \endlink, \link
- * Telepathy::Client::Connection \endlink, and so on), one needs to call \link
- * Telepathy::Client::ReadyObject::becomeReady() \endlink and wait the returned
+ * So when instantiating a new object (\link Tp::Account \endlink,
+ * \link Tp::AccountManager \endlink, \link
+ * Tp::Connection \endlink, and so on), one needs to call \link
+ * Tp::ReadyObject::becomeReady() \endlink and wait the returned
  * PendingOperation to finish before using the object.
  *
  * This assures that the initial object introspection process is completed and

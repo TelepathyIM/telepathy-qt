@@ -26,8 +26,7 @@
 
 #include <gst/gst.h>
 
-namespace Telepathy {
-namespace Client {
+namespace Tp {
 
 class VideoWidget : public QWidget
 {
@@ -52,7 +51,6 @@ private:
     Private *mPriv;
 };
 
-} // Telepathy::Client
-} // Telepathy
+} // Tp
 
 #endif

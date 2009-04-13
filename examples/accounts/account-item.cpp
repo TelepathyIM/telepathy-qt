@@ -21,24 +21,24 @@
 #include "account-item.h"
 #include "_gen/account-item.moc.hpp"
 
-#include <TelepathyQt4/Client/AccountManager>
-#include <TelepathyQt4/Client/PendingReady>
+#include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/PendingReady>
 
 #include <QDebug>
 #include <QComboBox>
 #include <QTableWidget>
 
-AccountItem::AccountItem(Telepathy::Client::AccountManagerPtr am,
+AccountItem::AccountItem(Tp::AccountManagerPtr am,
         const QString &objectPath, QTableWidget *table, int row, QObject *parent)
     : QObject(parent),
-      mAcc(Telepathy::Client::Account::create(am->dbusConnection(),
+      mAcc(Tp::Account::create(am->dbusConnection(),
                   am->busName(), objectPath)),
       mTable(table),
       mRow(row)
 {
     connect(mAcc->becomeReady(),
-            SIGNAL(finished(Telepathy::Client::PendingOperation *)),
-            SLOT(onReady(Telepathy::Client::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onReady(Tp::PendingOperation *)));
 }
 
 AccountItem::~AccountItem()
@@ -61,11 +61,11 @@ void AccountItem::setupGui()
     mTable->setItem(mRow, ColumnConnection, new QTableWidgetItem(mAcc->connectionObjectPath()));
 }
 
-void AccountItem::onReady(Telepathy::Client::PendingOperation *op)
+void AccountItem::onReady(Tp::PendingOperation *op)
 {
     setupGui();
 
-    Telepathy::Client::Account *acc = mAcc.data();
+    Tp::Account *acc = mAcc.data();
     connect(acc,
             SIGNAL(validityChanged(bool)),
             SLOT(onValidityChanged(bool)));
@@ -82,17 +82,17 @@ void AccountItem::onReady(Telepathy::Client::PendingOperation *op)
             SIGNAL(connectsAutomaticallyPropertyChanged(bool)),
             SLOT(onConnectsAutomaticallyPropertyChanged(bool)));
     connect(acc,
-            SIGNAL(automaticPresenceChanged(const Telepathy::SimplePresence &)),
-            SLOT(onAutomaticPresenceChanged(const Telepathy::SimplePresence &)));
+            SIGNAL(automaticPresenceChanged(const Tp::SimplePresence &)),
+            SLOT(onAutomaticPresenceChanged(const Tp::SimplePresence &)));
     connect(acc,
-            SIGNAL(currentPresenceChanged(const Telepathy::SimplePresence &)),
-            SLOT(onCurrentPresenceChanged(const Telepathy::SimplePresence &)));
+            SIGNAL(currentPresenceChanged(const Tp::SimplePresence &)),
+            SLOT(onCurrentPresenceChanged(const Tp::SimplePresence &)));
     connect(acc,
-            SIGNAL(requestedPresenceChanged(const Telepathy::SimplePresence &)),
-            SLOT(onRequestedPresenceChanged(const Telepathy::SimplePresence &)));
+            SIGNAL(requestedPresenceChanged(const Tp::SimplePresence &)),
+            SLOT(onRequestedPresenceChanged(const Tp::SimplePresence &)));
     connect(acc,
-            SIGNAL(connectionStatusChanged(Telepathy::ConnectionStatus, Telepathy::ConnectionStatusReason)),
-            SLOT(onConnectionStatusChanged(Telepathy::ConnectionStatus, Telepathy::ConnectionStatusReason)));
+            SIGNAL(connectionStatusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
+            SLOT(onConnectionStatusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)));
     connect(acc,
             SIGNAL(haveConnectionChanged(bool)),
             SLOT(onHaveConnectionChanged(bool)));
@@ -128,26 +128,26 @@ void AccountItem::onConnectsAutomaticallyPropertyChanged(bool value)
     item->setText((value ? "true" : "false"));
 }
 
-void AccountItem::onAutomaticPresenceChanged(const Telepathy::SimplePresence &presence)
+void AccountItem::onAutomaticPresenceChanged(const Tp::SimplePresence &presence)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnAutomaticPresence);
     item->setText(presence.status);
 }
 
-void AccountItem::onCurrentPresenceChanged(const Telepathy::SimplePresence &presence)
+void AccountItem::onCurrentPresenceChanged(const Tp::SimplePresence &presence)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnCurrentPresence);
     item->setText(presence.status);
 }
 
-void AccountItem::onRequestedPresenceChanged(const Telepathy::SimplePresence &presence)
+void AccountItem::onRequestedPresenceChanged(const Tp::SimplePresence &presence)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnRequestedPresence);
     item->setText(presence.status);
 }
 
-void AccountItem::onConnectionStatusChanged(Telepathy::ConnectionStatus status,
-        Telepathy::ConnectionStatusReason reason)
+void AccountItem::onConnectionStatusChanged(Tp::ConnectionStatus status,
+        Tp::ConnectionStatusReason reason)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnConnectionStatus);
     item->setText(QString::number(status));

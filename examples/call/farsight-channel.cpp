@@ -1,5 +1,5 @@
 /*
- * Very basic Telepathy-Qt <-> Telepathy-Farsight integration.
+ * Very basic Tp-Qt <-> Tp-Farsight integration.
  *
  * Copyright © 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright © 2009 Nokia Corporation
@@ -30,11 +30,10 @@
 #include <telepathy-glib/channel.h>
 #include <telepathy-glib/connection.h>
 #include <telepathy-glib/dbus.h>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/StreamedMediaChannel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/StreamedMediaChannel>
 
-namespace Telepathy {
-namespace Client {
+namespace Tp {
 
 struct FarsightChannel::Private
 {
@@ -346,5 +345,4 @@ VideoWidget *FarsightChannel::videoWidget() const
     return mPriv->videoOutput;
 }
 
-}
-}
+} // Tp

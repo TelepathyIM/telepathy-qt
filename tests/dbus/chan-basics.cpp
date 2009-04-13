@@ -5,12 +5,12 @@
 
 #include <QtTest/QtTest>
 
-#include <TelepathyQt4/Client/Channel>
-#include <TelepathyQt4/Client/Connection>
-#include <TelepathyQt4/Client/PendingChannel>
-#include <TelepathyQt4/Client/PendingHandles>
-#include <TelepathyQt4/Client/PendingReady>
-#include <TelepathyQt4/Client/ReferencedHandles>
+#include <TelepathyQt4/Channel>
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/PendingChannel>
+#include <TelepathyQt4/PendingHandles>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
@@ -18,7 +18,7 @@
 #include <tests/lib/echo2/conn.h>
 #include <tests/lib/test.h>
 
-using namespace Telepathy::Client;
+using namespace Tp;
 
 class TestChanBasics : public Test
 {
@@ -32,9 +32,9 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint, uint);
     void expectConnInvalidated();
-    void expectPendingHandleFinished(Telepathy::Client::PendingOperation*);
-    void expectCreateChannelFinished(Telepathy::Client::PendingOperation *);
-    void expectEnsureChannelFinished(Telepathy::Client::PendingOperation *);
+    void expectPendingHandleFinished(Tp::PendingOperation*);
+    void expectCreateChannelFinished(Tp::PendingOperation *);
+    void expectEnsureChannelFinished(Tp::PendingOperation *);
 
 private Q_SLOTS:
     void initTestCase();
@@ -205,8 +205,8 @@ void TestChanBasics::initTestCase()
 
     Features features = Features() << Connection::FeatureSelfContact;
     QVERIFY(connect(mConn->becomeReady(features),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
@@ -236,15 +236,15 @@ void TestChanBasics::testRequestHandle()
     QStringList ids = QStringList() << "alice";
 
     // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->requestHandles(Telepathy::HandleTypeContact, ids);
+    PendingHandles *pending = mConn->requestHandles(Tp::HandleTypeContact, ids);
     QVERIFY(connect(pending,
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectPendingHandleFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingHandleFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(disconnect(pending,
-                       SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                       SIGNAL(finished(Tp::PendingOperation*)),
                        this,
-                       SLOT(expectPendingHandleFinished(Telepathy::Client::PendingOperation*))));
+                       SLOT(expectPendingHandleFinished(Tp::PendingOperation*))));
     QVERIFY(mHandle != 0);
 }
 
@@ -254,18 +254,18 @@ void TestChanBasics::testCreateChannel()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeContact);
+                   Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    mHandle);
     QVERIFY(connect(mConn->createChannel(request),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     if (mChan) {
         QVERIFY(connect(mChan->becomeReady(),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
         QCOMPARE(mChan->isRequested(), true);
@@ -294,18 +294,18 @@ void TestChanBasics::testEnsureChannel()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Telepathy::HandleTypeContact);
+                   Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    mHandle);
     QVERIFY(connect(mConn->ensureChannel(request),
-                    SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                    SLOT(expectEnsureChannelFinished(Telepathy::Client::PendingOperation*))));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     if (mChan) {
         QVERIFY(connect(mChan->becomeReady(),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isReady(), true);
         QCOMPARE(mChan->isRequested(), true);
@@ -325,8 +325,8 @@ void TestChanBasics::testEnsureChannel()
         QCOMPARE(ids, toCheck);
 
         QVERIFY(connect(mChan->requestClose(),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mChan->isValid(), false);
 
@@ -344,13 +344,13 @@ void TestChanBasics::cleanupTestCase()
     if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Telepathy::Client::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
             QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
+                            SIGNAL(invalidated(Tp::DBusProxy *,
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);

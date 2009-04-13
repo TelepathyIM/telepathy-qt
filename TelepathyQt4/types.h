@@ -28,4 +28,33 @@
 
 #include <TelepathyQt4/_gen/types.h>
 
+#include <TelepathyQt4/SharedPtr>
+
+namespace Tp
+{
+
+class Account;
+class AccountManager;
+class Channel;
+class Connection;
+class ConnectionManager;
+class FileTransfer;
+class RoomList;
+class MediaStream;
+class StreamedMediaChannel;
+class TextChannel;
+
+typedef SharedPtr<Account> AccountPtr;
+typedef SharedPtr<AccountManager> AccountManagerPtr;
+typedef SharedPtr<Channel> ChannelPtr;
+typedef SharedPtr<Connection> ConnectionPtr;
+typedef SharedPtr<ConnectionManager> ConnectionManagerPtr;
+typedef SharedPtr<FileTransfer> FileTransferPtr;
+typedef SharedPtr<RoomList> RoomListPtr;
+typedef SharedPtr<MediaStream> MediaStreamPtr;
+typedef SharedPtr<StreamedMediaChannel> StreamedMediaChannelPtr;
+typedef SharedPtr<TextChannel> TextChannelPtr;
+
+} // Tp
+
 #endif

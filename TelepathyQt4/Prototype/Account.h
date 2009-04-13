@@ -27,7 +27,7 @@
 #include <QPointer>
 #include <QVariantMap>
 
-namespace Telepathy {
+namespace Tp {
 namespace Client {
 class AccountInterface;
 }
@@ -150,7 +150,7 @@ protected:
      * D-BUS interface.
      * This protected access to the D-BUS interface can be used to extend this class with special features.
      */
-    Telepathy::Client::AccountInterface* interface();
+    Tp::Client::AccountInterface* interface();
 
     /**
      * Returns the handle.
