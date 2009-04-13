@@ -25,6 +25,7 @@
 /depcomp
 /doc/*
 /doxygen.cfg
+/doxygen.log
 /examples/accounts/accounts
 /examples/call/call
 /examples/roster/roster

@@ -1,0 +1,58 @@
+/*
+ * This file is part of TelepathyQt4
+ *
+ * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008 Nokia Corporation
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+/**
+ * \page async_model Asynchronous Object Model
+ *
+ * \section async_model_overview Overview
+ *
+ * Telepathy-Qt4 uses <a href="http://dbus.freedesktop.org">D-Bus</a> to
+ * communicate with applications implementing the
+ * <a href="http://telepathy.freedesktop.org/spec.html">Telepathy
+ * specification</a>.
+ *
+ * When dealing with D-Bus, method calls can take some time to return,
+ * and in this case is not desirable to make synchronous calls,
+ * which could turn into applications hanging waiting for method returns.
+
+ * Telepathy-Qt4 introduces a new model in which objects needs to become ready
+ * before usage. This model became necessary as we needed a completelly
+ * asynchronous API for D-Bus proxy objects.
+ *
+ * In order to do this new classes so called PendingOperations were created,
+ * and all methods that need to be asynchronous will return a \link
+ * Telepathy::Client::PendingOperation \endlink which will emit a signal \link
+ * Telepathy::Client::PendingOperation::finished() \endlink when the operation
+ * has ended. See PendingOperation documentation for more details.
+ *
+ * So when instantiating a new object (\link Telepathy::Client::Account \endlink,
+ * \link Telepathy::Client::AccountManager \endlink, \link
+ * Telepathy::Client::Connection \endlink, and so on), one needs to call \link
+ * Telepathy::Client::ReadyObject::becomeReady() \endlink and wait the returned
+ * PendingOperation to finish before using the object.
+ *
+ * This assures that the initial object introspection process is completed and
+ * the object is ready to use.
+ *
+ * Many objects cache the returned values of a previous introspection run
+ * for future access, allowing some methods to be synchronous. See the
+ * individual methods descriptions for more details.
+ */

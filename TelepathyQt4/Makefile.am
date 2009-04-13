@@ -11,6 +11,7 @@ pkgconfig_DATA = TelepathyQt4.pc
 EXTRA_DIST = \
     account.xml \
     account-manager.xml \
+    async-model.dox \
     channel.xml \
     connection.xml \
     connection-manager.xml \
@@ -19,9 +20,12 @@ EXTRA_DIST = \
     dbus-introspectable.xml \
     dbus-peer.xml \
     dbus-properties.xml \
+    examples.dox \
+    main.dox \
     media-session-handler.xml \
     media-stream-handler.xml \
     properties.xml \
+    shared-ptr.dox \
     stable-interfaces.xml
 
 lib_LTLIBRARIES = libtelepathy-qt4.la

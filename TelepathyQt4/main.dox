@@ -1,0 +1,135 @@
+/*
+ * This file is part of TelepathyQt4
+ *
+ * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008 Nokia Corporation
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+/**
+ * \mainpage Telepathy-Qt4
+ *
+ * \section getting_started Getting Started
+ * \li \subpage introduction
+ * \li \subpage installation
+ * \li \subpage examples
+ *
+ * \section developer_resources Developer Resources
+ * \li \subpage bugreport
+ * \li \subpage mailing_lists
+ *
+ * \section api_reference API Reference
+ * \li <a href="classes.html">All Classes</a>
+ * \li <a href="namespaces.html">All Namespaces</a>
+ * \li <a href="modules.html">Modules</a>
+ * \li <a href="functions.html">Functions</a>
+ * \li <a href="inherits.html">Graphical Class Hierarchy</a>
+ *
+ * \section related_pages Related Pages
+ * \li \subpage async_model
+ * \li \subpage shared_ptr
+ */
+
+/**
+ * \page introduction Introduction
+ *
+ * Telepathy-Qt4 is a Qt4 high-level binding for <a
+ * href="http://telepathy.freedesktop.org">Telepathy</a>.
+ *
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> is a D-Bus
+ * framework for unifying real time communication, including instant messaging,
+ * voice calls and video calls. It abstracts differences between protocols to
+ * provide a unified interface for applications.
+ *
+ * Releases can be found <a
+ * href="http://telepathy.freedesktop.org/releases/telepathy-qt4">here</a>.
+ *
+ * Development is done in the git repository found <a
+ * href="http://git.collabora.co.uk/?p=telepathy-qt4.git;a=summary">here</a>.
+ */
+
+/**
+ * \page installation Installation
+ *
+ * \section installation_from_source Installing from source on Linux
+ *
+ * \subsection installation_from_source_requirements Requirements
+ *
+ * Building Telepathy-Qt4 requires:
+ * \li Qt, including QtDBus <http://www.qtsoftware.com/>
+ * \li GNU make <http://www.gnu.org/software/make/>
+ * \li pkg-config <http://ftp.gnome.org/pub/GNOME/sources/pkg-config/>
+ * \li libxslt, xsltproc <http://xmlsoft.org/XSLT/>
+ * \li Python <http://www.python.org/>
+ *
+ * For the full set of regression tests to run, you'll also need:
+ * \li telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+ * \li telepathy-pinocchio
+ *  <http://telepathy.freedesktop.org/releases/telepathy-pinocchio/>
+ *
+ * and to build the example VoIP call UI (examples/call), you'll need:
+ * \li telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
+ * \li telepathy-farsight
+ *  <http://telepathy.freedesktop.org/releases/telepathy-farsight/>
+ * \li GStreamer <http://gstreamer.freedesktop.org/>\n
+ *
+ * Building from git also requires the GNU build system (Autoconf, Automake,
+ * libtool).
+ *
+ * \subsection installation_from_source_building Building
+ *
+ * After installing all dependencies, run:
+ *
+ * \verbatim
+   $ ./configure
+   $ make
+   $ make install \endverbatim
+ */
+
+/**
+ * \page bugreport How to report a bug
+ *
+ * Before reporting a bug, please check the <a
+ * href="https://bugs.freedesktop.org/query.cgi?product=Telepathy&component=telepathy-qt4">
+ * Bug Tracker</a> to see if the issue is already known.
+ *
+ * Always include the following information in your bug report:
+ * \li The version of Telepathy-Qt4 you are using
+ *
+ * Please submit the bug report, feature request or "to-do" item
+ * <a
+ * href="https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=telepathy-qt4">
+ * here</a>.
+ */
+
+/**
+ * \page mailing_lists Mailing Lists
+ *
+ * <a href="http://lists.freedesktop.org/mailman/listinfo/telepathy">General
+ * discussion list</a>\n
+ * This list should be used for general discussion about telepathy usage,
+ * development.
+ *
+ * <a
+ * href="http://lists.freedesktop.org/mailman/listinfo/telepathy-commits">
+ * Commits list</a>\n
+ * Subscribe to this list to follow the telepathy commits.
+ *
+ * <a
+ * href="http://lists.freedesktop.org/mailman/listinfo/telepathy-bugs">
+ * Bugs list</a>\n
+ * Subscribe to this list to follow the telepathy bug reports.
+ */
