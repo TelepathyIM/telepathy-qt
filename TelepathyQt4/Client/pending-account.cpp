@@ -49,12 +49,12 @@ namespace Client
 
 struct PendingAccount::Private
 {
-    Private(AccountManager *manager) :
+    Private(const AccountManagerPtr &manager) :
         manager(manager)
     {
     }
 
-    AccountManager *manager;
+    WeakPtr<AccountManager> manager;
     AccountPtr account;
     QDBusObjectPath objectPath;
 };
@@ -78,10 +78,10 @@ struct PendingAccount::Private
  * \param displayName Account display name.
  * \param parameters Account parameters.
  */
-PendingAccount::PendingAccount(AccountManager *manager,
+PendingAccount::PendingAccount(const AccountManagerPtr &manager,
         const QString &connectionManager, const QString &protocol,
         const QString &displayName, const QVariantMap &parameters)
-    : PendingOperation(manager),
+    : PendingOperation(manager.data()),
       mPriv(new Private(manager))
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
@@ -105,9 +105,9 @@ PendingAccount::~PendingAccount()
  *
  * \return Account Manager object.
  */
-AccountManager *PendingAccount::manager() const
+AccountManagerPtr PendingAccount::manager() const
 {
-    return qobject_cast<AccountManager *>(parent());
+    return AccountManagerPtr(mPriv->manager);
 }
 
 /**
@@ -126,8 +126,9 @@ AccountPtr PendingAccount::account() const
     }
 
     if (!mPriv->account) {
-        mPriv->account = AccountPtr(
-                new Account(mPriv->manager, mPriv->objectPath.path()));
+        AccountManagerPtr manager(mPriv->manager);
+        mPriv->account = Account::create(manager->dbusConnection(),
+                manager->busName(), mPriv->objectPath.path());
     }
 
     return mPriv->account;

@@ -23,6 +23,8 @@
 #include "TelepathyQt4/Client/_gen/file-transfer.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Client/Connection>
+
 namespace Telepathy
 {
 namespace Client
@@ -55,6 +57,13 @@ FileTransfer::Private::~Private()
  * FileTransfer interface. Until then, it's just a Channel.
  */
 
+FileTransferPtr FileTransfer::create(const ConnectionPtr &connection,
+        const QString &objectPath, const QVariantMap &immutableProperties)
+{
+    return FileTransferPtr(new FileTransfer(connection, objectPath,
+                immutableProperties));
+}
+
 /**
  * Creates a FileTransfer associated with the given object on the same service
  * as the given connection.
@@ -65,13 +74,11 @@ FileTransfer::Private::~Private()
  * \param immutableProperties  The immutable properties of the channel, as
  *                             signalled by NewChannels or returned by
  *                             CreateChannel or EnsureChannel
- * \param parent      Passed to the parent class constructor.
  */
-FileTransfer::FileTransfer(Connection *connection,
+FileTransfer::FileTransfer(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties,
-        QObject *parent)
-    : Channel(connection, objectPath, immutableProperties, parent),
+        const QVariantMap &immutableProperties)
+    : Channel(connection, objectPath, immutableProperties),
       mPriv(new Private())
 {
 }

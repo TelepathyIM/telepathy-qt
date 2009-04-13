@@ -57,7 +57,7 @@ namespace Client
 
 struct Account::Private
 {
-    Private(Account *parent, AccountManager *am);
+    Private(Account *parent);
     ~Private();
 
     void init();
@@ -71,7 +71,6 @@ struct Account::Private
 
     // Public object
     Account *parent;
-    AccountManager *am;
 
     // Instance of generated interface class
     AccountInterface *baseInterface;
@@ -92,7 +91,7 @@ struct Account::Private
     QString connectionObjectPath;
     QString normalizedName;
     Telepathy::Avatar avatar;
-    ConnectionManager *cm;
+    ConnectionManagerPtr cm;
     ProtocolInfo *protocolInfo;
     Telepathy::ConnectionStatus connectionStatus;
     Telepathy::ConnectionStatusReason connectionStatusReason;
@@ -102,16 +101,14 @@ struct Account::Private
     ConnectionPtr connection;
 };
 
-Account::Private::Private(Account *parent, AccountManager *am)
+Account::Private::Private(Account *parent)
     : parent(parent),
-      am(am),
       baseInterface(new AccountInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
       valid(false),
       enabled(false),
       connectsAutomatically(false),
-      cm(0),
       protocolInfo(0),
       connectionStatus(Telepathy::ConnectionStatusDisconnected),
       connectionStatusReason(Telepathy::ConnectionStatusReasonNoneSpecified)
@@ -198,20 +195,49 @@ const Feature Account::FeatureCore = Feature(Account::staticMetaObject.className
 const Feature Account::FeatureAvatar = Feature(Account::staticMetaObject.className(), 1);
 const Feature Account::FeatureProtocolInfo = Feature(Account::staticMetaObject.className(), 2);
 
+AccountPtr Account::create(const QString &busName,
+        const QString &objectPath)
+{
+    return AccountPtr(new Account(busName, objectPath));
+}
+
+AccountPtr Account::create(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath)
+{
+    return AccountPtr(new Account(bus, busName, objectPath));
+}
+
+
 /**
  * Construct a new Account object.
  *
- * \param am Account manager.
+ * \param busName The account's well-known bus name
+ *                (sometimes called a "service name").
  * \param objectPath Account object path.
- * \param parent Object parent.
  */
-Account::Account(AccountManager *am, const QString &objectPath,
-        QObject *parent)
-    : StatelessDBusProxy(am->dbusConnection(),
-            am->busName(), objectPath, parent),
+Account::Account(const QString &busName, const QString &objectPath)
+    : StatelessDBusProxy(QDBusConnection::sessionBus(),
+            busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, am))
+      mPriv(new Private(this))
+{
+}
+
+/**
+ * Construct a new Account object.
+ *
+ * \param bus QDBusConnection to use
+ * \param busName The account's well-known bus name
+ *                (sometimes called a "service name").
+ * \param objectPath Account object path.
+ */
+Account::Account(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath)
+    : StatelessDBusProxy(bus, busName, objectPath),
+      OptionalInterfaceFactory<Account>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this))
 {
 }
 
@@ -221,16 +247,6 @@ Account::Account(AccountManager *am, const QString &objectPath,
 Account::~Account()
 {
     delete mPriv;
-}
-
-/**
- * Get the AccountManager from which this Account was created.
- *
- * \return A pointer to the AccountManager object that owns this Account.
- */
-AccountManager *Account::manager() const
-{
-    return mPriv->am;
 }
 
 /**
@@ -527,8 +543,8 @@ ConnectionPtr Account::connection() const
     QString objectPath = mPriv->connectionObjectPath;
     QString busName = objectPath.mid(1).replace('/', '.');
     if (!mPriv->connection) {
-        mPriv->connection = ConnectionPtr(
-                new Connection(dbusConnection(), busName, objectPath));
+        mPriv->connection = Connection::create(dbusConnection(),
+                busName, objectPath);
     }
     return mPriv->connection;
 }
@@ -755,11 +771,11 @@ void Account::Private::introspectAvatar(Account::Private *self)
 
 void Account::Private::introspectProtocolInfo(Account::Private *self)
 {
-    Q_ASSERT(self->cm == 0);
+    Q_ASSERT(!self->cm);
 
-    self->cm = new ConnectionManager(
+    self->cm = ConnectionManager::create(
             self->parent->dbusConnection(),
-            self->cmName, self->parent);
+            self->cmName);
     self->parent->connect(self->cm->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onConnectionManagerReady(Telepathy::Client::PendingOperation *)));

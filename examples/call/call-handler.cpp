@@ -60,13 +60,13 @@ void CallHandler::addOutgoingCall(const ContactPtr &contact)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact->handle()[0]);
 
-    Connection *conn = contact->manager()->connection();
+    ConnectionPtr conn = contact->manager()->connection();
     connect(conn->ensureChannel(request),
             SIGNAL(finished(Telepathy::Client::PendingOperation*)),
             SLOT(onOutgoingChannelCreated(Telepathy::Client::PendingOperation*)));
 }
 
-void CallHandler::addIncomingCall(StreamedMediaChannel *chan)
+void CallHandler::addIncomingCall(const StreamedMediaChannelPtr &chan)
 {
     mChannels.append(chan);
     connect(chan->becomeReady(),
@@ -88,7 +88,7 @@ void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
 
     PendingChannel *pc = qobject_cast<PendingChannel *>(op);
 
-    StreamedMediaChannel *chan = new StreamedMediaChannel(pc->connection(),
+    StreamedMediaChannelPtr chan = StreamedMediaChannel::create(pc->connection(),
             pc->objectPath(), pc->immutableProperties());
     mChannels.append(chan);
     connect(chan->becomeReady(),
@@ -99,7 +99,7 @@ void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
 void CallHandler::onOutgoingChannelReady(PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady *>(op);
-    StreamedMediaChannel *chan = qobject_cast<StreamedMediaChannel *>(pr->object());
+    StreamedMediaChannelPtr chan = StreamedMediaChannelPtr(qobject_cast<StreamedMediaChannel *>(pr->object()));
 
     if (op->isError()) {
         qWarning() << "CallHandler::onOutgoingChannelReady: channel cannot become ready:" <<
@@ -128,7 +128,7 @@ void CallHandler::onOutgoingChannelReady(PendingOperation *op)
 void CallHandler::onIncomingChannelReady(PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady *>(op);
-    StreamedMediaChannel *chan = qobject_cast<StreamedMediaChannel *>(pr->object());
+    StreamedMediaChannelPtr chan = StreamedMediaChannelPtr(qobject_cast<StreamedMediaChannel *>(pr->object()));
 
     if (op->isError()) {
         // ignore - channel cannot be ready
@@ -166,8 +166,7 @@ void CallHandler::onIncomingChannelReady(PendingOperation *op)
 void CallHandler::onCallTerminated(QObject *obj)
 {
     CallWidget *call = (CallWidget *) obj;
-    StreamedMediaChannel *chan = call->channel();
+    StreamedMediaChannelPtr chan = call->channel();
     mCalls.removeOne(call);
     mChannels.removeOne(chan);
-    delete chan;
 }

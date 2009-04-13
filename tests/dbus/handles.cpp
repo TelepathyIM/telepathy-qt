@@ -25,7 +25,7 @@ class TestHandles : public Test
 
 public:
     TestHandles(QObject *parent = 0)
-        : Test(parent), mConnService(0), mConn(0)
+        : Test(parent), mConnService(0)
     { }
 
 protected Q_SLOTS:
@@ -45,7 +45,7 @@ private Q_SLOTS:
 private:
     QString mConnName, mConnPath;
     SimpleConnection *mConnService;
-    Connection *mConn;
+    ConnectionPtr mConn;
     ReferencedHandles mHandles;
 };
 
@@ -135,7 +135,7 @@ void TestHandles::initTestCase()
     g_free(name);
     g_free(connPath);
 
-    mConn = new Connection(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath);
     QCOMPARE(mConn->isReady(), false);
 
     mConn->requestConnect();
@@ -147,11 +147,11 @@ void TestHandles::initTestCase()
     QCOMPARE(mConn->isReady(), true);
 
     if (mConn->status() != Connection::StatusConnected) {
-        QVERIFY(connect(mConn,
+        QVERIFY(connect(mConn.data(),
                         SIGNAL(statusChanged(uint, uint)),
                         SLOT(expectConnReady(uint, uint))));
         QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn,
+        QVERIFY(disconnect(mConn.data(),
                            SIGNAL(statusChanged(uint, uint)),
                            this,
                            SLOT(expectConnReady(uint, uint))));
@@ -199,7 +199,7 @@ void TestHandles::testRequestAndRelease()
     // Start releasing the handles, RAII style, and complete the asynchronous process doing that
     handles = ReferencedHandles();
     mLoop->processEvents();
-    processDBusQueue(mConn);
+    processDBusQueue(mConn.data());
 
     // Check that the handles have been released
     for (int i = 0; i < 3; i++) {
@@ -223,14 +223,11 @@ void TestHandles::cleanupTestCase()
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
-            QVERIFY(connect(mConn,
+            QVERIFY(connect(mConn.data(),
                             SIGNAL(invalidated(Telepathy::Client::DBusProxy *, const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
             QCOMPARE(mLoop->exec(), 0);
         }
-
-        delete mConn;
-        mConn = 0;
     }
 
     if (mConnService != 0) {

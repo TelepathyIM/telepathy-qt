@@ -12,6 +12,7 @@
 #include <tests/pinocchio/lib.h>
 
 using Telepathy::Client::Connection;
+using Telepathy::Client::ConnectionPtr;
 using Telepathy::Client::ConnectionManagerInterface;
 using Telepathy::Client::DBus::PeerInterface;
 using Telepathy::Client::DBus::PropertiesInterface;
@@ -25,7 +26,7 @@ private:
     Telepathy::Client::ConnectionManagerInterface* mCM;
     QString mConnBusName;
     QString mConnObjectPath;
-    Connection *mConn;
+    ConnectionPtr mConn;
 
 protected Q_SLOTS:
     void expectReady(uint, uint);
@@ -100,13 +101,12 @@ void TestConnBasics::init()
 
 void TestConnBasics::testInitialIntrospection()
 {
-    mConn = new Connection(mConnBusName, mConnObjectPath);
+    mConn = Connection::create(mConnBusName, mConnObjectPath);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Connection::StatusUnknown));
 
-    delete mConn;
-    mConn = NULL;
+    mConn.reset();
 }
 
 
@@ -135,7 +135,7 @@ void TestConnBasics::expectReady(uint newStatus, uint newStatusReason)
 
 void TestConnBasics::testConnect()
 {
-    mConn = new Connection(mConnBusName, mConnObjectPath);
+    mConn = Connection::create(mConnBusName, mConnObjectPath);
     QCOMPARE(mConn->isReady(), false);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
@@ -156,11 +156,11 @@ void TestConnBasics::testConnect()
     QCOMPARE(mConn->isReady(), true);
 
     if (mConn->status() != Connection::StatusConnected) {
-        QVERIFY(connect(mConn,
+        QVERIFY(connect(mConn.data(),
                         SIGNAL(statusChanged(uint, uint)),
                         SLOT(expectReady(uint, uint))));
         QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn,
+        QVERIFY(disconnect(mConn.data(),
                            SIGNAL(statusChanged(uint, uint)),
                            this,
                            SLOT(expectReady(uint, uint))));
@@ -200,14 +200,13 @@ void TestConnBasics::testConnect()
     QCOMPARE(static_cast<uint>(mConn->statusReason()),
         static_cast<uint>(Telepathy::ConnectionStatusReasonRequested));
 
-    delete mConn;
-    mConn = NULL;
+    mConn.reset();
 }
 
 
 void TestConnBasics::testAlreadyConnected()
 {
-    mConn = new Connection(mConnBusName, mConnObjectPath);
+    mConn = Connection::create(mConnBusName, mConnObjectPath);
 
     qDebug() << "calling Connect()";
     QVERIFY(connect(mConn->requestConnect(),
@@ -224,11 +223,11 @@ void TestConnBasics::testAlreadyConnected()
     QCOMPARE(mConn->isReady(), true);
 
     if (mConn->status() != Connection::StatusConnected) {
-        QVERIFY(connect(mConn,
+        QVERIFY(connect(mConn.data(),
                         SIGNAL(statusChanged(uint, uint)),
                         SLOT(expectReady(uint, uint))));
         QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn,
+        QVERIFY(disconnect(mConn.data(),
                            SIGNAL(statusChanged(uint, uint)),
                            this,
                            SLOT(expectReady(uint, uint))));
@@ -236,14 +235,14 @@ void TestConnBasics::testAlreadyConnected()
     }
 
     // delete proxy, make a new one
-    delete mConn;
-    mConn = new Connection(mConnBusName, mConnObjectPath);
+    mConn.reset();
+    mConn = Connection::create(mConnBusName, mConnObjectPath);
 
     // Wait for introspection to run (readiness changes to Full immediately)
-    QVERIFY(connect(mConn, SIGNAL(statusChanged(uint, uint)),
+    QVERIFY(connect(mConn.data(), SIGNAL(statusChanged(uint, uint)),
           this, SLOT(expectReady(uint, uint))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(mConn, SIGNAL(statusChanged(uint, uint)),
+    QVERIFY(disconnect(mConn.data(), SIGNAL(statusChanged(uint, uint)),
           this, SLOT(expectReady(uint, uint))));
 
     QVERIFY(connect(mConn->requestDisconnect(),
@@ -252,14 +251,13 @@ void TestConnBasics::testAlreadyConnected()
           SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    delete mConn;
-    mConn = NULL;
+    mConn.reset();
 }
 
 
 void TestConnBasics::testInterfaceFactory()
 {
-    mConn = new Connection(QDBusConnection::sessionBus(),
+    mConn = Connection::create(QDBusConnection::sessionBus(),
         mConnBusName, mConnObjectPath);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
@@ -277,8 +275,7 @@ void TestConnBasics::testInterfaceFactory()
     notListed = mConn->optionalInterface<PeerInterface>(Connection::BypassInterfaceCheck);
     QVERIFY(notListed != NULL);
 
-    delete mConn;
-    mConn = NULL;
+    mConn.reset();
 }
 
 
@@ -290,14 +287,13 @@ void TestConnBasics::cleanup()
 
 void TestConnBasics::testSpecifiedBus()
 {
-    mConn = new Connection(QDBusConnection::sessionBus(),
+    mConn = Connection::create(QDBusConnection::sessionBus(),
         mConnBusName, mConnObjectPath);
 
     QCOMPARE(static_cast<uint>(mConn->status()),
         static_cast<uint>(Connection::StatusUnknown));
 
-    delete mConn;
-    mConn = NULL;
+    mConn.reset();
 }
 
 

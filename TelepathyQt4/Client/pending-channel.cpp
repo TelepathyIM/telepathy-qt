@@ -51,6 +51,12 @@ namespace Client
 
 struct PendingChannel::Private
 {
+    Private(const ConnectionPtr &connection) :
+        connection(connection)
+    {
+    }
+
+    WeakPtr<Connection> connection;
     bool yours;
     QString channelType;
     uint handleType;
@@ -77,10 +83,10 @@ struct PendingChannel::Private
  * \param errorName The error name.
  * \param errorMessage The error message.
  */
-PendingChannel::PendingChannel(Connection *connection, const QString &errorName,
+PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &errorName,
         const QString &errorMessage)
-    : PendingOperation(connection),
-      mPriv(new Private)
+    : PendingOperation(connection.data()),
+      mPriv(new Private(connection))
 {
     mPriv->yours = false;
     mPriv->handleType = 0;
@@ -96,10 +102,10 @@ PendingChannel::PendingChannel(Connection *connection, const QString &errorName,
  * \param request A dictionary containing the desirable properties.
  * \param create Whether createChannel or ensureChannel should be called.
  */
-PendingChannel::PendingChannel(Connection *connection,
+PendingChannel::PendingChannel(const ConnectionPtr &connection,
         const QVariantMap &request, bool create)
-    : PendingOperation(connection),
-      mPriv(new Private)
+    : PendingOperation(connection.data()),
+      mPriv(new Private(connection))
 {
     mPriv->yours = create;
     mPriv->channelType = request.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
@@ -135,9 +141,9 @@ PendingChannel::~PendingChannel()
  *
  * \return Pointer to the Connection.
  */
-Connection *PendingChannel::connection() const
+ConnectionPtr PendingChannel::connection() const
 {
-    return qobject_cast<Connection *>(parent());
+    return ConnectionPtr(mPriv->connection);
 }
 
 /**
@@ -250,32 +256,32 @@ ChannelPtr PendingChannel::channel() const
         return mPriv->channel;
     }
 
+    SharedPtr<Connection> conn(mPriv->connection);
     if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
-        mPriv->channel = ChannelPtr(
-                new TextChannel(connection(), mPriv->objectPath.path(),
-                    mPriv->immutableProperties));
+        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
+                    TextChannel::create(conn,
+                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
-        mPriv->channel = ChannelPtr(
-                new StreamedMediaChannel(connection(), mPriv->objectPath.path(),
-                    mPriv->immutableProperties));
+        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
+                    StreamedMediaChannel::create(conn,
+                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
-        mPriv->channel = ChannelPtr(
-                new RoomList(connection(), mPriv->objectPath.path(),
-                    mPriv->immutableProperties));
+        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
+                    RoomList::create(conn,
+                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     // FIXME: update spec so we can do this properly
     else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
-        mPriv->channel = ChannelPtr(
-                new FileTransfer(connection(), mPriv->objectPath.path(),
-                    mPriv->immutableProperties));
+        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
+                    FileTransfer::create(conn,
+                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
     }
     else {
         // ContactList, old-style Tubes, or a future channel type
-        mPriv->channel = ChannelPtr(
-                new Channel(connection(), mPriv->objectPath.path(),
-                    mPriv->immutableProperties));
+        mPriv->channel = Channel::create(conn,
+                mPriv->objectPath.path(), mPriv->immutableProperties);
     }
     return mPriv->channel;
 }

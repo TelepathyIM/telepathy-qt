@@ -151,15 +151,23 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
 
 const Feature AccountManager::FeatureCore = Feature(AccountManager::staticMetaObject.className(), 0, true);
 
+AccountManagerPtr AccountManager::create()
+{
+    return AccountManagerPtr(new AccountManager());
+}
+
+AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
+{
+    return AccountManagerPtr(new AccountManager(bus));
+}
+
 /**
  * Construct a new AccountManager object.
- *
- * \param parent Object parent.
  */
-AccountManager::AccountManager(QObject* parent)
+AccountManager::AccountManager()
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), parent),
+            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
       OptionalInterfaceFactory<AccountManager>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
@@ -170,13 +178,11 @@ AccountManager::AccountManager(QObject* parent)
  * Construct a new AccountManager object.
  *
  * \param bus QDBusConnection to use.
- * \param parent Object parent.
  */
-AccountManager::AccountManager(const QDBusConnection& bus,
-        QObject* parent)
+AccountManager::AccountManager(const QDBusConnection& bus)
     : StatelessDBusProxy(bus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH), parent),
+            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
       OptionalInterfaceFactory<AccountManager>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
@@ -312,8 +318,7 @@ AccountPtr AccountManager::accountForPath(const QString &path)
         return AccountPtr();
     }
 
-    AccountPtr account = AccountPtr(
-            new Account(this, path));
+    AccountPtr account = Account::create(dbusConnection(), busName(), path);
     mPriv->accounts[path] = account;
     return account;
 }
@@ -357,7 +362,7 @@ PendingAccount *AccountManager::createAccount(const QString &connectionManager,
         const QString &protocol, const QString &displayName,
         const QVariantMap &parameters)
 {
-    return new PendingAccount(this, connectionManager,
+    return new PendingAccount(AccountManagerPtr(this), connectionManager,
             protocol, displayName, parameters);
 }
 

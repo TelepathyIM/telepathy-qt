@@ -128,11 +128,15 @@ tpqt4include_HEADERS = \
     Debug \
     KeyFile \
     ManagerFile \
+    SharedData \
+    SharedPtr \
+    WeakPtr \
     Types \
     constants.h \
     debug.h \
     key-file.h \
     manager-file.h \
+    shared-ptr.h \
     types.h
 
 tpqt4clientinclude_HEADERS = \
@@ -175,6 +179,7 @@ tpqt4clientinclude_HEADERS = \
     Client/StatefulDBusProxy \
     Client/StreamedMediaChannel \
     Client/TextChannel \
+    Client/Types \
     Client/AccountInterface \
     Client/AccountManagerInterface \
     Client/ChannelInterface \
@@ -238,7 +243,8 @@ tpqt4clientinclude_HEADERS = \
     Client/room-list.h \
     Client/simple-pending-operations.h \
     Client/streamed-media-channel.h \
-    Client/text-channel.h
+    Client/text-channel.h \
+    Client/types.h
 
 nodist_geninclude_HEADERS = \
     _gen/cli-account.h \

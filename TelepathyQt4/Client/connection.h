@@ -34,13 +34,13 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Client/ReadyObject>
+#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/SharedPtr>
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
-#include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedData>
 #include <QString>
 #include <QStringList>
 
@@ -61,7 +61,7 @@ class PendingReady;
 class Connection : public StatefulDBusProxy,
                    private OptionalInterfaceFactory<Connection>,
                    public ReadyObject,
-                   public QSharedData
+                   public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(Connection)
@@ -80,14 +80,10 @@ public:
         StatusUnknown = 0xFFFFFFFF
     };
 
-    Connection(const QString &busName,
-               const QString &objectPath,
-               QObject *parent = 0);
-
-    Connection(const QDBusConnection &bus,
-               const QString &busName,
-               const QString &objectPath,
-               QObject *parent = 0);
+    static ConnectionPtr create(const QString &busName,
+            const QString &objectPath);
+    static ConnectionPtr create(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath);
 
     ~Connection();
 
@@ -182,6 +178,10 @@ Q_SIGNALS:
     void selfContactChanged();
 
 protected:
+    Connection(const QString &busName, const QString &objectPath);
+    Connection(const QDBusConnection &bus, const QString &busName,
+            const QString &objectPath);
+
     ConnectionInterface *baseInterface() const;
 
 private Q_SLOTS:
@@ -217,8 +217,6 @@ private:
     friend class ReferencedHandles;
     Private *mPriv;
 };
-
-typedef QExplicitlySharedDataPointer<Connection> ConnectionPtr;
 
 } // Telepathy::Client
 } // Telepathy

@@ -48,7 +48,7 @@ class PendingAccount : public PendingOperation
 public:
     ~PendingAccount();
 
-    AccountManager *manager() const;
+    AccountManagerPtr manager() const;
 
     AccountPtr account() const;
 
@@ -59,7 +59,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(PendingAccount);
-    PendingAccount(AccountManager *manager,
+    PendingAccount(const AccountManagerPtr &manager,
             const QString &connectionManager, const QString &protocol,
             const QString &displayName, const QVariantMap &parameters);
 

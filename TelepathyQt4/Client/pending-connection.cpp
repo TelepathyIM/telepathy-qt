@@ -50,12 +50,12 @@ namespace Client
 
 struct PendingConnection::Private
 {
-    Private(ConnectionManager *manager) :
+    Private(const ConnectionManagerPtr &manager) :
         manager(manager)
     {
     }
 
-    ConnectionManager *manager;
+    WeakPtr<ConnectionManager> manager;
     ConnectionPtr connection;
     QString busName;
     QDBusObjectPath objectPath;
@@ -78,9 +78,9 @@ struct PendingConnection::Private
  * \param protocol Name of the protocol to create the connection for.
  * \param parameters Connection parameters.
  */
-PendingConnection::PendingConnection(ConnectionManager *manager,
+PendingConnection::PendingConnection(const ConnectionManagerPtr &manager,
         const QString &protocol, const QVariantMap &parameters)
-    : PendingOperation(manager),
+    : PendingOperation(manager.data()),
       mPriv(new Private(manager))
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
@@ -104,9 +104,9 @@ PendingConnection::~PendingConnection()
  *
  * \return Connection Manager object.
  */
-ConnectionManager *PendingConnection::manager() const
+ConnectionManagerPtr PendingConnection::manager() const
 {
-    return qobject_cast<ConnectionManager *>(parent());
+    return ConnectionManagerPtr(mPriv->manager);
 }
 
 /**
@@ -125,9 +125,9 @@ ConnectionPtr PendingConnection::connection() const
     }
 
     if (!mPriv->connection) {
-        mPriv->connection = ConnectionPtr(
-                new Connection(mPriv->manager->dbusConnection(),
-                    mPriv->busName, mPriv->objectPath.path()));
+        ConnectionManagerPtr manager(mPriv->manager);
+        mPriv->connection = Connection::create(manager->dbusConnection(),
+                mPriv->busName, mPriv->objectPath.path());
     }
 
     return mPriv->connection;

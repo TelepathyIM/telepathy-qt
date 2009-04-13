@@ -43,9 +43,9 @@ CallWindow::CallWindow(const QString &username, const QString &password,
       mUsername(username),
       mPassword(password)
 {
-    setWindowTitle("Roster");
+    setWindowTitle("Call");
 
-    mCM = new ConnectionManager("gabble", this);
+    mCM = ConnectionManager::create("gabble");
     connect(mCM->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onCMReady(Telepathy::Client::PendingOperation *)));
@@ -115,7 +115,7 @@ void CallWindow::onConnectionConnected(Telepathy::Client::PendingOperation *op)
     }
 
     PendingReady *pr = qobject_cast<PendingReady *>(op);
-    Connection *conn = qobject_cast<Connection *>(pr->object());
+    ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(pr->object()));
 
     if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)) {
         Telepathy::CapabilityPair capability = {
@@ -146,7 +146,7 @@ void CallWindow::onConnectionInvalidated(DBusProxy *proxy,
 {
     qDebug() << "CallWindow::onConnectionInvalidated: connection became invalid:" <<
         errorName << "-" << errorMessage;
-    mRoster->removeConnection(mConn.data());
+    mRoster->removeConnection(mConn);
     mConn.reset();
 }
 
@@ -161,7 +161,7 @@ void CallWindow::onNewChannels(const Telepathy::ChannelDetailsList &channels)
 
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             !requested) {
-            StreamedMediaChannel *channel = new StreamedMediaChannel(mConn.data(),
+            StreamedMediaChannelPtr channel = StreamedMediaChannel::create(mConn,
                         details.channel.path(),
                         details.properties);
             mCallHandler->addIncomingCall(channel);

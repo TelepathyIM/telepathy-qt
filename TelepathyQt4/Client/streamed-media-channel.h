@@ -27,6 +27,8 @@
 
 #include <TelepathyQt4/Client/Channel>
 #include <TelepathyQt4/Client/PendingOperation>
+#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/SharedPtr>
 
 namespace Telepathy
 {
@@ -34,9 +36,7 @@ namespace Client
 {
 
 class StreamedMediaChannel;
-class MediaStream;
 
-typedef QExplicitlySharedDataPointer<MediaStream> MediaStreamPtr;
 typedef QList<MediaStreamPtr> MediaStreams;
 
 class PendingMediaStreams : public PendingOperation
@@ -57,13 +57,9 @@ private Q_SLOTS:
 private:
     friend class StreamedMediaChannel;
 
-    PendingMediaStreams(StreamedMediaChannel *channel,
+    PendingMediaStreams(const StreamedMediaChannelPtr &channel,
             ContactPtr contact,
-            QList<Telepathy::MediaStreamType> types,
-            QObject *parent = 0);
-    PendingMediaStreams(StreamedMediaChannel *channel,
-            const MediaStreams &streams,
-            QObject *parent = 0);
+            QList<Telepathy::MediaStreamType> types);
 
     struct Private;
     friend struct Private;
@@ -72,7 +68,7 @@ private:
 
 class MediaStream : public QObject,
                     private ReadyObject,
-                    public QSharedData
+                    public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(MediaStream)
@@ -80,7 +76,7 @@ class MediaStream : public QObject,
 public:
     ~MediaStream();
 
-    StreamedMediaChannel *channel() const;
+    StreamedMediaChannelPtr channel() const;
     uint id() const;
 
     ContactPtr contact() const;
@@ -109,7 +105,7 @@ private:
 
     static const Feature FeatureContact;
 
-    MediaStream(StreamedMediaChannel *channel, uint id,
+    MediaStream(const StreamedMediaChannelPtr &channel, uint id,
             uint contactHandle, MediaStreamType type,
             MediaStreamState state, MediaStreamDirection direction,
             MediaStreamPendingSend pendingSend);
@@ -133,8 +129,9 @@ class StreamedMediaChannel : public Channel
 public:
     static const Feature FeatureStreams;
 
-    StreamedMediaChannel(Connection *connection, const QString &objectPath,
-            const QVariantMap &immutableProperties, QObject *parent = 0);
+    static StreamedMediaChannelPtr create(const ConnectionPtr &connection,
+            const QString &objectPath, const QVariantMap &immutableProperties);
+
     ~StreamedMediaChannel();
 
     MediaStreams streams() const;
@@ -167,6 +164,10 @@ Q_SIGNALS:
             Telepathy::MediaStreamError errorCode,
             const QString &errorMessage);
 
+protected:
+    StreamedMediaChannel(const ConnectionPtr &connection,
+            const QString &objectPath, const QVariantMap &immutableProperties);
+
 private Q_SLOTS:
     void gotStreams(QDBusPendingCallWatcher *);
     void onStreamReady(Telepathy::Client::PendingOperation *);
@@ -186,8 +187,6 @@ private:
     friend struct Private;
     Private *mPriv;
 };
-
-typedef QExplicitlySharedDataPointer<StreamedMediaChannel> StreamedMediaChannelPtr;
 
 } // Telepathy::Client
 } // Telepathy

@@ -51,7 +51,7 @@ class ContactManager : public QObject
 
     public:
 
-        Connection *connection() const;
+        ConnectionPtr connection() const;
 
         QSet<Contact::Feature> supportedFeatures() const;
 
@@ -154,7 +154,7 @@ class ContactManager : public QObject
             ChannelPtr channel;
         };
 
-        ContactManager(Connection *parent);
+        ContactManager(const ConnectionPtr &parent);
         ~ContactManager();
 
         ContactPtr ensureContact(const ReferencedHandles &handle,

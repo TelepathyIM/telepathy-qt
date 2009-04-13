@@ -58,7 +58,7 @@ private Q_SLOTS:
 private:
     void setupGui();
 
-    Telepathy::Client::ConnectionManager *mCM;
+    Telepathy::Client::ConnectionManagerPtr mCM;
     Telepathy::Client::ConnectionPtr mConn;
     QString mUsername;
     QString mPassword;

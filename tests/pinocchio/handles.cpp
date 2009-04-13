@@ -27,11 +27,11 @@ private:
     ConnectionManagerInterface *mCM;
 
     // Bus connection 1, proxy a
-    Connection *mConn1a;
+    ConnectionPtr mConn1a;
     // Bus connection 1, proxy b
-    Connection *mConn1b;
+    ConnectionPtr mConn1b;
     // Bus connection 2
-    Connection *mConn2;
+    ConnectionPtr mConn2;
 
     // Temporary storage to move ReferencedHandles away from their self-destructive parents in the
     // finished() handlers
@@ -107,12 +107,12 @@ void TestHandles::initTestCase()
     QString objectPath = reply.argumentAt<1>().path();
 
     // Get a few connections connected
-    mConn1a = new Connection(busName, objectPath);
-    mConn1b = new Connection(busName, objectPath);
+    mConn1a = Connection::create(busName, objectPath);
+    mConn1b = Connection::create(busName, objectPath);
     QDBusConnection privateBus =
         QDBusConnection::connectToBus(QDBusConnection::SessionBus,
                 "tpqt4_handles_test_private_bus");
-    mConn2 = new Connection(privateBus, busName, objectPath);
+    mConn2 = Connection::create(privateBus, busName, objectPath);
 
     // Connecting one connects them all
     QVERIFY(connect(mConn1a->requestConnect(),
@@ -121,19 +121,19 @@ void TestHandles::initTestCase()
             SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    Connection *connections[3] = {mConn1a, mConn1b, mConn2};
+    ConnectionPtr connections[3] = {mConn1a, mConn1b, mConn2};
     for (int i = 0; i < 3; ++i) {
-        Connection *conn = connections[i];
+        ConnectionPtr conn = connections[i];
 
         if (conn->status() == Connection::StatusConnected) {
             qDebug() << conn << "Already ready";
             continue;
         }
 
-        QVERIFY(connect(conn, SIGNAL(statusChanged(uint, uint)),
+        QVERIFY(connect(conn.data(), SIGNAL(statusChanged(uint, uint)),
                     this, SLOT(expectConnReady(uint, uint))));
         QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(conn, SIGNAL(statusChanged(uint, uint)),
+        QVERIFY(disconnect(conn.data(), SIGNAL(statusChanged(uint, uint)),
                     this, SLOT(expectConnReady(uint, uint))));
     }
 }
@@ -313,13 +313,6 @@ void TestHandles::cleanupTestCase()
           this,
           SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-
-    delete mConn1a;
-    mConn1a = NULL;
-    delete mConn1b;
-    mConn1b = NULL;
-    delete mConn2;
-    mConn2 = NULL;
 
     delete mCM;
     mCM = NULL;

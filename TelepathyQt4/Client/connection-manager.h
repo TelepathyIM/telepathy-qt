@@ -33,11 +33,11 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Client/ReadyObject>
+#include <TelepathyQt4/Client/Types>
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/SharedPtr>
 
-#include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedData>
 
 namespace Telepathy
 {
@@ -121,16 +121,16 @@ private:
 class ConnectionManager : public StatelessDBusProxy,
                           private OptionalInterfaceFactory<ConnectionManager>,
                           public ReadyObject,
-                          public QSharedData
+                          public RefCounted
 {
     Q_OBJECT
 
 public:
     static const Feature FeatureCore;
 
-    ConnectionManager(const QString &name, QObject *parent = 0);
-    ConnectionManager(const QDBusConnection &bus,
-            const QString &name, QObject *parent = 0);
+    static ConnectionManagerPtr create(const QString &name);
+    static ConnectionManagerPtr create(const QDBusConnection &bus,
+            const QString &name);
 
     virtual ~ConnectionManager();
 
@@ -152,6 +152,9 @@ public:
     static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
 protected:
+    ConnectionManager(const QString &name);
+    ConnectionManager(const QDBusConnection &bus, const QString &name);
+
     ConnectionManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
@@ -168,9 +171,7 @@ private:
     Private *mPriv;
 };
 
-typedef QExplicitlySharedDataPointer<ConnectionManager> ConnectionManagerPtr;
-
-}
-}
+} // Telepathy::Client
+} // Telepathy
 
 #endif

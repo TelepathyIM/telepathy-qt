@@ -45,14 +45,7 @@
  * interfaces.
  */
 
-namespace Telepathy
-{
-namespace Client
-{
-class ReferencedHandles;
-}
-}
-
+#include <TelepathyQt4/Client/Types>
 #include <TelepathyQt4/Types>
 
 #include <list>
@@ -103,7 +96,7 @@ class ReferencedHandles
         ReferencedHandles(const ReferencedHandles& other);
         ~ReferencedHandles();
 
-        Connection* connection() const;
+        ConnectionPtr connection() const;
         uint handleType() const;
 
         uint at(int i) const;
@@ -286,7 +279,8 @@ class ReferencedHandles
         friend class PendingContacts;
         friend class PendingHandles;
 
-        ReferencedHandles(Connection* connection, uint handleType, const UIntList& handles);
+        ReferencedHandles(const ConnectionPtr &connection,
+                uint handleType, const UIntList& handles);
 
         struct Private;
         QSharedDataPointer<Private> mPriv;

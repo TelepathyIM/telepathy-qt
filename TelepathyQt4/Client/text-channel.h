@@ -72,8 +72,9 @@ public:
     static const Feature FeatureMessageCapabilities;
     static const Feature FeatureMessageSentSignal;
 
-    TextChannel(Connection *connection, const QString &objectPath,
-            const QVariantMap &immutableProperties, QObject *parent = 0);
+    static TextChannelPtr create(const ConnectionPtr &connection,
+            const QString &objectPath, const QVariantMap &immutableProperties);
+
     ~TextChannel();
 
     bool hasMessagesInterface() const;
@@ -115,6 +116,10 @@ Q_SIGNALS:
     void pendingMessageRemoved(
             const Telepathy::Client::ReceivedMessage &message);
 
+protected:
+    TextChannel(const ConnectionPtr &connection, const QString &objectPath,
+            const QVariantMap &immutableProperties);
+
 private Q_SLOTS:
     void onContactsFinished(Telepathy::Client::PendingOperation *);
     void onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *);
@@ -138,8 +143,6 @@ private:
     friend struct Private;
     Private *mPriv;
 };
-
-typedef QExplicitlySharedDataPointer<TextChannel> TextChannelPtr;
 
 } // Telepathy::Client
 } // Telepathy

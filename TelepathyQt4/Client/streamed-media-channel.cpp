@@ -39,22 +39,21 @@ namespace Client
 
 struct PendingMediaStreams::Private
 {
-    Private(PendingMediaStreams *parent, StreamedMediaChannel *channel)
+    Private(PendingMediaStreams *parent, const StreamedMediaChannelPtr &channel)
         : parent(parent), channel(channel), streamsReady(0)
     {
     }
 
     PendingMediaStreams *parent;
-    StreamedMediaChannel *channel;
+    WeakPtr<StreamedMediaChannel> channel;
     MediaStreams streams;
     uint streamsReady;
 };
 
-PendingMediaStreams::PendingMediaStreams(StreamedMediaChannel *channel,
+PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
         ContactPtr contact,
-        QList<Telepathy::MediaStreamType> types,
-        QObject *parent)
-    : PendingOperation(parent),
+        QList<Telepathy::MediaStreamType> types)
+    : PendingOperation(channel.data()),
       mPriv(new Private(this, channel))
 {
     Telepathy::UIntList l;
@@ -105,26 +104,27 @@ void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
 
     Telepathy::MediaStreamInfoList list = reply.value();
     MediaStreamPtr stream;
+    StreamedMediaChannelPtr channel(mPriv->channel);
     foreach (const Telepathy::MediaStreamInfo &streamInfo, list) {
-        stream = mPriv->channel->lookupStreamById(streamInfo.identifier);
+        stream = channel->lookupStreamById(streamInfo.identifier);
         if (!stream) {
             stream = MediaStreamPtr(
-                    new MediaStream(mPriv->channel,
+                    new MediaStream(channel,
                         streamInfo.identifier,
                         streamInfo.contact,
                         (Telepathy::MediaStreamType) streamInfo.type,
                         (Telepathy::MediaStreamState) streamInfo.state,
                         (Telepathy::MediaStreamDirection) streamInfo.direction,
                         (Telepathy::MediaStreamPendingSend) streamInfo.pendingSendFlags));
-            mPriv->channel->addStream(stream);
+            channel->addStream(stream);
         } else {
-            mPriv->channel->onStreamDirectionChanged(streamInfo.identifier,
+            channel->onStreamDirectionChanged(streamInfo.identifier,
                     streamInfo.direction, streamInfo.pendingSendFlags);
-            mPriv->channel->onStreamStateChanged(streamInfo.identifier,
+            channel->onStreamStateChanged(streamInfo.identifier,
                     streamInfo.state);
         }
         mPriv->streams.append(stream);
-        connect(mPriv->channel,
+        connect(channel.data(),
                 SIGNAL(streamRemoved(Telepathy::Client::MediaStreamPtr)),
                 SLOT(onStreamRemoved(Telepathy::Client::MediaStreamPtr)));
         connect(stream->becomeReady(),
@@ -166,7 +166,7 @@ void PendingMediaStreams::onStreamReady(PendingOperation *op)
 
 struct MediaStream::Private
 {
-    Private(MediaStream *parent, StreamedMediaChannel *channel, uint id,
+    Private(MediaStream *parent, const StreamedMediaChannelPtr &channel, uint id,
             uint contactHandle, MediaStreamType type,
             MediaStreamState state, MediaStreamDirection direction,
             MediaStreamPendingSend pendingSend);
@@ -175,7 +175,7 @@ struct MediaStream::Private
 
     MediaStream *parent;
     ReadinessHelper *readinessHelper;
-    StreamedMediaChannel *channel;
+    WeakPtr<StreamedMediaChannel> channel;
     uint id;
     uint contactHandle;
     ContactPtr contact;
@@ -186,7 +186,7 @@ struct MediaStream::Private
 };
 
 MediaStream::Private::Private(MediaStream *parent,
-        StreamedMediaChannel *channel, uint id,
+        const StreamedMediaChannelPtr &channel, uint id,
         uint contactHandle, MediaStreamType type,
         MediaStreamState state, MediaStreamDirection direction,
         MediaStreamPendingSend pendingSend)
@@ -221,7 +221,8 @@ void MediaStream::Private::introspectContact(MediaStream::Private *self)
         return;
     }
 
-    ContactManager *contactManager = self->channel->connection()->contactManager();
+    StreamedMediaChannelPtr chan(self->channel);
+    ContactManager *contactManager = chan->connection()->contactManager();
     self->parent->connect(
             contactManager->contactsForHandles(UIntList() << self->contactHandle),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
@@ -230,7 +231,7 @@ void MediaStream::Private::introspectContact(MediaStream::Private *self)
 
 const Feature MediaStream::FeatureContact = Feature(MediaStream::staticMetaObject.className(), 0);
 
-MediaStream::MediaStream(StreamedMediaChannel *channel, uint id,
+MediaStream::MediaStream(const StreamedMediaChannelPtr &channel, uint id,
         uint contactHandle, MediaStreamType type,
         MediaStreamState state, MediaStreamDirection direction,
         MediaStreamPendingSend pendingSend)
@@ -246,9 +247,9 @@ MediaStream::~MediaStream()
     delete mPriv;
 }
 
-StreamedMediaChannel *MediaStream::channel() const
+StreamedMediaChannelPtr MediaStream::channel() const
 {
-    return mPriv->channel;
+    return StreamedMediaChannelPtr(mPriv->channel);
 }
 
 /**
@@ -364,8 +365,9 @@ Telepathy::MediaStreamPendingSend MediaStream::pendingSend() const
 PendingOperation *MediaStream::requestDirection(
         Telepathy::MediaStreamDirection direction)
 {
+    StreamedMediaChannelPtr chan(mPriv->channel);
     return new PendingVoidMethodCall(this,
-            mPriv->channel->streamedMediaInterface()->RequestStreamDirection(mPriv->id, direction));
+            chan->streamedMediaInterface()->RequestStreamDirection(mPriv->id, direction));
 }
 
 /**
@@ -512,6 +514,13 @@ void StreamedMediaChannel::Private::introspectStreams(StreamedMediaChannel::Priv
 
 const Feature StreamedMediaChannel::FeatureStreams = Feature(StreamedMediaChannel::staticMetaObject.className(), 0);
 
+StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connection,
+        const QString &objectPath, const QVariantMap &immutableProperties)
+{
+    return StreamedMediaChannelPtr(new StreamedMediaChannel(connection,
+                objectPath, immutableProperties));
+}
+
 /**
  * Creates a StreamedMediaChannel associated with the given object on the same
  * service as the given connection.
@@ -522,13 +531,11 @@ const Feature StreamedMediaChannel::FeatureStreams = Feature(StreamedMediaChanne
  * \param immutableProperties  The immutable properties of the channel, as
  *                             signalled by NewChannels or returned by
  *                             CreateChannel or EnsureChannel
- * \param parent      Passed to the parent class constructor.
  */
-StreamedMediaChannel::StreamedMediaChannel(Connection *connection,
+StreamedMediaChannel::StreamedMediaChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties,
-        QObject *parent)
-    : Channel(connection, objectPath, immutableProperties, parent),
+        const QVariantMap &immutableProperties)
+    : Channel(connection, objectPath, immutableProperties),
       mPriv(new Private(this))
 {
 }
@@ -630,15 +637,17 @@ PendingMediaStreams *StreamedMediaChannel::requestStream(
         const ContactPtr &contact,
         Telepathy::MediaStreamType type)
 {
-    return new PendingMediaStreams(this, contact,
-            QList<Telepathy::MediaStreamType>() << type, this);
+    return new PendingMediaStreams(StreamedMediaChannelPtr(this),
+            contact,
+            QList<Telepathy::MediaStreamType>() << type);
 }
 
 PendingMediaStreams *StreamedMediaChannel::requestStreams(
         const ContactPtr &contact,
         QList<Telepathy::MediaStreamType> types)
 {
-    return new PendingMediaStreams(this, contact, types, this);
+    return new PendingMediaStreams(StreamedMediaChannelPtr(this),
+            contact, types);
 }
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
@@ -662,7 +671,7 @@ void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
             MediaStreamPtr stream = lookupStreamById(streamInfo.identifier);
             if (!stream) {
                 addStream(MediaStreamPtr(
-                            new MediaStream(this,
+                            new MediaStream(StreamedMediaChannelPtr(this),
                                 streamInfo.identifier,
                                 streamInfo.contact,
                                 (Telepathy::MediaStreamType) streamInfo.type,
@@ -727,7 +736,7 @@ void StreamedMediaChannel::onStreamAdded(uint streamId,
     }
 
     MediaStreamPtr stream = MediaStreamPtr(
-            new MediaStream(this, streamId,
+            new MediaStream(StreamedMediaChannelPtr(this), streamId,
                 contactHandle,
                 (Telepathy::MediaStreamType) streamType,
                 // TODO where to get this info from?

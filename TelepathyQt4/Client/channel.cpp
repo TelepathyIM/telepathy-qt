@@ -66,7 +66,7 @@ namespace Client
 
 struct Channel::Private
 {
-    Private(Channel *parent, Connection *connection);
+    Private(Channel *parent, const ConnectionPtr &connection);
     ~Private();
 
     static void introspectMain(Private *self);
@@ -102,8 +102,9 @@ struct Channel::Private
     // Instance of generated interface class
     ChannelInterface *baseInterface;
 
-    // Owning connection
-    Connection *connection;
+    // Owning connection - it can be a SharedPtr as Connection does not cache
+    // channels
+    ConnectionPtr connection;
 
     // Optional interface proxies
     ChannelInterfaceGroupInterface *group;
@@ -197,7 +198,7 @@ struct Channel::Private::GroupMembersChangedInfo
     QString message;
 };
 
-Channel::Private::Private(Channel *parent, Connection *connection)
+Channel::Private::Private(Channel *parent, const ConnectionPtr &connection)
     : parent(parent),
       baseInterface(new ChannelInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
@@ -228,12 +229,12 @@ Channel::Private::Private(Channel *parent, Connection *connection)
                         SLOT(onClosed()));
 
         debug() << " Connection to owning connection's lifetime signals";
-        parent->connect(connection,
+        parent->connect(connection.data(),
                         SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
                                            const QString &, const QString &)),
                         SLOT(onConnectionInvalidated()));
 
-        parent->connect(connection,
+        parent->connect(connection.data(),
                         SIGNAL(destroyed()),
                         SLOT(onConnectionDestroyed()));
     }
@@ -951,6 +952,12 @@ void Channel::Private::setReady()
 
 const Feature Channel::FeatureCore = Feature(Channel::staticMetaObject.className(), 0, true);
 
+ChannelPtr Channel::create(const ConnectionPtr &connection,
+        const QString &objectPath, const QVariantMap &immutableProperties)
+{
+    return ChannelPtr(new Channel(connection, objectPath, immutableProperties));
+}
+
 /**
  * Construct a new Channel object.
  *
@@ -960,14 +967,12 @@ const Feature Channel::FeatureCore = Feature(Channel::staticMetaObject.className
  * \param immutableProperties  The immutable properties of the channel, as
  *                             signalled by NewChannels or returned by
  *                             CreateChannel or EnsureChannel
- * \param parent Object parent.
  */
-Channel::Channel(Connection *connection,
+Channel::Channel(const ConnectionPtr &connection,
                  const QString &objectPath,
-                 const QVariantMap &immutableProperties,
-                 QObject *parent)
+                 const QVariantMap &immutableProperties)
     : StatefulDBusProxy(connection->dbusConnection(), connection->busName(),
-            objectPath, parent),
+            objectPath),
       OptionalInterfaceFactory<Channel>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, connection))
@@ -990,7 +995,7 @@ Channel::~Channel()
  *
  * \return A pointer to the Connection object that owns this Channel.
  */
-Connection *Channel::connection() const
+ConnectionPtr Channel::connection() const
 {
     return mPriv->connection;
 }
@@ -1909,7 +1914,7 @@ void Channel::onConnectionInvalidated()
 void Channel::onConnectionDestroyed()
 {
     debug() << "Owning connection destroyed, cutting off dangling pointer";
-    mPriv->connection = 0;
+    mPriv->connection.reset();
     invalidate(TELEPATHY_ERROR_CANCELLED,
                "Connection given as the owner of this channel was destroyed");
 }

@@ -217,7 +217,6 @@ void ReadinessHelper::Private::iterateIntrospection()
             } else {
                 operation->setFinishedWithError(errorName, errorMessage);
             }
-            pendingOperations.removeOne(operation);
         }
     }
 
@@ -283,9 +282,17 @@ void ReadinessHelper::Private::abortOperations(const QString &errorName,
         const QString &errorMessage)
 {
     foreach (PendingReady *operation, pendingOperations) {
+        parent->disconnect(operation,
+                SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+                parent,
+                SLOT(onOperationFinished(Telepathy::Client::PendingOperation*)));
+        parent->disconnect(operation,
+                SIGNAL(destroyed(QObject*)),
+                parent,
+                SLOT(onOperationDestroyed(QObject*)));
         operation->setFinishedWithError(errorName, errorMessage);
-        pendingOperations.removeOne(operation);
     }
+    pendingOperations.clear();
 }
 
 ReadinessHelper::ReadinessHelper(QObject *object,
@@ -445,7 +452,7 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
         debug() << "ReadinessHelper::becomeReady called with invalid features: requestedFeatures =" <<
             requestedFeatures << "- supportedFeatures =" << mPriv->supportedFeatures;
         PendingReady *operation =
-            new PendingReady(requestedFeatures, mPriv->object);
+            new PendingReady(requestedFeatures, mPriv->object, this);
         operation->setFinishedWithError(
                 QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Requested features contains unsupported feature"));
@@ -454,7 +461,7 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
 
     if (mPriv->proxy && !mPriv->proxy->isValid()) {
         PendingReady *operation =
-            new PendingReady(requestedFeatures, mPriv->object);
+            new PendingReady(requestedFeatures, mPriv->object, this);
         operation->setFinishedWithError(mPriv->proxy->invalidationReason(),
                 mPriv->proxy->invalidationMessage());
         return operation;
@@ -471,7 +478,13 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     // it will be updated on iterateIntrospection
     mPriv->pendingFeatures += requestedFeatures;
 
-    operation = new PendingReady(requestedFeatures, mPriv->object);
+    operation = new PendingReady(requestedFeatures, mPriv->object, this);
+    connect(operation,
+            SIGNAL(finished(Telepathy::Client::PendingOperation*)),
+            SLOT(onOperationFinished(Telepathy::Client::PendingOperation*)));
+    connect(operation,
+            SIGNAL(destroyed(QObject*)),
+            SLOT(onOperationDestroyed(QObject*)));
     mPriv->pendingOperations.append(operation);
 
     QTimer::singleShot(0, this, SLOT(iterateIntrospection()));
@@ -500,7 +513,7 @@ void ReadinessHelper::iterateIntrospection()
     mPriv->iterateIntrospection();
 }
 
-void ReadinessHelper::onProxyInvalidated(Telepathy::Client::DBusProxy *proxy,
+void ReadinessHelper::onProxyInvalidated(DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
     // clear satisfied and missing features as we have public methods to get them
@@ -510,5 +523,18 @@ void ReadinessHelper::onProxyInvalidated(Telepathy::Client::DBusProxy *proxy,
     mPriv->abortOperations(errorName, errorMessage);
 }
 
+void ReadinessHelper::onOperationFinished(PendingOperation *op)
+{
+    disconnect(op,
+               SIGNAL(destroyed(QObject*)),
+               this,
+               SLOT(onOperationDestroyed(QObject*)));
+    mPriv->pendingOperations.removeOne(qobject_cast<PendingReady*>(op));
+}
+
+void ReadinessHelper::onOperationDestroyed(QObject *obj)
+{
+    mPriv->pendingOperations.removeOne(qobject_cast<PendingReady*>(obj));
+}
 }
 }

@@ -22,7 +22,7 @@ class TestStreamedMediaChan : public Test
 
 public:
     TestStreamedMediaChan(QObject *parent = 0)
-        : Test(parent), mConnService(0), mConn(0)
+        : Test(parent), mConnService(0)
     { }
 
 protected Q_SLOTS:
@@ -61,7 +61,7 @@ private Q_SLOTS:
 private:
     ExampleCallableConnection *mConnService;
 
-    Connection *mConn;
+    ConnectionPtr mConn;
     QString mConnName;
     QString mConnPath;
     StreamedMediaChannelPtr mChan;
@@ -128,7 +128,7 @@ void TestStreamedMediaChan::expectCreateChannelFinished(PendingOperation* op)
     }
 
     PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = pc->channel();
+    mChan = StreamedMediaChannelPtr::dynamicCast(pc->channel());
     mLoop->exit(0);
 }
 
@@ -218,9 +218,9 @@ void TestStreamedMediaChan::onNewChannels(const Telepathy::ChannelDetailsList &c
 
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             !requested) {
-            mChan = StreamedMediaChannelPtr(new StreamedMediaChannel(mConn,
+            mChan = StreamedMediaChannel::create(mConn,
                         details.channel.path(),
-                        details.properties));
+                        details.properties);
             mLoop->exit(0);
         }
     }
@@ -258,7 +258,7 @@ void TestStreamedMediaChan::initTestCase()
     g_free(name);
     g_free(connPath);
 
-    mConn = new Connection(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath);
     QCOMPARE(mConn->isReady(), false);
 
     QVERIFY(connect(mConn->requestConnect(Connection::FeatureSelfContact),
@@ -552,7 +552,7 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     QCOMPARE(mLoop->exec(), 0);
 
     /* After the initial flurry of D-Bus messages, alice still hasn't answered */
-    processDBusQueue(mConn);
+    processDBusQueue(mConn.data());
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
@@ -715,7 +715,7 @@ void TestStreamedMediaChan::testIncomingCall()
 
     QCOMPARE(mChan->streams().size(), 1);
     MediaStreamPtr stream = mChan->streams().first();
-    QCOMPARE(stream->channel(), mChan.data());
+    QCOMPARE(stream->channel(), mChan);
     QCOMPARE(stream->type(), Telepathy::MediaStreamTypeAudio);
 
     // RequestStreams with bad type must fail
@@ -805,23 +805,20 @@ void TestStreamedMediaChan::cleanup()
 
 void TestStreamedMediaChan::cleanupTestCase()
 {
-    if (mConn != 0) {
+    if (mConn) {
         QVERIFY(connect(mConn->requestDisconnect(),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
                         SLOT(expectSuccessfulCall(Telepathy::Client::PendingOperation*))));
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
-            QVERIFY(connect(mConn,
+            QVERIFY(connect(mConn.data(),
                             SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
                                                const QString &, const QString &)),
                             mLoop,
                             SLOT(quit())));
             QCOMPARE(mLoop->exec(), 0);
         }
-
-        delete mConn;
-        mConn = 0;
     }
 
     cleanupTestCaseImpl();

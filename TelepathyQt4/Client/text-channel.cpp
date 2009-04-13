@@ -390,6 +390,13 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
  * circumstances in which this happens.
  */
 
+TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
+        const QString &objectPath, const QVariantMap &immutableProperties)
+{
+    return TextChannelPtr(new TextChannel(connection, objectPath,
+                immutableProperties));
+}
+
 /**
  * Creates a TextChannel associated with the given object on the same service
  * as the given connection.
@@ -400,13 +407,11 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
  * \param immutableProperties The immutable D-Bus properties of the channel
  *                    (as announced in the NewChannels D-Bus signal), used to
  *                    reduce D-Bus round trips
- * \param parent      Passed to the parent class constructor.
  */
-TextChannel::TextChannel(Connection *connection,
+TextChannel::TextChannel(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties,
-        QObject *parent)
-    : Channel(connection, objectPath, immutableProperties, parent),
+        const QVariantMap &immutableProperties)
+    : Channel(connection, objectPath, immutableProperties),
       mPriv(new Private(this))
 {
 }
@@ -574,7 +579,7 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
     UIntList ids;
 
     foreach (const ReceivedMessage &m, messages) {
-        if (m.isFromChannel(this)) {
+        if (m.isFromChannel(TextChannelPtr(this))) {
             ids << m.pendingId();
         } else {
             warning() << "message did not come from this channel, ignoring";
@@ -614,7 +619,7 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
 void TextChannel::forget(const QList<ReceivedMessage> &messages)
 {
     foreach (const ReceivedMessage &m, messages) {
-        if (!m.isFromChannel(this)) {
+        if (!m.isFromChannel(TextChannelPtr(this))) {
             warning() << "message did not come from this channel, ignoring";
         } else if (mPriv->messages.removeOne(m)) {
             emit pendingMessageRemoved(m);
@@ -804,7 +809,7 @@ void TextChannel::onMessageReceived(const Telepathy::MessagePartList &parts)
     }
 
     mPriv->incompleteMessages << new Private::QueuedEvent(
-            ReceivedMessage(parts, this));
+            ReceivedMessage(parts, TextChannelPtr(this)));
     processQueue();
 }
 
@@ -865,7 +870,7 @@ void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
     parts << header;
     parts << body;
 
-    ReceivedMessage m(parts, this);
+    ReceivedMessage m(parts, TextChannelPtr(this));
 
     if (flags & ChannelTextMessageFlagNonTextContent) {
         // set the "you are not expected to understand this" flag

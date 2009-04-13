@@ -23,6 +23,8 @@
 #include "TelepathyQt4/Client/_gen/room-list.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Client/Connection>
+
 namespace Telepathy
 {
 namespace Client
@@ -54,6 +56,13 @@ RoomList::Private::~Private()
  * RoomList interface. Until then, it's just a Channel.
  */
 
+RoomListPtr RoomList::create(const ConnectionPtr &connection,
+        const QString &objectPath, const QVariantMap &immutableProperties)
+{
+    return RoomListPtr(new RoomList(connection, objectPath,
+                immutableProperties));
+}
+
 /**
  * Creates a RoomList associated with the given object on the same service
  * as the given connection.
@@ -64,13 +73,11 @@ RoomList::Private::~Private()
  * \param immutableProperties  The immutable properties of the channel, as
  *                             signalled by NewChannels or returned by
  *                             CreateChannel or EnsureChannel
- * \param parent      Passed to the parent class constructor.
  */
-RoomList::RoomList(Connection *connection,
+RoomList::RoomList(const ConnectionPtr &connection,
         const QString &objectPath,
-        const QVariantMap &immutableProperties,
-        QObject *parent)
-    : Channel(connection, objectPath, immutableProperties, parent),
+        const QVariantMap &immutableProperties)
+    : Channel(connection, objectPath, immutableProperties),
       mPriv(new Private())
 {
 }

@@ -42,9 +42,7 @@ public:
         : Test(parent),
           // service side (telepathy-glib)
           mConnService(0), mBaseConnService(0), mContactRepo(0),
-            mTextChanService(0), mMessagesChanService(0),
-          // client side (Telepathy-Qt4)
-          mConn(0), mChan(0)
+            mTextChanService(0), mMessagesChanService(0)
     { }
 
 protected Q_SLOTS:
@@ -77,8 +75,8 @@ private:
     ExampleEchoChannel *mTextChanService;
     ExampleEcho2Channel *mMessagesChanService;
 
-    Connection *mConn;
-    TextChannel *mChan;
+    ConnectionPtr mConn;
+    TextChannelPtr mChan;
     QString mTextChanPath;
     QString mMessagesChanPath;
     QString mConnName;
@@ -145,7 +143,7 @@ void TestTextChan::initTestCase()
     g_free(name);
     g_free(connPath);
 
-    mConn = new Connection(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath);
     QCOMPARE(mConn->isReady(), false);
 
     mConn->requestConnect();
@@ -189,13 +187,13 @@ void TestTextChan::init()
 {
     initImpl();
 
-    mChan = 0;
+    mChan.reset();
 }
 
 void TestTextChan::commonTest(bool withMessages)
 {
-    Q_ASSERT(mChan != 0);
-    Channel *asChannel = mChan;
+    Q_ASSERT(mChan);
+    ChannelPtr asChannel = ChannelPtr(dynamic_cast<Channel*>(mChan.data()));
 
     QVERIFY(connect(asChannel->becomeReady(),
                 SIGNAL(finished(Telepathy::Client::PendingOperation *)),
@@ -211,16 +209,16 @@ void TestTextChan::commonTest(bool withMessages)
     // early, so don't assert about that
     QVERIFY(!mChan->isReady(features));
 
-    QVERIFY(connect(mChan,
+    QVERIFY(connect(mChan.data(),
                 SIGNAL(messageReceived(const Telepathy::Client::ReceivedMessage &)),
                 SLOT(onMessageReceived(const Telepathy::Client::ReceivedMessage &))));
     QCOMPARE(received.size(), 0);
-    QVERIFY(connect(mChan,
+    QVERIFY(connect(mChan.data(),
                 SIGNAL(pendingMessageRemoved(const Telepathy::Client::ReceivedMessage &)),
                 SLOT(onMessageRemoved(const Telepathy::Client::ReceivedMessage &))));
     QCOMPARE(removed.size(), 0);
 
-    QVERIFY(connect(mChan,
+    QVERIFY(connect(mChan.data(),
                 SIGNAL(messageSent(const Telepathy::Client::Message &,
                         Telepathy::MessageSendingFlags,
                         const QString &)),
@@ -412,24 +410,20 @@ void TestTextChan::commonTest(bool withMessages)
 
 void TestTextChan::testMessages()
 {
-    mChan = new TextChannel(mConn, mMessagesChanPath, QVariantMap(), this);
+    mChan = TextChannel::create(mConn, mMessagesChanPath, QVariantMap());
 
     commonTest(true);
 }
 
 void TestTextChan::testLegacyText()
 {
-    mChan = new TextChannel(mConn, mTextChanPath, QVariantMap(), this);
+    mChan = TextChannel::create(mConn, mTextChanPath, QVariantMap());
 
     commonTest(false);
 }
 
 void TestTextChan::cleanup()
 {
-    if (mChan != 0) {
-        delete mChan;
-        mChan = 0;
-    }
     received.clear();
     removed.clear();
     sent.clear();
@@ -439,7 +433,7 @@ void TestTextChan::cleanup()
 
 void TestTextChan::cleanupTestCase()
 {
-    if (mConn != 0) {
+    if (mConn) {
         // Disconnect and wait for the readiness change
         QVERIFY(connect(mConn->requestDisconnect(),
                         SIGNAL(finished(Telepathy::Client::PendingOperation*)),
@@ -447,16 +441,13 @@ void TestTextChan::cleanupTestCase()
         QCOMPARE(mLoop->exec(), 0);
 
         if (mConn->isValid()) {
-            QVERIFY(connect(mConn,
+            QVERIFY(connect(mConn.data(),
                             SIGNAL(invalidated(Telepathy::Client::DBusProxy *,
                                                const QString &, const QString &)),
                             mLoop,
                             SLOT(quit())));
             QCOMPARE(mLoop->exec(), 0);
         }
-
-        delete mConn;
-        mConn = 0;
     }
 
     if (mTextChanService != 0) {

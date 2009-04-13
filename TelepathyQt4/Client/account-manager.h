@@ -34,11 +34,11 @@
 #include <TelepathyQt4/Client/OptionalInterfaceFactory>
 #include <TelepathyQt4/Client/ReadinessHelper>
 #include <TelepathyQt4/Client/ReadyObject>
+#include <TelepathyQt4/Client/Types>
+#include <TelepathyQt4/SharedPtr>
 
 #include <QDBusObjectPath>
-#include <QExplicitlySharedDataPointer>
 #include <QSet>
-#include <QSharedData>
 #include <QString>
 #include <QVariantMap>
 
@@ -54,7 +54,7 @@ class PendingReady;
 class AccountManager : public StatelessDBusProxy,
                        private OptionalInterfaceFactory<AccountManager>,
                        public ReadyObject,
-                       public QSharedData
+                       public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(AccountManager)
@@ -62,8 +62,8 @@ class AccountManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    AccountManager(QObject *parent = 0);
-    AccountManager(const QDBusConnection &bus, QObject *parent = 0);
+    static AccountManagerPtr create();
+    static AccountManagerPtr create(const QDBusConnection &bus);
 
     virtual ~AccountManager();
 
@@ -97,6 +97,9 @@ Q_SIGNALS:
     void accountValidityChanged(const QString &path, bool valid);
 
 protected:
+    AccountManager();
+    AccountManager(const QDBusConnection &bus);
+
     AccountManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
@@ -110,8 +113,6 @@ private:
     friend class PendingAccount;
     Private *mPriv;
 };
-
-typedef QExplicitlySharedDataPointer<AccountManager> AccountManagerPtr;
 
 } // Telepathy::Client
 } // Telepathy

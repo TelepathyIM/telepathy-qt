@@ -64,7 +64,7 @@ namespace Client
 
 struct PendingContactAttributes::Private
 {
-    Connection *connection;
+    ConnectionPtr connection;
     UIntList contactsRequested;
     QStringList interfacesRequested;
     bool shouldReference;
@@ -73,9 +73,10 @@ struct PendingContactAttributes::Private
     ContactAttributesMap attributes;
 };
 
-PendingContactAttributes::PendingContactAttributes(Connection* connection, const UIntList &handles,
-        const QStringList &interfaces, bool reference)
-    : PendingOperation(connection), mPriv(new Private)
+PendingContactAttributes::PendingContactAttributes(const ConnectionPtr &connection,
+        const UIntList &handles, const QStringList &interfaces, bool reference)
+    : PendingOperation(connection.data()),
+      mPriv(new Private)
 {
     debug() << "PendingContactAttributes()";
 
@@ -98,7 +99,7 @@ PendingContactAttributes::~PendingContactAttributes()
  *
  * \return Pointer to the Connection.
  */
-Connection* PendingContactAttributes::connection() const
+ConnectionPtr PendingContactAttributes::connection() const
 {
     return mPriv->connection;
 }
@@ -220,16 +221,18 @@ void PendingContactAttributes::onCallFinished(QDBusPendingCallWatcher* watcher)
         }
 
         if (shouldReference()) {
-            mPriv->validHandles = ReferencedHandles(connection(), HandleTypeContact, validHandles);
+            mPriv->validHandles = ReferencedHandles(mPriv->connection, HandleTypeContact,
+                    validHandles);
         }
 
         debug() << " Success:" << validHandles.size() << "valid and" << mPriv->invalidHandles.size()
             << "invalid handles";
-        
+
         setFinished();
     }
 
-    connection()->handleRequestLanded(HandleTypeContact);
+    mPriv->connection->handleRequestLanded(HandleTypeContact);
+
     watcher->deleteLater();
 }
 

@@ -49,7 +49,7 @@ class PendingChannel : public PendingOperation
 public:
     ~PendingChannel();
 
-    Connection *connection() const;
+    ConnectionPtr connection() const;
 
     bool yours() const;
 
@@ -72,9 +72,9 @@ private Q_SLOTS:
 private:
     friend class Connection;
 
-    PendingChannel(Connection *connection,
+    PendingChannel(const ConnectionPtr &connection,
             const QString &errorName, const QString &errorMessage);
-    PendingChannel(Connection *connection,
+    PendingChannel(const ConnectionPtr &connection,
             const QVariantMap &request, bool create);
 
     struct Private;

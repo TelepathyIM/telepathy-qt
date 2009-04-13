@@ -167,7 +167,7 @@ Connection::Private::Private(Connection *parent)
       selfHandle(0),
       contactListsChannelsReady(0),
       handleContext(0),
-      contactManager(new ContactManager(parent))
+      contactManager(0)
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -289,6 +289,11 @@ void Connection::Private::init()
 
 void Connection::Private::introspectMain(Connection::Private *self)
 {
+    if (!self->contactManager) {
+        self->contactManager = new ContactManager(
+                ConnectionPtr(self->parent));
+    }
+
     // Introspecting the main interface is currently just calling
     // GetInterfaces(), but it might include other stuff in the future if we
     // gain GetAll-able properties on the connection
@@ -386,7 +391,7 @@ void Connection::Private::introspectRoster(Connection::Private *self)
 }
 
 Connection::PendingConnect::PendingConnect(Connection *parent, const Features &requestedFeatures)
-    : PendingReady(requestedFeatures, parent)
+    : PendingReady(requestedFeatures, parent, parent)
 {
     QDBusPendingCall call = parent->baseInterface()->Connect();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, parent);
@@ -453,19 +458,29 @@ const Feature Connection::FeatureSelfContact = Feature(Connection::staticMetaObj
 const Feature Connection::FeatureSimplePresence = Feature(Connection::staticMetaObject.className(), 2);
 const Feature Connection::FeatureRoster = Feature(Connection::staticMetaObject.className(), 3);
 
+ConnectionPtr Connection::create(const QString &busName,
+        const QString &objectPath)
+{
+    return ConnectionPtr(new Connection(busName, objectPath));
+}
+
+ConnectionPtr Connection::create(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath)
+{
+    return ConnectionPtr(new Connection(bus, busName, objectPath));
+}
+
 /**
  * Construct a new Connection object.
  *
  * \param busName The connection's well-known or unique bus name
  *                (sometimes called a "service name")
  * \param objectPath The connection's object path
- * \param parent Object parent
  */
 Connection::Connection(const QString &busName,
-                       const QString &objectPath,
-                       QObject *parent)
+                       const QString &objectPath)
     : StatefulDBusProxy(QDBusConnection::sessionBus(),
-            busName, objectPath, parent),
+            busName, objectPath),
       OptionalInterfaceFactory<Connection>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
@@ -479,13 +494,11 @@ Connection::Connection(const QString &busName,
  * \param busName The connection's well-known or unique bus name
  *                (sometimes called a "service name")
  * \param objectPath The connection's object path
- * \param parent Object parent
  */
 Connection::Connection(const QDBusConnection &bus,
                        const QString &busName,
-                       const QString &objectPath,
-                       QObject *parent)
-    : StatefulDBusProxy(bus, busName, objectPath, parent),
+                       const QString &objectPath)
+    : StatefulDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Connection>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
@@ -1052,24 +1065,28 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
 {
     if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Calling createChannel with connection not yet connected";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Connection not yet connected");
     }
 
     if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
         warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Connection does not support Requests Interface");
     }
 
     if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
-        return new PendingChannel(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid 'request' argument");
     }
 
     debug() << "Creating a Channel";
     PendingChannel *channel =
-        new PendingChannel(this, request, true);
+        new PendingChannel(ConnectionPtr(this),
+                request, true);
     return channel;
 }
 
@@ -1103,24 +1120,27 @@ PendingChannel *Connection::ensureChannel(const QVariantMap &request)
 {
     if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Calling ensureChannel with connection not yet connected";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_NOT_AVAILABLE,
                 "Connection not yet connected");
     }
 
     if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
         warning() << "Requests interface is not support by this connection";
-        return new PendingChannel(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Connection does not support Requests Interface");
     }
 
     if (!request.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"))) {
-        return new PendingChannel(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+        return new PendingChannel(ConnectionPtr(this),
+                TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid 'request' argument");
     }
 
     debug() << "Creating a Channel";
     PendingChannel *channel =
-        new PendingChannel(this, request, false);
+        new PendingChannel(ConnectionPtr(this), request, false);
     return channel;
 }
 
@@ -1160,7 +1180,7 @@ PendingHandles *Connection::requestHandles(uint handleType, const QStringList &n
     }
 
     PendingHandles *pending =
-        new PendingHandles(this, handleType, names);
+        new PendingHandles(ConnectionPtr(this), handleType, names);
     return pending;
 }
 
@@ -1214,7 +1234,7 @@ PendingHandles *Connection::referenceHandles(uint handleType, const UIntList &ha
         "of the handles -" << notYetHeld.size() << "to go";
 
     PendingHandles *pending =
-        new PendingHandles(this, handleType, handles,
+        new PendingHandles(ConnectionPtr(this), handleType, handles,
                 alreadyHeld, notYetHeld);
     return pending;
 }
@@ -1285,7 +1305,8 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
     debug() << "Request for attributes for" << handles.size() << "contacts";
 
     PendingContactAttributes *pending =
-        new PendingContactAttributes(this, handles, interfaces, reference);
+        new PendingContactAttributes(ConnectionPtr(this),
+                handles, interfaces, reference);
     if (!isReady()) {
         warning() << "Connection::getContactAttributes() used when not ready";
         pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE, "The connection isn't ready");
@@ -1334,6 +1355,9 @@ QStringList Connection::contactAttributeInterfaces() const
 
 ContactManager *Connection::contactManager() const
 {
+    if (!isReady()) {
+        return 0;
+    }
     return mPriv->contactManager;
 }
 

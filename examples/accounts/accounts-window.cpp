@@ -41,11 +41,11 @@ AccountsWindow::AccountsWindow(QWidget *parent)
 {
     setupGui();
 
-    mAM = new Telepathy::Client::AccountManager(this);
+    mAM = Telepathy::Client::AccountManager::create();
     connect(mAM->becomeReady(),
             SIGNAL(finished(Telepathy::Client::PendingOperation *)),
             SLOT(onAMReady(Telepathy::Client::PendingOperation *)));
-    connect(mAM,
+    connect(mAM.data(),
             SIGNAL(accountCreated(const QString &)),
             SLOT(onAccountCreated(const QString &)));
 }

@@ -1,4 +1,5 @@
-/* FileTransfer channel client-side proxy
+/*
+ * This file is part of TelepathyQt4
  *
  * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2009 Nokia Corporation
@@ -18,40 +19,41 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_Client_file_transfer_h_HEADER_GUARD_
-#define _TelepathyQt4_Client_file_transfer_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_cli_types_h_HEADER_GUARD_
+#define _TelepathyQt4_cli_types_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/Client/Channel>
+#include <TelepathyQt4/SharedPtr>
 
 namespace Telepathy
 {
 namespace Client
 {
 
-class FileTransfer : public Channel
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(FileTransfer)
+class Account;
+class AccountManager;
+class Channel;
+class Connection;
+class ConnectionManager;
+class FileTransfer;
+class RoomList;
+class MediaStream;
+class StreamedMediaChannel;
+class TextChannel;
 
-public:
-    static FileTransferPtr create(const ConnectionPtr &connection,
-            const QString &objectPath, const QVariantMap &immutableProperties);
-
-    ~FileTransfer();
-
-protected:
-    FileTransfer(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties);
-
-private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
+typedef SharedPtr<Account> AccountPtr;
+typedef SharedPtr<AccountManager> AccountManagerPtr;
+typedef SharedPtr<Channel> ChannelPtr;
+typedef SharedPtr<Connection> ConnectionPtr;
+typedef SharedPtr<ConnectionManager> ConnectionManagerPtr;
+typedef SharedPtr<FileTransfer> FileTransferPtr;
+typedef SharedPtr<RoomList> RoomListPtr;
+typedef SharedPtr<MediaStream> MediaStreamPtr;
+typedef SharedPtr<StreamedMediaChannel> StreamedMediaChannelPtr;
+typedef SharedPtr<TextChannel> TextChannelPtr;
 
 } // Telepathy::Client
 } // Telepathy

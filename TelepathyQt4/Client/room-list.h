@@ -38,17 +38,20 @@ class RoomList : public Channel
     Q_DISABLE_COPY(RoomList)
 
 public:
-    RoomList(Connection *connection, const QString &objectPath,
-            const QVariantMap &immutableProperties, QObject *parent = 0);
+    static RoomListPtr create(const ConnectionPtr &connection,
+            const QString &objectPath, const QVariantMap &immutableProperties);
+
     ~RoomList();
+
+protected:
+    RoomList(const ConnectionPtr &connection, const QString &objectPath,
+            const QVariantMap &immutableProperties);
 
 private:
     struct Private;
     friend struct Private;
     Private *mPriv;
 };
-
-typedef QExplicitlySharedDataPointer<RoomList> RoomListPtr;
 
 } // Telepathy::Client
 } // Telepathy

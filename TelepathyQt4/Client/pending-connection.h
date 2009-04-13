@@ -48,7 +48,7 @@ class PendingConnection : public PendingOperation
 public:
     ~PendingConnection();
 
-    ConnectionManager *manager() const;
+    ConnectionManagerPtr manager() const;
 
     ConnectionPtr connection() const;
 
@@ -61,7 +61,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(PendingConnection);
-    PendingConnection(ConnectionManager *manager,
+    PendingConnection(const ConnectionManagerPtr &manager,
             const QString &protocol, const QVariantMap &parameters);
 
     struct Private;

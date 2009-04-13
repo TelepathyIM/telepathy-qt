@@ -67,7 +67,12 @@ namespace Client
 
 struct ContactManager::Private
 {
-    Connection *conn;
+    Private(const ConnectionPtr &connection) :
+        connection(connection)
+    {
+    }
+
+    WeakPtr<Connection> connection;
     QMap<uint, QWeakPointer<Contact> > contacts;
 
     QMap<Contact::Feature, bool> tracking;
@@ -85,9 +90,9 @@ struct ContactManager::Private
     void updateContactsPresenceState();
 };
 
-Connection *ContactManager::connection() const
+ConnectionPtr ContactManager::connection() const
 {
-    return mPriv->conn;
+    return ConnectionPtr(mPriv->connection);
 }
 
 namespace
@@ -111,13 +116,14 @@ QString featureToInterface(Contact::Feature feature)
 
 QSet<Contact::Feature> ContactManager::supportedFeatures() const
 {
+
     if (mPriv->supportedFeatures.isEmpty() &&
-        mPriv->conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        connection()->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
         QList<Contact::Feature> allFeatures = QList<Contact::Feature>()
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
             << Contact::FeatureSimplePresence;
-        QStringList interfaces = mPriv->conn->contactAttributeInterfaces();
+        QStringList interfaces = connection()->contactAttributeInterfaces();
         foreach (Contact::Feature feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
                 mPriv->supportedFeatures.insert(feature);
@@ -687,10 +693,10 @@ void ContactManager::onDenyChannelMembersChanged(
     }
 }
 
-ContactManager::ContactManager(Connection *parent)
-    : QObject(parent), mPriv(new Private)
+ContactManager::ContactManager(const ConnectionPtr &connection)
+    : QObject(connection.data()),
+      mPriv(new Private(connection))
 {
-    mPriv->conn = parent;
 }
 
 ContactManager::~ContactManager()
@@ -804,9 +810,11 @@ ContactPtr ContactManager::lookupContactByHandle(uint handle)
 
 void ContactManager::Private::ensureTracking(Contact::Feature feature)
 {
-    if (tracking[feature])
+    if (tracking[feature]) {
         return;
+    }
 
+    ConnectionPtr conn(connection);
     switch (feature) {
         case Contact::FeatureAlias:
             QObject::connect(
