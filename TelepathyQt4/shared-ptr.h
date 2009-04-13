@@ -67,8 +67,7 @@ class SharedPtr
 {
 public:
     inline SharedPtr() : d(0) { }
-    template <class Y>
-    explicit inline SharedPtr(Y *d) : d(dynamic_cast<T*>(d)) { if (d) { d->ref(); } }
+    explicit inline SharedPtr(T *d) : d(d) { if (d) { d->ref(); } }
     inline SharedPtr(const SharedPtr<T> &o) : d(o.d) { if (d) { d->ref(); } }
     explicit inline SharedPtr(const WeakPtr<T> &o)
     {
