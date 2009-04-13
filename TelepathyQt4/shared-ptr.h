@@ -117,6 +117,24 @@ public:
         o.d = tmp;
     }
 
+    template <class X>
+    static inline SharedPtr<T> staticCast(const SharedPtr<X> &src)
+    {
+        return SharedPtr<T>(static_cast<T*>(src.data()));
+    }
+
+    template <class X>
+    static inline SharedPtr<T> dynamicCast(const SharedPtr<X> &src)
+    {
+        return SharedPtr<T>(dynamic_cast<T*>(src.data()));
+    }
+
+    template <class X>
+    static inline SharedPtr<T> constCast(const SharedPtr<X> &src)
+    {
+        return SharedPtr<T>(const_cast<T*>(src.data()));
+    }
+
 private:
     friend class WeakPtr<T>;
 
