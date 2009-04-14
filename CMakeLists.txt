@@ -42,10 +42,27 @@ include(Doxygen)
 # Find qt4 version >= 4.5
 find_package(Qt4 REQUIRED)
 if(${QT_VERSION_MINOR} GREATER 4)
-    message(STATUS "Qt 4.${QT_VERSION_MINOR} found.")
+    message(STATUS "Qt 4.${QT_VERSION_MINOR} found")
 else(${QT_VERSION_MINOR} GREATER 4)
-    message(SEND_ERROR "Qt 4.5 or greater is required")
+    message(SEND_ERROR "Qt >= 4.5 is required")
 endif(${QT_VERSION_MINOR} GREATER 4)
+
+# Check for Qt4 Glib support
+include(CheckCXXSourceCompiles)
+set(CMAKE_REQUIRED_INCLUDES ${QT_INCLUDES})
+set(CMAKE_REQUIRED_DEFINITIONS "")
+set(CMAKE_REQUIRED_FLAGS "")
+
+CHECK_CXX_SOURCE_COMPILES("
+#include <QtCore/QtGlobal>
+int main()
+{
+#if defined(QT_NO_GLIB)
+#error \"Qt was compiled with Glib disabled\"
+#endif
+return 0;
+}"
+QT4_GLIB_SUPPORT)
 
 # add the -i option to QT4_GENERATE_MOC
 macro(QT4_GENERATE_MOC_I infile outfile)
@@ -59,19 +76,54 @@ endmacro(QT4_GENERATE_MOC_I)
 find_package(PythonLibrary REQUIRED)
 set(REQUIRED_PY 2.5)
 if(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
-    message(STATUS "Python ${PYTHON_SHORT_VERSION} found.")
+    message(STATUS "Python ${PYTHON_SHORT_VERSION} found")
 else(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
-    message(SEND_ERROR "Python ${REQUIRED_PY} or greater is required.")
+    message(SEND_ERROR "Python >= ${REQUIRED_PY} is required")
 endif(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
+
+# Check for dbus-python
+execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import dbus.mainloop.glib"
+                RESULT_VARIABLE PYTHON_DBUS_RESULT)
+if(PYTHON_DBUS_RESULT EQUAL 0)
+    message(STATUS "dbus-python installed, running additional tests")
+    set(HAVE_TEST_PYTHON 1)
+else(PYTHON_DBUS_RESULT EQUAL 0)
+    message(STATUS "dbus-python not installed, skipping some tests")
+    set(HAVE_TEST_PYTHON 0)
+endif(PYTHON_DBUS_RESULT EQUAL 0)
 
 # Optional dependencies
 find_package(PkgConfig)
+
+# Find tp-farsight
 pkg_check_modules(TP_FARSIGHT telepathy-farsight>=0.0.4 gstreamer-0.10 gstreamer-interfaces-0.10)
 if(TP_FARSIGHT_FOUND)
     message(STATUS "telepathy-farsight and gstreamer libraries found, building additional examples")
 else(TP_FARSIGHT_FOUND)
     message(STATUS "telepathy-farsight or gstreamer libraries not found, not building some examples")
 endif(TP_FARSIGHT_FOUND)
+
+# Find telepathy-glib
+set(REQUIRED_TP_GLIB 0.7.28)
+pkg_check_modules(TPGLIB telepathy-glib>=${REQUIRED_TP_GLIB})
+
+# process results...
+if(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
+    message(STATUS "Qt4 compiled with Glib support and telepathy-glib >= ${REQUIRED_TP_GLIB} found, running additional tests")
+    set(ENABLE_TP_GLIB_TESTS 1)
+else(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
+    message(STATUS "Qt4 not compiled with Glib support or telepathy-glib >= ${REQUIRED_TP_GLIB} not found, skipping some tests")
+    set(ENABLE_TP_GLIB_TESTS 0)
+endif(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
+
+find_program(PINOCCHIO telepathy-pinocchio PATHS /usr/local/libexec /usr/libexec /usr/lib/telepathy /usr/local/lib/telepathy)
+find_program(PINOCCHIO_CTL pinocchio-ctl)
+
+if(PINOCCHIO AND PINOCCHIO_CTL)
+    message(STATUS "telepathy-pinochhio found, running additional tests")
+else(PINOCCHIO AND PINOCCHIO_CTL)
+    message(STATUS "telepathy-pinochhio not found, skipping some tests")
+endif(PINOCCHIO AND PINOCCHIO_CTL)
 
 add_subdirectory(TelepathyQt4)
 add_subdirectory(examples)

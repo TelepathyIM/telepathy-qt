@@ -1,6 +1,3 @@
-find_program(PINOCCHIO telepathy-pinocchio PATHS /usr/local/libexec /usr/libexec /usr/lib/telepathy /usr/local/lib/telepathy)
-find_program(PINOCCHIO_CTL pinocchio-ctl)
-
 if(PINOCCHIO AND PINOCCHIO_CTL)
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_tmp)
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_gen)
