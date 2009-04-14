@@ -43,7 +43,7 @@ class ReadyObject
 
 public:
     ReadyObject(QObject *object, const Feature &featureCore);
-    ~ReadyObject();
+    virtual ~ReadyObject();
 
     virtual bool isReady(const Features &features = Features()) const;
     virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
