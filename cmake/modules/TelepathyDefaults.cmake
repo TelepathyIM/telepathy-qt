@@ -48,7 +48,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
         sign-compare
         pointer-arith
         format-security
-        init-self)
+        init-self
+        non-virtual-dtor)
     set(undesired
         missing-field-initializers
         unused-parameter)
