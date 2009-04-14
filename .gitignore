@@ -49,6 +49,7 @@
 /telepathy-qt4-*.tar.gz
 /telepathy-qt4-*.tar.gz.asc
 /telepathy-qt4-*/
+/tests/dbus/runDbusTest.sh
 /tests/dbus/test-*
 /tests/dbus/with-session-bus-*.address
 /tests/dbus/with-session-bus-*.pid
@@ -56,6 +57,7 @@
 /tests/dbus-1/session.conf
 /tests/pinocchio/test-*
 /tests/prototype/test-*
+/tests/runGenericTest.sh
 /tests/test-key-file
 /tests/test-manager-file
 /tests/test-utils
