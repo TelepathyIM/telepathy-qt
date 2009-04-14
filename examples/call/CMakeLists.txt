@@ -1,9 +1,4 @@
-find_package(PkgConfig)
-pkg_check_modules(TP_FARSIGHT telepathy-farsight>=0.0.4 gstreamer-0.10 gstreamer-interfaces-0.10)
-
 if(TP_FARSIGHT_FOUND)
-    message(STATUS "telepathy-farsight and gstreamer libraries found, building the call example")
-
     include_directories(
                 ${CMAKE_BINARY_DIR}
                 ${CMAKE_SOURCE_DIR}
@@ -42,6 +37,4 @@ if(TP_FARSIGHT_FOUND)
         ${TP_FARSIGHT_LIBRARIES}
         telepathy-qt4
         telepathy-qt4-examples-roster)
-else(TP_FARSIGHT_FOUND)
-    message(STATUS "telepathy-farsight or gstreamer libraries not found, not building the call example")
 endif(TP_FARSIGHT_FOUND)

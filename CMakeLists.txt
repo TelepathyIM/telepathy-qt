@@ -36,6 +36,9 @@ endif(NOT CMAKE_BUILD_TYPE)
 include(TelepathyDefaults)
 include(Doxygen)
 
+# external dependencies
+
+# Required dependencies
 # Find qt4 version >= 4.5
 find_package(Qt4 REQUIRED)
 if(${QT_VERSION_MINOR} GREATER 4)
@@ -60,6 +63,15 @@ if(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERS
 else(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
     message(SEND_ERROR "Python ${REQUIRED_PY} or greater is required.")
 endif(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_VERSION} VERSION_EQUAL ${REQUIRED_PY})
+
+# Optional dependencies
+find_package(PkgConfig)
+pkg_check_modules(TP_FARSIGHT telepathy-farsight>=0.0.4 gstreamer-0.10 gstreamer-interfaces-0.10)
+if(TP_FARSIGHT_FOUND)
+    message(STATUS "telepathy-farsight and gstreamer libraries found, building additional examples")
+else(TP_FARSIGHT_FOUND)
+    message(STATUS "telepathy-farsight or gstreamer libraries not found, not building some examples")
+endif(TP_FARSIGHT_FOUND)
 
 add_subdirectory(TelepathyQt4)
 add_subdirectory(examples)
