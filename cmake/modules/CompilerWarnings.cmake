@@ -21,7 +21,7 @@ macro(compiler_warnings ret lang werror_by_default desirable_flags undesirable_f
             set(warning_flags "${warning_flags} -W${flag}")
         endif( ${${flag}_${lang}_result} )
     endforeach(flag ${desirable_flags})
-    
+
     check_lang_compiler_flag(${lang} -Werror error_${lang}_result)
     if(${error_${lang}_result})
         set(error_flags "-Werror")
@@ -43,7 +43,7 @@ macro(compiler_warnings ret lang werror_by_default desirable_flags undesirable_f
     else(${DISABLE_WERROR} STREQUAL ON)
         set(enable_werror 1)
     endif(${DISABLE_WERROR} STREQUAL ON)
-    
+
     if(${werror_by_default} AND ${enable_werror})
         set(${ret} "${warning_flags} ${error_flags}")
     else(${werror_by_default} AND ${enable_werror})
