@@ -23,11 +23,11 @@ configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 # checked
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-# Default build type is Release for release versions and Debug for developement
+# Default build type is RelWithDebInfo for release versions and Debug for developement
 # versions
 if(NOT CMAKE_BUILD_TYPE)
     if(TP_QT4_NANO_VERSION EQUAL 0)
-        set(CMAKE_BUILD_TYPE Release)
+        set(CMAKE_BUILD_TYPE RelWithDebInfo)
     else(TP_QT4_NANO_VERSION EQUAL 0)
         set(CMAKE_BUILD_TYPE Debug)
     endif(TP_QT4_NANO_VERSION EQUAL 0)

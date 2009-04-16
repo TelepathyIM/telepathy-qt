@@ -30,7 +30,7 @@ if [ "$profile" ]; then
 elif [ "$debug" == "yes" ]; then
     flags="$flags -DCMAKE_BUILD_TYPE=Debug"
 elif [ "$debug" == "no" ]; then
-    flags="$flags -DCMAKE_BUILD_TYPE=Release"
+    flags="$flags -DCMAKE_BUILD_TYPE=RelWithDebInfo"
 fi
 
 echo "running cmake $flags .."
