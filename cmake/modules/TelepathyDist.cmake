@@ -1,10 +1,16 @@
 # setup make dist
-add_custom_target(clone git clone ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION})
-add_custom_target(clean-git rm -rf ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}/.git*)
-add_custom_target(dist tar -czf ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz ${PACKAGE_NAME}-${PACKAGE_VERSION})
-add_dependencies(clean-git clone)
-add_dependencies(dist clean-git)
+add_custom_target(dist cd ${CMAKE_SOURCE_DIR} &&
+                        git archive --format=tar --prefix=${PACKAGE_NAME}-${PACKAGE_VERSION}/ HEAD |
+                            gzip > ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz)
 
 # setup make distcheck
-FIND_FILE(_distcheck_py distcheck.py PATHS ${CMAKE_MODULE_PATH})
-add_custom_target(distcheck ${PYTHON_EXECUTABLE} ${_distcheck_py} ${PACKAGE_NAME} ${PACKAGE_VERSION} ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+add_custom_target(distcheck cd ${CMAKE_BINARY_DIR} &&
+                        rm -rf ${PACKAGE_NAME}-${PACKAGE_VERSION} &&
+                        gzip -d ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz &&
+                        tar -xf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar &&
+                        cd ${PACKAGE_NAME}-${PACKAGE_VERSION}/ &&
+                        cmake . && make && make test && make doxygen-doc &&
+                        cd ${CMAKE_BINARY_DIR} &&
+                        tar -rf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar ${PACKAGE_NAME}-${PACKAGE_VERSION}/doc/ &&
+                        gzip ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar)
+add_dependencies(distcheck dist)
