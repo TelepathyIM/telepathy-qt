@@ -268,11 +268,10 @@ QVariant ManagerFile::Private::valueForKey(const QString &param,
                 return QVariant(value);
             }
         default:
-            {
-                QString value = keyFile.value(param);
-                return QVariant(value);
-            }
+            break;
     }
+    QString value = keyFile.value(param);
+    return QVariant(value);
 }
 
 
