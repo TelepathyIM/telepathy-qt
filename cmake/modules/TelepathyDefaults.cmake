@@ -94,7 +94,8 @@ if(MSVC)
 endif(MSVC)
 
 set(LIB_SUFFIX "" CACHE STRING "Define suffix of library directory name (32/64)" )
-set(LIB_INSTALL_DIR     "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}"  CACHE PATH "The subdirectory relative to the install prefix where libraries will be installed (default is ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})" FORCE)
-set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include"           CACHE PATH "The subdirectory to the header prefix" FORCE)
+set(LIB_INSTALL_DIR     "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}"  CACHE PATH "The subdirectory where libraries will be installed (default is ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})" FORCE)
+set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include"           CACHE PATH "The subdirectory where header files will be installed (default is ${CMAKE_INSTALL_PREFIX}/include)" FORCE)
+set(DATA_INSTALL_DIR    "${CMAKE_INSTALL_PREFIX}/share/telepathy"   CACHE PATH "The subdirectory where data files will be installed (default is ${CMAKE_INSTALL_PREFIX}/share/telepathy)" FORCE)
 
 include(TelepathyDist)
