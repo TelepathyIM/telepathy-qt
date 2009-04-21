@@ -648,6 +648,22 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
             contact, types);
 }
 
+/**
+ * Check whether media handler streaming is required for this channel.
+ *
+ * \return \c true if required, \c false otherwise.
+ */
+bool StreamedMediaChannel::handlerStreamingRequired() const
+{
+    if (!isReady()) {
+        warning() << "Trying to check if handler streaming is required, "
+                     "but channel is not ready. Use becomeReady()";
+    }
+
+    return interfaces().contains(
+            TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING);
+}
+
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<MediaStreamInfoList> reply = *watcher;
