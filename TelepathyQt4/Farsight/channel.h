@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-TfChannel *tfChannelCreate(const StreamedMediaChannelPtr &channel);
+TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel);
 
 } // Tp
 

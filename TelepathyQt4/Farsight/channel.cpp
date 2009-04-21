@@ -34,7 +34,7 @@
 namespace Tp
 {
 
-TfChannel *tfChannelCreate(const StreamedMediaChannelPtr &channel)
+TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel)
 {
     TpDBusDaemon *dbus = tp_dbus_daemon_dup(0);
 
