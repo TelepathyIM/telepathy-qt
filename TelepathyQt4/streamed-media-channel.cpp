@@ -505,9 +505,6 @@ void StreamedMediaChannel::Private::introspectStreams(StreamedMediaChannel::Priv
  *
  * High-level proxy object for accessing remote %Channel objects of the
  * StreamedMedia channel type.
- *
- * This subclass of Channel will eventually provide a high-level API for the
- * StreamedMedia interface. Until then, it's just a Channel.
  */
 
 const Feature StreamedMediaChannel::FeatureStreams = Feature(StreamedMediaChannel::staticMetaObject.className(), 0);
@@ -649,7 +646,12 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
 }
 
 /**
- * Check whether media handler streaming is required for this channel.
+ * Check whether media streaming by the handler is required for this channel.
+ *
+ * For channels with the MediaSignalling interface, the main handler of the
+ * channel is responsible for doing the actual streaming, for instance by
+ * calling Tp::createFarsightChannel(channel) from TelepathyQt4-Farsight library
+ * and using the telepathy-farsight API on the resulting TfChannel.
  *
  * \return \c true if required, \c false otherwise.
  */
