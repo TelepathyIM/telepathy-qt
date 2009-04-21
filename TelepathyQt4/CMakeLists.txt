@@ -330,3 +330,4 @@ install(TARGETS telepathy-qt4 DESTINATION ${LIB_INSTALL_DIR})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4.pc)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 
+add_subdirectory(Farsight)
