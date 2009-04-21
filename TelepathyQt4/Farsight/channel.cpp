@@ -36,6 +36,11 @@ namespace Tp
 
 TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel)
 {
+    if (!channel->handlerStreamingRequired()) {
+        warning() << "Handler streaming not required";
+        return 0;
+    }
+
     TpDBusDaemon *dbus = tp_dbus_daemon_dup(0);
 
     if (!dbus) {
