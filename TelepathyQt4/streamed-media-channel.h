@@ -150,6 +150,8 @@ public:
             const ContactPtr &contact,
             QList<MediaStreamType> types);
 
+    bool handlerStreamingRequired() const;
+
 Q_SIGNALS:
     void streamAdded(const Tp::MediaStreamPtr &stream);
     void streamRemoved(const Tp::MediaStreamPtr &stream);

@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: Telepathy-Qt4-Farsight
+Description: Qt4 Telepathy Farsight utility library for the Telepathy framework
+Version: @VERSION@
+Requires.private: QtCore >= 4.5, QtDBus >= 4.5, TelepathyQt4
+Libs: -L${libdir} -ltelepathy-qt4-farsight
+Cflags: -I${includedir}/telepathy-1.0

@@ -209,7 +209,7 @@ AC_SUBST(TP_FARSIGHT_LIBS)
 if test no = "$have_tp_fs"; then
   AC_MSG_WARN([telepathy-farsight not found: not all examples will be built])
 fi
-AM_CONDITIONAL([ENABLE_TP_FARSIGHT_EXAMPLES],
+AM_CONDITIONAL([ENABLE_TP_FARSIGHT],
   [test yes = "$have_tp_glib" && test yes = "$have_tp_fs" &&
    test yes = "$have_qt_glib_main_loop"])
 
@@ -249,6 +249,8 @@ DX_INIT_DOXYGEN(TelepathyQt4, doxygen.cfg, doc)
 AC_OUTPUT([
     Makefile
     TelepathyQt4/Makefile
+    TelepathyQt4/Farsight/Makefile
+    TelepathyQt4/Farsight/TelepathyQt4Farsight.pc
     TelepathyQt4/Prototype/Makefile
     TelepathyQt4/Prototype/TpQt4Prototype.pc
     TelepathyQt4/TelepathyQt4.pc

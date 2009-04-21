@@ -1,5 +1,10 @@
 # We need to build this directory before the Prototype subdirectory
+DIST_SUBDIRS = Prototype Farsight
 SUBDIRS = . Prototype
+
+if ENABLE_TP_FARSIGHT
+SUBDIRS += Farsight
+endif
 
 tpqt4includedir=$(includedir)/telepathy-1.0/TelepathyQt4
 genincludedir=$(tpqt4includedir)/_gen
