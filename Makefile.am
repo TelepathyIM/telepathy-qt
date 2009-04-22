@@ -12,7 +12,7 @@ EXTRA_DIST = \
     doxygen-header.html \
     $(DX_CONFIG)
 
-CLEANFILES = FIXME.out
+CLEANFILES = FIXME.out doxygen.log
 MOSTLYCLEANFILES = $(DX_CLEANFILES)
 
 check-local::
