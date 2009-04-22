@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Interface_Group" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2005-2009 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2005-2009 Nokia Corporation</tp:copyright>
-  <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
+  <tp:copyright>Copyright © 2005-2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2006 INdT</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -76,6 +76,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotCapable"/>
         <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
         <tp:error name="org.freedesktop.Telepathy.Error.Channel.Full"/>
@@ -238,6 +239,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             connect to MembersChanged just in case the flag ever went away (and
             generally be unnecessarily complicated), which would mostly negate
             the point of having this flag in the first place.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="Message_Depart" value="8192">
+        <tp:added version="0.17.21"/>
+        <tp:docstring>
+          A message may be sent to the server when calling
+          <tp:member-ref>RemoveMembers</tp:member-ref> on
+          the <tp:member-ref>SelfHandle</tp:member-ref>.
+
+          <tp:rationale>
+            This would be set for XMPP Multi-User Chat or IRC channels,
+            but not for a typical implementation of streamed media calls.
           </tp:rationale>
         </tp:docstring>
       </tp:flag>
@@ -567,8 +581,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <tp:enum name="Channel_Group_Change_Reason" type="u">
       <tp:enumvalue suffix="None" value="0">
-        <tp:docstring>
-            No reason was provided for this change.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>No reason was provided for this change.</p>
+
+          <p>In particular, this reason SHOULD be used when representing
+            users joining a named chatroom in the usual way, users leaving
+            a chatroom by their own request, and normal termination of a
+            StreamedMedia call by the remote user.</p>
+
+          <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is removed from
+            a group for this reason and the actor is not the SelfHandle, the
+            equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Terminated</code>.</p>
+
+          <p>If the SelfHandle is removed from a group for this reason and
+            the actor is also the SelfHandle, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cancelled</code>.</p>
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Offline" value="1">
@@ -950,16 +978,45 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           A string message, which can be blank if desired
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Requests the removal of contacts from a channel, reject their request
-        for channel membership on the pending local list, or rescind their
-        invitation on the pending remote list. A message may be provided along
-        with the request, which will be sent to the server if supported. See
-        the CHANNEL_GROUP_FLAG_MESSAGE_REMOVE,
-        CHANNEL_GROUP_FLAG_MESSAGE_REJECT and
-        CHANNEL_GROUP_FLAG_MESSAGE_RESCIND
-        <tp:member-ref>GroupFlags</tp:member-ref> to see in which cases this
-        message should be provided.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Requests the removal of contacts from a channel, reject their
+          request for channel membership on the pending local list, or
+          rescind their invitation on the pending remote list.</p>
+
+        <p>If the <tp:member-ref>SelfHandle</tp:member-ref> is in a Group,
+          it can be removed via this method, in order to leave the group
+          gracefully. This is the recommended way to leave a chatroom, close
+          or reject a <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+          call, and so on.</p>
+
+        <p>Accordingly, connection managers SHOULD support
+          doing this, regardless of the value of
+          <tp:member-ref>GroupFlags</tp:member-ref>.
+          If doing so fails with PermissionDenied, this is considered to a bug
+          in the connection manager, but clients MUST recover by falling back
+          to closing the channel with the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref>
+          method.</p>
+
+        <p>Removing any contact from the local pending list is always
+          allowed. Removing contacts other than the
+          <tp:member-ref>SelfHandle</tp:member-ref> from the channel's members
+          is allowed if and only if Channel_Group_Flag_Can_Remove is in the
+          <tp:member-ref>GroupFlags</tp:member-ref>,
+          while removing contacts other than the
+          <tp:member-ref>SelfHandle</tp:member-ref> from the remote pending list
+          is allowed if and only if Channel_Group_Flag_Can_Rescind is in the
+          <tp:member-ref>GroupFlags</tp:member-ref>.</p>
+
+        <p>A message may be provided along with the request, which will be
+          sent to the server if supported. See the
+          Channel_Group_Flag_Message_Remove,
+          Channel_Group_Flag_Message_Depart,
+          Channel_Group_Flag_Message_Reject and
+          Channel_Group_Flag_Message_Rescind
+          <tp:member-ref>GroupFlags</tp:member-ref> to see in which cases this
+          message should be provided.</p>
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>

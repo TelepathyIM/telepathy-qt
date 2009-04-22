@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Channel" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2005-2008 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2005-2008 Nokia Corporation</tp:copyright>
-  <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
+  <tp:copyright>Copyright © 2005-2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2006 INdT</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

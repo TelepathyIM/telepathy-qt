@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Type_Streamed_Media_Future"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright> Copyright (C) 2009 Collabora Limited </tp:copyright>
-  <tp:copyright> Copyright (C) 2009 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright © 2009 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright © 2009 Nokia Corporation </tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
       modify it under the terms of the GNU Lesser General Public
@@ -109,39 +109,24 @@
           SHOULD include the following filters if calling <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT">SetSelfCapabilities</tp:dbus-ref>
           (clients of a <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">ChannelDispatcher.DRAFT</tp:dbus-ref>
+            namespace="org.freedesktop.Telepathy">ChannelDispatcher</tp:dbus-ref>
           SHOULD instead arrange for the ChannelDispatcher to do this,
           by including the filters in their <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandlerChannelFilter</tp:dbus-ref>
+            namespace="org.freedesktop.Telepathy.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
           properties):</p>
 
         <ul>
           <li>{ ChannelType = StreamedMedia }</li>
           <li>{ ChannelType = StreamedMedia, InitialAudio = true }
-            if receiving audio-only or audio+video calls is supported</li>
+            if receiving calls with audio is supported</li>
           <li>{ ChannelType = StreamedMedia, InitialVideo = true }
-            if receiving video-only or audio+video calls is supported</li>
+            if receiving calls with video is supported</li>
         </ul>
 
         <tp:rationale>
           <p>Connection managers for protocols with capability discovery,
             like XMPP, need this information to advertise the appropriate
             capabilities for their protocol.</p>
-        </tp:rationale>
-
-        <p>If { ChannelType = StreamedMedia } is passed to
-          SetSelfCapabilities, but no more specific channel class for
-          audio or video has been passed to that method (in the presence
-          of a ChannelDispatcher, this would mean that there is at least one
-          client with that channel class in its HandlerChannelFilter, but
-          no installed client has the more specific channel classes in its
-          HandlerChannelFilter), then the connection manager SHOULD advertise
-          support for every content type (audio or video) that it
-          supports.</p>
-
-        <tp:rationale>
-          <p>This lowers the "barrier to entry" by allowing a simple client
-            to say merely that it supports streamed media at all.</p>
         </tp:rationale>
       </tp:docstring>
     </property>

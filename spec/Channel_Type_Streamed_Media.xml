@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Type_Streamed_Media" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright> Copyright (C) 2005-2008 Collabora Limited </tp:copyright>
-  <tp:copyright> Copyright (C) 2005-2008 Nokia Corporation </tp:copyright>
-  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:copyright> Copyright © 2005-2009 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright © 2005-2009 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright © 2006 INdT </tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Interface.Group"/>
 
-    <tp:enum name="Media_Stream_Type" type="u">
+    <tp:enum name="Media_Stream_Type" type="u"
+      array-name="Media_Stream_Type_List">
       <tp:enumvalue suffix="Audio" value="0">
         <tp:docstring>An audio stream</tp:docstring>
       </tp:enumvalue>
@@ -86,7 +87,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         name="Pending_Send_Flags"/>
     </tp:struct>
 
-    <tp:simple-type name="Stream_ID" type="u"/>
+    <tp:simple-type name="Stream_ID" type="u"
+      array-name="Stream_ID_List">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>An unsigned integer identifying a stream within a channel.</p>
+      </tp:docstring>
+    </tp:simple-type>
 
     <method name="ListStreams" tp:name-for-bindings="List_Streams">
       <arg direction="out" type="a(uuuuuu)" tp:type="Media_Stream_Info[]"
@@ -118,9 +124,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:member-ref>ListStreams</tp:member-ref>)
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Request that the given streams are removed.
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request that the given streams are removed. If all streams are
+          removed, the channel MAY close.</p>
+
+        <p>Clients SHOULD NOT attempt to terminate calls by removing all the
+          streams; instead, clients SHOULD terminate calls by removing the
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface">Group.SelfHandle</tp:dbus-ref>
+          from the channel, using either
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemoveMembers</tp:dbus-ref>
+          or
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemoveMembersWithReason</tp:dbus-ref>.
+          </p>
       </tp:docstring>
+
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
           A stream identifier is unknown
@@ -209,11 +230,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         MEDIA_STREAM_PENDING_REMOTE_SEND flag set, and the signal emitted again
         with the flag cleared when the remote end has replied.</p>
 
-        <p>If streams of the requested types have already been requested
-          via this method or <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Type.StreamedMedia">FUTURE.InitialAudio</tp:dbus-ref>/<tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Type.StreamedMedia">FUTURE.InitialVideo</tp:dbus-ref>,
-          this method SHOULD return successfully.</p>
+        <p>If streams of the requested types already exist, calling this
+          method results in the creation of additional streams. Accordingly,
+          clients wishing to have exactly one audio stream or exactly one
+          video stream SHOULD check for the current streams using
+          <tp:member-ref>ListStreams</tp:member-ref> before calling this
+          method.</p>
       </tp:docstring>
       <tp:changed version="0.17.2">
         <p>It is valid to use a handle which is neither
@@ -231,10 +253,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          A stream type given is invalid
+          <tp:docstring>
+            A stream type given is invalid.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            A stream type given is not implemented by the connection manager.
+            Since 0.17.23, connection managers SHOULD raise this error
+            in preference to InvalidArgument.
+            <tp:rationale>
+              Connection managers can't know whether an unknown number
+              is a valid stream type that was introduced in a later spec
+              version.
+            </tp:rationale>
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          That contact is not able to do this stream type
+          <tp:docstring>
+            That contact's client does not implement one of the given stream
+            types. For this method, clients SHOULD consider this error and
+            NotCapable to be equivalent.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotCapable">
+          <tp:docstring>
+            That contact's client does not implement one of the given stream
+            types. Since 0.17.23, connection managers SHOULD raise
+            this in preference to NotAvailable.
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
@@ -257,8 +304,54 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The stream type (a value from MediaStreamType)
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Emitted when a new stream has been added to this channel.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when a new stream has been added to this channel.
+          Clients SHOULD assume that the stream's
+          <tp:type>Media_Stream_State</tp:type> is initially Disconnected.</p>
+
+        <p>If a connection manager needs to represent the addition of a stream
+          whose state is already Connecting or Connected, it MUST do this
+          by emitting StreamAdded, closely followed by
+          <tp:member-ref>StreamStateChanged</tp:member-ref> indicating a
+          change to the appropriate state.</p>
+
+        <tp:rationale>
+          <p>Historically, it was not clear from the StreamAdded signal what
+            the state of the stream was. telepathy-spec 0.17.22
+            clarified this.</p>
+        </tp:rationale>
+
+        <p>Similarly, clients SHOULD assume that the initial
+          <tp:type>Media_Stream_Direction</tp:type> of a newly added stream
+          is Receive, and that the initial
+          <tp:type>Media_Stream_Pending_Send</tp:type> is
+          Pending_Local_Send.</p>
+
+        <p>If a connection manager needs to represent the addition of a stream
+          whose direction or pending-send differs from those initial values,
+          it MUST do so by emitting StreamAdded, closely followed by
+          <tp:member-ref>StreamDirectionChanged</tp:member-ref> indicating a
+          change to the appropriate direction and pending-send state.</p>
+
+        <tp:rationale>
+          <p>StreamAdded doesn't itself indicate the stream's direction; this
+            is unfortunate, but is preserved for compatibility.</p>
+
+          <p>This is the appropriate direction for streams added by a remote
+            contact on existing connection managers, and does not violate
+            user privacy by automatically sending audio or video (audio streams
+            start off muted, video streams start off not sending). For
+            streams added by the local user using the client receiving the
+            signal, the true direction can also be determined from the return
+            value of the <tp:member-ref>RequestStreams</tp:member-ref>
+            method.</p>
+
+          <p>Existing clients typically operate by maintaining a separate
+            idea of the directions that they would like the streams to have,
+            and enforcing these intended directions by calling
+            <tp:member-ref>RequestStreamDirection</tp:member-ref> whenever
+            needed.</p>
+        </tp:rationale>
       </tp:docstring>
     </signal>
 
@@ -279,12 +372,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         The new pending send flags (as defined in ListStreams)
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Emitted when the direction or pending flags of a stream are changed. If
-        the MEDIA_STREAM_PENDING_LOCAL_SEND flag is set, the remote user has
-        requested that we begin sending on this stream.
-        <tp:member-ref>RequestStreamDirection</tp:member-ref>
-        should be called to indicate whether or not this change is acceptable.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when the direction or pending flags of a stream are
+          changed.</p>
+
+        <p>If the MEDIA_STREAM_PENDING_LOCAL_SEND flag is set, the remote user
+          has requested that we begin sending on this stream.
+          <tp:member-ref>RequestStreamDirection</tp:member-ref>
+          should be called to indicate whether or not this change is
+          acceptable.</p>
+
+        <tp:rationale>
+          <p>This allows for a MSN-style user interface, "Fred has asked you
+            to enable your webcam. (Accept | Reject)", if desired.</p>
+        </tp:rationale>
       </tp:docstring>
     </signal>
 
@@ -367,6 +468,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         which point the contact should appear in the channel's <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemotePendingMembers</tp:dbus-ref>).</p>
 
+      <p>In the past, several other patterns have been used to place outgoing
+        calls; see
+        <a href="http://telepathy.freedesktop.org/wiki/Requesting%20StreamedMedia%20channels">'Requesting StreamedMedia Channels' on the Telepathy wiki</a>
+        for the details.</p>
+
       <p>Incoming calls should be signalled as <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>
         = Contact, <tp:dbus-ref
@@ -377,10 +483,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           namespace="org.freedesktop.Telepathy.Channel.Interface.Group">AddMembers</tp:dbus-ref>
         can be used to move the local user to the group's members.</p>
 
-      <p>In the past, several other patterns have been used to place outgoing
-        calls; see
-        <a href="http://telepathy.freedesktop.org/wiki/Requesting%20StreamedMedia%20channels">'Requesting StreamedMedia Channels' on the Telepathy wiki</a>
-        for the details.</p>
+      <p>When the local user accepts an incoming call, the connection manager
+        SHOULD change the direction of any streams with pending local send
+        to be sending, without altering whether those streams are
+        receiving.</p>
+
+      <tp:rationale>
+        <p>This matches existing practice, and means that a client
+          can answer incoming calls and get an unmuted microphone/activated
+          webcam without having to take additional action to accept the
+          stream directions.</p>
+
+        <p>It does, however, introduce a race condition: a client believing
+          that it is accepting an audio-only call by calling AddMembers
+          can inadvertantly accept an audio + video call (and hence activate
+          sending from a webcam without the user's permission) if a video
+          stream is added just before AddMembers is processed. This race
+          should be removed when this specification is revised.</p>
+      </tp:rationale>
 
     <p>In general this should be used in conjunction with the <tp:dbus-ref
       namespace="org.freedesktop.Telepathy.Channel.Interface">MediaSignalling</tp:dbus-ref>
@@ -420,6 +540,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>
           The handle is capable of establishing Google Talk peer-to-peer
           connections (as implemented in libjingle 0.3) to traverse NATs.
+        </tp:docstring>
+      </tp:flag>
+      <tp:flag suffix="NAT_Traversal_ICE_UDP" value="16">
+        <tp:docstring>
+          The handle is capable of establishing ICE UDP peer-to-peer
+          connections (as defined by the IETF MMUSIC working group) to traverse
+          NATs.
         </tp:docstring>
       </tp:flag>
     </tp:flags>

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Type_Text" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright> Copyright (C) 2005, 2006 Collabora Limited </tp:copyright>
-  <tp:copyright> Copyright (C) 2005, 2006 Nokia Corporation </tp:copyright>
-  <tp:copyright> Copyright (C) 2006 INdT </tp:copyright>
+  <tp:copyright> Copyright © 2005-2009 Collabora Limited </tp:copyright>
+  <tp:copyright> Copyright © 2005-2009 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright © 2006 INdT </tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Type.Text">
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
 
-    <tp:simple-type name="Message_ID" type="u">
+    <tp:simple-type name="Message_ID" type="u" array-name="Message_ID_List">
       <tp:docstring>
         A unique-per-channel identifier for an incoming message. These
         SHOULD be allocated in a way that minimizes collisions (in particular,
@@ -87,7 +87,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:member-ref>AcknowledgePendingMessages</tp:member-ref> had also
           been called.
         </tp:docstring>
-        <tp:deprecated since="0.17.3">
+        <tp:deprecated version="0.17.3">
           Setting this to true is NOT RECOMMENDED for clients that
           have some sort of persistent message storage - clients SHOULD only
           acknowledge messages after they have actually stored them, which is
@@ -290,7 +290,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
-    <tp:enum name="Channel_Text_Message_Type" type="u">
+    <tp:enum name="Channel_Text_Message_Type" type="u"
+      array-name="Channel_Text_Message_Type_List">
       <tp:docstring>
         The type of message.
       </tp:docstring>

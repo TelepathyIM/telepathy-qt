@@ -70,6 +70,150 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:member>
     </tp:struct>
 
+    <property name="STUNServers" tp:name-for-bindings="STUN_Servers"
+      type="a(sq)" tp:type="Socket_Address_IP[]" access="read">
+      <tp:added version="0.17.22"/>
+      <tp:docstring>
+        The IP addresses of possible STUN servers to use for NAT traversal, as
+        dotted-quad IPv4 address literals or RFC2373 IPv6 address literals.
+        This property cannot change once the stream has been created, so there
+        is no change notification. The IP addresses MUST NOT be given as DNS
+        hostnames.
+
+        <tp:rationale>
+          High-quality connection managers already need an asynchronous
+          DNS resolver, so they might as well resolve this name to an IP
+          to make life easier for streaming implementations.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="CreatedLocally" tp:name-for-bindings="Created_Locally"
+      type="b" access="read">
+      <tp:added version="0.17.22"/>
+      <tp:docstring>
+        True if we were the creator of this stream, false otherwise.
+        <tp:rationale>
+          This information is needed for some nat traversal mechanisms, such
+          as ICE-UDP, where the creator gets the role of the controlling agent.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="NATTraversal" tp:name-for-bindings="NAT_Traversal"
+      type="s" access="read">
+      <tp:added version="0.17.22"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The transport (NAT traversal technique) to be used for this
+          stream. Well-known values include:</p>
+
+        <dl>
+          <dt>none</dt>
+          <dd>Raw UDP, with or without STUN, should be used. If the
+            <tp:member-ref>STUNServers</tp:member-ref> property is non-empty,
+            STUN SHOULD be used.</dd>
+
+          <dt>stun</dt>
+          <dd>A deprecated synonym for 'none'.</dd>
+
+          <dt>gtalk-p2p</dt>
+          <dd>Google Talk peer-to-peer connectivity establishment should be
+            used, as implemented in libjingle 0.3.</dd>
+
+          <dt>ice-udp</dt>
+          <dd>Interactive Connectivity Establishment should be used,
+            as defined by the IETF MMUSIC working group.</dd>
+
+          <dt>wlm-8.5</dt>
+          <dd>The transport used by Windows Live Messenger 8.5 or later,
+            which resembles ICE draft 6, should be used.</dd>
+
+          <dt>wlm-2009</dt>
+          <dd>The transport used by Windows Live Messenger 2009 or later,
+            which resembles ICE draft 19, should be used.</dd>
+        </dl>
+
+        <p>This property cannot change once the stream has been created, so
+          there is no change notification.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="RelayInfo" type="aa{sv}" access="read"
+      tp:type="String_Variant_Map[]" tp:name-for-bindings="Relay_Info">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of mappings describing TURN or Google relay servers
+          available for the client to use in its candidate gathering, as
+          determined from the protocol. Map keys are:</p>
+
+        <dl>
+          <dt><code>ip</code> - s</dt>
+          <dd>The IP address of the relay server as a dotted-quad IPv4
+            address literal or an RFC2373 IPv6 address literal. This MUST NOT
+            be a DNS hostname.
+
+            <tp:rationale>
+              High-quality connection managers already need an asynchronous
+              DNS resolver, so they might as well resolve this name to an IP
+              and make life easier for streaming implementations.
+            </tp:rationale>
+          </dd>
+
+          <dt><code>type</code> - s</dt>
+          <dd>
+            <p>Either <code>udp</code> for UDP (UDP MUST be assumed if this
+              key is omitted), <code>tcp</code> for TCP, or
+              <code>tls</code>.</p>
+
+            <p>The precise meaning of this key depends on the
+              <tp:member-ref>NATTraversal</tp:member-ref> property: if
+              NATTraversal is <code>ice-udp</code>, <code>tls</code> means
+              TLS over TCP as referenced by ICE draft 19, and if
+              NATTraversal is <code>gtalk-p2p</code>, <code>tls</code> means
+              a fake SSL session over TCP as implemented by libjingle.</p>
+          </dd>
+
+          <dt><code>port</code> - q</dt>
+          <dd>The UDP or TCP port of the relay server as an ASCII unsigned
+            integer</dd>
+
+          <dt><code>username</code> - s</dt>
+          <dd>The username to use</dd>
+
+          <dt><code>password</code> - s</dt>
+          <dd>The password to use</dd>
+
+          <dt><code>component</code> - u</dt>
+          <dd>The component number to use this relay server for, as an
+            ASCII unsigned integer; if not included, this relay server
+            may be used for any or all components.
+
+            <tp:rationale>
+              In ICE draft 6, as used by Google Talk, credentials are only
+              valid once, so each component needs relaying separately.
+            </tp:rationale>
+          </dd>
+        </dl>
+
+        <tp:rationale>
+          <p>An equivalent of the gtalk-p2p-relay-token property on
+            MediaSignalling channels is not included here. The connection
+            manager should be responsible for making the necessary HTTP
+            requests to turn the token into a username and password.</p>
+        </tp:rationale>
+
+        <p>The type of relay server that this represents depends on
+          the value of the <tp:member-ref>NATTraversal</tp:member-ref>
+          property. If NATTraversal is ice-udp, this is a TURN server;
+          if NATTraversal is gtalk-p2p, this is a Google relay server;
+          otherwise, the meaning of RelayInfo is undefined.</p>
+
+        <p>If relaying is not possible for this stream, the list is empty.</p>
+
+        <p>This property cannot change once the stream has been created, so
+          there is no change notification.</p>
+      </tp:docstring>
+    </property>
+
     <signal name="AddRemoteCandidate"
       tp:name-for-bindings="Add_Remote_Candidate">
       <arg name="Candidate_ID" type="s">
@@ -246,7 +390,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           String identifier for remote candidate to drop
         </tp:docstring>
       </arg>
-      <tp:deprecated>
+      <tp:deprecated version="0.17.18">
         There is no case where you want to release candidates (except
         for an ICE reset, and there you'd want to replace then all,
         using <tp:member-ref>SetRemoteCandidateList</tp:member-ref>).

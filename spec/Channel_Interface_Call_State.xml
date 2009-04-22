@@ -20,12 +20,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Interface.CallState">
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
 
-    <tp:docstring>
-      An interface for streamed media channels that can indicate call
-      progress or call states. The presence of this interface is no guarantee
-      that call states will actually be signalled (for instance, SIP
-      implementations are not guaranteed to generate status 180 Ringing,
-      so a call can be accepted without the Ringing flag ever having been set).
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>An interface for streamed media channels that can indicate call
+        progress or call states. The presence of this interface is no guarantee
+        that call states will actually be signalled (for instance, SIP
+        implementations are not guaranteed to generate status 180 Ringing, so a
+        call can be accepted without the Ringing flag ever having been set).</p>
+
+      <p>To notify the other participant in the call that they are on hold,
+        see <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface"
+          >Hold</tp:dbus-ref>.</p>
     </tp:docstring>
     <tp:added version="0.17.2"/>
 

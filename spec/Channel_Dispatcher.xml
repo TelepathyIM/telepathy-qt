@@ -2,8 +2,8 @@
 <node name="/Channel_Dispatcher"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
 
-  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
-  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
       modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,8 @@
       USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.ChannelDispatcher.DRAFT"
-    tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.ChannelDispatcher"
+    tp:causes-havoc="not yet final">
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>The channel dispatcher is responsible for responding to new
@@ -67,12 +67,14 @@
         specification:</p>
 
       <dl>
-        <dt>Observer</dt>
+        <dt><tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client">Observer</tp:dbus-ref></dt>
         <dd><p>Observers monitor the creation of new channels. This
             functionality can be used for things like message logging.
             All observers are notified simultaneously.</p></dd>
 
-        <dt>Approver</dt>
+        <dt><tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client">Approver</tp:dbus-ref></dt>p
         <dd>
           <p>Approvers notify the user that new channels have been created,
             and also select which channel handler will be used for the channel,
@@ -80,7 +82,8 @@
             channel handler.</p>
         </dd>
 
-        <dt>Handler</dt>
+        <dt><tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client">Handler</tp:dbus-ref></dt>
         <dd>
           <p>Each new channel or set of channels is passed to exactly one
             handler as its final destination. A typical channel handler is a
@@ -99,7 +102,7 @@
     <method name="CreateChannel" tp:name-for-bindings="Create_Channel">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Start a request to create a channel. This initially just creates a
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest.DRAFT</tp:dbus-ref>
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
           object, which can be used to continue the request and track its
           success or failure.</p>
 
@@ -119,10 +122,10 @@
         <p>If this method is called for an Account that is disabled, invalid
           or otherwise unusable, no error is signalled until
           <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">ChannelRequest.DRAFT.Proceed</tp:dbus-ref>
+            namespace="org.freedesktop.Telepathy">ChannelRequest.Proceed</tp:dbus-ref>
           is called, at which point
           <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">ChannelRequest.DRAFT.Failed</tp:dbus-ref>
+            namespace="org.freedesktop.Telepathy">ChannelRequest.Failed</tp:dbus-ref>
           is emitted with an appropriate error.</p>
 
         <tp:rationale>
@@ -166,10 +169,10 @@
           <p>The time at which user action occurred, or 0 if this channel
             request is for some reason not involving user action.
             The <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelRequest.DRAFT">UserActionTime</tp:dbus-ref>
+              namespace="org.freedesktop.Telepathy.ChannelRequest">UserActionTime</tp:dbus-ref>
             property will be set to this value, and it will eventually be
             passed as the <code>User_Action_Time</code> parameter of <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandleChannels</tp:dbus-ref>.</p>
+              namespace="org.freedesktop.Telepathy.Client.Handler">HandleChannels</tp:dbus-ref>.</p>
         </tp:docstring>
       </arg>
 
@@ -193,14 +196,15 @@
 
             <p>This is partly so the channel dispatcher can call
               <tp:dbus-ref
-                namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandleChannels</tp:dbus-ref>
+                namespace="org.freedesktop.Telepathy.Client.Handler">HandleChannels</tp:dbus-ref>
               on it, and partly so the channel dispatcher
               can recover state if it crashes and is restarted.</p>
           </tp:rationale>
 
-          <p>If this is a well-known bus name, the channel dispatcher SHOULD
+          <p>If this is a well-known bus name and the handler has the
+            Requests interface, the channel dispatcher SHOULD
             call <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">AddRequest</tp:dbus-ref>
+              namespace="org.freedesktop.Telepathy.Client.Interface.Requests">AddRequest</tp:dbus-ref>
             on that Handler after this method has returned.</p>
 
           <tp:rationale>
@@ -208,13 +212,18 @@
               itself as the preferred handler to associate the call to
               AddRequest with that call.</p>
           </tp:rationale>
+
+          <p>This is copied to the ChannelRequest that is returned,
+            as the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelRequest">PreferredHandler</tp:dbus-ref>
+            property.</p>
         </tp:docstring>
       </arg>
 
       <arg direction="out" name="Request" type="o">
         <tp:docstring>
           A
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest.DRAFT</tp:dbus-ref>
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
           object.
         </tp:docstring>
       </arg>
@@ -236,22 +245,22 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Start a request to ensure that a channel exists, creating it if
           necessary.  This initially just creates a <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">ChannelRequest.DRAFT</tp:dbus-ref>
+            namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
           object, which can be used to continue the request and track its
           success or failure.</p>
 
         <p>If this method is called for an Account that is disabled, invalid
           or otherwise unusable, no error is signalled until
           <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">ChannelRequest.DRAFT.Proceed</tp:dbus-ref>
+            namespace="org.freedesktop.Telepathy">ChannelRequest.Proceed</tp:dbus-ref>
           is called, at which point
           <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">ChannelRequest.DRAFT.Failed</tp:dbus-ref>
+            namespace="org.freedesktop.Telepathy">ChannelRequest.Failed</tp:dbus-ref>
           is emitted with an appropriate error.</p>
 
         <tp:rationale>
           <p>The rationale is as for <tp:dbus-ref
-              namespace='org.freedesktop.Telepathy.ChannelDispatcher.DRAFT'>CreateChannel</tp:dbus-ref>.</p>
+              namespace='org.freedesktop.Telepathy.ChannelDispatcher'>CreateChannel</tp:dbus-ref>.</p>
         </tp:rationale>
       </tp:docstring>
 
@@ -284,12 +293,10 @@
         tp:type="Unix_Timestamp64">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The time at which user action occurred, or 0 if this channel
-            request is for some reason not involving user action.
-            The <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelRequest.DRAFT">UserActionTime</tp:dbus-ref>
-            property will be set to this value, and it will eventually be
-            passed as the <code>User_Action_Time</code> parameter of <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandleChannels</tp:dbus-ref>.</p>
+            request is for some reason not involving user action.</p>
+
+          <p>This parameter is used in the same way as the corresponding
+            parameter to <tp:member-ref>CreateChannel</tp:member-ref>.</p>
         </tp:docstring>
       </arg>
 
@@ -300,30 +307,10 @@
             <code>org.freedesktop.Telepathy.Client.</code>)
             of the preferred handler for this
             channel, or an empty string to indicate that any handler would be
-            acceptable.</p>
-
-          <tp:rationale>
-            <p>This must be the well-known bus name, not the unique name,
-              to ensure that all handlers do indeed have the Client API,
-              and the Client object on the handler can be located easily.</p>
-
-            <p>This is partly so the channel dispatcher can call
-              <tp:dbus-ref
-                namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">HandleChannels</tp:dbus-ref>
-              on it, and partly so the channel dispatcher
-              can recover state if it crashes and is restarted.</p>
-          </tp:rationale>
-
-          <p>If this is a well-known bus name, the channel dispatcher SHOULD
-            call <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Client.Handler.DRAFT">AddRequest</tp:dbus-ref>
-            on that Handler after this method has returned.</p>
-
-          <tp:rationale>
-            <p>This ordering allows a Handler which calls EnsureChannel with
-              itself as the preferred handler to associate the call to
-              AddRequest with that call.</p>
-          </tp:rationale>
+            acceptable. The behaviour and rationale are the same as for the
+            corresponding parameter to
+            <tp:member-ref>CreateChannel</tp:member-ref>, except as noted
+            here.</p>
 
           <p>If any new channels are created in response to this
             request, the channel dispatcher SHOULD dispatch as many as
@@ -340,11 +327,11 @@
 
           <tp:rationale>
             <p>An address book application, for example, might call <tp:dbus-ref
-                namespace='org.freedesktop.Telepathy.ChannelDispatcher.DRAFT'>EnsureChannel</tp:dbus-ref>
+                namespace='org.freedesktop.Telepathy.ChannelDispatcher'>EnsureChannel</tp:dbus-ref>
               to ensure that a text channel with a particular contact is
               displayed to the user; it does not care whether a new channel was
               made. An IM client might call <tp:dbus-ref
-                namespace='org.freedesktop.Telepathy.ChannelDispatcher.DRAFT'>EnsureChannel</tp:dbus-ref>
+                namespace='org.freedesktop.Telepathy.ChannelDispatcher'>EnsureChannel</tp:dbus-ref>
               in response to the user double-clicking an entry in the contact
               list, with itself as the <code>Preferred_Handler</code>; if the
               user already has a conversation with that contact in another
@@ -360,7 +347,7 @@
       <arg direction="out" name="Request" type="o">
         <tp:docstring>
           A
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest.DRAFT</tp:dbus-ref>
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
           object.
         </tp:docstring>
       </arg>

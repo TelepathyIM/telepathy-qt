@@ -2,8 +2,8 @@
 <node name="/Channel_Request"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
 
-  <tp:copyright>Copyright (C) 2008 Collabora Ltd.</tp:copyright>
-  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
       modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,8 @@
       MA 02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.ChannelRequest.DRAFT"
-    tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.ChannelRequest"
+    tp:causes-havoc="not yet final">
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel request is an object in the ChannelDispatcher representing
@@ -34,9 +34,15 @@
 
       <tp:rationale>
         <p>See
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelDispatcher.DRAFT.CreateChannel</tp:dbus-ref>
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelDispatcher.CreateChannel</tp:dbus-ref>
           for rationale for ChannelRequest being a separate object.</p>
       </tp:rationale>
+
+      <p>A channel request can be cancelled by any client (not just the one
+        that requested it). This means that the ChannelDispatcher will
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref>
+        the resulting channel, or refrain from requesting it at all, rather
+        than dispatching it to a handler.</p>
     </tp:docstring>
 
     <property name="Account" tp:name-for-bindings="Account"
@@ -62,6 +68,20 @@
       </tp:docstring>
     </property>
 
+    <property name="PreferredHandler" tp:name-for-bindings="Preferred_Handler"
+      type="s" tp:type="DBus_Well_Known_Name" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Either the well-known bus name (starting with
+            <code>org.freedesktop.Telepathy.Client.</code>)
+            of the preferred handler for this
+            channel, or an empty string to indicate that any handler would be
+            acceptable.</p>
+
+        <p>This property is set when the channel request is created,
+          and can never change.</p>
+      </tp:docstring>
+    </property>
+
     <property name="Requests" tp:name-for-bindings="Requests" type="aa{sv}"
       tp:type="Qualified_Property_Value_Map[]"
       access="read">
@@ -76,6 +96,14 @@
 
         <p>This property is set when the channel request is created,
           and can never change.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      type="as" access="read" tp:type="DBus_Interface[]">
+      <tp:docstring>
+        A list of the extra interfaces provided by this channel request.
+        This property cannot change.
       </tp:docstring>
     </property>
 
@@ -105,7 +133,7 @@
       </tp:docstring>
 
       <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Errors.NotAvailable">
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
             This method has already been called, so it is no longer
             available. Stop calling it.
@@ -144,7 +172,7 @@
 
         <p>If <tp:member-ref>Failed</tp:member-ref> is emitted in response to
           this method, the error SHOULD be
-          <code>org.freedesktop.Telepathy.Errors.Cancelled</code>.</p>
+          <code>org.freedesktop.Telepathy.Error.Cancelled</code>.</p>
 
         <p>If the channel has already been dispatched to a handler, then
           it's too late to call this method, and the channel request will

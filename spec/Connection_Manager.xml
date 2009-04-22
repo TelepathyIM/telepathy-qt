@@ -55,7 +55,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         characters were not specified</tp:changed>
     </tp:simple-type>
 
-    <tp:simple-type name="Protocol" type="s">
+    <tp:simple-type name="Protocol" type="s" array-name="Protocol_List">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>An instant messaging protocol. It must consist only of ASCII
           letters, digits and hyphen/minus signs (U+002D "-"), and must start

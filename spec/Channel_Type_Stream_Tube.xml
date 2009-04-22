@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Type_Stream_Tube" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2008 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Nokia Corporation</tp:copyright>
   <tp:license>
     This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -64,6 +64,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:docstring>
           A parameter for the access control type, to be interpreted as
           specified in the documentation for the Socket_Access_Control enum.
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="parameters" type="a{sv}"
+        tp:type="String_Variant_Map">
+        <tp:docstring>
+          The dictionary of arbitrary
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Tube.DRAFT">Parameters</tp:dbus-ref>
+          to send with the tube offer.
         </tp:docstring>
       </arg>
       <tp:possible-errors>

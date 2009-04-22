@@ -17,16 +17,15 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
   <interface name="org.freedesktop.Telepathy.ChannelHandler">
+    <tp:deprecated version="0.17.23">
+      Clients should implement <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy">Client.Handler</tp:dbus-ref>
+      instead.
+    </tp:deprecated>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>An interface exported by client applications which are able to
-        handle incoming channels.  This
-        interface is intended to be deprecated in favour of
-        <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">Client.Handler.DRAFT</tp:dbus-ref>
-        when that interface comes out of DRAFT; client authors should consider
-        implementing that interface instead.
-      </p>
+      <p>An interface exported by Mission Control 4 client applications which
+        are able to handle incoming channels.</p>
     </tp:docstring>
     <tp:added version="0.17.0"/>
 

@@ -21,10 +21,10 @@
       USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.ChannelDispatcher.Interface.OperationList.DRAFT"
-    tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.ChannelDispatcher.Interface.OperationList"
+    tp:causes-havoc="not yet final">
 
-    <tp:requires interface="org.freedesktop.Telepathy.ChannelDispatcher.DRAFT"/>
+    <tp:requires interface="org.freedesktop.Telepathy.ChannelDispatcher"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface allows users of the ChannelDispatcher to enumerate
@@ -71,11 +71,10 @@
 
           <p>Each dictionary MUST contain at least the following keys:</p>
           <ul>
-            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT.Interfaces</tp:dbus-ref></li>
-            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT.Connection</tp:dbus-ref></li>
-            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT.Account</tp:dbus-ref></li>
-            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT.Channels</tp:dbus-ref></li>
-            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT.PossibleHandlers</tp:dbus-ref></li>
+            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.Interfaces</tp:dbus-ref></li>
+            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.Connection</tp:dbus-ref></li>
+            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.Account</tp:dbus-ref></li>
+            <li><tp:dbus-ref>org.freedesktop.Telepathy.ChannelDispatchOperation.PossibleHandlers</tp:dbus-ref></li>
           </ul>
         </tp:docstring>
       </tp:member>
@@ -119,7 +118,7 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         Emitted when a dispatch operation finishes (i.e. exactly once per
         emission of <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.DRAFT.Finished</tp:dbus-ref>).
+          namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.Finished</tp:dbus-ref>).
 
         <tp:rationale>
           Strictly speaking this is redundant with

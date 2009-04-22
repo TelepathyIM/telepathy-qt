@@ -17,23 +17,27 @@
       interfaces.</tp:rationale>
   </tp:simple-type>
 
-  <tp:simple-type name="DBus_Bus_Name" type="s">
+  <tp:simple-type name="DBus_Bus_Name" type="s"
+    array-name="DBus_Bus_Name_List">
     <tp:docstring>A string representing a D-Bus bus name - either a well-known
       name like "org.freedesktop.Telepathy.MissionControl" or a unique name
       like ":1.123"</tp:docstring>
   </tp:simple-type>
 
-  <tp:simple-type name="DBus_Well_Known_Name" type="s">
+  <tp:simple-type name="DBus_Well_Known_Name" type="s"
+    array-name="DBus_Well_Known_Name_List">
     <tp:docstring>A string representing a D-Bus well-known
       name like "org.freedesktop.Telepathy.MissionControl".</tp:docstring>
   </tp:simple-type>
 
-  <tp:simple-type name="DBus_Unique_Name" type="s">
+  <tp:simple-type name="DBus_Unique_Name" type="s"
+    array-name="DBus_Unique_Name_List">
     <tp:docstring>A string representing a D-Bus unique name, such as
       ":1.123"</tp:docstring>
   </tp:simple-type>
 
-  <tp:simple-type name="DBus_Interface" type="s">
+  <tp:simple-type name="DBus_Interface" type="s"
+    array-name="DBus_Interface_List">
     <tp:docstring>An ASCII string representing a D-Bus interface - two or more
       elements separated by dots, where each element is a non-empty
       string of ASCII letters, digits and underscores, not starting with
@@ -60,7 +64,8 @@
       characters. For example, "Ping".</tp:docstring>
   </tp:simple-type>
 
-  <tp:simple-type name="DBus_Qualified_Member" type="s">
+  <tp:simple-type name="DBus_Qualified_Member" type="s"
+    array-name="DBus_Qualified_Member_List">
     <tp:docstring>A string representing the full name of a D-Bus method,
       signal or property, consisting of a DBus_Interface, followed by
       a dot, followed by a DBus_Member. For example,
@@ -90,11 +95,74 @@
     <tp:member type="v" name="Value"/>
   </tp:mapping>
 
-  <tp:mapping name="String_String_Map">
+  <tp:mapping name="String_String_Map" array-name="String_String_Map_List">
     <tp:docstring>A mapping from strings to strings representing extra
       key-value pairs.</tp:docstring>
     <tp:member type="s" name="Key"/>
     <tp:member type="s" name="Value"/>
   </tp:mapping>
+
+  <tp:struct name="Socket_Address_IP" array-name="Socket_Address_IP_List">
+    <tp:docstring>An IP address and port.</tp:docstring>
+    <tp:member type="s" name="Address">
+      <tp:docstring>Either a dotted-quad IPv4 address literal as for
+        <tp:type>Socket_Address_IPv4</tp:type>, or an RFC2373 IPv6 address
+        as for <tp:type>Socket_Address_IPv6</tp:type>.
+      </tp:docstring>
+    </tp:member>
+    <tp:member type="q" name="Port">
+      <tp:docstring>The TCP or UDP port number.</tp:docstring>
+    </tp:member>
+  </tp:struct>
+
+  <tp:struct name="Socket_Address_IPv4">
+    <tp:docstring>An IPv4 address and port.</tp:docstring>
+    <tp:member type="s" name="Address">
+      <tp:docstring>A dotted-quad IPv4 address literal: four ASCII decimal
+        numbers, each between 0 and 255 inclusive, e.g.
+        "192.168.0.1".</tp:docstring>
+    </tp:member>
+    <tp:member type="q" name="Port">
+      <tp:docstring>The TCP or UDP port number.</tp:docstring>
+    </tp:member>
+  </tp:struct>
+
+  <tp:struct name="Socket_Address_IPv6">
+    <tp:docstring>An IPv6 address and port.</tp:docstring>
+    <tp:member type="s" name="Address">
+      <tp:docstring>An IPv6 address literal as specified by RFC2373
+        section 2.2, e.g. "2001:DB8::8:800:200C:4171".</tp:docstring>
+    </tp:member>
+    <tp:member type="q" name="Port">
+      <tp:docstring>The TCP or UDP port number.</tp:docstring>
+    </tp:member>
+  </tp:struct>
+
+  <tp:struct name="Socket_Netmask_IPv4">
+    <tp:docstring>An IPv4 network or subnet.</tp:docstring>
+    <tp:member type="s" name="Address">
+      <tp:docstring>A dotted-quad IPv4 address literal: four ASCII decimal
+        numbers, each between 0 and 255 inclusive, e.g.
+        "192.168.0.1".</tp:docstring>
+    </tp:member>
+    <tp:member type="y" name="Prefix_Length">
+      <tp:docstring>The number of leading bits of the address that must
+        match, for this netmask to be considered to match an
+        address.</tp:docstring>
+    </tp:member>
+  </tp:struct>
+
+  <tp:struct name="Socket_Netmask_IPv6">
+    <tp:docstring>An IPv6 network or subnet.</tp:docstring>
+    <tp:member type="s" name="Address">
+      <tp:docstring>An IPv6 address literal as specified by RFC2373
+        section 2.2, e.g. "2001:DB8::8:800:200C:4171".</tp:docstring>
+    </tp:member>
+    <tp:member type="y" name="Prefix_Length">
+      <tp:docstring>The number of leading bits of the address that must
+        match, for this netmask to be considered to match an
+        address.</tp:docstring>
+    </tp:member>
+  </tp:struct>
 
 </tp:generic-types>

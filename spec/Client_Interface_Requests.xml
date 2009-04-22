@@ -1,0 +1,173 @@
+<?xml version="1.0" ?>
+<node name="/Client_Interface_Requests"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2008-2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Client.Interface.Requests"
+    tp:causes-havoc="not yet final">
+    <tp:added version="0.17.23">(as a draft; functionality
+      moved from Handler)</tp:added>
+
+    <tp:requires interface="org.freedesktop.Telepathy.Client"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Client.Handler"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface can be implemented by a Handler to be notified about
+        requests for channels that it is likely to be asked to handle.</p>
+    </tp:docstring>
+
+    <method name="AddRequest" tp:name-for-bindings="Add_Request">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Called by the ChannelDispatcher to indicate that channels have been
+          requested, and that if the request is successful, they will probably
+          be handled by this Handler. The ChannelDispatcher SHOULD only
+          call this method on one handler per request.</p>
+
+        <tp:rationale>
+          <p>This allows the UI to start preparing to handle the channels
+            in advance (e.g. render a window with an "in progress" message),
+            improving perceived responsiveness.</p>
+
+          <p>The use of "probably" is because you can't necessarily tell from
+            a channel request which handler will handle particular channels.
+            A reasonable heuristic would be to match the request against the
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Client.Handler">HandlerChannelFilter</tp:dbus-ref>,
+            and respect the preferred handler (if any).</p>
+        </tp:rationale>
+
+        <p>If the request succeeds and is given to the expected Handler,
+          the Requests_Satisfied parameter to
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler">HandleChannels</tp:dbus-ref>
+          can be used to match the channel to a previous AddRequest call.</p>
+
+        <tp:rationale>
+          <p>This lets the UI direct the channels to the window that it
+            already opened.</p>
+        </tp:rationale>
+
+        <p>If the request fails, the expected handler is notified by the
+          channel dispatcher calling its
+          <tp:member-ref>RemoveRequest</tp:member-ref> method.</p>
+
+        <tp:rationale>
+          <p>This lets the UI close the window or display the error.</p>
+        </tp:rationale>
+
+        <p>The channel dispatcher SHOULD remember which handler was notified,
+          and if the channel request succeeds, it SHOULD dispatch the channels
+          to the expected handler, unless the channels do not match that
+          handler's <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler">HandlerChannelFilter</tp:dbus-ref>.
+          If the channels are not dispatched to the expected handler, the
+          handler that was expected is notified by the channel dispatcher
+          calling its <tp:member-ref>RemoveRequest</tp:member-ref> method
+          with the NotYours error.</p>
+
+        <tp:rationale>
+          <p>Expected handling is for the UI to close the window it
+            previously opened.</p>
+        </tp:rationale>
+
+        <p>Handlers SHOULD NOT return an error from this method; errors
+          returned from this method SHOULD NOT alter the channel dispatcher's
+          behaviour.</p>
+
+        <tp:rationale>
+          <p>Calls to this method are merely a notification.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Request" type="o" direction="in">
+        <tp:docstring>
+          The <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
+          object, which MUST have been returned by <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ChannelDispatcher">CreateChannel</tp:dbus-ref>
+          or <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ChannelDispatcher">EnsureChannel</tp:dbus-ref>
+          before this method is called.
+
+          <tp:rationale>
+            See those methods for the rationale of this ordering.
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Properties" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map" direction="in">
+        <tp:docstring>
+          <p>Some of the properties of the ChannelRequest. To avoid race
+            conditions, this dictionary MUST NOT include properties whose
+            values could subsequently change. It SHOULD include as many
+            properties as possible, given that constraint.</p>
+
+          <p>In particular, the properties <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelRequest">Requests</tp:dbus-ref>
+            and <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelRequest">UserActionTime</tp:dbus-ref>
+            MUST be included.</p>
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <method name="RemoveRequest"
+      tp:name-for-bindings="Remove_Request">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Called by the ChannelDispatcher to indicate that a request
+          previously passed to <tp:member-ref>AddRequest</tp:member-ref>
+          has failed and should be disregarded.</p>
+
+        <p>Handlers SHOULD NOT return an error from this method; errors
+          returned from this method SHOULD NOT alter the channel dispatcher's
+          behaviour.</p>
+
+        <tp:rationale>
+          <p>Calls to this method are merely a notification.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Request" type="o" direction="in">
+        <tp:docstring>
+          The request that failed.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Error" type="s" tp:type="DBus_Error_Name" direction="in">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The name of the D-Bus error with which the request failed.</p>
+
+          <p>If this is <code>org.freedesktop.Telepathy.Error.NotYours</code>,
+            this indicates that the request succeeded, but all the resulting
+            channels were given to some other handler.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg name="Message" type="s" direction="in">
+        <tp:docstring>
+          Any message supplied with the D-Bus error.
+        </tp:docstring>
+      </arg>
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

@@ -1,8 +1,5 @@
 <?xml version="1.0" ?>
 <tp:errors xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0" namespace="org.freedesktop.Telepathy.Error">
-  <!-- Don't re-order these errors until fd.o #17588 is fixed, or you will
-       break telepathy-glib's ABI.
-    -->
   <tp:error name="Network Error">
     <tp:docstring>
     Raised when there is an error reading from or writing to the network.
@@ -296,8 +293,22 @@
     </tp:docstring>
   </tp:error>
 
-  <tp:copyright>Copyright (C) 2005-2008 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2005-2008 Nokia Corporation</tp:copyright>
+  <tp:error name="Terminated">
+    <tp:docstring>
+      Raised when a channel is terminated for an unspecified reason. In
+      particular, this error SHOULD be used whenever normal termination of
+      a 1-1 StreamedMedia call by the remote user is represented as a D-Bus
+      error name.
+
+      <tp:rationale>
+        This corresponds to None in the
+        <tp:type>Channel_Group_Change_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:copyright>Copyright © 2005-2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
 <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

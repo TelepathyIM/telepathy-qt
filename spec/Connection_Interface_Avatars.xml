@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Connection.Interface.Avatars">
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
 
-    <tp:simple-type name="Avatar_Token" type="s">
+    <tp:simple-type name="Avatar_Token" type="s"
+      array-name="Avatar_Token_List">
       <tp:changed version="0.17.16">strengthened uniqueness requirements
         so (CM name, protocol, token) is unique; previously only
         (our Account, remote contact identifier, token) was required to be
@@ -124,8 +125,131 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
 
+    <property name="SupportedAvatarMIMETypes"
+      tp:name-for-bindings="Supported_Avatar_MIME_Types"
+      type="as" access="read">
+      <tp:added version="0.17.22">Fall back to calling
+        <tp:member-ref>GetAvatarRequirements</tp:member-ref> if getting this
+          property fails.</tp:added>
+      <tp:docstring>
+        An array of supported MIME types (e.g. "image/jpeg").
+        Clients MAY assume that the first type in this array is preferred.
+        This property cannot change after the Connection goes to the Connected
+        state.
+      </tp:docstring>
+    </property>
+
+    <property name="MinimumAvatarHeight"
+      tp:name-for-bindings="Minimum_Avatar_Height"
+      type="u" access="read">
+      <tp:added version="0.17.22">Fall back to calling
+        <tp:member-ref>GetAvatarRequirements</tp:member-ref> if getting this
+          property fails.</tp:added>
+      <tp:docstring>
+        The minimum height in pixels of an avatar on this protocol, which MAY
+        be 0.
+        This property cannot change after the Connection goes to the Connected
+        state.
+      </tp:docstring>
+    </property>
+
+    <property name="MinimumAvatarWidth"
+      tp:name-for-bindings="Minimum_Avatar_Width"
+      type="u" access="read">
+      <tp:added version="0.17.22">Fall back to calling
+        <tp:member-ref>GetAvatarRequirements</tp:member-ref> if getting this
+          property fails.</tp:added>
+      <tp:docstring>
+        The minimum width in pixels of an avatar on this protocol, which MAY
+        be 0.
+        This property cannot change after the Connection goes to the Connected
+        state.
+      </tp:docstring>
+    </property>
+
+    <property name="RecommendedAvatarHeight"
+      tp:name-for-bindings="Recommended_Avatar_Height"
+      type="u" access="read">
+      <tp:added version="0.17.22"/>
+      <tp:docstring>
+        The recommended height in pixels of an avatar on this protocol, or 0 if
+        there is no preferred height.
+        This property cannot change after the Connection goes to the Connected
+        state.
+
+        <tp:rationale>
+          In XMPP a recommended width is given by the protocol specification;
+          in proprietary protocols, using the same avatar size as the
+          proprietary client is likely to lead to the best display to other
+          users.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="RecommendedAvatarWidth"
+      tp:name-for-bindings="Recommended_Avatar_Width"
+      type="u" access="read">
+      <tp:added version="0.17.22"/>
+      <tp:docstring>
+        The recommended width in pixels of an avatar on this protocol, or 0 if
+        there is no preferred width.
+        This property cannot change after the Connection goes to the Connected
+        state.
+
+        <tp:rationale>
+          The rationale is the same as for
+          <tp:member-ref>RecommendedAvatarHeight</tp:member-ref>.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="MaximumAvatarHeight"
+      tp:name-for-bindings="Maximum_Avatar_Height"
+      type="u" access="read">
+      <tp:added version="0.17.22">Fall back to calling
+        <tp:member-ref>GetAvatarRequirements</tp:member-ref> if getting this
+          property fails.</tp:added>
+      <tp:docstring>
+        The maximum height in pixels of an avatar on this protocol, or 0 if
+        there is no limit.
+        This property cannot change after the Connection goes to the Connected
+        state.
+      </tp:docstring>
+    </property>
+
+    <property name="MaximumAvatarWidth"
+      tp:name-for-bindings="Maximum_Avatar_Width"
+      type="u" access="read">
+      <tp:added version="0.17.22">Fall back to calling
+        <tp:member-ref>GetAvatarRequirements</tp:member-ref> if getting this
+          property fails.</tp:added>
+      <tp:docstring>
+        The maximum width in pixels of an avatar on this protocol, or 0 if
+        there is no limit.
+        This property cannot change after the Connection goes to the Connected
+        state.
+      </tp:docstring>
+    </property>
+
+    <property name="MaximumAvatarBytes"
+      tp:name-for-bindings="Maximum_Avatar_Bytes"
+      type="u" access="read">
+      <tp:added version="0.17.22">Fall back to calling
+        <tp:member-ref>GetAvatarRequirements</tp:member-ref> if getting this
+          property fails.</tp:added>
+      <tp:docstring>
+        The maximum size in bytes of an avatar on this protocol, or 0 if
+        there is no limit.
+        This property cannot change after the Connection goes to the Connected
+        state.
+      </tp:docstring>
+    </property>
+
     <method name="GetAvatarRequirements"
       tp:name-for-bindings="Get_Avatar_Requirements">
+      <tp:deprecated version="0.17.22">Use GetAll to retrieve the
+        D-Bus properties on this interface, falling back to this method
+        on failure.</tp:deprecated>
       <arg direction="out" type="as" name="MIME_Types">
         <tp:docstring>
           An array of supported MIME types (eg image/jpeg)
@@ -179,6 +303,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           same order as the given array of contact handles
         </tp:docstring>
       </arg>
+      <tp:deprecated version="0.15.5">Use GetKnownAvatarTokens
+        instead.</tp:deprecated>
       <tp:docstring>
         Get the unique tokens for all of the given contacts' avatars.
 
@@ -244,6 +370,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         unknown
         </tp:docstring>
       </arg>
+      <tp:deprecated version="0.15.5">Use RequestAvatars
+        instead.</tp:deprecated>
       <tp:docstring>
         Request the avatar for a given contact. Using this method in new
         Telepathy clients is deprecated; use RequestAvatars instead.

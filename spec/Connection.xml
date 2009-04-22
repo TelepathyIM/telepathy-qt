@@ -22,8 +22,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 USA.</p>
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Connection">
+    <tp:requires interface="org.freedesktop.Telepathy.Connection.Interface.Requests"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection.Interface.Contacts"/>
 
     <tp:struct name="Channel_Info" array-name="Channel_Info_List">
+      <tp:deprecated version="0.17.23"/>
       <tp:docstring>A struct representing a channel, as returned by
         ListChannels on the Connection interface.</tp:docstring>
       <tp:member type="o" name="Channel">
@@ -45,17 +48,14 @@ USA.</p>
     </tp:struct>
 
     <method name="Connect" tp:name-for-bindings="Connect">
-      <tp:docstring>
-        Request that the connection be established. This will be done
-        asynchronously and errors will be returned by emitting
-        <tp:member-ref>StatusChanged</tp:member-ref> signals.
-      </tp:docstring>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request that the connection be established. This will be done
+          asynchronously and errors will be returned by emitting
+          <tp:member-ref>StatusChanged</tp:member-ref> signals.</p>
 
-      <tp:possible-errors>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          The connection is already connecting or connected
-        </tp:error>
-      </tp:possible-errors>
+        <p>Calling this method on a Connection that is already connecting
+          or connected is allowed, and has no effect.</p>
+      </tp:docstring>
     </method>
 
     <method name="Disconnect" tp:name-for-bindings="Disconnect">
@@ -272,6 +272,12 @@ USA.</p>
     </method>
 
     <method name="ListChannels" tp:name-for-bindings="List_Channels">
+      <tp:deprecated version="0.17.23">Use the
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection.Interface">Requests.Channels</tp:dbus-ref>
+        property instead.
+      </tp:deprecated>
+
       <arg direction="out" type="a(osuu)" tp:type="Channel_Info[]"
         name="Channel_Info">
         <tp:docstring>
@@ -289,6 +295,12 @@ USA.</p>
     </method>
 
     <signal name="NewChannel" tp:name-for-bindings="New_Channel">
+      <tp:deprecated version="0.17.23">Connection managers MUST still
+        emit this signal, but clients SHOULD listen for the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection.Interface">Requests.NewChannels</tp:dbus-ref>
+        signal instead.
+      </tp:deprecated>
+
       <arg name="Object_Path" type="o">
         <tp:docstring>
           A D-Bus object path for the channel object on this service
@@ -381,6 +393,15 @@ USA.</p>
     </method>
 
     <method name="RequestChannel" tp:name-for-bindings="Request_Channel">
+      <tp:deprecated version="0.17.23">Use
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection.Interface">Requests.CreateChannel</tp:dbus-ref>
+        or <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection.Interface">Requests.EnsureChannel</tp:dbus-ref>
+        instead. Connection managers MAY implement RequestChannel by
+        raising NotImplemented, or implement fewer types of channel via
+        this API.</tp:deprecated>
+
       <arg direction="in" name="Type" type="s" tp:type="DBus_Interface">
         <tp:docstring>
           A D-Bus interface name representing base channel type
@@ -534,27 +555,31 @@ USA.</p>
       </tp:enumvalue>
     </tp:enum>
 
-    <tp:simple-type name="Handle" type="u">
+    <tp:simple-type name="Handle" type="u" array-name="Handle_List">
       <tp:docstring>An unsigned 32-bit integer representing a
         handle</tp:docstring>
     </tp:simple-type>
 
-    <tp:simple-type name="Contact_Handle" type="u">
+    <tp:simple-type name="Contact_Handle" type="u"
+      array-name="Contact_Handle_List">
       <tp:docstring>An unsigned 32-bit integer representing a handle of type
         Handle_Type_Contact</tp:docstring>
     </tp:simple-type>
 
-    <tp:simple-type name="Room_Handle" type="u">
+    <tp:simple-type name="Room_Handle" type="u"
+      array-name="Room_Handle_List">
       <tp:docstring>An unsigned 32-bit integer representing a handle of type
         Handle_Type_Room</tp:docstring>
     </tp:simple-type>
 
-    <tp:simple-type name="List_Handle" type="u">
+    <tp:simple-type name="List_Handle" type="u"
+      array-name="List_Handle_List">
       <tp:docstring>An unsigned 32-bit integer representing a handle of type
         Handle_Type_List</tp:docstring>
     </tp:simple-type>
 
-    <tp:simple-type name="Group_Handle" type="u">
+    <tp:simple-type name="Group_Handle" type="u"
+      array-name="Group_Handle_List">
       <tp:docstring>An unsigned 32-bit integer representing a handle of type
         Handle_Type_Group</tp:docstring>
     </tp:simple-type>
@@ -970,7 +995,8 @@ USA.</p>
 
     <p>As well as the methods and signatures below, arbitrary interfaces may be
     provided by the Connection object to represent extra connection-wide
-    functionality, such as the Connection.Interface.Presence for receiving and
+    functionality, such as the Connection.Interface.SimplePresence for
+    receiving and
     reporting presence information, and Connection.Interface.Aliasing for
     connections where contacts may set and change an alias for themselves.
     These interfaces can be discovered using the
@@ -1007,6 +1033,11 @@ USA.</p>
       bus names and object paths with more than 7 components. We now restrict
       Connection bus names/object paths to have exactly 7
       components.</tp:changed>
+
+    <tp:changed version="0.17.23">The Requests and Contacts interfaces
+      are now mandatory. Their functionality will be merged into the main
+      Connection interface at some point in future.</tp:changed>
+
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

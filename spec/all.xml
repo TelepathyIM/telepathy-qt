@@ -3,11 +3,11 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.17.19</tp:version>
+<tp:version>0.17.23</tp:version>
 
-<tp:copyright>Copyright (C) 2005-2008 Collabora Limited</tp:copyright>
-<tp:copyright>Copyright (C) 2005-2008 Nokia Corporation</tp:copyright>
-<tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
+<tp:copyright>Copyright © 2005-2009 Collabora Limited</tp:copyright>
+<tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
+<tp:copyright>Copyright © 2006 INdT</tp:copyright>
 
 <tp:license xmlns="http://www.w3.org/1999/xhtml">
 <p>This library is free software; you can redistribute it and/or
@@ -25,68 +25,144 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
 </tp:license>
 
-<xi:include href="Connection_Manager.xml"/>
-<xi:include href="Connection.xml"/>
-<xi:include href="Connection_Interface_Aliasing.xml"/>
-<xi:include href="Connection_Interface_Avatars.xml"/>
-<xi:include href="Connection_Interface_Capabilities.xml"/>
-<xi:include href="Connection_Interface_Contact_Capabilities.xml"/>
-<xi:include href="Connection_Interface_Contact_Info.xml"/>
-<xi:include href="Connection_Interface_Contacts.xml"/>
-<xi:include href="Connection_Interface_Location.xml"/>
-<xi:include href="Connection_Interface_Presence.xml"/>
-<xi:include href="Connection_Interface_Renaming.xml"/>
-<xi:include href="Connection_Interface_Requests.xml"/>
-<xi:include href="Connection_Interface_Simple_Presence.xml"/>
+<tp:section name="Connection Managers">
+ <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+  <p>
+   A Connection Manager is a factory for connections.
+  </p>
+ </tp:docstring>
+ <xi:include href="Connection_Manager.xml"/>
+ 
+ <tp:section name="Connection Object">
+  <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+   <p>
+    Connections represent active protocol sessions.
+   </p>
+  </tp:docstring>
+  <xi:include href="Connection.xml"/>
+  <xi:include href="Connection_Interface_Aliasing.xml"/>
+  <xi:include href="Connection_Interface_Avatars.xml"/>
+  <xi:include href="Connection_Interface_Capabilities.xml"/>
+  <xi:include href="Connection_Interface_Contact_Capabilities.xml"/>
+  <xi:include href="Connection_Interface_Contact_Info.xml"/>
+  <xi:include href="Connection_Interface_Contacts.xml"/>
+  <xi:include href="Connection_Interface_Location.xml"/>
+  <xi:include href="Connection_Interface_Presence.xml"/>
+  <xi:include href="Connection_Interface_Renaming.xml"/>
+  <xi:include href="Connection_Interface_Requests.xml"/>
+  <xi:include href="Connection_Interface_Simple_Presence.xml"/>
+ </tp:section>
 
-<xi:include href="Channel_Bundle.xml"/>
+ <xi:include href="Channel_Bundle.xml"/>
+ 
+ <tp:section name="Channel Object">
+  <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+   <p>
+    A Channel is used by Telepathy to exchange data between local
+    applications and remote servers. A given connection will have many
+    channels, each one represented by a D-Bus object.
+   </p>
+   <p>
+    Each Channel has a type, represented by a D-Bus interface, and may
+    implement one or more additional interfaces from the list of channel
+    interfaces below.
+   </p>
+  </tp:docstring>
+  <xi:include href="Channel.xml"/>
+  <xi:include href="Channel_Future.xml"/>
 
-<xi:include href="Channel.xml"/>
-<xi:include href="Channel_Future.xml"/>
-<xi:include href="Channel_Type_Contact_List.xml"/>
-<xi:include href="Channel_Type_Streamed_Media.xml"/>
-<xi:include href="Channel_Type_Streamed_Media_Future.xml"/>
-<xi:include href="Channel_Type_Room_List.xml"/>
-<xi:include href="Channel_Type_Text.xml"/>
-<xi:include href="Channel_Type_Tubes.xml"/>
-<xi:include href="Channel_Type_Stream_Tube.xml"/>
-<xi:include href="Channel_Type_DBus_Tube.xml"/>
-<xi:include href="Channel_Type_File_Transfer.xml"/>
+  <tp:section name="Channel Types">
+   <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+    <p>
+     Each Channel implements one of the following types:
+    </p>
+   </tp:docstring>
+   <xi:include href="Channel_Type_Contact_List.xml"/>
+   <xi:include href="Channel_Type_Streamed_Media.xml"/>
+   <xi:include href="Channel_Type_Streamed_Media_Future.xml"/>
+   <xi:include href="Channel_Type_Room_List.xml"/>
+   <xi:include href="Channel_Type_Text.xml"/>
+   <xi:include href="Channel_Type_Tubes.xml"/>
+   <xi:include href="Channel_Type_Stream_Tube.xml"/>
+   <xi:include href="Channel_Type_DBus_Tube.xml"/>
+   <xi:include href="Channel_Type_File_Transfer.xml"/>
+   <xi:include href="Channel_Type_Contact_Search.xml"/>
+  </tp:section>
+   
+  <tp:section name="Channel Interfaces">
+   <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+    <p>
+     A Channel may also implement one or more of the following interfaces,
+     depending on its type:
+    </p>
+   </tp:docstring>
+   <xi:include href="Channel_Interface_Call_Merging.xml"/>
+   <xi:include href="Channel_Interface_Call_State.xml"/>
+   <xi:include href="Channel_Interface_Chat_State.xml"/>
+   <xi:include href="Channel_Interface_Destroyable.xml"/>
+   <xi:include href="Channel_Interface_DTMF.xml"/>
+   <xi:include href="Channel_Interface_Group.xml"/>
+   <xi:include href="Channel_Interface_Hold.xml"/>
+   <xi:include href="Channel_Interface_HTML.xml"/>
+   <xi:include href="Channel_Interface_Password.xml"/>
+   <xi:include href="Channel_Interface_Media_Signalling.xml"/>
+   <xi:include href="Channel_Interface_Media_Signalling_Future.xml"/>
+   <xi:include href="Channel_Interface_Messages.xml"/>
+   <xi:include href="Channel_Interface_Tube.xml"/>
+  </tp:section>
+ </tp:section>
 
-<xi:include href="Channel_Interface_Call_Merging.xml"/>
-<xi:include href="Channel_Interface_Call_State.xml"/>
-<xi:include href="Channel_Interface_Chat_State.xml"/>
-<xi:include href="Channel_Interface_Destroyable.xml"/>
-<xi:include href="Channel_Interface_DTMF.xml"/>
-<xi:include href="Channel_Interface_Group.xml"/>
-<xi:include href="Channel_Interface_Hold.xml"/>
-<xi:include href="Channel_Interface_HTML.xml"/>
-<xi:include href="Channel_Interface_Password.xml"/>
-<xi:include href="Channel_Interface_Media_Signalling.xml"/>
-<xi:include href="Channel_Interface_Media_Signalling_Future.xml"/>
-<xi:include href="Channel_Interface_Messages.xml"/>
-<xi:include href="Channel_Interface_Tube.xml"/>
+ <tp:section name="Media">
+  <xi:include href="Media_Session_Handler.xml"/>
+  <xi:include href="Media_Stream_Handler.xml"/>
+ </tp:section>
+</tp:section>
 
-<xi:include href="Media_Session_Handler.xml"/>
-<xi:include href="Media_Stream_Handler.xml"/>
+<tp:section name="The Account Manager">
+ <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+  <p>
+   The Account Manager is a desktop service that provides account configuration
+   and can manage the connection managers. In general, clients will use the
+   account manager to find out about instant messaging accounts and their
+   associated connections.
+  </p>
+ </tp:docstring>
+ <xi:include href="Account_Manager.xml"/>
+ <xi:include href="Account.xml"/>
+ <xi:include href="Account_Interface_Avatar.xml"/>
+</tp:section>
+
+<tp:section name="The Channel Dispatcher">
+ <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+  <p>
+   The Channel Dispatcher is a desktop service whose purpose is to dispatch
+   incoming Telepathy Channels to the appropriate client (e.g. incoming text
+   chat, file transfer, tubes, etc.).
+  </p>
+ </tp:docstring>
+ <xi:include href="Channel_Dispatcher.xml"/>
+ <xi:include href="Channel_Dispatcher_Interface_Operation_List.xml"/>
+ <xi:include href="Channel_Dispatch_Operation.xml"/>
+ <xi:include href="Channel_Request.xml"/>
+</tp:section>
+
+<tp:section name="Clients">
+ <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+  <p>
+   Clients should implement one or more of these interfaces to be able to
+   handle channels coming in from the Channel Dispatcher.
+  </p>
+ </tp:docstring>
+ <xi:include href="Client.xml"/>
+ <xi:include href="Client_Observer.xml"/>
+ <xi:include href="Client_Approver.xml"/>
+ <xi:include href="Client_Handler.xml"/>
+ <xi:include href="Client_Interface_Requests.xml"/>
+
+ <xi:include href="Channel_Handler.xml"/>
+</tp:section>
 
 <xi:include href="Properties_Interface.xml"/>
-
-<xi:include href="Account_Manager.xml"/>
-<xi:include href="Account.xml"/>
-<xi:include href="Account_Interface_Avatar.xml"/>
-
-<xi:include href="Channel_Dispatcher.xml"/>
-<xi:include href="Channel_Dispatcher_Interface_Operation_List.xml"/>
-<xi:include href="Channel_Dispatch_Operation.xml"/>
-<xi:include href="Channel_Request.xml"/>
-
-<xi:include href="Client.xml"/>
-<xi:include href="Client_Observer.xml"/>
-<xi:include href="Client_Approver.xml"/>
-<xi:include href="Client_Handler.xml"/>
-
-<xi:include href="Channel_Handler.xml"/>
 
 <xi:include href="errors.xml"/>
 <xi:include href="generic-types.xml"/>
