@@ -106,6 +106,8 @@ public:
     bool connectsAutomatically() const;
     PendingOperation *setConnectsAutomatically(bool value);
 
+    bool hasBeenOnline() const;
+
     ConnectionStatus connectionStatus() const;
     ConnectionStatusReason connectionStatusReason() const;
     bool haveConnection() const;
@@ -165,6 +167,7 @@ Q_SIGNALS:
     void validityChanged(bool);
     void stateChanged(bool);
     void connectsAutomaticallyPropertyChanged(bool);
+    void firstOnline();
     void parametersChanged(const QVariantMap &);
     void automaticPresenceChanged(const Tp::SimplePresence &) const;
     void currentPresenceChanged(const Tp::SimplePresence &) const;
