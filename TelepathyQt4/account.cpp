@@ -81,6 +81,7 @@ struct Account::Private
     bool valid;
     bool enabled;
     bool connectsAutomatically;
+    bool hasBeenOnline;
     QString cmName;
     QString protocol;
     QString displayName;
@@ -107,6 +108,7 @@ Account::Private::Private(Account *parent)
       valid(false),
       enabled(false),
       connectsAutomatically(false),
+      hasBeenOnline(false),
       protocolInfo(0),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified)
@@ -317,6 +319,21 @@ QString Account::protocol() const
 QString Account::displayName() const
 {
     return mPriv->displayName;
+}
+
+/**
+ * Check whether this account has ever been put online successfully.
+ *
+ * This property cannot change from true to false, only from false to true.
+ * When the account successfully goes online for the first time, or when it
+ * is detected that this has already happened, the firstOnline() signal is
+ * emitted.
+ *
+ * \return Whether the account has even been online.
+ */
+bool Account::hasBeenOnline() const
+{
+    return mPriv->hasBeenOnline;
 }
 
 /**
@@ -835,8 +852,21 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 qdbus_cast<bool>(props["ConnectAutomatically"])) {
         connectsAutomatically =
                 qdbus_cast<bool>(props["ConnectAutomatically"]);
-        debug() << " Connects Automatically:" << (enabled ? "true" : "false");
+        debug() << " Connects Automatically:" << (connectsAutomatically ? "true" : "false");
         emit parent->connectsAutomaticallyPropertyChanged(connectsAutomatically);
+    }
+
+    if (props.contains("HasBeenOnline") &&
+        !hasBeenOnline &&
+        qdbus_cast<bool>(props["HasBeenOnline"])) {
+        hasBeenOnline = true;
+        debug() << " HasBeenOnline changed to true";
+        // don't emit firstOnline unless we're already ready, that would be
+        // misleading - we'd emit it just before any already-used account
+        // became ready
+        if (parent->isReady()) {
+            emit parent->firstOnline();
+        }
     }
 
     if (props.contains("Parameters") &&
