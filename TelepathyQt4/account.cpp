@@ -852,7 +852,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 qdbus_cast<bool>(props["ConnectAutomatically"])) {
         connectsAutomatically =
                 qdbus_cast<bool>(props["ConnectAutomatically"]);
-        debug() << " Connects Automatically:" << (enabled ? "true" : "false");
+        debug() << " Connects Automatically:" << (connectsAutomatically ? "true" : "false");
         emit parent->connectsAutomaticallyPropertyChanged(connectsAutomatically);
     }
 
