@@ -1189,10 +1189,50 @@ bool Channel::groupCanAddContacts() const
 }
 
 /**
+ * Return whether a message is expected when inviting contacts who
+ * are not already members to this channel.
+ *
+ * \return \c true if a message is expected, \c false otherwise.
+ * \sa groupAddContacts()
+ */
+bool Channel::groupCanAddContactsWithMessage() const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupCanAddContactsWithMessage() used when channel not ready";
+    }
+
+    return mPriv->groupFlags & ChannelGroupFlagMessageAdd;
+}
+
+/**
+ * Return whether a message is expected when accepting contacts' requests to
+ * join this channel.
+ *
+ * \return \c true if a message is expected, \c false otherwise.
+ * \sa groupAddContacts()
+ */
+bool Channel::groupCanAcceptContactsWithMessage() const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupCanAcceptContactsWithMessage() used when channel not ready";
+    }
+
+    return mPriv->groupFlags & ChannelGroupFlagMessageAccept;
+}
+
+/**
  * Add contacts to this channel.
  *
- * Note that Contacts on local pending list can always be added even if
- * groupCanAddContacts() returns false.
+ * Contacts on the local pending list (those waiting for permission to join
+ * the channel) can always be added. If groupCanAcceptContactsWithMessage()
+ * returns \c true, an optional message is expected when doing this; if not,
+ * the message parameter is likely to be ignored (so the user should not be
+ * asked for a message, and the message parameter should be left empty).
+ *
+ * Other contacts can only be added if groupCanAddContacts() returns \c true.
+ * If groupCanAddContactsWithMessage() returns \c true, an optional message is
+ * expected when doing this, and if not, the message parameter is likely to be
+ * ignored.
  *
  * \param contacts Contacts to be added.
  * \param message A string message, which can be blank if desired.
@@ -1237,7 +1277,8 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
 }
 
 /**
- * Return if contacts in groupRemotePendingContacts() can be removed from this channel.
+ * Return whether contacts in groupRemotePendingContacts() can be removed from
+ * this channel (i.e. whether an invitation can be rescinded).
  *
  * \return \c true if contacts can be removed, \c false otherwise.
  * \sa groupRemoveContacts()
@@ -1252,10 +1293,27 @@ bool Channel::groupCanRescindContacts() const
 }
 
 /**
+ * Return whether a message is expected when removing contacts who are in
+ * groupRemotePendingContacts() from this channel, i.e. rescinding an
+ * invitation.
+ *
+ * \return \c true if a message is expected, \c false otherwise.
+ * \sa groupRemoveContacts()
+ */
+bool Channel::groupCanRescindContactsWithMessage() const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupCanRescindContactsWithMessage() used when channel not ready";
+    }
+
+    return mPriv->groupFlags & ChannelGroupFlagMessageRescind;
+}
+
+/**
  * Return if contacts in groupContacts() can be removed from this channel.
  *
- * Note that contacts in local pending lists can always be removed from the
- * channel.
+ * Note that contacts in local pending lists, and the groupSelfContact(), can
+ * always be removed from the channel.
  *
  * \return \c true if contacts can be removed, \c false otherwise.
  * \sa groupRemoveContacts()
@@ -1270,7 +1328,81 @@ bool Channel::groupCanRemoveContacts() const
 }
 
 /**
+ * Return whether a message is expected when removing contacts who are in
+ * groupContacts() from this channel.
+ *
+ * \return \c true if a message is expected, \c false otherwise.
+ * \sa groupRemoveContacts()
+ */
+bool Channel::groupCanRemoveContactsWithMessage() const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupCanRemoveContactsWithMessage() used when channel not ready";
+    }
+
+    return mPriv->groupFlags & ChannelGroupFlagMessageRemove;
+}
+
+/**
+ * Return whether a message is expected when removing contacts who are in
+ * groupLocalPendingContacts() from this channel, i.e. rejecting a request to
+ * join.
+ *
+ * \return \c true if a message is expected, \c false otherwise.
+ * \sa groupRemoveContacts()
+ */
+bool Channel::groupCanRejectContactsWithMessage() const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupCanRejectContactsWithMessage() used when channel not ready";
+    }
+
+    return mPriv->groupFlags & ChannelGroupFlagMessageReject;
+}
+
+/**
+ * Return whether a message is expected when removing the groupSelfContact()
+ * from this channel, i.e. departing from the channel.
+ *
+ * \return \c true if a message is expected, \c false otherwise.
+ * \sa groupRemoveContacts()
+ */
+bool Channel::groupCanDepartWithMessage() const
+{
+    if (!isReady()) {
+        warning() << "Channel::groupCanDepartWithMessage() used when channel not ready";
+    }
+
+    return mPriv->groupFlags & ChannelGroupFlagMessageDepart;
+}
+
+/**
  * Remove contacts from this channel.
+ *
+ * Contacts on the local pending list (those waiting for permission to join
+ * the channel) can always be removed. If groupCanRejectContactsWithMessage()
+ * returns \c true, an optional message is expected when doing this; if not,
+ * the message parameter is likely to be ignored (so the user should not be
+ * asked for a message, and the message parameter should be left empty).
+ *
+ * The groupSelfContact() can also always be removed, as a way to leave the
+ * group with an optional departure message and/or departure reason indication.
+ * If groupCanDepartWithMessage() returns \c true, an optional message is
+ * expected when doing this, and if not, the message parameter is likely to
+ * be ignored.
+ *
+ * Contacts in the group can only be removed (e.g. kicked) if
+ * groupCanRemoveContacts() returns \c true. If
+ * groupCanRemoveContactsWithMessage() returns \c true, an optional message is
+ * expected when doing this, and if not, the message parameter is likely to be
+ * ignored.
+ *
+ * Contacts in the remote pending list (those who have been invited to the
+ * channel) can only be removed (have their invitations rescinded) if
+ * groupCanRescindContacts() returns \c true. If
+ * groupCanRescindContactsWithMessage() returns \c true, an optional message is
+ * expected when doing this, and if not, the message parameter is likely to be
+ * ignored.
  *
  * \param contacts Contacts to be removed.
  * \param message A string message, which can be blank if desired.

@@ -80,10 +80,16 @@ public:
     uint groupFlags() const;
 
     bool groupCanAddContacts() const;
+    bool groupCanAddContactsWithMessage() const;
+    bool groupCanAcceptContactsWithMessage() const;
     PendingOperation *groupAddContacts(const QList<ContactPtr> &contacts,
             const QString &message = QString());
     bool groupCanRescindContacts() const;
+    bool groupCanRescindContactsWithMessage() const;
     bool groupCanRemoveContacts() const;
+    bool groupCanRemoveContactsWithMessage() const;
+    bool groupCanRejectContactsWithMessage() const;
+    bool groupCanDepartWithMessage() const;
     PendingOperation *groupRemoveContacts(const QList<ContactPtr> &contacts,
             const QString &message = QString(),
             uint reason = ChannelGroupChangeReasonNone);
