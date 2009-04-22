@@ -2,15 +2,16 @@
 DIST_SUBDIRS = Prototype Farsight
 SUBDIRS = . Prototype
 
-if ENABLE_TP_FARSIGHT
-SUBDIRS += Farsight
-endif
-
 tpqt4includedir=$(includedir)/telepathy-1.0/TelepathyQt4
 genincludedir=$(tpqt4includedir)/_gen
 
 pkgconfigdir = ${libdir}/pkgconfig
 pkgconfig_DATA = TelepathyQt4.pc
+
+if ENABLE_TP_FARSIGHT
+SUBDIRS += Farsight
+pkgconfig_DATA += TelepathyQt4Farsight.pc
+endif
 
 EXTRA_DIST = \
     account.xml \
