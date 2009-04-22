@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: Telepathy-Qt4-Farsight
 Description: Qt4 Telepathy Farsight utility library for the Telepathy framework
 Version: @VERSION@
-Requires.private: QtCore >= 4.5, QtDBus >= 4.5, TelepathyQt4
+Requires.private: QtCore >= 4.5, QtDBus >= 4.5, telepathy-glib >= 0.7.28, telepathy-farsight >= 0.0.4, TelepathyQt4 = @VERSION@
 Libs: -L${libdir} -ltelepathy-qt4-farsight
 Cflags: -I${includedir}/telepathy-1.0

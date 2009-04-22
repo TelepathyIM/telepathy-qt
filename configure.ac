@@ -250,10 +250,12 @@ AC_OUTPUT([
     Makefile
     TelepathyQt4/Makefile
     TelepathyQt4/Farsight/Makefile
-    TelepathyQt4/Farsight/TelepathyQt4Farsight.pc
     TelepathyQt4/Prototype/Makefile
     TelepathyQt4/Prototype/TpQt4Prototype.pc
     TelepathyQt4/TelepathyQt4.pc
+    TelepathyQt4/TelepathyQt4-uninstalled.pc
+    TelepathyQt4/TelepathyQt4Farsight.pc
+    TelepathyQt4/TelepathyQt4Farsight-uninstalled.pc
     doxygen.cfg
     examples/Makefile
     examples/accounts/Makefile
