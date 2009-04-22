@@ -1,6 +1,8 @@
 telepathy-qt4 0.1.3 (UNRELEASED)
 ================================
 
+The "what are you scared of?" release.
+
 Dependencies:
 
 * Full regression tests now require telepathy-glib >= 0.7.28 (telepathy-glib
@@ -8,22 +10,56 @@ Dependencies:
 
 API changes:
 
-* PendingHandles now finish successfully on non fatal errors (InvalidArgument,
-  InvalidHandle, NotAvailable). PendingHandles::invalidNames/invalidHandles should
-  be used to check if a non-fatal error occurred and some handle could not be
-  acquired.
+* Namespace simplification: Telepathy::Client::Channel (etc.) are now
+  Tp::Channel, similar to telepathy-glib's TpChannel. Auto-generated client
+  classes like Telepathy::Client::ChannelInterface are now
+  Tp::Client::ChannelInterface.
+
 * AccountManager, Account, ConnectionManager, Connection, Channel and Channel
-  subclasses now inherit SharedData and are used together with
-  SharedPtr/WeakPtr. The constructor is now protected (in order to support
-  custom classes) and a public create method that returns a SharedPtr was added.
-  This is an attempt to avoid memory leaks as hard as possible, see
+  subclasses now inherit from Tp::RefCounted and are used together with
+  Tp::SharedPtr/Tp::WeakPtr, shared and weak pointer classes using ideas from
+  Qt, glibmm, Boost and WebKit. The constructor is now protected (in order to
+  support custom classes) and a public create method that returns a SharedPtr
+  was added. This is an attempt to avoid memory leaks as much as possible, see
   http://lists.freedesktop.org/archives/telepathy/2009-March/003218.html for
   more details.
 
+* Instead of forward-declaring Telepathy::Client::Channel and using
+  a variable of type Telepathy::Client::Channel *, you should now include
+  <TelepathyQt4/Types> and use either Tp::ChannelPtr, which is a
+  reference-counted shared pointer, or Tp::WeakPtr<Tp::Channel>, which is the
+  weak counterpart.
+* Header simplification: the public headers now look like
+  <TelepathyQt4/Channel>, i.e. without the Client subdirectory.
+
+* PendingHandles now finish successfully on non fatal errors (InvalidArgument,
+  InvalidHandle, NotAvailable). PendingHandles::invalidNames/invalidHandles
+  should be used to check if a non-fatal error occurred and some handle could
+  not be acquired.
+
+Enhancements:
+
+* Updated to telepathy-spec 0.17.23
+
+* TelepathyQt4Farsight is a new mini-library with glue code to connect
+  telepathy-farsight to Telepathy-Qt4. Handlers for streamed media channels
+  with media signalling can #include <TelepathyQt4/Farsight/Channel> and pass
+  their Tp::StreamedMediaChannel to Tp::createFarsightChannel, then hook up
+  the resulting TfChannel to a GStreamer pipeline of their choice.
+
+* StreamedMediaChannel has a new handlerStreamingRequired method so you can
+  check whether the handler needs to carry out the streaming
+
+* fd.o #21336: Channels now indicate whether a message is expected when
+  doing various Group operations
+
+* fd.o #21337: Account supports the new HasBeenOnline property
+
 Fixes:
 
-* Fixed bug 20583: Contact objects don't work without the Contacts interface.
-* Fixed bug 20584: Contact object creation doesn't survive bad IDs or handles.
+* fd.o #20583: Contact objects don't work without the Contacts interface.
+
+* fd.o #20584: Contact object creation doesn't survive bad IDs or handles.
 
 telepathy-qt4 0.1.2 (2009-03-23)
 ================================
