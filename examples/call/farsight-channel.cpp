@@ -26,11 +26,8 @@
 
 #include <QDebug>
 
-#include <telepathy-farsight/channel.h>
-#include <telepathy-glib/channel.h>
-#include <telepathy-glib/connection.h>
-#include <telepathy-glib/dbus.h>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/Farsight/Channel>
 #include <TelepathyQt4/StreamedMediaChannel>
 
 namespace Tp {
@@ -83,44 +80,7 @@ FarsightChannel::Private::Private(FarsightChannel *parent,
       videoPreview(0),
       videoOutput(0)
 {
-    TpDBusDaemon *dbus = tp_dbus_daemon_dup(0);
-    if (!dbus) {
-        qWarning() << "Unable to connect to D-Bus";
-        return;
-    }
-
-    ConnectionPtr connection = channel->connection();
-
-    TpConnection *gconnection = tp_connection_new(dbus,
-            connection->busName().toAscii(),
-            connection->objectPath().toAscii(),
-            0);
-    g_object_unref(dbus);
-    dbus = 0;
-
-    if (!gconnection) {
-        qWarning() << "Unable to construct TpConnection";
-        return;
-    }
-
-    TpChannel *gchannel = tp_channel_new(gconnection,
-            channel->objectPath().toAscii(),
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
-            (TpHandleType) channel->targetHandleType(),
-            channel->targetHandle(),
-            0);
-    g_object_unref(gconnection);
-    gconnection = 0;
-
-    if (!gchannel) {
-        qWarning() << "Unable to construct TpChannel";
-        return;
-    }
-
-    tfChannel = tf_channel_new(gchannel);
-    g_object_unref(gchannel);
-    gchannel = 0;
-
+    tfChannel = createFarsightChannel(channel);
     if (!tfChannel) {
         qWarning() << "Unable to construct TfChannel";
         return;

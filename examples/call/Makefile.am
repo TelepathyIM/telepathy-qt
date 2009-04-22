@@ -19,6 +19,7 @@ call_LDADD = \
 	$(TP_GLIB_LIBS) \
 	$(TP_FARSIGHT_LIBS) \
 	$(top_builddir)/TelepathyQt4/libtelepathy-qt4.la \
+	$(top_builddir)/TelepathyQt4/Farsight/libtelepathy-qt4-farsight.la \
 	$(top_builddir)/examples/roster/libtelepathy-qt4-examples-roster.la
 
 call_SOURCES = \
