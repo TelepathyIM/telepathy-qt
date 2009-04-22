@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Type_Tubes" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
   <tp:copyright>
-    Copyright (C) 2007-2008 Collabora Limited
+    Copyright © 2007-2009 Collabora Limited
   </tp:copyright>
   <tp:license>
     This library is free software; you can redistribute it and/or
@@ -71,57 +71,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:member>
     </tp:struct>
 
-    <tp:struct name="Socket_Address_IPv4">
-      <tp:docstring>An IPv4 address and port.</tp:docstring>
-      <tp:member type="s" name="Address">
-        <tp:docstring>A dotted-quad IPv4 address literal: four ASCII decimal
-          numbers, each between 0 and 255 inclusive, e.g.
-          "192.168.0.1".</tp:docstring>
-      </tp:member>
-      <tp:member type="q" name="Port">
-        <tp:docstring>The TCP or UDP port number.</tp:docstring>
-      </tp:member>
-    </tp:struct>
-
-    <tp:struct name="Socket_Address_IPv6">
-      <tp:docstring>An IPv6 address and port.</tp:docstring>
-      <tp:member type="s" name="Address">
-        <tp:docstring>An IPv6 address literal as specified by RFC2373
-          section 2.2, e.g. "2001:DB8::8:800:200C:4171".</tp:docstring>
-      </tp:member>
-      <tp:member type="q" name="Port">
-        <tp:docstring>The TCP or UDP port number.</tp:docstring>
-      </tp:member>
-    </tp:struct>
-
-    <tp:struct name="Socket_Netmask_IPv4">
-      <tp:docstring>An IPv4 network or subnet.</tp:docstring>
-      <tp:member type="s" name="Address">
-        <tp:docstring>A dotted-quad IPv4 address literal: four ASCII decimal
-          numbers, each between 0 and 255 inclusive, e.g.
-          "192.168.0.1".</tp:docstring>
-      </tp:member>
-      <tp:member type="y" name="Prefix_Length">
-        <tp:docstring>The number of leading bits of the address that must
-          match, for this netmask to be considered to match an
-          address.</tp:docstring>
-      </tp:member>
-    </tp:struct>
-
-    <tp:struct name="Socket_Netmask_IPv6">
-      <tp:docstring>An IPv6 network or subnet.</tp:docstring>
-      <tp:member type="s" name="Address">
-        <tp:docstring>An IPv6 address literal as specified by RFC2373
-          section 2.2, e.g. "2001:DB8::8:800:200C:4171".</tp:docstring>
-      </tp:member>
-      <tp:member type="y" name="Prefix_Length">
-        <tp:docstring>The number of leading bits of the address that must
-          match, for this netmask to be considered to match an
-          address.</tp:docstring>
-      </tp:member>
-    </tp:struct>
-
-    <tp:enum name="Tube_Type" type="u">
+    <tp:enum name="Tube_Type" type="u" array-name="Tube_Type_List">
       <tp:enumvalue suffix="DBus" value="0">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The tube is D-Bus tube as described by the
@@ -193,7 +143,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     </tp:enum>
 
-    <tp:enum name="Socket_Access_Control" type="u">
+    <tp:enum name="Socket_Access_Control" type="u"
+      array-name="Socket_Access_Control_List">
       <tp:enumvalue suffix="Localhost" value="0">
         <tp:docstring>
           The IP or Unix socket can be accessed by any local user (e.g.

@@ -20,21 +20,30 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Client.Approver.DRAFT"
-    tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.Client.Approver"
+    tp:causes-havoc="not yet final">
     <tp:added version="0.17.12">(as a draft)</tp:added>
 
-    <tp:requires interface="org.freedesktop.Telepathy.Client.DRAFT"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Client"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>Approvers notify the user that new channels have been created,
-        and allow the user to accept or reject those channels.</p>
+      <p>Approvers are clients that notify the user that new channels have
+        been created by a contact, and allow the user to accept or reject
+        those channels. The new channels are represented by a <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">ChannelDispatchOperation</tp:dbus-ref>
+        object, which is passed to the
+        <tp:member-ref>AddDispatchOperation</tp:member-ref> method.</p>
 
-      <p>They can also select which channel handler will be used for the
+      <tp:rationale>
+        <p>For instance, Empathy's tray icon, or the answer/reject window
+          seen when a Maemo device receives a VoIP call, should be
+          Approvers.</p>
+      </tp:rationale>
+
+      <p>Approvers can also select which channel handler will be used for the
         channel, for instance by offering the user a list of possible
-        handlers rather than just an accept/reject choice.</p>
-
-      <p>However, the Channel Dispatcher must be able to prioritize
+        handlers rather than just an accept/reject choice.
+        However, the Channel Dispatcher must be able to prioritize
         possible handlers on its own using some reasonable heuristic,
         probably based on user configuration.</p>
 
@@ -49,12 +58,22 @@
         window and highlights contacts there, and one that is part
         of a full-screen media player.</p>
 
-      <p>Any approver can approve the handling of a channel with a
-        particular channel handler. Approvers can also request that the
-        channel is rejected. The first approver to reply gets its decision
-        acted on; any other approvers that reply at the same time will
-        get a D-Bus error, indicating that the channel has already been
-        dealt with.</p>
+      <p>Any approver can approve the handling of a channel dispatch operation
+        with a particular channel handler by calling the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">HandleWith</tp:dbus-ref>
+        method. Approvers can also attempt to <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Claim</tp:dbus-ref>
+        channels; if this succeeds, the approver may handle the channels
+        itself (if it is also a Handler), or close the channels in order to
+        reject them.</p>
+
+      <p>At the D-Bus level, there is no "reject" operation: approvers wishing
+        to reject channels SHOULD call the Claim method, then (if it succeeds)
+        close the channels in any way they see fit.</p>
+
+      <p>The first approver to reply gets its decision acted on; any other
+        approvers that reply at approximately the same time will get a D-Bus
+        error, indicating that the channel has already been dealt with.</p>
 
       <p>Approvers should usually prompt the user and ask for
         confirmation, rather than dispatching the channel to a handler
@@ -67,16 +86,16 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A specification of the channels in which this approver is
           interested. The <tp:member-ref>AddDispatchOperation</tp:member-ref>
-          method should be called by the channel dispatcher whenever the
-          channels in a channel dispatch operation
-          match this description.</p>
-
-        <p>(FIXME: what happens if some but not all of the channels
-          match this?)</p>
+          method should be called by the channel dispatcher whenever at least
+          one of the channels in a channel dispatch operation matches this
+          description.</p>
 
         <p>This property works in exactly the same way as the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Observer.DRAFT.ObserverChannelFilter</tp:dbus-ref>
-          property. In the .client file, it is represented in the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Observer.ObserverChannelFilter</tp:dbus-ref>
+          property. In particular, it cannot change while the approver process
+          continues to own the corresponding Client bus name.</p>
+
+        <p>In the .client file, it is represented in the
           same way as ObserverChannelFilter, but the group has the same
           name as this interface and the keys start with
           ApproverChannelFilter instead of ObserverChannelFilter.</p>
@@ -92,17 +111,61 @@
           operations already exist.</p>
 
         <p>The channel dispatcher SHOULD call this method on all approvers
-          at the same time. If no approvers return from this method
+          at the same time. If an approver returns an error from this method,
+          the approver is assumed to be faulty.</p>
+
+        <p>If no approvers return from this method
           successfully (including situations where there are no matching
           approvers at all), the channel dispatcher SHOULD consider this
           to be an error, and recover by dispatching the channel to the
           most preferred handler.</p>
 
         <tp:rationale>
-          Processes that aren't approvers shouldn't be making connections
-          anyway - there should always be at least one approver running.
+          Processes that aren't approvers (or don't at least ensure that there
+          is some approver) probably shouldn't be making connections
+          anyway, so there should always be at least one approver running.
         </tp:rationale>
       </tp:docstring>
+
+      <arg name="Channels" direction="in"
+        type="a(oa{sv})" tp:type="Channel_Details[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The initial value of the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.Channels</tp:dbus-ref>
+            property, containing the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>s
+            to be dispatched and their properties.</p>
+
+          <tp:rationale>
+            <p>This can't be signalled to the approver through the Properties
+              parameter of this method, because Channels is not an immutable
+              property.</p>
+          </tp:rationale>
+
+          <p>This argument always contains all of the channels in the channel
+            dispatch operation, even if not all of them actually match
+            the <tp:member-ref>ApproverChannelFilter</tp:member-ref>.</p>
+
+          <tp:rationale>
+            <p>This seems the least bad way to handle such a situation;
+              see the discussion on
+              <a href="http://bugs.freedesktop.org/show_bug.cgi?id=21090">bug
+                #21090</a>.</p>
+          </tp:rationale>
+
+          <p>The actual channels to be dispatched may reduce as channels are
+            closed: this is signalled by <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.ChannelLost</tp:dbus-ref>.
+          </p>
+
+          <p>Approvers SHOULD connect to ChannelLost and <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">ChannelDispatchOperation.Finished</tp:dbus-ref>.
+            (if desired) before returning from AddDispatchOperation, since
+            those signals are guaranteed not to be emitted until after all
+            AddDispatchOperation calls have returned (with success or failure)
+            or timed out.</p>
+        </tp:docstring>
+      </arg>
 
       <arg name="DispatchOperation" type="o" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -115,19 +178,16 @@
       <arg name="Properties" type="a{sv}"
         tp:type="Qualified_Property_Value_Map" direction="in">
         <tp:docstring>
-          Properties of the channel dispatch operation. This MUST NOT include
-          properties that could change, SHOULD include as many properties as
-          possible given that constraint, and MUST include at least the
-          <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">Account</tp:dbus-ref>,
-          <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">Connection</tp:dbus-ref>,
-          <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">Channels</tp:dbus-ref>
-          and
-          <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ChannelDispatchOperation.DRAFT">PossibleHandlers</tp:dbus-ref>
-          properties.
+          <p>Properties of the channel dispatch operation. This MUST NOT
+            include properties that could change, SHOULD include as many
+            properties as possible given that constraint, and MUST include at
+            least the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Account</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Connection</tp:dbus-ref>
+            and <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">PossibleHandlers</tp:dbus-ref>
+            properties.</p>
         </tp:docstring>
       </arg>
     </method>

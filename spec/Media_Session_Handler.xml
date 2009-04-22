@@ -23,19 +23,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="in" name="Error_Code" type="u"
         tp:type="Media_Stream_Error"/>
       <arg direction="in" name="Message" type="s"/>
+      <tp:deprecated version="0.13.4">
+        Use <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Media">StreamHandler.Error</tp:dbus-ref>
+        on each StreamHandler object instead.
+      </tp:deprecated>
       <tp:docstring>
-        THIS METHOD IS DEPRECATED AND SHOULD NOT BE USED. Instead the Error
-        function should be used on the relevant MediaStreamHandler objects.
         Informs the connection manager that an error occured in this session.
         If used, the connection manager must terminate the session and all of
-        the streams within it, and may also emit a StreamError signal on the
-        channel for each stream within the session.
+        the streams within it, and may also emit a <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type.StreamedMedia">StreamError</tp:dbus-ref>
+        signal on the channel for each stream within the session.
       </tp:docstring>
     </method>
     <signal name="NewStreamHandler" tp:name-for-bindings="New_Stream_Handler">
       <arg name="Stream_Handler" type="o">
         <tp:docstring>
-          An object path to a new MediaStreamHandler
+          The path of a new object implementing the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Media">StreamHandler</tp:dbus-ref>
+          interface.
         </tp:docstring>
       </arg>
       <arg name="ID" type="u">
@@ -45,14 +51,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <arg name="Media_Type" type="u" tp:type="Media_Stream_Type">
         <tp:docstring>
-          Enum for type of media that this stream should handle
-          (a value from MediaStreamType)
+          Type of media that this stream should handle
         </tp:docstring>
       </arg>
       <arg name="Direction" type="u" tp:type="Media_Stream_Direction">
         <tp:docstring>
-          Enum for direction of this stream (a value from
-          MediaStreamDirection)
+          Direction of this stream
         </tp:docstring>
       </arg>
       <tp:docstring>
@@ -64,7 +68,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         Inform the connection manager that a client is ready to handle
         this session handler (i.e. that it has connected to the
-        NewStreamHandler signal and done any other necessary setup).
+        <tp:member-ref>NewStreamHandler</tp:member-ref> signal and done any
+        other necessary setup).
       </tp:docstring>
     </method>
     <tp:docstring>

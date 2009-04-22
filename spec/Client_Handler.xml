@@ -20,16 +20,31 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Client.Handler.DRAFT"
-    tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.Client.Handler"
+    tp:causes-havoc="not yet final">
     <tp:added version="0.17.12">(as a draft)</tp:added>
 
-    <tp:requires interface="org.freedesktop.Telepathy.Client.DRAFT"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Client"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>Channel handlers are the eventual handler for a channel or a
-        channel bundle; a typical channel handler is a user interface
-        process handling channels of a particular type.</p>
+      <p>Handlers are the user interface for a channel. They turn an abstract
+        Telepathy channel into something the user wants to see, like a text
+        message stream or an audio and/or video call.</p>
+
+      <p>For its entire lifetime, each channel on a connection known to the
+        channel dispatcher is either being processed by the channel dispatcher,
+        or being handled by precisely one Handler.</p>
+
+      <p>Because each channel is only handled by one Handler, handlers may
+        perform actions that only make sense to do once, such as acknowledging
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
+        messages, doing the actual streaming for <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+        channels with the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface">MediaSignalling</tp:dbus-ref>
+        interface, or transferring the file in <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">FileTransfer</tp:dbus-ref>
+        channels.</p>
 
       <p>When a new incoming channel (one with
         <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">Requested</tp:dbus-ref>
@@ -60,8 +75,11 @@
           or for suitable channels that must be handled separately.</p>
 
         <p>This property works in exactly the same way as the
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Observer.DRAFT.ObserverChannelFilter</tp:dbus-ref>
-          property. In the .client file, it is represented in the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Client.Observer.ObserverChannelFilter</tp:dbus-ref>
+          property. In particular, it cannot change while the handler process
+          continues to own the corresponding Client bus name.</p>
+
+        <p>In the .client file, it is represented in the
           same way as ObserverChannelFilter, but the group has the same
           name as this interface and the keys start with
           HandlerChannelFilter instead of ObserverChannelFilter.</p>
@@ -105,13 +123,14 @@
             paths.</p>
         </tp:rationale>
 
-        <p>This method can raise any D-Bus error. If it does, or if the
-          handler loses its bus name before all the channels have closed, the
+        <p>This method can raise any D-Bus error. If it does, the
           handler is assumed to have failed or crashed, and the channel
-          dispatcher MUST recover in an implementation-specific way.</p>
+          dispatcher MUST recover in an implementation-specific way; it MAY
+          attempt to dispatch the channels to another handler, or close the
+          channels.</p>
 
-        <p>It is RECOMMENDED that the channel dispatcher attempts to
-          close the channels using
+        <p>If closing the channels, it is RECOMMENDED that the channel
+          dispatcher attempts to close the channels using
           <tp:dbus-ref
             namespace="org.freedesktop.Telepathy">Channel.Close</tp:dbus-ref>,
           but resorts to calling
@@ -119,6 +138,17 @@
             namespace="org.freedesktop.Telepathy">Channel.Interface.Destroyable.Destroy</tp:dbus-ref>
           (if available) or ignoring the channel (if not) if the same handler
           repeatedly fails to handle channels.</p>
+
+        <p>After HandleChannels returns successfully, the client process is
+          considered to be responsible for the channel until it its unique
+          name disappears from the bus.</p>
+
+        <tp:rationale>
+          <p>If a process has multiple Client bus names - some temporary and
+            some long-lived - and drops one of the temporary bus names in order
+            to reduce the set of channels that it will handle, any channels
+            that it is already handling should remain unaffected.</p>
+        </tp:rationale>
       </tp:docstring>
 
       <arg name="Account" type="o" direction="in">
@@ -140,7 +170,8 @@
         </tp:docstring>
       </arg>
 
-      <arg name="Channels" type="a(oa{sv})" direction="in">
+      <arg name="Channels" type="a(oa{sv})" direction="in"
+        tp:type="Channel_Details[]">
         <tp:docstring>
           The channels and their immutable properties. Their well-known
           bus name is the same as that of the Connection.
@@ -148,12 +179,17 @@
       </arg>
 
       <arg name="Requests_Satisfied" type="ao" direction="in">
-        <tp:docstring>
-          The requests satisfied by these channels.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The requests satisfied by these channels.</p>
 
           <tp:rationale>
-            There can be more than one, if they were EnsureChannel
-            requests.
+            <p>If the handler implements Requests, this tells it
+              that these channels match previous <tp:dbus-ref
+                namespace="org.freedesktop.Telepathy.Client.Interface.Requests">AddRequest</tp:dbus-ref>
+              calls that it may have received.</p>
+
+            <p>There can be more than one, if they were EnsureChannel
+              requests.</p>
           </tp:rationale>
         </tp:docstring>
       </arg>
@@ -167,95 +203,23 @@
         </tp:docstring>
       </arg>
 
-      <!-- FIXME: invent a way to say "any error is possible" in spec markup -->
-    </method>
-
-    <method name="AddRequest" tp:name-for-bindings="Add_Request">
-      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Called by the ChannelDispatcher to indicate that channels have been
-          requested, and that if the request is successful, they will be
-          handled by this Handler.</p>
-
-        <tp:rationale>
-          <p>This allows the UI to start preparing to handle the channels
-            in advance (e.g. render a window with an "in progress" message),
-            improving perceived responsiveness.</p>
-        </tp:rationale>
-
-        <p>(FIXME: how do we know the returned channels will be handled by
-          this handler? Do we just assume that they'll match the
-          HandlerChannelFilter iff the request does?)</p>
-      </tp:docstring>
-
-      <arg name="Request" type="o" direction="in">
-        <tp:docstring>
-          The <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
-          object, which MUST have been returned by <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ChannelDispatcher.DRAFT">CreateChannel</tp:dbus-ref>
-          or <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.ChannelDispatcher.DRAFT">EnsureChannel</tp:dbus-ref>
-          before this method is called.
-
-          <tp:rationale>
-            See those methods for the rationale of this ordering.
-          </tp:rationale>
-        </tp:docstring>
-      </arg>
-
-      <arg name="Properties" type="a{sv}"
-        tp:type="Qualified_Property_Value_Map" direction="in">
-        <tp:docstring>
-          <p>Some of the properties of the ChannelRequest. To avoid race
-            conditions, this dictionary MUST NOT include properties whose
-            values could subsequently change. It SHOULD include as many
-            properties as possible, given that constraint.</p>
-
-          <p>In particular, the properties <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelRequest.DRAFT">Requests</tp:dbus-ref>
-            and <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelRequest.DRAFT">UserActionTime</tp:dbus-ref>
-            MUST be included.</p>
-        </tp:docstring>
-      </arg>
-    </method>
-
-    <method name="RemoveFailedRequest"
-      tp:name-for-bindings="Remove_Failed_Request">
-      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Called by the ChannelDispatcher to indicate that a request
-          previously passed to <tp:member-ref>AddRequest</tp:member-ref>
-          has failed and should be disregarded.</p>
-      </tp:docstring>
-
-      <arg name="Request" type="o" direction="in">
-        <tp:docstring>
-          The request that failed.
-        </tp:docstring>
-      </arg>
-
-      <arg name="Error" type="s" tp:type="DBus_Error_Name" direction="in">
+      <arg name="Handler_Info" type="a{sv}" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The name of the D-Bus error with which the request failed.</p>
+          <p>Additional information about these channels. No keys are
+            currently defined.</p>
 
-          <p>If this is <code>org.freedesktop.Telepathy.Errors.NotYours</code>,
-            this indicates that the request succeeded, but all the resulting
-            channels were given to some other handler.</p>
+          <p>If keys are defined for this dictionary, all will be optional;
+            handlers MAY safely ignore any entry in this dictionary.</p>
         </tp:docstring>
       </arg>
 
-      <arg name="Message" type="s" direction="in">
-        <tp:docstring>
-          Any message supplied with the D-Bus error.
-        </tp:docstring>
-      </arg>
+      <!-- FIXME: invent a way to say "any error is possible" in spec markup -->
     </method>
 
     <property name="HandledChannels" tp:name-for-bindings="Handled_Channels"
       type="ao" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>A list of the channels that this Handler is currently handling.
-        </p>
+        <p>A list of the channels that this process is currently handling.</p>
 
         <p>There is no change notification.</p>
 
@@ -270,6 +234,17 @@
             channels can be re-dispatched, and the only issue visible to
             the user is that unhandled channels that they have already
             approved might be sent back to Approvers.</p>
+        </tp:rationale>
+
+        <p>The value of this property SHOULD be the same for all Client
+          instances that share a unique bus name, and SHOULD include all
+          channels that are being handled, even if they were conceptually
+          handled by a different Client instance.</p>
+
+        <tp:rationale>
+          <p>Otherwise, when a process released a temporary Client name,
+            channels that it handled because of that Client name would no
+            longer be state-recoverable.</p>
         </tp:rationale>
       </tp:docstring>
     </property>

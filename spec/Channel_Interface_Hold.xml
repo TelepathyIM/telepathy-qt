@@ -26,7 +26,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Interface for channels where you may put the channel on hold.
         This only makes sense for channels where
-        you are streaming media to or from the members.</p>
+        you are streaming media to or from the members. (To see whether the
+        other participant has put you on hold, see <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface">CallState</tp:dbus-ref>.)</p>
 
       <p>If you place a channel on hold, this indicates that you do not wish
         to be sent media streams by any of its members and will be ignoring

@@ -50,7 +50,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         pseudo-interface)</tp:added>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelBundle</tp:dbus-ref>
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">ChannelBundle.DRAFT</tp:dbus-ref>
           to which this channel belongs.</p>
 
         <p>A channel's Bundle property can never change.</p>

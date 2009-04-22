@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Interface_Tube" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2008 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2008 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright © 2008-2009 Nokia Corporation</tp:copyright>
   <tp:license>
     This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -26,9 +26,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       systems to communicate without having to establish network
       connections themselves. Currently, two types of tube exist:
       <tp:dbus-ref namespace="org.freedesktop.Telepathy"
-      >Channel.Type.DBusTube</tp:dbus-ref> and
+      >Channel.Type.DBusTube.DRAFT</tp:dbus-ref> and
       <tp:dbus-ref namespace="org.freedesktop.Telepathy"
-      >Channel.Type.StreamTube</tp:dbus-ref>. This interface contains
+      >Channel.Type.StreamTube.DRAFT</tp:dbus-ref>. This interface contains
       the properties, signals and methods common to both types of tube;
       you can only create channels of a specific tube type, not of this
       type. A tube channel contains exactly one tube; if you need several
@@ -38,10 +38,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       HANDLE_TYPE_CONTACT (for 1-1 communication) or of type
       HANDLE_TYPE_ROOM (to communicate with others in the room
       simultaneously).</p>
+
+      <p>As an exception to the usual handling of capabilities, connection managers
+        for protocols with capability discovery, such as XMPP, SHOULD advertise the
+        capability representing each Tube type that they support
+       (<tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Type.DBusTube.DRAFT</tp:dbus-ref> and/or
+        <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Type.StreamTube.DRAFT</tp:dbus-ref>)
+        even if no client has indicated via
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT">SetSelfCapabilities</tp:dbus-ref>
+        that such a tube is supported.</p>
+
+        <tp:rationale>
+          <p>To lower the barrier entry of new tube application, CM SHOULD accept to offer tubes of any
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type.StreamTube.DRAFT">Service</tp:dbus-ref> or
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type.DBusTube.DRAFT">ServiceName</tp:dbus-ref>
+            if the contact announced to support tubes.</p>
+        </tp:rationale>
     </tp:docstring>
 
     <property name="Parameters" type="a{sv}" tp:type="String_Variant_Map"
-              access="readwrite" tp:name-for-bindings="Parameters">
+              access="read" tp:name-for-bindings="Parameters">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Each tube has a dictionary of arbitrary parameters. Parameters are
           commonly used to bootstrap legacy protocols where you can't
@@ -60,11 +79,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           <code>{'u': 'username', 'p': 'password', 'path': 'path'}</code></p>
         <p>When requesting a channel with
           <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
-          this property MAY be included in the request. If it is not included in
-          the request, the connection manager MUST consider the property to be
-          empty. This property MAY be changed after the channel creation when
-          the tube is in the state Not_Offered. If the tube is in another
-          state, changing this property MUST fail without side effects.</p>
+          this property MUST NOT be included in the request. This property is undefined until the tube is offered
+          (using <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Type.StreamTube.DRAFT">OfferStreamTube</tp:dbus-ref>
+          or <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Type.DBusTube.DRAFT">OfferDBusTube</tp:dbus-ref>).
+          Once it has been offered, this property MUST NOT change.</p>
+        <p>When receiving an incoming tube, this property is immutable and so advertised in the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.NewChannels</tp:dbus-ref>
+          signal.</p>
       </tp:docstring>
     </property>
 

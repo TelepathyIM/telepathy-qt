@@ -217,6 +217,12 @@
             contact is using a client that lacks a particular feature.
           </tp:docstring>
         </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.Offline">
+          <tp:docstring>
+            The requested channel cannot be created because the target is
+            offline.
+          </tp:docstring>
+        </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
             <p>The requested channel cannot be created, but in
@@ -354,6 +360,12 @@
           <tp:docstring>
             The requested channel cannot be created because the requested
             contact is using a client that lacks a particular feature.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.Offline">
+          <tp:docstring>
+            The requested channel cannot be created because the target is
+            offline.
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">

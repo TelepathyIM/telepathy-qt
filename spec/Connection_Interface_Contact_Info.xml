@@ -31,28 +31,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </tp:docstring>
       </tp:member>
       <tp:member type="as" name="Parameters">
-        <tp:docstring>
-          A list of (lowercased) vCard type parameters applicable to this field.
-          For example, a contact's preferred home address would have parameters
-          'home' and 'pref'.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A list of vCard type parameters applicable to this field, with their
+            values. The type parameter names, and any values that are
+            case-insensitive in vCard, MUST be in lower case. For example, a
+            contact's preferred home address would have parameters
+            'type=home' and 'type=pref'.</p>
 
           <tp:rationale>
-            This is a list of strings rather than a bitwise OR of enum members
-            because vCard type parameters are essentially arbitrary strings.
+            The type parameter 'type' is likely to be the most common, but
+            there can be others, such as 'language=en'.
+          </tp:rationale>
+
+          <p>Characters which are required to be escaped in vCard type
+            parameters should not be escaped in this list. For instance,
+            a field "X-FOO;SEMICOLON=\;:bar" in a vCard would become
+            ('x-foo', ['semicolon=;'], ['bar']) in this interface.</p>
+
+          <tp:rationale>
+            This avoids Telepathy UIs having to understand the escaping and
+            unescaping rules for vCards. The type parameter name is not
+            allowed (by RFC 2425) to contain an '=' character, so no ambiguity
+            is introduced.
           </tp:rationale>
         </tp:docstring>
       </tp:member>
       <tp:member type="as" name="Field_Value">
-        <tp:docstring>
-          For unstructured vCard fields (such as 'fn', a formatted name
-          field), a single-element array containing the field's value; for
-          structured fields (such as 'adr', an address field), an array
-          corresponding to the semicolon-separated elements of the field (with
-          empty strings for empty elements).  A vCard field with multiple
-          comma-separated values should be represented by several
-          <tp:type>Contact_Info_Field</tp:type>s.  Characters which are
-          required to be escaped in vCard values, such as semi-colons, should
-          not be escaped in this list.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>For unstructured vCard fields (such as 'fn', a formatted name
+            field), a single-element array containing the field's value.</p>
+
+          <p>For structured fields (such as 'adr', an address field), an array
+            corresponding to the semicolon-separated elements of the field (with
+            empty strings for empty elements).</p>
+
+          <p>A vCard field with multiple comma-separated values, such as
+            'nickname', should be represented by several
+            <tp:type>Contact_Info_Field</tp:type>s.</p>
+
+          <p>Characters which are required to be escaped in vCard values, such as
+            semi-colons and newlines, should not be escaped in this list (e.g. if
+            a value contains a newline, the data passed over D-Bus should
+            contain a literal newline character).</p>
 
           <tp:rationale>
             An earlier draft of this interface split structured vCard fields
@@ -103,7 +123,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    BEGIN:vCard
    VERSION:3.0
    FN:Wee Ninja
-   N:Ninja;Wee;;;-san
+   N;LANGUAGE=ja:Ninja;Wee;;;-san
    ORG:Collabora, Ltd.;Human Resources\; Company Policy Enforcement
    ADR;TYPE=WORK,POSTAL,PARCEL:;;11 Kings Parade;Cambridge;Cambridgeshire
     ;CB2 1SJ;UK
@@ -111,6 +131,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    EMAIL;TYPE=INTERNET,PREF:wee.ninja@collabora.co.uk
    EMAIL;TYPE=INTERNET:wee.ninja@example.com
    URL:http://www.thinkgeek.com/geektoys/plush/8823/
+   NICKNAME:HR Ninja,Enforcement Ninja
    END:vCard</pre>
 
         <p>would be represented by (in Python-like syntax):</p>
@@ -118,15 +139,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <pre>
 [
   ('fn', [], ['Wee Ninja']),
-  ('n', [], ['Ninja', 'Wee', '', '', '-san']),
+  ('n', ['language=ja'], ['Ninja', 'Wee', '', '', '-san']),
   ('org', [], ['Collabora, Ltd.', 'Human Resources; Company Policy Enforcement']),
-  ('adr', ['work','postal','parcel'], ['','','11 Kings Parade','Cambridge',
-                                       'Cambridgeshire','CB2 1SJ','UK']),
-  ('tel', ['voice','work'], ['+44 1223 362967']),
-  ('tel', ['voice','work'], ['+44 7700 900753']),
-  ('email', ['internet','pref'], ['wee.ninja@collabora.co.uk']),
-  ('email', ['internet'], ['wee.ninja@example.com']),
+  ('adr', ['type=work','type=postal','type=parcel'],
+   ['','','11 Kings Parade','Cambridge', 'Cambridgeshire','CB2 1SJ','UK']),
+  ('tel', ['type=voice','type=work'], ['+44 1223 362967']),
+  ('tel', ['type=voice','type=work'], ['+44 7700 900753']),
+  ('email', ['type=internet','type=pref'], ['wee.ninja@collabora.co.uk']),
+  ('email', ['type=internet'], ['wee.ninja@example.com']),
   ('url', [], ['http://www.thinkgeek.com/geektoys/plush/8823/']),
+  ('nickname', [], ['HR Ninja']),
+  ('nickname', [], ['Enforcement Ninja'])
 ]</pre>
       </tp:docstring>
     </tp:struct>
@@ -267,11 +290,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:enumvalue>
     </tp:enum>
 
+    <tp:simple-type name="VCard_Field" type="s">
+      <tp:docstring>
+        A string naming a field in a vCard, such as "fn" or "adr". Although
+        these are case-insensitive in RFC 2425, in Telepathy they MUST be
+        normalized to lower case. In the terminology of RFC 2425 this is
+        called a "type name", and corresponds to the "name" production given
+        in the ABNF.
+      </tp:docstring>
+    </tp:simple-type>
+
+    <tp:simple-type name="VCard_Type_Parameter" type="s"
+      array-name="VCard_Type_Parameter_List">
+      <tp:docstring>
+        A type parameter as defined by RFC 2426, such as "type=cell" or
+        "language=en".
+      </tp:docstring>
+    </tp:simple-type>
+
     <property name="ContactInfoFlags" type="u" access="read"
       tp:type="Contact_Info_Flag" tp:name-for-bindings="Contact_Info_Flags">
       <tp:docstring>
-        An integer representing the bitwise-OR of flags on this channel. This
-        property should be constant over the lifetime of a connection.
+        An integer representing the bitwise-OR of flags on this connection.
+        This property should be constant over the lifetime of a connection.
       </tp:docstring>
     </property>
 
@@ -280,11 +321,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         may be passed to <tp:member-ref>SetContactInfo</tp:member-ref> on this
         Connection.</tp:docstring>
 
-      <tp:member type="s" name="Name">
+      <tp:member type="s" name="Name" tp:type="VCard_Field">
         <tp:docstring>A vCard field name, such as 'tel'.</tp:docstring>
       </tp:member>
 
-      <tp:member type="as" name="Parameters">
+      <tp:member type="as" name="Parameters" tp:type="VCard_Type_Parameter[]">
         <tp:docstring>The set of vCard type parameters which may be set on this
           field. If this list is empty and the
           Contact_Info_Field_Flag_Parameters_Mandatory
