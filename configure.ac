@@ -224,7 +224,8 @@ AM_PATH_PYTHON([2.5])
 
 # Check for Python >= 2.5 with dbus, to run the tests
 AC_MSG_CHECKING([for enough Python libraries to run tests])
-if "$PYTHON" -c "import dbus.mainloop.glib" >/dev/null 2>&1; then
+if "$PYTHON" -c "import dbus.mainloop.glib" >/dev/null 2>&1 &&
+   "$PYTHON" -c "import gobject" >/dev/null 2>&1; then
   AC_MSG_RESULT([yes])
   TEST_PYTHON="$PYTHON"
 else
