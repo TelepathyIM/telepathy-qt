@@ -1,3 +1,10 @@
+telepathy-qt4 0.1.4 (UNRELEASED)
+================================
+
+API changes:
+
+* Renamed SharedData header file to RefCounted to follow class name.
+
 telepathy-qt4 0.1.3 (2009-04-22)
 ================================
 
