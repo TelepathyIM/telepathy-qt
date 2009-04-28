@@ -168,10 +168,10 @@ tpqt4include_HEADERS = \
     ReadinessHelper \
     ReadyObject \
     ReceivedMessage \
+    RefCounted \
     ReferencedHandles \
     ReferencedHandlesIterator \
     RoomList \
-    SharedData \
     SharedPtr \
     StatelessDBusProxy \
     StatefulDBusProxy \
