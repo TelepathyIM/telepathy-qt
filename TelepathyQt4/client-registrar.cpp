@@ -23,11 +23,35 @@
 #include "TelepathyQt4/client-registrar-internal.h"
 
 #include "TelepathyQt4/_gen/client-registrar.moc.hpp"
+#include "TelepathyQt4/_gen/client-registrar-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
 namespace Tp
 {
+
+ClientHandlerAdaptor::ClientHandlerAdaptor(AbstractClientHandler *client)
+    : QDBusAbstractAdaptor(client),
+      mClient(client)
+{
+    setAutoRelaySignals(true);
+}
+
+ClientHandlerAdaptor::~ClientHandlerAdaptor()
+{
+}
+
+void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
+        const QDBusObjectPath &connection,
+        const Tp::ChannelDetailsList &channels,
+        const Tp::ObjectPathList &requestsSatisfied,
+        qulonglong userActionTime,
+        const QVariantMap &handlerInfo)
+{
+    mClient->handleChannels(account, connection, channels,
+            requestsSatisfied, userActionTime, handlerInfo);
+}
+
 
 struct ClientRegistrar::Private
 {
