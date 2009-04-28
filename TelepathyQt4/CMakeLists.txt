@@ -145,12 +145,12 @@ set(telepathy_qt4_HEADERS
     ReadyObject
     ready-object.h
     ReceivedMessage
+    RefCounted
     ReferencedHandles
     referenced-handles.h
     ReferencedHandlesIterator
     RoomList
     room-list.h
-    SharedData
     SharedPtr
     shared-ptr.h
     simple-pending-operations.h
