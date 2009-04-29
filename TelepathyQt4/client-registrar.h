@@ -29,6 +29,7 @@
 #include <TelepathyQt4/RefCounted>
 #include <TelepathyQt4/Types>
 
+#include <QDBusConnection>
 #include <QObject>
 #include <QString>
 
@@ -41,21 +42,19 @@ class ClientRegistrar : public QObject, public RefCounted
     Q_DISABLE_COPY(ClientRegistrar)
 
 public:
-    static ClientRegistrarPtr create(const QString &clientName,
-            bool unique = false);
+    static ClientRegistrarPtr create(const QString &clientName);
+    static ClientRegistrarPtr create(const QDBusConnection &bus,
+            const QString &clientName);
     virtual ~ClientRegistrar();
 
-    bool addClient(const AbstractClientPtr &client);
-    bool removeClient(const AbstractClientPtr &client);
-
-    bool registerClients();
-    bool registerClient(const AbstractClientPtr &client);
-
-    void unregisterClients();
+    QList<AbstractClientPtr> registeredClients() const;
+    bool registerClient(const AbstractClientPtr &client, bool unique = false);
     bool unregisterClient(const AbstractClientPtr &client);
+    void unregisterClients();
 
 private:
-    ClientRegistrar(const QString &clientName, bool unique = false);
+    ClientRegistrar(const QString &clientName);
+    ClientRegistrar(const QDBusConnection &bus, const QString &clientName);
 
     struct Private;
     friend struct Private;

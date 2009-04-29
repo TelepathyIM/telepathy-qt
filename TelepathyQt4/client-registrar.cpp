@@ -66,17 +66,39 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
 
 struct ClientRegistrar::Private
 {
+    Private(const QDBusConnection &bus, const QString &clientName)
+        : bus(bus), clientName(clientName)
+    {
+        busName = QLatin1String("org.freedesktop.Telepathy.Client.");
+        busName.append(clientName);
+    }
+
+    QDBusConnection bus;
+    QString busName;
+    QString clientName;
+    QHash<AbstractClientPtr, QString> clients;
+    QSet<QString> services;
 };
 
-ClientRegistrarPtr ClientRegistrar::create(const QString &clientName,
-        bool unique)
+ClientRegistrarPtr ClientRegistrar::create(const QString &clientName)
 {
-    return ClientRegistrarPtr(new ClientRegistrar(clientName, unique));
+    return ClientRegistrarPtr(new ClientRegistrar(clientName));
 }
 
-ClientRegistrar::ClientRegistrar(const QString &clientName,
-        bool unique)
-    : mPriv(new Private)
+ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
+        const QString &clientName)
+{
+    return ClientRegistrarPtr(new ClientRegistrar(bus, clientName));
+}
+
+ClientRegistrar::ClientRegistrar(const QString &clientName)
+    : mPriv(new Private(QDBusConnection::sessionBus(), clientName))
+{
+}
+
+ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
+        const QString &clientName)
+    : mPriv(new Private(bus, clientName))
 {
 }
 
@@ -85,33 +107,127 @@ ClientRegistrar::~ClientRegistrar()
     delete mPriv;
 }
 
-bool ClientRegistrar::addClient(const AbstractClientPtr &client)
+QList<AbstractClientPtr> ClientRegistrar::registeredClients() const
 {
-    return false;
+    return mPriv->clients.keys();
 }
 
-bool ClientRegistrar::removeClient(const AbstractClientPtr &client)
+bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
+        bool unique)
 {
-    return false;
-}
+    if (!client) {
+        warning() << "Unable to register a null client";
+        return false;
+    }
 
-bool ClientRegistrar::registerClients()
-{
-    return false;
-}
+    if (mPriv->clients.contains(client)) {
+        debug() << "Client already registered";
+        return true;
+    }
 
-bool ClientRegistrar::registerClient(const AbstractClientPtr &client)
-{
-    return false;
-}
+    QObject *object = client.data();
+    QString busName(mPriv->busName);
+    if (unique) {
+        // o.f.T.Client.<unique_bus_name>_<pointer> should be enough to identify
+        // an unique identifier
+        busName.append(QString(".%1._%2")
+                .arg(mPriv->bus.baseService()
+                    .replace(':', '_')
+                    .replace('.', "._"))
+                .arg((ulong) client.data()));
+    }
 
-void ClientRegistrar::unregisterClients()
-{
+    if (mPriv->services.contains(busName) ||
+        !mPriv->bus.registerService(busName)) {
+        warning() << "Unable to register client: busName" <<
+            busName << "already registered";
+        return false;
+    }
+
+    QStringList interfaces;
+
+    ClientHandlerAdaptor *clientHandlerAdaptor = 0;
+    AbstractClientHandler *handler =
+        qobject_cast<AbstractClientHandler*>(object);
+    if (handler) {
+        // export o.f.T.Client.Handler
+        clientHandlerAdaptor = new ClientHandlerAdaptor(handler);
+        interfaces.append(
+                QLatin1String("org.freedesktop.Telepathy.Client.Handler"));
+    }
+
+    // TODO add more adaptors when they exist
+
+    if (interfaces.isEmpty()) {
+        warning() << "Client does not implement any known interface";
+        // cleanup
+        mPriv->bus.unregisterService(busName);
+        return false;
+    }
+
+    // export o.f,T,Client interface
+    ClientAdaptor *clientAdaptor = new ClientAdaptor(interfaces, object);
+
+    QString objectPath = QString("/%1").arg(busName);
+    objectPath.replace('.', '/');
+    if (!mPriv->bus.registerObject(objectPath, object)) {
+        // this shouldn't happen, but let's make sure
+        warning() << "Unable to register client: objectPath" <<
+            objectPath << "already registered";
+        // cleanup
+        delete clientHandlerAdaptor;
+        delete clientAdaptor;
+        mPriv->bus.unregisterService(busName);
+        return false;
+    }
+
+    debug() << "Client registered - busName:" << busName <<
+        "objectPath:" << objectPath;
+
+    mPriv->services.insert(busName);
+    mPriv->clients.insert(client, objectPath);
+
+    return true;
 }
 
 bool ClientRegistrar::unregisterClient(const AbstractClientPtr &client)
 {
-    return false;
+    if (!mPriv->clients.contains(client)) {
+        warning() << "Trying to unregister an unregistered client";
+        return false;
+    }
+
+    QString objectPath = mPriv->clients.value(client);
+    mPriv->bus.unregisterObject(objectPath);
+    mPriv->clients.remove(client);
+
+    QString busName = objectPath.mid(1).replace('/', '.');
+    if (busName != mPriv->busName) {
+        // unique
+        mPriv->bus.unregisterService(busName);
+        mPriv->services.remove(busName);
+    }
+
+    return true;
+}
+
+void ClientRegistrar::unregisterClients()
+{
+    QHash<AbstractClientPtr, QString>::const_iterator end =
+        mPriv->clients.constEnd();
+    QHash<AbstractClientPtr, QString>::const_iterator it =
+        mPriv->clients.constBegin();
+    while (it != end) {
+        mPriv->bus.unregisterObject(it.value());
+        ++it;
+    }
+
+    foreach (const QString &service, mPriv->services) {
+        mPriv->bus.unregisterService(service);
+    }
+
+    mPriv->clients.clear();
+    mPriv->services.clear();
 }
 
 } // Tp
