@@ -40,12 +40,15 @@ AbstractClient::~AbstractClient()
 struct AbstractClientHandler::Private
 {
     ChannelClassList channelFilter;
+    bool listenRequests;
 };
 
-AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilter)
+AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilter,
+        bool listenRequests)
     : mPriv(new Private)
 {
     mPriv->channelFilter = channelFilter;
+    mPriv->listenRequests = listenRequests;
 }
 
 AbstractClientHandler::~AbstractClientHandler()
@@ -56,6 +59,27 @@ AbstractClientHandler::~AbstractClientHandler()
 ChannelClassList AbstractClientHandler::channelFilter() const
 {
     return mPriv->channelFilter;
+}
+
+bool AbstractClientHandler::isListeningRequests() const
+{
+    return mPriv->listenRequests;
+}
+
+void AbstractClientHandler::addRequest(
+        const QDBusObjectPath &requestObjectPath,
+        const QVariantMap &requestProperties)
+{
+    // do nothing, subclasses that want to listen requests should reimplement
+    // this method
+}
+
+void AbstractClientHandler::removeRequest(
+        const QDBusObjectPath &requestObjectPath,
+        const QString &error, const QString &message)
+{
+    // do nothing, subclasses that want to listen requests should reimplement
+    // this method
 }
 
 } // Tp

@@ -113,6 +113,38 @@ private:
     AbstractClientHandler *mClient;
 };
 
+class ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Interface.Requests")
+    Q_CLASSINFO("D-Bus Introspection", ""
+"  <interface name=\"org.freedesktop.Telepathy.Client.Interface.Requests\" >\n"
+"    <method name=\"AddRequest\" >\n"
+"      <arg name=\"Request\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Properties\" type=\"a{sv}\" direction=\"in\" />\n"
+"    </method>\n"
+"    <method name=\"RemoveRequest\" >\n"
+"      <arg name=\"Request\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Error\" type=\"s\" direction=\"in\" />\n"
+"      <arg name=\"Message\" type=\"s\" direction=\"in\" />\n"
+"    </method>\n"
+"  </interface>\n"
+        "")
+
+public:
+    ClientHandlerRequestsAdaptor(AbstractClientHandler *client);
+    virtual ~ClientHandlerRequestsAdaptor();
+
+public Q_SLOTS: // Methods
+    void AddRequest(const QDBusObjectPath &request,
+            const QVariantMap &properties);
+    void RemoveRequest(const QDBusObjectPath &request,
+            const QString &error, const QString &message);
+
+private:
+    AbstractClientHandler *mClient;
+};
+
 } // Tp
 
 #endif

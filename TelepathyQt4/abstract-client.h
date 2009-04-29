@@ -68,8 +68,15 @@ public:
             qulonglong userActionTime,
             const QVariantMap &handlerInfo) = 0;
 
+    bool isListeningRequests() const;
+    virtual void addRequest(const QDBusObjectPath &requestObjectPath,
+            const QVariantMap &requestProperties);
+    virtual void removeRequest(const QDBusObjectPath &requestObjectPath,
+            const QString &error, const QString &message);
+
 protected:
-    AbstractClientHandler(const ChannelClassList &channelFilter);
+    AbstractClientHandler(const ChannelClassList &channelFilter,
+            bool listenRequests = false);
 
 private:
     struct Private;

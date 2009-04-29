@@ -63,6 +63,31 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
             requestsSatisfied, userActionTime, handlerInfo);
 }
 
+ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
+        AbstractClientHandler *client)
+    : QDBusAbstractAdaptor(client),
+      mClient(client)
+{
+}
+
+ClientHandlerRequestsAdaptor::~ClientHandlerRequestsAdaptor()
+{
+}
+
+void ClientHandlerRequestsAdaptor::AddRequest(
+        const QDBusObjectPath &request,
+        const QVariantMap &properties)
+{
+    mClient->addRequest(request, properties);
+}
+
+void ClientHandlerRequestsAdaptor::RemoveRequest(
+        const QDBusObjectPath &request,
+        const QString &error, const QString &message)
+{
+    mClient->removeRequest(request, error, message);
+}
+
 
 struct ClientRegistrar::Private
 {
@@ -147,6 +172,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     QStringList interfaces;
 
     ClientHandlerAdaptor *clientHandlerAdaptor = 0;
+    ClientHandlerRequestsAdaptor *clientHandlerRequestsAdaptor = 0;
     AbstractClientHandler *handler =
         qobject_cast<AbstractClientHandler*>(object);
     if (handler) {
@@ -154,6 +180,14 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         clientHandlerAdaptor = new ClientHandlerAdaptor(handler);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Handler"));
+        if (handler->isListeningRequests()) {
+            // export o.f.T.Client.Interface.Requests
+            clientHandlerRequestsAdaptor =
+                new ClientHandlerRequestsAdaptor(handler);
+            interfaces.append(
+                    QLatin1String(
+                        "org.freedesktop.Telepathy.Client.Interface.Requests"));
+        }
     }
 
     // TODO add more adaptors when they exist
@@ -176,6 +210,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
             objectPath << "already registered";
         // cleanup
         delete clientHandlerAdaptor;
+        delete clientHandlerRequestsAdaptor;
         delete clientAdaptor;
         mPriv->bus.unregisterService(busName);
         return false;
