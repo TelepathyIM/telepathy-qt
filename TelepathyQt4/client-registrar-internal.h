@@ -31,6 +31,32 @@
 namespace Tp
 {
 
+class ClientAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client")
+    Q_CLASSINFO("D-Bus Introspection", ""
+"  <interface name=\"org.freedesktop.Telepathy.Client\" >\n"
+"    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
+"  </interface>\n"
+        "")
+
+    Q_PROPERTY(QStringList Interfaces READ Interfaces)
+
+public:
+    ClientAdaptor(const QStringList &interfaces, QObject *parent);
+    virtual ~ClientAdaptor();
+
+public: // Properties
+    inline QStringList Interfaces() const
+    {
+        return mInterfaces;
+    }
+
+private:
+    QStringList mInterfaces;
+};
+
 class ClientHandlerAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT

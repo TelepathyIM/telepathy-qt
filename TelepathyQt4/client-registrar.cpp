@@ -30,6 +30,17 @@
 namespace Tp
 {
 
+ClientAdaptor::ClientAdaptor(const QStringList &interfaces,
+        QObject *parent)
+    : QDBusAbstractAdaptor(parent),
+      mInterfaces(interfaces)
+{
+}
+
+ClientAdaptor::~ClientAdaptor()
+{
+}
+
 ClientHandlerAdaptor::ClientHandlerAdaptor(AbstractClientHandler *client)
     : QDBusAbstractAdaptor(client),
       mClient(client)
