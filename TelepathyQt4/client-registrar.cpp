@@ -186,8 +186,12 @@ void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
     }
 
     // now we are ready to call AbstractClientHandler::handleChannels
+    QStringList requestsSatisfied;
+    foreach (const QDBusObjectPath &path, mRequestsSatisfied) {
+        requestsSatisfied.append(path.path());
+    }
     mClient->handleChannels(mOperation, mAccount, mConnection, mChannels,
-            mRequestsSatisfied, mUserActionTime, mHandlerInfo);
+            requestsSatisfied, mUserActionTime, mHandlerInfo);
     emit finished();
 }
 
@@ -218,7 +222,7 @@ void ClientHandlerRequestsAdaptor::AddRequest(
         const QDBusMessage &message)
 {
     mBus.send(message.createReply());
-    mClient->addRequest(request, properties);
+    mClient->addRequest(request.path(), properties);
 }
 
 void ClientHandlerRequestsAdaptor::RemoveRequest(
@@ -227,7 +231,7 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
         const QDBusMessage &message)
 {
     mBus.send(message.createReply());
-    mClient->removeRequest(request, errorName, errorMessage);
+    mClient->removeRequest(request.path(), errorName, errorMessage);
 }
 
 struct ClientRegistrar::Private

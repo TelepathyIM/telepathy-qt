@@ -67,7 +67,7 @@ bool AbstractClientHandler::isListeningRequests() const
 }
 
 void AbstractClientHandler::addRequest(
-        const QDBusObjectPath &requestObjectPath,
+        const QString &requestObjectPath,
         const QVariantMap &requestProperties)
 {
     // do nothing, subclasses that want to listen requests should reimplement
@@ -75,7 +75,7 @@ void AbstractClientHandler::addRequest(
 }
 
 void AbstractClientHandler::removeRequest(
-        const QDBusObjectPath &requestObjectPath,
+        const QString &requestObjectPath,
         const QString &errorName, const QString &errorMessage)
 {
     // do nothing, subclasses that want to listen requests should reimplement

@@ -70,14 +70,14 @@ public:
             const AccountPtr &account,
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
-            const ObjectPathList &requestsSatisfied,
+            const QStringList &requestsSatisfied,
             qulonglong userActionTime,
             const QVariantMap &handlerInfo) = 0;
 
     bool isListeningRequests() const;
-    virtual void addRequest(const QDBusObjectPath &requestObjectPath,
+    virtual void addRequest(const QString &requestObjectPath,
             const QVariantMap &requestProperties);
-    virtual void removeRequest(const QDBusObjectPath &requestObjectPath,
+    virtual void removeRequest(const QString &requestObjectPath,
             const QString &errorName, const QString &errorMessage);
 
 protected:
