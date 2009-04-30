@@ -82,7 +82,8 @@ class ClientHandlerAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(Tp::ObjectPathList HandledChannels READ HandledChannels)
 
 public:
-    ClientHandlerAdaptor(AbstractClientHandler *client);
+    ClientHandlerAdaptor(const QDBusConnection &bus,
+            AbstractClientHandler *client);
     virtual ~ClientHandlerAdaptor();
 
 public: // Properties
@@ -107,9 +108,11 @@ public Q_SLOTS: // Methods
             const Tp::ChannelDetailsList &channels,
             const Tp::ObjectPathList &requestsSatisfied,
             qulonglong userActionTime,
-            const QVariantMap &handlerInfo);
+            const QVariantMap &handlerInfo,
+            const QDBusMessage &message);
 
 private:
+    QDBusConnection mBus;
     AbstractClientHandler *mClient;
 };
 

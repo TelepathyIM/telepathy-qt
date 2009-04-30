@@ -34,6 +34,8 @@
 namespace Tp
 {
 
+class PendingClientOperation;
+
 class AbstractClient : public QObject, public RefCounted
 {
     Q_OBJECT
@@ -61,7 +63,8 @@ public:
     virtual bool bypassApproval() const = 0;
     virtual ObjectPathList handledChannels() const = 0;
 
-    virtual void handleChannels(const QDBusObjectPath &account,
+    virtual void handleChannels(PendingClientOperation *operation,
+            const QDBusObjectPath &account,
             const QDBusObjectPath &connection,
             const ChannelDetailsList &channels,
             const ObjectPathList &requestsSatisfied,

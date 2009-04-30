@@ -27,6 +27,8 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/PendingClientOperation>
+
 namespace Tp
 {
 
@@ -41,11 +43,12 @@ ClientAdaptor::~ClientAdaptor()
 {
 }
 
-ClientHandlerAdaptor::ClientHandlerAdaptor(AbstractClientHandler *client)
+ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
+        AbstractClientHandler *client)
     : QDBusAbstractAdaptor(client),
+      mBus(bus),
       mClient(client)
 {
-    setAutoRelaySignals(true);
 }
 
 ClientHandlerAdaptor::~ClientHandlerAdaptor()
@@ -57,9 +60,13 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
         const Tp::ChannelDetailsList &channels,
         const Tp::ObjectPathList &requestsSatisfied,
         qulonglong userActionTime,
-        const QVariantMap &handlerInfo)
+        const QVariantMap &handlerInfo,
+        const QDBusMessage &message)
 {
-    mClient->handleChannels(account, connection, channels,
+    PendingClientOperation *operation = new PendingClientOperation(
+            mBus, message, this);
+
+    mClient->handleChannels(operation, account, connection, channels,
             requestsSatisfied, userActionTime, handlerInfo);
 }
 
@@ -87,7 +94,6 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
 {
     mClient->removeRequest(request, error, message);
 }
-
 
 struct ClientRegistrar::Private
 {
@@ -177,7 +183,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         qobject_cast<AbstractClientHandler*>(object);
     if (handler) {
         // export o.f.T.Client.Handler
-        clientHandlerAdaptor = new ClientHandlerAdaptor(handler);
+        clientHandlerAdaptor = new ClientHandlerAdaptor(mPriv->bus, handler);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Handler"));
         if (handler->isListeningRequests()) {
