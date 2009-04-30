@@ -18,6 +18,7 @@ EXTRA_DIST = \
     account-manager.xml \
     async-model.dox \
     channel.xml \
+    channel-request.xml \
     connection.xml \
     connection-manager.xml \
     dbus.xml \
@@ -49,6 +50,7 @@ libtelepathy_qt4_la_SOURCES = \
     account.cpp \
     account-manager.cpp \
     channel.cpp \
+    channel-request.cpp \
     client-registrar.cpp \
     client-registrar-internal.h \
     connection.cpp \
@@ -95,6 +97,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-account-manager.moc.hpp \
     _gen/cli-channel-body.hpp \
     _gen/cli-channel.moc.hpp \
+    _gen/cli-channel-request-body.hpp \
+    _gen/cli-channel-request.moc.hpp \
     _gen/cli-connection-body.hpp \
     _gen/cli-connection.moc.hpp \
     _gen/cli-connection-manager-body.hpp \
@@ -113,6 +117,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/account.moc.hpp \
     _gen/account-manager.moc.hpp \
     _gen/channel.moc.hpp \
+    _gen/channel-request.moc.hpp \
+    _gen/client-registrar.moc.hpp \
     _gen/client-registrar-internal.moc.hpp \
     _gen/connection.moc.hpp \
     _gen/connection-manager.moc.hpp \
@@ -145,6 +151,7 @@ tpqt4include_HEADERS = \
     Account \
     AccountManager \
     Channel \
+    ChannelRequest \
     ClientRegistrar \
     Connection \
     ConnectionManager \
@@ -200,6 +207,7 @@ tpqt4include_HEADERS = \
     ChannelInterfaceHoldInterface \
     ChannelInterfaceMediaSignallingInterface \
     ChannelInterfacePasswordInterface \
+    ChannelRequestInterface \
     ChannelTypeContactListInterface \
     ChannelTypeRoomListInterface \
     ChannelTypeStreamedMediaInterface \
@@ -226,6 +234,7 @@ tpqt4include_HEADERS = \
     account.h \
     account-manager.h \
     channel.h \
+    channel-request.h \
     client-registrar.h \
     connection.h \
     connection-manager.h \
@@ -268,6 +277,7 @@ nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
     _gen/cli-account-manager.h \
     _gen/cli-channel.h \
+    _gen/cli-channel-request.h \
     _gen/cli-connection.h \
     _gen/cli-connection-manager.h \
     _gen/cli-dbus.h \
@@ -366,6 +376,10 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
 			mainiface='--mainiface=Tp::Client::ChannelInterface';; \
+		channel-request) \
+			group='clientchannelrequest'; \
+			prettyinclude='ChannelRequest'; \
+			mainiface='--mainiface=Tp::Client::ChannelRequestInterface';; \
 		account) \
 			group='clientaccount'; \
 			prettyinclude='AccountManager'; \
