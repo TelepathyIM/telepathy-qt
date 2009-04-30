@@ -71,7 +71,7 @@ public:
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
             const QStringList &requestsSatisfied,
-            qulonglong userActionTime,
+            const QDateTime &userActionTime,
             const QVariantMap &handlerInfo) = 0;
 
     bool isListeningRequests() const;

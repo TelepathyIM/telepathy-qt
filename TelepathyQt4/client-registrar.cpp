@@ -190,8 +190,16 @@ void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
     foreach (const QDBusObjectPath &path, mRequestsSatisfied) {
         requestsSatisfied.append(path.path());
     }
+
+    // FIXME: Telepathy supports 64-bit time_t, but Qt only does so on
+    // ILP64 systems (e.g. sparc64, but not x86_64). If QDateTime
+    // gains a fromTimestamp64 method, we should use it instead.
+    QDateTime userActionTime;
+    if (mUserActionTime != 0) {
+        userActionTime = QDateTime::fromTime_t((uint) mUserActionTime);
+    }
     mClient->handleChannels(mOperation, mAccount, mConnection, mChannels,
-            requestsSatisfied, mUserActionTime, mHandlerInfo);
+            requestsSatisfied, userActionTime, mHandlerInfo);
     emit finished();
 }
 
