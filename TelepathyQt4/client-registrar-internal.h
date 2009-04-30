@@ -177,6 +177,7 @@ private:
     AccountPtr mAccount;
     ConnectionPtr mConnection;
     QList<ChannelPtr> mChannels;
+    QList<ChannelRequestPtr> mChannelRequests;
 };
 
 class ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor

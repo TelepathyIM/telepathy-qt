@@ -29,6 +29,7 @@
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingClientOperation>
 #include <TelepathyQt4/PendingReady>
@@ -139,6 +140,16 @@ void ClientHandlerAdaptor::HandleChannelsCall::process()
     connect(mConnection->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onConnectionReady(Tp::PendingOperation *)));
+
+    ChannelRequestPtr channelRequest;
+    foreach (const QDBusObjectPath &path, mRequestsSatisfied) {
+        channelRequest = ChannelRequest::create(mBus,
+                path.path(), QVariantMap());
+        connect(channelRequest->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(onObjectReady(Tp::PendingOperation *)));
+        mChannelRequests.append(channelRequest);
+    }
 }
 
 void ClientHandlerAdaptor::HandleChannelsCall::onObjectReady(
@@ -185,10 +196,10 @@ void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
         }
     }
 
-    // now we are ready to call AbstractClientHandler::handleChannels
-    QStringList requestsSatisfied;
-    foreach (const QDBusObjectPath &path, mRequestsSatisfied) {
-        requestsSatisfied.append(path.path());
+    foreach (const ChannelRequestPtr &channelRequest, mChannelRequests) {
+        if (!channelRequest->isReady()) {
+            return;
+        }
     }
 
     // FIXME: Telepathy supports 64-bit time_t, but Qt only does so on
@@ -199,7 +210,7 @@ void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
         userActionTime = QDateTime::fromTime_t((uint) mUserActionTime);
     }
     mClient->handleChannels(mOperation, mAccount, mConnection, mChannels,
-            requestsSatisfied, userActionTime, mHandlerInfo);
+            mChannelRequests, userActionTime, mHandlerInfo);
     emit finished();
 }
 
@@ -224,6 +235,8 @@ ClientHandlerRequestsAdaptor::~ClientHandlerRequestsAdaptor()
 {
 }
 
+// TODO should we use ChannelRequestPtr on
+// AbstractClientHandler::addRequest/removeRequest?
 void ClientHandlerRequestsAdaptor::AddRequest(
         const QDBusObjectPath &request,
         const QVariantMap &properties,

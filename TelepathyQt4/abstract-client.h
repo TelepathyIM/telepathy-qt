@@ -70,7 +70,7 @@ public:
             const AccountPtr &account,
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
-            const QStringList &requestsSatisfied,
+            const QList<ChannelRequestPtr> &requestsSatisfied,
             const QDateTime &userActionTime,
             const QVariantMap &handlerInfo) = 0;
 
