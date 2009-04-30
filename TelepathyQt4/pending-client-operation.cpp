@@ -52,20 +52,26 @@ PendingClientOperation::~PendingClientOperation()
 
 void PendingClientOperation::setFinished()
 {
-    mPriv->bus.send(mPriv->message.createReply());
+    if (!isFinished()) {
+        mPriv->bus.send(mPriv->message.createReply());
+    }
     PendingOperation::setFinished();
 }
 
 void PendingClientOperation::setFinishedWithError(const QString &name,
         const QString &message)
 {
-    mPriv->bus.send(mPriv->message.createErrorReply(name, message));
+    if (!isFinished()) {
+        mPriv->bus.send(mPriv->message.createErrorReply(name, message));
+    }
     PendingOperation::setFinishedWithError(name, message);
 }
 
 void PendingClientOperation::setFinishedWithError(const QDBusError &error)
 {
-    mPriv->bus.send(mPriv->message.createErrorReply(error));
+    if (!isFinished()) {
+        mPriv->bus.send(mPriv->message.createErrorReply(error));
+    }
     PendingOperation::setFinishedWithError(error);
 }
 
