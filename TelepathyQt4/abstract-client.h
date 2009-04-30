@@ -75,7 +75,7 @@ public:
     virtual void addRequest(const QDBusObjectPath &requestObjectPath,
             const QVariantMap &requestProperties);
     virtual void removeRequest(const QDBusObjectPath &requestObjectPath,
-            const QString &error, const QString &message);
+            const QString &errorName, const QString &errorMessage);
 
 protected:
     AbstractClientHandler(const ChannelClassList &channelFilter,

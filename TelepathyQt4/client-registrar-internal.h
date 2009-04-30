@@ -135,16 +135,20 @@ class ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor
         "")
 
 public:
-    ClientHandlerRequestsAdaptor(AbstractClientHandler *client);
+    ClientHandlerRequestsAdaptor(const QDBusConnection &bus,
+            AbstractClientHandler *client);
     virtual ~ClientHandlerRequestsAdaptor();
 
 public Q_SLOTS: // Methods
     void AddRequest(const QDBusObjectPath &request,
-            const QVariantMap &properties);
+            const QVariantMap &properties,
+            const QDBusMessage &message);
     void RemoveRequest(const QDBusObjectPath &request,
-            const QString &error, const QString &message);
+            const QString &errorName, const QString &errorMessage,
+            const QDBusMessage &message);
 
 private:
+    QDBusConnection mBus;
     AbstractClientHandler *mClient;
 };
 

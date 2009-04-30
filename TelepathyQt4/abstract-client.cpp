@@ -76,7 +76,7 @@ void AbstractClientHandler::addRequest(
 
 void AbstractClientHandler::removeRequest(
         const QDBusObjectPath &requestObjectPath,
-        const QString &error, const QString &message)
+        const QString &errorName, const QString &errorMessage)
 {
     // do nothing, subclasses that want to listen requests should reimplement
     // this method

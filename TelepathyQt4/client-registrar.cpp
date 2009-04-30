@@ -71,8 +71,10 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
 }
 
 ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
+        const QDBusConnection &bus,
         AbstractClientHandler *client)
     : QDBusAbstractAdaptor(client),
+      mBus(bus),
       mClient(client)
 {
 }
@@ -83,16 +85,20 @@ ClientHandlerRequestsAdaptor::~ClientHandlerRequestsAdaptor()
 
 void ClientHandlerRequestsAdaptor::AddRequest(
         const QDBusObjectPath &request,
-        const QVariantMap &properties)
+        const QVariantMap &properties,
+        const QDBusMessage &message)
 {
+    mBus.send(message.createReply());
     mClient->addRequest(request, properties);
 }
 
 void ClientHandlerRequestsAdaptor::RemoveRequest(
         const QDBusObjectPath &request,
-        const QString &error, const QString &message)
+        const QString &errorName, const QString &errorMessage,
+        const QDBusMessage &message)
 {
-    mClient->removeRequest(request, error, message);
+    mBus.send(message.createReply());
+    mClient->removeRequest(request, errorName, errorMessage);
 }
 
 struct ClientRegistrar::Private
@@ -189,7 +195,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         if (handler->isListeningRequests()) {
             // export o.f.T.Client.Interface.Requests
             clientHandlerRequestsAdaptor =
-                new ClientHandlerRequestsAdaptor(handler);
+                new ClientHandlerRequestsAdaptor(mPriv->bus, handler);
             interfaces.append(
                     QLatin1String(
                         "org.freedesktop.Telepathy.Client.Interface.Requests"));
