@@ -29,7 +29,10 @@
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
+#include <QList>
 #include <QObject>
+#include <QString>
+#include <QVariantMap>
 
 namespace Tp
 {
@@ -61,12 +64,12 @@ public:
 
     ChannelClassList channelFilter() const;
     virtual bool bypassApproval() const = 0;
-    virtual ObjectPathList handledChannels() const = 0;
+    virtual QList<ChannelPtr> handledChannels() const = 0;
 
     virtual void handleChannels(PendingClientOperation *operation,
-            const QDBusObjectPath &account,
-            const QDBusObjectPath &connection,
-            const ChannelDetailsList &channels,
+            const AccountPtr &account,
+            const ConnectionPtr &connection,
+            const QList<ChannelPtr> &channels,
             const ObjectPathList &requestsSatisfied,
             qulonglong userActionTime,
             const QVariantMap &handlerInfo) = 0;

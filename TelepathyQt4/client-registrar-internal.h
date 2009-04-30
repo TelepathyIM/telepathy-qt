@@ -26,10 +26,14 @@
 #include <QtDBus/QtDBus>
 
 #include <TelepathyQt4/AbstractClientHandler>
+#include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Types>
 
 namespace Tp
 {
+
+class PendingClientOperation;
+class PendingOperation;
 
 class ClientAdaptor : public QDBusAbstractAdaptor
 {
@@ -99,7 +103,11 @@ public: // Properties
 
     inline Tp::ObjectPathList HandledChannels() const
     {
-        return mClient->handledChannels();
+        Tp::ObjectPathList paths;
+        foreach (const ChannelPtr &channel, mClient->handledChannels()) {
+            paths.append(QDBusObjectPath(channel->objectPath()));
+        }
+        return paths;
     }
 
 public Q_SLOTS: // Methods
@@ -111,9 +119,64 @@ public Q_SLOTS: // Methods
             const QVariantMap &handlerInfo,
             const QDBusMessage &message);
 
+private Q_SLOTS:
+    void onHandleChannelsCallFinished();
+
 private:
+    void processHandleChannelsQueue();
+
+    class HandleChannelsCall;
+
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
+    QQueue<HandleChannelsCall*> mHandleChannelsQueue;
+    bool mProcessingHandleChannels;
+};
+
+class ClientHandlerAdaptor::HandleChannelsCall : public QObject
+{
+    Q_OBJECT
+
+public:
+    HandleChannelsCall(AbstractClientHandler *client,
+            const QDBusObjectPath &account,
+            const QDBusObjectPath &connection,
+            const ChannelDetailsList &channels,
+            const ObjectPathList &requestsSatisfied,
+            qulonglong userActionTime,
+            const QVariantMap &handlerInfo,
+            const QDBusConnection &bus,
+            const QDBusMessage &message,
+            QObject *parent);
+    virtual ~HandleChannelsCall();
+
+    void process();
+
+Q_SIGNALS:
+    void finished();
+
+private Q_SLOTS:
+    void onObjectReady(Tp::PendingOperation *op);
+    void onConnectionReady(Tp::PendingOperation *op);
+
+private:
+    void checkFinished();
+    void setFinishedWithError(const QString &errorName,
+            const QString &errorMessage);
+
+    AbstractClientHandler *mClient;
+    QDBusObjectPath mAccountPath;
+    QDBusObjectPath mConnectionPath;
+    ChannelDetailsList mChannelDetailsList;
+    ObjectPathList mRequestsSatisfied;
+    qulonglong mUserActionTime;
+    QVariantMap mHandlerInfo;
+    QDBusConnection mBus;
+    QDBusMessage mMessage;
+    PendingClientOperation *mOperation;
+    AccountPtr mAccount;
+    ConnectionPtr mConnection;
+    QList<ChannelPtr> mChannels;
 };
 
 class ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor

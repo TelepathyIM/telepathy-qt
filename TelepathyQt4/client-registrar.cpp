@@ -27,7 +27,11 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/Channel>
+#include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingClientOperation>
+#include <TelepathyQt4/PendingReady>
 
 namespace Tp
 {
@@ -47,7 +51,8 @@ ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
         AbstractClientHandler *client)
     : QDBusAbstractAdaptor(client),
       mBus(bus),
-      mClient(client)
+      mClient(client),
+      mProcessingHandleChannels(false)
 {
 }
 
@@ -63,11 +68,135 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
         const QVariantMap &handlerInfo,
         const QDBusMessage &message)
 {
-    PendingClientOperation *operation = new PendingClientOperation(
-            mBus, message, this);
+    mHandleChannelsQueue.enqueue(new HandleChannelsCall(mClient, account,
+                connection, channels, requestsSatisfied,
+                userActionTime, handlerInfo, mBus, message, this));
+    processHandleChannelsQueue();
+}
 
-    mClient->handleChannels(operation, account, connection, channels,
-            requestsSatisfied, userActionTime, handlerInfo);
+void ClientHandlerAdaptor::onHandleChannelsCallFinished()
+{
+    mHandleChannelsQueue.dequeue();
+    mProcessingHandleChannels = false;
+    processHandleChannelsQueue();
+}
+
+void ClientHandlerAdaptor::processHandleChannelsQueue()
+{
+    if (mProcessingHandleChannels) {
+        return;
+    }
+
+    mProcessingHandleChannels = true;
+    HandleChannelsCall *call = mHandleChannelsQueue.head();
+    connect(call,
+            SIGNAL(finished()),
+            SLOT(onHandleChannelsCallFinished()));
+    call->process();
+}
+
+ClientHandlerAdaptor::HandleChannelsCall::HandleChannelsCall(
+        AbstractClientHandler *client,
+        const QDBusObjectPath &account,
+        const QDBusObjectPath &connection,
+        const ChannelDetailsList &channels,
+        const ObjectPathList &requestsSatisfied,
+        qulonglong userActionTime,
+        const QVariantMap &handlerInfo,
+        const QDBusConnection &bus,
+        const QDBusMessage &message,
+        QObject *parent)
+    : QObject(parent),
+      mClient(client),
+      mAccountPath(account),
+      mConnectionPath(connection),
+      mChannelDetailsList(channels),
+      mRequestsSatisfied(requestsSatisfied),
+      mUserActionTime(userActionTime),
+      mHandlerInfo(handlerInfo),
+      mBus(bus),
+      mMessage(message),
+      mOperation(new PendingClientOperation(bus, message, this))
+{
+}
+
+ClientHandlerAdaptor::HandleChannelsCall::~HandleChannelsCall()
+{
+}
+
+void ClientHandlerAdaptor::HandleChannelsCall::process()
+{
+    mAccount = Account::create(mBus,
+            TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
+            mAccountPath.path());
+    connect(mAccount->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onObjectReady(Tp::PendingOperation *)));
+
+    QString connectionBusName = mConnectionPath.path().mid(1).replace('/', '.');
+    mConnection = Connection::create(mBus, connectionBusName,
+            mConnectionPath.path());
+    connect(mConnection->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onConnectionReady(Tp::PendingOperation *)));
+}
+
+void ClientHandlerAdaptor::HandleChannelsCall::onObjectReady(
+        PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+    checkFinished();
+}
+
+void ClientHandlerAdaptor::HandleChannelsCall::onConnectionReady(
+        PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    ChannelPtr channel;
+    foreach (const ChannelDetails &channelDetails, mChannelDetailsList) {
+        channel = Channel::create(mConnection, channelDetails.channel.path(),
+                channelDetails.properties);
+        connect(channel->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(onObjectReady(Tp::PendingOperation *)));
+        mChannels.append(channel);
+    }
+
+    // just to make sure
+    checkFinished();
+}
+
+void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
+{
+    if (!mAccount->isReady() || !mConnection->isReady()) {
+        return;
+    }
+
+    foreach (const ChannelPtr &channel, mChannels) {
+        if (!channel->isReady()) {
+            return;
+        }
+    }
+
+    // now we are ready to call AbstractClientHandler::handleChannels
+    mClient->handleChannels(mOperation, mAccount, mConnection, mChannels,
+            mRequestsSatisfied, mUserActionTime, mHandlerInfo);
+    emit finished();
+}
+
+void ClientHandlerAdaptor::HandleChannelsCall::setFinishedWithError(const QString &errorName,
+        const QString &errorMessage)
+{
+    mOperation->setFinishedWithError(errorName, errorMessage);
+    emit finished();
+    deleteLater();
 }
 
 ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
