@@ -71,6 +71,7 @@ libtelepathy_qt4_la_SOURCES = \
     optional-interface-factory.cpp \
     pending-account.cpp \
     pending-channel.cpp \
+    pending-client-operation.cpp \
     pending-connection.cpp \
     pending-contact-attributes.cpp \
     pending-contacts.cpp \
@@ -123,6 +124,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/file-transfer.moc.hpp \
     _gen/pending-account.moc.hpp \
     _gen/pending-channel.moc.hpp \
+    _gen/pending-client-operation.moc.hpp \
     _gen/pending-connection.moc.hpp \
     _gen/pending-contact-attributes.moc.hpp \
     _gen/pending-contacts.moc.hpp \
@@ -162,6 +164,7 @@ tpqt4include_HEADERS = \
     OptionalInterfaceFactory \
     PendingAccount \
     PendingChannel \
+    PendingClientOperation \
     PendingConnection \
     PendingContacts \
     PendingContactAttributes \
@@ -242,6 +245,7 @@ tpqt4include_HEADERS = \
     optional-interface-factory.h \
     pending-account.h \
     pending-channel.h \
+    pending-client-operation.h \
     pending-connection.h \
     pending-contact-attributes.h \
     pending-contacts.h \

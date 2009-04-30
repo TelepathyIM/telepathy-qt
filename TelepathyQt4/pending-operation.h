@@ -145,7 +145,7 @@ protected:
      * Record that this pending operation has finished successfully, and
      * emit the #finished() signal next time the event loop runs.
      */
-    void setFinished();
+    virtual void setFinished();
 
     /**
      * Record that this pending operation has finished with an error, and
@@ -154,7 +154,7 @@ protected:
      * \param name A D-Bus error name, which must be non-empty
      * \param message A debugging message
      */
-    void setFinishedWithError(const QString& name, const QString& message);
+    virtual void setFinishedWithError(const QString& name, const QString& message);
 
     /**
      * Record that this pending operation has finished with an error, and
@@ -162,7 +162,7 @@ protected:
      *
      * \param error A QtDBus error
      */
-    void setFinishedWithError(const QDBusError& error);
+    virtual void setFinishedWithError(const QDBusError& error);
 
 private Q_SLOTS:
     void emitFinished();
