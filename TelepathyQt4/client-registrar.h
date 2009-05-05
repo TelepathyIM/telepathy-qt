@@ -47,6 +47,9 @@ public:
             const QString &clientName);
     virtual ~ClientRegistrar();
 
+    QDBusConnection dbusConnection() const;
+    QString clientName() const;
+
     QList<AbstractClientPtr> registeredClients() const;
     bool registerClient(const AbstractClientPtr &client, bool unique = false);
     bool unregisterClient(const AbstractClientPtr &client);

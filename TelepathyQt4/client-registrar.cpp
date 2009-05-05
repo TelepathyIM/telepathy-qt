@@ -354,6 +354,16 @@ ClientRegistrar::~ClientRegistrar()
     delete mPriv;
 }
 
+QDBusConnection ClientRegistrar::dbusConnection() const
+{
+    return mPriv->bus;
+}
+
+QString ClientRegistrar::clientName() const
+{
+    return mPriv->clientName;
+}
+
 QList<AbstractClientPtr> ClientRegistrar::registeredClients() const
 {
     return mPriv->clients.keys();
