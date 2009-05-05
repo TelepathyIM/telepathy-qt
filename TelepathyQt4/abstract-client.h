@@ -75,9 +75,8 @@ public:
             const QVariantMap &handlerInfo) = 0;
 
     bool isListeningRequests() const;
-    virtual void addRequest(const QString &requestObjectPath,
-            const QVariantMap &requestProperties);
-    virtual void removeRequest(const QString &requestObjectPath,
+    virtual void addRequest(const ChannelRequestPtr &request);
+    virtual void removeRequest(const ChannelRequestPtr &request,
             const QString &errorName, const QString &errorMessage);
 
 protected:

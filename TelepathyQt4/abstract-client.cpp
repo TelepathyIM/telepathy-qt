@@ -67,15 +67,14 @@ bool AbstractClientHandler::isListeningRequests() const
 }
 
 void AbstractClientHandler::addRequest(
-        const QString &requestObjectPath,
-        const QVariantMap &requestProperties)
+        const ChannelRequestPtr &channelRequest)
 {
     // do nothing, subclasses that want to listen requests should reimplement
     // this method
 }
 
 void AbstractClientHandler::removeRequest(
-        const QString &requestObjectPath,
+        const ChannelRequestPtr &channelRequest,
         const QString &errorName, const QString &errorMessage)
 {
     // do nothing, subclasses that want to listen requests should reimplement

@@ -205,15 +205,52 @@ public:
 
 public Q_SLOTS: // Methods
     void AddRequest(const QDBusObjectPath &request,
-            const QVariantMap &properties,
+            const QVariantMap &requestProperties,
             const QDBusMessage &message);
     void RemoveRequest(const QDBusObjectPath &request,
             const QString &errorName, const QString &errorMessage,
             const QDBusMessage &message);
 
+private Q_SLOTS:
+    void onAddRequestCallFinished();
+
 private:
+    void processAddRequestQueue();
+
+    class AddRequestCall;
+
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
+    QQueue<AddRequestCall*> mAddRequestQueue;
+    bool mProcessingAddRequest;
+};
+
+class ClientHandlerRequestsAdaptor::AddRequestCall : public QObject
+{
+    Q_OBJECT
+
+public:
+    AddRequestCall(AbstractClientHandler *client,
+            const QDBusObjectPath &request,
+            const QVariantMap &requestProperties,
+            const QDBusConnection &bus,
+            QObject *parent);
+    virtual ~AddRequestCall();
+
+    void process();
+
+Q_SIGNALS:
+    void finished();
+
+private Q_SLOTS:
+    void onChannelRequestReady(Tp::PendingOperation *op);
+
+private:
+    AbstractClientHandler *mClient;
+    QDBusObjectPath mRequestPath;
+    QVariantMap mRequestProperties;
+    QDBusConnection mBus;
+    ChannelRequestPtr mRequest;
 };
 
 } // Tp

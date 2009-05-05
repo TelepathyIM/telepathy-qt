@@ -145,9 +145,6 @@ void ClientHandlerAdaptor::HandleChannelsCall::process()
     foreach (const QDBusObjectPath &path, mRequestsSatisfied) {
         channelRequest = ChannelRequest::create(mBus,
                 path.path(), QVariantMap());
-        connect(channelRequest->becomeReady(),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(onObjectReady(Tp::PendingOperation *)));
         mChannelRequests.append(channelRequest);
     }
 }
@@ -196,12 +193,6 @@ void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
         }
     }
 
-    foreach (const ChannelRequestPtr &channelRequest, mChannelRequests) {
-        if (!channelRequest->isReady()) {
-            return;
-        }
-    }
-
     // FIXME: Telepathy supports 64-bit time_t, but Qt only does so on
     // ILP64 systems (e.g. sparc64, but not x86_64). If QDateTime
     // gains a fromTimestamp64 method, we should use it instead.
@@ -212,6 +203,7 @@ void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
     mClient->handleChannels(mOperation, mAccount, mConnection, mChannels,
             mChannelRequests, userActionTime, mHandlerInfo);
     emit finished();
+    deleteLater();
 }
 
 void ClientHandlerAdaptor::HandleChannelsCall::setFinishedWithError(const QString &errorName,
@@ -227,7 +219,8 @@ ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
         AbstractClientHandler *client)
     : QDBusAbstractAdaptor(client),
       mBus(bus),
-      mClient(client)
+      mClient(client),
+      mProcessingAddRequest(false)
 {
 }
 
@@ -235,15 +228,16 @@ ClientHandlerRequestsAdaptor::~ClientHandlerRequestsAdaptor()
 {
 }
 
-// TODO should we use ChannelRequestPtr on
-// AbstractClientHandler::addRequest/removeRequest?
 void ClientHandlerRequestsAdaptor::AddRequest(
         const QDBusObjectPath &request,
-        const QVariantMap &properties,
+        const QVariantMap &requestProperties,
         const QDBusMessage &message)
 {
     mBus.send(message.createReply());
-    mClient->addRequest(request.path(), properties);
+
+    mAddRequestQueue.enqueue(new AddRequestCall(mClient, request,
+                requestProperties, mBus, this));
+    processAddRequestQueue();
 }
 
 void ClientHandlerRequestsAdaptor::RemoveRequest(
@@ -252,7 +246,69 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
         const QDBusMessage &message)
 {
     mBus.send(message.createReply());
-    mClient->removeRequest(request.path(), errorName, errorMessage);
+    mClient->removeRequest(ChannelRequest::create(mBus,
+                request.path(), QVariantMap()), errorName, errorMessage);
+}
+
+void ClientHandlerRequestsAdaptor::processAddRequestQueue()
+{
+    if (mProcessingAddRequest) {
+        return;
+    }
+
+    mProcessingAddRequest = true;
+    AddRequestCall *call = mAddRequestQueue.head();
+    connect(call,
+            SIGNAL(finished()),
+            SLOT(onAddRequestCallFinished()));
+    call->process();
+}
+
+void ClientHandlerRequestsAdaptor::onAddRequestCallFinished()
+{
+    mAddRequestQueue.dequeue();
+    mProcessingAddRequest = false;
+    processAddRequestQueue();
+}
+
+ClientHandlerRequestsAdaptor::AddRequestCall::AddRequestCall(
+        AbstractClientHandler *client,
+        const QDBusObjectPath &request,
+        const QVariantMap &requestProperties,
+        const QDBusConnection &bus,
+        QObject *parent)
+    : QObject(parent),
+      mClient(client),
+      mRequestPath(request),
+      mRequestProperties(requestProperties),
+      mBus(bus)
+{
+}
+
+ClientHandlerRequestsAdaptor::AddRequestCall::~AddRequestCall()
+{
+}
+
+void ClientHandlerRequestsAdaptor::AddRequestCall::process()
+{
+    mRequest = ChannelRequest::create(mBus,
+            mRequestPath.path(), mRequestProperties);
+    connect(mRequest->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onChannelRequestReady(Tp::PendingOperation *)));
+}
+
+void ClientHandlerRequestsAdaptor::AddRequestCall::onChannelRequestReady(
+        PendingOperation *op)
+{
+    if (!op->isError()) {
+        mClient->addRequest(mRequest);
+    } else {
+        warning() << "Unable to make ChannelRequest ready:" << op->errorName()
+            << "-" << op->errorMessage() << ". Ignoring AddRequest call";
+    }
+    emit finished();
+    deleteLater();
 }
 
 struct ClientRegistrar::Private
