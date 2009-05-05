@@ -86,7 +86,7 @@ void ClientHandlerAdaptor::onHandleChannelsCallFinished()
 
 void ClientHandlerAdaptor::processHandleChannelsQueue()
 {
-    if (mProcessingHandleChannels) {
+    if (mProcessingHandleChannels || mHandleChannelsQueue.isEmpty()) {
         return;
     }
 
@@ -257,7 +257,7 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
 
 void ClientHandlerRequestsAdaptor::processAddRequestQueue()
 {
-    if (mProcessingAddRequest) {
+    if (mProcessingAddRequest || mAddRequestQueue.isEmpty()) {
         return;
     }
 
