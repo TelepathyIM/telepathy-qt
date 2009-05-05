@@ -118,13 +118,11 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
         Q_ASSERT(self->properties != 0);
     }
 
-    connect(self->baseInterface,
+    self->parent->connect(self->baseInterface,
             SIGNAL(Failed(const QString &, const QString &)),
-            self->parent,
             SIGNAL(failed(const QString &, const QString &)));
-    connect(self->baseInterface,
+    self->parent->connect(self->baseInterface,
             SIGNAL(Succeeded()),
-            self->parent,
             SIGNAL(succeeded()));
 
     debug() << "Calling Properties::GetAll(ChannelRequest)";
@@ -132,9 +130,15 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
         new QDBusPendingCallWatcher(
                 self->properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_REQUEST),
                 self->parent);
-    self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    // FIXME: check if we need to add this check in all other places, and if
+    //        not, why this is needed here.
+    if (watcher->isFinished()) {
+        self->parent->gotMainProperties(watcher);
+    } else {
+        self->parent->connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    }
 }
 
 /**
