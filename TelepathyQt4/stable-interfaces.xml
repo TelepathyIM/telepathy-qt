@@ -15,6 +15,7 @@
 <xi:include href="properties.xml"/>
 <xi:include href="account-manager.xml"/>
 <xi:include href="account.xml"/>
+<xi:include href="client-handler.xml"/>
 
 <xi:include href="../spec/generic-types.xml"/>
 <xi:include href="../spec/errors.xml"/>
