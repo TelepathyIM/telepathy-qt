@@ -271,10 +271,11 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
 
         mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
 
-        QString accountObjectPath = qdbus_cast<QString>(props["Account"]);
+        QDBusObjectPath accountObjectPath =
+            qdbus_cast<QDBusObjectPath>(props["Account"]);
         mPriv->account = Account::create(
                 TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
-                accountObjectPath);
+                accountObjectPath.path());
         connect(mPriv->account->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(onAccountReady(Tp::PendingOperation *)));
@@ -300,6 +301,7 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
 void ChannelRequest::onAccountReady(PendingOperation *op)
 {
     if (op->isError()) {
+        warning() << "Unable to make account ready";
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
                 op->errorName(), op->errorMessage());
         return;
