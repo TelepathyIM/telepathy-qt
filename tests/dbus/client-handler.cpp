@@ -168,6 +168,7 @@ public:
         mHandleChannelsUserActionTime = userActionTime;
         mHandleChannelsHandlerInfo = handlerInfo;
         mHandledChannels.append(channels);
+        emit handleChannelsFinished();
         operation->setFinished();
     }
 
@@ -203,6 +204,7 @@ Q_SIGNALS:
     void requestAdded(const Tp::ChannelRequestPtr &request);
     void requestRemoved(const Tp::ChannelRequestPtr &request,
             const QString &errorName, const QString &errorMessage);
+    void handleChannelsFinished();
 };
 
 class TestClientHandler : public Test
@@ -225,6 +227,7 @@ private Q_SLOTS:
 
     void testRegister();
     void testRequests();
+    void testHandleChannels();
 
     void cleanup();
     void cleanupTestCase();
@@ -248,6 +251,7 @@ private:
     SharedPtr<MyHandler> mHandler;
     QString mHandlerBusName;
     QString mHandlerPath;
+    uint mUserActionTime;
 };
 
 void TestClientHandler::expectRequestChange()
@@ -344,9 +348,9 @@ void TestClientHandler::initTestCase()
     mChannelRequestBusName = "org.freedesktop.Telepathy.ChannelDispatcher";
     mChannelRequestPath = "/org/freedesktop/Telepathy/ChannelRequest/Request1";
     QObject *request = new QObject(this);
-    uint userActionTime = QDateTime::currentDateTime().toTime_t();
+    mUserActionTime = QDateTime::currentDateTime().toTime_t();
     new ChannelRequestAdaptor(QDBusObjectPath(mAccount->objectPath()),
-            userActionTime,
+            mUserActionTime,
             QString(),
             QualifiedPropertyValueMapList(),
             QStringList(),
@@ -417,6 +421,34 @@ void TestClientHandler::testRequests()
              QString("Not available"));
 }
 
+void TestClientHandler::testHandleChannels()
+{
+    QDBusConnection bus = mClientRegistrar->dbusConnection();
+    ClientHandlerInterface *handlerIface = new ClientHandlerInterface(bus,
+            mHandlerBusName, mHandlerPath, this);
+
+    connect(mHandler.data(),
+            SIGNAL(handleChannelsFinished()),
+            SLOT(expectRequestChange()));
+    ChannelDetailsList channelDetailsList;
+    ChannelDetails channelDetails = { QDBusObjectPath(mTextChanPath), QVariantMap() };
+    channelDetailsList.append(channelDetails);
+    handlerIface->HandleChannels(QDBusObjectPath(mAccount->objectPath()),
+            QDBusObjectPath(mConn->objectPath()),
+            channelDetailsList,
+            ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
+            mUserActionTime,
+            QVariantMap());
+    if (!mHandler->mHandleChannelsAccount) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QCOMPARE(mHandler->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(mHandler->mHandleChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(mHandler->mHandleChannelsChannels.first()->objectPath(), mTextChanPath);
+    QCOMPARE(mHandler->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QCOMPARE(mHandler->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+}
 void TestClientHandler::cleanup()
 {
     cleanupImpl();
