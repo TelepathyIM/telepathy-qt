@@ -119,7 +119,7 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
     }
 
     connect(self->baseInterface,
-            SIGNAL(failed(const QString &, const QString &)),
+            SIGNAL(Failed(const QString &, const QString &)),
             self->parent,
             SIGNAL(failed(const QString &, const QString &)));
     connect(self->baseInterface,
