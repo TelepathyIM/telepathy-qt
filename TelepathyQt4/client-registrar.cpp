@@ -69,6 +69,8 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
         const QVariantMap &handlerInfo,
         const QDBusMessage &message)
 {
+    debug() << "HandleChannels: account:" << account.path() << ", connection:"
+        << connection.path();
     mHandleChannelsQueue.enqueue(new HandleChannelsCall(mClient, account,
                 connection, channels, requestsSatisfied,
                 userActionTime, handlerInfo, mBus, message, this));
@@ -233,6 +235,7 @@ void ClientHandlerRequestsAdaptor::AddRequest(
         const QVariantMap &requestProperties,
         const QDBusMessage &message)
 {
+    debug() << "AddRequest:" << request.path();
     mBus.send(message.createReply());
 
     mAddRequestQueue.enqueue(new AddRequestCall(mClient, request,
@@ -245,6 +248,8 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
         const QString &errorName, const QString &errorMessage,
         const QDBusMessage &message)
 {
+    debug() << "RemoveRequest:" << request.path() << "-" << errorName
+        << "-" << errorMessage;
     mBus.send(message.createReply());
     mClient->removeRequest(ChannelRequest::create(mBus,
                 request.path(), QVariantMap()), errorName, errorMessage);
