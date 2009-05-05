@@ -351,6 +351,7 @@ ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
 
 ClientRegistrar::~ClientRegistrar()
 {
+    unregisterClients();
     delete mPriv;
 }
 
