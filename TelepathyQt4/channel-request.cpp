@@ -289,10 +289,12 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
         }
 
         mPriv->preferredHandler = qdbus_cast<QString>(props["PreferredHandler"]);
-        mPriv->requests = qdbus_cast<QualifiedPropertyValueMapList>(props["Requests"]);
+        mPriv->requests =
+            qdbus_cast<QualifiedPropertyValueMapList>(props["Requests"]);
     }
     else {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
+                false, reply.error());
         warning().nospace() << "Properties::GetAll(ChannelRequest) failed with "
             << reply.error().name() << ": " << reply.error().message();
     }
