@@ -400,7 +400,7 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
                 .arg(mPriv->bus.baseService()
                     .replace(':', '_')
                     .replace('.', "._"))
-                .arg((ulong) object));
+                .arg((intptr_t) object));
     }
 
     if (mPriv->services.contains(busName) ||
