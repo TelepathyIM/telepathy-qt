@@ -39,25 +39,9 @@ namespace Tp
 
 class PendingClientOperation;
 
-class AbstractClient : public QObject, public RefCounted
+class AbstractClientHandler : public RefCounted
 {
-    Q_OBJECT
-
-public:
-    virtual ~AbstractClient();
-
-protected:
-    AbstractClient();
-
-private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-class AbstractClientHandler : public AbstractClient
-{
-    Q_OBJECT
+    Q_DISABLE_COPY(AbstractClientHandler)
 
 public:
     virtual ~AbstractClientHandler();

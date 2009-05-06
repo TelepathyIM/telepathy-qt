@@ -33,11 +33,12 @@
 namespace Tp
 {
 
-class AbstractClient;
+class AbstractClientHandler;
 class Account;
 class AccountManager;
 class Channel;
 class ChannelRequest;
+class ClientObject;
 class ClientRegistrar;
 class Connection;
 class ConnectionManager;
@@ -47,11 +48,12 @@ class MediaStream;
 class StreamedMediaChannel;
 class TextChannel;
 
-typedef SharedPtr<AbstractClient> AbstractClientPtr;
+typedef SharedPtr<AbstractClientHandler> AbstractClientHandlerPtr;
 typedef SharedPtr<Account> AccountPtr;
 typedef SharedPtr<AccountManager> AccountManagerPtr;
 typedef SharedPtr<Channel> ChannelPtr;
 typedef SharedPtr<ChannelRequest> ChannelRequestPtr;
+typedef SharedPtr<ClientObject> ClientObjectPtr;
 typedef SharedPtr<ClientRegistrar> ClientRegistrarPtr;
 typedef SharedPtr<Connection> ConnectionPtr;
 typedef SharedPtr<ConnectionManager> ConnectionManagerPtr;

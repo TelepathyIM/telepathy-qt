@@ -52,6 +52,7 @@ libtelepathy_qt4_la_SOURCES = \
     channel.cpp \
     channel-request.cpp \
     client-handler.cpp \
+    client-object.cpp \
     client-registrar.cpp \
     client-registrar-internal.h \
     connection.cpp \
@@ -115,7 +116,6 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-properties-body.hpp \
     _gen/cli-properties.moc.hpp \
     _gen/types-body.hpp \
-    _gen/abstract-client.moc.hpp \
     _gen/abstract-interface.moc.hpp \
     _gen/account.moc.hpp \
     _gen/account-manager.moc.hpp \
@@ -157,6 +157,7 @@ tpqt4include_HEADERS = \
     Channel \
     ChannelRequest \
     ClientHandler \
+    ClientObject \
     ClientRegistrar \
     Connection \
     ConnectionManager \
@@ -243,6 +244,7 @@ tpqt4include_HEADERS = \
     channel.h \
     channel-request.h \
     client-handler.h \
+    client-object.h \
     client-registrar.h \
     connection.h \
     connection-manager.h \

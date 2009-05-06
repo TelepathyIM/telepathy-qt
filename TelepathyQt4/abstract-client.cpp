@@ -23,19 +23,10 @@
 
 #include "TelepathyQt4/_gen/abstract-client.moc.hpp"
 
-#include <QObject>
 #include <QString>
 
 namespace Tp
 {
-
-AbstractClient::AbstractClient()
-{
-}
-
-AbstractClient::~AbstractClient()
-{
-}
 
 struct AbstractClientHandler::Private
 {

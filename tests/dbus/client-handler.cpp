@@ -14,6 +14,7 @@
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/ClientHandlerInterface>
 #include <TelepathyQt4/ClientInterfaceRequestsInterface>
+#include <TelepathyQt4/ClientObject>
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Debug>
@@ -126,11 +127,19 @@ private:
     QStringList mInterfaces;
 };
 
-class MyHandler : public AbstractClientHandler
+class MyHandler : public QObject, public AbstractClientHandler
 {
     Q_OBJECT
 
 public:
+    static AbstractClientHandlerPtr create(const ChannelClassList &channelFilter,
+            bool bypassApproval = false,
+            bool listenRequests = false)
+    {
+        return AbstractClientHandlerPtr(new MyHandler(channelFilter,
+                    bypassApproval, listenRequests));
+    }
+
     MyHandler(const ChannelClassList &channelFilter,
             bool bypassApproval = false,
             bool listenRequests = false)
@@ -248,9 +257,9 @@ private:
     ClientRegistrarPtr mClientRegistrar;
     QString mChannelRequestBusName;
     QString mChannelRequestPath;
-    SharedPtr<MyHandler> mHandler;
-    QString mHandlerBusName;
-    QString mHandlerPath;
+    ClientObjectPtr mClientObject;
+    QString mClientObjectBusName;
+    QString mClientObjectPath;
     uint mUserActionTime;
 };
 
@@ -373,9 +382,9 @@ void TestClientHandler::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant(Tp::HandleTypeContact));
     filters.append(filter);
-    mHandler = SharedPtr<MyHandler>(
-            new MyHandler(filters, false, true));
-    mClientRegistrar->registerClient(AbstractClientPtr::dynamicCast(mHandler));
+    mClientObject = ClientObject::create(
+            MyHandler::create(filters, false, true));
+    mClientRegistrar->registerClient(mClientObject);
 
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     QDBusConnectionInterface *busIface = bus.interface();
@@ -383,41 +392,42 @@ void TestClientHandler::testRegister()
     QVERIFY(registeredServicesNames.contains(
                 "org.freedesktop.Telepathy.Client.foo"));
 
-    mHandlerBusName = "org.freedesktop.Telepathy.Client.foo";
-    mHandlerPath = "/org/freedesktop/Telepathy/Client/foo";
+    mClientObjectBusName = "org.freedesktop.Telepathy.Client.foo";
+    mClientObjectPath = "/org/freedesktop/Telepathy/Client/foo";
 }
 
 void TestClientHandler::testRequests()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     ClientInterfaceRequestsInterface *handlerRequestsIface = new ClientInterfaceRequestsInterface(bus,
-            mHandlerBusName, mHandlerPath, this);
+            mClientObjectBusName, mClientObjectPath, this);
 
-    connect(mHandler.data(),
+    MyHandler *handler = dynamic_cast<MyHandler*>(mClientObject->clientHandler().data());
+    connect(handler,
             SIGNAL(requestAdded(const Tp::ChannelRequestPtr &)),
             SLOT(expectRequestChange()));
     handlerRequestsIface->AddRequest(QDBusObjectPath(mChannelRequestPath), QVariantMap());
-    if (!mHandler->mAddRequestRequest) {
+    if (!handler->mAddRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
     }
-    QCOMPARE(mHandler->mAddRequestRequest->objectPath(),
+    QCOMPARE(handler->mAddRequestRequest->objectPath(),
              mChannelRequestPath);
 
-    connect(mHandler.data(),
+    connect(handler,
             SIGNAL(requestRemoved(const Tp::ChannelRequestPtr &,
                                   const QString &,
                                   const QString &)),
             SLOT(expectRequestChange()));
     handlerRequestsIface->RemoveRequest(QDBusObjectPath(mChannelRequestPath),
             TELEPATHY_ERROR_NOT_AVAILABLE, "Not available");
-    if (!mHandler->mRemoveRequestRequest) {
+    if (!handler->mRemoveRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
     }
-    QCOMPARE(mHandler->mRemoveRequestRequest->objectPath(),
+    QCOMPARE(handler->mRemoveRequestRequest->objectPath(),
              mChannelRequestPath);
-    QCOMPARE(mHandler->mRemoveRequestErrorName,
+    QCOMPARE(handler->mRemoveRequestErrorName,
              QString(TELEPATHY_ERROR_NOT_AVAILABLE));
-    QCOMPARE(mHandler->mRemoveRequestErrorMessage,
+    QCOMPARE(handler->mRemoveRequestErrorMessage,
              QString("Not available"));
 }
 
@@ -425,9 +435,10 @@ void TestClientHandler::testHandleChannels()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     ClientHandlerInterface *handlerIface = new ClientHandlerInterface(bus,
-            mHandlerBusName, mHandlerPath, this);
+            mClientObjectBusName, mClientObjectPath, this);
 
-    connect(mHandler.data(),
+    MyHandler *handler = dynamic_cast<MyHandler*>(mClientObject->clientHandler().data());
+    connect(handler,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectRequestChange()));
     ChannelDetailsList channelDetailsList;
@@ -439,15 +450,15 @@ void TestClientHandler::testHandleChannels()
             ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             mUserActionTime,
             QVariantMap());
-    if (!mHandler->mHandleChannelsAccount) {
+    if (!handler->mHandleChannelsAccount) {
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    QCOMPARE(mHandler->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
-    QCOMPARE(mHandler->mHandleChannelsConnection->objectPath(), mConn->objectPath());
-    QCOMPARE(mHandler->mHandleChannelsChannels.first()->objectPath(), mTextChanPath);
-    QCOMPARE(mHandler->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
-    QCOMPARE(mHandler->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+    QCOMPARE(handler->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(handler->mHandleChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(handler->mHandleChannelsChannels.first()->objectPath(), mTextChanPath);
+    QCOMPARE(handler->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QCOMPARE(handler->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 }
 void TestClientHandler::cleanup()
 {

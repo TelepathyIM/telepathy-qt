@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_cli_client_registrar_h_HEADER_GUARD_
-#define _TelepathyQt4_cli_client_registrar_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_cli_client_object_h_HEADER_GUARD_
+#define _TelepathyQt4_cli_client_object_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
@@ -29,35 +29,23 @@
 #include <TelepathyQt4/RefCounted>
 #include <TelepathyQt4/Types>
 
-#include <QDBusConnection>
 #include <QObject>
-#include <QString>
 
 namespace Tp
 {
 
-class ClientRegistrar : public QObject, public RefCounted
+class ClientObject : public QObject, public RefCounted
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(ClientRegistrar)
+    Q_DISABLE_COPY(ClientObject)
 
 public:
-    static ClientRegistrarPtr create(const QString &clientName);
-    static ClientRegistrarPtr create(const QDBusConnection &bus,
-            const QString &clientName);
-    virtual ~ClientRegistrar();
+    static ClientObjectPtr create(const AbstractClientHandlerPtr &clientHandler);
+    ~ClientObject();
 
-    QDBusConnection dbusConnection() const;
-    QString clientName() const;
-
-    QList<ClientObjectPtr> registeredClients() const;
-    bool registerClient(const ClientObjectPtr &client, bool unique = false);
-    bool unregisterClient(const ClientObjectPtr &client);
-    void unregisterClients();
+    AbstractClientHandlerPtr clientHandler() const;
 
 private:
-    ClientRegistrar(const QString &clientName);
-    ClientRegistrar(const QDBusConnection &bus, const QString &clientName);
+    ClientObject(const AbstractClientHandlerPtr &clientHandler);
 
     struct Private;
     friend struct Private;
