@@ -58,14 +58,14 @@ public:
             const QDateTime &userActionTime,
             const QVariantMap &handlerInfo) = 0;
 
-    bool isListeningRequests() const;
+    bool wantsRequestNotification() const;
     virtual void addRequest(const ChannelRequestPtr &request);
     virtual void removeRequest(const ChannelRequestPtr &request,
             const QString &errorName, const QString &errorMessage);
 
 protected:
     AbstractClientHandler(const ChannelClassList &channelFilter,
-            bool listenRequests = false);
+            bool wantsRequestNotification = false);
 
 private:
     struct Private;

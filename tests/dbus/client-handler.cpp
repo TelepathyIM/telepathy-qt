@@ -134,16 +134,16 @@ class MyHandler : public QObject, public AbstractClientHandler
 public:
     static AbstractClientHandlerPtr create(const ChannelClassList &channelFilter,
             bool bypassApproval = false,
-            bool listenRequests = false)
+            bool wantsRequestNotification = false)
     {
         return AbstractClientHandlerPtr(new MyHandler(channelFilter,
-                    bypassApproval, listenRequests));
+                    bypassApproval, wantsRequestNotification));
     }
 
     MyHandler(const ChannelClassList &channelFilter,
             bool bypassApproval = false,
-            bool listenRequests = false)
-        : AbstractClientHandler(channelFilter, listenRequests),
+            bool wantsRequestNotification = false)
+        : AbstractClientHandler(channelFilter, wantsRequestNotification),
           mBypassApproval(bypassApproval)
     {
     }

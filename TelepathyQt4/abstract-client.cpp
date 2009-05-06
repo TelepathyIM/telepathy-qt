@@ -31,15 +31,15 @@ namespace Tp
 struct AbstractClientHandler::Private
 {
     ChannelClassList channelFilter;
-    bool listenRequests;
+    bool wantsRequestNotification;
 };
 
 AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilter,
-        bool listenRequests)
+        bool wantsRequestNotification)
     : mPriv(new Private)
 {
     mPriv->channelFilter = channelFilter;
-    mPriv->listenRequests = listenRequests;
+    mPriv->wantsRequestNotification = wantsRequestNotification;
 }
 
 AbstractClientHandler::~AbstractClientHandler()
@@ -52,9 +52,9 @@ ChannelClassList AbstractClientHandler::channelFilter() const
     return mPriv->channelFilter;
 }
 
-bool AbstractClientHandler::isListeningRequests() const
+bool AbstractClientHandler::wantsRequestNotification() const
 {
-    return mPriv->listenRequests;
+    return mPriv->wantsRequestNotification;
 }
 
 void AbstractClientHandler::addRequest(

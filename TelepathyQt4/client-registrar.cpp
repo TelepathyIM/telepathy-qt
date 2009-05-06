@@ -420,7 +420,7 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
         clientHandlerAdaptor = new ClientHandlerAdaptor(mPriv->bus, handler, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Handler"));
-        if (handler->isListeningRequests()) {
+        if (handler->wantsRequestNotification()) {
             // export o.f.T.Client.Interface.Requests
             clientHandlerRequestsAdaptor =
                 new ClientHandlerRequestsAdaptor(mPriv->bus, handler, object);
