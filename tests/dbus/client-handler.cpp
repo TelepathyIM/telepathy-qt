@@ -157,11 +157,6 @@ public:
         return mBypassApproval;
     }
 
-    QList<ChannelPtr> handledChannels() const
-    {
-        return mHandledChannels;
-    }
-
     void handleChannels(PendingClientOperation *operation,
             const AccountPtr &account,
             const ConnectionPtr &connection,
@@ -176,9 +171,11 @@ public:
         mHandleChannelsRequestsSatisfied = requestsSatisfied;
         mHandleChannelsUserActionTime = userActionTime;
         mHandleChannelsHandlerInfo = handlerInfo;
-        mHandledChannels.append(channels);
-        emit handleChannelsFinished();
+
         operation->setFinished();
+        connect(operation,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SIGNAL(handleChannelsFinished()));
     }
 
     void addRequest(const ChannelRequestPtr &request)
@@ -203,7 +200,6 @@ public:
     QList<ChannelRequestPtr> mHandleChannelsRequestsSatisfied;
     QDateTime mHandleChannelsUserActionTime;
     QVariantMap mHandleChannelsHandlerInfo;
-    QList<ChannelPtr> mHandledChannels;
     ChannelRequestPtr mAddRequestRequest;
     ChannelRequestPtr mRemoveRequestRequest;
     QString mRemoveRequestErrorName;
@@ -450,16 +446,18 @@ void TestClientHandler::testHandleChannels()
             ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             mUserActionTime,
             QVariantMap());
-    if (!handler->mHandleChannelsAccount) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
+    QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(handler->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
     QCOMPARE(handler->mHandleChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(handler->mHandleChannelsChannels.first()->objectPath(), mTextChanPath);
     QCOMPARE(handler->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QCOMPARE(handler->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+
+    Tp::ObjectPathList handledChannels = handlerIface->HandledChannels();
+    QVERIFY(handledChannels.contains(QDBusObjectPath(mTextChanPath)));
 }
+
 void TestClientHandler::cleanup()
 {
     cleanupImpl();

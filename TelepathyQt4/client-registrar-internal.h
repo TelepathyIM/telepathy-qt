@@ -104,11 +104,11 @@ public: // Properties
 
     inline Tp::ObjectPathList HandledChannels() const
     {
-        Tp::ObjectPathList paths;
-        foreach (const ChannelPtr &channel, mClient->handledChannels()) {
-            paths.append(QDBusObjectPath(channel->objectPath()));
+        Tp::ObjectPathList ret;
+        foreach (const ChannelPtr &channel, mHandledChannels) {
+            ret.append(QDBusObjectPath(channel->objectPath()));
         }
-        return paths;
+        return ret;
     }
 
 public Q_SLOTS: // Methods
@@ -121,7 +121,9 @@ public Q_SLOTS: // Methods
             const QDBusMessage &message);
 
 private Q_SLOTS:
+    void onOperationFinished(Tp::PendingOperation *op);
     void onHandleChannelsCallFinished();
+    void onChannelInvalidated(Tp::DBusProxy *proxy);
 
 private:
     void processHandleChannelsQueue();
@@ -130,8 +132,10 @@ private:
 
     QDBusConnection mBus;
     AbstractClientHandlerPtr mClient;
+    QHash<PendingClientOperation *, HandleChannelsCall *> mOperations;
     QQueue<HandleChannelsCall*> mHandleChannelsQueue;
     bool mProcessingHandleChannels;
+    QSet<ChannelPtr> mHandledChannels;
 };
 
 class ClientHandlerAdaptor::HandleChannelsCall : public QObject
@@ -140,6 +144,7 @@ class ClientHandlerAdaptor::HandleChannelsCall : public QObject
 
 public:
     HandleChannelsCall(const AbstractClientHandlerPtr &client,
+            PendingClientOperation *op,
             const QDBusObjectPath &account,
             const QDBusObjectPath &connection,
             const ChannelDetailsList &channels,
@@ -150,6 +155,8 @@ public:
             const QDBusMessage &message,
             QObject *parent);
     virtual ~HandleChannelsCall();
+
+    QList<ChannelPtr> channels() const { return mChannels; };
 
     void process();
 
@@ -166,6 +173,7 @@ private:
             const QString &errorMessage);
 
     AbstractClientHandlerPtr mClient;
+    PendingClientOperation *mOperation;
     QDBusObjectPath mAccountPath;
     QDBusObjectPath mConnectionPath;
     ChannelDetailsList mChannelDetailsList;
@@ -174,7 +182,6 @@ private:
     QVariantMap mHandlerInfo;
     QDBusConnection mBus;
     QDBusMessage mMessage;
-    PendingClientOperation *mOperation;
     AccountPtr mAccount;
     ConnectionPtr mConnection;
     QList<ChannelPtr> mChannels;

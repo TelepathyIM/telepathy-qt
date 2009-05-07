@@ -48,7 +48,6 @@ public:
 
     ChannelClassList channelFilter() const;
     virtual bool bypassApproval() const = 0;
-    virtual QList<ChannelPtr> handledChannels() const = 0;
 
     virtual void handleChannels(PendingClientOperation *operation,
             const AccountPtr &account,

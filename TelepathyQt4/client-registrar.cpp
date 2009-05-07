@@ -73,10 +73,40 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
 {
     debug() << "HandleChannels: account:" << account.path() << ", connection:"
         << connection.path();
-    mHandleChannelsQueue.enqueue(new HandleChannelsCall(mClient, account,
-                connection, channels, requestsSatisfied,
-                userActionTime, handlerInfo, mBus, message, this));
+
+    PendingClientOperation *op = new PendingClientOperation(mBus,
+            message, this);
+    HandleChannelsCall *call = new HandleChannelsCall(mClient, op,
+            account, connection, channels, requestsSatisfied,
+            userActionTime, handlerInfo, mBus, message, this);
+    connect(op,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onOperationFinished(Tp::PendingOperation*)));
+    mOperations.insert(op, call);
+
+    mHandleChannelsQueue.enqueue(call);
     processHandleChannelsQueue();
+}
+
+void ClientHandlerAdaptor::onOperationFinished(PendingOperation *op)
+{
+    HandleChannelsCall *call =
+        mOperations.value(dynamic_cast<PendingClientOperation*>(op));
+    if (!op->isError()) {
+        debug() << "HandleChannels operation finished successfully, "
+            "updating handled channels";
+        foreach (const ChannelPtr &channel, call->channels()) {
+            mHandledChannels.insert(channel);
+            connect(channel.data(),
+                    SIGNAL(invalidated(Tp::DBusProxy *,
+                                       const QString &, const QString &)),
+                    SLOT(onChannelInvalidated(Tp::DBusProxy *)));
+        }
+    }
+
+    mOperations.remove(dynamic_cast<PendingClientOperation*>(op));
+    // op will delete itself, so no need to delete it
+    delete call;
 }
 
 void ClientHandlerAdaptor::onHandleChannelsCallFinished()
@@ -84,6 +114,12 @@ void ClientHandlerAdaptor::onHandleChannelsCallFinished()
     mHandleChannelsQueue.dequeue();
     mProcessingHandleChannels = false;
     processHandleChannelsQueue();
+}
+
+void ClientHandlerAdaptor::onChannelInvalidated(DBusProxy *proxy)
+{
+    ChannelPtr channel(dynamic_cast<Channel*>(proxy));
+    mHandledChannels.remove(channel);
 }
 
 void ClientHandlerAdaptor::processHandleChannelsQueue()
@@ -102,6 +138,7 @@ void ClientHandlerAdaptor::processHandleChannelsQueue()
 
 ClientHandlerAdaptor::HandleChannelsCall::HandleChannelsCall(
         const AbstractClientHandlerPtr &client,
+        PendingClientOperation *op,
         const QDBusObjectPath &account,
         const QDBusObjectPath &connection,
         const ChannelDetailsList &channels,
@@ -113,6 +150,7 @@ ClientHandlerAdaptor::HandleChannelsCall::HandleChannelsCall(
         QObject *parent)
     : QObject(parent),
       mClient(client),
+      mOperation(op),
       mAccountPath(account),
       mConnectionPath(connection),
       mChannelDetailsList(channels),
@@ -120,8 +158,7 @@ ClientHandlerAdaptor::HandleChannelsCall::HandleChannelsCall(
       mUserActionTime(userActionTime),
       mHandlerInfo(handlerInfo),
       mBus(bus),
-      mMessage(message),
-      mOperation(new PendingClientOperation(bus, message, this))
+      mMessage(message)
 {
 }
 
@@ -207,7 +244,6 @@ void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
     mClient->handleChannels(mOperation, mAccount, mConnection, mChannels,
             mChannelRequests, userActionTime, mHandlerInfo);
     emit finished();
-    deleteLater();
 }
 
 void ClientHandlerAdaptor::HandleChannelsCall::setFinishedWithError(const QString &errorName,
@@ -215,7 +251,6 @@ void ClientHandlerAdaptor::HandleChannelsCall::setFinishedWithError(const QStrin
 {
     mOperation->setFinishedWithError(errorName, errorMessage);
     emit finished();
-    deleteLater();
 }
 
 ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
