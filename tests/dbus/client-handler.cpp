@@ -393,6 +393,9 @@ void TestClientHandler::init()
 
 void TestClientHandler::testRegister()
 {
+    // invalid client
+    QVERIFY(!mClientRegistrar->registerClient(ClientObjectPtr()));
+
     ChannelClassList filters;
     QMap<QString, QDBusVariant> filter;
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -402,7 +405,11 @@ void TestClientHandler::testRegister()
     filters.append(filter);
     mClientObject1 = ClientObject::create(
             MyHandler::create(filters, false, true));
-    mClientRegistrar->registerClient(mClientObject1);
+    QVERIFY(mClientRegistrar->registerClient(mClientObject1));
+    QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
+
+    // no op - client already registered
+    QVERIFY(mClientRegistrar->registerClient(mClientObject1));
 
     filters.clear();
     filter.clear();
@@ -413,7 +420,11 @@ void TestClientHandler::testRegister()
     filters.append(filter);
     mClientObject2 = ClientObject::create(
             MyHandler::create(filters, true, true));
-    mClientRegistrar->registerClient(mClientObject2, true);
+    QVERIFY(mClientRegistrar->registerClient(mClientObject2, true));
+    QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
+
+    // no op - client already registered
+    QVERIFY(mClientRegistrar->registerClient(mClientObject2, true));
 
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     QDBusConnectionInterface *busIface = bus.interface();
