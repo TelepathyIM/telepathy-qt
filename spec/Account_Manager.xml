@@ -127,12 +127,78 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
     </signal>
 
+    <property name="SupportedAccountProperties"
+      tp:name-for-bindings="Supported_Account_Properties"
+      type="as" tp:type="DBus_Qualified_Member[]" access="read">
+      <tp:added version="0.17.24"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of the fully qualified names of properties that can be set
+          via the Properties argument to
+          <tp:member-ref>CreateAccount</tp:member-ref> when an account is
+          created.</p>
+
+        <tp:rationale>
+          <p>Examples of good properties to support here include
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">Icon</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">Enabled</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">Nickname</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">AutomaticPresence</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">ConnectAutomatically</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">RequestedPresence</tp:dbus-ref>
+            and
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account.Interface.Avatar">Avatar</tp:dbus-ref>.
+            </p>
+
+          <p>Examples of properties that would make no sense here include
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">Valid</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">Connection</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">ConnectionStatus</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">ConnectionStatusReason</tp:dbus-ref>,
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">CurrentPresence</tp:dbus-ref>
+            and
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">NormalizedName</tp:dbus-ref>.
+          </p>
+        </tp:rationale>
+
+        <p>This property MUST NOT include include the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Account">DisplayName</tp:dbus-ref>
+          and <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Account">Parameters</tp:dbus-ref>
+          properties, which are set using separate arguments.</p>
+
+        <p>This property MAY include the names of properties that, after
+          account creation, will be read-only: this indicates that the property
+          can be set at account creation but not changed later.</p>
+
+        <tp:rationale>
+          <p>For example, an account manager might support migration tools that
+            use this to preserve the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">HasBeenOnline</tp:dbus-ref>
+            property, even though that property is usually read-only.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
     <method name="CreateAccount" tp:name-for-bindings="Create_Account">
       <tp:docstring>
         Request the creation of a new <tp:dbus-ref
           namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>. The
         account manager SHOULD NOT allow invalid accounts to be created.
       </tp:docstring>
+      <tp:changed version="0.17.24">added the Properties argument</tp:changed>
 
       <arg name="Connection_Manager" direction="in" type="s"
         tp:type="Connection_Manager_Name">
@@ -152,8 +218,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           property. The account manager SHOULD modify this to make it unique if
           an Account already exists with the same display name, for instance by
           appending a number or the 'account' parameter. Account manager
-          implementations SHOULD accept an empty string but account editing user
-          interfaces should avoid passing an empty string for this parameter.
+          implementations SHOULD accept an empty string, but account editing
+          user interfaces should avoid passing an empty string for this
+          parameter.
 
           <tp:rationale>
             <p>The account creation UI may ask the user for a name for the new
@@ -176,6 +243,26 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             namespace="org.freedesktop.Telepathy.ConnectionManager">RequestConnection</tp:dbus-ref>.</tp:docstring>
       </arg>
 
+      <arg name="Properties" direction="in" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The values of any other properties to be set immediately on the
+            new Account.</p>
+
+          <p>Only the properties mentioned in
+            <tp:member-ref>SupportedAccountProperties</tp:member-ref> are
+            acceptable here. In particular, the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">DisplayName</tp:dbus-ref>
+            and <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">Parameters</tp:dbus-ref>
+            properties are never allowed here, since they are set using the other
+            arguments to this method.</p>
+
+          <p>Account manager implementations SHOULD support creating accounts
+            with an empty value for this argument.</p>
+        </tp:docstring>
+      </arg>
+
       <arg name="Account" direction="out" type="o">
         <tp:docstring>The new <tp:dbus-ref
           namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>.</tp:docstring>
@@ -183,12 +270,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
-          <tp:docstring>The connection manager is not installed or does not
-            implement that protocol.</tp:docstring>
+          <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+            <p>The Connection_Manager is not installed or does not
+              implement the given Protocol, or one of the properties in the
+              Properties argument is unsupported.</p>
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          <tp:docstring>The parameters provided omit a required argument
-            or provide unsupported arguments.
+          <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+            <p>The Parameters provided omit a required parameter
+              or provide unsupported parameter, or the type of one
+              of the Parameters or Properties is inappropriate.</p>
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>

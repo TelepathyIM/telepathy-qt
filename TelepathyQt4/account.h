@@ -51,6 +51,7 @@ class Connection;
 class PendingConnection;
 class PendingOperation;
 class PendingReady;
+class PendingStringList;
 class ProtocolInfo;
 
 class Account : public StatelessDBusProxy,
@@ -97,8 +98,11 @@ public:
     PendingOperation *setAvatar(const Avatar &avatar);
 
     QVariantMap parameters() const;
+    // FIXME: should return a PendingStringList
     PendingOperation *updateParameters(const QVariantMap &set,
             const QStringList &unset);
+    // requires spec 0.17.24
+    PendingOperation *reconnect();
 
     // comes from the ConnectionManager
     ProtocolInfo *protocolInfo() const;

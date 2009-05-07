@@ -78,13 +78,14 @@ struct PendingAccount::Private
  */
 PendingAccount::PendingAccount(const AccountManagerPtr &manager,
         const QString &connectionManager, const QString &protocol,
-        const QString &displayName, const QVariantMap &parameters)
+        const QString &displayName, const QVariantMap &parameters,
+        const QVariantMap &properties)
     : PendingOperation(manager.data()),
       mPriv(new Private(manager))
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             manager->baseInterface()->CreateAccount(connectionManager,
-                protocol, displayName, parameters), this);
+                protocol, displayName, parameters, properties), this);
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(onCallFinished(QDBusPendingCallWatcher *)));

@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.17.23</tp:version>
+<tp:version>0.17.24</tp:version>
 
 <tp:copyright>Copyright © 2005-2009 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
@@ -115,6 +115,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <tp:section name="Media">
   <xi:include href="Media_Session_Handler.xml"/>
   <xi:include href="Media_Stream_Handler.xml"/>
+ </tp:section>
+
+ <tp:section name="Debugging">
+  <xi:include href="Debug.xml"/>
  </tp:section>
 </tp:section>
 
