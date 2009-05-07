@@ -31,6 +31,7 @@
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/PendingVoidMethodCall>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
@@ -448,34 +449,25 @@ QVariantMap Account::parameters() const
     return mPriv->parameters;
 }
 
-/* FIXME: we would like this function to be as follows:
- *
+/**
  * Update this account parameters.
  *
  * On success, the pending operation returned by this method will produce a
  * list of strings, which are the names of parameters whose changes will not
  * take effect until the account is disconnected and reconnected (for instance
- * by calling Account::reconnect).
+ * by calling Account::reconnect()).
  *
  * \param set Parameters to set.
  * \param unset Parameters to unset.
  * \return A PendingStringList which will emit PendingOperation::finished
  *         when the call has finished
  */
-
-/**
- * Update this account parameters.
- *
- * \param set Parameters to set.
- * \param unset Parameters to unset.
- * \return A PendingOperation which will emit PendingOperation::finished
- *         when the call has finished.
- */
-PendingOperation *Account::updateParameters(const QVariantMap &set,
+PendingStringList *Account::updateParameters(const QVariantMap &set,
         const QStringList &unset)
 {
-    return new PendingVoidMethodCall(this,
-            baseInterface()->UpdateParameters(set, unset));
+    return new PendingStringList(
+            baseInterface()->UpdateParameters(set, unset),
+            this);
 }
 
 /**
