@@ -56,12 +56,13 @@ public:
     void unregisterClients();
 
 private:
-    ClientRegistrar(const QString &clientName);
     ClientRegistrar(const QDBusConnection &bus, const QString &clientName);
 
     struct Private;
     friend struct Private;
     Private *mPriv;
+
+    static QHash<QString, ClientRegistrar *> registrarForConnection;
 };
 
 } // Tp

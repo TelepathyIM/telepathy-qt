@@ -370,30 +370,34 @@ struct ClientRegistrar::Private
     QSet<QString> services;
 };
 
+QHash<QString, ClientRegistrar*> ClientRegistrar::registrarForConnection;
+
 ClientRegistrarPtr ClientRegistrar::create(const QString &clientName)
 {
-    return ClientRegistrarPtr(new ClientRegistrar(clientName));
+    QDBusConnection bus = QDBusConnection::sessionBus();
+    return create(bus, clientName);
 }
 
 ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
         const QString &clientName)
 {
+    if (registrarForConnection.contains(bus.baseService())) {
+        return ClientRegistrarPtr(
+                registrarForConnection.value(bus.baseService()));
+    }
     return ClientRegistrarPtr(new ClientRegistrar(bus, clientName));
-}
-
-ClientRegistrar::ClientRegistrar(const QString &clientName)
-    : mPriv(new Private(QDBusConnection::sessionBus(), clientName))
-{
 }
 
 ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
         const QString &clientName)
     : mPriv(new Private(bus, clientName))
 {
+    registrarForConnection.insert(bus.baseService(), this);
 }
 
 ClientRegistrar::~ClientRegistrar()
 {
+    registrarForConnection.remove(mPriv->bus.baseService());
     unregisterClients();
     delete mPriv;
 }
