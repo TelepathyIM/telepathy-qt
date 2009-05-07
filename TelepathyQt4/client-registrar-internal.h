@@ -86,7 +86,8 @@ class ClientHandlerAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(Tp::ObjectPathList HandledChannels READ HandledChannels)
 
 public:
-    ClientHandlerAdaptor(const QDBusConnection &bus,
+    ClientHandlerAdaptor(
+            const QDBusConnection &bus,
             const AbstractClientHandlerPtr &client,
             QObject *parent);
     virtual ~ClientHandlerAdaptor();
@@ -104,8 +105,16 @@ public: // Properties
 
     inline Tp::ObjectPathList HandledChannels() const
     {
+        // mAdaptorsForConnection includes this, so no need to start the set
+        // with this->mHandledChannels
+        QSet<ChannelPtr> handledChannels;
+        foreach (ClientHandlerAdaptor *handlerAdaptor,
+                 mAdaptorsForConnection.value(mBus.baseService())) {
+            handledChannels.unite(handlerAdaptor->mHandledChannels);
+        }
+
         Tp::ObjectPathList ret;
-        foreach (const ChannelPtr &channel, mHandledChannels) {
+        foreach (const ChannelPtr &channel, handledChannels) {
             ret.append(QDBusObjectPath(channel->objectPath()));
         }
         return ret;
@@ -136,6 +145,8 @@ private:
     QQueue<HandleChannelsCall*> mHandleChannelsQueue;
     bool mProcessingHandleChannels;
     QSet<ChannelPtr> mHandledChannels;
+
+    static QHash<QString, QList<ClientHandlerAdaptor *> > mAdaptorsForConnection;
 };
 
 class ClientHandlerAdaptor::HandleChannelsCall : public QObject
