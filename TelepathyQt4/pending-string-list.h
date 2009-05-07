@@ -39,12 +39,16 @@ class PendingStringList : public PendingOperation
 
 public:
     PendingStringList(QObject *parent = 0);
+    PendingStringList(QDBusPendingCall call, QObject *parent = 0);
     ~PendingStringList();
 
     QStringList result() const;
 
 protected:
     void setResult(const QStringList &result);
+
+private Q_SLOTS:
+    void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
     Q_DISABLE_COPY(PendingStringList);
