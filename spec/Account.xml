@@ -282,19 +282,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     <method name="UpdateParameters" tp:name-for-bindings="Update_Parameters">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        Change the value of the <tp:member-ref>Parameters</tp:member-ref>
-        property. If any of the changed parameters'
-        <tp:type>Conn_Mgr_Param_Flags</tp:type> include
-        <code>DBus_Property</code>, the change will be applied to the
-        corresponding D-Bus Property on the active
-        <tp:member-ref>Connection</tp:member-ref> if there is one; changes to
-        other parameters will not take effect until the next time the account
-        is disconnected and reconnected.
+        <p>Change the value of the <tp:member-ref>Parameters</tp:member-ref>
+          property.</p>
+
+        <p>If any of the changed parameters'
+          <tp:type>Conn_Mgr_Param_Flags</tp:type> include
+          <code>DBus_Property</code>, the change will be applied to the
+          corresponding D-Bus Property on the active
+          <tp:member-ref>Connection</tp:member-ref>, if there is one. Changes to
+          other parameters will not take effect until the next time the account
+          is disconnected and reconnected.</p>
 
         <tp:rationale>
-          Migration tools that twiddle the settings of all accounts shouldn't
-          cause an automatic disconnect and reconnect, probably. I could be
-          persuaded otherwise, though. Or we could add a Reconnect() method.
+          <p>In general, reconnecting is a destructive operation that shouldn't
+            happen as a side-effect. In particular, migration tools that
+            twiddle the settings of all accounts shouldn't cause an automatic
+            disconnect and reconnect.</p>
         </tp:rationale>
       </tp:docstring>
 
@@ -303,12 +306,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         existing Connections
       </tp:changed>
 
+      <tp:changed version="0.17.24">
+        return an array of the parameters that won't change until the account
+        is reconnected
+      </tp:changed>
+
       <arg name="Set" type="a{sv}" direction="in">
         <tp:docstring>
           A mapping from parameter names to their values. These parameters
           should be stored for future use.
         </tp:docstring>
       </arg>
+
       <arg name="Unset" type="as" direction="in">
         <tp:docstring>
           A list of the names of parameters to be removed from the set of
@@ -316,6 +325,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           If the given parameters were not, in fact, stored, or even if they
           do not exist at all, the account manager MUST accept this without
           error.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Reconnect_Required" type="as" direction="out">
+        <tp:docstring>
+          A list of the names of parameters with changes that will not take
+          effect until the account is reconnected (this may be empty, e.g. if
+          all the parameters are D-Bus properties or parameters for which the
+          account manager has specific support). User interfaces that
+          require "instant apply" semantics MAY call
+          <tp:member-ref>Reconnect</tp:member-ref> in response to receiving
+          a non-empty list.
         </tp:docstring>
       </arg>
 
@@ -458,6 +479,42 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:rationale>
       </tp:docstring>
     </property>
+
+    <method name="Reconnect" tp:name-for-bindings="Reconnect">
+      <tp:added version="0.17.24"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Re-connect this account. If the account is currently disconnected
+          and the requested presence is offline, or if the account
+          is not <tp:member-ref>Enabled</tp:member-ref> or not
+          <tp:member-ref>Valid</tp:member-ref>, this does nothing.</p>
+
+        <p>If the account is disconnected and the requested presence is not
+          offline, this forces an attempt to connect with the requested
+          presence immediately.</p>
+
+        <p>If the account is connecting or connected, this is equivalent to
+          remembering the current value of
+          <tp:member-ref>RequestedPresence</tp:member-ref>, setting its value
+          to (OFFLINE, "offline", ""), waiting for the change to take effect,
+          then setting its value to the value that was previously
+          remembered.</p>
+
+        <tp:rationale>
+          <p>Clients desiring "instant apply" semantics for CM parameters MAY
+            call this method to achieve that.</p>
+        </tp:rationale>
+
+        <p>In particular, if the account's
+          <tp:member-ref>Connection</tp:member-ref> is in the Connecting
+          state, calling this method causes the attempt to connect to be
+          aborted and re-tried.</p>
+
+        <tp:rationale>
+          <p>This is necessary to ensure that the new parameters are
+            picked up.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </method>
 
     <property name="NormalizedName" type="s" access="read"
       tp:name-for-bindings="Normalized_Name">

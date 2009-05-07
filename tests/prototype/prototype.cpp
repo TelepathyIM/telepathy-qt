@@ -309,7 +309,7 @@ void UnitTests::testAccountManager_createAccount()
     QSignalSpy spy_validity_changed( &accountmanager_interface, SIGNAL( AccountValidityChanged( const QDBusObjectPath&, bool ) ) );
     QCOMPARE( spy_validity_changed.isValid(), true );
                                                       
-    QDBusPendingReply<QDBusObjectPath> create_reply = accountmanager_interface.CreateAccount( "gabble", "jabber", g_displayName, parameter_map );
+    QDBusPendingReply<QDBusObjectPath> create_reply = accountmanager_interface.CreateAccount( "gabble", "jabber", g_displayName, parameter_map, QVariantMap() );
     create_reply.waitForFinished();
         
     if ( !create_reply.isValid() )

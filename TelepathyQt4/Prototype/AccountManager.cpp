@@ -233,7 +233,8 @@ bool AccountManager::createAccount( const QString& connectionManager, const QStr
     QDBusPendingReply<QDBusObjectPath> create_reply = d->m_pInterface->CreateAccount( connectionManager,
                                                                                       protocol,
                                                                                       displayName,
-                                                                                      parameters );
+                                                                                      parameters,
+                                                                                      QVariantMap());
     create_reply.waitForFinished();
         
     if ( !create_reply.isValid() )

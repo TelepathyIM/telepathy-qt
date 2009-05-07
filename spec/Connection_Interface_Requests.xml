@@ -30,6 +30,12 @@
         represent bundles of channels that should be dispatched together, and
         does not assume any particular properties by which channels are
         uniquely identifiable.</p>
+
+      <p>If this interface is implemented on a connection, then
+        <tp:member-ref>NewChannels</tp:member-ref> MUST be emitted for
+        all new channels, even those created with <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection"
+        >RequestChannel</tp:dbus-ref>.</p>
     </tp:docstring>
 
     <tp:struct name="Channel_Details" array-name="Channel_Details_List">

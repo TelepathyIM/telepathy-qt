@@ -122,7 +122,7 @@ bool Account::setParameters( const QVariantMap& parameters )
     if ( parameters.isEmpty() )
     { return false; }
     
-    QDBusPendingReply<> reply = d->m_pInterface->UpdateParameters( parameters, QStringList() );
+    QDBusPendingReply<QStringList> reply = d->m_pInterface->UpdateParameters( parameters, QStringList() );
     reply.waitForFinished();
 
     if ( !reply.isValid() )

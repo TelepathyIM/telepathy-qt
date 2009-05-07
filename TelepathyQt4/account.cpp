@@ -448,6 +448,21 @@ QVariantMap Account::parameters() const
     return mPriv->parameters;
 }
 
+/* FIXME: we would like this function to be as follows:
+ *
+ * Update this account parameters.
+ *
+ * On success, the pending operation returned by this method will produce a
+ * list of strings, which are the names of parameters whose changes will not
+ * take effect until the account is disconnected and reconnected (for instance
+ * by calling Account::reconnect).
+ *
+ * \param set Parameters to set.
+ * \param unset Parameters to unset.
+ * \return A PendingStringList which will emit PendingOperation::finished
+ *         when the call has finished
+ */
+
 /**
  * Update this account parameters.
  *
@@ -662,6 +677,19 @@ QString Account::connectionObjectPath() const
 QString Account::normalizedName() const
 {
     return mPriv->normalizedName;
+}
+
+/**
+ * If this account is currently connected, disconnect and reconnect it. If it
+ * is currently trying to connect, cancel the attempt to connect and start
+ * another. If it is currently disconnected, do nothing.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *Account::reconnect()
+{
+    return new PendingVoidMethodCall(this, baseInterface()->Reconnect());
 }
 
 /**

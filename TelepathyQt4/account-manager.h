@@ -83,9 +83,11 @@ public:
     AccountPtr accountForPath(const QString &path);
     QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
+    QStringList supportedAccountProperties() const;
     PendingAccount *createAccount(const QString &connectionManager,
             const QString &protocol, const QString &displayName,
-            const QVariantMap &parameters);
+            const QVariantMap &parameters,
+            const QVariantMap &properties = QVariantMap());
 
     // TODO: enabledAccounts(), accountsByProtocol(), ... ?
 

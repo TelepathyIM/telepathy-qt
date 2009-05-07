@@ -55,6 +55,7 @@ class AccountManager(Object):
                 signature='o'),
             'InvalidAccounts': dbus.Array(self._invalid_accounts.keys(),
                 signature='o'),
+            'SupportedAccountProperties': dbus.Array([], signature='s'),
         }, signature='sv')
 
     @method(dbus.PROPERTIES_IFACE,
@@ -104,14 +105,19 @@ class AccountManager(Object):
         self._invalid_accounts.pop(path, None)
         print "Emitting AccountRemoved(%s)" % path
 
-    @method(AM_IFACE, in_signature='sssa{sv}', out_signature='o')
-    def CreateAccount(self, cm, protocol, display_name, parameters):
+    @method(AM_IFACE, in_signature='sssa{sv}a{sv}', out_signature='o')
+    def CreateAccount(self, cm, protocol, display_name, parameters,
+            properties):
 
         if not VALID_CONNECTION_MANAGER_NAME.match(cm):
             raise ValueError('Invalid CM name')
 
         if not VALID_PROTOCOL_NAME.match(protocol):
             raise ValueError('Invalid protocol name')
+
+        if properties:
+            raise ValueError('This AM does not support setting properties at'
+                    'account creation')
 
         base = ACCOUNT_OBJECT_PATH_BASE + cm + '/' + protocol.replace('-', '_')
 
@@ -174,7 +180,7 @@ class Account(Object):
     def _is_valid(self):
         return True
 
-    @method(ACCOUNT_IFACE, in_signature='a{sv}as', out_signature='')
+    @method(ACCOUNT_IFACE, in_signature='a{sv}as', out_signature='as')
     def UpdateParameters(self, set_, unset):
         print ("%s: entering UpdateParameters(\n    %r,\n    %r    \n)"
             % (self.__dbus_object_path__, set_, unset))
@@ -186,6 +192,8 @@ class Account(Object):
                 % self.__dbus_object_path__)
 
         self.AccountPropertyChanged({'Parameters': self._parameters})
+
+        return []
 
     @signal(ACCOUNT_IFACE, signature='a{sv}')
     def AccountPropertyChanged(self, delta):

@@ -82,6 +82,7 @@ struct AccountManager::Private
     QSet<QString> validAccountPaths;
     QSet<QString> invalidAccountPaths;
     QMap<QString, AccountPtr> accounts;
+    QStringList supportedAccountProperties;
 };
 
 AccountManager::Private::Private(AccountManager *parent)
@@ -458,24 +459,42 @@ QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
 }
 
 /**
+ * Return a list of the fully qualified names of properties that can be set
+ * when calling AccountManager::createAccount.
+ *
+ * \return A list of fully qualified D-Bus property names,
+ *  such as "org.freedesktop.Telepathy.Account.Enabled"
+ */
+QStringList AccountManager::supportedAccountProperties() const
+{
+    return mPriv->supportedAccountProperties;
+}
+
+/**
  * Create an account with the given parameters.
  *
  * Return a pending operation representing the Account object which will succeed
  * when the account has been created or fail if an error occurred.
  *
+ * The optional properties argument can be used to set any property listed in
+ * AccountManager::supportedAccountProperties at the time the account is
+ * created.
+ *
  * \param connectionManager Name of the connection manager to create the account for.
  * \param protocol Name of the protocol to create the account for.
  * \param displayName The account display name.
  * \param parameters The account parameters.
+ * \param properties An optional map from fully qualified D-Bus property
+ *  names such as "org.freedesktop.Telepathy.Account.Enabled" to their values
  * \return A PendingAccount object which will emit PendingAccount::finished
  *         when the account has been created of failed its creation process.
  */
 PendingAccount *AccountManager::createAccount(const QString &connectionManager,
         const QString &protocol, const QString &displayName,
-        const QVariantMap &parameters)
+        const QVariantMap &parameters, const QVariantMap &properties)
 {
     return new PendingAccount(AccountManagerPtr(this), connectionManager,
-            protocol, displayName, parameters);
+            protocol, displayName, parameters, properties);
 }
 
 /**
@@ -567,6 +586,10 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         if (props.contains("InvalidAccounts")) {
             mPriv->setAccountPaths(mPriv->invalidAccountPaths,
                     props["InvalidAccounts"]);
+        }
+        if (props.contains("SupportedAccountProperties")) {
+            mPriv->supportedAccountProperties =
+                qdbus_cast<QStringList>(props["SupportedAccountProperties"]);
         }
     } else {
         warning().nospace() <<

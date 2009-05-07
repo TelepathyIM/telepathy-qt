@@ -59,7 +59,8 @@ private:
     Q_DISABLE_COPY(PendingAccount);
     PendingAccount(const AccountManagerPtr &manager,
             const QString &connectionManager, const QString &protocol,
-            const QString &displayName, const QVariantMap &parameters);
+            const QString &displayName, const QVariantMap &parameters,
+            const QVariantMap &properties = QVariantMap());
 
     struct Private;
     friend struct Private;
