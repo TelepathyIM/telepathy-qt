@@ -98,8 +98,7 @@ public:
     PendingOperation *setAvatar(const Avatar &avatar);
 
     QVariantMap parameters() const;
-    // FIXME: should return a PendingStringList
-    PendingOperation *updateParameters(const QVariantMap &set,
+    PendingStringList *updateParameters(const QVariantMap &set,
             const QStringList &unset);
     // requires spec 0.17.24
     PendingOperation *reconnect();

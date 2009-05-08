@@ -45,6 +45,16 @@ PendingStringList::PendingStringList(QObject *parent)
 {
 }
 
+PendingStringList::PendingStringList(QDBusPendingCall call, QObject *parent)
+    : PendingOperation(parent),
+      mPriv(new Private)
+{
+    connect(new QDBusPendingCallWatcher(call),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            this,
+            SLOT(watcherFinished(QDBusPendingCallWatcher*)));
+}
+
 /**
  * Class destructor.
  */
@@ -61,6 +71,23 @@ QStringList PendingStringList::result() const
 void PendingStringList::setResult(const QStringList &result)
 {
     mPriv->result = result;
+}
+
+void PendingStringList::watcherFinished(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QStringList> reply = *watcher;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to PendingStringList call";
+        setResult(reply.value());
+        setFinished();
+    } else {
+        debug().nospace() << "PendingStringList call failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+    }
+
+    watcher->deleteLater();
 }
 
 } // Tp
