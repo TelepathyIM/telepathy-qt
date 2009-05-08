@@ -1,9 +1,36 @@
-telepathy-qt4 0.1.4 (UNRELEASED)
+telepathy-qt4 0.1.4 (2009-05-08)
 ================================
+
+The "global military-industrial complex is subsidising your iPod" release.
+
+Dependencies:
+
+* Creating accounts, and possibly updating their parameters, now requires an
+  AccountManager implementing telepathy-spec 0.17.24, such as
+  telepathy-mission-control >= 5.0.beta70 (in particular, beta 69 won't work,
+  and the KWallet-based account manager will also need updating)
 
 API changes:
 
 * Renamed SharedData header file to RefCounted to follow class name.
+
+New API:
+
+* Update to telepathy-spec 0.17.24, breaking some D-Bus APIs:
+  * fd.o #21619: Account::updateParameters() returns a PendingStringList of
+    the parameters that won't be changed until reconnection takes place
+  * Account::reconnect() added (newer MC versions don't violate telepathy-spec
+    by reconnecting automatically when parameters are changed)
+  * AccountManager::supportedAccountProperties() added
+  * AccountManager::createAccount() takes an optional dict of properties
+    (the valid keys are in supportedAccountProperties())
+
+* Enhance PendingStringList to have a constructor from a QDBusPendingCall
+
+Bugfixes:
+
+* Don't try to run Python tests unless we have the gobject module (the tests
+  use it)
 
 telepathy-qt4 0.1.3 (2009-04-22)
 ================================
