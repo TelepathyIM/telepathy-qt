@@ -63,6 +63,8 @@ struct ChannelRequest::Private
 
     static void introspectMain(Private *self);
 
+    void extractMainProps(const QVariantMap &props);
+
     // Public object
     ChannelRequest *parent;
 
@@ -142,6 +144,32 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
     }
 }
 
+void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
+{
+    interfaces = qdbus_cast<QStringList>(props.value("Interfaces"));
+
+    QDBusObjectPath accountObjectPath = qdbus_cast<QDBusObjectPath>(props.value("Account"));
+    if (!accountObjectPath.path().isEmpty()) {
+        account = Account::create(
+                TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
+                accountObjectPath.path());
+        parent->connect(account->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(onAccountReady(Tp::PendingOperation *)));
+    }
+
+    // FIXME: Telepathy supports 64-bit time_t, but Qt only does so on
+    // ILP64 systems (e.g. sparc64, but not x86_64). If QDateTime
+    // gains a fromTimestamp64 method, we should use it instead.
+    uint stamp = (uint) qdbus_cast<qlonglong>(props.value("UserActionTime"));
+    if (stamp != 0) {
+        userActionTime = QDateTime::fromTime_t(stamp);
+    }
+
+    preferredHandler = qdbus_cast<QString>(props.value("PreferredHandler"));
+    requests = qdbus_cast<QualifiedPropertyValueMapList>(props.value("Requests"));
+}
+
 /**
  * \class ChannelRequest
  * \ingroup clientchannelrequest
@@ -175,9 +203,7 @@ ChannelRequest::ChannelRequest(const QString &objectPath,
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
-    // FIXME: remember the immutableProperties, and use them to reduce the
-    // number of D-Bus calls we need to make (but we should make at least
-    // one, to check that the channel request does in fact exist)
+    mPriv->extractMainProps(immutableProperties);
 }
 
 ChannelRequest::ChannelRequest(const QDBusConnection &bus,
@@ -189,9 +215,7 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
-    // FIXME: remember the immutableProperties, and use them to reduce the
-    // number of D-Bus calls we need to make (but we should make at least
-    // one, to check that the channel request does in fact exist)
+    mPriv->extractMainProps(immutableProperties);
 }
 
 /**
@@ -204,41 +228,26 @@ ChannelRequest::~ChannelRequest()
 
 QStringList ChannelRequest::interfaces() const
 {
-    if (!isReady()) {
-        warning() << "ChannelRequest::interfaces() used when channel request not ready";
-    }
     return mPriv->interfaces;
 }
 
 AccountPtr ChannelRequest::account() const
 {
-    if (!isReady()) {
-        warning() << "ChannelRequest::account() used when channel request not ready";
-    }
     return mPriv->account;
 }
 
 QDateTime ChannelRequest::userActionTime() const
 {
-    if (!isReady()) {
-        warning() << "ChannelRequest::userActionTime() used used channel request not ready";
-    }
     return mPriv->userActionTime;
 }
 
 QString ChannelRequest::preferredHandler() const
 {
-    if (!isReady()) {
-        warning() << "ChannelRequest::preferredHandler() used when channel request not ready";
-    }
     return mPriv->preferredHandler;
 }
 
 QualifiedPropertyValueMapList ChannelRequest::requests() const
 {
-    if (!isReady()) {
-        warning() << "ChannelRequest::requests() used when channel request not ready";
-    }
     return mPriv->requests;
 }
 
@@ -269,28 +278,7 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to Properties::GetAll(ChannelRequest)";
         props = reply.value();
 
-        mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
-
-        QDBusObjectPath accountObjectPath =
-            qdbus_cast<QDBusObjectPath>(props["Account"]);
-        mPriv->account = Account::create(
-                TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
-                accountObjectPath.path());
-        connect(mPriv->account->becomeReady(),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(onAccountReady(Tp::PendingOperation *)));
-
-        // FIXME: Telepathy supports 64-bit time_t, but Qt only does so on
-        // ILP64 systems (e.g. sparc64, but not x86_64). If QDateTime
-        // gains a fromTimestamp64 method, we should use it instead.
-        uint stamp = (uint) qdbus_cast<qlonglong>(props["UserActionTime"]);
-        if (stamp != 0) {
-            mPriv->userActionTime = QDateTime::fromTime_t(stamp);
-        }
-
-        mPriv->preferredHandler = qdbus_cast<QString>(props["PreferredHandler"]);
-        mPriv->requests =
-            qdbus_cast<QualifiedPropertyValueMapList>(props["Requests"]);
+        mPriv->extractMainProps(props);
     }
     else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
