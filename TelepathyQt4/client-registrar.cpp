@@ -108,9 +108,7 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
         channelRequests.append(channelRequest);
     }
 
-    // FIXME: Telepathy supports 64-bit time_t, but Qt only does so on
-    // ILP64 systems (e.g. sparc64, but not x86_64). If QDateTime
-    // gains a fromTimestamp64 method, we should use it instead.
+    // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
     QDateTime userActionTime;
     if (userActionTime_t != 0) {
         userActionTime = QDateTime::fromTime_t((uint) userActionTime_t);
