@@ -42,21 +42,20 @@ class ClientRegistrar : public QObject, public RefCounted
     Q_DISABLE_COPY(ClientRegistrar)
 
 public:
-    static ClientRegistrarPtr create(const QString &clientName);
-    static ClientRegistrarPtr create(const QDBusConnection &bus,
-            const QString &clientName);
+    static ClientRegistrarPtr create();
+    static ClientRegistrarPtr create(const QDBusConnection &bus);
     virtual ~ClientRegistrar();
 
     QDBusConnection dbusConnection() const;
-    QString clientName() const;
 
     QList<AbstractClientPtr> registeredClients() const;
-    bool registerClient(const AbstractClientPtr &client, bool unique = false);
+    bool registerClient(const AbstractClientPtr &client,
+            const QString &clientName, bool unique = false);
     bool unregisterClient(const AbstractClientPtr &client);
     void unregisterClients();
 
 private:
-    ClientRegistrar(const QDBusConnection &bus, const QString &clientName);
+    ClientRegistrar(const QDBusConnection &bus);
 
     struct Private;
     friend struct Private;

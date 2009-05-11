@@ -369,7 +369,7 @@ void TestClientHandler::initTestCase()
 
     tp_handle_unref(mContactRepo, handle);
 
-    mClientRegistrar = ClientRegistrar::create("foo");
+    mClientRegistrar = ClientRegistrar::create();
 
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     mChannelRequestBusName = "org.freedesktop.Telepathy.ChannelDispatcher";
@@ -394,7 +394,7 @@ void TestClientHandler::init()
 void TestClientHandler::testRegister()
 {
     // invalid client
-    QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr()));
+    QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), "foo"));
 
     ChannelClassList filters;
     QMap<QString, QDBusVariant> filter;
@@ -404,11 +404,11 @@ void TestClientHandler::testRegister()
                   QDBusVariant(Tp::HandleTypeContact));
     filters.append(filter);
     mClientObject1 = MyHandler::create(filters, false, true);
-    QVERIFY(mClientRegistrar->registerClient(mClientObject1));
+    QVERIFY(mClientRegistrar->registerClient(mClientObject1, "foo"));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
 
     // no op - client already registered
-    QVERIFY(mClientRegistrar->registerClient(mClientObject1));
+    QVERIFY(mClientRegistrar->registerClient(mClientObject1, "foo"));
 
     filters.clear();
     filter.clear();
@@ -418,11 +418,11 @@ void TestClientHandler::testRegister()
                   QDBusVariant(Tp::HandleTypeContact));
     filters.append(filter);
     mClientObject2 = MyHandler::create(filters, true, true);
-    QVERIFY(mClientRegistrar->registerClient(mClientObject2, true));
+    QVERIFY(mClientRegistrar->registerClient(mClientObject2, "foo", true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
 
     // no op - client already registered
-    QVERIFY(mClientRegistrar->registerClient(mClientObject2, true));
+    QVERIFY(mClientRegistrar->registerClient(mClientObject2, "foo", true));
 
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     QDBusConnectionInterface *busIface = bus.interface();

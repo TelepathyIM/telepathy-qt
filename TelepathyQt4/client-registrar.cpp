@@ -366,16 +366,12 @@ void ClientHandlerRequestsAdaptor::AddRequestCall::onChannelRequestReady(
 
 struct ClientRegistrar::Private
 {
-    Private(const QDBusConnection &bus, const QString &clientName)
-        : bus(bus), clientName(clientName)
+    Private(const QDBusConnection &bus)
+        : bus(bus)
     {
-        busName = QLatin1String("org.freedesktop.Telepathy.Client.");
-        busName.append(clientName);
     }
 
     QDBusConnection bus;
-    QString busName;
-    QString clientName;
     QHash<AbstractClientPtr, QString> clients;
     QHash<AbstractClientPtr, QObject*> clientObjects;
     QSet<QString> services;
@@ -383,25 +379,23 @@ struct ClientRegistrar::Private
 
 QHash<QString, ClientRegistrar*> ClientRegistrar::registrarForConnection;
 
-ClientRegistrarPtr ClientRegistrar::create(const QString &clientName)
+ClientRegistrarPtr ClientRegistrar::create()
 {
     QDBusConnection bus = QDBusConnection::sessionBus();
-    return create(bus, clientName);
+    return create(bus);
 }
 
-ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
-        const QString &clientName)
+ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
 {
     if (registrarForConnection.contains(bus.baseService())) {
         return ClientRegistrarPtr(
                 registrarForConnection.value(bus.baseService()));
     }
-    return ClientRegistrarPtr(new ClientRegistrar(bus, clientName));
+    return ClientRegistrarPtr(new ClientRegistrar(bus));
 }
 
-ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
-        const QString &clientName)
-    : mPriv(new Private(bus, clientName))
+ClientRegistrar::ClientRegistrar(const QDBusConnection &bus)
+    : mPriv(new Private(bus))
 {
     registrarForConnection.insert(bus.baseService(), this);
 }
@@ -418,18 +412,13 @@ QDBusConnection ClientRegistrar::dbusConnection() const
     return mPriv->bus;
 }
 
-QString ClientRegistrar::clientName() const
-{
-    return mPriv->clientName;
-}
-
 QList<AbstractClientPtr> ClientRegistrar::registeredClients() const
 {
     return mPriv->clients.keys();
 }
 
 bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
-        bool unique)
+        const QString &clientName, bool unique)
 {
     if (!client) {
         warning() << "Unable to register a null client";
@@ -441,7 +430,8 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         return true;
     }
 
-    QString busName(mPriv->busName);
+    QString busName = QLatin1String("org.freedesktop.Telepathy.Client.");
+    busName.append(clientName);
     if (unique) {
         // o.f.T.Client.<unique_bus_name>_<pointer> should be enough to identify
         // an unique identifier
