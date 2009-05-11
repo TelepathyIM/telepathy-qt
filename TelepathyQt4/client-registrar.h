@@ -50,9 +50,9 @@ public:
     QDBusConnection dbusConnection() const;
     QString clientName() const;
 
-    QList<ClientObjectPtr> registeredClients() const;
-    bool registerClient(const ClientObjectPtr &client, bool unique = false);
-    bool unregisterClient(const ClientObjectPtr &client);
+    QList<AbstractClientPtr> registeredClients() const;
+    bool registerClient(const AbstractClientPtr &client, bool unique = false);
+    bool unregisterClient(const AbstractClientPtr &client);
     void unregisterClients();
 
 private:

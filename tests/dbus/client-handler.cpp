@@ -14,7 +14,6 @@
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/ClientHandlerInterface>
 #include <TelepathyQt4/ClientInterfaceRequestsInterface>
-#include <TelepathyQt4/ClientObject>
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Debug>
@@ -136,8 +135,9 @@ public:
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
     {
-        return AbstractClientPtr(new MyHandler(channelFilter,
-                    bypassApproval, wantsRequestNotification));
+        return AbstractClientPtr::dynamicCast(SharedPtr<MyHandler>(
+                    new MyHandler(channelFilter,
+                        bypassApproval, wantsRequestNotification)));
     }
 
     MyHandler(const ChannelClassList &channelFilter,
@@ -263,10 +263,10 @@ private:
     ClientRegistrarPtr mClientRegistrar;
     QString mChannelRequestBusName;
     QString mChannelRequestPath;
-    ClientObjectPtr mClientObject1;
+    AbstractClientPtr mClientObject1;
     QString mClientObject1BusName;
     QString mClientObject1Path;
-    ClientObjectPtr mClientObject2;
+    AbstractClientPtr mClientObject2;
     QString mClientObject2BusName;
     QString mClientObject2Path;
     uint mUserActionTime;
@@ -394,7 +394,7 @@ void TestClientHandler::init()
 void TestClientHandler::testRegister()
 {
     // invalid client
-    QVERIFY(!mClientRegistrar->registerClient(ClientObjectPtr()));
+    QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr()));
 
     ChannelClassList filters;
     QMap<QString, QDBusVariant> filter;
@@ -403,8 +403,7 @@ void TestClientHandler::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant(Tp::HandleTypeContact));
     filters.append(filter);
-    mClientObject1 = ClientObject::create(
-            MyHandler::create(filters, false, true));
+    mClientObject1 = MyHandler::create(filters, false, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject1));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
 
@@ -418,8 +417,7 @@ void TestClientHandler::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant(Tp::HandleTypeContact));
     filters.append(filter);
-    mClientObject2 = ClientObject::create(
-            MyHandler::create(filters, true, true));
+    mClientObject2 = MyHandler::create(filters, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
 
@@ -448,7 +446,7 @@ void TestClientHandler::testRequests()
     ClientInterfaceRequestsInterface *handlerRequestsIface = new ClientInterfaceRequestsInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
 
-    MyHandler *handler = dynamic_cast<MyHandler*>(mClientObject1->client().data());
+    MyHandler *handler = dynamic_cast<MyHandler*>(mClientObject1.data());
     connect(handler,
             SIGNAL(requestAdded(const Tp::ChannelRequestPtr &)),
             SLOT(expectSignalEmission()));
@@ -484,7 +482,7 @@ void TestClientHandler::testHandleChannels()
     // object 1
     ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
-    MyHandler *handler1 = dynamic_cast<MyHandler*>(mClientObject1->client().data());
+    MyHandler *handler1 = dynamic_cast<MyHandler*>(mClientObject1.data());
     connect(handler1,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
@@ -511,7 +509,7 @@ void TestClientHandler::testHandleChannels()
     // object 2
     ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
             mClientObject2BusName, mClientObject2Path, this);
-    MyHandler *handler2 = dynamic_cast<MyHandler*>(mClientObject2->client().data());
+    MyHandler *handler2 = dynamic_cast<MyHandler*>(mClientObject2.data());
     connect(handler2,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));

@@ -30,7 +30,6 @@
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelRequest>
-#include <TelepathyQt4/ClientObject>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingClientOperation>
 #include <TelepathyQt4/PendingReady>
@@ -377,9 +376,9 @@ struct ClientRegistrar::Private
     QDBusConnection bus;
     QString busName;
     QString clientName;
-    QHash<ClientObjectPtr, QString> clients;
+    QHash<AbstractClientPtr, QString> clients;
+    QHash<AbstractClientPtr, QObject*> clientObjects;
     QSet<QString> services;
-    QHash<ClientObjectPtr, QList<QDBusAbstractAdaptor*> > adaptorsForClient;
 };
 
 QHash<QString, ClientRegistrar*> ClientRegistrar::registrarForConnection;
@@ -424,12 +423,12 @@ QString ClientRegistrar::clientName() const
     return mPriv->clientName;
 }
 
-QList<ClientObjectPtr> ClientRegistrar::registeredClients() const
+QList<AbstractClientPtr> ClientRegistrar::registeredClients() const
 {
     return mPriv->clients.keys();
 }
 
-bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
+bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         bool unique)
 {
     if (!client) {
@@ -442,7 +441,6 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
         return true;
     }
 
-    QObject *object = client.data();
     QString busName(mPriv->busName);
     if (unique) {
         // o.f.T.Client.<unique_bus_name>_<pointer> should be enough to identify
@@ -451,7 +449,7 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
                 .arg(mPriv->bus.baseService()
                     .replace(':', '_')
                     .replace('.', "._"))
-                .arg((intptr_t) object));
+                .arg((intptr_t) client.data()));
     }
 
     if (mPriv->services.contains(busName) ||
@@ -461,25 +459,20 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
         return false;
     }
 
+    QObject *object = new QObject(this);
     QStringList interfaces;
 
-    ClientHandlerAdaptor *clientHandlerAdaptor = 0;
-    ClientHandlerRequestsAdaptor *clientHandlerRequestsAdaptor = 0;
     AbstractClientHandler *handler =
-        dynamic_cast<AbstractClientHandler*>(client->client().data());
+        dynamic_cast<AbstractClientHandler*>(client.data());
 
-    QList<QDBusAbstractAdaptor *> &adaptors = mPriv->adaptorsForClient[client];
     if (handler) {
         // export o.f.T.Client.Handler
-        clientHandlerAdaptor = new ClientHandlerAdaptor(mPriv->bus, handler, object);
-        adaptors.append(clientHandlerAdaptor);
+        new ClientHandlerAdaptor(mPriv->bus, handler, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Handler"));
         if (handler->wantsRequestNotification()) {
             // export o.f.T.Client.Interface.Requests
-            clientHandlerRequestsAdaptor =
-                new ClientHandlerRequestsAdaptor(mPriv->bus, handler, object);
-            adaptors.append(clientHandlerRequestsAdaptor);
+            new ClientHandlerRequestsAdaptor(mPriv->bus, handler, object);
             interfaces.append(
                     QLatin1String(
                         "org.freedesktop.Telepathy.Client.Interface.Requests"));
@@ -496,8 +489,7 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
     }
 
     // export o.f,T,Client interface
-    ClientAdaptor *clientAdaptor = new ClientAdaptor(interfaces, object);
-    adaptors.append(clientAdaptor);
+    new ClientAdaptor(interfaces, object);
 
     QString objectPath = QString("/%1").arg(busName);
     objectPath.replace('.', '/');
@@ -506,10 +498,7 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
         warning() << "Unable to register client: objectPath" <<
             objectPath << "already registered";
         // cleanup
-        mPriv->adaptorsForClient.remove(client);
-        delete clientHandlerAdaptor;
-        delete clientHandlerRequestsAdaptor;
-        delete clientAdaptor;
+        delete object;
         mPriv->bus.unregisterService(busName);
         return false;
     }
@@ -519,11 +508,12 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
 
     mPriv->services.insert(busName);
     mPriv->clients.insert(client, objectPath);
+    mPriv->clientObjects.insert(client, object);
 
     return true;
 }
 
-bool ClientRegistrar::unregisterClient(const ClientObjectPtr &client)
+bool ClientRegistrar::unregisterClient(const AbstractClientPtr &client)
 {
     if (!mPriv->clients.contains(client)) {
         warning() << "Trying to unregister an unregistered client";
@@ -533,18 +523,15 @@ bool ClientRegistrar::unregisterClient(const ClientObjectPtr &client)
     QString objectPath = mPriv->clients.value(client);
     mPriv->bus.unregisterObject(objectPath);
     mPriv->clients.remove(client);
+    QObject *object = mPriv->clientObjects.value(client);
+    // delete object here and it's children (adaptors), to make sure if adaptor
+    // is keeping a static list of adaptors per connection, the list is updated.
+    delete object;
+    mPriv->clientObjects.remove(client);
 
     QString busName = objectPath.mid(1).replace('/', '.');
     mPriv->bus.unregisterService(busName);
     mPriv->services.remove(busName);
-
-    QList<QDBusAbstractAdaptor*> &adaptors = mPriv->adaptorsForClient[client];
-    foreach (QDBusAbstractAdaptor *adaptor, adaptors) {
-        // delete adaptor here, to make sure if adaptor is keeping a static list
-        // of adaptors per connection, the list is updated.
-        delete adaptor;
-    }
-    mPriv->adaptorsForClient.remove(client);
 
     debug() << "Client unregistered - busName:" << busName <<
         "objectPath:" << objectPath;
@@ -555,11 +542,11 @@ bool ClientRegistrar::unregisterClient(const ClientObjectPtr &client)
 void ClientRegistrar::unregisterClients()
 {
     // copy the hash as it will be modified
-    QHash<ClientObjectPtr, QString> clients = mPriv->clients;
+    QHash<AbstractClientPtr, QString> clients = mPriv->clients;
 
-    QHash<ClientObjectPtr, QString>::const_iterator end =
+    QHash<AbstractClientPtr, QString>::const_iterator end =
         clients.constEnd();
-    QHash<ClientObjectPtr, QString>::const_iterator it =
+    QHash<AbstractClientPtr, QString>::const_iterator it =
         clients.constBegin();
     while (it != end) {
         unregisterClient(it.key());
