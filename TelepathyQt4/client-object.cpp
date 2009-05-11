@@ -28,21 +28,21 @@ namespace Tp
 
 struct ClientObject::Private
 {
-    AbstractClientHandlerPtr clientHandler;
+    AbstractClientPtr client;
 };
 
-ClientObjectPtr ClientObject::create(const AbstractClientHandlerPtr &clientHandler)
+ClientObjectPtr ClientObject::create(const AbstractClientPtr &client)
 {
-    if (!clientHandler) {
+    if (!client) {
         return ClientObjectPtr();
     }
-    return ClientObjectPtr(new ClientObject(clientHandler));
+    return ClientObjectPtr(new ClientObject(client));
 }
 
-ClientObject::ClientObject(const AbstractClientHandlerPtr &clientHandler)
+ClientObject::ClientObject(const AbstractClientPtr &client)
     : mPriv(new Private)
 {
-    mPriv->clientHandler = clientHandler;
+    mPriv->client = client;
 }
 
 ClientObject::~ClientObject()
@@ -50,9 +50,9 @@ ClientObject::~ClientObject()
     delete mPriv;
 }
 
-AbstractClientHandlerPtr ClientObject::clientHandler() const
+AbstractClientPtr ClientObject::client() const
 {
-    return mPriv->clientHandler;
+    return mPriv->client;
 }
 
 } // Tp

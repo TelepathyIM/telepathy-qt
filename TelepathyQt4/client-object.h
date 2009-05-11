@@ -39,13 +39,13 @@ class ClientObject : public QObject, public RefCounted
     Q_DISABLE_COPY(ClientObject)
 
 public:
-    static ClientObjectPtr create(const AbstractClientHandlerPtr &clientHandler);
+    static ClientObjectPtr create(const AbstractClientPtr &clientHandler);
     ~ClientObject();
 
-    AbstractClientHandlerPtr clientHandler() const;
+    AbstractClientPtr client() const;
 
 private:
-    ClientObject(const AbstractClientHandlerPtr &clientHandler);
+    ClientObject(const AbstractClientPtr &clientHandler);
 
     struct Private;
     friend struct Private;

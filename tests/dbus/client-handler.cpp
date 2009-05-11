@@ -132,11 +132,11 @@ class MyHandler : public QObject, public AbstractClientHandler
     Q_OBJECT
 
 public:
-    static AbstractClientHandlerPtr create(const ChannelClassList &channelFilter,
+    static AbstractClientPtr create(const ChannelClassList &channelFilter,
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
     {
-        return AbstractClientHandlerPtr(new MyHandler(channelFilter,
+        return AbstractClientPtr(new MyHandler(channelFilter,
                     bypassApproval, wantsRequestNotification));
     }
 
@@ -448,7 +448,7 @@ void TestClientHandler::testRequests()
     ClientInterfaceRequestsInterface *handlerRequestsIface = new ClientInterfaceRequestsInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
 
-    MyHandler *handler = dynamic_cast<MyHandler*>(mClientObject1->clientHandler().data());
+    MyHandler *handler = dynamic_cast<MyHandler*>(mClientObject1->client().data());
     connect(handler,
             SIGNAL(requestAdded(const Tp::ChannelRequestPtr &)),
             SLOT(expectSignalEmission()));
@@ -484,7 +484,7 @@ void TestClientHandler::testHandleChannels()
     // object 1
     ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
-    MyHandler *handler1 = dynamic_cast<MyHandler*>(mClientObject1->clientHandler().data());
+    MyHandler *handler1 = dynamic_cast<MyHandler*>(mClientObject1->client().data());
     connect(handler1,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
@@ -511,7 +511,7 @@ void TestClientHandler::testHandleChannels()
     // object 2
     ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
             mClientObject2BusName, mClientObject2Path, this);
-    MyHandler *handler2 = dynamic_cast<MyHandler*>(mClientObject2->clientHandler().data());
+    MyHandler *handler2 = dynamic_cast<MyHandler*>(mClientObject2->client().data());
     connect(handler2,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));

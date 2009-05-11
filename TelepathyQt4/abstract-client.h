@@ -39,7 +39,16 @@ namespace Tp
 
 class PendingClientOperation;
 
-class AbstractClientHandler : public RefCounted
+class AbstractClient : public RefCounted
+{
+    Q_DISABLE_COPY(AbstractClient)
+
+public:
+    AbstractClient();
+    virtual ~AbstractClient();
+};
+
+class AbstractClientHandler : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientHandler)
 

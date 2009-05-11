@@ -88,7 +88,7 @@ class ClientHandlerAdaptor : public QDBusAbstractAdaptor
 public:
     ClientHandlerAdaptor(
             const QDBusConnection &bus,
-            const AbstractClientHandlerPtr &client,
+            AbstractClientHandler *client,
             QObject *parent);
     virtual ~ClientHandlerAdaptor();
 
@@ -140,7 +140,7 @@ private:
     class HandleChannelsCall;
 
     QDBusConnection mBus;
-    AbstractClientHandlerPtr mClient;
+    AbstractClientHandler *mClient;
     QHash<PendingClientOperation *, HandleChannelsCall *> mOperations;
     QQueue<HandleChannelsCall*> mHandleChannelsQueue;
     bool mProcessingHandleChannels;
@@ -154,7 +154,7 @@ class ClientHandlerAdaptor::HandleChannelsCall : public QObject
     Q_OBJECT
 
 public:
-    HandleChannelsCall(const AbstractClientHandlerPtr &client,
+    HandleChannelsCall(AbstractClientHandler *client,
             PendingClientOperation *op,
             const QDBusObjectPath &account,
             const QDBusObjectPath &connection,
@@ -183,7 +183,7 @@ private:
     void setFinishedWithError(const QString &errorName,
             const QString &errorMessage);
 
-    AbstractClientHandlerPtr mClient;
+    AbstractClientHandler *mClient;
     PendingClientOperation *mOperation;
     QDBusObjectPath mAccountPath;
     QDBusObjectPath mConnectionPath;
@@ -219,7 +219,7 @@ class ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor
 
 public:
     ClientHandlerRequestsAdaptor(const QDBusConnection &bus,
-            const AbstractClientHandlerPtr &client,
+            AbstractClientHandler *client,
             QObject *parent);
     virtual ~ClientHandlerRequestsAdaptor();
 
@@ -240,7 +240,7 @@ private:
     class AddRequestCall;
 
     QDBusConnection mBus;
-    AbstractClientHandlerPtr mClient;
+    AbstractClientHandler *mClient;
     QQueue<AddRequestCall*> mAddRequestQueue;
     bool mProcessingAddRequest;
 };
@@ -250,7 +250,7 @@ class ClientHandlerRequestsAdaptor::AddRequestCall : public QObject
     Q_OBJECT
 
 public:
-    AddRequestCall(const AbstractClientHandlerPtr &client,
+    AddRequestCall(AbstractClientHandler *client,
             const QDBusObjectPath &request,
             const QVariantMap &requestProperties,
             const QDBusConnection &bus,
@@ -266,7 +266,7 @@ private Q_SLOTS:
     void onChannelRequestReady(Tp::PendingOperation *op);
 
 private:
-    AbstractClientHandlerPtr mClient;
+    AbstractClientHandler *mClient;
     QDBusObjectPath mRequestPath;
     QVariantMap mRequestProperties;
     QDBusConnection mBus;

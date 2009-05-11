@@ -48,7 +48,7 @@ class MediaStream;
 class StreamedMediaChannel;
 class TextChannel;
 
-typedef SharedPtr<AbstractClientHandler> AbstractClientHandlerPtr;
+typedef SharedPtr<AbstractClientHandler> AbstractClientPtr;
 typedef SharedPtr<Account> AccountPtr;
 typedef SharedPtr<AccountManager> AccountManagerPtr;
 typedef SharedPtr<Channel> ChannelPtr;

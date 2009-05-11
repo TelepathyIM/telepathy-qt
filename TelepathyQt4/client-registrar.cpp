@@ -52,7 +52,7 @@ ClientAdaptor::~ClientAdaptor()
 QHash<QString, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
 
 ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
-        const AbstractClientHandlerPtr &client,
+        AbstractClientHandler *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
       mBus(bus),
@@ -148,7 +148,7 @@ void ClientHandlerAdaptor::processHandleChannelsQueue()
 }
 
 ClientHandlerAdaptor::HandleChannelsCall::HandleChannelsCall(
-        const AbstractClientHandlerPtr &client,
+        AbstractClientHandler *client,
         PendingClientOperation *op,
         const QDBusObjectPath &account,
         const QDBusObjectPath &connection,
@@ -266,7 +266,7 @@ void ClientHandlerAdaptor::HandleChannelsCall::setFinishedWithError(const QStrin
 
 ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
         const QDBusConnection &bus,
-        const AbstractClientHandlerPtr &client,
+        AbstractClientHandler *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
       mBus(bus),
@@ -326,7 +326,7 @@ void ClientHandlerRequestsAdaptor::onAddRequestCallFinished()
 }
 
 ClientHandlerRequestsAdaptor::AddRequestCall::AddRequestCall(
-        const AbstractClientHandlerPtr &client,
+        AbstractClientHandler *client,
         const QDBusObjectPath &request,
         const QVariantMap &requestProperties,
         const QDBusConnection &bus,
@@ -465,7 +465,8 @@ bool ClientRegistrar::registerClient(const ClientObjectPtr &client,
 
     ClientHandlerAdaptor *clientHandlerAdaptor = 0;
     ClientHandlerRequestsAdaptor *clientHandlerRequestsAdaptor = 0;
-    AbstractClientHandlerPtr handler = client->clientHandler();
+    AbstractClientHandler *handler =
+        dynamic_cast<AbstractClientHandler*>(client->client().data());
 
     QList<QDBusAbstractAdaptor *> &adaptors = mPriv->adaptorsForClient[client];
     if (handler) {

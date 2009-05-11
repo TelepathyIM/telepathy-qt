@@ -28,6 +28,14 @@
 namespace Tp
 {
 
+AbstractClient::AbstractClient()
+{
+}
+
+AbstractClient::~AbstractClient()
+{
+}
+
 struct AbstractClientHandler::Private
 {
     ChannelClassList channelFilter;
