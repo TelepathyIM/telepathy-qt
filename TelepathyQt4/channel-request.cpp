@@ -244,11 +244,6 @@ QualifiedPropertyValueMapList ChannelRequest::requests() const
 
 PendingOperation *ChannelRequest::cancel()
 {
-    if (!isReady()) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "ChannelRequest not ready");
-    }
-
     return new PendingVoidMethodCall(this, mPriv->baseInterface->Cancel());
 }
 
