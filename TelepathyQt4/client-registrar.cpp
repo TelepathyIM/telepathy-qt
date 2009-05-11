@@ -48,7 +48,7 @@ ClientAdaptor::~ClientAdaptor()
 {
 }
 
-QHash<QString, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
+QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
 
 ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
         AbstractClientHandler *client,
@@ -59,17 +59,18 @@ ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
       mProcessingHandleChannels(false)
 {
     QList<ClientHandlerAdaptor *> &handlerAdaptors =
-        mAdaptorsForConnection[mBus.baseService()];
+        mAdaptorsForConnection[qMakePair(mBus.name(), mBus.baseService())];
     handlerAdaptors.append(this);
 }
 
 ClientHandlerAdaptor::~ClientHandlerAdaptor()
 {
+    QPair<QString, QString> busId = qMakePair(mBus.name(), mBus.baseService());
     QList<ClientHandlerAdaptor *> &handlerAdaptors =
-        mAdaptorsForConnection[mBus.baseService()];
+        mAdaptorsForConnection[busId];
     handlerAdaptors.removeOne(this);
     if (handlerAdaptors.isEmpty()) {
-        mAdaptorsForConnection.remove(mBus.baseService());
+        mAdaptorsForConnection.remove(busId);
     }
 }
 
@@ -377,7 +378,7 @@ struct ClientRegistrar::Private
     QSet<QString> services;
 };
 
-QHash<QString, ClientRegistrar*> ClientRegistrar::registrarForConnection;
+QHash<QPair<QString, QString>, ClientRegistrar*> ClientRegistrar::registrarForConnection;
 
 ClientRegistrarPtr ClientRegistrar::create()
 {
@@ -387,9 +388,11 @@ ClientRegistrarPtr ClientRegistrar::create()
 
 ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
 {
-    if (registrarForConnection.contains(bus.baseService())) {
+    QPair<QString, QString> busId =
+        qMakePair(bus.name(), bus.baseService());
+    if (registrarForConnection.contains(busId)) {
         return ClientRegistrarPtr(
-                registrarForConnection.value(bus.baseService()));
+                registrarForConnection.value(busId));
     }
     return ClientRegistrarPtr(new ClientRegistrar(bus));
 }
@@ -397,12 +400,14 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
 ClientRegistrar::ClientRegistrar(const QDBusConnection &bus)
     : mPriv(new Private(bus))
 {
-    registrarForConnection.insert(bus.baseService(), this);
+    registrarForConnection.insert(qMakePair(bus.name(),
+                bus.baseService()), this);
 }
 
 ClientRegistrar::~ClientRegistrar()
 {
-    registrarForConnection.remove(mPriv->bus.baseService());
+    registrarForConnection.remove(qMakePair(mPriv->bus.name(),
+                mPriv->bus.baseService()));
     unregisterClients();
     delete mPriv;
 }

@@ -107,9 +107,10 @@ public: // Properties
     {
         // mAdaptorsForConnection includes this, so no need to start the set
         // with this->mHandledChannels
+        QList<ClientHandlerAdaptor*> adaptors(mAdaptorsForConnection.value(
+                    qMakePair(mBus.name(), mBus.baseService())));
         QSet<ChannelPtr> handledChannels;
-        foreach (ClientHandlerAdaptor *handlerAdaptor,
-                 mAdaptorsForConnection.value(mBus.baseService())) {
+        foreach (ClientHandlerAdaptor *handlerAdaptor, adaptors) {
             handledChannels.unite(handlerAdaptor->mHandledChannels);
         }
 
@@ -146,7 +147,7 @@ private:
     bool mProcessingHandleChannels;
     QSet<ChannelPtr> mHandledChannels;
 
-    static QHash<QString, QList<ClientHandlerAdaptor *> > mAdaptorsForConnection;
+    static QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > mAdaptorsForConnection;
 };
 
 class ClientHandlerAdaptor::HandleChannelsCall : public QObject

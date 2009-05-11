@@ -61,7 +61,7 @@ private:
     friend struct Private;
     Private *mPriv;
 
-    static QHash<QString, ClientRegistrar *> registrarForConnection;
+    static QHash<QPair<QString, QString>, ClientRegistrar *> registrarForConnection;
 };
 
 } // Tp
