@@ -130,8 +130,9 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
         new QDBusPendingCallWatcher(
                 self->properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_REQUEST),
                 self->parent);
-    // FIXME: check if we need to add this check in all other places, and if
-    //        not, why this is needed here.
+    // FIXME: This is a Qt bug fixed upstream, should be in the next Qt release.
+    //        We should not need to check watcher->isFinished() here, remove the
+    //        check when a fixed Qt version is released.
     if (watcher->isFinished()) {
         self->parent->gotMainProperties(watcher);
     } else {
