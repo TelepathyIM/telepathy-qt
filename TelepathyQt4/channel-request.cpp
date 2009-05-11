@@ -205,7 +205,7 @@ ChannelRequest::~ChannelRequest()
 QStringList ChannelRequest::interfaces() const
 {
     if (!isReady()) {
-        warning() << "ChannelRequest::interfaces() used channel request not ready";
+        warning() << "ChannelRequest::interfaces() used when channel request not ready";
     }
     return mPriv->interfaces;
 }
@@ -213,7 +213,7 @@ QStringList ChannelRequest::interfaces() const
 AccountPtr ChannelRequest::account() const
 {
     if (!isReady()) {
-        warning() << "ChannelRequest::account() used channel request not ready";
+        warning() << "ChannelRequest::account() used when channel request not ready";
     }
     return mPriv->account;
 }
@@ -221,7 +221,7 @@ AccountPtr ChannelRequest::account() const
 QDateTime ChannelRequest::userActionTime() const
 {
     if (!isReady()) {
-        warning() << "ChannelRequest::userActionTime() used channel request not ready";
+        warning() << "ChannelRequest::userActionTime() used used channel request not ready";
     }
     return mPriv->userActionTime;
 }
@@ -229,7 +229,7 @@ QDateTime ChannelRequest::userActionTime() const
 QString ChannelRequest::preferredHandler() const
 {
     if (!isReady()) {
-        warning() << "ChannelRequest::preferredHandler() used channel request not ready";
+        warning() << "ChannelRequest::preferredHandler() used when channel request not ready";
     }
     return mPriv->preferredHandler;
 }
@@ -237,7 +237,7 @@ QString ChannelRequest::preferredHandler() const
 QualifiedPropertyValueMapList ChannelRequest::requests() const
 {
     if (!isReady()) {
-        warning() << "ChannelRequest::requests() used channel request not ready";
+        warning() << "ChannelRequest::requests() used when channel request not ready";
     }
     return mPriv->requests;
 }
