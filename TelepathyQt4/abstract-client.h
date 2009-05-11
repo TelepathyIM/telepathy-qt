@@ -48,6 +48,46 @@ public:
     virtual ~AbstractClient();
 };
 
+class AbstractClientObserver : public virtual AbstractClient
+{
+    Q_DISABLE_COPY(AbstractClientObserver)
+
+public:
+    virtual ~AbstractClientObserver();
+
+    ChannelClassList channelFilter() const;
+
+    /* TODO add more methods */
+
+protected:
+    AbstractClientObserver(const ChannelClassList &channelFilter);
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class AbstractClientApprover : public virtual AbstractClient
+{
+    Q_DISABLE_COPY(AbstractClientApprover)
+
+public:
+    virtual ~AbstractClientApprover();
+
+    ChannelClassList channelFilter() const;
+
+    /* TODO add more methods */
+
+protected:
+    AbstractClientApprover(const ChannelClassList &channelFilter);
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 class AbstractClientHandler : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientHandler)

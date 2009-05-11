@@ -36,6 +36,40 @@ AbstractClient::~AbstractClient()
 {
 }
 
+struct AbstractClientObserver::Private
+{
+    ChannelClassList channelFilter;
+};
+
+AbstractClientObserver::AbstractClientObserver(
+        const ChannelClassList &channelFilter)
+    : mPriv(new Private)
+{
+    mPriv->channelFilter = channelFilter;
+}
+
+AbstractClientObserver::~AbstractClientObserver()
+{
+    delete mPriv;
+}
+
+struct AbstractClientApprover::Private
+{
+    ChannelClassList channelFilter;
+};
+
+AbstractClientApprover::AbstractClientApprover(
+        const ChannelClassList &channelFilter)
+    : mPriv(new Private)
+{
+    mPriv->channelFilter = channelFilter;
+}
+
+AbstractClientApprover::~AbstractClientApprover()
+{
+    delete mPriv;
+}
+
 struct AbstractClientHandler::Private
 {
     ChannelClassList channelFilter;
