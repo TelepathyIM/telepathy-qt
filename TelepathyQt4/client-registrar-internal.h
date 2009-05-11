@@ -132,72 +132,15 @@ public Q_SLOTS: // Methods
 
 private Q_SLOTS:
     void onOperationFinished(Tp::PendingOperation *op);
-    void onHandleChannelsCallFinished();
     void onChannelInvalidated(Tp::DBusProxy *proxy);
 
 private:
-    void processHandleChannelsQueue();
-
-    class HandleChannelsCall;
-
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
-    QHash<PendingClientOperation *, HandleChannelsCall *> mOperations;
-    QQueue<HandleChannelsCall*> mHandleChannelsQueue;
-    bool mProcessingHandleChannels;
+    QHash<PendingClientOperation *, QList<ChannelPtr> > mOperations;
     QSet<ChannelPtr> mHandledChannels;
 
     static QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > mAdaptorsForConnection;
-};
-
-class ClientHandlerAdaptor::HandleChannelsCall : public QObject
-{
-    Q_OBJECT
-
-public:
-    HandleChannelsCall(AbstractClientHandler *client,
-            PendingClientOperation *op,
-            const QDBusObjectPath &account,
-            const QDBusObjectPath &connection,
-            const ChannelDetailsList &channels,
-            const ObjectPathList &requestsSatisfied,
-            qulonglong userActionTime,
-            const QVariantMap &handlerInfo,
-            const QDBusConnection &bus,
-            const QDBusMessage &message,
-            QObject *parent);
-    virtual ~HandleChannelsCall();
-
-    QList<ChannelPtr> channels() const { return mChannels; };
-
-    void process();
-
-Q_SIGNALS:
-    void finished();
-
-private Q_SLOTS:
-    void onObjectReady(Tp::PendingOperation *op);
-    void onConnectionReady(Tp::PendingOperation *op);
-
-private:
-    void checkFinished();
-    void setFinishedWithError(const QString &errorName,
-            const QString &errorMessage);
-
-    AbstractClientHandler *mClient;
-    PendingClientOperation *mOperation;
-    QDBusObjectPath mAccountPath;
-    QDBusObjectPath mConnectionPath;
-    ChannelDetailsList mChannelDetailsList;
-    ObjectPathList mRequestsSatisfied;
-    qulonglong mUserActionTime;
-    QVariantMap mHandlerInfo;
-    QDBusConnection mBus;
-    QDBusMessage mMessage;
-    AccountPtr mAccount;
-    ConnectionPtr mConnection;
-    QList<ChannelPtr> mChannels;
-    QList<ChannelRequestPtr> mChannelRequests;
 };
 
 class ClientHandlerRequestsAdaptor : public QDBusAbstractAdaptor
@@ -232,46 +175,9 @@ public Q_SLOTS: // Methods
             const QString &errorName, const QString &errorMessage,
             const QDBusMessage &message);
 
-private Q_SLOTS:
-    void onAddRequestCallFinished();
-
 private:
-    void processAddRequestQueue();
-
-    class AddRequestCall;
-
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
-    QQueue<AddRequestCall*> mAddRequestQueue;
-    bool mProcessingAddRequest;
-};
-
-class ClientHandlerRequestsAdaptor::AddRequestCall : public QObject
-{
-    Q_OBJECT
-
-public:
-    AddRequestCall(AbstractClientHandler *client,
-            const QDBusObjectPath &request,
-            const QVariantMap &requestProperties,
-            const QDBusConnection &bus,
-            QObject *parent);
-    virtual ~AddRequestCall();
-
-    void process();
-
-Q_SIGNALS:
-    void finished();
-
-private Q_SLOTS:
-    void onChannelRequestReady(Tp::PendingOperation *op);
-
-private:
-    AbstractClientHandler *mClient;
-    QDBusObjectPath mRequestPath;
-    QVariantMap mRequestProperties;
-    QDBusConnection mBus;
-    ChannelRequestPtr mRequest;
 };
 
 } // Tp

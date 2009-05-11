@@ -55,8 +55,7 @@ ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
       mBus(bus),
-      mClient(client),
-      mProcessingHandleChannels(false)
+      mClient(client)
 {
     QList<ClientHandlerAdaptor *> &handlerAdaptors =
         mAdaptorsForConnection[qMakePair(mBus.name(), mBus.baseService())];
@@ -74,39 +73,69 @@ ClientHandlerAdaptor::~ClientHandlerAdaptor()
     }
 }
 
-void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &account,
-        const QDBusObjectPath &connection,
-        const Tp::ChannelDetailsList &channels,
+void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
+        const QDBusObjectPath &connectionPath,
+        const Tp::ChannelDetailsList &channelDetailsList,
         const Tp::ObjectPathList &requestsSatisfied,
-        qulonglong userActionTime,
+        qulonglong userActionTime_t,
         const QVariantMap &handlerInfo,
         const QDBusMessage &message)
 {
-    debug() << "HandleChannels: account:" << account.path() << ", connection:"
-        << connection.path();
+    debug() << "HandleChannels: account:" << accountPath.path() <<
+        ", connection:" << connectionPath.path();
 
-    PendingClientOperation *op = new PendingClientOperation(mBus,
+    AccountPtr account = Account::create(mBus,
+            TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
+            accountPath.path());
+
+    QString connectionBusName = connectionPath.path().mid(1).replace('/', '.');
+    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
+            connectionPath.path());
+
+    QList<ChannelPtr> channels;
+    ChannelPtr channel;
+    foreach (const ChannelDetails &channelDetails, channelDetailsList) {
+        channel = Channel::create(connection, channelDetails.channel.path(),
+                channelDetails.properties);
+        channels.append(channel);
+    }
+
+    QList<ChannelRequestPtr> channelRequests;
+    ChannelRequestPtr channelRequest;
+    foreach (const QDBusObjectPath &path, requestsSatisfied) {
+        channelRequest = ChannelRequest::create(mBus,
+                path.path(), QVariantMap());
+        channelRequests.append(channelRequest);
+    }
+
+    // FIXME: Telepathy supports 64-bit time_t, but Qt only does so on
+    // ILP64 systems (e.g. sparc64, but not x86_64). If QDateTime
+    // gains a fromTimestamp64 method, we should use it instead.
+    QDateTime userActionTime;
+    if (userActionTime_t != 0) {
+        userActionTime = QDateTime::fromTime_t((uint) userActionTime_t);
+    }
+
+    PendingClientOperation *operation = new PendingClientOperation(mBus,
             message, this);
-    HandleChannelsCall *call = new HandleChannelsCall(mClient, op,
-            account, connection, channels, requestsSatisfied,
-            userActionTime, handlerInfo, mBus, message, this);
-    connect(op,
+    connect(operation,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onOperationFinished(Tp::PendingOperation*)));
-    mOperations.insert(op, call);
 
-    mHandleChannelsQueue.enqueue(call);
-    processHandleChannelsQueue();
+    mClient->handleChannels(operation, account, connection, channels,
+            channelRequests, userActionTime, handlerInfo);
+
+    mOperations.insert(operation, channels);
 }
 
 void ClientHandlerAdaptor::onOperationFinished(PendingOperation *op)
 {
-    HandleChannelsCall *call =
-        mOperations.value(dynamic_cast<PendingClientOperation*>(op));
     if (!op->isError()) {
         debug() << "HandleChannels operation finished successfully, "
             "updating handled channels";
-        foreach (const ChannelPtr &channel, call->channels()) {
+        QList<ChannelPtr> channels =
+            mOperations.value(dynamic_cast<PendingClientOperation*>(op));
+        foreach (const ChannelPtr &channel, channels) {
             mHandledChannels.insert(channel);
             connect(channel.data(),
                     SIGNAL(invalidated(Tp::DBusProxy *,
@@ -116,15 +145,6 @@ void ClientHandlerAdaptor::onOperationFinished(PendingOperation *op)
     }
 
     mOperations.remove(dynamic_cast<PendingClientOperation*>(op));
-    // op will delete itself, so no need to delete it
-    delete call;
-}
-
-void ClientHandlerAdaptor::onHandleChannelsCallFinished()
-{
-    mHandleChannelsQueue.dequeue();
-    mProcessingHandleChannels = false;
-    processHandleChannelsQueue();
 }
 
 void ClientHandlerAdaptor::onChannelInvalidated(DBusProxy *proxy)
@@ -133,145 +153,13 @@ void ClientHandlerAdaptor::onChannelInvalidated(DBusProxy *proxy)
     mHandledChannels.remove(channel);
 }
 
-void ClientHandlerAdaptor::processHandleChannelsQueue()
-{
-    if (mProcessingHandleChannels || mHandleChannelsQueue.isEmpty()) {
-        return;
-    }
-
-    mProcessingHandleChannels = true;
-    HandleChannelsCall *call = mHandleChannelsQueue.head();
-    connect(call,
-            SIGNAL(finished()),
-            SLOT(onHandleChannelsCallFinished()));
-    call->process();
-}
-
-ClientHandlerAdaptor::HandleChannelsCall::HandleChannelsCall(
-        AbstractClientHandler *client,
-        PendingClientOperation *op,
-        const QDBusObjectPath &account,
-        const QDBusObjectPath &connection,
-        const ChannelDetailsList &channels,
-        const ObjectPathList &requestsSatisfied,
-        qulonglong userActionTime,
-        const QVariantMap &handlerInfo,
-        const QDBusConnection &bus,
-        const QDBusMessage &message,
-        QObject *parent)
-    : QObject(parent),
-      mClient(client),
-      mOperation(op),
-      mAccountPath(account),
-      mConnectionPath(connection),
-      mChannelDetailsList(channels),
-      mRequestsSatisfied(requestsSatisfied),
-      mUserActionTime(userActionTime),
-      mHandlerInfo(handlerInfo),
-      mBus(bus),
-      mMessage(message)
-{
-}
-
-ClientHandlerAdaptor::HandleChannelsCall::~HandleChannelsCall()
-{
-}
-
-void ClientHandlerAdaptor::HandleChannelsCall::process()
-{
-    mAccount = Account::create(mBus,
-            TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
-            mAccountPath.path());
-    connect(mAccount->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onObjectReady(Tp::PendingOperation *)));
-
-    QString connectionBusName = mConnectionPath.path().mid(1).replace('/', '.');
-    mConnection = Connection::create(mBus, connectionBusName,
-            mConnectionPath.path());
-    connect(mConnection->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionReady(Tp::PendingOperation *)));
-
-    ChannelRequestPtr channelRequest;
-    foreach (const QDBusObjectPath &path, mRequestsSatisfied) {
-        channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap());
-        mChannelRequests.append(channelRequest);
-    }
-}
-
-void ClientHandlerAdaptor::HandleChannelsCall::onObjectReady(
-        PendingOperation *op)
-{
-    if (op->isError()) {
-        setFinishedWithError(op->errorName(), op->errorMessage());
-        return;
-    }
-    checkFinished();
-}
-
-void ClientHandlerAdaptor::HandleChannelsCall::onConnectionReady(
-        PendingOperation *op)
-{
-    if (op->isError()) {
-        setFinishedWithError(op->errorName(), op->errorMessage());
-        return;
-    }
-
-    ChannelPtr channel;
-    foreach (const ChannelDetails &channelDetails, mChannelDetailsList) {
-        channel = Channel::create(mConnection, channelDetails.channel.path(),
-                channelDetails.properties);
-        connect(channel->becomeReady(),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(onObjectReady(Tp::PendingOperation *)));
-        mChannels.append(channel);
-    }
-
-    // just to make sure
-    checkFinished();
-}
-
-void ClientHandlerAdaptor::HandleChannelsCall::checkFinished()
-{
-    if (!mAccount->isReady() || !mConnection->isReady()) {
-        return;
-    }
-
-    foreach (const ChannelPtr &channel, mChannels) {
-        if (!channel->isReady()) {
-            return;
-        }
-    }
-
-    // FIXME: Telepathy supports 64-bit time_t, but Qt only does so on
-    // ILP64 systems (e.g. sparc64, but not x86_64). If QDateTime
-    // gains a fromTimestamp64 method, we should use it instead.
-    QDateTime userActionTime;
-    if (mUserActionTime != 0) {
-        userActionTime = QDateTime::fromTime_t((uint) mUserActionTime);
-    }
-    mClient->handleChannels(mOperation, mAccount, mConnection, mChannels,
-            mChannelRequests, userActionTime, mHandlerInfo);
-    emit finished();
-}
-
-void ClientHandlerAdaptor::HandleChannelsCall::setFinishedWithError(const QString &errorName,
-        const QString &errorMessage)
-{
-    mOperation->setFinishedWithError(errorName, errorMessage);
-    emit finished();
-}
-
 ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
         const QDBusConnection &bus,
         AbstractClientHandler *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
       mBus(bus),
-      mClient(client),
-      mProcessingAddRequest(false)
+      mClient(client)
 {
 }
 
@@ -286,10 +174,8 @@ void ClientHandlerRequestsAdaptor::AddRequest(
 {
     debug() << "AddRequest:" << request.path();
     mBus.send(message.createReply());
-
-    mAddRequestQueue.enqueue(new AddRequestCall(mClient, request,
-                requestProperties, mBus, this));
-    processAddRequestQueue();
+    mClient->addRequest(ChannelRequest::create(mBus,
+                request.path(), requestProperties));
 }
 
 void ClientHandlerRequestsAdaptor::RemoveRequest(
@@ -302,67 +188,6 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
     mBus.send(message.createReply());
     mClient->removeRequest(ChannelRequest::create(mBus,
                 request.path(), QVariantMap()), errorName, errorMessage);
-}
-
-void ClientHandlerRequestsAdaptor::processAddRequestQueue()
-{
-    if (mProcessingAddRequest || mAddRequestQueue.isEmpty()) {
-        return;
-    }
-
-    mProcessingAddRequest = true;
-    AddRequestCall *call = mAddRequestQueue.head();
-    connect(call,
-            SIGNAL(finished()),
-            SLOT(onAddRequestCallFinished()));
-    call->process();
-}
-
-void ClientHandlerRequestsAdaptor::onAddRequestCallFinished()
-{
-    mAddRequestQueue.dequeue();
-    mProcessingAddRequest = false;
-    processAddRequestQueue();
-}
-
-ClientHandlerRequestsAdaptor::AddRequestCall::AddRequestCall(
-        AbstractClientHandler *client,
-        const QDBusObjectPath &request,
-        const QVariantMap &requestProperties,
-        const QDBusConnection &bus,
-        QObject *parent)
-    : QObject(parent),
-      mClient(client),
-      mRequestPath(request),
-      mRequestProperties(requestProperties),
-      mBus(bus)
-{
-}
-
-ClientHandlerRequestsAdaptor::AddRequestCall::~AddRequestCall()
-{
-}
-
-void ClientHandlerRequestsAdaptor::AddRequestCall::process()
-{
-    mRequest = ChannelRequest::create(mBus,
-            mRequestPath.path(), mRequestProperties);
-    connect(mRequest->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onChannelRequestReady(Tp::PendingOperation *)));
-}
-
-void ClientHandlerRequestsAdaptor::AddRequestCall::onChannelRequestReady(
-        PendingOperation *op)
-{
-    if (!op->isError()) {
-        mClient->addRequest(mRequest);
-    } else {
-        warning() << "Unable to make ChannelRequest ready:" << op->errorName()
-            << "-" << op->errorMessage() << ". Ignoring AddRequest call";
-    }
-    emit finished();
-    deleteLater();
 }
 
 struct ClientRegistrar::Private
