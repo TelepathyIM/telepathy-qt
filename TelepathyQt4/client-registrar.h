@@ -44,7 +44,7 @@ class ClientRegistrar : public QObject, public RefCounted
 public:
     static ClientRegistrarPtr create();
     static ClientRegistrarPtr create(const QDBusConnection &bus);
-    virtual ~ClientRegistrar();
+    ~ClientRegistrar();
 
     QDBusConnection dbusConnection() const;
 
