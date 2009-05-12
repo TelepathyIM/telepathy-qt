@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/ClientHandler>
+#include <TelepathyQt4/Client>
 
-#include "TelepathyQt4/_gen/cli-client-handler-body.hpp"
-#include "TelepathyQt4/_gen/cli-client-handler.moc.hpp"
+#include "TelepathyQt4/_gen/cli-client-body.hpp"
+#include "TelepathyQt4/_gen/cli-client.moc.hpp"

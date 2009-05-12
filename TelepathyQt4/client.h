@@ -19,13 +19,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_cli_client_handler_h_HEADER_GUARD_
-#define _TelepathyQt4_cli_client_handler_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_cli_client_h_HEADER_GUARD_
+#define _TelepathyQt4_cli_client_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/_gen/cli-client-handler.h>
+#include <TelepathyQt4/_gen/cli-client.h>
 
 #endif
