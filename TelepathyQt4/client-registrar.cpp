@@ -201,14 +201,86 @@ struct ClientRegistrar::Private
     QSet<QString> services;
 };
 
+/**
+ * \class ClientRegistrar
+ * \ingroup clientclient
+ * \headerfile <TelepathyQt4/client-registrar.h> <TelepathyQt4/ClientRegistrar>
+ *
+ * Object responsible for registering
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a>
+ * clients (Observer, Approver, Handler).
+ *
+ * Clients should inherit AbstractClientObserver, AbstractClientApprover,
+ * AbstractClientHandler or some combination of these, by using multiple
+ * inheritance, and register themselves using registerClient().
+ *
+ * See the individual classes descriptions for more details.
+ *
+ * \section usage_sec Usage
+ *
+ * \subsection create_sec Creating a client registrar object
+ *
+ * One way to create a ClientRegistrar object is to just call the create method.
+ * For example:
+ *
+ * \code ClientRegistrarPtr cr = ClientRegistrar::create(); \endcode
+ *
+ * You can also provide a D-Bus connection as a QDBusConnection:
+ *
+ * \code ClientRegistrarPtr cr = ClientRegistrar::create(QDBusConnection::sessionBus()); \endcode
+ *
+ * \subsection registering_sec Registering a client
+ *
+ * To register a client, just call registerClient with a given AbstractClientPtr
+ * pointing to a valid AbstractClient instance.
+ *
+ * \code
+ *
+ * class MyClient : public AbstractClientObserver, public AbstractClientHandler
+ * {
+ *     ...
+ * };
+ *
+ * ...
+ *
+ * ClientRegistrarPtr cr = ClientRegistrar::create();
+ * SharedPtr<MyClient> client = SharedPtr<MyClient>(new MyClient(...));
+ * cr->registerClient(AbstractClientPtr::dynamicCast(client), "myclient");
+ *
+ * \endcode
+ *
+ * \sa AbstractClientObserver, AbstractClientApprover, AbstractClientHandler
+ */
+
 QHash<QPair<QString, QString>, ClientRegistrar*> ClientRegistrar::registrarForConnection;
 
+/**
+ * Create a new client registrar object using QDBusConnection::sessionBus().
+ *
+ * ClientRegistrar instances are unique per D-Bus connection. The returned
+ * ClientRegistrarPtr will point to the same ClientRegistrar instance on
+ * successive calls, unless the instance had already been destroyed, in which
+ * case a new instance will be returned.
+ *
+ * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ */
 ClientRegistrarPtr ClientRegistrar::create()
 {
     QDBusConnection bus = QDBusConnection::sessionBus();
     return create(bus);
 }
 
+/**
+ * Create a new client registrar object using the given \a bus.
+ *
+ * ClientRegistrar instances are unique per D-Bus connection. The returned
+ * ClientRegistrarPtr will point to the same ClientRegistrar instance on
+ * successive calls with the same \a bus, unless the instance
+ * had already been destroyed, in which case a new instance will be returned.
+ *
+ * \param bus QDBusConnection to use.
+ * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ */
 ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
 {
     QPair<QString, QString> busId =
@@ -220,6 +292,11 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
     return ClientRegistrarPtr(new ClientRegistrar(bus));
 }
 
+/**
+ * Construct a new client registrar object  using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ */
 ClientRegistrar::ClientRegistrar(const QDBusConnection &bus)
     : mPriv(new Private(bus))
 {
@@ -227,6 +304,9 @@ ClientRegistrar::ClientRegistrar(const QDBusConnection &bus)
                 bus.baseService()), this);
 }
 
+/**
+ * Class destructor.
+ */
 ClientRegistrar::~ClientRegistrar()
 {
     registrarForConnection.remove(qMakePair(mPriv->bus.name(),
@@ -235,16 +315,52 @@ ClientRegistrar::~ClientRegistrar()
     delete mPriv;
 }
 
+/**
+ * Return the D-Bus connection being used by this client registrar.
+ *
+ * \return QDBusConnection being used.
+ */
 QDBusConnection ClientRegistrar::dbusConnection() const
 {
     return mPriv->bus;
 }
 
+/**
+ * Return a list of clients registered using registerClient on this client registrar.
+ *
+ * \return A list of registered clients.
+ * \sa registerClient()
+ */
 QList<AbstractClientPtr> ClientRegistrar::registeredClients() const
 {
     return mPriv->clients.keys();
 }
 
+/**
+ * Register a client on D-Bus.
+ *
+ * The client registrar will be responsible for proper exporting the client
+ * D-Bus interfaces, based on inheritance.
+ *
+ * If each of a client instance should be able to manipulate channels
+ * separately, set unique to true.
+ *
+ * The client name MUST be a non-empty string of ASCII digits, letters, dots
+ * and/or underscores, starting with a letter, and without sets of
+ * two consecutive dots or a dot followed by a digit.
+ *
+ * This method will do nothing if the client is already registered, and \c true
+ * will be returned.
+ *
+ * To unregister a client use unregisterClient().
+ *
+ * \param client The client to register.
+ * \param clientName The client name used to register.
+ * \param unique Whether each of a client instance is able to manipulate
+ *               channels separately.
+ * \return \c true if client was successfully registered, \c false otherwise.
+ * \sa registeredClients(), unregisterClient()
+ */
 bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         const QString &clientName, bool unique)
 {
@@ -331,6 +447,15 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     return true;
 }
 
+/**
+ * Unregister a client registered using registerClient on this client registrar.
+ *
+ * If \a client was not registered previously, \c false will be returned.
+ *
+ * \param client The client to unregister.
+ * \return \c true if client was successfully unregistered, \c false otherwise.
+ * \sa registeredClients(), registerClient()
+ */
 bool ClientRegistrar::unregisterClient(const AbstractClientPtr &client)
 {
     if (!mPriv->clients.contains(client)) {
@@ -357,6 +482,11 @@ bool ClientRegistrar::unregisterClient(const AbstractClientPtr &client)
     return true;
 }
 
+/**
+ * Unregister all clients registered using registerClient on this client registrar.
+ *
+ * \sa registeredClients(), registerClient(), unregisterClient()
+ */
 void ClientRegistrar::unregisterClients()
 {
     // copy the hash as it will be modified
