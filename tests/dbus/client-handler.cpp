@@ -17,8 +17,8 @@
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Debug>
+#include <TelepathyQt4/MethodInvocationContext>
 #include <TelepathyQt4/PendingAccount>
-#include <TelepathyQt4/PendingClientOperation>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Types>
 
@@ -157,7 +157,7 @@ public:
         return mBypassApproval;
     }
 
-    void handleChannels(PendingClientOperation *operation,
+    void handleChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
@@ -179,10 +179,8 @@ public:
                     SIGNAL(channelClosed()));
         }
 
-        operation->setFinished();
-        connect(operation,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SIGNAL(handleChannelsFinished()));
+        context->setFinished();
+        QTimer::singleShot(0, this, SIGNAL(handleChannelsFinished()));
     }
 
     void addRequest(const ChannelRequestPtr &request)

@@ -32,7 +32,6 @@
 namespace Tp
 {
 
-class PendingClientOperation;
 class PendingOperation;
 
 class ClientAdaptor : public QDBusAbstractAdaptor
@@ -131,13 +130,14 @@ public Q_SLOTS: // Methods
             const QDBusMessage &message);
 
 private Q_SLOTS:
-    void onOperationFinished(Tp::PendingOperation *op);
     void onChannelInvalidated(Tp::DBusProxy *proxy);
 
 private:
+    static void onContextFinished(const MethodInvocationContextPtr<> &context,
+            const QList<ChannelPtr> &channels, ClientHandlerAdaptor *self);
+
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
-    QHash<PendingClientOperation *, QList<ChannelPtr> > mOperations;
     QSet<ChannelPtr> mHandledChannels;
 
     static QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > mAdaptorsForConnection;

@@ -31,11 +31,53 @@
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/Connection>
-#include <TelepathyQt4/PendingClientOperation>
+#include <TelepathyQt4/MethodInvocationContext>
 #include <TelepathyQt4/PendingReady>
 
 namespace Tp
 {
+
+class HandleChannelsInvocationContext : public MethodInvocationContext<>
+{
+    Q_DISABLE_COPY(HandleChannelsInvocationContext)
+
+public:
+    typedef void (*FinishedCb)(const MethodInvocationContextPtr<> &context,
+                               const QList<ChannelPtr> &channels,
+                               void *data);
+
+    static MethodInvocationContextPtr<> create(const QDBusConnection &bus,
+            const QDBusMessage &message, const QList<ChannelPtr> &channels,
+            FinishedCb finishedCb, void *finishedCbData)
+    {
+        return MethodInvocationContextPtr<>::dynamicCast(
+                SharedPtr<HandleChannelsInvocationContext>(
+                    new HandleChannelsInvocationContext(bus, message, channels,
+                        finishedCb, finishedCbData)));
+    }
+
+private:
+    HandleChannelsInvocationContext(const QDBusConnection &connection,
+            const QDBusMessage &message, const QList<ChannelPtr> &channels,
+            FinishedCb finishedCb, void *finishedCbData)
+        : MethodInvocationContext<>(connection, message),
+          mChannels(channels),
+          mFinishedCb(finishedCb),
+          mFinishedCbData(finishedCbData)
+    {
+    }
+
+    void onFinished()
+    {
+        if (mFinishedCb) {
+            mFinishedCb(MethodInvocationContextPtr<>(this), mChannels, mFinishedCbData);
+        }
+    }
+
+    QList<ChannelPtr> mChannels;
+    FinishedCb mFinishedCb;
+    void *mFinishedCbData;
+};
 
 ClientAdaptor::ClientAdaptor(const QStringList &interfaces,
         QObject *parent)
@@ -114,35 +156,31 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
         userActionTime = QDateTime::fromTime_t((uint) userActionTime_t);
     }
 
-    PendingClientOperation *operation = new PendingClientOperation(mBus,
-            message, this);
-    connect(operation,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onOperationFinished(Tp::PendingOperation*)));
+    MethodInvocationContextPtr<> context =
+        HandleChannelsInvocationContext::create(mBus, message,
+                channels,
+                (HandleChannelsInvocationContext::FinishedCb) &ClientHandlerAdaptor::onContextFinished,
+                this);
 
-    mClient->handleChannels(operation, account, connection, channels,
+    mClient->handleChannels(context, account, connection, channels,
             channelRequests, userActionTime, handlerInfo);
-
-    mOperations.insert(operation, channels);
 }
 
-void ClientHandlerAdaptor::onOperationFinished(PendingOperation *op)
+void ClientHandlerAdaptor::onContextFinished(
+        const MethodInvocationContextPtr<> &context,
+        const QList<ChannelPtr> &channels, ClientHandlerAdaptor *self)
 {
-    if (!op->isError()) {
-        debug() << "HandleChannels operation finished successfully, "
+    if (!context->isError()) {
+        debug() << "HandleChannels context finished successfully, "
             "updating handled channels";
-        QList<ChannelPtr> channels =
-            mOperations.value(dynamic_cast<PendingClientOperation*>(op));
         foreach (const ChannelPtr &channel, channels) {
-            mHandledChannels.insert(channel);
-            connect(channel.data(),
+            self->mHandledChannels.insert(channel);
+            self->connect(channel.data(),
                     SIGNAL(invalidated(Tp::DBusProxy *,
                                        const QString &, const QString &)),
                     SLOT(onChannelInvalidated(Tp::DBusProxy *)));
         }
     }
-
-    mOperations.remove(dynamic_cast<PendingClientOperation*>(op));
 }
 
 void ClientHandlerAdaptor::onChannelInvalidated(DBusProxy *proxy)

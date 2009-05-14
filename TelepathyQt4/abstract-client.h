@@ -37,8 +37,6 @@
 namespace Tp
 {
 
-class PendingClientOperation;
-
 class AbstractClient : public RefCounted
 {
     Q_DISABLE_COPY(AbstractClient)
@@ -98,7 +96,7 @@ public:
     ChannelClassList channelFilter() const;
     virtual bool bypassApproval() const = 0;
 
-    virtual void handleChannels(PendingClientOperation *operation,
+    virtual void handleChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
