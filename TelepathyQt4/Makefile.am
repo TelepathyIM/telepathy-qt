@@ -172,6 +172,7 @@ tpqt4include_HEADERS = \
     MediaSessionHandler \
     MediaStreamHandler \
     Message \
+    MethodInvocationContext \
     OptionalInterfaceFactory \
     PendingAccount \
     PendingChannel \
@@ -259,6 +260,7 @@ tpqt4include_HEADERS = \
     media-session-handler.h \
     media-stream-handler.h \
     message.h \
+    method-invocation-context.h \
     optional-interface-factory.h \
     pending-account.h \
     pending-channel.h \
