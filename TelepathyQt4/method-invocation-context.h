@@ -152,7 +152,7 @@ public:
     typename Select<Index>::Type argumentAt() const
     {
         Q_ASSERT(Index >= 0 && Index < Count);
-        return qvariant_cast<typename Select<Index>::Type>(mReply.value(Index));
+        return qdbus_cast<typename Select<Index>::Type>(mReply.value(Index));
     }
 
 protected:
