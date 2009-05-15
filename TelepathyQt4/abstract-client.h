@@ -55,7 +55,13 @@ public:
 
     ChannelClassList observerChannelFilter() const;
 
-    /* TODO add more methods */
+    virtual void observeChannels(const MethodInvocationContextPtr<> &context,
+            const AccountPtr &account,
+            const ConnectionPtr &connection,
+            const QList<ChannelPtr> &channels,
+            const QString &dispatchOperationPath,
+            const QList<ChannelRequestPtr> &requestsSatisfied,
+            const QVariantMap &observerInfo) = 0;
 
 protected:
     AbstractClientObserver(const ChannelClassList &channelFilter);
