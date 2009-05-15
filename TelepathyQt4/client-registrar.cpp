@@ -111,6 +111,39 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         const QVariantMap &observerInfo,
         const QDBusMessage &message)
 {
+    debug() << "ObserveChannels: account:" << accountPath.path() <<
+        ", connection:" << connectionPath.path();
+
+    AccountPtr account = Account::create(mBus,
+            TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
+            accountPath.path());
+
+    QString connectionBusName = connectionPath.path().mid(1).replace('/', '.');
+    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
+            connectionPath.path());
+
+    QList<ChannelPtr> channels;
+    ChannelPtr channel;
+    foreach (const ChannelDetails &channelDetails, channelDetailsList) {
+        channel = Channel::create(connection, channelDetails.channel.path(),
+                channelDetails.properties);
+        channels.append(channel);
+    }
+
+    QList<ChannelRequestPtr> channelRequests;
+    ChannelRequestPtr channelRequest;
+    foreach (const QDBusObjectPath &path, requestsSatisfied) {
+        channelRequest = ChannelRequest::create(mBus,
+                path.path(), QVariantMap());
+        channelRequests.append(channelRequest);
+    }
+
+    MethodInvocationContextPtr<> context =
+        MethodInvocationContextPtr<>(
+                new MethodInvocationContext<>(mBus, message));
+
+    mClient->observeChannels(context, account, connection, channels,
+            dispatchOperationPath.path(), channelRequests, observerInfo);
 }
 
 QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;

@@ -10,10 +10,12 @@
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/AbstractClientHandler>
+#include <TelepathyQt4/AbstractClientObserver>
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/ClientHandlerInterface>
 #include <TelepathyQt4/ClientInterfaceRequestsInterface>
+#include <TelepathyQt4/ClientObserverInterface>
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Debug>
@@ -161,6 +163,15 @@ public:
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QVariantMap &observerInfo)
     {
+        mObserveChannelsAccount = account;
+        mObserveChannelsConnection = connection;
+        mObserveChannelsChannels = channels;
+        mObserveChannelsDispathOperationPath = dispatchOperationPath;
+        mObserveChannelsRequestsSatisfied = requestsSatisfied;
+        mObserveChannelsObserverInfo = observerInfo;
+
+        context->setFinished();
+        QTimer::singleShot(0, this, SIGNAL(observeChannelsFinished()));
     }
 
     bool bypassApproval() const
@@ -209,6 +220,13 @@ public:
         emit requestRemoved(request, errorName, errorMessage);
     }
 
+    AccountPtr mObserveChannelsAccount;
+    ConnectionPtr mObserveChannelsConnection;
+    QList<ChannelPtr> mObserveChannelsChannels;
+    QString mObserveChannelsDispathOperationPath;
+    QList<ChannelRequestPtr> mObserveChannelsRequestsSatisfied;
+    QVariantMap mObserveChannelsObserverInfo;
+
     bool mBypassApproval;
     AccountPtr mHandleChannelsAccount;
     ConnectionPtr mHandleChannelsConnection;
@@ -226,6 +244,7 @@ Q_SIGNALS:
     void requestRemoved(const Tp::ChannelRequestPtr &request,
             const QString &errorName, const QString &errorMessage);
     void handleChannelsFinished();
+    void observeChannelsFinished();
     void channelClosed();
 };
 
@@ -240,6 +259,9 @@ public:
           mText1ChanService(0)
     { }
 
+    void testObserveChannelsCommon(const AbstractClientPtr &clientObject,
+            const QString &clientBusName, const QString &clientObjectPath);
+
 protected Q_SLOTS:
     void expectSignalEmission();
 
@@ -248,6 +270,7 @@ private Q_SLOTS:
     void init();
 
     void testRegister();
+    void testObserveChannels();
     void testRequests();
     void testHandleChannels();
 
@@ -482,6 +505,43 @@ void TestClient::testRequests()
              QString(TELEPATHY_ERROR_NOT_AVAILABLE));
     QCOMPARE(client->mRemoveRequestErrorMessage,
              QString("Not available"));
+}
+
+void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject,
+        const QString &clientBusName, const QString &clientObjectPath)
+{
+    QDBusConnection bus = mClientRegistrar->dbusConnection();
+
+    ClientObserverInterface *observeIface = new ClientObserverInterface(bus,
+            clientBusName, clientObjectPath, this);
+    MyClient *client = dynamic_cast<MyClient*>(clientObject.data());
+    connect(client,
+            SIGNAL(observeChannelsFinished()),
+            SLOT(expectSignalEmission()));
+    ChannelDetailsList channelDetailsList;
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    channelDetailsList.append(channelDetails);
+    observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
+            QDBusObjectPath(mConn->objectPath()),
+            channelDetailsList,
+            QDBusObjectPath("/"),
+            ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
+            QVariantMap());
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(client->mObserveChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client->mObserveChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
+    QCOMPARE(client->mObserveChannelsDispathOperationPath, QString("/"));
+    QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+}
+
+void TestClient::testObserveChannels()
+{
+    testObserveChannelsCommon(mClientObject1,
+            mClientObject1BusName, mClientObject1Path);
+    testObserveChannelsCommon(mClientObject2,
+            mClientObject2BusName, mClientObject2Path);
 }
 
 void TestClient::testHandleChannels()
