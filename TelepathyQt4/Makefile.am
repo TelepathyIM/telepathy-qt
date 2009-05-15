@@ -19,6 +19,7 @@ EXTRA_DIST = \
     async-model.dox \
     channel.xml \
     channel-request.xml \
+    client.xml \
     connection.xml \
     connection-manager.xml \
     dbus.xml \
