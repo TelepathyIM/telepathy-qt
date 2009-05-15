@@ -60,6 +60,53 @@ private:
     QStringList mInterfaces;
 };
 
+class ClientObserverAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Observer")
+    Q_CLASSINFO("D-Bus Introspection", ""
+"  <interface name=\"org.freedesktop.Telepathy.Client.Handler\" >\n"
+"    <property name=\"ObserverChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
+"    <method name=\"ObserveChannels\" >\n"
+"      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Connection\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Channels\" type=\"a(oa{sv})\" direction=\"in\" />\n"
+"      <arg name=\"Dispatch_Operation\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Requests_Satisfied\" type=\"ao\" direction=\"in\" />\n"
+"      <arg name=\"Observer_Info\" type=\"a{sv}\" direction=\"in\" />\n"
+"    </method>\n"
+"  </interface>\n"
+        "")
+
+    Q_PROPERTY(Tp::ChannelClassList ObserverChannelFilter READ ObserverChannelFilter)
+
+public:
+    ClientObserverAdaptor(
+            const QDBusConnection &bus,
+            AbstractClientObserver *client,
+            QObject *parent);
+    virtual ~ClientObserverAdaptor();
+
+public: // Properties
+    inline Tp::ChannelClassList ObserverChannelFilter() const
+    {
+        return mClient->observerChannelFilter();
+    }
+
+public Q_SLOTS: // Methods
+    void ObserveChannels(const QDBusObjectPath &account,
+            const QDBusObjectPath &connection,
+            const Tp::ChannelDetailsList &channels,
+            const QDBusObjectPath &dispatchOperation,
+            const Tp::ObjectPathList &requestsSatisfied,
+            const QVariantMap &observerInfo,
+            const QDBusMessage &message);
+
+private:
+    QDBusConnection mBus;
+    AbstractClientObserver *mClient;
+};
+
 class ClientHandlerAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT

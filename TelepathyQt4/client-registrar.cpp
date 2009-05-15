@@ -90,6 +90,29 @@ ClientAdaptor::~ClientAdaptor()
 {
 }
 
+ClientObserverAdaptor::ClientObserverAdaptor(const QDBusConnection &bus,
+        AbstractClientObserver *client,
+        QObject *parent)
+    : QDBusAbstractAdaptor(parent),
+      mBus(bus),
+      mClient(client)
+{
+}
+
+ClientObserverAdaptor::~ClientObserverAdaptor()
+{
+}
+
+void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
+        const QDBusObjectPath &connectionPath,
+        const Tp::ChannelDetailsList &channelDetailsList,
+        const QDBusObjectPath &dispatchOperationPath,
+        const Tp::ObjectPathList &requestsSatisfied,
+        const QVariantMap &observerInfo,
+        const QDBusMessage &message)
+{
+}
+
 QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
 
 ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
