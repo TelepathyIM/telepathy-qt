@@ -53,7 +53,7 @@ class AbstractClientObserver : public virtual AbstractClient
 public:
     virtual ~AbstractClientObserver();
 
-    ChannelClassList channelFilter() const;
+    ChannelClassList observerChannelFilter() const;
 
     /* TODO add more methods */
 
@@ -73,7 +73,7 @@ class AbstractClientApprover : public virtual AbstractClient
 public:
     virtual ~AbstractClientApprover();
 
-    ChannelClassList channelFilter() const;
+    ChannelClassList approverChannelFilter() const;
 
     /* TODO add more methods */
 
@@ -93,7 +93,7 @@ class AbstractClientHandler : public virtual AbstractClient
 public:
     virtual ~AbstractClientHandler();
 
-    ChannelClassList channelFilter() const;
+    ChannelClassList handlerChannelFilter() const;
     virtual bool bypassApproval() const = 0;
 
     virtual void handleChannels(const MethodInvocationContextPtr<> &context,

@@ -94,7 +94,7 @@ public:
 public: // Properties
     inline Tp::ChannelClassList HandlerChannelFilter() const
     {
-        return mClient->channelFilter();
+        return mClient->handlerChannelFilter();
     }
 
     inline bool BypassApproval() const

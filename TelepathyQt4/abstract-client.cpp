@@ -53,6 +53,11 @@ AbstractClientObserver::~AbstractClientObserver()
     delete mPriv;
 }
 
+ChannelClassList AbstractClientObserver::observerChannelFilter() const
+{
+    return mPriv->channelFilter;
+}
+
 struct AbstractClientApprover::Private
 {
     ChannelClassList channelFilter;
@@ -68,6 +73,11 @@ AbstractClientApprover::AbstractClientApprover(
 AbstractClientApprover::~AbstractClientApprover()
 {
     delete mPriv;
+}
+
+ChannelClassList AbstractClientApprover::approverChannelFilter() const
+{
+    return mPriv->channelFilter;
 }
 
 struct AbstractClientHandler::Private
@@ -89,7 +99,7 @@ AbstractClientHandler::~AbstractClientHandler()
     delete mPriv;
 }
 
-ChannelClassList AbstractClientHandler::channelFilter() const
+ChannelClassList AbstractClientHandler::handlerChannelFilter() const
 {
     return mPriv->channelFilter;
 }
