@@ -126,7 +126,7 @@ private:
     QStringList mInterfaces;
 };
 
-class MyHandler : public QObject, public AbstractClientHandler
+class MyClient : public QObject, public AbstractClientHandler
 {
     Q_OBJECT
 
@@ -135,12 +135,12 @@ public:
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
     {
-        return AbstractClientPtr::dynamicCast(SharedPtr<MyHandler>(
-                    new MyHandler(channelFilter,
+        return AbstractClientPtr::dynamicCast(SharedPtr<MyClient>(
+                    new MyClient(channelFilter,
                         bypassApproval, wantsRequestNotification)));
     }
 
-    MyHandler(const ChannelClassList &channelFilter,
+    MyClient(const ChannelClassList &channelFilter,
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
         : AbstractClientHandler(channelFilter, wantsRequestNotification),
@@ -148,7 +148,7 @@ public:
     {
     }
 
-    ~MyHandler()
+    ~MyClient()
     {
     }
 
@@ -218,12 +218,12 @@ Q_SIGNALS:
     void channelClosed();
 };
 
-class TestClientHandler : public Test
+class TestClient : public Test
 {
     Q_OBJECT
 
 public:
-    TestClientHandler(QObject *parent = 0)
+    TestClient(QObject *parent = 0)
         : Test(parent),
           mConnService(0), mBaseConnService(0), mContactRepo(0),
           mText1ChanService(0)
@@ -270,17 +270,17 @@ private:
     uint mUserActionTime;
 };
 
-void TestClientHandler::expectSignalEmission()
+void TestClient::expectSignalEmission()
 {
     mLoop->exit(0);
 }
 
-void TestClientHandler::initTestCase()
+void TestClient::initTestCase()
 {
     initTestCaseImpl();
 
     g_type_init();
-    g_set_prgname("client-handler");
+    g_set_prgname("client-client");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
@@ -384,12 +384,12 @@ void TestClientHandler::initTestCase()
     QVERIFY(bus.registerObject(mChannelRequestPath, request));
 }
 
-void TestClientHandler::init()
+void TestClient::init()
 {
     initImpl();
 }
 
-void TestClientHandler::testRegister()
+void TestClient::testRegister()
 {
     // invalid client
     QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), "foo"));
@@ -401,7 +401,7 @@ void TestClientHandler::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant(Tp::HandleTypeContact));
     filters.append(filter);
-    mClientObject1 = MyHandler::create(filters, false, true);
+    mClientObject1 = MyClient::create(filters, false, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, "foo"));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
 
@@ -415,7 +415,7 @@ void TestClientHandler::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant(Tp::HandleTypeContact));
     filters.append(filter);
-    mClientObject2 = MyHandler::create(filters, true, true);
+    mClientObject2 = MyClient::create(filters, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, "foo", true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
 
@@ -438,50 +438,50 @@ void TestClientHandler::testRegister()
     mClientObject2Path.replace('.', '/');
 }
 
-void TestClientHandler::testRequests()
+void TestClient::testRequests()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     ClientInterfaceRequestsInterface *handlerRequestsIface = new ClientInterfaceRequestsInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
 
-    MyHandler *handler = dynamic_cast<MyHandler*>(mClientObject1.data());
-    connect(handler,
+    MyClient *client = dynamic_cast<MyClient*>(mClientObject1.data());
+    connect(client,
             SIGNAL(requestAdded(const Tp::ChannelRequestPtr &)),
             SLOT(expectSignalEmission()));
     handlerRequestsIface->AddRequest(QDBusObjectPath(mChannelRequestPath), QVariantMap());
-    if (!handler->mAddRequestRequest) {
+    if (!client->mAddRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
     }
-    QCOMPARE(handler->mAddRequestRequest->objectPath(),
+    QCOMPARE(client->mAddRequestRequest->objectPath(),
              mChannelRequestPath);
 
-    connect(handler,
+    connect(client,
             SIGNAL(requestRemoved(const Tp::ChannelRequestPtr &,
                                   const QString &,
                                   const QString &)),
             SLOT(expectSignalEmission()));
     handlerRequestsIface->RemoveRequest(QDBusObjectPath(mChannelRequestPath),
             TELEPATHY_ERROR_NOT_AVAILABLE, "Not available");
-    if (!handler->mRemoveRequestRequest) {
+    if (!client->mRemoveRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
     }
-    QCOMPARE(handler->mRemoveRequestRequest->objectPath(),
+    QCOMPARE(client->mRemoveRequestRequest->objectPath(),
              mChannelRequestPath);
-    QCOMPARE(handler->mRemoveRequestErrorName,
+    QCOMPARE(client->mRemoveRequestErrorName,
              QString(TELEPATHY_ERROR_NOT_AVAILABLE));
-    QCOMPARE(handler->mRemoveRequestErrorMessage,
+    QCOMPARE(client->mRemoveRequestErrorMessage,
              QString("Not available"));
 }
 
-void TestClientHandler::testHandleChannels()
+void TestClient::testHandleChannels()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
 
     // object 1
     ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
-    MyHandler *handler1 = dynamic_cast<MyHandler*>(mClientObject1.data());
-    connect(handler1,
+    MyClient *client1 = dynamic_cast<MyClient*>(mClientObject1.data());
+    connect(client1,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
     ChannelDetailsList channelDetailsList;
@@ -495,11 +495,11 @@ void TestClientHandler::testHandleChannels()
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(handler1->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
-    QCOMPARE(handler1->mHandleChannelsConnection->objectPath(), mConn->objectPath());
-    QCOMPARE(handler1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
-    QCOMPARE(handler1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
-    QCOMPARE(handler1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+    QCOMPARE(client1->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client1->mHandleChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
+    QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
     Tp::ObjectPathList handledChannels = handler1Iface->HandledChannels();
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));
@@ -507,8 +507,8 @@ void TestClientHandler::testHandleChannels()
     // object 2
     ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
             mClientObject2BusName, mClientObject2Path, this);
-    MyHandler *handler2 = dynamic_cast<MyHandler*>(mClientObject2.data());
-    connect(handler2,
+    MyClient *client2 = dynamic_cast<MyClient*>(mClientObject2.data());
+    connect(client2,
             SIGNAL(handleChannelsFinished()),
             SLOT(expectSignalEmission()));
     channelDetailsList.clear();
@@ -522,11 +522,11 @@ void TestClientHandler::testHandleChannels()
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(handler2->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
-    QCOMPARE(handler2->mHandleChannelsConnection->objectPath(), mConn->objectPath());
-    QCOMPARE(handler2->mHandleChannelsChannels.first()->objectPath(), mText2ChanPath);
-    QCOMPARE(handler2->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
-    QCOMPARE(handler2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
+    QCOMPARE(client2->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client2->mHandleChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client2->mHandleChannelsChannels.first()->objectPath(), mText2ChanPath);
+    QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QCOMPARE(client2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
     handledChannels = handler1Iface->HandledChannels();
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));
@@ -540,7 +540,7 @@ void TestClientHandler::testHandleChannels()
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText2ChanPath)));
 
     g_object_unref(mText2ChanService);
-    connect(handler2,
+    connect(client2,
             SIGNAL(channelClosed()),
             SLOT(expectSignalEmission()));
     QCOMPARE(mLoop->exec(), 0);
@@ -548,15 +548,15 @@ void TestClientHandler::testHandleChannels()
     QVERIFY(handledChannels.isEmpty());
 }
 
-void TestClientHandler::cleanup()
+void TestClient::cleanup()
 {
     cleanupImpl();
 }
 
-void TestClientHandler::cleanupTestCase()
+void TestClient::cleanupTestCase()
 {
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestClientHandler)
-#include "_gen/client-handler.cpp.moc.hpp"
+QTEST_MAIN(TestClient)
+#include "_gen/client.cpp.moc.hpp"
