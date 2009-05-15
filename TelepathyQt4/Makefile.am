@@ -147,7 +147,9 @@ nodist_libtelepathy_qt4_la_SOURCES = \
 
 tpqt4include_HEADERS = \
     AbstractClient \
+    AbstractClientApprover \
     AbstractClientHandler \
+    AbstractClientObserver \
     AbstractInterface \
     Account \
     AccountManager \
