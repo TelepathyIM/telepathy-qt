@@ -459,7 +459,6 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
 
     AbstractClientHandler *handler =
         dynamic_cast<AbstractClientHandler*>(client.data());
-
     if (handler) {
         // export o.f.T.Client.Handler
         new ClientHandlerAdaptor(mPriv->bus, handler, object);
@@ -472,6 +471,15 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
                     QLatin1String(
                         "org.freedesktop.Telepathy.Client.Interface.Requests"));
         }
+    }
+
+    AbstractClientObserver *observer =
+        dynamic_cast<AbstractClientObserver*>(client.data());
+    if (observer) {
+        // export o.f.T.Client.Handler
+        new ClientObserverAdaptor(mPriv->bus, observer, object);
+        interfaces.append(
+                QLatin1String("org.freedesktop.Telepathy.Client.Observer"));
     }
 
     // TODO add more adaptors when they exist
