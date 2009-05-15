@@ -5,6 +5,7 @@
 <tp:title>Client interfaces</tp:title>
 
 <xi:include href="../spec/Client.xml"/>
+<xi:include href="../spec/Client_Observer.xml"/>
 <xi:include href="../spec/Client_Handler.xml"/>
 
 <xi:include href="../spec/Client_Interface_Requests.xml"/>
