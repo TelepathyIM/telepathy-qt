@@ -126,7 +126,7 @@ private:
     QStringList mInterfaces;
 };
 
-class MyClient : public QObject, public AbstractClientHandler
+class MyClient : public QObject, public AbstractClientObserver, public AbstractClientHandler
 {
     Q_OBJECT
 
@@ -143,12 +143,23 @@ public:
     MyClient(const ChannelClassList &channelFilter,
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
-        : AbstractClientHandler(channelFilter, wantsRequestNotification),
+        : AbstractClientObserver(channelFilter),
+          AbstractClientHandler(channelFilter, wantsRequestNotification),
           mBypassApproval(bypassApproval)
     {
     }
 
     ~MyClient()
+    {
+    }
+
+    void observeChannels(const MethodInvocationContextPtr<> &context,
+            const AccountPtr &account,
+            const ConnectionPtr &connection,
+            const QList<ChannelPtr> &channels,
+            const QString &dispatchOperationPath,
+            const QList<ChannelRequestPtr> &requestsSatisfied,
+            const QVariantMap &observerInfo)
     {
     }
 
