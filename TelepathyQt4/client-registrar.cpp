@@ -509,7 +509,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     AbstractClientObserver *observer =
         dynamic_cast<AbstractClientObserver*>(client.data());
     if (observer) {
-        // export o.f.T.Client.Handler
+        // export o.f.T.Client.Observer
         new ClientObserverAdaptor(mPriv->bus, observer, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Observer"));
@@ -524,7 +524,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         return false;
     }
 
-    // export o.f,T,Client interface
+    // export o.f.T.Client interface
     new ClientAdaptor(interfaces, object);
 
     QString objectPath = QString("/%1").arg(busName);
