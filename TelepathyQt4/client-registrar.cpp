@@ -473,11 +473,11 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     if (unique) {
         // o.f.T.Client.<unique_bus_name>_<pointer> should be enough to identify
         // an unique identifier
-        busName.append(QString(".%1._%2")
+        busName.append(QString(".%1.x%2")
                 .arg(mPriv->bus.baseService()
                     .replace(':', '_')
                     .replace('.', "._"))
-                .arg((intptr_t) client.data()));
+                .arg((intptr_t) client.data(), 0, 16));
     }
 
     if (mPriv->services.contains(busName) ||
