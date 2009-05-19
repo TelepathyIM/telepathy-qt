@@ -1,7 +1,19 @@
-telepathy-qt4 0.1.5 (UNRELEASED)
+telepathy-qt4 0.1.5 (2009-05-19)
 ================================
 
-...
+The "do not look at the conductor" release.
+
+New API:
+
+* Added Client support (Handler, Observer).
+  * Added ClientRegistrar, class responsible for registering clients and proper
+    exporting their D-Bus interfaces.
+  * Added AbstractClientObserver, AbstractClientApprover (skeleton) and
+    AbstractClientHandler. Clients should inherit one or some combination of
+    these, by using multiple inheritance, and register themselves using
+    ClientRegistrar::registerClient() in order to become a Client.
+
+* Added ChannelRequest high-level class.
 
 telepathy-qt4 0.1.4 (2009-05-08)
 ================================
