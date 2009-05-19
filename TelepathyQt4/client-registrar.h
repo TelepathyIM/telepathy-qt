@@ -42,8 +42,8 @@ class ClientRegistrar : public QObject, public RefCounted
     Q_DISABLE_COPY(ClientRegistrar)
 
 public:
-    static ClientRegistrarPtr create();
-    static ClientRegistrarPtr create(const QDBusConnection &bus);
+    static ClientRegistrarPtr create(
+            const QDBusConnection &bus = QDBusConnection::sessionBus());
     ~ClientRegistrar();
 
     QDBusConnection dbusConnection() const;

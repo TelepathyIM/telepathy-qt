@@ -321,7 +321,7 @@ struct ClientRegistrar::Private
  *
  * You can also provide a D-Bus connection as a QDBusConnection:
  *
- * \code ClientRegistrarPtr cr = ClientRegistrar::create(QDBusConnection::sessionBus()); \endcode
+ * \code ClientRegistrarPtr cr = ClientRegistrar::create(QDBusConnection::systemBus()); \endcode
  *
  * \subsection registering_sec Registering a client
  *
@@ -347,22 +347,6 @@ struct ClientRegistrar::Private
  */
 
 QHash<QPair<QString, QString>, ClientRegistrar*> ClientRegistrar::registrarForConnection;
-
-/**
- * Create a new client registrar object using QDBusConnection::sessionBus().
- *
- * ClientRegistrar instances are unique per D-Bus connection. The returned
- * ClientRegistrarPtr will point to the same ClientRegistrar instance on
- * successive calls, unless the instance had already been destroyed, in which
- * case a new instance will be returned.
- *
- * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
- */
-ClientRegistrarPtr ClientRegistrar::create()
-{
-    QDBusConnection bus = QDBusConnection::sessionBus();
-    return create(bus);
-}
 
 /**
  * Create a new client registrar object using the given \a bus.
