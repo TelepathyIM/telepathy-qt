@@ -433,8 +433,8 @@ QList<AbstractClientPtr> ClientRegistrar::registeredClients() const
 /**
  * Register a client on D-Bus.
  *
- * The client registrar will be responsible for proper exporting the client
- * D-Bus interfaces, based on inheritance.
+ * The client registrar will export the appropriate D-Bus interfaces,
+ * based on the abstract classes subclassed by \param client.
  *
  * If each of a client instance should be able to manipulate channels
  * separately, set unique to true.
