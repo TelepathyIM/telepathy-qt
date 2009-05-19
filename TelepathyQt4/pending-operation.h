@@ -64,7 +64,7 @@ class PendingOperation : public QObject
     Q_DISABLE_COPY(PendingOperation)
 
 public:
-    ~PendingOperation();
+    virtual ~PendingOperation();
 
     /**
      * Returns whether or not the request has finished processing. #finished()
