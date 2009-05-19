@@ -106,7 +106,6 @@ ChannelRequest::Private::Private(ChannelRequest *parent)
     introspectables[FeatureCore] = introspectableCore;
 
     readinessHelper->addIntrospectables(introspectables);
-    // readinessHelper->becomeReady(Features() << FeatureCore);
 }
 
 ChannelRequest::Private::~Private()
