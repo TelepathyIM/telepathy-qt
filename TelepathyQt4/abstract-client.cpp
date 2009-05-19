@@ -21,8 +21,6 @@
 
 #include <TelepathyQt4/AbstractClient>
 
-#include "TelepathyQt4/_gen/abstract-client.moc.hpp"
-
 #include <QString>
 
 namespace Tp
