@@ -18,6 +18,8 @@ EXTRA_DIST = \
     account-manager.xml \
     async-model.dox \
     channel.xml \
+    channel-request.xml \
+    client.xml \
     connection.xml \
     connection-manager.xml \
     dbus.xml \
@@ -44,10 +46,15 @@ libtelepathy_qt4_la_LIBADD = $(ALL_LIBS)
 libtelepathy_qt4_la_DEPENDENCIES = Makefile.am
 
 libtelepathy_qt4_la_SOURCES = \
+    abstract-client.cpp \
     abstract-interface.cpp \
     account.cpp \
     account-manager.cpp \
     channel.cpp \
+    channel-request.cpp \
+    client.cpp \
+    client-registrar.cpp \
+    client-registrar-internal.h \
     connection.cpp \
     connection-manager.cpp \
     connection-internal.h \
@@ -91,6 +98,10 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-account-manager.moc.hpp \
     _gen/cli-channel-body.hpp \
     _gen/cli-channel.moc.hpp \
+    _gen/cli-channel-request-body.hpp \
+    _gen/cli-channel-request.moc.hpp \
+    _gen/cli-client-body.hpp \
+    _gen/cli-client.moc.hpp \
     _gen/cli-connection-body.hpp \
     _gen/cli-connection.moc.hpp \
     _gen/cli-connection-manager-body.hpp \
@@ -108,6 +119,10 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/account.moc.hpp \
     _gen/account-manager.moc.hpp \
     _gen/channel.moc.hpp \
+    _gen/channel-request.moc.hpp \
+    _gen/client.moc.hpp \
+    _gen/client-registrar.moc.hpp \
+    _gen/client-registrar-internal.moc.hpp \
     _gen/connection.moc.hpp \
     _gen/connection-manager.moc.hpp \
     _gen/connection-internal.moc.hpp \
@@ -132,10 +147,17 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/text-channel.moc.hpp
 
 tpqt4include_HEADERS = \
+    AbstractClient \
+    AbstractClientApprover \
+    AbstractClientHandler \
+    AbstractClientObserver \
     AbstractInterface \
     Account \
     AccountManager \
     Channel \
+    ChannelRequest \
+    Client \
+    ClientRegistrar \
     Connection \
     ConnectionManager \
     Constants \
@@ -151,6 +173,7 @@ tpqt4include_HEADERS = \
     MediaSessionHandler \
     MediaStreamHandler \
     Message \
+    MethodInvocationContext \
     OptionalInterfaceFactory \
     PendingAccount \
     PendingChannel \
@@ -189,11 +212,16 @@ tpqt4include_HEADERS = \
     ChannelInterfaceHoldInterface \
     ChannelInterfaceMediaSignallingInterface \
     ChannelInterfacePasswordInterface \
+    ChannelRequestInterface \
     ChannelTypeContactListInterface \
     ChannelTypeRoomListInterface \
     ChannelTypeStreamedMediaInterface \
     ChannelTypeTextInterface \
     ChannelTypeTubesInterface \
+    ClientHandlerInterface \
+    ClientObserverInterface \
+    ClientInterface \
+    ClientInterfaceRequestsInterface \
     ConnectionInterface \
     ConnectionInterfaceAliasingInterface \
     ConnectionInterfaceAvatarsInterface \
@@ -210,10 +238,14 @@ tpqt4include_HEADERS = \
     PeerInterface \
     PropertiesInterface \
     PropertiesInterfaceInterface \
+    abstract-client.h \
     abstract-interface.h \
     account.h \
     account-manager.h \
     channel.h \
+    channel-request.h \
+    client.h \
+    client-registrar.h \
     connection.h \
     connection-manager.h \
     constants.h \
@@ -229,6 +261,7 @@ tpqt4include_HEADERS = \
     media-session-handler.h \
     media-stream-handler.h \
     message.h \
+    method-invocation-context.h \
     optional-interface-factory.h \
     pending-account.h \
     pending-channel.h \
@@ -254,6 +287,8 @@ nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
     _gen/cli-account-manager.h \
     _gen/cli-channel.h \
+    _gen/cli-channel-request.h \
+    _gen/cli-client.h \
     _gen/cli-connection.h \
     _gen/cli-connection-manager.h \
     _gen/cli-dbus.h \
@@ -352,6 +387,14 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
 			mainiface='--mainiface=Tp::Client::ChannelInterface';; \
+		channel-request) \
+			group='clientchannelrequest'; \
+			prettyinclude='ChannelRequest'; \
+			mainiface='--mainiface=Tp::Client::ChannelRequestInterface';; \
+		client) \
+			group='clientclient'; \
+			prettyinclude='Client'; \
+			mainiface='--mainiface=Tp::Client::ClientInterface';; \
 		account) \
 			group='clientaccount'; \
 			prettyinclude='AccountManager'; \

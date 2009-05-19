@@ -38,6 +38,7 @@ if ENABLE_TP_GLIB_TESTS
 TESTS += \
     test-chan-basics \
     test-chan-group \
+    test-client \
     test-cm-basics \
     test-conn-basics \
     test-conn-requests \
@@ -51,6 +52,7 @@ TESTS += \
 BUILT_SOURCES += \
     _gen/chan-basics.cpp.moc.hpp \
     _gen/chan-group.cpp.moc.hpp \
+    _gen/client.cpp.moc.hpp \
     _gen/cm-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
     _gen/conn-requests.cpp.moc.hpp \
@@ -68,6 +70,9 @@ test_chan_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-ech
 
 test_chan_group_SOURCES = chan-group.cpp
 test_chan_group_LDADD = $(LDADD) $(top_builddir)/tests/lib/csh/libtp-glib-csh-tests.la
+
+test_client_SOURCES = client.cpp
+test_client_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_cm_basics_SOURCES = cm-basics.cpp
 test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
