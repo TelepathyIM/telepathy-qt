@@ -184,7 +184,7 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  * An AccountManagerPtr object is returned, which will automatically keeps
  * track of object lifetime.
  *
- * You can also provide a D-Bus Connection as a QDBusConnection:
+ * You can also provide a D-Bus connection as a QDBusConnection:
  *
  * \code AccountManagerPtr am = AccountManager::create(QDBusConnection::sessionBus()); \endcode
  *
@@ -446,7 +446,7 @@ AccountPtr AccountManager::accountForPath(const QString &path)
  * make sure they are ready before using them.
  *
  * \param paths List of accounts object paths.
- * \return A liist of AccountPtr objects.
+ * \return A list of AccountPtr objects.
  * \sa validAccounts(), invalidAccounts(), allAccounts(), accountForPath()
  */
 QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
