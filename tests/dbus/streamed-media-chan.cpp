@@ -436,9 +436,8 @@ void TestStreamedMediaChan::testOutgoingCall()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    if (!mSDCStreamReturn) {
+    while (!mSDCStreamReturn || !mSSCStreamReturn) {
         // wait direction and state changed signal
-        QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mSDCStreamReturn, stream);
@@ -784,9 +783,8 @@ void TestStreamedMediaChan::testIncomingCall()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    if (!mSDCStreamReturn) {
+    while (!mSDCStreamReturn || !mSSCStreamReturn) {
         // wait direction and state changed signal
-        QCOMPARE(mLoop->exec(), 0);
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mSDCStreamReturn, stream);
