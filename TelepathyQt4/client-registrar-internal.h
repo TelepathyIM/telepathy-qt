@@ -65,7 +65,7 @@ class ClientObserverAdaptor : public QDBusAbstractAdaptor
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Observer")
     Q_CLASSINFO("D-Bus Introspection", ""
-"  <interface name=\"org.freedesktop.Telepathy.Client.Handler\" >\n"
+"  <interface name=\"org.freedesktop.Telepathy.Client.Observer\" >\n"
 "    <property name=\"ObserverChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
 "    <method name=\"ObserveChannels\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
