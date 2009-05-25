@@ -147,6 +147,46 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
             dispatchOperationPath.path(), channelRequests, observerInfo);
 }
 
+ClientApproverAdaptor::ClientApproverAdaptor(const QDBusConnection &bus,
+        AbstractClientApprover *client,
+        QObject *parent)
+    : QDBusAbstractAdaptor(parent),
+      mBus(bus),
+      mClient(client)
+{
+}
+
+ClientApproverAdaptor::~ClientApproverAdaptor()
+{
+}
+
+void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &channelDetailsList,
+        const QDBusObjectPath &dispatchOperationPath,
+        const QVariantMap &properties,
+        const QDBusMessage &message)
+{
+    QDBusObjectPath connectionPath = qdbus_cast<QDBusObjectPath>(
+            properties.value("Connection"));
+    QString connectionBusName = connectionPath.path().mid(1).replace('/', '.');
+    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
+            connectionPath.path());
+
+    QList<ChannelPtr> channels;
+    ChannelPtr channel;
+    foreach (const ChannelDetails &channelDetails, channelDetailsList) {
+        channel = Channel::create(connection, channelDetails.channel.path(),
+                channelDetails.properties);
+        channels.append(channel);
+    }
+
+    MethodInvocationContextPtr<> context =
+        MethodInvocationContextPtr<>(
+                new MethodInvocationContext<>(mBus, message));
+
+    mClient->addDispatchOperation(context, channels,
+            dispatchOperationPath.path(), properties);
+}
+
 QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
 
 ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
@@ -500,7 +540,14 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
                 QLatin1String("org.freedesktop.Telepathy.Client.Observer"));
     }
 
-    // TODO add more adaptors when they exist
+    AbstractClientApprover *approver =
+        dynamic_cast<AbstractClientApprover*>(client.data());
+    if (approver) {
+        // export o.f.T.Client.Approver
+        new ClientApproverAdaptor(mPriv->bus, approver, object);
+        interfaces.append(
+                QLatin1String("org.freedesktop.Telepathy.Client.Approver"));
+    }
 
     if (interfaces.isEmpty()) {
         warning() << "Client does not implement any known interface";

@@ -107,6 +107,47 @@ private:
     AbstractClientObserver *mClient;
 };
 
+class ClientApproverAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.Client.Approver")
+    Q_CLASSINFO("D-Bus Introspection", ""
+"  <interface name=\"org.freedesktop.Telepathy.Client.Approver\" >\n"
+"    <property name=\"ApproverChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
+"    <method name=\"AddDispatchOperation\" >\n"
+"      <arg name=\"Channels\" type=\"a(oa{sv})\" direction=\"in\" />\n"
+"      <arg name=\"Dispatch_Operation\" type=\"o\" direction=\"in\" />\n"
+"      <arg name=\"Properties\" type=\"a{sv}\" direction=\"in\" />\n"
+"    </method>\n"
+"  </interface>\n"
+        "")
+
+    Q_PROPERTY(Tp::ChannelClassList ApproverChannelFilter READ ApproverChannelFilter)
+
+public:
+    ClientApproverAdaptor(
+            const QDBusConnection &bus,
+            AbstractClientApprover *client,
+            QObject *parent);
+    virtual ~ClientApproverAdaptor();
+
+public: // Properties
+    inline Tp::ChannelClassList ApproverChannelFilter() const
+    {
+        return mClient->approverChannelFilter();
+    }
+
+public Q_SLOTS: // Methods
+    void AddDispatchOperation(const Tp::ChannelDetailsList &channels,
+            const QDBusObjectPath &dispatchOperation,
+            const QVariantMap &properties,
+            const QDBusMessage &message);
+
+private:
+    QDBusConnection mBus;
+    AbstractClientApprover *mClient;
+};
+
 class ClientHandlerAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT

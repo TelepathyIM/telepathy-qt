@@ -81,7 +81,10 @@ public:
 
     ChannelClassList approverChannelFilter() const;
 
-    /* TODO add more methods */
+    virtual void addDispatchOperation(const MethodInvocationContextPtr<> &context,
+            const QList<ChannelPtr> &channels,
+            const QString &dispatchOperationPath,
+            const QVariantMap &dispatchOperationProperties) = 0;
 
 protected:
     AbstractClientApprover(const ChannelClassList &channelFilter);
