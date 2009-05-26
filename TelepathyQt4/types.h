@@ -34,7 +34,7 @@
 namespace Tp
 {
 
-class AbstractClientHandler;
+class AbstractClient;
 class Account;
 class AccountManager;
 class Channel;
@@ -49,7 +49,7 @@ class MediaStream;
 class StreamedMediaChannel;
 class TextChannel;
 
-typedef SharedPtr<AbstractClientHandler> AbstractClientPtr;
+typedef SharedPtr<AbstractClient> AbstractClientPtr;
 typedef SharedPtr<Account> AccountPtr;
 typedef SharedPtr<AccountManager> AccountManagerPtr;
 typedef SharedPtr<Channel> ChannelPtr;
