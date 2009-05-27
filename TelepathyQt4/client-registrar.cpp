@@ -25,6 +25,7 @@
 #include "TelepathyQt4/_gen/client-registrar.moc.hpp"
 #include "TelepathyQt4/_gen/client-registrar-internal.moc.hpp"
 
+#include "TelepathyQt4/channel-factory.h"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Account>
@@ -125,7 +126,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
     QList<ChannelPtr> channels;
     ChannelPtr channel;
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        channel = Channel::create(connection, channelDetails.channel.path(),
+        channel = ChannelFactory::create(connection, channelDetails.channel.path(),
                 channelDetails.properties);
         channels.append(channel);
     }
@@ -193,7 +194,7 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
     QList<ChannelPtr> channels;
     ChannelPtr channel;
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        channel = Channel::create(connection, channelDetails.channel.path(),
+        channel = ChannelFactory::create(connection, channelDetails.channel.path(),
                 channelDetails.properties);
         channels.append(channel);
     }
