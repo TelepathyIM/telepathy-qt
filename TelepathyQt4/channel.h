@@ -66,6 +66,8 @@ public:
 
     ConnectionPtr connection() const;
 
+    QVariantMap immutableProperties() const;
+
     QString channelType() const;
     QStringList interfaces() const;
 

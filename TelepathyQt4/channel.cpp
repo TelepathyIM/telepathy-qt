@@ -64,7 +64,8 @@ namespace Tp
 
 struct Channel::Private
 {
-    Private(Channel *parent, const ConnectionPtr &connection);
+    Private(Channel *parent, const ConnectionPtr &connection,
+            const QVariantMap &immutableProperties);
     ~Private();
 
     static void introspectMain(Private *self);
@@ -103,6 +104,8 @@ struct Channel::Private
     // Owning connection - it can be a SharedPtr as Connection does not cache
     // channels
     ConnectionPtr connection;
+
+    QVariantMap immutableProperties;
 
     // Optional interface proxies
     Client::ChannelInterfaceGroupInterface *group;
@@ -196,11 +199,13 @@ struct Channel::Private::GroupMembersChangedInfo
     QString message;
 };
 
-Channel::Private::Private(Channel *parent, const ConnectionPtr &connection)
+Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
+        const QVariantMap &immutableProperties)
     : parent(parent),
       baseInterface(new Client::ChannelInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       connection(connection),
+      immutableProperties(immutableProperties),
       group(0),
       properties(0),
       readinessHelper(parent->readinessHelper()),
@@ -973,7 +978,7 @@ Channel::Channel(const ConnectionPtr &connection,
             objectPath),
       OptionalInterfaceFactory<Channel>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, connection))
+      mPriv(new Private(this, connection, immutableProperties))
 {
     // FIXME: remember the immutableProperties, and use them to reduce the
     // number of D-Bus calls we need to make (but we should make at least
@@ -996,6 +1001,22 @@ Channel::~Channel()
 ConnectionPtr Channel::connection() const
 {
     return mPriv->connection;
+}
+
+/**
+ * Return the immutable properties of the channel.
+ *
+ * The keys and values in this map are defined by the Telepathy D-Bus
+ * specification, or by third-party extensions to that specification.
+ * These are the properties that cannot change over the lifetime of the
+ * channel; they're announced in the result of the request, for efficiency.
+ *
+ * \return A map in which the keys are D-Bus property names and the values
+ *         are the corresponding values.
+ */
+QVariantMap Channel::immutableProperties() const
+{
+    return mPriv->immutableProperties;
 }
 
 /**
