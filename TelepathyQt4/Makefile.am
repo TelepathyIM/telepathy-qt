@@ -51,6 +51,8 @@ libtelepathy_qt4_la_SOURCES = \
     account.cpp \
     account-manager.cpp \
     channel.cpp \
+    channel-factory.cpp \
+    channel-factory.h \
     channel-request.cpp \
     client.cpp \
     client-registrar.cpp \
