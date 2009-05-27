@@ -17,10 +17,9 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Channel.Type.DBusTube.DRAFT"
-      tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.Channel.Type.DBusTube">
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
-    <tp:requires interface="org.freedesktop.Telepathy.Channel.Interface.Tube.DRAFT"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Interface.Tube"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A D-Bus tube is an ordered reliable transport, for transporting D-Bus
         traffic.</p>
@@ -54,7 +53,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
     </tp:docstring>
 
-    <method name="OfferDBusTube" tp:name-for-bindings="Offer_DBus_Tube">
+    <method name="Offer" tp:name-for-bindings="Offer">
       <tp:docstring>
         Offers a D-Bus tube providing the service specified.
       </tp:docstring>
@@ -62,14 +61,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         tp:type="String_Variant_Map">
         <tp:docstring>
           The dictionary of arbitrary
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Tube.DRAFT">Parameters</tp:dbus-ref>
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Tube">Parameters</tp:dbus-ref>
           to send with the tube offer.
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="access_control" type="u" tp:type="Socket_Access_Control">
+        <tp:docstring>
+          The access control the connection manager applies to the D-Bus socket.
         </tp:docstring>
       </arg>
       <arg direction="out" name="address" type="s">
         <tp:docstring>
           The string describing the address of the private bus. The client
-          SHOULD not attempt to connect to the address until the tube is open.
+          SHOULD NOT attempt to connect to the address until the tube is open.
         </tp:docstring>
       </arg>
       <tp:possible-errors>
@@ -83,17 +87,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:possible-errors>
     </method>
 
-    <method name="AcceptDBusTube" tp:name-for-bindings="Accept_DBus_Tube">
+    <method name="Accept" tp:name-for-bindings="Accept">
       <tp:docstring>
         Accept a D-Bus tube that's in the "local pending" state. The
         connection manager will attempt to open the tube. The tube remains in
-        the "local pending" state until the TubeStateChanged signal is
-        emitted.
+        the "local pending" state until the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Tube">TubeChannelStateChanged</tp:dbus-ref>
+        signal is emitted.
       </tp:docstring>
+      <arg direction="in" name="access_control" type="u" tp:type="Socket_Access_Control">
+        <tp:docstring>
+          The access control the connection manager applies to the D-Bus socket.
+        </tp:docstring>
+      </arg>
       <arg direction="out" name="address" type="s">
         <tp:docstring>
           The string describing the address of the private bus. The client
-          SHOULD not attempt to connect to the address until the tube is open.
+          SHOULD NOT attempt to connect to the address until the tube is open.
         </tp:docstring>
       </arg>
     </method>
@@ -104,12 +114,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         participant opens or closes the tube.  This provides change
         notification for the <tp:member-ref>DBusNames</tp:member-ref> property.
       </tp:docstring>
-      <arg name="added" type="a{us}" tp:type="DBus_Tube_Participants">
+      <arg name="Added" type="a{us}" tp:type="DBus_Tube_Participants">
         <tp:docstring>
           Array of handles and D-Bus names of new participants.
         </tp:docstring>
       </arg>
-      <arg name="removed" type="au" tp:type="Contact_Handle[]">
+      <arg name="Removed" type="au" tp:type="Contact_Handle[]">
         <tp:docstring>
           Array of handles of former participants.
         </tp:docstring>
@@ -121,11 +131,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>A string representing the service name that will be used over the
           tube. It SHOULD be a well-known D-Bus service name, of the form
-          com.example.ServiceName.</p>
+          <tt>com.example.ServiceName</tt>.</p>
         <p>When the tube is offered, the service name is transmitted to the
           other end.</p>
         <p>When requesting a channel with
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>,
           this property MUST be included in the request.</p>
       </tp:docstring>
     </property>
@@ -156,6 +167,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:docstring>
       </tp:member>
     </tp:mapping>
+
+    <property name="SupportedAccessControls" type="au"
+              tp:type="Socket_Access_Control[]" access="read"
+              tp:name-for-bindings="Supported_Access_Controls">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of the access control types that are supported with this channel.
+        Note that only Socket_Access_Control_Localhost and
+        Socket_Access_Control_Credentials can be used with D-Bus tubes.</p>
+
+        <p>When requesting a channel with
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.Interface.Requests.CreateChannel</tp:dbus-ref>,
+          this property MUST NOT be included in the request.</p>
+
+      </tp:docstring>
+    </property>
 
   </interface>
 

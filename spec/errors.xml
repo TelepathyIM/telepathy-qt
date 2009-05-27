@@ -307,6 +307,24 @@
     </tp:docstring>
   </tp:error>
 
+  <tp:error name="Connection Refused">
+    <tp:docstring>
+      Raised when a connection is refused.
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Connection Failed">
+    <tp:docstring>
+      Raised when a connection can't be established.
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Connection Lost">
+    <tp:docstring>
+      Raised when a connection is broken.
+    </tp:docstring>
+  </tp:error>
+
   <tp:copyright>Copyright © 2005-2009 Collabora Limited</tp:copyright>
   <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">

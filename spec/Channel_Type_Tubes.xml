@@ -19,6 +19,14 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Channel.Type.Tubes">
+
+    <tp:deprecated version="0.17.25">Client implementations
+      SHOULD use <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Type">StreamTube</tp:dbus-ref> and
+        <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Type">DBusTube</tp:dbus-ref>
+      instead.</tp:deprecated>
+
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A "tube" is a mechanism for arbitrary data transfer. Two types of
@@ -101,92 +109,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:enumvalue suffix="Open" value="2">
         <tp:docstring>
           The tube is open for traffic.
-        </tp:docstring>
-      </tp:enumvalue>
-    </tp:enum>
-
-    <tp:enum name="Socket_Address_Type" type="u">
-      <tp:enumvalue suffix="Unix" value="0">
-        <tp:docstring>
-          A Unix socket. The address variant contains a byte-array, signature 'ay',
-          containing the path of the socket.
-        </tp:docstring>
-      </tp:enumvalue>
-
-      <tp:enumvalue suffix="Abstract_Unix" value="1">
-        <tp:docstring>
-          An abstract Unix socket. The address variant contains a byte-array,
-          signature 'ay', containing the path of the socket including the
-          leading null byte.
-        </tp:docstring>
-      </tp:enumvalue>
-
-      <tp:enumvalue suffix="IPv4" value="2">
-        <tp:docstring>
-          An IPv4 socket. The address variant contains a Socket_Address_IPv4,
-          i.e. a structure with signature (sq)
-          in which the string is an IPv4 dotted-quad address literal
-          (and must not be a DNS name), while the 16-bit unsigned integer is
-          the port number.
-        </tp:docstring>
-      </tp:enumvalue>
-
-      <tp:enumvalue suffix="IPv6" value="3">
-        <tp:docstring>
-          An IPv6 socket. The address variant contains a Socket_Address_IPv6,
-          i.e. a structure with signature (sq)
-          in which the string is an IPv6 address literal as specified in
-          RFC2373 (and must not be a DNS name), while the 16-bit unsigned
-          integer is the port number.
-        </tp:docstring>
-      </tp:enumvalue>
-
-    </tp:enum>
-
-    <tp:enum name="Socket_Access_Control" type="u"
-      array-name="Socket_Access_Control_List">
-      <tp:enumvalue suffix="Localhost" value="0">
-        <tp:docstring>
-          The IP or Unix socket can be accessed by any local user (e.g.
-          a Unix socket that accepts all local connections, or an IP socket
-          listening on 127.0.0.1 (or ::1) or rejecting connections not from
-          that address). The associated variant must be ignored.
-        </tp:docstring>
-      </tp:enumvalue>
-      <tp:enumvalue suffix="Port" value="1">
-        <tp:docstring>
-          May only be used on IP sockets. The associated variant must contain
-          a struct Socket_Address_IPv4 (or Socket_Address_IPv6)
-          containing the string form of an IP address of the appropriate
-          version, and a port number. The socket can only be accessed if the
-          connecting process has that address and port number; all other
-          connections will be rejected.
-        </tp:docstring>
-      </tp:enumvalue>
-      <tp:enumvalue suffix="Netmask" value="2">
-        <tp:docstring>
-          May only be used on IP sockets. The associated variant must contain
-          a struct Socket_Netmask_IPv4 (or Socket_Netmask_IPv6) with
-          signature (sy), containing the string form of an
-          IP address of the appropriate version, and a prefix length "n".
-          The socket can only be accessed if the first n bits of the
-          connecting address match the first n bits of the given address.
-        </tp:docstring>
-      </tp:enumvalue>
-      <tp:enumvalue suffix="Credentials" value="3">
-        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The connecting process must send a single zero (NUL) byte when
-            it first connects, which is not considered to be part of the data
-            stream. If the operating system uses sendmsg() with SCM_CREDS or
-            SCM_CREDENTIALS to pass credentials over sockets, the connecting
-            process must do so if possible; if not, it must still send the
-            byte.</p>
-
-          <p>The listening process will disconnect the connection unless it
-            can determine by OS-specific means that the connecting process
-            has the same user ID as the listening process.</p>
-
-          <p>The associated variant must be ignored.</p>
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
