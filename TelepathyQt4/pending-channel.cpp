@@ -23,6 +23,7 @@
 
 #include "TelepathyQt4/_gen/pending-channel.moc.hpp"
 
+#include "TelepathyQt4/channel-factory.h"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Channel>
@@ -255,32 +256,8 @@ ChannelPtr PendingChannel::channel() const
     }
 
     SharedPtr<Connection> conn(mPriv->connection);
-    if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
-        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
-                    TextChannel::create(conn,
-                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
-    }
-    else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
-        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
-                    StreamedMediaChannel::create(conn,
-                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
-    }
-    else if (channelType() == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
-        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
-                    RoomList::create(conn,
-                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
-    }
-    // FIXME: update spec so we can do this properly
-    else if (channelType() == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
-        mPriv->channel = ChannelPtr(dynamic_cast<Channel*>(
-                    FileTransfer::create(conn,
-                        mPriv->objectPath.path(), mPriv->immutableProperties).data()));
-    }
-    else {
-        // ContactList, old-style Tubes, or a future channel type
-        mPriv->channel = Channel::create(conn,
-                mPriv->objectPath.path(), mPriv->immutableProperties);
-    }
+    mPriv->channel = ChannelFactory::create(conn,
+            mPriv->objectPath.path(), mPriv->immutableProperties);
     return mPriv->channel;
 }
 
