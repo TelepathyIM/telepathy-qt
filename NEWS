@@ -1,7 +1,23 @@
-telepathy-qt4 0.1.6 (UNRELEASED)
+telepathy-qt4 0.1.6 (2009-05-28)
 ================================
 
-...
+The "So hot, I have a fever" release.
+
+New API:
+
+* Added Channel::immutableProperties public method.
+
+Enhancements:
+
+* Added ChannelFactory, internal class to create channels based on
+  their types.
+* PendingChannel: Use ChannelFactory to create channels.
+
+Bugfixes:
+
+* Proper define AbstractClientPtr.
+* ClientRegistrar: Fixed Observer adaptor introspection data.
+* ClientRegistrar: Use ChannelFactory to create Channels.
 
 telepathy-qt4 0.1.5 (2009-05-19)
 ================================
