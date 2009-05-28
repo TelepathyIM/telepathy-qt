@@ -52,8 +52,7 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
                     RoomList::create(connection,
                         channelPath, immutableProperties).data()));
     }
-    // FIXME: update spec so we can do this properly
-    else if (channelType == "org.freedesktop.Telepathy.Channel.Type.FileTransfer") {
+    else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {
         return ChannelPtr(dynamic_cast<Channel*>(
                     FileTransfer::create(connection,
                         channelPath, immutableProperties).data()));
