@@ -48,7 +48,9 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Types>
 
-#include <list>
+#ifndef QT_NO_STL
+# include <list>
+#endif
 
 #include <QList>
 #include <QSet>
@@ -262,10 +264,12 @@ class ReferencedHandles
             return toList().toSet();
         }
 
+#ifndef QT_NO_STL
         inline std::list<uint> toStdList() const
         {
             return toList().toStdList();
         }
+#endif
 
         inline QVector<uint> toVector() const
         {
