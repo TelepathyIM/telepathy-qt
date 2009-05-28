@@ -1006,6 +1006,13 @@ ConnectionPtr Channel::connection() const
 /**
  * Return the immutable properties of the channel.
  *
+ * If the channel is ready (isReady() returns true), the following keys are
+ * guaranteed to be present:
+ * org.freedesktop.Telepathy.Channel.ChannelType,
+ * org.freedesktop.Telepathy.Channel.TargetHandleType,
+ * org.freedesktop.Telepathy.Channel.TargetHandle and
+ * org.freedesktop.Telepathy.Channel.Requested.
+ *
  * The keys and values in this map are defined by the Telepathy D-Bus
  * specification, or by third-party extensions to that specification.
  * These are the properties that cannot change over the lifetime of the
@@ -1016,6 +1023,30 @@ ConnectionPtr Channel::connection() const
  */
 QVariantMap Channel::immutableProperties() const
 {
+    if (isReady()) {
+        QString key;
+
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType");
+        if (!mPriv->immutableProperties.contains(key)) {
+            mPriv->immutableProperties.insert(key, mPriv->channelType);
+        }
+
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType");
+        if (!mPriv->immutableProperties.contains(key)) {
+            mPriv->immutableProperties.insert(key, mPriv->targetHandleType);
+        }
+
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle");
+        if (!mPriv->immutableProperties.contains(key)) {
+            mPriv->immutableProperties.insert(key, mPriv->targetHandle);
+        }
+
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested");
+        if (!mPriv->immutableProperties.contains(key)) {
+            mPriv->immutableProperties.insert(key, mPriv->requested);
+        }
+    }
+
     return mPriv->immutableProperties;
 }
 
