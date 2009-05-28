@@ -871,9 +871,10 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
     }
 
     // fake group interface
-    if (connection->selfContact() && targetHandle) {
+    if (connection->selfHandle() && targetHandle) {
         // Fake groupSelfHandle and initial members, let the MCD handling take care of the rest
-        groupSelfHandle = connection->selfContact()->handle()[0];
+        // TODO connect to Connection::selfHandleChanged
+        groupSelfHandle = connection->selfHandle();
         groupInitialMembers = UIntList() << groupSelfHandle << targetHandle;
 
         debug().nospace() << "Faking a group on channel with self handle=" <<
@@ -881,7 +882,7 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
 
         nowHaveInitialMembers();
     } else {
-        warning() << "Connection::selfContact returned a null contact or targetHandle is 0, "
+        warning() << "Connection::selfHandle is 0 or targetHandle is 0, "
             "not faking a group on channel";
     }
 
