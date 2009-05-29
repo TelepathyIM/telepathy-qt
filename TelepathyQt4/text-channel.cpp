@@ -300,7 +300,7 @@ void TextChannel::Private::updateInitialMessages()
 void TextChannel::Private::updateCapabilities()
 {
     if (!readinessHelper->requestedFeatures().contains(FeatureMessageCapabilities) ||
-        readinessHelper->isReady(Features() << FeatureMessageQueue)) {
+        readinessHelper->isReady(Features() << FeatureMessageCapabilities)) {
         return;
     }
 
