@@ -292,8 +292,13 @@ void TextChannel::Private::updateInitialMessages()
 
     MessagePartListList messages = qdbus_cast<MessagePartListList>(
             props["PendingMessages"]);
-    foreach (const MessagePartList &message, messages) {
-        parent->onMessageReceived(message);
+    if (messages.isEmpty()) {
+        debug() << "Message queue empty: FeatureMessageQueue is now ready";
+        readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
+    } else {
+        foreach (const MessagePartList &message, messages) {
+            parent->onMessageReceived(message);
+        }
     }
 }
 
