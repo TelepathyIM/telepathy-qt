@@ -69,6 +69,7 @@ struct Channel::Private
     ~Private();
 
     static void introspectMain(Private *self);
+    void introspectMainProperties();
     void introspectMainFallbackChannelType();
     void introspectMainFallbackHandle();
     void introspectMainFallbackInterfaces();
@@ -273,17 +274,27 @@ Channel::Private::~Private()
 
 void Channel::Private::introspectMain(Channel::Private *self)
 {
-    if (!self->properties) {
-        self->properties = self->parent->propertiesInterface();
-        Q_ASSERT(self->properties != 0);
+    // Make sure connection object is ready, as we need to use some methods that
+    // are only available after connection object gets ready.
+    debug() << "Calling Connection::becomeReady()";
+    self->parent->connect(self->connection->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onConnectionReady(Tp::PendingOperation*)));
+}
+
+void Channel::Private::introspectMainProperties()
+{
+    if (!properties) {
+        properties = parent->propertiesInterface();
+        Q_ASSERT(properties != 0);
     }
 
     debug() << "Calling Properties::GetAll(Channel)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(TELEPATHY_INTERFACE_CHANNEL),
-                self->parent);
-    self->parent->connect(watcher,
+                properties->GetAll(TELEPATHY_INTERFACE_CHANNEL),
+                parent);
+    parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
@@ -871,9 +882,10 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
     }
 
     // fake group interface
-    if (connection->selfContact() && targetHandle) {
+    if (connection->selfHandle() && targetHandle) {
         // Fake groupSelfHandle and initial members, let the MCD handling take care of the rest
-        groupSelfHandle = connection->selfContact()->handle()[0];
+        // TODO connect to Connection::selfHandleChanged
+        groupSelfHandle = connection->selfHandle();
         groupInitialMembers = UIntList() << groupSelfHandle << targetHandle;
 
         debug().nospace() << "Faking a group on channel with self handle=" <<
@@ -881,7 +893,7 @@ bool Channel::Private::fakeGroupInterfaceIfNeeded()
 
         nowHaveInitialMembers();
     } else {
-        warning() << "Connection::selfContact returned a null contact or targetHandle is 0, "
+        warning() << "Connection::selfHandle is 0 or targetHandle is 0, "
             "not faking a group on channel";
     }
 
@@ -2083,6 +2095,12 @@ void Channel::onClosed()
     debug() << "Got Channel::Closed";
     // I think this is the nearest error code we can get at the moment
     invalidate(TELEPATHY_ERROR_CANCELLED, "Closed");
+}
+
+void Channel::onConnectionReady(PendingOperation *op)
+{
+    Q_UNUSED(op);
+    mPriv->introspectMainProperties();
 }
 
 void Channel::onConnectionInvalidated()

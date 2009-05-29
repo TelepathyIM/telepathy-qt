@@ -287,6 +287,7 @@ private Q_SLOTS:
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
     void onClosed();
 
+    void onConnectionReady(Tp::PendingOperation *op);
     void onConnectionInvalidated();
     void onConnectionDestroyed();
 
