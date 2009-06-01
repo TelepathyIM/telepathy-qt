@@ -1,0 +1,9 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Channel Dispatch Operation interface</tp:title>
+
+<xi:include href="../spec/Channel_Dispatch_Operation.xml"/>
+
+</tp:spec>

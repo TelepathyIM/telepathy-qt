@@ -8,6 +8,7 @@
 <xi:include href="connection-manager.xml"/>
 <xi:include href="connection.xml"/>
 <xi:include href="channel.xml"/>
+<xi:include href="channel-dispatch-operation.xml"/>
 <xi:include href="channel-request.xml"/>
 <xi:include href="media-session-handler.xml"/>
 <xi:include href="media-stream-handler.xml"/>
