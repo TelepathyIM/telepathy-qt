@@ -12,6 +12,7 @@
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/AbstractClientObserver>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelDispatchOperation>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/ClientHandlerInterface>
 #include <TelepathyQt4/ClientInterfaceRequestsInterface>
@@ -159,14 +160,14 @@ public:
             const AccountPtr &account,
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
-            const QString &dispatchOperationPath,
+            const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QVariantMap &observerInfo)
     {
         mObserveChannelsAccount = account;
         mObserveChannelsConnection = connection;
         mObserveChannelsChannels = channels;
-        mObserveChannelsDispathOperationPath = dispatchOperationPath;
+        mObserveChannelsDispatchOperation = dispatchOperation;
         mObserveChannelsRequestsSatisfied = requestsSatisfied;
         mObserveChannelsObserverInfo = observerInfo;
 
@@ -223,7 +224,7 @@ public:
     AccountPtr mObserveChannelsAccount;
     ConnectionPtr mObserveChannelsConnection;
     QList<ChannelPtr> mObserveChannelsChannels;
-    QString mObserveChannelsDispathOperationPath;
+    ChannelDispatchOperationPtr mObserveChannelsDispatchOperation;
     QList<ChannelRequestPtr> mObserveChannelsRequestsSatisfied;
     QVariantMap mObserveChannelsObserverInfo;
 
@@ -532,7 +533,7 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     QCOMPARE(client->mObserveChannelsAccount->objectPath(), mAccount->objectPath());
     QCOMPARE(client->mObserveChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
-    QCOMPARE(client->mObserveChannelsDispathOperationPath, QString("/"));
+    QCOMPARE(client->mObserveChannelsDispatchOperation->objectPath(), QString("/"));
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
 }
 

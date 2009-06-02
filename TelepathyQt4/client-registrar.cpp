@@ -30,6 +30,7 @@
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelDispatchOperation>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/MethodInvocationContext>
@@ -167,6 +168,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
 {
     QDBusObjectPath connectionPath = qdbus_cast<QDBusObjectPath>(
             properties.value("Connection"));
+    debug() << "addDispatchOperation: connection:" << connectionPath.path();
     QString connectionBusName = connectionPath.path().mid(1).replace('/', '.');
     ConnectionPtr connection = Connection::create(mBus, connectionBusName,
             connectionPath.path());
@@ -179,12 +181,16 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
         channels.append(channel);
     }
 
+    ChannelDispatchOperationPtr channelDispatchOperation =
+        ChannelDispatchOperation::create(dispatchOperationPath.path(),
+                properties);
+
     MethodInvocationContextPtr<> context =
         MethodInvocationContextPtr<>(
                 new MethodInvocationContext<>(mBus, message));
 
     mClient->addDispatchOperation(context, channels,
-            dispatchOperationPath.path(), properties);
+            channelDispatchOperation);
 }
 
 QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
