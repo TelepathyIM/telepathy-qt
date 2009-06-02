@@ -129,7 +129,10 @@ private:
     QStringList mInterfaces;
 };
 
-class MyClient : public QObject, public AbstractClientObserver, public AbstractClientHandler
+class MyClient : public QObject,
+                 public AbstractClientObserver,
+                 public AbstractClientApprover,
+                 public AbstractClientHandler
 {
     Q_OBJECT
 
@@ -147,6 +150,7 @@ public:
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
         : AbstractClientObserver(channelFilter),
+          AbstractClientApprover(channelFilter),
           AbstractClientHandler(channelFilter, wantsRequestNotification),
           mBypassApproval(bypassApproval)
     {
@@ -173,6 +177,17 @@ public:
 
         context->setFinished();
         QTimer::singleShot(0, this, SIGNAL(observeChannelsFinished()));
+    }
+
+    void addDispatchOperation(const MethodInvocationContextPtr<> &context,
+            const QList<ChannelPtr> &channels,
+            const ChannelDispatchOperationPtr &dispatchOperation)
+    {
+        mAddDispatchOperationChannels = channels;
+        mAddDispatchOperationDispatchOperation = dispatchOperation;
+
+        context->setFinished();
+        QTimer::singleShot(0, this, SIGNAL(addDispatchOperationFinished()));
     }
 
     bool bypassApproval() const
@@ -228,6 +243,9 @@ public:
     QList<ChannelRequestPtr> mObserveChannelsRequestsSatisfied;
     QVariantMap mObserveChannelsObserverInfo;
 
+    QList<ChannelPtr> mAddDispatchOperationChannels;
+    ChannelDispatchOperationPtr mAddDispatchOperationDispatchOperation;
+
     bool mBypassApproval;
     AccountPtr mHandleChannelsAccount;
     ConnectionPtr mHandleChannelsConnection;
@@ -241,11 +259,12 @@ public:
     QString mRemoveRequestErrorMessage;
 
 Q_SIGNALS:
+    void observeChannelsFinished();
+    void addDispatchOperationFinished();
+    void handleChannelsFinished();
     void requestAdded(const Tp::ChannelRequestPtr &request);
     void requestRemoved(const Tp::ChannelRequestPtr &request,
             const QString &errorName, const QString &errorMessage);
-    void handleChannelsFinished();
-    void observeChannelsFinished();
     void channelClosed();
 };
 
@@ -272,6 +291,7 @@ private Q_SLOTS:
 
     void testRegister();
     void testObserveChannels();
+    void testAddDispatchOperation();
     void testRequests();
     void testHandleChannels();
 
@@ -543,6 +563,33 @@ void TestClient::testObserveChannels()
             mClientObject1BusName, mClientObject1Path);
     testObserveChannelsCommon(mClientObject2,
             mClientObject2BusName, mClientObject2Path);
+}
+
+void TestClient::testAddDispatchOperation()
+{
+    QDBusConnection bus = mClientRegistrar->dbusConnection();
+
+    ClientApproverInterface *approverIface = new ClientApproverInterface(bus,
+            mClientObject1BusName, mClientObject1Path, this);
+    MyClient *client = dynamic_cast<MyClient*>(mClientObject1.data());
+    connect(client,
+            SIGNAL(addDispatchOperationFinished()),
+            SLOT(expectSignalEmission()));
+    ChannelDetailsList channelDetailsList;
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    channelDetailsList.append(channelDetails);
+    QVariantMap dispatchOperationPropeties;
+    dispatchOperationPropeties.insert("Connection",
+            QVariant::fromValue(QDBusObjectPath(mConn->objectPath())));
+    dispatchOperationPropeties.insert("Account",
+            QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
+    approverIface->AddDispatchOperation(channelDetailsList,
+            QDBusObjectPath("/"),
+            dispatchOperationPropeties);
+    QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(client->mAddDispatchOperationChannels.first()->objectPath(), mText1ChanPath);
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), QString("/"));
 }
 
 void TestClient::testHandleChannels()
