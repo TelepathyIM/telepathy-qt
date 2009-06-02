@@ -180,8 +180,8 @@ const Feature ChannelRequest::FeatureCore = Feature(ChannelRequest::staticMetaOb
 ChannelRequestPtr ChannelRequest::create(const QString &objectPath,
         const QVariantMap &immutableProperties)
 {
-    return ChannelRequestPtr(new ChannelRequest(objectPath,
-                immutableProperties));
+    return ChannelRequestPtr(new ChannelRequest(QDBusConnection::sessionBus(),
+                objectPath, immutableProperties));
 }
 
 ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus,
@@ -189,18 +189,6 @@ ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus,
 {
     return ChannelRequestPtr(new ChannelRequest(bus, objectPath,
                 immutableProperties));
-}
-
-ChannelRequest::ChannelRequest(const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : StatefulDBusProxy(QDBusConnection::sessionBus(),
-            "org.freedesktop.Telepathy.ChannelDispatcher",
-            objectPath),
-      OptionalInterfaceFactory<ChannelRequest>(this),
-      ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
-{
-    mPriv->extractMainProps(immutableProperties);
 }
 
 ChannelRequest::ChannelRequest(const QDBusConnection &bus,
