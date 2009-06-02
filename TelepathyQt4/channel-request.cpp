@@ -147,14 +147,12 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 {
     interfaces = qdbus_cast<QStringList>(props.value("Interfaces"));
 
-    QDBusObjectPath accountObjectPath = qdbus_cast<QDBusObjectPath>(props.value("Account"));
-    if (!accountObjectPath.path().isEmpty()) {
+    if (!account && props.contains("Account")) {
+        QDBusObjectPath accountObjectPath =
+            qdbus_cast<QDBusObjectPath>(props.value("Account"));
         account = Account::create(
                 TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
                 accountObjectPath.path());
-        parent->connect(account->becomeReady(),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(onAccountReady(Tp::PendingOperation *)));
     }
 
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
@@ -264,6 +262,16 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
         props = reply.value();
 
         mPriv->extractMainProps(props);
+
+        if (mPriv->account) {
+            connect(mPriv->account->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(onAccountReady(Tp::PendingOperation *)));
+        } else {
+            warning() << "Properties.GetAll(ChannelRequest) is missing "
+                "account property, ignoring";
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        }
     }
     else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
