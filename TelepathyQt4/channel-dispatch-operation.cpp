@@ -175,7 +175,8 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
 
 void ChannelDispatchOperation::Private::checkReady()
 {
-    if (!connection->isReady() || !account->isReady()) {
+    if ((connection && !connection->isReady()) ||
+        (account && !account->isReady())) {
         return;
     }
 
@@ -300,17 +301,31 @@ void ChannelDispatchOperation::gotMainProperties(QDBusPendingCallWatcher *watche
 
         mPriv->extractMainProps(props, false);
 
-        connect(mPriv->connection->becomeReady(),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(onConnectionReady(Tp::PendingOperation *)));
-        connect(mPriv->account->becomeReady(),
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(onAccountReady(Tp::PendingOperation *)));
+        if (mPriv->connection) {
+            connect(mPriv->connection->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(onConnectionReady(Tp::PendingOperation *)));
+        } else {
+            warning() << "Properties.GetAll(ChannelDispatchOperation) is missing "
+                "connection property, ignoring";
+        }
+
+        if (mPriv->account) {
+            connect(mPriv->account->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(onAccountReady(Tp::PendingOperation *)));
+        } else {
+            warning() << "Properties.GetAll(ChannelDispatchOperation) is missing "
+                "account property, ignoring";
+        }
+
         foreach (const ChannelPtr &channel, mPriv->channels) {
             connect(channel->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(onChannelReady(Tp::PendingOperation *)));
         }
+
+        mPriv->checkReady();
     }
     else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
