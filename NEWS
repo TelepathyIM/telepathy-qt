@@ -1,7 +1,19 @@
-telepathy-qt4 0.1.7 (UNRELEASED)
+telepathy-qt4 0.1.7 (2009-06-02)
 ================================
 
-...
+The "approver" release.
+
+New API:
+
+* Added Client Approver support.
+* Added ChannelDispatchOperation high-level class.
+
+Bugfixes:
+
+* Fixed bug 21988: Channel does not work properly if the parent
+  connection object is not ready
+* Fixed bug 21993: TextChannel does not become ready until first message is
+  received if FeatureMessageQueue is enabled.
 
 telepathy-qt4 0.1.6 (2009-05-28)
 ================================
