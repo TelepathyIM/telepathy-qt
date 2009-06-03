@@ -86,6 +86,7 @@ private:
 void TestTextChan::onMessageReceived(const ReceivedMessage &message)
 {
     received << message;
+    mLoop->exit(0);
 }
 
 void TestTextChan::onMessageRemoved(const ReceivedMessage &message)
@@ -306,6 +307,9 @@ void TestTextChan::commonTest(bool withMessages)
     QVERIFY(mChan->isReady(features));
 
     // Assert that both our sent messages were echoed by the remote contact
+    while (received.size() != 2) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
     QCOMPARE(received.size(), 2);
     QCOMPARE(mChan->messageQueue().size(), 2);
     QVERIFY(mChan->messageQueue().at(0) == received.at(0));
