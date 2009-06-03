@@ -131,6 +131,10 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         channels.append(channel);
     }
 
+    ChannelDispatchOperationPtr channelDispatchOperation =
+        ChannelDispatchOperation::create(mBus,
+                dispatchOperationPath.path(), QVariantMap());
+
     QList<ChannelRequestPtr> channelRequests;
     ChannelRequestPtr channelRequest;
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
@@ -144,7 +148,7 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
                 new MethodInvocationContext<>(mBus, message));
 
     mClient->observeChannels(context, account, connection, channels,
-            dispatchOperationPath.path(), channelRequests, observerInfo);
+            channelDispatchOperation, channelRequests, observerInfo);
 }
 
 QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;

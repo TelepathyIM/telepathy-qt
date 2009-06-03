@@ -59,7 +59,7 @@ public:
             const AccountPtr &account,
             const ConnectionPtr &connection,
             const QList<ChannelPtr> &channels,
-            const QString &dispatchOperationPath,
+            const ChannelDispatchOperationPtr &dispatchOperation,
             const QList<ChannelRequestPtr> &requestsSatisfied,
             const QVariantMap &observerInfo) = 0;
 
