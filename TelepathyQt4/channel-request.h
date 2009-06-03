@@ -100,8 +100,6 @@ Q_SIGNALS:
     void succeeded();
 
 protected:
-    ChannelRequest(const QString &objectPath,
-            const QVariantMap &immutableProperties);
     ChannelRequest(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
