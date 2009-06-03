@@ -228,6 +228,7 @@ tpqt4include_HEADERS = \
     ChannelTypeTextInterface \
     ChannelTypeTubesInterface \
     ClientHandlerInterface \
+    ClientApproverInterface \
     ClientObserverInterface \
     ClientInterface \
     ClientInterfaceRequestsInterface \
