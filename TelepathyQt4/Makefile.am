@@ -18,6 +18,7 @@ EXTRA_DIST = \
     account-manager.xml \
     async-model.dox \
     channel.xml \
+    channel-dispatch-operation.xml \
     channel-request.xml \
     client.xml \
     connection.xml \
@@ -54,6 +55,7 @@ libtelepathy_qt4_la_SOURCES = \
     channel-factory.cpp \
     channel-factory.h \
     channel-request.cpp \
+    channel-dispatch-operation.cpp \
     client.cpp \
     client-registrar.cpp \
     client-registrar-internal.h \
@@ -100,6 +102,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-account-manager.moc.hpp \
     _gen/cli-channel-body.hpp \
     _gen/cli-channel.moc.hpp \
+    _gen/cli-channel-dispatch-operation-body.hpp \
+    _gen/cli-channel-dispatch-operation.moc.hpp \
     _gen/cli-channel-request-body.hpp \
     _gen/cli-channel-request.moc.hpp \
     _gen/cli-client-body.hpp \
@@ -121,6 +125,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/account.moc.hpp \
     _gen/account-manager.moc.hpp \
     _gen/channel.moc.hpp \
+    _gen/channel-dispatch-operation.moc.hpp \
     _gen/channel-request.moc.hpp \
     _gen/client.moc.hpp \
     _gen/client-registrar.moc.hpp \
@@ -157,6 +162,7 @@ tpqt4include_HEADERS = \
     Account \
     AccountManager \
     Channel \
+    ChannelDispatchOperation \
     ChannelRequest \
     Client \
     ClientRegistrar \
@@ -214,6 +220,7 @@ tpqt4include_HEADERS = \
     ChannelInterfaceHoldInterface \
     ChannelInterfaceMediaSignallingInterface \
     ChannelInterfacePasswordInterface \
+    ChannelDispatchOperationInterface \
     ChannelRequestInterface \
     ChannelTypeContactListInterface \
     ChannelTypeRoomListInterface \
@@ -245,6 +252,7 @@ tpqt4include_HEADERS = \
     account.h \
     account-manager.h \
     channel.h \
+    channel-dispatch-operation.h \
     channel-request.h \
     client.h \
     client-registrar.h \
@@ -289,6 +297,7 @@ nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
     _gen/cli-account-manager.h \
     _gen/cli-channel.h \
+    _gen/cli-channel-dispatch-operation.h \
     _gen/cli-channel-request.h \
     _gen/cli-client.h \
     _gen/cli-connection.h \
@@ -389,6 +398,10 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
 			mainiface='--mainiface=Tp::Client::ChannelInterface';; \
+		channel-dispatch-operation) \
+			group='clientchanneldispatchoperation'; \
+			prettyinclude='ChannelDispatchOperation'; \
+			mainiface='--mainiface=Tp::Client::ChannelDispatchOperationInterface';; \
 		channel-request) \
 			group='clientchannelrequest'; \
 			prettyinclude='ChannelRequest'; \
