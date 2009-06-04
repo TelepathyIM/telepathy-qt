@@ -36,5 +36,6 @@ if(TP_FARSIGHT_FOUND)
         ${QT_QTCORE_LIBRARIES}
         ${TP_FARSIGHT_LIBRARIES}
         telepathy-qt4
+        telepathy-qt4-farsight
         telepathy-qt4-examples-roster)
 endif(TP_FARSIGHT_FOUND)

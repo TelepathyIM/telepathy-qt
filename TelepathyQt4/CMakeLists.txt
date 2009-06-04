@@ -5,10 +5,17 @@ include_directories(${CMAKE_SOURCE_DIR}
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
 set(telepathy_qt4_SRCS
+    abstract-client.cpp
     abstract-interface.cpp
     account.cpp
     account-manager.cpp
     channel.cpp
+    channel-dispatch-operation.cpp
+    channel-factory.cpp
+    channel-request.cpp
+    client.cpp
+    client-registrar.cpp
+    client-registrar-internal.h
     connection.cpp
     connection-internal.h
     connection-manager.cpp
@@ -46,6 +53,11 @@ set(telepathy_qt4_SRCS
     types.cpp)
 
 set(telepathy_qt4_HEADERS
+    AbstractClient
+    AbstractClientApprover
+    abstract-client.h
+    AbstractClientHandler
+    AbstractClientObserver
     AbstractInterface
     abstract-interface.h
     Account
@@ -55,6 +67,9 @@ set(telepathy_qt4_HEADERS
     account-manager.h
     AccountManagerInterface
     Channel
+    ChannelDispatchOperation
+    channel-dispatch-operation.h
+    ChannelDispatchOperationInterface
     channel.h
     ChannelInterface
     ChannelInterfaceCallStateInterface
@@ -64,11 +79,23 @@ set(telepathy_qt4_HEADERS
     ChannelInterfaceHoldInterface
     ChannelInterfaceMediaSignallingInterface
     ChannelInterfacePasswordInterface
+    ChannelRequest
+    channel-request.h
+    ChannelRequestInterface
     ChannelTypeContactListInterface
     ChannelTypeRoomListInterface
     ChannelTypeStreamedMediaInterface
     ChannelTypeTextInterface
     ChannelTypeTubesInterface
+    Client
+    ClientApproverInterface
+    client.h
+    ClientHandlerInterface
+    ClientInterface
+    ClientInterfaceRequestsInterface
+    ClientObserverInterface
+    ClientRegistrar
+    client-registrar.h
     Connection
     connection.h
     ConnectionInterface
@@ -112,6 +139,8 @@ set(telepathy_qt4_HEADERS
     MediaStreamHandlerInterface
     Message
     message.h
+    MethodInvocationContext
+    method-invocation-context.h
     OptionalInterfaceFactory
     optional-interface-factory.h
     PeerInterface
@@ -168,6 +197,9 @@ set(telepathy_qt4_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account-manager.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-dispatch-operation.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-request.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-client.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-manager.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-dbus.h
@@ -181,7 +213,11 @@ set(telepathy_qt4_MOC_SRCS
     abstract-interface.h
     account.h
     account-manager.h
+    channel-dispatch-operation.h
     channel.h
+    channel-request.h
+    client-registrar.h
+    client-registrar-internal.h
     connection.h
     connection-internal.h
     connection-manager.h
@@ -245,6 +281,9 @@ set(SPECS
     account
     account-manager
     channel
+    channel-dispatch-operation
+    channel-request
+    client
     connection
     connection-manager
     dbus
@@ -299,9 +338,12 @@ function(CLIENT_GENERATOR spec group pretty_include namespace main_iface)
     list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
 endfunction(CLIENT_GENERATOR spec group pretty_include main_iface)
 
-client_generator(channel clientchannel Channel Tp::Client --mainiface=Tp::Client::ChannelInterface)
 client_generator(account clientaccount AccountManager Tp::Client --mainiface=Tp::Client::AccountInterface)
 client_generator(account-manager clientam AccountManager Tp::Client --mainiface=Tp::Client::AccountManagerInterface)
+client_generator(channel clientchannel Channel Tp::Client --mainiface=Tp::Client::ChannelInterface)
+client_generator(channel-dispatch-operation clientchanneldispatchoperation ChannelDispatchOperation Tp::Client --mainiface=Tp::Client::ChannelDispatchOperationInterface)
+client_generator(channel-request clientchannelrequest ChannelRequest Tp::Client --mainiface=Tp::Client::ChannelRequestInterface)
+client_generator(client clientclient Client Tp::Client --mainiface=Tp::Client::ClientInterface)
 client_generator(connection clientconn Connection Tp::Client --mainiface=Tp::Client::ConnectionInterface)
 client_generator(connection-manager clientcm ConnectionManager Tp::Client --mainiface=Tp::Client::ConnectionManagerInterface)
 client_generator(dbus clientdbus DBus Tp::Client::DBus "")
@@ -317,7 +359,7 @@ foreach(moc_src ${telepathy_qt4_MOC_SRCS})
     list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
 endforeach(moc_src ${telepathy_qt4_MOC_SRCS})
 
-add_library(telepathy-qt4 STATIC ${telepathy_qt4_SRCS})
+add_library(telepathy-qt4 SHARED ${telepathy_qt4_SRCS})
 target_link_libraries(telepathy-qt4
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTCORE_LIBRARY})
@@ -328,6 +370,13 @@ install(TARGETS telepathy-qt4 DESTINATION ${LIB_INSTALL_DIR})
 
 # pkg-config file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4-uninstalled.pc)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+
+if(TP_FARSIGHT_FOUND)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4Farsight.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4Farsight-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight-uninstalled.pc)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+endif(TP_FARSIGHT_FOUND)
 
 add_subdirectory(Farsight)
