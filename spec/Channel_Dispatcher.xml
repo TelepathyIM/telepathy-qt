@@ -21,8 +21,8 @@
       USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.ChannelDispatcher"
-    tp:causes-havoc="not yet final">
+  <interface name="org.freedesktop.Telepathy.ChannelDispatcher">
+    <tp:added version="0.17.26">(as a stable interface)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>The channel dispatcher is responsible for responding to new
