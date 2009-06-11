@@ -46,7 +46,7 @@ public:
 
     void proceed(const ChannelRequestPtr &channelRequest)
     {
-        Q_ASSERT(mChannelRequest);
+        Q_ASSERT(mChannelRequest.isNull());
         mChannelRequest = channelRequest;
         connect(mChannelRequest->cancel(),
                 SIGNAL(finished(Tp::PendingOperation*)),
