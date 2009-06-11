@@ -697,6 +697,22 @@ PendingOperation *Account::remove()
     return new PendingVoidMethodCall(this, baseInterface()->Remove());
 }
 
+/**
+ * Start a request to ensure that a text channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contactIdentifier The identifier of the contact to chat with.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::ensureTextChat(
         const QString &contactIdentifier,
         QDateTime userActionTime,
@@ -713,6 +729,22 @@ PendingChannelRequest *Account::ensureTextChat(
             request, userActionTime, preferredHandler, false, this);
 }
 
+/**
+ * Start a request to ensure that a text channel with the given
+ * contact \a contact exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contact The contact to chat with.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::ensureTextChat(
         const ContactPtr &contact,
         QDateTime userActionTime,
@@ -729,6 +761,22 @@ PendingChannelRequest *Account::ensureTextChat(
             request, userActionTime, preferredHandler, false, this);
 }
 
+/**
+ * Start a request to ensure that a text chat room with the given
+ * room name \a roomName exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param roomName The name of the chat room.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::ensureTextChatroom(
         const QString &roomName,
         QDateTime userActionTime,
@@ -745,6 +793,22 @@ PendingChannelRequest *Account::ensureTextChatroom(
             request, userActionTime, preferredHandler, false, this);
 }
 
+/**
+ * Start a request to ensure that a media channel with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::ensureMediaCall(
         const QString &contactIdentifier,
         QDateTime userActionTime,
@@ -761,6 +825,22 @@ PendingChannelRequest *Account::ensureMediaCall(
             request, userActionTime, preferredHandler, false, this);
 }
 
+/**
+ * Start a request to ensure that a media channel with the given
+ * contact \a contact exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * \param contact The contact to call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::ensureMediaCall(
         const ContactPtr &contact,
         QDateTime userActionTime,
@@ -777,7 +857,33 @@ PendingChannelRequest *Account::ensureMediaCall(
             request, userActionTime, preferredHandler, false, this);
 }
 
-// advanced
+/**
+ * Start a request to create a channel.
+ * This initially just creates a PendingChannelRequest object,
+ * which can be used to retrive the ChannelRequest object and track its success
+ * or failure.
+ *
+ * On destructor PendingChannelRequest will call ChannelRequest::proceed() if
+ * and only if the ChannelRequest was not cancelled.
+ *
+ * If this method is called for an Account that is disabled, invalid or
+ * otherwise unusable, no error is signalled until ChannelRequest::proceed() is
+ * called, at which point ChannelRequest::failed() signal is emitted with
+ * an appropriate error.
+ *
+ * Helper methods for text chat, text chat room and media call are provided and
+ * should be used if appropriate.
+ *
+ * \param request A dictionary containing desirable properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa createChannel()
+ */
 PendingChannelRequest *Account::createChannel(
         const QVariantMap &request,
         QDateTime userActionTime,
@@ -787,6 +893,33 @@ PendingChannelRequest *Account::createChannel(
             request, userActionTime, preferredHandler, true, this);
 }
 
+/**
+ * Start a request to ensure that a channel exists, creating it if necessary.
+ * This initially just creates a PendingChannelRequest object,
+ * which can be used to retrive the ChannelRequest object and track its success
+ * or failure.
+ *
+ * On destructor PendingChannelRequest will call ChannelRequest::proceed() if
+ * and only if the ChannelRequest was not cancelled.
+ *
+ * If this method is called for an Account that is disabled, invalid or
+ * otherwise unusable, no error is signalled until ChannelRequest::proceed() is
+ * called, at which point ChannelRequest::failed() signal is emitted with
+ * an appropriate error.
+ *
+ * Helper methods for text chat, text chat room and media call are provided and
+ * should be used if appropriate.
+ *
+ * \param request A dictionary containing desirable properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa createChannel()
+ */
 PendingChannelRequest *Account::ensureChannel(
         const QVariantMap &request,
         QDateTime userActionTime,
