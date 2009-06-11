@@ -152,7 +152,7 @@ PendingOperation *PendingChannelRequest::cancel()
                 SLOT(onCancelOperationFinished(Tp::PendingOperation*)));
 
         if (mPriv->channelRequest) {
-            mPriv->cancelOperation->proceed(mPriv->channelRequest);
+            mPriv->cancelOperation->go(mPriv->channelRequest);
         }
     }
 
@@ -172,7 +172,7 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
                 objectPath.path(), QVariantMap());
 
         if (mPriv->cancelOperation) {
-            mPriv->cancelOperation->proceed(mPriv->channelRequest);
+            mPriv->cancelOperation->go(mPriv->channelRequest);
             setFinishedWithError(TELEPATHY_ERROR_CANCELLED,
                     "ChannelRequest cancelled");
         } else {

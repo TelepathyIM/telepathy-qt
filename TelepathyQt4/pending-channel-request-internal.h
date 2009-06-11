@@ -44,7 +44,7 @@ public:
     {
     }
 
-    void proceed(const ChannelRequestPtr &channelRequest)
+    void go(const ChannelRequestPtr &channelRequest)
     {
         Q_ASSERT(mChannelRequest.isNull());
         mChannelRequest = channelRequest;
