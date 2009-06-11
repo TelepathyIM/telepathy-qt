@@ -141,6 +141,7 @@ protected:
      */
     PendingOperation(QObject* parent);
 
+protected Q_SLOTS:
     /**
      * Record that this pending operation has finished successfully, and
      * emit the #finished() signal next time the event loop runs.
