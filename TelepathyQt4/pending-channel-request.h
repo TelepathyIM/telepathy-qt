@@ -57,9 +57,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void onWatcherFinished(QDBusPendingCallWatcher *watcher);
-    void onChannelRequestFailed(const QString &errorName,
-            const QString &errorMessage);
-    void onChannelRequestSucceeded();
     void onProceedOperationFinished(Tp::PendingOperation *op);
     void onCancelOperationFinished(Tp::PendingOperation *op);
 

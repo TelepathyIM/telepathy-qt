@@ -178,10 +178,10 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
         } else {
             connect(mPriv->channelRequest.data(),
                     SIGNAL(failed(const QString &, const QString &)),
-                    SLOT(onChannelRequestFailed(const QString &, const QString &)));
+                    SLOT(setFinishedWithError(const QString &, const QString &)));
             connect(mPriv->channelRequest.data(),
                     SIGNAL(succeeded()),
-                    SLOT(onChannelRequestSucceeded()));
+                    SLOT(setFinished()));
 
             connect(mPriv->channelRequest->proceed(),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -196,17 +196,6 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
     }
 
     watcher->deleteLater();
-}
-
-void PendingChannelRequest::onChannelRequestFailed(
-        const QString &errorName, const QString &errorMessage)
-{
-    setFinishedWithError(errorName, errorMessage);
-}
-
-void PendingChannelRequest::onChannelRequestSucceeded()
-{
-    setFinished();
 }
 
 void PendingChannelRequest::onProceedOperationFinished(PendingOperation *op)
