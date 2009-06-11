@@ -48,12 +48,14 @@ namespace Tp
 struct PendingChannelRequest::Private
 {
     Private(const QDBusConnection &dbusConnection)
-        : dbusConnection(dbusConnection)
+        : dbusConnection(dbusConnection),
+          channelRequestFinished(false)
     {
     }
 
     QDBusConnection dbusConnection;
     ChannelRequestPtr channelRequest;
+    bool channelRequestFinished;
 };
 
 /**
@@ -127,6 +129,12 @@ PendingChannelRequest::PendingChannelRequest(const QDBusConnection &dbusConnecti
  */
 PendingChannelRequest::~PendingChannelRequest()
 {
+    // let's call proceed now, as the channel request was not canceled neither
+    // succeeded yet.
+    if (!mPriv->channelRequestFinished && isFinished() && isValid()) {
+        mPriv->channelRequest->proceed();
+    }
+
     delete mPriv;
 }
 
@@ -177,6 +185,13 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
         connect(mPriv->channelRequest->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onChannelRequestReady(Tp::PendingOperation*)));
+
+        connect(mPriv->channelRequest.data(),
+                SIGNAL(failed(const QString &, const QString &)),
+                SLOT(onChannelRequestFinished()));
+        connect(mPriv->channelRequest.data(),
+                SIGNAL(succeeded()),
+                SLOT(onChannelRequestFinished()));
     } else {
         debug().nospace() << "Ensure/CreateChannel failed:" <<
             reply.error().name() << ": " << reply.error().message();
@@ -196,6 +211,11 @@ void PendingChannelRequest::onChannelRequestReady(PendingOperation *op)
     }
 
     setFinished();
+}
+
+void PendingChannelRequest::onChannelRequestFinished()
+{
+    mPriv->channelRequestFinished = true;
 }
 
 } // Tp
