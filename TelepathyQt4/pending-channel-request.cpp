@@ -141,6 +141,7 @@ ChannelRequestPtr PendingChannelRequest::channelRequest() const
 PendingOperation *PendingChannelRequest::cancel()
 {
     if (isFinished()) {
+        // CR has already succeeded or failed, so let's just fail here
         return new PendingFailure(this, "org.freedesktop.DBus.UnknownMethod",
                 "ChannnelRequest already finished");
     }
