@@ -82,6 +82,7 @@ libtelepathy_qt4_la_SOURCES = \
     pending-account.cpp \
     pending-channel.cpp \
     pending-channel-request.cpp \
+    pending-channel-request-internal.h \
     pending-connection.cpp \
     pending-contact-attributes.cpp \
     pending-contacts.cpp \
@@ -146,6 +147,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/pending-account.moc.hpp \
     _gen/pending-channel.moc.hpp \
     _gen/pending-channel-request.moc.hpp \
+    _gen/pending-channel-request-internal.moc.hpp \
     _gen/pending-connection.moc.hpp \
     _gen/pending-contact-attributes.moc.hpp \
     _gen/pending-contacts.moc.hpp \

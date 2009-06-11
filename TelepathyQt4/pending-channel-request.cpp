@@ -20,8 +20,10 @@
  */
 
 #include <TelepathyQt4/PendingChannelRequest>
+#include "TelepathyQt4/pending-channel-request-internal.h"
 
 #include "TelepathyQt4/_gen/pending-channel-request.moc.hpp"
+#include "TelepathyQt4/_gen/pending-channel-request-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -141,6 +143,24 @@ ChannelRequestPtr PendingChannelRequest::channelRequest() const
     }
 
     return mPriv->channelRequest;
+}
+
+PendingOperation *PendingChannelRequest::cancel()
+{
+    if (!isFinished()) {
+        warning() << "PendingChannelRequest::cancel called before "
+            "finished, returning 0";
+        return 0;
+    } else if (!isValid()) {
+        warning() << "PendingChannelRequest::cancel called when "
+            "not valid, returning 0";
+        return 0;
+    }
+
+    // PendingChannelRequestCancelOperation will hold a reference to
+    // ChannelRequest so it does not get deleted even if this PendingOperation
+    // gets deleted.
+    return new PendingChannelRequestCancelOperation(mPriv->channelRequest);
 }
 
 void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)

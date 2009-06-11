@@ -19,57 +19,48 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_cli_pending_channel_request_h_HEADER_GUARD_
-#define _TelepathyQt4_cli_pending_channel_request_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_cli_pending_channel_request_internal_h_HEADER_GUARD_
+#define _TelepathyQt4_cli_pending_channel_request_internal_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_HEADER
-#error IN_TELEPATHY_QT4_HEADER
-#endif
-
+#include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/Types>
-
-#include <QDateTime>
-#include <QString>
-#include <QVariantMap>
-
-class QDBusPendingCallWatcher;
 
 namespace Tp
 {
 
-class Account;
-
-class PendingChannelRequest : public PendingOperation
+class PendingChannelRequestCancelOperation : public PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(PendingChannelRequest)
+    Q_DISABLE_COPY(PendingChannelRequestCancelOperation)
 
 public:
-    ~PendingChannelRequest();
+    PendingChannelRequestCancelOperation(
+            const ChannelRequestPtr &channelRequest)
+        : PendingOperation(channelRequest.data())
+    {
+        mPendingOperation = channelRequest->cancel();
+        connect(mPendingOperation,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onCancelOperationFinished(Tp::PendingOperation*)));
+    }
 
-    ChannelRequestPtr channelRequest() const;
-
-    PendingOperation *cancel();
+    ~PendingChannelRequestCancelOperation()
+    {
+    }
 
 private Q_SLOTS:
-    void onWatcherFinished(QDBusPendingCallWatcher *watcher);
-    void onChannelRequestReady(Tp::PendingOperation *op);
+    void onCancelOperationFinished(Tp::PendingOperation *op)
+    {
+        if (op->isError()) {
+            setFinishedWithError(op->errorName(), op->errorMessage());
+            return;
+        }
+        setFinished();
+    }
 
 private:
-    friend class Account;
-
-    PendingChannelRequest(const QDBusConnection &dbusConnection,
-            const QString &accountObjectPath,
-            const QVariantMap &requestedProperties,
-            const QDateTime &userActionTime,
-            const QString &preferredHandler,
-            bool create,
-            QObject *parent);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
+    PendingOperation *mPendingOperation;
 };
 
 } // Tp
