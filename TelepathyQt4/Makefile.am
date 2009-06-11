@@ -18,6 +18,7 @@ EXTRA_DIST = \
     account-manager.xml \
     async-model.dox \
     channel.xml \
+    channel-dispatcher.xml \
     channel-dispatch-operation.xml \
     channel-request.xml \
     client.xml \
@@ -55,6 +56,7 @@ libtelepathy_qt4_la_SOURCES = \
     channel-factory.cpp \
     channel-factory.h \
     channel-request.cpp \
+    channel-dispatcher.cpp \
     channel-dispatch-operation.cpp \
     client.cpp \
     client-registrar.cpp \
@@ -102,6 +104,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-account-manager.moc.hpp \
     _gen/cli-channel-body.hpp \
     _gen/cli-channel.moc.hpp \
+    _gen/cli-channel-dispatcher-body.hpp \
+    _gen/cli-channel-dispatcher.moc.hpp \
     _gen/cli-channel-dispatch-operation-body.hpp \
     _gen/cli-channel-dispatch-operation.moc.hpp \
     _gen/cli-channel-request-body.hpp \
@@ -162,6 +166,7 @@ tpqt4include_HEADERS = \
     Account \
     AccountManager \
     Channel \
+    ChannelDispatcher \
     ChannelDispatchOperation \
     ChannelRequest \
     Client \
@@ -220,6 +225,7 @@ tpqt4include_HEADERS = \
     ChannelInterfaceHoldInterface \
     ChannelInterfaceMediaSignallingInterface \
     ChannelInterfacePasswordInterface \
+    ChannelDispatcherInterface \
     ChannelDispatchOperationInterface \
     ChannelRequestInterface \
     ChannelTypeContactListInterface \
@@ -253,6 +259,7 @@ tpqt4include_HEADERS = \
     account.h \
     account-manager.h \
     channel.h \
+    channel-dispatcher.h \
     channel-dispatch-operation.h \
     channel-request.h \
     client.h \
@@ -298,6 +305,7 @@ nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
     _gen/cli-account-manager.h \
     _gen/cli-channel.h \
+    _gen/cli-channel-dispatcher.h \
     _gen/cli-channel-dispatch-operation.h \
     _gen/cli-channel-request.h \
     _gen/cli-client.h \
@@ -399,6 +407,10 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
 			mainiface='--mainiface=Tp::Client::ChannelInterface';; \
+		channel-dispatcher) \
+			group='clientchanneldispatcher'; \
+			prettyinclude='ChannelDispatcher'; \
+			mainiface='--mainiface=Tp::Client::ChannelDispatcherInterface';; \
 		channel-dispatch-operation) \
 			group='clientchanneldispatchoperation'; \
 			prettyinclude='ChannelDispatchOperation'; \
