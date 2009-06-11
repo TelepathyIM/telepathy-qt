@@ -29,6 +29,7 @@
 
 #include <TelepathyQt4/ChannelDispatcher>
 #include <TelepathyQt4/ChannelRequest>
+#include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 
 /**
@@ -49,13 +50,13 @@ struct PendingChannelRequest::Private
 {
     Private(const QDBusConnection &dbusConnection)
         : dbusConnection(dbusConnection),
-          channelRequestFinished(false)
+          cancelOperation(0)
     {
     }
 
     QDBusConnection dbusConnection;
     ChannelRequestPtr channelRequest;
-    bool channelRequestFinished;
+    PendingChannelRequestCancelOperation *cancelOperation;
 };
 
 /**
@@ -129,46 +130,33 @@ PendingChannelRequest::PendingChannelRequest(const QDBusConnection &dbusConnecti
  */
 PendingChannelRequest::~PendingChannelRequest()
 {
-    // let's call proceed now, as the channel request was not canceled neither
-    // succeeded yet.
-    if (!mPriv->channelRequestFinished && isFinished() && isValid()) {
-        mPriv->channelRequest->proceed();
-    }
-
     delete mPriv;
 }
 
 ChannelRequestPtr PendingChannelRequest::channelRequest() const
 {
-    if (!isFinished()) {
-        warning() << "PendingChannelRequest::channelRequest called before "
-            "finished, returning 0";
-        return ChannelRequestPtr();
-    } else if (!isValid()) {
-        warning() << "PendingChannelRequest::channelRequest called when "
-            "not valid, returning 0";
-        return ChannelRequestPtr();
-    }
-
     return mPriv->channelRequest;
 }
 
 PendingOperation *PendingChannelRequest::cancel()
 {
-    if (!isFinished()) {
-        warning() << "PendingChannelRequest::cancel called before "
-            "finished, returning 0";
-        return 0;
-    } else if (!isValid()) {
-        warning() << "PendingChannelRequest::cancel called when "
-            "not valid, returning 0";
-        return 0;
+    if (isFinished()) {
+        return new PendingFailure(this, "org.freedesktop.DBus.UnknownMethod",
+                "ChannnelRequest already finished");
     }
 
-    // PendingChannelRequestCancelOperation will hold a reference to
-    // ChannelRequest so it does not get deleted even if this PendingOperation
-    // gets deleted.
-    return new PendingChannelRequestCancelOperation(mPriv->channelRequest);
+    if (!mPriv->cancelOperation) {
+        mPriv->cancelOperation = new PendingChannelRequestCancelOperation(this);
+        connect(mPriv->cancelOperation,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onCancelOperationFinished(Tp::PendingOperation*)));
+
+        if (mPriv->channelRequest) {
+            mPriv->cancelOperation->proceed(mPriv->channelRequest);
+        }
+    }
+
+    return mPriv->cancelOperation;
 }
 
 void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
@@ -182,16 +170,23 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
 
         mPriv->channelRequest = ChannelRequest::create(mPriv->dbusConnection,
                 objectPath.path(), QVariantMap());
-        connect(mPriv->channelRequest->becomeReady(),
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onChannelRequestReady(Tp::PendingOperation*)));
 
         connect(mPriv->channelRequest.data(),
                 SIGNAL(failed(const QString &, const QString &)),
-                SLOT(onChannelRequestFinished()));
+                SLOT(onChannelRequestFailed(const QString &, const QString &)));
         connect(mPriv->channelRequest.data(),
                 SIGNAL(succeeded()),
-                SLOT(onChannelRequestFinished()));
+                SLOT(onChannelRequestSucceeded()));
+
+        connect(mPriv->channelRequest->proceed(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onProceedOperationFinished(Tp::PendingOperation*)));
+
+        if (mPriv->cancelOperation) {
+            mPriv->cancelOperation->proceed(mPriv->channelRequest);
+        }
+
+        emit channelRequestCreated(mPriv->channelRequest);
     } else {
         debug().nospace() << "Ensure/CreateChannel failed:" <<
             reply.error().name() << ": " << reply.error().message();
@@ -201,21 +196,27 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-void PendingChannelRequest::onChannelRequestReady(PendingOperation *op)
+void PendingChannelRequest::onChannelRequestFailed(
+        const QString &errorName, const QString &errorMessage)
 {
-    if (op->isError()) {
-        debug().nospace() << "Unable to make ChannelRequest object ready:" <<
-            op->errorName() << ": " << op->errorMessage();
-        setFinishedWithError(op->errorName(), op->errorMessage());
-        return;
-    }
+    setFinishedWithError(errorName, errorMessage);
+}
 
+void PendingChannelRequest::onChannelRequestSucceeded()
+{
     setFinished();
 }
 
-void PendingChannelRequest::onChannelRequestFinished()
+void PendingChannelRequest::onProceedOperationFinished(PendingOperation *op)
 {
-    mPriv->channelRequestFinished = true;
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    }
+}
+
+void PendingChannelRequest::onCancelOperationFinished(PendingOperation *op)
+{
+    mPriv->cancelOperation = 0;
 }
 
 } // Tp

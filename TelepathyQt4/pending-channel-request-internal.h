@@ -35,18 +35,22 @@ class PendingChannelRequestCancelOperation : public PendingOperation
     Q_DISABLE_COPY(PendingChannelRequestCancelOperation)
 
 public:
-    PendingChannelRequestCancelOperation(
-            const ChannelRequestPtr &channelRequest)
-        : PendingOperation(channelRequest.data())
+    PendingChannelRequestCancelOperation(QObject *parent)
+        : PendingOperation(parent)
     {
-        mPendingOperation = channelRequest->cancel();
-        connect(mPendingOperation,
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onCancelOperationFinished(Tp::PendingOperation*)));
     }
 
     ~PendingChannelRequestCancelOperation()
     {
+    }
+
+    void proceed(const ChannelRequestPtr &channelRequest)
+    {
+        Q_ASSERT(mChannelRequest);
+        mChannelRequest = channelRequest;
+        connect(mChannelRequest->cancel(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onCancelOperationFinished(Tp::PendingOperation*)));
     }
 
 private Q_SLOTS:
@@ -60,7 +64,7 @@ private Q_SLOTS:
     }
 
 private:
-    PendingOperation *mPendingOperation;
+    ChannelRequestPtr mChannelRequest;
 };
 
 } // Tp

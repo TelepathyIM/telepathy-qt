@@ -52,10 +52,16 @@ public:
 
     PendingOperation *cancel();
 
+Q_SIGNALS:
+    void channelRequestCreated(const ChannelRequestPtr &channelRequest);
+
 private Q_SLOTS:
     void onWatcherFinished(QDBusPendingCallWatcher *watcher);
-    void onChannelRequestReady(Tp::PendingOperation *op);
-    void onChannelRequestFinished();
+    void onChannelRequestFailed(const QString &errorName,
+            const QString &errorMessage);
+    void onChannelRequestSucceeded();
+    void onProceedOperationFinished(Tp::PendingOperation *op);
+    void onCancelOperationFinished(Tp::PendingOperation *op);
 
 private:
     friend class Account;
