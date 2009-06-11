@@ -171,22 +171,24 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
         mPriv->channelRequest = ChannelRequest::create(mPriv->dbusConnection,
                 objectPath.path(), QVariantMap());
 
-        connect(mPriv->channelRequest.data(),
-                SIGNAL(failed(const QString &, const QString &)),
-                SLOT(onChannelRequestFailed(const QString &, const QString &)));
-        connect(mPriv->channelRequest.data(),
-                SIGNAL(succeeded()),
-                SLOT(onChannelRequestSucceeded()));
-
-        connect(mPriv->channelRequest->proceed(),
-                SIGNAL(finished(Tp::PendingOperation*)),
-                SLOT(onProceedOperationFinished(Tp::PendingOperation*)));
-
         if (mPriv->cancelOperation) {
             mPriv->cancelOperation->proceed(mPriv->channelRequest);
-        }
+            setFinishedWithError(TELEPATHY_ERROR_CANCELLED,
+                    "ChannelRequest cancelled");
+        } else {
+            connect(mPriv->channelRequest.data(),
+                    SIGNAL(failed(const QString &, const QString &)),
+                    SLOT(onChannelRequestFailed(const QString &, const QString &)));
+            connect(mPriv->channelRequest.data(),
+                    SIGNAL(succeeded()),
+                    SLOT(onChannelRequestSucceeded()));
 
-        emit channelRequestCreated(mPriv->channelRequest);
+            connect(mPriv->channelRequest->proceed(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onProceedOperationFinished(Tp::PendingOperation*)));
+
+            emit channelRequestCreated(mPriv->channelRequest);
+        }
     } else {
         debug().nospace() << "Ensure/CreateChannel failed:" <<
             reply.error().name() << ": " << reply.error().message();
