@@ -860,8 +860,8 @@ PendingChannelRequest *Account::ensureMediaCall(
 /**
  * Start a request to create a channel.
  * This initially just creates a PendingChannelRequest object,
- * which can be used to retrive the ChannelRequest object and track its success
- * or failure.
+ * which can be used to track the success or failure of the request,
+ * or to cancel it.
  *
  * Helper methods for text chat, text chat room and media call are provided and
  * should be used if appropriate.
@@ -888,8 +888,8 @@ PendingChannelRequest *Account::createChannel(
 /**
  * Start a request to ensure that a channel exists, creating it if necessary.
  * This initially just creates a PendingChannelRequest object,
- * which can be used to retrive the ChannelRequest object and track its success
- * or failure.
+ * which can be used to track the success or failure of the request,
+ * or to cancel it.
  *
  * Helper methods for text chat, text chat room and media call are provided and
  * should be used if appropriate.
