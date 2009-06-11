@@ -863,14 +863,6 @@ PendingChannelRequest *Account::ensureMediaCall(
  * which can be used to retrive the ChannelRequest object and track its success
  * or failure.
  *
- * On destructor PendingChannelRequest will call ChannelRequest::proceed() if
- * and only if the ChannelRequest was not cancelled.
- *
- * If this method is called for an Account that is disabled, invalid or
- * otherwise unusable, no error is signalled until ChannelRequest::proceed() is
- * called, at which point ChannelRequest::failed() signal is emitted with
- * an appropriate error.
- *
  * Helper methods for text chat, text chat room and media call are provided and
  * should be used if appropriate.
  *
@@ -898,14 +890,6 @@ PendingChannelRequest *Account::createChannel(
  * This initially just creates a PendingChannelRequest object,
  * which can be used to retrive the ChannelRequest object and track its success
  * or failure.
- *
- * On destructor PendingChannelRequest will call ChannelRequest::proceed() if
- * and only if the ChannelRequest was not cancelled.
- *
- * If this method is called for an Account that is disabled, invalid or
- * otherwise unusable, no error is signalled until ChannelRequest::proceed() is
- * called, at which point ChannelRequest::failed() signal is emitted with
- * an appropriate error.
  *
  * Helper methods for text chat, text chat room and media call are provided and
  * should be used if appropriate.
