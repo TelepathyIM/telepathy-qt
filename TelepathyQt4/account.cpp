@@ -29,10 +29,12 @@
 
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/PendingChannelRequest>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
 
@@ -693,6 +695,105 @@ PendingOperation *Account::reconnect()
 PendingOperation *Account::remove()
 {
     return new PendingVoidMethodCall(this, baseInterface()->Remove());
+}
+
+PendingChannelRequest *Account::ensureTextChat(
+        const QString &contactIdentifier,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+PendingChannelRequest *Account::ensureTextChat(
+        const ContactPtr &contact,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : 0);
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+PendingChannelRequest *Account::ensureTextChatroom(
+        const QString &roomName,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeRoom);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   roomName);
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+PendingChannelRequest *Account::ensureMediaCall(
+        const QString &contactIdentifier,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+PendingChannelRequest *Account::ensureMediaCall(
+        const ContactPtr &contact,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : 0);
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+// advanced
+PendingChannelRequest *Account::createChannel(
+        const QVariantMap &request,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, true, this);
+}
+
+PendingChannelRequest *Account::ensureChannel(
+        const QVariantMap &request,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
 }
 
 QStringList Account::interfaces() const
