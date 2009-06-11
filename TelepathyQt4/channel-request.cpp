@@ -239,6 +239,11 @@ PendingOperation *ChannelRequest::cancel()
     return new PendingVoidMethodCall(this, mPriv->baseInterface->Cancel());
 }
 
+PendingOperation *ChannelRequest::proceed()
+{
+    return new PendingVoidMethodCall(this, mPriv->baseInterface->Proceed());
+}
+
 /**
  * Get the ChannelRequestInterface for this ChannelRequest class. This method is
  * protected since the convenience methods provided by this class should

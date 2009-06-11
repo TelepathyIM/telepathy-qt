@@ -110,6 +110,10 @@ private Q_SLOTS:
     void onAccountReady(Tp::PendingOperation *op);
 
 private:
+    friend class PendingChannelRequest;
+
+    PendingOperation *proceed();
+
     struct Private;
     friend struct Private;
     Private *mPriv;
