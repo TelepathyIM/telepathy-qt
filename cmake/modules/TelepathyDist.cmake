@@ -6,7 +6,7 @@ add_custom_target(dist cd ${CMAKE_SOURCE_DIR} &&
 # setup make distcheck
 add_custom_target(distcheck cd ${CMAKE_BINARY_DIR} &&
                         rm -rf ${PACKAGE_NAME}-${PACKAGE_VERSION} &&
-                        gzip -d ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz &&
+                        gzip -df ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz &&
                         tar -xf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar &&
                         cd ${PACKAGE_NAME}-${PACKAGE_VERSION}/ &&
                         cmake . && make && make test && make doxygen-doc &&
