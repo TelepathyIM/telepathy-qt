@@ -120,9 +120,17 @@ PendingChannelRequest::PendingChannelRequest(const QDBusConnection &dbusConnecti
                     userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
                     preferredHandler), this);
     }
-    connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onWatcherFinished(QDBusPendingCallWatcher *)));
+
+    // FIXME: This is a Qt bug fixed upstream, should be in the next Qt release.
+    //        We should not need to check watcher->isFinished() here, remove the
+    //        check when a fixed Qt version is released.
+    if (watcher->isFinished()) {
+        onWatcherFinished(watcher);
+    } else {
+        connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(onWatcherFinished(QDBusPendingCallWatcher *)));
+    }
 }
 
 /**
