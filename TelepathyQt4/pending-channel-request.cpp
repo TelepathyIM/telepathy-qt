@@ -186,6 +186,8 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
             setFinishedWithError(TELEPATHY_ERROR_CANCELLED,
                     "ChannelRequest cancelled");
         } else {
+            emit channelRequestCreated(mPriv->channelRequest);
+
             connect(mPriv->channelRequest.data(),
                     SIGNAL(failed(const QString &, const QString &)),
                     SLOT(setFinishedWithError(const QString &, const QString &)));
@@ -196,8 +198,6 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
             connect(mPriv->channelRequest->proceed(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(onProceedOperationFinished(Tp::PendingOperation*)));
-
-            emit channelRequestCreated(mPriv->channelRequest);
         }
     } else {
         debug().nospace() << "Ensure/CreateChannel failed:" <<
