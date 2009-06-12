@@ -53,7 +53,7 @@ public:
     PendingOperation *cancel();
 
 Q_SIGNALS:
-    void channelRequestCreated(const ChannelRequestPtr &channelRequest);
+    void channelRequestCreated(const Tp::ChannelRequestPtr &channelRequest);
 
 private Q_SLOTS:
     void onWatcherFinished(QDBusPendingCallWatcher *watcher);
