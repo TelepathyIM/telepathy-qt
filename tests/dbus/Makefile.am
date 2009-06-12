@@ -38,10 +38,15 @@ if HAVE_TEST_PYTHON
 # Tests which can only be run if we have suitable versions of Python and
 # dbus-python and telepathy-glib, and Qt was compiled to use the Glib main loop
 TESTS += \
+    test-account-channel-dispatcher \
     test-client
 
 BUILT_SOURCES += \
+    _gen/account-channel-dispatcher.cpp.moc.hpp \
     _gen/client.cpp.moc.hpp
+
+test_account_channel_dispatcher_SOURCES = account-channel-dispatcher.cpp
+test_account_channel_dispatcher_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_client_SOURCES = client.cpp
 test_client_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la

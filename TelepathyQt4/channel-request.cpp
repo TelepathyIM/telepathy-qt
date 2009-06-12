@@ -94,6 +94,13 @@ ChannelRequest::Private::Private(ChannelRequest *parent)
 {
     debug() << "Creating new ChannelRequest:" << parent->objectPath();
 
+    parent->connect(baseInterface,
+            SIGNAL(Failed(const QString &, const QString &)),
+            SIGNAL(failed(const QString &, const QString &)));
+    parent->connect(baseInterface,
+            SIGNAL(Succeeded()),
+            SIGNAL(succeeded()));
+
     ReadinessHelper::Introspectables introspectables;
 
     // As ChannelRequest does not have predefined statuses let's simulate one (0)
@@ -118,13 +125,6 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
         self->properties = self->parent->propertiesInterface();
         Q_ASSERT(self->properties != 0);
     }
-
-    self->parent->connect(self->baseInterface,
-            SIGNAL(Failed(const QString &, const QString &)),
-            SIGNAL(failed(const QString &, const QString &)));
-    self->parent->connect(self->baseInterface,
-            SIGNAL(Succeeded()),
-            SIGNAL(succeeded()));
 
     debug() << "Calling Properties::GetAll(ChannelRequest)";
     QDBusPendingCallWatcher *watcher =
@@ -237,6 +237,11 @@ QualifiedPropertyValueMapList ChannelRequest::requests() const
 PendingOperation *ChannelRequest::cancel()
 {
     return new PendingVoidMethodCall(this, mPriv->baseInterface->Cancel());
+}
+
+PendingOperation *ChannelRequest::proceed()
+{
+    return new PendingVoidMethodCall(this, mPriv->baseInterface->Proceed());
 }
 
 /**

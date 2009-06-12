@@ -18,6 +18,7 @@ EXTRA_DIST = \
     account-manager.xml \
     async-model.dox \
     channel.xml \
+    channel-dispatcher.xml \
     channel-dispatch-operation.xml \
     channel-request.xml \
     client.xml \
@@ -55,6 +56,7 @@ libtelepathy_qt4_la_SOURCES = \
     channel-factory.cpp \
     channel-factory.h \
     channel-request.cpp \
+    channel-dispatcher.cpp \
     channel-dispatch-operation.cpp \
     client.cpp \
     client-registrar.cpp \
@@ -79,6 +81,8 @@ libtelepathy_qt4_la_SOURCES = \
     optional-interface-factory.cpp \
     pending-account.cpp \
     pending-channel.cpp \
+    pending-channel-request.cpp \
+    pending-channel-request-internal.h \
     pending-connection.cpp \
     pending-contact-attributes.cpp \
     pending-contacts.cpp \
@@ -102,6 +106,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-account-manager.moc.hpp \
     _gen/cli-channel-body.hpp \
     _gen/cli-channel.moc.hpp \
+    _gen/cli-channel-dispatcher-body.hpp \
+    _gen/cli-channel-dispatcher.moc.hpp \
     _gen/cli-channel-dispatch-operation-body.hpp \
     _gen/cli-channel-dispatch-operation.moc.hpp \
     _gen/cli-channel-request-body.hpp \
@@ -140,6 +146,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/file-transfer.moc.hpp \
     _gen/pending-account.moc.hpp \
     _gen/pending-channel.moc.hpp \
+    _gen/pending-channel-request.moc.hpp \
+    _gen/pending-channel-request-internal.moc.hpp \
     _gen/pending-connection.moc.hpp \
     _gen/pending-contact-attributes.moc.hpp \
     _gen/pending-contacts.moc.hpp \
@@ -162,6 +170,7 @@ tpqt4include_HEADERS = \
     Account \
     AccountManager \
     Channel \
+    ChannelDispatcher \
     ChannelDispatchOperation \
     ChannelRequest \
     Client \
@@ -185,6 +194,7 @@ tpqt4include_HEADERS = \
     OptionalInterfaceFactory \
     PendingAccount \
     PendingChannel \
+    PendingChannelRequest \
     PendingConnection \
     PendingContacts \
     PendingContactAttributes \
@@ -220,6 +230,7 @@ tpqt4include_HEADERS = \
     ChannelInterfaceHoldInterface \
     ChannelInterfaceMediaSignallingInterface \
     ChannelInterfacePasswordInterface \
+    ChannelDispatcherInterface \
     ChannelDispatchOperationInterface \
     ChannelRequestInterface \
     ChannelTypeContactListInterface \
@@ -253,6 +264,7 @@ tpqt4include_HEADERS = \
     account.h \
     account-manager.h \
     channel.h \
+    channel-dispatcher.h \
     channel-dispatch-operation.h \
     channel-request.h \
     client.h \
@@ -276,6 +288,7 @@ tpqt4include_HEADERS = \
     optional-interface-factory.h \
     pending-account.h \
     pending-channel.h \
+    pending-channel-request.h \
     pending-connection.h \
     pending-contact-attributes.h \
     pending-contacts.h \
@@ -298,6 +311,7 @@ nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
     _gen/cli-account-manager.h \
     _gen/cli-channel.h \
+    _gen/cli-channel-dispatcher.h \
     _gen/cli-channel-dispatch-operation.h \
     _gen/cli-channel-request.h \
     _gen/cli-client.h \
@@ -399,6 +413,10 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 			group='clientchannel'; \
 			prettyinclude='Channel'; \
 			mainiface='--mainiface=Tp::Client::ChannelInterface';; \
+		channel-dispatcher) \
+			group='clientchanneldispatcher'; \
+			prettyinclude='ChannelDispatcher'; \
+			mainiface='--mainiface=Tp::Client::ChannelDispatcherInterface';; \
 		channel-dispatch-operation) \
 			group='clientchanneldispatchoperation'; \
 			prettyinclude='ChannelDispatchOperation'; \

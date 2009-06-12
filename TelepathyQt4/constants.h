@@ -114,4 +114,15 @@
 #define TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER \
     "org.freedesktop.DBus.Error.NameHasNoOwner"
 
+/**
+ * \ingroup errorstrconsts
+ *
+ * The error name "org.freedesktop.DBus.Error.UnknownMethod".
+ *
+ * Raised by the D-Bus daemon when the method name invoked isn't
+ * known by the object you invoked it on.
+ */
+#define TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD \
+    "org.freedesktop.DBus.Error.UnknownMethod"
+
 #endif
