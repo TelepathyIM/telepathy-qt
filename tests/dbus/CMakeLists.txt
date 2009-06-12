@@ -25,6 +25,7 @@ if(ENABLE_TP_GLIB_TESTS)
     include_directories(${TPGLIB_INCLUDE_DIRS})
 
     if(HAVE_TEST_PYTHON)
+        add_dbus_unit_test(AccountChannelDispatcher account-channel-dispatcher tp-glib-tests)
         add_dbus_unit_test(Client client tp-glib-tests)
     endif(HAVE_TEST_PYTHON)
 

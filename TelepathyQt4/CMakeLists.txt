@@ -10,6 +10,7 @@ set(telepathy_qt4_SRCS
     account.cpp
     account-manager.cpp
     channel.cpp
+    channel-dispatcher.cpp
     channel-dispatch-operation.cpp
     channel-factory.cpp
     channel-request.cpp
@@ -36,6 +37,8 @@ set(telepathy_qt4_SRCS
     optional-interface-factory.cpp
     pending-account.cpp
     pending-channel.cpp
+    pending-channel-request.cpp
+    pending-channel-request-internal.h
     pending-connection.cpp
     pending-contact-attributes.cpp
     pending-contacts.cpp
@@ -67,6 +70,9 @@ set(telepathy_qt4_HEADERS
     account-manager.h
     AccountManagerInterface
     Channel
+    ChannelDispatcher
+    ChannelDispatcherInterface
+    channel-dispatcher.h
     ChannelDispatchOperation
     channel-dispatch-operation.h
     ChannelDispatchOperationInterface
@@ -148,6 +154,8 @@ set(telepathy_qt4_HEADERS
     pending-account.h
     PendingChannel
     pending-channel.h
+    PendingChannelRequest
+    pending-channel-request.h
     PendingConnection
     pending-connection.h
     PendingContactAttributes
@@ -197,6 +205,7 @@ set(telepathy_qt4_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account-manager.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-dispatcher.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-dispatch-operation.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-channel-request.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-client.h
@@ -228,6 +237,8 @@ set(telepathy_qt4_MOC_SRCS
     file-transfer.h
     pending-account.h
     pending-channel.h
+    pending-channel-request.h
+    pending-channel-request-internal.h
     pending-connection.h
     pending-contact-attributes.h
     pending-contacts.h
@@ -281,6 +292,7 @@ set(SPECS
     account
     account-manager
     channel
+    channel-dispatcher
     channel-dispatch-operation
     channel-request
     client
@@ -341,6 +353,7 @@ endfunction(CLIENT_GENERATOR spec group pretty_include main_iface)
 client_generator(account clientaccount AccountManager Tp::Client --mainiface=Tp::Client::AccountInterface)
 client_generator(account-manager clientam AccountManager Tp::Client --mainiface=Tp::Client::AccountManagerInterface)
 client_generator(channel clientchannel Channel Tp::Client --mainiface=Tp::Client::ChannelInterface)
+client_generator(channel-dispatcher clientchanneldispatcher ChannelDispatcher Tp::Client --mainiface=Tp::Client::ChannelDispatcherInterface)
 client_generator(channel-dispatch-operation clientchanneldispatchoperation ChannelDispatchOperation Tp::Client --mainiface=Tp::Client::ChannelDispatchOperationInterface)
 client_generator(channel-request clientchannelrequest ChannelRequest Tp::Client --mainiface=Tp::Client::ChannelRequestInterface)
 client_generator(client clientclient Client Tp::Client --mainiface=Tp::Client::ClientInterface)
