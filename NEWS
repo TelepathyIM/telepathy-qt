@@ -1,7 +1,25 @@
-telepathy-qt4 0.1.8 (UNRELEASED)
+telepathy-qt4 0.1.8 (2009-06-16)
 ================================
 
-...
+The "Every Good Boy Deserves Frontalot" release.
+
+New API:
+
+* Added PendingChannelRequest class to be used when requesting channels using
+  ChannelDispatcher through Account.
+* Added Account methods to request/create channels using ChannelDispatcher
+  (ensureTextChat, ensureTextChatroom, ensureMediaCall, createChannel and
+  ensureChannel)
+
+Enhancements:
+
+* Updated to telepathy-spec 0.17.26
+
+Fixes:
+
+* ChannelDispatchOperation: Read Channels property instead of incorrectly
+  reading ChannelDetailsList (Patch from George Kiagiadakis
+  <kiagiadakis.george@gmail.com>).
 
 telepathy-qt4 0.1.7 (2009-06-02)
 ================================
