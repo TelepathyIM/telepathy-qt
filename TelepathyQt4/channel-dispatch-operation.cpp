@@ -160,7 +160,7 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
 
     if (!immutableProperties) {
         ChannelDetailsList channelDetailsList =
-            qdbus_cast<ChannelDetailsList>(props.value("ChannelDetailsList"));
+            qdbus_cast<ChannelDetailsList>(props.value("Channels"));
         ChannelPtr channel;
         foreach (const ChannelDetails &channelDetails, channelDetailsList) {
             channel = ChannelFactory::create(connection,
