@@ -226,7 +226,7 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  * {
  *     if (op->isError()) {
  *         qWarning() << "Account manager cannot become ready:" <<
- *             error->errorName() << "-" << error->errorMessage();
+ *             op->errorName() << "-" << op->errorMessage();
  *         return;
  *     }
  *
