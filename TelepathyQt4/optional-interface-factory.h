@@ -26,17 +26,6 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
 #include <QtGlobal>
 #include <QObject>
 
@@ -50,16 +39,8 @@ class OptionalInterfaceCache
     Q_DISABLE_COPY(OptionalInterfaceCache)
 
 public:
-    /**
-     * Class constructor.
-     */
     explicit OptionalInterfaceCache(QObject *proxy);
 
-    /**
-     * Class destructor.
-     *
-     * Frees all interface instances constructed by this factory.
-     */
     ~OptionalInterfaceCache();
 
 protected:
@@ -72,66 +53,19 @@ private:
     Private *mPriv;
 };
 
-/**
- * \class OptionalInterfaceFactory
- * \ingroup clientsideproxies
- * \headerfile <TelepathyQt4/optional-interface-factory.h> <TelepathyQt4/OptionalInterfaceFactory>
- *
- * Implementation helper class for high-level proxy classes willing to offer
- * access to shared instances of interface proxies for optional interfaces.
- *
- * This class is included in the public API for the benefit of high-level
- * proxies in extensions.
- *
- * To use this helper in a subclass of DBusProxy (say, ExampleObject),
- * ExampleObject should inherit privately from
- * OptionalInterfaceFactory<ExampleObject>, and call
- * OptionalInterfaceFactory(this) in its constructor's initialization list.
- *
- * \tparam DBusProxySubclass A subclass of DBusProxy
- */
 template <typename DBusProxySubclass> class OptionalInterfaceFactory
     : private OptionalInterfaceCache
 {
 public:
-    /**
-     * Class constructor.
-     *
-     * \param this_ The class to which this OptionalInterfaceFactory is
-     *              attached
-     */
     inline OptionalInterfaceFactory(DBusProxySubclass *this_)
         : OptionalInterfaceCache(this_)
     {
     }
 
-    /**
-     * Class destructor.
-     *
-     * Frees all interface instances constructed by this factory.
-     */
     inline ~OptionalInterfaceFactory()
     {
     }
 
-    /**
-     * Return a pointer to a valid instance of a interface class, associated
-     * with the same remote object as the given main interface instance. The
-     * given main interface must be of the class the optional interface is
-     * generated for (for eg. ChannelInterfaceGroupInterface this means
-     * ChannelInterface) or a subclass.
-     *
-     * First invocation of this method for a particular optional interface
-     * class will construct the instance; subsequent calls will return a
-     * pointer to the same instance.
-     *
-     * The returned instance is freed when the factory is destroyed; using
-     * it after destroying the factory will likely produce a crash. As the
-     * instance is shared, it should not be freed directly.
-     *
-     * \tparam Interface Class of the interface instance to get.
-     * \return A pointer to an optional interface instance.
-     */
     template <typename Interface>
     inline Interface *interface() const
     {
