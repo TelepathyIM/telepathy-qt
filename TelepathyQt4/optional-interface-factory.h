@@ -49,27 +49,27 @@ class OptionalInterfaceCache
 {
     Q_DISABLE_COPY(OptionalInterfaceCache)
 
-    public:
-        /**
-         * Class constructor.
-         */
-        explicit OptionalInterfaceCache(QObject *proxy);
+public:
+    /**
+     * Class constructor.
+     */
+    explicit OptionalInterfaceCache(QObject *proxy);
 
-        /**
-         * Class destructor.
-         *
-         * Frees all interface instances constructed by this factory.
-         */
-        ~OptionalInterfaceCache();
+    /**
+     * Class destructor.
+     *
+     * Frees all interface instances constructed by this factory.
+     */
+    ~OptionalInterfaceCache();
 
-    protected:
-        AbstractInterface *getCached(const QString &name) const;
-        void cache(AbstractInterface *interface) const;
-        QObject *proxy() const;
+protected:
+    AbstractInterface *getCached(const QString &name) const;
+    void cache(AbstractInterface *interface) const;
+    QObject *proxy() const;
 
-    private:
-        struct Private;
-        Private *mPriv;
+private:
+    struct Private;
+    Private *mPriv;
 };
 
 /**
@@ -93,63 +93,63 @@ class OptionalInterfaceCache
 template <typename DBusProxySubclass> class OptionalInterfaceFactory
     : private OptionalInterfaceCache
 {
-    public:
-        /**
-         * Class constructor.
-         *
-         * \param this_ The class to which this OptionalInterfaceFactory is
-         *              attached
-         */
-        inline OptionalInterfaceFactory(DBusProxySubclass *this_)
-            : OptionalInterfaceCache(this_)
-        {
-        }
+public:
+    /**
+     * Class constructor.
+     *
+     * \param this_ The class to which this OptionalInterfaceFactory is
+     *              attached
+     */
+    inline OptionalInterfaceFactory(DBusProxySubclass *this_)
+        : OptionalInterfaceCache(this_)
+    {
+    }
 
-        /**
-         * Class destructor.
-         *
-         * Frees all interface instances constructed by this factory.
-         */
-        inline ~OptionalInterfaceFactory()
-        {
-        }
+    /**
+     * Class destructor.
+     *
+     * Frees all interface instances constructed by this factory.
+     */
+    inline ~OptionalInterfaceFactory()
+    {
+    }
 
-        /**
-         * Return a pointer to a valid instance of a interface class, associated
-         * with the same remote object as the given main interface instance. The
-         * given main interface must be of the class the optional interface is
-         * generated for (for eg. ChannelInterfaceGroupInterface this means
-         * ChannelInterface) or a subclass.
-         *
-         * First invocation of this method for a particular optional interface
-         * class will construct the instance; subsequent calls will return a
-         * pointer to the same instance.
-         *
-         * The returned instance is freed when the factory is destroyed; using
-         * it after destroying the factory will likely produce a crash. As the
-         * instance is shared, it should not be freed directly.
-         *
-         * \tparam Interface Class of the interface instance to get.
-         * \return A pointer to an optional interface instance.
-         */
-        template <typename Interface>
-        inline Interface *interface() const
-        {
-            AbstractInterface* interfaceMustBeASubclassOfAbstractInterface = static_cast<Interface *>(NULL);
-            Q_UNUSED(interfaceMustBeASubclassOfAbstractInterface);
+    /**
+     * Return a pointer to a valid instance of a interface class, associated
+     * with the same remote object as the given main interface instance. The
+     * given main interface must be of the class the optional interface is
+     * generated for (for eg. ChannelInterfaceGroupInterface this means
+     * ChannelInterface) or a subclass.
+     *
+     * First invocation of this method for a particular optional interface
+     * class will construct the instance; subsequent calls will return a
+     * pointer to the same instance.
+     *
+     * The returned instance is freed when the factory is destroyed; using
+     * it after destroying the factory will likely produce a crash. As the
+     * instance is shared, it should not be freed directly.
+     *
+     * \tparam Interface Class of the interface instance to get.
+     * \return A pointer to an optional interface instance.
+     */
+    template <typename Interface>
+    inline Interface *interface() const
+    {
+        AbstractInterface* interfaceMustBeASubclassOfAbstractInterface = static_cast<Interface *>(NULL);
+        Q_UNUSED(interfaceMustBeASubclassOfAbstractInterface);
 
-            // If there is a interface cached already, return it
-            QString name(Interface::staticInterfaceName());
-            AbstractInterface *cached = getCached(name);
-            if (cached)
-                return static_cast<Interface *>(cached);
+        // If there is a interface cached already, return it
+        QString name(Interface::staticInterfaceName());
+        AbstractInterface *cached = getCached(name);
+        if (cached)
+            return static_cast<Interface *>(cached);
 
-            // Otherwise, cache and return a newly constructed proxy
-            Interface *interface = new Interface(
-                    static_cast<DBusProxySubclass *>(proxy()));
-            cache(interface);
-            return interface;
-        }
+        // Otherwise, cache and return a newly constructed proxy
+        Interface *interface = new Interface(
+                static_cast<DBusProxySubclass *>(proxy()));
+        cache(interface);
+        return interface;
+    }
 };
 
 } // Tp
