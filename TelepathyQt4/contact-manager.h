@@ -47,124 +47,129 @@ class ContactManager : public QObject
 {
     Q_OBJECT
 
-    public:
+public:
+    ConnectionPtr connection() const;
 
-        ConnectionPtr connection() const;
+    QSet<Contact::Feature> supportedFeatures() const;
 
-        QSet<Contact::Feature> supportedFeatures() const;
+    Contacts allKnownContacts() const;
 
-        Contacts allKnownContacts() const;
+    bool canRequestPresenceSubscription() const;
+    bool subscriptionRequestHasMessage() const;
+    PendingOperation *requestPresenceSubscription(
+            const QList<ContactPtr> &contacts,
+            const QString &message = QString());
+    bool canRemovePresenceSubscription() const;
+    bool subscriptionRemovalHasMessage() const;
+    bool canRescindPresenceSubscriptionRequest() const;
+    bool subscriptionRescindingHasMessage() const;
+    PendingOperation *removePresenceSubscription(
+            const QList<ContactPtr> &contacts,
+            const QString &message = QString());
+    bool canAuthorizePresencePublication() const;
+    bool publicationAuthorizationHasMessage() const;
+    PendingOperation *authorizePresencePublication(
+            const QList<ContactPtr> &contacts,
+            const QString &message = QString());
+    bool publicationRejectionHasMessage() const;
+    bool canRemovePresencePublication() const;
+    bool publicationRemovalHasMessage() const;
+    PendingOperation *removePresencePublication(
+            const QList<ContactPtr> &contacts,
+            const QString &message = QString());
 
-        bool canRequestPresenceSubscription() const;
-        bool subscriptionRequestHasMessage() const;
-        PendingOperation *requestPresenceSubscription(
-                const QList<ContactPtr> &contacts, const QString &message = QString());
-        bool canRemovePresenceSubscription() const;
-        bool subscriptionRemovalHasMessage() const;
-        bool canRescindPresenceSubscriptionRequest() const;
-        bool subscriptionRescindingHasMessage() const;
-        PendingOperation *removePresenceSubscription(
-                const QList<ContactPtr> &contacts, const QString &message = QString());
-        bool canAuthorizePresencePublication() const;
-        bool publicationAuthorizationHasMessage() const;
-        PendingOperation *authorizePresencePublication(
-                const QList<ContactPtr> &contacts, const QString &message = QString());
-        bool publicationRejectionHasMessage() const;
-        bool canRemovePresencePublication() const;
-        bool publicationRemovalHasMessage() const;
-        PendingOperation *removePresencePublication(
-                const QList<ContactPtr> &contacts, const QString &message = QString());
+    bool canBlockContacts() const;
+    PendingOperation *blockContacts(
+            const QList<ContactPtr> &contacts, bool value = true);
 
-        bool canBlockContacts() const;
-        PendingOperation *blockContacts(
-                const QList<ContactPtr> &contacts, bool value = true);
+    PendingContacts *contactsForHandles(const UIntList &handles,
+            const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+    PendingContacts *contactsForHandles(const ReferencedHandles &handles,
+            const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
 
-        PendingContacts *contactsForHandles(const UIntList &handles,
-                const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
-        PendingContacts *contactsForHandles(const ReferencedHandles &handles,
-                const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+    PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
+            const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
 
-        PendingContacts *contactsForIdentifiers(const QStringList &identifiers,
-                const QSet<Contact::Feature> &features = QSet<Contact::Feature>());
+    PendingContacts *upgradeContacts(const QList<ContactPtr> &contacts,
+            const QSet<Contact::Feature> &features);
 
-        PendingContacts *upgradeContacts(const QList<ContactPtr> &contacts,
-                const QSet<Contact::Feature> &features);
+    ContactPtr lookupContactByHandle(uint handle);
 
-        ContactPtr lookupContactByHandle(uint handle);
+Q_SIGNALS:
+    void presencePublicationRequested(const Tp::Contacts &contacts);
 
-    Q_SIGNALS:
-        void presencePublicationRequested(const Tp::Contacts &contacts);
+private Q_SLOTS:
+    void onAliasesChanged(const Tp::AliasPairList &);
+    void onAvatarUpdated(uint, const QString &);
+    void onPresencesChanged(const Tp::SimpleContactPresences &);
 
-    private Q_SLOTS:
-        void onAliasesChanged(const Tp::AliasPairList &);
-        void onAvatarUpdated(uint, const QString &);
-        void onPresencesChanged(const Tp::SimpleContactPresences &);
+    void onSubscribeChannelMembersChanged(
+        const Tp::Contacts &groupMembersAdded,
+        const Tp::Contacts &groupLocalPendingMembersAdded,
+        const Tp::Contacts &groupRemotePendingMembersAdded,
+        const Tp::Contacts &groupMembersRemoved,
+        const Tp::Channel::GroupMemberChangeDetails &details);
+    void onPublishChannelMembersChanged(
+        const Tp::Contacts &groupMembersAdded,
+        const Tp::Contacts &groupLocalPendingMembersAdded,
+        const Tp::Contacts &groupRemotePendingMembersAdded,
+        const Tp::Contacts &groupMembersRemoved,
+        const Tp::Channel::GroupMemberChangeDetails &details);
+    void onDenyChannelMembersChanged(
+        const Tp::Contacts &groupMembersAdded,
+        const Tp::Contacts &groupLocalPendingMembersAdded,
+        const Tp::Contacts &groupRemotePendingMembersAdded,
+        const Tp::Contacts &groupMembersRemoved,
+        const Tp::Channel::GroupMemberChangeDetails &details);
 
-        void onSubscribeChannelMembersChanged(
-            const Tp::Contacts &groupMembersAdded,
-            const Tp::Contacts &groupLocalPendingMembersAdded,
-            const Tp::Contacts &groupRemotePendingMembersAdded,
-            const Tp::Contacts &groupMembersRemoved,
-            const Tp::Channel::GroupMemberChangeDetails &details);
-        void onPublishChannelMembersChanged(
-            const Tp::Contacts &groupMembersAdded,
-            const Tp::Contacts &groupLocalPendingMembersAdded,
-            const Tp::Contacts &groupRemotePendingMembersAdded,
-            const Tp::Contacts &groupMembersRemoved,
-            const Tp::Channel::GroupMemberChangeDetails &details);
-        void onDenyChannelMembersChanged(
-            const Tp::Contacts &groupMembersAdded,
-            const Tp::Contacts &groupLocalPendingMembersAdded,
-            const Tp::Contacts &groupRemotePendingMembersAdded,
-            const Tp::Contacts &groupMembersRemoved,
-            const Tp::Channel::GroupMemberChangeDetails &details);
-
-    private:
-        struct ContactListChannel
-        {
-            enum Type {
-                TypeSubscribe = 0,
-                TypePublish,
-                TypeStored,
-                TypeDeny,
-                LastType
-            };
-
-            ContactListChannel()
-                : type((Type) -1)
-            {
-            }
-
-            ContactListChannel(Type type)
-                : type(type)
-            {
-            }
-
-            ~ContactListChannel()
-            {
-            }
-
-            static QString identifierForType(Type type);
-            static uint typeForIdentifier(const QString &identifier);
-
-            Type type;
-            ReferencedHandles handle;
-            ChannelPtr channel;
+private:
+    struct ContactListChannel
+    {
+        enum Type {
+            TypeSubscribe = 0,
+            TypePublish,
+            TypeStored,
+            TypeDeny,
+            LastType
         };
 
-        ContactManager(const ConnectionPtr &parent);
-        ~ContactManager();
+        ContactListChannel()
+            : type((Type) -1)
+        {
+        }
 
-        ContactPtr ensureContact(const ReferencedHandles &handle,
-                const QSet<Contact::Feature> &features, const QVariantMap &attributes);
+        ContactListChannel(Type type)
+            : type(type)
+        {
+        }
 
-        void setContactListChannels(const QMap<uint, ContactListChannel> &contactListsChannels);
+        ~ContactListChannel()
+        {
+        }
 
-        struct Private;
-        friend struct Private;
-        friend class Connection;
-        friend class PendingContacts;
-        Private *mPriv;
+        static QString identifierForType(Type type);
+        static uint typeForIdentifier(const QString &identifier);
+
+        Type type;
+        ReferencedHandles handle;
+        ChannelPtr channel;
+    };
+
+    ContactManager(const ConnectionPtr &parent);
+    ~ContactManager();
+
+    ContactPtr ensureContact(const ReferencedHandles &handle,
+            const QSet<Contact::Feature> &features,
+            const QVariantMap &attributes);
+
+    void setContactListChannels(
+            const QMap<uint, ContactListChannel> &contactListsChannels);
+
+    struct Private;
+    friend struct Private;
+    friend class Connection;
+    friend class PendingContacts;
+    Private *mPriv;
 };
 
 } // Tp
