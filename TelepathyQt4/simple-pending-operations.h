@@ -42,7 +42,7 @@ class PendingSuccess : public PendingOperation
     Q_DISABLE_COPY(PendingSuccess)
 
 public:
-    PendingSuccess(QObject* parent)
+    PendingSuccess(QObject *parent)
         : PendingOperation(parent)
     {
         setFinished();
@@ -59,14 +59,14 @@ class PendingFailure : public PendingOperation
     Q_DISABLE_COPY(PendingFailure)
 
 public:
-    PendingFailure(QObject* parent, const QString& name,
-            const QString& message)
+    PendingFailure(QObject *parent, const QString &name,
+            const QString &message)
         : PendingOperation(parent)
     {
         setFinishedWithError(name, message);
     }
 
-    PendingFailure(QObject* parent, const QDBusError& error)
+    PendingFailure(QObject *parent, const QDBusError &error)
         : PendingOperation(parent)
     {
         setFinishedWithError(error);
@@ -95,7 +95,7 @@ public:
      *             Telepathy API; if the method returns anything, the return
      *             value(s) will be ignored
      */
-    PendingVoidMethodCall(QObject* parent, QDBusPendingCall call);
+    PendingVoidMethodCall(QObject *parent, QDBusPendingCall call);
 
 private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);

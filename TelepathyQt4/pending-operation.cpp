@@ -39,36 +39,31 @@ namespace Tp
 
 struct PendingOperation::Private
 {
-    inline Private()
-      : errorName(QString()),
-        errorMessage(QString()),
-        finished(false)
-    { }
+    Private() : finished(false)
+    {
+    }
 
     QString errorName;
     QString errorMessage;
     bool finished;
 };
 
-
-PendingOperation::PendingOperation(QObject* parent)
-  : QObject(parent),
-    mPriv(new Private())
+PendingOperation::PendingOperation(QObject *parent)
+    : QObject(parent),
+      mPriv(new Private())
 {
 }
-
 
 PendingOperation::~PendingOperation()
 {
     if (!mPriv->finished) {
-        warning() << this
-                << "still pending when it was deleted - finished will "
-                   "never be emitted";
+        warning() << this <<
+            "still pending when it was deleted - finished will "
+            "never be emitted";
     }
 
     delete mPriv;
 }
-
 
 void PendingOperation::emitFinished()
 {
@@ -77,16 +72,16 @@ void PendingOperation::emitFinished()
     deleteLater();
 }
 
-
 void PendingOperation::setFinished()
 {
     if (mPriv->finished) {
-        if (mPriv->errorName.isEmpty())
+        if (mPriv->errorName.isEmpty()) {
             warning() << this << "trying to finish with success, but already"
-              " failed with" << errorName() << ":" << errorMessage();
-        else
+                " failed with" << errorName() << ":" << errorMessage();
+        } else {
             warning() << this << "trying to finish with success, but already"
-              " succeeded";
+                " succeeded";
+        }
         return;
     }
 
@@ -95,26 +90,25 @@ void PendingOperation::setFinished()
     QTimer::singleShot(0, this, SLOT(emitFinished()));
 }
 
-
-void PendingOperation::setFinishedWithError(const QString& name,
-        const QString& message)
+void PendingOperation::setFinishedWithError(const QString &name,
+        const QString &message)
 {
     if (mPriv->finished) {
-        if (mPriv->errorName.isEmpty())
+        if (mPriv->errorName.isEmpty()) {
             warning() << this << "trying to fail with" << name <<
-              "but already failed with" << errorName() << ":" <<
-              errorMessage();
-        else
+                "but already failed with" << errorName() << ":" <<
+                errorMessage();
+        } else {
             warning() << this << "trying to fail with" << name <<
-              "but already succeeded";
+                "but already succeeded";
+        }
         return;
     }
 
     if (name.isEmpty()) {
         warning() << this << "should be given a non-empty error name";
         mPriv->errorName = "org.freedesktop.Telepathy.Qt4.ErrorHandlingError";
-    }
-    else {
+    } else {
         mPriv->errorName = name;
     }
 
@@ -124,36 +118,30 @@ void PendingOperation::setFinishedWithError(const QString& name,
     QTimer::singleShot(0, this, SLOT(emitFinished()));
 }
 
-
-void PendingOperation::setFinishedWithError(const QDBusError& error)
+void PendingOperation::setFinishedWithError(const QDBusError &error)
 {
     setFinishedWithError(error.name(), error.message());
 }
-
 
 bool PendingOperation::isValid() const
 {
     return (mPriv->finished && mPriv->errorName.isEmpty());
 }
 
-
 bool PendingOperation::isFinished() const
 {
     return mPriv->finished;
 }
-
 
 bool PendingOperation::isError() const
 {
     return (mPriv->finished && !mPriv->errorName.isEmpty());
 }
 
-
 QString PendingOperation::errorName() const
 {
     return mPriv->errorName;
 }
-
 
 QString PendingOperation::errorMessage() const
 {
@@ -161,26 +149,20 @@ QString PendingOperation::errorMessage() const
 }
 
 
-PendingVoidMethodCall::PendingVoidMethodCall(QObject* proxy,
-    QDBusPendingCall call)
-  : PendingOperation(proxy),
-    mPriv(0)
+PendingVoidMethodCall::PendingVoidMethodCall(QObject *proxy,
+        QDBusPendingCall call)
+  : PendingOperation(proxy)
 {
     connect(new QDBusPendingCallWatcher(call),
-        SIGNAL(finished(QDBusPendingCallWatcher*)),
-        this,
-        SLOT(watcherFinished(QDBusPendingCallWatcher*)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(watcherFinished(QDBusPendingCallWatcher*)));
 }
 
-
-void PendingVoidMethodCall::watcherFinished(QDBusPendingCallWatcher* watcher)
+void PendingVoidMethodCall::watcherFinished(QDBusPendingCallWatcher *watcher)
 {
-    if (watcher->isError())
-    {
+    if (watcher->isError()) {
         setFinishedWithError(watcher->error());
-    }
-    else
-    {
+    } else {
         setFinished();
     }
 }

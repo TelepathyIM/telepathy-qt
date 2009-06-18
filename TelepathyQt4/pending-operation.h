@@ -131,7 +131,7 @@ Q_SIGNALS:
      * \param operation This operation object, from which further information
      *    may be obtained
      */
-    void finished(Tp::PendingOperation* operation);
+    void finished(Tp::PendingOperation *operation);
 
 protected:
     /**
@@ -139,7 +139,7 @@ protected:
      *
      * \param parent The object on which this pending operation takes place
      */
-    PendingOperation(QObject* parent);
+    PendingOperation(QObject *parent);
 
 protected Q_SLOTS:
     /**
@@ -155,7 +155,7 @@ protected Q_SLOTS:
      * \param name A D-Bus error name, which must be non-empty
      * \param message A debugging message
      */
-    void setFinishedWithError(const QString& name, const QString& message);
+    void setFinishedWithError(const QString &name, const QString &message);
 
     /**
      * Record that this pending operation has finished with an error, and
@@ -163,7 +163,7 @@ protected Q_SLOTS:
      *
      * \param error A QtDBus error
      */
-    void setFinishedWithError(const QDBusError& error);
+    void setFinishedWithError(const QDBusError &error);
 
 private Q_SLOTS:
     void emitFinished();
