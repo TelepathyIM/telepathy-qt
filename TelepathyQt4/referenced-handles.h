@@ -82,211 +82,211 @@ class Connection;
  */
 class ReferencedHandles
 {
-    public:
-        typedef UIntList::const_iterator const_iterator;
-        typedef UIntList::ConstIterator ConstIterator;
-        typedef UIntList::const_pointer const_pointer;
-        typedef UIntList::const_reference const_reference;
-        typedef UIntList::difference_type difference_type;
-        typedef UIntList::pointer pointer;
-        typedef UIntList::reference reference;
-        typedef UIntList::size_type size_type;
-        typedef UIntList::value_type value_type;
+public:
+    typedef UIntList::const_iterator const_iterator;
+    typedef UIntList::ConstIterator ConstIterator;
+    typedef UIntList::const_pointer const_pointer;
+    typedef UIntList::const_reference const_reference;
+    typedef UIntList::difference_type difference_type;
+    typedef UIntList::pointer pointer;
+    typedef UIntList::reference reference;
+    typedef UIntList::size_type size_type;
+    typedef UIntList::value_type value_type;
 
-        ReferencedHandles();
-        ReferencedHandles(const ReferencedHandles& other);
-        ~ReferencedHandles();
+    ReferencedHandles();
+    ReferencedHandles(const ReferencedHandles& other);
+    ~ReferencedHandles();
 
-        ConnectionPtr connection() const;
-        uint handleType() const;
+    ConnectionPtr connection() const;
+    uint handleType() const;
 
-        uint at(int i) const;
+    uint at(int i) const;
 
-        inline uint back() const
-        {
-            return last();
-        }
+    inline uint back() const
+    {
+        return last();
+    }
 
-        inline uint first() const
-        {
-            return at(0);
-        }
+    inline uint first() const
+    {
+        return at(0);
+    }
 
-        inline uint front() const
-        {
-            return first();
-        }
+    inline uint front() const
+    {
+        return first();
+    }
 
-        inline uint last() const
-        {
-            return at(size() - 1);
-        }
+    inline uint last() const
+    {
+        return at(size() - 1);
+    }
 
-        uint value(int i, uint defaultValue = 0) const;
+    uint value(int i, uint defaultValue = 0) const;
 
-        const_iterator begin() const;
+    const_iterator begin() const;
 
-        inline const_iterator constBegin() const
-        {
-            return begin();
-        }
+    inline const_iterator constBegin() const
+    {
+        return begin();
+    }
 
-        inline const_iterator constEnd() const
-        {
-            return end();
-        }
+    inline const_iterator constEnd() const
+    {
+        return end();
+    }
 
-        const_iterator end() const;
+    const_iterator end() const;
 
-        bool contains(uint handle) const;
+    bool contains(uint handle) const;
 
-        int count(uint handle) const;
+    int count(uint handle) const;
 
-        inline int count() const
-        {
-            return size();
-        }
+    inline int count() const
+    {
+        return size();
+    }
 
-        inline bool empty() const
-        {
-            return isEmpty();
-        }
+    inline bool empty() const
+    {
+        return isEmpty();
+    }
 
-        inline bool endsWith(uint handle) const
-        {
-            return !isEmpty() && last() == handle;
-        }
+    inline bool endsWith(uint handle) const
+    {
+        return !isEmpty() && last() == handle;
+    }
 
-        int indexOf(uint handle, int from = 0) const;
+    int indexOf(uint handle, int from = 0) const;
 
-        bool isEmpty() const;
+    bool isEmpty() const;
 
-        int lastIndexOf(uint handle, int from = -1) const;
+    int lastIndexOf(uint handle, int from = -1) const;
 
-        inline int length() const
-        {
-            return count();
-        }
+    inline int length() const
+    {
+        return count();
+    }
 
-        ReferencedHandles mid(int pos, int length = -1) const;
+    ReferencedHandles mid(int pos, int length = -1) const;
 
-        int size() const;
+    int size() const;
 
-        inline bool startsWith(uint handle) const
-        {
-            return !isEmpty() && first() == handle;
-        }
+    inline bool startsWith(uint handle) const
+    {
+        return !isEmpty() && first() == handle;
+    }
 
-        inline void append(const ReferencedHandles& another)
-        {
-            *this = *this + another;
-        }
+    inline void append(const ReferencedHandles& another)
+    {
+        *this = *this + another;
+    }
 
-        void clear();
-        void move(int from, int to);
+    void clear();
+    void move(int from, int to);
 
-        inline void pop_back()
-        {
-            return removeLast();
-        }
+    inline void pop_back()
+    {
+        return removeLast();
+    }
 
-        inline void pop_front()
-        {
-            return removeFirst();
-        }
+    inline void pop_front()
+    {
+        return removeFirst();
+    }
 
-        int removeAll(uint handle);
+    int removeAll(uint handle);
 
-        void removeAt(int i);
+    void removeAt(int i);
 
-        inline void removeFirst()
-        {
-            return removeAt(0);
-        }
+    inline void removeFirst()
+    {
+        return removeAt(0);
+    }
 
-        inline void removeLast()
-        {
-            return removeAt(size() - 1);
-        }
+    inline void removeLast()
+    {
+        return removeAt(size() - 1);
+    }
 
-        bool removeOne(uint handle);
+    bool removeOne(uint handle);
 
-        void swap(int i, int j);
+    void swap(int i, int j);
 
-        uint takeAt(int i);
+    uint takeAt(int i);
 
-        inline uint takeFirst()
-        {
-            return takeAt(0);
-        }
+    inline uint takeFirst()
+    {
+        return takeAt(0);
+    }
 
-        inline uint takeLast()
-        {
-            return takeAt(size() - 1);
-        }
+    inline uint takeLast()
+    {
+        return takeAt(size() - 1);
+    }
 
-        bool operator!=(const ReferencedHandles& another) const
-        {
-            return !(*this == another);
-        }
+    bool operator!=(const ReferencedHandles& another) const
+    {
+        return !(*this == another);
+    }
 
-        bool operator!=(const UIntList& another) const
-        {
-            return !(*this == another);
-        }
+    bool operator!=(const UIntList& another) const
+    {
+        return !(*this == another);
+    }
 
-        ReferencedHandles operator+(const ReferencedHandles& another) const;
+    ReferencedHandles operator+(const ReferencedHandles& another) const;
 
-        inline ReferencedHandles& operator+=(const ReferencedHandles& another)
-        {
-            return *this = (*this + another);
-        }
+    inline ReferencedHandles& operator+=(const ReferencedHandles& another)
+    {
+        return *this = (*this + another);
+    }
 
-        ReferencedHandles& operator<<(const ReferencedHandles& another)
-        {
-            return *this += another;
-        }
+    ReferencedHandles& operator<<(const ReferencedHandles& another)
+    {
+        return *this += another;
+    }
 
-        ReferencedHandles& operator=(const ReferencedHandles& another);
+    ReferencedHandles& operator=(const ReferencedHandles& another);
 
-        bool operator==(const ReferencedHandles& another) const;
-        bool operator==(const UIntList& list) const;
+    bool operator==(const ReferencedHandles& another) const;
+    bool operator==(const UIntList& list) const;
 
-        inline uint operator[](int i) const
-        {
-            return at(i);
-        }
+    inline uint operator[](int i) const
+    {
+        return at(i);
+    }
 
-        UIntList toList() const;
+    UIntList toList() const;
 
-        inline QSet<uint> toSet() const
-        {
-            return toList().toSet();
-        }
+    inline QSet<uint> toSet() const
+    {
+        return toList().toSet();
+    }
 
 #ifndef QT_NO_STL
-        inline std::list<uint> toStdList() const
-        {
-            return toList().toStdList();
-        }
+    inline std::list<uint> toStdList() const
+    {
+        return toList().toStdList();
+    }
 #endif
 
-        inline QVector<uint> toVector() const
-        {
-            return toList().toVector();
-        }
+    inline QVector<uint> toVector() const
+    {
+        return toList().toVector();
+    }
 
-    private:
-        // For access to the "prime" constructor
-        friend class PendingContactAttributes;
-        friend class PendingContacts;
-        friend class PendingHandles;
+private:
+    // For access to the "prime" constructor
+    friend class PendingContactAttributes;
+    friend class PendingContacts;
+    friend class PendingHandles;
 
-        ReferencedHandles(const ConnectionPtr &connection,
-                uint handleType, const UIntList& handles);
+    ReferencedHandles(const ConnectionPtr &connection,
+            uint handleType, const UIntList& handles);
 
-        struct Private;
-        QSharedDataPointer<Private> mPriv;
+    struct Private;
+    QSharedDataPointer<Private> mPriv;
 };
 
 typedef QListIterator<uint> ReferencedHandlesIterator;

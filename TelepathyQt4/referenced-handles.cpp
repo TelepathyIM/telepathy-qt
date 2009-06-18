@@ -43,17 +43,18 @@ struct ReferencedHandles::Private : public QSharedData
     }
 
     Private(const ConnectionPtr &connection, uint handleType,
-            const UIntList& handles)
+            const UIntList &handles)
         : connection(connection), handleType(handleType), handles(handles)
     {
         Q_ASSERT(connection);
         Q_ASSERT(handleType != 0);
 
-        foreach (uint handle, handles)
+        foreach (uint handle, handles) {
             connection->refHandle(handleType, handle);
+        }
     }
 
-    Private(const Private& a)
+    Private(const Private &a)
         : QSharedData(a),
           connection(a.connection),
           handleType(a.handleType),
@@ -61,14 +62,13 @@ struct ReferencedHandles::Private : public QSharedData
     {
         if (!handles.isEmpty()) {
             if (!connection) {
-                debug() << "  Destroyed after Connection, so the Connection has already released the handles";
+                debug() << "  Destroyed after Connection, so the Connection "
+                    "has already released the handles";
                 return;
             }
 
             ConnectionPtr conn(connection);
-            for (const_iterator i = handles.begin();
-                                i != handles.end();
-                                ++i) {
+            for (const_iterator i = handles.begin(); i != handles.end(); ++i) {
                 conn->refHandle(handleType, *i);
             }
         }
@@ -78,14 +78,13 @@ struct ReferencedHandles::Private : public QSharedData
     {
         if (!handles.isEmpty()) {
             if (!connection) {
-                debug() << "  Destroyed after Connection, so the Connection has already released the handles";
+                debug() << "  Destroyed after Connection, so the Connection "
+                    "has already released the handles";
                 return;
             }
 
             ConnectionPtr conn(connection);
-            for (const_iterator i = handles.begin();
-                                i != handles.end();
-                                ++i) {
+            for (const_iterator i = handles.begin(); i != handles.end(); ++i) {
                 conn->unrefHandle(handleType, *i);
             }
         }
@@ -100,7 +99,7 @@ ReferencedHandles::ReferencedHandles()
 {
 }
 
-ReferencedHandles::ReferencedHandles(const ReferencedHandles& other)
+ReferencedHandles::ReferencedHandles(const ReferencedHandles &other)
     : mPriv(other.mPriv)
 {
 }
@@ -166,7 +165,8 @@ int ReferencedHandles::lastIndexOf(uint handle, int from) const
 
 ReferencedHandles ReferencedHandles::mid(int pos, int length) const
 {
-    return ReferencedHandles(connection(), handleType(), mPriv->handles.mid(pos, length));
+    return ReferencedHandles(connection(), handleType(),
+            mPriv->handles.mid(pos, length));
 }
 
 int ReferencedHandles::size() const
@@ -183,7 +183,8 @@ void ReferencedHandles::clear()
                 conn->unrefHandle(handleType(), handle);
             }
         } else {
-            warning() << "Connection already destroyed in ReferencedHandles::clear() so can't unref!";
+            warning() << "Connection already destroyed in "
+                "ReferencedHandles::clear() so can't unref!";
         }
     }
 
@@ -202,11 +203,13 @@ int ReferencedHandles::removeAll(uint handle)
     if (count > 0) {
         if (mPriv->connection) {
             ConnectionPtr conn(mPriv->connection);
-            for (int i = 0; i < count; i++) {
+            for (int i = 0; i < count; ++i) {
                 conn->unrefHandle(handleType(), handle);
             }
         } else {
-            warning() << "Connection already destroyed in ReferencedHandles::removeAll() with handle ==" << handle << "so can't unref!";
+            warning() << "Connection already destroyed in "
+                "ReferencedHandles::removeAll() with handle ==" <<
+                handle << "so can't unref!";
         }
     }
 
@@ -218,9 +221,11 @@ void ReferencedHandles::removeAt(int i)
     if (mPriv->connection) {
         ConnectionPtr conn(mPriv->connection);
         conn->unrefHandle(handleType(), at(i));
+    } else {
+        warning() << "Connection already destroyed in "
+            "ReferencedHandles::removeAt() with i ==" <<
+            i << "so can't unref!";
     }
-    else
-        warning() << "Connection already destroyed in ReferencedHandles::removeAt() with i ==" << i << "so can't unref!";
 
     mPriv->handles.removeAt(i);
 }
@@ -233,9 +238,11 @@ bool ReferencedHandles::removeOne(uint handle)
         if (mPriv->connection) {
             ConnectionPtr conn(mPriv->connection);
             conn->unrefHandle(handleType(), handle);
+        } else {
+            warning() << "Connection already destroyed in "
+                "ReferencedHandles::removeOne() with handle ==" <<
+                handle << "so can't unref!";
         }
-        else
-            warning() << "Connection already destroyed in ReferencedHandles::removeOne() with handle ==" << handle << "so can't unref!";
     }
 
     return wasThere;
@@ -251,37 +258,43 @@ uint ReferencedHandles::takeAt(int i)
     if (mPriv->connection) {
         ConnectionPtr conn(mPriv->connection);
         conn->unrefHandle(handleType(), at(i));
+    } else {
+        warning() << "Connection already destroyed in "
+            "ReferencedHandles::takeAt() with i ==" <<
+            i << "so can't unref!";
     }
-    else
-        warning() << "Connection already destroyed in ReferencedHandles::takeAt() with i ==" << i << "so can't unref!";
 
     return mPriv->handles.takeAt(i);
 }
 
-ReferencedHandles ReferencedHandles::operator+(const ReferencedHandles& another) const
+ReferencedHandles ReferencedHandles::operator+(const ReferencedHandles &another) const
 {
-    if (connection() != another.connection() || handleType() != another.handleType()) {
-        warning() << "Tried to concatenate ReferencedHandles instances with different connection and/or handle type";
+    if (connection() != another.connection() ||
+        handleType() != another.handleType()) {
+        warning() << "Tried to concatenate ReferencedHandles instances "
+            "with different connection and/or handle type";
         return *this;
     }
 
-    return ReferencedHandles(connection(), handleType(), mPriv->handles + another.mPriv->handles);
+    return ReferencedHandles(connection(), handleType(),
+            mPriv->handles + another.mPriv->handles);
 }
 
-ReferencedHandles& ReferencedHandles::operator=(const ReferencedHandles& another)
+ReferencedHandles &ReferencedHandles::operator=(
+        const ReferencedHandles &another)
 {
     mPriv = another.mPriv;
     return *this;
 }
 
-bool ReferencedHandles::operator==(const ReferencedHandles& another) const
+bool ReferencedHandles::operator==(const ReferencedHandles &another) const
 {
-    return connection() == another.connection()
-        && handleType() == another.handleType()
-        && mPriv->handles == another.mPriv->handles;
+    return connection() == another.connection() &&
+        handleType() == another.handleType() &&
+        mPriv->handles == another.mPriv->handles;
 }
 
-bool ReferencedHandles::operator==(const UIntList& list) const
+bool ReferencedHandles::operator==(const UIntList &list) const
 {
     return mPriv->handles == list;
 }
@@ -292,7 +305,7 @@ UIntList ReferencedHandles::toList() const
 }
 
 ReferencedHandles::ReferencedHandles(const ConnectionPtr &connection,
-        uint handleType, const UIntList& handles)
+        uint handleType, const UIntList &handles)
     : mPriv(new Private(connection, handleType, handles))
 {
 }
