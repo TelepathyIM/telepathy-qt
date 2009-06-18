@@ -33,9 +33,6 @@
 namespace Tp
 {
 
-/**
- * A %PendingOperation that is always successful.
- */
 class PendingSuccess : public PendingOperation
 {
     Q_OBJECT
@@ -49,10 +46,6 @@ public:
     }
 };
 
-/**
- * A %PendingOperation that always fails with the error passed to the
- * constructor.
- */
 class PendingFailure : public PendingOperation
 {
     Q_OBJECT
@@ -73,35 +66,18 @@ public:
     }
 };
 
-/**
- * Generic subclass of %PendingOperation representing a pending D-Bus method
- * call that does not return anything (or returns a result that is not
- * interesting).
- *
- * Objects of this class indicate the success or failure of the method call,
- * but if the method call succeeds, no additional information is available.
- */
 class PendingVoidMethodCall : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingVoidMethodCall)
 
 public:
-    /**
-     * Constructor.
-     *
-     * \param parent The object on which this pending operation takes place
-     * \param call A pending call as returned by the auto-generated low level
-     *             Telepathy API; if the method returns anything, the return
-     *             value(s) will be ignored
-     */
     PendingVoidMethodCall(QObject *parent, QDBusPendingCall call);
 
 private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
-    // just ABI padding at the moment
     struct Private;
     Private *mPriv;
 };
