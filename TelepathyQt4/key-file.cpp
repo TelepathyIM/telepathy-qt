@@ -295,7 +295,7 @@ bool KeyFile::Private::unescapeStringList(const QByteArray &data, int from, int 
         }
     }
 
-    Q_FOREACH (value, valueList) {
+    foreach (value, valueList) {
         QString str;
         if (!unescapeString(value, 0, value.size(), str)) {
             return false;
