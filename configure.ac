@@ -176,10 +176,6 @@ dnl TP_QT4_LIBS would interfere with dependency tracking, so don't do that
 TP_QT4_CFLAGS='-I${top_builddir} -I${top_srcdir}'
 AC_SUBST(TP_QT4_CFLAGS)
 
-dnl Likewise for the prototype library
-PROTO_CFLAGS='-I${top_builddir} -I${top_srcdir}'
-AC_SUBST(PROTO_CFLAGS)
-
 dnl Check for telepathy-glib, and for Qt <-> GLib main loop integration:
 dnl if we have both, we can run more tests
 PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.7.28], [have_tp_glib=yes],
@@ -251,8 +247,6 @@ AC_OUTPUT([
     Makefile
     TelepathyQt4/Makefile
     TelepathyQt4/Farsight/Makefile
-    TelepathyQt4/Prototype/Makefile
-    TelepathyQt4/Prototype/TpQt4Prototype.pc
     TelepathyQt4/TelepathyQt4.pc
     TelepathyQt4/TelepathyQt4-uninstalled.pc
     TelepathyQt4/TelepathyQt4Farsight.pc
@@ -275,6 +269,5 @@ AC_OUTPUT([
     tests/lib/echo/Makefile
     tests/lib/echo2/Makefile
     tests/pinocchio/Makefile
-    tests/prototype/Makefile
     tools/Makefile
 ])

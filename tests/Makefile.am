@@ -2,8 +2,7 @@
 SUBDIRS = \
     lib \
     dbus \
-    pinocchio \
-    prototype
+    pinocchio
 
 # Standalone tests that don't touch D-Bus
 TESTS = \
