@@ -79,7 +79,6 @@ struct ChannelDispatchOperation::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    QStringList interfaces;
     ConnectionPtr connection;
     AccountPtr account;
     QList<ChannelPtr> channels;
@@ -138,7 +137,7 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
 void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &props,
         bool immutableProperties)
 {
-    interfaces = qdbus_cast<QStringList>(props.value("Interfaces"));
+    parent->setInterfaces(qdbus_cast<QStringList>(props.value("Interfaces")));
 
     if (!connection && props.contains("Connection")) {
         QDBusObjectPath connectionObjectPath =
@@ -233,11 +232,6 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
 ChannelDispatchOperation::~ChannelDispatchOperation()
 {
     delete mPriv;
-}
-
-QStringList ChannelDispatchOperation::interfaces() const
-{
-    return mPriv->interfaces;
 }
 
 ConnectionPtr ChannelDispatchOperation::connection() const

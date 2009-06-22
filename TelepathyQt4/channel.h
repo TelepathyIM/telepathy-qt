@@ -49,7 +49,7 @@ class PendingOperation;
 class PendingReady;
 
 class Channel : public StatefulDBusProxy,
-                private OptionalInterfaceFactory<Channel>,
+                public OptionalInterfaceFactory<Channel>,
                 public ReadyObject,
                 public RefCounted
 {
@@ -69,7 +69,6 @@ public:
     QVariantMap immutableProperties() const;
 
     QString channelType() const;
-    QStringList interfaces() const;
 
     uint targetHandleType() const;
     uint targetHandle() const;

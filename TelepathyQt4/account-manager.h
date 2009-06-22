@@ -50,7 +50,7 @@ class PendingAccount;
 class PendingReady;
 
 class AccountManager : public StatelessDBusProxy,
-                       private OptionalInterfaceFactory<AccountManager>,
+                       public OptionalInterfaceFactory<AccountManager>,
                        public ReadyObject,
                        public RefCounted
 {
@@ -64,8 +64,6 @@ public:
     static AccountManagerPtr create(const QDBusConnection &bus);
 
     virtual ~AccountManager();
-
-    QStringList interfaces() const;
 
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {

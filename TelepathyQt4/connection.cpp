@@ -99,7 +99,6 @@ struct Connection::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    QStringList interfaces;
 
     // Introspected properties
     // keep pendingStatus and pendingStatusReason until we emit statusChanged
@@ -536,25 +535,6 @@ uint Connection::statusReason() const
 }
 
 /**
- * Return a list of optional interfaces supported by this object. The
- * contents of the list is undefined unless the Connection has status
- * StatusConnecting or StatusConnected. The returned value stays
- * constant for the entire time the connection spends in each of these
- * states; however interfaces might have been added to the supported set by
- * the time StatusConnected is reached.
- *
- * \return Names of the supported interfaces.
- */
-QStringList Connection::interfaces() const
-{
-    if (!isReady()) {
-        warning() << "Connection::interfaces() used while connection is not ready";
-    }
-
-    return mPriv->interfaces;
-}
-
-/**
  * Return the handle which represents the user on this connection, which will remain
  * valid for the lifetime of this connection, or until a change in the user's
  * identifier is signalled by the selfHandleChanged signal. If the connection is
@@ -612,7 +592,7 @@ SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
 PendingOperation *Connection::setSelfPresence(const QString &status,
         const QString &statusMessage)
 {
-    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
+    if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Connection does not support SimplePresence");
     }
@@ -834,9 +814,9 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QStringList> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->interfaces = reply.value();
-        debug() << "Got reply to GetInterfaces():" << mPriv->interfaces;
-        mPriv->readinessHelper->setInterfaces(mPriv->interfaces);
+        setInterfaces(reply.value());
+        debug() << "Got reply to GetInterfaces():" << interfaces();
+        mPriv->readinessHelper->setInterfaces(interfaces());
     }
     else {
         warning().nospace() << "GetInterfaces() failed with " <<
@@ -932,7 +912,7 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
         mPriv->selfHandle = reply.value();
         debug() << "Got self handle" << mPriv->selfHandle;
 
-        if (mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        if (interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
             mPriv->introspectContacts();
         } else {
             mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
@@ -1068,7 +1048,7 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
                 "Connection not yet connected");
     }
 
-    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+    if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
         warning() << "Requests interface is not support by this connection";
         return new PendingChannel(ConnectionPtr(this),
                 TELEPATHY_ERROR_NOT_IMPLEMENTED,
@@ -1123,7 +1103,7 @@ PendingChannel *Connection::ensureChannel(const QVariantMap &request)
                 "Connection not yet connected");
     }
 
-    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+    if (!interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
         warning() << "Requests interface is not support by this connection";
         return new PendingChannel(ConnectionPtr(this),
                 TELEPATHY_ERROR_NOT_IMPLEMENTED,

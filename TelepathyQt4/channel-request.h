@@ -48,7 +48,7 @@ namespace Tp
 class PendingOperation;
 
 class ChannelRequest : public StatefulDBusProxy,
-                       private OptionalInterfaceFactory<ChannelRequest>,
+                       public OptionalInterfaceFactory<ChannelRequest>,
                        public ReadyObject,
                        public RefCounted
 {
@@ -64,8 +64,6 @@ public:
             const QString &objectPath, const QVariantMap &immutableProperties);
 
     ~ChannelRequest();
-
-    QStringList interfaces() const;
 
     AccountPtr account() const;
 

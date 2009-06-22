@@ -407,11 +407,6 @@ QString ConnectionManager::name() const
     return mPriv->name;
 }
 
-QStringList ConnectionManager::interfaces() const
-{
-    return mPriv->interfaces;
-}
-
 /**
  * Get a list of strings identifying the protocols supported by this
  * connection manager, as described in the Telepathy
@@ -586,8 +581,8 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         // If Interfaces is not supported, the spec says to assume it's
         // empty, so keep the empty list mPriv was initialized with
         if (props.contains("Interfaces")) {
-            mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
-            mPriv->readinessHelper->setInterfaces(mPriv->interfaces);
+            setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
+            mPriv->readinessHelper->setInterfaces(interfaces());
         }
     } else {
         warning().nospace() <<

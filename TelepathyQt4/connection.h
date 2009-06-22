@@ -57,7 +57,7 @@ class PendingOperation;
 class PendingReady;
 
 class Connection : public StatefulDBusProxy,
-                   private OptionalInterfaceFactory<Connection>,
+                   public OptionalInterfaceFactory<Connection>,
                    public ReadyObject,
                    public RefCounted
 {
@@ -87,8 +87,6 @@ public:
 
     uint status() const;
     uint statusReason() const;
-
-    QStringList interfaces() const;
 
     uint selfHandle() const;
 

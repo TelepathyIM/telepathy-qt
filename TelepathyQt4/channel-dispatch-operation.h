@@ -48,7 +48,7 @@ namespace Tp
 class PendingOperation;
 
 class ChannelDispatchOperation : public StatefulDBusProxy,
-                                 private OptionalInterfaceFactory<ChannelDispatchOperation>,
+                                 public OptionalInterfaceFactory<ChannelDispatchOperation>,
                                  public ReadyObject,
                                  public RefCounted
 {
@@ -64,8 +64,6 @@ public:
             const QString &objectPath, const QVariantMap &immutableProperties);
 
     ~ChannelDispatchOperation();
-
-    QStringList interfaces() const;
 
     ConnectionPtr connection() const;
 

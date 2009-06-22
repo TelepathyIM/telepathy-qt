@@ -78,7 +78,6 @@ struct AccountManager::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    QStringList interfaces;
     QSet<QString> validAccountPaths;
     QSet<QString> invalidAccountPaths;
     QMap<QString, AccountPtr> accounts;
@@ -309,16 +308,6 @@ AccountManager::AccountManager(const QDBusConnection& bus)
 AccountManager::~AccountManager()
 {
     delete mPriv;
-}
-
-/**
- * Return a list of interfaces supported by this account manager.
- *
- * \return List of supported interfaces.
- */
-QStringList AccountManager::interfaces() const
-{
-    return mPriv->interfaces;
 }
 
 /**
@@ -577,7 +566,7 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         props = reply.value();
 
         if (props.contains("Interfaces")) {
-            mPriv->interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
+            setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
         }
         if (props.contains("ValidAccounts")) {
             mPriv->setAccountPaths(mPriv->validAccountPaths,

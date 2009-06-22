@@ -56,7 +56,7 @@ class PendingStringList;
 class ProtocolInfo;
 
 class Account : public StatelessDBusProxy,
-                private OptionalInterfaceFactory<Account>,
+                public OptionalInterfaceFactory<Account>,
                 public ReadyObject,
                 public RefCounted
 
@@ -168,8 +168,6 @@ public:
             const QVariantMap &requestedProperties,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
-
-    QStringList interfaces() const;
 
     template <class Interface>
     inline Interface *optionalInterface(

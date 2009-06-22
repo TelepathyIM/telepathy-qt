@@ -134,6 +134,14 @@ void OptionalInterfaceCache::cache(AbstractInterface *interface) const
  * Frees all interface instances constructed by this factory.
  */
 
+ /**
+  * \fn OptionalInterfaceFactory::interfaces() const;
+  *
+  * Return a list of interfaces supported by this object.
+  *
+  * \return List of supported interfaces.
+  */
+
 /**
  * \fn template <typename Interface> inline Interface *OptionalInterfaceFactory::interface() const
  *

@@ -117,7 +117,7 @@ private:
 
 
 class ConnectionManager : public StatelessDBusProxy,
-                          private OptionalInterfaceFactory<ConnectionManager>,
+                          public OptionalInterfaceFactory<ConnectionManager>,
                           public ReadyObject,
                           public RefCounted
 {
@@ -133,8 +133,6 @@ public:
     virtual ~ConnectionManager();
 
     QString name() const;
-
-    QStringList interfaces() const;
 
     QStringList supportedProtocols() const;
     const ProtocolInfoList &protocols() const;

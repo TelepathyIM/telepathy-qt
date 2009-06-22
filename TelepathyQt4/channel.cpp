@@ -115,7 +115,6 @@ struct Channel::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    QStringList interfaces;
     QQueue<void (Private::*)()> introspectQueue;
 
     // Introspected properties
@@ -442,15 +441,15 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
     else {
         debug() << " Found properties specified in 0.17.7";
 
+        parent->setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
         channelType = qdbus_cast<QString>(props["ChannelType"]);
-        interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
         targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
         targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
         requested = qdbus_cast<uint>(props["Requested"]);
         initiatorHandle = qdbus_cast<uint>(props["InitiatorHandle"]);
 
         if (!fakeGroupInterfaceIfNeeded() &&
-            !interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) &&
+            !parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) &&
             initiatorHandle) {
             // No group interface, so nobody will build the poor fellow for us. Will do it ourselves
             // out of pity for him.
@@ -506,10 +505,10 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
 
 void Channel::Private::nowHaveInterfaces()
 {
-    debug() << "Channel has" << interfaces.size() <<
-        "optional interfaces:" << interfaces;
+    debug() << "Channel has" << parent->interfaces().size() <<
+        "optional interfaces:" << parent->interfaces();
 
-    if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         introspectQueue.enqueue(&Private::introspectGroup);
     }
 }
@@ -573,7 +572,7 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
     groupFlags = newGroupFlags;
 
     // this shouldn't happen but let's make sure
-    if (!interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         return false;
     }
 
@@ -875,7 +874,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
 
 bool Channel::Private::fakeGroupInterfaceIfNeeded()
 {
-    if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         return false;
     } else if (targetHandleType != HandleTypeContact) {
         return false;
@@ -909,7 +908,7 @@ void Channel::Private::setReady()
     debug() << " Target handle" << targetHandle;
     debug() << " Target handle type" << targetHandleType;
 
-    if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         debug() << " Group: flags" << groupFlags;
         if (groupAreHandleOwnersAvailable) {
             debug() << " Group: Number of handle owner mappings" <<
@@ -1060,27 +1059,6 @@ QVariantMap Channel::immutableProperties() const
     }
 
     return mPriv->immutableProperties;
-}
-
-/**
- * Return a list of optional interfaces implemented by the remote object.
- *
- * \return D-Bus names of the implemented optional interfaces.
- */
-QStringList Channel::interfaces() const
-{
-    // Different check than the others, because the optional interface getters
-    // may be used internally with the knowledge about getting the interfaces
-    // list, so we don't want this to cause warnings.
-    if (!isReady() && mPriv->interfaces.empty()) {
-        warning() << "Channel::interfaces() used possibly before the list of "
-            "interfaces has been received";
-    }
-    else if (!isValid()) {
-        warning() << "Channel::interfaces() used with channel closed";
-    }
-
-    return mPriv->interfaces;
 }
 
 /**
@@ -1326,7 +1304,7 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
         }
     }
 
-    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAddContacts() used with no group interface";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Channel does not support group interface");
@@ -1500,7 +1478,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
         }
     }
 
-    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupRemoveContacts() used with no group interface";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Channel does not support group interface");
@@ -1538,8 +1516,7 @@ Contacts Channel::groupLocalPendingContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupLocalPending() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupLocalPending() used with no group interface";
     }
 
@@ -1556,8 +1533,7 @@ Contacts Channel::groupRemotePendingContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupRemotePending() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupRemotePending() used with no "
             "group interface";
     }
@@ -1578,8 +1554,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
 {
     if (!isReady()) {
         warning() << "Channel::groupLocalPending() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupLocalPending() used with no group interface";
     }
     else if (!contact) {
@@ -1611,8 +1586,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
 {
     if (!isReady()) {
         warning() << "Channel::groupSelfContactRemoveInfo() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupSelfContactRemoveInfo() used with "
             "no group interface";
     }
@@ -1646,8 +1620,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
 {
     if (!isReady()) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with "
             "no group interface";
     }
@@ -1671,8 +1644,7 @@ HandleOwnerMap Channel::groupHandleOwners() const
 {
     if (!isReady()) {
         warning() << "Channel::groupHandleOwners() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with no "
             "group interface";
     }
@@ -1697,8 +1669,7 @@ bool Channel::groupIsSelfContactTracked() const
 {
     if (!isReady()) {
         warning() << "Channel::groupIsSelfHandleTracked() used channel not ready";
-    }
-    else if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupIsSelfHandleTracked() used with "
             "no group interface";
     }
@@ -2082,7 +2053,7 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
     }
 
     debug() << "Got reply to fallback Channel::GetInterfaces()";
-    mPriv->interfaces = reply.value();
+    setInterfaces(reply.value());
     mPriv->nowHaveInterfaces();
 
     mPriv->fakeGroupInterfaceIfNeeded();

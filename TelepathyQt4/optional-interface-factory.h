@@ -26,8 +26,9 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QtGlobal>
 #include <QObject>
+#include <QStringList>
+#include <QtGlobal>
 
 namespace Tp
 {
@@ -66,6 +67,8 @@ public:
     {
     }
 
+    inline QStringList interfaces() const { return mInterfaces; }
+
     template <typename Interface>
     inline Interface *interface() const
     {
@@ -84,6 +87,15 @@ public:
         cache(interface);
         return interface;
     }
+
+protected:
+    inline void setInterfaces(const QStringList &interfaces)
+    {
+        mInterfaces = interfaces;
+    }
+
+private:
+    QStringList mInterfaces;
 };
 
 } // Tp
