@@ -58,6 +58,12 @@ template <typename DBusProxySubclass> class OptionalInterfaceFactory
     : private OptionalInterfaceCache
 {
 public:
+    enum InterfaceSupportedChecking
+    {
+        CheckInterfaceSupported,
+        BypassInterfaceCheck
+    };
+
     inline OptionalInterfaceFactory(DBusProxySubclass *this_)
         : OptionalInterfaceCache(this_)
     {
