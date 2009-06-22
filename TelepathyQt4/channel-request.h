@@ -75,19 +75,6 @@ public:
 
     PendingOperation *cancel();
 
-    template <class Interface>
-    inline Interface *optionalInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        // Check for the remote object supporting the interface
-        QString name(Interface::staticInterfaceName());
-        if (check == CheckInterfaceSupported && !interfaces().contains(name))
-            return 0;
-
-        // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory<ChannelRequest>::interface<Interface>();
-    }
-
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);

@@ -75,6 +75,20 @@ public:
 
     inline QStringList interfaces() const { return mInterfaces; }
 
+    template <class Interface>
+    inline Interface *optionalInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        // Check for the remote object supporting the interface
+        QString name(Interface::staticInterfaceName());
+        if (check == CheckInterfaceSupported && !mInterfaces.contains(name)) {
+            return 0;
+        }
+
+        // If present or forced, delegate to OptionalInterfaceFactory
+        return interface<Interface>();
+    }
+
     template <typename Interface>
     inline Interface *interface() const
     {

@@ -170,19 +170,6 @@ protected Q_SLOTS:
     PendingOperation *groupAddSelfHandle();
 
 public:
-    template <class Interface>
-    inline Interface *optionalInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        // Check for the remote object supporting the interface
-        QString name(Interface::staticInterfaceName());
-        if (check == CheckInterfaceSupported && !interfaces().contains(name))
-            return 0;
-
-        // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory<Channel>::interface<Interface>();
-    }
-
     inline Client::ChannelInterfaceCallStateInterface *callStateInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
