@@ -36,6 +36,7 @@ namespace Tp
 class PendingStringList : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingStringList);
 
 public:
     PendingStringList(QObject *parent = 0);
@@ -51,8 +52,6 @@ private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
-    Q_DISABLE_COPY(PendingStringList);
-
     struct Private;
     friend struct Private;
     Private *mPriv;
