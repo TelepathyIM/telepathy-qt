@@ -144,32 +144,11 @@ public:
     bool groupIsSelfContactTracked() const;
     ContactPtr groupSelfContact() const;
 
-Q_SIGNALS:
-    void groupFlagsChanged(uint flags, uint added, uint removed);
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    {
+        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
+    }
 
-    void groupCanAddContactsChanged(bool canAddContacts);
-    void groupCanRemoveContactsChanged(bool canRemoveContacts);
-    void groupCanRescindContactsChanged(bool canRescindContacts);
-
-    void groupMembersChanged(
-            const Tp::Contacts &groupMembersAdded,
-            const Tp::Contacts &groupLocalPendingMembersAdded,
-            const Tp::Contacts &groupRemotePendingMembersAdded,
-            const Tp::Contacts &groupMembersRemoved,
-            const Tp::Channel::GroupMemberChangeDetails &details);
-
-    void groupHandleOwnersChanged(const Tp::HandleOwnerMap &owners,
-            const Tp::UIntList &added, const Tp::UIntList &removed);
-
-    void groupSelfContactChanged();
-
-protected:
-    bool groupSelfHandleIsLocalPending() const;
-
-protected Q_SLOTS:
-    PendingOperation *groupAddSelfHandle();
-
-public:
     inline Client::ChannelInterfaceCallStateInterface *callStateInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
@@ -212,11 +191,6 @@ public:
         return optionalInterface<Client::ChannelInterfacePasswordInterface>(check);
     }
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
-    }
-
     template <class Interface>
     inline Interface *typeInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -254,6 +228,25 @@ public:
         return typeInterface<Client::ChannelTypeTubesInterface>(check);
     }
 
+Q_SIGNALS:
+    void groupFlagsChanged(uint flags, uint added, uint removed);
+
+    void groupCanAddContactsChanged(bool canAddContacts);
+    void groupCanRemoveContactsChanged(bool canRemoveContacts);
+    void groupCanRescindContactsChanged(bool canRescindContacts);
+
+    void groupMembersChanged(
+            const Tp::Contacts &groupMembersAdded,
+            const Tp::Contacts &groupLocalPendingMembersAdded,
+            const Tp::Contacts &groupRemotePendingMembersAdded,
+            const Tp::Contacts &groupMembersRemoved,
+            const Tp::Channel::GroupMemberChangeDetails &details);
+
+    void groupHandleOwnersChanged(const Tp::HandleOwnerMap &owners,
+            const Tp::UIntList &added, const Tp::UIntList &removed);
+
+    void groupSelfContactChanged();
+
 protected:
     Channel(const ConnectionPtr &connection,const QString &objectPath,
             const QVariantMap &immutableProperties);
@@ -265,6 +258,11 @@ protected:
     {
         return optionalInterface<Client::ChannelInterfaceGroupInterface>(check);
     }
+
+    bool groupSelfHandleIsLocalPending() const;
+
+protected Q_SLOTS:
+    PendingOperation *groupAddSelfHandle();
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
