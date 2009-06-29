@@ -42,6 +42,7 @@ class ConnectionManager;
 class PendingConnection : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingConnection);
 
 public:
     ~PendingConnection();
@@ -58,13 +59,13 @@ private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
 
 private:
-    Q_DISABLE_COPY(PendingConnection);
+    friend class ConnectionManager;
+
     PendingConnection(const ConnectionManagerPtr &manager,
             const QString &protocol, const QVariantMap &parameters);
 
     struct Private;
     friend struct Private;
-    friend class ConnectionManager;
     Private *mPriv;
 };
 
