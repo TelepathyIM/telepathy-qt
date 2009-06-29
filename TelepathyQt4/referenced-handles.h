@@ -57,7 +57,7 @@ public:
     typedef UIntList::value_type value_type;
 
     ReferencedHandles();
-    ReferencedHandles(const ReferencedHandles& other);
+    ReferencedHandles(const ReferencedHandles &other);
     ~ReferencedHandles();
 
     ConnectionPtr connection() const;
@@ -249,6 +249,7 @@ private:
             uint handleType, const UIntList& handles);
 
     struct Private;
+    friend struct Private;
     QSharedDataPointer<Private> mPriv;
 };
 
