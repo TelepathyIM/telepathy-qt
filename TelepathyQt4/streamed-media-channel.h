@@ -130,7 +130,7 @@ public:
     static StreamedMediaChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    ~StreamedMediaChannel();
+    virtual ~StreamedMediaChannel();
 
     MediaStreams streams() const;
     MediaStreams streamsForType(MediaStreamType type) const;
