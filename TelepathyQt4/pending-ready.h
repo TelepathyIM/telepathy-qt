@@ -37,6 +37,7 @@ namespace Tp
 class PendingReady: public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingReady);
 
 public:
     PendingReady(const Features &requestedFeatures, QObject *object,
@@ -48,11 +49,10 @@ public:
     Features requestedFeatures() const;
 
 private:
-    Q_DISABLE_COPY(PendingReady);
+    friend class ReadinessHelper;
 
     struct Private;
     friend struct Private;
-    friend class ReadinessHelper;
     Private *mPriv;
 };
 
