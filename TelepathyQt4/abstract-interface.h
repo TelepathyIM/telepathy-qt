@@ -56,6 +56,7 @@ protected:
 
 private:
     struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
