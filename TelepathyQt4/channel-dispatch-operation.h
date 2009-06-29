@@ -63,7 +63,7 @@ public:
     static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    ~ChannelDispatchOperation();
+    virtual ~ChannelDispatchOperation();
 
     ConnectionPtr connection() const;
 
