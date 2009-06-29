@@ -129,7 +129,7 @@ public:
     static ConnectionManagerPtr create(const QDBusConnection &bus,
             const QString &name);
 
-    ~ConnectionManager();
+    virtual ~ConnectionManager();
 
     QString name() const;
 
