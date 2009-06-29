@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,75 +33,51 @@
 namespace Tp
 {
 
-/**
- * A %PendingOperation that is always successful.
- */
 class PendingSuccess : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingSuccess)
 
 public:
-    PendingSuccess(QObject* parent)
+    PendingSuccess(QObject *parent)
         : PendingOperation(parent)
     {
         setFinished();
     }
 };
 
-/**
- * A %PendingOperation that always fails with the error passed to the
- * constructor.
- */
 class PendingFailure : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingFailure)
 
 public:
-    PendingFailure(QObject* parent, const QString& name,
-            const QString& message)
+    PendingFailure(QObject *parent, const QString &name,
+            const QString &message)
         : PendingOperation(parent)
     {
         setFinishedWithError(name, message);
     }
 
-    PendingFailure(QObject* parent, const QDBusError& error)
+    PendingFailure(QObject *parent, const QDBusError &error)
         : PendingOperation(parent)
     {
         setFinishedWithError(error);
     }
 };
 
-/**
- * Generic subclass of %PendingOperation representing a pending D-Bus method
- * call that does not return anything (or returns a result that is not
- * interesting).
- *
- * Objects of this class indicate the success or failure of the method call,
- * but if the method call succeeds, no additional information is available.
- */
 class PendingVoidMethodCall : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingVoidMethodCall)
 
 public:
-    /**
-     * Constructor.
-     *
-     * \param parent The object on which this pending operation takes place
-     * \param call A pending call as returned by the auto-generated low level
-     *             Telepathy API; if the method returns anything, the return
-     *             value(s) will be ignored
-     */
-    PendingVoidMethodCall(QObject* parent, QDBusPendingCall call);
+    PendingVoidMethodCall(QObject *parent, QDBusPendingCall call);
 
 private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
-    // just ABI padding at the moment
     struct Private;
     Private *mPriv;
 };

@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -81,12 +81,12 @@ void ManagerFile::Private::init()
     }
     else {
         QStringList xdgDataDirs = xdgDataDirsEnv.split(QLatin1Char(':'));
-        Q_FOREACH (const QString xdgDataDir, xdgDataDirs) {
+        foreach (const QString xdgDataDir, xdgDataDirs) {
             configDirs << xdgDataDir + QLatin1String("/telepathy/managers/");
         }
     }
 
-    Q_FOREACH (const QString configDir, configDirs) {
+    foreach (const QString configDir, configDirs) {
         QString fileName = configDir + cmName + QLatin1String(".manager");
         if (QFile::exists(fileName)) {
             debug() << "parsing manager file" << fileName;
@@ -109,7 +109,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
     /* read supported protocols and parameters */
     QString protocol;
     QStringList groups = keyFile.allGroups();
-    Q_FOREACH (const QString group, groups) {
+    foreach (const QString group, groups) {
         if (group.startsWith("Protocol ")) {
             protocol = group.right(group.length() - 9);
             keyFile.setGroup(group);
@@ -117,7 +117,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
             ParamSpecList paramSpecList;
             QString param;
             QStringList params = keyFile.keys();
-            Q_FOREACH (param, params) {
+            foreach (param, params) {
                 ParamSpec spec;
                 spec.flags = 0;
                 if (param.startsWith("param-")) {
@@ -150,7 +150,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
             protocolParams[protocol] = paramSpecList;
 
             /* now that we have all param-* created, let's find their default values */
-            Q_FOREACH (param, params) {
+            foreach (param, params) {
                 if (param.startsWith("default-")) {
                     QString paramName = param.right(param.length() - 8);
 
@@ -185,7 +185,7 @@ bool ManagerFile::Private::hasParameter(const QString &protocol,
                                         const QString &paramName) const
 {
     ParamSpecList paramSpecList = protocolParams[protocol];
-    Q_FOREACH (ParamSpec paramSpec, paramSpecList) {
+    foreach (ParamSpec paramSpec, paramSpecList) {
         if (paramSpec.name == paramName) {
             return true;
         }

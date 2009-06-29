@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2009 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -295,7 +295,7 @@ bool KeyFile::Private::unescapeStringList(const QByteArray &data, int from, int 
         }
     }
 
-    Q_FOREACH (value, valueList) {
+    foreach (value, valueList) {
         QString str;
         if (!unescapeString(value, 0, value.size(), str)) {
             return false;
