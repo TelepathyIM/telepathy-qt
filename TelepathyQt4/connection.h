@@ -83,7 +83,7 @@ public:
     static ConnectionPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
 
-    ~Connection();
+    virtual ~Connection();
 
     uint status() const;
     uint statusReason() const;
