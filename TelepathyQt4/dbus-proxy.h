@@ -52,14 +52,14 @@ public:
     QString invalidationReason() const;
     QString invalidationMessage() const;
 
+Q_SIGNALS:
+    void invalidated(Tp::DBusProxy *proxy,
+            const QString &errorName, const QString &errorMessage);
+
 protected:
     void setBusName(const QString &busName);
     void invalidate(const QString &reason, const QString &message);
     void invalidate(const QDBusError &error);
-
-Q_SIGNALS:
-    void invalidated(Tp::DBusProxy *proxy,
-            const QString &errorName, const QString &errorMessage);
 
 private Q_SLOTS:
     void emitInvalidated();
@@ -73,6 +73,7 @@ private:
 class StatelessDBusProxy : public DBusProxy
 {
     Q_OBJECT
+    Q_DISABLE_COPY(StatelessDBusProxy)
 
 public:
     StatelessDBusProxy(const QDBusConnection &dbusConnection,
@@ -90,6 +91,7 @@ private:
 class StatefulDBusProxy : public DBusProxy
 {
     Q_OBJECT
+    Q_DISABLE_COPY(StatefulDBusProxy)
 
 public:
     StatefulDBusProxy(const QDBusConnection &dbusConnection,
