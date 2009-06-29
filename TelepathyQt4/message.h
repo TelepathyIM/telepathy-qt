@@ -43,7 +43,6 @@ class TextChannel;
 class Message
 {
 public:
-
     Message(ChannelTextMessageType, const QString &);
     Message(const Message &other);
     ~Message();
@@ -88,7 +87,8 @@ private:
     Message(const MessagePartList &parts);
     Message(uint, uint, const QString &);
 
-    class Private;
+    struct Private;
+    friend struct Private;
     QSharedDataPointer<Private> mPriv;
 };
 
@@ -108,9 +108,11 @@ public:
 
 private:
     friend class TextChannel;
+
     ReceivedMessage(const MessagePartList &parts,
             const TextChannelPtr &channel);
     ReceivedMessage();
+
     uint senderHandle() const;
     uint pendingId() const;
 
