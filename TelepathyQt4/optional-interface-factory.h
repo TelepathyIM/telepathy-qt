@@ -51,12 +51,15 @@ protected:
 
 private:
     struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
 template <typename DBusProxySubclass> class OptionalInterfaceFactory
     : private OptionalInterfaceCache
 {
+    Q_DISABLE_COPY(OptionalInterfaceFactory)
+
 public:
     enum InterfaceSupportedChecking
     {
