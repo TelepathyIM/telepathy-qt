@@ -85,7 +85,6 @@ private:
     ConnMgrParamFlag mFlags;
 };
 
-
 class ProtocolInfo
 {
 public:
@@ -115,13 +114,13 @@ private:
     QString mName;
 };
 
-
 class ConnectionManager : public StatelessDBusProxy,
                           public OptionalInterfaceFactory<ConnectionManager>,
                           public ReadyObject,
                           public RefCounted
 {
     Q_OBJECT
+    Q_DISABLE_COPY(ConnectionManager);
 
 public:
     static const Feature FeatureCore;
@@ -130,7 +129,7 @@ public:
     static ConnectionManagerPtr create(const QDBusConnection &bus,
             const QString &name);
 
-    virtual ~ConnectionManager();
+    ~ConnectionManager();
 
     QString name() const;
 
@@ -140,12 +139,13 @@ public:
     PendingConnection *requestConnection(const QString &protocol,
             const QVariantMap &parameters);
 
+    static PendingStringList *listNames(
+            const QDBusConnection &bus = QDBusConnection::sessionBus());
+
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return OptionalInterfaceFactory<ConnectionManager>::interface<Client::DBus::PropertiesInterface>();
     }
-
-    static PendingStringList *listNames(const QDBusConnection &bus = QDBusConnection::sessionBus());
 
 protected:
     ConnectionManager(const QString &name);
@@ -159,11 +159,10 @@ private Q_SLOTS:
     void gotParameters(QDBusPendingCallWatcher *);
 
 private:
-    Q_DISABLE_COPY(ConnectionManager);
+    friend class PendingConnection;
 
     struct Private;
     friend struct Private;
-    friend class PendingConnection;
     Private *mPriv;
 };
 
