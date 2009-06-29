@@ -57,7 +57,7 @@ class PendingOperation;
 class PendingReady;
 
 class Connection : public StatefulDBusProxy,
-                   private OptionalInterfaceFactory<Connection>,
+                   public OptionalInterfaceFactory<Connection>,
                    public ReadyObject,
                    public RefCounted
 {
@@ -88,28 +88,12 @@ public:
     uint status() const;
     uint statusReason() const;
 
-    QStringList interfaces() const;
-
     uint selfHandle() const;
 
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 
     ContactPtr selfContact() const;
-
-    template <class Interface>
-    inline Interface *optionalInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        // Check for the remote object supporting the interface
-        QString name(Interface::staticInterfaceName());
-        if (check == CheckInterfaceSupported && !interfaces().contains(name)) {
-            return 0;
-        }
-
-        // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory<Connection>::interface<Interface>();
-    }
 
     inline Client::ConnectionInterfaceAliasingInterface *aliasingInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const

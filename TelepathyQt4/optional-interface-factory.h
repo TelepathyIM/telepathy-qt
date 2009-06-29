@@ -26,8 +26,9 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QtGlobal>
 #include <QObject>
+#include <QStringList>
+#include <QtGlobal>
 
 namespace Tp
 {
@@ -57,6 +58,12 @@ template <typename DBusProxySubclass> class OptionalInterfaceFactory
     : private OptionalInterfaceCache
 {
 public:
+    enum InterfaceSupportedChecking
+    {
+        CheckInterfaceSupported,
+        BypassInterfaceCheck
+    };
+
     inline OptionalInterfaceFactory(DBusProxySubclass *this_)
         : OptionalInterfaceCache(this_)
     {
@@ -64,6 +71,22 @@ public:
 
     inline ~OptionalInterfaceFactory()
     {
+    }
+
+    inline QStringList interfaces() const { return mInterfaces; }
+
+    template <class Interface>
+    inline Interface *optionalInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        // Check for the remote object supporting the interface
+        QString name(Interface::staticInterfaceName());
+        if (check == CheckInterfaceSupported && !mInterfaces.contains(name)) {
+            return 0;
+        }
+
+        // If present or forced, delegate to OptionalInterfaceFactory
+        return interface<Interface>();
     }
 
     template <typename Interface>
@@ -84,6 +107,15 @@ public:
         cache(interface);
         return interface;
     }
+
+protected:
+    inline void setInterfaces(const QStringList &interfaces)
+    {
+        mInterfaces = interfaces;
+    }
+
+private:
+    QStringList mInterfaces;
 };
 
 } // Tp

@@ -79,7 +79,6 @@ struct Account::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    QStringList interfaces;
     QVariantMap parameters;
     bool valid;
     bool enabled;
@@ -430,7 +429,7 @@ const Avatar &Account::avatar() const
  */
 PendingOperation *Account::setAvatar(const Avatar &avatar)
 {
-    if (!mPriv->interfaces.contains(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR)) {
+    if (!interfaces().contains(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR)) {
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Account does not support Avatar");
     }
@@ -913,11 +912,6 @@ PendingChannelRequest *Account::ensureChannel(
             request, userActionTime, preferredHandler, false, this);
 }
 
-QStringList Account::interfaces() const
-{
-    return mPriv->interfaces;
-}
-
 /**
  * \fn Account::optionalInterface(InterfaceSupportedChecking check) const
  *
@@ -1039,8 +1033,8 @@ void Account::Private::updateProperties(const QVariantMap &props)
     debug() << "Account::updateProperties: changed:";
 
     if (props.contains("Interfaces")) {
-        interfaces = qdbus_cast<QStringList>(props["Interfaces"]);
-        debug() << " Interfaces:" << interfaces;
+        parent->setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
+        debug() << " Interfaces:" << parent->interfaces();
     }
 
     if (props.contains("DisplayName") &&
@@ -1211,7 +1205,7 @@ void Account::gotMainProperties(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to Properties.GetAll(Account)";
         mPriv->updateProperties(reply.value());
 
-        mPriv->readinessHelper->setInterfaces(mPriv->interfaces);
+        mPriv->readinessHelper->setInterfaces(interfaces());
 
         debug() << "Account basic functionality is ready";
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);

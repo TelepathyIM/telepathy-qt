@@ -64,7 +64,6 @@ struct ConnectionManager::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    QStringList interfaces;
     QQueue<QString> parametersQueue;
     ProtocolInfoList protocols;
 };

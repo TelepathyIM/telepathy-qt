@@ -56,7 +56,7 @@ class PendingStringList;
 class ProtocolInfo;
 
 class Account : public StatelessDBusProxy,
-                private OptionalInterfaceFactory<Account>,
+                public OptionalInterfaceFactory<Account>,
                 public ReadyObject,
                 public RefCounted
 
@@ -168,22 +168,6 @@ public:
             const QVariantMap &requestedProperties,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
-
-    QStringList interfaces() const;
-
-    template <class Interface>
-    inline Interface *optionalInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        // Check for the remote object supporting the interface
-        QString name(Interface::staticInterfaceName());
-        if (check == CheckInterfaceSupported && !interfaces().contains(name)) {
-            return 0;
-        }
-
-        // If present or forced, delegate to OptionalInterfaceFactory
-        return OptionalInterfaceFactory<Account>::interface<Interface>();
-    }
 
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {

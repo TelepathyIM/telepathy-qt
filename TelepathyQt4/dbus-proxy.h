@@ -42,13 +42,6 @@ class DBusProxy : public QObject
 public:
     DBusProxy(const QDBusConnection &dbusConnection, const QString &busName,
             const QString &objectPath, QObject *parent = 0);
-
-    enum InterfaceSupportedChecking
-    {
-        CheckInterfaceSupported,
-        BypassInterfaceCheck
-    };
-
     virtual ~DBusProxy();
 
     QDBusConnection dbusConnection() const;

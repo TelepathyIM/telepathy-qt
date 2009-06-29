@@ -77,7 +77,6 @@ struct ChannelRequest::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    QStringList interfaces;
     AccountPtr account;
     QDateTime userActionTime;
     QString preferredHandler;
@@ -145,7 +144,7 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
 
 void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 {
-    interfaces = qdbus_cast<QStringList>(props.value("Interfaces"));
+    parent->setInterfaces(qdbus_cast<QStringList>(props.value("Interfaces")));
 
     if (!account && props.contains("Account")) {
         QDBusObjectPath accountObjectPath =
@@ -207,11 +206,6 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
 ChannelRequest::~ChannelRequest()
 {
     delete mPriv;
-}
-
-QStringList ChannelRequest::interfaces() const
-{
-    return mPriv->interfaces;
 }
 
 AccountPtr ChannelRequest::account() const
