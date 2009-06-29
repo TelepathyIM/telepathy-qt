@@ -43,6 +43,7 @@ class ReferencedHandles;
 class Contact : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(Contact);
 
 public:
     enum Feature {
@@ -104,8 +105,6 @@ Q_SIGNALS:
     // want to signal that change right away with a handle?
 
 private:
-    Q_DISABLE_COPY(Contact);
-
     Contact(ContactManager *manager, const ReferencedHandles &handle,
             const QSet<Feature> &requestedFeatures, const QVariantMap &attributes);
 
