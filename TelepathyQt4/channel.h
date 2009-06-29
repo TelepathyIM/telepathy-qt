@@ -62,7 +62,7 @@ public:
     static ChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    ~Channel();
+    virtual ~Channel();
 
     ConnectionPtr connection() const;
 
