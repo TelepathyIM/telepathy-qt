@@ -46,6 +46,7 @@ class PendingOperation;
 class ContactManager : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(ContactManager)
 
 public:
     ConnectionPtr connection() const;
@@ -123,6 +124,9 @@ private Q_SLOTS:
         const Tp::Channel::GroupMemberChangeDetails &details);
 
 private:
+    friend class Connection;
+    friend class PendingContacts;
+
     struct ContactListChannel
     {
         enum Type {
@@ -167,8 +171,6 @@ private:
 
     struct Private;
     friend struct Private;
-    friend class Connection;
-    friend class PendingContacts;
     Private *mPriv;
 };
 
