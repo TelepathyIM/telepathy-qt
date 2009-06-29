@@ -73,7 +73,7 @@ public:
     static TextChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    ~TextChannel();
+    virtual ~TextChannel();
 
     bool hasMessagesInterface() const;
     bool canInviteContacts() const;
