@@ -95,6 +95,10 @@ ChannelDispatchOperation::Private::Private(ChannelDispatchOperation *parent)
 {
     debug() << "Creating new ChannelDispatchOperation:" << parent->objectPath();
 
+    parent->connect(baseInterface,
+            SIGNAL(Finished()),
+            SLOT(onFinished()));
+
     ReadinessHelper::Introspectables introspectables;
 
     // As ChannelDispatchOperation does not have predefined statuses let's simulate one (0)
@@ -282,6 +286,13 @@ PendingOperation *ChannelDispatchOperation::claim()
 Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterface() const
 {
     return mPriv->baseInterface;
+}
+
+void ChannelDispatchOperation::onFinished()
+{
+    debug() << "ChannelDispatchOperation finished and was removed";
+    invalidate(TELEPATHY_QT4_ERROR_OBJECT_REMOVED,
+               "ChannelDispatchOperation finished and was removed");
 }
 
 void ChannelDispatchOperation::gotMainProperties(QDBusPendingCallWatcher *watcher)

@@ -93,6 +93,7 @@ protected:
     Client::ChannelDispatchOperationInterface *baseInterface() const;
 
 private Q_SLOTS:
+    void onFinished();
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void onConnectionReady(Tp::PendingOperation *op);
     void onAccountReady(Tp::PendingOperation *op);
