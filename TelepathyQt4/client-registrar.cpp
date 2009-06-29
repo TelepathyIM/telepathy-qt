@@ -171,7 +171,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
         const QDBusMessage &message)
 {
     QDBusObjectPath connectionPath = qdbus_cast<QDBusObjectPath>(
-            properties.value("Connection"));
+            properties.value(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"));
     debug() << "addDispatchOperation: connection:" << connectionPath.path();
     QString connectionBusName = connectionPath.path().mid(1).replace('/', '.');
     ConnectionPtr connection = Connection::create(mBus, connectionBusName,
