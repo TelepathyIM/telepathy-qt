@@ -67,6 +67,7 @@ private Q_SLOTS:
 
 private:
     struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
