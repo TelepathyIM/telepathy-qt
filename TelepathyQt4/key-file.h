@@ -36,6 +36,8 @@ namespace Tp
 
 class KeyFile
 {
+    Q_DISABLE_COPY(KeyFile);
+
 public:
     enum Status {
         None = 0,
@@ -67,8 +69,6 @@ public:
     QStringList valueAsStringList(const QString &key) const;
 
 private:
-    Q_DISABLE_COPY(KeyFile);
-
     struct Private;
     friend struct Private;
     Private *mPriv;

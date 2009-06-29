@@ -63,7 +63,7 @@ public:
     static ChannelRequestPtr create(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    ~ChannelRequest();
+    virtual ~ChannelRequest();
 
     AccountPtr account() const;
 

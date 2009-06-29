@@ -28,6 +28,23 @@ followed by eg. KDELibs. In short, that amounts to:
  * Destroy transient objects such as method call watchers as soon as possible
    rather than accumulating them to long-lived parent objects
  * Documentation should be in the source file instead of the header file
+ * Public xxxInterface methods' definitions should be added to the end of the
+   public methods declaration.
+ * Always add friend struct Private declaration on classes that have Private
+   structure.
+ * Always add Q_DISABLE_COPY(xxx) to classes that cannot be copied.
+ * Q_DISABLE_COPY(xxx) declaration must be placed on the top of the class
+   definition, before the public keyword.
+ * Methods should be ordered as follows:
+    public
+    public Q_SLOTS
+    Q_SIGNALS
+    protected
+    protected Q_SLOTS
+    private Q_SLOTS
+    private
+ * friend class xxx definitions must be placed right below the private keyword.
+
 The coding style is described in more detail in the KDE TechBase at
 http://techbase.kde.org/Policies/Kdelibs_Coding_Style.
 

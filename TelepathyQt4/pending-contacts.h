@@ -45,6 +45,7 @@ class ContactManager;
 class PendingContacts : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingContacts);
 
 public:
     ~PendingContacts();
@@ -74,7 +75,7 @@ private Q_SLOTS:
     void onInspectHandlesFinished(QDBusPendingCallWatcher *);
 
 private:
-    Q_DISABLE_COPY(PendingContacts);
+    friend class ContactManager;
 
     PendingContacts(ContactManager *manager, const UIntList &handles,
             const QSet<Contact::Feature> &features,
@@ -90,7 +91,6 @@ private:
 
     struct Private;
     friend struct Private;
-    friend class ContactManager;
     Private *mPriv;
 };
 

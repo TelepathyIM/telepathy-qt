@@ -83,17 +83,35 @@ public:
     static ConnectionPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
 
-    ~Connection();
+    virtual ~Connection();
 
     uint status() const;
     uint statusReason() const;
 
     uint selfHandle() const;
+    ContactPtr selfContact() const;
 
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 
-    ContactPtr selfContact() const;
+    PendingChannel *createChannel(const QVariantMap &request);
+    PendingChannel *ensureChannel(const QVariantMap &request);
+
+    PendingReady *requestConnect(const Features &requestedFeatures = Features());
+    PendingOperation *requestDisconnect();
+
+    PendingHandles *requestHandles(uint handleType, const QStringList &names);
+    PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
+
+    PendingContactAttributes *getContactAttributes(const UIntList &handles,
+            const QStringList &interfaces, bool reference = true);
+    QStringList contactAttributeInterfaces() const;
+    ContactManager *contactManager() const;
+
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    {
+        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
+    }
 
     inline Client::ConnectionInterfaceAliasingInterface *aliasingInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -131,28 +149,6 @@ public:
         return optionalInterface<Client::ConnectionInterfaceRequestsInterface>(check);
     }
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
-    }
-
-    PendingChannel *createChannel(const QVariantMap &request);
-
-    PendingChannel *ensureChannel(const QVariantMap &request);
-
-    PendingReady *requestConnect(const Features &requestedFeatures = Features());
-
-    PendingOperation *requestDisconnect();
-
-    PendingHandles *requestHandles(uint handleType, const QStringList &names);
-
-    PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
-
-    PendingContactAttributes *getContactAttributes(const UIntList &handles,
-            const QStringList &interfaces, bool reference = true);
-    QStringList contactAttributeInterfaces() const;
-    ContactManager *contactManager() const;
-
 Q_SIGNALS:
     void statusChanged(uint newStatus, uint newStatusReason);
     void selfHandleChanged(uint newHandle);
@@ -184,19 +180,20 @@ private Q_SLOTS:
     void onSelfHandleChanged(uint);
 
 private:
-    void refHandle(uint type, uint handle);
-    void unrefHandle(uint type, uint handle);
-    void handleRequestLanded(uint type);
-
-    struct Private;
     class PendingConnect;
-    friend struct Private;
     friend class PendingChannel;
     friend class PendingConnect;
     friend class PendingContactAttributes;
     friend class PendingContacts;
     friend class PendingHandles;
     friend class ReferencedHandles;
+
+    void refHandle(uint type, uint handle);
+    void unrefHandle(uint type, uint handle);
+    void handleRequestLanded(uint type);
+
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

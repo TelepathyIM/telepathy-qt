@@ -42,6 +42,7 @@ class AccountManager;
 class PendingAccount : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingAccount);
 
 public:
     ~PendingAccount();
@@ -56,7 +57,8 @@ private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
 
 private:
-    Q_DISABLE_COPY(PendingAccount);
+    friend class AccountManager;
+
     PendingAccount(const AccountManagerPtr &manager,
             const QString &connectionManager, const QString &protocol,
             const QString &displayName, const QVariantMap &parameters,
@@ -64,7 +66,6 @@ private:
 
     struct Private;
     friend struct Private;
-    friend class AccountManager;
     Private *mPriv;
 };
 

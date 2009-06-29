@@ -37,6 +37,8 @@ namespace Tp
 
 class ManagerFile
 {
+    Q_DISABLE_COPY(ManagerFile);
+
 public:
     ManagerFile(const QString &cmName);
     ~ManagerFile();
@@ -50,9 +52,8 @@ public:
     static QVariant::Type variantTypeFromDBusSignature(const QString &signature);
 
 private:
-    Q_DISABLE_COPY(ManagerFile);
-
     struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 

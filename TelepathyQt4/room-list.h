@@ -39,7 +39,7 @@ public:
     static RoomListPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    ~RoomList();
+    virtual ~RoomList();
 
 protected:
     RoomList(const ConnectionPtr &connection, const QString &objectPath,

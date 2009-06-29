@@ -39,7 +39,7 @@ public:
     static FileTransferPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    ~FileTransfer();
+    virtual ~FileTransfer();
 
 protected:
     FileTransfer(const ConnectionPtr &connection, const QString &objectPath,
