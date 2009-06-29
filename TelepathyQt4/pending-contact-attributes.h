@@ -39,6 +39,7 @@ class ReferencedHandles;
 class PendingContactAttributes : public PendingOperation
 {
     Q_OBJECT
+    Q_DISABLE_COPY(PendingContactAttributes)
 
 public:
     ~PendingContactAttributes();
@@ -59,8 +60,10 @@ private Q_SLOTS:
 private:
     friend class Connection;
 
-    PendingContactAttributes(const ConnectionPtr &connection, const UIntList &handles,
+    PendingContactAttributes(const ConnectionPtr &connection,
+            const UIntList &handles,
             const QStringList &interfaces, bool reference);
+
     void failImmediately(const QString &error, const QString &errorMessage);
 
     struct Private;
