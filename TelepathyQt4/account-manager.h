@@ -65,11 +65,6 @@ public:
 
     virtual ~AccountManager();
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
-    {
-        return OptionalInterfaceFactory<AccountManager>::interface<Client::DBus::PropertiesInterface>();
-    }
-
     QStringList validAccountPaths() const;
     QStringList invalidAccountPaths() const;
     QStringList allAccountPaths() const;
@@ -89,6 +84,11 @@ public:
 
     // TODO: enabledAccounts(), accountsByProtocol(), ... ?
 
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    {
+        return OptionalInterfaceFactory<AccountManager>::interface<Client::DBus::PropertiesInterface>();
+    }
+
 Q_SIGNALS:
     void accountCreated(const QString &path);
     void accountRemoved(const QString &path);
@@ -106,9 +106,10 @@ private Q_SLOTS:
     void onAccountRemoved(const QDBusObjectPath &);
 
 private:
+    friend class PendingAccount;
+
     struct Private;
     friend struct Private;
-    friend class PendingAccount;
     Private *mPriv;
 };
 
