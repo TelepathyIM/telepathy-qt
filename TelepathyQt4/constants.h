@@ -125,4 +125,12 @@
 #define TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD \
     "org.freedesktop.DBus.Error.UnknownMethod"
 
+/**
+ * \ingroup errorstrconsts
+ *
+ * The error name "org.freedesktop.DBus.Error.ObjectRemoved".
+ */
+#define TELEPATHY_QT4_ERROR_OBJECT_REMOVED \
+    "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved"
+
 #endif

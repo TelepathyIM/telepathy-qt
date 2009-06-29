@@ -95,6 +95,10 @@ ChannelDispatchOperation::Private::Private(ChannelDispatchOperation *parent)
 {
     debug() << "Creating new ChannelDispatchOperation:" << parent->objectPath();
 
+    parent->connect(baseInterface,
+            SIGNAL(Finished()),
+            SLOT(onFinished()));
+
     ReadinessHelper::Introspectables introspectables;
 
     // As ChannelDispatchOperation does not have predefined statuses let's simulate one (0)
@@ -195,6 +199,44 @@ void ChannelDispatchOperation::Private::checkReady()
  *
  * High-level proxy object for accessing remote Telepathy
  * ChannelDispatchOperation objects.
+ *
+ * One of the channel dispatcher's functions is to offer incoming channels to
+ * Approver clients for approval. An approver should generally ask the user
+ * whether they want to participate in the requested communication channels
+ * (join the chat or chatroom, answer the call, accept the file transfer, or
+ * whatever is appropriate). A collection of channels offered in this way
+ * is represented by a ChannelDispatchOperation object.
+ *
+ * If the user wishes to accept the communication channels, the approver
+ * should call handleWith() to indicate the user's or approver's preferred
+ * handler for the channels (the empty string indicates no particular
+ * preference, and will cause any suitable handler to be used).
+ *
+ * If the user wishes to reject the communication channels, or if the user
+ * accepts the channels and the approver will handle them itself, the approver
+ * should call claim(). If the resulting PendingOperation succeeds, the approver
+ * immediately has control over the channels as their primary handler,
+ * and may do anything with them (in particular, it may close them in whatever
+ * way seems most appropriate).
+ *
+ * There are various situations in which the channel dispatch operation will
+ * be closed, causing the DBusProxy::invalidated() signal to be emitted. If this
+ * happens, the approver should stop prompting the user.
+ *
+ * Because all approvers are launched simultaneously, the user might respond
+ * to another approver; if this happens, the invalidated signal will be
+ * emitted with the error code %TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ *
+ * If a channel closes, the signal channelLost() is emitted. If all channels
+ * close, there is nothing more to dispatch, so the invalidated signal will be
+ * emitted with the error code %TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ *
+ * If the channel dispatcher crashes or exits, the invalidated
+ * signal will be emitted with the error code
+ * %TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
+ * the dispatcher should be restarted, at which point it will create new
+ * channel dispatch operations for any undispatched channels, and the approver
+ * will be notified again.
  */
 
 const Feature ChannelDispatchOperation::FeatureCore = Feature(ChannelDispatchOperation::staticMetaObject.className(), 0, true);
@@ -282,6 +324,13 @@ PendingOperation *ChannelDispatchOperation::claim()
 Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterface() const
 {
     return mPriv->baseInterface;
+}
+
+void ChannelDispatchOperation::onFinished()
+{
+    debug() << "ChannelDispatchOperation finished and was removed";
+    invalidate(TELEPATHY_QT4_ERROR_OBJECT_REMOVED,
+               "ChannelDispatchOperation finished and was removed");
 }
 
 void ChannelDispatchOperation::gotMainProperties(QDBusPendingCallWatcher *watcher)
