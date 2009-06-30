@@ -344,10 +344,7 @@ void Connection::Private::introspectSelfContact(Connection::Private *self)
     debug() << "Building self contact";
     // FIXME: these should be features when Connection is sanitized
     PendingContacts *contacts = self->contactManager->contactsForHandles(
-            UIntList() << self->selfHandle,
-            QSet<Contact::Feature>() << Contact::FeatureAlias
-                                     << Contact::FeatureAvatarToken
-                                     << Contact::FeatureSimplePresence);
+            UIntList() << self->selfHandle);
     self->parent->connect(contacts,
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(gotSelfContact(Tp::PendingOperation *)));
