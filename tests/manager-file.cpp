@@ -21,10 +21,10 @@ void TestManagerFile::testManagerFile()
     ManagerFile notFoundManagerFile("test-manager-file-not-found");
     QCOMPARE(notFoundManagerFile.isValid(), false);
 
-    ManagerFile invalidManagerFile("test-manager-file-invalid");
+    ManagerFile invalidManagerFile("test-manager-file-malformed-keyfile");
     QCOMPARE(invalidManagerFile.isValid(), false);
 
-    ManagerFile invalidManagerFile2("test-manager-file-invalid2");
+    ManagerFile invalidManagerFile2("test-manager-file-invalid-signature");
     QCOMPARE(invalidManagerFile2.isValid(), false);
 
     ManagerFile managerFile("test-manager-file");
