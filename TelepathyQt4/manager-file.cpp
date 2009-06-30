@@ -40,6 +40,7 @@ struct ManagerFile::Private
     QString cmName;
     KeyFile keyFile;
     QHash<QString, ParamSpecList> protocolParams;
+    bool valid;
 
     Private(const QString &cnName);
 
@@ -56,7 +57,8 @@ struct ManagerFile::Private
 };
 
 ManagerFile::Private::Private(const QString &cmName)
-    : cmName(cmName)
+    : cmName(cmName),
+      valid(false)
 {
     init();
 }
@@ -90,10 +92,12 @@ void ManagerFile::Private::init()
         QString fileName = configDir + cmName + QLatin1String(".manager");
         if (QFile::exists(fileName)) {
             debug() << "parsing manager file" << fileName;
+            protocolParams.clear();
             if (!parse(fileName)) {
                 warning() << "error parsing manager file" << fileName;
                 continue;
             }
+            valid = true;
             return;
         }
     }
@@ -167,6 +171,11 @@ bool ManagerFile::Private::parse(const QString &fileName)
                     /* map based on the param dbus signature, otherwise use
                      * QString */
                     QVariant value = valueForKey(param, spec->signature);
+                    if (value.type() == QVariant::Invalid) {
+                        warning() << "param" << paramName
+                                  << "has invalid signature";
+                        return false;
+                    }
                     spec->defaultValue = QDBusVariant(value);
                 }
             }
@@ -178,7 +187,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
 
 bool ManagerFile::Private::isValid() const
 {
-    return (keyFile.status() == KeyFile::NoError);
+    return ((keyFile.status() == KeyFile::NoError) && (valid));
 }
 
 bool ManagerFile::Private::hasParameter(const QString &protocol,

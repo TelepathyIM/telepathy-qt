@@ -24,6 +24,9 @@ void TestManagerFile::testManagerFile()
     ManagerFile invalidManagerFile("test-manager-file-invalid");
     QCOMPARE(invalidManagerFile.isValid(), false);
 
+    ManagerFile invalidManagerFile2("test-manager-file-invalid2");
+    QCOMPARE(invalidManagerFile2.isValid(), false);
+
     ManagerFile managerFile("test-manager-file");
     QCOMPARE(managerFile.isValid(), true);
 

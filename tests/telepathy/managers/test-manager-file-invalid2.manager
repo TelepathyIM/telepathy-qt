@@ -82,5 +82,5 @@ param-i = i
 default-i = -42
 param-x = x
 default-x = -42
-param-d = d
+param-d = 42.0
 default-d = 42.0
