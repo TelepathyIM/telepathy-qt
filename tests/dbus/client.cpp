@@ -578,14 +578,14 @@ void TestClient::testAddDispatchOperation()
     ChannelDetailsList channelDetailsList;
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
     channelDetailsList.append(channelDetails);
-    QVariantMap dispatchOperationPropeties;
-    dispatchOperationPropeties.insert("Connection",
+    QVariantMap dispatchOperationProperties;
+    dispatchOperationProperties.insert(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection",
             QVariant::fromValue(QDBusObjectPath(mConn->objectPath())));
-    dispatchOperationPropeties.insert("Account",
+    dispatchOperationProperties.insert(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account",
             QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
     approverIface->AddDispatchOperation(channelDetailsList,
             QDBusObjectPath("/"),
-            dispatchOperationPropeties);
+            dispatchOperationProperties);
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mAddDispatchOperationChannels.first()->objectPath(), mText1ChanPath);
