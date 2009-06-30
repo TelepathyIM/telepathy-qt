@@ -38,6 +38,7 @@
 
 #include <QHash>
 #include <QQueue>
+#include <QSharedData>
 #include <QTimer>
 
 /**
@@ -1539,6 +1540,56 @@ Contacts Channel::groupRemotePendingContacts() const
     }
 
     return mPriv->groupRemotePendingContacts.values().toSet();
+}
+
+struct Channel::GroupMemberChangeDetails::Private : public QSharedData
+{
+    ContactPtr actor;
+    QVariantMap details;
+
+    Private(const ContactPtr &actor, const QVariantMap &details)
+        : actor(actor), details(details) {}
+};
+
+Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()
+{
+}
+
+Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const GroupMemberChangeDetails &other)
+    : mPriv(other.mPriv)
+{
+}
+
+Channel::GroupMemberChangeDetails::~GroupMemberChangeDetails()
+{
+}
+
+Channel::GroupMemberChangeDetails &Channel::GroupMemberChangeDetails::operator=(
+        const GroupMemberChangeDetails &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+bool Channel::GroupMemberChangeDetails::hasActor() const
+{
+    return isValid() && !mPriv->actor.isNull();
+}
+
+ContactPtr Channel::GroupMemberChangeDetails::actor() const
+{
+    return isValid() ? mPriv->actor : ContactPtr();
+}
+
+QVariantMap Channel::GroupMemberChangeDetails::allDetails() const
+{
+    return isValid() ? mPriv->details : QVariantMap();
+}
+
+Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const ContactPtr &actor,
+        const QVariantMap &details)
+    : mPriv(new Private(actor, details))
+{
 }
 
 /**

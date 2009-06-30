@@ -39,6 +39,7 @@
 #include <TelepathyQt4/SharedPtr>
 
 #include <QSet>
+#include <QSharedDataPointer>
 #include <QVariantMap>
 
 namespace Tp
@@ -102,37 +103,39 @@ public:
     class GroupMemberChangeDetails
     {
     public:
-        GroupMemberChangeDetails()
-            : mIsValid(false) {}
+        GroupMemberChangeDetails();
+        GroupMemberChangeDetails(const GroupMemberChangeDetails &other);
+        ~GroupMemberChangeDetails();
 
-        bool isValid() const { return mIsValid; }
+        GroupMemberChangeDetails &operator=(const GroupMemberChangeDetails &other);
 
-        bool hasActor() const { return !mActor.isNull(); }
-        ContactPtr actor() const { return mActor; }
+        bool isValid() const { return mPriv.constData() != 0; }
 
-        bool hasReason() const { return mDetails.contains("change-reason"); }
-        uint reason() const { return qdbus_cast<uint>(mDetails.value("change-reason")); }
+        bool hasActor() const;
+        ContactPtr actor() const;
 
-        bool hasMessage() const { return mDetails.contains("message"); }
-        QString message () const { return qdbus_cast<QString>(mDetails.value("message")); }
+        bool hasReason() const { return allDetails().contains("change-reason"); }
+        uint reason() const { return qdbus_cast<uint>(allDetails().value("change-reason")); }
 
-        bool hasError() const { return mDetails.contains("error"); }
-        QString error() const { return qdbus_cast<QString>(mDetails.value("error")); }
+        bool hasMessage() const { return allDetails().contains("message"); }
+        QString message () const { return qdbus_cast<QString>(allDetails().value("message")); }
 
-        bool hasDebugMessage() const { return mDetails.contains("debug-message"); }
-        QString debugMessage() const { return qdbus_cast<QString>(mDetails.value("debug-message")); }
+        bool hasError() const { return allDetails().contains("error"); }
+        QString error() const { return qdbus_cast<QString>(allDetails().value("error")); }
 
-        QVariantMap allDetails() const { return mDetails; }
+        bool hasDebugMessage() const { return allDetails().contains("debug-message"); }
+        QString debugMessage() const { return qdbus_cast<QString>(allDetails().value("debug-message")); }
+
+        QVariantMap allDetails() const;
 
     private:
         friend class Channel;
 
-        GroupMemberChangeDetails(const ContactPtr &actor, const QVariantMap &details)
-            : mActor(actor), mDetails(details), mIsValid(true) {}
+        GroupMemberChangeDetails(const ContactPtr &actor, const QVariantMap &details);
 
-        ContactPtr mActor;
-        QVariantMap mDetails;
-        bool mIsValid;
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
     };
 
     GroupMemberChangeDetails groupLocalPendingContactChangeInfo(const ContactPtr &contact) const;
