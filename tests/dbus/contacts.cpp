@@ -212,6 +212,15 @@ void TestContacts::testSelfContact()
     QCOMPARE(selfContact->handle()[0], mConn->selfHandle());
     QCOMPARE(selfContact->id(), QString("me@example.com"));
 
+    QVERIFY(connect(selfContact->manager()->upgradeContacts(
+                        QList<ContactPtr>() << selfContact,
+                        QSet<Contact::Feature>() << Contact::FeatureAlias
+                            << Contact::FeatureAvatarToken
+                            << Contact::FeatureSimplePresence),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
     QCOMPARE(selfContact->alias(), QString("me@example.com"));
 
     QVERIFY(!selfContact->isAvatarTokenKnown());
@@ -219,7 +228,6 @@ void TestContacts::testSelfContact()
     QCOMPARE(selfContact->presenceStatus(), QString("available"));
     QCOMPARE(selfContact->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
     QCOMPARE(selfContact->presenceMessage(), QString(""));
-
 }
 
 void TestContacts::testForHandles()
