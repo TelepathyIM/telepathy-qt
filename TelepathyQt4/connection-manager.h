@@ -85,9 +85,9 @@ class ProtocolInfo
 public:
     ~ProtocolInfo();
 
-    QString cmName() const { return mCmName; }
+    QString cmName() const;
 
-    QString name() const { return mName; }
+    QString name() const;
 
     const ProtocolParameterList &parameters() const;
     bool hasParameter(const QString &name) const;
@@ -105,8 +105,6 @@ private:
     friend class Private;
     friend class ConnectionManager;
     Private *mPriv;
-    QString mCmName;
-    QString mName;
 };
 
 class ConnectionManager : public StatelessDBusProxy,

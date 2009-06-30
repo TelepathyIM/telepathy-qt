@@ -138,7 +138,12 @@ bool ProtocolParameter::operator==(const QString &name) const
 
 struct ProtocolInfo::Private
 {
+    QString cmName;
+    QString name;
     ProtocolParameterList params;
+
+    Private(const QString &cmName, const QString &name)
+        : cmName(cmName), name(name) {}
 };
 
 /**
@@ -156,9 +161,7 @@ struct ProtocolInfo::Private
  * \param name Name of the protocol.
  */
 ProtocolInfo::ProtocolInfo(const QString &cmName, const QString &name)
-    : mPriv(new Private()),
-      mCmName(cmName),
-      mName(name)
+    : mPriv(new Private(cmName, name))
 {
 }
 
@@ -170,19 +173,21 @@ ProtocolInfo::~ProtocolInfo()
     foreach (ProtocolParameter *param, mPriv->params) {
         delete param;
     }
+
+    delete mPriv;
 }
 
 /**
- * \fn QString ProtocolInfo::cmName() const
- *
  * Get the short name of the connection manager (e.g. "gabble").
  *
  * \return The name of the connection manager.
  */
+QString ProtocolInfo::cmName() const
+{
+    return mPriv->cmName;
+}
 
 /**
- * \fn QString ProtocolInfo::name() const
- *
  * Get the string identifying the protocol as described in the Telepathy
  * D-Bus API Specification (e.g. "jabber").
  *
@@ -191,6 +196,10 @@ ProtocolInfo::~ProtocolInfo()
  *
  * \return A string identifying the protocol.
  */
+QString ProtocolInfo::name() const
+{
+    return mPriv->name;
+}
 
 /**
  * Return all supported parameters. The parameters' names
