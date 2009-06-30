@@ -30,6 +30,7 @@
 
 #include <QMap>
 #include <QSet>
+#include <QSharedDataPointer>
 #include <QStringList>
 
 class QDBusError;
@@ -51,36 +52,24 @@ public:
 
     struct Introspectable {
     public:
-        Introspectable()
-            : introspectFunc(0),
-              introspectFuncData(0)
-        {
-        }
-
+        Introspectable();
         Introspectable(const QSet<uint> &makesSenseForStatuses,
                 const Features &dependsOnFeatures,
                 const QStringList &dependsOnInterfaces,
                 IntrospectFunc introspectFunc,
                 void *introspectFuncData,
-                bool critical = false)
-            : makesSenseForStatuses(makesSenseForStatuses),
-              dependsOnFeatures(dependsOnFeatures),
-              dependsOnInterfaces(dependsOnInterfaces),
-              introspectFunc(introspectFunc),
-              introspectFuncData(introspectFuncData),
-              critical(critical)
-        {
-        }
+                bool critical = false);
+        Introspectable(const Introspectable &other);
+        ~Introspectable();
+
+        Introspectable &operator=(const Introspectable &other);
 
     private:
         friend class ReadinessHelper;
 
-        QSet<uint> makesSenseForStatuses;
-        Features dependsOnFeatures;
-        QStringList dependsOnInterfaces;
-        IntrospectFunc introspectFunc;
-        void *introspectFuncData;
-        bool critical;
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
     };
     typedef QMap<Feature, Introspectable> Introspectables;
 

@@ -30,10 +30,63 @@
 #include <TelepathyQt4/Constants>
 
 #include <QDBusError>
+#include <QSharedData>
 #include <QTimer>
 
 namespace Tp
 {
+
+struct ReadinessHelper::Introspectable::Private : public QSharedData
+{
+    QSet<uint> makesSenseForStatuses;
+    Features dependsOnFeatures;
+    QStringList dependsOnInterfaces;
+    IntrospectFunc introspectFunc;
+    void *introspectFuncData;
+    bool critical;
+
+    Private(const QSet<uint> &makesSenseForStatuses,
+            const Features &dependsOnFeatures,
+            const QStringList &dependsOnInterfaces,
+            IntrospectFunc introspectFunc,
+            void *introspectFuncData,
+            bool critical)
+        : makesSenseForStatuses(makesSenseForStatuses),
+        dependsOnFeatures(dependsOnFeatures),
+        dependsOnInterfaces(dependsOnInterfaces),
+        introspectFunc(introspectFunc),
+        introspectFuncData(introspectFuncData),
+        critical(critical) {}
+};
+
+ReadinessHelper::Introspectable::Introspectable()
+    : mPriv(new Private(QSet<uint>(), Features(), QStringList(), 0, 0, false))
+{
+}
+
+ReadinessHelper::Introspectable::Introspectable(const QSet<uint> &makesSenseForStatuses,
+        const Features &dependsOnFeatures, const QStringList &dependsOnInterfaces,
+        IntrospectFunc introspectFunc, void *introspectFuncData, bool critical)
+    : mPriv(new Private(makesSenseForStatuses, dependsOnFeatures, dependsOnInterfaces,
+                introspectFunc, introspectFuncData, critical))
+{
+}
+
+ReadinessHelper::Introspectable::Introspectable(const Introspectable &other)
+    : mPriv(other.mPriv)
+{
+}
+
+ReadinessHelper::Introspectable::~Introspectable()
+{
+}
+
+ReadinessHelper::Introspectable &ReadinessHelper::Introspectable::operator=(
+        const Introspectable &other)
+{
+    mPriv = other.mPriv;
+    return *this;
+}
 
 struct ReadinessHelper::Private
 {
@@ -89,8 +142,8 @@ ReadinessHelper::Private::Private(
     while (i != end) {
         Feature feature = i.key();
         Introspectable introspectable = i.value();
-        Q_ASSERT(introspectable.introspectFunc != 0);
-        supportedStatuses += introspectable.makesSenseForStatuses;
+        Q_ASSERT(introspectable.mPriv->introspectFunc != 0);
+        supportedStatuses += introspectable.mPriv->makesSenseForStatuses;
         supportedFeatures += feature;
         ++i;
     }
@@ -193,7 +246,7 @@ void ReadinessHelper::Private::iterateIntrospection()
     while (i != end) {
         Feature feature = i.key();
         Introspectable introspectable = i.value();
-        Features dependsOnFeatures = introspectable.dependsOnFeatures;
+        Features dependsOnFeatures = introspectable.mPriv->dependsOnFeatures;
         if (!dependsOnFeatures.intersect(missingFeatures).isEmpty()) {
             missingFeatures.insert(feature);
             missingFeaturesErrors.insert(feature,
@@ -232,7 +285,7 @@ void ReadinessHelper::Private::iterateIntrospection()
     Features readyToIntrospect;
     foreach (const Feature &feature, pendingFeatures) {
         // missing doesn't have to be considered here anymore
-        if ((introspectables[feature].dependsOnFeatures - satisfiedFeatures).isEmpty()) {
+        if ((introspectables[feature].mPriv->dependsOnFeatures - satisfiedFeatures).isEmpty()) {
             readyToIntrospect.insert(feature);
         }
     }
@@ -248,19 +301,19 @@ void ReadinessHelper::Private::iterateIntrospection()
 
         Introspectable introspectable = introspectables[feature];
 
-        if (!introspectable.makesSenseForStatuses.contains(currentStatus)) {
+        if (!introspectable.mPriv->makesSenseForStatuses.contains(currentStatus)) {
             // No-op satisfy features for which nothing has to be done in
             // the current state
             setIntrospectCompleted(feature, true);
             return; // will be called with a single-shot soon again
         }
 
-        foreach (const QString &interface, introspectable.dependsOnInterfaces) {
+        foreach (const QString &interface, introspectable.mPriv->dependsOnInterfaces) {
             if (!interfaces.contains(interface)) {
                 // If a feature is ready to introspect and depends on a interface
                 // that is not present the feature can't possibly be satisfied
                 debug() << "feature" << feature << "depends on interfaces" <<
-                    introspectable.dependsOnInterfaces << ", but interface" << interface <<
+                    introspectable.mPriv->dependsOnInterfaces << ", but interface" << interface <<
                     "is not present";
                 setIntrospectCompleted(feature, false,
                         QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
@@ -272,7 +325,7 @@ void ReadinessHelper::Private::iterateIntrospection()
         // yes, with the dependency info, we can even parallelize
         // introspection of several features at once, reducing total round trip
         // time considerably with many independent features!
-        (*(introspectable.introspectFunc))(introspectable.introspectFuncData);
+        (*(introspectable.mPriv->introspectFunc))(introspectable.mPriv->introspectFuncData);
     }
 }
 
@@ -322,7 +375,7 @@ void ReadinessHelper::addIntrospectables(const Introspectables &introspectables)
         } else {
             Introspectable introspectable = i.value();
             mPriv->introspectables.insert(feature, introspectable);
-            mPriv->supportedStatuses += introspectable.makesSenseForStatuses;
+            mPriv->supportedStatuses += introspectable.mPriv->makesSenseForStatuses;
             mPriv->supportedFeatures += feature;
         }
 
