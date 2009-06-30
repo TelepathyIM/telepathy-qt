@@ -1544,11 +1544,11 @@ Contacts Channel::groupRemotePendingContacts() const
 
 struct Channel::GroupMemberChangeDetails::Private : public QSharedData
 {
-    ContactPtr actor;
-    QVariantMap details;
-
     Private(const ContactPtr &actor, const QVariantMap &details)
         : actor(actor), details(details) {}
+
+    ContactPtr actor;
+    QVariantMap details;
 };
 
 Channel::GroupMemberChangeDetails::GroupMemberChangeDetails()

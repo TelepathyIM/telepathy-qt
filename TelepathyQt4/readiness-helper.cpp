@@ -38,13 +38,6 @@ namespace Tp
 
 struct ReadinessHelper::Introspectable::Private : public QSharedData
 {
-    QSet<uint> makesSenseForStatuses;
-    Features dependsOnFeatures;
-    QStringList dependsOnInterfaces;
-    IntrospectFunc introspectFunc;
-    void *introspectFuncData;
-    bool critical;
-
     Private(const QSet<uint> &makesSenseForStatuses,
             const Features &dependsOnFeatures,
             const QStringList &dependsOnInterfaces,
@@ -57,6 +50,13 @@ struct ReadinessHelper::Introspectable::Private : public QSharedData
         introspectFunc(introspectFunc),
         introspectFuncData(introspectFuncData),
         critical(critical) {}
+
+    QSet<uint> makesSenseForStatuses;
+    Features dependsOnFeatures;
+    QStringList dependsOnInterfaces;
+    IntrospectFunc introspectFunc;
+    void *introspectFuncData;
+    bool critical;
 };
 
 ReadinessHelper::Introspectable::Introspectable()

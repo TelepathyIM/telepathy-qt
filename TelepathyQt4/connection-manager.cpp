@@ -64,16 +64,16 @@ namespace Tp
 
 struct ProtocolParameter::Private
 {
+    Private(const QString &name, const QDBusSignature &dbusSignature, QVariant::Type type,
+            const QVariant &defaultValue, ConnMgrParamFlag flags)
+        : name(name), dbusSignature(dbusSignature), type(type), defaultValue(defaultValue),
+          flags(flags) {}
+
     QString name;
     QDBusSignature dbusSignature;
     QVariant::Type type;
     QVariant defaultValue;
     ConnMgrParamFlag flags;
-
-    Private(const QString &name, const QDBusSignature &dbusSignature, QVariant::Type type,
-            const QVariant &defaultValue, ConnMgrParamFlag flags)
-        : name(name), dbusSignature(dbusSignature), type(type), defaultValue(defaultValue),
-          flags(flags) {}
 };
 
 ProtocolParameter::ProtocolParameter(const QString &name,
@@ -138,12 +138,12 @@ bool ProtocolParameter::operator==(const QString &name) const
 
 struct ProtocolInfo::Private
 {
+    Private(const QString &cmName, const QString &name)
+        : cmName(cmName), name(name) {}
+
     QString cmName;
     QString name;
     ProtocolParameterList params;
-
-    Private(const QString &cmName, const QString &name)
-        : cmName(cmName), name(name) {}
 };
 
 /**
