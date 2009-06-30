@@ -55,7 +55,11 @@ default-triply-escaped-semicolon-in-list = list\\\;of;misc;
 
 # the value is an empty list
 param-empty-list = as
-default-empty-list = ;
+default-empty-list =
+
+# the value is a list of empty string
+param-list-of-empty-string = as
+default-list-of-empty-string = ;
 
 # this is probably technically a Desktop Entry spec violation?
 # we should be permissive, interpreting this as either "foo\;bar" or "foo;bar"

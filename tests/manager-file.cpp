@@ -88,6 +88,14 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(param->signature, QString("as"));
     QCOMPARE(param->defaultValue.variant().toStringList(),
              QStringList() << "list\\;of" << "misc");
+    param = getParam(params, "empty-list");
+    QCOMPARE(param->signature, QString("as"));
+    QCOMPARE(param->defaultValue.variant().toStringList(),
+             QStringList());
+    param = getParam(params, "list-of-empty-string");
+    QCOMPARE(param->signature, QString("as"));
+    QCOMPARE(param->defaultValue.variant().toStringList(),
+             QStringList() << QString());
 }
 
 bool containsParam(const ParamSpecList &params, const char *name)
