@@ -60,10 +60,10 @@ public:
                       ConnMgrParamFlag flags);
     ~ProtocolParameter();
 
-    QString name() const { return mName; }
-    QDBusSignature dbusSignature() const { return mDBusSignature; }
-    QVariant::Type type() const { return mType; }
-    QVariant defaultValue() const { return mDefaultValue; }
+    QString name() const;
+    QDBusSignature dbusSignature() const;
+    QVariant::Type type() const;
+    QVariant defaultValue() const;
 
     bool isRequired() const;
     bool isSecret() const;
@@ -78,11 +78,6 @@ private:
     struct Private;
     friend struct Private;
     Private *mPriv;
-    QString mName;
-    QDBusSignature mDBusSignature;
-    QVariant::Type mType;
-    QVariant mDefaultValue;
-    ConnMgrParamFlag mFlags;
 };
 
 class ProtocolInfo

@@ -62,45 +62,78 @@
 namespace Tp
 {
 
+struct ProtocolParameter::Private
+{
+    QString name;
+    QDBusSignature dbusSignature;
+    QVariant::Type type;
+    QVariant defaultValue;
+    ConnMgrParamFlag flags;
+
+    Private(const QString &name, const QDBusSignature &dbusSignature, QVariant::Type type,
+            const QVariant &defaultValue, ConnMgrParamFlag flags)
+        : name(name), dbusSignature(dbusSignature), type(type), defaultValue(defaultValue),
+          flags(flags) {}
+};
+
 ProtocolParameter::ProtocolParameter(const QString &name,
                                      const QDBusSignature &dbusSignature,
                                      QVariant defaultValue,
                                      ConnMgrParamFlag flags)
-    : mName(name),
-      mDBusSignature(dbusSignature),
-      mType(ManagerFile::variantTypeFromDBusSignature(dbusSignature.signature())),
-      mDefaultValue(defaultValue),
-      mFlags(flags)
+    : mPriv(new Private(name, dbusSignature,
+                ManagerFile::variantTypeFromDBusSignature(dbusSignature.signature()), defaultValue,
+                flags))
 {
 }
 
 ProtocolParameter::~ProtocolParameter()
 {
+    delete mPriv;
+}
+
+QString ProtocolParameter::name() const
+{
+    return mPriv->name;
+}
+
+QDBusSignature ProtocolParameter::dbusSignature() const
+{
+    return mPriv->dbusSignature;
+}
+
+QVariant::Type ProtocolParameter::type() const
+{
+    return mPriv->type;
+}
+
+QVariant ProtocolParameter::defaultValue() const
+{
+    return mPriv->defaultValue;
 }
 
 bool ProtocolParameter::isRequired() const
 {
-    return mFlags & ConnMgrParamFlagRequired;
+    return mPriv->flags & ConnMgrParamFlagRequired;
 }
 
 bool ProtocolParameter::isSecret() const
 {
-    return mFlags & ConnMgrParamFlagSecret;
+    return mPriv->flags & ConnMgrParamFlagSecret;
 }
 
 bool ProtocolParameter::requiredForRegistration() const
 {
-    return mFlags & ConnMgrParamFlagRegister;
+    return mPriv->flags & ConnMgrParamFlagRegister;
 }
 
 bool ProtocolParameter::operator==(const ProtocolParameter &other) const
 {
-    return (mName == other.name());
+    return (mPriv->name == other.name());
 }
 
 bool ProtocolParameter::operator==(const QString &name) const
 {
-    return (mName == name);
+    return (mPriv->name == name);
 }
 
 struct ProtocolInfo::Private
