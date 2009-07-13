@@ -587,9 +587,10 @@ SimplePresence Account::automaticPresence() const
 
 /**
  * Set the presence status that this account should have if it is brought
- * online.
+ * online automatically.
  *
- * \param value Presence status to set when this account is put online.
+ * \param value Presence status to set when this account is brought online
+ *        automatically.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa setRequestedPresence()
