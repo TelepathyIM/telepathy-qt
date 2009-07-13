@@ -574,10 +574,11 @@ ConnectionPtr Account::connection() const
 }
 
 /**
- * Set the presence status that this account should have if it is brought
- * online.
+ * Get the presence status that this account will have if it is brought
+ * online automatically.
  *
- * \return Presence status that will be set when this account is put online.
+ * \return Presence status that will be set if this account is brought
+ *         online automatically.
  */
 SimplePresence Account::automaticPresence() const
 {
