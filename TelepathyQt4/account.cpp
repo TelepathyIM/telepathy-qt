@@ -550,13 +550,14 @@ bool Account::haveConnection() const
 /**
  * Get the Connection object for this account.
  *
- * Note that the Connection object won't be cached by account, and
- * should be done by the application itself.
+ * The Connection object will not be cached by the Account instance.
+ * Applications should do this themselves
  *
- * Remember to call Connection::becomeReady on the new connection, to
+ * Remember to call Connection::becomeReady on the new connection to
  * make sure it is ready before using it.
  *
- * \return Connection object, or 0 if an error occurred.
+ * \return Connection object, or a null ConnectionPtr if the account does
+ * not currently have a Connection or if an error occurred.
  */
 ConnectionPtr Account::connection() const
 {
