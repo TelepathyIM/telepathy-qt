@@ -537,7 +537,7 @@ ConnectionStatusReason Account::connectionStatusReason() const
 }
 
 /**
- * Return whether this account have a connection object that can be retrieved
+ * Return whether this account has a connection object that can be retrieved
  * using connection().
  *
  * \return \c true if a connection object can be retrieved, \c false otherwise
