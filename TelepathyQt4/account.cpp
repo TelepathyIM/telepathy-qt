@@ -574,11 +574,11 @@ ConnectionPtr Account::connection() const
 }
 
 /**
- * Get the presence status that this account will have if it is brought
- * online automatically.
+ * Get the presence status that this account will have set on it by the account
+ * manager if it brings it online automatically.
  *
- * \return Presence status that will be set if this account is brought
- *         online automatically.
+ * \return Presence status that will be set by the account manager if this
+ *         account is brought online automatically by it.
  */
 SimplePresence Account::automaticPresence() const
 {
@@ -587,10 +587,10 @@ SimplePresence Account::automaticPresence() const
 
 /**
  * Set the presence status that this account should have if it is brought
- * online automatically.
+ * online automatically by the account manager.
  *
  * \param value Presence status to set when this account is brought online
- *        automatically.
+ *        automatically by the account manager.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa setRequestedPresence()
