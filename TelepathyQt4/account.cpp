@@ -550,8 +550,8 @@ bool Account::haveConnection() const
 /**
  * Get the Connection object for this account.
  *
- * The Connection object will not be cached by the Account instance.
- * Applications should do this themselves
+ * The Connection object will not be cached by the Account instance;
+ * applications should do this themselves.
  *
  * Remember to call Connection::becomeReady on the new connection to
  * make sure it is ready before using it.
