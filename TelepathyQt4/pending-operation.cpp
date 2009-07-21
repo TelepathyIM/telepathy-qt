@@ -114,9 +114,9 @@ void PendingOperation::emitFinished()
 void PendingOperation::setFinished()
 {
     if (mPriv->finished) {
-        if (mPriv->errorName.isEmpty()) {
+        if (!mPriv->errorName.isEmpty()) {
             warning() << this << "trying to finish with success, but already"
-                " failed with" << errorName() << ":" << errorMessage();
+                " failed with" << mPriv->errorName << ":" << mPriv->errorMessage;
         } else {
             warning() << this << "trying to finish with success, but already"
                 " succeeded";
