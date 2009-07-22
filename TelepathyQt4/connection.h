@@ -70,6 +70,7 @@ public:
     static const Feature FeatureSelfContact;
     static const Feature FeatureSimplePresence;
     static const Feature FeatureRoster;
+    static const Feature FeatureRosterGroups;
 
     enum Status {
         StatusDisconnected = ConnectionStatusDisconnected,
@@ -174,6 +175,9 @@ private Q_SLOTS:
     void gotContactListsHandles(Tp::PendingOperation *);
     void gotContactListChannel(Tp::PendingOperation *);
     void contactListChannelReady();
+    void onNewChannels(const Tp::ChannelDetailsList &);
+    void onContactListGroupChannelReady(Tp::PendingOperation *);
+    void gotChannels(QDBusPendingCallWatcher *);
 
     void doReleaseSweep(uint type);
 

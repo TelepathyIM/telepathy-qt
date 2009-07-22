@@ -83,6 +83,7 @@ struct ContactManager::Private
     ChannelPtr publishChannel;
     ChannelPtr storedChannel;
     ChannelPtr denyChannel;
+    QMap<QString, ChannelPtr> contactListGroupsChannels;
 
     Contacts allKnownContacts() const;
     void updateContactsPresenceState();
@@ -155,6 +156,11 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
 Contacts ContactManager::allKnownContacts() const
 {
     return mPriv->allKnownContacts();
+}
+
+QStringList ContactManager::allKnownGroups() const
+{
+    return mPriv->contactListGroupsChannels.keys();
 }
 
 /**
@@ -789,6 +795,32 @@ void ContactManager::setContactListsChannels(
                         const Tp::Channel::GroupMemberChangeDetails &)),
                 method);
     }
+}
+
+void ContactManager::setContactListGroupsChannels(
+        const QList<ChannelPtr> &contactListGroupsChannels)
+{
+    Q_ASSERT(mPriv->contactListGroupsChannels.isEmpty());
+
+    QString id;
+    foreach (const ChannelPtr &contactListGroupChannel, contactListGroupsChannels) {
+        id = contactListGroupChannel->immutableProperties().value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+        mPriv->contactListGroupsChannels.insert(id, contactListGroupChannel);
+
+        // TODO connect to closed signal
+    }
+}
+
+void ContactManager::addContactListGroupChannel(
+        const ChannelPtr &contactListGroupChannel)
+{
+    QString id = contactListGroupChannel->immutableProperties().value(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+    mPriv->contactListGroupsChannels.insert(id, contactListGroupChannel);
+
+    // TODO connect to closed signal
+    //      emit group added signal
 }
 
 ContactPtr ContactManager::lookupContactByHandle(uint handle)

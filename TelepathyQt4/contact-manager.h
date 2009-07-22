@@ -54,6 +54,7 @@ public:
     QSet<Contact::Feature> supportedFeatures() const;
 
     Contacts allKnownContacts() const;
+    QStringList allKnownGroups() const;
 
     bool canRequestPresenceSubscription() const;
     bool subscriptionRequestHasMessage() const;
@@ -168,6 +169,9 @@ private:
 
     void setContactListsChannels(
             const QMap<uint, ContactListChannel> &contactListsChannels);
+    void setContactListGroupsChannels(
+            const QList<ChannelPtr> &contactListGroupsChannels);
+    void addContactListGroupChannel(const ChannelPtr &contactListGroupChannel);
 
     struct Private;
     friend struct Private;
