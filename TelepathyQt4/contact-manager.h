@@ -99,6 +99,7 @@ public:
 
 Q_SIGNALS:
     void presencePublicationRequested(const Tp::Contacts &contacts);
+    void groupAdded(const QString &group);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);

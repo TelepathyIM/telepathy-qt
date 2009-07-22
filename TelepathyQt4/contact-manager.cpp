@@ -820,7 +820,8 @@ void ContactManager::addContactListGroupChannel(
     mPriv->contactListGroupsChannels.insert(id, contactListGroupChannel);
 
     // TODO connect to closed signal
-    //      emit group added signal
+
+    emit groupAdded(id);
 }
 
 ContactPtr ContactManager::lookupContactByHandle(uint handle)
