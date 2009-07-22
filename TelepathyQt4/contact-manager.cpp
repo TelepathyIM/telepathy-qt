@@ -65,11 +65,12 @@ namespace Tp
 
 struct ContactManager::Private
 {
-    Private(const ConnectionPtr &connection) :
-        connection(connection)
+    Private(ContactManager *parent, const ConnectionPtr &connection)
+        : parent(parent), connection(connection)
     {
     }
 
+    ContactManager *parent;
     WeakPtr<Connection> connection;
     QMap<uint, QWeakPointer<Contact> > contacts;
 
@@ -868,7 +869,7 @@ void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
 
 ContactManager::ContactManager(const ConnectionPtr &connection)
     : QObject(connection.data()),
-      mPriv(new Private(connection))
+      mPriv(new Private(this, connection))
 {
 }
 
