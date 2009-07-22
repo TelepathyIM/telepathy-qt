@@ -70,6 +70,17 @@ struct ContactManager::Private
     {
     }
 
+    QString addContactListGroupChannel(const ChannelPtr &contactListGroupChannel)
+    {
+        QString id = contactListGroupChannel->immutableProperties().value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+        contactListGroupsChannels.insert(id, contactListGroupChannel);
+        parent->connect(contactListGroupChannel.data(),
+                SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+                SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
+        return id;
+    }
+
     ContactManager *parent;
     WeakPtr<Connection> connection;
     QMap<uint, QWeakPointer<Contact> > contacts;
@@ -972,27 +983,15 @@ void ContactManager::setContactListGroupsChannels(
 {
     Q_ASSERT(mPriv->contactListGroupsChannels.isEmpty());
 
-    QString id;
     foreach (const ChannelPtr &contactListGroupChannel, contactListGroupsChannels) {
-        id = contactListGroupChannel->immutableProperties().value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
-        mPriv->contactListGroupsChannels.insert(id, contactListGroupChannel);
-        connect(contactListGroupChannel.data(),
-                SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-                SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
+        mPriv->addContactListGroupChannel(contactListGroupChannel);
     }
 }
 
 void ContactManager::addContactListGroupChannel(
         const ChannelPtr &contactListGroupChannel)
 {
-    QString id = contactListGroupChannel->immutableProperties().value(
-            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
-    mPriv->contactListGroupsChannels.insert(id, contactListGroupChannel);
-    connect(contactListGroupChannel.data(),
-            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-            SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
-
+    QString id = mPriv->addContactListGroupChannel(contactListGroupChannel);
     emit groupAdded(id);
 }
 
