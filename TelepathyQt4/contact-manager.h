@@ -59,6 +59,7 @@ public:
     PendingOperation *addGroup(const QString &group);
     PendingOperation *removeGroup(const QString &group);
 
+    QStringList contactGroups(const ContactPtr &contact) const;
     Contacts groupContacts(const QString &group) const;
     PendingOperation *groupAddContacts(const QString &group,
             const QList<ContactPtr> &contacts);

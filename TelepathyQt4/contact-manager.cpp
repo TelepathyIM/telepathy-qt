@@ -185,6 +185,28 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
     return channel->requestClose();
 }
 
+QStringList ContactManager::contactGroups(const ContactPtr &contact) const
+{
+    if (!contact) {
+        return QStringList();
+    }
+
+    QStringList result;
+    ChannelPtr contactListGroupChannel;
+    QMap<QString, ChannelPtr>::const_iterator i = mPriv->contactListGroupsChannels.constBegin();
+    QMap<QString, ChannelPtr>::const_iterator end = mPriv->contactListGroupsChannels.constEnd();
+    while (i != end) {
+        contactListGroupChannel = i.value();
+        if (contactListGroupChannel->groupContacts().contains(contact)) {
+            QString id = contactListGroupChannel->immutableProperties().value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+            result << id;
+        }
+        ++i;
+    }
+    return result;
+}
+
 Contacts ContactManager::groupContacts(const QString &group) const
 {
     if (!mPriv->contactListGroupsChannels.contains(group)) {
