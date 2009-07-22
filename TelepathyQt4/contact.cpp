@@ -383,4 +383,9 @@ void Contact::setAddedToGroup(const QString &group)
     emit addedToGroup(group);
 }
 
+void Contact::setRemovedFromGroup(const QString &group)
+{
+    emit removedFromGroup(group);
+}
+
 } // Tp

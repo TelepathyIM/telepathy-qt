@@ -103,6 +103,7 @@ Q_SIGNALS:
     void blockStatusChanged(bool blocked);
 
     void addedToGroup(const QString &group);
+    void removedFromGroup(const QString &group);
 
     // TODO: consider how the Renaming interface should work and map to Contacts
     // I guess it would be something like:
@@ -125,6 +126,7 @@ private:
     void setBlocked(bool value);
 
     void setAddedToGroup(const QString &group);
+    void setRemovedFromGroup(const QString &group);
 
     struct Private;
     friend class ContactManager;
