@@ -213,6 +213,13 @@ PendingOperation *Contact::block(bool value)
             value);
 }
 
+QStringList Contact::groups() const
+{
+    ContactPtr self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->contactGroups(self);
+}
+
 PendingOperation *Contact::addToGroup(const QString &group)
 {
     ContactPtr self =

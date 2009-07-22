@@ -87,6 +87,7 @@ public:
     bool isBlocked() const;
     PendingOperation *block(bool value = true);
 
+    QStringList groups() const;
     PendingOperation *addToGroup(const QString &group);
     PendingOperation *removeFromGroup(const QString &group);
 
