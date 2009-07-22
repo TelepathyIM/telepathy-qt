@@ -378,4 +378,9 @@ void Contact::setBlocked(bool value)
     emit blockStatusChanged(value);
 }
 
+void Contact::setAddedToGroup(const QString &group)
+{
+    emit addedToGroup(group);
+}
+
 } // Tp

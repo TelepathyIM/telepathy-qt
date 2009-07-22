@@ -102,6 +102,8 @@ Q_SIGNALS:
     void publishStateChanged(Tp::Contact::PresenceState state);
     void blockStatusChanged(bool blocked);
 
+    void addedToGroup(const QString &group);
+
     // TODO: consider how the Renaming interface should work and map to Contacts
     // I guess it would be something like:
     // void renamedTo(Tp::ContactPtr)
@@ -121,6 +123,8 @@ private:
     void setSubscriptionState(PresenceState state);
     void setPublishState(PresenceState state);
     void setBlocked(bool value);
+
+    void setAddedToGroup(const QString &group);
 
     struct Private;
     friend class ContactManager;
