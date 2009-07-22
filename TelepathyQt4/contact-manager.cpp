@@ -707,6 +707,22 @@ void ContactManager::onDenyChannelMembersChanged(
     }
 }
 
+void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage)
+{
+    Q_UNUSED(errorName);
+    Q_UNUSED(errorMessage);
+
+    // Is it correct to assume that if a user-defined contact list
+    // gets invalidated it means it was removed? Spec states that if a
+    // user-defined contact list gets closed it was removed, and Channel
+    // invalidates itself when it gets closed.
+    ChannelPtr contactListGroupChannel = ChannelPtr(qobject_cast<Channel*>(proxy));
+    QString id = contactListGroupChannel->immutableProperties().value(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+    emit groupRemoved(id);
+}
+
 ContactManager::ContactManager(const ConnectionPtr &connection)
     : QObject(connection.data()),
       mPriv(new Private(connection))
@@ -817,8 +833,9 @@ void ContactManager::setContactListGroupsChannels(
         id = contactListGroupChannel->immutableProperties().value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
         mPriv->contactListGroupsChannels.insert(id, contactListGroupChannel);
-
-        // TODO connect to closed signal
+        connect(contactListGroupChannel.data(),
+                SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+                SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
     }
 }
 
@@ -828,8 +845,9 @@ void ContactManager::addContactListGroupChannel(
     QString id = contactListGroupChannel->immutableProperties().value(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
     mPriv->contactListGroupsChannels.insert(id, contactListGroupChannel);
-
-    // TODO connect to closed signal
+    connect(contactListGroupChannel.data(),
+            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+            SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
 
     emit groupAdded(id);
 }

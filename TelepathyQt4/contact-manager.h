@@ -102,6 +102,7 @@ public:
 Q_SIGNALS:
     void presencePublicationRequested(const Tp::Contacts &contacts);
     void groupAdded(const QString &group);
+    void groupRemoved(const QString &group);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);
@@ -126,6 +127,9 @@ private Q_SLOTS:
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
+
+    void onContactListGroupRemoved(Tp::DBusProxy *,
+        const QString &, const QString &);
 
 private:
     friend class Connection;
