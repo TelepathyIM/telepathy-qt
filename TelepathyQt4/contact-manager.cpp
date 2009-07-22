@@ -163,6 +163,17 @@ QStringList ContactManager::allKnownGroups() const
     return mPriv->contactListGroupsChannels.keys();
 }
 
+PendingOperation *ContactManager::addGroup(const QString &group)
+{
+    if (group.isEmpty() || group.trimmed().isEmpty()) {
+        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Group must be a non-empty UTF-8 string");
+    }
+
+    return connection()->requestHandles(HandleTypeGroup,
+            QStringList() << group);
+}
+
 Contacts ContactManager::groupContacts(const QString &group) const
 {
     if (!mPriv->contactListGroupsChannels.contains(group)) {
