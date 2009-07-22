@@ -57,6 +57,7 @@ public:
     QStringList allKnownGroups() const;
 
     PendingOperation *addGroup(const QString &group);
+    PendingOperation *removeGroup(const QString &group);
 
     Contacts groupContacts(const QString &group) const;
     PendingOperation *groupAddContacts(const QString &group,
