@@ -781,7 +781,7 @@ void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
     Q_UNUSED(errorName);
     Q_UNUSED(errorMessage);
 
-    // Is it correct to assume that if a user-defined contact list
+    // Is it correct to assume that if an user-defined contact list
     // gets invalidated it means it was removed? Spec states that if a
     // user-defined contact list gets closed it was removed, and Channel
     // invalidates itself when it gets closed.
