@@ -1,5 +1,5 @@
 /*
- * An example ContactList channel with handle type LIST
+ * An example ContactList channel with handle type LIST or GROUP
  *
  * Copyright © 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright © 2009 Nokia Corporation
@@ -26,6 +26,7 @@ static void channel_iface_init (gpointer iface, gpointer data);
 static void list_channel_iface_init (gpointer iface, gpointer data);
 static void group_channel_iface_init (gpointer iface, gpointer data);
 
+/* Abstract base class */
 G_DEFINE_TYPE_WITH_CODE (ExampleContactListBase, example_contact_list_base,
     G_TYPE_OBJECT,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL, channel_iface_init);
@@ -37,10 +38,12 @@ G_DEFINE_TYPE_WITH_CODE (ExampleContactListBase, example_contact_list_base,
     G_IMPLEMENT_INTERFACE (TP_TYPE_EXPORTABLE_CHANNEL, NULL);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL))
 
+/* Subclass for handle type LIST */
 G_DEFINE_TYPE_WITH_CODE (ExampleContactList, example_contact_list,
     EXAMPLE_TYPE_CONTACT_LIST_BASE,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL, list_channel_iface_init))
 
+/* Subclass for handle type GROUP */
 G_DEFINE_TYPE_WITH_CODE (ExampleContactGroup, example_contact_group,
     EXAMPLE_TYPE_CONTACT_LIST_BASE,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL, group_channel_iface_init))

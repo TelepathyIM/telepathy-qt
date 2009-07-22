@@ -841,18 +841,16 @@ example_contact_list_manager_foreach_channel_class (TpChannelManager *manager,
 {
     GHashTable *table = g_hash_table_new_full (g_str_hash, g_str_equal,
         NULL, (GDestroyNotify) tp_g_value_slice_free);
-    GValue *ctype, *htype;
 
-    ctype = tp_g_value_slice_new (G_TYPE_STRING);
-    g_value_set_static_string (ctype, TP_IFACE_CHANNEL_TYPE_CONTACT_LIST);
-    g_hash_table_insert (table, TP_IFACE_CHANNEL ".ChannelType", ctype);
-
-    htype = tp_g_value_slice_new (G_TYPE_UINT); /* initialized later */
-    g_hash_table_insert (table, TP_IFACE_CHANNEL ".TargetHandleType", htype);
-
-    g_value_set_uint (htype, TP_HANDLE_TYPE_LIST);
+    g_hash_table_insert (table, TP_IFACE_CHANNEL ".ChannelType",
+        tp_g_value_slice_new_static_string (
+          TP_IFACE_CHANNEL_TYPE_CONTACT_LIST));
+    g_hash_table_insert (table, TP_IFACE_CHANNEL ".TargetHandleType",
+        tp_g_value_slice_new_uint (TP_HANDLE_TYPE_LIST));
     func (manager, table, allowed_properties, user_data);
-    g_value_set_uint (htype, TP_HANDLE_TYPE_GROUP);
+
+    g_hash_table_insert (table, TP_IFACE_CHANNEL ".TargetHandleType",
+        tp_g_value_slice_new_uint (TP_HANDLE_TYPE_GROUP));
     func (manager, table, allowed_properties, user_data);
 
     g_hash_table_destroy (table);
