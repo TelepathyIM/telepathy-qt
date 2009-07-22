@@ -221,6 +221,14 @@ PendingOperation *Contact::addToGroup(const QString &group)
             group, QList<ContactPtr>() << self);
 }
 
+PendingOperation *Contact::removeFromGroup(const QString &group)
+{
+    ContactPtr self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->groupRemoveContacts(
+            group, QList<ContactPtr>() << self);
+}
+
 Contact::~Contact()
 {
     debug() << "Contact" << id() << "destroyed";

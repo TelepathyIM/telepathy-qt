@@ -88,6 +88,7 @@ public:
     PendingOperation *block(bool value = true);
 
     PendingOperation *addToGroup(const QString &group);
+    PendingOperation *removeFromGroup(const QString &group);
 
     ~Contact();
 
