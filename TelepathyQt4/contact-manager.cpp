@@ -76,6 +76,19 @@ struct ContactManager::Private
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
         contactListGroupsChannels.insert(id, contactListGroupChannel);
         parent->connect(contactListGroupChannel.data(),
+                SIGNAL(groupMembersChanged(
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Channel::GroupMemberChangeDetails &)),
+                SLOT(onContactListGroupMembersChanged(
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Channel::GroupMemberChangeDetails &)));
+        parent->connect(contactListGroupChannel.data(),
                 SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
                 SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
         return id;
@@ -860,6 +873,20 @@ void ContactManager::onDenyChannelMembersChanged(
         debug() << "Contact" << contact->id() << "removed from deny list";
         contact->setBlocked(false);
     }
+}
+
+void ContactManager::onContactListGroupMembersChanged(
+        const Tp::Contacts &groupMembersAdded,
+        const Tp::Contacts &groupLocalPendingMembersAdded,
+        const Tp::Contacts &groupRemotePendingMembersAdded,
+        const Tp::Contacts &groupMembersRemoved,
+        const Tp::Channel::GroupMemberChangeDetails &details)
+{
+    ChannelPtr contactListGroupChannel = ChannelPtr(
+            qobject_cast<Channel*>(sender()));
+    QString id = contactListGroupChannel->immutableProperties().value(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+    emit groupChanged(id);
 }
 
 void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
