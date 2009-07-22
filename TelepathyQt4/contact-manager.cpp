@@ -185,6 +185,18 @@ PendingOperation *ContactManager::groupAddContacts(const QString &group,
     return channel->groupAddContacts(contacts);
 }
 
+PendingOperation *ContactManager::groupRemoveContacts(const QString &group,
+        const QList<ContactPtr> &contacts)
+{
+    if (!mPriv->contactListGroupsChannels.contains(group)) {
+        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid group");
+    }
+
+    ChannelPtr channel = mPriv->contactListGroupsChannels[group];
+    return channel->groupRemoveContacts(contacts);
+}
+
 /**
  * Return whether subscribing to additional contacts' presence is supported
  * on this channel.

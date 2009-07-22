@@ -59,6 +59,8 @@ public:
     Contacts groupContacts(const QString &group) const;
     PendingOperation *groupAddContacts(const QString &group,
             const QList<ContactPtr> &contacts);
+    PendingOperation *groupRemoveContacts(const QString &group,
+            const QList<ContactPtr> &contacts);
 
     bool canRequestPresenceSubscription() const;
     bool subscriptionRequestHasMessage() const;
