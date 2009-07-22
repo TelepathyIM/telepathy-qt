@@ -87,6 +87,8 @@ public:
     bool isBlocked() const;
     PendingOperation *block(bool value = true);
 
+    PendingOperation *addToGroup(const QString &group);
+
     ~Contact();
 
 Q_SIGNALS:
