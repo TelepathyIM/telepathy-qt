@@ -158,11 +158,30 @@ Contacts ContactManager::allKnownContacts() const
     return mPriv->allKnownContacts();
 }
 
+/**
+ * Return a list of user-defined contact list groups names.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \return List of user-defined contact list groups names.
+ */
 QStringList ContactManager::allKnownGroups() const
 {
     return mPriv->contactListGroupsChannels.keys();
 }
 
+/**
+ * Attempt to add an user-defined contact list group named \a group.
+ *
+ * On some protocols (e.g. XMPP) empty groups are not represented on the server,
+ * so disconnecting from the server and reconnecting might cause empty groups to
+ * vanish.
+ *
+ * \param group Group name.
+ * \return A pending operation which will return when an attempt has been made
+ *         to add an user-defined contact list group.
+ * \sa groupAdded(), groupAddContacts()
+ */
 PendingOperation *ContactManager::addGroup(const QString &group)
 {
     if (group.isEmpty() || group.trimmed().isEmpty()) {
@@ -174,6 +193,19 @@ PendingOperation *ContactManager::addGroup(const QString &group)
             QStringList() << group);
 }
 
+/**
+ * Attempt to remove an user-defined contact list group named \a group.
+ *
+ * User-defined contact list groups may only be deleted if the group is
+ * already empty.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove an user-defined contact list group.
+ * \sa groupRemoved(), groupRemoveContacts()
+ */
 PendingOperation *ContactManager::removeGroup(const QString &group)
 {
     if (!mPriv->contactListGroupsChannels.contains(group)) {
@@ -185,6 +217,16 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
     return channel->requestClose();
 }
 
+/**
+ * Return a list of user-defined contact list groups a given contact
+ * \a contact belongs.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param contact Contact to get the groups from.
+ * \return List of user-defined contact list groups names for a given contact.
+ * \sa groupContacts()
+ */
 QStringList ContactManager::contactGroups(const ContactPtr &contact) const
 {
     if (!contact) {
@@ -207,6 +249,17 @@ QStringList ContactManager::contactGroups(const ContactPtr &contact) const
     return result;
 }
 
+/**
+ * Return a list of contacts on a given user-defined contact list group
+ * named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \return List of contacts on a user-defined contact list group, or an empty
+ *         list if the group does not exist.
+ * \sa allKnownGroups(), contactGroups()
+ */
 Contacts ContactManager::groupContacts(const QString &group) const
 {
     if (!mPriv->contactListGroupsChannels.contains(group)) {
@@ -217,6 +270,17 @@ Contacts ContactManager::groupContacts(const QString &group) const
     return channel->groupContacts();
 }
 
+/**
+ * Attempt to add the given \a contacts to the user-defined contact list
+ * group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \param contacts Contacts to add.
+ * \return A pending operation which will return when an attempt has been made
+ *         to add the contacts to the user-defined contact list group.
+ */
 PendingOperation *ContactManager::groupAddContacts(const QString &group,
         const QList<ContactPtr> &contacts)
 {
@@ -229,6 +293,17 @@ PendingOperation *ContactManager::groupAddContacts(const QString &group,
     return channel->groupAddContacts(contacts);
 }
 
+/**
+ * Attempt to remove the given \a contacts from the user-defined contact list
+ * group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \param contacts Contacts to remove.
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove the contacts from the user-defined contact list group.
+ */
 PendingOperation *ContactManager::groupRemoveContacts(const QString &group,
         const QList<ContactPtr> &contacts)
 {
