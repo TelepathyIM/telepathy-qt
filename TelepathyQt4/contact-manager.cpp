@@ -163,6 +163,16 @@ QStringList ContactManager::allKnownGroups() const
     return mPriv->contactListGroupsChannels.keys();
 }
 
+Contacts ContactManager::groupContacts(const QString &group) const
+{
+    if (!mPriv->contactListGroupsChannels.contains(group)) {
+        return Contacts();
+    }
+
+    ChannelPtr channel = mPriv->contactListGroupsChannels[group];
+    return channel->groupContacts();
+}
+
 /**
  * Return whether subscribing to additional contacts' presence is supported
  * on this channel.

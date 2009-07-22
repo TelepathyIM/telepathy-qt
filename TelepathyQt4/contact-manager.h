@@ -56,6 +56,8 @@ public:
     Contacts allKnownContacts() const;
     QStringList allKnownGroups() const;
 
+    Contacts groupContacts(const QString &group) const;
+
     bool canRequestPresenceSubscription() const;
     bool subscriptionRequestHasMessage() const;
     PendingOperation *requestPresenceSubscription(
