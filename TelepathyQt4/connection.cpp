@@ -991,7 +991,7 @@ void Connection::contactListChannelReady()
     if (++mPriv->contactListsChannelsReady ==
             ContactManager::ContactListChannel::LastType) {
         debug() << "FeatureRoster ready";
-        mPriv->contactManager->setContactListChannels(mPriv->contactListsChannels);
+        mPriv->contactManager->setContactListsChannels(mPriv->contactListsChannels);
         mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
     }
 }

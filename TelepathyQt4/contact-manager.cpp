@@ -718,7 +718,7 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
     return contact;
 }
 
-void ContactManager::setContactListChannels(
+void ContactManager::setContactListsChannels(
         const QMap<uint, ContactListChannel> &contactListsChannels)
 {
     Q_ASSERT(mPriv->contactListsChannels.isEmpty());

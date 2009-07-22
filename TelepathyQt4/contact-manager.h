@@ -166,7 +166,7 @@ private:
             const QSet<Contact::Feature> &features,
             const QVariantMap &attributes);
 
-    void setContactListChannels(
+    void setContactListsChannels(
             const QMap<uint, ContactListChannel> &contactListsChannels);
 
     struct Private;
