@@ -91,6 +91,10 @@ struct ContactManager::Private
         parent->connect(contactListGroupChannel.data(),
                 SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
                 SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
+
+        foreach (const ContactPtr &contact, contactListGroupChannel->groupContacts()) {
+            contact->setAddedToGroup(id);
+        }
         return id;
     }
 
@@ -258,20 +262,7 @@ QStringList ContactManager::contactGroups(const ContactPtr &contact) const
         return QStringList();
     }
 
-    QStringList result;
-    ChannelPtr contactListGroupChannel;
-    QMap<QString, ChannelPtr>::const_iterator i = mPriv->contactListGroupsChannels.constBegin();
-    QMap<QString, ChannelPtr>::const_iterator end = mPriv->contactListGroupsChannels.constEnd();
-    while (i != end) {
-        contactListGroupChannel = i.value();
-        if (contactListGroupChannel->groupContacts().contains(contact)) {
-            QString id = contactListGroupChannel->immutableProperties().value(
-                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
-            result << id;
-        }
-        ++i;
-    }
-    return result;
+    return contact->groups();
 }
 
 /**

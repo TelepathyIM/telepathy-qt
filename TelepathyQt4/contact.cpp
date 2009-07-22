@@ -56,6 +56,8 @@ struct Contact::Private
     PresenceState subscriptionState;
     PresenceState publishState;
     bool blocked;
+
+    QSet<QString> groups;
 };
 
 ContactManager *Contact::manager() const
@@ -215,9 +217,7 @@ PendingOperation *Contact::block(bool value)
 
 QStringList Contact::groups() const
 {
-    ContactPtr self =
-        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
-    return mPriv->manager->contactGroups(self);
+    return mPriv->groups.toList();
 }
 
 PendingOperation *Contact::addToGroup(const QString &group)
@@ -380,12 +380,17 @@ void Contact::setBlocked(bool value)
 
 void Contact::setAddedToGroup(const QString &group)
 {
-    emit addedToGroup(group);
+    if (!mPriv->groups.contains(group)) {
+        mPriv->groups.insert(group);
+        emit addedToGroup(group);
+    }
 }
 
 void Contact::setRemovedFromGroup(const QString &group)
 {
-    emit removedFromGroup(group);
+    if (mPriv->groups.remove(group)) {
+        emit removedFromGroup(group);
+    }
 }
 
 } // Tp
