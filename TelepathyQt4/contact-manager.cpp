@@ -887,7 +887,7 @@ void ContactManager::onContactListGroupMembersChanged(
     QString id = contactListGroupChannel->immutableProperties().value(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
 
-    emit groupChanged(id);
+    emit groupMembersChanged(id);
 
     foreach (const ContactPtr &contact, groupMembersAdded) {
         contact->setAddedToGroup(id);
