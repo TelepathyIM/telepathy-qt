@@ -887,14 +887,14 @@ void ContactManager::onContactListGroupMembersChanged(
     QString id = contactListGroupChannel->immutableProperties().value(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
 
-    emit groupMembersChanged(id);
-
     foreach (const ContactPtr &contact, groupMembersAdded) {
         contact->setAddedToGroup(id);
     }
     foreach (const ContactPtr &contact, groupMembersRemoved) {
         contact->setRemovedFromGroup(id);
     }
+
+    emit groupMembersChanged(id, groupMembersAdded, groupMembersRemoved);
 }
 
 void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,

@@ -111,7 +111,9 @@ Q_SIGNALS:
     void presencePublicationRequested(const Tp::Contacts &contacts);
     void groupAdded(const QString &group);
     void groupRemoved(const QString &group);
-    void groupMembersChanged(const QString &group);
+    void groupMembersChanged(const QString &group,
+            const Tp::Contacts &groupMembersAdded,
+            const Tp::Contacts &groupMembersRemoved);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);
