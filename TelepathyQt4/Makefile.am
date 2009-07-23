@@ -94,7 +94,7 @@ libtelepathy_qt4_la_SOURCES = \
     readiness-helper.cpp \
     ready-object.cpp \
     referenced-handles.cpp \
-    room-list.cpp \
+    room-list-channel.cpp \
     streamed-media-channel.cpp \
     text-channel.cpp \
     types.cpp
@@ -156,7 +156,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/pending-ready.moc.hpp \
     _gen/pending-string-list.moc.hpp \
     _gen/readiness-helper.moc.hpp \
-    _gen/room-list.moc.hpp \
+    _gen/room-list-channel.moc.hpp \
     _gen/simple-pending-operations.moc.hpp \
     _gen/streamed-media-channel.moc.hpp \
     _gen/text-channel.moc.hpp
@@ -212,7 +212,7 @@ tpqt4include_HEADERS = \
     RefCounted \
     ReferencedHandles \
     ReferencedHandlesIterator \
-    RoomList \
+    RoomListChannel \
     SharedPtr \
     StatelessDBusProxy \
     StatefulDBusProxy \
@@ -300,7 +300,7 @@ tpqt4include_HEADERS = \
     readiness-helper.h \
     ready-object.h \
     referenced-handles.h \
-    room-list.h \
+    room-list-channel.h \
     shared-ptr.h \
     simple-pending-operations.h \
     streamed-media-channel.h \

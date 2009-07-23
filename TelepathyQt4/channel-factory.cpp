@@ -25,7 +25,7 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/FileTransfer>
-#include <TelepathyQt4/RoomList>
+#include <TelepathyQt4/RoomListChannel>
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <TelepathyQt4/TextChannel>
 
@@ -49,7 +49,7 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
     }
     else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
         return ChannelPtr(dynamic_cast<Channel*>(
-                    RoomList::create(connection,
+                    RoomListChannel::create(connection,
                         channelPath, immutableProperties).data()));
     }
     else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {

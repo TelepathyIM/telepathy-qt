@@ -28,10 +28,6 @@
 
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Connection>
-#include <TelepathyQt4/FileTransfer>
-#include <TelepathyQt4/RoomList>
-#include <TelepathyQt4/StreamedMediaChannel>
-#include <TelepathyQt4/TextChannel>
 #include <TelepathyQt4/Constants>
 
 /**
