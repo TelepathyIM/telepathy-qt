@@ -30,6 +30,7 @@ public:
 
 protected Q_SLOTS:
     void onGroupAdded(const QString &group);
+    void onGroupRemoved(const QString &group);
     void onContactAddedToGroup(const QString &group);
     void onContactRemovedFromGroup(const QString &group);
     void expectConnInvalidated();
@@ -49,6 +50,7 @@ private:
     ConnectionPtr mConn;
 
     QString mGroupAdded;
+    QString mGroupRemoved;
     int mContactsAddedToGroup;
     int mContactsRemovedFromGroup;
 };
@@ -58,6 +60,13 @@ void TestConnRosterGroups::onGroupAdded(const QString &group)
     mGroupAdded = group;
     mLoop->exit(0);
 }
+
+void TestConnRosterGroups::onGroupRemoved(const QString &group)
+{
+    mGroupRemoved = group;
+    mLoop->exit(0);
+}
+
 
 void TestConnRosterGroups::onContactAddedToGroup(const QString &group)
 {
@@ -240,6 +249,25 @@ void TestConnRosterGroups::testRosterGroups()
     foreach (const ContactPtr &contact, contacts) {
         QVERIFY(!contact->groups().contains(group));
     }
+
+    // add group foo
+    QVERIFY(connect(contactManager,
+                    SIGNAL(groupRemoved(const QString&)),
+                    SLOT(onGroupRemoved(const QString&))));
+    QVERIFY(connect(contactManager->removeGroup(group),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    while (mGroupRemoved.isEmpty()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mGroupRemoved, group);
+
+    expectedGroups.removeOne(group);
+    expectedGroups.sort();
+    groups = contactManager->allKnownGroups();
+    groups.sort();
+    QCOMPARE(groups, expectedGroups);
 }
 
 void TestConnRosterGroups::cleanup()
