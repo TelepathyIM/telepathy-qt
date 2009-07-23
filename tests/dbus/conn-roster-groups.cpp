@@ -24,12 +24,14 @@ class TestConnRosterGroups : public Test
 
 public:
     TestConnRosterGroups(QObject *parent = 0)
-        : Test(parent), mConnService(0), mContactsAddedToGroup(0)
+        : Test(parent), mConnService(0),
+          mContactsAddedToGroup(0), mContactsRemovedFromGroup(0)
     { }
 
 protected Q_SLOTS:
     void onGroupAdded(const QString &group);
     void onContactAddedToGroup(const QString &group);
+    void onContactRemovedFromGroup(const QString &group);
     void expectConnInvalidated();
 
 private Q_SLOTS:
@@ -48,6 +50,7 @@ private:
 
     QString mGroupAdded;
     int mContactsAddedToGroup;
+    int mContactsRemovedFromGroup;
 };
 
 void TestConnRosterGroups::onGroupAdded(const QString &group)
@@ -59,6 +62,12 @@ void TestConnRosterGroups::onGroupAdded(const QString &group)
 void TestConnRosterGroups::onContactAddedToGroup(const QString &group)
 {
     mContactsAddedToGroup++;
+    mLoop->exit(0);
+}
+
+void TestConnRosterGroups::onContactRemovedFromGroup(const QString &group)
+{
+    mContactsRemovedFromGroup++;
     mLoop->exit(0);
 }
 
@@ -212,6 +221,24 @@ void TestConnRosterGroups::testRosterGroups()
     }
     foreach (const ContactPtr &contact, contacts) {
         QVERIFY(contact->groups().contains(group));
+    }
+
+    // remove all contacts from group foo
+    contacts = contactManager->groupContacts(group);
+    foreach (const ContactPtr &contact, contacts) {
+        QVERIFY(connect(contact.data(),
+                        SIGNAL(removedFromGroup(const QString&)),
+                        SLOT(onContactRemovedFromGroup(const QString&))));
+    }
+    QVERIFY(connect(contactManager->groupRemoveContacts(group, contacts.toList()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    while (mContactsRemovedFromGroup != contacts.size()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    foreach (const ContactPtr &contact, contacts) {
+        QVERIFY(!contact->groups().contains(group));
     }
 }
 
