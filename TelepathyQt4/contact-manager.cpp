@@ -214,15 +214,6 @@ QStringList ContactManager::allKnownGroups() const
  */
 PendingOperation *ContactManager::addGroup(const QString &group)
 {
-    // TODO Check here. Spec states that in order to create an empty group
-    //      RequestHandles with HandleType 'HandleTypeGroup' and the UTF-8 name
-    //      of the group should be called, but this just does not work.
-    //      Using CreateChannel does the job, so let's use it.
-    /*
-    return connection()->requestHandles(HandleTypeGroup,
-            QStringList() << group);
-    */
-
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                                   TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
