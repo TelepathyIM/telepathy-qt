@@ -118,6 +118,8 @@ struct Connection::Private
     QMap<uint, ContactManager::ContactListChannel> contactListChannels;
     uint contactListChannelsReady;
     QList<ChannelPtr> contactListGroupChannels;
+    // Number of things left to do before the Groups feature is ready
+    // 1 for Get("Channels") + 1 per channel not ready
     uint featureRosterGroupsTodo;
 
     // (Bus connection name, service name) -> HandleContext
@@ -402,7 +404,7 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
 {
     debug() << "Introspecting roster groups";
 
-    ++self->featureRosterGroupsTodo;
+    ++self->featureRosterGroupsTodo; // decremented in gotChannels
 
     // we already checked if requests interface exists, so bypass requests
     // interface checking
@@ -1068,7 +1070,7 @@ void Connection::onNewChannels(const Tp::ChannelDetailsList &channelDetailsList)
             continue;
         }
 
-        ++mPriv->featureRosterGroupsTodo;
+        ++mPriv->featureRosterGroupsTodo; // decremented in onContactListGroupChannelReady
         ChannelPtr channel = Channel::create(ConnectionPtr(this),
                 channelDetails.channel.path(), channelDetails.properties);
         mPriv->contactListGroupChannels.append(channel);
@@ -1080,7 +1082,7 @@ void Connection::onNewChannels(const Tp::ChannelDetailsList &channelDetailsList)
 
 void Connection::onContactListGroupChannelReady(Tp::PendingOperation *op)
 {
-    --mPriv->featureRosterGroupsTodo;
+    --mPriv->featureRosterGroupsTodo; // incremented in onNewChannels
 
     if (!isReady(FeatureRosterGroups)) {
         mPriv->checkFeatureRosterGroupsReady();
@@ -1096,7 +1098,7 @@ void Connection::gotChannels(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariant> reply = *watcher;
 
-    --mPriv->featureRosterGroupsTodo;
+    --mPriv->featureRosterGroupsTodo; // incremented in introspectRosterGroups
 
     if (!reply.isError()) {
         debug() << "Got channels";
