@@ -212,6 +212,9 @@ QStringList ContactManager::allKnownGroups() const
  * so disconnecting from the server and reconnecting might cause empty groups to
  * vanish.
  *
+ * The returned pending operation will finish successfully if the group already
+ * exists.
+ *
  * \param group Group name.
  * \return A pending operation which will return when an attempt has been made
  *         to add an user-defined contact list group.
