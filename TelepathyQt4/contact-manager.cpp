@@ -917,6 +917,7 @@ void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
     ChannelPtr contactListGroupChannel = ChannelPtr(qobject_cast<Channel*>(proxy));
     QString id = contactListGroupChannel->immutableProperties().value(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+    mPriv->contactListGroupsChannels.remove(id);
     emit groupRemoved(id);
 }
 
