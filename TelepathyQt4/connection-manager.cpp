@@ -121,7 +121,7 @@ bool ProtocolParameter::isSecret() const
     return mPriv->flags & ConnMgrParamFlagSecret;
 }
 
-bool ProtocolParameter::requiredForRegistration() const
+bool ProtocolParameter::isRequiredForRegistration() const
 {
     return mPriv->flags & ConnMgrParamFlagRegister;
 }

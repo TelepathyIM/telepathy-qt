@@ -67,7 +67,7 @@ public:
 
     bool isRequired() const;
     bool isSecret() const;
-    bool requiredForRegistration() const;
+    bool isRequiredForRegistration() const;
 
     bool operator==(const ProtocolParameter &other) const;
     bool operator==(const QString &name) const;
