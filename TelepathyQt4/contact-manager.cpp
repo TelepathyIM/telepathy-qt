@@ -20,7 +20,10 @@
  */
 
 #include <TelepathyQt4/ContactManager>
+#include "TelepathyQt4/contact-manager-internal.h"
+
 #include "TelepathyQt4/_gen/contact-manager.moc.hpp"
+#include "TelepathyQt4/_gen/contact-manager-internal.moc.hpp"
 
 #include <QMap>
 #include <QString>
@@ -98,6 +101,8 @@ struct ContactManager::Private
         }
         return id;
     }
+
+    class PendingContactManagerRemoveContactListGroup;
 
     ContactManager *parent;
     WeakPtr<Connection> connection;
@@ -227,9 +232,6 @@ PendingOperation *ContactManager::addGroup(const QString &group)
 /**
  * Attempt to remove an user-defined contact list group named \a group.
  *
- * User-defined contact list groups may only be deleted if the group is
- * already empty.
- *
  * This method requires Connection::FeatureRosterGroups to be enabled.
  *
  * \param group Group name.
@@ -245,7 +247,9 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
     }
 
     ChannelPtr channel = mPriv->contactListGroupChannels[group];
-    return channel->requestClose();
+    PendingContactManagerRemoveContactListGroup *op =
+        new PendingContactManagerRemoveContactListGroup(channel, this);
+    return op;
 }
 
 /**
@@ -1158,6 +1162,45 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
         return types[identifier];
     }
     return (uint) -1;
+}
+
+PendingContactManagerRemoveContactListGroup::PendingContactManagerRemoveContactListGroup(
+        const ChannelPtr &channel, QObject *parent)
+    : PendingOperation(parent),
+      mChannel(channel)
+{
+    Contacts contacts = channel->groupContacts();
+    if (!contacts.isEmpty()) {
+        connect(channel->groupRemoveContacts(contacts.toList()),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onContactsRemoved(Tp::PendingOperation*)));
+    } else {
+        connect(channel->requestClose(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onChannelClosed(Tp::PendingOperation*)));
+    }
+}
+
+void PendingContactManagerRemoveContactListGroup::onContactsRemoved(PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    // Let's ignore possible errors and try to remove the group
+    connect(mChannel->requestClose(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onChannelClosed(Tp::PendingOperation*)));
+}
+
+void PendingContactManagerRemoveContactListGroup::onChannelClosed(PendingOperation *op)
+{
+    if (!op->isError()) {
+        setFinished();
+    } else {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    }
 }
 
 } // Tp
