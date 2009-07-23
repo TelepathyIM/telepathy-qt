@@ -20,7 +20,10 @@
  */
 
 #include <TelepathyQt4/ContactManager>
+#include "TelepathyQt4/contact-manager-internal.h"
+
 #include "TelepathyQt4/_gen/contact-manager.moc.hpp"
+#include "TelepathyQt4/_gen/contact-manager-internal.moc.hpp"
 
 #include <QMap>
 #include <QString>
@@ -28,6 +31,7 @@
 #include <QWeakPointer>
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContactAttributes>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingFailure>
@@ -65,11 +69,42 @@ namespace Tp
 
 struct ContactManager::Private
 {
-    Private(const ConnectionPtr &connection) :
-        connection(connection)
+    Private(ContactManager *parent, const ConnectionPtr &connection)
+        : parent(parent), connection(connection)
     {
     }
 
+    QString addContactListGroupChannel(const ChannelPtr &contactListGroupChannel)
+    {
+        QString id = contactListGroupChannel->immutableProperties().value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+        contactListGroupChannels.insert(id, contactListGroupChannel);
+        parent->connect(contactListGroupChannel.data(),
+                SIGNAL(groupMembersChanged(
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Channel::GroupMemberChangeDetails &)),
+                SLOT(onContactListGroupMembersChanged(
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Contacts &,
+                       const Tp::Channel::GroupMemberChangeDetails &)));
+        parent->connect(contactListGroupChannel.data(),
+                SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+                SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
+
+        foreach (const ContactPtr &contact, contactListGroupChannel->groupContacts()) {
+            contact->setAddedToGroup(id);
+        }
+        return id;
+    }
+
+    class PendingContactManagerRemoveContactListGroup;
+
+    ContactManager *parent;
     WeakPtr<Connection> connection;
     QMap<uint, QWeakPointer<Contact> > contacts;
 
@@ -78,11 +113,12 @@ struct ContactManager::Private
 
     QSet<Contact::Feature> supportedFeatures;
 
-    QMap<uint, ContactListChannel> contactListsChannels;
+    QMap<uint, ContactListChannel> contactListChannels;
     ChannelPtr subscribeChannel;
     ChannelPtr publishChannel;
     ChannelPtr storedChannel;
     ChannelPtr denyChannel;
+    QMap<QString, ChannelPtr> contactListGroupChannels;
 
     Contacts allKnownContacts() const;
     void updateContactsPresenceState();
@@ -155,6 +191,135 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
 Contacts ContactManager::allKnownContacts() const
 {
     return mPriv->allKnownContacts();
+}
+
+/**
+ * Return a list of user-defined contact list groups' names.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \return List of user-defined contact list groups names.
+ */
+QStringList ContactManager::allKnownGroups() const
+{
+    return mPriv->contactListGroupChannels.keys();
+}
+
+/**
+ * Attempt to add an user-defined contact list group named \a group.
+ *
+ * On some protocols (e.g. XMPP) empty groups are not represented on the server,
+ * so disconnecting from the server and reconnecting might cause empty groups to
+ * vanish.
+ *
+ * The returned pending operation will finish successfully if the group already
+ * exists.
+ *
+ * \param group Group name.
+ * \return A pending operation which will return when an attempt has been made
+ *         to add an user-defined contact list group.
+ * \sa groupAdded(), addContactsToGroup()
+ */
+PendingOperation *ContactManager::addGroup(const QString &group)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                                  TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                                 Tp::HandleTypeGroup);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                                 group);
+    return connection()->ensureChannel(request);
+}
+
+/**
+ * Attempt to remove an user-defined contact list group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove an user-defined contact list group.
+ * \sa groupRemoved(), removeContactsFromGroup()
+ */
+PendingOperation *ContactManager::removeGroup(const QString &group)
+{
+    if (!mPriv->contactListGroupChannels.contains(group)) {
+        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid group");
+    }
+
+    ChannelPtr channel = mPriv->contactListGroupChannels[group];
+    PendingContactManagerRemoveContactListGroup *op =
+        new PendingContactManagerRemoveContactListGroup(channel, this);
+    return op;
+}
+
+/**
+ * Return the contacts in the given user-defined contact list group
+ * named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \return List of contacts on a user-defined contact list group, or an empty
+ *         list if the group does not exist.
+ * \sa allKnownGroups(), contactGroups()
+ */
+Contacts ContactManager::groupContacts(const QString &group) const
+{
+    if (!mPriv->contactListGroupChannels.contains(group)) {
+        return Contacts();
+    }
+
+    ChannelPtr channel = mPriv->contactListGroupChannels[group];
+    return channel->groupContacts();
+}
+
+/**
+ * Attempt to add the given \a contacts to the user-defined contact list
+ * group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \param contacts Contacts to add.
+ * \return A pending operation which will return when an attempt has been made
+ *         to add the contacts to the user-defined contact list group.
+ */
+PendingOperation *ContactManager::addContactsToGroup(const QString &group,
+        const QList<ContactPtr> &contacts)
+{
+    if (!mPriv->contactListGroupChannels.contains(group)) {
+        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid group");
+    }
+
+    ChannelPtr channel = mPriv->contactListGroupChannels[group];
+    return channel->groupAddContacts(contacts);
+}
+
+/**
+ * Attempt to remove the given \a contacts from the user-defined contact list
+ * group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \param contacts Contacts to remove.
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove the contacts from the user-defined contact list group.
+ */
+PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
+        const QList<ContactPtr> &contacts)
+{
+    if (!mPriv->contactListGroupChannels.contains(group)) {
+        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid group");
+    }
+
+    ChannelPtr channel = mPriv->contactListGroupChannels[group];
+    return channel->groupRemoveContacts(contacts);
 }
 
 /**
@@ -691,9 +856,48 @@ void ContactManager::onDenyChannelMembersChanged(
     }
 }
 
+void ContactManager::onContactListGroupMembersChanged(
+        const Tp::Contacts &groupMembersAdded,
+        const Tp::Contacts &groupLocalPendingMembersAdded,
+        const Tp::Contacts &groupRemotePendingMembersAdded,
+        const Tp::Contacts &groupMembersRemoved,
+        const Tp::Channel::GroupMemberChangeDetails &details)
+{
+    ChannelPtr contactListGroupChannel = ChannelPtr(
+            qobject_cast<Channel*>(sender()));
+    QString id = contactListGroupChannel->immutableProperties().value(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+
+    foreach (const ContactPtr &contact, groupMembersAdded) {
+        contact->setAddedToGroup(id);
+    }
+    foreach (const ContactPtr &contact, groupMembersRemoved) {
+        contact->setRemovedFromGroup(id);
+    }
+
+    emit groupMembersChanged(id, groupMembersAdded, groupMembersRemoved);
+}
+
+void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage)
+{
+    Q_UNUSED(errorName);
+    Q_UNUSED(errorMessage);
+
+    // Is it correct to assume that if an user-defined contact list
+    // gets invalidated it means it was removed? Spec states that if a
+    // user-defined contact list gets closed it was removed, and Channel
+    // invalidates itself when it gets closed.
+    ChannelPtr contactListGroupChannel = ChannelPtr(qobject_cast<Channel*>(proxy));
+    QString id = contactListGroupChannel->immutableProperties().value(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
+    mPriv->contactListGroupChannels.remove(id);
+    emit groupRemoved(id);
+}
+
 ContactManager::ContactManager(const ConnectionPtr &connection)
     : QObject(connection.data()),
-      mPriv(new Private(connection))
+      mPriv(new Private(this, connection))
 {
 }
 
@@ -719,31 +923,31 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
 }
 
 void ContactManager::setContactListChannels(
-        const QMap<uint, ContactListChannel> &contactListsChannels)
+        const QMap<uint, ContactListChannel> &contactListChannels)
 {
-    Q_ASSERT(mPriv->contactListsChannels.isEmpty());
-    mPriv->contactListsChannels = contactListsChannels;
+    Q_ASSERT(mPriv->contactListChannels.isEmpty());
+    mPriv->contactListChannels = contactListChannels;
 
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
-        mPriv->subscribeChannel = mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
+    if (mPriv->contactListChannels.contains(ContactListChannel::TypeSubscribe)) {
+        mPriv->subscribeChannel = mPriv->contactListChannels[ContactListChannel::TypeSubscribe].channel;
     }
 
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
-        mPriv->publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
+    if (mPriv->contactListChannels.contains(ContactListChannel::TypePublish)) {
+        mPriv->publishChannel = mPriv->contactListChannels[ContactListChannel::TypePublish].channel;
     }
 
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeStored)) {
-        mPriv->storedChannel = mPriv->contactListsChannels[ContactListChannel::TypeStored].channel;
+    if (mPriv->contactListChannels.contains(ContactListChannel::TypeStored)) {
+        mPriv->storedChannel = mPriv->contactListChannels[ContactListChannel::TypeStored].channel;
     }
 
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeDeny)) {
-        mPriv->denyChannel = mPriv->contactListsChannels[ContactListChannel::TypeDeny].channel;
+    if (mPriv->contactListChannels.contains(ContactListChannel::TypeDeny)) {
+        mPriv->denyChannel = mPriv->contactListChannels[ContactListChannel::TypeDeny].channel;
     }
 
     mPriv->updateContactsPresenceState();
 
-    QMap<uint, ContactListChannel>::const_iterator i = contactListsChannels.constBegin();
-    QMap<uint, ContactListChannel>::const_iterator end = contactListsChannels.constEnd();
+    QMap<uint, ContactListChannel>::const_iterator i = contactListChannels.constBegin();
+    QMap<uint, ContactListChannel>::const_iterator end = contactListChannels.constEnd();
     uint type;
     ChannelPtr channel;
     const char *method;
@@ -789,6 +993,23 @@ void ContactManager::setContactListChannels(
                         const Tp::Channel::GroupMemberChangeDetails &)),
                 method);
     }
+}
+
+void ContactManager::setContactListGroupChannels(
+        const QList<ChannelPtr> &contactListGroupChannels)
+{
+    Q_ASSERT(mPriv->contactListGroupChannels.isEmpty());
+
+    foreach (const ChannelPtr &contactListGroupChannel, contactListGroupChannels) {
+        mPriv->addContactListGroupChannel(contactListGroupChannel);
+    }
+}
+
+void ContactManager::addContactListGroupChannel(
+        const ChannelPtr &contactListGroupChannel)
+{
+    QString id = mPriv->addContactListGroupChannel(contactListGroupChannel);
+    emit groupAdded(id);
 }
 
 ContactPtr ContactManager::lookupContactByHandle(uint handle)
@@ -850,7 +1071,7 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 Contacts ContactManager::Private::allKnownContacts() const
 {
     Contacts contacts;
-    foreach (const ContactListChannel &contactListChannel, contactListsChannels) {
+    foreach (const ContactListChannel &contactListChannel, contactListChannels) {
         ChannelPtr channel = contactListChannel.channel;
         if (!channel) {
             continue;
@@ -944,6 +1165,45 @@ uint ContactManager::ContactListChannel::typeForIdentifier(const QString &identi
         return types[identifier];
     }
     return (uint) -1;
+}
+
+PendingContactManagerRemoveContactListGroup::PendingContactManagerRemoveContactListGroup(
+        const ChannelPtr &channel, QObject *parent)
+    : PendingOperation(parent),
+      mChannel(channel)
+{
+    Contacts contacts = channel->groupContacts();
+    if (!contacts.isEmpty()) {
+        connect(channel->groupRemoveContacts(contacts.toList()),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onContactsRemoved(Tp::PendingOperation*)));
+    } else {
+        connect(channel->requestClose(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onChannelClosed(Tp::PendingOperation*)));
+    }
+}
+
+void PendingContactManagerRemoveContactListGroup::onContactsRemoved(PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    // Let's ignore possible errors and try to remove the group
+    connect(mChannel->requestClose(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onChannelClosed(Tp::PendingOperation*)));
+}
+
+void PendingContactManagerRemoveContactListGroup::onChannelClosed(PendingOperation *op)
+{
+    if (!op->isError()) {
+        setFinished();
+    } else {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    }
 }
 
 } // Tp

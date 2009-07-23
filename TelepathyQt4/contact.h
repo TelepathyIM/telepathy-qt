@@ -87,6 +87,10 @@ public:
     bool isBlocked() const;
     PendingOperation *block(bool value = true);
 
+    QStringList groups() const;
+    PendingOperation *addToGroup(const QString &group);
+    PendingOperation *removeFromGroup(const QString &group);
+
     ~Contact();
 
 Q_SIGNALS:
@@ -97,6 +101,9 @@ Q_SIGNALS:
     void subscriptionStateChanged(Tp::Contact::PresenceState state);
     void publishStateChanged(Tp::Contact::PresenceState state);
     void blockStatusChanged(bool blocked);
+
+    void addedToGroup(const QString &group);
+    void removedFromGroup(const QString &group);
 
     // TODO: consider how the Renaming interface should work and map to Contacts
     // I guess it would be something like:
@@ -117,6 +124,9 @@ private:
     void setSubscriptionState(PresenceState state);
     void setPublishState(PresenceState state);
     void setBlocked(bool value);
+
+    void setAddedToGroup(const QString &group);
+    void setRemovedFromGroup(const QString &group);
 
     struct Private;
     friend class ContactManager;

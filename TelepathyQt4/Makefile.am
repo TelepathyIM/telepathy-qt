@@ -142,6 +142,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/connection-manager-internal.moc.hpp \
     _gen/contact.moc.hpp \
     _gen/contact-manager.moc.hpp \
+    _gen/contact-manager-internal.moc.hpp \
     _gen/dbus-proxy.moc.hpp \
     _gen/file-transfer.moc.hpp \
     _gen/pending-account.moc.hpp \
@@ -274,6 +275,7 @@ tpqt4include_HEADERS = \
     constants.h \
     contact.h \
     contact-manager.h \
+    contact-manager-internal.h \
     dbus.h \
     dbus-proxy.h \
     debug.h \

@@ -54,6 +54,16 @@ public:
     QSet<Contact::Feature> supportedFeatures() const;
 
     Contacts allKnownContacts() const;
+    QStringList allKnownGroups() const;
+
+    PendingOperation *addGroup(const QString &group);
+    PendingOperation *removeGroup(const QString &group);
+
+    Contacts groupContacts(const QString &group) const;
+    PendingOperation *addContactsToGroup(const QString &group,
+            const QList<ContactPtr> &contacts);
+    PendingOperation *removeContactsFromGroup(const QString &group,
+            const QList<ContactPtr> &contacts);
 
     bool canRequestPresenceSubscription() const;
     bool subscriptionRequestHasMessage() const;
@@ -98,6 +108,11 @@ public:
 
 Q_SIGNALS:
     void presencePublicationRequested(const Tp::Contacts &contacts);
+    void groupAdded(const QString &group);
+    void groupRemoved(const QString &group);
+    void groupMembersChanged(const QString &group,
+            const Tp::Contacts &groupMembersAdded,
+            const Tp::Contacts &groupMembersRemoved);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);
@@ -122,6 +137,15 @@ private Q_SLOTS:
         const Tp::Contacts &groupRemotePendingMembersAdded,
         const Tp::Contacts &groupMembersRemoved,
         const Tp::Channel::GroupMemberChangeDetails &details);
+
+    void onContactListGroupMembersChanged(
+        const Tp::Contacts &groupMembersAdded,
+        const Tp::Contacts &groupLocalPendingMembersAdded,
+        const Tp::Contacts &groupRemotePendingMembersAdded,
+        const Tp::Contacts &groupMembersRemoved,
+        const Tp::Channel::GroupMemberChangeDetails &details);
+    void onContactListGroupRemoved(Tp::DBusProxy *,
+        const QString &, const QString &);
 
 private:
     friend class Connection;
@@ -167,7 +191,10 @@ private:
             const QVariantMap &attributes);
 
     void setContactListChannels(
-            const QMap<uint, ContactListChannel> &contactListsChannels);
+            const QMap<uint, ContactListChannel> &contactListChannels);
+    void setContactListGroupChannels(
+            const QList<ChannelPtr> &contactListGroupChannels);
+    void addContactListGroupChannel(const ChannelPtr &contactListGroupChannel);
 
     struct Private;
     friend struct Private;

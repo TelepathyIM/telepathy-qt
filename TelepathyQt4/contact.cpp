@@ -56,6 +56,8 @@ struct Contact::Private
     PresenceState subscriptionState;
     PresenceState publishState;
     bool blocked;
+
+    QSet<QString> groups;
 };
 
 ContactManager *Contact::manager() const
@@ -213,6 +215,56 @@ PendingOperation *Contact::block(bool value)
             value);
 }
 
+/**
+ * Return the names of the user-defined contact list groups to which the contact
+ * belongs.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \return List of user-defined contact list groups names for a given contact.
+ * \sa addToGroup(), removedFromGroup()
+ */
+QStringList Contact::groups() const
+{
+    return mPriv->groups.toList();
+}
+
+/**
+ * Attempt to add the contact to the user-defined contact list
+ * group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \return A pending operation which will return when an attempt has been made
+ *         to add the contact to the user-defined contact list group.
+ */
+PendingOperation *Contact::addToGroup(const QString &group)
+{
+    ContactPtr self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->addContactsToGroup(
+            group, QList<ContactPtr>() << self);
+}
+
+/**
+ * Attempt to remove the contact from the user-defined contact list
+ * group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove the contact from the user-defined contact list group.
+ */
+PendingOperation *Contact::removeFromGroup(const QString &group)
+{
+    ContactPtr self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return mPriv->manager->removeContactsFromGroup(
+            group, QList<ContactPtr>() << self);
+}
+
 Contact::~Contact()
 {
     debug() << "Contact" << id() << "destroyed";
@@ -353,6 +405,21 @@ void Contact::setBlocked(bool value)
     }
     mPriv->blocked = value;
     emit blockStatusChanged(value);
+}
+
+void Contact::setAddedToGroup(const QString &group)
+{
+    if (!mPriv->groups.contains(group)) {
+        mPriv->groups.insert(group);
+        emit addedToGroup(group);
+    }
+}
+
+void Contact::setRemovedFromGroup(const QString &group)
+{
+    if (mPriv->groups.remove(group)) {
+        emit removedFromGroup(group);
+    }
 }
 
 } // Tp
