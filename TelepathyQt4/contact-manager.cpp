@@ -214,11 +214,6 @@ QStringList ContactManager::allKnownGroups() const
  */
 PendingOperation *ContactManager::addGroup(const QString &group)
 {
-    if (group.isEmpty() || group.trimmed().isEmpty()) {
-        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Group must be a non-empty UTF-8 string");
-    }
-
     // TODO Check here. Spec states that in order to create an empty group
     //      RequestHandles with HandleType 'HandleTypeGroup' and the UTF-8 name
     //      of the group should be called, but this just does not work.
