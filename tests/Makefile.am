@@ -54,7 +54,8 @@ EXTRA_DIST = \
     dbus-1/services/spurious.service \
     telepathy/managers/spurious.manager \
     telepathy/managers/test-manager-file.manager \
-    telepathy/managers/test-manager-file-invalid.manager \
+    telepathy/managers/test-manager-file-invalid-signature.manager \
+    telepathy/managers/test-manager-file-malformed-keyfile.manager \
     test-key-file.ini \
     test-key-file-format-error.ini
 
