@@ -537,7 +537,7 @@ ConnectionStatusReason Account::connectionStatusReason() const
 }
 
 /**
- * Return whether this account have a connection object that can be retrieved
+ * Return whether this account has a connection object that can be retrieved
  * using connection().
  *
  * \return \c true if a connection object can be retrieved, \c false otherwise
@@ -550,13 +550,14 @@ bool Account::haveConnection() const
 /**
  * Get the Connection object for this account.
  *
- * Note that the Connection object won't be cached by account, and
- * should be done by the application itself.
+ * The Connection object will not be cached by the Account instance;
+ * applications should do this themselves.
  *
- * Remember to call Connection::becomeReady on the new connection, to
+ * Remember to call Connection::becomeReady on the new connection to
  * make sure it is ready before using it.
  *
- * \return Connection object, or 0 if an error occurred.
+ * \return Connection object, or a null ConnectionPtr if the account does
+ * not currently have a Connection or if an error occurred.
  */
 ConnectionPtr Account::connection() const
 {
@@ -573,10 +574,11 @@ ConnectionPtr Account::connection() const
 }
 
 /**
- * Set the presence status that this account should have if it is brought
- * online.
+ * Get the presence status that this account will have set on it by the account
+ * manager if it brings it online automatically.
  *
- * \return Presence status that will be set when this account is put online.
+ * \return Presence status that will be set by the account manager if this
+ *         account is brought online automatically by it.
  */
 SimplePresence Account::automaticPresence() const
 {
@@ -585,9 +587,10 @@ SimplePresence Account::automaticPresence() const
 
 /**
  * Set the presence status that this account should have if it is brought
- * online.
+ * online automatically by the account manager.
  *
- * \param value Presence status to set when this account is put online.
+ * \param value Presence status to set when this account is brought online
+ *        automatically by the account manager.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa setRequestedPresence()
