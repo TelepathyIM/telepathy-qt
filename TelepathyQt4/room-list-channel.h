@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_Client_room_list_h_HEADER_GUARD_
-#define _TelepathyQt4_Client_room_list_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_Client_room_list_channel_h_HEADER_GUARD_
+#define _TelepathyQt4_Client_room_list_channel_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
@@ -30,19 +30,19 @@
 namespace Tp
 {
 
-class RoomList : public Channel
+class RoomListChannel : public Channel
 {
     Q_OBJECT
-    Q_DISABLE_COPY(RoomList)
+    Q_DISABLE_COPY(RoomListChannel)
 
 public:
-    static RoomListPtr create(const ConnectionPtr &connection,
+    static RoomListChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~RoomList();
+    virtual ~RoomListChannel();
 
 protected:
-    RoomList(const ConnectionPtr &connection, const QString &objectPath,
+    RoomListChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
 private:

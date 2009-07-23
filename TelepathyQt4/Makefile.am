@@ -72,7 +72,7 @@ libtelepathy_qt4_la_SOURCES = \
     debug.cpp \
     debug-internal.h \
     feature.cpp \
-    file-transfer.cpp \
+    file-transfer-channel.cpp \
     key-file.cpp \
     manager-file.cpp \
     media-session-handler.cpp \
@@ -94,7 +94,7 @@ libtelepathy_qt4_la_SOURCES = \
     readiness-helper.cpp \
     ready-object.cpp \
     referenced-handles.cpp \
-    room-list.cpp \
+    room-list-channel.cpp \
     streamed-media-channel.cpp \
     text-channel.cpp \
     types.cpp
@@ -144,7 +144,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/contact-manager.moc.hpp \
     _gen/contact-manager-internal.moc.hpp \
     _gen/dbus-proxy.moc.hpp \
-    _gen/file-transfer.moc.hpp \
+    _gen/file-transfer-channel.moc.hpp \
     _gen/pending-account.moc.hpp \
     _gen/pending-channel.moc.hpp \
     _gen/pending-channel-request.moc.hpp \
@@ -157,7 +157,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/pending-ready.moc.hpp \
     _gen/pending-string-list.moc.hpp \
     _gen/readiness-helper.moc.hpp \
-    _gen/room-list.moc.hpp \
+    _gen/room-list-channel.moc.hpp \
     _gen/simple-pending-operations.moc.hpp \
     _gen/streamed-media-channel.moc.hpp \
     _gen/text-channel.moc.hpp
@@ -185,7 +185,7 @@ tpqt4include_HEADERS = \
     DBus \
     DBusProxy \
     Feature \
-    FileTransfer \
+    FileTransferChannel \
     KeyFile \
     ManagerFile \
     MediaSessionHandler \
@@ -213,7 +213,7 @@ tpqt4include_HEADERS = \
     RefCounted \
     ReferencedHandles \
     ReferencedHandlesIterator \
-    RoomList \
+    RoomListChannel \
     SharedPtr \
     StatelessDBusProxy \
     StatefulDBusProxy \
@@ -280,7 +280,7 @@ tpqt4include_HEADERS = \
     dbus-proxy.h \
     debug.h \
     feature.h \
-    file-transfer.h \
+    file-transfer-channel.h \
     key-file.h \
     manager-file.h \
     media-session-handler.h \
@@ -302,7 +302,7 @@ tpqt4include_HEADERS = \
     readiness-helper.h \
     ready-object.h \
     referenced-handles.h \
-    room-list.h \
+    room-list-channel.h \
     shared-ptr.h \
     simple-pending-operations.h \
     streamed-media-channel.h \

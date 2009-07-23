@@ -18,9 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/RoomList>
+#include <TelepathyQt4/RoomListChannel>
 
-#include "TelepathyQt4/_gen/room-list.moc.hpp"
+#include "TelepathyQt4/_gen/room-list-channel.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Connection>
@@ -28,24 +28,24 @@
 namespace Tp
 {
 
-struct RoomList::Private
+struct RoomListChannel::Private
 {
     inline Private();
     inline ~Private();
 };
 
-RoomList::Private::Private()
+RoomListChannel::Private::Private()
 {
 }
 
-RoomList::Private::~Private()
+RoomListChannel::Private::~Private()
 {
 }
 
 /**
- * \class RoomList
+ * \class RoomListChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/room-list.h <TelepathyQt4/RoomList>
+ * \headerfile TelepathyQt4/room-list-channel.h <TelepathyQt4/RoomListChannel>
  *
  * High-level proxy object for accessing remote %Channel objects of the RoomList
  * channel type.
@@ -54,25 +54,25 @@ RoomList::Private::~Private()
  * RoomList interface. Until then, it's just a Channel.
  */
 
-RoomListPtr RoomList::create(const ConnectionPtr &connection,
+RoomListChannelPtr RoomListChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
-    return RoomListPtr(new RoomList(connection, objectPath,
+    return RoomListChannelPtr(new RoomListChannel(connection, objectPath,
                 immutableProperties));
 }
 
 /**
- * Creates a RoomList associated with the given object on the same service
+ * Creates a RoomListChannel associated with the given object on the same service
  * as the given connection.
  *
- * \param connection  Connection owning this RoomList, and specifying the
+ * \param connection  Connection owning this RoomListChannel, and specifying the
  *                    service.
  * \param objectPath  Path to the object on the service.
  * \param immutableProperties  The immutable properties of the channel, as
  *                             signalled by NewChannels or returned by
  *                             CreateChannel or EnsureChannel
  */
-RoomList::RoomList(const ConnectionPtr &connection,
+RoomListChannel::RoomListChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties)
     : Channel(connection, objectPath, immutableProperties),
@@ -83,7 +83,7 @@ RoomList::RoomList(const ConnectionPtr &connection,
 /**
  * Class destructor.
  */
-RoomList::~RoomList()
+RoomListChannel::~RoomListChannel()
 {
     delete mPriv;
 }
