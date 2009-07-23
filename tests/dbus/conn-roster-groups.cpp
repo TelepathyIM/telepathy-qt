@@ -166,7 +166,27 @@ void TestConnRosterGroups::testRosterGroups()
         QCOMPARE(contacts, expectedContacts);
     }
 
-    QVERIFY(contactManager->groupContacts("foo").isEmpty());
+    QString group("foo");
+    QVERIFY(contactManager->groupContacts(group).isEmpty());
+
+    // add group foo
+    QVERIFY(connect(contactManager,
+                    SIGNAL(groupAdded(const QString&)),
+                    SLOT(onGroupAdded(const QString&))));
+    QVERIFY(connect(contactManager->addGroup(group),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    while (mGroupAdded.isEmpty()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mGroupAdded, group);
+
+    expectedGroups << group;
+    expectedGroups.sort();
+    groups = contactManager->allKnownGroups();
+    groups.sort();
+    QCOMPARE(groups, expectedGroups);
 }
 
 void TestConnRosterGroups::cleanup()
