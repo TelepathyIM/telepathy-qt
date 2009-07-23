@@ -215,7 +215,7 @@ QStringList ContactManager::allKnownGroups() const
  * \param group Group name.
  * \return A pending operation which will return when an attempt has been made
  *         to add an user-defined contact list group.
- * \sa groupAdded(), groupAddContacts()
+ * \sa groupAdded(), addContactsToGroup()
  */
 PendingOperation *ContactManager::addGroup(const QString &group)
 {
@@ -237,7 +237,7 @@ PendingOperation *ContactManager::addGroup(const QString &group)
  * \param group Group name.
  * \return A pending operation which will return when an attempt has been made
  *         to remove an user-defined contact list group.
- * \sa groupRemoved(), groupRemoveContacts()
+ * \sa groupRemoved(), removeContactsFromGroup()
  */
 PendingOperation *ContactManager::removeGroup(const QString &group)
 {
@@ -284,7 +284,7 @@ Contacts ContactManager::groupContacts(const QString &group) const
  * \return A pending operation which will return when an attempt has been made
  *         to add the contacts to the user-defined contact list group.
  */
-PendingOperation *ContactManager::groupAddContacts(const QString &group,
+PendingOperation *ContactManager::addContactsToGroup(const QString &group,
         const QList<ContactPtr> &contacts)
 {
     if (!mPriv->contactListGroupChannels.contains(group)) {
@@ -307,7 +307,7 @@ PendingOperation *ContactManager::groupAddContacts(const QString &group,
  * \return A pending operation which will return when an attempt has been made
  *         to remove the contacts from the user-defined contact list group.
  */
-PendingOperation *ContactManager::groupRemoveContacts(const QString &group,
+PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
         const QList<ContactPtr> &contacts)
 {
     if (!mPriv->contactListGroupChannels.contains(group)) {

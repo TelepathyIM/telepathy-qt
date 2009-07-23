@@ -221,7 +221,7 @@ void TestConnRosterGroups::testRosterGroups()
                         SIGNAL(addedToGroup(const QString&)),
                         SLOT(onContactAddedToGroup(const QString&))));
     }
-    QVERIFY(connect(contactManager->groupAddContacts(group, contacts.toList()),
+    QVERIFY(connect(contactManager->addContactsToGroup(group, contacts.toList()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -239,7 +239,7 @@ void TestConnRosterGroups::testRosterGroups()
                         SIGNAL(removedFromGroup(const QString&)),
                         SLOT(onContactRemovedFromGroup(const QString&))));
     }
-    QVERIFY(connect(contactManager->groupRemoveContacts(group, contacts.toList()),
+    QVERIFY(connect(contactManager->removeContactsFromGroup(group, contacts.toList()),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
