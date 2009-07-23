@@ -115,9 +115,9 @@ struct Connection::Private
     ContactPtr selfContact;
     QStringList contactAttributeInterfaces;
     uint selfHandle;
-    QMap<uint, ContactManager::ContactListChannel> contactListsChannels;
-    uint contactListsChannelsReady;
-    QList<ChannelPtr> contactListGroupsChannels;
+    QMap<uint, ContactManager::ContactListChannel> contactListChannels;
+    uint contactListChannelsReady;
+    QList<ChannelPtr> contactListGroupChannels;
     uint featureRosterGroupsTodo;
 
     // (Bus connection name, service name) -> HandleContext
@@ -167,7 +167,7 @@ Connection::Private::Private(Connection *parent)
       status(Connection::StatusUnknown),
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
-      contactListsChannelsReady(0),
+      contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
       handleContext(0),
       contactManager(0)
@@ -384,7 +384,7 @@ void Connection::Private::introspectRoster(Connection::Private *self)
     debug() << "Requesting handles for contact lists";
 
     for (uint i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
-        self->contactListsChannels.insert(i,
+        self->contactListChannels.insert(i,
                 ContactManager::ContactListChannel(
                     (ContactManager::ContactListChannel::Type) i));
 
@@ -431,11 +431,11 @@ void Connection::Private::checkFeatureRosterGroupsReady()
     }
 
     debug() << "FeatureRosterGroups ready";
-    contactManager->setContactListGroupsChannels(
-            contactListGroupsChannels);
+    contactManager->setContactListGroupChannels(
+            contactListGroupChannels);
     readinessHelper->setIntrospectCompleted(
             FeatureRosterGroups, true);
-    contactListGroupsChannels.clear();
+    contactListGroupChannels.clear();
 }
 
 Connection::PendingConnect::PendingConnect(Connection *parent, const Features &requestedFeatures)
@@ -1010,7 +1010,7 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     uint type = ContactManager::ContactListChannel::typeForIdentifier(
             pending->namesRequested().first());
     Q_ASSERT(type != (uint) -1 && type < ContactManager::ContactListChannel::LastType);
-    mPriv->contactListsChannels[type].handle = handle;
+    mPriv->contactListChannels[type].handle = handle;
     request[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle")] = handle[0];
     connect(ensureChannel(request),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -1030,10 +1030,10 @@ void Connection::gotContactListChannel(PendingOperation *op)
     Q_ASSERT(channel);
     Q_ASSERT(handle);
     for (int i = 0; i < ContactManager::ContactListChannel::LastType; ++i) {
-        if (mPriv->contactListsChannels[i].handle.size() > 0 &&
-            mPriv->contactListsChannels[i].handle[0] == handle) {
-            Q_ASSERT(!mPriv->contactListsChannels[i].channel);
-            mPriv->contactListsChannels[i].channel = channel;
+        if (mPriv->contactListChannels[i].handle.size() > 0 &&
+            mPriv->contactListChannels[i].handle[0] == handle) {
+            Q_ASSERT(!mPriv->contactListChannels[i].channel);
+            mPriv->contactListChannels[i].channel = channel;
             connect(channel->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(contactListChannelReady()));
@@ -1043,10 +1043,10 @@ void Connection::gotContactListChannel(PendingOperation *op)
 
 void Connection::contactListChannelReady()
 {
-    if (++mPriv->contactListsChannelsReady ==
+    if (++mPriv->contactListChannelsReady ==
             ContactManager::ContactListChannel::LastType) {
         debug() << "FeatureRoster ready";
-        mPriv->contactManager->setContactListsChannels(mPriv->contactListsChannels);
+        mPriv->contactManager->setContactListChannels(mPriv->contactListChannels);
         mPriv->readinessHelper->setIntrospectCompleted(FeatureRoster, true);
     }
 }
@@ -1071,7 +1071,7 @@ void Connection::onNewChannels(const Tp::ChannelDetailsList &channelDetailsList)
         ++mPriv->featureRosterGroupsTodo;
         ChannelPtr channel = Channel::create(ConnectionPtr(this),
                 channelDetails.channel.path(), channelDetails.properties);
-        mPriv->contactListGroupsChannels.append(channel);
+        mPriv->contactListGroupChannels.append(channel);
         connect(channel->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onContactListGroupChannelReady(Tp::PendingOperation*)));
@@ -1088,7 +1088,7 @@ void Connection::onContactListGroupChannelReady(Tp::PendingOperation *op)
         PendingReady *pr = qobject_cast<PendingReady*>(op);
         ChannelPtr channel = ChannelPtr(qobject_cast<Channel*>(pr->object()));
         mPriv->contactManager->addContactListGroupChannel(channel);
-        mPriv->contactListGroupsChannels.removeOne(channel);
+        mPriv->contactListGroupChannels.removeOne(channel);
     }
 }
 

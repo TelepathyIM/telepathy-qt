@@ -75,7 +75,7 @@ struct ContactManager::Private
     {
         QString id = contactListGroupChannel->immutableProperties().value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
-        contactListGroupsChannels.insert(id, contactListGroupChannel);
+        contactListGroupChannels.insert(id, contactListGroupChannel);
         parent->connect(contactListGroupChannel.data(),
                 SIGNAL(groupMembersChanged(
                        const Tp::Contacts &,
@@ -108,12 +108,12 @@ struct ContactManager::Private
 
     QSet<Contact::Feature> supportedFeatures;
 
-    QMap<uint, ContactListChannel> contactListsChannels;
+    QMap<uint, ContactListChannel> contactListChannels;
     ChannelPtr subscribeChannel;
     ChannelPtr publishChannel;
     ChannelPtr storedChannel;
     ChannelPtr denyChannel;
-    QMap<QString, ChannelPtr> contactListGroupsChannels;
+    QMap<QString, ChannelPtr> contactListGroupChannels;
 
     Contacts allKnownContacts() const;
     void updateContactsPresenceState();
@@ -197,7 +197,7 @@ Contacts ContactManager::allKnownContacts() const
  */
 QStringList ContactManager::allKnownGroups() const
 {
-    return mPriv->contactListGroupsChannels.keys();
+    return mPriv->contactListGroupChannels.keys();
 }
 
 /**
@@ -253,12 +253,12 @@ PendingOperation *ContactManager::addGroup(const QString &group)
  */
 PendingOperation *ContactManager::removeGroup(const QString &group)
 {
-    if (!mPriv->contactListGroupsChannels.contains(group)) {
+    if (!mPriv->contactListGroupChannels.contains(group)) {
         return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid group");
     }
 
-    ChannelPtr channel = mPriv->contactListGroupsChannels[group];
+    ChannelPtr channel = mPriv->contactListGroupChannels[group];
     return channel->requestClose();
 }
 
@@ -275,11 +275,11 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
  */
 Contacts ContactManager::groupContacts(const QString &group) const
 {
-    if (!mPriv->contactListGroupsChannels.contains(group)) {
+    if (!mPriv->contactListGroupChannels.contains(group)) {
         return Contacts();
     }
 
-    ChannelPtr channel = mPriv->contactListGroupsChannels[group];
+    ChannelPtr channel = mPriv->contactListGroupChannels[group];
     return channel->groupContacts();
 }
 
@@ -297,12 +297,12 @@ Contacts ContactManager::groupContacts(const QString &group) const
 PendingOperation *ContactManager::groupAddContacts(const QString &group,
         const QList<ContactPtr> &contacts)
 {
-    if (!mPriv->contactListGroupsChannels.contains(group)) {
+    if (!mPriv->contactListGroupChannels.contains(group)) {
         return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid group");
     }
 
-    ChannelPtr channel = mPriv->contactListGroupsChannels[group];
+    ChannelPtr channel = mPriv->contactListGroupChannels[group];
     return channel->groupAddContacts(contacts);
 }
 
@@ -320,12 +320,12 @@ PendingOperation *ContactManager::groupAddContacts(const QString &group,
 PendingOperation *ContactManager::groupRemoveContacts(const QString &group,
         const QList<ContactPtr> &contacts)
 {
-    if (!mPriv->contactListGroupsChannels.contains(group)) {
+    if (!mPriv->contactListGroupChannels.contains(group)) {
         return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
                 "Invalid group");
     }
 
-    ChannelPtr channel = mPriv->contactListGroupsChannels[group];
+    ChannelPtr channel = mPriv->contactListGroupChannels[group];
     return channel->groupRemoveContacts(contacts);
 }
 
@@ -898,7 +898,7 @@ void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
     ChannelPtr contactListGroupChannel = ChannelPtr(qobject_cast<Channel*>(proxy));
     QString id = contactListGroupChannel->immutableProperties().value(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID")).toString();
-    mPriv->contactListGroupsChannels.remove(id);
+    mPriv->contactListGroupChannels.remove(id);
     emit groupRemoved(id);
 }
 
@@ -929,32 +929,32 @@ ContactPtr ContactManager::ensureContact(const ReferencedHandles &handle,
     return contact;
 }
 
-void ContactManager::setContactListsChannels(
-        const QMap<uint, ContactListChannel> &contactListsChannels)
+void ContactManager::setContactListChannels(
+        const QMap<uint, ContactListChannel> &contactListChannels)
 {
-    Q_ASSERT(mPriv->contactListsChannels.isEmpty());
-    mPriv->contactListsChannels = contactListsChannels;
+    Q_ASSERT(mPriv->contactListChannels.isEmpty());
+    mPriv->contactListChannels = contactListChannels;
 
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeSubscribe)) {
-        mPriv->subscribeChannel = mPriv->contactListsChannels[ContactListChannel::TypeSubscribe].channel;
+    if (mPriv->contactListChannels.contains(ContactListChannel::TypeSubscribe)) {
+        mPriv->subscribeChannel = mPriv->contactListChannels[ContactListChannel::TypeSubscribe].channel;
     }
 
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypePublish)) {
-        mPriv->publishChannel = mPriv->contactListsChannels[ContactListChannel::TypePublish].channel;
+    if (mPriv->contactListChannels.contains(ContactListChannel::TypePublish)) {
+        mPriv->publishChannel = mPriv->contactListChannels[ContactListChannel::TypePublish].channel;
     }
 
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeStored)) {
-        mPriv->storedChannel = mPriv->contactListsChannels[ContactListChannel::TypeStored].channel;
+    if (mPriv->contactListChannels.contains(ContactListChannel::TypeStored)) {
+        mPriv->storedChannel = mPriv->contactListChannels[ContactListChannel::TypeStored].channel;
     }
 
-    if (mPriv->contactListsChannels.contains(ContactListChannel::TypeDeny)) {
-        mPriv->denyChannel = mPriv->contactListsChannels[ContactListChannel::TypeDeny].channel;
+    if (mPriv->contactListChannels.contains(ContactListChannel::TypeDeny)) {
+        mPriv->denyChannel = mPriv->contactListChannels[ContactListChannel::TypeDeny].channel;
     }
 
     mPriv->updateContactsPresenceState();
 
-    QMap<uint, ContactListChannel>::const_iterator i = contactListsChannels.constBegin();
-    QMap<uint, ContactListChannel>::const_iterator end = contactListsChannels.constEnd();
+    QMap<uint, ContactListChannel>::const_iterator i = contactListChannels.constBegin();
+    QMap<uint, ContactListChannel>::const_iterator end = contactListChannels.constEnd();
     uint type;
     ChannelPtr channel;
     const char *method;
@@ -1002,12 +1002,12 @@ void ContactManager::setContactListsChannels(
     }
 }
 
-void ContactManager::setContactListGroupsChannels(
-        const QList<ChannelPtr> &contactListGroupsChannels)
+void ContactManager::setContactListGroupChannels(
+        const QList<ChannelPtr> &contactListGroupChannels)
 {
-    Q_ASSERT(mPriv->contactListGroupsChannels.isEmpty());
+    Q_ASSERT(mPriv->contactListGroupChannels.isEmpty());
 
-    foreach (const ChannelPtr &contactListGroupChannel, contactListGroupsChannels) {
+    foreach (const ChannelPtr &contactListGroupChannel, contactListGroupChannels) {
         mPriv->addContactListGroupChannel(contactListGroupChannel);
     }
 }
@@ -1078,7 +1078,7 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
 Contacts ContactManager::Private::allKnownContacts() const
 {
     Contacts contacts;
-    foreach (const ContactListChannel &contactListChannel, contactListsChannels) {
+    foreach (const ContactListChannel &contactListChannel, contactListChannels) {
         ChannelPtr channel = contactListChannel.channel;
         if (!channel) {
             continue;

@@ -190,10 +190,10 @@ private:
             const QSet<Contact::Feature> &features,
             const QVariantMap &attributes);
 
-    void setContactListsChannels(
-            const QMap<uint, ContactListChannel> &contactListsChannels);
-    void setContactListGroupsChannels(
-            const QList<ChannelPtr> &contactListGroupsChannels);
+    void setContactListChannels(
+            const QMap<uint, ContactListChannel> &contactListChannels);
+    void setContactListGroupChannels(
+            const QList<ChannelPtr> &contactListGroupChannels);
     void addContactListGroupChannel(const ChannelPtr &contactListGroupChannel);
 
     struct Private;
