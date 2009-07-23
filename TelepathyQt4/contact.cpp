@@ -215,11 +215,29 @@ PendingOperation *Contact::block(bool value)
             value);
 }
 
+/**
+ * Return a list of user-defined contact list groups the contact belongs.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \return List of user-defined contact list groups names for a given contact.
+ * \sa addToGroup(), removedFromGroup()
+ */
 QStringList Contact::groups() const
 {
     return mPriv->groups.toList();
 }
 
+/**
+ * Attempt to add the contact to the user-defined contact list
+ * group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \return A pending operation which will return when an attempt has been made
+ *         to add the contact to the user-defined contact list group.
+ */
 PendingOperation *Contact::addToGroup(const QString &group)
 {
     ContactPtr self =
@@ -228,6 +246,16 @@ PendingOperation *Contact::addToGroup(const QString &group)
             group, QList<ContactPtr>() << self);
 }
 
+/**
+ * Attempt to remove the contact from the user-defined contact list
+ * group named \a group.
+ *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * \param group Group name.
+ * \return A pending operation which will return when an attempt has been made
+ *         to remove the contact from the user-defined contact list group.
+ */
 PendingOperation *Contact::removeFromGroup(const QString &group)
 {
     ContactPtr self =
