@@ -28,6 +28,7 @@
 #include <QWeakPointer>
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContactAttributes>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingFailure>
@@ -218,8 +219,23 @@ PendingOperation *ContactManager::addGroup(const QString &group)
                 "Group must be a non-empty UTF-8 string");
     }
 
+    // TODO Check here. Spec states that in order to create an empty group
+    //      RequestHandles with HandleType 'HandleTypeGroup' and the UTF-8 name
+    //      of the group should be called, but this just does not work.
+    //      Using CreateChannel does the job, so let's use it.
+    /*
     return connection()->requestHandles(HandleTypeGroup,
             QStringList() << group);
+    */
+
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                                  TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                                 Tp::HandleTypeGroup);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                                 group);
+    return connection()->createChannel(request);
 }
 
 /**
