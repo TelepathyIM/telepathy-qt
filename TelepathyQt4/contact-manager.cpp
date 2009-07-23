@@ -263,25 +263,6 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
 }
 
 /**
- * Return a list of user-defined contact list groups a given contact
- * \a contact belongs.
- *
- * This method requires Connection::FeatureRosterGroups to be enabled.
- *
- * \param contact Contact to get the groups from.
- * \return List of user-defined contact list groups names for a given contact.
- * \sa groupContacts()
- */
-QStringList ContactManager::contactGroups(const ContactPtr &contact) const
-{
-    if (!contact) {
-        return QStringList();
-    }
-
-    return contact->groups();
-}
-
-/**
  * Return a list of contacts on a given user-defined contact list group
  * named \a group.
  *
