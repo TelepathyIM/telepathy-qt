@@ -24,11 +24,12 @@ class TestConnRosterGroups : public Test
 
 public:
     TestConnRosterGroups(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+        : Test(parent), mConnService(0), mContactsAddedToGroup(0)
     { }
 
 protected Q_SLOTS:
     void onGroupAdded(const QString &group);
+    void onContactAddedToGroup(const QString &group);
     void expectConnInvalidated();
 
 private Q_SLOTS:
@@ -46,11 +47,18 @@ private:
     ConnectionPtr mConn;
 
     QString mGroupAdded;
+    int mContactsAddedToGroup;
 };
 
 void TestConnRosterGroups::onGroupAdded(const QString &group)
 {
     mGroupAdded = group;
+    mLoop->exit(0);
+}
+
+void TestConnRosterGroups::onContactAddedToGroup(const QString &group)
+{
+    mContactsAddedToGroup++;
     mLoop->exit(0);
 }
 
@@ -187,6 +195,24 @@ void TestConnRosterGroups::testRosterGroups()
     groups = contactManager->allKnownGroups();
     groups.sort();
     QCOMPARE(groups, expectedGroups);
+
+    // add Montreal contacts to group foo
+    Contacts contacts = contactManager->groupContacts("Montreal");
+    foreach (const ContactPtr &contact, contacts) {
+        QVERIFY(connect(contact.data(),
+                        SIGNAL(addedToGroup(const QString&)),
+                        SLOT(onContactAddedToGroup(const QString&))));
+    }
+    QVERIFY(connect(contactManager->groupAddContacts(group, contacts.toList()),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    while (mContactsAddedToGroup != contacts.size()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    foreach (const ContactPtr &contact, contacts) {
+        QVERIFY(contact->groups().contains(group));
+    }
 }
 
 void TestConnRosterGroups::cleanup()
