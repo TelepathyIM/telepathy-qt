@@ -1,4 +1,4 @@
-/* FileTransfer channel client-side proxy
+/* FileTransferChannel channel client-side proxy
  *
  * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2009 Nokia Corporation
@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_Client_file_transfer_h_HEADER_GUARD_
-#define _TelepathyQt4_Client_file_transfer_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_Client_file_transfer_channel_h_HEADER_GUARD_
+#define _TelepathyQt4_Client_file_transfer_channel_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
@@ -30,19 +30,19 @@
 namespace Tp
 {
 
-class FileTransfer : public Channel
+class FileTransferChannel : public Channel
 {
     Q_OBJECT
-    Q_DISABLE_COPY(FileTransfer)
+    Q_DISABLE_COPY(FileTransferChannel)
 
 public:
-    static FileTransferPtr create(const ConnectionPtr &connection,
+    static FileTransferChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
-    virtual ~FileTransfer();
+    virtual ~FileTransferChannel();
 
 protected:
-    FileTransfer(const ConnectionPtr &connection, const QString &objectPath,
+    FileTransferChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
 private:

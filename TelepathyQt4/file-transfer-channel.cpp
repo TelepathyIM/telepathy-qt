@@ -1,4 +1,4 @@
-/* FileTransfer channel client-side proxy
+/* FileTransferChannel channel client-side proxy
  *
  * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2009 Nokia Corporation
@@ -18,9 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <TelepathyQt4/FileTransfer>
+#include <TelepathyQt4/FileTransferChannel>
 
-#include "TelepathyQt4/_gen/file-transfer.moc.hpp"
+#include "TelepathyQt4/_gen/file-transfer-channel.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Connection>
@@ -28,24 +28,24 @@
 namespace Tp
 {
 
-struct FileTransfer::Private
+struct FileTransferChannel::Private
 {
     inline Private();
     inline ~Private();
 };
 
-FileTransfer::Private::Private()
+FileTransferChannel::Private::Private()
 {
 }
 
-FileTransfer::Private::~Private()
+FileTransferChannel::Private::~Private()
 {
 }
 
 /**
- * \class FileTransfer
+ * \class FileTransferChannel
  * \ingroup clientchannel
- * \headerfile TelepathyQt4/file-transfer.h <TelepathyQt4/FileTransfer>
+ * \headerfile TelepathyQt4/file-transfer-channel.h <TelepathyQt4/FileTransferChannel>
  *
  * High-level proxy object for accessing remote %Channel objects of the
  * FileTransfer channel type. These channels can be used to transfer one file
@@ -55,25 +55,25 @@ FileTransfer::Private::~Private()
  * FileTransfer interface. Until then, it's just a Channel.
  */
 
-FileTransferPtr FileTransfer::create(const ConnectionPtr &connection,
+FileTransferChannelPtr FileTransferChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
-    return FileTransferPtr(new FileTransfer(connection, objectPath,
+    return FileTransferChannelPtr(new FileTransferChannel(connection, objectPath,
                 immutableProperties));
 }
 
 /**
- * Creates a FileTransfer associated with the given object on the same service
+ * Creates a FileTransferChannel associated with the given object on the same service
  * as the given connection.
  *
- * \param connection  Connection owning this FileTransfer, and specifying the
+ * \param connection  Connection owning this FileTransferChannel, and specifying the
  *                    service.
  * \param objectPath  Path to the object on the service.
  * \param immutableProperties  The immutable properties of the channel, as
  *                             signalled by NewChannels or returned by
  *                             CreateChannel or EnsureChannel
  */
-FileTransfer::FileTransfer(const ConnectionPtr &connection,
+FileTransferChannel::FileTransferChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties)
     : Channel(connection, objectPath, immutableProperties),
@@ -84,7 +84,7 @@ FileTransfer::FileTransfer(const ConnectionPtr &connection,
 /**
  * Class destructor.
  */
-FileTransfer::~FileTransfer()
+FileTransferChannel::~FileTransferChannel()
 {
     delete mPriv;
 }
