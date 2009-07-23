@@ -1,3 +1,60 @@
+telepathy-qt4 0.1.9 (2009-07-23)
+================================
+
+The "never too late" release.
+
+New API:
+
+* OptionalInterfaceFactory: Added methods interfaces and optionalInterface
+  and removed duplicated code in all OptionalInterfaceFactory subclasses.
+* Added ContactManager allKnownGroups, addGroup, removeGroup, groupContacts,
+  addContactsToGroup and removeContactsFromGroup methods.
+* Added ContactManager groupAdded, groupRemoved and groupMembersChanged signals.
+* Added Contact groups, addToGroup and removeFromGroup methods.
+* Added Contact addedToGroup and removedFromGroup signals.
+
+API changes:
+
+* Changed ProtocolParameter requiredForRegistration method to
+  isRequiredForRegistration to make it consistent with other bool returning
+  getters.
+
+Enhancements:
+
+* Changed all classes to follow coding-style.
+* Moved documentation to source file for all classes.
+* Standardize class definition in all classes:
+  * Moved public xxxInterface methods definition to the end of the public
+    methods declaration.
+  * Added friend struct Private declaration.
+  * Added Q_DISABLE_COPY(xxx) to all classes that can not be copied.
+  * Moved Q_DISABLE_COPY(xxx) declaration to the top of the class definition,
+    before the public keyword.
+  * Reorder public, protected, SIGNALS declaration as follows:
+     public
+     public Q_SLOTS
+     Q_SIGNALS
+     protected
+     protected Q_SLOTS
+     private Q_SLOTS
+     private
+  * Moved friend class xxx definitions to be placed right bellow private keyword.
+* ChannelDispatchOperation: Emit invalidated with
+  TELEPATHY_QT4_ERROR_OBJECT_REMOVED when ChannelDispatchOperation.Finished is
+  received.
+* Added/Improved some documentation.
+
+Fixes:
+
+* ClientApproverAdaptor: Use the dbus fully qualified name to get the connection
+  property (Patch from George Kiagiadakis <kiagiadakis.george@gmail.com>).
+* Fixed bug 20268: Connection's selfContact object should initially have no
+  features.
+* Fixed bug 20080: KeyFile: ";" as a list may be mis-parsed.
+* Fixed bug 20082: KeyFile: double (and other types?) not correctly tested.
+* Fixed bug 20353: No d-pointer in Channel::GroupMemberChangeDetails.
+* Fixed bug 20033: Contact / ContactList Group integration.
+
 telepathy-qt4 0.1.8 (2009-06-16)
 ================================
 
