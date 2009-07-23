@@ -85,6 +85,8 @@ struct Connection::Private
     static void introspectRoster(Private *self);
     static void introspectRosterGroups(Private *self);
 
+    void checkFeatureRosterGroupsReady();
+
     struct HandleContext;
 
     // Public object
@@ -116,7 +118,7 @@ struct Connection::Private
     QMap<uint, ContactManager::ContactListChannel> contactListsChannels;
     uint contactListsChannelsReady;
     QList<ChannelPtr> contactListGroupsChannels;
-    uint contactListGroupsChannelsReady;
+    uint featureRosterGroupsTodo;
 
     // (Bus connection name, service name) -> HandleContext
     static QMap<QPair<QString, QString>, HandleContext *> handleContexts;
@@ -166,7 +168,7 @@ Connection::Private::Private(Connection *parent)
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
       contactListsChannelsReady(0),
-      contactListGroupsChannelsReady(0),
+      featureRosterGroupsTodo(0),
       handleContext(0),
       contactManager(0)
 {
@@ -400,6 +402,8 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
 {
     debug() << "Introspecting roster groups";
 
+    ++self->featureRosterGroupsTodo;
+
     // we already checked if requests interface exists, so bypass requests
     // interface checking
     Client::ConnectionInterfaceRequestsInterface *iface =
@@ -418,6 +422,20 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotChannels(QDBusPendingCallWatcher*)));
+}
+
+void Connection::Private::checkFeatureRosterGroupsReady()
+{
+    if (featureRosterGroupsTodo != 0) {
+        return;
+    }
+
+    debug() << "FeatureRosterGroups ready";
+    contactManager->setContactListGroupsChannels(
+            contactListGroupsChannels);
+    readinessHelper->setIntrospectCompleted(
+            FeatureRosterGroups, true);
+    contactListGroupsChannels.clear();
 }
 
 Connection::PendingConnect::PendingConnect(Connection *parent, const Features &requestedFeatures)
@@ -1050,6 +1068,7 @@ void Connection::onNewChannels(const Tp::ChannelDetailsList &channelDetailsList)
             continue;
         }
 
+        ++mPriv->featureRosterGroupsTodo;
         ChannelPtr channel = Channel::create(ConnectionPtr(this),
                 channelDetails.channel.path(), channelDetails.properties);
         mPriv->contactListGroupsChannels.append(channel);
@@ -1057,24 +1076,14 @@ void Connection::onNewChannels(const Tp::ChannelDetailsList &channelDetailsList)
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onContactListGroupChannelReady(Tp::PendingOperation*)));
     }
-
-    if (channelDetailsList.isEmpty()) {
-        mPriv->readinessHelper->setIntrospectCompleted(
-                FeatureRosterGroups, true);
-    }
 }
 
 void Connection::onContactListGroupChannelReady(Tp::PendingOperation *op)
 {
+    --mPriv->featureRosterGroupsTodo;
+
     if (!isReady(FeatureRosterGroups)) {
-        if (++mPriv->contactListGroupsChannelsReady ==
-                mPriv->contactListGroupsChannels.size()) {
-            debug() << "FeatureRosterGroups ready";
-            mPriv->contactManager->setContactListGroupsChannels(
-                    mPriv->contactListGroupsChannels);
-            mPriv->readinessHelper->setIntrospectCompleted(
-                    FeatureRosterGroups, true);
-        }
+        mPriv->checkFeatureRosterGroupsReady();
     } else {
         PendingReady *pr = qobject_cast<PendingReady*>(op);
         ChannelPtr channel = ChannelPtr(qobject_cast<Channel*>(pr->object()));
@@ -1087,6 +1096,8 @@ void Connection::gotChannels(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariant> reply = *watcher;
 
+    --mPriv->featureRosterGroupsTodo;
+
     if (!reply.isError()) {
         debug() << "Got channels";
         onNewChannels(qdbus_cast<ChannelDetailsList>(reply.value()));
@@ -1094,6 +1105,8 @@ void Connection::gotChannels(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Getting channels failed with " <<
             reply.error().name() << ":" << reply.error().message();
     }
+
+    mPriv->checkFeatureRosterGroupsReady();
 
     watcher->deleteLater();
 }
