@@ -216,7 +216,8 @@ PendingOperation *Contact::block(bool value)
 }
 
 /**
- * Return a list of user-defined contact list groups the contact belongs.
+ * Return the names of the user-defined contact list groups to which the contact
+ * belongs.
  *
  * This method requires Connection::FeatureRosterGroups to be enabled.
  *

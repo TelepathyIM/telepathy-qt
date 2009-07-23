@@ -194,7 +194,7 @@ Contacts ContactManager::allKnownContacts() const
 }
 
 /**
- * Return a list of user-defined contact list groups names.
+ * Return a list of user-defined contact list groups' names.
  *
  * This method requires Connection::FeatureRosterGroups to be enabled.
  *
@@ -253,7 +253,7 @@ PendingOperation *ContactManager::removeGroup(const QString &group)
 }
 
 /**
- * Return a list of contacts on a given user-defined contact list group
+ * Return the contacts in the given user-defined contact list group
  * named \a group.
  *
  * This method requires Connection::FeatureRosterGroups to be enabled.
