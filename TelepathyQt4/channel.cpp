@@ -852,6 +852,9 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
         GroupMemberChangeDetails details(
                 actorContact,
                 currentGroupMembersChangedInfo->details);
+        if (currentGroupMembersChangedInfo->removed.contains(groupSelfHandle)) {
+            groupSelfContactRemoveInfo = details;
+        }
         if (parent->isReady()) {
             // Channel is ready, we can signal membership changes to the outside world without
             // confusing anyone's fragile logic.
