@@ -593,6 +593,12 @@ remove_member (GObject *object,
   if (tp_intset_is_member (self->priv->remote, handle))
     tp_intset_remove (self->priv->remote, handle);
 
+  if (mixin->self_handle == handle)
+    {
+      self->priv->closed = TRUE;
+      tp_svc_channel_emit_closed (self);
+    }
+
   return TRUE;
 }
 
