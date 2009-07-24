@@ -659,10 +659,7 @@ void Channel::Private::buildContacts()
     }
 
     PendingContacts *pendingContacts = manager->contactsForHandles(
-            toBuild,
-            QSet<Contact::Feature>() << Contact::FeatureAlias
-                                     << Contact::FeatureAvatarToken
-                                     << Contact::FeatureSimplePresence);
+            toBuild);
     parent->connect(pendingContacts,
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(gotContacts(Tp::PendingOperation *)));
