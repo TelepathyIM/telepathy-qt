@@ -95,6 +95,9 @@ struct Channel::Private
     bool fakeGroupInterfaceIfNeeded();
     void setReady();
 
+    QString groupMemberChangeDetailsTelepathyError(
+            const GroupMemberChangeDetails &details);
+
     struct GroupMembersChangedInfo;
 
     // Public object
@@ -932,6 +935,41 @@ void Channel::Private::setReady()
     }
 
     readinessHelper->setIntrospectCompleted(FeatureCore, true);
+}
+
+QString Channel::Private::groupMemberChangeDetailsTelepathyError(
+        const GroupMemberChangeDetails &details)
+{
+    QString error;
+    uint reason = details.reason();
+    switch (reason) {
+        case ChannelGroupChangeReasonOffline:
+            error = TELEPATHY_ERROR_OFFLINE;
+            break;
+        case ChannelGroupChangeReasonKicked:
+            error = TELEPATHY_ERROR_CHANNEL_KICKED;
+            break;
+        case ChannelGroupChangeReasonBanned:
+            error = TELEPATHY_ERROR_CHANNEL_BANNED;
+            break;
+        case ChannelGroupChangeReasonBusy:
+            error = TELEPATHY_ERROR_BUSY;
+            break;
+        case ChannelGroupChangeReasonNoAnswer:
+            error = TELEPATHY_ERROR_NO_ANSWER;
+            break;
+        case ChannelGroupChangeReasonPermissionDenied:
+            error = TELEPATHY_ERROR_PERMISSION_DENIED;
+            break;
+        default:
+            // let's use the actor handle and selfHandle here instead of the
+            // contacts, as the contacts may not be ready.
+            error = ((qdbus_cast<uint>(details.allDetails().value("actor")) == groupSelfHandle) ?
+                     TELEPATHY_ERROR_CANCELLED : TELEPATHY_ERROR_TERMINATED);
+            break;
+    }
+
+    return error;
 }
 
 /**
