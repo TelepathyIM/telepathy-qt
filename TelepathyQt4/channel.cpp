@@ -2374,9 +2374,7 @@ void Channel::onMembersChanged(const QString &message,
         details.insert("actor", actor);
     }
 
-    if (reason != ChannelGroupChangeReasonNone) {
-        details.insert("change-reason", reason);
-    }
+    details.insert("change-reason", reason);
 
     onMembersChangedDetailed(added, removed, localPending, remotePending, details);
 }
