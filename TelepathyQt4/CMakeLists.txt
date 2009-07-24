@@ -23,12 +23,13 @@ set(telepathy_qt4_SRCS
     connection-manager-internal.h
     contact.cpp
     contact-manager.cpp
+    contact-manager-internal.h
     dbus.cpp
     dbus-proxy.cpp
     debug.cpp
     debug-internal.h
     feature.cpp
-    file-transfer.cpp
+    file-transfer-channel.cpp
     key-file.cpp
     manager-file.cpp
     media-session-handler.cpp
@@ -50,7 +51,7 @@ set(telepathy_qt4_SRCS
     readiness-helper.cpp
     ready-object.cpp
     referenced-handles.cpp
-    room-list.cpp
+    room-list-channel.cpp
     streamed-media-channel.cpp
     text-channel.cpp
     types.cpp)
@@ -130,8 +131,8 @@ set(telepathy_qt4_HEADERS
     debug.h
     Feature
     feature.h
-    FileTransfer
-    file-transfer.h
+    FileTransferChannel
+    file-transfer-channel.h
     IntrospectableInterface
     KeyFile
     key-file.h
@@ -186,8 +187,8 @@ set(telepathy_qt4_HEADERS
     ReferencedHandles
     referenced-handles.h
     ReferencedHandlesIterator
-    RoomList
-    room-list.h
+    RoomListChannel
+    room-list-channel.h
     SharedPtr
     shared-ptr.h
     simple-pending-operations.h
@@ -233,8 +234,9 @@ set(telepathy_qt4_MOC_SRCS
     connection-manager-internal.h
     contact.h
     contact-manager.h
+    contact-manager-internal.h
     dbus-proxy.h
-    file-transfer.h
+    file-transfer-channel.h
     pending-account.h
     pending-channel.h
     pending-channel-request.h
@@ -247,7 +249,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-ready.h
     pending-string-list.h
     readiness-helper.h
-    room-list.h
+    room-list-channel.h
     simple-pending-operations.h
     streamed-media-channel.h
     text-channel.h)
