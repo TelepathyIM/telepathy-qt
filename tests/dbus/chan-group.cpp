@@ -560,6 +560,14 @@ void TestChanGroup::doTestCreateChannel()
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
 
+    mChan->groupRemoveContacts(QList<ContactPtr>() << mChan->groupSelfContact(), "I want to remove myself");
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasActor(), true);
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().actor(), mChan->groupSelfContact());
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasMessage(), true);
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().message(), QString("I want to remove myself"));
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasError(), false);
+
     mChan.reset();
 }
 
