@@ -855,9 +855,14 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
         GroupMemberChangeDetails details(
                 actorContact,
                 currentGroupMembersChangedInfo->details);
+
         if (currentGroupMembersChangedInfo->removed.contains(groupSelfHandle)) {
+            // Update groupSelfContactRemoveInfo with the proper actor in case
+            // the actor was not available by the time onMembersChangedDetailed
+            // was called.
             groupSelfContactRemoveInfo = details;
         }
+
         if (parent->isReady()) {
             // Channel is ready, we can signal membership changes to the outside world without
             // confusing anyone's fragile logic.
@@ -2399,6 +2404,17 @@ void Channel::onMembersChangedDetailed(
         localPending.isEmpty() && remotePending.isEmpty()) {
         debug() << "Nothing really changed, so skipping membersChanged";
         return;
+    }
+
+    // let's store groupSelfContactRemoveInfo here as we may not have time
+    // to build the contacts in case self contact is removed,
+    // as Closed will be emitted right after
+    if (removed.contains(mPriv->groupSelfHandle)) {
+        // let's try to get the actor contact from contact manager if available
+        mPriv->groupSelfContactRemoveInfo = GroupMemberChangeDetails(
+                mPriv->connection->contactManager()->lookupContactByHandle(
+                    qdbus_cast<uint>(details.value("actor"))),
+                details);
     }
 
     mPriv->groupMembersChangedQueue.enqueue(
