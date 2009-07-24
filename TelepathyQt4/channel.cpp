@@ -2161,8 +2161,21 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
 void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
-    // I think this is the nearest error code we can get at the moment
-    invalidate(TELEPATHY_ERROR_CANCELLED, "Closed");
+
+    QString error;
+    QString message;
+    if (mPriv->groupSelfContactRemoveInfo.isValid() &&
+        mPriv->groupSelfContactRemoveInfo.hasReason()) {
+        error = mPriv->groupMemberChangeDetailsTelepathyError(
+                mPriv->groupSelfContactRemoveInfo);
+        message = mPriv->groupSelfContactRemoveInfo.message();
+    } else {
+        // I think this is the nearest error code we can get at the moment
+        error = TELEPATHY_ERROR_CANCELLED;
+        message = "Closed";
+    }
+
+    invalidate(error, message);
 }
 
 void Channel::onConnectionReady(PendingOperation *op)
