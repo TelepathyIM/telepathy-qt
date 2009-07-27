@@ -2171,7 +2171,7 @@ void Channel::onClosed()
         message = mPriv->groupSelfContactRemoveInfo.message();
     } else {
         // I think this is the nearest error code we can get at the moment
-        error = TELEPATHY_ERROR_CANCELLED;
+        error = TELEPATHY_ERROR_TERMINATED;
         message = "Closed";
     }
 
