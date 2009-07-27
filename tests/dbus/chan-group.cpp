@@ -35,6 +35,7 @@ public:
 protected Q_SLOTS:
     void expectConnReady(uint, uint);
     void expectConnInvalidated();
+    void expectChanInvalidated(Tp::DBusProxy*,const QString &, const QString &);
     void expectPendingRoomHandlesFinished(Tp::PendingOperation*);
     void expectPendingContactHandlesFinished(Tp::PendingOperation*);
     void expectCreateChannelFinished(Tp::PendingOperation *);
@@ -82,6 +83,8 @@ private:
     Contacts mChangedRemoved;
     Channel::GroupMemberChangeDetails mDetails;
     bool mRequested;
+    QString mChanInvalidatedErrorName;
+    QString mChanInvalidatedErrorMessage;
 };
 
 void TestChanGroup::expectConnReady(uint newStatus, uint newStatusReason)
@@ -109,6 +112,15 @@ void TestChanGroup::expectConnReady(uint newStatus, uint newStatusReason)
 
 void TestChanGroup::expectConnInvalidated()
 {
+    mLoop->exit(0);
+}
+
+void TestChanGroup::expectChanInvalidated(Tp::DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage)
+{
+    Q_UNUSED(proxy);
+    mChanInvalidatedErrorName = errorName;
+    mChanInvalidatedErrorMessage = errorMessage;
     mLoop->exit(0);
 }
 
@@ -559,6 +571,25 @@ void TestChanGroup::doTestCreateChannel()
     QCOMPARE(mLoop->exec(), 0);
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
+
+    QVERIFY(connect(mChan.data(),
+            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
+            SLOT(expectChanInvalidated(Tp::DBusProxy *, const QString &, const QString &))));
+
+    mChan->groupRemoveContacts(QList<ContactPtr>() << mChan->groupSelfContact(), "I want to remove myself");
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasActor(), true);
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().actor(), mChan->groupSelfContact());
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasMessage(), true);
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().message(), QString("I want to remove myself"));
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasError(), false);
+
+    // wait until chan gets invalidated
+    while (mChan->isValid()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mChanInvalidatedErrorName, QString(TELEPATHY_ERROR_CANCELLED));
+    QCOMPARE(mChanInvalidatedErrorMessage, QString("I want to remove myself"));
 
     mChan.reset();
 }

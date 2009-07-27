@@ -95,6 +95,9 @@ struct Channel::Private
     bool fakeGroupInterfaceIfNeeded();
     void setReady();
 
+    QString groupMemberChangeDetailsTelepathyError(
+            const GroupMemberChangeDetails &details);
+
     struct GroupMembersChangedInfo;
 
     // Public object
@@ -849,6 +852,14 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
         GroupMemberChangeDetails details(
                 actorContact,
                 currentGroupMembersChangedInfo->details);
+
+        if (currentGroupMembersChangedInfo->removed.contains(groupSelfHandle)) {
+            // Update groupSelfContactRemoveInfo with the proper actor in case
+            // the actor was not available by the time onMembersChangedDetailed
+            // was called.
+            groupSelfContactRemoveInfo = details;
+        }
+
         if (parent->isReady()) {
             // Channel is ready, we can signal membership changes to the outside world without
             // confusing anyone's fragile logic.
@@ -926,6 +937,50 @@ void Channel::Private::setReady()
     }
 
     readinessHelper->setIntrospectCompleted(FeatureCore, true);
+}
+
+QString Channel::Private::groupMemberChangeDetailsTelepathyError(
+        const GroupMemberChangeDetails &details)
+{
+    QString error;
+    uint reason = details.reason();
+    switch (reason) {
+        case ChannelGroupChangeReasonOffline:
+            error = TELEPATHY_ERROR_OFFLINE;
+            break;
+        case ChannelGroupChangeReasonKicked:
+            error = TELEPATHY_ERROR_CHANNEL_KICKED;
+            break;
+        case ChannelGroupChangeReasonBanned:
+            error = TELEPATHY_ERROR_CHANNEL_BANNED;
+            break;
+        case ChannelGroupChangeReasonBusy:
+            error = TELEPATHY_ERROR_BUSY;
+            break;
+        case ChannelGroupChangeReasonNoAnswer:
+            error = TELEPATHY_ERROR_NO_ANSWER;
+            break;
+        case ChannelGroupChangeReasonPermissionDenied:
+            error = TELEPATHY_ERROR_PERMISSION_DENIED;
+            break;
+        case ChannelGroupChangeReasonInvalidContact:
+            error = TELEPATHY_ERROR_DOES_NOT_EXIST;
+            break;
+        // The following change reason are being mapped to default
+        // case ChannelGroupChangeReasonNone:
+        // case ChannelGroupChangeReasonInvited:   // shouldn't happen
+        // case ChannelGroupChangeReasonError:
+        // case ChannelGroupChangeReasonRenamed:
+        // case ChannelGroupChangeReasonSeparated: // shouldn't happen
+        default:
+            // let's use the actor handle and selfHandle here instead of the
+            // contacts, as the contacts may not be ready.
+            error = ((qdbus_cast<uint>(details.allDetails().value("actor")) == groupSelfHandle) ?
+                     TELEPATHY_ERROR_CANCELLED : TELEPATHY_ERROR_TERMINATED);
+            break;
+    }
+
+    return error;
 }
 
 /**
@@ -2112,8 +2167,21 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
 void Channel::onClosed()
 {
     debug() << "Got Channel::Closed";
-    // I think this is the nearest error code we can get at the moment
-    invalidate(TELEPATHY_ERROR_CANCELLED, "Closed");
+
+    QString error;
+    QString message;
+    if (mPriv->groupSelfContactRemoveInfo.isValid() &&
+        mPriv->groupSelfContactRemoveInfo.hasReason()) {
+        error = mPriv->groupMemberChangeDetailsTelepathyError(
+                mPriv->groupSelfContactRemoveInfo);
+        message = mPriv->groupSelfContactRemoveInfo.message();
+    } else {
+        // I think this is the nearest error code we can get at the moment
+        error = TELEPATHY_ERROR_TERMINATED;
+        message = "Closed";
+    }
+
+    invalidate(error, message);
 }
 
 void Channel::onConnectionReady(PendingOperation *op)
@@ -2330,9 +2398,7 @@ void Channel::onMembersChanged(const QString &message,
         details.insert("actor", actor);
     }
 
-    if (reason != ChannelGroupChangeReasonNone) {
-        details.insert("change-reason", reason);
-    }
+    details.insert("change-reason", reason);
 
     onMembersChangedDetailed(added, removed, localPending, remotePending, details);
 }
@@ -2357,6 +2423,38 @@ void Channel::onMembersChangedDetailed(
         localPending.isEmpty() && remotePending.isEmpty()) {
         debug() << "Nothing really changed, so skipping membersChanged";
         return;
+    }
+
+    // let's store groupSelfContactRemoveInfo here as we may not have time
+    // to build the contacts in case self contact is removed,
+    // as Closed will be emitted right after
+    if (removed.contains(mPriv->groupSelfHandle)) {
+        if (qdbus_cast<uint>(details.value("change-reason")) == ChannelGroupChangeReasonRenamed) {
+            if (removed.size() != 1 ||
+                (added.size() + localPending.size() + remotePending.size()) != 1) {
+                // spec-incompliant CM, ignoring members changed
+                warning() << "Received MembersChangedDetailed with reason "
+                    "Renamed and removed.size != 1 or added.size + "
+                    "localPending.size + remotePending.size != 1. Ignoring";
+                return;
+            }
+            uint newHandle = 0;
+            if (!added.isEmpty()) {
+                newHandle = added.first();
+            } else if (!localPending.isEmpty()) {
+                newHandle = localPending.first();
+            } else if (!remotePending.isEmpty()) {
+                newHandle = remotePending.first();
+            }
+            onSelfHandleChanged(newHandle);
+            return;
+        }
+
+        // let's try to get the actor contact from contact manager if available
+        mPriv->groupSelfContactRemoveInfo = GroupMemberChangeDetails(
+                mPriv->connection->contactManager()->lookupContactByHandle(
+                    qdbus_cast<uint>(details.value("actor"))),
+                details);
     }
 
     mPriv->groupMembersChangedQueue.enqueue(
