@@ -2432,6 +2432,27 @@ void Channel::onMembersChangedDetailed(
     // to build the contacts in case self contact is removed,
     // as Closed will be emitted right after
     if (removed.contains(mPriv->groupSelfHandle)) {
+        if (qdbus_cast<uint>(details.value("change-reason")) == ChannelGroupChangeReasonRenamed) {
+            if (removed.size() != 1 ||
+                (added.size() + localPending.size() + remotePending.size()) != 1) {
+                // spec-incompliant CM, ignoring members changed
+                warning() << "Received MembersChangedDetailed with reason "
+                    "Renamed and removed.size != 1 or added.size + "
+                    "localPending.size + remotePending.size != 1. Ignoring";
+                return;
+            }
+            uint newHandle = 0;
+            if (!added.isEmpty()) {
+                newHandle = added.first();
+            } else if (!localPending.isEmpty()) {
+                newHandle = localPending.first();
+            } else if (!remotePending.isEmpty()) {
+                newHandle = remotePending.first();
+            }
+            onSelfHandleChanged(newHandle);
+            return;
+        }
+
         // let's try to get the actor contact from contact manager if available
         mPriv->groupSelfContactRemoveInfo = GroupMemberChangeDetails(
                 mPriv->connection->contactManager()->lookupContactByHandle(
