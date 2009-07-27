@@ -971,10 +971,10 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
             break;
         // The following change reason are being mapped to default
         // case ChannelGroupChangeReasonNone:
-        // case ChannelGroupChangeReasonInvited:
+        // case ChannelGroupChangeReasonInvited:   // shouldn't happen
         // case ChannelGroupChangeReasonError:
         // case ChannelGroupChangeReasonRenamed:
-        // case ChannelGroupChangeReasonSeparated:
+        // case ChannelGroupChangeReasonSeparated: // shouldn't happen
         default:
             // let's use the actor handle and selfHandle here instead of the
             // contacts, as the contacts may not be ready.
