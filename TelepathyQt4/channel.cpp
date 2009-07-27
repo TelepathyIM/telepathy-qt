@@ -966,6 +966,15 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
         case ChannelGroupChangeReasonPermissionDenied:
             error = TELEPATHY_ERROR_PERMISSION_DENIED;
             break;
+        case ChannelGroupChangeReasonInvalidContact:
+            error = TELEPATHY_ERROR_DOES_NOT_EXIST;
+            break;
+        // The following change reason are being mapped to default
+        // case ChannelGroupChangeReasonNone:
+        // case ChannelGroupChangeReasonInvited:
+        // case ChannelGroupChangeReasonError:
+        // case ChannelGroupChangeReasonRenamed:
+        // case ChannelGroupChangeReasonSeparated:
         default:
             // let's use the actor handle and selfHandle here instead of the
             // contacts, as the contacts may not be ready.
