@@ -297,7 +297,7 @@ void ConnectionManager::Private::PendingNames::continueProcessing()
     }
     else {
         debug() << "Success: list" << mResult;
-        setResult(mResult);
+        setResult(mResult.toList());
         setFinished();
     }
 }

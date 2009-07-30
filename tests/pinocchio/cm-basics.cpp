@@ -51,6 +51,8 @@ void TestCmBasics::onListNames(Tp::PendingOperation *operation)
 {
     Tp::PendingStringList *p = static_cast<Tp::PendingStringList*>(operation);
     QCOMPARE(p->result().contains("pinocchio"), QBool(true));
+    // Check for bug 23040: Running Connection Managers appear twice in ConnectionManager::listNames().
+    QCOMPARE(p->result().count("pinocchio"), 1);
     mLoop->exit(0);
 }
 
