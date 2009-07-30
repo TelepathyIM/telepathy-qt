@@ -27,6 +27,7 @@
 #include <QDBusConnection>
 #include <QLatin1String>
 #include <QQueue>
+#include <QSet>
 #include <QString>
 
 namespace Tp
@@ -85,7 +86,7 @@ private:
     void parseResult(const QStringList &names);
 
     QQueue<QLatin1String> mMethodsQueue;
-    QStringList mResult;
+    QSet<QString> mResult;
     QDBusConnection mBus;
 };
 
