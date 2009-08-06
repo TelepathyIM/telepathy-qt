@@ -1,5 +1,5 @@
-#ifndef _TelepathyQt4_Client_ReferencedHandlesIterator_HEADER_GUARD_
-#define _TelepathyQt4_Client_ReferencedHandlesIterator_HEADER_GUARD_
+#ifndef _TelepathyQt4_ReferencedHandlesIterator_HEADER_GUARD_
+#define _TelepathyQt4_ReferencedHandlesIterator_HEADER_GUARD_
 
 #include <TelepathyQt4/referenced-handles.h>
 

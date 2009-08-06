@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_cli_pending_channel_request_internal_h_HEADER_GUARD_
-#define _TelepathyQt4_cli_pending_channel_request_internal_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_pending_channel_request_internal_h_HEADER_GUARD_
+#define _TelepathyQt4_pending_channel_request_internal_h_HEADER_GUARD_
 
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/PendingOperation>
