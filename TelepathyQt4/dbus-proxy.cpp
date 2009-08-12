@@ -78,9 +78,8 @@ namespace Tp
 // * making methods always raise an error when called after invalidated
 //   (has to be in the generated code)
 
-class DBusProxy::Private
+struct DBusProxy::Private
 {
-public:
     QDBusConnection dbusConnection;
     QString busName;
     QString objectPath;

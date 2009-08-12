@@ -101,8 +101,8 @@ private:
 
     void addParameter(const ParamSpec &spec);
 
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     friend class ConnectionManager;
     Private *mPriv;
 };

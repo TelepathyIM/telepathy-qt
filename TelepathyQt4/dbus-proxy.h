@@ -65,8 +65,8 @@ private Q_SLOTS:
     void emitInvalidated();
 
 private:
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
@@ -83,8 +83,8 @@ public:
     virtual ~StatelessDBusProxy();
 
 private:
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
@@ -105,8 +105,8 @@ private Q_SLOTS:
             const QString &newOwner);
 
 private:
-    class Private;
-    friend class Private;
+    struct Private;
+    friend struct Private;
     Private *mPriv;
 };
 
