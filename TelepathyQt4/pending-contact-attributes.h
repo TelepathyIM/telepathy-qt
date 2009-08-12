@@ -36,7 +36,7 @@ namespace Tp
 
 class ReferencedHandles;
 
-class PendingContactAttributes : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingContactAttributes : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingContactAttributes)

@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 #include <QObject>
 #include <QStringList>
 #include <QtGlobal>
@@ -35,7 +37,7 @@ namespace Tp
 
 class AbstractInterface;
 
-class OptionalInterfaceCache
+class TELEPATHY_QT4_EXPORT OptionalInterfaceCache
 {
     Q_DISABLE_COPY(OptionalInterfaceCache)
 

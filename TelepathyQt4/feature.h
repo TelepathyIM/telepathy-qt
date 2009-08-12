@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 #include <QPair>
 #include <QSet>
 #include <QSharedDataPointer>
@@ -34,7 +36,7 @@
 namespace Tp
 {
 
-class Feature : public QPair<QString, uint>
+class TELEPATHY_QT4_EXPORT Feature : public QPair<QString, uint>
 {
 public:
     Feature(const QString &className, uint id, bool critical = false);
@@ -51,7 +53,7 @@ private:
     QSharedDataPointer<Private> mPriv;
 };
 
-class Features : public QSet<Feature>
+class TELEPATHY_QT4_EXPORT Features : public QSet<Feature>
 {
 public:
     Features() { }

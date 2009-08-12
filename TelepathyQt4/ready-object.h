@@ -37,7 +37,7 @@ class DBusProxy;
 class PendingReady;
 class ReadinessHelper;
 
-class ReadyObject
+class TELEPATHY_QT4_EXPORT ReadyObject
 {
     Q_DISABLE_COPY(ReadyObject)
 

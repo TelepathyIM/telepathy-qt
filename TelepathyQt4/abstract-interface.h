@@ -25,6 +25,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 #include <QDBusAbstractInterface>
 
 namespace Tp
@@ -32,7 +34,7 @@ namespace Tp
 
 class DBusProxy;
 
-class AbstractInterface : public QDBusAbstractInterface
+class TELEPATHY_QT4_EXPORT AbstractInterface : public QDBusAbstractInterface
 {
     Q_OBJECT
     Q_DISABLE_COPY(AbstractInterface)

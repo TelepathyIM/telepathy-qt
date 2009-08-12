@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-class PendingSuccess : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingSuccess : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingSuccess)
@@ -46,7 +46,7 @@ public:
     }
 };
 
-class PendingFailure : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingFailure : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingFailure)
@@ -67,7 +67,7 @@ public:
     }
 };
 
-class PendingVoid : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingVoid : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingVoid)

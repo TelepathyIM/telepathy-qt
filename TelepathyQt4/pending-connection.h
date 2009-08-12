@@ -39,7 +39,7 @@ namespace Tp
 
 class ConnectionManager;
 
-class PendingConnection : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingConnection : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingConnection);

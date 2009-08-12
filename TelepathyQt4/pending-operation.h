@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 #include <QObject>
 
 class QDBusError;
@@ -35,7 +37,7 @@ class QDBusPendingCallWatcher;
 namespace Tp
 {
 
-class PendingOperation : public QObject
+class TELEPATHY_QT4_EXPORT PendingOperation : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingOperation)

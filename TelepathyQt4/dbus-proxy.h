@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 #include <QObject>
 
 class QDBusConnection;
@@ -34,7 +36,7 @@ class QDBusError;
 namespace Tp
 {
 
-class DBusProxy : public QObject
+class TELEPATHY_QT4_EXPORT DBusProxy : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(DBusProxy)
@@ -70,7 +72,7 @@ private:
     Private *mPriv;
 };
 
-class StatelessDBusProxy : public DBusProxy
+class TELEPATHY_QT4_EXPORT StatelessDBusProxy : public DBusProxy
 {
     Q_OBJECT
     Q_DISABLE_COPY(StatelessDBusProxy)
@@ -88,7 +90,7 @@ private:
     Private *mPriv;
 };
 
-class StatefulDBusProxy : public DBusProxy
+class TELEPATHY_QT4_EXPORT StatefulDBusProxy : public DBusProxy
 {
     Q_OBJECT
     Q_DISABLE_COPY(StatefulDBusProxy)

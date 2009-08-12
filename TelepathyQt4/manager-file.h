@@ -35,7 +35,7 @@ class QString;
 namespace Tp
 {
 
-class ManagerFile
+class TELEPATHY_QT4_EXPORT ManagerFile
 {
     Q_DISABLE_COPY(ManagerFile);
 

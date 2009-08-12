@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 #include <QObject>
 
 namespace Tp
@@ -36,7 +38,7 @@ class WeakData;
 template <class T> class SharedPtr;
 template <class T> class WeakPtr;
 
-class WeakData
+class TELEPATHY_QT4_EXPORT WeakData
 {
     Q_DISABLE_COPY(WeakData)
 
@@ -47,7 +49,7 @@ public:
     mutable QAtomicInt weakref;
 };
 
-class RefCounted
+class TELEPATHY_QT4_EXPORT RefCounted
 {
     Q_DISABLE_COPY(RefCounted)
 

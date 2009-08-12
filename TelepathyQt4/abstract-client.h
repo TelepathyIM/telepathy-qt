@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-class AbstractClient : public RefCounted
+class TELEPATHY_QT4_EXPORT AbstractClient : public RefCounted
 {
     Q_DISABLE_COPY(AbstractClient)
 
@@ -46,7 +46,7 @@ public:
     virtual ~AbstractClient();
 };
 
-class AbstractClientObserver : public virtual AbstractClient
+class TELEPATHY_QT4_EXPORT AbstractClientObserver : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientObserver)
 
@@ -72,7 +72,7 @@ private:
     Private *mPriv;
 };
 
-class AbstractClientApprover : public virtual AbstractClient
+class TELEPATHY_QT4_EXPORT AbstractClientApprover : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientApprover)
 
@@ -94,7 +94,7 @@ private:
     Private *mPriv;
 };
 
-class AbstractClientHandler : public virtual AbstractClient
+class TELEPATHY_QT4_EXPORT AbstractClientHandler : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientHandler)
 

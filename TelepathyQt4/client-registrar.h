@@ -36,7 +36,7 @@
 namespace Tp
 {
 
-class ClientRegistrar : public QObject, public RefCounted
+class TELEPATHY_QT4_EXPORT ClientRegistrar : public QObject, public RefCounted
 {
     Q_OBJECT
     Q_DISABLE_COPY(ClientRegistrar)
