@@ -44,6 +44,8 @@ protected Q_SLOTS:
     void onChanInvalidated(Tp::DBusProxy *,
             const QString &, const QString &);
     void onNewChannels(const Tp::ChannelDetailsList &);
+    void onHoldStateChanged(Tp::LocalHoldState,
+            Tp::LocalHoldStateReason);
 
 private Q_SLOTS:
     void initTestCase();
@@ -54,6 +56,8 @@ private Q_SLOTS:
     void testOutgoingCallNoAnswer();
     void testOutgoingCallTerminate();
     void testIncomingCall();
+    void testHold();
+    void testHoldNoUnhold();
 
     void cleanup();
     void cleanupTestCase();
@@ -78,6 +82,8 @@ private:
     Tp::MediaStreamPendingSend mSDCPendingReturn;
     MediaStreamPtr mSSCStreamReturn;
     Tp::MediaStreamState mSSCStateReturn;
+    UIntList mHoldStates;
+    UIntList mHoldStateReasons;
 };
 
 void TestStreamedMediaChan::expectRequestContactsFinished(PendingOperation *op)
@@ -226,6 +232,14 @@ void TestStreamedMediaChan::onNewChannels(const Tp::ChannelDetailsList &channels
     }
 }
 
+void TestStreamedMediaChan::onHoldStateChanged(Tp::LocalHoldState holdState,
+        Tp::LocalHoldStateReason holdStateReason)
+{
+    mHoldStates.append(holdState);
+    mHoldStateReasons.append(holdStateReason);
+    mLoop->exit(0);
+}
+
 void TestStreamedMediaChan::initTestCase()
 {
     initTestCaseImpl();
@@ -286,6 +300,8 @@ void TestStreamedMediaChan::init()
     mSDCPendingReturn = (Tp::MediaStreamPendingSend) -1;
     mSSCStateReturn = (Tp::MediaStreamState) -1;
     mSSCStreamReturn.reset();
+    mHoldStates.clear();
+    mHoldStateReasons.clear();
 }
 
 void TestStreamedMediaChan::testOutgoingCall()
@@ -793,6 +809,139 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(stream->pendingSend(), mSDCPendingReturn);
     QCOMPARE(mSSCStreamReturn, stream);
     QCOMPARE(mSSCStateReturn, Tp::MediaStreamStateConnected);
+}
+
+void TestStreamedMediaChan::testHold()
+{
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "bob"),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mRequestContactsReturn.size() == 1);
+    ContactPtr otherContact = mRequestContactsReturn.first();
+    QVERIFY(otherContact);
+
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   otherContact->handle()[0]);
+    QVERIFY(connect(mConn->createChannel(request),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan);
+
+    QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureHoldState),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureHoldState));
+
+    QCOMPARE(static_cast<uint>(mChan->holdState()), static_cast<uint>(LocalHoldStateUnheld));
+    QCOMPARE(static_cast<uint>(mChan->holdStateReason()), static_cast<uint>(LocalHoldStateReasonNone));
+
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(holdStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason)),
+                    SLOT(onHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason))));
+    // Request hold
+    QVERIFY(connect(mChan->requestHold(true),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    while (mHoldStates.size() != 2) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mHoldStates.first(), static_cast<uint>(LocalHoldStatePendingHold));
+    QCOMPARE(mHoldStateReasons.first(), static_cast<uint>(LocalHoldStateReasonRequested));
+    QCOMPARE(mHoldStates.last(), static_cast<uint>(LocalHoldStateHeld));
+    QCOMPARE(mHoldStateReasons.last(), static_cast<uint>(LocalHoldStateReasonRequested));
+    QCOMPARE(static_cast<uint>(mChan->holdState()), static_cast<uint>(LocalHoldStateHeld));
+    QCOMPARE(static_cast<uint>(mChan->holdStateReason()), static_cast<uint>(LocalHoldStateReasonRequested));
+
+    mHoldStates.clear();
+    mHoldStateReasons.clear();
+
+    // Request unhold
+    QVERIFY(connect(mChan->requestHold(false),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    while (mHoldStates.size() != 2) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mHoldStates.first(), static_cast<uint>(LocalHoldStatePendingUnhold));
+    QCOMPARE(mHoldStateReasons.first(), static_cast<uint>(LocalHoldStateReasonRequested));
+    QCOMPARE(mHoldStates.last(), static_cast<uint>(LocalHoldStateUnheld));
+    QCOMPARE(mHoldStateReasons.last(), static_cast<uint>(LocalHoldStateReasonRequested));
+    QCOMPARE(static_cast<uint>(mChan->holdState()), static_cast<uint>(LocalHoldStateUnheld));
+    QCOMPARE(static_cast<uint>(mChan->holdStateReason()), static_cast<uint>(LocalHoldStateReasonRequested));
+}
+
+void TestStreamedMediaChan::testHoldNoUnhold()
+{
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "bob (no unhold)"),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mRequestContactsReturn.size() == 1);
+    ContactPtr otherContact = mRequestContactsReturn.first();
+    QVERIFY(otherContact);
+
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   otherContact->handle()[0]);
+    QVERIFY(connect(mConn->createChannel(request),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan);
+
+    QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureHoldState),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureHoldState));
+
+    QCOMPARE(static_cast<uint>(mChan->holdState()), static_cast<uint>(LocalHoldStateUnheld));
+    QCOMPARE(static_cast<uint>(mChan->holdStateReason()), static_cast<uint>(LocalHoldStateReasonNone));
+
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(holdStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason)),
+                    SLOT(onHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason))));
+    // Request hold
+    QVERIFY(connect(mChan->requestHold(true),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    while (mHoldStates.size() != 2) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mHoldStates.first(), static_cast<uint>(LocalHoldStatePendingHold));
+    QCOMPARE(mHoldStateReasons.first(), static_cast<uint>(LocalHoldStateReasonRequested));
+    QCOMPARE(mHoldStates.last(), static_cast<uint>(LocalHoldStateHeld));
+    QCOMPARE(mHoldStateReasons.last(), static_cast<uint>(LocalHoldStateReasonRequested));
+    QCOMPARE(static_cast<uint>(mChan->holdState()), static_cast<uint>(LocalHoldStateHeld));
+    QCOMPARE(static_cast<uint>(mChan->holdStateReason()), static_cast<uint>(LocalHoldStateReasonRequested));
+
+    mHoldStates.clear();
+    mHoldStateReasons.clear();
+
+    // Request unhold (fail)
+    QVERIFY(connect(mChan->requestHold(false),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+    QCOMPARE(mHoldStates.size(), 0);
+    QCOMPARE(mHoldStateReasons.size(), 0);
+    QCOMPARE(static_cast<uint>(mChan->holdState()), static_cast<uint>(LocalHoldStateHeld));
+    QCOMPARE(static_cast<uint>(mChan->holdStateReason()), static_cast<uint>(LocalHoldStateReasonRequested));
 }
 
 void TestStreamedMediaChan::cleanup()
