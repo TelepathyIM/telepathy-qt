@@ -34,4 +34,12 @@
 #  define TELEPATHY_QT4_EXPORT Q_DECL_IMPORT
 #endif
 
+#if !defined(Q_OS_WIN) && defined(QT_VISIBILITY_AVAILABLE)
+#  define TELEPATHY_QT4_NO_EXPORT __attribute__((visibility("hidden")))
+#endif
+
+#ifndef TELEPATHY_QT4_NO_EXPORT
+#  define TELEPATHY_QT4_NO_EXPORT
+#endif
+
 #endif
