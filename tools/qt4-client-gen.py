@@ -86,6 +86,7 @@ class Generator(object):
 
 #include <TelepathyQt4/AbstractInterface>
 #include <TelepathyQt4/DBusProxy>
+#include <TelepathyQt4/Global>
 
 // basically the same as GLib's G_GNUC_DEPRECATED
 #ifndef TELEPATHY_GNUC_DEPRECATED
@@ -148,7 +149,7 @@ namespace %s
  *
  * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
  */
-class %(name)s : public Tp::AbstractInterface
+class TELEPATHY_QT4_EXPORT %(name)s : public Tp::AbstractInterface
 {
     Q_OBJECT
 
