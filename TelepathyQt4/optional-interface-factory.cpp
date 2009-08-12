@@ -42,6 +42,30 @@
 namespace Tp
 {
 
+/**
+ * \enum OptionalInterfaceFactory::InterfaceSupportedChecking
+ *
+ * Specifies if the interface being supported by the remote object should be
+ * checked by optionalInterface() and the convenience functions for it.
+ *
+ * \sa optionalInterface()
+ */
+
+/**
+ * \var OptionalInterfaceFactory::InterfaceSupportedChecking OptionalInterfaceFactory::CheckInterfaceSupported
+ *
+ * Don't return an interface instance unless it can be guaranteed that the
+ * remote object actually implements the interface.
+ */
+
+/**
+ * \var OptionalInterfaceFactory::InterfaceSupportedChecking OptionalInterfaceFactory::BypassInterfaceCheck
+ *
+ * Return an interface instance even if it can't be verified that the remote
+ * object supports the interface.
+ */
+
+
 struct OptionalInterfaceCache::Private
 {
     QObject *proxy;
