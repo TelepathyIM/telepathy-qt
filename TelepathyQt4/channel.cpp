@@ -446,6 +446,7 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         debug() << " Found properties specified in 0.17.7";
 
         parent->setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
+        readinessHelper->setInterfaces(parent->interfaces());
         channelType = qdbus_cast<QString>(props["ChannelType"]);
         targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
         targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
@@ -2157,6 +2158,7 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
 
     debug() << "Got reply to fallback Channel::GetInterfaces()";
     setInterfaces(reply.value());
+    mPriv->readinessHelper->setInterfaces(interfaces());
     mPriv->nowHaveInterfaces();
 
     mPriv->fakeGroupInterfaceIfNeeded();
