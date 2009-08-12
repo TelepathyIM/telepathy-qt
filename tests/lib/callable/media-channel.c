@@ -48,6 +48,7 @@
 
 static void media_iface_init (gpointer iface, gpointer data);
 static void channel_iface_init (gpointer iface, gpointer data);
+static void hold_iface_init (gpointer iface, gpointer data);
 
 G_DEFINE_TYPE_WITH_CODE (ExampleCallableMediaChannel,
     example_callable_media_channel,
@@ -59,6 +60,8 @@ G_DEFINE_TYPE_WITH_CODE (ExampleCallableMediaChannel,
       media_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_GROUP,
       tp_group_mixin_iface_init);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_HOLD,
+      hold_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL);
     G_IMPLEMENT_INTERFACE (TP_TYPE_EXPORTABLE_CHANNEL, NULL))
 
@@ -111,6 +114,9 @@ struct _ExampleCallableMediaChannelPrivate
 
   GHashTable *streams;
 
+  guint hold_state;
+  guint hold_state_reason;
+
   gboolean locally_requested;
   gboolean initial_audio;
   gboolean initial_video;
@@ -119,6 +125,7 @@ struct _ExampleCallableMediaChannelPrivate
 
 static const char * example_callable_media_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_GROUP,
+    TP_IFACE_CHANNEL_INTERFACE_HOLD,
     NULL
 };
 
@@ -132,6 +139,9 @@ example_callable_media_channel_init (ExampleCallableMediaChannel *self)
   self->priv->next_stream_id = 1;
   self->priv->streams = g_hash_table_new_full (g_direct_hash, g_direct_equal,
       NULL, g_object_unref);
+
+  self->priv->hold_state = TP_LOCAL_HOLD_STATE_UNHELD;
+  self->priv->hold_state_reason = TP_LOCAL_HOLD_STATE_REASON_NONE;
 }
 
 static ExampleCallableMediaStream *example_callable_media_channel_add_stream (
@@ -1204,5 +1214,107 @@ media_iface_init (gpointer iface,
   IMPLEMENT (remove_streams);
   IMPLEMENT (request_stream_direction);
   IMPLEMENT (request_streams);
+#undef IMPLEMENT
+}
+
+static gboolean
+simulate_hold (gpointer p)
+{
+  ExampleCallableMediaChannel *self = p;
+  self->priv->hold_state = TP_LOCAL_HOLD_STATE_HELD;
+  g_message ("SIGNALLING: hold state changed to held");
+  tp_svc_channel_interface_hold_emit_hold_state_changed (self,
+      self->priv->hold_state, self->priv->hold_state_reason);
+  return FALSE;
+}
+
+static gboolean
+simulate_unhold (gpointer p)
+{
+  ExampleCallableMediaChannel *self = p;
+  self->priv->hold_state = TP_LOCAL_HOLD_STATE_UNHELD;
+  g_message ("SIGNALLING: hold state changed to unheld");
+  tp_svc_channel_interface_hold_emit_hold_state_changed (self,
+      self->priv->hold_state, self->priv->hold_state_reason);
+  return FALSE;
+}
+
+static void
+hold_get_hold_state (TpSvcChannelInterfaceHold *iface,
+                     DBusGMethodInvocation *context)
+{
+  ExampleCallableMediaChannel *self = EXAMPLE_CALLABLE_MEDIA_CHANNEL (iface);
+  tp_svc_channel_interface_hold_return_from_get_hold_state (context,
+      self->priv->hold_state, self->priv->hold_state_reason);
+}
+
+static void
+hold_request_hold (TpSvcChannelInterfaceHold *iface,
+                   gboolean hold,
+                   DBusGMethodInvocation *context)
+{
+  ExampleCallableMediaChannel *self = EXAMPLE_CALLABLE_MEDIA_CHANNEL (iface);
+  TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
+      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
+  GError *error = NULL;
+  const gchar *peer;
+  GSourceFunc callback;
+
+  if ((hold && self->priv->hold_state == TP_LOCAL_HOLD_STATE_HELD) ||
+      (!hold && self->priv->hold_state == TP_LOCAL_HOLD_STATE_UNHELD))
+    {
+      tp_svc_channel_interface_hold_return_from_request_hold (context);
+      return;
+    }
+
+  peer = tp_handle_inspect (contact_repo, self->priv->handle);
+  if (!hold && strstr (peer, "(no unhold)") != NULL)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "unable to unhold");
+      goto error;
+    }
+
+  self->priv->hold_state_reason = TP_LOCAL_HOLD_STATE_REASON_REQUESTED;
+  if (hold)
+    {
+      self->priv->hold_state = TP_LOCAL_HOLD_STATE_PENDING_HOLD;
+      callback = simulate_hold;
+    }
+  else
+    {
+      self->priv->hold_state = TP_LOCAL_HOLD_STATE_PENDING_UNHOLD;
+      callback = simulate_unhold;
+    }
+
+  g_message ("SIGNALLING: hold state changed to pending %s",
+             (hold ? "hold" : "unhold"));
+  tp_svc_channel_interface_hold_emit_hold_state_changed (iface,
+    self->priv->hold_state, self->priv->hold_state_reason);
+
+  g_timeout_add_full (G_PRIORITY_DEFAULT,
+      self->priv->simulation_delay,
+      callback, g_object_ref (self),
+      g_object_unref);
+
+  tp_svc_channel_interface_hold_return_from_request_hold (context);
+  return;
+
+error:
+  dbus_g_method_return_error (context, error);
+  g_error_free (error);
+}
+
+
+void
+hold_iface_init (gpointer iface,
+                 gpointer data)
+{
+  TpSvcChannelInterfaceHoldClass *klass = iface;
+
+#define IMPLEMENT(x) \
+  tp_svc_channel_interface_hold_implement_##x (klass, hold_##x)
+  IMPLEMENT (get_hold_state);
+  IMPLEMENT (request_hold);
 #undef IMPLEMENT
 }
