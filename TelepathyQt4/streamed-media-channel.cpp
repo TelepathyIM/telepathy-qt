@@ -742,15 +742,14 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  * streams to you) or be taken off hold.
  *
  * If the connection manager can immediately tell that the requested state
- * change could not possibly succeed, the resulting PendingOperation SHOULD fail
+ * change could not possibly succeed, the resulting PendingOperation will fail
  * with error code %TELEPATHY_ERROR_NOT_AVAILABLE.
  * If the requested state is the same as the current state, the resulting
- * PendingOperation SHOULD finish successfully.
+ * PendingOperation will finish successfully.
  *
- * Otherwise, this method SHOULD immediately set the local hold state to
+ * Otherwise, the channel's local hold state will change to
  * Tp::LocalHoldStatePendingHold or Tp::LocalHoldStatePendingUnhold (as
- * appropriate), emitting localHoldStateChanged() if this is a change, and the
- * resulting PendingOperation should finish successfully.
+ * appropriate), then the resulting PendingOperation will finish successfully.
  *
  * The eventual success or failure of the request is indicated by a subsequent
  * localHoldStateChanged() signal, changing the local hold state to
@@ -758,11 +757,11 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  *
  * If the channel has multiple streams, and the connection manager succeeds in
  * changing the hold state of one stream but fails to change the hold state of
- * another, it SHOULD attempt to revert all streams to their previous hold
+ * another, it will attempt to revert all streams to their previous hold
  * states.
  *
  * If the channel does not support the %TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD
- * interface, the resulting PendingOperation will fail with error code
+ * interface, the PendingOperation will fail with error code
  * %TELEPATHY_ERROR_NOT_IMPLEMENTED.
  *
  * \param hold A boolean indicating whether or not the channel should be on hold 
