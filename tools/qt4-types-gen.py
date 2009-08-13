@@ -181,7 +181,7 @@ namespace %s
  * Call this function to register the types used before using anything else in
  * the library.
  */
-void registerTypes();
+TELEPATHY_QT4_EXPORT void registerTypes();
 }
 
 """ % get_headerfile_cmd(self.realinclude, self.prettyinclude))

@@ -26,11 +26,13 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 namespace Tp
 {
 
-void enableDebug(bool enable);
-void enableWarnings(bool enable);
+TELEPATHY_QT4_EXPORT void enableDebug(bool enable);
+TELEPATHY_QT4_EXPORT void enableWarnings(bool enable);
 
 } // Tp
 
