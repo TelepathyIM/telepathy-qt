@@ -1239,6 +1239,22 @@ simulate_unhold (gpointer p)
   return FALSE;
 }
 
+static gboolean
+simulate_inability_unhold (gpointer p)
+{
+  ExampleCallableMediaChannel *self = p;
+  self->priv->hold_state = TP_LOCAL_HOLD_STATE_PENDING_HOLD;
+  g_message ("SIGNALLING: unable to unhold - hold state changed to pending hold");
+  tp_svc_channel_interface_hold_emit_hold_state_changed (self,
+      self->priv->hold_state, self->priv->hold_state_reason);
+  // hold again
+  g_timeout_add_full (G_PRIORITY_DEFAULT,
+      self->priv->simulation_delay,
+      simulate_hold, g_object_ref (self),
+      g_object_unref);
+  return FALSE;
+}
+
 static void
 hold_get_hold_state (TpSvcChannelInterfaceHold *iface,
                      DBusGMethodInvocation *context)
@@ -1284,7 +1300,16 @@ hold_request_hold (TpSvcChannelInterfaceHold *iface,
   else
     {
       self->priv->hold_state = TP_LOCAL_HOLD_STATE_PENDING_UNHOLD;
-      callback = simulate_unhold;
+
+      peer = tp_handle_inspect (contact_repo, self->priv->handle);
+      if (strstr (peer, "(inability to unhold)") != NULL)
+        {
+          callback = simulate_inability_unhold;
+        }
+      else
+        {
+          callback = simulate_unhold;
+        }
     }
 
   g_message ("SIGNALLING: hold state changed to pending %s",
