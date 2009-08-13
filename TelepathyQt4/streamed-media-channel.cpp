@@ -95,6 +95,7 @@ void PendingMediaStreams::gotStreams(QDBusPendingCallWatcher *watcher)
             " failed with " << reply.error().name() << ": " <<
             reply.error().message();
         setFinishedWithError(reply.error());
+        watcher->deleteLater();
         return;
     }
 
@@ -676,6 +677,7 @@ void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
 
         mPriv->readinessHelper->setIntrospectCompleted(FeatureStreams,
                 false, reply.error());
+        watcher->deleteLater();
         return;
     }
 
