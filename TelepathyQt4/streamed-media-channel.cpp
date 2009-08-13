@@ -979,9 +979,11 @@ void StreamedMediaChannel::gotLocalHoldState(QDBusPendingCallWatcher *watcher)
             " failed with " << reply.error().name() << ": " <<
             reply.error().message();
 
-        // should we fail here or just ignore?
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureLocalHoldState,
-                false, reply.error());
+        debug() << "Ignoring error getting hold state and assuming we're not "
+            "on hold";
+        onLocalHoldStateChanged(mPriv->localHoldState,
+                mPriv->localHoldStateReason);
+        watcher->deleteLater();
         return;
     }
 
