@@ -94,6 +94,9 @@ public:
     PendingOperation *requestDirection(
             bool send, bool receive);
 
+    PendingOperation *startDTMFTone(DTMFEvent event);
+    PendingOperation *stopDTMFTone();
+
 private Q_SLOTS:
     void gotContact(Tp::PendingOperation *op);
 

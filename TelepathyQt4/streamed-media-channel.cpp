@@ -369,6 +369,62 @@ PendingOperation *MediaStream::requestDirection(
 }
 
 /**
+ * Start sending a DTMF tone on this stream. Where possible, the tone will
+ * continue until stopDTMFTone() is called. On certain protocols, it may only be
+ * possible to send events with a predetermined length. In this case, the
+ * implementation may emit a fixed-length tone, and the stopDTMFTone() method
+ * call should return %TELEPATHY_ERROR_NOT_AVAILABLE.
+ *
+ * If the channel() does not support the %TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF
+ * interface, the resulting PendingOperation will fail with error code
+ * %TELEPATHY_ERROR_NOT_IMPLEMENTED.
+
+ * \param event A numeric event code from the %DTMFEvent enum.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the request finishes.
+ * \sa stopDTMFTone()
+ */
+PendingOperation *MediaStream::startDTMFTone(DTMFEvent event)
+{
+    StreamedMediaChannelPtr chan(mPriv->channel);
+    if (!chan->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF)) {
+        warning() << "MediaStream::startDTMFTone() used with no dtmf interface";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "StreamedMediaChannel does not support dtmf interface");
+    }
+    return new PendingVoidMethodCall(this,
+            chan->DTMFInterface()->StartTone(mPriv->id, event));
+}
+
+/**
+ * Stop sending any DTMF tone which has been started using the startDTMFTone()
+ * method. If there is no current tone, the resulting PendingOperation will
+ * finish successfully.
+ *
+ * If continuous tones are not supported by this stream, the resulting
+ * PendingOperation will fail with error code %TELEPATHY_ERROR_NOT_AVAILABLE.
+ *
+ * If the channel() does not support the %TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF
+ * interface, the resulting PendingOperation will fail with error code
+ * %TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the request finishes.
+ * \sa startDTMFTone()
+ */
+PendingOperation *MediaStream::stopDTMFTone()
+{
+    StreamedMediaChannelPtr chan(mPriv->channel);
+    if (!chan->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF)) {
+        warning() << "MediaStream::stopDTMFTone() used with no dtmf interface";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "StreamedMediaChannel does not support dtmf interface");
+    }
+    return new PendingVoidMethodCall(this,
+            chan->DTMFInterface()->StopTone(mPriv->id));
+}
+
+/**
  * Request a change in the direction of this stream. In particular, this
  * might be useful to stop sending media of a particular type, or inform the
  * peer that you are no longer using media that is being sent to you.
