@@ -995,14 +995,22 @@ void StreamedMediaChannel::gotLocalHoldState(QDBusPendingCallWatcher *watcher)
 void StreamedMediaChannel::onLocalHoldStateChanged(uint localHoldState,
         uint localHoldStateReason)
 {
+    bool changed = false;
+    if (mPriv->localHoldState != static_cast<LocalHoldState>(localHoldState) ||
+        mPriv->localHoldStateReason != static_cast<LocalHoldStateReason>(localHoldStateReason)) {
+        changed = true;
+    }
+
     mPriv->localHoldState = static_cast<LocalHoldState>(localHoldState);
     mPriv->localHoldStateReason = static_cast<LocalHoldStateReason>(localHoldStateReason);
 
     if (!isReady(FeatureLocalHoldState)) {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureLocalHoldState, true);
     } else {
-        emit localHoldStateChanged(mPriv->localHoldState,
-                mPriv->localHoldStateReason);
+        if (changed) {
+            emit localHoldStateChanged(mPriv->localHoldState,
+                    mPriv->localHoldStateReason);
+        }
     }
 }
 
