@@ -1221,6 +1221,7 @@ static gboolean
 simulate_hold (gpointer p)
 {
   ExampleCallableMediaChannel *self = p;
+
   self->priv->hold_state = TP_LOCAL_HOLD_STATE_HELD;
   g_message ("SIGNALLING: hold state changed to held");
   tp_svc_channel_interface_hold_emit_hold_state_changed (self,
@@ -1232,6 +1233,7 @@ static gboolean
 simulate_unhold (gpointer p)
 {
   ExampleCallableMediaChannel *self = p;
+
   self->priv->hold_state = TP_LOCAL_HOLD_STATE_UNHELD;
   g_message ("SIGNALLING: hold state changed to unheld");
   tp_svc_channel_interface_hold_emit_hold_state_changed (self,
@@ -1240,14 +1242,16 @@ simulate_unhold (gpointer p)
 }
 
 static gboolean
-simulate_inability_unhold (gpointer p)
+simulate_inability_to_unhold (gpointer p)
 {
   ExampleCallableMediaChannel *self = p;
+
   self->priv->hold_state = TP_LOCAL_HOLD_STATE_PENDING_HOLD;
-  g_message ("SIGNALLING: unable to unhold - hold state changed to pending hold");
+  g_message ("SIGNALLING: unable to unhold - hold state changed to "
+      "pending hold");
   tp_svc_channel_interface_hold_emit_hold_state_changed (self,
       self->priv->hold_state, self->priv->hold_state_reason);
-  // hold again
+  /* hold again */
   g_timeout_add_full (G_PRIORITY_DEFAULT,
       self->priv->simulation_delay,
       simulate_hold, g_object_ref (self),
@@ -1260,6 +1264,7 @@ hold_get_hold_state (TpSvcChannelInterfaceHold *iface,
                      DBusGMethodInvocation *context)
 {
   ExampleCallableMediaChannel *self = EXAMPLE_CALLABLE_MEDIA_CHANNEL (iface);
+
   tp_svc_channel_interface_hold_return_from_get_hold_state (context,
       self->priv->hold_state, self->priv->hold_state_reason);
 }
@@ -1284,6 +1289,7 @@ hold_request_hold (TpSvcChannelInterfaceHold *iface,
     }
 
   peer = tp_handle_inspect (contact_repo, self->priv->handle);
+
   if (!hold && strstr (peer, "(no unhold)") != NULL)
     {
       g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
@@ -1292,6 +1298,7 @@ hold_request_hold (TpSvcChannelInterfaceHold *iface,
     }
 
   self->priv->hold_state_reason = TP_LOCAL_HOLD_STATE_REASON_REQUESTED;
+
   if (hold)
     {
       self->priv->hold_state = TP_LOCAL_HOLD_STATE_PENDING_HOLD;
@@ -1302,9 +1309,10 @@ hold_request_hold (TpSvcChannelInterfaceHold *iface,
       self->priv->hold_state = TP_LOCAL_HOLD_STATE_PENDING_UNHOLD;
 
       peer = tp_handle_inspect (contact_repo, self->priv->handle);
+
       if (strstr (peer, "(inability to unhold)") != NULL)
         {
-          callback = simulate_inability_unhold;
+          callback = simulate_inability_to_unhold;
         }
       else
         {
