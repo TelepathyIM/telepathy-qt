@@ -700,7 +700,7 @@ bool StreamedMediaChannel::handlerStreamingRequired() const
 }
 
 /**
- * Return the channel local hold state.
+ * Return whether the local user has placed this channel on hold.
  *
  * This method requires StreamedMediaChannel::FeatureHoldState to be enabled.
  *
@@ -719,7 +719,7 @@ LocalHoldState StreamedMediaChannel::localHoldState() const
 }
 
 /**
- * Return the channel local hold state reason.
+ * Return the reason why localHoldState() changed to its current value.
  *
  * This method requires StreamedMediaChannel::FeatureLocalHoldState to be enabled.
  *
