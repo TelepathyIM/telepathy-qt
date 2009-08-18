@@ -62,7 +62,7 @@
 namespace Tp
 {
 
-struct ProtocolParameter::Private
+struct TELEPATHY_QT4_NO_EXPORT ProtocolParameter::Private
 {
     Private(const QString &name, const QDBusSignature &dbusSignature, QVariant::Type type,
             const QVariant &defaultValue, ConnMgrParamFlag flags)
@@ -136,7 +136,7 @@ bool ProtocolParameter::operator==(const QString &name) const
     return (mPriv->name == name);
 }
 
-struct ProtocolInfo::Private
+struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private
 {
     Private(const QString &cmName, const QString &name)
         : cmName(cmName), name(name) {}

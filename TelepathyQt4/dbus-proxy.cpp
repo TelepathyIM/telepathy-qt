@@ -59,7 +59,7 @@ namespace Tp
 // * making methods always raise an error when called after invalidated
 //   (has to be in the generated code)
 
-struct DBusProxy::Private
+struct TELEPATHY_QT4_NO_EXPORT DBusProxy::Private
 {
     QDBusConnection dbusConnection;
     QString busName;

@@ -39,7 +39,7 @@
 namespace Tp
 {
 
-struct PendingReady::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
 {
     Private(const Features &requestedFeatures, QObject *object) :
         requestedFeatures(requestedFeatures),

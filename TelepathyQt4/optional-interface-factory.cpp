@@ -65,8 +65,7 @@ namespace Tp
  * object supports the interface.
  */
 
-
-struct OptionalInterfaceCache::Private
+struct TELEPATHY_QT4_NO_EXPORT OptionalInterfaceCache::Private
 {
     QObject *proxy;
     QMap<QString, AbstractInterface*> interfaces;

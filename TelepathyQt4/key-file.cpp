@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-struct KeyFile::Private
+struct TELEPATHY_QT4_NO_EXPORT KeyFile::Private
 {
     QString fileName;
     KeyFile::Status status;

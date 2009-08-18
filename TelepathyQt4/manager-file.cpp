@@ -35,7 +35,7 @@
 namespace Tp
 {
 
-struct ManagerFile::Private
+struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
 {
     QString cmName;
     KeyFile keyFile;

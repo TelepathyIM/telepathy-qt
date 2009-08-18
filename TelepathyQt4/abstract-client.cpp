@@ -34,7 +34,7 @@ AbstractClient::~AbstractClient()
 {
 }
 
-struct AbstractClientObserver::Private
+struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 {
     ChannelClassList channelFilter;
 };
@@ -56,7 +56,7 @@ ChannelClassList AbstractClientObserver::observerChannelFilter() const
     return mPriv->channelFilter;
 }
 
-struct AbstractClientApprover::Private
+struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
 {
     ChannelClassList channelFilter;
 };
@@ -78,7 +78,7 @@ ChannelClassList AbstractClientApprover::approverChannelFilter() const
     return mPriv->channelFilter;
 }
 
-struct AbstractClientHandler::Private
+struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
 {
     ChannelClassList channelFilter;
     bool wantsRequestNotification;

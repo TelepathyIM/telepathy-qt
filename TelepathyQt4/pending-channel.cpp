@@ -44,7 +44,7 @@
 namespace Tp
 {
 
-struct PendingChannel::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
 {
     Private(const ConnectionPtr &connection) :
         connection(connection)

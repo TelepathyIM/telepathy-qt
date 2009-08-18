@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-struct PendingOperation::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingOperation::Private
 {
     Private() : finished(false)
     {

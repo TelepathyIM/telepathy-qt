@@ -36,7 +36,7 @@ namespace Tp
 class ConnectionManager;
 class ReadinessHelper;
 
-struct ConnectionManager::Private
+struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
 {
     Private(ConnectionManager *parent, const QString &name);
     ~Private();
@@ -69,7 +69,7 @@ struct ConnectionManager::Private
     ProtocolInfoList protocols;
 };
 
-class ConnectionManager::Private::PendingNames : public PendingStringList
+class TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private::PendingNames : public PendingStringList
 {
     Q_OBJECT
 

@@ -28,7 +28,7 @@
 namespace Tp
 {
 
-struct RoomListChannel::Private
+struct TELEPATHY_QT4_NO_EXPORT RoomListChannel::Private
 {
     inline Private();
     inline ~Private();

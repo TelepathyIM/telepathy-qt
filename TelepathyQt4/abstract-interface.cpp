@@ -28,7 +28,7 @@
 namespace Tp
 {
 
-struct AbstractInterface::Private
+struct TELEPATHY_QT4_NO_EXPORT AbstractInterface::Private
 {
     Private();
     QString mError;

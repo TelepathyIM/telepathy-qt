@@ -71,7 +71,7 @@
 namespace Tp
 {
 
-struct Connection::Private
+struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 {
     Private(Connection *parent);
     ~Private();
@@ -134,7 +134,7 @@ struct Connection::Private
 };
 
 // Handle tracking
-struct Connection::Private::HandleContext
+struct TELEPATHY_QT4_NO_EXPORT Connection::Private::HandleContext
 {
     struct Type
     {

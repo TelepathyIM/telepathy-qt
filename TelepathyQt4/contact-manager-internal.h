@@ -28,7 +28,7 @@
 namespace Tp
 {
 
-class PendingContactManagerRemoveContactListGroup : public PendingOperation
+class TELEPATHY_QT4_NO_EXPORT PendingContactManagerRemoveContactListGroup : public PendingOperation
 {
     Q_OBJECT
 

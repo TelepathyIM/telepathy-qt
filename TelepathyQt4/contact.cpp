@@ -34,7 +34,7 @@
 namespace Tp
 {
 
-struct Contact::Private
+struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 {
     Private(ContactManager *manager, const ReferencedHandles &handle)
         : manager(manager), handle(handle), isAvatarTokenKnown(false),

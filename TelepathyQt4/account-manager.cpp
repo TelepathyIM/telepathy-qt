@@ -58,7 +58,7 @@
 namespace Tp
 {
 
-struct AccountManager::Private
+struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
 {
     Private(AccountManager *parent);
     ~Private();

@@ -31,7 +31,7 @@
 namespace Tp
 {
 
-class Connection::PendingConnect : public PendingReady
+class TELEPATHY_QT4_NO_EXPORT Connection::PendingConnect : public PendingReady
 {
     Q_OBJECT
 
