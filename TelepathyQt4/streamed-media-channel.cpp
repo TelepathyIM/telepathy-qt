@@ -705,7 +705,7 @@ bool StreamedMediaChannel::handlerStreamingRequired() const
  * This method requires StreamedMediaChannel::FeatureHoldState to be enabled.
  *
  * \return The channel local hold state.
- * \sa requestLocalHold()
+ * \sa requestHold()
  */
 LocalHoldState StreamedMediaChannel::localHoldState() const
 {
@@ -724,7 +724,7 @@ LocalHoldState StreamedMediaChannel::localHoldState() const
  * This method requires StreamedMediaChannel::FeatureLocalHoldState to be enabled.
  *
  * \return The channel local hold state reason.
- * \sa requestLocalHold()
+ * \sa requestHold()
  */
 LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
 {
@@ -769,10 +769,10 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  *         when the request finishes.
  * \sa localHoldState(), localHoldStateReason()
  */
-PendingOperation *StreamedMediaChannel::requestLocalHold(bool hold)
+PendingOperation *StreamedMediaChannel::requestHold(bool hold)
 {
     if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD)) {
-        warning() << "StreamedMediaChannel::requestLocalHold() used with no hold interface";
+        warning() << "StreamedMediaChannel::requestHold() used with no hold interface";
         return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "StreamedMediaChannel does not support hold interface");
     }

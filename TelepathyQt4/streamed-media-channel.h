@@ -155,7 +155,7 @@ public:
 
     LocalHoldState localHoldState() const;
     LocalHoldStateReason localHoldStateReason() const;
-    PendingOperation *requestLocalHold(bool hold);
+    PendingOperation *requestHold(bool hold);
 
 Q_SIGNALS:
     void streamAdded(const Tp::MediaStreamPtr &stream);

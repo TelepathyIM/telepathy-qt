@@ -848,7 +848,7 @@ void TestStreamedMediaChan::testHold()
                     SIGNAL(localHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason)),
                     SLOT(onLocalHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason))));
     // Request hold
-    QVERIFY(connect(mChan->requestLocalHold(true),
+    QVERIFY(connect(mChan->requestHold(true),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -866,7 +866,7 @@ void TestStreamedMediaChan::testHold()
     mLocalHoldStateReasons.clear();
 
     // Request unhold
-    QVERIFY(connect(mChan->requestLocalHold(false),
+    QVERIFY(connect(mChan->requestHold(false),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -917,7 +917,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
                     SIGNAL(localHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason)),
                     SLOT(onLocalHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason))));
     // Request hold
-    QVERIFY(connect(mChan->requestLocalHold(true),
+    QVERIFY(connect(mChan->requestHold(true),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -935,7 +935,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
     mLocalHoldStateReasons.clear();
 
     // Request unhold (fail)
-    QVERIFY(connect(mChan->requestLocalHold(false),
+    QVERIFY(connect(mChan->requestHold(false),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 1);
@@ -981,7 +981,7 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
                     SIGNAL(localHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason)),
                     SLOT(onLocalHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason))));
     // Request hold
-    QVERIFY(connect(mChan->requestLocalHold(true),
+    QVERIFY(connect(mChan->requestHold(true),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -999,7 +999,7 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
     mLocalHoldStateReasons.clear();
 
     // Request unhold (fail - back to hold)
-    QVERIFY(connect(mChan->requestLocalHold(false),
+    QVERIFY(connect(mChan->requestHold(false),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
