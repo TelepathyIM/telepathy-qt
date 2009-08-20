@@ -237,6 +237,12 @@ public:
         return typeInterface<Client::ChannelTypeTubesInterface>(check);
     }
 
+    inline Client::ChannelTypeStreamTubeInterface *streamTubeInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return typeInterface<Client::ChannelTypeStreamTubeInterface>(check);
+    }
+
 Q_SIGNALS:
     void groupFlagsChanged(uint flags, uint added, uint removed);
 
