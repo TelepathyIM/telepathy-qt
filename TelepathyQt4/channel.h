@@ -194,6 +194,12 @@ public:
         return optionalInterface<Client::ChannelInterfacePasswordInterface>(check);
     }
 
+    inline Client::ChannelInterfaceTubeInterface *tubeInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ChannelInterfaceTubeInterface>(check);
+    }
+
     template <class Interface>
     inline Interface *typeInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
