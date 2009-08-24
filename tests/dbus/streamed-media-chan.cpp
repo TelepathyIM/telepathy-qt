@@ -54,6 +54,8 @@ private Q_SLOTS:
     void testOutgoingCallNoAnswer();
     void testOutgoingCallTerminate();
     void testIncomingCall();
+    void testDTMF();
+    void testDTMFNoContinuousTone();
 
     void cleanup();
     void cleanupTestCase();
@@ -793,6 +795,149 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(stream->pendingSend(), mSDCPendingReturn);
     QCOMPARE(mSSCStreamReturn, stream);
     QCOMPARE(mSSCStateReturn, Tp::MediaStreamStateConnected);
+}
+
+void TestStreamedMediaChan::testDTMF()
+{
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "john"),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mRequestContactsReturn.size() == 1);
+    ContactPtr otherContact = mRequestContactsReturn.first();
+    QVERIFY(otherContact);
+
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   otherContact->handle()[0]);
+    QVERIFY(connect(mConn->createChannel(request),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan);
+
+    QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureStreams));
+
+    // Request audio stream
+    QVERIFY(connect(mChan->requestStreams(otherContact,
+                        QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mRequestStreamsReturn.size(), 1);
+    MediaStreamPtr stream = mRequestStreamsReturn.first();
+    QCOMPARE(stream->contact(), otherContact);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
+
+    QCOMPARE(mChan->streams().size(), 1);
+    QVERIFY(mChan->streams().contains(stream));
+
+    // start dtmf
+    QVERIFY(connect(stream->startDTMFTone(DTMFEventDigit0),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // stop dtmf
+    QVERIFY(connect(stream->stopDTMFTone(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // stop dtmf again (should succeed)
+    QVERIFY(connect(stream->stopDTMFTone(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Request video stream
+    QVERIFY(connect(mChan->requestStream(otherContact, Tp::MediaStreamTypeVideo),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mRequestStreamsReturn.size(), 1);
+    stream = mRequestStreamsReturn.first();
+    QCOMPARE(stream->contact(), otherContact);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeVideo);
+
+    QCOMPARE(mChan->streams().size(), 2);
+    QVERIFY(mChan->streams().contains(stream));
+
+    // start dtmf (must fail)
+    QVERIFY(connect(stream->startDTMFTone(DTMFEventDigit0),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+
+    // stop dtmf (must fail)
+    QVERIFY(connect(stream->stopDTMFTone(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
+}
+
+void TestStreamedMediaChan::testDTMFNoContinuousTone()
+{
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "john (no continuous tone)"),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mRequestContactsReturn.size() == 1);
+    ContactPtr otherContact = mRequestContactsReturn.first();
+    QVERIFY(otherContact);
+
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   otherContact->handle()[0]);
+    QVERIFY(connect(mConn->createChannel(request),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan);
+
+    QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureStreams));
+
+    // Request audio stream
+    QVERIFY(connect(mChan->requestStreams(otherContact,
+                        QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mRequestStreamsReturn.size(), 1);
+    MediaStreamPtr stream = mRequestStreamsReturn.first();
+    QCOMPARE(stream->contact(), otherContact);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
+
+    QCOMPARE(mChan->streams().size(), 1);
+    QVERIFY(mChan->streams().contains(stream));
+
+    // start dtmf
+    QVERIFY(connect(stream->startDTMFTone(DTMFEventDigit0),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // stop dtmf (must fail)
+    QVERIFY(connect(stream->stopDTMFTone(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 1);
 }
 
 void TestStreamedMediaChan::cleanup()
