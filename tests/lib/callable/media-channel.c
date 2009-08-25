@@ -49,6 +49,7 @@
 static void media_iface_init (gpointer iface, gpointer data);
 static void channel_iface_init (gpointer iface, gpointer data);
 static void hold_iface_init (gpointer iface, gpointer data);
+static void dtmf_iface_init (gpointer iface, gpointer data);
 
 G_DEFINE_TYPE_WITH_CODE (ExampleCallableMediaChannel,
     example_callable_media_channel,
@@ -62,6 +63,8 @@ G_DEFINE_TYPE_WITH_CODE (ExampleCallableMediaChannel,
       tp_group_mixin_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_HOLD,
       hold_iface_init);
+    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_DTMF,
+      dtmf_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL);
     G_IMPLEMENT_INTERFACE (TP_TYPE_EXPORTABLE_CHANNEL, NULL))
 
@@ -126,6 +129,7 @@ struct _ExampleCallableMediaChannelPrivate
 static const char * example_callable_media_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_GROUP,
     TP_IFACE_CHANNEL_INTERFACE_HOLD,
+    TP_IFACE_CHANNEL_INTERFACE_DTMF,
     NULL
 };
 
@@ -1349,5 +1353,100 @@ hold_iface_init (gpointer iface,
   tp_svc_channel_interface_hold_implement_##x (klass, hold_##x)
   IMPLEMENT (get_hold_state);
   IMPLEMENT (request_hold);
+#undef IMPLEMENT
+}
+
+static void
+dtmf_start_tone (TpSvcChannelInterfaceDTMF *iface,
+                 guint stream_id,
+                 guchar event,
+                 DBusGMethodInvocation *context)
+{
+  ExampleCallableMediaChannel *self = EXAMPLE_CALLABLE_MEDIA_CHANNEL (iface);
+  ExampleCallableMediaStream *stream = g_hash_table_lookup (self->priv->streams,
+      GUINT_TO_POINTER (stream_id));
+  GError *error = NULL;
+  guint media_type;
+
+  if (stream == NULL)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "No stream with ID %u in this channel", stream_id);
+      goto error;
+    }
+
+  g_object_get (G_OBJECT (stream), "type", &media_type, NULL);
+  if (media_type != TP_MEDIA_STREAM_TYPE_AUDIO)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "DTMF is only supported by audio streams");
+      goto error;
+    }
+
+  tp_svc_channel_interface_dtmf_return_from_start_tone (context);
+
+  return;
+
+error:
+  dbus_g_method_return_error (context, error);
+  g_error_free (error);
+}
+
+static void
+dtmf_stop_tone (TpSvcChannelInterfaceDTMF *iface,
+                guint stream_id,
+                DBusGMethodInvocation *context)
+{
+  ExampleCallableMediaChannel *self = EXAMPLE_CALLABLE_MEDIA_CHANNEL (iface);
+  ExampleCallableMediaStream *stream = g_hash_table_lookup (self->priv->streams,
+      GUINT_TO_POINTER (stream_id));
+  TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
+      (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
+  GError *error = NULL;
+  const gchar *peer;
+  guint media_type;
+
+  if (stream == NULL)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "No stream with ID %u in this channel", stream_id);
+      goto error;
+    }
+
+  g_object_get (G_OBJECT (stream), "type", &media_type, NULL);
+  if (media_type != TP_MEDIA_STREAM_TYPE_AUDIO)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+          "DTMF is only supported by audio streams");
+      goto error;
+    }
+
+  peer = tp_handle_inspect (contact_repo, self->priv->handle);
+  if (strstr (peer, "(no continuous tone)") != NULL)
+    {
+      g_set_error (&error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
+          "Continuous tones are not supported by this stream");
+      goto error;
+    }
+
+  tp_svc_channel_interface_dtmf_return_from_stop_tone (context);
+
+  return;
+
+error:
+  dbus_g_method_return_error (context, error);
+  g_error_free (error);
+}
+
+static void
+dtmf_iface_init (gpointer iface,
+                 gpointer data)
+{
+  TpSvcChannelInterfaceDTMFClass *klass = iface;
+
+#define IMPLEMENT(x) \
+  tp_svc_channel_interface_dtmf_implement_##x (klass, dtmf_##x)
+  IMPLEMENT (start_tone);
+  IMPLEMENT (stop_tone);
 #undef IMPLEMENT
 }
