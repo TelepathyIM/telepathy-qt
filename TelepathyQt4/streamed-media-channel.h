@@ -126,6 +126,7 @@ class StreamedMediaChannel : public Channel
 
 public:
     static const Feature FeatureStreams;
+    static const Feature FeatureLocalHoldState;
 
     static StreamedMediaChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -152,6 +153,10 @@ public:
 
     bool handlerStreamingRequired() const;
 
+    LocalHoldState localHoldState() const;
+    LocalHoldStateReason localHoldStateReason() const;
+    PendingOperation *requestHold(bool hold);
+
 Q_SIGNALS:
     void streamAdded(const Tp::MediaStreamPtr &stream);
     void streamRemoved(const Tp::MediaStreamPtr &stream);
@@ -163,6 +168,9 @@ Q_SIGNALS:
     void streamError(const Tp::MediaStreamPtr &stream,
             Tp::MediaStreamError errorCode,
             const QString &errorMessage);
+
+    void localHoldStateChanged(Tp::LocalHoldState state,
+            Tp::LocalHoldStateReason reason);
 
 protected:
     StreamedMediaChannel(const ConnectionPtr &connection,
@@ -176,6 +184,9 @@ private Q_SLOTS:
     void onStreamDirectionChanged(uint, uint, uint);
     void onStreamStateChanged(uint, uint);
     void onStreamError(uint, uint, const QString &);
+
+    void gotLocalHoldState(QDBusPendingCallWatcher *);
+    void onLocalHoldStateChanged(uint, uint);
 
 private:
     friend class PendingMediaStreams;

@@ -436,6 +436,7 @@ struct StreamedMediaChannel::Private
     ~Private();
 
     static void introspectStreams(Private *self);
+    static void introspectLocalHoldState(Private *self);
 
     // Public object
     StreamedMediaChannel *parent;
@@ -446,11 +447,16 @@ struct StreamedMediaChannel::Private
 
     QHash<uint, MediaStreamPtr> incompleteStreams;
     QHash<uint, MediaStreamPtr> streams;
+
+    LocalHoldState localHoldState;
+    LocalHoldStateReason localHoldStateReason;
 };
 
 StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
     : parent(parent),
-      readinessHelper(parent->readinessHelper())
+      readinessHelper(parent->readinessHelper()),
+      localHoldState(LocalHoldStateUnheld),
+      localHoldStateReason(LocalHoldStateReasonNone)
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -461,6 +467,14 @@ StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
         (ReadinessHelper::IntrospectFunc) &Private::introspectStreams,
         this);
     introspectables[FeatureStreams] = introspectableStreams;
+
+    ReadinessHelper::Introspectable introspectableLocalHoldState(
+        QSet<uint>() << 0,                                                      // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
+        QStringList(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD),                // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectLocalHoldState,
+        this);
+    introspectables[FeatureLocalHoldState] = introspectableLocalHoldState;
 
     readinessHelper->addIntrospectables(introspectables);
 }
@@ -498,6 +512,24 @@ void StreamedMediaChannel::Private::introspectStreams(StreamedMediaChannel::Priv
             SLOT(gotStreams(QDBusPendingCallWatcher *)));
 }
 
+void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChannel::Private *self)
+{
+    StreamedMediaChannel *parent = self->parent;
+    Client::ChannelInterfaceHoldInterface *holdInterface =
+        parent->holdInterface();
+
+    parent->connect(holdInterface,
+            SIGNAL(HoldStateChanged(uint, uint)),
+            SLOT(onLocalHoldStateChanged(uint, uint)));
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            holdInterface->GetHoldState(), parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotLocalHoldState(QDBusPendingCallWatcher *)));
+}
+
+
 /**
  * \class StreamedMediaChannel
  * \ingroup clientchannel
@@ -508,6 +540,7 @@ void StreamedMediaChannel::Private::introspectStreams(StreamedMediaChannel::Priv
  */
 
 const Feature StreamedMediaChannel::FeatureStreams = Feature(StreamedMediaChannel::staticMetaObject.className(), 0);
+const Feature StreamedMediaChannel::FeatureLocalHoldState = Feature(StreamedMediaChannel::staticMetaObject.className(), 1);
 
 StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
@@ -664,6 +697,86 @@ bool StreamedMediaChannel::handlerStreamingRequired() const
 
     return interfaces().contains(
             TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING);
+}
+
+/**
+ * Return whether the local user has placed this channel on hold.
+ *
+ * This method requires StreamedMediaChannel::FeatureHoldState to be enabled.
+ *
+ * \return The channel local hold state.
+ * \sa requestHold()
+ */
+LocalHoldState StreamedMediaChannel::localHoldState() const
+{
+    if (!isReady(FeatureLocalHoldState)) {
+        warning() << "StreamedMediaChannel::localHoldState() used with FeatureLocalHoldState not ready";
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD)) {
+        warning() << "StreamedMediaChannel::localHoldStateReason() used with no hold interface";
+    }
+
+    return mPriv->localHoldState;
+}
+
+/**
+ * Return the reason why localHoldState() changed to its current value.
+ *
+ * This method requires StreamedMediaChannel::FeatureLocalHoldState to be enabled.
+ *
+ * \return The channel local hold state reason.
+ * \sa requestHold()
+ */
+LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
+{
+    if (!isReady(FeatureLocalHoldState)) {
+        warning() << "StreamedMediaChannel::localHoldStateReason() used with FeatureLocalHoldState not ready";
+    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD)) {
+        warning() << "StreamedMediaChannel::localHoldStateReason() used with no hold interface";
+    }
+
+    return mPriv->localHoldStateReason;
+}
+
+/**
+ * Request that the channel be put on hold (be instructed not to send any media
+ * streams to you) or be taken off hold.
+ *
+ * If the connection manager can immediately tell that the requested state
+ * change could not possibly succeed, the resulting PendingOperation will fail
+ * with error code %TELEPATHY_ERROR_NOT_AVAILABLE.
+ * If the requested state is the same as the current state, the resulting
+ * PendingOperation will finish successfully.
+ *
+ * Otherwise, the channel's local hold state will change to
+ * Tp::LocalHoldStatePendingHold or Tp::LocalHoldStatePendingUnhold (as
+ * appropriate), then the resulting PendingOperation will finish successfully.
+ *
+ * The eventual success or failure of the request is indicated by a subsequent
+ * localHoldStateChanged() signal, changing the local hold state to
+ * Tp::LocalHoldStateHeld or Tp::LocalHoldStateUnheld.
+ *
+ * If the channel has multiple streams, and the connection manager succeeds in
+ * changing the hold state of one stream but fails to change the hold state of
+ * another, it will attempt to revert all streams to their previous hold
+ * states.
+ *
+ * If the channel does not support the %TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD
+ * interface, the PendingOperation will fail with error code
+ * %TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ *
+ * \param hold A boolean indicating whether or not the channel should be on hold 
+ * \return A %PendingOperation, which will emit PendingOperation::finished
+ *         when the request finishes.
+ * \sa localHoldState(), localHoldStateReason()
+ */
+PendingOperation *StreamedMediaChannel::requestHold(bool hold)
+{
+    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD)) {
+        warning() << "StreamedMediaChannel::requestHold() used with no hold interface";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "StreamedMediaChannel does not support hold interface");
+    }
+    return new PendingVoidMethodCall(this, holdInterface()->RequestHold(hold));
 }
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)
@@ -855,6 +968,49 @@ void StreamedMediaChannel::onStreamError(uint streamId,
         emit streamError(stream,
             (MediaStreamError) errorCode,
             errorMessage);
+    }
+}
+
+void StreamedMediaChannel::gotLocalHoldState(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<uint, uint> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "StreamedMedia::Hold::GetHoldState()"
+            " failed with " << reply.error().name() << ": " <<
+            reply.error().message();
+
+        debug() << "Ignoring error getting hold state and assuming we're not "
+            "on hold";
+        onLocalHoldStateChanged(mPriv->localHoldState,
+                mPriv->localHoldStateReason);
+        watcher->deleteLater();
+        return;
+    }
+
+    debug() << "Got reply to StreamedMedia::Hold::GetHoldState()";
+    onLocalHoldStateChanged(reply.argumentAt<0>(), reply.argumentAt<1>());
+    watcher->deleteLater();
+}
+
+void StreamedMediaChannel::onLocalHoldStateChanged(uint localHoldState,
+        uint localHoldStateReason)
+{
+    bool changed = false;
+    if (mPriv->localHoldState != static_cast<LocalHoldState>(localHoldState) ||
+        mPriv->localHoldStateReason != static_cast<LocalHoldStateReason>(localHoldStateReason)) {
+        changed = true;
+    }
+
+    mPriv->localHoldState = static_cast<LocalHoldState>(localHoldState);
+    mPriv->localHoldStateReason = static_cast<LocalHoldStateReason>(localHoldStateReason);
+
+    if (!isReady(FeatureLocalHoldState)) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureLocalHoldState, true);
+    } else {
+        if (changed) {
+            emit localHoldStateChanged(mPriv->localHoldState,
+                    mPriv->localHoldStateReason);
+        }
     }
 }
 
