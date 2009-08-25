@@ -1,7 +1,27 @@
-telepathy-qt4 0.1.10 (UNRELEASED)
+telepathy-qt4 0.1.10 (2009-08-25)
 ================================
 
-...
+The "not yet stable" release.
+
+New API:
+
+* StreamedMediaChannel: Added Hold and DTMF interface support.
+
+Enhancements:
+
+* Moved OptionalInterfaceFactory::InterfaceSupportedChecking docs from DBusProxy
+  to OptionalInterfaceFactory.
+* Use struct Private instead of class Private for consistence.
+* Removed cli/Client from header guards.
+
+Fixes:
+
+* fd.o #20269: Channel's Contact objects should initially have no features.
+* fd.o #21335: Implement Group self-handle removal reasons.
+* fd.o #23040: Running connection managers appear twice in
+  ConnectionManager::listNames result.
+* fd.o #23282: Channel should update ReadinessHelper with the supported
+  interfaces.
 
 telepathy-qt4 0.1.9 (2009-07-23)
 ================================
