@@ -225,6 +225,12 @@ public:
         return typeInterface<Client::ChannelTypeTextInterface>(check);
     }
 
+    inline Client::ChannelTypeFileTransferInterface *fileTransferInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return typeInterface<Client::ChannelTypeFileTransferInterface>(check);
+    }
+
     inline Client::ChannelTypeTubesInterface *tubesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
