@@ -349,14 +349,16 @@ check-local: check-coding-style
 AM_CPPFLAGS = \
     -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
-    $(QTDBUS_CFLAGS)
+    $(QTDBUS_CFLAGS) \
+    $(QTNETWORK_CFLAGS)
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS)
 
 ALL_LIBS = \
     $(QTCORE_LIBS) \
-    $(QTDBUS_LIBS)
+    $(QTDBUS_LIBS) \
+    $(QTNETWORK_LIBS)
 
 # Generated stuff
 
