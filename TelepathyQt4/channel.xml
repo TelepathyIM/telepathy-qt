@@ -21,5 +21,6 @@
 <xi:include href="../spec/Channel_Interface_Media_Signalling.xml"/>
 <xi:include href="../spec/Channel_Interface_Messages.xml"/>
 <xi:include href="../spec/Channel_Interface_Password.xml"/>
+<xi:include href="../spec/Channel_Interface_Tube.xml"/>
 
 </tp:spec>
