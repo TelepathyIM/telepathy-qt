@@ -36,14 +36,51 @@ class FileTransferChannel : public Channel
     Q_DISABLE_COPY(FileTransferChannel)
 
 public:
+    static const Feature FeatureCore;
+
     static FileTransferChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
     virtual ~FileTransferChannel();
 
+    FileTransferState state() const;
+    FileTransferStateChangeReason stateReason() const;
+
+    QString fileName() const;
+    QString contentType() const;
+    qulonglong size() const;
+
+    FileHashType contentHashType() const;
+    QString contentHash() const;
+
+    QString description() const;
+
+    QDateTime lastModificationTime() const;
+
+    qulonglong initialOffset() const;
+
+    qulonglong transferredBytes() const;
+
+    PendingOperation *provideFile(QIODevice *input);
+    PendingOperation *acceptFile(qulonglong offset, QIODevice *output);
+    void cancel();
+
+Q_SIGNALS:
+    void stateChanged(Tp::FileTransferState state,
+            Tp::FileTransferStateChangeReason reason);
+    void transferredBytesChanged(qulonglong count);
+    void initialOffsetDefined(qulonglong offset);
+
 protected:
     FileTransferChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
+
+private Q_SLOTS:
+    void gotProperties(QDBusPendingCallWatcher *watcher);
+    void onCallFinished(Tp::PendingOperation *op);
+    void onFileTrasnferStateChanged(uint state, uint stateReason);
+    void onSocketConnected();
+    void writeData();
 
 private:
     struct Private;
