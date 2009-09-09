@@ -159,6 +159,29 @@ public:
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
+    PendingChannelRequest *createFileTransfer(
+            const QString &contactIdentifier,
+            const QString &fileName,
+            const QString &contentType,
+            qulonglong size,
+            FileHashType contentHashType = (FileHashType) -1,
+            const QString &contentHash = QString(),
+            const QString &description = QString(),
+            QDateTime lastModificationTime = QDateTime(),
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+    PendingChannelRequest *createFileTransfer(
+            const ContactPtr &contact,
+            const QString &fileName,
+            const QString &contentType,
+            qulonglong size,
+            FileHashType contentHashType = (FileHashType) -1,
+            const QString &contentHash = QString(),
+            const QString &description = QString(),
+            QDateTime lastModificationTime = QDateTime(),
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+
     // advanced
     PendingChannelRequest *createChannel(
             const QVariantMap &requestedProperties,

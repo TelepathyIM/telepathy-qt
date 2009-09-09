@@ -184,7 +184,7 @@ Account::Private::~Private()
 /**
  * \class Account
  * \ingroup clientaccount
- * \headerfile TelepathyQt4/account.h> <TelepathyQt4/Account>
+ * \headerfile <TelepathyQt4/account.h> <TelepathyQt4/Account>
  *
  * Object representing a Telepathy account.
  *
@@ -857,6 +857,132 @@ PendingChannelRequest *Account::ensureMediaCall(
                    contact ? contact->handle().at(0) : 0);
     return new PendingChannelRequest(dbusConnection(), objectPath(),
             request, userActionTime, preferredHandler, false, this);
+}
+
+/**
+ * Start a request to create a file transfer channel with the given
+ * contact \a contact.
+ *
+ * \param contactIdentifier The identifier of the contact to send a file.
+ * \param fileName The suggested filename for the receiver.
+ * \param contentType The file's MIME type.
+ * \param size The size of the file.
+ * \param contentHashType The type of the \a contentHash.
+ * \param contentHash The hash of the contents of the file.
+ * \param description Description of the file transfer.
+ * \param lastModificationTime The last modification time of the file.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::createFileTransfer(
+        const QString &contactIdentifier,
+        const QString &fileName,
+        const QString &contentType,
+        qulonglong size,
+        FileHashType contentHashType,
+        const QString &contentHash,
+        const QString &description,
+        QDateTime lastModificationTime,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+
+    QFileInfo fileInfo(fileName);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
+                   fileInfo.fileName());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
+                   contentType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
+                   size);
+    if (contentHashType != (FileHashType) -1) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
+                       (uint) contentHashType);
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHash"),
+                       contentHash);
+    }
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Description"),
+                   description);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
+                   (qulonglong) lastModificationTime.toTime_t());
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, true, this);
+}
+
+/**
+ * Start a request to create a file transfer channel with the given
+ * contact \a contact.
+ *
+ * \param contact The contact to send a file.
+ * \param fileName The suggested filename for the receiver.
+ * \param contentType The file's MIME type.
+ * \param size The size of the file.
+ * \param contentHashType The type of the \a contentHash.
+ * \param contentHash The hash of the contents of the file.
+ * \param description Description of the file transfer.
+ * \param lastModificationTime The last modification time of the file.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::createFileTransfer(
+        const ContactPtr &contact,
+        const QString &fileName,
+        const QString &contentType,
+        qulonglong size,
+        FileHashType contentHashType,
+        const QString &contentHash,
+        const QString &description,
+        QDateTime lastModificationTime,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : 0);
+
+    QFileInfo fileInfo(fileName);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
+                   fileInfo.fileName());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
+                   contentType);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
+                   size);
+    if (contentHashType != (FileHashType) -1) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
+                       (uint) contentHashType);
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHash"),
+                       contentHash);
+    }
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Description"),
+                   description);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
+                   (qulonglong) lastModificationTime.toTime_t());
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, true, this);
 }
 
 /**
