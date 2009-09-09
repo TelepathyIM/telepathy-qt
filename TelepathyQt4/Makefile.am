@@ -90,6 +90,7 @@ libtelepathy_qt4_la_SOURCES = \
     pending-operation.cpp \
     pending-ready.cpp \
     pending-string-list.cpp \
+    pending-variant.cpp \
     properties.cpp \
     readiness-helper.cpp \
     ready-object.cpp \
@@ -156,6 +157,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/pending-operation.moc.hpp \
     _gen/pending-ready.moc.hpp \
     _gen/pending-string-list.moc.hpp \
+    _gen/pending-variant.moc.hpp \
     _gen/readiness-helper.moc.hpp \
     _gen/room-list-channel.moc.hpp \
     _gen/simple-pending-operations.moc.hpp \
@@ -205,6 +207,7 @@ tpqt4include_HEADERS = \
     PendingReady \
     PendingSuccess \
     PendingStringList \
+    PendingVariant \
     PendingVoidMethodCall \
     Properties \
     ReadinessHelper \
@@ -298,6 +301,7 @@ tpqt4include_HEADERS = \
     pending-operation.h \
     pending-ready.h \
     pending-string-list.h \
+    pending-variant.h \
     properties.h \
     readiness-helper.h \
     ready-object.h \
