@@ -1,5 +1,5 @@
-DIST_SUBDIRS = extensions accounts roster call
-SUBDIRS = extensions accounts roster
+DIST_SUBDIRS = extensions accounts file-transfer roster call
+SUBDIRS = extensions accounts file-transfer roster
 
 if ENABLE_TP_FARSIGHT
 SUBDIRS += call

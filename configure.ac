@@ -261,6 +261,7 @@ AC_OUTPUT([
     examples/accounts/Makefile
     examples/call/Makefile
     examples/extensions/Makefile
+    examples/file-transfer/Makefile
     examples/roster/Makefile
     m4/Makefile
     spec/Makefile
