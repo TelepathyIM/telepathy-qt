@@ -373,7 +373,7 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), \
                                  TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT); \
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), \
-                                 Tp::HandleTypeContact); \
+                                 (uint) Tp::HandleTypeContact); \
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), \
                                  "foo@bar"); \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \

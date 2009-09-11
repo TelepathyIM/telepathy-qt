@@ -724,7 +724,7 @@ PendingChannelRequest *Account::ensureTextChat(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
     return new PendingChannelRequest(dbusConnection(), objectPath(),
@@ -756,7 +756,7 @@ PendingChannelRequest *Account::ensureTextChat(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : 0);
     return new PendingChannelRequest(dbusConnection(), objectPath(),
@@ -788,7 +788,7 @@ PendingChannelRequest *Account::ensureTextChatroom(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeRoom);
+                   (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    roomName);
     return new PendingChannelRequest(dbusConnection(), objectPath(),
@@ -820,7 +820,7 @@ PendingChannelRequest *Account::ensureMediaCall(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
     return new PendingChannelRequest(dbusConnection(), objectPath(),
@@ -852,7 +852,7 @@ PendingChannelRequest *Account::ensureMediaCall(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : 0);
     return new PendingChannelRequest(dbusConnection(), objectPath(),

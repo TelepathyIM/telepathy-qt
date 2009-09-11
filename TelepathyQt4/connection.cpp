@@ -1004,7 +1004,7 @@ void Connection::gotContactListsHandles(PendingOperation *op)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   HandleTypeList);
+                   (uint) HandleTypeList);
 
     Q_ASSERT(pending->handles().size() == 1);
     Q_ASSERT(pending->namesRequested().size() == 1);

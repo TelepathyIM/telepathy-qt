@@ -226,7 +226,7 @@ PendingOperation *ContactManager::addGroup(const QString &group)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                                   TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                                 Tp::HandleTypeGroup);
+                                 (uint) Tp::HandleTypeGroup);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                                  group);
     return connection()->ensureChannel(request);

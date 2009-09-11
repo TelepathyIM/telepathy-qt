@@ -56,7 +56,7 @@ void CallHandler::addOutgoingCall(const ContactPtr &contact)
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   HandleTypeContact);
+                   (uint) HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact->handle()[0]);
 

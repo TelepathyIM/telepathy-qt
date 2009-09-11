@@ -454,7 +454,7 @@ void TestClient::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                   QDBusVariant(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                  QDBusVariant(Tp::HandleTypeContact));
+                  QDBusVariant((uint) Tp::HandleTypeContact));
     filters.append(filter);
     mClientObject1 = MyClient::create(filters, false, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, "foo"));
@@ -468,7 +468,7 @@ void TestClient::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                   QDBusVariant(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                  QDBusVariant(Tp::HandleTypeContact));
+                  QDBusVariant((uint) Tp::HandleTypeContact));
     filters.append(filter);
     mClientObject2 = MyClient::create(filters, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, "foo", true));
