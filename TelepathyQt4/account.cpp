@@ -894,7 +894,7 @@ PendingChannelRequest *Account::createFileTransfer(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -957,7 +957,7 @@ PendingChannelRequest *Account::createFileTransfer(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
