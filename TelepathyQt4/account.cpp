@@ -961,7 +961,7 @@ PendingChannelRequest *Account::createFileTransfer(
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   contact ? contact->handle().at(0) : 0);
+                   contact ? contact->handle().at(0) : (uint) 0);
 
     QFileInfo fileInfo(fileName);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
