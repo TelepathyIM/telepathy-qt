@@ -321,7 +321,7 @@ void TestStreamedMediaChan::testOutgoingCall()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
@@ -483,7 +483,7 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
@@ -540,7 +540,7 @@ void TestStreamedMediaChan::testOutgoingCallNoAnswer()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
@@ -624,7 +624,7 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
@@ -828,7 +828,7 @@ void TestStreamedMediaChan::testHold()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
@@ -897,7 +897,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
@@ -961,7 +961,7 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
@@ -1043,7 +1043,7 @@ void TestStreamedMediaChan::testDTMF()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
@@ -1130,7 +1130,7 @@ void TestStreamedMediaChan::testDTMFNoContinuousTone()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                    TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   Tp::HandleTypeContact);
+                   (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    otherContact->handle()[0]);
     QVERIFY(connect(mConn->createChannel(request),
