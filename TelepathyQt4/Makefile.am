@@ -73,6 +73,7 @@ libtelepathy_qt4_la_SOURCES = \
     debug-internal.h \
     feature.cpp \
     file-transfer-channel.cpp \
+    file-transfer-channel-creation-properties.cpp \
     incoming-file-transfer-channel.cpp \
     key-file.cpp \
     manager-file.cpp \
@@ -290,6 +291,7 @@ tpqt4include_HEADERS = \
     debug.h \
     feature.h \
     file-transfer-channel.h \
+    file-transfer-channel-creation-properties.h \
     incoming-file-transfer-channel.h \
     key-file.h \
     manager-file.h \
