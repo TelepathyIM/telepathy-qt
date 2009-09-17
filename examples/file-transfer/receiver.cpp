@@ -173,7 +173,8 @@ void Receiver::onFileTransferChannelStateChanged(Tp::FileTransferState state,
 
 void Receiver::onFileTransferChannelTransferredBytesChanged(qulonglong count)
 {
-    qDebug() << "Tranferred bytes" << count;
+    qDebug().nospace() << "Tranferred bytes " << count << " - " <<
+        ((int) (((double) count / mChan->size()) * 100)) << "% done";
 }
 
 void Receiver::onInvalidated()
