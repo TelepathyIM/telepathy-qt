@@ -33,8 +33,6 @@
 #include <QIODevice>
 #include <QTcpSocket>
 
-#define BUFFER_SIZE 4096
-
 namespace Tp
 {
 
@@ -50,12 +48,15 @@ struct OutgoingFileTransferChannel::Private
     QIODevice *input;
     QTcpSocket *socket;
     SocketAddressIPv4 addr;
+
+    qint64 pos;
 };
 
 OutgoingFileTransferChannel::Private::Private(OutgoingFileTransferChannel *parent)
     : parent(parent),
       input(0),
-      socket(0)
+      socket(0),
+      pos(0)
 {
 }
 
@@ -209,6 +210,13 @@ void OutgoingFileTransferChannel::onSocketConnected()
     connect(mPriv->input, SIGNAL(readyRead()),
             SLOT(doTransfer()));
 
+    // for non sequential devices, let's seek to the initialOffset
+    if (!mPriv->input->isSequential()) {
+        if (mPriv->input->seek(initialOffset())) {
+            mPriv->pos = initialOffset();
+        }
+    }
+
     debug() << "Starting transfer...";
     doTransfer();
 }
@@ -246,16 +254,45 @@ void OutgoingFileTransferChannel::doTransfer()
     // read 16k each time, as input can be a QFile, we don't want to block
     // reading the whole file
     char buffer[16 * 1024];
+    char *p = buffer;
+
+    memset(buffer, 0, sizeof(buffer));
     qint64 len = mPriv->input->read(buffer, sizeof(buffer));
 
-    if (len > 0) {
-        mPriv->socket->write(buffer, len); // never fails
+    bool scheduleTransfer = false;
+    if (((qulonglong) mPriv->pos < initialOffset()) && (len > 0)) {
+        qint64 skip = (qint64) qMin(initialOffset() - mPriv->pos,
+                (qulonglong) len);
+
+        debug() << "skipping" << skip << "bytes";
+        if (skip == len) {
+            // nothing to write, all data read was skipped
+            // schedule a transfer, as readyRead may never be called and
+            // bytesWriiten will not
+            scheduleTransfer = true;
+            goto end;
+        }
+
+        p += skip;
+        len -= skip;
     }
 
+    if (len > 0) {
+        mPriv->socket->write(p, len); // never fails
+    }
+
+end:
     if (len == -1 || (!mPriv->input->isSequential() && mPriv->input->atEnd())) {
         // error or EOF
         setFinished();
         return;
+    }
+
+    mPriv->pos += len;
+
+    if (scheduleTransfer) {
+        QMetaObject::invokeMethod(this, SLOT(doTransfer()),
+                Qt::QueuedConnection);
     }
 }
 
