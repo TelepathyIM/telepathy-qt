@@ -115,6 +115,8 @@ IncomingFileTransferChannel::~IncomingFileTransferChannel()
  * The given output device should not be closed/destroyed until the state()
  * changes to %FileTransferStateCompleted or %FileTransferStateCancelled.
  *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
  * \param offset The desired offset in bytes where the file transfer should
  *               start. The offset is taken from the beginning of the file.
  *               Specifying an offset of zero will start the transfer from the
@@ -136,6 +138,13 @@ IncomingFileTransferChannel::~IncomingFileTransferChannel()
 PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
         QIODevice *output)
 {
+    if (!isReady(FileTransferChannel::FeatureCore)) {
+        warning() << "FileTransferChannel::FeatureCore must be ready before "
+            "calling acceptFile";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Channel not ready");
+    }
+
     // let's fail here direclty as we may only have one device to handle
     if (mPriv->output) {
         warning() << "File transfer can only be started once in the same "
