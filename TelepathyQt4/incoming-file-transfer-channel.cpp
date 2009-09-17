@@ -231,7 +231,6 @@ void IncomingFileTransferChannel::onSocketDisconnected()
 
 void IncomingFileTransferChannel::onSocketError(QAbstractSocket::SocketError error)
 {
-    debug() << "Socket error" << error;
     setFinished();
 }
 
