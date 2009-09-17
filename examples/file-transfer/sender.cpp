@@ -275,6 +275,9 @@ void Sender::onFileTransferChannelReady(PendingOperation *op)
     connect(mChan.data(),
             SIGNAL(stateChanged(Tp::FileTransferState, Tp::FileTransferStateChangeReason)),
             SLOT(onFileTransferChannelStateChanged(Tp::FileTransferState, Tp::FileTransferStateChangeReason)));
+    connect(mChan.data(),
+            SIGNAL(transferredBytesChanged(qulonglong)),
+            SLOT(onFileTransferChannelTransferredBytesChanged(qulonglong)));
     mChan->provideFile(&mFile);
 }
 
@@ -288,6 +291,11 @@ void Sender::onFileTransferChannelStateChanged(Tp::FileTransferState state,
         qDebug() << "Transfer completed!";
         QCoreApplication::exit(0);
     }
+}
+
+void Sender::onFileTransferChannelTransferredBytesChanged(qulonglong count)
+{
+    qDebug() << "Tranferred bytes" << count;
 }
 
 void Sender::onInvalidated()
