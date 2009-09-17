@@ -296,7 +296,8 @@ void Sender::onFileTransferChannelStateChanged(Tp::FileTransferState state,
 
 void Sender::onFileTransferChannelTransferredBytesChanged(qulonglong count)
 {
-    qDebug() << "Tranferred bytes" << count;
+    qDebug().nospace() << "Tranferred bytes " << count << " - " <<
+        ((int) (((double) count / mChan->size()) * 100)) << "% done";
 }
 
 void Sender::onInvalidated()
