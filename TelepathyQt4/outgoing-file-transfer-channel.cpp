@@ -121,6 +121,8 @@ OutgoingFileTransferChannel::~OutgoingFileTransferChannel()
  * If input is a sequential device QIODevice::isSequential(), it should be
  * closed when no more data is available, so we know when to stop reading.
  *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
  * \param input A QIODevice object where the data will be read from.
  * \return A PendingOperation object which will emit PendingOperation::finished
  *         when the call has finished.
@@ -128,6 +130,13 @@ OutgoingFileTransferChannel::~OutgoingFileTransferChannel()
  */
 PendingOperation *OutgoingFileTransferChannel::provideFile(QIODevice *input)
 {
+    if (!isReady(FileTransferChannel::FeatureCore)) {
+        warning() << "FileTransferChannel::FeatureCore must be ready before "
+            "calling provideFile";
+        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Channel not ready");
+    }
+
     // let's fail here direclty as we may only have one device to handle
     if (mPriv->input) {
         warning() << "File transfer can only be started once in the same "
