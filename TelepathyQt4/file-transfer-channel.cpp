@@ -147,12 +147,16 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
  * \ingroup clientchannel
  * \headerfile <TelepathyQt4/file-transfer-channel.h> <TelepathyQt4/FileTransferChannel>
  *
- * High-level proxy object for accessing remote %Channel objects of the
- * FileTransfer channel type. These channels can be used to transfer one file
- * to or from a contact.
+ * \brief The FileTransferChannel class provides an object representing
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
+ * channel.
  *
- * This subclass of Channel will eventually provide a high-level API for the
- * FileTransfer interface. Until then, it's just a Channel.
+ * FileTransferChannel is a high-level class representing a
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
+ * channel.
+
+ * For more specialized file transfer classes, please refer to
+ * OutgoingFileTransferChannel and IncomingFileTransferChannel.
  */
 
 const Feature FileTransferChannel::FeatureCore = Feature(FileTransferChannel::staticMetaObject.className(), 0);
@@ -165,15 +169,12 @@ FileTransferChannelPtr FileTransferChannel::create(const ConnectionPtr &connecti
 }
 
 /**
- * Creates a FileTransferChannel associated with the given object on the same service
- * as the given connection.
+ * Construct a new file transfer channel associated with the given \a objectPath
+ * on the same service as the given \a connection.
  *
- * \param connection  Connection owning this FileTransferChannel, and specifying the
- *                    service.
- * \param objectPath  Path to the object on the service.
- * \param immutableProperties  The immutable properties of the channel, as
- *                             signalled by NewChannels or returned by
- *                             CreateChannel or EnsureChannel
+ * \param connection Connection owning this channel, and specifying the service.
+ * \param objectPath Path to the object on the service.
+ * \param immutableProperties The immutable properties of the channel.
  */
 FileTransferChannel::FileTransferChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -191,6 +192,14 @@ FileTransferChannel::~FileTransferChannel()
     delete mPriv;
 }
 
+/**
+ * Return the state of the file transfer as described by the %FileTransferState
+ * enum.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
+ * \return The state of the file transfer.
+ */
 FileTransferState FileTransferChannel::state() const
 {
     if (!isReady(FeatureCore)) {
@@ -201,6 +210,14 @@ FileTransferState FileTransferChannel::state() const
     return (FileTransferState) mPriv->state;
 }
 
+/**
+ * Return the for the state change as described by the
+ * %FileTransferStateChangeReason enum.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
+ * \return The reason for the state change.
+ */
 FileTransferStateChangeReason FileTransferChannel::stateReason() const
 {
     if (!isReady(FeatureCore)) {
@@ -211,6 +228,19 @@ FileTransferStateChangeReason FileTransferChannel::stateReason() const
     return (FileTransferStateChangeReason) mPriv->stateReason;
 }
 
+/**
+ * Return the name of the file on the sender's side. This is therefore given as
+ * a suggested filename for the receiver. This cannot change once the channel
+ * has been created.
+ *
+ * This property should be the basename of the file being sent. For example, if
+ * the sender sends the file /home/user/monkey.pdf then this property should be
+ * set to monkey.pdf.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
+ * \return Suggested filename for the receiver.
+ */
 QString FileTransferChannel::fileName() const
 {
     if (!isReady(FeatureCore)) {
@@ -221,6 +251,14 @@ QString FileTransferChannel::fileName() const
     return mPriv->fileName;
 }
 
+/**
+ * Return the file's MIME type. This cannot change once the channel has been
+ * created.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
+ * \return The file's MIME type.
+ */
 QString FileTransferChannel::contentType() const
 {
     if (!isReady(FeatureCore)) {
@@ -231,6 +269,14 @@ QString FileTransferChannel::contentType() const
     return mPriv->contentType;
 }
 
+/**
+ * The size of the file. This cannot change once the channel has been
+ * created.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
+ * \return The size of the file.
+ */
 qulonglong FileTransferChannel::size() const
 {
     if (!isReady(FeatureCore)) {
@@ -243,6 +289,8 @@ qulonglong FileTransferChannel::size() const
 
 /**
  * Return the type of the contentHash().
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
  * \return The type of the contentHash().
  * \sa contentHash()
@@ -265,6 +313,8 @@ FileHashType FileTransferChannel::contentHashType() const
  * If the contentHashType() is set to %FileHashTypeNone,
  * then this value should be ignored.
  *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
  * \return Hash of the contents of the file transfer.
  * \sa contentHashType()
  */
@@ -282,6 +332,8 @@ QString FileTransferChannel::contentHash() const
  * Return the description of the file transfer. This cannot change once the
  * channel has been created.
  *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
  * \return The description of the file transfer.
  */
 QString FileTransferChannel::description() const
@@ -298,6 +350,8 @@ QString FileTransferChannel::description() const
  * Return the last modification time of the file being transferred. This cannot
  * change once the channel has been created.
  *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
  * \return The last modification time of the file being transferred.
  */
 QDateTime FileTransferChannel::lastModificationTime() const
@@ -312,6 +366,8 @@ QDateTime FileTransferChannel::lastModificationTime() const
 
 /**
  * Return the offset in bytes from where the file should be sent.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
  * \return The offset in bytes from where the file should be sent.
  */
@@ -329,6 +385,8 @@ qulonglong FileTransferChannel::initialOffset() const
  * Return the number of bytes that have been transferred.
  * This will be updated as the file transfer continues.
  *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
  * \return Number of bytes that have been transferred.
  * \sa transferredBytesChanged()
  */
@@ -344,32 +402,78 @@ qulonglong FileTransferChannel::transferredBytes() const
 
 /**
  * Cancel a file transfer.
+ *
+ * \return A PendingOperation object which will emit PendingOperation::finished
+ *         when the call has finished.
  */
 PendingOperation *FileTransferChannel::cancel()
 {
     return requestClose();
 }
 
+/**
+ * Protected virtual method called when the state becomes
+ * %FileTransferStateOpen.
+ *
+ * Specialized classes should reimplement this method and call setConnected()
+ * when the connection is established.
+ *
+ * \sa setConnected()
+ */
 void FileTransferChannel::connectToHost()
 {
     // do nothing
 }
 
+/**
+ * Return whether a connection has been established.
+ *
+ * \return Whether a connection has been established.
+ * \sa setConnected()
+ */
 bool FileTransferChannel::isConnected() const
 {
     return mPriv->connected;
 }
 
+/**
+ * Indicate whether a connection has been established.
+ *
+ * Specialized classes that reimplement connectToHost() must call this method
+ * once the connection has been established or setFinished() if an error
+ * occurred.
+ *
+ * \sa isConnected(), connectToHost(), setFinished()
+ */
 void FileTransferChannel::setConnected()
 {
     mPriv->connected = true;
 }
 
+/**
+ * Return whether sending/receiving has finished.
+ *
+ * \return Whether sending/receiving has finished.
+ */
 bool FileTransferChannel::isFinished() const
 {
     return mPriv->finished;
 }
 
+/**
+ * Protected virtual method called when an error occurred and the transfer
+ * should finish.
+ *
+ * Specialized classes should reimplement this method and close the IO devices
+ * and do all the needed cleanup.
+ *
+ * Note that for specialized classes that reimplement connectToHost() and set
+ * isConnected() to true, the state will not change to
+ * %FileTransferStateCompleted once the state change is received.
+ *
+ * When finished sending/receiving the specialized class MUST call this method
+ * and then the state will change to the latest pending state.
+ */
 void FileTransferChannel::setFinished()
 {
     mPriv->finished = true;
