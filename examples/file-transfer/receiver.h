@@ -49,6 +49,7 @@ private Q_SLOTS:
     void onFileTransferChannelReady(Tp::PendingOperation *op);
     void onFileTransferChannelStateChanged(Tp::FileTransferState state,
             Tp::FileTransferStateChangeReason stateReason);
+    void onFileTransferChannelTransferredBytesChanged(qulonglong count);
     void onInvalidated();
 
 private:

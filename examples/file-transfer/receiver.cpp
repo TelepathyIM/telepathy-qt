@@ -148,8 +148,11 @@ void Receiver::onFileTransferChannelReady(PendingOperation *op)
     connect(mChan.data(),
             SIGNAL(stateChanged(Tp::FileTransferState, Tp::FileTransferStateChangeReason)),
             SLOT(onFileTransferChannelStateChanged(Tp::FileTransferState, Tp::FileTransferStateChangeReason)));
-    qDebug() << "Saving file as" << mChan->fileName();
-    mFile.setFileName(mChan->fileName());
+    connect(mChan.data(),
+            SIGNAL(transferredBytesChanged(qulonglong)),
+            SLOT(onFileTransferChannelTransferredBytesChanged(qulonglong)));
+    mFile.setFileName(QLatin1String("TelepathyQt4FTReceiverExample_") + mChan->fileName());
+    qDebug() << "Saving file as" << mFile.fileName();
     mChan->acceptFile(0, &mFile);
 }
 
@@ -163,6 +166,11 @@ void Receiver::onFileTransferChannelStateChanged(Tp::FileTransferState state,
         qDebug() << "Transfer completed!";
         QCoreApplication::exit(0);
     }
+}
+
+void Receiver::onFileTransferChannelTransferredBytesChanged(qulonglong count)
+{
+    qDebug() << "Tranferred bytes" << count;
 }
 
 void Receiver::onInvalidated()
