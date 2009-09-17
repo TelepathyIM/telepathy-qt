@@ -19,11 +19,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_examples_file_transfer_receiver_h_HEADER_GUARD_
-#define _TelepathyQt4_examples_file_transfer_receiver_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_examples_file_transfer_receiver_channel_h_HEADER_GUARD_
+#define _TelepathyQt4_examples_file_transfer_receiver_channel_h_HEADER_GUARD_
 
 #include <TelepathyQt4/Constants>
-#include <TelepathyQt4/Contact>
 #include <TelepathyQt4/Types>
 
 using namespace Tp;
@@ -33,28 +32,29 @@ namespace Tp
 class PendingOperation;
 }
 
-class Receiver : public QObject
+class ReceiverChannel : public QObject
 {
     Q_OBJECT
 
 public:
-   Receiver(const QString &username, const QString &password);
-   ~Receiver();
+   ReceiverChannel(const ConnectionPtr &connection,
+           const QString &objectPath, const QVariantMap &immutableProperties);
+   ~ReceiverChannel();
+
+Q_SIGNALS:
+    void finished();
 
 private Q_SLOTS:
-    void onCMReady(Tp::PendingOperation *op);
-    void onConnectionCreated(Tp::PendingOperation *op);
-    void onConnectionConnected(Tp::PendingOperation *op);
-    void onNewChannels(const Tp::ChannelDetailsList &channels);
+    void onFileTransferChannelReady(Tp::PendingOperation *op);
+    void onFileTransferChannelStateChanged(Tp::FileTransferState state,
+            Tp::FileTransferStateChangeReason stateReason);
+    void onFileTransferChannelTransferredBytesChanged(qulonglong count);
     void onInvalidated();
 
 private:
-    QString mUsername;
-    QString mPassword;
+    IncomingFileTransferChannelPtr mChan;
     QFile mFile;
-
-    ConnectionManagerPtr mCM;
-    ConnectionPtr mConn;
+    bool mCompleted;
 };
 
 #endif

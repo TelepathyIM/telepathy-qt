@@ -29,10 +29,12 @@ receiver_LDADD = \
 	$(top_builddir)/TelepathyQt4/libtelepathy-qt4.la
 
 receiver_SOURCES = \
-	receiver.cpp
+	receiver.cpp \
+	receiver-channel.cpp
 
 nodist_receiver_SOURCES = \
-	_gen/receiver.moc.hpp
+	_gen/receiver.moc.hpp \
+	_gen/receiver-channel.moc.hpp
 
 BUILT_SOURCES = \
 	$(nodist_sender_SOURCES) \

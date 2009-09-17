@@ -22,28 +22,23 @@
 #include "receiver.h"
 #include "_gen/receiver.moc.hpp"
 
+#include "receiver-channel.h"
+
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/Constants>
-#include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/FileTransferChannel>
 #include <TelepathyQt4/IncomingFileTransferChannel>
-#include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingConnection>
-#include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
 
 #include <QDebug>
-#include <QFile>
-#include <QFileInfo>
 
 Receiver::Receiver(const QString &username, const QString &password)
     : mUsername(username),
-      mPassword(password),
-      mTransferStarted(false),
-      mCompleted(false)
+      mPassword(password)
 {
     mCM = ConnectionManager::create("gabble");
     connect(mCM->becomeReady(),
@@ -122,64 +117,21 @@ void Receiver::onNewChannels(const Tp::ChannelDetailsList &channels)
         qDebug() << " requested  :" << requested;
 
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER &&
-            !requested && !mTransferStarted) {
-            mTransferStarted = true;
-            mChan = IncomingFileTransferChannel::create(mConn,
-                        details.channel.path(),
-                        details.properties);
-            connect(mChan.data(),
-                    SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-                    SLOT(onInvalidated()));
-            connect(mChan->becomeReady(FileTransferChannel::FeatureCore),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(onFileTransferChannelReady(Tp::PendingOperation *)));
+            !requested) {
+            ReceiverChannel *channel = new ReceiverChannel(mConn,
+                    details.channel.path(),
+                    details.properties);
+            connect(channel,
+                    SIGNAL(finished()),
+                    channel,
+                    SLOT(deleteLater()));
         }
     }
 }
 
-void Receiver::onFileTransferChannelReady(PendingOperation *op)
-{
-    if (op->isError()) {
-        qWarning() << "Unable to make file transfer channel ready -" <<
-            op->errorName() << ": " << op->errorMessage();
-        return;
-    }
-
-    qDebug() << "File transfer channel ready!";
-    connect(mChan.data(),
-            SIGNAL(stateChanged(Tp::FileTransferState, Tp::FileTransferStateChangeReason)),
-            SLOT(onFileTransferChannelStateChanged(Tp::FileTransferState, Tp::FileTransferStateChangeReason)));
-    connect(mChan.data(),
-            SIGNAL(transferredBytesChanged(qulonglong)),
-            SLOT(onFileTransferChannelTransferredBytesChanged(qulonglong)));
-    QString fileName(QLatin1String("TelepathyQt4FTReceiverExample_") + mChan->fileName());
-    fileName.replace("/", "_");
-    mFile.setFileName(fileName);
-    qDebug() << "Saving file as" << mFile.fileName();
-    mChan->acceptFile(0, &mFile);
-}
-
-void Receiver::onFileTransferChannelStateChanged(Tp::FileTransferState state,
-    Tp::FileTransferStateChangeReason stateReason)
-{
-    qDebug() << "File transfer channel state changed to" << state <<
-        "with reason" << stateReason;
-    mCompleted = (state == FileTransferStateCompleted);
-    if (mCompleted) {
-        qDebug() << "Transfer completed!";
-        QCoreApplication::exit(0);
-    }
-}
-
-void Receiver::onFileTransferChannelTransferredBytesChanged(qulonglong count)
-{
-    qDebug().nospace() << "Tranferred bytes " << count << " - " <<
-        ((int) (((double) count / mChan->size()) * 100)) << "% done";
-}
-
 void Receiver::onInvalidated()
 {
-    QCoreApplication::exit(!mCompleted);
+    QCoreApplication::exit(1);
 }
 
 int main(int argc, char **argv)
