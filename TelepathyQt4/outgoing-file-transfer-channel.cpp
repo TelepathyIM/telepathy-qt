@@ -69,12 +69,13 @@ OutgoingFileTransferChannel::Private::~Private()
  * \ingroup clientchannel
  * \headerfile <TelepathyQt4/outgoing-file-transfer-channel.h> <TelepathyQt4/OutgoingFileTransferChannel>
  *
- * High-level proxy object for accessing remote %Channel objects of the
- * FileTransfer channel type. These channels can be used to transfer one file
- * to or from a contact.
+ * \brief The OutgoingFileTransferChannel class provides an object representing
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
+ * channel for outgoing file transfers.
  *
- * This subclass of Channel will eventually provide a high-level API for the
- * FileTransfer interface. Until then, it's just a Channel.
+ * OutgoingFileTransferChannel is a high-level class representing a
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
+ * channel for outgoing file transfers.
  */
 
 const Feature OutgoingFileTransferChannel::FeatureCore = Feature(OutgoingFileTransferChannel::staticMetaObject.className(), 0);
@@ -87,15 +88,12 @@ OutgoingFileTransferChannelPtr OutgoingFileTransferChannel::create(const Connect
 }
 
 /**
- * Creates a OutgoingFileTransferChannel associated with the given object on the
- * same service as the given connection.
+ * Construct a new outgoing file transfer channel associated with the given
+ * \a objectPath on the same service as the given \a connection.
  *
- * \param connection Connection owning this OutgoingFileTransferChannel, and
- *                   specifying the service.
+ * \param connection Connection owning this channel, and specifying the service.
  * \param objectPath Path to the object on the service.
- * \param immutableProperties The immutable properties of the channel, as
- *                            signalled by NewChannels or returned by
- *                            CreateChannel or EnsureChannel
+ * \param immutableProperties The immutable properties of the channel.
  */
 OutgoingFileTransferChannel::OutgoingFileTransferChannel(
         const ConnectionPtr &connection,
