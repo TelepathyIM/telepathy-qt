@@ -73,12 +73,14 @@ libtelepathy_qt4_la_SOURCES = \
     debug-internal.h \
     feature.cpp \
     file-transfer-channel.cpp \
+    incoming-file-transfer-channel.cpp \
     key-file.cpp \
     manager-file.cpp \
     media-session-handler.cpp \
     media-stream-handler.cpp \
     message.cpp \
     optional-interface-factory.cpp \
+    outgoing-file-transfer-channel.cpp \
     pending-account.cpp \
     pending-channel.cpp \
     pending-channel-request.cpp \
@@ -146,6 +148,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/contact-manager-internal.moc.hpp \
     _gen/dbus-proxy.moc.hpp \
     _gen/file-transfer-channel.moc.hpp \
+    _gen/incoming-file-transfer-channel.moc.hpp \
+    _gen/outgoing-file-transfer-channel.moc.hpp \
     _gen/pending-account.moc.hpp \
     _gen/pending-channel.moc.hpp \
     _gen/pending-channel-request.moc.hpp \
@@ -188,6 +192,7 @@ tpqt4include_HEADERS = \
     DBusProxy \
     Feature \
     FileTransferChannel \
+    IncomingFileTransferChannel \
     KeyFile \
     ManagerFile \
     MediaSessionHandler \
@@ -195,6 +200,7 @@ tpqt4include_HEADERS = \
     Message \
     MethodInvocationContext \
     OptionalInterfaceFactory \
+    OutgoingFileTransferChannel \
     PendingAccount \
     PendingChannel \
     PendingChannelRequest \
@@ -284,6 +290,7 @@ tpqt4include_HEADERS = \
     debug.h \
     feature.h \
     file-transfer-channel.h \
+    incoming-file-transfer-channel.h \
     key-file.h \
     manager-file.h \
     media-session-handler.h \
@@ -291,6 +298,7 @@ tpqt4include_HEADERS = \
     message.h \
     method-invocation-context.h \
     optional-interface-factory.h \
+    outgoing-file-transfer-channel.h \
     pending-account.h \
     pending-channel.h \
     pending-channel-request.h \

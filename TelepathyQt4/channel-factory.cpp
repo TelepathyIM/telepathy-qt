@@ -25,6 +25,8 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/FileTransferChannel>
+#include <TelepathyQt4/IncomingFileTransferChannel>
+#include <TelepathyQt4/OutgoingFileTransferChannel>
 #include <TelepathyQt4/RoomListChannel>
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <TelepathyQt4/TextChannel>
@@ -53,9 +55,24 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
                         channelPath, immutableProperties).data()));
     }
     else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {
-        return ChannelPtr(dynamic_cast<Channel*>(
-                    FileTransferChannel::create(connection,
-                        channelPath, immutableProperties).data()));
+        if (immutableProperties.contains(QLatin1String(
+                        TELEPATHY_INTERFACE_CHANNEL ".Requested"))) {
+            bool requested = immutableProperties.value(QLatin1String(
+                        TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
+            if (requested) {
+                return ChannelPtr(dynamic_cast<Channel*>(
+                            OutgoingFileTransferChannel::create(connection,
+                                channelPath, immutableProperties).data()));
+            } else {
+                return ChannelPtr(dynamic_cast<Channel*>(
+                            IncomingFileTransferChannel::create(connection,
+                                channelPath, immutableProperties).data()));
+            }
+        } else {
+            return ChannelPtr(dynamic_cast<Channel*>(
+                        FileTransferChannel::create(connection,
+                            channelPath, immutableProperties).data()));
+        }
     }
 
     // ContactList, old-style Tubes, or a future channel type

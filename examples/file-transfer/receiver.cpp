@@ -28,6 +28,7 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/FileTransferChannel>
+#include <TelepathyQt4/IncomingFileTransferChannel>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingContacts>
@@ -123,7 +124,7 @@ void Receiver::onNewChannels(const Tp::ChannelDetailsList &channels)
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER &&
             !requested && !mTransferStarted) {
             mTransferStarted = true;
-            mChan = FileTransferChannel::create(mConn,
+            mChan = IncomingFileTransferChannel::create(mConn,
                         details.channel.path(),
                         details.properties);
             connect(mChan.data(),

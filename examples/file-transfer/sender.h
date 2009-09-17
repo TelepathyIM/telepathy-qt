@@ -70,7 +70,7 @@ private:
 
     ConnectionManagerPtr mCM;
     ConnectionPtr mConn;
-    FileTransferChannelPtr mChan;
+    OutgoingFileTransferChannelPtr mChan;
     ContactPtr mContact;
 
     bool mTransferStarted;

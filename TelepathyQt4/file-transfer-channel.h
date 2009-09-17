@@ -1,4 +1,5 @@
-/* FileTransfer channel client-side proxy
+/*
+ * This file is part of TelepathyQt4
  *
  * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2009 Nokia Corporation
@@ -61,26 +62,32 @@ public:
 
     qulonglong transferredBytes() const;
 
-    PendingOperation *provideFile(QIODevice *input);
-    PendingOperation *acceptFile(qulonglong offset, QIODevice *output);
-    void cancel();
+    PendingOperation *cancel();
 
 Q_SIGNALS:
     void stateChanged(Tp::FileTransferState state,
             Tp::FileTransferStateChangeReason reason);
+    void initialOffsetDefined(qulonglong initialOffset);
     void transferredBytesChanged(qulonglong count);
-    void initialOffsetDefined(qulonglong offset);
 
 protected:
     FileTransferChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
+    virtual void connectToHost();
+    bool isConnected() const;
+    void setConnected();
+
+    bool isFinished() const;
+    virtual void setFinished();
+
 private Q_SLOTS:
     void gotProperties(QDBusPendingCallWatcher *watcher);
-    void onCallFinished(Tp::PendingOperation *op);
-    void onFileTrasnferStateChanged(uint state, uint stateReason);
-    void onSocketConnected();
-    void writeData();
+
+    void changeState();
+    void onStateChanged(uint state, uint stateReason);
+    void onInitialOffsetDefined(qulonglong initialOffset);
+    void onTransferredBytesChanged(qulonglong count);
 
 private:
     struct Private;

@@ -1,4 +1,5 @@
-/* FileTransfer channel client-side proxy
+/*
+ * This file is part of TelepathyQt4
  *
  * Copyright (C) 2009 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright (C) 2009 Nokia Corporation
@@ -25,14 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Connection>
-#include <TelepathyQt4/PendingFailure>
-#include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/Types>
-
-#include <QIODevice>
-#include <QTcpSocket>
-
-#define BUFFER_SIZE 4096
 
 namespace Tp
 {
@@ -46,12 +40,6 @@ struct FileTransferChannel::Private
 
     void extractProperties(const QVariantMap &props);
 
-    void connectToHost();
-    void startTransfer();
-    void writeData();
-    void changeState();
-    void setFinished();
-
     // Public object
     FileTransferChannel *parent;
 
@@ -61,25 +49,22 @@ struct FileTransferChannel::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    FileTransferState pendingState;
-    FileTransferStateChangeReason pendingStateReason;
-    FileTransferState state;
-    FileTransferStateChangeReason stateReason;
+    uint pendingState;
+    uint pendingStateReason;
+    uint state;
+    uint stateReason;
     QString contentType;
     QString fileName;
     QString contentHash;
     QString description;
     QDateTime lastModificationTime;
     FileHashType contentHashType;
+    qulonglong initialOffset;
     qulonglong size;
     qulonglong transferredBytes;
-    qulonglong initialOffset;
-    qulonglong bytesWritten;
 
-    QIODevice *input;
-    QIODevice *output;
-    QTcpSocket *socket;
-    SocketAddressIPv4 addr;
+    bool connected;
+    bool finished;
 };
 
 FileTransferChannel::Private::Private(FileTransferChannel *parent)
@@ -92,23 +77,21 @@ FileTransferChannel::Private::Private(FileTransferChannel *parent)
       state(pendingState),
       stateReason(pendingStateReason),
       contentHashType(FileHashTypeNone),
+      initialOffset(0),
       size(0),
       transferredBytes(0),
-      initialOffset(0),
-      bytesWritten(0),
-      input(0),
-      output(0),
-      socket(0)
+      connected(false),
+      finished(false)
 {
     parent->connect(fileTransferInterface,
+            SIGNAL(InitialOffsetDefined(qulonglong)),
+            SLOT(onInitialOffsetDefined(qulonglong)));
+    parent->connect(fileTransferInterface,
             SIGNAL(FileTransferStateChanged(uint, uint)),
-            SLOT(onFileTrasnferStateChanged(uint, uint)));
+            SLOT(onStateChanged(uint, uint)));
     parent->connect(fileTransferInterface,
             SIGNAL(TransferredBytesChanged(qulonglong)),
-            SIGNAL(transferredBytesChanged(qulonglong)));
-    parent->connect(fileTransferInterface,
-            SIGNAL(InitialOffsetDefined(qulonglong)),
-            SIGNAL(initialOffsetDefined(qulonglong)));
+            SLOT(onTransferredBytesChanged(qulonglong)));
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -147,91 +130,16 @@ void FileTransferChannel::Private::introspectProperties(
 
 void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
 {
-    state = (FileTransferState) qdbus_cast<uint>(props["State"]);
-    pendingState = state;
+    pendingState = state = qdbus_cast<uint>(props["State"]);
     contentType = qdbus_cast<QString>(props["ContentType"]);
     fileName = qdbus_cast<QString>(props["Filename"]);
     contentHash = qdbus_cast<QString>(props["ContentHash"]);
     description = qdbus_cast<QString>(props["Description"]);
     lastModificationTime.setTime_t((uint) qdbus_cast<qulonglong>(props["Date"]));
     contentHashType = (FileHashType) qdbus_cast<uint>(props["ContentHashType"]);
+    initialOffset = qdbus_cast<qulonglong>(props["InitialOffset"]);
     size = qdbus_cast<qulonglong>(props["Size"]);
     transferredBytes = qdbus_cast<qulonglong>(props["TransferredBytes"]);
-    initialOffset = qdbus_cast<qulonglong>(props["InitialOffset"]);
-}
-
-void FileTransferChannel::Private::connectToHost()
-{
-    socket = new QTcpSocket(parent);
-
-    if (parent->isRequested()) {
-        output = socket;
-    } else {
-        input = socket;
-    }
-
-    parent->connect(socket,
-            SIGNAL(connected()),
-            SLOT(onSocketConnected()));
-    debug().nospace() << "Connecting to host " <<
-        addr.address << ":" << addr.port << "...";
-
-    socket->connectToHost(addr.address, addr.port);
-}
-
-void FileTransferChannel::Private::startTransfer()
-{
-    parent->connect(input, SIGNAL(readyRead()), SLOT(writeData()));
-    parent->writeData();
-}
-
-void FileTransferChannel::Private::writeData()
-{
-    char buffer[16 * 1024];
-    qint64 len = input->read(buffer, sizeof(buffer));
-    if (len > 0) {
-        output->write(buffer, len); // never fails
-        bytesWritten += len;
-    } else if (len == -1 || (!input->isSequential() && input->atEnd())) {
-        // error or EOF
-        if (pendingState == FileTransferStateCompleted &&
-            bytesWritten != size) {
-            // the CM finished receiving the file but some error occurred
-            pendingState = FileTransferStateCancelled;
-            pendingStateReason = FileTransferStateChangeReasonLocalError;
-            warning() << "An error occurred during the transfer";
-        }
-        setFinished();
-        return;
-    }
-
-    if (pendingState == FileTransferStateCompleted &&
-        bytesWritten == size) {
-        setFinished();
-        return;
-    }
-
-    // if there is no data available, writeData will be called automatically
-    // when readyRead is emitted
-    if (input->bytesAvailable() > 0) {
-        // process more data
-        QMetaObject::invokeMethod(parent, "writeData", Qt::QueuedConnection);
-    }
-}
-
-void FileTransferChannel::Private::changeState()
-{
-    state = pendingState;
-    stateReason = pendingStateReason;
-    debug() << "State changed to" << state << "with reason" << stateReason;
-    emit parent->stateChanged(state, stateReason);
-}
-
-void FileTransferChannel::Private::setFinished()
-{
-    changeState();
-    input->close();
-    output->close();
 }
 
 /**
@@ -290,7 +198,7 @@ FileTransferState FileTransferChannel::state() const
             "calling state";
     }
 
-    return mPriv->state;
+    return (FileTransferState) mPriv->state;
 }
 
 FileTransferStateChangeReason FileTransferChannel::stateReason() const
@@ -300,7 +208,7 @@ FileTransferStateChangeReason FileTransferChannel::stateReason() const
             "calling stateReason";
     }
 
-    return mPriv->stateReason;
+    return (FileTransferStateChangeReason) mPriv->stateReason;
 }
 
 QString FileTransferChannel::fileName() const
@@ -333,6 +241,12 @@ qulonglong FileTransferChannel::size() const
     return mPriv->size;
 }
 
+/**
+ * Return the type of the contentHash().
+ *
+ * \return The type of the contentHash().
+ * \sa contentHash()
+ */
 FileHashType FileTransferChannel::contentHashType() const
 {
     if (!isReady(FeatureCore)) {
@@ -343,6 +257,17 @@ FileHashType FileTransferChannel::contentHashType() const
     return mPriv->contentHashType;
 }
 
+/**
+ * Return the hash of the contents of the file transfer, of type described in
+ * the value of the contentHashType().
+ *
+ * Its value MUST correspond to the appropriate type of the contentHashType().
+ * If the contentHashType() is set to %FileHashTypeNone,
+ * then this value should be ignored.
+ *
+ * \return Hash of the contents of the file transfer.
+ * \sa contentHashType()
+ */
 QString FileTransferChannel::contentHash() const
 {
     if (!isReady(FeatureCore)) {
@@ -353,6 +278,12 @@ QString FileTransferChannel::contentHash() const
     return mPriv->contentHash;
 }
 
+/**
+ * Return the description of the file transfer. This cannot change once the
+ * channel has been created.
+ *
+ * \return The description of the file transfer.
+ */
 QString FileTransferChannel::description() const
 {
     if (!isReady(FeatureCore)) {
@@ -363,6 +294,12 @@ QString FileTransferChannel::description() const
     return mPriv->description;
 }
 
+/**
+ * Return the last modification time of the file being transferred. This cannot
+ * change once the channel has been created.
+ *
+ * \return The last modification time of the file being transferred.
+ */
 QDateTime FileTransferChannel::lastModificationTime() const
 {
     if (!isReady(FeatureCore)) {
@@ -373,6 +310,11 @@ QDateTime FileTransferChannel::lastModificationTime() const
     return mPriv->lastModificationTime;
 }
 
+/**
+ * Return the offset in bytes from where the file should be sent.
+ *
+ * \return The offset in bytes from where the file should be sent.
+ */
 qulonglong FileTransferChannel::initialOffset() const
 {
     if (!isReady(FeatureCore)) {
@@ -383,6 +325,13 @@ qulonglong FileTransferChannel::initialOffset() const
     return mPriv->initialOffset;
 }
 
+/**
+ * Return the number of bytes that have been transferred.
+ * This will be updated as the file transfer continues.
+ *
+ * \return Number of bytes that have been transferred.
+ * \sa transferredBytesChanged()
+ */
 qulonglong FileTransferChannel::transferredBytes() const
 {
     if (!isReady(FeatureCore)) {
@@ -393,99 +342,41 @@ qulonglong FileTransferChannel::transferredBytes() const
     return mPriv->transferredBytes;
 }
 
-PendingOperation *FileTransferChannel::provideFile(QIODevice *input)
+/**
+ * Cancel a file transfer.
+ */
+PendingOperation *FileTransferChannel::cancel()
 {
-    if (!isReady(FeatureCore)) {
-        warning() << "FileTransferChannel::FeatureCore must be ready before "
-            "calling provideFile";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel not ready");
-    }
-
-    if (!isRequested()) {
-        warning() << "Channel must have been requested in order to start an "
-            "outgoing file transfer";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_YOURS,
-                "Channel must have been requested in order to start an "
-                "outgoing file transfer");
-    }
-
-    // let's fail here direclty as we may only have one device to handle
-    if (mPriv->input) {
-        warning() << "File transfer can only be started once in the same "
-            "channel";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "File transfer can only be started once in the same channel");
-    }
-
-    if ((!input->isOpen() && !input->open(QIODevice::ReadOnly)) &&
-        !input->isReadable()) {
-        warning() << "Unable to open IO device for reading";
-        return new PendingFailure(this, TELEPATHY_ERROR_PERMISSION_DENIED,
-                "Unable to open IO device for reading");
-    }
-
-    mPriv->input = input;
-
-    PendingVariant *pv = new PendingVariant(
-            mPriv->fileTransferInterface->ProvideFile(SocketAddressTypeIPv4,
-                SocketAccessControlLocalhost, QDBusVariant(QVariant(QString()))),
-            this);
-    connect(pv,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onCallFinished(Tp::PendingOperation*)));
-    return pv;
+    return requestClose();
 }
 
-PendingOperation *FileTransferChannel::acceptFile(qulonglong offset,
-        QIODevice *output)
+void FileTransferChannel::connectToHost()
 {
-    if (!isReady(FeatureCore)) {
-        warning() << "FileTransferChannel::FeatureCore must be ready before "
-            "calling acceptFile";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel not ready");
-    }
-
-    if (isRequested()) {
-        warning() << "Channel must not have been requested in order to accept "
-            "an incoming file transfer";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_YOURS,
-                "Channel must not have been requested in order to accept an "
-                "incoming file transfer");
-    }
-
-    // let's fail here direclty as we may only have one device to handle
-    if (mPriv->output) {
-        warning() << "File transfer can only be started once in the same "
-            "channel";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "File transfer can only be started once in the same channel");
-    }
-
-    if ((!output->isOpen() && !output->open(QIODevice::ReadWrite)) &&
-        !output->isWritable()) {
-        warning() << "Unable to open IO device for writing";
-        return new PendingFailure(this, TELEPATHY_ERROR_PERMISSION_DENIED,
-                "Unable to open IO device for writing");
-    }
-
-    mPriv->output = output;
-
-    PendingVariant *pv = new PendingVariant(
-            mPriv->fileTransferInterface->AcceptFile(SocketAddressTypeIPv4,
-                SocketAccessControlLocalhost, QDBusVariant(QVariant(QString())),
-                offset),
-            this);
-    connect(pv,
-            SIGNAL(finished(Tp::PendingOperation*)),
-            SLOT(onCallFinished(Tp::PendingOperation*)));
-    return pv;
+    // do nothing
 }
 
-void FileTransferChannel::cancel()
+bool FileTransferChannel::isConnected() const
 {
-    requestClose();
+    return mPriv->connected;
+}
+
+void FileTransferChannel::setConnected()
+{
+    mPriv->connected = true;
+}
+
+bool FileTransferChannel::isFinished() const
+{
+    return mPriv->finished;
+}
+
+void FileTransferChannel::setFinished()
+{
+    mPriv->finished = true;
+
+    // do the actual state change, in case we are in
+    // FileTransferStateCompleted pendingState
+    changeState();
 }
 
 void FileTransferChannel::gotProperties(QDBusPendingCallWatcher *watcher)
@@ -506,56 +397,77 @@ void FileTransferChannel::gotProperties(QDBusPendingCallWatcher *watcher)
     }
 }
 
-void FileTransferChannel::onCallFinished(PendingOperation *op)
+void FileTransferChannel::changeState()
 {
-    if (op->isError()) {
-        // fail providing file, request close
-        warning() << "Error starting file transfer, "
-            "closing channel...";
-        requestClose();
+    if (mPriv->state == mPriv->pendingState) {
         return;
     }
 
-    PendingVariant *pv = qobject_cast<PendingVariant *>(op);
-    mPriv->addr = qdbus_cast<SocketAddressIPv4>(pv->result());
-    debug().nospace() << "Got address " << mPriv->addr.address <<
-        ":" << mPriv->addr.port;
-
-    if (mPriv->pendingState == FileTransferStateOpen) {
-        mPriv->connectToHost();
-    }
+    mPriv->state = mPriv->pendingState;
+    mPriv->stateReason = mPriv->pendingStateReason;
+    emit stateChanged((FileTransferState) mPriv->state,
+            (FileTransferStateChangeReason) mPriv->stateReason);
 }
 
-void FileTransferChannel::onFileTrasnferStateChanged(uint state,
-        uint stateReason)
+void FileTransferChannel::onStateChanged(uint state, uint stateReason)
 {
     if (state == (uint) mPriv->pendingState) {
         return;
     }
 
+    debug() << "File transfer state changed to" << state <<
+        "with reason" << stateReason;
     mPriv->pendingState = (FileTransferState) state;
     mPriv->pendingStateReason = (FileTransferStateChangeReason) stateReason;
 
-    if (state == FileTransferStateOpen && !mPriv->addr.address.isNull()) {
-        mPriv->connectToHost();
-    }
-
-    if ((state != FileTransferStateCompleted) ||
-        (state == FileTransferStateCompleted &&
-         mPriv->bytesWritten == mPriv->size)) {
-        mPriv->changeState();
+    switch (state) {
+        case FileTransferStateOpen:
+            // try to connect to host, for handlers this
+            // connect to host, as the user called Accept/ProvideFile
+            // and have the host addr, for observers this will do nothing and
+            // everything will keep working
+            connectToHost();
+            changeState();
+            break;
+        case FileTransferStateCompleted:
+            //iIf already finished sending/receiving, just change the state,
+            // if not completed will only be set when:
+            // IncomingChannel:
+            //  - The input socket closes
+            // OutgoingChannel:
+            //  - Input EOF is reached or the output socket is closed
+            //
+            // we also check for connected as observers will never be connected
+            // and finished will never be set, but we need to work anyway.
+            if (mPriv->finished || !mPriv->connected) {
+                changeState();
+            }
+            break;
+        case FileTransferStateCancelled:
+            // if already finished sending/receiving, just change the state,
+            // if not finish now and change the state
+            if (!mPriv->finished) {
+                setFinished();
+            } else {
+                changeState();
+            }
+            break;
+        default:
+            changeState();
+            break;
     }
 }
 
-void FileTransferChannel::onSocketConnected()
+void FileTransferChannel::onInitialOffsetDefined(qulonglong initialOffset)
 {
-    debug() << "Connected to host!";
-    mPriv->startTransfer();
+    mPriv->initialOffset = initialOffset;
+    emit initialOffsetDefined(initialOffset);
 }
 
-void FileTransferChannel::writeData()
+void FileTransferChannel::onTransferredBytesChanged(qulonglong count)
 {
-    mPriv->writeData();
+    mPriv->transferredBytes = count;
+    emit transferredBytesChanged(count);
 }
 
 } // Tp

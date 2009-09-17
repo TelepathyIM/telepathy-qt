@@ -28,6 +28,7 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/FileTransferChannel>
+#include <TelepathyQt4/OutgoingFileTransferChannel>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingContacts>
@@ -254,7 +255,7 @@ void Sender::onFileTransferChannelCreated(PendingOperation *op)
 
     qDebug() << "File transfer channel created!";
     PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = FileTransferChannelPtr::dynamicCast(pc->channel());
+    mChan = OutgoingFileTransferChannelPtr::dynamicCast(pc->channel());
     connect(mChan.data(),
             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
             SLOT(onInvalidated()));

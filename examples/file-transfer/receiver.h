@@ -59,7 +59,7 @@ private:
 
     ConnectionManagerPtr mCM;
     ConnectionPtr mConn;
-    FileTransferChannelPtr mChan;
+    IncomingFileTransferChannelPtr mChan;
 
     bool mTransferStarted;
     bool mCompleted;
