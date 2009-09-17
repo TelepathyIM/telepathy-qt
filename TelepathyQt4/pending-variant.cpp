@@ -64,11 +64,11 @@ QVariant PendingVariant::result() const
 
 void PendingVariant::watcherFinished(QDBusPendingCallWatcher* watcher)
 {
-    QDBusPendingReply<QVariant> reply = *watcher;
+    QDBusPendingReply<QDBusVariant> reply = *watcher;
 
     if (!reply.isError()) {
         debug() << "Got reply to PendingVariant call";
-        mPriv->result = reply.value();
+        mPriv->result = reply.value().variant();
         setFinished();
     } else {
         debug().nospace() << "PendingVariant call failed: " <<
