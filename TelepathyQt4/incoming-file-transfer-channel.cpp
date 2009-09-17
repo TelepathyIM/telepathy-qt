@@ -65,12 +65,13 @@ IncomingFileTransferChannel::Private::~Private()
  * \ingroup clientchannel
  * \headerfile <TelepathyQt4/incoming-file-transfer-channel.h> <TelepathyQt4/IncomingFileTransferChannel>
  *
- * High-level proxy object for accessing remote %Channel objects of the
- * FileTransfer channel type. These channels can be used to transfer one file
- * to or from a contact.
+ * \brief The IncomingFileTransferChannel class provides an object representing
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
+ * channel for incoming file transfers.
  *
- * This subclass of Channel will eventually provide a high-level API for the
- * FileTransfer interface. Until then, it's just a Channel.
+ * IncomingFileTransferChannel is a high-level class representing a
+ * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
+ * channel for incoming file transfers.
  */
 
 const Feature IncomingFileTransferChannel::FeatureCore = Feature(IncomingFileTransferChannel::staticMetaObject.className(), 0);
@@ -84,15 +85,12 @@ IncomingFileTransferChannelPtr IncomingFileTransferChannel::create(
 }
 
 /**
- * Creates a IncomingFileTransferChannel associated with the given object on
- * the same service as the given connection.
+ * Construct a new incoming file transfer channel associated with the given
+ * \a objectPath on the same service as the given \a connection.
  *
- * \param connection Connection owning this IncomingFileTransferChannel,
- *                   and specifying the service.
+ * \param connection Connection owning this channel, and specifying the service.
  * \param objectPath Path to the object on the service.
- * \param immutableProperties The immutable properties of the channel, as
- *                            signalled by NewChannels or returned by
- *                            CreateChannel or EnsureChannel
+ * \param immutableProperties The immutable properties of the channel.
  */
 IncomingFileTransferChannel::IncomingFileTransferChannel(
         const ConnectionPtr &connection, const QString &objectPath,
