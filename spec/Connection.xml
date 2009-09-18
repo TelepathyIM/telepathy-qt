@@ -251,7 +251,7 @@ USA.</p>
 
       <arg direction="out" type="as" name="Identifiers">
         <tp:docstring>
-          An array of handle names in the same order as the given numbers
+          An array of identifiers corresponding to the given handles, in the same order.
         </tp:docstring>
       </arg>
 
@@ -591,16 +591,16 @@ USA.</p>
         </tp:docstring>
       </arg>
 
-      <arg direction="in" name="Names" type="as">
+      <arg direction="in" name="Identifiers" type="as">
         <tp:docstring>
-          An array of names of entities to request handles for
+          An array of identifiers of entities to request handles for
         </tp:docstring>
       </arg>
 
       <arg direction="out" type="au" tp:type="Handle[]"
         name="Handles">
         <tp:docstring>
-          An array of integer handle numbers in the same order as the given strings
+          An array of integer handle numbers in the same order as the given identifiers.
         </tp:docstring>
       </arg>
 
@@ -611,16 +611,18 @@ USA.</p>
         client who invokes this method, and must not deallocate the handles
         until the client disconnects from the bus or calls the
         <tp:member-ref>ReleaseHandles</tp:member-ref>
-        method. Where the name refers to an entity that already has a handle
-        in this connection manager, this handle should be returned instead.
-        The handle number 0 must not be returned by the connection manager.
+        method. Where the identifier refers to an entity that already has a
+        handle in this connection manager, this handle should be returned
+        instead. The handle number 0 must not be returned by the connection
+        manager.
       </tp:docstring>
 
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
           <tp:docstring>
-            The given name does not identify a valid entity of the given type.
+            The given identifier does not identify a valid entity of the given
+            type.
 
             <tp:rationale>
               For instance, an XMPP connection would raise this error for
@@ -698,8 +700,18 @@ USA.</p>
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>There was an error sending or receiving on the network socket.</p>
 
-          <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>org.freedesktop.Telepathy.Error.NetworkError</code>.</p>
+          <p>When the status changes from Connecting to Disconnected for this
+            reason, the equivalent D-Bus error is either
+            <code>org.freedesktop.Telepathy.Error.NetworkError</code>,
+            <code>org.freedesktop.Telepathy.Error.ConnectionRefused</code>,
+            <code>org.freedesktop.Telepathy.Error.ConnectionFailed</code>
+            or some more specific error.</p>
+
+          <p>When the status changes from Connected to Disconnected for this
+            reason, the equivalent D-Bus error is either
+            <code>org.freedesktop.Telepathy.Error.NetworkError</code>,
+            <code>org.freedesktop.Telepathy.Error.ConnectionLost</code>
+            or some more specific error.</p>
         </tp:docstring>
       </tp:enumvalue>
 
@@ -737,12 +749,17 @@ USA.</p>
             <li>If the status change is from Connecting to Disconnected
               and the 'register' parameter to RequestConnection was present
               and true, the requested account could not be created on the
-              server because it already exists.</li>
+              server because it already exists.
+              The equivalent D-Bus error is
+              <code>org.freedesktop.Telepathy.Error.RegistrationExists</code>.
+            </li>
 
             <li>If the status change is from Connecting to Disconnected
               but the 'register' parameter is absent or false, the connection
               manager could not connect to the specified account because
               a connection to that account already exists.
+              The equivalent D-Bus error is
+              <code>org.freedesktop.Telepathy.Error.AlreadyConnected</code>.
 
               <tp:rationale>
                 In some protocols, like XMPP (when connecting with the same
@@ -755,6 +772,8 @@ USA.</p>
               the existing connection was automatically disconnected because
               a new connection to the same account (perhaps from a different
               client or location) was established.
+              The equivalent D-Bus error is
+              <code>org.freedesktop.Telepathy.Error.ConnectionReplaced</code>.
 
               <tp:rationale>
                 In some protocols, like MSNP (when connecting twice with the
@@ -763,15 +782,6 @@ USA.</p>
               </tp:rationale>
             </li>
           </ul>
-
-          <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>org.freedesktop.Telepathy.Error.NotYours</code>.
-          </p>
-
-          <tp:rationale>
-            These three errors are distinct but very similar, and can be
-            distinguished by other factors.
-          </tp:rationale>
         </tp:docstring>
       </tp:enumvalue>
 
@@ -897,8 +907,12 @@ USA.</p>
         <tp:docstring>
           The name of a D-Bus error describing the error that occurred,
           which may correspond to a
-          <tp:type>Connection_Status_Reason</tp:type> or be a
-          protocol-specific or connection-manager-specific error in a
+          <tp:type>Connection_Status_Reason</tp:type>, or may be a more
+          specific Telepathy error
+          (such as
+          <code>org.freedesktop.Telepathy.Errors.ConnectionRefused</code>
+          for Connection_Status_Reason_Network_Error)
+          or a protocol-specific or connection-manager-specific error in a
           suitable namespace.
 
           <tp:rationale>
@@ -953,6 +967,16 @@ USA.</p>
         and ConnectionStatusReason.
       </tp:docstring>
     </signal>
+
+    <tp:contact-attribute name="contact-id" type="s">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same string that would be returned by
+          <tp:member-ref>InspectHandles</tp:member-ref>. As a special case,
+          this is always present in the result of <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Contacts">GetContactAttributes</tp:dbus-ref>,
+          whether it was explicitly requested or not.</p>
+      </tp:docstring>
+    </tp:contact-attribute>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This models a connection to a single user account on a communication
@@ -1018,9 +1042,9 @@ USA.</p>
     ambiguous. Connection manager implementations should reference count these
     handles to determine if they are in use either by any active clients or any
     open channels, and may deallocate them when this ceases to be true. Clients
-    may request handles of a given type and name with the
+    may request handles of a given type and identifier with the
     <tp:member-ref>RequestHandles</tp:member-ref> method, inspect the entity
-    name of handles with the <tp:member-ref>InspectHandles</tp:member-ref>
+    identifier with the <tp:member-ref>InspectHandles</tp:member-ref>
     method, keep handles from being released with
     <tp:member-ref>HoldHandles</tp:member-ref>, and notify that they are no
     longer storing handles with

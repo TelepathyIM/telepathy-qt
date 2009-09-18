@@ -303,6 +303,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <dt>stun-port (q)</dt>
           <dd>The UDP port number on the stun-server to use for STUN. Only
             significant if the stun-server is also supplied.</dd>
+
+          <dt>keepalive-interval (u)</dt>
+          <dd>The time in seconds between pings sent to the server to ensure
+            that the connection is still alive, or <tt>0</tt> to disable such
+            pings.</dd>
         </dl>
 
         <p>Every successful RequestConnection call will cause the emission of a
@@ -444,7 +449,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <dt>b (boolean)</dt>
         <dd>"true" (case-insensitively) or "1" means True, "false"
           (case-insensitively) or "0" means False</dd>
-      <dt>q, u, t (16-, 32-, 64-bit unsigned integer)</dt>
+      <dt>y, q, u, t (8-, 16-, 32-, 64-bit unsigned integer)</dt>
         <dd>ASCII decimal integer</dd>
       <dt>n, i, x (16-, 32-, 64-bit signed integer)</dt>
         <dd>ASCII decimal integer, optionally prefixed with "-"</dd>

@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.17.26</tp:version>
+<tp:version>0.17.28</tp:version>
 
 <tp:copyright>Copyright © 2005-2009 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
@@ -79,7 +79,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    </tp:docstring>
    <xi:include href="Channel_Type_Contact_List.xml"/>
    <xi:include href="Channel_Type_Streamed_Media.xml"/>
-   <xi:include href="Channel_Type_Streamed_Media_Future.xml"/>
    <xi:include href="Channel_Type_Room_List.xml"/>
    <xi:include href="Channel_Type_Text.xml"/>
    <xi:include href="Channel_Type_Tubes.xml"/>
@@ -106,7 +105,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_HTML.xml"/>
    <xi:include href="Channel_Interface_Password.xml"/>
    <xi:include href="Channel_Interface_Media_Signalling.xml"/>
-   <xi:include href="Channel_Interface_Media_Signalling_Future.xml"/>
    <xi:include href="Channel_Interface_Messages.xml"/>
    <xi:include href="Channel_Interface_Tube.xml"/>
   </tp:section>

@@ -252,6 +252,7 @@
         <tp:error name="org.freedesktop.Telepathy.Error.Channel.Banned"/>
         <tp:error name="org.freedesktop.Telepathy.Error.Channel.Full"/>
         <tp:error name="org.freedesktop.Telepathy.Error.Channel.InviteOnly"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 
@@ -383,6 +384,7 @@
         <tp:error name="org.freedesktop.Telepathy.Error.Channel.Banned"/>
         <tp:error name="org.freedesktop.Telepathy.Error.Channel.Full"/>
         <tp:error name="org.freedesktop.Telepathy.Error.Channel.InviteOnly"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
 

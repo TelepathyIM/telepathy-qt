@@ -119,9 +119,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </arg>
       <tp:docstring>
         Request the value of several contacts' aliases at once. This SHOULD
-        only return cached aliases, falling back on the handle name if none is
-        present. Also if there was no cached alias, a request SHOULD be started
-        of which the result is later signalled by
+        only return cached aliases, falling back on the contact identifier
+        (i.e. the string corresponding to the handle) if none is present. Also
+        if there was no cached alias, a request SHOULD be started of which the
+        result is later signalled by
         <tp:member-ref>AliasesChanged</tp:member-ref>.
       </tp:docstring>
       <tp:possible-errors>
@@ -152,6 +153,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
+
+    <tp:contact-attribute name="alias" type="s">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same string that would be returned by
+          <tp:member-ref>GetAliases</tp:member-ref>
+          (always present with some value, possibly the
+          same as Connection/contact-id, if information from the
+          Aliasing interface was requested)
+        </p>
+      </tp:docstring>
+    </tp:contact-attribute>
+
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface on connections to support protocols where contacts have an
     alias which they can change at will. Provides a method for the user to set

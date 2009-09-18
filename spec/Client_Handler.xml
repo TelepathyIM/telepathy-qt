@@ -109,6 +109,71 @@
       </tp:docstring>
     </property>
 
+    <tp:simple-type name="Handler_Capability_Token" type="s"
+      array-name="Handler_Capability_Token_List">
+      <tp:docstring>
+        A <tp:type>DBus_Interface</tp:type>, followed by a slash '/' character
+        and an identifier for a capability defined by that interface. The
+        capability identifier SHOULD be in lower case. If an interface
+        references an external specification which is case-insensitive (such
+        as MIME), then names from that specification MUST be normalized to
+        lower-case before providing them to this Telepathy API, so that
+        implementations can safely rely on simple byte-by-byte comparison.
+
+        <tp:rationale>
+          These aren't D-Bus core Properties, and we want them to look visibly
+          different.
+        </tp:rationale>
+
+        <p>So far, all client capabilities are defined by the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface">MediaSignalling</tp:dbus-ref>
+          interface.</p>
+      </tp:docstring>
+    </tp:simple-type>
+
+    <property name="Capabilities" tp:name-for-bindings="Capabilities"
+      type="as" tp:type="Handler_Capability_Token[]" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The set of additional capabilities supported by this handler.
+          This describes things like support for streamed media codecs and
+          NAT traversal mechanisms: see the Contact Capabilities
+          interface for more details.</p>
+
+        <p>For handlers that have a <code>.client</code> file, the
+          channel dispatcher may discover this property from the
+          <code>org.freedesktop.Telepathy.Client.Handler.Capabilities</code>
+          group; for each capability, that group contains a key
+          whose name is the capability, with value <code>true</code>.
+          Keys with other values SHOULD NOT appear in this group.</p>
+
+        <p>For instance, the <code>.client</code> file for a streamed media
+          handler that supports ICE-UDP NAT traversal, Speex audio,
+          and Theora and H264 video might contain this group:</p>
+
+<pre>
+[org.freedesktop.Telepathy.Client.Handler.Capabilities]
+org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/ice-udp=true
+org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/audio/speex=true
+org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/video/theora=true
+org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/video/h264=true
+</pre>
+
+        <p>Like the <tp:member-ref>HandlerChannelFilter</tp:member-ref>
+          property, this property cannot change while the Handler owns its
+          Client bus name. However, the <code>.client</code> file, if any,
+          can change (due to upgrades or installation of pluggable codecs),
+          and the capabilities really supported by the handler might not
+          exactly match what is cached in the <code>.client</code> file.</p>
+
+        <tp:rationale>
+          <p>The client file is installed statically and is intended to list
+            codecs etc. that the handler guarantees it can support (e.g. by
+            having a hard dependency on them), whereas the running handler
+            process might be able to find additional codecs.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
     <method name="HandleChannels" tp:name-for-bindings="Handle_Channels">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Called by the channel dispatcher when this client should handle these

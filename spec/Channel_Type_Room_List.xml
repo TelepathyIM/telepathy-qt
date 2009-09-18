@@ -74,7 +74,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <dl>
           <dt>handle-name (s)</dt>
-          <dd>The string name of the room handle (as would be returned by
+          <dd>The identifier of the room (as would be returned by
             <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>)</dd>
 
           <dt>name (s)</dt>

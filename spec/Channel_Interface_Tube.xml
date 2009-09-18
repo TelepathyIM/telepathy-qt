@@ -44,7 +44,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:dbus-ref namespace="org.freedesktop.Telepathy">Channel.Type.StreamTube</tp:dbus-ref>)
         even if no client has indicated via
         <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT">SetSelfCapabilities</tp:dbus-ref>
+          namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities">UpdateCapabilities</tp:dbus-ref>
         that such a tube is supported. They SHOULD also allow clients to offer tubes with any
         <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Channel.Type.StreamTube">Service</tp:dbus-ref> or

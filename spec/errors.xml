@@ -48,7 +48,7 @@
 
   <tp:error name="Invalid Handle">
     <tp:docstring>
-    The contact name specified is unknown on this channel or connection.
+    The handle specified is unknown on this channel or connection.
     </tp:docstring>
   </tp:error>
 
@@ -71,9 +71,13 @@
   </tp:error>
 
   <tp:error name="Not Yours">
-    <tp:docstring>
-      The requested channel or other resource already exists, and another
-      client is responsible for it
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>The requested channel or other resource already exists, and another
+        user interface in this session is responsible for it.</p>
+
+      <p>User interfaces SHOULD handle this error unobtrusively, since it
+        indicates that some other user interface is already processing the
+        channel.</p>
     </tp:docstring>
   </tp:error>
 
@@ -260,7 +264,9 @@
   <tp:error name="Busy">
     <tp:docstring>
       Used to represent a user being removed from a channel because of a
-      "busy" indication.
+      "busy" indication. This error SHOULD NOT be used to represent a server
+      or other infrastructure being too busy to process a request - for that,
+      see ServerBusy.
 
       <tp:rationale>
         This corresponds to Busy in the
@@ -322,6 +328,72 @@
   <tp:error name="Connection Lost">
     <tp:docstring>
       Raised when a connection is broken.
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Already Connected">
+    <tp:docstring>
+      Raised when the user attempts to connect to an account but they are
+      already connected (perhaps from another client or computer), and the
+      protocol or account settings do not allow this.
+
+      <tp:rationale>
+        XMPP can have this behaviour if the user chooses the same resource
+        in both clients (it is server-dependent whether the result is
+        AlreadyConnected on the new connection, ConnectionReplaced on the
+        old connection, or two successful connections).
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Connection Replaced">
+    <tp:docstring>
+      Raised by an existing connection to an account if it is replaced by
+      a new connection (perhaps from another client or computer).
+
+      <tp:rationale>
+        In MSNP, when connecting twice with the same Passport, the new
+        connection "wins" and the old one is automatically disconnected.
+        XMPP can also have this behaviour if the user chooses the same
+        resource in two clients (it is server-dependent whether the result is
+        AlreadyConnected on the new connection, ConnectionReplaced on the
+        old connection, or two successful connections).
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Registration Exists">
+    <tp:docstring>
+      Raised during in-band registration if the server indicates that the
+      requested account already exists.
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Service Busy">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      Raised if a server or some other piece of infrastructure cannot process
+      the request, e.g. due to resource limitations. Clients MAY try again
+      later.
+
+      <tp:rationale>
+        This is not the same error as Busy, which indicates that a
+        <em>user</em> is busy.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Resource Unavailable">
+    <tp:docstring>
+      Raised if a request cannot be satisfied because a process local to the
+      user has insufficient resources. Clients MAY try again
+      later.
+
+      <tp:rationale>
+        For instance, the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">ChannelDispatcher</tp:dbus-ref>
+        might raise this error for some or all channel requests if it has
+        detected that there is not enough free memory.
+      </tp:rationale>
     </tp:docstring>
   </tp:error>
 

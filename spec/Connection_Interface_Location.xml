@@ -18,9 +18,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.Location.DRAFT"
-    tp:causes-havoc='experimental'>
-    <tp:added version="0.17.18">(as a draft)</tp:added>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.Location">
+    <tp:added version="0.17.27">(as stable API)</tp:added>
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -50,6 +49,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         possible.</p>
     </tp:docstring>
 
+    <!-- Potentially to be reinstated later:
+         http://bugs.freedesktop.org/show_bug.cgi?id=19585
     <tp:enum name="Location_Accuracy_Level" type="i">
       <tp:docstring>
         A location accuracy level. This should be kept in sync with
@@ -89,11 +90,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:enumvalue>
       <tp:enumvalue suffix="Detailed" value="6">
         <tp:docstring>
-          The location's accuracy is given by the error, horizontal-error-m
-          and/or vertical-error-m keys.
+          The location's accuracy is given by the accuracy key.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
+    -->
 
     <tp:mapping name="Location">
       <tp:docstring>
@@ -137,6 +138,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
               information about it</li>
           </ul>
 
+          <p>Since the previous strings have data intended to be read by users,
+            the language used should be stated using:</p>
+
+          <ul>
+            <li>language - s: a specific language or locale of location
+              information in a format compatible to RFC 4646. Note that UTF-8
+              is the only allowed encoding, e.g. "en" or "fr-CA".</li>
+          </ul>
+
           <p>Positions are represented by the following well-known keys:</p>
 
           <ul>
@@ -164,6 +174,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
                 This is from XEP-0080
               </tp:rationale>
             </li>
+
+            <!-- Potentially to be reinstated later:
+                 http://bugs.freedesktop.org/show_bug.cgi?id=19585
             <li>accuracy-level - i (<tp:type>Location_Accuracy_Level</tp:type>):
               an indication of accuracy, which SHOULD be omitted if it would be
               Location_Accuracy_Level_None or
@@ -174,24 +187,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
                 with any future XEP-0080 terminology.
               </tp:rationale>
             </li>
-            <li>error - d: horizontal position error in arc-minutes (1/60
-              degree) if known
+            -->
+
+            <li>accuracy - d: horizontal position error in metres if
+              known
               <tp:rationale>
                 This is from XEP-0080
-              </tp:rationale>
-            </li>
-            <li>vertical-error-m - d: vertical position error in metres if
-              known
-              <tp:rationale>
-                This exists as a struct field in GeoClue; the name is new
-                in this specification.
-              </tp:rationale>
-            </li>
-            <li>horizontal-error-m - d: horizontal position error in metres if
-              known
-              <tp:rationale>
-                This exists as a struct field in GeoClue; the name is new
-                in this specification.
               </tp:rationale>
             </li>
           </ul>
@@ -209,12 +210,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
               <tp:rationale>
                 This is from XEP-0080, and is equivalent to the struct field
                 called "direction" in GeoClue
-              </tp:rationale>
-            </li>
-            <li>climb - d: rate of change of 'alt' in metres per second
-              <tp:rationale>
-                This is a struct field in GeoClue; the name is new to this
-                specification, but seems uncontroversial
               </tp:rationale>
             </li>
           </ul>
@@ -389,6 +384,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         set it to be as restrictive as possible (an empty whitelist, if
         supported).</tp:docstring>
     </property>
+
+    <tp:contact-attribute name="location"
+      type="a{sv}" tp:type="Location">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same mapping that would be returned by
+          <tp:member-ref>GetLocations</tp:member-ref> for this contact.
+          Omitted from the result if the contact's location
+          is not known.</p>
+      </tp:docstring>
+    </tp:contact-attribute>
+
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

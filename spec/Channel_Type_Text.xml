@@ -419,8 +419,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:property>
     <tp:property name="name" type="s">
       <tp:docstring>
-      A human-visible name for the channel, if it differs from the string
-      version of the channel's handle.
+      A human-visible name for the channel, if it differs from the channel's
+      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">TargetID</tp:dbus-ref>.
       </tp:docstring>
     </tp:property>
     <tp:property name="description" type="s">
