@@ -452,7 +452,7 @@ example_callable_media_stream_change_direction (
   gboolean receiving =
     ((self->priv->direction & TP_MEDIA_STREAM_DIRECTION_RECEIVE) != 0);
   gboolean want_to_send =
-    ((direction & TP_MEDIA_STREAM_DIRECTION_RECEIVE) != 0);
+    ((direction & TP_MEDIA_STREAM_DIRECTION_SEND) != 0);
   gboolean want_to_receive =
     ((direction & TP_MEDIA_STREAM_DIRECTION_RECEIVE) != 0);
   gboolean pending_remote_send =
