@@ -375,8 +375,7 @@ void TestStreamedMediaChan::testOutgoingCall()
     QCOMPARE(stream->contact(), otherContact);
     QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
     QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionSend);
-    QCOMPARE(stream->pendingSend(), Tp::MediaStreamPendingRemoteSend);
+    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
 
     QCOMPARE(mChan->streams().size(), 1);
     QVERIFY(mChan->streams().contains(stream));
@@ -406,8 +405,7 @@ void TestStreamedMediaChan::testOutgoingCall()
     QCOMPARE(stream->contact(), otherContact);
     QCOMPARE(stream->type(), Tp::MediaStreamTypeVideo);
     QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionSend);
-    QCOMPARE(stream->pendingSend(), Tp::MediaStreamPendingRemoteSend);
+    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
 
     QCOMPARE(mChan->streams().size(), 2);
     QVERIFY(mChan->streams().contains(stream));
@@ -753,8 +751,7 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(stream->contact(), otherContact);
     QCOMPARE(stream->type(), Tp::MediaStreamTypeVideo);
     QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionSend);
-    QCOMPARE(stream->pendingSend(), Tp::MediaStreamPendingRemoteSend);
+    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
 
     QCOMPARE(mChan->streams().size(), 2);
     QVERIFY(mChan->streams().contains(stream));
@@ -807,8 +804,8 @@ void TestStreamedMediaChan::testIncomingCall()
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mSDCStreamReturn, stream);
-    QVERIFY(mSDCDirectionReturn & Tp::MediaStreamDirectionSend);
-    QVERIFY(stream->direction() & Tp::MediaStreamDirectionSend);
+    QVERIFY(mSDCDirectionReturn & Tp::MediaStreamDirectionReceive);
+    QVERIFY(stream->direction() & Tp::MediaStreamDirectionReceive);
     QCOMPARE(stream->pendingSend(), mSDCPendingReturn);
     QCOMPARE(mSSCStreamReturn, stream);
     QCOMPARE(mSSCStateReturn, Tp::MediaStreamStateConnected);
