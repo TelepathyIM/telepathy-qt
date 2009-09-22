@@ -55,8 +55,10 @@ struct _ExampleCallableMediaManagerPrivate
   TpBaseConnection *conn;
   guint simulation_delay;
 
-  /* List of ExampleCallableMediaChannel */
-  GList *channels;
+  /* Map from reffed ExampleCallableMediaChannel to the same pointer; used as a
+   * set.
+   */
+  GHashTable *channels;
 
   /* Next channel will be ("MediaChannel%u", next_channel_index) */
   guint next_channel_index;
@@ -73,7 +75,8 @@ example_callable_media_manager_init (ExampleCallableMediaManager *self)
       ExampleCallableMediaManagerPrivate);
 
   self->priv->conn = NULL;
-  self->priv->channels = NULL;
+  self->priv->channels = g_hash_table_new_full (NULL, NULL, g_object_unref,
+      NULL);
   self->priv->status_changed_id = 0;
   self->priv->available_id = 0;
 }
@@ -83,12 +86,11 @@ example_callable_media_manager_close_all (ExampleCallableMediaManager *self)
 {
   if (self->priv->channels != NULL)
     {
-      GList *tmp = self->priv->channels;
+      GHashTable *tmp = self->priv->channels;
 
       self->priv->channels = NULL;
 
-      g_list_foreach (tmp, (GFunc) g_object_unref, NULL);
-      g_list_free (tmp);
+      g_hash_table_unref (tmp);
     }
 
   if (self->priv->available_id != 0)
@@ -279,8 +281,13 @@ example_callable_media_manager_foreach_channel (
     gpointer user_data)
 {
   ExampleCallableMediaManager *self = EXAMPLE_CALLABLE_MEDIA_MANAGER (iface);
+  GHashTableIter iter;
+  gpointer chan;
 
-  g_list_foreach (self->priv->channels, (GFunc) callback, user_data);
+  g_hash_table_iter_init (&iter, self->priv->channels);
+
+  while (g_hash_table_iter_next (&iter, &chan, NULL))
+    callback (chan, user_data);
 }
 
 static void
@@ -291,9 +298,7 @@ channel_closed_cb (ExampleCallableMediaChannel *chan,
       TP_EXPORTABLE_CHANNEL (chan));
 
   if (self->priv->channels != NULL)
-    {
-      self->priv->channels = g_list_remove_all (self->priv->channels, chan);
-    }
+    g_hash_table_remove (self->priv->channels, chan);
 }
 
 static ExampleCallableMediaChannel *
@@ -328,7 +333,7 @@ new_channel (ExampleCallableMediaManager *self,
 
   g_signal_connect (chan, "closed", G_CALLBACK (channel_closed_cb), self);
 
-  self->priv->channels = g_list_prepend (self->priv->channels, chan);
+  g_hash_table_insert (self->priv->channels, chan, chan);
 
   if (request_token != NULL)
     requests = g_slist_prepend (requests, request_token);
@@ -421,20 +426,23 @@ example_callable_media_manager_request (ExampleCallableMediaManager *self,
   if (!require_new)
     {
       /* see if we're already calling that handle */
-      const GList *link;
+      GHashTableIter iter;
+      gpointer chan;
 
-      for (link = self->priv->channels; link != NULL; link = link->next)
+      g_hash_table_iter_init (&iter, self->priv->channels);
+
+      while (g_hash_table_iter_next (&iter, &chan, NULL))
         {
           guint its_handle;
 
-          g_object_get (link->data,
+          g_object_get (chan,
               "handle", &its_handle,
               NULL);
 
           if (its_handle == handle)
             {
               tp_channel_manager_emit_request_already_satisfied (self,
-                  request_token, TP_EXPORTABLE_CHANNEL (link->data));
+                  request_token, TP_EXPORTABLE_CHANNEL (chan));
               return TRUE;
             }
         }
