@@ -31,7 +31,6 @@
 #include <TelepathyQt4/Types>
 
 #include <QIODevice>
-#include <QTcpServer>
 #include <QTcpSocket>
 
 namespace Tp
@@ -50,7 +49,6 @@ struct OutgoingFileTransferChannel::Private
     // Introspection
     QIODevice *input;
     QTcpSocket *socket;
-    SocketAccessControl accessControl;
     SocketAddressIPv4 addr;
 
     qint64 pos;
@@ -163,36 +161,11 @@ PendingOperation *OutgoingFileTransferChannel::provideFile(QIODevice *input)
             SIGNAL(aboutToClose()),
             SLOT(onInputAboutToClose()));
 
-    QDBusVariant accessControlParam;
-    SupportedSocketMap socketTypes = availableSocketTypes();
-    UIntList addressTypeList = socketTypes.value(SocketAddressTypeIPv4);
-    if (addressTypeList.contains(SocketAccessControlPort)) {
-        debug() << "Using SocketAccessControlPort";
-
-        QTcpServer tcpServer;
-        tcpServer.listen(QHostAddress("127.0.0.1"));
-        quint16 port = tcpServer.serverPort();
-        tcpServer.close();
-
-        SocketAddressIPv4 addr;
-        addr.address = "127.0.0.1";
-        addr.port = port;
-
-        mPriv->accessControl = SocketAccessControlPort;
-        // set port here
-        mPriv->addr.port = port;
-        accessControlParam.setVariant(qVariantFromValue(addr));
-    } else {
-        debug() << "Using SocketAccessControlLocalhost";
-
-        mPriv->accessControl = SocketAccessControlLocalhost;
-        accessControlParam = QDBusVariant(QVariant(QString()));
-    }
-
     PendingVariant *pv = new PendingVariant(
             fileTransferInterface(BypassInterfaceCheck)->ProvideFile(
                 SocketAddressTypeIPv4,
-                mPriv->accessControl, accessControlParam),
+                SocketAccessControlLocalhost,
+                QDBusVariant(QVariant(QString()))),
             this);
     connect(pv,
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -209,14 +182,8 @@ void OutgoingFileTransferChannel::onProvideFileFinished(PendingOperation *op)
         return;
     }
 
-    if (mPriv->accessControl == SocketAccessControlLocalhost) {
-        PendingVariant *pv = qobject_cast<PendingVariant *>(op);
-        mPriv->addr = qdbus_cast<SocketAddressIPv4>(pv->result());
-    } else {
-        mPriv->addr.address = "127.0.0.1";
-        // the port was already set in provideFile
-    }
-
+    PendingVariant *pv = qobject_cast<PendingVariant *>(op);
+    mPriv->addr = qdbus_cast<SocketAddressIPv4>(pv->result());
     debug().nospace() << "Got address " << mPriv->addr.address <<
         ":" << mPriv->addr.port;
 
