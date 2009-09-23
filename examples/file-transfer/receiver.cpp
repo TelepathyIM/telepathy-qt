@@ -48,7 +48,6 @@ Receiver::Receiver(const QString &username, const QString &password)
 
 Receiver::~Receiver()
 {
-    mFile.close();
 }
 
 void Receiver::onCMReady(PendingOperation *op)

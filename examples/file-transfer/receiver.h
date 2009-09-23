@@ -51,7 +51,6 @@ private Q_SLOTS:
 private:
     QString mUsername;
     QString mPassword;
-    QFile mFile;
 
     ConnectionManagerPtr mCM;
     ConnectionPtr mConn;
