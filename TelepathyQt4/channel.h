@@ -194,6 +194,12 @@ public:
         return optionalInterface<Client::ChannelInterfacePasswordInterface>(check);
     }
 
+    inline Client::ChannelInterfaceTubeInterface *tubeInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ChannelInterfaceTubeInterface>(check);
+    }
+
     template <class Interface>
     inline Interface *typeInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
@@ -229,6 +235,12 @@ public:
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return typeInterface<Client::ChannelTypeTubesInterface>(check);
+    }
+
+    inline Client::ChannelTypeStreamTubeInterface *streamTubeInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return typeInterface<Client::ChannelTypeStreamTubeInterface>(check);
     }
 
 Q_SIGNALS:
