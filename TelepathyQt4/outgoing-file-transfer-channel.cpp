@@ -215,7 +215,7 @@ void OutgoingFileTransferChannel::connectToHost()
 
 void OutgoingFileTransferChannel::onSocketConnected()
 {
-    debug() << "Connected to host!";
+    debug() << "Connected to host";
     setConnected();
 
     connect(mPriv->input, SIGNAL(readyRead()),
@@ -234,7 +234,7 @@ void OutgoingFileTransferChannel::onSocketConnected()
 
 void OutgoingFileTransferChannel::onSocketDisconnected()
 {
-    debug() << "Disconnected from host!";
+    debug() << "Disconnected from host";
     setFinished();
 }
 
@@ -246,7 +246,7 @@ void OutgoingFileTransferChannel::onSocketError(QAbstractSocket::SocketError err
 
 void OutgoingFileTransferChannel::onInputAboutToClose()
 {
-    debug() << "Input closed!";
+    debug() << "Input closed";
 
     // in case of sequential devices, we should read everything from it and
     // write to the socket. Let's not do this for non-sequential devices as we
