@@ -249,10 +249,8 @@ void OutgoingFileTransferChannel::onInputAboutToClose()
 {
     debug() << "Input closed";
 
-    // in case of sequential devices, we should read everything from it and
-    // write to the socket. Let's not do this for non-sequential devices as we
-    // don't want to read a whole file into memory.
-    if (isConnected() && mPriv->input->isSequential()) {
+    // read all remaining data from input device and write to output device
+    if (isConnected()) {
         QByteArray data;
         data = mPriv->input->readAll();
         mPriv->socket->write(data); // never fails
