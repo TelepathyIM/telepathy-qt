@@ -178,6 +178,7 @@ void OutgoingFileTransferChannel::onProvideFileFinished(PendingOperation *op)
     if (op->isError()) {
         warning() << "Error providing file transfer " <<
             op->errorName() << ":" << op->errorMessage();
+        invalidate(op->errorName(), op->errorMessage());
         return;
     }
 
