@@ -38,7 +38,8 @@ class Receiver : public QObject
     Q_OBJECT
 
 public:
-   Receiver(const QString &username, const QString &password);
+   Receiver(const QString &username, const QString &password,
+           qulonglong offset);
    ~Receiver();
 
 private Q_SLOTS:
@@ -51,6 +52,7 @@ private Q_SLOTS:
 private:
     QString mUsername;
     QString mPassword;
+    qulonglong mOffset;
 
     ConnectionManagerPtr mCM;
     ConnectionPtr mConn;

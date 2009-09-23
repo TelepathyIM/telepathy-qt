@@ -36,9 +36,11 @@
 
 #include <QDebug>
 
-Receiver::Receiver(const QString &username, const QString &password)
+Receiver::Receiver(const QString &username, const QString &password,
+        qulonglong offset)
     : mUsername(username),
-      mPassword(password)
+      mPassword(password),
+      mOffset(offset)
 {
     mCM = ConnectionManager::create("gabble");
     connect(mCM->becomeReady(),
@@ -119,7 +121,8 @@ void Receiver::onNewChannels(const Tp::ChannelDetailsList &channels)
             !requested) {
             ReceiverChannel *channel = new ReceiverChannel(mConn,
                     details.channel.path(),
-                    details.properties);
+                    details.properties,
+                    mOffset);
             connect(channel,
                     SIGNAL(finished()),
                     channel,
@@ -138,14 +141,14 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     if (argc < 3) {
-        qDebug() << "usage: receiver username password";
+        qDebug() << "usage: receiver username password offset";
         return 1;
     }
 
     Tp::registerTypes();
     Tp::enableDebug(true);
 
-    new Receiver(argv[1], argv[2]);
+    new Receiver(argv[1], argv[2], QString(argv[3]).toULongLong());
 
     return app.exec();
 }

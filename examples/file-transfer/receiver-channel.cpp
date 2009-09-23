@@ -34,8 +34,9 @@
 #include <QFileInfo>
 
 ReceiverChannel::ReceiverChannel(const ConnectionPtr &connection, const QString &objectPath,
-        const QVariantMap &immutableProperties)
-    : mCompleted(false)
+        const QVariantMap &immutableProperties, qulonglong offset)
+    : mCompleted(false),
+      mOffset(offset)
 {
     mChan = IncomingFileTransferChannel::create(connection,
             objectPath, immutableProperties);
@@ -72,7 +73,7 @@ void ReceiverChannel::onFileTransferChannelReady(PendingOperation *op)
     fileName.replace("/", "_");
     mFile.setFileName(fileName);
     qDebug() << "Saving file as" << mFile.fileName();
-    mChan->acceptFile(0, &mFile);
+    mChan->acceptFile(mOffset, &mFile);
 }
 
 void ReceiverChannel::onFileTransferChannelStateChanged(Tp::FileTransferState state,

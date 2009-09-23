@@ -38,7 +38,8 @@ class ReceiverChannel : public QObject
 
 public:
    ReceiverChannel(const ConnectionPtr &connection,
-           const QString &objectPath, const QVariantMap &immutableProperties);
+           const QString &objectPath, const QVariantMap &immutableProperties,
+           qulonglong offset);
    ~ReceiverChannel();
 
 Q_SIGNALS:
@@ -55,6 +56,7 @@ private:
     IncomingFileTransferChannelPtr mChan;
     QFile mFile;
     bool mCompleted;
+    qulonglong mOffset;
 };
 
 #endif
