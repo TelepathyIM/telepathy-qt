@@ -133,4 +133,12 @@
 #define TELEPATHY_QT4_ERROR_OBJECT_REMOVED \
     "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved"
 
+/**
+ * \ingroup errorstrconsts
+ *
+ * The error name "org.freedesktop.Telepathy.Qt4.Error.Inconsistent".
+ */
+#define TELEPATHY_QT4_ERROR_INCONSISTENT \
+    "org.freedesktop.Telepathy.Qt4.Error.Inconsistent"
+
 #endif
