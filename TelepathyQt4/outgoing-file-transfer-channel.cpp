@@ -36,6 +36,8 @@
 namespace Tp
 {
 
+static const int FT_BLOCK_SIZE = 16 * 1024;
+
 struct OutgoingFileTransferChannel::Private
 {
     Private(OutgoingFileTransferChannel *parent);
@@ -260,9 +262,9 @@ void OutgoingFileTransferChannel::onInputAboutToClose()
 
 void OutgoingFileTransferChannel::doTransfer()
 {
-    // read 16k each time, as input can be a QFile, we don't want to block
-    // reading the whole file
-    char buffer[16 * 1024];
+    // read FT_BLOCK_SIZE each time, as input can be a QFile, we don't want to
+    // block reading the whole file
+    char buffer[FT_BLOCK_SIZE];
     char *p = buffer;
 
     memset(buffer, 0, sizeof(buffer));
