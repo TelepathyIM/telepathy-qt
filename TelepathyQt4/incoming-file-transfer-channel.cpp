@@ -219,7 +219,7 @@ void IncomingFileTransferChannel::connectToHost()
 
 void IncomingFileTransferChannel::onSocketConnected()
 {
-    debug() << "Connected to host!";
+    debug() << "Connected to host";
     setConnected();
 
     doTransfer();
@@ -227,7 +227,7 @@ void IncomingFileTransferChannel::onSocketConnected()
 
 void IncomingFileTransferChannel::onSocketDisconnected()
 {
-    debug() << "Disconnected from host!";
+    debug() << "Disconnected from host";
     setFinished();
 }
 
