@@ -217,6 +217,8 @@ void IncomingFileTransferChannel::connectToHost()
         warning() << "InitialOffset bigger than requested offset, "
             "cancelling the transfer";
         cancel();
+        invalidate(TELEPATHY_QT4_ERROR_INCONSISTENT,
+                "Initial offset bigger than requested offset");
         return;
     }
 
