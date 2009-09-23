@@ -180,6 +180,7 @@ void IncomingFileTransferChannel::onAcceptFileFinished(PendingOperation *op)
     if (op->isError()) {
         warning() << "Error accepting file transfer " <<
             op->errorName() << ":" << op->errorMessage();
+        invalidate(op->errorName(), op->errorMessage());
         return;
     }
 
