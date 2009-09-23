@@ -21,6 +21,8 @@
 
 #include "TelepathyQt4/channel-factory.h"
 
+#include "TelepathyQt4/debug-internal.h"
+
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
@@ -69,6 +71,10 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
                                 channelPath, immutableProperties).data()));
             }
         } else {
+            warning() << "Trying to create a channel of type FileTransfer "
+                "without the " TELEPATHY_INTERFACE_CHANNEL ".Requested "
+                "property set in immutableProperties, returning a "
+                "FileTransferChannel instance";
             return ChannelPtr(dynamic_cast<Channel*>(
                         FileTransferChannel::create(connection,
                             channelPath, immutableProperties).data()));
