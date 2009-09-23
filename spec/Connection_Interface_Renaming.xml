@@ -65,7 +65,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </signal>
     <method name="RequestRename" tp:name-for-bindings="Request_Rename">
-      <arg direction="in" name="Name" type="s">
+      <arg direction="in" name="Identifier" type="s">
         <tp:docstring>
           The desired identifier
         </tp:docstring>

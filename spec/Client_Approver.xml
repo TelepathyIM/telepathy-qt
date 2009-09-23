@@ -177,10 +177,11 @@
       <arg name="Properties" type="a{sv}"
         tp:type="Qualified_Property_Value_Map" direction="in">
         <tp:docstring>
-          <p>Properties of the channel dispatch operation. This MUST NOT
-            include properties that could change, SHOULD include as many
-            properties as possible given that constraint, and MUST include at
-            least the <tp:dbus-ref
+          <p>Properties of the channel dispatch operation. The keys MUST be
+            fully qualified D-Bus property names. This MUST NOT include
+            properties that could change, SHOULD include as many properties as
+            possible given that constraint, and MUST include at least the
+            <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Account</tp:dbus-ref>,
             <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.ChannelDispatchOperation">Connection</tp:dbus-ref>

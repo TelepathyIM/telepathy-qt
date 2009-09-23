@@ -450,6 +450,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
+    <tp:contact-attribute name="token" type="s" tp:type="Avatar_Token">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same string that would be returned by
+          <tp:member-ref>GetKnownAvatarTokens</tp:member-ref>
+          (omitted from the result if the contact's avatar token is not known,
+          present as an empty string if the contact is known not to have
+          an avatar). Unlike in the
+          <tp:member-ref>GetKnownAvatarTokens</tp:member-ref>
+          method, the avatar tokens for the self handle aren't required to be
+          present. This attribute should not be used to determine whether or
+          not the Avatar needs to be set.
+        </p>
+      </tp:docstring>
+    </tp:contact-attribute>
+
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for requesting avatars for contacts on a given connection,
     receiving notification when avatars are changed, and publishing your own

@@ -362,10 +362,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           handle).</p>
 
         <tp:rationale>
-          <p>The careful wording about the self-handle is because the Renaming
-            interface can cause the return from Connection.GetSelfHandle to
-            change. It's something of a specification bug that we don't signal
-            this in the Connection interface yet.</p>
+          <p>On some protocols, the SelfHandle may change (as signalled by
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">Connection.SelfHandleChanged</tp:dbus-ref>),
+            but this property is immutable. Hence, locally-requested channels'
+            InitiatorHandle and InitiatorID may not match the current
+            SelfHandle; <tp:member-ref>Requested</tp:member-ref> can be used to
+            determine whether the channel was created locally.</p>
         </tp:rationale>
 
         <p>For channels requested by a remote user, this MUST be their handle.

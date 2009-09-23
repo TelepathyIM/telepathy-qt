@@ -18,10 +18,9 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT"
-    tp:causes-havoc="experimental">
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities">
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
-    <tp:added version="0.17.16">(as a draft)</tp:added>
+    <tp:added version="0.17.28">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>Contact capabilities describe the channel classes which may be
@@ -38,38 +37,77 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>This interface also enables user interfaces to notify the connection
         manager what capabilities to advertise for the user to other contacts.
         This is done by using the
-        <tp:member-ref>SetSelfCapabilities</tp:member-ref> method, and deals
-        with channel property values pertaining to them which are implemented
-        by available client processes.</p>
+        <tp:member-ref>UpdateCapabilities</tp:member-ref> method.</p>
 
+      <tp:rationale>
+        <p>XMPP is a major user of this interface: XMPP contacts will not,
+          in general, be callable using VoIP unless they advertise suitable
+          Jingle capabilities.</p>
+
+        <p>Many other protocols also have some concept of capability flags,
+          which this interface exposes in a protocol-independent way.</p>
+      </tp:rationale>
     </tp:docstring>
 
-    <method name="SetSelfCapabilities"
-            tp:name-for-bindings="Set_Self_Capabilities">
-      <arg direction="in" name="caps" type="aa{sv}"
+    <tp:struct name="Handler_Capabilities"
+      array-name="Handler_Capabilities_List">
+      <tp:docstring>
+        A structure representing the capabilities of a single client.
+      </tp:docstring>
+
+      <tp:member name="Well_Known_Name" type="s" tp:type="DBus_Well_Known_Name">
+        <tp:docstring>
+          For implementations of the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Client</tp:dbus-ref>
+          interface, the well-known bus name name of the client; for any other
+          process, any other reversed domain name that uniquely identifies it.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Channel_Classes" type="aa{sv}"
            tp:type="String_Variant_Map[]">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          An array of channel classes to replace to the list of what the
-          connection can handle. If you include optional properties, they
-          may not get advertised. The given properties are matched to the
-          mandatory properties.
+          An array of channel classes that can be handled by this client.
+          This will usually be a copy of the client's <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
+          property.
         </tp:docstring>
-      </arg>
+      </tp:member>
+
+      <tp:member name="Capabilities"
+        type="as" tp:type="Handler_Capability_Token[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          An array of client capabilities supported by this client, to be
+          used by the connection manager to determine what capabilities to
+          advertise. This will usually be a copy of the client's <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler">Capabilities</tp:dbus-ref>
+          property.
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <method name="UpdateCapabilities" tp:name-for-bindings="Update_Capabilities">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Used by user interfaces to indicate which channel classes they are
-        able to handle on this connection. It replaces the previous advertised
-        channel classes by the set given as parameter.</p>
+        <p>Alter the connection's advertised capabilities to include
+          the intersection of the given clients' capabilities with what the
+          connection manager is able to implement.</p>
 
-        <p>If a channel class is unknown by the connection manager, it is just
-        ignored. No error are returned in this case, and other known channel
-        class are added.</p>
+        <p>On connections managed by the ChannelDispatcher, processes other
+          than the ChannelDispatcher SHOULD NOT call this method, and the
+          ChannelDispatcher SHOULD use this method to advertise the
+          capabilities of all the registered <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Client.Handler</tp:dbus-ref>
+          implementations.On connections not managed by the ChannelDispatcher,
+          clients MAY use this method directly, to indicate the channels they
+          will handle and the extra capabilities they have.</p>
 
-        <p>Upon a successful invocation of this method, the
-        <tp:member-ref>ContactCapabilitiesChanged</tp:member-ref> signal
-        will only be emitted for the user's own
-        handle (as returned by GetSelfHandle) by the connection manager if, in
-        the given protocol, the given capabilities are distinct from the
-        previous state.</p>
+        <p>Upon a successful invocation of this method, the connection manager
+          will only emit the
+          <tp:member-ref>ContactCapabilitiesChanged</tp:member-ref> signal
+          for the user's <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection">SelfHandle</tp:dbus-ref>
+          if, in the underlying protocol, the new capabilities are distinct
+          from the previous state.</p>
 
         <tp:rationale>
           <p>The connection manager will essentially intersect the provided
@@ -79,10 +117,45 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             channel) will almost certainly not be advertised.</p>
         </tp:rationale>
 
+        <p>This method MAY be called on a newly-created connection while it
+          is still in the DISCONNECTED state, to request that when the
+          connection connects, it will do so with the appropriate
+          capabilities. Doing so MUST NOT fail.</p>
       </tp:docstring>
+
+      <arg direction="in" name="Handler_Capabilities" type="a(saa{sv}as)"
+        tp:type="Handler_Capabilities[]">
+        <tp:docstring>
+          <p>The capabilities of one or more clients.</p>
+
+          <p>For each client in the given list, any capabilities previously
+            advertised for the same client name are discarded, then replaced by
+            the capabilities indicated.</p>
+
+          <p>As a result, if a client becomes unavailable, this method SHOULD
+            be called with a <tp:type>Handler_Capabilities</tp:type> structure
+            containing its name, an empty list of channel classes, and an
+            empty list of capabilities. When this is done, the connection
+            manager SHOULD free all memory associated with that client name.</p>
+
+          <tp:rationale>
+            <p>This method takes a list of clients so that
+              when the channel dispatcher first calls it (with a list of all
+              the Handlers that are initially available), the changes can be
+              made atomically, with only one transmission of updated
+              capabilities to the network. Afterwards, the channel dispatcher
+              will call this method with a single-element list every time
+              a Handler becomes available or unavailable.</p>
+          </tp:rationale>
+
+          <p>The connection manager MUST ignore any channel classes and client
+            capabilities for which there is no representation in the protocol
+            or no support in the connection manager.</p>
+        </tp:docstring>
+      </arg>
+
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
       </tp:possible-errors>
     </method>
 
@@ -95,11 +168,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <p>The handle zero MUST NOT be included in the request.</p>
         </tp:docstring>
       </arg>
-      <!-- There was a bug in dbus-glib that prevent to use the right type:
-           Instead of a{ua(a{sv}as)}, we used a(ua{sv}as) as a workaround.
-           See http://bugs.freedesktop.org/show_bug.cgi?id=17329
-           Now there is a fix, so we don't use the workaround anymore.
-        -->
       <arg direction="out" type="a{ua(a{sv}as)}"
            tp:type="Contact_Capabilities_Map" name="Contact_Capabilities">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -160,6 +228,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </tp:member>
   </tp:mapping>
+
+    <tp:contact-attribute name="capabilities"
+      type="a(a{sv}as)" tp:type="Requestable_Channel_Class[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same structs that would be returned by
+          <tp:member-ref>GetContactCapabilities</tp:member-ref>.
+          Omitted from the result if the contact's capabilities
+          are not known; present in the result as an empty array if the
+          contact is known to have no capabilities at all.</p>
+      </tp:docstring>
+    </tp:contact-attribute>
 
   </interface>
 </node>

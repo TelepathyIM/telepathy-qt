@@ -25,7 +25,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         progress or call states. The presence of this interface is no guarantee
         that call states will actually be signalled (for instance, SIP
         implementations are not guaranteed to generate status 180 Ringing, so a
-        call can be accepted without the Ringing flag ever having been set).</p>
+        call can be accepted without the Ringing flag ever having been set;
+        similarly, Jingle implementations are not guaranteed to send
+        <code>&lt;ringing/&gt;</code>).</p>
 
       <p>To notify the other participant in the call that they are on hold,
         see <tp:dbus-ref
@@ -112,6 +114,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The initiator of the call originally called a contact other than the
           current recipient of the call, but the call was then forwarded or
           diverted.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="In_Progress" value="16">
+        <tp:docstring>
+          Progress has been made in placing the outgoing call, but the
+          destination contact may not have been made aware of the call yet
+          (so the Ringing state is not appropriate). This corresponds to SIP's
+          status code 183 Session Progress, and could be used when the
+          outgoing call has reached a gateway, for instance.
         </tp:docstring>
       </tp:flag>
     </tp:flags>

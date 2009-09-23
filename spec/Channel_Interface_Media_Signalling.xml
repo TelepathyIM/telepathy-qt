@@ -152,6 +152,84 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </tp:property>
 
+    <tp:handler-capability-token name="gtalk-p2p">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The client can implement streaming for streams whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
+          property is <code>gtalk-p2p</code>.</p>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+    <tp:handler-capability-token name="ice-udp">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The client can implement streaming for streams whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
+          property is <code>ice-udp</code>.</p>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+    <tp:handler-capability-token name="wlm-8.5">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The client can implement streaming for streams whose <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
+          property is <code>wlm-8.5</code>.</p>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+    <tp:handler-capability-token name="wlm-2009">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The client can implement streaming for streams whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
+          property is <code>wlm-2009</code>.</p>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+    <tp:handler-capability-token name="video/h264" is-family="yes">
+      <tp:docstring>
+        <p>The client supports media streaming with H264 (etc.).</p>
+
+        <p>This handler capability token is a one of a family
+          of similar tokens: for any other audio or video codec whose MIME
+          type is audio/<em>subtype</em> or video/<em>subtype</em>, a handler
+          capability token of this form may exist (the subtype MUST appear
+          in lower case in this context). Clients MAY support more
+          codecs than they explicitly advertise support for; clients SHOULD
+          explicitly advertise support for their preferred codec(s), and
+          for codecs like H264 that are, in practice, significant in codec
+          negotiation.</p>
+
+        <tp:rationale>
+          <p>For instance, the XMPP capability used by the Google Video
+            Chat web client to determine whether a client is compatible
+            with it requires support for H264 video, so an XMPP
+            connection manager that supports this version of Jingle should
+            not advertise the Google Video Chat capability unless there
+            is at least one installed client that declares that it supports
+            <code>video/h264</code> on StreamedMedia channels.</p>
+        </tp:rationale>
+
+        <p>For example, a client could advertise support for
+          Speex, Theora and H264 by having three
+          handler capability tokens,
+          <code>org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/audio/speex</code>,
+          <code>org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/video/theora</code> and
+          <code>org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/video/h264</code>,
+          in its <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler">Capabilities</tp:dbus-ref>
+          property.</p>
+
+        <p>Clients MAY have media signalling abilities without explicitly
+          supporting any particular codec, and connection managers SHOULD
+          support this usage.</p>
+
+        <tp:rationale>
+          <p>This is necessary to support gatewaying between two Telepathy
+            connections, in which case the available codecs might not be
+            known to the gatewaying process.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

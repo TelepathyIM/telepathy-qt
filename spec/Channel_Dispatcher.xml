@@ -74,7 +74,7 @@
             All observers are notified simultaneously.</p></dd>
 
         <dt><tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Client">Approver</tp:dbus-ref></dt>p
+            namespace="org.freedesktop.Telepathy.Client">Approver</tp:dbus-ref></dt>
         <dd>
           <p>Approvers notify the user that new channels have been created,
             and also select which channel handler will be used for the channel,

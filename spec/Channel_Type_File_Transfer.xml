@@ -80,7 +80,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <p>Connection managers SHOULD NOT advertise support for file transfer to
         other contacts unless it has been indicated by a call to
         <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities.DRAFT">SetSelfCapabilities</tp:dbus-ref>.
+          namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities">UpdateCapabilities</tp:dbus-ref>.
       </p>
       <tp:rationale>
         <p>People would send us files, and it would always fail. That would be silly.</p>

@@ -56,12 +56,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       well-defined or consistent, and as far as we know it was never
       implemented correctly. This usage is now deprecated.</tp:changed>
 
-    <!-- FIXME: are the type-specific flags sufficient, in a world that has
-    the Requests interface? It'd be nice if we could advertise capabilities
-    that are not defined in terms of a channel type but rather in terms of
-    a property or something, e.g. Channel.Interface.TLS.Secure for
-    individually TLS'd channels. -->
-
     <tp:flags name="Connection_Capability_Flags"
       value-prefix="Connection_Capability_Flag" type="u">
       <tp:flag suffix="Create" value="1">
@@ -160,6 +154,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         that the set is kept accurate - for example, a client may remove
         capabilities or type specific capability flags when it exits
         which are still provided by another client.</p>
+
+        <p>On connections managed by the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">ChannelDispatcher</tp:dbus-ref>,
+          this method SHOULD NOT be used by clients other than the
+          ChannelDispatcher itself.</p>
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
@@ -230,6 +229,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
+
+    <tp:contact-attribute name="caps"
+      type="a(usuu)" tp:type="Contact_Capability">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same structs that would be returned by
+          <tp:member-ref>GetCapabilities</tp:member-ref>
+          (all of them will redundantly have the contact's handle as the
+          first member). Omitted from the result if the contact's capabilities
+          are not known; present in the result as an empty array if the
+          contact is known to have no capabilities at all.</p>
+      </tp:docstring>
+    </tp:contact-attribute>
 
   </interface>
 </node>
