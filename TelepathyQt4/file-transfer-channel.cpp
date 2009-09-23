@@ -62,6 +62,7 @@ struct FileTransferChannel::Private
     qulonglong initialOffset;
     qulonglong size;
     qulonglong transferredBytes;
+    SupportedSocketMap availableSocketTypes;
 
     bool connected;
     bool finished;
@@ -140,6 +141,7 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
     initialOffset = qdbus_cast<qulonglong>(props["InitialOffset"]);
     size = qdbus_cast<qulonglong>(props["Size"]);
     transferredBytes = qdbus_cast<qulonglong>(props["TransferredBytes"]);
+    availableSocketTypes = qdbus_cast<SupportedSocketMap>(props["AvailableSocketTypes"]);
 }
 
 /**
@@ -409,6 +411,30 @@ qulonglong FileTransferChannel::transferredBytes() const
 
     return mPriv->transferredBytes;
 }
+
+/**
+ * Return a mapping from address types (members of SocketAddressType) to arrays
+ * of access-control type (members of SocketAccessControl) that the connection
+ * manager supports for sockets with that address type. For simplicity, if a CM
+ * supports offering a particular type of file transfer, it is assumed to
+ * support accepting it. All connection Managers support at least
+ * SocketAddressTypeIPv4.
+ *
+ * This method requires FileTransferChannel::FeatureCore to be enabled.
+ *
+ * \return A mapping from address types to arrays of access-control type.
+ * \sa transferredBytesChanged()
+ */
+SupportedSocketMap FileTransferChannel::availableSocketTypes() const
+{
+    if (!isReady(FeatureCore)) {
+        warning() << "FileTransferChannel::FeatureCore must be ready before "
+            "calling availableSocketTypes";
+    }
+
+    return mPriv->availableSocketTypes;
+}
+
 
 /**
  * Cancel a file transfer.

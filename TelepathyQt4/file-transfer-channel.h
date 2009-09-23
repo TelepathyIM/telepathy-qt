@@ -74,6 +74,8 @@ protected:
     FileTransferChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
 
+    SupportedSocketMap availableSocketTypes() const;
+
     virtual void connectToHost();
     bool isConnected() const;
     void setConnected();
