@@ -49,12 +49,17 @@ struct IncomingFileTransferChannel::Private
     QTcpSocket *socket;
     SocketAccessControl accessControl;
     SocketAddressIPv4 addr;
+
+    qulonglong requestedOffset;
+    qint64 pos;
 };
 
 IncomingFileTransferChannel::Private::Private(IncomingFileTransferChannel *parent)
     : parent(parent),
       output(0),
-      socket(0)
+      socket(0),
+      requestedOffset(0),
+      pos(0)
 {
 }
 
@@ -192,6 +197,8 @@ PendingOperation *IncomingFileTransferChannel::acceptFile(qulonglong offset,
         accessControlParam = QDBusVariant(QVariant(QString()));
     }
 
+    mPriv->requestedOffset = offset;
+
     PendingVariant *pv = new PendingVariant(
             fileTransferInterface(BypassInterfaceCheck)->AcceptFile(SocketAddressTypeIPv4,
                 mPriv->accessControl, accessControlParam,
@@ -233,6 +240,19 @@ void IncomingFileTransferChannel::connectToHost()
         return;
     }
 
+    // we already have initialOffsetDefined, called before State became Open, so
+    // let's make sure everything is ok.
+    if (initialOffset() > mPriv->requestedOffset) {
+        // either the CM or the sender is doing something really wrong here,
+        // cancel the transfer.
+        warning() << "InitialOffset bigger than requested offset, "
+            "cancelling the transfer";
+        cancel();
+        return;
+    }
+
+    mPriv->pos = initialOffset();
+
     mPriv->socket = new QTcpSocket(this);
 
     connect(mPriv->socket, SIGNAL(connected()),
@@ -273,8 +293,19 @@ void IncomingFileTransferChannel::doTransfer()
     QByteArray data;
     while (mPriv->socket->bytesAvailable()) {
         data = mPriv->socket->readAll();
+
+        // skip until we reach requetedOffset and start writing from there
+        if ((qulonglong) mPriv->pos < mPriv->requestedOffset) {
+            if ((qulonglong) data.length() <= (mPriv->requestedOffset - mPriv->pos)) {
+                break;
+            }
+            data = data.mid(mPriv->requestedOffset - mPriv->pos);
+        }
+
         mPriv->output->write(data); // never fails
     }
+
+    mPriv->pos += data.length();
 }
 
 void IncomingFileTransferChannel::setFinished()
