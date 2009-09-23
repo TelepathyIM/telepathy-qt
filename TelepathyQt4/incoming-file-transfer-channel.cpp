@@ -115,6 +115,8 @@ IncomingFileTransferChannel::~IncomingFileTransferChannel()
  * The given output device should not be closed/destroyed until the state()
  * changes to %FileTransferStateCompleted or %FileTransferStateCancelled.
  *
+ * Only the primary handler of a file transfer channel may call this method.
+ *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
  * \param offset The desired offset in bytes where the file transfer should

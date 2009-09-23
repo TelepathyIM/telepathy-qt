@@ -229,7 +229,7 @@ FileTransferStateChangeReason FileTransferChannel::stateReason() const
 }
 
 /**
- * Return the name of the file on the sender's side. This is therefore given as
+ * Return the name of the file on the sender's side. This is given as
  * a suggested filename for the receiver. This cannot change once the channel
  * has been created.
  *
@@ -273,6 +273,12 @@ QString FileTransferChannel::contentType() const
  * The size of the file. This cannot change once the channel has been
  * created.
  *
+ * Note that the size is not guaranteed to be exactly right for
+ * incoming files. This is merely a hint and should not be used to know when the
+ * transfer finished.
+ *
+ * For unknown sizes the return value can be UINT64_MAX.
+ *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
  * \return The size of the file.
@@ -310,8 +316,8 @@ FileHashType FileTransferChannel::contentHashType() const
  * the value of the contentHashType().
  *
  * Its value MUST correspond to the appropriate type of the contentHashType().
- * If the contentHashType() is set to %FileHashTypeNone,
- * then this value should be ignored.
+ * If the contentHashType() is set to %FileHashTypeNone, then the
+ * returned value is an empty string.
  *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
@@ -323,6 +329,10 @@ QString FileTransferChannel::contentHash() const
     if (!isReady(FeatureCore)) {
         warning() << "FileTransferChannel::FeatureCore must be ready before "
             "calling contentHash";
+    }
+
+    if (mPriv->contentHashType == FileHashTypeNone) {
+        return QString();
     }
 
     return mPriv->contentHash;
@@ -365,7 +375,7 @@ QDateTime FileTransferChannel::lastModificationTime() const
 }
 
 /**
- * Return the offset in bytes from where the file should be sent.
+ * Return the offset in bytes from which the file will be sent.
  *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
  *

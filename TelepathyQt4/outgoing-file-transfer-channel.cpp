@@ -121,6 +121,8 @@ OutgoingFileTransferChannel::~OutgoingFileTransferChannel()
  * If input is a sequential device QIODevice::isSequential(), it should be
  * closed when no more data is available, so we know when to stop reading.
  *
+ * Only the primary handler of a file transfer channel may call this method.
+ *
  * This method requires FileTransferChannel::FeatureCore to be enabled.
  *
  * \param input A QIODevice object where the data will be read from.
