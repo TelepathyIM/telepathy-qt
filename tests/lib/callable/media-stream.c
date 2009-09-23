@@ -45,6 +45,7 @@ enum
   PROP_DIRECTION,
   PROP_STREAM_INFO,
   PROP_SIMULATION_DELAY,
+  PROP_LOCALLY_REQUESTED,
   N_PROPS
 };
 
@@ -74,6 +75,7 @@ struct _ExampleCallableMediaStreamPrivate
 
   guint connected_event_id;
 
+  gboolean locally_requested;
   gboolean removed;
 };
 
@@ -84,10 +86,10 @@ example_callable_media_stream_init (ExampleCallableMediaStream *self)
       EXAMPLE_TYPE_CALLABLE_MEDIA_STREAM,
       ExampleCallableMediaStreamPrivate);
 
-  /* FIXME: no particular "implicit" direction is currently mandated by
-   * telepathy-spec */
+  /* start off directionless */
   self->priv->direction = TP_MEDIA_STREAM_DIRECTION_NONE;
   self->priv->pending_send = 0;
+  self->priv->state = TP_MEDIA_STREAM_STATE_DISCONNECTED;
 }
 
 static void
@@ -188,6 +190,10 @@ get_property (GObject *object,
       g_value_set_uint (value, self->priv->simulation_delay);
       break;
 
+    case PROP_LOCALLY_REQUESTED:
+      g_value_set_boolean (value, self->priv->locally_requested);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -223,6 +229,22 @@ set_property (GObject *object,
 
     case PROP_SIMULATION_DELAY:
       self->priv->simulation_delay = g_value_get_uint (value);
+      break;
+
+    case PROP_LOCALLY_REQUESTED:
+      self->priv->locally_requested = g_value_get_boolean (value);
+
+      if (self->priv->locally_requested)
+        {
+          example_callable_media_stream_change_direction (self,
+              TP_MEDIA_STREAM_DIRECTION_BIDIRECTIONAL, NULL);
+        }
+      else
+        {
+          example_callable_media_stream_receive_direction_request (self,
+              TP_MEDIA_STREAM_DIRECTION_BIDIRECTIONAL);
+        }
+
       break;
 
     default:
@@ -339,6 +361,13 @@ example_callable_media_stream_class_init (ExampleCallableMediaStreamClass *klass
   g_object_class_install_property (object_class, PROP_SIMULATION_DELAY,
       param_spec);
 
+  param_spec = g_param_spec_boolean ("locally-requested", "Locally requested?",
+      "True if this channel was requested by the local user",
+      FALSE,
+      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_LOCALLY_REQUESTED,
+      param_spec);
+
   signals[SIGNAL_REMOVED] = g_signal_new ("removed",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       g_cclosure_marshal_VOID__VOID,
@@ -360,12 +389,14 @@ example_callable_media_stream_close (ExampleCallableMediaStream *self)
       g_message ("Sending to server: Closing stream %u",
           self->priv->id);
 
-      g_signal_emit (self, signals[SIGNAL_REMOVED], 0);
-
       if (self->priv->connected_event_id != 0)
         {
           g_source_remove (self->priv->connected_event_id);
         }
+
+      /* this has to come last, because the MediaChannel may unref us in
+       * response to the removed signal */
+      g_signal_emit (self, signals[SIGNAL_REMOVED], 0);
     }
 }
 
@@ -421,7 +452,7 @@ example_callable_media_stream_change_direction (
   gboolean receiving =
     ((self->priv->direction & TP_MEDIA_STREAM_DIRECTION_RECEIVE) != 0);
   gboolean want_to_send =
-    ((direction & TP_MEDIA_STREAM_DIRECTION_RECEIVE) != 0);
+    ((direction & TP_MEDIA_STREAM_DIRECTION_SEND) != 0);
   gboolean want_to_receive =
     ((direction & TP_MEDIA_STREAM_DIRECTION_RECEIVE) != 0);
   gboolean pending_remote_send =

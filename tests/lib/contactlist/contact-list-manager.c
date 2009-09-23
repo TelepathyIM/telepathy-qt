@@ -211,8 +211,12 @@ example_contact_list_manager_close_all (ExampleContactListManager *self)
     {
       if (self->priv->lists[i] != NULL)
         {
-          g_object_unref (self->priv->lists[i]);
+          ExampleContactList *list = self->priv->lists[i];
+
+          /* set self->priv->lists[i] to NULL here so list_closed_cb does
+           * not try to delete the list again */
           self->priv->lists[i] = NULL;
+          g_object_unref (list);
         }
     }
 
