@@ -184,7 +184,7 @@ Account::Private::~Private()
 /**
  * \class Account
  * \ingroup clientaccount
- * \headerfile TelepathyQt4/account.h> <TelepathyQt4/Account>
+ * \headerfile <TelepathyQt4/account.h> <TelepathyQt4/Account>
  *
  * Object representing a Telepathy account.
  *
@@ -857,6 +857,123 @@ PendingChannelRequest *Account::ensureMediaCall(
                    contact ? contact->handle().at(0) : (uint) 0);
     return new PendingChannelRequest(dbusConnection(), objectPath(),
             request, userActionTime, preferredHandler, false, this);
+}
+
+/**
+ * Start a request to create a file transfer channel with the given
+ * contact \a contact.
+ *
+ * \param contactIdentifier The identifier of the contact to send a file.
+ * \param fileName The suggested filename for the receiver.
+ * \param properties The desired properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::createFileTransfer(
+        const QString &contactIdentifier,
+        const FileTransferChannelCreationProperties &properties,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+
+    QFileInfo fileInfo(properties.suggestedFileName());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
+                   fileInfo.fileName());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
+                   properties.contentType());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
+                   properties.size());
+
+    if (properties.hasContentHash()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
+                       (uint) properties.contentHashType());
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHash"),
+                       properties.contentHash());
+    }
+
+    if (properties.hasDescription()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Description"),
+                       properties.description());
+    }
+
+    if (properties.hasLastModificationTime()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
+                       (qulonglong) properties.lastModificationTime().toTime_t());
+    }
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, true, this);
+}
+
+/**
+ * Start a request to create a file transfer channel with the given
+ * contact \a contact.
+ *
+ * \param contact The contact to send a file.
+ * \param properties The desired properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::createFileTransfer(
+        const ContactPtr &contact,
+        const FileTransferChannelCreationProperties &properties,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+
+    QFileInfo fileInfo(properties.suggestedFileName());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Filename"),
+                   fileInfo.fileName());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
+                   properties.contentType());
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
+                   properties.size());
+
+    if (properties.hasContentHash()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHashType"),
+                       (uint) properties.contentHashType());
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentHash"),
+                       properties.contentHash());
+    }
+
+    if (properties.hasDescription()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Description"),
+                       properties.description());
+    }
+
+    if (properties.hasLastModificationTime()) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Date"),
+                       (qulonglong) properties.lastModificationTime().toTime_t());
+    }
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, true, this);
 }
 
 /**

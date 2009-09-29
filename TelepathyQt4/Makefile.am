@@ -73,12 +73,15 @@ libtelepathy_qt4_la_SOURCES = \
     debug-internal.h \
     feature.cpp \
     file-transfer-channel.cpp \
+    file-transfer-channel-creation-properties.cpp \
+    incoming-file-transfer-channel.cpp \
     key-file.cpp \
     manager-file.cpp \
     media-session-handler.cpp \
     media-stream-handler.cpp \
     message.cpp \
     optional-interface-factory.cpp \
+    outgoing-file-transfer-channel.cpp \
     pending-account.cpp \
     pending-channel.cpp \
     pending-channel-request.cpp \
@@ -90,6 +93,7 @@ libtelepathy_qt4_la_SOURCES = \
     pending-operation.cpp \
     pending-ready.cpp \
     pending-string-list.cpp \
+    pending-variant.cpp \
     properties.cpp \
     readiness-helper.cpp \
     ready-object.cpp \
@@ -145,6 +149,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/contact-manager-internal.moc.hpp \
     _gen/dbus-proxy.moc.hpp \
     _gen/file-transfer-channel.moc.hpp \
+    _gen/incoming-file-transfer-channel.moc.hpp \
+    _gen/outgoing-file-transfer-channel.moc.hpp \
     _gen/pending-account.moc.hpp \
     _gen/pending-channel.moc.hpp \
     _gen/pending-channel-request.moc.hpp \
@@ -156,6 +162,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/pending-operation.moc.hpp \
     _gen/pending-ready.moc.hpp \
     _gen/pending-string-list.moc.hpp \
+    _gen/pending-variant.moc.hpp \
     _gen/readiness-helper.moc.hpp \
     _gen/room-list-channel.moc.hpp \
     _gen/simple-pending-operations.moc.hpp \
@@ -186,6 +193,7 @@ tpqt4include_HEADERS = \
     DBusProxy \
     Feature \
     FileTransferChannel \
+    IncomingFileTransferChannel \
     KeyFile \
     ManagerFile \
     MediaSessionHandler \
@@ -193,6 +201,7 @@ tpqt4include_HEADERS = \
     Message \
     MethodInvocationContext \
     OptionalInterfaceFactory \
+    OutgoingFileTransferChannel \
     PendingAccount \
     PendingChannel \
     PendingChannelRequest \
@@ -205,6 +214,7 @@ tpqt4include_HEADERS = \
     PendingReady \
     PendingSuccess \
     PendingStringList \
+    PendingVariant \
     PendingVoidMethodCall \
     Properties \
     ReadinessHelper \
@@ -283,6 +293,8 @@ tpqt4include_HEADERS = \
     debug.h \
     feature.h \
     file-transfer-channel.h \
+    file-transfer-channel-creation-properties.h \
+    incoming-file-transfer-channel.h \
     key-file.h \
     manager-file.h \
     media-session-handler.h \
@@ -290,6 +302,7 @@ tpqt4include_HEADERS = \
     message.h \
     method-invocation-context.h \
     optional-interface-factory.h \
+    outgoing-file-transfer-channel.h \
     pending-account.h \
     pending-channel.h \
     pending-channel-request.h \
@@ -300,6 +313,7 @@ tpqt4include_HEADERS = \
     pending-operation.h \
     pending-ready.h \
     pending-string-list.h \
+    pending-variant.h \
     properties.h \
     readiness-helper.h \
     ready-object.h \
@@ -347,14 +361,16 @@ check-local: check-coding-style
 AM_CPPFLAGS = \
     -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
-    $(QTDBUS_CFLAGS)
+    $(QTDBUS_CFLAGS) \
+    $(QTNETWORK_CFLAGS)
 
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS)
 
 ALL_LIBS = \
     $(QTCORE_LIBS) \
-    $(QTDBUS_LIBS)
+    $(QTDBUS_LIBS) \
+    $(QTNETWORK_LIBS)
 
 # Generated stuff
 

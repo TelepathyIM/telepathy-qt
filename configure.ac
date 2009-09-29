@@ -158,6 +158,11 @@ PKG_CHECK_MODULES(QTDBUS, [QtDBus >= 4.5])
 AC_SUBST(QTDBUS_CFLAGS)
 AC_SUBST(QTDBUS_LIBS)
 
+dnl Check for QtNetwork
+PKG_CHECK_MODULES(QTNETWORK, [QtNetwork >= 4.5])
+AC_SUBST(QTNETWORK_CFLAGS)
+AC_SUBST(QTNETWORK_LIBS)
+
 dnl Check for QtGui
 have_qt_gui=
 PKG_CHECK_MODULES(QTGUI, [QtGui >= 4.5], [have_qt_gui=yes], [have_qt_gui=no])
@@ -256,6 +261,7 @@ AC_OUTPUT([
     examples/accounts/Makefile
     examples/call/Makefile
     examples/extensions/Makefile
+    examples/file-transfer/Makefile
     examples/roster/Makefile
     m4/Makefile
     spec/Makefile

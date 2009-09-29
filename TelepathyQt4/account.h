@@ -31,6 +31,7 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
+#include <TelepathyQt4/FileTransferChannelCreationProperties>
 #include <TelepathyQt4/OptionalInterfaceFactory>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/ReadyObject>
@@ -156,6 +157,17 @@ public:
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureMediaCall(
             const ContactPtr &contact,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+
+    PendingChannelRequest *createFileTransfer(
+            const QString &contactIdentifier,
+            const FileTransferChannelCreationProperties &properties,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+    PendingChannelRequest *createFileTransfer(
+            const ContactPtr &contact,
+            const FileTransferChannelCreationProperties &properties,
             QDateTime userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
