@@ -193,6 +193,7 @@ tpqt4include_HEADERS = \
     DBusProxy \
     Feature \
     FileTransferChannel \
+    FileTransferChannelCreationProperties \
     IncomingFileTransferChannel \
     KeyFile \
     ManagerFile \
