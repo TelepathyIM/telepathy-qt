@@ -22,6 +22,7 @@
 #include <TelepathyQt4/Contact>
 #include "TelepathyQt4/_gen/contact.moc.hpp"
 
+#include <TelepathyQt4/CapabilitiesBase>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/ReferencedHandles>
@@ -36,6 +37,7 @@ struct Contact::Private
 {
     Private(ContactManager *manager, const ReferencedHandles &handle)
         : manager(manager), handle(handle), isAvatarTokenKnown(false),
+          caps(0),
           subscriptionState(PresenceStateNo), publishState(PresenceStateNo),
           blocked(false)
     {
@@ -52,6 +54,7 @@ struct Contact::Private
     bool isAvatarTokenKnown;
     QString avatarToken;
     SimplePresence simplePresence;
+    CapabilitiesBase *caps;
 
     PresenceState subscriptionState;
     PresenceState publishState;
@@ -153,6 +156,17 @@ QString Contact::presenceMessage() const
     }
 
     return mPriv->simplePresence.statusMessage;
+}
+
+CapabilitiesBase *Contact::capabilities() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureCapabilities)) {
+        warning() << "Contact::capabilities() used on" << this
+            << "for which FeatureCapabilities hasn't been requested - returning 0";
+        return 0;
+    }
+
+    return mPriv->caps;
 }
 
 Contact::PresenceState Contact::subscriptionState() const
@@ -286,6 +300,7 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
     foreach (Feature feature, requestedFeatures) {
         QString maybeAlias;
         SimplePresence maybePresence;
+        RequestableChannelClassList maybeCaps;
 
         switch (feature) {
             case FeatureAlias:
@@ -326,6 +341,15 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                     mPriv->simplePresence.type = ConnectionPresenceTypeUnknown;
                     mPriv->simplePresence.status = "unknown";
                     mPriv->simplePresence.statusMessage = "";
+                }
+                break;
+
+            case FeatureCapabilities:
+                maybeCaps = qdbus_cast<RequestableChannelClassList>(attributes.value(
+                            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES "/capabilities"));
+
+                if (!maybeCaps.isEmpty()) {
+                    receiveCapabilities(maybeCaps);
                 }
                 break;
 
@@ -377,6 +401,20 @@ void Contact::receiveSimplePresence(const SimplePresence &presence)
             || mPriv->simplePresence.statusMessage != presence.statusMessage) {
         mPriv->simplePresence = presence;
         emit simplePresenceChanged(presenceStatus(), presenceType(), presenceMessage());
+    }
+}
+
+void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureCapabilities)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureCapabilities);
+
+    if (mPriv->caps->requestableChannelClasses() != caps) {
+        mPriv->caps->setRequestableChannelClasses(caps);
+        emit capabilitiesChanged(mPriv->caps);
     }
 }
 
