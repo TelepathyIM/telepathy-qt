@@ -52,6 +52,7 @@ libtelepathy_qt4_la_SOURCES = \
     abstract-interface.cpp \
     account.cpp \
     account-manager.cpp \
+    capabilities-base.cpp \
     channel.cpp \
     channel-factory.cpp \
     channel-factory.h \
@@ -177,6 +178,7 @@ tpqt4include_HEADERS = \
     AbstractInterface \
     Account \
     AccountManager \
+    CapabilitiesBase \
     Channel \
     ChannelDispatcher \
     ChannelDispatchOperation \
@@ -277,6 +279,7 @@ tpqt4include_HEADERS = \
     abstract-interface.h \
     account.h \
     account-manager.h \
+    capabilities-base.h \
     channel.h \
     channel-dispatcher.h \
     channel-dispatch-operation.h \
