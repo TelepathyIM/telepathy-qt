@@ -1216,7 +1216,7 @@ PendingOperation *Channel::requestClose()
         return new PendingSuccess(this);
     }
 
-    return new PendingVoidMethodCall(this, mPriv->baseInterface->Close());
+    return new PendingVoidMethodCall(mPriv->baseInterface->Close(), this);
 }
 
 /**
@@ -1341,35 +1341,36 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
 {
     if (!isReady()) {
         warning() << "Channel::groupAddContacts() used channel not ready";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel not ready");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Channel not ready", this);
     } else if (contacts.isEmpty()) {
         warning() << "Channel::groupAddContacts() used with empty contacts param";
-        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "contacts cannot be an empty list");
+        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "contacts cannot be an empty list", this);
     }
 
     foreach (const ContactPtr &contact, contacts) {
         if (!contact) {
             warning() << "Channel::groupAddContacts() used but contacts param contains "
                 "invalid contact";
-            return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
-                    "Unable to add invalid contacts");
+            return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                    "Unable to add invalid contacts", this);
         }
     }
 
     if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupAddContacts() used with no group interface";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support group interface");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Channel does not support group interface", this);
     }
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle()[0];
     }
-    return new PendingVoidMethodCall(this,
-            mPriv->group->AddMembers(handles, message));
+    return new PendingVoidMethodCall(
+            mPriv->group->AddMembers(handles, message),
+            this);
 }
 
 /**
@@ -1513,37 +1514,38 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
 {
     if (!isReady()) {
         warning() << "Channel::groupRemoveContacts() used channel not ready";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel not ready");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Channel not ready", this);
     }
 
     if (contacts.isEmpty()) {
         warning() << "Channel::groupRemoveContacts() used with empty contacts param";
-        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "contacts param cannot be an empty list");
+        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "contacts param cannot be an empty list", this);
     }
 
     foreach (const ContactPtr &contact, contacts) {
         if (!contact) {
             warning() << "Channel::groupRemoveContacts() used but contacts param contains "
                 "invalid contact:";
-            return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
-                    "Unable to remove invalid contacts");
+            return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                    "Unable to remove invalid contacts", this);
         }
     }
 
     if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         warning() << "Channel::groupRemoveContacts() used with no group interface";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support group interface");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Channel does not support group interface", this);
     }
 
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle()[0];
     }
-    return new PendingVoidMethodCall(this,
-            mPriv->group->RemoveMembersWithReason(handles, message, reason));
+    return new PendingVoidMethodCall(
+            mPriv->group->RemoveMembersWithReason(handles, message, reason),
+            this);
 }
 
 /**
@@ -1833,9 +1835,8 @@ PendingOperation *Channel::groupAddSelfHandle()
     if (!isReady()) {
         warning() << "Channel::groupAddSelfHandle() used when channel not "
             "ready";
-        return new PendingFailure(this,
-                TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Channel object not ready");
+        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Channel object not ready", this);
     }
 
     UIntList handles;
@@ -1846,8 +1847,9 @@ PendingOperation *Channel::groupAddSelfHandle()
         handles << mPriv->groupSelfHandle;
     }
 
-    return new PendingVoidMethodCall(this,
-            mPriv->group->AddMembers(handles, ""));
+    return new PendingVoidMethodCall(
+            mPriv->group->AddMembers(handles, ""),
+            this);
 }
 
 /**

@@ -72,7 +72,7 @@ void Test::processDBusQueue(Tp::DBusProxy *proxy)
 {
     // Call method Ping on the D-Bus Peer interface
     PeerInterface peer(proxy);
-    PendingVoidMethodCall *call = new PendingVoidMethodCall(this, peer.Ping());
+    PendingVoidMethodCall *call = new PendingVoidMethodCall(peer.Ping(), this);
 
     // Wait for the reply to the Ping call
     QVERIFY(connect(call,

@@ -230,12 +230,12 @@ QualifiedPropertyValueMapList ChannelRequest::requests() const
 
 PendingOperation *ChannelRequest::cancel()
 {
-    return new PendingVoidMethodCall(this, mPriv->baseInterface->Cancel());
+    return new PendingVoidMethodCall(mPriv->baseInterface->Cancel(), this);
 }
 
 PendingOperation *ChannelRequest::proceed()
 {
-    return new PendingVoidMethodCall(this, mPriv->baseInterface->Proceed());
+    return new PendingVoidMethodCall(mPriv->baseInterface->Proceed(), this);
 }
 
 /**

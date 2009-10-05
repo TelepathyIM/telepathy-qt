@@ -365,8 +365,10 @@ PendingOperation *MediaStream::requestDirection(
         MediaStreamDirection direction)
 {
     StreamedMediaChannelPtr chan(mPriv->channel);
-    return new PendingVoidMethodCall(this,
-            chan->streamedMediaInterface()->RequestStreamDirection(mPriv->id, direction));
+    return new PendingVoidMethodCall(
+            chan->streamedMediaInterface()->RequestStreamDirection(
+                mPriv->id, direction),
+            this);
 }
 
 /**
@@ -390,11 +392,13 @@ PendingOperation *MediaStream::startDTMFTone(DTMFEvent event)
     StreamedMediaChannelPtr chan(mPriv->channel);
     if (!chan->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF)) {
         warning() << "MediaStream::startDTMFTone() used with no dtmf interface";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "StreamedMediaChannel does not support dtmf interface");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "StreamedMediaChannel does not support dtmf interface",
+                this);
     }
-    return new PendingVoidMethodCall(this,
-            chan->DTMFInterface()->StartTone(mPriv->id, event));
+    return new PendingVoidMethodCall(
+            chan->DTMFInterface()->StartTone(mPriv->id, event),
+            this);
 }
 
 /**
@@ -418,11 +422,13 @@ PendingOperation *MediaStream::stopDTMFTone()
     StreamedMediaChannelPtr chan(mPriv->channel);
     if (!chan->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF)) {
         warning() << "MediaStream::stopDTMFTone() used with no dtmf interface";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "StreamedMediaChannel does not support dtmf interface");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "StreamedMediaChannel does not support dtmf interface",
+                this);
     }
-    return new PendingVoidMethodCall(this,
-            chan->DTMFInterface()->StopTone(mPriv->id));
+    return new PendingVoidMethodCall(
+            chan->DTMFInterface()->StopTone(mPriv->id),
+            this);
 }
 
 /**
@@ -697,8 +703,10 @@ PendingOperation *StreamedMediaChannel::acceptCall()
  */
 PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &stream)
 {
-    return new PendingVoidMethodCall(this,
-            streamedMediaInterface()->RemoveStreams(UIntList() << stream->id()));
+    return new PendingVoidMethodCall(
+            streamedMediaInterface()->RemoveStreams(
+                UIntList() << stream->id()),
+            this);
 }
 
 /**
@@ -714,8 +722,9 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
     foreach (const MediaStreamPtr &stream, streams) {
         ids << stream->id();
     }
-    return new PendingVoidMethodCall(this,
-            streamedMediaInterface()->RemoveStreams(ids));
+    return new PendingVoidMethodCall(
+            streamedMediaInterface()->RemoveStreams(ids),
+            this);
 }
 
 PendingMediaStreams *StreamedMediaChannel::requestStream(
@@ -830,10 +839,11 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
 {
     if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD)) {
         warning() << "StreamedMediaChannel::requestHold() used with no hold interface";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "StreamedMediaChannel does not support hold interface");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "StreamedMediaChannel does not support hold interface",
+                this);
     }
-    return new PendingVoidMethodCall(this, holdInterface()->RequestHold(hold));
+    return new PendingVoidMethodCall(holdInterface()->RequestHold(hold), this);
 }
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)

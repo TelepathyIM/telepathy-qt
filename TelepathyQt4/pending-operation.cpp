@@ -292,9 +292,9 @@ QString PendingOperation::errorMessage() const
  *             Telepathy API; if the method returns anything, the return
  *             value(s) will be ignored
  */
-PendingVoidMethodCall::PendingVoidMethodCall(QObject *proxy,
-        QDBusPendingCall call)
-    : PendingOperation(proxy)
+PendingVoidMethodCall::PendingVoidMethodCall(QDBusPendingCall call,
+        QObject *parent)
+    : PendingOperation(parent)
 {
     connect(new QDBusPendingCallWatcher(call),
             SIGNAL(finished(QDBusPendingCallWatcher*)),

@@ -302,14 +302,14 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
 
 PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
 {
-    return new PendingVoidMethodCall(this,
-            mPriv->baseInterface->HandleWith(handler));
+    return new PendingVoidMethodCall(
+            mPriv->baseInterface->HandleWith(handler),
+            this);
 }
 
 PendingOperation *ChannelDispatchOperation::claim()
 {
-    return new PendingVoidMethodCall(this,
-            mPriv->baseInterface->Claim());
+    return new PendingVoidMethodCall(mPriv->baseInterface->Claim(), this);
 }
 
 /**
