@@ -139,46 +139,46 @@ public:
 
     PendingChannelRequest *ensureTextChat(
             const QString &contactIdentifier,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureTextChat(
             const ContactPtr &contact,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
     PendingChannelRequest *ensureTextChatroom(
             const QString &roomName,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
     PendingChannelRequest *ensureMediaCall(
             const QString &contactIdentifier,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureMediaCall(
             const ContactPtr &contact,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
     PendingChannelRequest *createFileTransfer(
             const QString &contactIdentifier,
             const FileTransferChannelCreationProperties &properties,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *createFileTransfer(
             const ContactPtr &contact,
             const FileTransferChannelCreationProperties &properties,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
     // advanced
     PendingChannelRequest *createChannel(
             const QVariantMap &requestedProperties,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
     PendingChannelRequest *ensureChannel(
             const QVariantMap &requestedProperties,
-            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
     inline Client::DBus::PropertiesInterface *propertiesInterface() const

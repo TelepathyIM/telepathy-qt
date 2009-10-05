@@ -717,7 +717,7 @@ PendingOperation *Account::remove()
  */
 PendingChannelRequest *Account::ensureTextChat(
         const QString &contactIdentifier,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     QVariantMap request;
@@ -749,7 +749,7 @@ PendingChannelRequest *Account::ensureTextChat(
  */
 PendingChannelRequest *Account::ensureTextChat(
         const ContactPtr &contact,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     QVariantMap request;
@@ -781,7 +781,7 @@ PendingChannelRequest *Account::ensureTextChat(
  */
 PendingChannelRequest *Account::ensureTextChatroom(
         const QString &roomName,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     QVariantMap request;
@@ -813,7 +813,7 @@ PendingChannelRequest *Account::ensureTextChatroom(
  */
 PendingChannelRequest *Account::ensureMediaCall(
         const QString &contactIdentifier,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     QVariantMap request;
@@ -845,7 +845,7 @@ PendingChannelRequest *Account::ensureMediaCall(
  */
 PendingChannelRequest *Account::ensureMediaCall(
         const ContactPtr &contact,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     QVariantMap request;
@@ -878,7 +878,7 @@ PendingChannelRequest *Account::ensureMediaCall(
 PendingChannelRequest *Account::createFileTransfer(
         const QString &contactIdentifier,
         const FileTransferChannelCreationProperties &properties,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     QVariantMap request;
@@ -936,7 +936,7 @@ PendingChannelRequest *Account::createFileTransfer(
 PendingChannelRequest *Account::createFileTransfer(
         const ContactPtr &contact,
         const FileTransferChannelCreationProperties &properties,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     QVariantMap request;
@@ -997,7 +997,7 @@ PendingChannelRequest *Account::createFileTransfer(
  */
 PendingChannelRequest *Account::createChannel(
         const QVariantMap &request,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     return new PendingChannelRequest(dbusConnection(), objectPath(),
@@ -1025,7 +1025,7 @@ PendingChannelRequest *Account::createChannel(
  */
 PendingChannelRequest *Account::ensureChannel(
         const QVariantMap &request,
-        QDateTime userActionTime,
+        const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
     return new PendingChannelRequest(dbusConnection(), objectPath(),
