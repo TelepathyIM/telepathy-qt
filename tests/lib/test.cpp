@@ -7,10 +7,10 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/DBus>
-#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingVoid>
 
 using Tp::PendingOperation;
-using Tp::PendingVoidMethodCall;
+using Tp::PendingVoid;
 using Tp::Client::DBus::PeerInterface;
 
 Test::Test(QObject *parent)
@@ -72,7 +72,7 @@ void Test::processDBusQueue(Tp::DBusProxy *proxy)
 {
     // Call method Ping on the D-Bus Peer interface
     PeerInterface peer(proxy);
-    PendingVoidMethodCall *call = new PendingVoidMethodCall(peer.Ping(), this);
+    PendingVoid *call = new PendingVoid(peer.Ping(), this);
 
     // Wait for the reply to the Ping call
     QVERIFY(connect(call,

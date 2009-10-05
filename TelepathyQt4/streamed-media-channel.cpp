@@ -28,7 +28,7 @@
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingVoid>
 
 #include <QHash>
 
@@ -365,7 +365,7 @@ PendingOperation *MediaStream::requestDirection(
         MediaStreamDirection direction)
 {
     StreamedMediaChannelPtr chan(mPriv->channel);
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             chan->streamedMediaInterface()->RequestStreamDirection(
                 mPriv->id, direction),
             this);
@@ -396,7 +396,7 @@ PendingOperation *MediaStream::startDTMFTone(DTMFEvent event)
                 "StreamedMediaChannel does not support dtmf interface",
                 this);
     }
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             chan->DTMFInterface()->StartTone(mPriv->id, event),
             this);
 }
@@ -426,7 +426,7 @@ PendingOperation *MediaStream::stopDTMFTone()
                 "StreamedMediaChannel does not support dtmf interface",
                 this);
     }
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             chan->DTMFInterface()->StopTone(mPriv->id),
             this);
 }
@@ -703,7 +703,7 @@ PendingOperation *StreamedMediaChannel::acceptCall()
  */
 PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &stream)
 {
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             streamedMediaInterface()->RemoveStreams(
                 UIntList() << stream->id()),
             this);
@@ -722,7 +722,7 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
     foreach (const MediaStreamPtr &stream, streams) {
         ids << stream->id();
     }
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             streamedMediaInterface()->RemoveStreams(ids),
             this);
 }
@@ -843,7 +843,7 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
                 "StreamedMediaChannel does not support hold interface",
                 this);
     }
-    return new PendingVoidMethodCall(holdInterface()->RequestHold(hold), this);
+    return new PendingVoid(holdInterface()->RequestHold(hold), this);
 }
 
 void StreamedMediaChannel::gotStreams(QDBusPendingCallWatcher *watcher)

@@ -62,7 +62,7 @@ struct PendingOperation::Private
  * In simple cases, like a D-Bus method with no 'out' arguments or for which
  * all 'out' arguments are to be ignored (so the possible results are
  * success with no extra information, or failure with an error code), the
- * trivial subclass %PendingVoidMethodCall can be used.
+ * trivial subclass %PendingVoid can be used.
  *
  * For pending operations that produce a result, another subclass of
  * %PendingOperation can be used, with additional methods that provide that
@@ -273,8 +273,8 @@ QString PendingOperation::errorMessage() const
  */
 
 /**
- * \class PendingVoidMethodCall
- * \headerfile <TelepathyQt4/simple-pending-operations.h> <TelepathyQt4/PendingVoidMethodCall>
+ * \class PendingVoid
+ * \headerfile <TelepathyQt4/simple-pending-operations.h> <TelepathyQt4/PendingVoid>
  *
  * Generic subclass of PendingOperation representing a pending D-Bus method
  * call that does not return anything (or returns a result that is not
@@ -292,7 +292,7 @@ QString PendingOperation::errorMessage() const
  *             Telepathy API; if the method returns anything, the return
  *             value(s) will be ignored
  */
-PendingVoidMethodCall::PendingVoidMethodCall(QDBusPendingCall call,
+PendingVoid::PendingVoid(QDBusPendingCall call,
         QObject *parent)
     : PendingOperation(parent)
 {
@@ -301,7 +301,7 @@ PendingVoidMethodCall::PendingVoidMethodCall(QDBusPendingCall call,
             SLOT(watcherFinished(QDBusPendingCallWatcher*)));
 }
 
-void PendingVoidMethodCall::watcherFinished(QDBusPendingCallWatcher *watcher)
+void PendingVoid::watcherFinished(QDBusPendingCallWatcher *watcher)
 {
     if (watcher->isError()) {
         setFinishedWithError(watcher->error());

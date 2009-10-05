@@ -67,13 +67,13 @@ public:
     }
 };
 
-class PendingVoidMethodCall : public PendingOperation
+class PendingVoid : public PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(PendingVoidMethodCall)
+    Q_DISABLE_COPY(PendingVoid)
 
 public:
-    PendingVoidMethodCall(QDBusPendingCall call, QObject *parent);
+    PendingVoid(QDBusPendingCall call, QObject *parent);
 
 private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);

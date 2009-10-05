@@ -36,7 +36,7 @@
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/ReferencedHandles>
 
 #include <QMap>
@@ -650,7 +650,7 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
         return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Connection does not support SimplePresence", this);
     }
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             simplePresenceInterface()->SetPresence(status, statusMessage),
             this);
 }
@@ -1361,7 +1361,7 @@ PendingReady *Connection::requestConnect(const Features &requestedFeatures)
  */
 PendingOperation *Connection::requestDisconnect()
 {
-    return new PendingVoidMethodCall(baseInterface()->Disconnect(), this);
+    return new PendingVoid(baseInterface()->Disconnect(), this);
 }
 
 /**

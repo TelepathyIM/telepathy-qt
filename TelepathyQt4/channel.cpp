@@ -1216,7 +1216,7 @@ PendingOperation *Channel::requestClose()
         return new PendingSuccess(this);
     }
 
-    return new PendingVoidMethodCall(mPriv->baseInterface->Close(), this);
+    return new PendingVoid(mPriv->baseInterface->Close(), this);
 }
 
 /**
@@ -1368,7 +1368,7 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle()[0];
     }
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             mPriv->group->AddMembers(handles, message),
             this);
 }
@@ -1543,7 +1543,7 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
     foreach (const ContactPtr &contact, contacts) {
         handles << contact->handle()[0];
     }
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             mPriv->group->RemoveMembersWithReason(handles, message, reason),
             this);
 }
@@ -1847,7 +1847,7 @@ PendingOperation *Channel::groupAddSelfHandle()
         handles << mPriv->groupSelfHandle;
     }
 
-    return new PendingVoidMethodCall(
+    return new PendingVoid(
             mPriv->group->AddMembers(handles, ""),
             this);
 }

@@ -30,7 +30,7 @@
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingVoid>
 
 #include <QDateTime>
 
@@ -230,12 +230,12 @@ QualifiedPropertyValueMapList ChannelRequest::requests() const
 
 PendingOperation *ChannelRequest::cancel()
 {
-    return new PendingVoidMethodCall(mPriv->baseInterface->Cancel(), this);
+    return new PendingVoid(mPriv->baseInterface->Cancel(), this);
 }
 
 PendingOperation *ChannelRequest::proceed()
 {
-    return new PendingVoidMethodCall(mPriv->baseInterface->Proceed(), this);
+    return new PendingVoid(mPriv->baseInterface->Proceed(), this);
 }
 
 /**
