@@ -1035,11 +1035,12 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
 
 void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<RequestableChannelClassList> reply = *watcher;
+    QDBusPendingReply<QDBusVariant> reply = *watcher;
 
     if (!reply.isError()) {
         debug() << "Got capabilities";
-        mPriv->caps = new ConnectionCapabilities(reply.value());
+        mPriv->caps = new ConnectionCapabilities(
+                qdbus_cast<RequestableChannelClassList>(reply.value().variant()));
 
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCapabilities, true);
     } else {
