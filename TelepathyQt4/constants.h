@@ -128,7 +128,7 @@
 /**
  * \ingroup errorstrconsts
  *
- * The error name "org.freedesktop.DBus.Error.ObjectRemoved".
+ * The error name "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved".
  */
 #define TELEPATHY_QT4_ERROR_OBJECT_REMOVED \
     "org.freedesktop.Telepathy.Qt4.Error.ObjectRemoved"
