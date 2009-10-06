@@ -412,7 +412,10 @@ void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
 
     mPriv->actualFeatures.insert(FeatureCapabilities);
 
-    if (mPriv->caps->requestableChannelClasses() != caps) {
+    if (!mPriv->caps) {
+        mPriv->caps = new CapabilitiesBase(caps);
+        emit capabilitiesChanged(mPriv->caps);
+    } else if (mPriv->caps->requestableChannelClasses() != caps) {
         mPriv->caps->updateRequestableChannelClasses(caps);
         emit capabilitiesChanged(mPriv->caps);
     }
