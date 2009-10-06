@@ -59,10 +59,12 @@ TESTS += \
     test-chan-group \
     test-cm-basics \
     test-conn-basics \
+    test-conn-capabilities \
     test-conn-requests \
     test-conn-roster \
     test-conn-roster-groups \
     test-contacts \
+    test-contacts-capabilities \
     test-handles \
     test-stateful-proxy \
     test-streamed-media-chan \
@@ -73,10 +75,12 @@ BUILT_SOURCES += \
     _gen/chan-group.cpp.moc.hpp \
     _gen/cm-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
+    _gen/conn-capabilities.cpp.moc.hpp \
     _gen/conn-requests.cpp.moc.hpp \
     _gen/conn-roster.cpp.moc.hpp \
     _gen/conn-roster-groups.cpp.moc.hpp \
     _gen/contacts.cpp.moc.hpp \
+    _gen/contacts-capabilities.cpp.moc.hpp \
     _gen/handles.cpp.moc.hpp \
     _gen/stateful-proxy.cpp.moc.hpp \
     _gen/streamed-media-chan.cpp.moc.hpp \
@@ -96,6 +100,9 @@ test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 test_conn_basics_SOURCES = conn-basics.cpp
 test_conn_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
+test_conn_capabilities_SOURCES = conn-capabilities.cpp
+test_conn_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
+
 test_conn_requests_SOURCES = conn-requests.cpp
 test_conn_requests_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
 
@@ -107,6 +114,9 @@ test_conn_roster_groups_LDADD = $(LDADD) $(top_builddir)/tests/lib/contactlist/l
 
 test_contacts_SOURCES = contacts.cpp
 test_contacts_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+
+test_contacts_capabilities_SOURCES = contacts-capabilities.cpp
+test_contacts_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_handles_SOURCES = handles.cpp
 test_handles_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la

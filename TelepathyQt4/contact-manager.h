@@ -118,6 +118,7 @@ private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);
     void onAvatarUpdated(uint, const QString &);
     void onPresencesChanged(const Tp::SimpleContactPresences &);
+    void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
 
     void onSubscribeChannelMembersChanged(
         const Tp::Contacts &groupMembersAdded,

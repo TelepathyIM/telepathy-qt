@@ -52,6 +52,7 @@ libtelepathy_qt4_la_SOURCES = \
     abstract-interface.cpp \
     account.cpp \
     account-manager.cpp \
+    capabilities-base.cpp \
     channel.cpp \
     channel-factory.cpp \
     channel-factory.h \
@@ -62,10 +63,12 @@ libtelepathy_qt4_la_SOURCES = \
     client-registrar.cpp \
     client-registrar-internal.h \
     connection.cpp \
+    connection-capabilities.cpp \
     connection-manager.cpp \
     connection-internal.h \
     connection-manager-internal.h \
     contact.cpp \
+    contact-capabilities.cpp \
     contact-manager.cpp \
     dbus.cpp \
     dbus-proxy.cpp \
@@ -177,6 +180,7 @@ tpqt4include_HEADERS = \
     AbstractInterface \
     Account \
     AccountManager \
+    CapabilitiesBase \
     Channel \
     ChannelDispatcher \
     ChannelDispatchOperation \
@@ -184,9 +188,11 @@ tpqt4include_HEADERS = \
     Client \
     ClientRegistrar \
     Connection \
+    ConnectionCapabilities \
     ConnectionManager \
     Constants \
     Contact \
+    ContactCapabilities \
     ContactManager \
     Debug \
     DBus \
@@ -277,6 +283,7 @@ tpqt4include_HEADERS = \
     abstract-interface.h \
     account.h \
     account-manager.h \
+    capabilities-base.h \
     channel.h \
     channel-dispatcher.h \
     channel-dispatch-operation.h \
@@ -284,9 +291,11 @@ tpqt4include_HEADERS = \
     client.h \
     client-registrar.h \
     connection.h \
+    connection-capabilities.h \
     connection-manager.h \
     constants.h \
     contact.h \
+    contact-capabilities.h \
     contact-manager.h \
     contact-manager-internal.h \
     dbus.h \

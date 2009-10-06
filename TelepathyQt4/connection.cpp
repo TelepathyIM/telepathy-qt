@@ -29,6 +29,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContactAttributes>
@@ -78,6 +79,7 @@ struct Connection::Private
     void init();
 
     static void introspectMain(Private *self);
+    void introspectCapabilities();
     void introspectSelfHandle();
     void introspectContacts();
     static void introspectSelfContact(Private *self);
@@ -115,6 +117,7 @@ struct Connection::Private
     ContactPtr selfContact;
     QStringList contactAttributeInterfaces;
     uint selfHandle;
+    ConnectionCapabilities *caps;
     QMap<uint, ContactManager::ContactListChannel> contactListChannels;
     uint contactListChannelsReady;
     QList<ChannelPtr> contactListGroupChannels;
@@ -169,6 +172,7 @@ Connection::Private::Private(Connection *parent)
       status(Connection::StatusUnknown),
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
+      caps(0),
       contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
       handleContext(0),
@@ -381,6 +385,23 @@ void Connection::Private::introspectSelfHandle()
                     SLOT(gotSelfHandle(QDBusPendingCallWatcher *)));
 }
 
+void Connection::Private::introspectCapabilities()
+{
+    if (!properties) {
+        properties = parent->propertiesInterface();
+        Q_ASSERT(properties != 0);
+    }
+
+    debug() << "Retrieving capabilities";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            properties->Get(
+                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS,
+                "RequestableChannelClasses"), parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotCapabilities(QDBusPendingCallWatcher *)));
+}
+
 void Connection::Private::introspectRoster(Connection::Private *self)
 {
     debug() << "Requesting handles for contact lists";
@@ -506,8 +527,8 @@ QMutex Connection::Private::handleContextsLock;
 const Feature Connection::FeatureCore = Feature(Connection::staticMetaObject.className(), 0, true);
 const Feature Connection::FeatureSelfContact = Feature(Connection::staticMetaObject.className(), 1);
 const Feature Connection::FeatureSimplePresence = Feature(Connection::staticMetaObject.className(), 2);
-const Feature Connection::FeatureRoster = Feature(Connection::staticMetaObject.className(), 3);
-const Feature Connection::FeatureRosterGroups = Feature(Connection::staticMetaObject.className(), 4);
+const Feature Connection::FeatureRoster = Feature(Connection::staticMetaObject.className(), 4);
+const Feature Connection::FeatureRosterGroups = Feature(Connection::staticMetaObject.className(), 5);
 
 ConnectionPtr Connection::create(const QString &busName,
         const QString &objectPath)
@@ -664,6 +685,29 @@ ContactPtr Connection::selfContact() const
     // actually work sensibly and selfContact is made a feature
 
     return mPriv->selfContact;
+}
+
+/**
+ * Return the capabilities that are expected to be available on this connection,
+ * i.e. those for which createChannel() can reasonably be expected to succeed.
+ * User interfaces can use this information to show or hide UI components.
+ *
+ * This property cannot change after the connection has gone to state()
+ * %Tp::Connection_Status_Connected, so there is no change notification.
+ *
+ * This method requires Connection::FeatureCore to be enabled.
+ *
+ * @return An object representing the connection capabilities or 0 if
+ *         FeatureCore is not ready.
+ */
+ConnectionCapabilities *Connection::capabilities() const
+{
+    if (!isReady()) {
+        warning() << "Connection::capabilities() used before connection "
+            "FeatureCore is ready";
+    }
+
+    return mPriv->caps;
 }
 
 /**
@@ -881,7 +925,11 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     }
 
     if (mPriv->pendingStatus == StatusConnected) {
-        mPriv->introspectSelfHandle();
+        if (interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+            mPriv->introspectCapabilities();
+        } else {
+            mPriv->introspectSelfHandle();
+        }
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
@@ -977,6 +1025,25 @@ void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ":" << reply.error().message();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
     }
+
+    watcher->deleteLater();
+}
+
+void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QDBusVariant> reply = *watcher;
+
+    if (!reply.isError()) {
+        debug() << "Got capabilities";
+        mPriv->caps = new ConnectionCapabilities(
+                qdbus_cast<RequestableChannelClassList>(reply.value().variant()));
+    } else {
+        warning().nospace() << "Getting capabilities failed with " <<
+            reply.error().name() << ":" << reply.error().message();
+        mPriv->caps = new ConnectionCapabilities();
+    }
+
+    mPriv->introspectSelfHandle();
 
     watcher->deleteLater();
 }

@@ -140,6 +140,8 @@ QString featureToInterface(Contact::Feature feature)
             return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS;
         case Contact::FeatureSimplePresence:
             return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
+        case Contact::FeatureCapabilities:
+            return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES;
         default:
             warning() << "ContactManager doesn't know which interface corresponds to feature"
                 << feature;
@@ -156,7 +158,8 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
         QList<Contact::Feature> allFeatures = QList<Contact::Feature>()
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
-            << Contact::FeatureSimplePresence;
+            << Contact::FeatureSimplePresence
+            << Contact::FeatureCapabilities;
         QStringList interfaces = connection()->contactAttributeInterfaces();
         foreach (Contact::Feature feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
@@ -771,6 +774,19 @@ void ContactManager::onPresencesChanged(const SimpleContactPresences &presences)
     }
 }
 
+void ContactManager::onCapabilitiesChanged(const ContactCapabilitiesMap &caps)
+{
+    debug() << "Got ContactCapabilitiesChanged for" << caps.size() << "contacts";
+
+    foreach (uint handle, caps.keys()) {
+        ContactPtr contact = lookupContactByHandle(handle);
+
+        if (contact) {
+            contact->receiveCapabilities(caps[handle]);
+        }
+    }
+}
+
 void ContactManager::onSubscribeChannelMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -1062,6 +1078,14 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
                     SIGNAL(PresencesChanged(const Tp::SimpleContactPresences &)),
                     conn->contactManager(),
                     SLOT(onPresencesChanged(const Tp::SimpleContactPresences &)));
+            break;
+
+        case Contact::FeatureCapabilities:
+            QObject::connect(
+                    conn->contactCapabilitiesInterface(),
+                    SIGNAL(ContactCapabilitiesChanged(const Tp::ContactCapabilitiesMap &)),
+                    conn->contactManager(),
+                    SLOT(onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &)));
             break;
 
         default:

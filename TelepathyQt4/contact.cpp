@@ -23,6 +23,8 @@
 #include "TelepathyQt4/_gen/contact.moc.hpp"
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/ContactCapabilities>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
@@ -39,6 +41,19 @@ struct Contact::Private
           subscriptionState(PresenceStateNo), publishState(PresenceStateNo),
           blocked(false)
     {
+        if (manager->supportedFeatures().contains(Contact::FeatureCapabilities)) {
+            caps = new ContactCapabilities(true);
+        } else {
+            // use the connection capabilities
+            caps = new ContactCapabilities(
+                    manager->connection()->capabilities()->requestableChannelClasses(),
+                    false);
+        }
+    }
+
+    ~Private()
+    {
+        delete caps;
     }
 
     ContactManager *manager;
@@ -52,6 +67,7 @@ struct Contact::Private
     bool isAvatarTokenKnown;
     QString avatarToken;
     SimplePresence simplePresence;
+    ContactCapabilities *caps;
 
     PresenceState subscriptionState;
     PresenceState publishState;
@@ -153,6 +169,35 @@ QString Contact::presenceMessage() const
     }
 
     return mPriv->simplePresence.statusMessage;
+}
+
+/**
+ * Return the capabilities for this contact.
+ * User interfaces can use this information to show or hide UI components.
+ *
+ * Change notification is advertised through capabilitiesChanged().
+ *
+ * If ContactManager::supportedFeatures contains Contact::FeatureCapabilities,
+ * the returned object will be a ContactCapabilities object, where
+ * CapabilitiesBase::isSpecificToContact() will be true; if that feature
+ * isn't present, this returned object is the subset of
+ * Contact::manager()::connection()->capabilities()
+ * and CapabilitiesBase::>isSpecificToContact() will be false.
+ *
+ * This method requires Contact::FeatureCapabilities to be enabled.
+ *
+ * @return An object representing the contact capabilities or 0 if
+ *         FeatureCapabilities is not ready.
+ */
+ContactCapabilities *Contact::capabilities() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureCapabilities)) {
+        warning() << "Contact::capabilities() used on" << this
+            << "for which FeatureCapabilities hasn't been requested - returning 0";
+        return 0;
+    }
+
+    return mPriv->caps;
 }
 
 Contact::PresenceState Contact::subscriptionState() const
@@ -286,6 +331,7 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
     foreach (Feature feature, requestedFeatures) {
         QString maybeAlias;
         SimplePresence maybePresence;
+        RequestableChannelClassList maybeCaps;
 
         switch (feature) {
             case FeatureAlias:
@@ -326,6 +372,15 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                     mPriv->simplePresence.type = ConnectionPresenceTypeUnknown;
                     mPriv->simplePresence.status = "unknown";
                     mPriv->simplePresence.statusMessage = "";
+                }
+                break;
+
+            case FeatureCapabilities:
+                maybeCaps = qdbus_cast<RequestableChannelClassList>(attributes.value(
+                            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES "/capabilities"));
+
+                if (!maybeCaps.isEmpty()) {
+                    receiveCapabilities(maybeCaps);
                 }
                 break;
 
@@ -377,6 +432,20 @@ void Contact::receiveSimplePresence(const SimplePresence &presence)
             || mPriv->simplePresence.statusMessage != presence.statusMessage) {
         mPriv->simplePresence = presence;
         emit simplePresenceChanged(presenceStatus(), presenceType(), presenceMessage());
+    }
+}
+
+void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureCapabilities)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureCapabilities);
+
+    if (mPriv->caps->requestableChannelClasses() != caps) {
+        mPriv->caps->updateRequestableChannelClasses(caps);
+        emit capabilitiesChanged(mPriv->caps);
     }
 }
 

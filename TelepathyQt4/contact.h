@@ -36,6 +36,7 @@
 namespace Tp
 {
 
+class ContactCapabilities;
 class ContactManager;
 class PendingOperation;
 class ReferencedHandles;
@@ -50,6 +51,7 @@ public:
         FeatureAlias,
         FeatureAvatarToken,
         FeatureSimplePresence,
+        FeatureCapabilities,
         _Padding = 0xFFFFFFFF
     };
 
@@ -76,6 +78,8 @@ public:
     uint presenceType() const;
     QString presenceMessage() const;
 
+    ContactCapabilities *capabilities() const;
+
     PresenceState subscriptionState() const;
     PresenceState publishState() const;
 
@@ -97,6 +101,7 @@ Q_SIGNALS:
     void aliasChanged(const QString &alias);
     void avatarTokenChanged(const QString &avatarToken);
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
+    void capabilitiesChanged(Tp::ContactCapabilities *caps);
 
     void subscriptionStateChanged(Tp::Contact::PresenceState state);
     void publishStateChanged(Tp::Contact::PresenceState state);
@@ -120,6 +125,7 @@ private:
     void receiveAlias(const QString &alias);
     void receiveAvatarToken(const QString &avatarToken);
     void receiveSimplePresence(const SimplePresence &presence);
+    void receiveCapabilities(const RequestableChannelClassList &caps);
 
     void setSubscriptionState(PresenceState state);
     void setPublishState(PresenceState state);

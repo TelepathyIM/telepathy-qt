@@ -48,6 +48,7 @@ namespace Tp
 {
 
 class Channel;
+class ConnectionCapabilities;
 class Contact;
 class ContactManager;
 class PendingChannel;
@@ -95,6 +96,8 @@ public:
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
 
+    ConnectionCapabilities *capabilities() const;
+
     PendingChannel *createChannel(const QVariantMap &request);
     PendingChannel *ensureChannel(const QVariantMap &request);
 
@@ -130,6 +133,12 @@ public:
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceCapabilitiesInterface>(check);
+    }
+
+    inline Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>(check);
     }
 
     inline Client::ConnectionInterfacePresenceInterface *presenceInterface(
@@ -172,6 +181,7 @@ private Q_SLOTS:
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
     void gotSelfContact(Tp::PendingOperation *);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
+    void gotCapabilities(QDBusPendingCallWatcher *watcher);
     void gotContactListsHandles(Tp::PendingOperation *);
     void gotContactListChannel(Tp::PendingOperation *);
     void contactListChannelReady();
