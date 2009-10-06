@@ -158,14 +158,14 @@ bool CapabilitiesBase::supportsTextChats() const
 {
     QString channelType;
     uint targetHandleType;
-    foreach (const RequestableChannelClass &class_, mPriv->classes) {
-        if (!class_.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClass &cls, mPriv->classes) {
+        if (!cls.fixedProperties.size() == 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(class_.fixedProperties.value(
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(class_.fixedProperties.value(
+        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT &&
             targetHandleType == HandleTypeContact) {
@@ -190,14 +190,14 @@ bool CapabilitiesBase::supportsMediaCalls() const
 {
     QString channelType;
     uint targetHandleType;
-    foreach (const RequestableChannelClass &class_, mPriv->classes) {
-        if (!class_.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClass &cls, mPriv->classes) {
+        if (!cls.fixedProperties.size() == 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(class_.fixedProperties.value(
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(class_.fixedProperties.value(
+        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             targetHandleType == HandleTypeContact) {
@@ -232,18 +232,18 @@ bool CapabilitiesBase::supportsAudioCalls() const
 {
     QString channelType;
     uint targetHandleType;
-    foreach (const RequestableChannelClass &class_, mPriv->classes) {
-        if (!class_.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClass &cls, mPriv->classes) {
+        if (!cls.fixedProperties.size() == 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(class_.fixedProperties.value(
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(class_.fixedProperties.value(
+        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             targetHandleType == HandleTypeContact &&
-            class_.allowedProperties.contains(
+            cls.allowedProperties.contains(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"))) {
                 return true;
         }
@@ -268,20 +268,20 @@ bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
 {
     QString channelType;
     uint targetHandleType;
-    foreach (const RequestableChannelClass &class_, mPriv->classes) {
-        if (!class_.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClass &cls, mPriv->classes) {
+        if (!cls.fixedProperties.size() == 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(class_.fixedProperties.value(
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(class_.fixedProperties.value(
+        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
             targetHandleType == HandleTypeContact &&
-            class_.allowedProperties.contains(
+            cls.allowedProperties.contains(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo")) &&
-            (!withAudio || class_.allowedProperties.contains(
+            (!withAudio || cls.allowedProperties.contains(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio")))) {
                 return true;
         }
@@ -316,11 +316,11 @@ bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
 bool CapabilitiesBase::supportsUpgradingCalls() const
 {
     QString channelType;
-    foreach (const RequestableChannelClass &class_, mPriv->classes) {
-        channelType = qdbus_cast<QString>(class_.fixedProperties.value(
+    foreach (const RequestableChannelClass &cls, mPriv->classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
-            !class_.allowedProperties.contains(
+            !cls.allowedProperties.contains(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".ImmutableStreams"))) {
                 // TODO should we test all classes that have channelType
                 //      StreamedMedia or just one is fine?
