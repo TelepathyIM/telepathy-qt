@@ -77,14 +77,14 @@ bool ConnectionCapabilities::supportsTextChatrooms() const
     QString channelType;
     uint targetHandleType;
     RequestableChannelClassList classes = requestableChannelClasses();
-    foreach (const RequestableChannelClass &class_, classes) {
-        if (!class_.fixedProperties.size() == 2) {
+    foreach (const RequestableChannelClass &cls, classes) {
+        if (!cls.fixedProperties.size() == 2) {
             continue;
         }
 
-        channelType = qdbus_cast<QString>(class_.fixedProperties.value(
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
-        targetHandleType = qdbus_cast<uint>(class_.fixedProperties.value(
+        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
         if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT &&
             targetHandleType == HandleTypeRoom) {
