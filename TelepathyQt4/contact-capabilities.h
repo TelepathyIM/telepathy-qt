@@ -44,8 +44,9 @@ public:
 private:
     friend class Contact;
 
-    ContactCapabilities();
-    ContactCapabilities(const RequestableChannelClassList &classes);
+    ContactCapabilities(bool specificToContact);
+    ContactCapabilities(const RequestableChannelClassList &classes,
+            bool specificToContact);
 
     struct Private;
     friend struct Private;

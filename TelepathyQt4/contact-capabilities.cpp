@@ -38,8 +38,8 @@ namespace Tp
 /**
  * Construct a new ContactCapabilities object.
  */
-ContactCapabilities::ContactCapabilities()
-    : CapabilitiesBase(false)
+ContactCapabilities::ContactCapabilities(bool specificToContact)
+    : CapabilitiesBase(specificToContact)
 {
 }
 
@@ -49,8 +49,10 @@ ContactCapabilities::ContactCapabilities()
  * \param classes RequestableChannelClassList representing the capabilities of a
  *                contact.
  */
-ContactCapabilities::ContactCapabilities(const RequestableChannelClassList &classes)
-    : CapabilitiesBase(classes, false)
+ContactCapabilities::ContactCapabilities(
+        const RequestableChannelClassList &classes,
+        bool specificToContact)
+    : CapabilitiesBase(classes, specificToContact)
 {
 }
 
