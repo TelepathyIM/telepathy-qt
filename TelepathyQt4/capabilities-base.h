@@ -34,6 +34,7 @@ namespace Tp
 class CapabilitiesBase
 {
 public:
+    CapabilitiesBase();
     CapabilitiesBase(const RequestableChannelClassList &classes);
     virtual ~CapabilitiesBase();
 

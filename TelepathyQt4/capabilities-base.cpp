@@ -29,10 +29,16 @@ namespace Tp
 
 struct CapabilitiesBase::Private
 {
+    Private();
     Private(const RequestableChannelClassList &classes);
 
     RequestableChannelClassList classes;
 };
+
+CapabilitiesBase::Private::Private()
+    : classes()
+{
+}
 
 CapabilitiesBase::Private::Private(const RequestableChannelClassList &classes)
     : classes(classes)
@@ -47,6 +53,14 @@ CapabilitiesBase::Private::Private(const RequestableChannelClassList &classes)
  * \brief The CapabilitiesBase class provides an object representing the
  * capabilities a Tp::Connection or a Tp::Contact supports.
  */
+
+/**
+ * Construct a new CapabilitiesBase object.
+ */
+CapabilitiesBase::CapabilitiesBase()
+    : mPriv(new Private())
+{
+}
 
 /**
  * Construct a new CapabilitiesBase object using the give \a classes.
