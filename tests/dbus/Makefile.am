@@ -59,6 +59,7 @@ TESTS += \
     test-chan-group \
     test-cm-basics \
     test-conn-basics \
+    test-conn-capabilities \
     test-conn-requests \
     test-conn-roster \
     test-conn-roster-groups \
@@ -73,6 +74,7 @@ BUILT_SOURCES += \
     _gen/chan-group.cpp.moc.hpp \
     _gen/cm-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
+    _gen/conn-capabilities.cpp.moc.hpp \
     _gen/conn-requests.cpp.moc.hpp \
     _gen/conn-roster.cpp.moc.hpp \
     _gen/conn-roster-groups.cpp.moc.hpp \
@@ -95,6 +97,9 @@ test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
 
 test_conn_basics_SOURCES = conn-basics.cpp
 test_conn_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+
+test_conn_capabilities_SOURCES = conn-capabilities.cpp
+test_conn_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
 
 test_conn_requests_SOURCES = conn-requests.cpp
 test_conn_requests_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
