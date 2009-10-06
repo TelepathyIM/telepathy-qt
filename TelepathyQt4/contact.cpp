@@ -23,6 +23,7 @@
 #include "TelepathyQt4/_gen/contact.moc.hpp"
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ContactCapabilities>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/ReferencedHandles>
@@ -37,10 +38,22 @@ struct Contact::Private
 {
     Private(ContactManager *manager, const ReferencedHandles &handle)
         : manager(manager), handle(handle), isAvatarTokenKnown(false),
-          caps(0),
           subscriptionState(PresenceStateNo), publishState(PresenceStateNo),
           blocked(false)
     {
+        if (manager->supportedFeatures().contains(Contact::FeatureCapabilities)) {
+            caps = new ContactCapabilities(true);
+        } else {
+            // use the connection capabilities
+            caps = new ContactCapabilities(
+                    manager->connection()->capabilities()->requestableChannelClasses(),
+                    false);
+        }
+    }
+
+    ~Private()
+    {
+        delete caps;
     }
 
     ContactManager *manager;
@@ -164,8 +177,14 @@ QString Contact::presenceMessage() const
  *
  * Change notification is advertised through capabilitiesChanged().
  *
- * This method requires ContactManager::supportedFeatures() to contain
- * Contact::FeatureCapabilities and Contact::FeatureCapabilities to be enabled,
+ * If ContactManager::supportedFeatures contains Contact::FeatureCapabilities,
+ * the returned object will be a ContactCapabilities object, where
+ * CapabilitiesBase::isSpecificToContact() will be true; if that feature
+ * isn't present, this returned object is the subset of
+ * Contact::manager()::connection()->capabilities()
+ * and CapabilitiesBase::>isSpecificToContact() will be false.
+ *
+ * This method requires Contact::FeatureCapabilities to be enabled.
  *
  * @return An object representing the contact capabilities or 0 if
  *         FeatureCapabilities is not ready.
@@ -424,10 +443,7 @@ void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
 
     mPriv->actualFeatures.insert(FeatureCapabilities);
 
-    if (!mPriv->caps) {
-        mPriv->caps = new ContactCapabilities(caps);
-        emit capabilitiesChanged(mPriv->caps);
-    } else if (mPriv->caps->requestableChannelClasses() != caps) {
+    if (mPriv->caps->requestableChannelClasses() != caps) {
         mPriv->caps->updateRequestableChannelClasses(caps);
         emit capabilitiesChanged(mPriv->caps);
     }
