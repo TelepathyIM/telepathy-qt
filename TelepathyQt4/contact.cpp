@@ -158,6 +158,18 @@ QString Contact::presenceMessage() const
     return mPriv->simplePresence.statusMessage;
 }
 
+/**
+ * Return the capabilities for this contact.
+ * User interfaces can use this information to show or hide UI components.
+ *
+ * Change notification is advertised through capabilitiesChanged().
+ *
+ * This method requires ContactManager::supportedFeatures() to contain
+ * Contact::FeatureCapabilities and Contact::FeatureCapabilities to be enabled,
+ *
+ * @return An object representing the contact capabilities or 0 if
+ *         FeatureCapabilities is not ready.
+ */
 ContactCapabilities *Contact::capabilities() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureCapabilities)) {
