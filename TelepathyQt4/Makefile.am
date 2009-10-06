@@ -63,6 +63,7 @@ libtelepathy_qt4_la_SOURCES = \
     client-registrar.cpp \
     client-registrar-internal.h \
     connection.cpp \
+    connection-capabilities.cpp \
     connection-manager.cpp \
     connection-internal.h \
     connection-manager-internal.h \
@@ -187,6 +188,7 @@ tpqt4include_HEADERS = \
     Client \
     ClientRegistrar \
     Connection \
+    ConnectionCapabilities \
     ConnectionManager \
     Constants \
     Contact \
@@ -289,6 +291,7 @@ tpqt4include_HEADERS = \
     client.h \
     client-registrar.h \
     connection.h \
+    connection-capabilities.h \
     connection-manager.h \
     constants.h \
     contact.h \
