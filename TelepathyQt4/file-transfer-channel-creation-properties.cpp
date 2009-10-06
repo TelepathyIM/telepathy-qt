@@ -21,12 +21,14 @@
 
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
 
+#include <TelepathyQt4/Global>
+
 #include <QSharedData>
 
 namespace Tp
 {
 
-struct FileTransferChannelCreationProperties::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT FileTransferChannelCreationProperties::Private : public QSharedData
 {
     Private(const QString &suggestedFileName, const QString &contentType,
             qulonglong size)

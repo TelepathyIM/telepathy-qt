@@ -36,7 +36,7 @@
 namespace Tp
 {
 
-struct IncomingFileTransferChannel::Private
+struct TELEPATHY_QT4_NO_EXPORT IncomingFileTransferChannel::Private
 {
     Private(IncomingFileTransferChannel *parent);
     ~Private();
