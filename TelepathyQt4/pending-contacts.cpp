@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-struct PendingContacts::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingContacts::Private
 {
     enum RequestType
     {

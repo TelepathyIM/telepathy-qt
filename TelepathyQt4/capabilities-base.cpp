@@ -27,7 +27,7 @@
 namespace Tp
 {
 
-struct CapabilitiesBase::Private
+struct TELEPATHY_QT4_NO_EXPORT CapabilitiesBase::Private
 {
     Private(bool specificToContact);
     Private(const RequestableChannelClassList &classes, bool specificToContact);

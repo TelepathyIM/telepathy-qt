@@ -30,7 +30,7 @@
 namespace Tp
 {
 
-class ChannelFactory
+class TELEPATHY_QT4_EXPORT ChannelFactory
 {
 public:
     static ChannelPtr create(const ConnectionPtr &connection,

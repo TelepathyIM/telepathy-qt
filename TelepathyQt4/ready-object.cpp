@@ -29,7 +29,7 @@
 namespace Tp
 {
 
-struct ReadyObject::Private
+struct TELEPATHY_QT4_NO_EXPORT ReadyObject::Private
 {
     Private(ReadyObject *parent, QObject *object,
             Feature featureCore);

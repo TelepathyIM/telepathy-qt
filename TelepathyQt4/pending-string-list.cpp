@@ -29,7 +29,7 @@
 namespace Tp
 {
 
-struct PendingStringList::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingStringList::Private
 {
     QStringList result;
 };

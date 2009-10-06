@@ -44,6 +44,8 @@ followed by eg. KDELibs. In short, that amounts to:
     private Q_SLOTS
     private
  * friend class xxx definitions must be placed right below the private keyword.
+ * All exported classes should use TELEPATHY_QT4_EXPORT macro as following:
+    class TELEPATHY_QT4_EXPORT xxx { ... };
 
 The coding style is described in more detail in the KDE TechBase at
 http://techbase.kde.org/Policies/Kdelibs_Coding_Style.

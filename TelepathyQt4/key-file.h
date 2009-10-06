@@ -26,6 +26,8 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
+
 #include <QtGlobal>
 
 class QString;
@@ -34,7 +36,7 @@ class QStringList;
 namespace Tp
 {
 
-class KeyFile
+class TELEPATHY_QT4_EXPORT KeyFile
 {
     Q_DISABLE_COPY(KeyFile);
 

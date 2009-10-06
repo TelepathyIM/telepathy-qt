@@ -60,7 +60,7 @@ namespace Tp
  * wrapping the ConnectionInterfaceContactsInterface::GetContactAttributes() D-Bus method.
  */
 
-struct PendingContactAttributes::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingContactAttributes::Private
 {
     ConnectionPtr connection;
     UIntList contactsRequested;

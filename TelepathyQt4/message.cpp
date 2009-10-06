@@ -32,9 +32,8 @@
 namespace Tp
 {
 
-class Message::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT Message::Private : public QSharedData
 {
-public:
     Private(const MessagePartList &parts);
     ~Private();
 

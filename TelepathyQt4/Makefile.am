@@ -200,6 +200,7 @@ tpqt4include_HEADERS = \
     Feature \
     FileTransferChannel \
     FileTransferChannelCreationProperties \
+    Global \
     IncomingFileTransferChannel \
     KeyFile \
     ManagerFile \
@@ -304,6 +305,7 @@ tpqt4include_HEADERS = \
     feature.h \
     file-transfer-channel.h \
     file-transfer-channel-creation-properties.h \
+    global.h \
     incoming-file-transfer-channel.h \
     key-file.h \
     manager-file.h \
@@ -369,6 +371,7 @@ include $(top_srcdir)/tools/check-coding-style.mk
 check-local: check-coding-style
 
 AM_CPPFLAGS = \
+    -DBUILDING_TELEPATHY_QT4 \
     -I$(top_srcdir) -I$(top_builddir) \
     $(QTCORE_CFLAGS) \
     $(QTDBUS_CFLAGS) \

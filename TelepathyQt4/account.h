@@ -56,7 +56,7 @@ class PendingReady;
 class PendingStringList;
 class ProtocolInfo;
 
-class Account : public StatelessDBusProxy,
+class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
                 public OptionalInterfaceFactory<Account>,
                 public ReadyObject,
                 public RefCounted

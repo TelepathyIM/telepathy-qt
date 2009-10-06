@@ -49,7 +49,7 @@ class AccountManager;
 class PendingAccount;
 class PendingReady;
 
-class AccountManager : public StatelessDBusProxy,
+class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
                        public OptionalInterfaceFactory<AccountManager>,
                        public ReadyObject,
                        public RefCounted

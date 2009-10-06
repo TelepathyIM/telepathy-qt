@@ -46,7 +46,7 @@
 namespace Tp
 {
 
-struct PendingConnection::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
 {
     Private(const ConnectionManagerPtr &manager) :
         manager(manager)

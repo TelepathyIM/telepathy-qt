@@ -27,6 +27,7 @@
 #endif
 
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/Global>
 
 #include <QDateTime>
 #include <QSharedDataPointer>
@@ -35,7 +36,7 @@
 namespace Tp
 {
 
-class FileTransferChannelCreationProperties
+class TELEPATHY_QT4_EXPORT FileTransferChannelCreationProperties
 {
 public:
     FileTransferChannelCreationProperties(const QString &suggestedFileName,

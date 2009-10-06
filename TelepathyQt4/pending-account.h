@@ -39,7 +39,7 @@ namespace Tp
 
 class AccountManager;
 
-class PendingAccount : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingAccount : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingAccount);

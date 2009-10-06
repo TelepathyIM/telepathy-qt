@@ -37,7 +37,7 @@
 namespace Tp
 {
 
-struct PendingSendMessage::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingSendMessage::Private
 {
     inline Private(const Message &message);
     QString token;
@@ -94,7 +94,7 @@ void PendingSendMessage::onMessageSent(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-struct TextChannel::Private
+struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
 {
     Private(TextChannel *parent);
     ~Private();

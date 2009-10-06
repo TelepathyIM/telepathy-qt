@@ -36,7 +36,7 @@ class Message;
 class ReceivedMessage;
 class TextChannel;
 
-class PendingSendMessage : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingSendMessage : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingSendMessage)
@@ -60,7 +60,7 @@ private:
     Private *mPriv;
 };
 
-class TextChannel : public Channel
+class TELEPATHY_QT4_EXPORT TextChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(TextChannel)

@@ -19,48 +19,27 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_ready_object_h_HEADER_GUARD_
-#define _TelepathyQt4_ready_object_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_global_h_HEADER_GUARD_
+#define _TelepathyQt4_global_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/Feature>
+#include <QtGlobal>
 
-#include <QObject>
+#ifdef BUILDING_TELEPATHY_QT4
+#  define TELEPATHY_QT4_EXPORT Q_DECL_EXPORT
+#else
+#  define TELEPATHY_QT4_EXPORT Q_DECL_IMPORT
+#endif
 
-namespace Tp
-{
+#if !defined(Q_OS_WIN) && defined(QT_VISIBILITY_AVAILABLE)
+#  define TELEPATHY_QT4_NO_EXPORT __attribute__((visibility("hidden")))
+#endif
 
-class DBusProxy;
-class PendingReady;
-class ReadinessHelper;
-
-class TELEPATHY_QT4_EXPORT ReadyObject
-{
-    Q_DISABLE_COPY(ReadyObject)
-
-public:
-    ReadyObject(QObject *object, const Feature &featureCore);
-    virtual ~ReadyObject();
-
-    virtual bool isReady(const Features &features = Features()) const;
-    virtual PendingReady *becomeReady(const Features &requestedFeatures = Features());
-
-    virtual Features requestedFeatures() const;
-    virtual Features actualFeatures() const;
-    virtual Features missingFeatures() const;
-
-protected:
-    ReadinessHelper *readinessHelper() const;
-
-private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-} // Tp
+#ifndef TELEPATHY_QT4_NO_EXPORT
+#  define TELEPATHY_QT4_NO_EXPORT
+#endif
 
 #endif

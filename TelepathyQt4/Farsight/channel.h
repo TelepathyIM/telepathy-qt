@@ -33,7 +33,7 @@
 namespace Tp
 {
 
-TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel);
+TELEPATHY_QT4_EXPORT TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel);
 
 } // Tp
 

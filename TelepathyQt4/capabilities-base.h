@@ -31,7 +31,7 @@
 namespace Tp
 {
 
-class CapabilitiesBase
+class TELEPATHY_QT4_EXPORT CapabilitiesBase
 {
 public:
     virtual ~CapabilitiesBase();

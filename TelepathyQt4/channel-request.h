@@ -47,7 +47,7 @@ namespace Tp
 
 class PendingOperation;
 
-class ChannelRequest : public StatefulDBusProxy,
+class TELEPATHY_QT4_EXPORT ChannelRequest : public StatefulDBusProxy,
                        public OptionalInterfaceFactory<ChannelRequest>,
                        public ReadyObject,
                        public RefCounted

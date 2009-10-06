@@ -67,7 +67,7 @@ namespace Tp
  * \headerfile <TelepathyQt4/contact-manager.h> <TelepathyQt4/ContactManager>
  */
 
-struct ContactManager::Private
+struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
 {
     Private(ContactManager *parent, const ConnectionPtr &connection)
         : parent(parent), connection(connection)

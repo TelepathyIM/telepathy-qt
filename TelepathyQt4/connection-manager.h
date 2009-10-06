@@ -51,7 +51,7 @@ class ProtocolInfo;
 typedef QList<ProtocolParameter*> ProtocolParameterList;
 typedef QList<ProtocolInfo*> ProtocolInfoList;
 
-class ProtocolParameter
+class TELEPATHY_QT4_EXPORT ProtocolParameter
 {
 public:
     ProtocolParameter(const QString &name,
@@ -80,7 +80,7 @@ private:
     Private *mPriv;
 };
 
-class ProtocolInfo
+class TELEPATHY_QT4_EXPORT ProtocolInfo
 {
 public:
     ~ProtocolInfo();
@@ -107,7 +107,7 @@ private:
     Private *mPriv;
 };
 
-class ConnectionManager : public StatelessDBusProxy,
+class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
                           public OptionalInterfaceFactory<ConnectionManager>,
                           public ReadyObject,
                           public RefCounted

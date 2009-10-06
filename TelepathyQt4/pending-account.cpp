@@ -45,7 +45,7 @@
 namespace Tp
 {
 
-struct PendingAccount::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingAccount::Private
 {
     Private(const AccountManagerPtr &manager) :
         manager(manager)

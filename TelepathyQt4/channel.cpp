@@ -63,7 +63,7 @@
 namespace Tp
 {
 
-struct Channel::Private
+struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 {
     Private(Channel *parent, const ConnectionPtr &connection,
             const QVariantMap &immutableProperties);
@@ -176,7 +176,7 @@ struct Channel::Private
     ContactPtr groupSelfContact;
 };
 
-struct Channel::Private::GroupMembersChangedInfo
+struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
 {
     GroupMembersChangedInfo(const UIntList &added, const UIntList &removed,
             const UIntList &localPending, const UIntList &remotePending,
@@ -1597,7 +1597,7 @@ Contacts Channel::groupRemotePendingContacts() const
     return mPriv->groupRemotePendingContacts.values().toSet();
 }
 
-struct Channel::GroupMemberChangeDetails::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT Channel::GroupMemberChangeDetails::Private : public QSharedData
 {
     Private(const ContactPtr &actor, const QVariantMap &details)
         : actor(actor), details(details) {}

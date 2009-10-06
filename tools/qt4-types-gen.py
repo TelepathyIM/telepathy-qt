@@ -121,6 +121,8 @@ class Generator(object):
 #include <QDBusSignature>
 #include <QDBusVariant>
 
+#include <TelepathyQt4/Global>
+
 /**
  * \\addtogroup typesconstants Types and constants
  *
@@ -179,7 +181,7 @@ namespace %s
  * Call this function to register the types used before using anything else in
  * the library.
  */
-void registerTypes();
+TELEPATHY_QT4_EXPORT void registerTypes();
 }
 
 """ % get_headerfile_cmd(self.realinclude, self.prettyinclude))
@@ -338,7 +340,7 @@ void registerTypes()
  * Structure type generated from the specification.
 %(docstring)s\
  */
-struct %(name)s
+struct TELEPATHY_QT4_EXPORT %(name)s
 {
 """ % {'name' : depinfo.binding.val, 'headercmd': get_headerfile_cmd(self.realinclude, self.prettyinclude), 'docstring' : format_docstring(depinfo.el)})
 
@@ -459,7 +461,7 @@ typedef QList<%s> %sList;
 
     def faketype(self, fake, real):
         return """\
-struct %(fake)s : public %(real)s
+struct TELEPATHY_QT4_EXPORT %(fake)s : public %(real)s
 {
     inline %(fake)s() : %(real)s() {}
     inline %(fake)s(const %(real)s& a) : %(real)s(a) {}

@@ -333,7 +333,7 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
                 request.path(), QVariantMap()), errorName, errorMessage);
 }
 
-struct ClientRegistrar::Private
+struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
 {
     Private(const QDBusConnection &bus)
         : bus(bus)

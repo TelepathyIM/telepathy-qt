@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
 #include <TelepathyQt4/PendingOperation>
 
 #include <QVariant>
@@ -33,7 +34,7 @@
 namespace Tp
 {
 
-class PendingVariant : public PendingOperation
+class TELEPATHY_QT4_EXPORT PendingVariant : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingVariant);

@@ -38,7 +38,7 @@ namespace Tp
 
 static const int FT_BLOCK_SIZE = 16 * 1024;
 
-struct OutgoingFileTransferChannel::Private
+struct TELEPATHY_QT4_NO_EXPORT OutgoingFileTransferChannel::Private
 {
     Private(OutgoingFileTransferChannel *parent);
     ~Private();

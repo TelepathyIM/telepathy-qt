@@ -24,12 +24,14 @@
 #include "TelepathyQt4/_gen/pending-variant.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Global>
+
 #include <QDBusPendingReply>
 
 namespace Tp
 {
 
-struct PendingVariant::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingVariant::Private
 {
     QVariant result;
 };

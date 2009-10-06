@@ -42,7 +42,7 @@
 namespace Tp
 {
 
-struct PendingHandles::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
 {
     ConnectionPtr connection;
     uint handleType;

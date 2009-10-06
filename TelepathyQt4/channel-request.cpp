@@ -56,7 +56,7 @@
 namespace Tp
 {
 
-struct ChannelRequest::Private
+struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
 {
     Private(ChannelRequest *parent);
     ~Private();

@@ -56,7 +56,7 @@
 namespace Tp
 {
 
-struct ChannelDispatchOperation::Private
+struct TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::Private
 {
     Private(ChannelDispatchOperation *parent);
     ~Private();

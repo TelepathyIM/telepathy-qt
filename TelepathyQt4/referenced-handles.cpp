@@ -50,7 +50,7 @@
 namespace Tp
 {
 
-struct ReferencedHandles::Private : public QSharedData
+struct TELEPATHY_QT4_NO_EXPORT ReferencedHandles::Private : public QSharedData
 {
     WeakPtr<Connection> connection;
     uint handleType;

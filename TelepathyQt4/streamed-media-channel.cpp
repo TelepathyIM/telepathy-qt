@@ -35,7 +35,7 @@
 namespace Tp
 {
 
-struct PendingMediaStreams::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingMediaStreams::Private
 {
     Private(PendingMediaStreams *parent, const StreamedMediaChannelPtr &channel)
         : parent(parent), channel(channel), streamsReady(0)
@@ -163,7 +163,7 @@ void PendingMediaStreams::onStreamReady(PendingOperation *op)
     }
 }
 
-struct MediaStream::Private
+struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private
 {
     Private(MediaStream *parent, const StreamedMediaChannelPtr &channel, uint id,
             uint contactHandle, MediaStreamType type,
@@ -493,7 +493,7 @@ void MediaStream::gotContact(PendingOperation *op)
     mPriv->readinessHelper->setIntrospectCompleted(FeatureContact, true);
 }
 
-struct StreamedMediaChannel::Private
+struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
 {
     Private(StreamedMediaChannel *parent);
     ~Private();
