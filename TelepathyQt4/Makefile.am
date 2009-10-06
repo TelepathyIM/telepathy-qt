@@ -67,6 +67,7 @@ libtelepathy_qt4_la_SOURCES = \
     connection-internal.h \
     connection-manager-internal.h \
     contact.cpp \
+    contact-capabilities.cpp \
     contact-manager.cpp \
     dbus.cpp \
     dbus-proxy.cpp \
@@ -189,6 +190,7 @@ tpqt4include_HEADERS = \
     ConnectionManager \
     Constants \
     Contact \
+    ContactCapabilities \
     ContactManager \
     Debug \
     DBus \
@@ -290,6 +292,7 @@ tpqt4include_HEADERS = \
     connection-manager.h \
     constants.h \
     contact.h \
+    contact-capabilities.h \
     contact-manager.h \
     contact-manager-internal.h \
     dbus.h \
