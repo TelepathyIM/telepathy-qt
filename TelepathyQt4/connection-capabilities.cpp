@@ -37,6 +37,14 @@ namespace Tp
  */
 
 /**
+ * Construct a new ConnectionCapabilities object.
+ */
+ConnectionCapabilities::ConnectionCapabilities()
+    : CapabilitiesBase()
+{
+}
+
+/**
  * Construct a new ConnectionCapabilities object using the give \a classes.
  *
  * \param classes RequestableChannelClassList representing the capabilities of a

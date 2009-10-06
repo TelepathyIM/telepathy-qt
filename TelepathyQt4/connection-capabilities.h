@@ -42,6 +42,7 @@ public:
 private:
     friend class Connection;
 
+    ConnectionCapabilities();
     ConnectionCapabilities(const RequestableChannelClassList &classes);
 
     struct Private;
