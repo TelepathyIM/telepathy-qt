@@ -22,8 +22,8 @@
 #include <TelepathyQt4/Contact>
 #include "TelepathyQt4/_gen/contact.moc.hpp"
 
-#include <TelepathyQt4/CapabilitiesBase>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ContactCapabilities>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
@@ -54,7 +54,7 @@ struct Contact::Private
     bool isAvatarTokenKnown;
     QString avatarToken;
     SimplePresence simplePresence;
-    CapabilitiesBase *caps;
+    ContactCapabilities *caps;
 
     PresenceState subscriptionState;
     PresenceState publishState;
@@ -158,7 +158,7 @@ QString Contact::presenceMessage() const
     return mPriv->simplePresence.statusMessage;
 }
 
-CapabilitiesBase *Contact::capabilities() const
+ContactCapabilities *Contact::capabilities() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureCapabilities)) {
         warning() << "Contact::capabilities() used on" << this
@@ -413,7 +413,7 @@ void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
     mPriv->actualFeatures.insert(FeatureCapabilities);
 
     if (!mPriv->caps) {
-        mPriv->caps = new CapabilitiesBase(caps);
+        mPriv->caps = new ContactCapabilities(caps);
         emit capabilitiesChanged(mPriv->caps);
     } else if (mPriv->caps->requestableChannelClasses() != caps) {
         mPriv->caps->updateRequestableChannelClasses(caps);
