@@ -54,7 +54,7 @@ public:
     // bool supportsDBusTubes() const;
 
 protected:
-    virtual void setRequestableChannelClasses(
+    virtual void updateRequestableChannelClasses(
             const RequestableChannelClassList &classes);
 
 private:

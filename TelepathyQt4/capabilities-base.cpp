@@ -88,7 +88,7 @@ RequestableChannelClassList CapabilitiesBase::requestableChannelClasses() const
     return mPriv->classes;
 }
 
-void CapabilitiesBase::setRequestableChannelClasses(
+void CapabilitiesBase::updateRequestableChannelClasses(
         const RequestableChannelClassList &classes)
 {
     mPriv->classes = classes;
