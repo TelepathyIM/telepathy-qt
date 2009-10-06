@@ -36,6 +36,14 @@ namespace Tp
  */
 
 /**
+ * Construct a new ContactCapabilities object.
+ */
+ContactCapabilities::ContactCapabilities()
+    : CapabilitiesBase()
+{
+}
+
+/**
  * Construct a new ContactCapabilities object using the give \a classes.
  *
  * \param classes RequestableChannelClassList representing the capabilities of a
