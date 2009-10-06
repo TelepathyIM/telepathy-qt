@@ -79,11 +79,11 @@ struct Connection::Private
     void init();
 
     static void introspectMain(Private *self);
+    void introspectCapabilities();
     void introspectSelfHandle();
     void introspectContacts();
     static void introspectSelfContact(Private *self);
     static void introspectSimplePresence(Private *self);
-    static void introspectCapabilities(Private *self);
     static void introspectRoster(Private *self);
     static void introspectRosterGroups(Private *self);
 
@@ -203,14 +203,6 @@ Connection::Private::Private(Connection *parent)
         (ReadinessHelper::IntrospectFunc) &Private::introspectSimplePresence,
         this);
     introspectables[FeatureSimplePresence] = introspectableSimplePresence;
-
-    ReadinessHelper::Introspectable introspectableCapabilities(
-        QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
-        Features() << FeatureCore,                                                     // dependsOnFeatures (core)
-        QStringList() << TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS,            // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &Private::introspectCapabilities,
-        this);
-    introspectables[FeatureCapabilities] = introspectableCapabilities;
 
     ReadinessHelper::Introspectable introspectableRoster(
         QSet<uint>() << Connection::StatusConnected,                                   // makesSenseForStatuses
@@ -393,19 +385,19 @@ void Connection::Private::introspectSelfHandle()
                     SLOT(gotSelfHandle(QDBusPendingCallWatcher *)));
 }
 
-void Connection::Private::introspectCapabilities(Connection::Private *self)
+void Connection::Private::introspectCapabilities()
 {
-    if (!self->properties) {
-        self->properties = self->parent->propertiesInterface();
-        Q_ASSERT(self->properties != 0);
+    if (!properties) {
+        properties = parent->propertiesInterface();
+        Q_ASSERT(properties != 0);
     }
 
     debug() << "Retrieving capabilities";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            self->properties->Get(
+            properties->Get(
                 TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS,
-                "RequestableChannelClasses"), self->parent);
-    self->parent->connect(watcher,
+                "RequestableChannelClasses"), parent);
+    parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotCapabilities(QDBusPendingCallWatcher *)));
 }
@@ -535,7 +527,6 @@ QMutex Connection::Private::handleContextsLock;
 const Feature Connection::FeatureCore = Feature(Connection::staticMetaObject.className(), 0, true);
 const Feature Connection::FeatureSelfContact = Feature(Connection::staticMetaObject.className(), 1);
 const Feature Connection::FeatureSimplePresence = Feature(Connection::staticMetaObject.className(), 2);
-const Feature Connection::FeatureCapabilities = Feature(Connection::staticMetaObject.className(), 3);
 const Feature Connection::FeatureRoster = Feature(Connection::staticMetaObject.className(), 4);
 const Feature Connection::FeatureRosterGroups = Feature(Connection::staticMetaObject.className(), 5);
 
@@ -703,16 +694,16 @@ ContactPtr Connection::selfContact() const
  * This property cannot change after the connection has gone to state()
  * %Tp::Connection_Status_Connected, so there is no change notification.
  *
- * This method requires Connection::FeatureCapabilities to be enabled.
+ * This method requires Connection::FeatureCore to be enabled.
  *
  * @return An object representing the connection capabilities or 0 if
- *         FeatureCapabilities is not ready.
+ *         FeatureCore is not ready.
  */
 ConnectionCapabilities *Connection::capabilities() const
 {
-    if (!isReady(FeatureCapabilities)) {
+    if (!isReady()) {
         warning() << "Connection::capabilities() used before connection "
-            "FeatureCapabilities is ready";
+            "FeatureCore is ready";
     }
 
     return mPriv->caps;
@@ -933,7 +924,11 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     }
 
     if (mPriv->pendingStatus == StatusConnected) {
-        mPriv->introspectSelfHandle();
+        if (interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+            mPriv->introspectCapabilities();
+        } else {
+            mPriv->introspectSelfHandle();
+        }
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
@@ -1041,14 +1036,13 @@ void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
         debug() << "Got capabilities";
         mPriv->caps = new ConnectionCapabilities(
                 qdbus_cast<RequestableChannelClassList>(reply.value().variant()));
-
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCapabilities, true);
     } else {
         warning().nospace() << "Getting capabilities failed with " <<
             reply.error().name() << ":" << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
-                false, reply.error());
+        mPriv->caps = new ConnectionCapabilities();
     }
+
+    mPriv->introspectSelfHandle();
 
     watcher->deleteLater();
 }

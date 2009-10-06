@@ -70,7 +70,6 @@ public:
     static const Feature FeatureCore;
     static const Feature FeatureSelfContact;
     static const Feature FeatureSimplePresence;
-    static const Feature FeatureCapabilities;
     static const Feature FeatureRoster;
     static const Feature FeatureRosterGroups;
 

@@ -95,7 +95,7 @@ void TestConnCapabilities::init()
 void TestConnCapabilities::testCapabilities()
 {
     QVERIFY(mConn->capabilities() == 0);
-    QVERIFY(connect(mConn->becomeReady(Connection::FeatureCapabilities),
+    QVERIFY(connect(mConn->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
