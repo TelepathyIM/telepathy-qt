@@ -48,6 +48,7 @@ namespace Tp
 {
 
 class Channel;
+class ConnectionCapabilities;
 class Contact;
 class ContactManager;
 class PendingChannel;
@@ -69,6 +70,7 @@ public:
     static const Feature FeatureCore;
     static const Feature FeatureSelfContact;
     static const Feature FeatureSimplePresence;
+    static const Feature FeatureCapabilities;
     static const Feature FeatureRoster;
     static const Feature FeatureRosterGroups;
 
@@ -94,6 +96,8 @@ public:
 
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
+
+    ConnectionCapabilities *capabilities() const;
 
     PendingChannel *createChannel(const QVariantMap &request);
     PendingChannel *ensureChannel(const QVariantMap &request);
@@ -178,6 +182,7 @@ private Q_SLOTS:
     void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
     void gotSelfContact(Tp::PendingOperation *);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
+    void gotCapabilities(QDBusPendingCallWatcher *watcher);
     void gotContactListsHandles(Tp::PendingOperation *);
     void gotContactListChannel(Tp::PendingOperation *);
     void contactListChannelReady();
