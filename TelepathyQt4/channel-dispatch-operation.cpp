@@ -32,7 +32,7 @@
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingReady>
-#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingVoid>
 
 /**
  * \addtogroup clientsideproxies Client-side proxies
@@ -302,14 +302,14 @@ QStringList ChannelDispatchOperation::possibleHandlers() const
 
 PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
 {
-    return new PendingVoidMethodCall(this,
-            mPriv->baseInterface->HandleWith(handler));
+    return new PendingVoid(
+            mPriv->baseInterface->HandleWith(handler),
+            this);
 }
 
 PendingOperation *ChannelDispatchOperation::claim()
 {
-    return new PendingVoidMethodCall(this,
-            mPriv->baseInterface->Claim());
+    return new PendingVoid(mPriv->baseInterface->Claim(), this);
 }
 
 /**

@@ -245,8 +245,8 @@ PendingOperation *ContactManager::addGroup(const QString &group)
 PendingOperation *ContactManager::removeGroup(const QString &group)
 {
     if (!mPriv->contactListGroupChannels.contains(group)) {
-        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid group");
+        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid group", this);
     }
 
     ChannelPtr channel = mPriv->contactListGroupChannels[group];
@@ -291,8 +291,8 @@ PendingOperation *ContactManager::addContactsToGroup(const QString &group,
         const QList<ContactPtr> &contacts)
 {
     if (!mPriv->contactListGroupChannels.contains(group)) {
-        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid group");
+        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid group", this);
     }
 
     ChannelPtr channel = mPriv->contactListGroupChannels[group];
@@ -314,8 +314,8 @@ PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
         const QList<ContactPtr> &contacts)
 {
     if (!mPriv->contactListGroupChannels.contains(group)) {
-        return new PendingFailure(this, TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid group");
+        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                "Invalid group", this);
     }
 
     ChannelPtr channel = mPriv->contactListGroupChannels[group];
@@ -385,8 +385,9 @@ PendingOperation *ContactManager::requestPresenceSubscription(
         const QList<ContactPtr> &contacts, const QString &message)
 {
     if (!mPriv->subscribeChannel) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot subscribe to contacts' presence on this protocol");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot subscribe to contacts' presence on this protocol",
+                this);
     }
 
     return mPriv->subscribeChannel->groupAddContacts(contacts, message);
@@ -472,8 +473,9 @@ PendingOperation *ContactManager::removePresenceSubscription(
         const QList<ContactPtr> &contacts, const QString &message)
 {
     if (!mPriv->subscribeChannel) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot subscribe to contacts' presence on this protocol");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot subscribe to contacts' presence on this protocol",
+                this);
     }
 
     return mPriv->subscribeChannel->groupRemoveContacts(contacts, message);
@@ -529,8 +531,9 @@ PendingOperation *ContactManager::authorizePresencePublication(
         const QList<ContactPtr> &contacts, const QString &message)
 {
     if (!mPriv->publishChannel) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot control publication of presence on this protocol");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot control publication of presence on this protocol",
+                this);
     }
 
     return mPriv->publishChannel->groupAddContacts(contacts, message);
@@ -611,8 +614,9 @@ PendingOperation *ContactManager::removePresencePublication(
         const QList<ContactPtr> &contacts, const QString &message)
 {
     if (!mPriv->publishChannel) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot control publication of presence on this protocol");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot control publication of presence on this protocol",
+                this);
     }
 
     return mPriv->publishChannel->groupRemoveContacts(contacts, message);
@@ -644,8 +648,9 @@ PendingOperation *ContactManager::blockContacts(
         const QList<ContactPtr> &contacts, bool value)
 {
     if (!mPriv->denyChannel) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot block contacts on this protocol");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Cannot block contacts on this protocol",
+                this);
     }
 
     if (value) {

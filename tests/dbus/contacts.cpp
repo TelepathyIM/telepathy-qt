@@ -9,7 +9,7 @@
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
-#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Debug>

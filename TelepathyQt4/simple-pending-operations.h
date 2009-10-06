@@ -52,27 +52,28 @@ class PendingFailure : public PendingOperation
     Q_DISABLE_COPY(PendingFailure)
 
 public:
-    PendingFailure(QObject *parent, const QString &name,
-            const QString &message)
+    PendingFailure(const QString &name, const QString &message,
+            QObject *parent)
         : PendingOperation(parent)
     {
         setFinishedWithError(name, message);
     }
 
-    PendingFailure(QObject *parent, const QDBusError &error)
+    PendingFailure(const QDBusError &error,
+            QObject *parent)
         : PendingOperation(parent)
     {
         setFinishedWithError(error);
     }
 };
 
-class PendingVoidMethodCall : public PendingOperation
+class PendingVoid : public PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(PendingVoidMethodCall)
+    Q_DISABLE_COPY(PendingVoid)
 
 public:
-    PendingVoidMethodCall(QObject *parent, QDBusPendingCall call);
+    PendingVoid(QDBusPendingCall call, QObject *parent);
 
 private Q_SLOTS:
     void watcherFinished(QDBusPendingCallWatcher*);

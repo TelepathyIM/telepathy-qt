@@ -137,23 +137,24 @@ PendingOperation *OutgoingFileTransferChannel::provideFile(QIODevice *input)
     if (!isReady(FileTransferChannel::FeatureCore)) {
         warning() << "FileTransferChannel::FeatureCore must be ready before "
             "calling provideFile";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel not ready");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "Channel not ready", this);
     }
 
     // let's fail here direclty as we may only have one device to handle
     if (mPriv->input) {
         warning() << "File transfer can only be started once in the same "
             "channel";
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_AVAILABLE,
-                "File transfer can only be started once in the same channel");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_AVAILABLE,
+                "File transfer can only be started once in the same channel",
+                this);
     }
 
     if ((!input->isOpen() && !input->open(QIODevice::ReadOnly)) &&
         !input->isReadable()) {
         warning() << "Unable to open IO device for reading";
-        return new PendingFailure(this, TELEPATHY_ERROR_PERMISSION_DENIED,
-                "Unable to open IO device for reading");
+        return new PendingFailure(TELEPATHY_ERROR_PERMISSION_DENIED,
+                "Unable to open IO device for reading", this);
     }
 
     mPriv->input = input;

@@ -33,7 +33,7 @@
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
-#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
@@ -288,9 +288,10 @@ bool Account::isEnabled() const
  */
 PendingOperation *Account::setEnabled(bool value)
 {
-    return new PendingVoidMethodCall(this,
+    return new PendingVoid(
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "Enabled", QDBusVariant(value)));
+                "Enabled", QDBusVariant(value)),
+            this);
 }
 
 /**
@@ -347,9 +348,10 @@ bool Account::hasBeenOnline() const
  */
 PendingOperation *Account::setDisplayName(const QString &value)
 {
-    return new PendingVoidMethodCall(this,
+    return new PendingVoid(
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "DisplayName", QDBusVariant(value)));
+                "DisplayName", QDBusVariant(value)),
+            this);
 }
 
 /**
@@ -371,9 +373,10 @@ QString Account::icon() const
  */
 PendingOperation *Account::setIcon(const QString &value)
 {
-    return new PendingVoidMethodCall(this,
+    return new PendingVoid(
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "Icon", QDBusVariant(value)));
+                "Icon", QDBusVariant(value)),
+            this);
 }
 
 /**
@@ -395,9 +398,10 @@ QString Account::nickname() const
  */
 PendingOperation *Account::setNickname(const QString &value)
 {
-    return new PendingVoidMethodCall(this,
+    return new PendingVoid(
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "Nickname", QDBusVariant(value)));
+                "Nickname", QDBusVariant(value)),
+            this);
 }
 
 /**
@@ -430,14 +434,15 @@ const Avatar &Account::avatar() const
 PendingOperation *Account::setAvatar(const Avatar &avatar)
 {
     if (!interfaces().contains(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR)) {
-        return new PendingFailure(this, TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Account does not support Avatar");
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Account does not support Avatar", this);
     }
 
-    return new PendingVoidMethodCall(this,
+    return new PendingVoid(
             propertiesInterface()->Set(
                 TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
-                "Avatar", QDBusVariant(QVariant::fromValue(avatar))));
+                "Avatar", QDBusVariant(QVariant::fromValue(avatar))),
+            this);
 }
 
 /**
@@ -511,9 +516,10 @@ bool Account::connectsAutomatically() const
  */
 PendingOperation *Account::setConnectsAutomatically(bool value)
 {
-    return new PendingVoidMethodCall(this,
+    return new PendingVoid(
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "ConnectAutomatically", QDBusVariant(value)));
+                "ConnectAutomatically", QDBusVariant(value)),
+            this);
 }
 
 /**
@@ -598,9 +604,10 @@ SimplePresence Account::automaticPresence() const
 PendingOperation *Account::setAutomaticPresence(
         const SimplePresence &value)
 {
-    return new PendingVoidMethodCall(this,
+    return new PendingVoid(
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "AutomaticPresence", QDBusVariant(QVariant::fromValue(value))));
+                "AutomaticPresence", QDBusVariant(QVariant::fromValue(value))),
+            this);
 }
 
 /**
@@ -640,9 +647,10 @@ SimplePresence Account::requestedPresence() const
 PendingOperation *Account::setRequestedPresence(
         const SimplePresence &value)
 {
-    return new PendingVoidMethodCall(this,
+    return new PendingVoid(
             propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "RequestedPresence", QDBusVariant(QVariant::fromValue(value))));
+                "RequestedPresence", QDBusVariant(QVariant::fromValue(value))),
+            this);
 }
 
 /**
@@ -685,7 +693,7 @@ QString Account::normalizedName() const
  */
 PendingOperation *Account::reconnect()
 {
-    return new PendingVoidMethodCall(this, baseInterface()->Reconnect());
+    return new PendingVoid(baseInterface()->Reconnect(), this);
 }
 
 /**
@@ -696,7 +704,7 @@ PendingOperation *Account::reconnect()
  */
 PendingOperation *Account::remove()
 {
-    return new PendingVoidMethodCall(this, baseInterface()->Remove());
+    return new PendingVoid(baseInterface()->Remove(), this);
 }
 
 /**

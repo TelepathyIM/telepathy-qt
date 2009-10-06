@@ -150,9 +150,8 @@ PendingOperation *PendingChannelRequest::cancel()
 {
     if (isFinished()) {
         // CR has already succeeded or failed, so let's just fail here
-        return new PendingFailure(this,
-                TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD,
-                "ChannnelRequest already finished");
+        return new PendingFailure(TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD,
+                "ChannnelRequest already finished", this);
     }
 
     if (!mPriv->cancelOperation) {

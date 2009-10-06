@@ -216,7 +216,7 @@ tpqt4include_HEADERS = \
     PendingSuccess \
     PendingStringList \
     PendingVariant \
-    PendingVoidMethodCall \
+    PendingVoid \
     Properties \
     ReadinessHelper \
     ReadyObject \

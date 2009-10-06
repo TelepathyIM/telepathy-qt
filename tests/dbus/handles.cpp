@@ -7,7 +7,7 @@
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/PendingHandles>
-#include <TelepathyQt4/PendingVoidMethodCall>
+#include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Debug>
