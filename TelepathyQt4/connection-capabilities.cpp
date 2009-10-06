@@ -40,7 +40,7 @@ namespace Tp
  * Construct a new ConnectionCapabilities object.
  */
 ConnectionCapabilities::ConnectionCapabilities()
-    : CapabilitiesBase()
+    : CapabilitiesBase(false)
 {
 }
 
@@ -51,7 +51,7 @@ ConnectionCapabilities::ConnectionCapabilities()
  *                Connection.
  */
 ConnectionCapabilities::ConnectionCapabilities(const RequestableChannelClassList &classes)
-    : CapabilitiesBase(classes)
+    : CapabilitiesBase(classes, false)
 {
 }
 

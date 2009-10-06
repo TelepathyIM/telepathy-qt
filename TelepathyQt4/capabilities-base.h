@@ -34,11 +34,11 @@ namespace Tp
 class CapabilitiesBase
 {
 public:
-    CapabilitiesBase();
-    CapabilitiesBase(const RequestableChannelClassList &classes);
     virtual ~CapabilitiesBase();
 
     RequestableChannelClassList requestableChannelClasses() const;
+
+    bool isSpecificToContact() const;
 
     bool supportsTextChats() const;
 
@@ -55,6 +55,10 @@ public:
     // bool supportsDBusTubes() const;
 
 protected:
+    CapabilitiesBase(bool specificToContact);
+    CapabilitiesBase(const RequestableChannelClassList &classes,
+            bool specificToContact);
+
     virtual void updateRequestableChannelClasses(
             const RequestableChannelClassList &classes);
 

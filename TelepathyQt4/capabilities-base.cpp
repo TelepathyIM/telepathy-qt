@@ -29,19 +29,22 @@ namespace Tp
 
 struct CapabilitiesBase::Private
 {
-    Private();
-    Private(const RequestableChannelClassList &classes);
+    Private(bool specificToContact);
+    Private(const RequestableChannelClassList &classes, bool specificToContact);
 
     RequestableChannelClassList classes;
+    bool specificToContact;
 };
 
-CapabilitiesBase::Private::Private()
-    : classes()
+CapabilitiesBase::Private::Private(bool specificToContact)
+    : specificToContact(specificToContact)
 {
 }
 
-CapabilitiesBase::Private::Private(const RequestableChannelClassList &classes)
-    : classes(classes)
+CapabilitiesBase::Private::Private(const RequestableChannelClassList &classes,
+        bool specificToContact)
+    : classes(classes),
+      specificToContact(specificToContact)
 {
 }
 
@@ -56,20 +59,26 @@ CapabilitiesBase::Private::Private(const RequestableChannelClassList &classes)
 
 /**
  * Construct a new CapabilitiesBase object.
+ *
+ * \param specificToContact Whether this object describes the capabilities of a
+ *                          particular Tp::Contact,
  */
-CapabilitiesBase::CapabilitiesBase()
-    : mPriv(new Private())
+CapabilitiesBase::CapabilitiesBase(bool specificToContact)
+    : mPriv(new Private(specificToContact))
 {
 }
 
 /**
- * Construct a new CapabilitiesBase object using the give \a classes.
+ * Construct a new CapabilitiesBase object using the given \a classes.
  *
  * \param classes RequestableChannelClassList representing the capabilities of a
  *                connection or contact.
+ * \param specificToContact Whether this object describes the capabilities of a
+ *                          particular Tp::Contact,
  */
-CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassList &classes)
-    : mPriv(new Private(classes))
+CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassList &classes,
+        bool specificToContact)
+    : mPriv(new Private(classes, specificToContact))
 {
 }
 
@@ -106,6 +115,33 @@ void CapabilitiesBase::updateRequestableChannelClasses(
         const RequestableChannelClassList &classes)
 {
     mPriv->classes = classes;
+}
+
+/**
+ * Return true if this object accurately describes the capabilities of a
+ * particular Tp::Contact, or false if it's only a guess based on the
+ * capabilities of the underlying Tp::Connection.
+ *
+ * In protocols like XMPP where each contact advertises their capabilities
+ * to others, Tp::Contact::capabilities will generally return an object where
+ * this method returns true.
+ *
+ * In protocols like SIP where contacts' capabilities are not known,
+ * Tp::Contact::capabilities() will return an object where this method returns
+ * false, whose methods supportsTextChats() etc. are based on what the
+ * underlying Tp::Connection supports.
+ *
+ * This reflects the fact that the best assumption an application can make is
+ * that every contact supports every channel type supported by the connection,
+ * while indicating that requests to communicate might fail if the contact
+ * does not actually have the necessary functionality.
+ *
+ * \return true if this object describes the capabilities of a particular Tp::Contact,
+ *         false otherwise.
+ */
+bool CapabilitiesBase::isSpecificToContact() const
+{
+    return mPriv->specificToContact;
 }
 
 /**

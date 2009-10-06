@@ -39,7 +39,7 @@ namespace Tp
  * Construct a new ContactCapabilities object.
  */
 ContactCapabilities::ContactCapabilities()
-    : CapabilitiesBase()
+    : CapabilitiesBase(false)
 {
 }
 
@@ -50,7 +50,7 @@ ContactCapabilities::ContactCapabilities()
  *                contact.
  */
 ContactCapabilities::ContactCapabilities(const RequestableChannelClassList &classes)
-    : CapabilitiesBase(classes)
+    : CapabilitiesBase(classes, false)
 {
 }
 
