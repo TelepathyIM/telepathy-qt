@@ -873,7 +873,8 @@ PendingChannelRequest *Account::ensureMediaCall(
  *
  * See ensureChannel() for more details.
  *
- * This will only work on relatively modern connection managers.
+ * This will only work on relatively modern connection managers,
+ * like telepathy-gabble 0.9.0 or later.
  *
  * \param contactIdentifier The identifier of the contact to call.
  * \param userActionTime The time at which user action occurred, or QDateTime()
@@ -909,7 +910,8 @@ PendingChannelRequest *Account::ensureAudioCall(
  *
  * See ensureChannel() for more details.
  *
- * This will only work on relatively modern connection managers.
+ * This will only work on relatively modern connection managers,
+ * like telepathy-gabble 0.9.0 or later.
  *
  * \param contact The contact to call.
  * \param userActionTime The time at which user action occurred, or QDateTime()
@@ -945,7 +947,8 @@ PendingChannelRequest *Account::ensureAudioCall(
  *
  * See ensureChannel() for more details.
  *
- * This will only work on relatively modern connection managers.
+ * This will only work on relatively modern connection managers,
+ * like telepathy-gabble 0.9.0 or later.
  *
  * \param contactIdentifier The identifier of the contact to call.
  * \param withAudio true if both audio and video are required, false for a
@@ -990,7 +993,8 @@ PendingChannelRequest *Account::ensureVideoCall(
  *
  * See ensureChannel() for more details.
  *
- * This will only work on relatively modern connection managers.
+ * This will only work on relatively modern connection managers,
+ * like telepathy-gabble 0.9.0 or later.
  *
  * \param contact The contact to call.
  * \param withAudio true if both audio and video are required, false for a
