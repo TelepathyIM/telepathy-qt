@@ -160,6 +160,26 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
+    PendingChannelRequest *ensureAudioCall(
+            const QString &contactIdentifier,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+    PendingChannelRequest *ensureAudioCall(
+            const ContactPtr &contact,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+
+    PendingChannelRequest *ensureVideoCall(
+            const QString &contactIdentifier,
+            bool withAudio = true,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+    PendingChannelRequest *ensureVideoCall(
+            const ContactPtr &contact,
+            bool withAudio = true,
+            QDateTime userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+
     PendingChannelRequest *createFileTransfer(
             const QString &contactIdentifier,
             const FileTransferChannelCreationProperties &properties,

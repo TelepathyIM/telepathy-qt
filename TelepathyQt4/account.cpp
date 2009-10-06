@@ -868,6 +868,168 @@ PendingChannelRequest *Account::ensureMediaCall(
 }
 
 /**
+ * Start a request to ensure that an audio call with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * This will only work on relatively modern connection managers.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureAudioCall(
+        const QString &contactIdentifier,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+                   true);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+/**
+ * Start a request to ensure that an audio call with the given
+ * contact \a contact exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * This will only work on relatively modern connection managers.
+ *
+ * \param contact The contact to call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureAudioCall(
+        const ContactPtr &contact,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+                   true);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+/**
+ * Start a request to ensure that a video call with the given
+ * contact \a contactIdentifier exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * This will only work on relatively modern connection managers.
+ *
+ * \param contactIdentifier The identifier of the contact to call.
+ * \param withAudio true if both audio and video are required, false for a
+ *                  video-only call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureVideoCall(
+        const QString &contactIdentifier,
+        bool withAudio,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
+                   true);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+
+    if (withAudio) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+                       true);
+    }
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+/**
+ * Start a request to ensure that a video call with the given
+ * contact \a contact exists, creating it if necessary.
+ *
+ * See ensureChannel() for more details.
+ *
+ * This will only work on relatively modern connection managers.
+ *
+ * \param contact The contact to call.
+ * \param withAudio true if both audio and video are required, false for a
+ *                  video-only call.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest *Account::ensureVideoCall(
+        const ContactPtr &contact,
+        bool withAudio,
+        QDateTime userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
+                   true);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+
+    if (withAudio) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
+                       true);
+    }
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+/**
  * Start a request to create a file transfer channel with the given
  * contact \a contact.
  *
