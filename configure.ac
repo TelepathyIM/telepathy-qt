@@ -158,6 +158,21 @@ PKG_CHECK_MODULES(QTDBUS, [QtDBus >= 4.5])
 AC_SUBST(QTDBUS_CFLAGS)
 AC_SUBST(QTDBUS_LIBS)
 
+save_CFLAGS="$CFLAGS"
+save_CXXFLAGS="$CXXFLAGS"
+CFLAGS="$CFLAGS $QTDBUS_CFLAGS"
+CXXFLAGS="$CXXFLAGS $QTDBUS_CFLAGS"
+AC_TRY_COMPILE([#include <QtDBus>],
+    [ QDBusVariant a; QDBusVariant b; if (a == b) { ; } ],
+    [have_qdbusvariant_operator_equal=yes],
+    [have_qdbusvariant_operator_equal=no])
+CFLAGS="$save_CFLAGS"
+CXXFLAGS="$save_CXXFLAGS"
+
+if test x$have_qdbusvariant_operator_equal = xyes; then
+  AC_DEFINE(HAVE_QDBUSVARIANT_OPERATOR_EQUAL, [], [Have QDBusVariant operator==])
+fi
+
 dnl Check for QtNetwork
 PKG_CHECK_MODULES(QTNETWORK, [QtNetwork >= 4.5])
 AC_SUBST(QTNETWORK_CFLAGS)
