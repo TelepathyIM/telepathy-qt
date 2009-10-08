@@ -1,7 +1,49 @@
-telepathy-qt4 0.1.11 (UNRELEASED)
+telepathy-qt4 0.1.11 (2009-10-08)
 ================================
 
-...
+The "on more to go" release.
+
+New API:
+
+* FileTransferChannel: Added methods to access FileTransfer interface
+  properties.
+* IncomingFileTransferChannel: Added specialized class for handling incoming
+  file transfers.
+* OutgoingFileTransferChannel: Added specialized class for handling outgoing
+  file transfers.
+* CapabilitiesBase: Added base class to represent contact/connection
+  capabilities.
+* ContactCapabilities: Added specialized class that inherits CapabilitiesBase to
+  represent contact capabilities.
+* ConnectionCapabilities: Added specialized class that inherits CapabilitiesBase
+  to represent connection capabilities.
+* Contact: Added ContactCapabilities interface support.
+* Connection: Added capabilities (RequestableChannelClasses) support.
+* Account: Added ensureAudio/VideoCall methods that make use of
+  InitialAudio/Video properties when creating StreamedMedia channels.
+* Channel: Added streamTubeInterface/tubeInterface methods.
+  (Patch from Abner Silva <abner.silva@collabora.co.uk>).
+* PendingVariant: Added pending operation helper class for D-Bus methods that
+  return a variant as result.
+
+API changes:
+
+* Renamed PendingVoidMethodCall to PendingVoid.
+* Changed PendingVoid/Success/Failure constructor to receive parent as last
+  parameter.
+
+Enhancements:
+
+* Added examples for handling incoming/outgoing file transfers,
+  examples/file-transfer/
+* Added C++ visibility support.
+* Updated to 0.18.0 spec.
+
+Fixes:
+
+* fd.o #24324: Account::create/ensureXXX should receive a const QDateTime & for
+  userActionTime
+* Explicitly use uint for TargetHandleType.
 
 telepathy-qt4 0.1.10 (2009-08-25)
 ================================
