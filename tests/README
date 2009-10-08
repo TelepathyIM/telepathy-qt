@@ -9,8 +9,5 @@ Where to put new tests:
 * /tests/dbus/ if they touch the session bus (a temporary session bus will be
   used)
 
-* /tests/pinocchio/ if they touch the session bus, and also require
-  telepathy-pinocchio to be available
-
 /tests/lib/ contains support code, some of it taken from the telepathy-glib
 examples and regression tests.
