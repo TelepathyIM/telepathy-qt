@@ -928,6 +928,10 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
         if (interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
             mPriv->introspectCapabilities();
         } else {
+            // we don't support Requests interface, so let's create an empty
+            // ConnectionCapabilities object
+            mPriv->caps = new ConnectionCapabilities();
+
             mPriv->introspectSelfHandle();
         }
     } else {
@@ -1040,6 +1044,8 @@ void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
     } else {
         warning().nospace() << "Getting capabilities failed with " <<
             reply.error().name() << ":" << reply.error().message();
+        // Some error occurred, so let's create an empty
+        // ConnectionCapabilities object
         mPriv->caps = new ConnectionCapabilities();
     }
 
