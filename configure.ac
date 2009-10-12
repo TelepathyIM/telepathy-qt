@@ -229,12 +229,6 @@ AM_CONDITIONAL([ENABLE_TP_FARSIGHT],
   [test yes = "$have_tp_glib" && test yes = "$have_tp_fs" &&
    test yes = "$have_qt_glib_main_loop"])
 
-AC_PATH_PROGS([PINOCCHIO], [telepathy-pinocchio], [none],
-  [$PATH:/usr/local/libexec:/usr/libexec:/usr/lib/telepathy])
-AC_PATH_PROGS([PINOCCHIO_CTL], [pinocchio-ctl], [none])
-AM_CONDITIONAL([HAVE_PINOCCHIO],
-  [test none != "$PINOCCHIO" && test none != "$PINOCCHIO_CTL"])
-
 dnl Check for code generation tools
 AM_PATH_PYTHON([2.5])
 
@@ -289,6 +283,5 @@ AC_OUTPUT([
     tests/lib/csh/Makefile
     tests/lib/echo/Makefile
     tests/lib/echo2/Makefile
-    tests/pinocchio/Makefile
     tools/Makefile
 ])

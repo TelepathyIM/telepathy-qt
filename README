@@ -31,7 +31,6 @@ Building telepathy-qt4 requires:
 
 For the full set of regression tests to run, you'll also need:
   telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
-  telepathy-pinocchio <http://telepathy.freedesktop.org/releases/telepathy-pinocchio/>
 
 and to build the example VoIP call UI (examples/call), you'll need:
   telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>

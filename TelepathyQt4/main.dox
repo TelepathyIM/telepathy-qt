@@ -77,8 +77,6 @@
  *
  * For the full set of regression tests to run, you'll also need:
  * \li telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
- * \li telepathy-pinocchio
- *  <http://telepathy.freedesktop.org/releases/telepathy-pinocchio/>
  *
  * and to build the example VoIP call UI (examples/call), you'll need:
  * \li telepathy-glib <http://telepathy.freedesktop.org/releases/telepathy-glib/>
