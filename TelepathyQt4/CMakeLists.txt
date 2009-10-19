@@ -9,6 +9,7 @@ set(telepathy_qt4_SRCS
     abstract-interface.cpp
     account.cpp
     account-manager.cpp
+    capabilities-base.cpp
     channel.cpp
     channel-dispatcher.cpp
     channel-dispatch-operation.cpp
@@ -18,10 +19,12 @@ set(telepathy_qt4_SRCS
     client-registrar.cpp
     client-registrar-internal.h
     connection.cpp
+    connection-capabilities.cpp
     connection-internal.h
     connection-manager.cpp
     connection-manager-internal.h
     contact.cpp
+    contact-capabilities.cpp
     contact-manager.cpp
     contact-manager-internal.h
     dbus.cpp
@@ -30,12 +33,15 @@ set(telepathy_qt4_SRCS
     debug-internal.h
     feature.cpp
     file-transfer-channel.cpp
+    file-transfer-channel-creation-properties.cpp
+    incoming-file-transfer-channel.cpp
     key-file.cpp
     manager-file.cpp
     media-session-handler.cpp
     media-stream-handler.cpp
     message.cpp
     optional-interface-factory.cpp
+    outgoing-file-transfer-channel.cpp
     pending-account.cpp
     pending-channel.cpp
     pending-channel-request.cpp
@@ -47,6 +53,7 @@ set(telepathy_qt4_SRCS
     pending-operation.cpp
     pending-ready.cpp
     pending-string-list.cpp
+    pending-variant.cpp
     properties.cpp
     readiness-helper.cpp
     ready-object.cpp
@@ -59,9 +66,9 @@ set(telepathy_qt4_SRCS
 set(telepathy_qt4_HEADERS
     AbstractClient
     AbstractClientApprover
-    abstract-client.h
     AbstractClientHandler
     AbstractClientObserver
+    abstract-client.h
     AbstractInterface
     abstract-interface.h
     Account
@@ -70,6 +77,8 @@ set(telepathy_qt4_HEADERS
     AccountManager
     account-manager.h
     AccountManagerInterface
+    CapabilitiesBase
+    capabilities-base.h
     Channel
     ChannelDispatcher
     ChannelDispatcherInterface
@@ -105,6 +114,8 @@ set(telepathy_qt4_HEADERS
     client-registrar.h
     Connection
     connection.h
+    ConnectionCapabilities
+    connection-capabilities.h
     ConnectionInterface
     ConnectionInterfaceAliasingInterface
     ConnectionInterfaceAvatarsInterface
@@ -120,7 +131,8 @@ set(telepathy_qt4_HEADERS
     constants.h
     Contact
     contact.h
-    ContactManager
+    ContactCapabilities
+    contact-capabilities.h
     contact-manager.h
     DBus
     DBusDaemonInterface
@@ -132,7 +144,10 @@ set(telepathy_qt4_HEADERS
     Feature
     feature.h
     FileTransferChannel
+    FileTransferChannelCreationProperties
     file-transfer-channel.h
+    IncomingFileTransferChannel
+    incoming-file-transfer-channel.h
     IntrospectableInterface
     KeyFile
     key-file.h
@@ -150,6 +165,8 @@ set(telepathy_qt4_HEADERS
     method-invocation-context.h
     OptionalInterfaceFactory
     optional-interface-factory.h
+    OutgoingFileTransferChannel.h
+    outgoing-file-transfer-channel.h
     PeerInterface
     PendingAccount
     pending-account.h
@@ -173,6 +190,8 @@ set(telepathy_qt4_HEADERS
     PendingStringList
     pending-string-list.h
     PendingSuccess
+    PendingVariant
+    pending-variant.h
     PendingVoidMethodCall
     Properties
     properties.h
@@ -237,6 +256,8 @@ set(telepathy_qt4_MOC_SRCS
     contact-manager-internal.h
     dbus-proxy.h
     file-transfer-channel.h
+    incoming-file-transfer-channel.h
+    outgoing-file-transfer-channel.h
     pending-account.h
     pending-channel.h
     pending-channel-request.h
@@ -248,6 +269,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-operation.h
     pending-ready.h
     pending-string-list.h
+    pending-variant.h
     readiness-helper.h
     room-list-channel.h
     simple-pending-operations.h
@@ -376,8 +398,9 @@ endforeach(moc_src ${telepathy_qt4_MOC_SRCS})
 
 add_library(telepathy-qt4 SHARED ${telepathy_qt4_SRCS})
 target_link_libraries(telepathy-qt4
+    ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
-    ${QT_QTCORE_LIBRARY})
+    ${QT_QTNETWORK_LIBRARIES})
 
 install(FILES ${telepathy_qt4_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4)
 install(FILES ${telepathy_qt4_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4/_gen)
