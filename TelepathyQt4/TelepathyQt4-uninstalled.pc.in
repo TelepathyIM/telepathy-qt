@@ -6,6 +6,6 @@ abs_top_srcdir=@abs_top_srcdir@
 Name: Telepathy-Qt4 (uninstalled copy)
 Description: Qt4 utility library for the Telepathy framework
 Version: @VERSION@
-Requires.private: QtCore >= 4.5, QtDBus >= 4.5
+Requires.private: QtCore >= 4.5, QtDBus >= 4.5, QtNetwork >= 4.5
 Libs: ${abs_top_builddir}/TelepathyQt4/libtelepathy-qt4.la
 Cflags: -I${abs_top_srcdir} -I${abs_top_builddir}
