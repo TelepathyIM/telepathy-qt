@@ -77,6 +77,7 @@ public:
     virtual ~TextChannel();
 
     bool hasMessagesInterface() const;
+    bool hasChatStateInterface() const;
     bool canInviteContacts() const;
 
     // requires FeatureMessageCapabilities

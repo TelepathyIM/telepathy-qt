@@ -667,6 +667,22 @@ bool TextChannel::hasMessagesInterface() const
 }
 
 /**
+ * Return whether this channel supports the Telepathy ChatState interface.
+ * If it does not, some advanced functionality will be unavailable.
+ *
+ * The result of calling this method is undefined until basic Channel
+ * functionality has been enabled by calling becomeReady and waiting for the
+ * pending operation to complete.
+ *
+ * \return true if the ChatState interface is supported
+ */
+bool TextChannel::hasChatStateInterface() const
+{
+    return interfaces().contains(QLatin1String(
+                TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE));
+}
+
+/**
  * Return whether contacts can be invited into this channel using
  * inviteContacts (which is equivalent to groupAddContacts). Whether this
  * is the case depends on the underlying protocol, the type of channel,
