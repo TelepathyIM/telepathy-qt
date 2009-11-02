@@ -631,14 +631,15 @@ void TextChannel::forget(const QList<ReceivedMessage> &messages)
 }
 
 PendingSendMessage *TextChannel::send(const QString &text,
-        ChannelTextMessageType type)
+        ChannelTextMessageType type, MessageSendingFlags flags)
 {
     Message m(type, text);
     PendingSendMessage *op = new PendingSendMessage(m, this);
 
     if (hasMessagesInterface()) {
         connect(new QDBusPendingCallWatcher(
-                    messagesInterface()->SendMessage(m.parts(), 0)),
+                    messagesInterface()->SendMessage(m.parts(),
+                        (uint) flags)),
                 SIGNAL(finished(QDBusPendingCallWatcher *)),
                 op,
                 SLOT(onMessageSent(QDBusPendingCallWatcher *)));
@@ -651,14 +652,16 @@ PendingSendMessage *TextChannel::send(const QString &text,
     return op;
 }
 
-PendingSendMessage *TextChannel::send(const MessagePartList &parts)
+PendingSendMessage *TextChannel::send(const MessagePartList &parts,
+        MessageSendingFlags flags)
 {
     Message m(parts);
     PendingSendMessage *op = new PendingSendMessage(m, this);
 
     if (hasMessagesInterface()) {
         connect(new QDBusPendingCallWatcher(
-                    messagesInterface()->SendMessage(m.parts(), 0)),
+                    messagesInterface()->SendMessage(m.parts(),
+                        (uint) flags)),
                 SIGNAL(finished(QDBusPendingCallWatcher *)),
                 op,
                 SLOT(onMessageSent(QDBusPendingCallWatcher *)));

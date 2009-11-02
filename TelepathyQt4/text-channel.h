@@ -92,9 +92,11 @@ public Q_SLOTS:
     void forget(const QList<ReceivedMessage> &messages);
 
     PendingSendMessage *send(const QString &text,
-            ChannelTextMessageType type = ChannelTextMessageTypeNormal);
+            ChannelTextMessageType type = ChannelTextMessageTypeNormal,
+            MessageSendingFlags flags = 0);
 
-    PendingSendMessage *send(const MessagePartList &parts);
+    PendingSendMessage *send(const MessagePartList &parts,
+            MessageSendingFlags flags = 0);
 
     inline PendingOperation *inviteContacts(
             const QList<ContactPtr> &contacts,
