@@ -434,6 +434,10 @@ void TextChannel::Private::processMessageQueue()
         }
     }
 
+    if (contactsRequired.isEmpty()) {
+        return;
+    }
+
     parent->connect(parent->connection()->contactManager()->contactsForHandles(
                 contactsRequired.toList()),
             SIGNAL(finished(Tp::PendingOperation *)),
@@ -470,6 +474,10 @@ void TextChannel::Private::processChatStateQueue()
             !awaitingContacts.contains(e->contactHandle)) {
             contactsRequired << e->contactHandle;
         }
+    }
+
+    if (contactsRequired.isEmpty()) {
+        return;
     }
 
     parent->connect(parent->connection()->contactManager()->contactsForHandles(
