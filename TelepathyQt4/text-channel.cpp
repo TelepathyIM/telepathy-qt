@@ -188,6 +188,9 @@ TextChannel::Private::Private(TextChannel *parent)
 
 TextChannel::Private::~Private()
 {
+    foreach (MessageEvent *e, incompleteMessages) {
+        delete e;
+    }
 }
 
 void TextChannel::Private::introspectMessageQueue(
