@@ -106,7 +106,7 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
     void updateInitialMessages();
     void updateCapabilities();
 
-    void processQueue();
+    void processMessageQueue();
 
     // Public object
     TextChannel *parent;
@@ -685,7 +685,7 @@ void TextChannel::onMessageSent(const MessagePartList &parts,
             sentMessageToken);
 }
 
-void TextChannel::Private::processQueue()
+void TextChannel::Private::processMessageQueue()
 {
     // Proceed as far as we can with the processing of incoming messages
     // and message-removal events; message IDs aren't necessarily globally
@@ -807,7 +807,7 @@ void TextChannel::onContactsFinished(PendingOperation *op)
         }
     }
     // all the messages we were asking about should now be ready
-    mPriv->processQueue();
+    mPriv->processMessageQueue();
 }
 
 void TextChannel::onMessageReceived(const MessagePartList &parts)
@@ -818,7 +818,7 @@ void TextChannel::onMessageReceived(const MessagePartList &parts)
 
     mPriv->incompleteMessages << new Private::QueuedEvent(
             ReceivedMessage(parts, TextChannelPtr(this)));
-    mPriv->processQueue();
+    mPriv->processMessageQueue();
 }
 
 void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
@@ -829,7 +829,7 @@ void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
     foreach (uint id, ids) {
         mPriv->incompleteMessages << new Private::QueuedEvent(id);
     }
-    mPriv->processQueue();
+    mPriv->processMessageQueue();
 }
 
 void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
@@ -886,7 +886,7 @@ void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
     }
 
     mPriv->incompleteMessages << new Private::QueuedEvent(m);
-    mPriv->processQueue();
+    mPriv->processMessageQueue();
 }
 
 void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
