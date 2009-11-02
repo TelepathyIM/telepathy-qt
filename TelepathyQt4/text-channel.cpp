@@ -106,6 +106,8 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
     void updateInitialMessages();
     void updateCapabilities();
 
+    void processQueue();
+
     // Public object
     TextChannel *parent;
 
@@ -683,14 +685,14 @@ void TextChannel::onMessageSent(const MessagePartList &parts,
             sentMessageToken);
 }
 
-void TextChannel::processQueue()
+void TextChannel::Private::processQueue()
 {
     // Proceed as far as we can with the processing of incoming messages
     // and message-removal events; message IDs aren't necessarily globally
     // unique, so we need to process them in the correct order relative
     // to incoming messages
-    while (!mPriv->incompleteMessages.isEmpty()) {
-        const Private::QueuedEvent *e = mPriv->incompleteMessages.first();
+    while (!incompleteMessages.isEmpty()) {
+        const QueuedEvent *e = incompleteMessages.first();
         debug() << "QueuedEvent:" << e;
 
         if (e->isMessage) {
@@ -704,16 +706,16 @@ void TextChannel::processQueue()
 
             // if we reach here, the message is ready
             debug() << "Message is usable, copying to main queue";
-            mPriv->messages << e->message;
-            emit messageReceived(e->message);
+            messages << e->message;
+            emit parent->messageReceived(e->message);
         } else {
             // forget about the message(s) with ID e->removed (there should be
             // at most one under normal circumstances)
             int i = 0;
-            while (i < mPriv->messages.size()) {
-                if (mPriv->messages.at(i).pendingId() == e->removed) {
-                    emit pendingMessageRemoved(mPriv->messages.at(i));
-                    mPriv->messages.removeAt(i);
+            while (i < messages.size()) {
+                if (messages.at(i).pendingId() == e->removed) {
+                    emit parent->pendingMessageRemoved(messages.at(i));
+                    messages.removeAt(i);
                 } else {
                     i++;
                 }
@@ -721,15 +723,15 @@ void TextChannel::processQueue()
         }
 
         debug() << "Dropping first event";
-        delete mPriv->incompleteMessages.takeFirst();
+        delete incompleteMessages.takeFirst();
     }
 
-    if (mPriv->incompleteMessages.isEmpty()) {
-        if (mPriv->readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
-            !mPriv->readinessHelper->isReady(Features() << FeatureMessageQueue)) {
+    if (incompleteMessages.isEmpty()) {
+        if (readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
+            !readinessHelper->isReady(Features() << FeatureMessageQueue)) {
             debug() << "incompleteMessages empty for the first time: "
                 "FeatureMessageQueue is now ready";
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
+            readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
         }
         return;
     }
@@ -737,22 +739,22 @@ void TextChannel::processQueue()
     // What Contact objects do we need in order to proceed, ignoring those
     // for which we've already sent a request?
     QSet<uint> contactsRequired;
-    foreach (const Private::QueuedEvent *e, mPriv->incompleteMessages) {
+    foreach (const QueuedEvent *e, incompleteMessages) {
         if (e->isMessage) {
             uint handle = e->message.senderHandle();
             if (handle != 0 && !e->message.sender()
-                    && !mPriv->awaitingContacts.contains(handle)) {
+                    && !awaitingContacts.contains(handle)) {
                 contactsRequired << handle;
             }
         }
     }
 
-    connect(connection()->contactManager()->contactsForHandles(
+    parent->connect(parent->connection()->contactManager()->contactsForHandles(
                 contactsRequired.toList()),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onContactsFinished(Tp::PendingOperation *)));
 
-    mPriv->awaitingContacts |= contactsRequired;
+    awaitingContacts |= contactsRequired;
 }
 
 void TextChannel::Private::contactLost(uint handle)
@@ -805,7 +807,7 @@ void TextChannel::onContactsFinished(PendingOperation *op)
         }
     }
     // all the messages we were asking about should now be ready
-    processQueue();
+    mPriv->processQueue();
 }
 
 void TextChannel::onMessageReceived(const MessagePartList &parts)
@@ -816,7 +818,7 @@ void TextChannel::onMessageReceived(const MessagePartList &parts)
 
     mPriv->incompleteMessages << new Private::QueuedEvent(
             ReceivedMessage(parts, TextChannelPtr(this)));
-    processQueue();
+    mPriv->processQueue();
 }
 
 void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
@@ -827,7 +829,7 @@ void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
     foreach (uint id, ids) {
         mPriv->incompleteMessages << new Private::QueuedEvent(id);
     }
-    processQueue();
+    mPriv->processQueue();
 }
 
 void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
@@ -884,7 +886,7 @@ void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
     }
 
     mPriv->incompleteMessages << new Private::QueuedEvent(m);
-    processQueue();
+    mPriv->processQueue();
 }
 
 void TextChannel::onTextSendError(uint error, uint timestamp, uint type,

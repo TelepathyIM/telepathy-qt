@@ -137,8 +137,6 @@ private Q_SLOTS:
     void gotPendingMessages(QDBusPendingCallWatcher *);
 
 private:
-    void processQueue();
-
     struct Private;
     friend struct Private;
     Private *mPriv;
