@@ -28,6 +28,7 @@
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/Message>
 #include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReceivedMessage>
 #include <TelepathyQt4/ReferencedHandles>
@@ -886,6 +887,26 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
                 SLOT(onTextSent(QDBusPendingCallWatcher *)));
     }
     return op;
+}
+
+/**
+ * Set the local chat state and notify other members of the channel that it has
+ * changed.
+ *
+ * \param state The new state.
+ * \sa chatStateChanged()
+ */
+PendingOperation *TextChannel::setChatState(ChannelChatState state)
+{
+    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE)) {
+        warning() << "TextChannel::setChatState() used with no chat "
+            "state interface";
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "TextChannel does not support chat state interface",
+                this);
+    }
+    return new PendingVoid(chatStateInterface()->SetChatState(
+                (uint) state), this);
 }
 
 void TextChannel::onMessageSent(const MessagePartList &parts,
