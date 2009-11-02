@@ -128,13 +128,13 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
 
     // FeatureMessageQueue
     bool initialMessagesReceived;
-    struct QueuedEvent
+    struct MessageEvent
     {
-        inline QueuedEvent(const ReceivedMessage &message)
+        MessageEvent(const ReceivedMessage &message)
             : isMessage(true), message(message),
                 removed(0)
         { }
-        inline QueuedEvent(uint removed)
+        MessageEvent(uint removed)
             : isMessage(false), message(), removed(removed)
         { }
 
@@ -143,7 +143,7 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
         uint removed;
     };
     QList<ReceivedMessage> messages;
-    QList<QueuedEvent *> incompleteMessages;
+    QList<MessageEvent *> incompleteMessages;
     QSet<uint> awaitingContacts;
     QHash<QDBusPendingCallWatcher *, UIntList> acknowledgeBatches;
 };
@@ -331,8 +331,8 @@ void TextChannel::Private::processMessageQueue()
     // unique, so we need to process them in the correct order relative
     // to incoming messages
     while (!incompleteMessages.isEmpty()) {
-        const QueuedEvent *e = incompleteMessages.first();
-        debug() << "QueuedEvent:" << e;
+        const MessageEvent *e = incompleteMessages.first();
+        debug() << "MessageEvent:" << e;
 
         if (e->isMessage) {
             if (e->message.senderHandle() != 0 &&
@@ -378,7 +378,7 @@ void TextChannel::Private::processMessageQueue()
     // What Contact objects do we need in order to proceed, ignoring those
     // for which we've already sent a request?
     QSet<uint> contactsRequired;
-    foreach (const QueuedEvent *e, incompleteMessages) {
+    foreach (const MessageEvent *e, incompleteMessages) {
         if (e->isMessage) {
             uint handle = e->message.senderHandle();
             if (handle != 0 && !e->message.sender()
@@ -400,7 +400,7 @@ void TextChannel::Private::contactLost(uint handle)
 {
     // we're not going to get a Contact object for this handle, so mark the
     // messages from that handle as "unknown sender"
-    foreach (QueuedEvent *e, incompleteMessages) {
+    foreach (MessageEvent *e, incompleteMessages) {
         if (e->isMessage && e->message.senderHandle() == handle
                 && !e->message.sender()) {
             e->message.clearSenderHandle();
@@ -412,7 +412,7 @@ void TextChannel::Private::contactFound(ContactPtr contact)
 {
     uint handle = contact->handle().at(0);
 
-    foreach (QueuedEvent *e, incompleteMessages) {
+    foreach (MessageEvent *e, incompleteMessages) {
         if (e->isMessage && e->message.senderHandle() == handle
                 && !e->message.sender()) {
             e->message.setSender(contact);
@@ -817,7 +817,7 @@ void TextChannel::onMessageReceived(const MessagePartList &parts)
         return;
     }
 
-    mPriv->incompleteMessages << new Private::QueuedEvent(
+    mPriv->incompleteMessages << new Private::MessageEvent(
             ReceivedMessage(parts, TextChannelPtr(this)));
     mPriv->processMessageQueue();
 }
@@ -828,7 +828,7 @@ void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
         return;
     }
     foreach (uint id, ids) {
-        mPriv->incompleteMessages << new Private::QueuedEvent(id);
+        mPriv->incompleteMessages << new Private::MessageEvent(id);
     }
     mPriv->processMessageQueue();
 }
@@ -886,7 +886,7 @@ void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
         m.setForceNonText();
     }
 
-    mPriv->incompleteMessages << new Private::QueuedEvent(m);
+    mPriv->incompleteMessages << new Private::MessageEvent(m);
     mPriv->processMessageQueue();
 }
 
