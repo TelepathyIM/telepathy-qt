@@ -918,6 +918,9 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
  * Set the local chat state and notify other members of the channel that it has
  * changed.
  *
+ * Note that only the preferred handler of the channel should set its chat
+ * state.
+ *
  * \param state The new state.
  * \sa chatStateChanged()
  */
