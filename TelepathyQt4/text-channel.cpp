@@ -147,7 +147,6 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
     };
     QList<ReceivedMessage> messages;
     QList<MessageEvent *> incompleteMessages;
-    QSet<uint> awaitingContacts;
     QHash<QDBusPendingCallWatcher *, UIntList> acknowledgeBatches;
 
     // FeatureChatState
@@ -162,6 +161,8 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
         uint state;
     };
     QList<ChatStateEvent *> chatStateQueue;
+
+    QSet<uint> awaitingContacts;
 };
 
 TextChannel::Private::Private(TextChannel *parent)
