@@ -324,6 +324,102 @@ void TextChannel::Private::updateCapabilities()
     readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, true);
 }
 
+void TextChannel::Private::processMessageQueue()
+{
+    // Proceed as far as we can with the processing of incoming messages
+    // and message-removal events; message IDs aren't necessarily globally
+    // unique, so we need to process them in the correct order relative
+    // to incoming messages
+    while (!incompleteMessages.isEmpty()) {
+        const QueuedEvent *e = incompleteMessages.first();
+        debug() << "QueuedEvent:" << e;
+
+        if (e->isMessage) {
+            if (e->message.senderHandle() != 0 &&
+                    !e->message.sender()) {
+                // the message doesn't have a sender Contact, but needs one.
+                // We'll have to stop processing here, and come back to it
+                // when we have more Contact objects
+                break;
+            }
+
+            // if we reach here, the message is ready
+            debug() << "Message is usable, copying to main queue";
+            messages << e->message;
+            emit parent->messageReceived(e->message);
+        } else {
+            // forget about the message(s) with ID e->removed (there should be
+            // at most one under normal circumstances)
+            int i = 0;
+            while (i < messages.size()) {
+                if (messages.at(i).pendingId() == e->removed) {
+                    emit parent->pendingMessageRemoved(messages.at(i));
+                    messages.removeAt(i);
+                } else {
+                    i++;
+                }
+            }
+        }
+
+        debug() << "Dropping first event";
+        delete incompleteMessages.takeFirst();
+    }
+
+    if (incompleteMessages.isEmpty()) {
+        if (readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
+            !readinessHelper->isReady(Features() << FeatureMessageQueue)) {
+            debug() << "incompleteMessages empty for the first time: "
+                "FeatureMessageQueue is now ready";
+            readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
+        }
+        return;
+    }
+
+    // What Contact objects do we need in order to proceed, ignoring those
+    // for which we've already sent a request?
+    QSet<uint> contactsRequired;
+    foreach (const QueuedEvent *e, incompleteMessages) {
+        if (e->isMessage) {
+            uint handle = e->message.senderHandle();
+            if (handle != 0 && !e->message.sender()
+                    && !awaitingContacts.contains(handle)) {
+                contactsRequired << handle;
+            }
+        }
+    }
+
+    parent->connect(parent->connection()->contactManager()->contactsForHandles(
+                contactsRequired.toList()),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onContactsFinished(Tp::PendingOperation *)));
+
+    awaitingContacts |= contactsRequired;
+}
+
+void TextChannel::Private::contactLost(uint handle)
+{
+    // we're not going to get a Contact object for this handle, so mark the
+    // messages from that handle as "unknown sender"
+    foreach (QueuedEvent *e, incompleteMessages) {
+        if (e->isMessage && e->message.senderHandle() == handle
+                && !e->message.sender()) {
+            e->message.clearSenderHandle();
+        }
+    }
+}
+
+void TextChannel::Private::contactFound(ContactPtr contact)
+{
+    uint handle = contact->handle().at(0);
+
+    foreach (QueuedEvent *e, incompleteMessages) {
+        if (e->isMessage && e->message.senderHandle() == handle
+                && !e->message.sender()) {
+            e->message.setSender(contact);
+        }
+    }
+}
+
 /**
  * \class TextChannel
  * \ingroup clientchannel
@@ -684,102 +780,6 @@ void TextChannel::onMessageSent(const MessagePartList &parts,
 {
     emit messageSent(Message(parts), MessageSendingFlag(flags),
             sentMessageToken);
-}
-
-void TextChannel::Private::processMessageQueue()
-{
-    // Proceed as far as we can with the processing of incoming messages
-    // and message-removal events; message IDs aren't necessarily globally
-    // unique, so we need to process them in the correct order relative
-    // to incoming messages
-    while (!incompleteMessages.isEmpty()) {
-        const QueuedEvent *e = incompleteMessages.first();
-        debug() << "QueuedEvent:" << e;
-
-        if (e->isMessage) {
-            if (e->message.senderHandle() != 0 &&
-                    !e->message.sender()) {
-                // the message doesn't have a sender Contact, but needs one.
-                // We'll have to stop processing here, and come back to it
-                // when we have more Contact objects
-                break;
-            }
-
-            // if we reach here, the message is ready
-            debug() << "Message is usable, copying to main queue";
-            messages << e->message;
-            emit parent->messageReceived(e->message);
-        } else {
-            // forget about the message(s) with ID e->removed (there should be
-            // at most one under normal circumstances)
-            int i = 0;
-            while (i < messages.size()) {
-                if (messages.at(i).pendingId() == e->removed) {
-                    emit parent->pendingMessageRemoved(messages.at(i));
-                    messages.removeAt(i);
-                } else {
-                    i++;
-                }
-            }
-        }
-
-        debug() << "Dropping first event";
-        delete incompleteMessages.takeFirst();
-    }
-
-    if (incompleteMessages.isEmpty()) {
-        if (readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
-            !readinessHelper->isReady(Features() << FeatureMessageQueue)) {
-            debug() << "incompleteMessages empty for the first time: "
-                "FeatureMessageQueue is now ready";
-            readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
-        }
-        return;
-    }
-
-    // What Contact objects do we need in order to proceed, ignoring those
-    // for which we've already sent a request?
-    QSet<uint> contactsRequired;
-    foreach (const QueuedEvent *e, incompleteMessages) {
-        if (e->isMessage) {
-            uint handle = e->message.senderHandle();
-            if (handle != 0 && !e->message.sender()
-                    && !awaitingContacts.contains(handle)) {
-                contactsRequired << handle;
-            }
-        }
-    }
-
-    parent->connect(parent->connection()->contactManager()->contactsForHandles(
-                contactsRequired.toList()),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onContactsFinished(Tp::PendingOperation *)));
-
-    awaitingContacts |= contactsRequired;
-}
-
-void TextChannel::Private::contactLost(uint handle)
-{
-    // we're not going to get a Contact object for this handle, so mark the
-    // messages from that handle as "unknown sender"
-    foreach (QueuedEvent *e, incompleteMessages) {
-        if (e->isMessage && e->message.senderHandle() == handle
-                && !e->message.sender()) {
-            e->message.clearSenderHandle();
-        }
-    }
-}
-
-void TextChannel::Private::contactFound(ContactPtr contact)
-{
-    uint handle = contact->handle().at(0);
-
-    foreach (QueuedEvent *e, incompleteMessages) {
-        if (e->isMessage && e->message.senderHandle() == handle
-                && !e->message.sender()) {
-            e->message.setSender(contact);
-        }
-    }
 }
 
 void TextChannel::onContactsFinished(PendingOperation *op)
