@@ -69,6 +69,7 @@ public:
     static const Feature FeatureMessageQueue;
     static const Feature FeatureMessageCapabilities;
     static const Feature FeatureMessageSentSignal;
+    static const Feature FeatureChatState;
 
     static TextChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -116,6 +117,10 @@ Q_SIGNALS:
     void pendingMessageRemoved(
             const Tp::ReceivedMessage &message);
 
+    // FeatureChatState
+    void chatStateChanged(const Tp::ContactPtr &contact,
+            ChannelChatState state);
+
 protected:
     TextChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
@@ -135,6 +140,8 @@ private Q_SLOTS:
 
     void gotProperties(QDBusPendingCallWatcher *);
     void gotPendingMessages(QDBusPendingCallWatcher *);
+
+    void onChatStateChanged(uint, uint);
 
 private:
     struct Private;
