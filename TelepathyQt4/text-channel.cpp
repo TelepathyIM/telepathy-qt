@@ -108,6 +108,9 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
 
     void processMessageQueue();
 
+    void contactLost(uint handle);
+    void contactFound(ContactPtr contact);
+
     // Public object
     TextChannel *parent;
 
@@ -143,8 +146,6 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
     QList<QueuedEvent *> incompleteMessages;
     QSet<uint> awaitingContacts;
     QHash<QDBusPendingCallWatcher *, UIntList> acknowledgeBatches;
-    void contactLost(uint handle);
-    void contactFound(ContactPtr contact);
 };
 
 TextChannel::Private::Private(TextChannel *parent)
