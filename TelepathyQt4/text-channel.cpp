@@ -327,9 +327,7 @@ void TextChannel::Private::enableChatStateNotifications(
             SIGNAL(ChatStateChanged(uint, uint)),
             SLOT(onChatStateChanged(uint, uint)));
 
-    /* FIXME Download initial contacts chat state.
-     * See http://bugs.freedesktop.org/show_bug.cgi?id=24882
-     */
+    // FIXME fd.o#24882 - Download contacts' initial chat states
 
     self->readinessHelper->setIntrospectCompleted(FeatureChatState, true);
 }
