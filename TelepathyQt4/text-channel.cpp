@@ -789,7 +789,7 @@ QList<ReceivedMessage> TextChannel::messageQueue() const
 }
 
 /**
- * Return the contact \a contact current chat state.
+ * Return the current chat state for \a contact.
  *
  * If hasChatStateInterface() returns false, this method will always return
  * ChannelChatStateInactive.
