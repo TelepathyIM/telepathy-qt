@@ -161,6 +161,7 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
         uint state;
     };
     QList<ChatStateEvent *> chatStateQueue;
+    QHash<ContactPtr, ChannelChatState> chatStates;
 
     QSet<uint> awaitingContacts;
 };
@@ -326,6 +327,10 @@ void TextChannel::Private::enableChatStateNotifications(
             SIGNAL(ChatStateChanged(uint, uint)),
             SLOT(onChatStateChanged(uint, uint)));
 
+    /* FIXME Download initial contacts chat state.
+     * See http://bugs.freedesktop.org/show_bug.cgi?id=24882
+     */
+
     self->readinessHelper->setIntrospectCompleted(FeatureChatState, true);
 }
 
@@ -458,6 +463,8 @@ void TextChannel::Private::processChatStateQueue()
             // when we have more Contact objects
             break;
         }
+
+        chatStates.insert(e->contact, (ChannelChatState) e->state);
 
         // if we reach here, the Contact object is ready
         emit parent->chatStateChanged(e->contact, (ChannelChatState) e->state);
@@ -778,6 +785,30 @@ DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
 QList<ReceivedMessage> TextChannel::messageQueue() const
 {
     return mPriv->messages;
+}
+
+/**
+ * Return the contact \a contact current chat state.
+ *
+ * If hasChatStateInterface() returns false, this method will always return
+ * ChannelChatStateInactive.
+ *
+ * This method requires TextChannel::FeatureChatState to be enabled.
+ *
+ * \return A contact current chat state.
+ */
+ChannelChatState TextChannel::chatState(const ContactPtr &contact) const
+{
+    if (!isReady(FeatureChatState)) {
+        warning() << "TextChannel::chatState() used with "
+            "FeatureChatState not ready";
+        return ChannelChatStateInactive;
+    }
+
+    if (mPriv->chatStates.contains(contact)) {
+        return mPriv->chatStates.value(contact);
+    }
+    return ChannelChatStateInactive;
 }
 
 void TextChannel::onAcknowledgePendingMessagesReply(

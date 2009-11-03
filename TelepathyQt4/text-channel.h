@@ -88,6 +88,9 @@ public:
     // requires FeatureMessageQueue
     QList<ReceivedMessage> messageQueue() const;
 
+    // requires FeatureChatState
+    ChannelChatState chatState(const ContactPtr &contact) const;
+
 public Q_SLOTS:
     void acknowledge(const QList<ReceivedMessage> &messages);
 
