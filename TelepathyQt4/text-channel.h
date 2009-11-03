@@ -69,6 +69,7 @@ public:
     static const Feature FeatureMessageQueue;
     static const Feature FeatureMessageCapabilities;
     static const Feature FeatureMessageSentSignal;
+    static const Feature FeatureChatState;
 
     static TextChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -76,6 +77,7 @@ public:
     virtual ~TextChannel();
 
     bool hasMessagesInterface() const;
+    bool hasChatStateInterface() const;
     bool canInviteContacts() const;
 
     // requires FeatureMessageCapabilities
@@ -85,6 +87,9 @@ public:
 
     // requires FeatureMessageQueue
     QList<ReceivedMessage> messageQueue() const;
+
+    // requires FeatureChatState
+    ChannelChatState chatState(const ContactPtr &contact) const;
 
 public Q_SLOTS:
     void acknowledge(const QList<ReceivedMessage> &messages);
@@ -105,6 +110,8 @@ public Q_SLOTS:
         return groupAddContacts(contacts, message);
     }
 
+    PendingOperation *requestChatState(ChannelChatState state);
+
 Q_SIGNALS:
     // FeatureMessageSentSignal
     void messageSent(const Tp::Message &message,
@@ -115,6 +122,10 @@ Q_SIGNALS:
     void messageReceived(const Tp::ReceivedMessage &message);
     void pendingMessageRemoved(
             const Tp::ReceivedMessage &message);
+
+    // FeatureChatState
+    void chatStateChanged(const Tp::ContactPtr &contact,
+            ChannelChatState state);
 
 protected:
     TextChannel(const ConnectionPtr &connection, const QString &objectPath,
@@ -136,9 +147,9 @@ private Q_SLOTS:
     void gotProperties(QDBusPendingCallWatcher *);
     void gotPendingMessages(QDBusPendingCallWatcher *);
 
-private:
-    void processQueue();
+    void onChatStateChanged(uint, uint);
 
+private:
     struct Private;
     friend struct Private;
     Private *mPriv;

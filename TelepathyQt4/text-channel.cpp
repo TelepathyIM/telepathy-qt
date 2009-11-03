@@ -28,6 +28,7 @@
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/Message>
 #include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReceivedMessage>
 #include <TelepathyQt4/ReferencedHandles>
@@ -102,9 +103,16 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
     static void introspectMessageQueue(Private *self);
     static void introspectMessageCapabilities(Private *self);
     static void introspectMessageSentSignal(Private *self);
+    static void enableChatStateNotifications(Private *self);
 
     void updateInitialMessages();
     void updateCapabilities();
+
+    void processMessageQueue();
+    void processChatStateQueue();
+
+    void contactLost(uint handle);
+    void contactFound(ContactPtr contact);
 
     // Public object
     TextChannel *parent;
@@ -123,13 +131,13 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
 
     // FeatureMessageQueue
     bool initialMessagesReceived;
-    struct QueuedEvent
+    struct MessageEvent
     {
-        inline QueuedEvent(const ReceivedMessage &message)
+        MessageEvent(const ReceivedMessage &message)
             : isMessage(true), message(message),
                 removed(0)
         { }
-        inline QueuedEvent(uint removed)
+        MessageEvent(uint removed)
             : isMessage(false), message(), removed(removed)
         { }
 
@@ -138,11 +146,24 @@ struct TELEPATHY_QT4_NO_EXPORT TextChannel::Private
         uint removed;
     };
     QList<ReceivedMessage> messages;
-    QList<QueuedEvent *> incompleteMessages;
-    QSet<uint> awaitingContacts;
+    QList<MessageEvent *> incompleteMessages;
     QHash<QDBusPendingCallWatcher *, UIntList> acknowledgeBatches;
-    void contactLost(uint handle);
-    void contactFound(ContactPtr contact);
+
+    // FeatureChatState
+    struct ChatStateEvent
+    {
+        ChatStateEvent(uint contactHandle, uint state)
+            : contactHandle(contactHandle), state(state)
+        { }
+
+        ContactPtr contact;
+        uint contactHandle;
+        uint state;
+    };
+    QList<ChatStateEvent *> chatStateQueue;
+    QHash<ContactPtr, ChannelChatState> chatStates;
+
+    QSet<uint> awaitingContacts;
 };
 
 TextChannel::Private::Private(TextChannel *parent)
@@ -180,11 +201,26 @@ TextChannel::Private::Private(TextChannel *parent)
         this);
     introspectables[FeatureMessageSentSignal] = introspectableMessageSentSignal;
 
+    ReadinessHelper::Introspectable introspectableChatState(
+        QSet<uint>() << 0,                                                      // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
+        QStringList(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE),          // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::enableChatStateNotifications,
+        this);
+    introspectables[FeatureChatState] = introspectableChatState;
+
     readinessHelper->addIntrospectables(introspectables);
 }
 
 TextChannel::Private::~Private()
 {
+    foreach (MessageEvent *e, incompleteMessages) {
+        delete e;
+    }
+
+    foreach (ChatStateEvent *e, chatStateQueue) {
+        delete e;
+    }
 }
 
 void TextChannel::Private::introspectMessageQueue(
@@ -280,6 +316,22 @@ void TextChannel::Private::introspectMessageSentSignal(
     self->readinessHelper->setIntrospectCompleted(FeatureMessageSentSignal, true);
 }
 
+void TextChannel::Private::enableChatStateNotifications(
+        TextChannel::Private *self)
+{
+    TextChannel *parent = self->parent;
+    Client::ChannelInterfaceChatStateInterface *chatStateInterface =
+        parent->chatStateInterface();
+
+    parent->connect(chatStateInterface,
+            SIGNAL(ChatStateChanged(uint, uint)),
+            SLOT(onChatStateChanged(uint, uint)));
+
+    // FIXME fd.o#24882 - Download contacts' initial chat states
+
+    self->readinessHelper->setIntrospectCompleted(FeatureChatState, true);
+}
+
 void TextChannel::Private::updateInitialMessages()
 {
     if (!readinessHelper->requestedFeatures().contains(FeatureMessageQueue) ||
@@ -321,6 +373,165 @@ void TextChannel::Private::updateCapabilities()
     readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, true);
 }
 
+void TextChannel::Private::processMessageQueue()
+{
+    // Proceed as far as we can with the processing of incoming messages
+    // and message-removal events; message IDs aren't necessarily globally
+    // unique, so we need to process them in the correct order relative
+    // to incoming messages
+    while (!incompleteMessages.isEmpty()) {
+        const MessageEvent *e = incompleteMessages.first();
+        debug() << "MessageEvent:" << e;
+
+        if (e->isMessage) {
+            if (e->message.senderHandle() != 0 &&
+                    !e->message.sender()) {
+                // the message doesn't have a sender Contact, but needs one.
+                // We'll have to stop processing here, and come back to it
+                // when we have more Contact objects
+                break;
+            }
+
+            // if we reach here, the message is ready
+            debug() << "Message is usable, copying to main queue";
+            messages << e->message;
+            emit parent->messageReceived(e->message);
+        } else {
+            // forget about the message(s) with ID e->removed (there should be
+            // at most one under normal circumstances)
+            int i = 0;
+            while (i < messages.size()) {
+                if (messages.at(i).pendingId() == e->removed) {
+                    emit parent->pendingMessageRemoved(messages.at(i));
+                    messages.removeAt(i);
+                } else {
+                    i++;
+                }
+            }
+        }
+
+        debug() << "Dropping first event";
+        delete incompleteMessages.takeFirst();
+    }
+
+    if (incompleteMessages.isEmpty()) {
+        if (readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
+            !readinessHelper->isReady(Features() << FeatureMessageQueue)) {
+            debug() << "incompleteMessages empty for the first time: "
+                "FeatureMessageQueue is now ready";
+            readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
+        }
+        return;
+    }
+
+    // What Contact objects do we need in order to proceed, ignoring those
+    // for which we've already sent a request?
+    QSet<uint> contactsRequired;
+    foreach (const MessageEvent *e, incompleteMessages) {
+        if (e->isMessage) {
+            uint handle = e->message.senderHandle();
+            if (handle != 0 && !e->message.sender()
+                    && !awaitingContacts.contains(handle)) {
+                contactsRequired << handle;
+            }
+        }
+    }
+
+    if (contactsRequired.isEmpty()) {
+        return;
+    }
+
+    parent->connect(parent->connection()->contactManager()->contactsForHandles(
+                contactsRequired.toList()),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onContactsFinished(Tp::PendingOperation *)));
+
+    awaitingContacts |= contactsRequired;
+}
+
+void TextChannel::Private::processChatStateQueue()
+{
+    while (!chatStateQueue.isEmpty()) {
+        const ChatStateEvent *e = chatStateQueue.first();
+        debug() << "ChatStateEvent:" << e;
+
+        if (e->contact.isNull()) {
+            // the chat state Contact object wasn't retrieved yet, but needs
+            // one. We'll have to stop processing here, and come back to it
+            // when we have more Contact objects
+            break;
+        }
+
+        chatStates.insert(e->contact, (ChannelChatState) e->state);
+
+        // if we reach here, the Contact object is ready
+        emit parent->chatStateChanged(e->contact, (ChannelChatState) e->state);
+
+        debug() << "Dropping first event";
+        delete chatStateQueue.takeFirst();
+    }
+
+    // What Contact objects do we need in order to proceed, ignoring those
+    // for which we've already sent a request?
+    QSet<uint> contactsRequired;
+    foreach (const ChatStateEvent *e, chatStateQueue) {
+        if (!e->contact &&
+            !awaitingContacts.contains(e->contactHandle)) {
+            contactsRequired << e->contactHandle;
+        }
+    }
+
+    if (contactsRequired.isEmpty()) {
+        return;
+    }
+
+    parent->connect(parent->connection()->contactManager()->contactsForHandles(
+                contactsRequired.toList()),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onContactsFinished(Tp::PendingOperation *)));
+
+    awaitingContacts |= contactsRequired;
+}
+
+void TextChannel::Private::contactLost(uint handle)
+{
+    // we're not going to get a Contact object for this handle, so mark the
+    // messages from that handle as "unknown sender"
+    foreach (MessageEvent *e, incompleteMessages) {
+        if (e->isMessage && e->message.senderHandle() == handle
+                && !e->message.sender()) {
+            e->message.clearSenderHandle();
+        }
+    }
+
+    // there is no point in sending chat state notifications for unknown
+    // contacts, removing chat state events from queue that refer to this handle
+    foreach (ChatStateEvent *e, chatStateQueue) {
+        if (e->contactHandle == handle) {
+            chatStateQueue.removeOne(e);
+            delete e;
+        }
+    }
+}
+
+void TextChannel::Private::contactFound(ContactPtr contact)
+{
+    uint handle = contact->handle().at(0);
+
+    foreach (MessageEvent *e, incompleteMessages) {
+        if (e->isMessage && e->message.senderHandle() == handle
+                && !e->message.sender()) {
+            e->message.setSender(contact);
+        }
+    }
+
+    foreach (ChatStateEvent *e, chatStateQueue) {
+        if (e->contactHandle == handle) {
+            e->contact = contact;
+        }
+    }
+}
+
 /**
  * \class TextChannel
  * \ingroup clientchannel
@@ -347,10 +558,18 @@ void TextChannel::Private::updateCapabilities()
  * \var Feature TextChannel::FeatureMessageSentSignal
  * The messageSent signal will be emitted when a message is sent
  */
+/**
+ * \var Feature TextChannel::FeatureChatState
+ * Enable this feature in order to receive notifications of remote contacts'
+ * state.
+ * The chatStateChanged() signal will be emitted when a remote contact chat
+ * state changes.
+ */
 
 const Feature TextChannel::FeatureMessageQueue = Feature(TextChannel::staticMetaObject.className(), 0);
 const Feature TextChannel::FeatureMessageCapabilities = Feature(TextChannel::staticMetaObject.className(), 1);
 const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::staticMetaObject.className(), 2);
+const Feature TextChannel::FeatureChatState = Feature(TextChannel::staticMetaObject.className(), 3);
 
 /**
  * \fn void TextChannel::messageSent(const Tp::Message &message,
@@ -393,6 +612,15 @@ const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::stati
  * circumstances in which this happens.
  */
 
+/**
+ * \fn void TextChannel::chatStateChanged(const Tp::ContactPtr &contact,
+ *      ChannelChatState state)
+ *
+ * Emitted when the state of a member of the channel has changed, if the
+ * FeatureChatState feature has been enabled.
+ * This includes local state.
+ */
+
 TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
@@ -429,7 +657,8 @@ TextChannel::~TextChannel()
 
 /**
  * Return whether this channel supports the Telepathy Messages interface.
- * If it does not, some advanced functionality will be unavailable.
+ * if it does not, requestChatState() will fail and all contacts' chat states
+ * will appear to be %Tp::ChannelChatStateInactive.
  *
  * The result of calling this method is undefined until basic Channel
  * functionality has been enabled by calling becomeReady and waiting for the
@@ -441,6 +670,22 @@ bool TextChannel::hasMessagesInterface() const
 {
     return interfaces().contains(QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES));
+}
+
+/**
+ * Return whether this channel supports the Telepathy ChatState interface.
+ * If it does not, some advanced functionality will be unavailable.
+ *
+ * The result of calling this method is undefined until basic Channel
+ * functionality has been enabled by calling becomeReady and waiting for the
+ * pending operation to complete.
+ *
+ * \return true if the ChatState interface is supported
+ */
+bool TextChannel::hasChatStateInterface() const
+{
+    return interfaces().contains(QLatin1String(
+                TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE));
 }
 
 /**
@@ -539,6 +784,30 @@ DeliveryReportingSupportFlags TextChannel::deliveryReportingSupport() const
 QList<ReceivedMessage> TextChannel::messageQueue() const
 {
     return mPriv->messages;
+}
+
+/**
+ * Return the current chat state for \a contact.
+ *
+ * If hasChatStateInterface() returns false, this method will always return
+ * ChannelChatStateInactive.
+ *
+ * This method requires TextChannel::FeatureChatState to be enabled.
+ *
+ * \return A contact current chat state.
+ */
+ChannelChatState TextChannel::chatState(const ContactPtr &contact) const
+{
+    if (!isReady(FeatureChatState)) {
+        warning() << "TextChannel::chatState() used with "
+            "FeatureChatState not ready";
+        return ChannelChatStateInactive;
+    }
+
+    if (mPriv->chatStates.contains(contact)) {
+        return mPriv->chatStates.value(contact);
+    }
+    return ChannelChatStateInactive;
 }
 
 void TextChannel::onAcknowledgePendingMessagesReply(
@@ -675,108 +944,35 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
     return op;
 }
 
+/**
+ * Set the local chat state and notify other members of the channel that it has
+ * changed.
+ *
+ * Note that only the primary handler of the channel should set its chat
+ * state.
+ *
+ * \param state The new state.
+ * \sa chatStateChanged()
+ */
+PendingOperation *TextChannel::requestChatState(ChannelChatState state)
+{
+    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE)) {
+        warning() << "TextChannel::requestChatState() used with no chat "
+            "state interface";
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "TextChannel does not support chat state interface",
+                this);
+    }
+    return new PendingVoid(chatStateInterface()->SetChatState(
+                (uint) state), this);
+}
+
 void TextChannel::onMessageSent(const MessagePartList &parts,
         uint flags,
         const QString &sentMessageToken)
 {
     emit messageSent(Message(parts), MessageSendingFlag(flags),
             sentMessageToken);
-}
-
-void TextChannel::processQueue()
-{
-    // Proceed as far as we can with the processing of incoming messages
-    // and message-removal events; message IDs aren't necessarily globally
-    // unique, so we need to process them in the correct order relative
-    // to incoming messages
-    while (!mPriv->incompleteMessages.isEmpty()) {
-        const Private::QueuedEvent *e = mPriv->incompleteMessages.first();
-        debug() << "QueuedEvent:" << e;
-
-        if (e->isMessage) {
-            if (e->message.senderHandle() != 0 &&
-                    !e->message.sender()) {
-                // the message doesn't have a sender Contact, but needs one.
-                // We'll have to stop processing here, and come back to it
-                // when we have more Contact objects
-                break;
-            }
-
-            // if we reach here, the message is ready
-            debug() << "Message is usable, copying to main queue";
-            mPriv->messages << e->message;
-            emit messageReceived(e->message);
-        } else {
-            // forget about the message(s) with ID e->removed (there should be
-            // at most one under normal circumstances)
-            int i = 0;
-            while (i < mPriv->messages.size()) {
-                if (mPriv->messages.at(i).pendingId() == e->removed) {
-                    emit pendingMessageRemoved(mPriv->messages.at(i));
-                    mPriv->messages.removeAt(i);
-                } else {
-                    i++;
-                }
-            }
-        }
-
-        debug() << "Dropping first event";
-        delete mPriv->incompleteMessages.takeFirst();
-    }
-
-    if (mPriv->incompleteMessages.isEmpty()) {
-        if (mPriv->readinessHelper->requestedFeatures().contains(FeatureMessageQueue) &&
-            !mPriv->readinessHelper->isReady(Features() << FeatureMessageQueue)) {
-            debug() << "incompleteMessages empty for the first time: "
-                "FeatureMessageQueue is now ready";
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
-        }
-        return;
-    }
-
-    // What Contact objects do we need in order to proceed, ignoring those
-    // for which we've already sent a request?
-    QSet<uint> contactsRequired;
-    foreach (const Private::QueuedEvent *e, mPriv->incompleteMessages) {
-        if (e->isMessage) {
-            uint handle = e->message.senderHandle();
-            if (handle != 0 && !e->message.sender()
-                    && !mPriv->awaitingContacts.contains(handle)) {
-                contactsRequired << handle;
-            }
-        }
-    }
-
-    connect(connection()->contactManager()->contactsForHandles(
-                contactsRequired.toList()),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onContactsFinished(Tp::PendingOperation *)));
-
-    mPriv->awaitingContacts |= contactsRequired;
-}
-
-void TextChannel::Private::contactLost(uint handle)
-{
-    // we're not going to get a Contact object for this handle, so mark the
-    // messages from that handle as "unknown sender"
-    foreach (QueuedEvent *e, incompleteMessages) {
-        if (e->isMessage && e->message.senderHandle() == handle
-                && !e->message.sender()) {
-            e->message.clearSenderHandle();
-        }
-    }
-}
-
-void TextChannel::Private::contactFound(ContactPtr contact)
-{
-    uint handle = contact->handle().at(0);
-
-    foreach (QueuedEvent *e, incompleteMessages) {
-        if (e->isMessage && e->message.senderHandle() == handle
-                && !e->message.sender()) {
-            e->message.setSender(contact);
-        }
-    }
 }
 
 void TextChannel::onContactsFinished(PendingOperation *op)
@@ -804,8 +1000,11 @@ void TextChannel::onContactsFinished(PendingOperation *op)
             mPriv->contactLost(handle);
         }
     }
-    // all the messages we were asking about should now be ready
-    processQueue();
+
+    // all contacts for messages and chat state events we were asking about
+    // should now be ready
+    mPriv->processMessageQueue();
+    mPriv->processChatStateQueue();
 }
 
 void TextChannel::onMessageReceived(const MessagePartList &parts)
@@ -814,9 +1013,9 @@ void TextChannel::onMessageReceived(const MessagePartList &parts)
         return;
     }
 
-    mPriv->incompleteMessages << new Private::QueuedEvent(
+    mPriv->incompleteMessages << new Private::MessageEvent(
             ReceivedMessage(parts, TextChannelPtr(this)));
-    processQueue();
+    mPriv->processMessageQueue();
 }
 
 void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
@@ -825,9 +1024,9 @@ void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
         return;
     }
     foreach (uint id, ids) {
-        mPriv->incompleteMessages << new Private::QueuedEvent(id);
+        mPriv->incompleteMessages << new Private::MessageEvent(id);
     }
-    processQueue();
+    mPriv->processMessageQueue();
 }
 
 void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
@@ -883,8 +1082,8 @@ void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
         m.setForceNonText();
     }
 
-    mPriv->incompleteMessages << new Private::QueuedEvent(m);
-    processQueue();
+    mPriv->incompleteMessages << new Private::MessageEvent(m);
+    mPriv->processMessageQueue();
 }
 
 void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
@@ -1008,6 +1207,13 @@ void TextChannel::gotPendingMessages(QDBusPendingCallWatcher *watcher)
     }
 
     watcher->deleteLater();
+}
+
+void TextChannel::onChatStateChanged(uint contactHandle, uint state)
+{
+    mPriv->chatStateQueue.append(new Private::ChatStateEvent(
+                contactHandle, state));
+    mPriv->processChatStateQueue();
 }
 
 } // Tp
