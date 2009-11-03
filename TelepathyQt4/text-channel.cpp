@@ -955,10 +955,10 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
  * \param state The new state.
  * \sa chatStateChanged()
  */
-PendingOperation *TextChannel::setChatState(ChannelChatState state)
+PendingOperation *TextChannel::requestChatState(ChannelChatState state)
 {
     if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE)) {
-        warning() << "TextChannel::setChatState() used with no chat "
+        warning() << "TextChannel::requestChatState() used with no chat "
             "state interface";
         return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "TextChannel does not support chat state interface",

@@ -110,7 +110,7 @@ public Q_SLOTS:
         return groupAddContacts(contacts, message);
     }
 
-    PendingOperation *setChatState(ChannelChatState state);
+    PendingOperation *requestChatState(ChannelChatState state);
 
 Q_SIGNALS:
     // FeatureMessageSentSignal
