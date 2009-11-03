@@ -659,7 +659,8 @@ TextChannel::~TextChannel()
 
 /**
  * Return whether this channel supports the Telepathy Messages interface.
- * If it does not, some advanced functionality will be unavailable.
+ * if it does not, requestChatState() will fail and all contacts' chat states
+ * will appear to be %Tp::ChannelChatStateInactive.
  *
  * The result of calling this method is undefined until basic Channel
  * functionality has been enabled by calling becomeReady and waiting for the
@@ -949,7 +950,7 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
  * Set the local chat state and notify other members of the channel that it has
  * changed.
  *
- * Note that only the preferred handler of the channel should set its chat
+ * Note that only the primary handler of the channel should set its chat
  * state.
  *
  * \param state The new state.
