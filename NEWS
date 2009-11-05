@@ -1,7 +1,20 @@
-telepathy-qt4 0.2.0 (UNRELEASED)
+telepathy-qt4 0.1.12 (2009-11-05)
 ================================
 
-...
+The "an enzyme that breaks down tigers" release.
+
+New API:
+
+* TextChannel: Added ChatState interface support.
+
+API changes:
+
+* TextChannel: send() methods now receive a flags parameter, so we proper
+  support delivery reports.
+
+Fixes:
+
+* pkgconfig: Added missing QtNetwork dependency.
 
 telepathy-qt4 0.1.11 (2009-10-08)
 ================================
