@@ -190,7 +190,8 @@ Account::Private::~Private()
  *
  * If the account is deleted from the AccountManager, this object
  * will not be deleted automatically; however, it will emit invalidated()
- * and will cease to be useful.
+ * with error code %TELEPATHY_QT4_ERROR_OBJECT_REMOVED and will cease to
+ * be useful.
  */
 
 const Feature Account::FeatureCore = Feature(Account::staticMetaObject.className(), 0, true);
@@ -1581,8 +1582,7 @@ void Account::onRemoved()
 {
     mPriv->valid = false;
     mPriv->enabled = false;
-    // This is the closest error we have at the moment
-    invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+    invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
             QLatin1String("Account removed from AccountManager"));
 }
 
