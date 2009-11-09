@@ -591,22 +591,22 @@ Connection::~Connection()
  * The returned value may have changed whenever statusChanged() is
  * emitted.
  *
- * \return The status, as defined in Status.
+ * \return The status, as defined in Connection::Status.
  */
-uint Connection::status() const
+Connection::Status Connection::status() const
 {
-    return mPriv->status;
+    return (Connection::Status) mPriv->status;
 }
 
 /**
  * Return the reason for the connection's status (which is returned by
  * status()). The validity and change rules are the same as for status().
  *
- * \return The reason, as defined in Status.
+ * \return The reason, as defined in ConnectionStatusReason.
  */
-uint Connection::statusReason() const
+ConnectionStatusReason Connection::statusReason() const
 {
-    return mPriv->statusReason;
+    return (ConnectionStatusReason) mPriv->statusReason;
 }
 
 /**
@@ -803,7 +803,8 @@ void Connection::onStatusReady(uint status)
 
     mPriv->status = status;
     mPriv->statusReason = mPriv->pendingStatusReason;
-    emit statusChanged(mPriv->status, mPriv->statusReason);
+    emit statusChanged((Connection::Status) mPriv->status,
+            (ConnectionStatusReason) mPriv->statusReason);
 }
 
 void Connection::onStatusChanged(uint status, uint reason)

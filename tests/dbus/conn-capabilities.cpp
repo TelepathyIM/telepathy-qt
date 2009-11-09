@@ -89,7 +89,7 @@ void TestConnCapabilities::testCapabilities()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(mConn->status(), static_cast<uint>(Connection::StatusConnected));
+    QCOMPARE(mConn->status(), Connection::StatusConnected);
     QVERIFY(mConn->requestsInterface() != 0);
     QVERIFY(mConn->capabilities() != 0);
     QCOMPARE(mConn->capabilities()->supportsTextChats(), true);

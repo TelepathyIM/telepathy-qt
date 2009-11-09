@@ -29,7 +29,7 @@ public:
     { }
 
 protected Q_SLOTS:
-    void expectConnReady(uint newStatus, uint newStatusReason);
+    void expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason);
     void expectConnInvalidated();
     void expectPendingHandlesFinished(Tp::PendingOperation*);
 
@@ -49,7 +49,8 @@ private:
     ReferencedHandles mHandles;
 };
 
-void TestHandles::expectConnReady(uint newStatus, uint newStatusReason)
+void TestHandles::expectConnReady(Tp::Connection::Status newStatus,
+        Tp::ConnectionStatusReason newStatusReason)
 {
     switch (newStatus) {
     case Connection::StatusDisconnected:
@@ -148,14 +149,14 @@ void TestHandles::initTestCase()
 
     if (mConn->status() != Connection::StatusConnected) {
         QVERIFY(connect(mConn.data(),
-                        SIGNAL(statusChanged(uint, uint)),
-                        SLOT(expectConnReady(uint, uint))));
+                        SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
+                        SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
         QCOMPARE(mLoop->exec(), 0);
         QVERIFY(disconnect(mConn.data(),
-                           SIGNAL(statusChanged(uint, uint)),
+                           SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
                            this,
-                           SLOT(expectConnReady(uint, uint))));
-        QCOMPARE(mConn->status(), (uint) Connection::StatusConnected);
+                           SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
+        QCOMPARE(mConn->status(), Connection::StatusConnected);
     }
 }
 

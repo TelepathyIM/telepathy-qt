@@ -132,7 +132,7 @@ void TestConnRoster::init()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
-    QCOMPARE(mConn->status(), static_cast<uint>(Connection::StatusConnected));
+    QCOMPARE(mConn->status(), Connection::StatusConnected);
 }
 
 void TestConnRoster::testRoster()
