@@ -363,7 +363,7 @@ PendingContacts::PendingContacts(ContactManager *manager,
         if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
             debug() << " Building contacts using contact attributes";
             PendingContactAttributes *attributes =
-                conn->getContactAttributes(otherContacts.toList(),
+                conn->contactAttributes(otherContacts.toList(),
                         interfaces, true);
 
             connect(attributes,

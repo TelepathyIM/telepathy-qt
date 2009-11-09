@@ -107,7 +107,7 @@ public:
     PendingHandles *requestHandles(uint handleType, const QStringList &names);
     PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
 
-    PendingContactAttributes *getContactAttributes(const UIntList &handles,
+    PendingContactAttributes *contactAttributes(const UIntList &handles,
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;

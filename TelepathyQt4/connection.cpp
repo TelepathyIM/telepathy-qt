@@ -1465,7 +1465,7 @@ PendingOperation *Connection::requestDisconnect()
  * \return Pointer to a newly constructed PendingContactAttributes, tracking the progress of the
  *         request.
  */
-PendingContactAttributes *Connection::getContactAttributes(const UIntList &handles,
+PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
         const QStringList &interfaces, bool reference)
 {
     debug() << "Request for attributes for" << handles.size() << "contacts";
@@ -1474,16 +1474,16 @@ PendingContactAttributes *Connection::getContactAttributes(const UIntList &handl
         new PendingContactAttributes(ConnectionPtr(this),
                 handles, interfaces, reference);
     if (!isReady()) {
-        warning() << "Connection::getContactAttributes() used when not ready";
+        warning() << "Connection::contactAttributes() used when not ready";
         pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE, "The connection isn't ready");
         return pending;
     } /* FIXME: readd this check when Connection isn't FSCKING broken anymore: else if (status() != StatusConnected) {
-        warning() << "Connection::getContactAttributes() used with status" << status() << "!= StatusConnected";
+        warning() << "Connection::contactAttributes() used with status" << status() << "!= StatusConnected";
         pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE,
                 "The connection isn't Connected");
         return pending;
     } */else if (!this->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
-        warning() << "Connection::getContactAttributes() used without the remote object supporting"
+        warning() << "Connection::contactAttributes() used without the remote object supporting"
                   << "the Contacts interface";
         pending->failImmediately(TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "The connection doesn't support the Contacts interface");
