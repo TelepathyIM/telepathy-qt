@@ -1,8 +1,19 @@
-telepathy-qt4 0.2.0 (UNRELEASED)
+telepathy-qt4 0.2.0 (2009-11-10)
 ================================
 
-...
+The "I Shot the Sheriff" release.
 
+API changes:
+
+* Connection: Changed status/statusReason/statusChanged to use enums
+  Tp::Connection::Status and ConnectionStatusReason.
+* Connection: Renamed getContactAttributes method to contactAttributes.
+
+Fixes:
+
+* fd.o#23370: Make better use of telepathy-spec 0.17.27 errors.
+* fd.o#24422: Account removal should be represented by
+  TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
 
 telepathy-qt4 0.1.12 (2009-11-05)
 ================================
