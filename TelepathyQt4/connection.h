@@ -175,6 +175,7 @@ protected:
 private Q_SLOTS:
     void onStatusReady(uint);
     void onStatusChanged(uint, uint);
+    void onConnectionError(const QString &, const QVariantMap &);
     void gotStatus(QDBusPendingCallWatcher *watcher);
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
     void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
