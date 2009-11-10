@@ -87,8 +87,8 @@ public:
 
     virtual ~Connection();
 
-    uint status() const;
-    uint statusReason() const;
+    Status status() const;
+    ConnectionStatusReason statusReason() const;
 
     uint selfHandle() const;
     ContactPtr selfContact() const;
@@ -107,7 +107,7 @@ public:
     PendingHandles *requestHandles(uint handleType, const QStringList &names);
     PendingHandles *referenceHandles(uint handleType, const UIntList &handles);
 
-    PendingContactAttributes *getContactAttributes(const UIntList &handles,
+    PendingContactAttributes *contactAttributes(const UIntList &handles,
             const QStringList &interfaces, bool reference = true);
     QStringList contactAttributeInterfaces() const;
     ContactManager *contactManager() const;
@@ -160,7 +160,8 @@ public:
     }
 
 Q_SIGNALS:
-    void statusChanged(uint newStatus, uint newStatusReason);
+    void statusChanged(Tp::Connection::Status newStatus,
+            Tp::ConnectionStatusReason newStatusReason);
     void selfHandleChanged(uint newHandle);
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts
     void selfContactChanged();

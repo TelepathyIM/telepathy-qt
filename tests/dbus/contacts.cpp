@@ -34,7 +34,7 @@ public:
     }
 
 protected Q_SLOTS:
-    void expectConnReady(uint newStatus, uint newStatusReason);
+    void expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason);
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
 
@@ -62,7 +62,8 @@ private:
     Tp::UIntList mInvalidHandles;
 };
 
-void TestContacts::expectConnReady(uint newStatus, uint newStatusReason)
+void TestContacts::expectConnReady(Tp::Connection::Status newStatus,
+        Tp::ConnectionStatusReason newStatusReason)
 {
     switch (newStatus) {
     case Connection::StatusDisconnected:
@@ -167,14 +168,14 @@ void TestContacts::initTestCase()
 
     if (mConn->status() != Connection::StatusConnected) {
         QVERIFY(connect(mConn.data(),
-                        SIGNAL(statusChanged(uint, uint)),
-                        SLOT(expectConnReady(uint, uint))));
+                        SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
+                        SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
         QCOMPARE(mLoop->exec(), 0);
         QVERIFY(disconnect(mConn.data(),
-                           SIGNAL(statusChanged(uint, uint)),
+                           SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
                            this,
-                           SLOT(expectConnReady(uint, uint))));
-        QCOMPARE(mConn->status(), static_cast<uint>(Connection::StatusConnected));
+                           SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
+        QCOMPARE(mConn->status(), Connection::StatusConnected);
     }
 }
 

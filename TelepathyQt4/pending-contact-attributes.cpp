@@ -56,7 +56,7 @@ namespace Tp
  * \headerfile <TelepathyQt4/pending-contact-attributes.h> <TelepathyQt4/PendingContactAttributes>
  *
  * Class containing the parameters of and the reply to an asynchronous request for raw contact
- * attributes, as used in the Connection::getContactAttributes() low-level convenience method
+ * attributes, as used in the Connection::contactAttributes() low-level convenience method
  * wrapping the ConnectionInterfaceContactsInterface::GetContactAttributes() D-Bus method.
  */
 
@@ -125,7 +125,7 @@ const QStringList &PendingContactAttributes::interfacesRequested() const
 /**
  * Returns whether it was requested that the contact handles should be referenced in addition to
  * fetching their attributes. This corresponds to the <code>reference</code> argument to
- * Connection::getContactAttributes().
+ * Connection::contactAttributes().
  *
  * \return Whether the handles should be referenced or not.
  */
