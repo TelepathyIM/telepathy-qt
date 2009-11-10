@@ -278,6 +278,9 @@ void Connection::Private::init()
     parent->connect(baseInterface,
                     SIGNAL(StatusChanged(uint, uint)),
                     SLOT(onStatusChanged(uint, uint)));
+    parent->connect(baseInterface,
+                    SIGNAL(ConnectionError(const QString &, const QVariantMap &)),
+                    SLOT(onConnectionError(const QString &, const QVariantMap &)));
 
     debug() << "Calling GetStatus()";
     QDBusPendingCallWatcher *watcher =
@@ -913,6 +916,13 @@ void Connection::onStatusChanged(uint status, uint reason)
             warning() << "Unknown connection status" << status;
             break;
     }
+}
+
+void Connection::onConnectionError(const QString &error,
+        const QVariantMap &details)
+{
+    invalidate(error,
+            details.value(QLatin1String("debug-message")).toString());
 }
 
 void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
