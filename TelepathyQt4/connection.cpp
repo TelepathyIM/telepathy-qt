@@ -816,6 +816,7 @@ void Connection::onStatusChanged(uint status, uint reason)
         return;
     }
 
+    uint oldStatus = mPriv->pendingStatus;
     mPriv->pendingStatus = status;
     mPriv->pendingStatusReason = reason;
 
@@ -832,38 +833,70 @@ void Connection::onStatusChanged(uint status, uint reason)
         case ConnectionStatusDisconnected:
             const char *errorName;
 
-            // This is the best we can do right now: in an imminent
-            // spec version we should define a different D-Bus error name
-            // for each ConnectionStatusReason
-
             switch (reason) {
                 case ConnectionStatusReasonNoneSpecified:
-                case ConnectionStatusReasonRequested:
                     errorName = TELEPATHY_ERROR_DISCONNECTED;
+                    break;
+
+                case ConnectionStatusReasonRequested:
+                    errorName = TELEPATHY_ERROR_CANCELLED;
                     break;
 
                 case ConnectionStatusReasonNetworkError:
-                case ConnectionStatusReasonAuthenticationFailed:
-                case ConnectionStatusReasonEncryptionError:
                     errorName = TELEPATHY_ERROR_NETWORK_ERROR;
+                    break;
+
+                case ConnectionStatusReasonAuthenticationFailed:
+                    errorName = TELEPATHY_ERROR_AUTHENTICATION_FAILED;
+                    break;
+
+                case ConnectionStatusReasonEncryptionError:
+                    errorName = TELEPATHY_ERROR_ENCRYPTION_ERROR;
                     break;
 
                 case ConnectionStatusReasonNameInUse:
-                    errorName = TELEPATHY_ERROR_NOT_YOURS;
+                    if (oldStatus == ConnectionStatusConnecting) {
+                        errorName = TELEPATHY_ERROR_ALREADY_CONNECTED;
+                    } else {
+                        errorName = TELEPATHY_ERROR_CONNECTION_REPLACED;
+                    }
                     break;
 
                 case ConnectionStatusReasonCertNotProvided:
+                    errorName = TELEPATHY_ERROR_CERT_NOT_PROVIDED;
+                    break;
+
                 case ConnectionStatusReasonCertUntrusted:
+                    errorName = TELEPATHY_ERROR_CERT_UNTRUSTED;
+                    break;
+
                 case ConnectionStatusReasonCertExpired:
+                    errorName = TELEPATHY_ERROR_CERT_EXPIRED;
+                    break;
+
                 case ConnectionStatusReasonCertNotActivated:
+                    errorName = TELEPATHY_ERROR_CERT_NOT_ACTIVATED;
+                    break;
+
                 case ConnectionStatusReasonCertHostnameMismatch:
+                    errorName = TELEPATHY_ERROR_CERT_HOSTNAME_MISMATCH;
+                    break;
+
                 case ConnectionStatusReasonCertFingerprintMismatch:
+                    errorName = TELEPATHY_ERROR_CERT_FINGERPRINT_MISMATCH;
+                    break;
+
                 case ConnectionStatusReasonCertSelfSigned:
+                    errorName = TELEPATHY_ERROR_CERT_SELF_SIGNED;
+                    break;
+
                 case ConnectionStatusReasonCertOtherError:
-                    errorName = TELEPATHY_ERROR_NETWORK_ERROR;
+                    errorName = TELEPATHY_ERROR_CERT_INVALID;
+                    break;
 
                 default:
                     errorName = TELEPATHY_ERROR_DISCONNECTED;
+                    break;
             }
 
             // TODO should we signal statusChanged to Disconnected here or just
