@@ -1,7 +1,11 @@
 telepathy-qt4 0.2.9999 (UNRELEASED)
 ================================
 
-...
+Fixes:
+
+* fd.o #25058: reduce the scope of our workaround for Qt 4.5 bug
+  <http://qt.gitorious.org/qt/qt/merge_requests/1657>, fixing compilation
+  against Qt versions >= 4.6 beta, where this bug has been fixed (smcv)
 
 telepathy-qt4 0.2.0 (2009-11-10)
 ================================
