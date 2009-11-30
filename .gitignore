@@ -58,5 +58,8 @@
 /tests/test-manager-file
 Makefile
 Makefile.in
+TAGS
 _gen
 _tmp
+cscope.out
+tags
