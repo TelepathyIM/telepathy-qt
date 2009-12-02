@@ -313,7 +313,6 @@ void registerTypes()
                 self.provide(binding.array_val)
 
             d = binding.array_depth
-            print "%s has max array depth %d" % (binding.val, d)
             while d > 1:
                 d -= 1
                 self.provide(binding.array_val + ('List' * d))
@@ -321,7 +320,6 @@ void registerTypes()
         assert not self.required_custom, 'These required types were not provided by the spec: ' + ', '.join(self.required_custom)
 
     def provide(self, type):
-        print "Have type: %s" % type
         if type in self.required_custom:
             self.required_custom.remove(type)
 
