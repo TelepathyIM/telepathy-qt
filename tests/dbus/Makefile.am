@@ -1,3 +1,5 @@
+include $(top_srcdir)/tools/telepathy-qt4.mk
+
 # Tests each run under their own temporary dbus-daemon.
 
 TESTS = \
@@ -7,8 +9,8 @@ BUILT_SOURCES = \
     _gen/do-nothing.cpp.moc.hpp
 
 _gen/%.moc.hpp: %
-	$(mkdir_p) _gen
-	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
+	$(AM_V_at)$(mkdir_p) _gen
+	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 noinst_PROGRAMS = $(TESTS)
 

@@ -46,6 +46,8 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.9 -Wno-portability tar-ustar])
 AM_CONFIG_HEADER(config.h)
 
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
+
 dnl check for tools
 AC_PROG_CXX
 AC_PROG_INSTALL

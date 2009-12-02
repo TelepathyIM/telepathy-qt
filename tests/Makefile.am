@@ -1,3 +1,5 @@
+include $(top_srcdir)/tools/telepathy-qt4.mk
+
 # compile lib/ first, so it can be used by tests in the other directories
 SUBDIRS = \
     lib \
@@ -59,8 +61,8 @@ EXTRA_DIST = \
     test-key-file-format-error.ini
 
 _gen/%.moc.hpp: %
-	$(mkdir_p) _gen
-	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
+	$(AM_V_at)$(mkdir_p) _gen
+	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 distclean-local:
 	rm -rf _gen

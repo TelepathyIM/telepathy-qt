@@ -36,8 +36,8 @@ EXTRA_DIST = manager-file.py
 
 _gen/example_callable.manager _gen/param-spec-struct.h: \
 		manager-file.py $(top_srcdir)/tools/manager-file.py
-	$(mkdir_p) _gen
-	$(PYTHON) $(top_srcdir)/tools/manager-file.py $(srcdir)/manager-file.py _gen
+	$(AM_V_at)$(mkdir_p) _gen
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/manager-file.py $(srcdir)/manager-file.py _gen
 
 BUILT_SOURCES = _gen/example_callable.manager _gen/param-spec-struct.h
 CLEANFILES = $(BUILT_SOURCES)

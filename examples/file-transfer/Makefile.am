@@ -1,3 +1,5 @@
+include $(top_srcdir)/tools/telepathy-qt4.mk
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir) -I$(top_builddir) \
 	$(QTCORE_CFLAGS) \
@@ -47,5 +49,5 @@ CLEANFILES = \
 	$(BUILT_SOURCES)
 
 _gen/%.moc.hpp: %.h
-	$(mkdir_p) _gen
-	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
+	$(AM_V_at)$(mkdir_p) _gen
+	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@

@@ -16,6 +16,11 @@
 
 tools_dir = $(top_srcdir)/tools
 
+# for the $(TPQT4_V_MOC) variable, used for "silent" invocation of moc. See
+# also the "silent-rules" section in
+# <http://www.gnu.org/software/hello/manual/automake/Options.html.
+include $(tools_dir)/telepathy-qt4.mk
+
 AM_CXXFLAGS = \
     $(ERROR_CXXFLAGS)
 
@@ -63,13 +68,13 @@ CLEANFILES = $(BUILT_SOURCES)
 # Generated files which can be generated for all categories simultaneously
 
 _gen/all.xml: all.xml $(wildcard *.xml)
-	$(mkdir_p) _gen
-	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
+	$(AM_V_at)$(mkdir_p) _gen
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
 _gen/constants.h: _gen/all.xml \
 		$(top_srcdir)/tools/qt4-constants-gen.py
-	$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
 		--namespace='Example' \
 		--str-constant-prefix='EXAMPLE_' \
 		--specxml=$< \
@@ -77,7 +82,7 @@ _gen/constants.h: _gen/all.xml \
 
 _gen/types.h _gen/types-body.hpp: _gen/all.xml \
 		$(top_srcdir)/tools/qt4-types-gen.py
-	$(PYTHON) $(top_srcdir)/tools/qt4-types-gen.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/qt4-types-gen.py \
 		--namespace='Example' \
 		--declfile='_gen/types.h' \
 		--implfile='_gen/types-body.hpp' \
@@ -88,13 +93,13 @@ _gen/types.h _gen/types-body.hpp: _gen/all.xml \
 # Things generated per interface group
 
 _gen/connection.xml: connection.xml $(wildcard *.xml)
-	$(mkdir_p) _gen
-	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
+	$(AM_V_at)$(mkdir_p) _gen
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
 _gen/cli-connection-body.hpp _gen/cli-connection.h: _gen/connection.xml \
 	_gen/all.xml $(tools_dir)/qt4-client-gen.py
-	$(PYTHON) $(tools_dir)/qt4-client-gen.py \
+	$(AM_V_GEN)$(PYTHON) $(tools_dir)/qt4-client-gen.py \
 		--namespace='Example::Client' \
 		--typesnamespace='Example' \
 		--headerfile=_gen/cli-connection.h \
@@ -106,4 +111,4 @@ _gen/cli-connection-body.hpp _gen/cli-connection.h: _gen/connection.xml \
 		--mainiface='Tp::Client::ConnectionInterface'
 
 %.moc.hpp: %.h _gen/constants.h _gen/types.h
-	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
+	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@

@@ -1,3 +1,5 @@
+include $(top_srcdir)/tools/telepathy-qt4.mk
+
 DIST_SUBDIRS = Farsight
 # We need to build this directory before the Farsight subdirectory
 SUBDIRS = .
@@ -390,16 +392,16 @@ ALL_LIBS = \
 # Bootstrapping
 
 _gen/spec-stamp: $(wildcard $(top_srcdir)/spec/*.xml)
-	$(mkdir_p) _gen
-	touch $@
+	$(AM_V_at)$(mkdir_p) _gen
+	$(AM_V_GEN)touch $@
 
 _gen/stable-stamp: $(wildcard *.xml) _gen/spec-stamp
-	touch $@
+	$(AM_V_GEN)touch $@
 
 _gen/stable-spec.xml: $(srcdir)/stable-interfaces.xml _gen/stable-stamp \
 	$(top_srcdir)/tools/xincludator.py \
 	Makefile.am
-	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
 # Things generated from the whole spec at once
@@ -407,7 +409,7 @@ _gen/stable-spec.xml: $(srcdir)/stable-interfaces.xml _gen/stable-stamp \
 _gen/constants.h: _gen/stable-spec.xml \
 		$(top_srcdir)/tools/qt4-constants-gen.py \
 		Makefile.am
-	$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
 		--namespace='Tp' \
 		--str-constant-prefix='TELEPATHY_' \
 		--must-define='IN_TELEPATHY_QT4_HEADER' \
@@ -417,7 +419,7 @@ _gen/constants.h: _gen/stable-spec.xml \
 _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		$(top_srcdir)/tools/qt4-types-gen.py \
 		Makefile.am
-	$(PYTHON) $(top_srcdir)/tools/qt4-types-gen.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/qt4-types-gen.py \
 		--namespace='Tp' \
 		--declfile='_gen/types.h' \
 		--implfile='_gen/types-body.hpp' \
@@ -429,14 +431,14 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 # Things generated per interface group
 
 _gen/spec-%.xml: %.xml $(top_srcdir)/tools/xincludator.py _gen/spec-stamp
-	$(PYTHON) $(top_srcdir)/tools/xincludator.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
 _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		_gen/stable-spec.xml \
 		$(top_srcdir)/tools/qt4-client-gen.py \
 		Makefile.am
-	set -e; \
+	$(AM_V_GEN)set -e; \
 	namespace='Tp::Client'; \
 	group= ; \
 	prettyinclude= ; \
@@ -509,7 +511,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		$$mainiface
 
 _gen/%.moc.hpp: %.h _gen/constants.h _gen/types.h
-	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
+	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 _gen/cli-%.moc.hpp: _gen/cli-%.h _gen/constants.h _gen/types.h
-	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
+	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@

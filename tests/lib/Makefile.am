@@ -1,3 +1,5 @@
+include $(top_srcdir)/tools/telepathy-qt4.mk
+
 SUBDIRS =
 
 AM_CPPFLAGS = \
@@ -54,5 +56,5 @@ SUBDIRS += . csh echo2
 endif
 
 _gen/%.moc.hpp: %
-	$(mkdir_p) _gen
-	$(MOC) $(AM_CPPFLAGS) -i $< -o $@
+	$(AM_V_at)$(mkdir_p) _gen
+	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@
