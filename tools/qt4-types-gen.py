@@ -211,8 +211,8 @@ void registerTypes()
 
         # Write output to files
 
-        open(self.declfile, 'w').write(''.join(self.decls))
-        open(self.implfile, 'w').write(''.join(self.impls))
+        open(self.declfile, 'w').write(''.join(self.decls).encode("utf-8"))
+        open(self.implfile, 'w').write(''.join(self.impls).encode("utf-8"))
 
     def decl(self, str):
         self.decls.append(str)
