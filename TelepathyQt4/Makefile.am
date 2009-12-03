@@ -426,6 +426,7 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		--realinclude='TelepathyQt4/types.h' \
 		--prettyinclude='TelepathyQt4/Types' \
 		--must-define='IN_TELEPATHY_QT4_HEADER' \
+		--visibility=TELEPATHY_QT4_EXPORT \
 		--specxml=$<
 
 # Things generated per interface group

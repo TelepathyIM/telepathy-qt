@@ -64,6 +64,7 @@ class Generator(object):
             self.prettyinclude = opts.get('--prettyinclude', self.realinclude)
             self.extraincludes = opts.get('--extraincludes', None)
             self.must_define = opts.get('--must-define', None)
+            self.visibility = opts.get('--visibility', '')
             dom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
             assert False, 'Missing required parameter %s' % k.args[0]
@@ -181,10 +182,13 @@ namespace %s
  * Call this function to register the types used before using anything else in
  * the library.
  */
-TELEPATHY_QT4_EXPORT void registerTypes();
+%s void registerTypes();
 }
 
-""" % get_headerfile_cmd(self.realinclude, self.prettyinclude))
+""" % (
+    get_headerfile_cmd(self.realinclude, self.prettyinclude),
+    self.visibility,
+    ))
 
         self.impl("""\
 void registerTypes()
@@ -338,9 +342,14 @@ void registerTypes()
  * Structure type generated from the specification.
 %(docstring)s\
  */
-struct TELEPATHY_QT4_EXPORT %(name)s
+struct %(visibility)s %(name)s
 {
-""" % {'name' : depinfo.binding.val, 'headercmd': get_headerfile_cmd(self.realinclude, self.prettyinclude), 'docstring' : format_docstring(depinfo.el)})
+""" % {
+        'name' : depinfo.binding.val,
+        'headercmd': get_headerfile_cmd(self.realinclude, self.prettyinclude),
+        'docstring' : format_docstring(depinfo.el),
+        'visibility': self.visibility,
+        })
 
             for i in xrange(members):
                 self.decl("""\
@@ -459,7 +468,7 @@ typedef QList<%s> %sList;
 
     def faketype(self, fake, real):
         return """\
-struct TELEPATHY_QT4_EXPORT %(fake)s : public %(real)s
+struct %(visibility)s %(fake)s : public %(real)s
 {
     inline %(fake)s() : %(real)s() {}
     inline %(fake)s(const %(real)s& a) : %(real)s(a) {}
@@ -471,7 +480,7 @@ struct TELEPATHY_QT4_EXPORT %(fake)s : public %(real)s
     }
 };
 
-""" % {'fake' : fake, 'real' : real}
+""" % {'fake' : fake, 'real' : real, 'visibility': self.visibility}
 
 if __name__ == '__main__':
     options, argv = gnu_getopt(argv[1:], '',
@@ -482,7 +491,9 @@ if __name__ == '__main__':
              'extraincludes=',
              'must-define=',
              'namespace=',
-             'specxml='])
+             'specxml=',
+             'visibility=',
+             ])
 
     Generator(dict(options))()
 
