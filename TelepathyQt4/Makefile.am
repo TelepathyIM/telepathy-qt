@@ -509,6 +509,7 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--ifacexml=$< \
 		--extraincludes='<TelepathyQt4/Types>' \
 		--must-define='IN_TELEPATHY_QT4_HEADER' \
+		--visibility=TELEPATHY_QT4_EXPORT \
 		$$mainiface
 
 _gen/%.moc.hpp: %.h _gen/constants.h _gen/types.h
