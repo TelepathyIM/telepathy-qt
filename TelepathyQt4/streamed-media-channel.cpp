@@ -32,6 +32,10 @@
 
 #include <QHash>
 
+#include "TelepathyQt4/future-internal.h"
+
+using TpFuture::Client::ChannelTypeCallInterface;
+
 namespace Tp
 {
 
@@ -513,6 +517,12 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
 
     LocalHoldState localHoldState;
     LocalHoldStateReason localHoldStateReason;
+
+    inline ChannelTypeCallInterface *callInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return parent->typeInterface<ChannelTypeCallInterface>(check);
+    }
 };
 
 StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
