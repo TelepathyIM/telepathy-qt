@@ -36,27 +36,30 @@ class Generator(object):
 
         self.spec = get_by_path(dom, "spec")[0]
 
+    def write(self, text):
+        stdout.write(text.encode('utf-8'))
+
     def __call__(self):
         # Header
-        stdout.write('/* Generated from ')
-        stdout.write(get_descendant_text(get_by_path(self.spec, 'title')))
+        self.write('/* Generated from ')
+        self.write(get_descendant_text(get_by_path(self.spec, 'title')))
         version = get_by_path(self.spec, "version")
 
         if version:
-            stdout.write(', version ' + get_descendant_text(version))
+            self.write(', version ' + get_descendant_text(version))
 
-        stdout.write("""
+        self.write("""
  */
  """)
 
         if self.must_define:
-            stdout.write("""
+            self.write("""
 #ifndef %s
 #error %s
 #endif
 """ % (self.must_define, self.must_define))
 
-        stdout.write("""
+        self.write("""
 #include <QFlags>
 
 /**
@@ -97,7 +100,7 @@ class Generator(object):
 """)
 
         # Begin namespace
-        stdout.write("""
+        self.write("""
 namespace %s
 {
 """ % self.namespace)
@@ -111,14 +114,14 @@ namespace %s
             self.do_enum(enum)
 
         # End namespace
-        stdout.write("""\
+        self.write("""\
 }
 
 """)
 
         # Interface names
         for iface in self.spec.getElementsByTagName('interface'):
-            stdout.write("""\
+            self.write("""\
 /**
  * \\ingroup ifacestrconsts
  *
@@ -134,7 +137,7 @@ namespace %s
             name = error.getAttribute('name')
             fullname = get_by_path(error, '../@namespace') + '.' + name.replace(' ', '')
             define = self.prefix + 'ERROR_' + name.replace(' ', '_').replace('.', '_').upper()
-            stdout.write("""\
+            self.write("""\
 /**
  * \\ingroup errorstrconsts
  *
@@ -157,7 +160,7 @@ namespace %s
 
         singular = singular.replace('_', '')
         plural = (flags.getAttribute('plural') or flags.getAttribute('name') or singular + 's').replace('_', '')
-        stdout.write("""\
+        self.write("""\
 /**
  * \\ingroup flagtypeconsts
  *
@@ -172,7 +175,7 @@ enum %(singular)s
         for flag in flagvalues:
             self.do_val(flag, singular, flag == flagvalues[-1])
 
-        stdout.write("""\
+        self.write("""\
 };
 
 /**
@@ -199,7 +202,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(%(plural)s)
         singular = singular.replace('_', '')
         vals = get_by_path(enum, 'enumvalue')
 
-        stdout.write("""\
+        self.write("""\
 /**
  * \\enum %(singular)s
  * \\ingroup enumtypeconsts
@@ -214,7 +217,7 @@ enum %(singular)s
         for val in vals:
             self.do_val(val, singular, val == vals[-1])
 
-        stdout.write("""\
+        self.write("""\
 };
 
 /**
@@ -230,7 +233,7 @@ const int NUM_%(upper-plural)s = (%(last-val)s+1);
 
     def do_val(self, val, prefix, last):
         name = (val.getAttribute('suffix') or val.getAttribute('name')).replace('_', '')
-        stdout.write("""\
+        self.write("""\
 %s\
      %s = %s%s
 """ % (format_docstring(val, indent='     * ', brackets=('    /**', '     */')), prefix + name, val.getAttribute('value'), (not last and ',\n') or ''))
