@@ -1,8 +1,9 @@
 include $(top_srcdir)/tools/telepathy-qt4.mk
 
-# compile lib/ first, so it can be used by tests in the other directories
+# compile lib/ and this dir first, so they can be used by dbus tests
 SUBDIRS = \
     lib \
+    . \
     dbus
 
 # Standalone tests that don't touch D-Bus
@@ -19,8 +20,13 @@ test_manager_file_SOURCES = \
     manager-file.cpp
 
 BUILT_SOURCES = \
+    dbus-1/session.conf \
     _gen/key-file.cpp.moc.hpp \
     _gen/manager-file.cpp.moc.hpp
+
+dbus-1/%.conf: $(srcdir)/dbus-1/%.conf.in
+	$(AM_V_at)$(mkdir_p) dbus-1
+	$(AM_V_GEN)sed -e "s|[@]abs_top_builddir[@]|@abs_top_builddir@|g" $< > $@
 
 LDADD = \
     $(QTCORE_LIBS) \
@@ -51,6 +57,7 @@ CLEANFILES = \
 
 EXTRA_DIST = \
     README \
+    dbus-1/session.conf.in \
     dbus-1/services/account-manager.service.in \
     dbus-1/services/spurious.service \
     telepathy/managers/spurious.manager \

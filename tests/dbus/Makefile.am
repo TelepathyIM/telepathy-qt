@@ -153,7 +153,8 @@ TESTS_ENV = \
 
 TESTS_ENVIRONMENT = \
     $(TESTS_ENV) \
-    sh $(top_srcdir)/tools/with-session-bus.sh --session --
+    sh $(top_srcdir)/tools/with-session-bus.sh \
+        --config-file=$(top_builddir)/tests/dbus-1/session.conf --
 
 CLEANFILES = \
     $(BUILT_SOURCES)
