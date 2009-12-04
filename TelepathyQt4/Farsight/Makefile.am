@@ -8,6 +8,10 @@ AM_CPPFLAGS = \
 	$(TP_FARSIGHT_CFLAGS) \
 	$(TP_QT4_CFLAGS)
 
+AM_CXXFLAGS = \
+    $(ERROR_CXXFLAGS) \
+    $(VISIBILITY_HIDDEN_FLAGS)
+
 lib_LTLIBRARIES = libtelepathy-qt4-farsight.la
 
 # The quoting here is unnecessary but harmless, and has the useful side-effect
