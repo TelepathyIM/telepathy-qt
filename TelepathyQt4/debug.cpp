@@ -40,7 +40,6 @@
 
 namespace Tp
 {
-#ifdef ENABLE_DEBUG
 
 /**
  * \fn void enableDebug(bool enable)
@@ -82,7 +81,12 @@ struct DiscardDevice : public QIODevice
         return maxsize;
     }
 } discard;
+}
 
+#ifdef ENABLE_DEBUG
+
+namespace
+{
 bool debugEnabled = false;
 bool warningsEnabled = true;
 }
@@ -113,7 +117,7 @@ QDebug enabledWarning()
         return QDebug(&discard);
 }
 
-#else /* #ifdef ENABLE_DEBUG */
+#else /* !defined(ENABLE_DEBUG) */
 
 void enableDebug(bool enable)
 {
@@ -123,6 +127,16 @@ void enableWarnings(bool enable)
 {
 }
 
-#endif /* #ifdef ENABLE_DEBUG */
+QDebug enabledDebug()
+{
+    return QDebug(&discard);
+}
+
+QDebug enabledWarning()
+{
+    return QDebug(&discard);
+}
+
+#endif /* !defined(ENABLE_DEBUG) */
 
 } // Tp

@@ -28,10 +28,13 @@
 
 namespace Tp
 {
-#ifdef ENABLE_DEBUG
 
-QDebug enabledDebug();
-QDebug enabledWarning();
+// The telepathy-farsight Qt 4 binding links to these - they're not API outside
+// this source tarball, but they *are* ABI
+TELEPATHY_QT4_EXPORT QDebug enabledDebug();
+TELEPATHY_QT4_EXPORT QDebug enabledWarning();
+
+#ifdef ENABLE_DEBUG
 
 inline QDebug debug()
 {
