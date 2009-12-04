@@ -19,24 +19,27 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_Farsight_channel_h_HEADER_GUARD_
-#define _TelepathyQt4_Farsight_channel_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_Farsight_global_h_HEADER_GUARD_
+#define _TelepathyQt4_Farsight_global_h_HEADER_GUARD_
 
 #ifndef IN_TELEPATHY_QT4_HEADER
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/Farsight/global.h>
+#include <QtGlobal>
 
-#include <TelepathyQt4/Types>
+#ifdef BUILDING_TELEPATHY_QT4_FARSIGHT
+#  define TELEPATHY_QT4_FS_EXPORT Q_DECL_EXPORT
+#else
+#  define TELEPATHY_QT4_FS_EXPORT Q_DECL_IMPORT
+#endif
 
-#include <telepathy-farsight/channel.h>
+#if !defined(Q_OS_WIN) && defined(QT_VISIBILITY_AVAILABLE)
+#  define TELEPATHY_QT4_FS_NO_EXPORT __attribute__((visibility("hidden")))
+#endif
 
-namespace Tp
-{
-
-TELEPATHY_QT4_FS_EXPORT TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel);
-
-} // Tp
+#ifndef TELEPATHY_QT4_FS_NO_EXPORT
+#  define TELEPATHY_QT4_FS_NO_EXPORT
+#endif
 
 #endif

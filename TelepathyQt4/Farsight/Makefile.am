@@ -1,4 +1,5 @@
 AM_CPPFLAGS = \
+	-DBUILDING_TELEPATHY_QT4_FARSIGHT \
 	-I$(top_srcdir) \
 	-I$(top_builddir) \
 	$(QTCORE_CFLAGS) \
@@ -30,4 +31,5 @@ tpqt4farsightincludedir = \
     $(includedir)/telepathy-1.0/TelepathyQt4/Farsight
 tpqt4farsightinclude_HEADERS = \
     Channel \
-    channel.h
+    channel.h \
+    global.h
