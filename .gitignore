@@ -52,6 +52,7 @@
 /tests/dbus/with-session-bus-*.address
 /tests/dbus/with-session-bus-*.pid
 /tests/dbus-1/services/account-manager.service
+/tests/dbus-1/session.conf
 /tests/pinocchio/test-*
 /tests/prototype/test-*
 /tests/test-key-file
