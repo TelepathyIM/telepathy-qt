@@ -362,8 +362,10 @@ struct %(visibility)s %(name)s
 
 """)
 
-            self.both('bool operator==(%s v1, %s v2)' %
-                      (depinfo.binding.inarg, depinfo.binding.inarg))
+            self.both('%s bool operator==(%s v1, %s v2)' %
+                    (self.visibility,
+                     depinfo.binding.inarg,
+                     depinfo.binding.inarg))
             self.decl(';\n')
             self.impl("""
 {""")
@@ -394,7 +396,8 @@ struct %(visibility)s %(name)s
 }
 """)
 
-            self.both('QDBusArgument& operator<<(QDBusArgument& arg, %s val)' % depinfo.binding.inarg)
+            self.both('%s QDBusArgument& operator<<(QDBusArgument& arg, %s val)' %
+                    (self.visibility, depinfo.binding.inarg))
             self.decl(';\n')
             self.impl("""
 {
@@ -406,7 +409,8 @@ struct %(visibility)s %(name)s
 
 """ % ' << '.join(['val.' + name for name in names]))
 
-            self.both('const QDBusArgument& operator>>(const QDBusArgument& arg, %s val)' % depinfo.binding.outarg)
+            self.both('%s const QDBusArgument& operator>>(const QDBusArgument& arg, %s val)' %
+                    (self.visibility, depinfo.binding.outarg))
             self.decl(';\n\n')
             self.impl("""
 {
