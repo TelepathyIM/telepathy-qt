@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-class ConnectionCapabilities : public CapabilitiesBase
+class TELEPATHY_QT4_EXPORT ConnectionCapabilities : public CapabilitiesBase
 {
 public:
     virtual ~ConnectionCapabilities();

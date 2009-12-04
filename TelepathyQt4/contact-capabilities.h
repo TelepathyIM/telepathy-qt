@@ -32,7 +32,7 @@
 namespace Tp
 {
 
-class ContactCapabilities : public CapabilitiesBase
+class TELEPATHY_QT4_EXPORT ContactCapabilities : public CapabilitiesBase
 {
 public:
     virtual ~ContactCapabilities();
