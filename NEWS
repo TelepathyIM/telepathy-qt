@@ -1,11 +1,39 @@
-telepathy-qt4 0.2.9999 (UNRELEASED)
+telepathy-qt4 0.2.1 (2009-12-04)
 ================================
+
+The "all you want, only better" release.
 
 Fixes:
 
 * fd.o #25058: reduce the scope of our workaround for Qt 4.5 bug
   <http://qt.gitorious.org/qt/qt/merge_requests/1657>, fixing compilation
   against Qt versions >= 4.6 beta, where this bug has been fixed (smcv)
+
+* Avoid the installed AccountManager (if any) being service-activated during
+  distcheck under some circumstances (smcv)
+
+* Compile with symbols hidden by default, explicitly export a few
+  symbols that were mistakenly not exported, and improve the code generation
+  tools to be more correct about their exports (smcv)
+
+* Improve the code-generation tools to cope with UTF-8 in the spec (wjt, smcv)
+
+* Enable Automake 1.11 silent building (./configure --enable-silent-rules
+  to enable this) (wjt)
+
+Code generation release notes:
+
+* qt4-types-gen.py and qt4-client-gen.py previously forced the generated
+  classes to be exported, in a way that's not actually correct for code outside
+  telepathy-qt4 (the TELEPATHY_QT4_EXPORT macro).
+  
+  They now use a macro set by --visibility, defaulting to nothing; if you're
+  building a shared library with -fvisibility=hidden, or supporting Windows,
+  you may need to use --visibility=YOUR_LIB_EXPORT when running these scripts.
+
+  See TelepathyQt4/global.h or QtDBus/qdbusmacros.h for an example of setting
+  up such a macro (unfortunately, the only correct way to do this seems to be
+  for each shared library to define its own).
 
 telepathy-qt4 0.2.0 (2009-11-10)
 ================================
