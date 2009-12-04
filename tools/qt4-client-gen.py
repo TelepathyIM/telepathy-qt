@@ -40,6 +40,7 @@ class Generator(object):
             self.must_define = opts.get('--must-define', None)
             self.dbus_proxy = opts.get('--dbus-proxy',
                     'Tp::DBusProxy')
+            self.visibility = opts.get('--visibility', '')
             ifacedom = xml.dom.minidom.parse(opts['--ifacexml'])
             specdom = xml.dom.minidom.parse(opts['--specxml'])
         except KeyError, k:
@@ -149,7 +150,7 @@ namespace %s
  *
  * Proxy class providing a 1:1 mapping of the D-Bus interface "%(dbusname)s."
  */
-class TELEPATHY_QT4_EXPORT %(name)s : public Tp::AbstractInterface
+class %(visibility)s %(name)s : public Tp::AbstractInterface
 {
     Q_OBJECT
 
@@ -195,7 +196,9 @@ public:
 """ % {'name' : name,
        'headercmd' : get_headerfile_cmd(self.realinclude, self.prettyinclude),
        'groupcmd' : self.group and (' * \\ingroup %s\n' % self.group),
-       'dbusname' : dbusname})
+       'dbusname' : dbusname,
+       'visibility': self.visibility,
+       })
 
         self.b("""
 %(name)s::%(name)s(const QString& busName, const QString& objectPath, QObject *parent)
@@ -505,6 +508,7 @@ if __name__ == '__main__':
              'extraincludes=',
              'mainiface=',
              'must-define=',
-             'dbus-proxy='])
+             'dbus-proxy=',
+             'visibility='])
 
     Generator(dict(options))()
