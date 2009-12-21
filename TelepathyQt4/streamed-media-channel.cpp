@@ -505,6 +505,12 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
     static void introspectStreams(Private *self);
     static void introspectLocalHoldState(Private *self);
 
+    inline ChannelTypeCallInterface *callInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return parent->typeInterface<ChannelTypeCallInterface>(check);
+    }
+
     // Public object
     StreamedMediaChannel *parent;
 
@@ -517,12 +523,6 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
 
     LocalHoldState localHoldState;
     LocalHoldStateReason localHoldStateReason;
-
-    inline ChannelTypeCallInterface *callInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return parent->typeInterface<ChannelTypeCallInterface>(check);
-    }
 };
 
 StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
