@@ -201,7 +201,7 @@ AC_SUBST(TP_QT4_CFLAGS)
 
 dnl Check for telepathy-glib, and for Qt <-> GLib main loop integration:
 dnl if we have both, we can run more tests
-PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.7.28], [have_tp_glib=yes],
+PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.8.0], [have_tp_glib=yes],
                   [have_tp_glib=no])
 AC_SUBST(TP_GLIB_CFLAGS)
 AC_SUBST(TP_GLIB_LIBS)
