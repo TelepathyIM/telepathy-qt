@@ -83,33 +83,33 @@ public:
 
     MediaContentPtr content() const;
 
-    StreamedMediaChannelPtr channel() const;
+    TELEPATHY_QT4_DEPRECATED StreamedMediaChannelPtr channel() const;
 
-    uint id() const;
+    TELEPATHY_QT4_DEPRECATED uint id() const;
 
     Contacts members() const;
 
-    ContactPtr contact() const;
+    TELEPATHY_QT4_DEPRECATED ContactPtr contact() const;
 
-    MediaStreamState state() const;
-    MediaStreamType type() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreamState state() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreamType type() const;
 
     SendingState localSendingState() const;
     SendingState remoteSendingState(const ContactPtr &contact) const;
 
-    bool sending() const;
-    bool receiving() const;
-    bool localSendingRequested() const;
-    bool remoteSendingRequested() const;
-    MediaStreamDirection direction() const;
-    MediaStreamPendingSend pendingSend() const;
+    TELEPATHY_QT4_DEPRECATED bool sending() const;
+    TELEPATHY_QT4_DEPRECATED bool receiving() const;
+    TELEPATHY_QT4_DEPRECATED bool localSendingRequested() const;
+    TELEPATHY_QT4_DEPRECATED bool remoteSendingRequested() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreamDirection direction() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreamPendingSend pendingSend() const;
 
     PendingOperation *requestSending(bool send);
     PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
 
-    PendingOperation *requestDirection(
+    TELEPATHY_QT4_DEPRECATED PendingOperation *requestDirection(
             MediaStreamDirection direction);
-    PendingOperation *requestDirection(
+    TELEPATHY_QT4_DEPRECATED PendingOperation *requestDirection(
             bool send, bool receive);
 
     PendingOperation *startDTMFTone(DTMFEvent event);
@@ -242,23 +242,26 @@ public:
     MediaContents contents() const;
     MediaContents contentsForType(MediaStreamType type) const;
 
-    MediaStreams streams() const;
-    MediaStreams streamsForType(MediaStreamType type) const;
+    TELEPATHY_QT4_DEPRECATED MediaStreams streams() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreams streamsForType(
+            MediaStreamType type) const;
 
     PendingMediaContent *requestContent(const QString &name,
             MediaStreamType type);
 
-    PendingMediaStreams *requestStream(
+    TELEPATHY_QT4_DEPRECATED PendingMediaStreams *requestStream(
             const ContactPtr &contact,
             MediaStreamType type);
-    PendingMediaStreams *requestStreams(
+    TELEPATHY_QT4_DEPRECATED PendingMediaStreams *requestStreams(
             const ContactPtr &contact,
             QList<MediaStreamType> types);
 
     PendingOperation *removeContent(const MediaContentPtr &content);
 
-    PendingOperation *removeStream(const MediaStreamPtr &stream);
-    PendingOperation *removeStreams(const MediaStreams &streams);
+    TELEPATHY_QT4_DEPRECATED PendingOperation *removeStream(
+            const MediaStreamPtr &stream);
+    TELEPATHY_QT4_DEPRECATED PendingOperation *removeStreams(
+            const MediaStreams &streams);
 
     bool handlerStreamingRequired() const;
 
