@@ -57,8 +57,8 @@ private:
     friend class StreamedMediaChannel;
 
     PendingMediaStreams(const StreamedMediaChannelPtr &channel,
-            ContactPtr contact,
-            QList<MediaStreamType> types);
+            const ContactPtr &contact,
+            const QList<MediaStreamType> &types);
 
     struct Private;
     friend struct Private;

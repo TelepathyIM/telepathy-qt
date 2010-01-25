@@ -59,8 +59,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingMediaStreams::Private
 };
 
 PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
-        ContactPtr contact,
-        QList<MediaStreamType> types)
+        const ContactPtr &contact,
+        const QList<MediaStreamType> &types)
     : PendingOperation(channel.data()),
       mPriv(new Private(this, channel))
 {
