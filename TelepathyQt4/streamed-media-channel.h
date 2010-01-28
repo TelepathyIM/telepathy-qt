@@ -240,11 +240,17 @@ class TELEPATHY_QT4_EXPORT StreamedMediaChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamedMediaChannel)
+    Q_ENUMS(StateChangeReason)
 
 public:
     static const Feature FeatureContents;
     static const Feature FeatureLocalHoldState;
     static const Feature FeatureStreams;
+
+    enum StateChangeReason {
+        StateChangeReasonUnknown = 0,
+        StateChangeReasonUserRequested = 1
+    };
 
     static StreamedMediaChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
