@@ -1885,8 +1885,7 @@ PendingOperation *StreamedMediaChannel::acceptCall()
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return groupAddSelfHandle();
     } else {
-        // TODO add Call iface support
-        return NULL;
+        return new PendingVoid(mPriv->callInterface()->Accept(), this);
     }
 }
 
