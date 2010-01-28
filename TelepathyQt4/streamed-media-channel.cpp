@@ -1912,8 +1912,9 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
                     UIntList() << stream->id()),
                 this);
     } else {
-        // TODO add Call iface support
-        return NULL;
+        // TODO add Call iface support once RemoveContent is implement
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Removing streams is not supported", this);
     }
 }
 
@@ -1944,8 +1945,9 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
                 streamedMediaInterface()->RemoveStreams(ids),
                 this);
     } else {
-        // TODO add Call iface support
-        return NULL;
+        // TODO add Call iface support once RemoveContent is implement
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Removing streams is not supported", this);
     }
 }
 
