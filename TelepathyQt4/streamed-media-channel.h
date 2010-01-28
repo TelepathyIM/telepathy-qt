@@ -261,7 +261,8 @@ public:
     bool awaitingRemoteAnswer() const;
 
     PendingOperation *acceptCall();
-    PendingOperation *hangupCall();
+    PendingOperation *hangupCall(StateChangeReason reason,
+            const QString &detailedReason, const QString &message);
 
     MediaContents contents() const;
     MediaContents contentsForType(MediaStreamType type) const;

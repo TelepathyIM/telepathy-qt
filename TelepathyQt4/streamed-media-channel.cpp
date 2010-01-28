@@ -1977,13 +1977,14 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
     }
 }
 
-PendingOperation *StreamedMediaChannel::hangupCall()
+PendingOperation *StreamedMediaChannel::hangupCall(StateChangeReason reason,
+        const QString &detailedReason, const QString &message)
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return requestClose();
     } else {
-        // TODO add Call iface support
-        return NULL;
+        return new PendingVoid(mPriv->callInterface()->Hangup(
+                    reason, detailedReason, message), this);
     }
 }
 
