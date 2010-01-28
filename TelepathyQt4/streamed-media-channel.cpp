@@ -34,6 +34,8 @@
 
 #include "TelepathyQt4/future-internal.h"
 
+using TpFuture::Client::CallContentInterface;
+using TpFuture::Client::CallStreamInterface;
 using TpFuture::Client::ChannelTypeCallInterface;
 
 namespace Tp
@@ -174,12 +176,22 @@ struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private
 {
     Private(MediaStream *parent, const MediaContentPtr &content,
             const MediaStreamInfo &info);
+    Private(MediaStream *parent, const MediaContentPtr &content,
+            const QDBusObjectPath &objectPath);
 
+    // SM specific methods
     static void introspectSMContact(Private *self);
 
     PendingOperation *updateSMDirection(bool send, bool receive);
     SendingState localSendingStateFromSMDirection();
     SendingState remoteSendingStateFromSMDirection();
+
+    // Call specific methods
+    static void introspectCallMainProperties(Private *self);
+
+    void processCallSendersChanged();
+
+    struct CallSendersChangedInfo;
 
     IfaceType ifaceType;
     MediaStream *parent;
@@ -194,6 +206,29 @@ struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private
     uint SMDirection;
     uint SMPendingSend;
     uint SMState;
+
+    // Call specific fields
+    CallStreamInterface *callBaseInterface;
+    Client::DBus::PropertiesInterface *callPropertiesInterface;
+    QDBusObjectPath callObjectPath;
+    TpFuture::ContactSendingStateMap senders;
+    QHash<uint, ContactPtr> sendersContacts;
+    bool buildingCallSenders;
+    QQueue<CallSendersChangedInfo *> callSendersChangedQueue;
+    CallSendersChangedInfo *currentCallSendersChangedInfo;
+};
+
+struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private::CallSendersChangedInfo
+{
+    CallSendersChangedInfo(const TpFuture::ContactSendingStateMap &updates,
+            const UIntList &removed)
+        : updates(updates),
+          removed(removed)
+    {
+    }
+
+    TpFuture::ContactSendingStateMap updates;
+    UIntList removed;
 };
 
 MediaStream::Private::Private(MediaStream *parent,
@@ -223,6 +258,33 @@ MediaStream::Private::Private(MediaStream *parent,
     readinessHelper->becomeReady(FeatureCore);
 }
 
+MediaStream::Private::Private(MediaStream *parent,
+        const MediaContentPtr &content,
+        const QDBusObjectPath &objectPath)
+    : ifaceType(IfaceTypeCall),
+      parent(parent),
+      readinessHelper(parent->readinessHelper()),
+      content(content),
+      callBaseInterface(0),
+      callPropertiesInterface(0),
+      callObjectPath(objectPath),
+      buildingCallSenders(false),
+      currentCallSendersChangedInfo(0)
+{
+    ReadinessHelper::Introspectables introspectables;
+
+    ReadinessHelper::Introspectable introspectableCore(
+        QSet<uint>() << 0,                                                      // makesSenseForStatuses
+        Features(),                                                             // dependsOnFeatures
+        QStringList(),                                                          // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectCallMainProperties,
+        this);
+    introspectables[FeatureCore] = introspectableCore;
+
+    readinessHelper->addIntrospectables(introspectables);
+    readinessHelper->becomeReady(FeatureCore);
+}
+
 void MediaStream::Private::introspectSMContact(MediaStream::Private *self)
 {
     if (self->SMContactHandle == 0) {
@@ -230,11 +292,11 @@ void MediaStream::Private::introspectSMContact(MediaStream::Private *self)
         return;
     }
 
-    MediaContentPtr content(self->content);
-    StreamedMediaChannelPtr chan(content->channel());
-    ContactManager *contactManager = chan->connection()->contactManager();
+    ContactManager *contactManager =
+        self->parent->channel()->connection()->contactManager();
     self->parent->connect(
-            contactManager->contactsForHandles(UIntList() << self->SMContactHandle),
+            contactManager->contactsForHandles(
+                UIntList() << self->SMContactHandle),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(gotSMContact(Tp::PendingOperation *)));
 }
@@ -287,6 +349,81 @@ MediaStream::SendingState MediaStream::Private::remoteSendingStateFromSMDirectio
     return SendingStateNone;
 }
 
+void MediaStream::Private::introspectCallMainProperties(
+        MediaStream::Private *self)
+{
+    MediaStream *parent = self->parent;
+    StreamedMediaChannelPtr channel = parent->channel();
+
+    self->callBaseInterface = new CallStreamInterface(
+            channel->dbusConnection(), channel->busName(),
+            self->callObjectPath.path(), parent);
+    // parent->connect(self->callBaseInterface,
+    //         SIGNAL(SendersChanged(const TpFuture::ContactSendingStateMap &,
+    //                 const TpFuture::UIntList &)),
+    //         SLOT(onCallSendersChanged(const TpFuture::ContactSendingStateMap &,
+    //                 const TpFuture::UIntList &)));
+
+    self->callPropertiesInterface = new Client::DBus::PropertiesInterface(
+            channel->dbusConnection(), channel->busName(),
+            self->callObjectPath.path(), parent);
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                self->callPropertiesInterface->GetAll(
+                    TP_FUTURE_INTERFACE_CALL_STREAM),
+                parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotCallMainProperties(QDBusPendingCallWatcher *)));
+}
+
+void MediaStream::Private::processCallSendersChanged()
+{
+    if (buildingCallSenders) {
+        return;
+    }
+
+    if (callSendersChangedQueue.isEmpty()) {
+        if (!parent->isReady(FeatureCore)) {
+            readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        }
+        return;
+    }
+
+    currentCallSendersChangedInfo = callSendersChangedQueue.dequeue();
+
+    TpFuture::ContactSendingStateMap::const_iterator i =
+        currentCallSendersChangedInfo->updates.constBegin();
+    TpFuture::ContactSendingStateMap::const_iterator end =
+        currentCallSendersChangedInfo->updates.constEnd();
+    QSet<uint> pendingSenders;
+    while (i != end) {
+        pendingSenders.insert(i.key());
+        ++i;
+    }
+
+    if (!pendingSenders.isEmpty()) {
+        buildingCallSenders = true;
+
+        ContactManager *contactManager =
+            parent->channel()->connection()->contactManager();
+        PendingContacts *contacts = contactManager->contactsForHandles(
+                pendingSenders.toList());
+        parent->connect(contacts,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(gotCallSendersContacts(Tp::PendingOperation *)));
+    } else {
+        if (callSendersChangedQueue.isEmpty()) {
+            if (!parent->isReady(FeatureCore)) {
+                readinessHelper->setIntrospectCompleted(FeatureCore, true);
+            }
+            return;
+        } else {
+            processCallSendersChanged();
+        }
+    }
+}
+
 const Feature MediaStream::FeatureCore = Feature(MediaStream::staticMetaObject.className(), 0);
 
 MediaStream::MediaStream(const MediaContentPtr &content,
@@ -297,6 +434,14 @@ MediaStream::MediaStream(const MediaContentPtr &content,
 {
     gotSMDirection(streamInfo.direction, streamInfo.pendingSendFlags);
     gotSMStreamState(streamInfo.state);
+}
+
+MediaStream::MediaStream(const MediaContentPtr &content,
+        const QDBusObjectPath &objectPath)
+    : QObject(),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this, content, objectPath))
+{
 }
 
 MediaStream::~MediaStream()
@@ -734,6 +879,147 @@ void MediaStream::gotSMStreamState(uint state)
     mPriv->SMState = state;
 }
 
+void MediaStream::gotCallMainProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "Properties.GetAll(Call.Stream) failed with" <<
+            reply.error().name() << ": " << reply.error().message();
+
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
+                false, reply.error());
+        watcher->deleteLater();
+        return;
+    }
+
+    debug() << "Got reply to Properties.GetAll(Call.Stream)";
+
+    QVariantMap props = reply.value();
+    TpFuture::ContactSendingStateMap senders =
+        qdbus_cast<TpFuture::ContactSendingStateMap>(props["Senders"]);
+
+    mPriv->callSendersChangedQueue.enqueue(
+            new Private::CallSendersChangedInfo(
+                senders, UIntList()));
+    mPriv->processCallSendersChanged();
+
+    watcher->deleteLater();
+}
+
+void MediaStream::gotCallSendersContacts(PendingOperation *op)
+{
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+
+    mPriv->buildingCallSenders = false;
+
+    if (pending->isValid()) {
+        warning().nospace() << "Getting contacts failed with " <<
+            pending->errorName() << ":" << pending->errorMessage() <<
+            ", ignoring";
+        mPriv->processCallSendersChanged();
+        return;
+    }
+
+    QMap<uint, ContactPtr> removed;
+
+    TpFuture::ContactSendingStateMap::const_iterator i =
+        mPriv->currentCallSendersChangedInfo->updates.constBegin();
+    TpFuture::ContactSendingStateMap::const_iterator end =
+        mPriv->currentCallSendersChangedInfo->updates.constEnd();
+    while (i != end) {
+        mPriv->senders.insert(i.key(), i.value());
+        ++i;
+    }
+
+    foreach (const ContactPtr &contact, pending->contacts()) {
+        mPriv->sendersContacts.insert(contact->handle()[0], contact);
+    }
+
+    foreach (uint handle, mPriv->currentCallSendersChangedInfo->removed) {
+        mPriv->senders.remove(handle);
+        if (isReady(FeatureCore) && mPriv->sendersContacts.contains(handle)) {
+            removed.insert(handle, mPriv->sendersContacts[handle]);
+
+            // make sure we don't have updates for removed contacts
+            mPriv->currentCallSendersChangedInfo->updates.remove(handle);
+        }
+        mPriv->sendersContacts.remove(handle);
+    }
+
+    foreach (uint handle, pending->invalidHandles()) {
+        mPriv->senders.remove(handle);
+        if (isReady(FeatureCore) && mPriv->sendersContacts.contains(handle)) {
+            removed.insert(handle, mPriv->sendersContacts[handle]);
+
+            // make sure we don't have updates for invalid handles
+            mPriv->currentCallSendersChangedInfo->updates.remove(handle);
+        }
+        mPriv->sendersContacts.remove(handle);
+    }
+
+    if (isReady(FeatureCore)) {
+        StreamedMediaChannelPtr chan(channel());
+        uint chanSelfHandle = chan->groupSelfContact() ?
+            chan->groupSelfContact()->handle()[0] : 0;
+        uint connSelfHandle = chan->connection()->selfHandle();
+
+        QHash<ContactPtr, SendingState> remoteSendingStates;
+
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->currentCallSendersChangedInfo->updates.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->currentCallSendersChangedInfo->updates.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+            SendingState sendingState = (SendingState) i.value();
+
+            if (handle == chanSelfHandle || handle == connSelfHandle) {
+                emit localSendingStateChanged(sendingState);
+            } else {
+                Q_ASSERT(mPriv->sendersContacts.contains(handle));
+                remoteSendingStates.insert(mPriv->sendersContacts[handle],
+                        sendingState);
+            }
+
+            mPriv->senders.insert(i.key(), i.value());
+            ++i;
+        }
+
+        if (!remoteSendingStates.isEmpty()) {
+            emit remoteSendingStateChanged(remoteSendingStates);
+        }
+
+        if (!removed.isEmpty()) {
+            emit membersRemoved(removed.values().toSet());
+        }
+    }
+
+    mPriv->processCallSendersChanged();
+}
+
+/*
+void MediaStream::onCallSendersChanged(
+        const TpFuture::ContactSendingStateMap &updates,
+        const TpFuture::UIntList &removed)
+{
+    if (updates.isEmpty() && removed.isEmpty()) {
+        debug() << "Received Call.Content.SendersChanged with 0 changes and "
+            "updates, skipping it";
+        return;
+    }
+
+    mPriv->callSendersChangedQueue.enqueue(
+            new Private::CallSendersChangedInfo(
+                updates, removed));
+    mPriv->processCallSendersChanged();
+}
+*/
+
+QDBusObjectPath MediaStream::callObjectPath() const
+{
+    return mPriv->callObjectPath;
+}
+
 /* ====== PendingMediaContent ====== */
 struct TELEPATHY_QT4_NO_EXPORT PendingMediaContent::Private
 {
@@ -851,7 +1137,23 @@ struct TELEPATHY_QT4_NO_EXPORT MediaContent::Private
             const StreamedMediaChannelPtr &channel,
             const QString &name,
             const MediaStreamInfo &streamInfo);
+    Private(MediaContent *parent,
+            const StreamedMediaChannelPtr &channel,
+            const QDBusObjectPath &objectPath);
+
+    // SM specific methods
     static void introspectSMStream(Private *self);
+
+    // Call specific methods
+    static void introspectCallMainProperties(Private *self);
+
+    MediaStreamPtr lookupStreamByCallObjectPath(
+            const QDBusObjectPath &streamPath);
+
+    // general methods
+    void checkIntrospectionCompleted();
+
+    void addStream(const MediaStreamPtr &stream);
 
     IfaceType ifaceType;
     MediaContent *parent;
@@ -859,12 +1161,19 @@ struct TELEPATHY_QT4_NO_EXPORT MediaContent::Private
     WeakPtr<StreamedMediaChannel> channel;
     QString name;
     uint type;
+    uint creatorHandle;
     ContactPtr creator;
 
     MediaStreams incompleteStreams;
     MediaStreams streams;
 
+    // SM specific fields
     MediaStreamInfo SMStreamInfo;
+
+    // Call specific fields
+    CallContentInterface *callBaseInterface;
+    Client::DBus::PropertiesInterface *callPropertiesInterface;
+    QDBusObjectPath callObjectPath;
 };
 
 MediaContent::Private::Private(MediaContent *parent,
@@ -877,6 +1186,7 @@ MediaContent::Private::Private(MediaContent *parent,
       channel(channel),
       name(name),
       type(streamInfo.type),
+      creatorHandle(0),
       SMStreamInfo(streamInfo)
 {
     ReadinessHelper::Introspectables introspectables;
@@ -893,13 +1203,96 @@ MediaContent::Private::Private(MediaContent *parent,
     readinessHelper->becomeReady(FeatureCore);
 }
 
+MediaContent::Private::Private(MediaContent *parent,
+        const StreamedMediaChannelPtr &channel,
+        const QDBusObjectPath &objectPath)
+    : ifaceType(IfaceTypeCall),
+      parent(parent),
+      readinessHelper(parent->readinessHelper()),
+      channel(channel),
+      callBaseInterface(0),
+      callPropertiesInterface(0),
+      callObjectPath(objectPath)
+{
+    ReadinessHelper::Introspectables introspectables;
+
+    ReadinessHelper::Introspectable introspectableCore(
+        QSet<uint>() << 0,                                                      // makesSenseForStatuses
+        Features(),                                                             // dependsOnFeatures
+        QStringList(),                                                          // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectCallMainProperties,
+        this);
+    introspectables[FeatureCore] = introspectableCore;
+
+    readinessHelper->addIntrospectables(introspectables);
+    readinessHelper->becomeReady(FeatureCore);
+}
+
 void MediaContent::Private::introspectSMStream(MediaContent::Private *self)
 {
     MediaStreamPtr stream = MediaStreamPtr(
             new MediaStream(MediaContentPtr(self->parent), self->SMStreamInfo));
-    self->incompleteStreams.append(stream);
+    self->addStream(stream);
+}
 
-    self->parent->connect(stream->becomeReady(),
+void MediaContent::Private::introspectCallMainProperties(
+        MediaContent::Private *self)
+{
+    MediaContent *parent = self->parent;
+    StreamedMediaChannelPtr channel = parent->channel();
+
+    self->callBaseInterface = new CallContentInterface(
+            channel->dbusConnection(), channel->busName(),
+            self->callObjectPath.path(), parent);
+    parent->connect(self->callBaseInterface,
+            SIGNAL(StreamAdded(const QDBusObjectPath &)),
+            SLOT(onCallStreamAdded(const QDBusObjectPath &)));
+    parent->connect(self->callBaseInterface,
+            SIGNAL(StreamRemoved(const QDBusObjectPath &)),
+            SLOT(onCallStreamRemoved(const QDBusObjectPath &)));
+
+    self->callPropertiesInterface = new Client::DBus::PropertiesInterface(
+            channel->dbusConnection(), channel->busName(),
+            self->callObjectPath.path(), parent);
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                self->callPropertiesInterface->GetAll(
+                    TP_FUTURE_INTERFACE_CALL_CONTENT),
+                parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotCallMainProperties(QDBusPendingCallWatcher *)));
+}
+
+MediaStreamPtr MediaContent::Private::lookupStreamByCallObjectPath(
+        const QDBusObjectPath &streamPath)
+{
+    foreach (const MediaStreamPtr &stream, streams) {
+        if (stream->callObjectPath() == streamPath) {
+            return stream;
+        }
+    }
+    foreach (const MediaStreamPtr &stream, incompleteStreams) {
+        if (stream->callObjectPath() == streamPath) {
+            return stream;
+        }
+    }
+    return MediaStreamPtr();
+}
+
+void MediaContent::Private::checkIntrospectionCompleted()
+{
+    if (!parent->isReady(FeatureCore) &&
+        incompleteStreams.size() == 0 &&
+        ((creatorHandle != 0 && creator) || (creatorHandle == 0))) {
+        readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
+}
+
+void MediaContent::Private::addStream(const MediaStreamPtr &stream)
+{
+    incompleteStreams.append(stream);
+    parent->connect(stream->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onStreamReady(Tp::PendingOperation*)));
 }
@@ -912,6 +1305,14 @@ MediaContent::MediaContent(const StreamedMediaChannelPtr &channel,
     : QObject(),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, channel, name, streamInfo))
+{
+}
+
+MediaContent::MediaContent(const StreamedMediaChannelPtr &channel,
+        const QDBusObjectPath &objectPath)
+    : QObject(),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this, channel, objectPath))
 {
 }
 
@@ -972,35 +1373,121 @@ void MediaContent::onStreamReady(Tp::PendingOperation *op)
     MediaStreamPtr stream = MediaStreamPtr(
             qobject_cast<MediaStream*>(pr->object()));
 
-    if (op->isError()) {
+    if (op->isError() || !mPriv->incompleteStreams.contains(stream)) {
         mPriv->incompleteStreams.removeOne(stream);
-    }
-
-    // the stream was removed before become ready
-    if (!mPriv->incompleteStreams.contains(stream)) {
-        if (!isReady(FeatureCore) &&
-            mPriv->incompleteStreams.size() == 0 &&
-            mPriv->streams.size() > 0) {
-            // let's not fail because a stream could not become ready and we have
-            // streams ready
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-        } else {
-            // all streams failed to become ready
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
-        }
+        mPriv->checkIntrospectionCompleted();
         return;
     }
 
     mPriv->incompleteStreams.removeOne(stream);
     mPriv->streams.append(stream);
 
-    if (!isReady(FeatureCore) && mPriv->incompleteStreams.size() == 0) {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-    }
-
     if (isReady(FeatureCore)) {
         emit streamAdded(stream);
     }
+
+    mPriv->checkIntrospectionCompleted();
+}
+
+void MediaContent::gotCreator(PendingOperation *op)
+{
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+
+    if (pending->isValid()) {
+        Q_ASSERT(pending->contacts().size() == 1);
+        mPriv->creator = pending->contacts()[0];
+
+    } else {
+        warning().nospace() << "Getting creator failed with " <<
+            pending->errorName() << ":" << pending->errorMessage() <<
+            ", ignoring";
+        mPriv->creatorHandle = 0;
+    }
+
+    mPriv->checkIntrospectionCompleted();
+}
+
+void MediaContent::gotCallMainProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "Properties.GetAll(Call.Content) failed with" <<
+            reply.error().name() << ": " << reply.error().message();
+
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
+                false, reply.error());
+        watcher->deleteLater();
+        return;
+    }
+
+    debug() << "Got reply to Properties.GetAll(Call.Content)";
+
+    QVariantMap props = reply.value();
+    mPriv->name = qdbus_cast<QString>(props["Name"]);
+    mPriv->type = qdbus_cast<uint>(props["Type"]);
+    mPriv->creatorHandle = qdbus_cast<uint>(props["Creator"]);
+    ObjectPathList streamsPaths = qdbus_cast<ObjectPathList>(props["Streams"]);
+
+    if (streamsPaths.size() == 0 && mPriv->creatorHandle == 0) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
+
+    foreach (const QDBusObjectPath &streamPath, streamsPaths) {
+        MediaStreamPtr stream = mPriv->lookupStreamByCallObjectPath(streamPath);
+        if (!stream) {
+            MediaStreamPtr stream = MediaStreamPtr(
+                    new MediaStream(MediaContentPtr(this), streamPath));
+            mPriv->addStream(stream);
+        }
+    }
+
+    if (mPriv->creatorHandle != 0) {
+        ContactManager *contactManager =
+            channel()->connection()->contactManager();
+        PendingContacts *contacts = contactManager->contactsForHandles(
+                UIntList() << mPriv->creatorHandle);
+        connect(contacts,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(gotCreator(Tp::PendingOperation *)));
+    }
+
+    watcher->deleteLater();
+}
+
+void MediaContent::onCallStreamAdded(const QDBusObjectPath &streamPath)
+{
+    if (mPriv->lookupStreamByCallObjectPath(streamPath)) {
+        debug() << "Received Call.Content.StreamAdded for an existing "
+            "stream, ignoring";
+        return;
+    }
+
+    MediaStreamPtr stream = MediaStreamPtr(
+        new MediaStream(MediaContentPtr(this), streamPath));
+    mPriv->addStream(stream);
+}
+
+void MediaContent::onCallStreamRemoved(const QDBusObjectPath &streamPath)
+{
+    debug() << "Received Call.Content.StreamRemoved for stream" <<
+        streamPath.path();
+
+    MediaStreamPtr stream = mPriv->lookupStreamByCallObjectPath(streamPath);
+    if (!stream) {
+        return;
+    }
+    bool incomplete = mPriv->incompleteStreams.contains(stream);
+    if (incomplete) {
+        mPriv->incompleteStreams.removeOne(stream);
+    } else {
+        mPriv->streams.removeOne(stream);
+    }
+
+    if (isReady(FeatureCore) && !incomplete) {
+        emit streamRemoved(stream);
+    }
+
+    mPriv->checkIntrospectionCompleted();
 }
 
 MediaStreamPtr MediaContent::SMStream() const
@@ -1021,6 +1508,11 @@ void MediaContent::removeSMStream()
     emit streamRemoved(stream);
 }
 
+QDBusObjectPath MediaContent::callObjectPath() const
+{
+    return mPriv->callObjectPath;
+}
+
 /* ====== StreamedMediaChannel ====== */
 struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
 {
@@ -1029,6 +1521,7 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
 
     static void introspectContents(Private *self);
     void introspectSMStreams();
+    void introspectCallContents();
 
     static void introspectLocalHoldState(Private *self);
 
@@ -1098,7 +1591,7 @@ void StreamedMediaChannel::Private::introspectContents(StreamedMediaChannel::Pri
     if (self->ifaceType == IfaceTypeStreamedMedia) {
         self->introspectSMStreams();
     } else {
-        // TODO add Call iface support
+        self->introspectCallContents();
         return;
     }
 }
@@ -1129,6 +1622,25 @@ void StreamedMediaChannel::Private::introspectSMStreams()
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotSMStreams(QDBusPendingCallWatcher *)));
+}
+
+void StreamedMediaChannel::Private::introspectCallContents()
+{
+    parent->connect(callInterface(),
+            SIGNAL(ContentAdded(const QDBusObjectPath &, uint)),
+            SLOT(onCallContentAdded(const QDBusObjectPath &, uint)));
+    parent->connect(callInterface(),
+            SIGNAL(ContentRemoved(const QDBusObjectPath &)),
+            SLOT(onCallContentRemoved(const QDBusObjectPath &)));
+
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                parent->propertiesInterface()->GetAll(
+                    TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL),
+                parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotCallMainProperties(QDBusPendingCallWatcher *)));
 }
 
 void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChannel::Private *self)
@@ -1710,6 +2222,81 @@ void StreamedMediaChannel::onSMStreamError(uint streamId,
     emit streamError(stream, (MediaStreamError) errorCode, errorMessage);
 }
 
+void StreamedMediaChannel::gotCallMainProperties(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "Properties.GetAll(Call) failed with" <<
+            reply.error().name() << ": " << reply.error().message();
+
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureContents,
+                false, reply.error());
+        watcher->deleteLater();
+        return;
+    }
+
+    debug() << "Got reply to Properties.GetAll(Call)";
+
+    QVariantMap props = reply.value();
+    ObjectPathList contentsPaths = qdbus_cast<ObjectPathList>(props["Contents"]);
+    if (contentsPaths.size() > 0) {
+        foreach (const QDBusObjectPath &contentPath, contentsPaths) {
+            MediaContentPtr content = lookupContentByCallObjectPath(
+                    contentPath);
+            if (!content) {
+                addContentForCallObjectPath(contentPath);
+            }
+        }
+    } else {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureContents, true);
+    }
+
+    watcher->deleteLater();
+}
+
+void StreamedMediaChannel::onCallContentAdded(
+        const QDBusObjectPath &contentPath,
+        uint contentType)
+{
+    if (lookupContentByCallObjectPath(contentPath)) {
+        debug() << "Received Call.ContentAdded for an existing "
+            "content, ignoring";
+        return;
+    }
+
+    addContentForCallObjectPath(contentPath);
+}
+
+void StreamedMediaChannel::onCallContentRemoved(
+        const QDBusObjectPath &contentPath)
+{
+    debug() << "Received Call.ContentRemoved for content" <<
+        contentPath.path();
+
+    MediaContentPtr content = lookupContentByCallObjectPath(contentPath);
+    if (!content) {
+        return;
+    }
+    bool incomplete = mPriv->incompleteContents.contains(content);
+    if (incomplete) {
+        mPriv->incompleteContents.removeOne(content);
+    } else {
+        mPriv->contents.removeOne(content);
+    }
+
+    if (isReady(FeatureContents) && !incomplete) {
+        emit contentRemoved(content);
+    }
+
+    // the content was added/removed before become ready
+    if (!isReady(FeatureContents) &&
+        mPriv->contents.size() == 0 &&
+        mPriv->incompleteContents.size() == 0) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureContents, true);
+    }
+}
+
 void StreamedMediaChannel::gotLocalHoldState(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint, uint> reply = *watcher;
@@ -1789,6 +2376,46 @@ MediaContentPtr StreamedMediaChannel::lookupContentBySMStreamId(uint streamId)
     }
     foreach (const MediaContentPtr &content, mPriv->incompleteContents) {
         if (content->SMStream() && content->SMStream()->id() == streamId) {
+            return content;
+        }
+    }
+    return MediaContentPtr();
+}
+
+MediaContentPtr StreamedMediaChannel::addContentForCallObjectPath(
+        const QDBusObjectPath &contentPath)
+{
+    /* Simulate content creation. For SM channels each stream will have one
+     * fake content */
+    MediaContentPtr content = MediaContentPtr(
+            new MediaContent(StreamedMediaChannelPtr(this),
+                contentPath));
+
+    /* Forward MediaContent::streamAdded/Removed signals */
+    connect(content.data(),
+            SIGNAL(streamAdded(const Tp::MediaStreamPtr &)),
+            SIGNAL(streamAdded(const Tp::MediaStreamPtr &)));
+    connect(content.data(),
+            SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)),
+            SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)));
+
+    mPriv->incompleteContents.append(content);
+    connect(content->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContentReady(Tp::PendingOperation*)));
+    return content;
+}
+
+MediaContentPtr StreamedMediaChannel::lookupContentByCallObjectPath(
+        const QDBusObjectPath &contentPath)
+{
+    foreach (const MediaContentPtr &content, mPriv->contents) {
+        if (content->callObjectPath() == contentPath) {
+            return content;
+        }
+    }
+    foreach (const MediaContentPtr &content, mPriv->incompleteContents) {
+        if (content->callObjectPath() == contentPath) {
             return content;
         }
     }

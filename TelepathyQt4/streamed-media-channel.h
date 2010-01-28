@@ -126,6 +126,11 @@ Q_SIGNALS:
 private Q_SLOTS:
     void gotSMContact(Tp::PendingOperation *op);
 
+    void gotCallMainProperties(QDBusPendingCallWatcher *);
+    void gotCallSendersContacts(Tp::PendingOperation *);
+    // void onCallSendersChanged(const TpFuture::ContactSendingStateMap &,
+    //         const TpFuture::UIntList &);
+
 private:
     friend class MediaContent;
     friend class PendingMediaStreams;
@@ -134,9 +139,13 @@ private:
     static const Feature FeatureCore;
 
     MediaStream(const MediaContentPtr &content, const MediaStreamInfo &info);
+    MediaStream(const MediaContentPtr &content,
+            const QDBusObjectPath &streamPath);
 
     void gotSMDirection(uint direction, uint pendingSend);
     void gotSMStreamState(uint state);
+
+    QDBusObjectPath callObjectPath() const;
 
     struct Private;
     friend struct Private;
@@ -198,6 +207,11 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void onStreamReady(Tp::PendingOperation *op);
+    void gotCreator(Tp::PendingOperation *op);
+
+    void gotCallMainProperties(QDBusPendingCallWatcher *);
+    void onCallStreamAdded(const QDBusObjectPath &);
+    void onCallStreamRemoved(const QDBusObjectPath &);
 
 private:
     friend class StreamedMediaChannel;
@@ -209,9 +223,13 @@ private:
     MediaContent(const StreamedMediaChannelPtr &channel,
             const QString &name,
             const MediaStreamInfo &streamInfo);
+    MediaContent(const StreamedMediaChannelPtr &channel,
+            const QDBusObjectPath &contentPath);
 
     MediaStreamPtr SMStream() const;
     void removeSMStream();
+
+    QDBusObjectPath callObjectPath() const;
 
     struct Private;
     friend struct Private;
@@ -301,6 +319,10 @@ private Q_SLOTS:
     void onSMStreamStateChanged(uint streamId, uint streamState);
     void onSMStreamError(uint, uint, const QString &);
 
+    void gotCallMainProperties(QDBusPendingCallWatcher *);
+    void onCallContentAdded(const QDBusObjectPath &, uint);
+    void onCallContentRemoved(const QDBusObjectPath &);
+
     void gotLocalHoldState(QDBusPendingCallWatcher *);
     void onLocalHoldStateChanged(uint, uint);
 
@@ -310,6 +332,11 @@ private:
 
     MediaContentPtr addContentForSMStream(const MediaStreamInfo &streamInfo);
     MediaContentPtr lookupContentBySMStreamId(uint streamId);
+
+    MediaContentPtr addContentForCallObjectPath(
+            const QDBusObjectPath &contentPath);
+    MediaContentPtr lookupContentByCallObjectPath(
+            const QDBusObjectPath &contentPath);
 
     struct Private;
     friend struct Private;
