@@ -198,11 +198,10 @@ struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private
     ReadinessHelper *readinessHelper;
     WeakPtr<MediaContent> content;
 
-    Contacts members;
-
     // SM specific fields
     uint SMId;
     uint SMContactHandle;
+    ContactPtr SMContact;
     uint SMDirection;
     uint SMPendingSend;
     uint SMState;
@@ -475,10 +474,27 @@ uint MediaStream::id() const
  */
 ContactPtr MediaStream::contact() const
 {
-    if (mPriv->members.size() > 0) {
-        return *(mPriv->members.begin());
-    }
+    if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
+        return mPriv->SMContact;
+    } else {
+        StreamedMediaChannelPtr chan(channel());
+        uint chanSelfHandle = chan->groupSelfContact() ?
+            chan->groupSelfContact()->handle()[0] : 0;
+        uint connSelfHandle = chan->connection()->selfHandle();
 
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->senders.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->senders.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+
+            if (handle != chanSelfHandle && handle != connSelfHandle) {
+                Q_ASSERT(mPriv->sendersContacts.contains(handle));
+                return mPriv->sendersContacts[handle];
+            }
+        }
+    }
     return ContactPtr();
 }
 
@@ -516,7 +532,23 @@ bool MediaStream::sending() const
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return mPriv->SMDirection & MediaStreamDirectionSend;
     } else {
-        // TODO add Call iface support
+        StreamedMediaChannelPtr chan(channel());
+        uint chanSelfHandle = chan->groupSelfContact() ?
+            chan->groupSelfContact()->handle()[0] : 0;
+        uint connSelfHandle = chan->connection()->selfHandle();
+
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->senders.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->senders.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+            SendingState sendingState = (SendingState) i.value();
+
+            if (handle == chanSelfHandle || handle == connSelfHandle) {
+                return sendingState & SendingStateSending;
+            }
+        }
         return false;
     }
 }
@@ -531,7 +563,24 @@ bool MediaStream::receiving() const
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return mPriv->SMDirection & MediaStreamDirectionReceive;
     } else {
-        // TODO add Call iface support
+        StreamedMediaChannelPtr chan(channel());
+        uint chanSelfHandle = chan->groupSelfContact() ?
+            chan->groupSelfContact()->handle()[0] : 0;
+        uint connSelfHandle = chan->connection()->selfHandle();
+
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->senders.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->senders.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+            SendingState sendingState = (SendingState) i.value();
+
+            if (handle != chanSelfHandle && handle != connSelfHandle &&
+                sendingState & SendingStateSending) {
+                return true;
+            }
+        }
         return false;
     }
 }
@@ -547,7 +596,23 @@ bool MediaStream::localSendingRequested() const
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return mPriv->SMPendingSend & MediaStreamPendingLocalSend;
     } else {
-        // TODO add Call iface support
+        StreamedMediaChannelPtr chan(channel());
+        uint chanSelfHandle = chan->groupSelfContact() ?
+            chan->groupSelfContact()->handle()[0] : 0;
+        uint connSelfHandle = chan->connection()->selfHandle();
+
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->senders.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->senders.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+            SendingState sendingState = (SendingState) i.value();
+
+            if (handle == chanSelfHandle || handle == connSelfHandle) {
+                return sendingState & SendingStatePendingSend;
+            }
+        }
         return false;
     }
 }
@@ -563,7 +628,24 @@ bool MediaStream::remoteSendingRequested() const
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return mPriv->SMPendingSend & MediaStreamPendingRemoteSend;
     } else {
-        // TODO add Call iface support
+        StreamedMediaChannelPtr chan(channel());
+        uint chanSelfHandle = chan->groupSelfContact() ?
+            chan->groupSelfContact()->handle()[0] : 0;
+        uint connSelfHandle = chan->connection()->selfHandle();
+
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->senders.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->senders.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+            SendingState sendingState = (SendingState) i.value();
+
+            if (handle != chanSelfHandle && handle != connSelfHandle &&
+                sendingState & SendingStatePendingSend) {
+                return true;
+            }
+        }
         return false;
     }
 }
@@ -578,7 +660,14 @@ MediaStreamDirection MediaStream::direction() const
    if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
        return (MediaStreamDirection) mPriv->SMDirection;
    } else {
-       return MediaStreamDirectionNone;
+       uint dir = MediaStreamDirectionNone;
+       if (sending()) {
+           dir |= MediaStreamDirectionSend;
+       }
+       if (receiving()) {
+           dir |= MediaStreamDirectionReceive;
+       }
+       return (MediaStreamDirection) dir;
    }
 }
 
@@ -593,8 +682,14 @@ MediaStreamPendingSend MediaStream::pendingSend() const
         return (MediaStreamPendingSend) mPriv->SMPendingSend;
     }
     else {
-        // TODO add Call iface support
-        return (MediaStreamPendingSend) 0;
+        uint pending = 0;
+        if (localSendingRequested()) {
+            pending |= MediaStreamPendingLocalSend;
+        }
+        if (remoteSendingRequested()) {
+            pending |= MediaStreamPendingRemoteSend;
+        }
+        return (MediaStreamPendingSend) pending;
     }
 }
 
@@ -726,7 +821,11 @@ MediaContentPtr MediaStream::content() const
  */
 Contacts MediaStream::members() const
 {
-    return mPriv->members;
+    if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
+        return Contacts() << mPriv->SMContact;
+    } else {
+        return mPriv->sendersContacts.values().toSet();
+    }
 }
 
 /**
@@ -739,9 +838,25 @@ MediaStream::SendingState MediaStream::localSendingState() const
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return mPriv->localSendingStateFromSMDirection();
     } else {
-        // TODO add Call iface support
-        return SendingStateNone;
+        StreamedMediaChannelPtr chan(channel());
+        uint chanSelfHandle = chan->groupSelfContact() ?
+            chan->groupSelfContact()->handle()[0] : 0;
+        uint connSelfHandle = chan->connection()->selfHandle();
+
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->senders.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->senders.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+            SendingState sendingState = (SendingState) i.value();
+
+            if (handle == chanSelfHandle || handle == connSelfHandle) {
+                return sendingState;
+            }
+        }
     }
+    return SendingStateNone;
 }
 
 /**
@@ -752,16 +867,31 @@ MediaStream::SendingState MediaStream::localSendingState() const
 MediaStream::SendingState MediaStream::remoteSendingState(
         const ContactPtr &contact) const
 {
+    if (!contact) {
+        return SendingStateNone;
+    }
+
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
-        if (mPriv->members.contains(contact)) {
+        if (mPriv->SMContact == contact) {
             return mPriv->remoteSendingStateFromSMDirection();
         }
-        return SendingStateNone;
     }
     else {
-        // TODO add Call iface support
-        return SendingStateNone;
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->senders.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->senders.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+            SendingState sendingState = (SendingState) i.value();
+
+            if (handle == contact->handle()[0]) {
+                return sendingState;
+            }
+        }
     }
+
+    return SendingStateNone;
 }
 
 /**
@@ -778,8 +908,9 @@ PendingOperation *MediaStream::requestSending(bool send)
                 mPriv->SMDirection & MediaStreamDirectionReceive);
     }
     else {
-        // TODO add Call iface support
-        return NULL;
+        return new PendingVoid(
+                mPriv->callBaseInterface->SetSending(send),
+                this);
     }
 }
 
@@ -792,20 +923,24 @@ PendingOperation *MediaStream::requestSending(bool send)
 PendingOperation *MediaStream::requestReceiving(const ContactPtr &contact,
         bool receive)
 {
-    if (!mPriv->members.contains(contact)) {
+    if (!contact) {
         return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Contact is not a member of the stream",
-                this);
+                "Invalid contact", this);
     }
 
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
+        if (mPriv->SMContact != contact) {
+            return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
+                    "Contact is not a member of the stream", this);
+        }
+
         return mPriv->updateSMDirection(
                 mPriv->SMDirection & MediaStreamDirectionSend,
                 receive);
     }
     else {
-        // TODO add Call iface support
-        return NULL;
+        return new PendingVoid(mPriv->callBaseInterface->RequestReceiving(
+                    contact->handle()[0], receive), this);
     }
 }
 
@@ -829,7 +964,7 @@ void MediaStream::gotSMContact(PendingOperation *op)
     if (contacts.size()) {
         Q_ASSERT(contacts.size() == 1);
         Q_ASSERT(invalidHandles.size() == 0);
-        mPriv->members.insert(contacts.first());
+        mPriv->SMContact = contacts.first();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     } else {
         Q_ASSERT(invalidHandles.size() == 1);
@@ -860,11 +995,10 @@ void MediaStream::gotSMDirection(uint direction, uint pendingSend)
         mPriv->localSendingStateFromSMDirection();
     emit localSendingStateChanged(localSendingState);
 
-    Q_ASSERT(mPriv->members.size() == 1);
     SendingState remoteSendingState =
         mPriv->remoteSendingStateFromSMDirection();
     QHash<ContactPtr, SendingState> remoteSendingStates;
-    remoteSendingStates.insert(*(mPriv->members.begin()), remoteSendingState);
+    remoteSendingStates.insert(mPriv->SMContact, remoteSendingState);
     emit remoteSendingStateChanged(remoteSendingStates);
 }
 
