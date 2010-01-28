@@ -1679,13 +1679,17 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
 
     LocalHoldState localHoldState;
     LocalHoldStateReason localHoldStateReason;
+
+    // Call speficic fields
+    bool callHardwareStreaming;
 };
 
 StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
     : parent(parent),
       readinessHelper(parent->readinessHelper()),
       localHoldState(LocalHoldStateUnheld),
-      localHoldStateReason(LocalHoldStateReasonNone)
+      localHoldStateReason(LocalHoldStateReasonNone),
+      callHardwareStreaming(false)
 {
     QString channelType = parent->immutableProperties().value(QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
@@ -2084,8 +2088,7 @@ bool StreamedMediaChannel::handlerStreamingRequired() const
         return interfaces().contains(
                 TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING);
     } else {
-        // TODO add Call iface support
-        return false;
+        return !mPriv->callHardwareStreaming;
     }
 }
 
@@ -2375,6 +2378,7 @@ void StreamedMediaChannel::gotCallMainProperties(
     debug() << "Got reply to Properties.GetAll(Call)";
 
     QVariantMap props = reply.value();
+    mPriv->callHardwareStreaming = qdbus_cast<bool>(props["HardwareStreaming"]);
     ObjectPathList contentsPaths = qdbus_cast<ObjectPathList>(props["Contents"]);
     if (contentsPaths.size() > 0) {
         foreach (const QDBusObjectPath &contentPath, contentsPaths) {
