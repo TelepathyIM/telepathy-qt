@@ -83,7 +83,7 @@ public:
 
     MediaContentPtr content() const;
 
-    TELEPATHY_QT4_DEPRECATED StreamedMediaChannelPtr channel() const;
+    StreamedMediaChannelPtr channel() const;
 
     TELEPATHY_QT4_DEPRECATED uint id() const;
 
@@ -97,10 +97,12 @@ public:
     SendingState localSendingState() const;
     SendingState remoteSendingState(const ContactPtr &contact) const;
 
-    TELEPATHY_QT4_DEPRECATED bool sending() const;
+    bool sending() const;
     TELEPATHY_QT4_DEPRECATED bool receiving() const;
-    TELEPATHY_QT4_DEPRECATED bool localSendingRequested() const;
+
+    bool localSendingRequested() const;
     TELEPATHY_QT4_DEPRECATED bool remoteSendingRequested() const;
+
     TELEPATHY_QT4_DEPRECATED MediaStreamDirection direction() const;
     TELEPATHY_QT4_DEPRECATED MediaStreamPendingSend pendingSend() const;
 
