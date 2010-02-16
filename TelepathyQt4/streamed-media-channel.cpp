@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingVoid>
@@ -647,8 +648,25 @@ PendingOperation *MediaStream::requestDirection(
                     mPriv->SMId, direction),
                 this);
     } else {
-        // TODO add Call iface support
-        return NULL;
+        QList<PendingOperation*> operations;
+
+        operations.append(new PendingVoid(
+                mPriv->callBaseInterface->SetSending(direction & MediaStreamDirectionSend),
+                this));
+
+        TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->senders.constBegin();
+        TpFuture::ContactSendingStateMap::const_iterator end =
+            mPriv->senders.constEnd();
+        while (i != end) {
+            uint handle = i.key();
+            operations.append(new PendingVoid(
+                    mPriv->callBaseInterface->RequestReceiving(handle,
+                            direction & MediaStreamDirectionReceive),
+                    this));
+        }
+
+        return new PendingComposite(operations, this);
     }
 }
 
