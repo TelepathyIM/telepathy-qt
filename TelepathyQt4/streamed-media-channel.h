@@ -319,7 +319,7 @@ protected:
             const QString &objectPath, const QVariantMap &immutableProperties);
 
 private Q_SLOTS:
-    void onContentReady(PendingOperation *op);
+    void onContentReady(Tp::PendingOperation *op);
 
     void gotSMStreams(QDBusPendingCallWatcher *);
     void onSMStreamAdded(uint, uint, uint);

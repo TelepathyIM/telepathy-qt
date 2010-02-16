@@ -132,8 +132,8 @@ void PendingMediaStreams::gotSMStreams(QDBusPendingCallWatcher *watcher)
         }
         mPriv->contents.append(content);
         connect(channel.data(),
-                SIGNAL(contentRemoved(Tp::MediaStreamPtr)),
-                SLOT(onContentRemoved(Tp::MediaStreamPtr)));
+                SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
+                SLOT(onContentRemoved(const Tp::MediaContentPtr &)));
         connect(content->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onContentReady(Tp::PendingOperation*)));
