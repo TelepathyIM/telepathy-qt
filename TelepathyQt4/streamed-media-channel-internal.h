@@ -67,6 +67,7 @@ struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private
 
     void processCallSendersChanged();
 
+    class CallProxy;
     struct CallSendersChangedInfo;
 
     IfaceType ifaceType;
@@ -85,12 +86,33 @@ struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private
     // Call specific fields
     CallStreamInterface *callBaseInterface;
     Client::DBus::PropertiesInterface *callPropertiesInterface;
+    CallProxy *callProxy;
     QDBusObjectPath callObjectPath;
     TpFuture::ContactSendingStateMap senders;
     QHash<uint, ContactPtr> sendersContacts;
     bool buildingCallSenders;
     QQueue<CallSendersChangedInfo *> callSendersChangedQueue;
     CallSendersChangedInfo *currentCallSendersChangedInfo;
+};
+
+class TELEPATHY_QT4_NO_EXPORT MediaStream::Private::CallProxy : public QObject
+{
+    Q_OBJECT
+
+public:
+    CallProxy(MediaStream::Private *priv, QObject *parent)
+        : QObject(parent), mPriv(priv)
+    {
+    }
+
+    ~CallProxy() {}
+
+private Q_SLOTS:
+    void onCallSendersChanged(const TpFuture::ContactSendingStateMap &,
+        const TpFuture::UIntList &);
+
+private:
+    MediaStream::Private *mPriv;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private::CallSendersChangedInfo

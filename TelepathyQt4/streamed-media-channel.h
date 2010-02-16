@@ -130,8 +130,6 @@ private Q_SLOTS:
 
     void gotCallMainProperties(QDBusPendingCallWatcher *);
     void gotCallSendersContacts(Tp::PendingOperation *);
-    // void onCallSendersChanged(const TpFuture::ContactSendingStateMap &,
-    //         const TpFuture::UIntList &);
 
 private:
     friend class MediaContent;

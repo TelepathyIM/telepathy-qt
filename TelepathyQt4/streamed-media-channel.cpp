@@ -186,6 +186,7 @@ MediaStream::Private::Private(MediaStream *parent,
       content(content),
       callBaseInterface(0),
       callPropertiesInterface(0),
+      callProxy(new CallProxy(this, parent)),
       callObjectPath(objectPath),
       buildingCallSenders(false),
       currentCallSendersChangedInfo(0)
@@ -277,11 +278,11 @@ void MediaStream::Private::introspectCallMainProperties(
     self->callBaseInterface = new CallStreamInterface(
             channel->dbusConnection(), channel->busName(),
             self->callObjectPath.path(), parent);
-    // parent->connect(self->callBaseInterface,
-    //         SIGNAL(SendersChanged(const TpFuture::ContactSendingStateMap &,
-    //                 const TpFuture::UIntList &)),
-    //         SLOT(onCallSendersChanged(const TpFuture::ContactSendingStateMap &,
-    //                 const TpFuture::UIntList &)));
+    self->callProxy->connect(self->callBaseInterface,
+            SIGNAL(SendersChanged(const TpFuture::ContactSendingStateMap &,
+                    const TpFuture::UIntList &)),
+            SLOT(onCallSendersChanged(const TpFuture::ContactSendingStateMap &,
+                    const TpFuture::UIntList &)));
 
     self->callPropertiesInterface = new Client::DBus::PropertiesInterface(
             channel->dbusConnection(), channel->busName(),
@@ -341,6 +342,22 @@ void MediaStream::Private::processCallSendersChanged()
             processCallSendersChanged();
         }
     }
+}
+
+void MediaStream::Private::CallProxy::onCallSendersChanged(
+        const TpFuture::ContactSendingStateMap &updates,
+        const TpFuture::UIntList &removed)
+{
+    if (updates.isEmpty() && removed.isEmpty()) {
+        debug() << "Received Call.Content.SendersChanged with 0 changes and "
+            "updates, skipping it";
+        return;
+    }
+
+    mPriv->callSendersChangedQueue.enqueue(
+            new Private::CallSendersChangedInfo(
+                updates, removed));
+    mPriv->processCallSendersChanged();
 }
 
 const Feature MediaStream::FeatureCore = Feature(MediaStream::staticMetaObject.className(), 0);
@@ -1050,24 +1067,6 @@ void MediaStream::gotCallSendersContacts(PendingOperation *op)
 
     mPriv->processCallSendersChanged();
 }
-
-/*
-void MediaStream::onCallSendersChanged(
-        const TpFuture::ContactSendingStateMap &updates,
-        const TpFuture::UIntList &removed)
-{
-    if (updates.isEmpty() && removed.isEmpty()) {
-        debug() << "Received Call.Content.SendersChanged with 0 changes and "
-            "updates, skipping it";
-        return;
-    }
-
-    mPriv->callSendersChangedQueue.enqueue(
-            new Private::CallSendersChangedInfo(
-                updates, removed));
-    mPriv->processCallSendersChanged();
-}
-*/
 
 QDBusObjectPath MediaStream::callObjectPath() const
 {
