@@ -21,6 +21,8 @@
 
 #include "TelepathyQt4/channel-factory.h"
 
+#include "TelepathyQt4/_gen/future-constants.h"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Channel>
@@ -46,7 +48,8 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
                     TextChannel::create(connection,
                         channelPath, immutableProperties).data()));
     }
-    else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+    else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ||
+             channelType == TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL) {
         return ChannelPtr(dynamic_cast<Channel*>(
                     StreamedMediaChannel::create(connection,
                         channelPath, immutableProperties).data()));
