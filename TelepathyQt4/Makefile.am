@@ -228,6 +228,7 @@ tpqt4include_HEADERS = \
     PendingAccount \
     PendingChannel \
     PendingChannelRequest \
+    PendingComposite \
     PendingConnection \
     PendingContacts \
     PendingContactAttributes \

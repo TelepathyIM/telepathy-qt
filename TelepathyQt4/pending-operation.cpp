@@ -310,4 +310,40 @@ void PendingVoid::watcherFinished(QDBusPendingCallWatcher *watcher)
     }
 }
 
+struct TELEPATHY_QT4_NO_EXPORT PendingComposite::Private
+{
+    Private(uint nOperations)
+        : nOperations(nOperations),
+          nOperationsFinished(0)
+    {
+    }
+
+    uint nOperations;
+    uint nOperationsFinished;
+};
+
+PendingComposite::PendingComposite(const QList<PendingOperation*> &operations,
+         QObject *parent)
+    : PendingOperation(parent),
+      mPriv(new Private(operations.size()))
+{
+    foreach (PendingOperation *operation, operations) {
+        connect(operation,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onOperationFinished(Tp::PendingOperation*)));
+    }
+}
+
+void PendingComposite::onOperationFinished(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    if (++mPriv->nOperationsFinished == mPriv->nOperations) {
+        setFinished();
+    }
+}
+
 } // Tp
