@@ -19,8 +19,10 @@
  */
 
 #include <TelepathyQt4/StreamedMediaChannel>
+#include "TelepathyQt4/streamed-media-channel-internal.h"
 
 #include "TelepathyQt4/_gen/streamed-media-channel.moc.hpp"
+#include "TelepathyQt4/_gen/streamed-media-channel-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -32,34 +34,10 @@
 
 #include <QHash>
 
-#include "TelepathyQt4/future-internal.h"
-
-using TpFuture::Client::CallContentInterface;
-using TpFuture::Client::CallStreamInterface;
-using TpFuture::Client::ChannelTypeCallInterface;
-
 namespace Tp
 {
 
-enum IfaceType {
-    IfaceTypeStreamedMedia,
-    IfaceTypeCall,
-};
-
 /* ====== PendingMediaStreams ====== */
-struct TELEPATHY_QT4_NO_EXPORT PendingMediaStreams::Private
-{
-    Private(PendingMediaStreams *parent, const StreamedMediaChannelPtr &channel)
-        : parent(parent), channel(channel), contentsReady(0)
-    {
-    }
-
-    PendingMediaStreams *parent;
-    WeakPtr<StreamedMediaChannel> channel;
-    MediaContents contents;
-    uint contentsReady;
-};
-
 PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
         const ContactPtr &contact,
         const QList<MediaStreamType> &types)
@@ -172,64 +150,6 @@ void PendingMediaStreams::onContentReady(PendingOperation *op)
 }
 
 /* ====== MediaStream ====== */
-struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private
-{
-    Private(MediaStream *parent, const MediaContentPtr &content,
-            const MediaStreamInfo &info);
-    Private(MediaStream *parent, const MediaContentPtr &content,
-            const QDBusObjectPath &objectPath);
-
-    // SM specific methods
-    static void introspectSMContact(Private *self);
-
-    PendingOperation *updateSMDirection(bool send, bool receive);
-    SendingState localSendingStateFromSMDirection();
-    SendingState remoteSendingStateFromSMDirection();
-
-    // Call specific methods
-    static void introspectCallMainProperties(Private *self);
-
-    void processCallSendersChanged();
-
-    struct CallSendersChangedInfo;
-
-    IfaceType ifaceType;
-    MediaStream *parent;
-    ReadinessHelper *readinessHelper;
-    WeakPtr<MediaContent> content;
-
-    // SM specific fields
-    uint SMId;
-    uint SMContactHandle;
-    ContactPtr SMContact;
-    uint SMDirection;
-    uint SMPendingSend;
-    uint SMState;
-
-    // Call specific fields
-    CallStreamInterface *callBaseInterface;
-    Client::DBus::PropertiesInterface *callPropertiesInterface;
-    QDBusObjectPath callObjectPath;
-    TpFuture::ContactSendingStateMap senders;
-    QHash<uint, ContactPtr> sendersContacts;
-    bool buildingCallSenders;
-    QQueue<CallSendersChangedInfo *> callSendersChangedQueue;
-    CallSendersChangedInfo *currentCallSendersChangedInfo;
-};
-
-struct TELEPATHY_QT4_NO_EXPORT MediaStream::Private::CallSendersChangedInfo
-{
-    CallSendersChangedInfo(const TpFuture::ContactSendingStateMap &updates,
-            const UIntList &removed)
-        : updates(updates),
-          removed(removed)
-    {
-    }
-
-    TpFuture::ContactSendingStateMap updates;
-    UIntList removed;
-};
-
 MediaStream::Private::Private(MediaStream *parent,
         const MediaContentPtr &content,
         const MediaStreamInfo &streamInfo)
@@ -1155,18 +1075,6 @@ QDBusObjectPath MediaStream::callObjectPath() const
 }
 
 /* ====== PendingMediaContent ====== */
-struct TELEPATHY_QT4_NO_EXPORT PendingMediaContent::Private
-{
-    Private(PendingMediaContent *parent, const StreamedMediaChannelPtr &channel)
-        : parent(parent), channel(channel)
-    {
-    }
-
-    PendingMediaContent *parent;
-    WeakPtr<StreamedMediaChannel> channel;
-    MediaContentPtr content;
-};
-
 PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
         const ContactPtr &contact,
         const QString &name,
@@ -1265,52 +1173,6 @@ void PendingMediaContent::onContentRemoved(const MediaContentPtr &content)
 }
 
 /* ====== MediaContent ====== */
-struct TELEPATHY_QT4_NO_EXPORT MediaContent::Private
-{
-    Private(MediaContent *parent,
-            const StreamedMediaChannelPtr &channel,
-            const QString &name,
-            const MediaStreamInfo &streamInfo);
-    Private(MediaContent *parent,
-            const StreamedMediaChannelPtr &channel,
-            const QDBusObjectPath &objectPath);
-
-    // SM specific methods
-    static void introspectSMStream(Private *self);
-
-    // Call specific methods
-    static void introspectCallMainProperties(Private *self);
-
-    MediaStreamPtr lookupStreamByCallObjectPath(
-            const QDBusObjectPath &streamPath);
-
-    // general methods
-    void checkIntrospectionCompleted();
-
-    void addStream(const MediaStreamPtr &stream);
-
-    IfaceType ifaceType;
-    MediaContent *parent;
-    ReadinessHelper *readinessHelper;
-    WeakPtr<StreamedMediaChannel> channel;
-    QString name;
-    uint type;
-    uint creatorHandle;
-    ContactPtr creator;
-
-    MediaStreams incompleteStreams;
-    MediaStreams streams;
-
-    // SM specific fields
-    MediaStreamPtr SMStream;
-    MediaStreamInfo SMStreamInfo;
-
-    // Call specific fields
-    CallContentInterface *callBaseInterface;
-    Client::DBus::PropertiesInterface *callPropertiesInterface;
-    QDBusObjectPath callObjectPath;
-};
-
 MediaContent::Private::Private(MediaContent *parent,
         const StreamedMediaChannelPtr &channel,
         const QString &name,
@@ -1661,42 +1523,6 @@ QDBusObjectPath MediaContent::callObjectPath() const
 }
 
 /* ====== StreamedMediaChannel ====== */
-struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
-{
-    Private(StreamedMediaChannel *parent);
-    ~Private();
-
-    static void introspectContents(Private *self);
-    void introspectSMStreams();
-    void introspectCallContents();
-
-    static void introspectLocalHoldState(Private *self);
-
-    inline ChannelTypeCallInterface *callInterface(
-            InterfaceSupportedChecking check = CheckInterfaceSupported) const
-    {
-        return parent->typeInterface<ChannelTypeCallInterface>(check);
-    }
-
-    // Public object
-    StreamedMediaChannel *parent;
-
-    ReadinessHelper *readinessHelper;
-
-    IfaceType ifaceType;
-
-    // Introspection
-
-    MediaContents incompleteContents;
-    MediaContents contents;
-
-    LocalHoldState localHoldState;
-    LocalHoldStateReason localHoldStateReason;
-
-    // Call speficic fields
-    bool callHardwareStreaming;
-};
-
 StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
     : parent(parent),
       readinessHelper(parent->readinessHelper()),
