@@ -228,6 +228,7 @@ private:
     MediaContent(const StreamedMediaChannelPtr &channel,
             const QDBusObjectPath &contentPath);
 
+    void setSMStream(const MediaStreamPtr &stream);
     MediaStreamPtr SMStream() const;
     void removeSMStream();
 

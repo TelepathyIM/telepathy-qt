@@ -1302,6 +1302,7 @@ struct TELEPATHY_QT4_NO_EXPORT MediaContent::Private
     MediaStreams streams;
 
     // SM specific fields
+    MediaStreamPtr SMStream;
     MediaStreamInfo SMStreamInfo;
 
     // Call specific fields
@@ -1364,9 +1365,8 @@ MediaContent::Private::Private(MediaContent *parent,
 
 void MediaContent::Private::introspectSMStream(MediaContent::Private *self)
 {
-    MediaStreamPtr stream = MediaStreamPtr(
-            new MediaStream(MediaContentPtr(self->parent), self->SMStreamInfo));
-    self->addStream(stream);
+    Q_ASSERT(self->SMStream);
+    self->checkIntrospectionCompleted();
 }
 
 void MediaContent::Private::introspectCallMainProperties(
@@ -1624,22 +1624,35 @@ void MediaContent::onCallStreamRemoved(const QDBusObjectPath &streamPath)
     mPriv->checkIntrospectionCompleted();
 }
 
+void MediaContent::setSMStream(const MediaStreamPtr &stream)
+{
+    Q_ASSERT(mPriv->ifaceType == IfaceTypeStreamedMedia);
+    Q_ASSERT(mPriv->incompleteStreams.size() == 0 && mPriv->streams.size() == 0);
+    mPriv->SMStream = stream;
+    mPriv->incompleteStreams.append(stream);
+    connect(stream->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onStreamReady(Tp::PendingOperation*)));
+}
+
 MediaStreamPtr MediaContent::SMStream() const
 {
     Q_ASSERT(mPriv->ifaceType == IfaceTypeStreamedMedia);
-    if (mPriv->streams.size() == 1) {
-        return mPriv->streams.first();
-    }
-    return MediaStreamPtr();
+    return mPriv->SMStream;
 }
 
 void MediaContent::removeSMStream()
 {
     Q_ASSERT(mPriv->ifaceType == IfaceTypeStreamedMedia);
-    Q_ASSERT(mPriv->streams.size() == 1);
-    MediaStreamPtr stream = mPriv->streams.first();
-    mPriv->streams.removeOne(stream);
-    emit streamRemoved(stream);
+    Q_ASSERT(mPriv->SMStream);
+
+    MediaStreamPtr stream = mPriv->SMStream;
+    if (mPriv->streams.contains(stream)) {
+        mPriv->streams.removeOne(stream);
+        emit streamRemoved(stream);
+    } else if (mPriv->incompleteStreams.contains(stream)) {
+        mPriv->incompleteStreams.removeOne(stream);
+    }
 }
 
 QDBusObjectPath MediaContent::callObjectPath() const
@@ -2491,6 +2504,8 @@ MediaContentPtr StreamedMediaChannel::addContentForSMStream(
                     .arg(streamInfo.type == MediaStreamTypeAudio ? "audio" : "video")
                     .arg((qulonglong) this),
                 streamInfo));
+    MediaStreamPtr stream = MediaStreamPtr(new MediaStream(content, streamInfo));
+    content->setSMStream(stream);
 
     /* Forward MediaContent::streamAdded/Removed signals */
     connect(content.data(),
