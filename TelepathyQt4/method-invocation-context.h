@@ -87,6 +87,7 @@ public:
     MethodInvocationContext(const QDBusConnection &bus, const QDBusMessage &message)
         : mBus(bus), mMessage(message), mFinished(false)
     {
+        mMessage.setDelayedReply(true);
     }
 
     virtual ~MethodInvocationContext()
