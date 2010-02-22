@@ -138,20 +138,22 @@ class MyClient : public QObject,
 
 public:
     static AbstractClientPtr create(const ChannelClassList &channelFilter,
+            const QStringList &capabilities,
             bool bypassApproval = false,
             bool wantsRequestNotification = false)
     {
         return AbstractClientPtr::dynamicCast(SharedPtr<MyClient>(
-                    new MyClient(channelFilter,
+                    new MyClient(channelFilter, capabilities,
                         bypassApproval, wantsRequestNotification)));
     }
 
     MyClient(const ChannelClassList &channelFilter,
-            bool bypassApproval = false,
-            bool wantsRequestNotification = false)
+             const QStringList &capabilities,
+             bool bypassApproval = false,
+             bool wantsRequestNotification = false)
         : AbstractClientObserver(channelFilter),
           AbstractClientApprover(channelFilter),
-          AbstractClientHandler(channelFilter, wantsRequestNotification),
+          AbstractClientHandler(channelFilter, capabilities, wantsRequestNotification),
           mBypassApproval(bypassApproval)
     {
     }
@@ -290,6 +292,7 @@ private Q_SLOTS:
     void init();
 
     void testRegister();
+    void testCapabilities();
     void testObserveChannels();
     void testAddDispatchOperation();
     void testRequests();
@@ -316,6 +319,7 @@ private:
     ClientRegistrarPtr mClientRegistrar;
     QString mChannelRequestBusName;
     QString mChannelRequestPath;
+    QStringList mClientCapabilities;
     AbstractClientPtr mClientObject1;
     QString mClientObject1BusName;
     QString mClientObject1Path;
@@ -449,6 +453,11 @@ void TestClient::testRegister()
     // invalid client
     QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), "foo"));
 
+    mClientCapabilities.append(
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/ice-udp=true"));
+    mClientCapabilities.append(
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/audio/speex=true"));
+
     ChannelClassList filters;
     QMap<QString, QDBusVariant> filter;
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -456,7 +465,7 @@ void TestClient::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant((uint) Tp::HandleTypeContact));
     filters.append(filter);
-    mClientObject1 = MyClient::create(filters, false, true);
+    mClientObject1 = MyClient::create(filters, mClientCapabilities, false, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject1, "foo"));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
 
@@ -470,7 +479,7 @@ void TestClient::testRegister()
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant((uint) Tp::HandleTypeContact));
     filters.append(filter);
-    mClientObject2 = MyClient::create(filters, true, true);
+    mClientObject2 = MyClient::create(filters, mClientCapabilities, true, true);
     QVERIFY(mClientRegistrar->registerClient(mClientObject2, "foo", true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
 
@@ -491,6 +500,21 @@ void TestClient::testRegister()
             QRegExp("org.freedesktop.Telepathy.Client.foo._*")).first();
     mClientObject2Path = QString("/%1").arg(mClientObject2BusName);
     mClientObject2Path.replace('.', '/');
+}
+
+void TestClient::testCapabilities()
+{
+    QDBusConnection bus = mClientRegistrar->dbusConnection();
+
+    // object 1
+    ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
+            mClientObject1BusName, mClientObject1Path, this);
+    QCOMPARE(handler1Iface->Capabilities(), mClientCapabilities);
+
+    // object 2
+    ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
+            mClientObject2BusName, mClientObject2Path, this);
+    QCOMPARE(handler2Iface->Capabilities(), mClientCapabilities);
 }
 
 void TestClient::testRequests()
