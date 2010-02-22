@@ -156,6 +156,7 @@ class TELEPATHY_QT4_NO_EXPORT ClientHandlerAdaptor : public QDBusAbstractAdaptor
 "  <interface name=\"org.freedesktop.Telepathy.Client.Handler\" >\n"
 "    <property name=\"HandlerChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
 "    <property name=\"BypassApproval\" type=\"b\" access=\"read\" />\n"
+"    <property name=\"Capabilities\" type=\"as\" access=\"read\" />\n"
 "    <property name=\"HandledChannels\" type=\"ao\" access=\"read\" />\n"
 "    <method name=\"HandleChannels\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
@@ -170,6 +171,7 @@ class TELEPATHY_QT4_NO_EXPORT ClientHandlerAdaptor : public QDBusAbstractAdaptor
 
     Q_PROPERTY(Tp::ChannelClassList HandlerChannelFilter READ HandlerChannelFilter)
     Q_PROPERTY(bool BypassApproval READ BypassApproval)
+    Q_PROPERTY(QStringList Capabilities READ Capabilities)
     Q_PROPERTY(Tp::ObjectPathList HandledChannels READ HandledChannels)
 
 public:
@@ -188,6 +190,11 @@ public: // Properties
     inline bool BypassApproval() const
     {
         return mClient->bypassApproval();
+    }
+
+    inline QStringList Capabilities() const
+    {
+        return mClient->capabilities();
     }
 
     inline Tp::ObjectPathList HandledChannels() const
