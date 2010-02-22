@@ -1,7 +1,15 @@
-telepathy-qt4 0.2.2/0.3.0 (UNRELEASED)
+telepathy-qt4 0.2.2 (2010-02-22)
 ================================
 
-...
+The "no pain, no gain" release.
+
+New API:
+
+* AbstractClientHandler: Added support to set Handler Capabilities property.
+
+Fixes:
+
+* fd.o #25659: ObserveChannels implementation might actually return immediately.
 
 telepathy-qt4 0.2.1 (2009-12-04)
 ================================
