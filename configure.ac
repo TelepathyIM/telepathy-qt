@@ -12,7 +12,7 @@ AC_PREREQ([2.59])
 m4_define([tp_qt4_major_version], [0])
 m4_define([tp_qt4_minor_version], [2])
 m4_define([tp_qt4_micro_version], [2])
-m4_define([tp_qt4_nano_version], [0])
+m4_define([tp_qt4_nano_version], [1])
 
 # If library source has changed since last release, increment revision
 # If interfaces have been added, removed or changed since last release,
