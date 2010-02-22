@@ -102,6 +102,9 @@ public:
     virtual ~AbstractClientHandler();
 
     ChannelClassList handlerChannelFilter() const;
+
+    QStringList capabilities() const;
+
     virtual bool bypassApproval() const = 0;
 
     virtual void handleChannels(const MethodInvocationContextPtr<> &context,
@@ -119,6 +122,9 @@ public:
 
 protected:
     AbstractClientHandler(const ChannelClassList &channelFilter,
+            bool wantsRequestNotification = false);
+    AbstractClientHandler(const ChannelClassList &channelFilter,
+            const QStringList &capabilities,
             bool wantsRequestNotification = false);
 
 private:

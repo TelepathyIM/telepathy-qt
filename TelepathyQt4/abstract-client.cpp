@@ -81,6 +81,7 @@ ChannelClassList AbstractClientApprover::approverChannelFilter() const
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
 {
     ChannelClassList channelFilter;
+    QStringList capabilities;
     bool wantsRequestNotification;
 };
 
@@ -92,6 +93,17 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilt
     mPriv->wantsRequestNotification = wantsRequestNotification;
 }
 
+AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilter,
+        const QStringList &capabilities,
+        bool wantsRequestNotification)
+    : mPriv(new Private)
+{
+    mPriv->channelFilter = channelFilter;
+    mPriv->capabilities = capabilities;
+    mPriv->wantsRequestNotification = wantsRequestNotification;
+}
+
+
 AbstractClientHandler::~AbstractClientHandler()
 {
     delete mPriv;
@@ -100,6 +112,11 @@ AbstractClientHandler::~AbstractClientHandler()
 ChannelClassList AbstractClientHandler::handlerChannelFilter() const
 {
     return mPriv->channelFilter;
+}
+
+QStringList AbstractClientHandler::capabilities() const
+{
+    return mPriv->capabilities;
 }
 
 bool AbstractClientHandler::wantsRequestNotification() const
