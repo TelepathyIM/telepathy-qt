@@ -126,7 +126,7 @@ Q_SIGNALS:
     void localSendingStateChanged(
             Tp::MediaStream::SendingState localSendingState);
     void remoteSendingStateChanged(
-            QHash<ContactPtr, Tp::MediaStream::SendingState> remoteSendingStates);
+            const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &remoteSendingStates);
 
     void membersRemoved(const Tp::Contacts &members);
 
