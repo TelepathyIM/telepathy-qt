@@ -71,6 +71,7 @@ TESTS += \
     test-handles \
     test-stateful-proxy \
     test-streamed-media-chan \
+    test-streamed-media-chan-call \
     test-text-chan
 
 BUILT_SOURCES += \
@@ -88,6 +89,7 @@ BUILT_SOURCES += \
     _gen/handles.cpp.moc.hpp \
     _gen/stateful-proxy.cpp.moc.hpp \
     _gen/streamed-media-chan.cpp.moc.hpp \
+    _gen/streamed-media-chan-call.cpp.moc.hpp \
     _gen/text-chan.cpp.moc.hpp
 
 AM_CPPFLAGS += $(TP_GLIB_CFLAGS)
@@ -133,6 +135,9 @@ test_stateful_proxy_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-t
 
 test_streamed_media_chan_SOURCES = streamed-media-chan.cpp
 test_streamed_media_chan_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
+
+test_streamed_media_chan_call_SOURCES = streamed-media-chan-call.cpp
+test_streamed_media_chan_call_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_text_chan_SOURCES = text-chan.cpp
 test_text_chan_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
