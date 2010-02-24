@@ -1003,7 +1003,7 @@ void MediaStream::gotCallSendersContacts(PendingOperation *op)
 
     mPriv->buildingCallSenders = false;
 
-    if (pending->isValid()) {
+    if (!pending->isValid()) {
         warning().nospace() << "Getting contacts failed with " <<
             pending->errorName() << ":" << pending->errorMessage() <<
             ", ignoring";
