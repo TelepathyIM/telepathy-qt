@@ -164,6 +164,9 @@ public:
 
 private Q_SLOTS:
     void gotSMStream(QDBusPendingCallWatcher *watcher);
+
+    void gotCallContent(QDBusPendingCallWatcher *watcher);
+
     void onContentReady(Tp::PendingOperation *op);
     void onContentRemoved(const Tp::MediaContentPtr &content);
 
@@ -172,6 +175,9 @@ private:
 
     PendingMediaContent(const StreamedMediaChannelPtr &channel,
             const ContactPtr &contact,
+            const QString &contentName,
+            MediaStreamType type);
+    PendingMediaContent(const StreamedMediaChannelPtr &channel,
             const QString &contentName,
             MediaStreamType type);
     PendingMediaContent(const StreamedMediaChannelPtr &channel,

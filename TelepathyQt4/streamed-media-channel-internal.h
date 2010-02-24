@@ -136,6 +136,14 @@ struct TELEPATHY_QT4_NO_EXPORT PendingMediaContent::Private
     {
     }
 
+    inline ChannelTypeCallInterface *callInterface(
+            OptionalInterfaceFactory<Channel>::InterfaceSupportedChecking check =
+                OptionalInterfaceFactory<Channel>::CheckInterfaceSupported) const
+    {
+        return StreamedMediaChannelPtr(channel)->typeInterface<ChannelTypeCallInterface>(check);
+    }
+
+
     PendingMediaContent *parent;
     WeakPtr<StreamedMediaChannel> channel;
     MediaContentPtr content;

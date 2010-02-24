@@ -1111,6 +1111,20 @@ PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
 }
 
 PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
+        const QString &name,
+        MediaStreamType type)
+    : PendingOperation(channel.data()),
+      mPriv(new Private(this, channel))
+{
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                mPriv->callInterface()->AddContent(name, type), this);
+    connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotCallContent(QDBusPendingCallWatcher*)));
+}
+
+PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
         const QString &errorName, const QString &errorMessage)
     : PendingOperation(channel.data()),
       mPriv(0)
@@ -1164,6 +1178,39 @@ void PendingMediaContent::gotSMStream(QDBusPendingCallWatcher *watcher)
     connect(channel.data(),
             SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
             SLOT(onContentRemoved(const Tp::MediaContentPtr &)));
+
+    mPriv->content = content;
+
+    watcher->deleteLater();
+}
+
+void PendingMediaContent::gotCallContent(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "StreamedMedia.AddContent failed with" <<
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+        watcher->deleteLater();
+        return;
+    }
+
+    QDBusObjectPath contentPath = reply.value();
+    StreamedMediaChannelPtr channel(mPriv->channel);
+    MediaContentPtr content = channel->lookupContentByCallObjectPath(
+            contentPath);
+    if (!content) {
+        content = channel->addContentForCallObjectPath(contentPath);
+    }
+
+    connect(content->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onContentReady(Tp::PendingOperation *)));
+    connect(channel.data(),
+            SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
+            SLOT(onContentRemoved(const Tp::MediaContentPtr &)));
+
+    mPriv->content = content;
 
     watcher->deleteLater();
 }
@@ -1897,8 +1944,8 @@ PendingMediaContent *StreamedMediaChannel::requestContent(
         return new PendingMediaContent(StreamedMediaChannelPtr(this),
             otherContact, name, type);
     } else {
-        // TODO add Call iface support
-        return NULL;
+        return new PendingMediaContent(StreamedMediaChannelPtr(this),
+                name, type);
     }
 }
 
