@@ -239,6 +239,8 @@ struct TELEPATHY_QT4_NO_EXPORT StreamedMediaChannel::Private
 
     // Call speficic fields
     bool callHardwareStreaming;
+
+    uint numContents;
 };
 
 } // Tp

@@ -1649,7 +1649,8 @@ StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
       readinessHelper(parent->readinessHelper()),
       localHoldState(LocalHoldStateUnheld),
       localHoldStateReason(LocalHoldStateReasonNone),
-      callHardwareStreaming(false)
+      callHardwareStreaming(false),
+      numContents(0)
 {
     QString channelType = parent->immutableProperties().value(QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
@@ -2447,9 +2448,10 @@ MediaContentPtr StreamedMediaChannel::addContentForSMStream(
      * fake content */
     MediaContentPtr content = MediaContentPtr(
             new MediaContent(StreamedMediaChannelPtr(this),
-                QString("%1 %2")
+                QString("%1 %2 %3")
                     .arg(streamInfo.type == MediaStreamTypeAudio ? "audio" : "video")
-                    .arg((qulonglong) this),
+                    .arg((qulonglong) this)
+                    .arg(mPriv->numContents++),
                 streamInfo));
     MediaStreamPtr stream = MediaStreamPtr(new MediaStream(content, streamInfo));
     content->setSMStream(stream);
