@@ -355,6 +355,8 @@ void MediaStream::Private::CallProxy::onCallSendersChanged(
         return;
     }
 
+    debug() << "Received Call.Content.SendersChanged with" << updates.size() <<
+        "and " << removed.size() << "removed";
     mPriv->callSendersChangedQueue.enqueue(
             new Private::CallSendersChangedInfo(
                 updates, removed));
