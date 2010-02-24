@@ -45,6 +45,8 @@ PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
     : PendingOperation(channel.data()),
       mPriv(new Private(this, channel))
 {
+    mPriv->numContents = types.size();
+
     UIntList l;
     foreach (MediaStreamType type, types) {
         l << type;
@@ -56,6 +58,28 @@ PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotSMStreams(QDBusPendingCallWatcher*)));
+}
+
+PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
+        const QList<MediaStreamType> &types)
+    : PendingOperation(channel.data()),
+      mPriv(new Private(this, channel))
+{
+    mPriv->numContents = types.size();
+
+    foreach (MediaStreamType type, types) {
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(
+                mPriv->callInterface()->AddContent(
+                    QString("%1 %2 %3")
+                        .arg(type == MediaStreamTypeAudio ? "audio" : "video")
+                        .arg((qulonglong) this)
+                        .arg(mPriv->contents.size()),
+                    type), this);
+        connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotCallContent(QDBusPendingCallWatcher*)));
+    }
 }
 
 PendingMediaStreams::~PendingMediaStreams()
@@ -121,6 +145,38 @@ void PendingMediaStreams::gotSMStreams(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
+void PendingMediaStreams::gotCallContent(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QDBusObjectPath> reply = *watcher;
+    if (reply.isError()) {
+        warning().nospace() << "StreamedMedia.AddContent failed with" <<
+            reply.error().name() << ": " << reply.error().message();
+        setFinishedWithError(reply.error());
+        watcher->deleteLater();
+        return;
+    }
+
+
+    QDBusObjectPath contentPath = reply.value();
+    StreamedMediaChannelPtr channel(mPriv->channel);
+    MediaContentPtr content = channel->lookupContentByCallObjectPath(
+            contentPath);
+    if (!content) {
+        content = channel->addContentForCallObjectPath(contentPath);
+    }
+
+    connect(content->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onContentReady(Tp::PendingOperation *)));
+    connect(channel.data(),
+            SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
+            SLOT(onContentRemoved(const Tp::MediaContentPtr &)));
+
+    mPriv->contents.append(content);
+
+    watcher->deleteLater();
+}
+
 void PendingMediaStreams::onContentRemoved(const MediaContentPtr &content)
 {
     if (isFinished()) {
@@ -144,8 +200,7 @@ void PendingMediaStreams::onContentReady(PendingOperation *op)
         return;
     }
 
-    mPriv->contentsReady++;
-    if (mPriv->contentsReady == (uint) mPriv->contents.size()) {
+    if (mPriv->contentsReady++ == mPriv->numContents) {
         setFinished();
     }
 }
@@ -1868,8 +1923,8 @@ PendingMediaStreams *StreamedMediaChannel::requestStream(
                 contact,
                 QList<MediaStreamType>() << type);
     } else {
-        // TODO add Call iface support
-        return NULL;
+        return new PendingMediaStreams(StreamedMediaChannelPtr(this),
+                QList<MediaStreamType>() << type);
     }
 }
 
@@ -1881,8 +1936,8 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
         return new PendingMediaStreams(StreamedMediaChannelPtr(this),
                 contact, types);
     } else {
-        // TODO add Call iface support
-        return NULL;
+        return new PendingMediaStreams(StreamedMediaChannelPtr(this),
+                types);
     }
 }
 

@@ -50,6 +50,9 @@ public:
 
 private Q_SLOTS:
     void gotSMStreams(QDBusPendingCallWatcher *);
+
+    void gotCallContent(QDBusPendingCallWatcher *watcher);
+
     void onContentRemoved(const Tp::MediaContentPtr &);
     void onContentReady(Tp::PendingOperation *);
 
@@ -58,6 +61,8 @@ private:
 
     PendingMediaStreams(const StreamedMediaChannelPtr &channel,
             const ContactPtr &contact,
+            const QList<MediaStreamType> &types);
+    PendingMediaStreams(const StreamedMediaChannelPtr &channel,
             const QList<MediaStreamType> &types);
 
     struct Private;
