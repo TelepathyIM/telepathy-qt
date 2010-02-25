@@ -1914,12 +1914,12 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
     return NULL;
 }
 
-bool Channel::hasConferenceSplittableInterface() const
+bool Channel::hasSplittableInterface() const
 {
     return false;
 }
 
-PendingOperation *Channel::conferenceSplitChannel(const ChannelPtr &channel)
+PendingOperation *Channel::splitChannel(const ChannelPtr &channel)
 {
     return NULL;
 }

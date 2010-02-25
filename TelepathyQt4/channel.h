@@ -156,8 +156,8 @@ public:
     bool hasConferenceMergeableInterface() const;
     PendingOperation *conferenceMergeChannel(const ChannelPtr &channel);
 
-    bool hasConferenceSplittableInterface() const;
-    PendingOperation *conferenceSplitChannel(const ChannelPtr &channel);
+    bool hasSplittableInterface() const;
+    PendingOperation *splitChannel(const ChannelPtr &channel);
 
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
