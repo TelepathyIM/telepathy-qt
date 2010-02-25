@@ -4,9 +4,9 @@
 
 <tp:title>Channel extensions from the future</tp:title>
 
-<xi:include href="Channel_Interface_Conference.xml"/>
-<xi:include href="Channel_Interface_Mergeable_Conference.xml"/>
-<xi:include href="Channel_Interface_Splittable.xml"/>
+<xi:include href="../spec/Channel_Interface_Conference.xml"/>
+<xi:include href="../spec/Channel_Interface_Mergeable_Conference.xml"/>
+<xi:include href="../spec/Channel_Interface_Splittable.xml"/>
 
 <xi:include href="../spec/generic-types.xml"/>
 <xi:include href="../spec/errors.xml"/>

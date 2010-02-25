@@ -147,6 +147,18 @@ public:
     bool groupIsSelfContactTracked() const;
     ContactPtr groupSelfContact() const;
 
+    bool hasConferenceInterface() const;
+    Contacts conferenceInitialContacts() const;
+    bool conferenceSupportsNonMerges() const;
+    QList<ChannelPtr> conferenceChannels() const;
+    QList<ChannelPtr> conferenceInitialChannels() const;
+
+    bool hasConferenceMergeableInterface() const;
+    PendingOperation *conferenceMergeChannel(const ChannelPtr &channel);
+
+    bool hasConferenceSplittableInterface() const;
+    PendingOperation *conferenceSplitChannel(const ChannelPtr &channel);
+
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
@@ -267,6 +279,9 @@ Q_SIGNALS:
             const Tp::UIntList &added, const Tp::UIntList &removed);
 
     void groupSelfContactChanged();
+
+    void conferenceChannelMerged(const ChannelPtr &channel);
+    void conferenceChannelRemoved(const ChannelPtr &channel);
 
 protected:
     Channel(const ConnectionPtr &connection,const QString &objectPath,

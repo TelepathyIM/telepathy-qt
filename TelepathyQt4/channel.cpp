@@ -26,6 +26,8 @@
 #include "TelepathyQt4/_gen/channel.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
+#include "TelepathyQt4/future-internal.h"
+
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
@@ -62,6 +64,10 @@
 
 namespace Tp
 {
+
+using TpFuture::Client::ChannelInterfaceConferenceInterface;
+using TpFuture::Client::ChannelInterfaceMergeableConferenceInterface;
+using TpFuture::Client::ChannelInterfaceSplittableInterface;
 
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 {
@@ -1871,6 +1877,51 @@ PendingOperation *Channel::groupAddSelfHandle()
     return new PendingVoid(
             mPriv->group->AddMembers(handles, ""),
             this);
+}
+
+bool Channel::hasConferenceInterface() const
+{
+    return false;
+}
+
+Contacts Channel::conferenceInitialContacts() const
+{
+    return Contacts();
+}
+
+bool Channel::conferenceSupportsNonMerges() const
+{
+    return false;
+}
+
+QList<ChannelPtr> Channel::conferenceChannels() const
+{
+    return QList<ChannelPtr>();
+}
+
+QList<ChannelPtr> Channel::conferenceInitialChannels() const
+{
+    return QList<ChannelPtr>();
+}
+
+bool Channel::hasConferenceMergeableInterface() const
+{
+    return false;
+}
+
+PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
+{
+    return NULL;
+}
+
+bool Channel::hasConferenceSplittableInterface() const
+{
+    return false;
+}
+
+PendingOperation *Channel::conferenceSplitChannel(const ChannelPtr &channel)
+{
+    return NULL;
 }
 
 /**
