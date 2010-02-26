@@ -557,7 +557,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </tp:docstring>
       </arg>
 
-      <arg name="Call_State_Reason" type="(uus)">
+      <arg name="Call_State_Reason" type="(uus)" tp:type="Call_State_Reason">
         <tp:docstring>
           The new value of the <tp:member-ref>CallStateReason</tp:member-ref>
           property.
