@@ -204,6 +204,9 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
     ContactPtr groupSelfContact;
+
+    // Conference
+    bool introspectingConference;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
@@ -255,7 +258,8 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       groupAreHandleOwnersAvailable(false),
       pendingRetrieveGroupSelfContact(false),
       groupIsSelfHandleTracked(false),
-      groupSelfHandle(0)
+      groupSelfHandle(0),
+      introspectingConference(false)
 {
     debug() << "Creating new Channel:" << parent->busName();
 
@@ -461,7 +465,8 @@ void Channel::Private::continueIntrospection()
     if (introspectQueue.isEmpty()) {
         // this should always be true, but let's make sure
         if (!parent->isReady()) {
-            if (groupMembersChangedQueue.isEmpty() && !buildingContacts) {
+            if (groupMembersChangedQueue.isEmpty() && !buildingContacts &&
+                !introspectingConference) {
                 debug() << "Both the IS and the MCD queue empty for the first time. Ready.";
                 setReady();
             } else {
