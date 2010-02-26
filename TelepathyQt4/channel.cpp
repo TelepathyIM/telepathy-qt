@@ -695,7 +695,7 @@ void Channel::Private::processMembersChanged()
                         groupSelfHandle;
                 }
 
-                setReady();
+                parent->continueIntrospection();
             } else {
                 debug() << "Contact queue empty but introspect queue isn't. IS will set ready.";
             }
