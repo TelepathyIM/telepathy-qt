@@ -106,6 +106,13 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     QString groupMemberChangeDetailsTelepathyError(
             const GroupMemberChangeDetails &details);
 
+    // TODO move to channel.h once Conference interface is undrafted
+    inline ChannelInterfaceConferenceInterface *conferenceInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return parent->optionalInterface<ChannelInterfaceConferenceInterface>(check);
+    }
+
     struct GroupMembersChangedInfo;
 
     // Public object
