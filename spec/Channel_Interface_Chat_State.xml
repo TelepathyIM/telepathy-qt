@@ -17,7 +17,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Channel.Interface.ChatState">
-    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Text"/>
+
     <method name="SetChatState" tp:name-for-bindings="Set_Chat_State">
       <arg direction="in" name="State" type="u" tp:type="Channel_Chat_State">
         <tp:docstring>

@@ -228,10 +228,14 @@ USA.</p>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          The handle type is invalid
+          <tp:docstring>
+            The handle type is invalid
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
-          One of the given handles is not valid
+          <tp:docstring>
+            One of the given handles is not valid
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
@@ -263,10 +267,14 @@ USA.</p>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          The handle type is invalid
+          <tp:docstring>
+            The handle type is invalid
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle">
-          One of the given handles is not valid
+          <tp:docstring>
+            One of the given handles is not valid
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
@@ -878,7 +886,7 @@ USA.</p>
 
         <p>Whenever this signal is emitted, it MUST immediately be followed by
           a <tp:member-ref>StatusChanged</tp:member-ref> signal with status
-          Connection_Status_Reason_Disconnected and an appropriate reason
+          Connection_Status_Disconnected and an appropriate reason
           code.</p>
 
         <p>Connection managers SHOULD emit this signal on disconnection, but

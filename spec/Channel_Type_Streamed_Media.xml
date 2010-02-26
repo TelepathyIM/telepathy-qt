@@ -144,7 +144,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          A stream identifier is unknown
+          <tp:docstring>
+            A stream identifier is unknown
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
@@ -183,10 +185,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          A stream identifier is unknown
+          <tp:docstring>
+            A stream identifier is unknown
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          The requested direction is not available on this stream
+          <tp:docstring>
+            The requested direction is not available on this stream
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>

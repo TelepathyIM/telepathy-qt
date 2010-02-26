@@ -1,0 +1,931 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Type_Call" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license>
+    This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:added version="0.19.0">(draft 1)</tp:added>
+
+    <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>A channel type for making audio and video calls.</p>
+
+      <p>A Call channel can have one or more <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Call">Content.DRAFT</tp:dbus-ref>
+        objects, which represent the actual Media that forms the Call (e.g. an
+        audio content and a video content).</p>
+    </tp:docstring>
+
+    <method name="Ringing" tp:name-for-bindings="Ringing">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Indicate that the local user has been alerted about the incoming
+          call.</p>
+
+        <p>This method is only useful if the channel's
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel"
+            >Requested</tp:dbus-ref> property is false, and the
+          <tp:member-ref>CallState</tp:member-ref> is
+          Call_State_Pending_Receiver. While this is the case,
+          this method SHOULD change the
+          <tp:member-ref>CallFlags</tp:member-ref> to include
+          Call_Flag_Ringing, and notify the remote contact that the local
+          user has been alerted (if the protocol implements this); repeated
+          calls to this method SHOULD succeed, but have no further effect.</p>
+
+        <p>In all other states, this method SHOULD fail with the error
+          NotAvailable.</p>
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The call was <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel"
+              >Requested</tp:dbus-ref>, so ringing does not make sense.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The call is no longer in state Call_State_Pending_Receiver.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="Accept" tp:name-for-bindings="Accept">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>For incoming calls in state Call_State_Pending_Receiver, accept the
+          incoming call; this changes the
+          <tp:member-ref>CallState</tp:member-ref> to Call_State_Accepted.</p>
+
+        <p>For outgoing calls in state Call_State_Pending_Initiator, actually
+          call the remote contact; this changes the
+          <tp:member-ref>CallState</tp:member-ref> to
+          Call_State_Pending_Receiver.</p>
+
+        <p>Otherwise, this method SHOULD fail with the error NotAvailable.</p>
+
+        <p>This method should be called exactly once per Call, by whatever
+          client (user interface) is handling the channel.</p>
+
+        <p>When this method is called, for each <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call"
+            >Content.DRAFT</tp:dbus-ref> whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Content.DRAFT"
+            >Disposition</tp:dbus-ref> is Call_Content_Disposition_Initial,
+          any streams where the self-handle's sending state in <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Stream.DRAFT"
+            >Senders</tp:dbus-ref> is Sending_State_Pending_Send
+          will be moved to Sending_State_Sending as if <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Stream.DRAFT"
+            >SetSending</tp:dbus-ref>(TRUE) had been called.</p>
+      </tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The call is not in one of the states where this method makes sense.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="Hangup" tp:name-for-bindings="Hangup">
+      <tp:docstring>
+        Request that the call is ended.
+      </tp:docstring>
+
+      <arg direction="in" name="Reason"
+        type="u"  tp:type="Call_State_Change_Reason">
+        <tp:docstring>
+          A generic hangup reason.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Detailed_Hangup_Reason"
+        type="s" tp:type="DBus_Error_Name">
+        <tp:docstring>
+          A more specific reason for the call hangup, if one is available, or
+          an empty string otherwise.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" name="Message" type="s">
+        <tp:docstring>
+          A human-readable message to be sent to the remote contact(s).
+
+          <tp:rationale>
+            XMPP Jingle allows calls to be terminated with a human-readable
+            message.
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The call has already been ended.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="AddContent" tp:name-for-bindings="Add_Content">
+      <tp:docstring>
+        [FIXME]
+      </tp:docstring>
+      <arg direction="in" name="Content_Name" type="s">
+        <tp:docstring>
+          The suggested name of the content to add
+
+          <tp:rationale>
+            [FIXME: rationale]
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+      <arg direction="in" name="Content_Type" type="u"
+          tp:type="Media_Stream_Type">
+        <tp:docstring>
+          The media type of the content to add
+        </tp:docstring>
+      </arg>
+      <arg direction="out" name="Content" type="o">
+        <tp:docstring>
+          Path to the newly-created <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
+            >Call.Content.DRAFT</tp:dbus-ref> object.
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            [FIXME: when?]
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            [FIXME: when?]
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <signal name="ContentAdded"
+            tp:name-for-bindings="Content_Added">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when a new <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call"
+            >Content.DRAFT</tp:dbus-ref> is added to the call.</p>
+      </tp:docstring>
+      <arg name="Content" type="o">
+        <tp:docstring>
+          Path to the newly-created <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call"
+            >Content.DRAFT</tp:dbus-ref> object.
+        </tp:docstring>
+      </arg>
+       <arg name="Content_Type" type="u" tp:type="Media_Stream_Type">
+          <tp:docstring>
+            The media type of the content which was added
+          </tp:docstring>
+        </arg>
+    </signal>
+
+    <signal name="ContentRemoved" tp:name-for-bindings="Content_Removed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when a <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call"
+            >Content.DRAFT</tp:dbus-ref> is removed from the call.</p>
+      </tp:docstring>
+      <arg name="Content" type="o">
+        <tp:docstring>
+          The <tp:dbus-ref namespace="org.freedesktop.Telepathy.Call"
+            >Content.DRAFT</tp:dbus-ref> which was removed.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="Contents" type="ao" access="read"
+              tp:name-for-bindings="Contents">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The list of
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call">Content.DRAFT</tp:dbus-ref>
+          objects  that are part of this call. Change notification
+          is via the <tp:member-ref>ContentAdded</tp:member-ref> and
+          <tp:member-ref>ContentRemoved</tp:member-ref> signals.
+        </p>
+      </tp:docstring>
+    </property>
+
+    <tp:enum type="u" name="Call_State">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The state of a call, as a whole.</p>
+
+        <p>The allowed transitions are:</p>
+
+        <ul>
+          <li>Pending_Initiator → Pending_Receiver (for outgoing calls,
+            when <tp:member-ref>Accept</tp:member-ref> is called)</li>
+          <li>Pending_Receiver → Accepted (for incoming calls, when
+            <tp:member-ref>Accept</tp:member-ref> is called; for outgoing
+            calls to a contact, when the remote contact accepts the call;
+            for joining a conference call, when the local user successfully
+            joins the conference)</li>
+          <li>Accepted → Pending_Receiver (when transferred to another
+            contact)</li>
+          <li>any state → Ended (when the call is terminated normally, or
+            when an error occurs)</li>
+        </ul>
+
+        <p>Clients MAY consider unknown values from this enum to be an
+          error - additional values will not be defined after the Call
+          specification is declared to be stable.</p>
+      </tp:docstring>
+
+      <tp:enumvalue suffix="Unknown" value = "0">
+        <tp:docstring>
+          The call state is not known. This call state MUST NOT appear as a
+          value of the <tp:member-ref>CallState</tp:member-ref> property, but
+          MAY be used by client code to represent calls whose state is as yet
+          unknown.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Pending_Initiator" value = "1">
+        <tp:docstring>
+          The initiator of the call hasn't accepted the call yet. This state
+          only makes sense for outgoing calls, where it means that the local
+          user has not yet sent any signalling messages to the remote user(s),
+          and will not do so until <tp:member-ref>Accept</tp:member-ref> is
+          called.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Pending_Receiver" value = "2">
+        <tp:docstring>
+          The receiver (the contact being called) hasn't accepted the call yet.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Accepted" value = "3">
+        <tp:docstring>
+          The contact being called has accepted the call.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Ended" value = "4">
+        <tp:docstring>
+          The call has ended, either via normal termination or an error.
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:flags name="Call_Flags" value-prefix="Call_Flag" type="u">
+      <tp:docstring>
+        A set of flags representing the status of the call as a whole,
+        providing more specific information than the
+        <tp:member-ref>CallState</tp:member-ref>. Many of these flags only make
+        sense in a particular state.
+      </tp:docstring>
+
+      <tp:flag suffix="Locally_Ringing" value="1">
+        <tp:docstring>
+          The local contact has been alerted about the call but has not
+          responded; if possible, the remote contact(s) have been informed of
+          this fact. This flag only makes sense on incoming calls in
+          state Call_State_Pending_Receiver. It SHOULD be set when
+          <tp:member-ref>Ringing</tp:member-ref> is called successfully, and
+          unset when the state changes.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Queued" value="2">
+        <tp:docstring>
+          The contact is temporarily unavailable, and the call has been placed
+          in a queue (e.g. 182 Queued in SIP, or call-waiting in telephony).
+          This flag only makes sense on outgoing 1-1 calls in
+          state Call_State_Pending_Receiver. It SHOULD be set or unset
+          according to informational messages from other contacts.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Locally_Held" value="4">
+        <tp:docstring>
+          The call has been put on hold by the local user, e.g. using the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface"
+            >Hold</tp:dbus-ref> interface. This flag SHOULD only be set if
+          there is at least one Content, and all Contents are locally held;
+          it makes sense on calls in state Call_State_Pending_Receiver or
+          Call_State_Accepted.
+
+          <tp:rationale>
+            Otherwise, in transient situations where some but not all contents
+            are on hold, UIs would falsely indicate that the call as a whole
+            is on hold, which could lead to the user saying something they'll
+            regret, while under the impression that the other contacts can't
+            hear them!
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Forwarded" value="8">
+        <tp:docstring>
+          The initiator of the call originally called a contact other than the
+          current recipient of the call, but the call was then forwarded or
+          diverted. This flag only makes sense on outgoing calls, in state
+          Call_State_Pending_Receiver or Call_State_Accepted. It SHOULD be
+          set or unset according to informational messages from other contacts.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="In_Progress" value="16">
+        <tp:docstring>
+          Progress has been made in placing the outgoing call, but the
+          contact may not have been made aware of the call yet
+          (so the Ringing state is not appropriate). This corresponds to SIP's
+          status code 183 Session Progress, and could be used when the
+          outgoing call has reached a gateway, for instance.
+          This flag only makes sense on outgoing calls in state
+          Call_State_Pending_Receiver, and SHOULD be set or unset according to
+          informational messages from servers, gateways and other
+          infrastructure.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Clearing" value="32">
+        <tp:docstring>
+          This flag only occurs when the CallState is Ended. The call with
+          this flag set has ended, but not all resources corresponding to the
+          call have been freed yet.
+
+          Depending on the protocol there might be some audible feedback while
+          the clearing flag is set.
+
+          <tp:rationale>
+            In calls following the ITU-T Q.931 standard there is a period of
+            time between the call ending and the underlying channel being
+            completely free for re-use.
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+    <property name="CallStateDetails"
+      tp:name-for-bindings="Call_State_Details" type="a{sv}" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A map used to provide optional extensible details for the
+          <tp:member-ref>CallState</tp:member-ref>,
+          <tp:member-ref>CallFlags</tp:member-ref> and/or
+          <tp:member-ref>CallStateReason</tp:member-ref>.</p>
+
+        <p>Well-known keys and their corresponding value types include:</p>
+
+        <dl>
+          <dt>hangup-message - s</dt>
+          <dd>An optional human-readable message sent when the call was ended,
+            corresponding to the Message argument to the
+            <tp:member-ref>Hangup</tp:member-ref> method. This is only
+            applicable when the call state is Call_State_Ended.
+            <tp:rationale>
+              XMPP Jingle can send such messages.
+            </tp:rationale>
+          </dd>
+
+          <dt>queue-message - s</dt>
+          <dd>An optional human-readable message sent when the local contact
+            is being held in a queue. This is only applicable when
+            Call_Flag_Queued is in the call flags.
+            <tp:rationale>
+              SIP 182 notifications can have human-readable messages attached.
+            </tp:rationale>
+          </dd>
+
+          <dt>debug-message - s</dt>
+          <dd>A message giving further details of any error indicated by the
+            <tp:member-ref>CallStateReason</tp:member-ref>. This will not
+            normally be localized or suitable for display to users, and is only
+            applicable when the call state is Call_State_Ended.</dd>
+        </dl>
+      </tp:docstring>
+    </property>
+
+    <property name="CallState" type="u" access="read"
+      tp:name-for-bindings="Call_State" tp:type="Call_State">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The current high-level state of this call. The
+          <tp:member-ref>CallFlags</tp:member-ref> provide additional
+          information, and the <tp:member-ref>CallStateReason</tp:member-ref>
+          and <tp:member-ref>CallStateDetails</tp:member-ref> explain the
+          reason for the current values for those properties.</p>
+
+        <p>Clients MAY consider unknown values in this property to be an
+          error.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="CallFlags" type="u" access="read"
+      tp:name-for-bindings="Call_Flags" tp:type="Call_Flags">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Flags representing the status of the call as a whole,
+          providing more specific information than the
+          <tp:member-ref>CallState</tp:member-ref>.</p>
+
+        <p>Clients are expected to ignore unknown flags in this property,
+          without error.</p>
+      </tp:docstring>
+    </property>
+
+    <tp:enum name="Call_State_Change_Reason" type="u">
+      <tp:docstring>
+        A simple representation of the reason for a change in the call's
+        state, which may be used by simple clients, or used as a fallback
+        when the DBus_Reason member of a <tp:type>Call_State_Reason</tp:type>
+        struct is not understood.
+      </tp:docstring>
+
+      <tp:enumvalue suffix="Unknown" value="0">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          We just don't know. Unknown values of this enum SHOULD also be
+          treated like this.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="User_Requested" value="1">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The change was requested by the contact indicated by the Actor
+            member of a <tp:type>Call_State_Reason</tp:type> struct.</p>
+
+          <p>If the Actor is the local user, the DBus_Reason SHOULD be the
+            empty string.</p>
+
+          <p>If the Actor is a remote user, the DBus_Reason SHOULD be the empty
+            string if the call was terminated normally, but MAY be a non-empty
+            error name to indicate error-like call termination reasons (call
+            rejected as busy, kicked from a conference by a moderator, etc.).</p>
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <tp:struct name="Call_State_Reason">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A description of the reason for a change to the
+          <tp:member-ref>CallState</tp:member-ref> and/or
+          <tp:member-ref>CallFlags</tp:member-ref>.</p>
+      </tp:docstring>
+
+      <tp:member type="u" tp:type="Contact_Handle" name="Actor">
+        <tp:docstring>
+          The contact responsible for the change, or 0 if no contact was
+          responsible.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member type="u" tp:type="Call_State_Change_Reason" name="Reason">
+        <tp:docstring>
+          The reason, chosen from a limited set of possibilities defined by
+          the Telepathy specification.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member type="s" tp:type="DBus_Error_Name" name="DBus_Reason">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>A specific reason for the change, which may be a D-Bus error in
+            the Telepathy namespace, a D-Bus error in any other namespace
+            (for implementation-specific errors), or the empty string to
+            indicate that the state change was not an error.</p>
+
+          <p>This SHOULD be an empty string for changes to any state other
+            than Ended.</p>
+
+          <p>The errors Cancelled and Terminated SHOULD NOT be used here;
+            an empty string SHOULD be used instead.</p>
+
+          <tp:rationale>
+            <p>Those error names are used to indicate normal call
+              termination by the local user or another user, respectively,
+              in contexts where a D-Bus error name must appear.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <property name="CallStateReason" tp:name-for-bindings="Call_State_Reason"
+      type="(uus)" access="read"  tp:type="Call_State_Reason">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The reason for the last change to the
+          <tp:member-ref>CallState</tp:member-ref> and/or
+          <tp:member-ref>CallFlags</tp:member-ref>. The
+          <tp:member-ref>CallStateDetails</tp:member-ref> MAY provide additional
+          information.</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="CallStateChanged"
+            tp:name-for-bindings="Call_State_Changed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when the state of the call as a whole changes.</p>
+
+        <p>This signal is emitted for any change in the properties
+          corresponding to its arguments, even if the other properties
+          referenced remain unchanged.</p>
+      </tp:docstring>
+
+      <arg name="Call_State" type="u" tp:type="Call_State">
+        <tp:docstring>
+          The new value of the <tp:member-ref>CallState</tp:member-ref>
+          property.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Call_Flags" type="u" tp:type="Call_Flags">
+        <tp:docstring>
+          The new value of the <tp:member-ref>CallFlags</tp:member-ref>
+          property.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Call_State_Reason" type="(uus)">
+        <tp:docstring>
+          The new value of the <tp:member-ref>CallStateReason</tp:member-ref>
+          property.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Call_State_Details" type="a{sv}">
+        <tp:docstring>
+          The new value of the <tp:member-ref>CallStateDetails</tp:member-ref>
+          property.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="HardwareStreaming" tp:name-for-bindings="Hardware_Streaming"
+        type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If this property is TRUE, all of the media streaming is done by some
+          mechanism outside the scope of Telepathy.</p>
+
+        <tp:rationale>
+          <p>A connection manager might be intended for a specialized hardware
+            device, which will take care of the audio streaming (e.g.
+            telepathy-yafono, which uses GSM hardware which does the actual
+            audio streaming for the call).</p>
+        </tp:rationale>
+
+        <p>If this is FALSE, the handler is responsible for doing the actual
+          media streaming for at least some contents itself. Those contents
+          will have the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Content.Interface"
+            >Media.DRAFT</tp:dbus-ref> interface, to communicate the necessary
+          information to a streaming implementation. Connection managers SHOULD
+          operate like this, if possible.</p>
+
+        <tp:rationale>
+          <p>Many connection managers (such as telepathy-gabble) only do the
+            call signalling, and expect the client to do the actual streaming
+            using something like
+            <a href="http://farsight.freedesktop.org/">Farsight</a>, to improve
+            latency and allow better UI integration.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <tp:flags type="u" name="Call_Member_Flags" value-prefix="Call_Member_Flag">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A set of flags representing the status of a remote contact in a
+          call.</p>
+
+        <p>It is protocol- and client-specific whether a particular contact
+          will ever have a particular flag set on them, and Telepathy clients
+          SHOULD NOT assume that a flag will ever be set.</p>
+
+        <tp:rationale>
+          <p>180 Ringing in SIP, and its equivalent in XMPP, are optional
+            informational messages, and implementations are not required
+            to send them. The same applies to the messages used to indicate
+            hold state.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <tp:flag suffix="Ringing" value = "1">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The remote contact's client has told us that the contact has been
+            alerted about the call but has not responded.</p>
+
+          <tp:rationale>
+            <p>This is a flag per member, not a flag for the call as a whole,
+              because in Muji conference calls, you could invite someone and
+              have their state be "ringing" for a while.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Held" value = "2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The call member has put this call on hold.</p>
+
+          <tp:rationale>
+            <p>This is a flag per member, not a flag for the call as a whole,
+              because in conference calls, any member could put the conference
+              on hold.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </tp:flag>
+    </tp:flags>
+
+    <tp:mapping name="Call_Member_Map" array-name="Call_Member_Map_List">
+      <tp:docstring>A mapping from handles to their current state in the call.
+        </tp:docstring>
+      <tp:member type="u" tp:type="Handle" name="key"/>
+      <tp:member type="u" tp:type="Call_Member_Flags" name="Flag"/>
+    </tp:mapping>
+
+    <signal name="CallMembersChanged"
+      tp:name-for-bindings="Call_Members_Changed">
+      <tp:docstring>
+        Emitted when the <tp:member-ref>CallMembers</tp:member-ref> property
+        changes in any way, either because contacts have been added to the
+        call, contacts have been removed from the call, or contacts' flags
+        have changed.
+      </tp:docstring>
+
+      <arg name="Flags_Changed" type="a{uu}" tp:type="Call_Member_Map">
+        <tp:docstring>
+          A map from members of the call to their new call member flags,
+          including at least the members who have been added to
+          <tp:member-ref>CallMembers</tp:member-ref>, and the members whose
+          flags have changed.
+        </tp:docstring>
+      </arg>
+      <arg name="Removed"  type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of members who have left the call, i.e. keys to be removed
+          from <tp:member-ref>CallMembers</tp:member-ref>.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="CallMembers" tp:name-for-bindings="Call_Members"
+      type="a{uu}" access="read" tp:type="Call_Member_Map">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        A mapping from the remote contacts that are part of this call to flags
+        discribing their status. This mapping never has the local user's handle
+        as a key.
+      </tp:docstring>
+    </property>
+
+    <property name="InitialTransport" tp:name-for-bindings="Initial_Transport"
+      type="s" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>
+          If set on a requested channel this indicates the transport that
+          should be used for this call.
+          <tp:rationale>
+            When implementing a voip gateway one wants the outgoing leg of the
+            gatewayed to have the same transport as the incoming leg. This
+            property allows the gateway to request a Call with the right
+            transport from the CM.
+          </tp:rationale>
+        </p>
+      </tp:docstring>
+    </property>
+
+    <property name="InitialAudio" tp:name-for-bindings="Initial_Audio"
+      type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If set to true in a channel request that will create a new channel,
+          the connection manager should immediately attempt to establish an
+          audio stream to the remote contact, making it unnecessary for the
+          client to call
+          <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT">AddContent</tp:dbus-ref>.
+          </p>
+
+        <p>If this property, or InitialVideo, is passed to EnsureChannel
+          (as opposed to CreateChannel), the connection manager SHOULD ignore
+          these properties when checking whether it can return an existing
+          channel as suitable; these properties only become significant when
+          the connection manager has decided to create a new channel.</p>
+
+        <p>If true on a requested channel, this indicates that the audio
+          stream has already been requested and the client does not need to
+          call RequestStreams, although it MAY still do so.</p>
+
+        <p>If true on an unrequested (incoming) channel, this indicates that
+          the remote contact initially requested an audio stream; this does
+          not imply that that audio stream is still active (as indicated by
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT">Contents</tp:dbus-ref>).</p>
+
+        <p>This property is immutable (cannot change), and therefore SHOULD
+          appear wherever immutable properties are reported, e.g. <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">NewChannels</tp:dbus-ref>
+          signals.</p>
+
+        <tp:rationale><p>This reduces D-Bus round trips.</p></tp:rationale>
+
+        <p>Connection managers capable of signalling audio calls to contacts
+          SHOULD include a channel class in <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
+          with <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>
+           <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">Call.DRAFT</tp:dbus-ref>
+          and <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>
+          = Contact in the fixed properties dictionary, and InitialAudio
+          (and also InitialVideo, if applicable) in the allowed properties
+          list. Clients wishing to discover whether a connection manager
+          can signal audio and/or video calls SHOULD use this information.</p>
+
+        <tp:rationale>
+          <p>Not all protocols support signalling video calls, and it would be
+            possible (although unlikely) to have a protocol where only video,
+            and not audio, could be signalled.</p>
+        </tp:rationale>
+
+        <p>Connection managers that support the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface">ContactCapabilities</tp:dbus-ref>
+          interface SHOULD represent the capabilities of receiving audio
+          and/or video calls by including a channel class in
+          a contact's capabilities with ChannelType = Call
+          in the fixed properties dictionary, and InitialAudio and/or
+          InitialVideo in the allowed properties list. Clients wishing to
+          discover whether a particular contact is likely to be able to
+          receive audio and/or video calls SHOULD use this information.</p>
+
+        <tp:rationale>
+          <p>Not all clients support video calls, and it would also be
+            possible (although unlikely) to have a client which could only
+            stream video, not audio.</p>
+        </tp:rationale>
+
+        <p>Clients that are willing to receive audio and/or video calls
+          SHOULD include the following among their channel classes if
+          calling <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities">UpdateCapabilities</tp:dbus-ref>
+          (clients of a <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">ChannelDispatcher</tp:dbus-ref>
+          SHOULD instead arrange for the ChannelDispatcher to do this,
+          by including the filters in their <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
+          properties):</p>
+
+        <ul>
+          <li>{ ChannelType = Call }</li>
+          <li>{ ChannelType = Call, InitialAudio = true }
+            if receiving calls with audio is supported</li>
+          <li>{ ChannelType = Call, InitialVideo = true }
+            if receiving calls with video is supported</li>
+        </ul>
+
+        <tp:rationale>
+          <p>Connection managers for protocols with capability discovery,
+            like XMPP, need this information to advertise the appropriate
+            capabilities for their protocol.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="InitialVideo" tp:name-for-bindings="Initial_Video"
+      type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same as <tp:member-ref>InitialAudio</tp:member-ref>, but for
+          a video stream. This property is immutable (cannot change).</p>
+
+        <p>In particular, note that if this property is false, this does not
+          imply that an active video stream has not been added, only that no
+          video stream was active at the time the channel appeared.</p>
+
+        <p>This property is the correct way to discover whether connection
+          managers, contacts etc. support video calls; it appears in
+          capabilities structures in the same way as InitialAudio.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="MutableContents" tp:name-for-bindings="Mutable_Contents"
+      type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If <tt>True</tt>, a stream of a different content type can be added
+        after the Channel has been requested </p>
+
+        <p>If this property is missing, clients SHOULD assume that it is false,
+          and thus that the channel's streams cannot be changed once the call
+          has started.</p>
+
+        <p>If this property isn't present in the "allowed" set in any of the
+          Call entries contact capabilities, then user interfaces MAY choose to
+          show a separate "call" option for each class of call.</p>
+
+          <tp:rationale>
+            <p>For example, once an audio-only Google Talk call has started,
+              it is not possible to add a video stream; both audio and video
+              must be requested at the start of the call if video is desired.
+              User interfaces may use this pseudo-capability as a hint to
+              display separate "Audio call" and "Video call" buttons, rather
+              than a single "Call" button with the option to add and remove
+              video once the call has started for contacts without this flag.
+            </p>
+          </tp:rationale>
+
+        <p>This property is immutable, and therefore SHOULD be announced
+          in <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">NewChannels</tp:dbus-ref>,
+          etc.</p>
+      </tp:docstring>
+    </property>
+
+    <tp:handler-capability-token name="gtalk-p2p">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The client can implement streaming for streams whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT">Transport</tp:dbus-ref>
+          property is Stream_Transport_Type_GTalk_P2P.</p>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+    <tp:handler-capability-token name="ice">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The client can implement streaming for streams whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT">Transport</tp:dbus-ref>
+          property is Stream_Transport_Type_ICE.</p>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+    <tp:handler-capability-token name="wlm-8.5">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The client can implement streaming for streams whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT">Transport</tp:dbus-ref>
+          property is Stream_Transport_Type_WLM_8_5.</p>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+    <tp:handler-capability-token name="wlm-2009">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The client can implement streaming for streams whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT">Transport</tp:dbus-ref>
+          property is Stream_Transport_Type_WLM_2009.</p>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+    <tp:handler-capability-token name="video/h264" is-family="yes">
+      <tp:docstring>
+        <p>The client supports media streaming with H264 (etc.).</p>
+
+        <p>This handler capability token is a one of a family
+          of similar tokens: for any other audio or video codec whose MIME
+          type is audio/<em>subtype</em> or video/<em>subtype</em>, a handler
+          capability token of this form may exist (the subtype MUST appear
+          in lower case in this context). Clients MAY support more
+          codecs than they explicitly advertise support for; clients SHOULD
+          explicitly advertise support for their preferred codec(s), and
+          for codecs like H264 that are, in practice, significant in codec
+          negotiation.</p>
+
+        <tp:rationale>
+          <p>For instance, the XMPP capability used by the Google Video
+            Chat web client to determine whether a client is compatible
+            with it requires support for H264 video, so an XMPP
+            connection manager that supports this version of Jingle should
+            not advertise the Google Video Chat capability unless there
+            is at least one installed client that declares that it supports
+            <code>video/h264</code> on Call channels.</p>
+        </tp:rationale>
+
+        <p>For example, a client could advertise support for
+          Speex, Theora and H264 by having three
+          handler capability tokens,
+          <code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/audio/speex</code>,
+          <code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/video/theora</code> and
+          <code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/video/h264</code>,
+          in its <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Client.Handler">Capabilities</tp:dbus-ref>
+          property.</p>
+
+        <p>Clients MAY have media signalling abilities without explicitly
+          supporting any particular codec, and connection managers SHOULD
+          support this usage.</p>
+
+        <tp:rationale>
+          <p>This is necessary to support gatewaying between two Telepathy
+            connections, in which case the available codecs might not be
+            known to the gatewaying process.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </tp:handler-capability-token>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

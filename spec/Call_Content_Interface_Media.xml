@@ -1,0 +1,229 @@
+<?xml version="1.0" ?>
+<node name="/Call_Content_Interface_Media"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Call.Content.Interface.Media.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:added version="0.19.0">(draft 1)</tp:added>
+    <tp:requires interface="org.freedesktop.Telepathy.Call.Content"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      Interface to use by a software implementation of media streaming.
+
+      FIXME: How should the streaming implementation know when it is its turn
+      to set the codecs.
+    </tp:docstring>
+
+    <tp:struct name="Codec" array-name="Codec_List">
+      <tp:docstring>
+        A description of a codec.
+      </tp:docstring>
+
+      <tp:member name="Identifier" type="u">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Numeric identifier for the codec. This will be used as the PT in the
+          SDP or content description.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Name" type="s">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The name of the codec.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Clockrate" type="u">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The clockrate of the codec
+        </tp:docstring>
+      </tp:member>
+      <tp:member name="Channels" type="u">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Number of channels of the codec if applicable, otherwise 0
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Parameters" type="a{ss}">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Extra parameters for this codec
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <tp:mapping name="Contact_Codec_Map">
+      <tp:docstring>
+        A map from contacts to the lists of codecs they support.
+      </tp:docstring>
+
+      <tp:member name="Handle" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          A contact
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Codecs" type="a(usuua{ss})" tp:type="Codec[]">
+        <tp:docstring>
+          The codecs that the contact supports
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <tp:struct name="Codec_Offering">
+      <tp:docstring>
+        A codec offer and its corresponding remote contact codec map.
+      </tp:docstring>
+
+      <tp:member name="Codec_Offer" type="o">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The object path to the
+            <tp:dbus-ref namespace="org.freedesktop.Telepathy.Call.Content"
+              >CodecOffer.DRAFT</tp:dbus-ref>
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Remote_Contact_Codec_Map" type="a{ua(usuua{ss})}"
+          tp:type="Contact_Codec_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The <tp:dbus-ref namespace="org.freedesktop.Telepathy.Call.Content"
+            >CodecOffer.DRAFT.RemoteContactCodecMap</tp:dbus-ref> property
+          of the codec offer.
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <signal name="CodecsChanged" tp:name-for-bindings="Codecs_Changed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when the codecs in use change.</p>
+
+        <p>As well as acting as change notification for the
+          <tp:member-ref>ContactCodecMap</tp:member-ref>, emission of this
+          signal implies that the <tp:member-ref>CodecOffer</tp:member-ref>
+          property has changed to <code>('/', {})</code>.</p>
+      </tp:docstring>
+
+      <arg name="Updated_Codecs" type="a{ua(usuua{ss})}"
+        tp:type="Contact_Codec_Map">
+        <tp:docstring>
+          A map from contacts to their codecs. Each pair in this map is added
+          to the <tp:member-ref>ContactCodecMap</tp:member-ref> property,
+          replacing any previous pair with that key.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Removed_Contacts" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          A list of keys which were removed from the
+          <tp:member-ref>ContactCodecMap</tp:member-ref>, probably because
+          those contacts left the call.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="SetCodecs" tp:name-for-bindings="Set_Codecs">
+      <tp:docstring>
+        Set or update the local codec mapping.
+      </tp:docstring>
+
+      <arg name="Codecs" direction="in"
+        type="a(usuua{ss})" tp:type="Codec[]">
+        <tp:docstring>
+          The codecs now supported by the local user.
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <property name="ContactCodecMap" tp:name-for-bindings="Contact_Codec_Map"
+      type="a{ua(usuua{ss})}" tp:type="Contact_Codec_Map" access="read">
+      <tp:docstring>
+        <p>A map from contact handles (including the local user's own handle)
+          to the codecs supported by that contact.</p>
+
+        <p>Change notification is via
+          <tp:member-ref>CodecsChanged</tp:member-ref>.</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="NewCodecOffer" tp:name-for-bindings="New_Codec_Offer">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when a new <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Content"
+            >CodecOffer.DRAFT</tp:dbus-ref> appears. The streaming
+          implementation MUST respond by calling the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Content.CodecOffer.DRAFT"
+            >Accept</tp:dbus-ref> or <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Content.CodecOffer.DRAFT"
+            >Reject</tp:dbus-ref> method on the codec offer object.</p>
+
+        <p>Emission of this signal indicates that the
+          <tp:member-ref>CodecOffer</tp:member-ref> property has changed to
+          <code>(Offer, Codecs)</code>.</p>
+      </tp:docstring>
+
+      <arg name="Offer" type="o">
+        <tp:docstring>
+          The object path of the new codec offer. This replaces any previous
+          codec offer.
+        </tp:docstring>
+      </arg>
+
+      <arg name="Codecs" type="a{ua(usuua{ss})}" tp:type="Contact_Codec_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The <tp:dbus-ref namespace="org.freedesktop.Telepathy.Call.Content"
+              >CodecOffer.DRAFT.RemoteContactCodecMap</tp:dbus-ref> property
+            of the codec offer.</p>
+
+          <tp:rationale>
+            <p>Having the RemoteContactCodecMap property here saves a D-Bus
+              round-trip - it shouldn't be necessary to get the property
+              from the CodecOffer object, in practice.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="CodecOffer" tp:name-for-bindings="Codec_Offer"
+      type="(oa{ua(usuua{ss})})" tp:type="Codec_Offering" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The object path to the current
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Call.Content"
+              >CodecOffer.DRAFT</tp:dbus-ref> object, and its
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Call.Content"
+              >CodecOffer.DRAFT.RemoteContactCodecMap</tp:dbus-ref> property.
+            If the object path is "/" then there isn't an outstanding
+          codec offer, and the mapping MUST be empty.</p>
+
+        <tp:rationale>
+          <p>Having the RemoteContactCodecMap property here saves a D-Bus
+            round-trip - it shouldn't be necessary to get the property
+            from the CodecOffer object, in practice.</p>
+        </tp:rationale>
+
+        <p>Change notification is via
+          <tp:member-ref>NewCodecOffer</tp:member-ref> (which replaces the
+          value of this property with a new codec offer), and
+          <tp:member-ref>CodecsChanged</tp:member-ref> (which implies that
+          there is no longer any active codec offer).</p>
+      </tp:docstring>
+    </property>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

@@ -1,0 +1,141 @@
+<?xml version="1.0" ?>
+<node name="/Call_Content"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Call.Content.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:added version="0.19.0">(draft 1)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      This object represents one Content inside a Call. For example in an
+      audio/video call there would be one audio and one video content. Each
+      content has one or more <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Call">Stream.DRAFT</tp:dbus-ref>
+      objects which represent the actual transport to one or more contacts.
+
+    </tp:docstring>
+
+    <property name="Name" tp:name-for-bindings="Name" type="s" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The name of the content.
+          [FIXME: rationale?]</p>
+      </tp:docstring>
+    </property>
+
+    <property name="Type" tp:name-for-bindings="Type"
+        type="u" tp:type="Media_Stream_Type" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The media type of this content</p>
+      </tp:docstring>
+    </property>
+
+    <property name="Creator" tp:name-for-bindings="Creator"
+        type="u" tp:type="Contact_Handle" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The creator of this content</p>
+      </tp:docstring>
+    </property>
+
+    <tp:enum name="Call_Content_Disposition" type="u">
+      <tp:docstring>
+        [FIXME]
+      </tp:docstring>
+
+      <tp:enumvalue suffix="None" value="0">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The content has no specific disposition
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Early_Media" value="1">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          [FIXME: what does this mean?]
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Initial" value="2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The content was initially part of the call. When <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type.Call.DRAFT"
+              >Accept</tp:dbus-ref> is called on the channel, all streams of
+            this content where the self-handle's sending state in <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Call.Stream.DRAFT"
+              >Senders</tp:dbus-ref> is Sending_State_Pending_Send
+            will be moved to Sending_State_Sending as if <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Call.Stream.DRAFT"
+              >SetSending</tp:dbus-ref>(TRUE) had been called.</p>
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <property name="Disposition" tp:name-for-bindings="Disposition"
+        type="u" tp:type="Call_Content_Disposition" access="read">
+      <tp:docstring>
+        The disposition of this content. This property cannot change.
+      </tp:docstring>
+    </property>
+
+    <signal name="StreamAdded" tp:name-for-bindings="Stream_Added">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+         <p>Emitted when a stream is added to a call</p>
+      </tp:docstring>
+      <arg name="Stream" type="o">
+         <tp:docstring>
+           The stream which was added
+         </tp:docstring>
+       </arg>
+    </signal>
+
+    <signal name="StreamRemoved" tp:name-for-bindings="Stream_Removed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+         <p>Emitted when a stream is added to a call</p>
+      </tp:docstring>
+      <arg name="Stream" type="o">
+         <tp:docstring>
+           The stream which was removed
+         </tp:docstring>
+       </arg>
+    </signal>
+
+    <property name="Streams" tp:name-for-bindings="Streams"
+      type="ao" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The list of
+           <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Call">Stream.DRAFT</tp:dbus-ref>
+           objects that exist in this content.</p>
+
+        <tp:rationale>
+          <p>In a conference call multiple parties can share one media content
+            (say, audio), but the streaming of that media can either be shared
+            or separate. For example, in a multicast conference all contacts
+            would share one stream, while in a Muji conference there would be
+            a stream for each participant.</p>
+        </tp:rationale>
+
+        <p>Change notification is via
+          <tp:member-ref>StreamAdded</tp:member-ref> and
+          <tp:member-ref>StreamRemoved</tp:member-ref>.</p>
+      </tp:docstring>
+    </property>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->
