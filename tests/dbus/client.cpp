@@ -30,8 +30,8 @@
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 
-#include <tests/lib/contacts-conn.h>
-#include <tests/lib/echo/chan.h>
+#include <tests/lib/glib/contacts-conn.h>
+#include <tests/lib/glib/echo/chan.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;

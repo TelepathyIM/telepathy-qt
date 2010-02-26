@@ -13,7 +13,7 @@
 
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/contactlist/conn.h>
+#include <tests/lib/glib/contactlist/conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;

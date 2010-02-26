@@ -48,10 +48,10 @@ BUILT_SOURCES += \
     _gen/client.cpp.moc.hpp
 
 test_account_channel_dispatcher_SOURCES = account-channel-dispatcher.cpp
-test_account_channel_dispatcher_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_account_channel_dispatcher_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_client_SOURCES = client.cpp
-test_client_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_client_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 endif
 
 # Tests which can only be run if we have telepathy-glib, and Qt was compiled
@@ -91,48 +91,47 @@ BUILT_SOURCES += \
 AM_CPPFLAGS += $(TP_GLIB_CFLAGS)
 
 test_chan_basics_SOURCES = chan-basics.cpp
-test_chan_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
+test_chan_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_chan_group_SOURCES = chan-group.cpp
-test_chan_group_LDADD = $(LDADD) $(top_builddir)/tests/lib/csh/libtp-glib-csh-tests.la
+test_chan_group_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_cm_basics_SOURCES = cm-basics.cpp
-test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_cm_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_conn_basics_SOURCES = conn-basics.cpp
-test_conn_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_conn_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_conn_capabilities_SOURCES = conn-capabilities.cpp
-test_conn_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
+test_conn_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_conn_requests_SOURCES = conn-requests.cpp
-test_conn_requests_LDADD = $(LDADD) $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
+test_conn_requests_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_conn_roster_SOURCES = conn-roster.cpp
-test_conn_roster_LDADD = $(LDADD) $(top_builddir)/tests/lib/contactlist/libexample-cm-contactlist.la
+test_conn_roster_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_conn_roster_groups_SOURCES = conn-roster-groups.cpp
-test_conn_roster_groups_LDADD = $(LDADD) $(top_builddir)/tests/lib/contactlist/libexample-cm-contactlist.la
+test_conn_roster_groups_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_contacts_SOURCES = contacts.cpp
-test_contacts_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_contacts_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_contacts_capabilities_SOURCES = contacts-capabilities.cpp
-test_contacts_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_contacts_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_handles_SOURCES = handles.cpp
-test_handles_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_handles_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_stateful_proxy_SOURCES = stateful-proxy.cpp
-test_stateful_proxy_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_stateful_proxy_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_streamed_media_chan_SOURCES = streamed-media-chan.cpp
-test_streamed_media_chan_LDADD = $(LDADD) $(top_builddir)/tests/lib/libtp-glib-tests.la
+test_streamed_media_chan_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_text_chan_SOURCES = text-chan.cpp
-test_text_chan_LDADD = $(LDADD) \
-                       $(top_builddir)/tests/lib/libtp-glib-tests.la \
-                       $(top_builddir)/tests/lib/echo2/libtp-glib-echo2-tests.la
+test_text_chan_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
+
 endif
 
 LDADD = \

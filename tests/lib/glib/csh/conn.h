@@ -14,7 +14,7 @@
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection.h>
-#include <tests/lib/contacts-conn.h>
+#include <tests/lib/glib/contacts-conn.h>
 
 G_BEGIN_DECLS
 

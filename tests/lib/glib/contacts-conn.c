@@ -19,7 +19,7 @@
 #include <telepathy-glib/handle-repo-dynamic.h>
 #include <telepathy-glib/util.h>
 
-#include "tests/lib/debug.h"
+#include "tests/lib/glib/debug.h"
 
 static void init_aliasing (gpointer, gpointer);
 static void init_avatars (gpointer, gpointer);

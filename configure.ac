@@ -281,10 +281,12 @@ AC_OUTPUT([
     tests/dbus/Makefile
     tests/dbus-1/services/account-manager.service
     tests/lib/Makefile
-    tests/lib/callable/Makefile
-    tests/lib/contactlist/Makefile
-    tests/lib/csh/Makefile
-    tests/lib/echo/Makefile
-    tests/lib/echo2/Makefile
+    tests/lib/glib/Makefile
+    tests/lib/glib/callable/Makefile
+    tests/lib/glib/contactlist/Makefile
+    tests/lib/glib/csh/Makefile
+    tests/lib/glib/echo/Makefile
+    tests/lib/glib/echo2/Makefile
+    tests/lib/python/Makefile
     tools/Makefile
 ])

@@ -13,7 +13,7 @@
 #include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/simple-manager.h>
+#include <tests/lib/glib/simple-manager.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
