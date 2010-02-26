@@ -19,5 +19,6 @@ libexample_cm_csh_la_LIBADD = \
     $(TP_GLIB_LIBS)
 
 AM_CFLAGS = \
+    -I$(top_builddir) -I$(top_srcdir) \
     $(ERROR_CFLAGS) \
     $(TP_GLIB_CFLAGS)
