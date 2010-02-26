@@ -8,6 +8,8 @@
 <xi:include href="../spec/Channel_Interface_Mergeable_Conference.xml"/>
 <xi:include href="../spec/Channel_Interface_Splittable.xml"/>
 
+<xi:include href="../spec/Channel_Type_Call.xml"/>
+
 <xi:include href="../spec/generic-types.xml"/>
 <xi:include href="../spec/errors.xml"/>
 
