@@ -85,6 +85,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     void introspectGroupFallbackMembers();
     void introspectGroupFallbackLocalPendingWithInfo();
     void introspectGroupFallbackSelfHandle();
+    void introspectConference();
 
     void continueIntrospection();
 
@@ -559,8 +560,14 @@ void Channel::Private::nowHaveInterfaces()
     debug() << "Channel has" << parent->interfaces().size() <<
         "optional interfaces:" << parent->interfaces();
 
-    if (parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    QStringList interfaces = parent->interfaces();
+
+    if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         introspectQueue.enqueue(&Private::introspectGroup);
+    }
+
+    if (interfaces.contains(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+        introspectQueue.enqueue(&Private::introspectConference);
     }
 }
 
