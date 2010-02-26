@@ -120,6 +120,13 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
         return parent->optionalInterface<ChannelInterfaceMergeableConferenceInterface>(check);
     }
 
+    // TODO move to channel.h once Splittable interface is undrafted
+    inline ChannelInterfaceSplittableInterface *splittableInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return parent->optionalInterface<ChannelInterfaceSplittableInterface>(check);
+    }
+
     struct GroupMembersChangedInfo;
 
     // Public object
