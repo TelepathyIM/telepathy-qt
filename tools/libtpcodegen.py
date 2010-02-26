@@ -120,6 +120,16 @@ def get_docstring(element):
             docstring = ''
     return docstring
 
+def get_deprecated(element):
+    text = []
+    for x in element.childNodes:
+        if hasattr(x, 'data'):
+            text.append(x.data.replace('\n', ' ').strip())
+        else:
+            # This caters for tp:dbus-ref elements, but little else.
+            if x.childNodes and hasattr(x.childNodes[0], 'data'):
+                text.append(x.childNodes[0].data.replace('\n', ' ').strip())
+    return ' '.join(text)
 
 def get_descendant_text(element_or_elements):
     if not element_or_elements:
