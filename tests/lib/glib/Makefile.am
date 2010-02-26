@@ -4,7 +4,8 @@ DIST_SUBDIRS = \
     contactlist \
     csh \
     echo \
-    echo2
+    echo2 \
+    future
 
 AM_CPPFLAGS = \
     -I$(top_builddir) -I$(top_srcdir)
@@ -14,7 +15,7 @@ AM_CXXFLAGS = $(ERROR_CXXFLAGS)
 
 if ENABLE_TP_GLIB_TESTS
 
-SUBDIRS += callable contactlist csh echo echo2
+SUBDIRS += callable contactlist csh echo echo2 future
 AM_CPPFLAGS += $(TP_GLIB_CFLAGS)
 
 noinst_LTLIBRARIES = libtp-glib-tests.la
