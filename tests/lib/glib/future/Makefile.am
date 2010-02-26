@@ -1,1 +1,1 @@
-SUBDIRS = extensions conference
+SUBDIRS = extensions call conference
