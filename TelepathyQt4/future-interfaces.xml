@@ -1,0 +1,13 @@
+<tp:spec
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<tp:title>Extensions from the future</tp:title>
+
+<xi:include href="future-channel.xml"/>
+<xi:include href="future-misc.xml"/>
+
+<xi:include href="../spec/generic-types.xml"/>
+<xi:include href="../spec/errors.xml"/>
+
+</tp:spec>

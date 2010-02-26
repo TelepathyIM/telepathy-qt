@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/_gen/types.h>
 
+#include <TelepathyQt4/Global>
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/MethodInvocationContext>
 
@@ -35,6 +36,7 @@
 
 namespace Tp
 {
+TELEPATHY_QT4_EXPORT void registerTypes();
 
 class AbstractClient;
 class Account;
