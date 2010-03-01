@@ -330,6 +330,7 @@ private Q_SLOTS:
     void onSelfHandleChanged(uint);
 
     void gotConferenceProperties(QDBusPendingCallWatcher *watcher);
+    void gotConferenceContacts(Tp::PendingOperation *op);
     void onConferenceChannelMerged(const QDBusObjectPath &channel);
     void onConferenceChannelRemoved(const QDBusObjectPath &channel);
 

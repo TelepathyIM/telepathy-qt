@@ -212,6 +212,9 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     QHash<QString, ChannelPtr> conferenceInitialChannels;
     QString conferenceInvitationMessage;
     bool conferenceSupportsNonMerges;
+    UIntList pendingConferenceInitialInviteeHandles;
+    QStringList pendingConferenceInitialInviteeIDs;
+    Contacts conferenceInitialInviteeContacts;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
@@ -1955,7 +1958,7 @@ bool Channel::hasConferenceInterface() const
 
 Contacts Channel::conferenceInitialContacts() const
 {
-    return Contacts();
+    return mPriv->conferenceInitialInviteeContacts;
 }
 
 bool Channel::conferenceSupportsNonMerges() const
@@ -2694,6 +2697,8 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QVariantMap> reply = *watcher;
     QVariantMap props;
 
+    mPriv->introspectingConference = false;
+
     if (!reply.isError()) {
         debug() << "Got reply to Properties::GetAll(Channel.Interface.Conference)";
         props = reply.value();
@@ -2722,7 +2727,32 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
                         QVariantMap()));
         }
 
-        // TODO get initial contacts
+        ContactManager *manager = mPriv->connection->contactManager();
+
+        mPriv->pendingConferenceInitialInviteeHandles =
+            qdbus_cast<UIntList>(props["InitialInviteeHandles"]);
+        if (!mPriv->pendingConferenceInitialInviteeHandles.isEmpty()) {
+            mPriv->introspectingConference = true;
+
+            PendingContacts *pendingContacts = manager->contactsForHandles(
+                    mPriv->pendingConferenceInitialInviteeHandles);
+            connect(pendingContacts,
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(gotConferenceInitialContacts(Tp::PendingOperation *)));
+        } else {
+            // only check InitialInviteeIDs if InitialInviteeHandles is empty
+            mPriv->pendingConferenceInitialInviteeIDs =
+                qdbus_cast<QStringList>(props["InitialInviteeIDs"]);
+            if (!mPriv->pendingConferenceInitialInviteeIDs.isEmpty()) {
+                mPriv->introspectingConference = true;
+
+                PendingContacts *pendingContacts = manager->contactsForIdentifiers(
+                        mPriv->pendingConferenceInitialInviteeIDs);
+                connect(pendingContacts,
+                        SIGNAL(finished(Tp::PendingOperation *)),
+                        SLOT(gotConferenceInitialContacts(Tp::PendingOperation *)));
+            }
+        }
 
         mPriv->conferenceInvitationMessage =
             qdbus_cast<QString>(props["InvitationMessage"]);
@@ -2735,7 +2765,23 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
             reply.error().message();
     }
 
+    mPriv->continueIntrospection();
+}
+
+void Channel::gotConferenceContacts(PendingOperation *op)
+{
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+
     mPriv->introspectingConference = false;
+
+    QList<ContactPtr> contacts;
+    if (pending->isValid()) {
+        mPriv->conferenceInitialInviteeContacts = pending->contacts().toSet();
+    } else {
+        warning().nospace() << "Getting conference initial invitee contacts "
+            "failed with " << pending->errorName() << ":" <<
+            pending->errorMessage();
+    }
 
     mPriv->continueIntrospection();
 }
