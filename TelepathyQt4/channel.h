@@ -329,6 +329,10 @@ private Q_SLOTS:
     void onHandleOwnersChanged(const Tp::HandleOwnerMap&, const Tp::UIntList&);
     void onSelfHandleChanged(uint);
 
+    void gotConferenceProperties(QDBusPendingCallWatcher *watcher);
+    void onConferenceChannelMerged(const QDBusObjectPath &channel);
+    void onConferenceChannelRemoved(const QDBusObjectPath &channel);
+
 private:
     struct Private;
     friend struct Private;

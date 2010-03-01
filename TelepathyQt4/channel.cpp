@@ -144,6 +144,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 
     // Optional interface proxies
     Client::ChannelInterfaceGroupInterface *group;
+    ChannelInterfaceConferenceInterface *conference;
     Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
@@ -207,6 +208,10 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 
     // Conference
     bool introspectingConference;
+    QHash<QString, ChannelPtr> conferenceChannels;
+    QHash<QString, ChannelPtr> conferenceInitialChannels;
+    QString conferenceInvitationMessage;
+    bool conferenceSupportsNonMerges;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
@@ -259,7 +264,8 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       pendingRetrieveGroupSelfContact(false),
       groupIsSelfHandleTracked(false),
       groupSelfHandle(0),
-      introspectingConference(false)
+      introspectingConference(false),
+      conferenceSupportsNonMerges(false)
 {
     debug() << "Creating new Channel:" << parent->busName();
 
@@ -458,6 +464,35 @@ void Channel::Private::introspectGroupFallbackSelfHandle()
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
                     SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
+}
+
+void Channel::Private::introspectConference()
+{
+    Q_ASSERT(properties != 0);
+
+    if (!conference) {
+        conference = conferenceInterface();
+        Q_ASSERT(conference != 0);
+    }
+
+    introspectingConference = true;
+
+    debug() << "Connecting to Channel.Interface.Conference.ChannelMerged/Removed";
+    parent->connect(conference,
+                    SIGNAL(ChannelMerged(const QDBusObjectPath &)),
+                    SLOT(onConferenceChannelMerged(const QDBusObjectPath &)));
+    parent->connect(conference,
+                    SIGNAL(ChannelRemoved(const QDBusObjectPath &)),
+                    SLOT(onConferenceChannelRemoved(const QDBusObjectPath &)));
+
+    debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                properties->GetAll(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE),
+                parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotConferenceProperties(QDBusPendingCallWatcher*)));
 }
 
 void Channel::Private::continueIntrospection()
@@ -2641,6 +2676,76 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
         // FIXME: fix self contact building with no group
         mPriv->pendingRetrieveGroupSelfContact = true;
     }
+}
+
+void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties::GetAll(Channel.Interface.Conference)";
+        props = reply.value();
+
+        ObjectPathList channels =
+            qdbus_cast<ObjectPathList>(props["Channels"]);
+        foreach (const QDBusObjectPath &channel, channels) {
+            if (mPriv->conferenceChannels.contains(channel.path())) {
+                continue;
+            }
+
+            mPriv->conferenceChannels.insert(channel.path(),
+                    Channel::create(connection(), channel.path(),
+                        QVariantMap()));
+        }
+
+        ObjectPathList initialChannels =
+            qdbus_cast<ObjectPathList>(props["InitialChannels"]);
+        foreach (const QDBusObjectPath &channel, initialChannels) {
+            if (mPriv->conferenceInitialChannels.contains(channel.path())) {
+                continue;
+            }
+
+            mPriv->conferenceInitialChannels.insert(channel.path(),
+                    Channel::create(connection(), channel.path(),
+                        QVariantMap()));
+        }
+
+        // TODO get initial contacts
+
+        mPriv->conferenceInvitationMessage =
+            qdbus_cast<QString>(props["InvitationMessage"]);
+        mPriv->conferenceSupportsNonMerges =
+            qdbus_cast<bool>(props["SupportsNonMerges"]);
+    }
+    else {
+        warning().nospace() << "Properties::GetAll(Channel.Interface.Conference) "
+            "failed with " << reply.error().name() << ": " <<
+            reply.error().message();
+    }
+
+    mPriv->introspectingConference = false;
+
+    mPriv->continueIntrospection();
+}
+
+void Channel::onConferenceChannelMerged(const QDBusObjectPath &channel)
+{
+    if (mPriv->conferenceChannels.contains(channel.path())) {
+        return;
+    }
+
+    mPriv->conferenceChannels.insert(channel.path(),
+            Channel::create(connection(), channel.path(), QVariantMap()));
+}
+
+void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channel)
+{
+    if (!mPriv->conferenceChannels.contains(channel.path())) {
+        return;
+    }
+
+    mPriv->conferenceChannels.remove(channel.path());
 }
 
 /**
