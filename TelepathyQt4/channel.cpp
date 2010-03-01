@@ -1973,7 +1973,7 @@ QList<ChannelPtr> Channel::conferenceInitialChannels() const
     return mPriv->conferenceInitialChannels.values();
 }
 
-bool Channel::hasConferenceMergeableInterface() const
+bool Channel::hasMergeableConferenceInterface() const
 {
     return interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE));
@@ -1981,7 +1981,7 @@ bool Channel::hasConferenceMergeableInterface() const
 
 PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 {
-    if (!hasConferenceMergeableInterface()) {
+    if (!hasMergeableConferenceInterface()) {
         return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
                 "Channel does not support MergeableConference interface", this);
     }

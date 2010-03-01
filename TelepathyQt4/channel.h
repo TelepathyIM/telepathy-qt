@@ -153,7 +153,7 @@ public:
     QList<ChannelPtr> conferenceChannels() const;
     QList<ChannelPtr> conferenceInitialChannels() const;
 
-    bool hasConferenceMergeableInterface() const;
+    bool hasMergeableConferenceInterface() const;
     PendingOperation *conferenceMergeChannel(const ChannelPtr &channel);
 
     bool hasSplittableInterface() const;
