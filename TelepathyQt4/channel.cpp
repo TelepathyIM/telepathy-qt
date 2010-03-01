@@ -1981,7 +1981,13 @@ bool Channel::hasConferenceMergeableInterface() const
 
 PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 {
-    return NULL;
+    if (!hasConferenceMergeableInterface()) {
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Channel does not support MergeableConference interface", this);
+    }
+
+    return new PendingVoid(mPriv->mergeableConferenceInterface()->Merge(
+                QDBusObjectPath(channel->objectPath())), this);
 }
 
 bool Channel::hasSplittableInterface() const
