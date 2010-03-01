@@ -1914,7 +1914,8 @@ PendingOperation *Channel::groupAddSelfHandle()
 
 bool Channel::hasConferenceInterface() const
 {
-    return false;
+    return interfaces().contains(QLatin1String(
+                TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE));
 }
 
 Contacts Channel::conferenceInitialContacts() const
