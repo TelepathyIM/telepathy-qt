@@ -1956,7 +1956,7 @@ bool Channel::hasConferenceInterface() const
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE));
 }
 
-Contacts Channel::conferenceInitialContacts() const
+Contacts Channel::conferenceInitialInviteeContacts() const
 {
     return mPriv->conferenceInitialInviteeContacts;
 }

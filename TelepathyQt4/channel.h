@@ -148,7 +148,7 @@ public:
     ContactPtr groupSelfContact() const;
 
     bool hasConferenceInterface() const;
-    Contacts conferenceInitialContacts() const;
+    Contacts conferenceInitialInviteeContacts() const;
     bool conferenceSupportsNonMerges() const;
     QList<ChannelPtr> conferenceChannels() const;
     QList<ChannelPtr> conferenceInitialChannels() const;
