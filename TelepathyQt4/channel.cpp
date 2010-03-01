@@ -1960,7 +1960,7 @@ Contacts Channel::conferenceInitialContacts() const
 
 bool Channel::conferenceSupportsNonMerges() const
 {
-    return false;
+    return mPriv->conferenceSupportsNonMerges;
 }
 
 QList<ChannelPtr> Channel::conferenceChannels() const
