@@ -1965,7 +1965,7 @@ bool Channel::conferenceSupportsNonMerges() const
 
 QList<ChannelPtr> Channel::conferenceChannels() const
 {
-    return QList<ChannelPtr>();
+    return mPriv->conferenceChannels.values();
 }
 
 QList<ChannelPtr> Channel::conferenceInitialChannels() const
