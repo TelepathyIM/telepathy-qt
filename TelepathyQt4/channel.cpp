@@ -1998,7 +1998,12 @@ bool Channel::hasSplittableInterface() const
 
 PendingOperation *Channel::splitChannel()
 {
-    return NULL;
+    if (!hasSplittableInterface()) {
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Channel does not support Splittable interface", this);
+    }
+
+    return new PendingVoid(mPriv->splittableInterface()->Split(), this);
 }
 
 /**
