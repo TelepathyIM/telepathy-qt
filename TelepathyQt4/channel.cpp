@@ -1940,7 +1940,8 @@ QList<ChannelPtr> Channel::conferenceInitialChannels() const
 
 bool Channel::hasConferenceMergeableInterface() const
 {
-    return false;
+    return interfaces().contains(QLatin1String(
+                TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE));
 }
 
 PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
