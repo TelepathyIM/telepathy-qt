@@ -1951,7 +1951,8 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 
 bool Channel::hasSplittableInterface() const
 {
-    return false;
+    return interfaces().contains(QLatin1String(
+                TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_SPLITTABLE));
 }
 
 PendingOperation *Channel::splitChannel(const ChannelPtr &channel)
