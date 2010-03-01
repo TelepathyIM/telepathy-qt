@@ -1970,7 +1970,7 @@ QList<ChannelPtr> Channel::conferenceChannels() const
 
 QList<ChannelPtr> Channel::conferenceInitialChannels() const
 {
-    return QList<ChannelPtr>();
+    return mPriv->conferenceInitialChannels.values();
 }
 
 bool Channel::hasConferenceMergeableInterface() const
