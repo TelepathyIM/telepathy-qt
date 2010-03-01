@@ -1990,7 +1990,7 @@ bool Channel::hasSplittableInterface() const
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_SPLITTABLE));
 }
 
-PendingOperation *Channel::splitChannel(const ChannelPtr &channel)
+PendingOperation *Channel::splitChannel()
 {
     return NULL;
 }
