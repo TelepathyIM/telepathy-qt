@@ -27,6 +27,8 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include "TelepathyQt4/future-internal.h"
+
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingChannelRequest>
@@ -1149,6 +1151,73 @@ PendingChannelRequest *Account::createFileTransfer(
 
     return new PendingChannelRequest(dbusConnection(), objectPath(),
             request, userActionTime, preferredHandler, true, this);
+}
+
+PendingChannelRequest *Account::createConferenceMediaCall(
+        const QList<ChannelPtr> &channels,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
+    //      should be used?
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+
+    ObjectPathList objectPaths;
+    foreach (const ChannelPtr &channel, channels) {
+        objectPaths << QDBusObjectPath(channel->objectPath());
+    }
+    request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"),
+                   qVariantFromValue(objectPaths));
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+PendingChannelRequest *Account::createConferenceTextChat(
+        const QList<ChannelPtr> &channels,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+
+    ObjectPathList objectPaths;
+    foreach (const ChannelPtr &channel, channels) {
+        objectPaths << QDBusObjectPath(channel->objectPath());
+    }
+    request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"),
+                   qVariantFromValue(objectPaths));
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
+}
+
+PendingChannelRequest *Account::createConferenceTextChatRoom(
+        const QString &roomName,
+        const QList<ChannelPtr> &channels,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeRoom);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   roomName);
+
+    ObjectPathList objectPaths;
+    foreach (const ChannelPtr &channel, channels) {
+        objectPaths << QDBusObjectPath(channel->objectPath());
+    }
+    request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"),
+                   qVariantFromValue(objectPaths));
+
+    return new PendingChannelRequest(dbusConnection(), objectPath(),
+            request, userActionTime, preferredHandler, false, this);
 }
 
 /**
