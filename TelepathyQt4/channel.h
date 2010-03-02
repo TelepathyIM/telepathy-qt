@@ -280,8 +280,8 @@ Q_SIGNALS:
 
     void groupSelfContactChanged();
 
-    void conferenceChannelMerged(const ChannelPtr &channel);
-    void conferenceChannelRemoved(const ChannelPtr &channel);
+    void conferenceChannelMerged(const Tp::ChannelPtr &channel);
+    void conferenceChannelRemoved(const Tp::ChannelPtr &channel);
 
 protected:
     Channel(const ConnectionPtr &connection,const QString &objectPath,
