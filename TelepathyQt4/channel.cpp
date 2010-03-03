@@ -87,7 +87,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     void introspectGroupFallbackSelfHandle();
     void introspectConference();
 
-    static void introspectConferenceInitialContacts(Private *self);
+    static void introspectConferenceInitialInviteeContacts(Private *self);
 
     void continueIntrospection();
 
@@ -309,13 +309,14 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
     introspectables[FeatureCore] = introspectableCore;
 
     // As Channel does not have predefined statuses let's simulate one (0)
-    ReadinessHelper::Introspectable introspectableConferenceInitialContacts(
+    ReadinessHelper::Introspectable introspectableConferenceInitialInviteeContacts(
         QSet<uint>() << 0,                                                 // makesSenseForStatuses
         Features() << FeatureCore,                                         // dependsOnFeatures
         QStringList() << TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE, // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &Private::introspectConferenceInitialContacts,
+        (ReadinessHelper::IntrospectFunc) &Private::introspectConferenceInitialInviteeContacts,
         this);
-    introspectables[FeatureConferenceInitialContacts] = introspectableConferenceInitialContacts;
+    introspectables[FeatureConferenceInitialInviteeContacts] =
+        introspectableConferenceInitialInviteeContacts;
 
     readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
@@ -511,7 +512,7 @@ void Channel::Private::introspectConference()
                     SLOT(gotConferenceProperties(QDBusPendingCallWatcher*)));
 }
 
-void Channel::Private::introspectConferenceInitialContacts(Private *self)
+void Channel::Private::introspectConferenceInitialInviteeContacts(Private *self)
 {
     if (!self->conferenceInitialInviteeHandles.isEmpty()) {
         ContactManager *manager = self->connection->contactManager();
@@ -519,10 +520,10 @@ void Channel::Private::introspectConferenceInitialContacts(Private *self)
                 self->conferenceInitialInviteeHandles);
         self->parent->connect(pendingContacts,
                 SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(gotConferenceInitialContacts(Tp::PendingOperation *)));
+                SLOT(gotConferenceInitialInviteeContacts(Tp::PendingOperation *)));
     } else {
         self->readinessHelper->setIntrospectCompleted(
-                FeatureConferenceInitialContacts, true);
+                FeatureConferenceInitialInviteeContacts, true);
     }
 }
 
@@ -1145,7 +1146,7 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
  */
 
 const Feature Channel::FeatureCore = Feature(Channel::staticMetaObject.className(), 0, true);
-const Feature Channel::FeatureConferenceInitialContacts = Feature(Channel::staticMetaObject.className(), 1, true);
+const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(Channel::staticMetaObject.className(), 1, true);
 
 ChannelPtr Channel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
@@ -2773,7 +2774,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
     mPriv->continueIntrospection();
 }
 
-void Channel::gotConferenceInitialContacts(PendingOperation *op)
+void Channel::gotConferenceInitialInviteeContacts(PendingOperation *op)
 {
     PendingContacts *pending = qobject_cast<PendingContacts *>(op);
 
@@ -2786,7 +2787,7 @@ void Channel::gotConferenceInitialContacts(PendingOperation *op)
     }
 
     mPriv->readinessHelper->setIntrospectCompleted(
-            FeatureConferenceInitialContacts, true);
+            FeatureConferenceInitialInviteeContacts, true);
 }
 
 void Channel::onConferenceChannelMerged(const QDBusObjectPath &channel)

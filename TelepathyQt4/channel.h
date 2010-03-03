@@ -59,7 +59,7 @@ class TELEPATHY_QT4_EXPORT Channel : public StatefulDBusProxy,
 
 public:
     static const Feature FeatureCore;
-    static const Feature FeatureConferenceInitialContacts;
+    static const Feature FeatureConferenceInitialInviteeContacts;
 
     static ChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -331,7 +331,7 @@ private Q_SLOTS:
     void onSelfHandleChanged(uint);
 
     void gotConferenceProperties(QDBusPendingCallWatcher *watcher);
-    void gotConferenceInitialContacts(Tp::PendingOperation *op);
+    void gotConferenceInitialInviteeContacts(Tp::PendingOperation *op);
     void onConferenceChannelMerged(const QDBusObjectPath &channel);
     void onConferenceChannelRemoved(const QDBusObjectPath &channel);
 
