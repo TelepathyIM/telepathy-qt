@@ -17,8 +17,8 @@
 
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/contacts-conn.h>
-#include <tests/lib/simple-conn.h>
+#include <tests/lib/glib/contacts-conn.h>
+#include <tests/lib/glib/simple-conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;

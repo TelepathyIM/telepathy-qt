@@ -17,7 +17,7 @@
 
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/csh/conn.h>
+#include <tests/lib/glib/csh/conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;

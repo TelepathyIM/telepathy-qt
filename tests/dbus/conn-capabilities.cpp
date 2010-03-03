@@ -4,7 +4,7 @@
 
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/echo2/conn.h>
+#include <tests/lib/glib/echo2/conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
