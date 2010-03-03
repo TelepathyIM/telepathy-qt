@@ -474,6 +474,8 @@ void Channel::Private::introspectConference()
 {
     Q_ASSERT(properties != 0);
 
+    debug() << "Introspecting Conference interface";
+
     if (!conference) {
         conference = conferenceInterface();
         Q_ASSERT(conference != 0);
@@ -489,7 +491,7 @@ void Channel::Private::introspectConference()
                     SIGNAL(ChannelRemoved(const QDBusObjectPath &)),
                     SLOT(onConferenceChannelRemoved(const QDBusObjectPath &)));
 
-    debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
+    debug() << "Calling Properties::GetAll(Channel.Interface.Conference)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 properties->GetAll(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE),
