@@ -1,0 +1,402 @@
+<?xml version="1.0" ?>
+<node name="/Call_Stream_Interface_Media"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:added version="0.19.0">(draft 1)</tp:added>
+    <tp:requires interface="org.freedesktop.Telepathy.Call.Stream"/>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      [FIXME]
+    </tp:docstring>
+
+    <tp:method name="SetCredentials" tp:name-for-bindings="Set_Credentials">
+      <tp:docstring>
+        Used to set the username fragment and password for streams that have
+        global credentials.
+
+        <tp:rationale>
+          [FIXME: rationale?]
+        </tp:rationale>
+      </tp:docstring>
+      <arg name="Username" type="s" direction="in"/>
+      <arg name="Password" type="s" direction="in" />
+    </tp:method>
+
+    <tp:mapping name="Candidate_Info">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        Extra information about the candidate. Allowed and mandatory keys
+        depend on the transport protocol used. The following keys are commenly
+        used:
+        <dl>
+          <dt>Type (u)</dt>
+          <dd>type of candidate (host, srflx, prflx, relay)</dd>
+
+          <dt>Foundation (s)</dt>
+          <dd>the foundation of this candiate</dd>
+
+          <dt>Protocol (u) </dt>
+          <dd>Underlying protocol of the candidate (udp, tcp) </dd>
+
+          <dt>Priority (u) </dt>
+          <dd>Priority of the candidate </dd>
+
+          <dt>BaseIP (u) </dt>
+          <dd>Base IP of this candidate </dd>
+
+          <dt>Username (s) </dt>
+          <dd>Username of this candidate
+            (only if credentials are per candidate)</dd>
+
+          <dt>Password (s) </dt>
+          <dd>Password of this candidate
+            (only if credentials are per candidate)</dd>
+
+          <dt>RawUDPFallback (b) </dt>
+          <dd>Indicate whether this candidate may be used to provide a UDP
+               fallback</dd>
+        </dl>
+      </tp:docstring>
+      <tp:member name="Key" type="s">
+        <tp:docstring>One of the well-known keys documented here, or an
+          implementation-specific key</tp:docstring>
+      </tp:member>
+      <tp:member name="Value" type="v">
+        <tp:docstring>The value corresponding to that key</tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <tp:struct name="Candidate" array-name="Candidate_List">
+      <tp:docstring>A Stream Candidate</tp:docstring>
+
+      <tp:member name="Component" type="u">
+        <tp:docstring>The component number</tp:docstring>
+      </tp:member>
+      <tp:member name="IP" type="s">
+        <tp:docstring>The IP address to use</tp:docstring>
+      </tp:member>
+      <tp:member name="Port" type="q">
+        <tp:docstring>The port number to use</tp:docstring>
+      </tp:member>
+      <tp:member name="Info" type="a{sv}" tp:type="Candidate_Info">
+        <tp:docstring>Additional information about the candidate</tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <method name="AddCandidates" tp:name-for-bindings="Add_Candidates">
+      <tp:docstring>
+        Add candidates to <tp:member-ref>LocalCandidates</tp:member-ref>
+        and signal them to the remote contact(s).
+      </tp:docstring>
+
+      <arg name="candidates" direction="in"
+        type="a(usqa{sv})" tp:type="Candidate[]">
+        <tp:docstring>
+          Candidates to be appended to
+          <tp:member-ref>LocalCandidates</tp:member-ref>
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <method name="CandidatesPrepared"
+      tp:name-for-bindings="Candidates_Prepared">
+      <tp:docstring>
+        This indicates to the CM that the initial batch of candidates has been
+        added.
+
+        <tp:rationale>
+          [FIXME: rationale]
+        </tp:rationale>
+      </tp:docstring>
+    </method>
+
+    <tp:enum type="u" name="Stream_Transport_Type">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        A transport that can be used for streaming.
+      </tp:docstring>
+
+      <tp:enumvalue suffix="Raw_UDP" value="0">
+        <tp:docstring>
+          Raw UDP, with or without STUN. All streaming clients are assumed to
+          support this transport, so there is no handler capability token for
+          it in the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type"
+            >Call.DRAFT</tp:dbus-ref> interface.
+          [This corresponds to "none" or "stun" in the old Media.StreamHandler
+          interface.]
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="ICE" value="1">
+        <tp:docstring>
+          Interactive Connectivity Establishment, as defined by the IETF MMUSIC
+          working group.
+          [FIXME: do we want this to cover both ICE-UDP and ICE-TCP, or split
+          them?]
+          [This corresponds to "ice-udp" in the old Media.StreamHandler
+          interface.]
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="GTalk_P2P" value="2">
+        <tp:docstring>
+          Google Talk peer-to-peer connectivity establishment, as implemented
+          by libjingle 0.3.
+          [This corresponds to "gtalk-p2p" in the old Media.StreamHandler
+          interface.]
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="WLM_8_5" value="3">
+        <tp:docstring>
+          The transport used by Windows Live Messenger 8.5 or later, which
+          resembles ICE draft 6.
+          [This corresponds to "wlm-8.5" in the old Media.StreamHandler
+          interface.]
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="WLM_2009" value="4">
+        <tp:docstring>
+          The transport used by Windows Live Messenger 2009 or later, which
+          resembles ICE draft 19.
+          [This corresponds to "wlm-2009" in the old Media.StreamHandler
+          interface.]
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
+    <property name="Transport" tp:name-for-bindings="Transport"
+        type="u" tp:type="Stream_Transport_Type" access="read">
+      <tp:docstring>
+        The transport for this stream. This property is immutable.
+      </tp:docstring>
+    </property>
+
+    <property name="LocalCandidates" tp:name-for-bindings="Local_Candidates"
+      type="a(usqa{sv})" tp:type="Candidate[]" access="read">
+      <tp:docstring>
+        [FIXME]. Change notification is via
+        <tp:member-ref>LocalCandidatesAdded</tp:member-ref>.
+      </tp:docstring>
+    </property>
+
+    <signal name="LocalCandidatesAdded"
+      tp:name-for-bindings="Local_Candidates_Added">
+      <tp:docstring>
+        Emitted when local candidates are added to
+        <tp:member-ref>LocalCandidates</tp:member-ref>.
+      </tp:docstring>
+
+      <arg name="Candidates"
+        type="a(usqa{sv})" tp:type="Candidate[]">
+        <tp:docstring>
+          Candidates that have been appended to
+          <tp:member-ref>LocalCandidates</tp:member-ref>
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <tp:struct name="Stream_Credentials">
+      <tp:docstring>A username/password pair.</tp:docstring>
+
+      <tp:member name="Username" type="s">
+        <tp:docstring>The username</tp:docstring>
+      </tp:member>
+
+      <tp:member name="Password" type="s">
+        <tp:docstring>The password</tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <property name="LocalCredentials" tp:name-for-bindings="Local_Credentials"
+      type="(ss)" tp:type="Stream_Credentials" access="read">
+      <tp:docstring>
+        [FIXME]. Change notification is via
+        <tp:member-ref>LocalCredentialsSet</tp:member-ref>.
+      </tp:docstring>
+
+    </property>
+
+    <signal name="LocalCredentialsSet"
+      tp:name-for-bindings="Local_Credentials_Set">
+      <tp:docstring>
+        Emitted when the value of
+        <tp:member-ref>LocalCredentials</tp:member-ref> changes.
+      </tp:docstring>
+
+      <arg name="Username" type="s" />
+      <arg name="Password" type="s" />
+    </signal>
+
+    <property name="STUNServers" tp:name-for-bindings="STUN_Servers"
+      type="a(sq)" tp:type="Socket_Address_IP[]" access="read">
+      <tp:docstring>
+        The IP addresses of possible STUN servers to use for NAT traversal, as
+        dotted-quad IPv4 address literals or RFC2373 IPv6 address literals.
+        This property cannot change once the stream has been created, so there
+        is no change notification. The IP addresses MUST NOT be given as DNS
+        hostnames.
+
+        <tp:rationale>
+          High-quality connection managers already need an asynchronous
+          DNS resolver, so they might as well resolve this name to an IP
+          to make life easier for streaming implementations.
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="RelayInfo" type="aa{sv}" access="read"
+      tp:type="String_Variant_Map[]" tp:name-for-bindings="Relay_Info">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of mappings describing TURN or Google relay servers
+          available for the client to use in its candidate gathering, as
+          determined from the protocol. Map keys are:</p>
+
+        <dl>
+          <dt><code>ip</code> - s</dt>
+          <dd>The IP address of the relay server as a dotted-quad IPv4
+            address literal or an RFC2373 IPv6 address literal. This MUST NOT
+            be a DNS hostname.
+
+            <tp:rationale>
+              High-quality connection managers already need an asynchronous
+              DNS resolver, so they might as well resolve this name to an IP
+              and make life easier for streaming implementations.
+            </tp:rationale>
+          </dd>
+
+          <dt><code>type</code> - s</dt>
+          <dd>
+            <p>Either <code>udp</code> for UDP (UDP MUST be assumed if this
+              key is omitted), <code>tcp</code> for TCP, or
+              <code>tls</code>.</p>
+
+            <p>The precise meaning of this key depends on the
+              <tp:member-ref>Transport</tp:member-ref> property: if
+              Transport is ICE, <code>tls</code> means
+              TLS over TCP as referenced by ICE draft 19, and if
+              Transport is GTalk_P2P, <code>tls</code> means
+              a fake SSL session over TCP as implemented by libjingle.</p>
+          </dd>
+
+          <dt><code>port</code> - q</dt>
+          <dd>The UDP or TCP port of the relay server as an ASCII unsigned
+            integer</dd>
+
+          <dt><code>username</code> - s</dt>
+          <dd>The username to use</dd>
+
+          <dt><code>password</code> - s</dt>
+          <dd>The password to use</dd>
+
+          <dt><code>component</code> - u</dt>
+          <dd>The component number to use this relay server for, as an
+            ASCII unsigned integer; if not included, this relay server
+            may be used for any or all components.
+
+            <tp:rationale>
+              In ICE draft 6, as used by Google Talk, credentials are only
+              valid once, so each component needs relaying separately.
+            </tp:rationale>
+          </dd>
+        </dl>
+
+        <tp:rationale>
+          <p>An equivalent of the gtalk-p2p-relay-token property on
+            MediaSignalling channels is not included here. The connection
+            manager should be responsible for making the necessary HTTP
+            requests to turn the token into a username and password.</p>
+        </tp:rationale>
+
+        <p>The type of relay server that this represents depends on
+          the value of the <tp:member-ref>Transport</tp:member-ref>
+          property. If Transport is ICE, this is a TURN server;
+          if Transport is GTalk_P2P, this is a Google relay server;
+          otherwise, the meaning of RelayInfo is undefined.</p>
+
+        <p>If relaying is not possible for this stream, the list is empty.</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="ServerInfoRetrieved"
+      tp:name-for-bindings="Server_Info_Retrieved">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Signals that the initial information about STUN and Relay servers
+          has been retrieved, i.e. the
+          <tp:member-ref>RetrievedServerInfo</tp:member-ref> property is now
+          true.</p>
+      </tp:docstring>
+    </signal>
+
+    <property name="RetrievedServerInfo" type="b"
+        tp:name-for-bindings="Retrieved_Server_Info" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>True if the initial information about STUN servers and Relay servers
+          has been retrieved. Change notification is via the
+          <tp:member-ref>ServerInfoRetrieved</tp:member-ref> signal.</p>
+
+        <tp:rationale>
+          <p>Streaming implementations that can't cope with STUN and relay
+            servers being added later SHOULD wait for this property
+            to become true before proceeding.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <signal name="EndpointsChanged"
+        tp:name-for-bindings="Endpoints_Changed">
+      <tp:docstring>
+        Emitted when the <tp:member-ref>Endpoints</tp:member-ref> property
+        changes.
+      </tp:docstring>
+
+      <arg name="EndpointsAdded" type="ao">
+        <tp:docstring>
+          Endpoints that were added.
+        </tp:docstring>
+      </arg>
+
+      <arg name="EndpointsRemoved" type="ao">
+        <tp:docstring>
+          Endpoints that no longer exist.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="Endpoints" tp:name-for-bindings="Endpoints"
+      type="ao" access="read">
+      <tp:docstring>
+        <p> The list of endpoints
+           <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Call.Stream"
+              >Endpoint.DRAFT</tp:dbus-ref>
+           that exist for this stream.
+        </p>
+
+        <p>Change notification is via the
+          <tp:member-ref>EndpointsChanged</tp:member-ref> signal.</p>
+      </tp:docstring>
+    </property>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

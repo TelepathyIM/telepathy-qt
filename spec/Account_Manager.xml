@@ -62,8 +62,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <property name="ValidAccounts" type="ao" access="read"
       tp:name-for-bindings="Valid_Accounts">
       <tp:docstring>
-        A list of the valid (complete, usable) accounts. Change notification
-        is via <tp:member-ref>AccountValidityChanged</tp:member-ref>.
+        A list of the valid (complete, usable) <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>s. Change
+        notification is via
+        <tp:member-ref>AccountValidityChanged</tp:member-ref>.
 
         <tp:rationale>
           This split between valid and invalid accounts makes it easy to
@@ -77,7 +79,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <property name="InvalidAccounts" type="ao" access="read"
       tp:name-for-bindings="Invalid_Accounts">
       <tp:docstring>
-        A list of incomplete or otherwise unusable accounts. Change
+        A list of incomplete or otherwise unusable <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>s. Change
         notification is via
         <tp:member-ref>AccountValidityChanged</tp:member-ref>.
       </tp:docstring>
@@ -116,7 +119,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
       <arg name="Account" type="o">
         <tp:docstring>
-          An Account.
+          An <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Account</tp:dbus-ref>.
         </tp:docstring>
       </arg>
 

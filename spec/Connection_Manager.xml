@@ -72,13 +72,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <li>local-xmpp - Link-local XMPP (XEP-0174) (Bonjour, Salut)</li>
           <li>msn - MSNP (Windows Live Messenger)</li>
           <li>myspace - MySpaceIM</li>
+          <li>mxit - MXit</li>
           <li>napster - Napster</li>
           <li>qq - Tencent QQ</li>
           <li>sametime - IBM Lotus Sametime</li>
           <li>silc - SILC</li>
-          <li>sip - Session Initiation Protocol (SIP)</li>
+          <li>sip - Session Initiation Protocol (SIP), with or without
+            SIMPLE support</li>
+          <li>skype - Skype</li>
+          <li>tel - telephony (the PSTN, including GSM, CDMA and fixed-line
+            telephony)</li>
           <li>trepia - Trepia</li>
           <li>yahoo - YMSG (Yahoo! Messenger)</li>
+          <li>yahoojp - Japanese version of YMSG</li>
           <li>zephyr - Zephyr</li>
         </ul>
       </tp:docstring>
@@ -173,7 +179,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
-          The requested protocol is not supported by this manager
+          <tp:docstring>
+            The requested protocol is not supported by this manager
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
@@ -321,13 +329,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
         <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
-          The requested protocol is not supported by this manager
+          <tp:docstring>
+            The requested protocol is not supported by this manager
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
-          The requested connection already appears to exist
+          <tp:docstring>
+            The requested connection already appears to exist
+          </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          Unrecognised connection parameters
+          <tp:docstring>
+            Unrecognised connection parameters
+          </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>

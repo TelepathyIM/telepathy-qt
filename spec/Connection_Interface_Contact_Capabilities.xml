@@ -223,8 +223,64 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:member>
     <tp:member type="a(a{sv}as)" name="Value"
                tp:type="Requestable_Channel_Class[]">
-      <tp:docstring>
-        The contact capabilities.
+       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+         <p>The contact's capabilities. These should be represented
+          in the same way as in <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests"
+            >RequestableChannelClasses</tp:dbus-ref>,
+          except that they may have more fixed properties or fewer allowed
+          properties, to represent contacts who do not have all the
+          capabilities of the connection.</p>
+
+        <p>In particular, requestable channel classes for channels with
+          target handle type Contact MUST list <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel"
+            >TargetHandleType</tp:dbus-ref> among their fixed properties when
+          they appear here, and clients MAY assume that this will be the
+          case.</p>
+
+        <tp:rationale>
+          <p>This matches the initial implementations - service-side in
+            telepathy-gabble, and client-side in telepathy-qt4 - and means
+            that clients can use exactly the same code to interpret
+            RequestableChannelClasses and contact capabilities.</p>
+        </tp:rationale>
+
+        <p>Channel classes with target handle type Handle_Type_Contact
+          indicate that a request that matches the channel class, and also
+          either has the contact's handle as <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel"
+            >TargetHandle</tp:dbus-ref> or the contact's identifier as
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel"
+            >TargetID</tp:dbus-ref>, can be expected to succeed. Connection
+          managers SHOULD NOT include the TargetHandle or TargetID as a
+          fixed property in contact capabilities.</p>
+
+        <tp:rationale>
+          <p>This makes one channel class sufficient to describe requests via
+            TargetHandle or TargetID, and is necessary in order to allow
+            clients to interpret RequestableChannelClasses and contact
+            capabilities with the same code.</p>
+        </tp:rationale>
+
+        <p>Channel classes with target handle type Handle_Type_Room or
+          Handle_Type_None indicate that if a channel matching the channel
+          class is created, then inviting the contact to that channel
+          can be expected to succeed.</p>
+
+        <tp:rationale>
+          <p>To support room-based XMPP protocols like
+            <a href="http://telepathy.freedesktop.org/wiki/Muji">Muji</a>
+            and MUC Tubes, it's necessary to be able to discover who can be
+            invited to a given room channel; most XMPP contacts won't
+            support being invited into a Muji conference call, at least
+            in the short to medium term.</p>
+        </tp:rationale>
+
+        <p>No interpretation is defined for channel classes with any other
+          target handle type, or for channel classes that do not fix a
+          target handle type, in this version of the Telepathy
+          specification.</p>
       </tp:docstring>
     </tp:member>
   </tp:mapping>

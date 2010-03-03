@@ -1,0 +1,110 @@
+<?xml version="1.0" ?>
+<node name="/Connection_FUTURE"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  >
+  <tp:copyright>Copyright © 2009 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+<p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.FUTURE"
+             tp:causes-havoc='experimental'>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+
+    <method name="EnsureSidecar" tp:name-for-bindings="Ensure_Sidecar">
+      <tp:added version="0.19.0">(as a draft)</tp:added>
+
+      <arg direction="in" name="Main_Interface" type="s"
+           tp:type="DBus_Interface">
+        <tp:docstring>
+          The "primary" interface implemented by an object attached
+          to a connection. For example, a Gabble plugin implementing
+          fine-grained control of XEP-0016 privacy lists might expose an object
+          implementing <tt>com.example.PrivacyLists</tt>.
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" name="Path" type="o">
+        <tp:docstring>The object path of the sidecar, exported by the same bus
+          name as the Connection to which it is attached.</tp:docstring>
+      </arg>
+      <arg direction="out" name="Properties" type="a{sv}"
+           tp:type="Qualified_Property_Value_Map">
+        <tp:docstring>Immutable properties of the sidecar.</tp:docstring>
+      </arg>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Request an object with a particular interface providing additional
+          connection-specific functionality, together with its immutable
+          properties. These will often be implemented by plug-ins to the
+          connection managers; for example, support for an XMPP XEP for which
+          no generic Telepathy interface exists might be implemented by a
+          Gabble plugin exposing a sidecar with a particular interface.</p>
+
+        <p>This method may be called at any point during the lifetime of a
+          connection, even before its <tp:type>Connection_Status</tp:type>
+          changes to Connected. It MAY take a long time to
+          return—perhaps it needs to wait for a connection to be established
+          and for all the services supported by the server to be discovered
+          before determining whether necessary server-side support is
+          available—so callers SHOULD override the default method timeout (25
+          seconds) with a much higher value (perhaps even MAX_INT32, meaning
+          “no timeout” in recent versions of libdbus).</p>
+
+        <tp:rationale>
+          <p>There is an implicit assumption that any connection
+            manager plugin will only want to export one “primary” object per
+            feature it implements, since there is a one-to-one mapping between
+            interface and object. This is reasonable since Sidecars are
+            (intended to be) analogous to extra interfaces on the connection,
+            providing once-per-connection shared functionality; it also makes
+            client code straightforward (look up the interface you care about
+            in a dictionary, build a proxy object from the value). More
+            “plural” plugins are likely to want to implement new types of
+            <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">Channel</tp:dbus-ref>
+            instead.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+        <tp:docstring>
+          The requested sidecar is not implemented by this connection manager,
+          or a necessary server-side component does not exist. (FIXME: split
+          these two errors out? Then again, once we list the guaranteed and
+          possible sidecars on a Protocol object, clients can tell the
+          difference themselves, because they shouldn't be calling this in the
+          first case.)
+        </tp:docstring>
+      </tp:error>
+
+      <tp:error name="org.freedesktop.Telepathy.Error.ServiceBusy">
+        <tp:docstring>
+          A server-side component needed by the requested sidecar reported it
+          is currently too busy, or did not respond for some
+          implementation-defined time. The caller may wish to try again later.
+        </tp:docstring>
+      </tp:error>
+
+      <tp:error name="org.freedesktop.Telepathy.Error.Cancelled">
+        <tp:docstring>
+          The connection was disconnected while the sidecar was being set up.
+        </tp:docstring>
+      </tp:error>
+    </method>
+
+  </interface>
+</node>

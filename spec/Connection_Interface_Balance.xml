@@ -1,0 +1,105 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Balance"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+      USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.Balance">
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+    <tp:added version="0.19.0">(as stable API)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>In many real-time communication services the user can pay for certain
+        services, typically calls to the
+        <abbr title="Public Switched Telephone Network">PSTN</abbr>,
+        in advance. In (at least) Skype, it's possible to query the current
+        balance in a machine-readable way.</p>
+    </tp:docstring>
+
+    <tp:struct name="Currency_Amount">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>An amount of money in a specified currency. For example,
+          3.21 British pounds would conventionally be represented by
+          (Amount = 321, Scale = 2, Currency = "GBP"), but could be
+          represented by (Amount = 3210, Scale = 3, Currency = "GBP")
+          in a service that records balance in units of 0.001 pounds.</p>
+
+        <p>As a special case, if Amount = 0, Scale = 2**32 - 1 (i.e.
+          the largest possible 32-bit unsigned integer) and Currency = "",
+          this indicates an unknown amount.</p>
+      </tp:docstring>
+
+      <tp:member type="i" name="Amount">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The amount, expressed as a fixed-point number with decimal scale
+            defined by the Scale property; for instance, an Amount value of
+            1234 with Scale of 2 represents 12.34 in the currency unit given
+            by the Currency.</p>
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="u" name="Scale">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The decimal scale for the fixed point value of the Amount
+            property, defining the number of rightmost decimal digits from
+            the integer value which form the fractional part of the resulting
+            currency value.</p>
+
+          <p>As well as defining the interpretation of Amount, user interfaces
+            may use this value to determine the precision with which to display
+            the amount.</p>
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="s" name="Currency">
+        <tp:docstring>
+          The currency code represented by this amount, which SHOULD be an
+          international currency code such as "EUR", "USD", or "JPY" if
+          possible. An empty string can be used to indicate that the currency
+          is not known.
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
+    <property name="AccountBalance" tp:name-for-bindings="Account_Balance"
+      access="read" type="(ius)" tp:type="Currency_Amount">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The user's balance on the account corresponding to this Connection.
+          A negative amount may be possible on some services, and indicates
+          that the user owes money to the service provider.</p>
+
+        <p>On initial connection, this property may have an unknown
+          value, represented by Amount = 0, Scale = 2**32 - 1 (the largest
+          possible 32-bit unsigned integer) and Currency = "".</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="BalanceChanged" tp:name-for-bindings="Balance_Changed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when the user's balance has changed.</p>
+      </tp:docstring>
+
+      <arg name="Balance" type="(ius)" tp:type="Currency_Amount">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The new value of the <tp:member-ref>AccountBalance</tp:member-ref>
+            property.</p>
+        </tp:docstring>
+      </arg>
+    </signal>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

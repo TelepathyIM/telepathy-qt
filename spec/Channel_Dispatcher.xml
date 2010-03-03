@@ -185,7 +185,9 @@
             channel, or an empty string to indicate that any handler would be
             acceptable. The channel dispatcher SHOULD dispatch as many as
             possible of the resulting channels (ideally, all of them)
-            to that handler, and SHOULD remember the preferred handler
+            to that handler—irrespective of whether that handler's <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Client.Handler">HandlerChannelFilter</tp:dbus-ref>
+            matches the channel—and SHOULD remember the preferred handler
             so it can try to dispatch subsequent channels in the same bundle
             to the same handler.</p>
 
@@ -199,6 +201,13 @@
                 namespace="org.freedesktop.Telepathy.Client.Handler">HandleChannels</tp:dbus-ref>
               on it, and partly so the channel dispatcher
               can recover state if it crashes and is restarted.</p>
+
+            <p>The filter should be disregarded for ease of use of this
+              interface: clients will usually use this argument to request
+              channels be sent to themself, and this should trump the filter
+              not matching. This also allows a client to become the handler
+              for a channel produced by one of its own requests, while not
+              being a candidate to handle other channels of that type.</p>
           </tp:rationale>
 
           <p>If this is a well-known bus name and the handler has the
@@ -218,6 +227,12 @@
               namespace="org.freedesktop.Telepathy.ChannelRequest">PreferredHandler</tp:dbus-ref>
             property.</p>
         </tp:docstring>
+
+        <tp:changed version="0.19.0">
+          Previously, the spec didn't say that this should disregard the
+          handler's filter. This has been implemented since
+          telepathy-mission-control 5.3.2.
+        </tp:changed>
       </arg>
 
       <arg direction="out" name="Request" type="o">

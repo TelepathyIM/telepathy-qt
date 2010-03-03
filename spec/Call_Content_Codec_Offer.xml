@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<node name="/Call_Content_Codec_Offer"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Call.Content.CodecOffer.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:added version="0.19.0">(draft 1)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      This object represents an offer of a Codec payload mapping.
+      FIXME add Accept and Reject signals ?
+    </tp:docstring>
+
+    <method name="Accept" tp:name-for-bindings="Accept">
+      <arg name="Codecs" direction="in"
+        type="a(usuua{ss})" tp:type="Codec[]" />
+      <tp:docstring>
+        Accept the updated Codec mapping and update the local mapping
+      </tp:docstring>
+    </method>
+
+    <method name="Reject" tp:name-for-bindings="Reject">
+      <tp:docstring>
+        Reject the proposed update to the codecs
+        FIXME add error codes and strings here
+      </tp:docstring>
+    </method>
+
+    <property name="RemoteContactCodecMap"
+      tp:name-for-bindings="Remote_Contact_Codec_Map"
+      type="a{ua(usuua{ss})}" tp:type="Contact_Codec_Map" access="read">
+      <tp:docstring>
+        A map from remote contacts to the lists of codecs they support.
+      </tp:docstring>
+    </property>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

@@ -1,0 +1,95 @@
+<?xml version="1.0" ?>
+<node name="/Call_Stream_Endpoint"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Call.Stream.Endpoint.DRAFT"
+      tp:causes-havoc="experimental">
+    <tp:added version="0.19.0">(draft 1)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      This object represents a set of candidates of one end-point.
+    </tp:docstring>
+
+    <property name="RemoteCredentials"
+      tp:name-for-bindings="Remote_Credentials"
+      type="(ss)" tp:type="Stream_Credentials" access="read">
+    </property>
+
+    <signal name="RemoteCredentialsSet"
+        tp:name-for-bindings="Remote_Credentials_Set">
+      <arg name="Username" type="s" />
+      <arg name="Password" type="s" />
+    </signal>
+
+    <property name="RemoteCandidates" tp:name-for-bindings="Remote_Candidates"
+      type="a(usqa{sv})" tp:type="Candidate[]" access="read">
+    </property>
+
+    <signal name="RemoteCandidatesAdded"
+        tp:name-for-bindings="Remote_Candidates_Added">
+      <arg name="Candidates"
+        type="a(usqa{sv})" tp:type="Candidate[]"/>
+    </signal>
+
+    <signal name="CandidateSelected"
+        tp:name-for-bindings="Candidate_Selected">
+      <arg name="Candidate"
+        type="(usqa{sv})" tp:type="Candidate"/>
+    </signal>
+
+    <property name="SelectedCandidate"
+        tp:name-for-bindings="Selected_Candidate"
+      type="(usqa{sv})" tp:type="Candidate" access="read">
+    </property>
+
+    <method name="SetSelectedCandidate"
+        tp:name-for-bindings="Set_Selected_Candidate">
+      <arg name="Candidate"
+        type="(usqa{sv})" tp:type="Candidate" direction="in">
+        <tp:docstring>
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <property name="StreamState" tp:name-for-bindings="Stream_State"
+      type="u" tp:type="Media_Stream_State"
+      access="read">
+    </property>
+
+    <signal name="StreamStateChanged"
+        tp:name-for-bindings="Stream_State_Changed">
+      <arg name="state"
+      type="u" tp:type="Media_Stream_State"/>
+    </signal>
+
+    <method name="SetStreamState"
+        tp:name-for-bindings="Set_Stream_State">
+      <arg name="State" type="u" tp:type="Media_Stream_State"
+        direction="in" />
+    </method>
+
+    <property name="Transport" tp:name-for-bindings="Transport"
+        type="u" tp:type="Stream_Transport_Type" access="read">
+    </property>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

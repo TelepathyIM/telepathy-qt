@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.18.0</tp:version>
+<tp:version>0.19.1</tp:version>
 
 <tp:copyright>Copyright © 2005-2009 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2009 Nokia Corporation</tp:copyright>
@@ -40,13 +40,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    </p>
   </tp:docstring>
   <xi:include href="Connection.xml"/>
+  <xi:include href="Connection_Future.xml"/>
   <xi:include href="Connection_Interface_Aliasing.xml"/>
   <xi:include href="Connection_Interface_Avatars.xml"/>
+  <xi:include href="Connection_Interface_Balance.xml"/>
   <xi:include href="Connection_Interface_Capabilities.xml"/>
   <xi:include href="Connection_Interface_Contact_Capabilities.xml"/>
   <xi:include href="Connection_Interface_Contact_Info.xml"/>
   <xi:include href="Connection_Interface_Contacts.xml"/>
   <xi:include href="Connection_Interface_Location.xml"/>
+  <xi:include href="Connection_Interface_Mail_Notification.xml"/>
   <xi:include href="Connection_Interface_Presence.xml"/>
   <xi:include href="Connection_Interface_Renaming.xml"/>
   <xi:include href="Connection_Interface_Requests.xml"/>
@@ -86,6 +89,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Type_DBus_Tube.xml"/>
    <xi:include href="Channel_Type_File_Transfer.xml"/>
    <xi:include href="Channel_Type_Contact_Search.xml"/>
+   <xi:include href="Channel_Type_Call.xml"/>
   </tp:section>
 
   <tp:section name="Channel Interfaces">
@@ -95,9 +99,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
      depending on its type:
     </p>
    </tp:docstring>
-   <xi:include href="Channel_Interface_Call_Merging.xml"/>
    <xi:include href="Channel_Interface_Call_State.xml"/>
    <xi:include href="Channel_Interface_Chat_State.xml"/>
+   <xi:include href="Channel_Interface_Conference.xml"/>
    <xi:include href="Channel_Interface_Destroyable.xml"/>
    <xi:include href="Channel_Interface_DTMF.xml"/>
    <xi:include href="Channel_Interface_Group.xml"/>
@@ -105,7 +109,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_HTML.xml"/>
    <xi:include href="Channel_Interface_Password.xml"/>
    <xi:include href="Channel_Interface_Media_Signalling.xml"/>
+   <xi:include href="Channel_Interface_Mergeable_Conference.xml"/>
    <xi:include href="Channel_Interface_Messages.xml"/>
+   <xi:include href="Channel_Interface_Splittable.xml"/>
    <xi:include href="Channel_Interface_Tube.xml"/>
   </tp:section>
  </tp:section>
@@ -113,6 +119,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <tp:section name="Media">
   <xi:include href="Media_Session_Handler.xml"/>
   <xi:include href="Media_Stream_Handler.xml"/>
+ </tp:section>
+
+ <tp:section name="Calls">
+   <xi:include href="Call_Content.xml"/>
+   <xi:include href="Call_Content_Interface_Media.xml"/>
+   <xi:include href="Call_Content_Codec_Offer.xml"/>
+   <xi:include href="Call_Stream.xml"/>
+   <xi:include href="Call_Stream_Interface_Media.xml"/>
+   <xi:include href="Call_Stream_Endpoint.xml"/>
  </tp:section>
 
  <tp:section name="Debugging">
@@ -159,6 +174,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <xi:include href="Client_Observer.xml"/>
  <xi:include href="Client_Approver.xml"/>
  <xi:include href="Client_Handler.xml"/>
+ <xi:include href="Client_Handler_Future.xml"/>
  <xi:include href="Client_Interface_Requests.xml"/>
 
  <xi:include href="Channel_Handler.xml"/>
