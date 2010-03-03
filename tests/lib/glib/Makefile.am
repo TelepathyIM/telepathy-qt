@@ -34,6 +34,7 @@ libtp_glib_tests_la_LIBADD = \
     contactlist/libexample-cm-contactlist.la \
     csh/libexample-cm-csh.la \
     echo/libexample-cm-echo.la \
-    echo2/libexample-cm-echo2.la
+    echo2/libexample-cm-echo2.la \
+    future/extensions/libtp-glib-tests-future-extensions.la
 
 endif

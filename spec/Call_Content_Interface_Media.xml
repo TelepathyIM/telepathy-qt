@@ -61,7 +61,7 @@
         </tp:docstring>
       </tp:member>
 
-      <tp:member name="Parameters" type="a{ss}">
+      <tp:member name="Parameters" type="a{ss}" tp:type="String_String_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           Extra parameters for this codec
         </tp:docstring>

@@ -79,6 +79,8 @@ libtelepathy_qt4_la_SOURCES = \
     feature.cpp \
     file-transfer-channel.cpp \
     file-transfer-channel-creation-properties.cpp \
+    future.cpp \
+    future-internal.h \
     incoming-file-transfer-channel.cpp \
     key-file.cpp \
     manager-file.cpp \
@@ -172,7 +174,16 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/room-list-channel.moc.hpp \
     _gen/simple-pending-operations.moc.hpp \
     _gen/streamed-media-channel.moc.hpp \
-    _gen/text-channel.moc.hpp
+    _gen/text-channel.moc.hpp \
+    _gen/future-channel.h \
+    _gen/future-channel.moc.hpp \
+    _gen/future-channel-body.hpp \
+    _gen/future-constants.h \
+    _gen/future-misc.h \
+    _gen/future-misc.moc.hpp \
+    _gen/future-misc-body.hpp \
+    _gen/future-types.h \
+    _gen/future-types-body.hpp
 
 tpqt4include_HEADERS = \
     AbstractClient \
@@ -405,6 +416,15 @@ _gen/stable-spec.xml: $(srcdir)/stable-interfaces.xml _gen/stable-stamp \
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xincludator.py \
 		$< > $@
 
+_gen/future-stamp: $(srcdir)/future-interfaces.xml
+	$(AM_V_GEN)touch $@
+
+_gen/future-spec.xml: $(srcdir)/future-interfaces.xml _gen/future-stamp \
+	$(top_srcdir)/tools/xincludator.py \
+	Makefile.am
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xincludator.py \
+		$< > $@
+
 # Things generated from the whole spec at once
 
 _gen/constants.h: _gen/stable-spec.xml \
@@ -428,6 +448,26 @@ _gen/types.h _gen/types-body.hpp: _gen/stable-spec.xml \
 		--prettyinclude='TelepathyQt4/Types' \
 		--must-define='IN_TELEPATHY_QT4_HEADER' \
 		--visibility=TELEPATHY_QT4_EXPORT \
+		--specxml=$<
+
+_gen/future-constants.h: _gen/future-spec.xml \
+		$(top_srcdir)/tools/qt4-constants-gen.py \
+		Makefile.am
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/qt4-constants-gen.py \
+		--namespace='TpFuture' \
+		--str-constant-prefix='TP_FUTURE_' \
+		--specxml=$< \
+		> $@.tmp && mv $@.tmp $@
+
+_gen/future-types.h _gen/future-types-body.hpp: _gen/future-spec.xml \
+		$(top_srcdir)/tools/qt4-types-gen.py \
+		Makefile.am
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/qt4-types-gen.py \
+		--namespace='TpFuture' \
+		--declfile='_gen/future-types.h' \
+		--implfile='_gen/future-types-body.hpp' \
+		--realinclude='TelepathyQt4/future-internal.h' \
+		--prettyinclude='TelepathyQt4/future-internal.h' \
 		--specxml=$<
 
 # Things generated per interface group
@@ -513,8 +553,43 @@ _gen/cli-%.h _gen/cli-%-body.hpp: _gen/spec-%.xml \
 		--visibility=TELEPATHY_QT4_EXPORT \
 		$$mainiface
 
+_gen/future-%.xml: $(srcdir)/future-%.xml \
+	$(top_srcdir)/tools/xincludator.py _gen/future-stamp
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xincludator.py \
+		$< > $@
+
+_gen/future-%.h _gen/future-%-body.hpp: _gen/future-%.xml \
+		_gen/future-spec.xml \
+		$(top_srcdir)/tools/qt4-client-gen.py \
+		Makefile.am
+	$(AM_V_GEN)set -e; \
+	namespace='TpFuture::Client'; \
+	mainiface= ; \
+	case $* in \
+		channel) \
+			mainiface='--mainiface=Tp::Client::ChannelInterface';; \
+	esac; \
+	$(PYTHON) $(top_srcdir)/tools/qt4-client-gen.py \
+		--namespace=$$namespace \
+		--typesnamespace='TpFuture' \
+		--headerfile=_gen/future-$*.h \
+		--implfile=_gen/future-$*-body.hpp \
+		--realinclude='TelepathyQt4/future-internal.h' \
+		--prettyinclude='TelepathyQt4/future-internal.h' \
+		--specxml=_gen/future-spec.xml \
+		--ifacexml=$< \
+		--extraincludes='<TelepathyQt4/Types>' \
+		--extraincludes='<TelepathyQt4/future-internal.h>' \
+		--visibility=TELEPATHY_QT4_NO_EXPORT \
+		$$mainiface
+
 _gen/%.moc.hpp: %.h _gen/constants.h _gen/types.h
 	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@
 
 _gen/cli-%.moc.hpp: _gen/cli-%.h _gen/constants.h _gen/types.h
+	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@
+
+_gen/future-%.moc.hpp: _gen/future-%.h \
+	_gen/future-constants.h \
+	_gen/future-types.h
 	$(TPQT4_V_MOC)$(MOC) $(AM_CPPFLAGS) -i $< -o $@

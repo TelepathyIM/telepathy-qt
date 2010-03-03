@@ -172,26 +172,13 @@ namespace %s
 
         # Emit type registration function
 
-        self.decl("""\
-/**
- * \\ingroup types
-%s\
- *
- * Register the types used by the library with the QtDBus type system.
- *
- * Call this function to register the types used before using anything else in
- * the library.
- */
-%s void registerTypes();
-}
+        self.decl("""
+} // namespace %s
 
-""" % (
-    get_headerfile_cmd(self.realinclude, self.prettyinclude),
-    self.visibility,
-    ))
+""" % self.namespace)
 
         self.impl("""\
-void registerTypes()
+TELEPATHY_QT4_NO_EXPORT void _registerTypes()
 {
     static bool registered = false;
     if (registered)
@@ -210,8 +197,9 @@ void registerTypes()
 
         self.impl("""\
 }
-}
-""")
+
+} // namespace %s
+""" % self.namespace)
 
         # Write output to files
 

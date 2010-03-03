@@ -35,3 +35,21 @@ inline bool operator==(const QDBusVariant &v1, const QDBusVariant &v2)
 #endif
 
 #include "TelepathyQt4/_gen/types-body.hpp"
+
+#include "TelepathyQt4/future-internal.h"
+#include "TelepathyQt4/_gen/future-types-body.hpp"
+
+/**
+ * \\ingroup types
+ * \headerfile TelepathyQt4/types.h <TelepathyQt4/Types>
+ *
+ * Register the types used by the library with the QtDBus type system.
+ *
+ * Call this function to register the types used before using anything else in
+ * the library.
+ */
+void Tp::registerTypes()
+{
+    Tp::_registerTypes();
+    TpFuture::_registerTypes();
+}
