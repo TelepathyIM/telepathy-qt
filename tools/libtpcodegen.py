@@ -29,32 +29,6 @@ NS_TP = "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
 _ASCII_ALNUM = ascii_letters + digits
 
 
-def camelcase_to_lower(s):
-    out ="";
-    out += s[0].lower()
-    last_upper=False
-    if s[0].isupper():
-        last_upper=True
-    for i in range(1,len(s)):
-        if s[i].isupper():
-            if last_upper:
-                if (i+1) < len(s) and  s[i+1].islower():
-                    out += "_" + s[i].lower()
-                else:
-                    out += s[i].lower()
-            else:
-                out += "_" + s[i].lower()
-            last_upper=True
-        else:
-            out += s[i]
-            last_upper=False
-    return out
-
-
-def camelcase_to_upper(s):
-    return camelcase_to_lower(s).upper()
-
-
 def cmp_by_name(node1, node2):
     return cmp(node1.getAttributeNode("name").nodeValue,
                node2.getAttributeNode("name").nodeValue)
@@ -146,6 +120,16 @@ def get_docstring(element):
             docstring = ''
     return docstring
 
+def get_deprecated(element):
+    text = []
+    for x in element.childNodes:
+        if hasattr(x, 'data'):
+            text.append(x.data.replace('\n', ' ').strip())
+        else:
+            # This caters for tp:dbus-ref elements, but little else.
+            if x.childNodes and hasattr(x.childNodes[0], 'data'):
+                text.append(x.childNodes[0].data.replace('\n', ' ').strip())
+    return ' '.join(text)
 
 def get_descendant_text(element_or_elements):
     if not element_or_elements:
