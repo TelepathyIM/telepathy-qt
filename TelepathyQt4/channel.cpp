@@ -80,6 +80,8 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     void introspectGroupFallbackLocalPendingWithInfo();
     void introspectGroupFallbackSelfHandle();
 
+    void continueIntrospection();
+
     void extract0177MainProps(const QVariantMap &props);
     void extract0176GroupProps(const QVariantMap &props);
 
@@ -426,6 +428,23 @@ void Channel::Private::introspectGroupFallbackSelfHandle()
                     SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
 }
 
+void Channel::Private::continueIntrospection()
+{
+    if (introspectQueue.isEmpty()) {
+        // this should always be true, but let's make sure
+        if (!parent->isReady()) {
+            if (groupMembersChangedQueue.isEmpty() && !buildingContacts) {
+                debug() << "Both the IS and the MCD queue empty for the first time. Ready.";
+                setReady();
+            } else {
+                debug() << "Introspection done before contacts done - contacts sets ready";
+            }
+        }
+    } else {
+        (this->*(introspectQueue.dequeue()))();
+    }
+}
+
 void Channel::Private::extract0177MainProps(const QVariantMap &props)
 {
     bool haveProps = props.size() >= 4
@@ -695,7 +714,7 @@ void Channel::Private::processMembersChanged()
                         groupSelfHandle;
                 }
 
-                setReady();
+                continueIntrospection();
             } else {
                 debug() << "Contact queue empty but introspect queue isn't. IS will set ready.";
             }
@@ -2108,7 +2127,7 @@ void Channel::gotMainProperties(QDBusPendingCallWatcher *watcher)
     // Add extraction (and possible fallbacks) in similar functions,
     // called from here
 
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
@@ -2125,7 +2144,7 @@ void Channel::gotChannelType(QDBusPendingCallWatcher *watcher)
 
     debug() << "Got reply to fallback Channel::GetChannelType()";
     mPriv->channelType = reply.value();
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
@@ -2143,7 +2162,7 @@ void Channel::gotHandle(QDBusPendingCallWatcher *watcher)
     debug() << "Got reply to fallback Channel::GetHandle()";
     mPriv->targetHandleType = reply.argumentAt<0>();
     mPriv->targetHandle = reply.argumentAt<1>();
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
@@ -2165,7 +2184,7 @@ void Channel::gotInterfaces(QDBusPendingCallWatcher *watcher)
 
     mPriv->fakeGroupInterfaceIfNeeded();
 
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::onClosed()
@@ -2228,7 +2247,7 @@ void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)
     mPriv->extract0176GroupProps(props);
     // Add extraction (and possible fallbacks) in similar functions, called from here
 
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotGroupFlags(QDBusPendingCallWatcher *watcher)
@@ -2250,7 +2269,7 @@ void Channel::gotGroupFlags(QDBusPendingCallWatcher *watcher)
         }
     }
 
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
@@ -2272,7 +2291,7 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
         }
     }
 
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher)
@@ -2291,7 +2310,7 @@ void Channel::gotLocalPendingMembersWithInfo(QDBusPendingCallWatcher *watcher)
         mPriv->groupInitialLP = reply.value();
     }
 
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
@@ -2308,7 +2327,7 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
 
     mPriv->nowHaveInitialMembers();
 
-    continueIntrospection();
+    mPriv->continueIntrospection();
 }
 
 void Channel::gotContacts(PendingOperation *op)
@@ -2532,23 +2551,6 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
 
         // FIXME: fix self contact building with no group
         mPriv->pendingRetrieveGroupSelfContact = true;
-    }
-}
-
-void Channel::continueIntrospection()
-{
-    if (mPriv->introspectQueue.isEmpty()) {
-        // this should always be true, but let's make sure
-        if (!isReady()) {
-            if (mPriv->groupMembersChangedQueue.isEmpty() && !mPriv->buildingContacts) {
-                debug() << "Both the IS and the MCD queue empty for the first time. Ready.";
-                mPriv->setReady();
-            } else {
-                debug() << "Introspection done before contacts done - contacts sets ready";
-            }
-        }
-    } else {
-        (mPriv->*(mPriv->introspectQueue.dequeue()))();
     }
 }
 

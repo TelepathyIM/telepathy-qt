@@ -314,8 +314,6 @@ private Q_SLOTS:
     void onHandleOwnersChanged(const Tp::HandleOwnerMap&, const Tp::UIntList&);
     void onSelfHandleChanged(uint);
 
-    void continueIntrospection();
-
 private:
     struct Private;
     friend struct Private;
