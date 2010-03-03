@@ -58,6 +58,7 @@ endif
 # to use the GLib main loop
 TESTS += \
     test-chan-basics \
+    test-chan-conference \
     test-chan-group \
     test-cm-basics \
     test-conn-basics \
@@ -74,6 +75,7 @@ TESTS += \
 
 BUILT_SOURCES += \
     _gen/chan-basics.cpp.moc.hpp \
+    _gen/chan-conference.cpp.moc.hpp \
     _gen/chan-group.cpp.moc.hpp \
     _gen/cm-basics.cpp.moc.hpp \
     _gen/conn-basics.cpp.moc.hpp \
@@ -92,6 +94,9 @@ AM_CPPFLAGS += $(TP_GLIB_CFLAGS)
 
 test_chan_basics_SOURCES = chan-basics.cpp
 test_chan_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
+
+test_chan_conference_SOURCES = chan-conference.cpp
+test_chan_conference_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_chan_group_SOURCES = chan-group.cpp
 test_chan_group_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
