@@ -207,7 +207,11 @@ AC_SUBST(TP_GLIB_CFLAGS)
 AC_SUBST(TP_GLIB_LIBS)
 if test no = "$have_tp_glib"; then
   AC_MSG_WARN([telepathy-glib not found: not all tests will be run])
+else
+  GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
+  AC_SUBST(GLIB_GENMARSHAL)
 fi
+AM_CONDITIONAL([HAVE_TP_GLIB], [test yes = "$have_tp_glib"])
 
 have_qt_glib_main_loop=no
 if ${PKG_CONFIG} --libs --static QtCore | grep ['[-]lglib-2.0'] >/dev/null; then
@@ -287,6 +291,8 @@ AC_OUTPUT([
     tests/lib/glib/csh/Makefile
     tests/lib/glib/echo/Makefile
     tests/lib/glib/echo2/Makefile
+    tests/lib/glib/future/Makefile
+    tests/lib/glib/future/extensions/Makefile
     tests/lib/python/Makefile
     tools/Makefile
 ])
