@@ -678,6 +678,8 @@ void Channel::Private::buildContacts()
                 emit parent->groupSelfContactChanged();
             }
         }
+
+        buildingContacts = false;
         return;
     }
 
