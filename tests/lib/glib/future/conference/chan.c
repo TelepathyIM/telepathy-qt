@@ -34,11 +34,9 @@
 
 /* TODO:
  * Simulate Conference.ChannelRemoved
- * Simulate Splittable.Split
  */
 
 static void mergeable_conference_iface_init (gpointer iface, gpointer data);
-static void splittable_iface_init (gpointer iface, gpointer data);
 static void channel_iface_init (gpointer iface, gpointer data);
 
 G_DEFINE_TYPE_WITH_CODE (ExampleConferenceChannel,
@@ -53,8 +51,6 @@ G_DEFINE_TYPE_WITH_CODE (ExampleConferenceChannel,
       NULL);
     G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE,
       mergeable_conference_iface_init);
-    G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CHANNEL_INTERFACE_SPLITTABLE,
-      splittable_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_CHANNEL_IFACE, NULL);
     G_IMPLEMENT_INTERFACE (TP_TYPE_EXPORTABLE_CHANNEL, NULL))
 
@@ -102,7 +98,6 @@ static const gchar * example_conference_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_GROUP,
     FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE,
     FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE,
-    FUTURE_IFACE_CHANNEL_INTERFACE_SPLITTABLE,
     NULL
 };
 
@@ -615,23 +610,5 @@ mergeable_conference_iface_init (gpointer iface,
 
 #define IMPLEMENT(x) future_svc_channel_interface_mergeable_conference_implement_##x (klass, mergeable_conference_##x)
   IMPLEMENT (merge);
-#undef IMPLEMENT
-}
-
-static void
-splittable_split (FutureSvcChannelInterfaceSplittable *iface G_GNUC_UNUSED,
-                  DBusGMethodInvocation *context)
-{
-  future_svc_channel_interface_splittable_return_from_split (context);
-}
-
-static void
-splittable_iface_init (gpointer iface,
-                       gpointer data)
-{
-  FutureSvcChannelInterfaceSplittableClass *klass = iface;
-
-#define IMPLEMENT(x) future_svc_channel_interface_splittable_implement_##x (klass, splittable_##x)
-  IMPLEMENT (split);
 #undef IMPLEMENT
 }
