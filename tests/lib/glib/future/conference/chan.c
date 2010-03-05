@@ -218,6 +218,12 @@ get_property (GObject *object,
               TP_IFACE_CHANNEL, "InitiatorID",
               TP_IFACE_CHANNEL, "Requested",
               TP_IFACE_CHANNEL, "Interfaces",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "Channels",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialChannels",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialInviteeHandles",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialInviteeIDs",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InvitationMessage",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "SupportsNonMerges",
               NULL));
       break;
 
