@@ -33,7 +33,7 @@ public:
     { }
 
 protected Q_SLOTS:
-    // void onConferenceChannelMerged(const Tp::ChannelPtr &);
+    void onConferenceChannelMerged(const Tp::ChannelPtr &);
     // void onConferenceChannelRemoved(const Tp::ChannelPtr &);
 
 private Q_SLOTS:
@@ -59,9 +59,19 @@ private:
     ExampleEchoChannel *mTextChan1Service;
     QString mTextChan2Path;
     ExampleEchoChannel *mTextChan2Service;
+    QString mTextChan3Path;
+    ExampleEchoChannel *mTextChan3Service;
     QString mConferenceChanPath;
     ExampleConferenceChannel *mConferenceChanService;
+
+    ChannelPtr mChannelMerged;
 };
+
+void TestConferenceChan::onConferenceChannelMerged(const Tp::ChannelPtr &channel)
+{
+    mChannelMerged = channel;
+    mLoop->exit(0);
+}
 
 void TestConferenceChan::initTestCase()
 {
@@ -115,6 +125,7 @@ void TestConferenceChan::initTestCase()
             TP_HANDLE_TYPE_CONTACT);
     guint handle1 = tp_handle_ensure(mContactRepo, "someone1@localhost", 0, 0);
     guint handle2 = tp_handle_ensure(mContactRepo, "someone2@localhost", 0, 0);
+    guint handle3 = tp_handle_ensure(mContactRepo, "someone3@localhost", 0, 0);
 
     QByteArray chanPath;
     GPtrArray *initialChannels = g_ptr_array_new();
@@ -139,6 +150,16 @@ void TestConferenceChan::initTestCase()
                 NULL));
     g_ptr_array_add(initialChannels, g_strdup(chanPath.data()));
 
+    // let's not add this one to initial channels
+    mTextChan3Path = mConnPath + QLatin1String("/TextChannel/3");
+    chanPath = mTextChan3Path.toAscii();
+    mTextChan3Service = EXAMPLE_ECHO_CHANNEL(g_object_new(
+                EXAMPLE_TYPE_ECHO_CHANNEL,
+                "connection", mConnService,
+                "object-path", chanPath.data(),
+                "handle", handle3,
+                NULL));
+
     mConferenceChanPath = mConnPath + QLatin1String("/ConferenceChannel");
     chanPath = mConferenceChanPath.toAscii();
     mConferenceChanService = EXAMPLE_CONFERENCE_CHANNEL(g_object_new(
@@ -150,6 +171,7 @@ void TestConferenceChan::initTestCase()
 
     tp_handle_unref(mContactRepo, handle1);
     tp_handle_unref(mContactRepo, handle2);
+    tp_handle_unref(mContactRepo, handle3);
 }
 
 void TestConferenceChan::init()
@@ -166,7 +188,48 @@ void TestConferenceChan::testConference()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
-    mChan->requestClose();
+    QStringList expectedObjectPaths;
+    expectedObjectPaths << mTextChan1Path << mTextChan2Path;
+
+    QStringList objectPaths;
+    foreach (const ChannelPtr &channel, mChan->conferenceInitialChannels()) {
+        objectPaths << channel->objectPath();
+    }
+    QCOMPARE(expectedObjectPaths, objectPaths);
+
+    objectPaths.clear();
+    foreach (const ChannelPtr &channel, mChan->conferenceChannels()) {
+        objectPaths << channel->objectPath();
+    }
+    QCOMPARE(expectedObjectPaths, objectPaths);
+
+    QCOMPARE(mChan->conferenceInitialInviteeContacts(), Contacts());
+
+    QCOMPARE(mChan->hasConferenceInterface(), true);
+    QCOMPARE(mChan->hasMergeableConferenceInterface(), true);
+
+    ChannelPtr otherChannel = Channel::create(mConn, mTextChan3Path, QVariantMap());
+
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(conferenceChannelMerged(const Tp::ChannelPtr &)),
+                    SLOT(onConferenceChannelMerged(const Tp::ChannelPtr &))));
+    QVERIFY(connect(mChan->conferenceMergeChannel(otherChannel),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(), true);
+    while (!mChannelMerged) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QCOMPARE(mChannelMerged->objectPath(), otherChannel->objectPath());
+
+    expectedObjectPaths << mTextChan3Path;
+    objectPaths.clear();
+    foreach (const ChannelPtr &channel, mChan->conferenceChannels()) {
+        objectPaths << channel->objectPath();
+    }
+    QCOMPARE(expectedObjectPaths, objectPaths);
 }
 
 void TestConferenceChan::cleanup()
