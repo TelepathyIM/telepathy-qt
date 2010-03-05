@@ -1980,38 +1980,104 @@ PendingOperation *Channel::groupAddSelfHandle()
             this);
 }
 
+/**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.Conference interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
 bool Channel::hasConferenceInterface() const
 {
     return interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE));
 }
 
+/**
+ * Return a list of contacts invited to this conference when it was created.
+ *
+ * This method requires Channel::FeatureConferenceInitialInviteeContacts to be enabled.
+ *
+ * \return A list of contacts.
+ */
 Contacts Channel::conferenceInitialInviteeContacts() const
 {
     return mPriv->conferenceInitialInviteeContacts;
 }
 
+/**
+ * Return whether requests to create a conference channel with InitialChannels
+ * omitted, empty, or one element long are expected to succeed.
+ *
+ * If false, InitialChannels must be supplied in all requests for this channel
+ * class, and contain at least two channels.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return Whether the channels supports non merges.
+ */
 bool Channel::conferenceSupportsNonMerges() const
 {
     return mPriv->conferenceSupportsNonMerges;
 }
 
+/**
+ * Return the individual channels that are part of this conference.
+ *
+ * Change notification is via the conferenceChannelMerged and
+ * conferenceChannelRemoved signals.
+ *
+ * Note that the returned channels are not ready(). Calling
+ * Channel::becomeReady() may be needed.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A List of individual channels that are part of this conference.
+ */
 QList<ChannelPtr> Channel::conferenceChannels() const
 {
     return mPriv->conferenceChannels.values();
 }
 
+/**
+ * Return the initial value of channels().
+ *
+ * Note that the returned channels are not ready(). Calling
+ * Channel::becomeReady() may be needed.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A list of individual channels that were initially part of this
+ *         conference.
+ */
 QList<ChannelPtr> Channel::conferenceInitialChannels() const
 {
     return mPriv->conferenceInitialChannels.values();
 }
 
+/**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.MergeableConference interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
 bool Channel::hasMergeableConferenceInterface() const
 {
     return interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE));
 }
 
+/**
+ * Request that the given channel be incorporated into this channel.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 {
     if (!hasMergeableConferenceInterface()) {
@@ -2023,12 +2089,29 @@ PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
                 QDBusObjectPath(channel->objectPath())), this);
 }
 
+/**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.Splittable interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
 bool Channel::hasSplittableInterface() const
 {
     return interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_SPLITTABLE));
 }
 
+/**
+ * Request that this channel is removed from any Conference of which it is
+ * a part.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *Channel::splitChannel()
 {
     if (!hasSplittableInterface()) {
@@ -2089,6 +2172,22 @@ PendingOperation *Channel::splitChannel()
  */
 
 //@}
+
+/**
+ * \fn conferenceChannelMerged(const Tp::ChannelPtr &channel)
+ *
+ * Emitted when a new channel is added to the value of conferenceChannels().
+ *
+ * \param channel The channel that was added to conferenceChannels().
+ */
+
+/**
+ * \fn conferenceChannelRemoved(const Tp::ChannelPtr &channel)
+ *
+ * Emitted when a new channel is removed from the value of conferenceChannels().
+ *
+ * \param channel The channel that was removed from conferenceChannels().
+ */
 
 /**
  * \name Optional interface proxy factory
