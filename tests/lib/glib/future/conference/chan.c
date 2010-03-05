@@ -108,16 +108,7 @@ example_conference_channel_init (ExampleConferenceChannel *self)
       EXAMPLE_TYPE_CONFERENCE_CHANNEL,
       ExampleConferenceChannelPrivate);
 
-  self->priv->conn = NULL;
-  self->priv->object_path = NULL;
   self->priv->handle_type = (guint) -1;
-
-  self->priv->conference_channels = g_ptr_array_new ();
-  self->priv->conference_initial_channels = g_ptr_array_new ();
-  self->priv->conference_initial_invitee_handles =  g_array_new (FALSE, TRUE, sizeof (guint));
-  self->priv->conference_initial_invitee_ids = g_new0 (gchar *, 1);
-  self->priv->conference_invitation_message = g_strdup ("");
-  self->priv->conference_supports_non_merges = FALSE;
 }
 
 static void
@@ -145,6 +136,27 @@ constructed (GObject *object)
   if (self->priv->handle_type == (guint) -1)
     {
       self->priv->handle_type = TP_HANDLE_TYPE_NONE;
+    }
+  if (!self->priv->conference_channels)
+    {
+      self->priv->conference_channels = g_ptr_array_new ();
+    }
+  if (!self->priv->conference_initial_channels)
+    {
+      self->priv->conference_initial_channels = g_ptr_array_new ();
+    }
+  if (!self->priv->conference_initial_invitee_handles)
+    {
+      self->priv->conference_initial_invitee_handles =
+          g_array_new (FALSE, TRUE, sizeof (guint));
+    }
+  if (!self->priv->conference_initial_invitee_ids)
+    {
+      self->priv->conference_initial_invitee_ids = g_new0 (gchar *, 1);
+    }
+  if (!self->priv->conference_invitation_message)
+    {
+      self->priv->conference_invitation_message = g_strdup ("");
     }
 }
 
