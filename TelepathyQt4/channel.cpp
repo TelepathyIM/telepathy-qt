@@ -2895,8 +2895,10 @@ void Channel::onConferenceChannelMerged(const QDBusObjectPath &channel)
         return;
     }
 
-    mPriv->conferenceChannels.insert(channel.path(),
-            Channel::create(connection(), channel.path(), QVariantMap()));
+    ChannelPtr mergedChannel = Channel::create(connection(),
+            channel.path(), QVariantMap());
+    mPriv->conferenceChannels.insert(channel.path(), mergedChannel);
+    emit conferenceChannelMerged(mergedChannel);
 }
 
 void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channel)
@@ -2905,7 +2907,9 @@ void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channel)
         return;
     }
 
+    ChannelPtr removedChannel = mPriv->conferenceChannels[channel.path()];
     mPriv->conferenceChannels.remove(channel.path());
+    emit conferenceChannelRemoved(removedChannel);
 }
 
 /**
