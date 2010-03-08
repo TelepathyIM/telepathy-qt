@@ -23,7 +23,7 @@
 #define EXAMPLE_CONFERENCE_CHANNEL_H
 
 #include <glib-object.h>
-#include <telepathy-glib/telepathy-glib.h>
+#include <telepathy-glib/base-connection.h>
 #include <telepathy-glib/group-mixin.h>
 
 G_BEGIN_DECLS
