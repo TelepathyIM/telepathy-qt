@@ -417,6 +417,7 @@ _gen/stable-spec.xml: $(srcdir)/stable-interfaces.xml _gen/stable-stamp \
 		$< > $@
 
 _gen/future-stamp: $(srcdir)/future-interfaces.xml
+	$(AM_V_at)$(mkdir_p) _gen
 	$(AM_V_GEN)touch $@
 
 _gen/future-spec.xml: $(srcdir)/future-interfaces.xml _gen/future-stamp \
