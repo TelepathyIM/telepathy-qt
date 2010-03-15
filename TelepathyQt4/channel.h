@@ -59,6 +59,7 @@ class TELEPATHY_QT4_EXPORT Channel : public StatefulDBusProxy,
 
 public:
     static const Feature FeatureCore;
+    static const Feature FeatureConferenceInitialInviteeContacts;
 
     static ChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -146,6 +147,18 @@ public:
 
     bool groupIsSelfContactTracked() const;
     ContactPtr groupSelfContact() const;
+
+    bool hasConferenceInterface() const;
+    Contacts conferenceInitialInviteeContacts() const;
+    bool conferenceSupportsNonMerges() const;
+    QList<ChannelPtr> conferenceChannels() const;
+    QList<ChannelPtr> conferenceInitialChannels() const;
+
+    bool hasMergeableConferenceInterface() const;
+    PendingOperation *conferenceMergeChannel(const ChannelPtr &channel);
+
+    bool hasSplittableInterface() const;
+    PendingOperation *splitChannel();
 
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
@@ -268,6 +281,9 @@ Q_SIGNALS:
 
     void groupSelfContactChanged();
 
+    void conferenceChannelMerged(const Tp::ChannelPtr &channel);
+    void conferenceChannelRemoved(const Tp::ChannelPtr &channel);
+
 protected:
     Channel(const ConnectionPtr &connection,const QString &objectPath,
             const QVariantMap &immutableProperties);
@@ -313,6 +329,11 @@ private Q_SLOTS:
         const QVariantMap &details);
     void onHandleOwnersChanged(const Tp::HandleOwnerMap&, const Tp::UIntList&);
     void onSelfHandleChanged(uint);
+
+    void gotConferenceProperties(QDBusPendingCallWatcher *watcher);
+    void gotConferenceInitialInviteeContacts(Tp::PendingOperation *op);
+    void onConferenceChannelMerged(const QDBusObjectPath &channel);
+    void onConferenceChannelRemoved(const QDBusObjectPath &channel);
 
 private:
     struct Private;

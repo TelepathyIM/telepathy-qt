@@ -26,6 +26,8 @@
 #include "TelepathyQt4/_gen/channel.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
+#include "TelepathyQt4/future-internal.h"
+
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
@@ -63,6 +65,10 @@
 namespace Tp
 {
 
+using TpFuture::Client::ChannelInterfaceConferenceInterface;
+using TpFuture::Client::ChannelInterfaceMergeableConferenceInterface;
+using TpFuture::Client::ChannelInterfaceSplittableInterface;
+
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 {
     Private(Channel *parent, const ConnectionPtr &connection,
@@ -79,6 +85,9 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     void introspectGroupFallbackMembers();
     void introspectGroupFallbackLocalPendingWithInfo();
     void introspectGroupFallbackSelfHandle();
+    void introspectConference();
+
+    static void introspectConferenceInitialInviteeContacts(Private *self);
 
     void continueIntrospection();
 
@@ -100,6 +109,27 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     QString groupMemberChangeDetailsTelepathyError(
             const GroupMemberChangeDetails &details);
 
+    // TODO move to channel.h once Conference interface is undrafted
+    inline ChannelInterfaceConferenceInterface *conferenceInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return parent->optionalInterface<ChannelInterfaceConferenceInterface>(check);
+    }
+
+    // TODO move to channel.h once MergeableConference interface is undrafted
+    inline ChannelInterfaceMergeableConferenceInterface *mergeableConferenceInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return parent->optionalInterface<ChannelInterfaceMergeableConferenceInterface>(check);
+    }
+
+    // TODO move to channel.h once Splittable interface is undrafted
+    inline ChannelInterfaceSplittableInterface *splittableInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return parent->optionalInterface<ChannelInterfaceSplittableInterface>(check);
+    }
+
     struct GroupMembersChangedInfo;
 
     // Public object
@@ -116,6 +146,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 
     // Optional interface proxies
     Client::ChannelInterfaceGroupInterface *group;
+    ChannelInterfaceConferenceInterface *conference;
     Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
@@ -176,6 +207,15 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     bool groupIsSelfHandleTracked;
     uint groupSelfHandle;
     ContactPtr groupSelfContact;
+
+    // Conference
+    bool introspectingConference;
+    QHash<QString, ChannelPtr> conferenceChannels;
+    QHash<QString, ChannelPtr> conferenceInitialChannels;
+    QString conferenceInvitationMessage;
+    bool conferenceSupportsNonMerges;
+    UIntList conferenceInitialInviteeHandles;
+    Contacts conferenceInitialInviteeContacts;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
@@ -213,6 +253,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       connection(connection),
       immutableProperties(immutableProperties),
       group(0),
+      conference(0),
       properties(0),
       readinessHelper(parent->readinessHelper()),
       targetHandleType(0),
@@ -227,7 +268,9 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       groupAreHandleOwnersAvailable(false),
       pendingRetrieveGroupSelfContact(false),
       groupIsSelfHandleTracked(false),
-      groupSelfHandle(0)
+      groupSelfHandle(0),
+      introspectingConference(false),
+      conferenceSupportsNonMerges(false)
 {
     debug() << "Creating new Channel:" << parent->busName();
 
@@ -264,6 +307,16 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
         this);
     introspectables[FeatureCore] = introspectableCore;
+
+    // As Channel does not have predefined statuses let's simulate one (0)
+    ReadinessHelper::Introspectable introspectableConferenceInitialInviteeContacts(
+        QSet<uint>() << 0,                                                 // makesSenseForStatuses
+        Features() << FeatureCore,                                         // dependsOnFeatures
+        QStringList() << TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE, // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectConferenceInitialInviteeContacts,
+        this);
+    introspectables[FeatureConferenceInitialInviteeContacts] =
+        introspectableConferenceInitialInviteeContacts;
 
     readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
@@ -428,12 +481,59 @@ void Channel::Private::introspectGroupFallbackSelfHandle()
                     SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
 }
 
+void Channel::Private::introspectConference()
+{
+    Q_ASSERT(properties != 0);
+
+    debug() << "Introspecting Conference interface";
+
+    if (!conference) {
+        conference = conferenceInterface();
+        Q_ASSERT(conference != 0);
+    }
+
+    introspectingConference = true;
+
+    debug() << "Connecting to Channel.Interface.Conference.ChannelMerged/Removed";
+    parent->connect(conference,
+                    SIGNAL(ChannelMerged(const QDBusObjectPath &)),
+                    SLOT(onConferenceChannelMerged(const QDBusObjectPath &)));
+    parent->connect(conference,
+                    SIGNAL(ChannelRemoved(const QDBusObjectPath &)),
+                    SLOT(onConferenceChannelRemoved(const QDBusObjectPath &)));
+
+    debug() << "Calling Properties::GetAll(Channel.Interface.Conference)";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                properties->GetAll(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE),
+                parent);
+    parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotConferenceProperties(QDBusPendingCallWatcher*)));
+}
+
+void Channel::Private::introspectConferenceInitialInviteeContacts(Private *self)
+{
+    if (!self->conferenceInitialInviteeHandles.isEmpty()) {
+        ContactManager *manager = self->connection->contactManager();
+        PendingContacts *pendingContacts = manager->contactsForHandles(
+                self->conferenceInitialInviteeHandles);
+        self->parent->connect(pendingContacts,
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(gotConferenceInitialInviteeContacts(Tp::PendingOperation *)));
+    } else {
+        self->readinessHelper->setIntrospectCompleted(
+                FeatureConferenceInitialInviteeContacts, true);
+    }
+}
+
 void Channel::Private::continueIntrospection()
 {
     if (introspectQueue.isEmpty()) {
         // this should always be true, but let's make sure
         if (!parent->isReady()) {
-            if (groupMembersChangedQueue.isEmpty() && !buildingContacts) {
+            if (groupMembersChangedQueue.isEmpty() && !buildingContacts &&
+                !introspectingConference) {
                 debug() << "Both the IS and the MCD queue empty for the first time. Ready.";
                 setReady();
             } else {
@@ -532,8 +632,14 @@ void Channel::Private::nowHaveInterfaces()
     debug() << "Channel has" << parent->interfaces().size() <<
         "optional interfaces:" << parent->interfaces();
 
-    if (parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    QStringList interfaces = parent->interfaces();
+
+    if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
         introspectQueue.enqueue(&Private::introspectGroup);
+    }
+
+    if (interfaces.contains(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+        introspectQueue.enqueue(&Private::introspectConference);
     }
 }
 
@@ -1040,6 +1146,7 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
  */
 
 const Feature Channel::FeatureCore = Feature(Channel::staticMetaObject.className(), 0, true);
+const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(Channel::staticMetaObject.className(), 1, true);
 
 ChannelPtr Channel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
@@ -1874,6 +1981,148 @@ PendingOperation *Channel::groupAddSelfHandle()
 }
 
 /**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.Conference interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
+bool Channel::hasConferenceInterface() const
+{
+    return interfaces().contains(QLatin1String(
+                TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE));
+}
+
+/**
+ * Return a list of contacts invited to this conference when it was created.
+ *
+ * This method requires Channel::FeatureConferenceInitialInviteeContacts to be enabled.
+ *
+ * \return A list of contacts.
+ */
+Contacts Channel::conferenceInitialInviteeContacts() const
+{
+    return mPriv->conferenceInitialInviteeContacts;
+}
+
+/**
+ * Return whether requests to create a conference channel with InitialChannels
+ * omitted, empty, or one element long are expected to succeed.
+ *
+ * If false, InitialChannels must be supplied in all requests for this channel
+ * class, and contain at least two channels.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return Whether the channels supports non merges.
+ */
+bool Channel::conferenceSupportsNonMerges() const
+{
+    return mPriv->conferenceSupportsNonMerges;
+}
+
+/**
+ * Return the individual channels that are part of this conference.
+ *
+ * Change notification is via the conferenceChannelMerged and
+ * conferenceChannelRemoved signals.
+ *
+ * Note that the returned channels are not ready(). Calling
+ * Channel::becomeReady() may be needed.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A List of individual channels that are part of this conference.
+ */
+QList<ChannelPtr> Channel::conferenceChannels() const
+{
+    return mPriv->conferenceChannels.values();
+}
+
+/**
+ * Return the initial value of channels().
+ *
+ * Note that the returned channels are not ready(). Calling
+ * Channel::becomeReady() may be needed.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A list of individual channels that were initially part of this
+ *         conference.
+ */
+QList<ChannelPtr> Channel::conferenceInitialChannels() const
+{
+    return mPriv->conferenceInitialChannels.values();
+}
+
+/**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.MergeableConference interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
+bool Channel::hasMergeableConferenceInterface() const
+{
+    return interfaces().contains(QLatin1String(
+                TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE));
+}
+
+/**
+ * Request that the given channel be incorporated into this channel.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
+{
+    if (!hasMergeableConferenceInterface()) {
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Channel does not support MergeableConference interface", this);
+    }
+
+    return new PendingVoid(mPriv->mergeableConferenceInterface()->Merge(
+                QDBusObjectPath(channel->objectPath())), this);
+}
+
+/**
+ * Return whether this channel implements the
+ * org.freedesktop.Telepathy.Channel.Interface.Splittable interface.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if the interface is supported, \c false otherwise.
+ */
+bool Channel::hasSplittableInterface() const
+{
+    return interfaces().contains(QLatin1String(
+                TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_SPLITTABLE));
+}
+
+/**
+ * Request that this channel is removed from any Conference of which it is
+ * a part.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *Channel::splitChannel()
+{
+    if (!hasSplittableInterface()) {
+        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
+                "Channel does not support Splittable interface", this);
+    }
+
+    return new PendingVoid(mPriv->splittableInterface()->Split(), this);
+}
+
+/**
  * \fn void Channel::groupFlagsChanged(uint flags, uint added, uint removed)
  *
  * Emitted when the value returned by groupFlags() changes.
@@ -1923,6 +2172,22 @@ PendingOperation *Channel::groupAddSelfHandle()
  */
 
 //@}
+
+/**
+ * \fn conferenceChannelMerged(const Tp::ChannelPtr &channel)
+ *
+ * Emitted when a new channel is added to the value of conferenceChannels().
+ *
+ * \param channel The channel that was added to conferenceChannels().
+ */
+
+/**
+ * \fn conferenceChannelRemoved(const Tp::ChannelPtr &channel)
+ *
+ * Emitted when a new channel is removed from the value of conferenceChannels().
+ *
+ * \param channel The channel that was removed from conferenceChannels().
+ */
 
 /**
  * \name Optional interface proxy factory
@@ -2554,6 +2819,97 @@ void Channel::onSelfHandleChanged(uint newSelfHandle)
         // FIXME: fix self contact building with no group
         mPriv->pendingRetrieveGroupSelfContact = true;
     }
+}
+
+void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    mPriv->introspectingConference = false;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties::GetAll(Channel.Interface.Conference)";
+        props = reply.value();
+
+        ObjectPathList channels =
+            qdbus_cast<ObjectPathList>(props["Channels"]);
+        foreach (const QDBusObjectPath &channel, channels) {
+            if (mPriv->conferenceChannels.contains(channel.path())) {
+                continue;
+            }
+
+            mPriv->conferenceChannels.insert(channel.path(),
+                    Channel::create(connection(), channel.path(),
+                        QVariantMap()));
+        }
+
+        ObjectPathList initialChannels =
+            qdbus_cast<ObjectPathList>(props["InitialChannels"]);
+        foreach (const QDBusObjectPath &channel, initialChannels) {
+            if (mPriv->conferenceInitialChannels.contains(channel.path())) {
+                continue;
+            }
+
+            mPriv->conferenceInitialChannels.insert(channel.path(),
+                    Channel::create(connection(), channel.path(),
+                        QVariantMap()));
+        }
+
+        mPriv->conferenceInitialInviteeHandles =
+            qdbus_cast<UIntList>(props["InitialInviteeHandles"]);
+
+        mPriv->conferenceInvitationMessage =
+            qdbus_cast<QString>(props["InvitationMessage"]);
+        mPriv->conferenceSupportsNonMerges =
+            qdbus_cast<bool>(props["SupportsNonMerges"]);
+    }
+    else {
+        warning().nospace() << "Properties::GetAll(Channel.Interface.Conference) "
+            "failed with " << reply.error().name() << ": " <<
+            reply.error().message();
+    }
+
+    mPriv->continueIntrospection();
+}
+
+void Channel::gotConferenceInitialInviteeContacts(PendingOperation *op)
+{
+    PendingContacts *pending = qobject_cast<PendingContacts *>(op);
+
+    if (pending->isValid()) {
+        mPriv->conferenceInitialInviteeContacts = pending->contacts().toSet();
+    } else {
+        warning().nospace() << "Getting conference initial invitee contacts "
+            "failed with " << pending->errorName() << ":" <<
+            pending->errorMessage();
+    }
+
+    mPriv->readinessHelper->setIntrospectCompleted(
+            FeatureConferenceInitialInviteeContacts, true);
+}
+
+void Channel::onConferenceChannelMerged(const QDBusObjectPath &channel)
+{
+    if (mPriv->conferenceChannels.contains(channel.path())) {
+        return;
+    }
+
+    ChannelPtr mergedChannel = Channel::create(connection(),
+            channel.path(), QVariantMap());
+    mPriv->conferenceChannels.insert(channel.path(), mergedChannel);
+    emit conferenceChannelMerged(mergedChannel);
+}
+
+void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channel)
+{
+    if (!mPriv->conferenceChannels.contains(channel.path())) {
+        return;
+    }
+
+    ChannelPtr removedChannel = mPriv->conferenceChannels[channel.path()];
+    mPriv->conferenceChannels.remove(channel.path());
+    emit conferenceChannelRemoved(removedChannel);
 }
 
 /**
