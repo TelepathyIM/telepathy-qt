@@ -292,6 +292,7 @@ AC_OUTPUT([
     tests/lib/glib/echo/Makefile
     tests/lib/glib/echo2/Makefile
     tests/lib/glib/future/Makefile
+    tests/lib/glib/future/call/Makefile
     tests/lib/glib/future/conference/Makefile
     tests/lib/glib/future/extensions/Makefile
     tests/lib/python/Makefile

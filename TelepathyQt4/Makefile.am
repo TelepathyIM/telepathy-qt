@@ -107,6 +107,7 @@ libtelepathy_qt4_la_SOURCES = \
     referenced-handles.cpp \
     room-list-channel.cpp \
     streamed-media-channel.cpp \
+    streamed-media-channel-internal.h \
     text-channel.cpp \
     types.cpp
 
@@ -174,6 +175,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/room-list-channel.moc.hpp \
     _gen/simple-pending-operations.moc.hpp \
     _gen/streamed-media-channel.moc.hpp \
+    _gen/streamed-media-channel-internal.moc.hpp \
     _gen/text-channel.moc.hpp \
     _gen/future-channel.h \
     _gen/future-channel.moc.hpp \
@@ -226,6 +228,7 @@ tpqt4include_HEADERS = \
     PendingAccount \
     PendingChannel \
     PendingChannelRequest \
+    PendingComposite \
     PendingConnection \
     PendingContacts \
     PendingContactAttributes \
@@ -347,6 +350,7 @@ tpqt4include_HEADERS = \
     shared-ptr.h \
     simple-pending-operations.h \
     streamed-media-channel.h \
+    streamed-media-channel-internal.h \
     text-channel.h \
     types.h
 

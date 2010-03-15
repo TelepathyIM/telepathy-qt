@@ -35,6 +35,7 @@ libtp_glib_tests_la_LIBADD = \
     csh/libexample-cm-csh.la \
     echo/libexample-cm-echo.la \
     echo2/libexample-cm-echo2.la \
+    future/call/libexample-cm-call.la \
     future/conference/libexample-cm-conference.la \
     future/extensions/libtp-glib-tests-future-extensions.la
 

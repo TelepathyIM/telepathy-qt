@@ -84,6 +84,23 @@ private:
     Private *mPriv;
 };
 
+class TELEPATHY_QT4_EXPORT PendingComposite : public PendingOperation
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(PendingComposite)
+
+public:
+    PendingComposite(const QList<PendingOperation*> &operations, QObject *parent);
+
+private Q_SLOTS:
+    void onOperationFinished(Tp::PendingOperation *);
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
 } // Tp
 
 #endif

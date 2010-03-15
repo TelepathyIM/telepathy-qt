@@ -35,6 +35,7 @@ namespace Tp
 
 class StreamedMediaChannel;
 
+typedef QList<MediaContentPtr> MediaContents;
 typedef QList<MediaStreamPtr> MediaStreams;
 
 class TELEPATHY_QT4_EXPORT PendingMediaStreams : public PendingOperation
@@ -48,16 +49,21 @@ public:
     MediaStreams streams() const;
 
 private Q_SLOTS:
-    void gotStreams(QDBusPendingCallWatcher *);
-    void onStreamRemoved(Tp::MediaStreamPtr);
-    void onStreamReady(Tp::PendingOperation *);
+    void gotSMStreams(QDBusPendingCallWatcher *);
+
+    void gotCallContent(QDBusPendingCallWatcher *watcher);
+
+    void onContentRemoved(const Tp::MediaContentPtr &);
+    void onContentReady(Tp::PendingOperation *);
 
 private:
     friend class StreamedMediaChannel;
 
     PendingMediaStreams(const StreamedMediaChannelPtr &channel,
-            ContactPtr contact,
-            QList<MediaStreamType> types);
+            const ContactPtr &contact,
+            const QList<MediaStreamType> &types);
+    PendingMediaStreams(const StreamedMediaChannelPtr &channel,
+            const QList<MediaStreamType> &types);
 
     struct Private;
     friend struct Private;
@@ -72,50 +78,170 @@ class TELEPATHY_QT4_EXPORT MediaStream : public QObject,
     Q_DISABLE_COPY(MediaStream)
 
 public:
+    enum SendingState {
+        SendingStateNone = 0,
+        SendingStatePendingSend = 1,
+        SendingStateSending = 2
+    };
+
     ~MediaStream();
 
-    StreamedMediaChannelPtr channel() const;
-    uint id() const;
+    MediaContentPtr content() const;
 
-    ContactPtr contact() const;
-    MediaStreamState state() const;
-    MediaStreamType type() const;
+    StreamedMediaChannelPtr channel() const;
+
+    TELEPATHY_QT4_DEPRECATED uint id() const;
+
+    Contacts members() const;
+
+    TELEPATHY_QT4_DEPRECATED ContactPtr contact() const;
+
+    TELEPATHY_QT4_DEPRECATED MediaStreamState state() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreamType type() const;
+
+    SendingState localSendingState() const;
+    SendingState remoteSendingState(const ContactPtr &contact) const;
 
     bool sending() const;
-    bool receiving() const;
+    TELEPATHY_QT4_DEPRECATED bool receiving() const;
+
     bool localSendingRequested() const;
-    bool remoteSendingRequested() const;
+    TELEPATHY_QT4_DEPRECATED bool remoteSendingRequested() const;
 
-    MediaStreamDirection direction() const;
-    MediaStreamPendingSend pendingSend() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreamDirection direction() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreamPendingSend pendingSend() const;
 
-    PendingOperation *requestDirection(
+    PendingOperation *requestSending(bool send);
+    PendingOperation *requestReceiving(const ContactPtr &contact, bool receive);
+
+    TELEPATHY_QT4_DEPRECATED PendingOperation *requestDirection(
             MediaStreamDirection direction);
-    PendingOperation *requestDirection(
+    TELEPATHY_QT4_DEPRECATED PendingOperation *requestDirection(
             bool send, bool receive);
 
     PendingOperation *startDTMFTone(DTMFEvent event);
     PendingOperation *stopDTMFTone();
 
+Q_SIGNALS:
+    void localSendingStateChanged(
+            Tp::MediaStream::SendingState localSendingState);
+    void remoteSendingStateChanged(
+            const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &remoteSendingStates);
+
+    void membersRemoved(const Tp::Contacts &members);
+
 private Q_SLOTS:
-    void gotContact(Tp::PendingOperation *op);
+    void gotSMContact(Tp::PendingOperation *op);
+
+    void gotCallMainProperties(QDBusPendingCallWatcher *);
+    void gotCallSendersContacts(Tp::PendingOperation *);
 
 private:
+    friend class MediaContent;
     friend class PendingMediaStreams;
     friend class StreamedMediaChannel;
 
-    static const Feature FeatureContact;
+    static const Feature FeatureCore;
 
-    MediaStream(const StreamedMediaChannelPtr &channel, uint id,
-            uint contactHandle, MediaStreamType type,
-            MediaStreamState state, MediaStreamDirection direction,
-            MediaStreamPendingSend pendingSend);
+    MediaStream(const MediaContentPtr &content, const MediaStreamInfo &info);
+    MediaStream(const MediaContentPtr &content,
+            const QDBusObjectPath &streamPath);
 
-    uint contactHandle() const;
-    void setContact(const ContactPtr &contact);
-    void setDirection(MediaStreamDirection direction,
-            MediaStreamPendingSend pendingSend);
-    void setState(MediaStreamState state);
+    void gotSMDirection(uint direction, uint pendingSend);
+    void gotSMStreamState(uint state);
+
+    QDBusObjectPath callObjectPath() const;
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TELEPATHY_QT4_EXPORT PendingMediaContent : public PendingOperation
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(PendingMediaContent)
+
+public:
+    ~PendingMediaContent();
+
+    MediaContentPtr content() const;
+
+private Q_SLOTS:
+    void gotSMStream(QDBusPendingCallWatcher *watcher);
+
+    void gotCallContent(QDBusPendingCallWatcher *watcher);
+
+    void onContentReady(Tp::PendingOperation *op);
+    void onContentRemoved(const Tp::MediaContentPtr &content);
+
+private:
+    friend class StreamedMediaChannel;
+
+    PendingMediaContent(const StreamedMediaChannelPtr &channel,
+            const ContactPtr &contact,
+            const QString &contentName,
+            MediaStreamType type);
+    PendingMediaContent(const StreamedMediaChannelPtr &channel,
+            const QString &contentName,
+            MediaStreamType type);
+    PendingMediaContent(const StreamedMediaChannelPtr &channel,
+            const QString &errorName,
+            const QString &errorMessage);
+
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TELEPATHY_QT4_EXPORT MediaContent : public QObject,
+                    private ReadyObject,
+                    public RefCounted
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(MediaContent)
+
+public:
+    ~MediaContent();
+
+    StreamedMediaChannelPtr channel() const;
+
+    QString name() const;
+    MediaStreamType type() const;
+    ContactPtr creator() const;
+
+    MediaStreams streams() const;
+
+Q_SIGNALS:
+    void streamAdded(const Tp::MediaStreamPtr &stream);
+    void streamRemoved(const Tp::MediaStreamPtr &stream);
+
+private Q_SLOTS:
+    void onStreamReady(Tp::PendingOperation *op);
+    void gotCreator(Tp::PendingOperation *op);
+
+    void gotCallMainProperties(QDBusPendingCallWatcher *);
+    void onCallStreamAdded(const QDBusObjectPath &);
+    void onCallStreamRemoved(const QDBusObjectPath &);
+
+private:
+    friend class StreamedMediaChannel;
+    friend class PendingMediaContent;
+    friend class PendingMediaStreams;
+
+    static const Feature FeatureCore;
+
+    MediaContent(const StreamedMediaChannelPtr &channel,
+            const QString &name,
+            const MediaStreamInfo &streamInfo);
+    MediaContent(const StreamedMediaChannelPtr &channel,
+            const QDBusObjectPath &contentPath);
+
+    void setSMStream(const MediaStreamPtr &stream);
+    MediaStreamPtr SMStream() const;
+    void removeSMStream();
+
+    QDBusObjectPath callObjectPath() const;
 
     struct Private;
     friend struct Private;
@@ -126,33 +252,53 @@ class TELEPATHY_QT4_EXPORT StreamedMediaChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamedMediaChannel)
+    Q_ENUMS(StateChangeReason)
 
 public:
-    static const Feature FeatureStreams;
+    static const Feature FeatureContents;
     static const Feature FeatureLocalHoldState;
+    static const Feature FeatureStreams;
+
+    enum StateChangeReason {
+        StateChangeReasonUnknown = 0,
+        StateChangeReasonUserRequested = 1
+    };
 
     static StreamedMediaChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
     virtual ~StreamedMediaChannel();
 
-    MediaStreams streams() const;
-    MediaStreams streamsForType(MediaStreamType type) const;
-
     bool awaitingLocalAnswer() const;
     bool awaitingRemoteAnswer() const;
 
     PendingOperation *acceptCall();
+    PendingOperation *hangupCall(StateChangeReason reason,
+            const QString &detailedReason, const QString &message);
 
-    PendingOperation *removeStream(const MediaStreamPtr &stream);
-    PendingOperation *removeStreams(const MediaStreams &streams);
+    MediaContents contents() const;
+    MediaContents contentsForType(MediaStreamType type) const;
 
-    PendingMediaStreams *requestStream(
+    TELEPATHY_QT4_DEPRECATED MediaStreams streams() const;
+    TELEPATHY_QT4_DEPRECATED MediaStreams streamsForType(
+            MediaStreamType type) const;
+
+    PendingMediaContent *requestContent(const QString &name,
+            MediaStreamType type);
+
+    TELEPATHY_QT4_DEPRECATED PendingMediaStreams *requestStream(
             const ContactPtr &contact,
             MediaStreamType type);
-    PendingMediaStreams *requestStreams(
+    TELEPATHY_QT4_DEPRECATED PendingMediaStreams *requestStreams(
             const ContactPtr &contact,
             QList<MediaStreamType> types);
+
+    PendingOperation *removeContent(const MediaContentPtr &content);
+
+    TELEPATHY_QT4_DEPRECATED PendingOperation *removeStream(
+            const MediaStreamPtr &stream);
+    TELEPATHY_QT4_DEPRECATED PendingOperation *removeStreams(
+            const MediaStreams &streams);
 
     bool handlerStreamingRequired() const;
 
@@ -161,6 +307,9 @@ public:
     PendingOperation *requestHold(bool hold);
 
 Q_SIGNALS:
+    void contentAdded(const Tp::MediaContentPtr &content);
+    void contentRemoved(const Tp::MediaContentPtr &content);
+
     void streamAdded(const Tp::MediaStreamPtr &stream);
     void streamRemoved(const Tp::MediaStreamPtr &stream);
     void streamDirectionChanged(const Tp::MediaStreamPtr &stream,
@@ -180,22 +329,33 @@ protected:
             const QString &objectPath, const QVariantMap &immutableProperties);
 
 private Q_SLOTS:
-    void gotStreams(QDBusPendingCallWatcher *);
-    void onStreamReady(Tp::PendingOperation *);
-    void onStreamAdded(uint, uint, uint);
-    void onStreamRemoved(uint);
-    void onStreamDirectionChanged(uint, uint, uint);
-    void onStreamStateChanged(uint, uint);
-    void onStreamError(uint, uint, const QString &);
+    void onContentReady(Tp::PendingOperation *op);
+
+    void gotSMStreams(QDBusPendingCallWatcher *);
+    void onSMStreamAdded(uint, uint, uint);
+    void onSMStreamRemoved(uint);
+    void onSMStreamDirectionChanged(uint, uint, uint);
+    void onSMStreamStateChanged(uint streamId, uint streamState);
+    void onSMStreamError(uint, uint, const QString &);
+
+    void gotCallMainProperties(QDBusPendingCallWatcher *);
+    void onCallContentAdded(const QDBusObjectPath &, uint);
+    void onCallContentRemoved(const QDBusObjectPath &);
 
     void gotLocalHoldState(QDBusPendingCallWatcher *);
     void onLocalHoldStateChanged(uint, uint);
 
 private:
+    friend class PendingMediaContent;
     friend class PendingMediaStreams;
 
-    void addStream(const MediaStreamPtr &stream);
-    MediaStreamPtr lookupStreamById(uint streamId);
+    MediaContentPtr addContentForSMStream(const MediaStreamInfo &streamInfo);
+    MediaContentPtr lookupContentBySMStreamId(uint streamId);
+
+    MediaContentPtr addContentForCallObjectPath(
+            const QDBusObjectPath &contentPath);
+    MediaContentPtr lookupContentByCallObjectPath(
+            const QDBusObjectPath &contentPath);
 
     struct Private;
     friend struct Private;
