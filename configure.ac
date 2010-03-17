@@ -92,6 +92,7 @@ TP_COMPILER_WARNINGS([ERROR_CXXFLAGS], [test "x$official_release" = xno],
    init-self],
    [missing-field-initializers \
     unused-parameter])
+ERROR_CXXFLAGS="$ERROR_CXXFLAGS -DQT_NO_CAST_FROM_ASCII"
 AC_SUBST([ERROR_CXXFLAGS])
 
 # For C code taken from telepathy-glib, we want different warnings
