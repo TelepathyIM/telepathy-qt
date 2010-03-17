@@ -11,13 +11,12 @@ cmake_minimum_required(VERSION 2.6)
 #   make the release, tag it
 #   set nano_version to 1
 set(TP_QT4_MAJOR_VERSION 0)
-set(TP_QT4_MINOR_VERSION 1)
-set(TP_QT4_MICRO_VERSION 9)
+set(TP_QT4_MINOR_VERSION 2)
+set(TP_QT4_MICRO_VERSION 2)
 set(TP_QT4_NANO_VERSION  1)
 
 set(PACKAGE_NAME telepathy-qt4)
 set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
-configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is
 # checked
@@ -64,6 +63,17 @@ return 0;
 }"
 QT4_GLIB_SUPPORT)
 
+SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTDBUS_LIBRARY})
+CHECK_CXX_SOURCE_COMPILES("
+#include <QtDBus>
+int main()
+{
+QDBusVariant a; QDBusVariant b; if (a == b) { ; }
+return 0;
+}"
+HAVE_QDBUSVARIANT_OPERATOR_EQUAL)
+set(CMAKE_REQUIRED_LIBRARIES)
+
 # add the -i option to QT4_GENERATE_MOC
 macro(QT4_GENERATE_MOC_I infile outfile)
     qt4_get_moc_flags(moc_flags)
@@ -107,6 +117,8 @@ endif(TP_FARSIGHT_FOUND)
 set(REQUIRED_TP_GLIB 0.7.28)
 pkg_check_modules(TPGLIB telepathy-glib>=${REQUIRED_TP_GLIB})
 
+find_program(GLIB_GENMARSHAL glib-genmarshal)
+
 # process results...
 if(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
     message(STATUS "Qt4 compiled with Glib support and telepathy-glib >= ${REQUIRED_TP_GLIB} found, running additional tests")
@@ -116,18 +128,11 @@ else(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
     set(ENABLE_TP_GLIB_TESTS 0)
 endif(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
 
-find_program(PINOCCHIO telepathy-pinocchio PATHS /usr/local/libexec /usr/libexec /usr/lib/telepathy /usr/local/lib/telepathy)
-find_program(PINOCCHIO_CTL pinocchio-ctl)
-
-if(PINOCCHIO AND PINOCCHIO_CTL)
-    message(STATUS "telepathy-pinochhio found, running additional tests")
-else(PINOCCHIO AND PINOCCHIO_CTL)
-    message(STATUS "telepathy-pinochhio not found, skipping some tests")
-endif(PINOCCHIO AND PINOCCHIO_CTL)
-
 add_subdirectory(TelepathyQt4)
 add_subdirectory(examples)
 add_subdirectory(tests)
+
+configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"

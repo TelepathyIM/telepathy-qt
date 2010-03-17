@@ -16,8 +16,8 @@ if(ENABLE_TP_GLIB_TESTS)
     set_source_files_properties(connection-manager.c
         PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h)
 
-    add_library(tp-glib-example-cm-contactlist SHARED ${example_cm_contactlist_SRCS})
-    target_link_libraries(tp-glib-example-cm-contactlist ${TPGLIB_LIBRARIES})
+    add_library(example-cm-contactlist STATIC ${example_cm_contactlist_SRCS})
+    target_link_libraries(example-cm-contactlist ${TPGLIB_LIBRARIES})
 
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_gen)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h

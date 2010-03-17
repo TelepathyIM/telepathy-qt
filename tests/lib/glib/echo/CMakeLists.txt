@@ -13,6 +13,6 @@ if(ENABLE_TP_GLIB_TESTS)
         im-manager.c
         im-manager.h)
 
-    add_library(tp-glib-example-cm-echo SHARED ${example_cm_echo_SRCS})
-    target_link_libraries(tp-glib-example-cm-echo ${TPGLIB_LIBRARIES})
+    add_library(example-cm-echo STATIC ${example_cm_echo_SRCS})
+    target_link_libraries(example-cm-echo ${TPGLIB_LIBRARIES})
 endif(ENABLE_TP_GLIB_TESTS)

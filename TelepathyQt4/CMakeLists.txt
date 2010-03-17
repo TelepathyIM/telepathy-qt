@@ -18,13 +18,13 @@ set(telepathy_qt4_SRCS
     client.cpp
     client-registrar.cpp
     client-registrar-internal.h
-    connection.cpp
     connection-capabilities.cpp
+    connection.cpp
     connection-internal.h
     connection-manager.cpp
     connection-manager-internal.h
-    contact.cpp
     contact-capabilities.cpp
+    contact.cpp
     contact-manager.cpp
     contact-manager-internal.h
     dbus.cpp
@@ -34,6 +34,8 @@ set(telepathy_qt4_SRCS
     feature.cpp
     file-transfer-channel.cpp
     file-transfer-channel-creation-properties.cpp
+    future.cpp
+    future-internal.h
     incoming-file-transfer-channel.cpp
     key-file.cpp
     manager-file.cpp
@@ -60,15 +62,16 @@ set(telepathy_qt4_SRCS
     referenced-handles.cpp
     room-list-channel.cpp
     streamed-media-channel.cpp
+    streamed-media-channel-internal.h
     text-channel.cpp
     types.cpp)
 
 set(telepathy_qt4_HEADERS
     AbstractClient
     AbstractClientApprover
+    abstract-client.h
     AbstractClientHandler
     AbstractClientObserver
-    abstract-client.h
     AbstractInterface
     abstract-interface.h
     Account
@@ -81,11 +84,12 @@ set(telepathy_qt4_HEADERS
     capabilities-base.h
     Channel
     ChannelDispatcher
-    ChannelDispatcherInterface
     channel-dispatcher.h
+    ChannelDispatcherInterface
     ChannelDispatchOperation
     channel-dispatch-operation.h
     ChannelDispatchOperationInterface
+    channel-factory.h
     channel.h
     ChannelInterface
     ChannelInterfaceCallStateInterface
@@ -101,7 +105,9 @@ set(telepathy_qt4_HEADERS
     ChannelTypeContactListInterface
     ChannelTypeRoomListInterface
     ChannelTypeStreamedMediaInterface
+    ChannelTypeStreamTubeInterface
     ChannelTypeTextInterface
+    ChannelTypeTubeInterface
     ChannelTypeTubesInterface
     Client
     ClientApproverInterface
@@ -113,9 +119,9 @@ set(telepathy_qt4_HEADERS
     ClientRegistrar
     client-registrar.h
     Connection
-    connection.h
     ConnectionCapabilities
     connection-capabilities.h
+    connection.h
     ConnectionInterface
     ConnectionInterfaceAliasingInterface
     ConnectionInterfaceAvatarsInterface
@@ -130,9 +136,10 @@ set(telepathy_qt4_HEADERS
     Constants
     constants.h
     Contact
-    contact.h
     ContactCapabilities
     contact-capabilities.h
+    contact.h
+    ContactManager
     contact-manager.h
     DBus
     DBusDaemonInterface
@@ -145,7 +152,10 @@ set(telepathy_qt4_HEADERS
     feature.h
     FileTransferChannel
     FileTransferChannelCreationProperties
+    file-transfer-channel-creation-properties.h
     file-transfer-channel.h
+    Global
+    global.h
     IncomingFileTransferChannel
     incoming-file-transfer-channel.h
     IntrospectableInterface
@@ -165,7 +175,7 @@ set(telepathy_qt4_HEADERS
     method-invocation-context.h
     OptionalInterfaceFactory
     optional-interface-factory.h
-    OutgoingFileTransferChannel.h
+    OutgoingFileTransferChannel
     outgoing-file-transfer-channel.h
     PeerInterface
     PendingAccount
@@ -174,6 +184,7 @@ set(telepathy_qt4_HEADERS
     pending-channel.h
     PendingChannelRequest
     pending-channel-request.h
+    PendingComposite
     PendingConnection
     pending-connection.h
     PendingContactAttributes
@@ -192,7 +203,7 @@ set(telepathy_qt4_HEADERS
     PendingSuccess
     PendingVariant
     pending-variant.h
-    PendingVoidMethodCall
+    PendingVoid
     Properties
     properties.h
     PropertiesInterface
@@ -236,14 +247,18 @@ set(telepathy_qt4_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-media-stream-handler.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-properties.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-channel.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-misc.h
+    ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 
 set(telepathy_qt4_MOC_SRCS
     abstract-interface.h
     account.h
     account-manager.h
-    channel-dispatch-operation.h
     channel.h
+    channel-dispatch-operation.h
     channel-request.h
     client-registrar.h
     client-registrar-internal.h
@@ -274,6 +289,7 @@ set(telepathy_qt4_MOC_SRCS
     room-list-channel.h
     simple-pending-operations.h
     streamed-media-channel.h
+    streamed-media-channel-internal.h
     text-channel.h)
 
 set(gen_stable_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml)
@@ -283,6 +299,15 @@ add_custom_command(OUTPUT ${gen_stable_spec_xml}
          ${CMAKE_CURRENT_SOURCE_DIR}/stable-interfaces.xml
          > ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/stable-interfaces.xml
+            ${CMAKE_SOURCE_DIR}/tools/xincludator.py)
+
+set(gen_future_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml)
+add_custom_command(OUTPUT ${gen_future_spec_xml}
+    COMMAND ${PYTHON_EXECUTABLE}
+    ARGS ${CMAKE_SOURCE_DIR}/tools/xincludator.py
+         ${CMAKE_CURRENT_SOURCE_DIR}/future-interfaces.xml
+         > ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/future-interfaces.xml
             ${CMAKE_SOURCE_DIR}/tools/xincludator.py)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
@@ -296,6 +321,16 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
     DEPENDS ${gen_stable_spec_xml}
             ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py)
 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
+    COMMAND ${PYTHON_EXECUTABLE}
+    ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
+         --namespace=TpFuture
+         --str-constant-prefix=TP_FUTURE_
+         --specxml=${gen_future_spec_xml}
+         > ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
+    DEPENDS ${gen_future_spec_xml}
+            ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py)
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
     COMMAND ${PYTHON_EXECUTABLE}
     ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
@@ -305,12 +340,32 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRE
          --realinclude=TelepathyQt4/types.h
          --prettyinclude=TelepathyQt4/Types
          --must-define=IN_TELEPATHY_QT4_HEADER
+         --visibility=TELEPATHY_QT4_EXPORT
          --specxml=${gen_stable_spec_xml}
     DEPENDS ${gen_stable_spec_xml}
             ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
             ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h)
+list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h PROPERTIES GENERATED true)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp PROPERTIES GENERATED true)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp
+    COMMAND ${PYTHON_EXECUTABLE}
+    ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
+         --namespace=TpFuture
+         --declfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h
+         --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp
+         --realinclude=TelepathyQt4/future-internal.h
+         --prettyinclude=TelepathyQt4/future-internal.h
+         --specxml=${gen_future_spec_xml}
+    DEPENDS ${gen_future_spec_xml}
+            ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
+            ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h)
+list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h)
+list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h PROPERTIES GENERATED true)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp PROPERTIES GENERATED true)
 
 set(SPECS
     account
@@ -327,7 +382,7 @@ set(SPECS
     media-stream-handler
     properties)
 foreach(spec ${SPECS})
-    add_custom_command(OUTPUT "_gen/spec-${spec}.xml"
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${CMAKE_SOURCE_DIR}/tools/xincludator.py
              ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml
@@ -340,6 +395,24 @@ foreach(spec ${SPECS})
     list(APPEND telepathy_qt4_SRCS ${NEW_FILES})
     set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
 endforeach(spec ${SPECS})
+
+set(FUTURE_SPECS
+    channel
+    misc)
+foreach(spec ${FUTURE_SPECS})
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
+        COMMAND ${PYTHON_EXECUTABLE}
+        ARGS ${CMAKE_SOURCE_DIR}/tools/xincludator.py
+             ${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml
+             > ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
+        DEPENDS future-${spec}.xml
+                ${CMAKE_SOURCE_DIR}/tools/xincludator.py)
+    set(NEW_FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp)
+    list(APPEND telepathy_qt4_SRCS ${NEW_FILES})
+    set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
+endforeach(spec ${FUTURE_SPECS})
 
 if(MSVC)
     set(TYPES_INCLUDE ^<TelepathyQt4/Types^> )
@@ -361,8 +434,9 @@ function(CLIENT_GENERATOR spec group pretty_include namespace main_iface)
             --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
             --extraincludes=${TYPES_INCLUDE}
             --must-define=IN_TELEPATHY_QT4_HEADER
+            --visibility=TELEPATHY_QT4_EXPORT
             ${main_iface})
-    add_custom_command(OUTPUT _gen/cli-${spec}.h _gen/cli-${spec}-body.hpp
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
         DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
@@ -387,6 +461,36 @@ client_generator(dbus clientdbus DBus Tp::Client::DBus "")
 client_generator(media-session-handler clientmsesh MediaSessionHandler Tp::Client --mainiface=Tp::Client::MediaSessionHandlerInterface)
 client_generator(media-stream-handler clientmstrh MediaStreamHandler Tp::Client --mainiface=Tp::Client::MediaStreamHandlerInterface)
 client_generator(properties clientprops Properties Tp::Client "")
+
+function(FUTURE_CLIENT_GENERATOR spec namespace main_iface)
+    set(ARGS
+        ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
+            --namespace=${namespace}
+            --typesnamespace=TpFuture
+            --headerfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
+            --implfile=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
+            --realinclude=TelepathyQt4/future-internal.h
+            --prettyinclude=TelepathyQt4/future-internal.h
+            --specxml=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml
+            --ifacexml=${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
+            --extraincludes=${TYPES_INCLUDE}
+            --extraincludes='<TelepathyQt4/Types>'
+            --extraincludes='<TelepathyQt4/future-internal.h>'
+            --visibility=TELEPATHY_QT4_NO_EXPORT
+            ${main_iface})
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
+        COMMAND ${PYTHON_EXECUTABLE}
+        ARGS ${ARGS}
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
+                ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml
+                ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    qt4_generate_moc_i(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
+                       ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp)
+endfunction(FUTURE_CLIENT_GENERATOR spec group pretty_include main_iface)
+
+future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface)
+future_client_generator(misc TpFuture::Client '')
 
 # generate client moc files
 foreach(moc_src ${telepathy_qt4_MOC_SRCS})
