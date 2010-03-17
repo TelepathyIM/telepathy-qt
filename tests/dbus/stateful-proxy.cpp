@@ -193,9 +193,9 @@ void TestStatefulProxy::testBasics()
 
     QVERIFY(!mProxy->isValid());
     QCOMPARE(mProxy->invalidationReason(),
-            QString::fromAscii("com.example.DomainSpecificError"));
+            QLatin1String("com.example.DomainSpecificError"));
     QCOMPARE(mProxy->invalidationMessage(),
-            QString::fromAscii("Because I said so"));
+            QLatin1String("Because I said so"));
 
     // FIXME: ideally, the method call would already fail synchronously at
     // this point - after all, the proxy already knows it's dead
@@ -220,9 +220,9 @@ void TestStatefulProxy::testBasics()
 
     QCOMPARE(mInvalidated, 1);
     QCOMPARE(mSignalledInvalidationReason,
-            QString::fromAscii("com.example.DomainSpecificError"));
+            QLatin1String("com.example.DomainSpecificError"));
     QCOMPARE(mSignalledInvalidationMessage,
-            QString::fromAscii("Because I said so"));
+            QLatin1String("Because I said so"));
 
     // the low-level proxy made from the high-level proxy now returns an
     // error, synchronously
@@ -291,9 +291,9 @@ void TestStatefulProxy::testNameOwnerChanged()
     QCOMPARE(mInvalidated, 1);
     QVERIFY(!mProxy->isValid());
     QCOMPARE(mProxy->invalidationReason(),
-            QString::fromAscii(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER));
+            QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER));
     QCOMPARE(mSignalledInvalidationReason,
-            QString::fromAscii(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER));
+            QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER));
     QVERIFY(!mProxy->invalidationMessage().isEmpty());
     QCOMPARE(mProxy->invalidationMessage(), mSignalledInvalidationMessage);
 }

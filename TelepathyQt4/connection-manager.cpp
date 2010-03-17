@@ -355,14 +355,14 @@ ConnectionManager::Private::~Private()
 
 QString ConnectionManager::Private::makeBusName(const QString &name)
 {
-    return QString::fromAscii(
-            TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE).append(name);
+    return QString(QLatin1String(
+                TELEPATHY_CONNECTION_MANAGER_BUS_NAME_BASE)).append(name);
 }
 
 QString ConnectionManager::Private::makeObjectPath(const QString &name)
 {
-    return QString::fromAscii(
-            TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE).append(name);
+    return QString(QLatin1String(
+                TELEPATHY_CONNECTION_MANAGER_OBJECT_PATH_BASE)).append(name);
 }
 
 ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
