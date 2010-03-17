@@ -193,8 +193,8 @@ void TestChanBasics::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = name;
-    mConnPath = connPath;
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);
@@ -234,7 +234,7 @@ void TestChanBasics::init()
 void TestChanBasics::testRequestHandle()
 {
     // Test identifiers
-    QStringList ids = QStringList() << "alice";
+    QStringList ids = QStringList() << QLatin1String("alice");
 
     // Request handles for the identifiers and wait for the request to process
     PendingHandles *pending = mConn->requestHandles(Tp::HandleTypeContact, ids);
@@ -253,7 +253,7 @@ void TestChanBasics::testCreateChannel()
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -272,8 +272,8 @@ void TestChanBasics::testCreateChannel()
         QCOMPARE(mChan->isRequested(), true);
         QCOMPARE(mChan->groupCanAddContacts(), false);
         QCOMPARE(mChan->groupCanRemoveContacts(), false);
-        QCOMPARE(mChan->initiatorContact()->id(), QString("me@example.com"));
-        QCOMPARE(mChan->groupSelfContact()->id(), QString("me@example.com"));
+        QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
+        QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
         QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
 
         QStringList ids;
@@ -281,7 +281,8 @@ void TestChanBasics::testCreateChannel()
             ids << contact->id();
         }
         ids.sort();
-        QStringList toCheck = QStringList() << "me@example.com" << "alice";
+        QStringList toCheck = QStringList() << QLatin1String("me@example.com")
+            << QLatin1String("alice");
         toCheck.sort();
         QCOMPARE(ids, toCheck);
 
@@ -293,7 +294,7 @@ void TestChanBasics::testEnsureChannel()
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -312,8 +313,8 @@ void TestChanBasics::testEnsureChannel()
         QCOMPARE(mChan->isRequested(), true);
         QCOMPARE(mChan->groupCanAddContacts(), false);
         QCOMPARE(mChan->groupCanRemoveContacts(), false);
-        QCOMPARE(mChan->initiatorContact()->id(), QString("me@example.com"));
-        QCOMPARE(mChan->groupSelfContact()->id(), QString("me@example.com"));
+        QCOMPARE(mChan->initiatorContact()->id(), QString(QLatin1String("me@example.com")));
+        QCOMPARE(mChan->groupSelfContact()->id(), QString(QLatin1String("me@example.com")));
         QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
 
         QStringList ids;
@@ -321,7 +322,8 @@ void TestChanBasics::testEnsureChannel()
             ids << contact->id();
         }
         ids.sort();
-        QStringList toCheck = QStringList() << "me@example.com" << "alice";
+        QStringList toCheck = QStringList() << QLatin1String("me@example.com")
+            << QLatin1String("alice");
         toCheck.sort();
         QCOMPARE(ids, toCheck);
 

@@ -167,8 +167,8 @@ void TestConnRequests::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = name;
-    mConnPath = connPath;
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);
@@ -195,7 +195,7 @@ void TestConnRequests::init()
 void TestConnRequests::testRequestHandle()
 {
     // Test identifiers
-    QStringList ids = QStringList() << "alice";
+    QStringList ids = QStringList() << QLatin1String("alice");
 
     // Request handles for the identifiers and wait for the request to process
     PendingHandles *pending = mConn->requestHandles(Tp::HandleTypeContact, ids);
@@ -214,7 +214,7 @@ void TestConnRequests::testCreateChannel()
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -229,7 +229,7 @@ void TestConnRequests::testEnsureChannel()
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),

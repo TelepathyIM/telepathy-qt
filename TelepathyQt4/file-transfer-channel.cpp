@@ -122,7 +122,7 @@ void FileTransferChannel::Private::introspectProperties(
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 self->properties->GetAll(
-                    TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER),
+                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER)),
                 self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
@@ -131,17 +131,17 @@ void FileTransferChannel::Private::introspectProperties(
 
 void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
 {
-    pendingState = state = qdbus_cast<uint>(props["State"]);
-    contentType = qdbus_cast<QString>(props["ContentType"]);
-    fileName = qdbus_cast<QString>(props["Filename"]);
-    contentHash = qdbus_cast<QString>(props["ContentHash"]);
-    description = qdbus_cast<QString>(props["Description"]);
-    lastModificationTime.setTime_t((uint) qdbus_cast<qulonglong>(props["Date"]));
-    contentHashType = (FileHashType) qdbus_cast<uint>(props["ContentHashType"]);
-    initialOffset = qdbus_cast<qulonglong>(props["InitialOffset"]);
-    size = qdbus_cast<qulonglong>(props["Size"]);
-    transferredBytes = qdbus_cast<qulonglong>(props["TransferredBytes"]);
-    availableSocketTypes = qdbus_cast<SupportedSocketMap>(props["AvailableSocketTypes"]);
+    pendingState = state = qdbus_cast<uint>(props[QLatin1String("State")]);
+    contentType = qdbus_cast<QString>(props[QLatin1String("ContentType")]);
+    fileName = qdbus_cast<QString>(props[QLatin1String("Filename")]);
+    contentHash = qdbus_cast<QString>(props[QLatin1String("ContentHash")]);
+    description = qdbus_cast<QString>(props[QLatin1String("Description")]);
+    lastModificationTime.setTime_t((uint) qdbus_cast<qulonglong>(props[QLatin1String("Date")]));
+    contentHashType = (FileHashType) qdbus_cast<uint>(props[QLatin1String("ContentHashType")]);
+    initialOffset = qdbus_cast<qulonglong>(props[QLatin1String("InitialOffset")]);
+    size = qdbus_cast<qulonglong>(props[QLatin1String("Size")]);
+    transferredBytes = qdbus_cast<qulonglong>(props[QLatin1String("TransferredBytes")]);
+    availableSocketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("AvailableSocketTypes")]);
 }
 
 /**
@@ -161,7 +161,7 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
  * OutgoingFileTransferChannel and IncomingFileTransferChannel.
  */
 
-const Feature FileTransferChannel::FeatureCore = Feature(FileTransferChannel::staticMetaObject.className(), 0);
+const Feature FileTransferChannel::FeatureCore = Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0);
 
 FileTransferChannelPtr FileTransferChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)

@@ -148,8 +148,8 @@ void TestContacts::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = name;
-    mConnPath = connPath;
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);
@@ -190,13 +190,14 @@ void TestContacts::testSupport()
 
     QVERIFY(!mConn->contactAttributeInterfaces().isEmpty());
 
-    QVERIFY(mConn->contactAttributeInterfaces().contains(TELEPATHY_INTERFACE_CONNECTION));
     QVERIFY(mConn->contactAttributeInterfaces().contains(
-                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING));
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION)));
     QVERIFY(mConn->contactAttributeInterfaces().contains(
-                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS));
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING)));
     QVERIFY(mConn->contactAttributeInterfaces().contains(
-                TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE));
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS)));
+    QVERIFY(mConn->contactAttributeInterfaces().contains(
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE)));
 
     QSet<Contact::Feature> supportedFeatures = mConn->contactManager()->supportedFeatures();
     QVERIFY(!supportedFeatures.isEmpty());
@@ -211,7 +212,7 @@ void TestContacts::testSelfContact()
     QVERIFY(selfContact != 0);
 
     QCOMPARE(selfContact->handle()[0], mConn->selfHandle());
-    QCOMPARE(selfContact->id(), QString("me@example.com"));
+    QCOMPARE(selfContact->id(), QString(QLatin1String("me@example.com")));
 
     QVERIFY(connect(selfContact->manager()->upgradeContacts(
                         QList<ContactPtr>() << selfContact,
@@ -222,13 +223,13 @@ void TestContacts::testSelfContact()
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(selfContact->alias(), QString("me@example.com"));
+    QCOMPARE(selfContact->alias(), QString(QLatin1String("me@example.com")));
 
     QVERIFY(!selfContact->isAvatarTokenKnown());
 
-    QCOMPARE(selfContact->presenceStatus(), QString("available"));
+    QCOMPARE(selfContact->presenceStatus(), QString(QLatin1String("available")));
     QCOMPARE(selfContact->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
-    QCOMPARE(selfContact->presenceMessage(), QString(""));
+    QCOMPARE(selfContact->presenceMessage(), QString(QLatin1String("")));
 }
 
 void TestContacts::testForHandles()
@@ -290,9 +291,9 @@ void TestContacts::testForHandles()
     QCOMPARE(mContacts[1]->handle()[0], handles[1]);
     QCOMPARE(mContacts[2]->handle()[0], handles[3]);
 
-    QCOMPARE(mContacts[0]->id(), QString("alice"));
-    QCOMPARE(mContacts[1]->id(), QString("bob"));
-    QCOMPARE(mContacts[2]->id(), QString("chris"));
+    QCOMPARE(mContacts[0]->id(), QString(QLatin1String("alice")));
+    QCOMPARE(mContacts[1]->id(), QString(QLatin1String("bob")));
+    QCOMPARE(mContacts[2]->id(), QString(QLatin1String("chris")));
 
     // Save the contacts, and make a new request, replacing one of the invalid handles with a valid
     // one
@@ -317,7 +318,7 @@ void TestContacts::testForHandles()
 
     // Check that the new contact is OK too
     QCOMPARE(mContacts[2]->handle()[0], handles[2]);
-    QCOMPARE(mContacts[2]->id(), QString("dora"));
+    QCOMPARE(mContacts[2]->id(), QString(QLatin1String("dora")));
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that
     saveContacts.clear();
@@ -338,8 +339,10 @@ void TestContacts::testForHandles()
 
 void TestContacts::testForIdentifiers()
 {
-    QStringList validIDs = QStringList() << "Alice" << "Bob" << "Chris";
-    QStringList invalidIDs = QStringList() << "Not valid" << "Not valid either";
+    QStringList validIDs = QStringList() << QLatin1String("Alice")
+        << QLatin1String("Bob") << QLatin1String("Chris");
+    QStringList invalidIDs = QStringList() << QLatin1String("Not valid")
+        << QLatin1String("Not valid either");
     TpHandleRepoIface *serviceRepo =
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
 
@@ -398,15 +401,15 @@ void TestContacts::testForIdentifiers()
         QCOMPARE(mContacts[i]->actualFeatures(), QSet<Contact::Feature>());
     }
 
-    QCOMPARE(mContacts[0]->id(), QString("alice"));
-    QCOMPARE(mContacts[1]->id(), QString("bob"));
-    QCOMPARE(mContacts[2]->id(), QString("chris"));
+    QCOMPARE(mContacts[0]->id(), QString(QLatin1String("alice")));
+    QCOMPARE(mContacts[1]->id(), QString(QLatin1String("bob")));
+    QCOMPARE(mContacts[2]->id(), QString(QLatin1String("chris")));
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that (but
     // save their handles first)
     Tp::UIntList saveHandles = Tp::UIntList() << mContacts[0]->handle()[0]
-                                                            << mContacts[1]->handle()[0]
-                                                            << mContacts[2]->handle()[0];
+        << mContacts[1]->handle()[0]
+        << mContacts[2]->handle()[0];
     mContacts.clear();
     mLoop->processEvents();
     processDBusQueue(mConn.data());
@@ -419,7 +422,8 @@ void TestContacts::testForIdentifiers()
 
 void TestContacts::testFeatures()
 {
-    QStringList ids = QStringList() << "alice" << "bob" << "chris";
+    QStringList ids = QStringList() << QLatin1String("alice")
+        << QLatin1String("bob") << QLatin1String("chris");
     const char *initialAliases[] = {
         "Alice in Wonderland",
         "Bob the Builder",
@@ -493,11 +497,11 @@ void TestContacts::testFeatures()
         QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
-        QCOMPARE(mContacts[i]->alias(), QString(initialAliases[i]));
+        QCOMPARE(mContacts[i]->alias(), QString(QLatin1String(initialAliases[i])));
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
-        QCOMPARE(mContacts[i]->presenceMessage(), QString(initialMessages[i]));
+        QCOMPARE(mContacts[i]->presenceMessage(), QString(QLatin1String(initialMessages[i])));
     }
 
     // Check that there's no known avatar token for the first contact, but that there is for the
@@ -506,13 +510,13 @@ void TestContacts::testFeatures()
     QVERIFY(mContacts[1]->isAvatarTokenKnown());
     QVERIFY(mContacts[2]->isAvatarTokenKnown());
 
-    QCOMPARE(mContacts[0]->avatarToken(), QString(""));
-    QCOMPARE(mContacts[1]->avatarToken(), QString(initialTokens[0]));
-    QCOMPARE(mContacts[2]->avatarToken(), QString(initialTokens[1]));
+    QCOMPARE(mContacts[0]->avatarToken(), QString(QLatin1String("")));
+    QCOMPARE(mContacts[1]->avatarToken(), QString(QLatin1String(initialTokens[0])));
+    QCOMPARE(mContacts[2]->avatarToken(), QString(QLatin1String(initialTokens[1])));
 
-    QCOMPARE(mContacts[0]->presenceStatus(), QString("available"));
-    QCOMPARE(mContacts[1]->presenceStatus(), QString("busy"));
-    QCOMPARE(mContacts[2]->presenceStatus(), QString("away"));
+    QCOMPARE(mContacts[0]->presenceStatus(), QString(QLatin1String("available")));
+    QCOMPARE(mContacts[1]->presenceStatus(), QString(QLatin1String("busy")));
+    QCOMPARE(mContacts[2]->presenceStatus(), QString(QLatin1String("away")));
 
     QCOMPARE(mContacts[0]->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
     QCOMPARE(mContacts[1]->presenceType(), uint(Tp::ConnectionPresenceTypeBusy));
@@ -542,25 +546,25 @@ void TestContacts::testFeatures()
         QVERIFY(mContacts[i]->isAvatarTokenKnown());
     }
 
-    QCOMPARE(mContacts[0]->alias(), QString(latterAliases[0]));
-    QCOMPARE(mContacts[1]->alias(), QString(latterAliases[1]));
-    QCOMPARE(mContacts[2]->alias(), QString(initialAliases[2]));
+    QCOMPARE(mContacts[0]->alias(), QString(QLatin1String(latterAliases[0])));
+    QCOMPARE(mContacts[1]->alias(), QString(QLatin1String(latterAliases[1])));
+    QCOMPARE(mContacts[2]->alias(), QString(QLatin1String(initialAliases[2])));
 
-    QCOMPARE(mContacts[0]->avatarToken(), QString(latterTokens[0]));
-    QCOMPARE(mContacts[1]->avatarToken(), QString(latterTokens[1]));
-    QCOMPARE(mContacts[2]->avatarToken(), QString(initialTokens[1]));
+    QCOMPARE(mContacts[0]->avatarToken(), QString(QLatin1String(latterTokens[0])));
+    QCOMPARE(mContacts[1]->avatarToken(), QString(QLatin1String(latterTokens[1])));
+    QCOMPARE(mContacts[2]->avatarToken(), QString(QLatin1String(initialTokens[1])));
 
-    QCOMPARE(mContacts[0]->presenceStatus(), QString("away"));
-    QCOMPARE(mContacts[1]->presenceStatus(), QString("available"));
-    QCOMPARE(mContacts[2]->presenceStatus(), QString("away"));
+    QCOMPARE(mContacts[0]->presenceStatus(), QString(QLatin1String("away")));
+    QCOMPARE(mContacts[1]->presenceStatus(), QString(QLatin1String("available")));
+    QCOMPARE(mContacts[2]->presenceStatus(), QString(QLatin1String("away")));
 
     QCOMPARE(mContacts[0]->presenceType(), uint(Tp::ConnectionPresenceTypeAway));
     QCOMPARE(mContacts[1]->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
     QCOMPARE(mContacts[2]->presenceType(), uint(Tp::ConnectionPresenceTypeAway));
 
-    QCOMPARE(mContacts[0]->presenceMessage(), QString(latterMessages[0]));
-    QCOMPARE(mContacts[1]->presenceMessage(), QString(latterMessages[1]));
-    QCOMPARE(mContacts[2]->presenceMessage(), QString(initialMessages[2]));
+    QCOMPARE(mContacts[0]->presenceMessage(), QString(QLatin1String(latterMessages[0])));
+    QCOMPARE(mContacts[1]->presenceMessage(), QString(QLatin1String(latterMessages[1])));
+    QCOMPARE(mContacts[2]->presenceMessage(), QString(QLatin1String(initialMessages[2])));
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that
     mContacts.clear();
@@ -579,7 +583,8 @@ void TestContacts::testFeatures()
 void TestContacts::testFeaturesNotRequested()
 {
     // Test ids and corresponding handles
-    QStringList ids = QStringList() << "alice" << "bob" << "chris";
+    QStringList ids = QStringList() << QLatin1String("alice")
+        << QLatin1String("bob") << QLatin1String("chris");
     TpHandleRepoIface *serviceRepo =
         tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService), TP_HANDLE_TYPE_CONTACT);
     Tp::UIntList handles;
@@ -607,11 +612,11 @@ void TestContacts::testFeaturesNotRequested()
         QCOMPARE(contact->alias(), contact->id());
 
         QVERIFY(!contact->isAvatarTokenKnown());
-        QCOMPARE(contact->avatarToken(), QString(""));
+        QCOMPARE(contact->avatarToken(), QString(QLatin1String("")));
 
-        QCOMPARE(contact->presenceStatus(), QString("unknown"));
+        QCOMPARE(contact->presenceStatus(), QString(QLatin1String("unknown")));
         QCOMPARE(contact->presenceType(), uint(Tp::ConnectionPresenceTypeUnknown));
-        QCOMPARE(contact->presenceMessage(), QString(""));
+        QCOMPARE(contact->presenceMessage(), QString(QLatin1String("")));
     }
 
     // Make the contacts go out of scope, starting releasing their handles, and finish that
@@ -627,9 +632,11 @@ void TestContacts::testFeaturesNotRequested()
     tp_handle_unref(serviceRepo, handles[2]);
     QVERIFY(!tp_handle_is_valid(serviceRepo, handles[2], NULL));
 }
+
 void TestContacts::testUpgrade()
 {
-    QStringList ids = QStringList() << "alice" << "bob" << "chris";
+    QStringList ids = QStringList() << QLatin1String("alice")
+        << QLatin1String("bob") << QLatin1String("chris");
     const char *aliases[] = {
         "Alice in Wonderland",
         "Bob The Builder",
@@ -710,19 +717,19 @@ void TestContacts::testUpgrade()
         QVERIFY((mContacts[i]->actualFeatures() - mContacts[i]->requestedFeatures()).isEmpty());
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAlias));
-        QCOMPARE(mContacts[i]->alias(), QString(aliases[i]));
+        QCOMPARE(mContacts[i]->alias(), QString(QLatin1String(aliases[i])));
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureAvatarToken));
         QVERIFY(mContacts[i]->isAvatarTokenKnown());
-        QCOMPARE(mContacts[i]->avatarToken(), QString(tokens[i]));
+        QCOMPARE(mContacts[i]->avatarToken(), QString(QLatin1String(tokens[i])));
 
         QVERIFY(mContacts[i]->actualFeatures().contains(Contact::FeatureSimplePresence));
-        QCOMPARE(mContacts[i]->presenceMessage(), QString(messages[i]));
+        QCOMPARE(mContacts[i]->presenceMessage(), QString(QLatin1String(messages[i])));
     }
 
-    QCOMPARE(mContacts[0]->presenceStatus(), QString("available"));
-    QCOMPARE(mContacts[1]->presenceStatus(), QString("busy"));
-    QCOMPARE(mContacts[2]->presenceStatus(), QString("away"));
+    QCOMPARE(mContacts[0]->presenceStatus(), QString(QLatin1String("available")));
+    QCOMPARE(mContacts[1]->presenceStatus(), QString(QLatin1String("busy")));
+    QCOMPARE(mContacts[2]->presenceStatus(), QString(QLatin1String("away")));
 
     QCOMPARE(mContacts[0]->presenceType(), uint(Tp::ConnectionPresenceTypeAvailable));
     QCOMPARE(mContacts[1]->presenceType(), uint(Tp::ConnectionPresenceTypeBusy));
@@ -763,7 +770,7 @@ void TestContacts::testSelfContactFallback()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    ConnectionPtr conn = Connection::create(name, connPath);
+    ConnectionPtr conn = Connection::create(QLatin1String(name), QLatin1String(connPath));
     g_free(name);
     g_free(connPath);
 
@@ -782,10 +789,10 @@ void TestContacts::testSelfContactFallback()
     QVERIFY(selfContact != 0);
 
     QCOMPARE(selfContact->handle()[0], conn->selfHandle());
-    QCOMPARE(selfContact->id(), QString("me@example.com"));
-    QCOMPARE(selfContact->alias(), QString("me@example.com"));
+    QCOMPARE(selfContact->id(), QString(QLatin1String("me@example.com")));
+    QCOMPARE(selfContact->alias(), QString(QLatin1String("me@example.com")));
     QVERIFY(!selfContact->isAvatarTokenKnown());
-    QCOMPARE(selfContact->presenceStatus(), QString("unknown"));
+    QCOMPARE(selfContact->presenceStatus(), QString(QLatin1String("unknown")));
 }
 
 void TestContacts::cleanup()

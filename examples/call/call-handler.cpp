@@ -54,7 +54,7 @@ void CallHandler::addOutgoingCall(const ContactPtr &contact)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -81,7 +81,7 @@ void CallHandler::onOutgoingChannelCreated(PendingOperation *op)
             op->errorName() << "-" << op->errorMessage();
 
         QMessageBox msgBox;
-        msgBox.setText(QString("Unable to call (%1)").arg(op->errorMessage()));
+        msgBox.setText(QString(QLatin1String("Unable to call (%1)")).arg(op->errorMessage()));
         msgBox.exec();
         return;
     }
@@ -108,7 +108,7 @@ void CallHandler::onOutgoingChannelReady(PendingOperation *op)
         mChannels.removeOne(chan);
 
         QMessageBox msgBox;
-        msgBox.setText(QString("Unable to call (%1)").arg(op->errorMessage()));
+        msgBox.setText(QString(QLatin1String("Unable to call (%1)")).arg(op->errorMessage()));
         msgBox.exec();
         return;
     }
@@ -142,8 +142,8 @@ void CallHandler::onIncomingChannelReady(PendingOperation *op)
     ContactPtr contact = chan->initiatorContact();
 
     QMessageBox msgBox;
-    msgBox.setText("Incoming call");
-    msgBox.setInformativeText(QString("%1 is calling you, do you want to answer?").arg(contact->id()));
+    msgBox.setText(QLatin1String("Incoming call"));
+    msgBox.setInformativeText(QString(QLatin1String("%1 is calling you, do you want to answer?")).arg(contact->id()));
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::Yes);
     int ret = msgBox.exec();

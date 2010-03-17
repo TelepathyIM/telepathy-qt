@@ -70,7 +70,7 @@ void ReceiverChannel::onFileTransferChannelReady(PendingOperation *op)
             SIGNAL(transferredBytesChanged(qulonglong)),
             SLOT(onFileTransferChannelTransferredBytesChanged(qulonglong)));
     QString fileName(QLatin1String("TelepathyQt4FTReceiverExample_") + mChan->fileName());
-    fileName.replace("/", "_");
+    fileName.replace(QLatin1String("/"), QLatin1String("_"));
     mFile.setFileName(fileName);
     qDebug() << "Saving file as" << mFile.fileName();
     mChan->acceptFile(mOffset, &mFile);

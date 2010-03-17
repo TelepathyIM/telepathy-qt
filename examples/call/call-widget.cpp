@@ -51,7 +51,7 @@ CallWidget::CallWidget(const StreamedMediaChannelPtr &chan,
       mPmsAudio(0),
       mPmsVideo(0)
 {
-    setWindowTitle(QString("Call (%1)").arg(mContact->id()));
+    setWindowTitle(QString(QLatin1String("Call (%1)")).arg(mContact->id()));
 
     setAttribute(Qt::WA_DeleteOnClose);
 
@@ -83,13 +83,13 @@ void CallWidget::setupGui()
     // buttons
     QHBoxLayout *btnBox = new QHBoxLayout;
 
-    mBtnHangup = new QPushButton("Hangup");
+    mBtnHangup = new QPushButton(QLatin1String("Hangup"));
     connect(mBtnHangup,
             SIGNAL(clicked(bool)),
             SLOT(onBtnHangupClicked()));
     btnBox->addWidget(mBtnHangup);
 
-    mBtnSendAudio = new QPushButton("Send Audio");
+    mBtnSendAudio = new QPushButton(QLatin1String("Send Audio"));
     mBtnSendAudio->setCheckable(true);
     mBtnSendAudio->setChecked(true);
     mBtnSendAudio->setEnabled(false);
@@ -98,7 +98,7 @@ void CallWidget::setupGui()
             SLOT(onBtnSendAudioToggled(bool)));
     btnBox->addWidget(mBtnSendAudio);
 
-    mBtnSendVideo = new QPushButton("Send Video");
+    mBtnSendVideo = new QPushButton(QLatin1String("Send Video"));
     mBtnSendVideo->setCheckable(true);
     mBtnSendVideo->setChecked(false);
     mBtnSendVideo->setEnabled(false);
@@ -359,14 +359,14 @@ void CallWidget::onTfChannelStatusChanged(FarsightChannel::Status status)
 {
     switch (status) {
     case FarsightChannel::StatusConnecting:
-        mStatusBar->showMessage("Connecting...");
+        mStatusBar->showMessage(QLatin1String("Connecting..."));
         break;
     case FarsightChannel::StatusConnected:
-        mStatusBar->showMessage("Connected");
+        mStatusBar->showMessage(QLatin1String("Connected"));
         break;
     case FarsightChannel::StatusDisconnected:
         mChan->requestClose();
-        callEnded("Call terminated");
+        callEnded(QLatin1String("Call terminated"));
         break;
     }
 }
@@ -374,7 +374,7 @@ void CallWidget::onTfChannelStatusChanged(FarsightChannel::Status status)
 void CallWidget::onBtnHangupClicked()
 {
     mChan->requestClose();
-    callEnded("Call terminated");
+    callEnded(QLatin1String("Call terminated"));
 }
 
 void CallWidget::onBtnSendAudioToggled(bool checked)

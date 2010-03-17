@@ -54,18 +54,18 @@ void RosterItem::onContactChanged()
     QString status = mContact->presenceStatus();
     // I've asked to see the contact presence
     if (mContact->subscriptionState() == Contact::PresenceStateAsk) {
-        setText(QString("%1 (%2) (awaiting approval)").arg(mContact->id()).arg(status));
+        setText(QString(QLatin1String("%1 (%2) (awaiting approval)")).arg(mContact->id()).arg(status));
     // The contact asked to see my presence
     } else if (mContact->publishState() == Contact::PresenceStateAsk) {
-        setText(QString("%1 (%2) (pending approval)").arg(mContact->id()).arg(status));
+        setText(QString(QLatin1String("%1 (%2) (pending approval)")).arg(mContact->id()).arg(status));
     } else if (mContact->subscriptionState() == Contact::PresenceStateNo &&
                mContact->publishState() == Contact::PresenceStateNo) {
-        setText(QString("%1 (unknown)").arg(mContact->id()));
+        setText(QString(QLatin1String("%1 (unknown)")).arg(mContact->id()));
     } else {
         if (mContact->isBlocked()) {
-            setText(QString("%1 (%2) (blocked)").arg(mContact->id()).arg(status));
+            setText(QString(QLatin1String("%1 (%2) (blocked)")).arg(mContact->id()).arg(status));
         } else {
-            setText(QString("%1 (%2)").arg(mContact->id()).arg(status));
+            setText(QString(QLatin1String("%1 (%2)")).arg(mContact->id()).arg(status));
         }
     }
 

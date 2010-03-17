@@ -39,11 +39,11 @@ RosterWindow::RosterWindow(const QString &username, const QString &password,
       mUsername(username),
       mPassword(password)
 {
-    setWindowTitle("Roster");
+    setWindowTitle(QLatin1String("Roster"));
 
     setupGui();
 
-    mCM = ConnectionManager::create("gabble");
+    mCM = ConnectionManager::create(QLatin1String("gabble"));
     connect(mCM->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onCMReady(Tp::PendingOperation *)));
@@ -73,9 +73,10 @@ void RosterWindow::onCMReady(Tp::PendingOperation *op)
 
     qDebug() << "CM ready";
     QVariantMap params;
-    params.insert("account", QVariant(mUsername));
-    params.insert("password", QVariant(mPassword));
-    PendingConnection *pconn = mCM->requestConnection("jabber", params);
+    params.insert(QLatin1String("account"), QVariant(mUsername));
+    params.insert(QLatin1String("password"), QVariant(mPassword));
+    PendingConnection *pconn = mCM->requestConnection(QLatin1String("jabber"),
+            params);
     connect(pconn,
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onConnectionCreated(Tp::PendingOperation *)));

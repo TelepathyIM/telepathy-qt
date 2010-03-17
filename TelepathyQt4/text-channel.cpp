@@ -202,9 +202,9 @@ TextChannel::Private::Private(TextChannel *parent)
     introspectables[FeatureMessageSentSignal] = introspectableMessageSentSignal;
 
     ReadinessHelper::Introspectable introspectableChatState(
-        QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
-        QStringList(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE),          // dependsOnInterfaces
+        QSet<uint>() << 0,                                                                  // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                                 // dependsOnFeatures (core)
+        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE),   // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::enableChatStateNotifications,
         this);
     introspectables[FeatureChatState] = introspectableChatState;
@@ -343,7 +343,7 @@ void TextChannel::Private::updateInitialMessages()
     initialMessagesReceived = true;
 
     MessagePartListList messages = qdbus_cast<MessagePartListList>(
-            props["PendingMessages"]);
+            props[QLatin1String("PendingMessages")]);
     if (messages.isEmpty()) {
         debug() << "Message queue empty: FeatureMessageQueue is now ready";
         readinessHelper->setIntrospectCompleted(FeatureMessageQueue, true);
@@ -362,14 +362,14 @@ void TextChannel::Private::updateCapabilities()
     }
 
     supportedContentTypes = qdbus_cast<QStringList>(
-            props["SupportedContentTypes"]);
+            props[QLatin1String("SupportedContentTypes")]);
     if (supportedContentTypes.isEmpty()) {
         supportedContentTypes << QLatin1String("text/plain");
     }
     messagePartSupport = MessagePartSupportFlags(qdbus_cast<uint>(
-            props["MessagePartSupportFlags"]));
+            props[QLatin1String("MessagePartSupportFlags")]));
     deliveryReportingSupport = DeliveryReportingSupportFlags(
-            qdbus_cast<uint>(props["DeliveryReportingSupport"]));
+            qdbus_cast<uint>(props[QLatin1String("DeliveryReportingSupport")]));
     readinessHelper->setIntrospectCompleted(FeatureMessageCapabilities, true);
 }
 
@@ -566,10 +566,10 @@ void TextChannel::Private::contactFound(ContactPtr contact)
  * state changes.
  */
 
-const Feature TextChannel::FeatureMessageQueue = Feature(TextChannel::staticMetaObject.className(), 0);
-const Feature TextChannel::FeatureMessageCapabilities = Feature(TextChannel::staticMetaObject.className(), 1);
-const Feature TextChannel::FeatureMessageSentSignal = Feature(TextChannel::staticMetaObject.className(), 2);
-const Feature TextChannel::FeatureChatState = Feature(TextChannel::staticMetaObject.className(), 3);
+const Feature TextChannel::FeatureMessageQueue = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 0);
+const Feature TextChannel::FeatureMessageCapabilities = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 1);
+const Feature TextChannel::FeatureMessageSentSignal = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 2);
+const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 3);
 
 /**
  * \fn void TextChannel::messageSent(const Tp::Message &message,
@@ -956,11 +956,11 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
  */
 PendingOperation *TextChannel::requestChatState(ChannelChatState state)
 {
-    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE)) {
+    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CHAT_STATE))) {
         warning() << "TextChannel::requestChatState() used with no chat "
             "state interface";
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "TextChannel does not support chat state interface",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("TextChannel does not support chat state interface"),
                 this);
     }
     return new PendingVoid(chatStateInterface()->SetChatState(

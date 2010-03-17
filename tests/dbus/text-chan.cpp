@@ -281,13 +281,13 @@ void TestTextChan::commonTest(bool withMessages)
     QVERIFY(!mChan->isReady(features));
 
     if (withMessages) {
-        QCOMPARE(mChan->supportedContentTypes(), QStringList() << "*/*");
+        QCOMPARE(mChan->supportedContentTypes(), QStringList() << QLatin1String("*/*"));
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()),
                 static_cast<uint>(Tp::MessagePartSupportFlagOneAttachment |
                     Tp::MessagePartSupportFlagMultipleAttachments));
         QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
     } else {
-        QCOMPARE(mChan->supportedContentTypes(), QStringList() << "text/plain");
+        QCOMPARE(mChan->supportedContentTypes(), QStringList() << QLatin1String("text/plain"));
         QCOMPARE(static_cast<uint>(mChan->messagePartSupport()), 0U);
         QCOMPARE(static_cast<uint>(mChan->deliveryReportingSupport()), 0U);
     }

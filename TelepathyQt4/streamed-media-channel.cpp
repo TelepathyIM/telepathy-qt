@@ -71,8 +71,9 @@ PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
         QDBusPendingCallWatcher *watcher =
             new QDBusPendingCallWatcher(
                 mPriv->callInterface()->AddContent(
-                    QString("%1 %2 %3")
-                        .arg(type == MediaStreamTypeAudio ? "audio" : "video")
+                    QString(QLatin1String("%1 %2 %3"))
+                        .arg(type == MediaStreamTypeAudio ?
+                            QLatin1String("audio") : QLatin1String("video"))
                         .arg((qulonglong) this)
                         .arg(mPriv->contents.size()),
                     type), this);
@@ -185,7 +186,8 @@ void PendingMediaStreams::onContentRemoved(const MediaContentPtr &content)
 
     if (mPriv->contents.contains(content)) {
         // the content was removed before becoming ready
-        setFinishedWithError(TELEPATHY_ERROR_CANCELLED, "Content removed before ready");
+        setFinishedWithError(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+                QLatin1String("Content removed before ready"));
     }
 }
 
@@ -346,7 +348,7 @@ void MediaStream::Private::introspectCallMainProperties(
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 self->callPropertiesInterface->GetAll(
-                    TP_FUTURE_INTERFACE_CALL_STREAM),
+                    QLatin1String(TP_FUTURE_INTERFACE_CALL_STREAM)),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
@@ -418,7 +420,7 @@ void MediaStream::Private::CallProxy::onCallSendersChanged(
     mPriv->processCallSendersChanged();
 }
 
-const Feature MediaStream::FeatureCore = Feature(MediaStream::staticMetaObject.className(), 0);
+const Feature MediaStream::FeatureCore = Feature(QLatin1String(MediaStream::staticMetaObject.className()), 0);
 
 MediaStream::MediaStream(const MediaContentPtr &content,
         const MediaStreamInfo &streamInfo)
@@ -747,15 +749,15 @@ PendingOperation *MediaStream::startDTMFTone(DTMFEvent event)
 {
     if (mPriv->ifaceType != IfaceTypeStreamedMedia) {
         // TODO add Call iface support
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "MediaStream does not have DTMF support", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("MediaStream does not have DTMF support"), this);
     }
 
     StreamedMediaChannelPtr chan(channel());
-    if (!chan->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF)) {
+    if (!chan->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF))) {
         warning() << "MediaStream::startDTMFTone() used with no dtmf interface";
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "StreamedMediaChannel does not support dtmf interface",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("StreamedMediaChannel does not support dtmf interface"),
                 this);
     }
     return new PendingVoid(
@@ -783,15 +785,15 @@ PendingOperation *MediaStream::stopDTMFTone()
 {
     if (mPriv->ifaceType != IfaceTypeStreamedMedia) {
         // TODO add Call iface support
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "MediaStream does not have DTMF support", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("MediaStream does not have DTMF support"), this);
     }
 
     StreamedMediaChannelPtr chan(channel());
-    if (!chan->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF)) {
+    if (!chan->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF))) {
         warning() << "MediaStream::stopDTMFTone() used with no dtmf interface";
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "StreamedMediaChannel does not support dtmf interface",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("StreamedMediaChannel does not support dtmf interface"),
                 this);
     }
     return new PendingVoid(
@@ -936,14 +938,15 @@ PendingOperation *MediaStream::requestReceiving(const ContactPtr &contact,
         bool receive)
 {
     if (!contact) {
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid contact", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Invalid contact"), this);
     }
 
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         if (mPriv->SMContact != contact) {
-            return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                    "Contact is not a member of the stream", this);
+            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                    QLatin1String("Contact is not a member of the stream"),
+                    this);
         }
 
         return mPriv->updateSMDirection(
@@ -982,8 +985,8 @@ void MediaStream::gotSMContact(PendingOperation *op)
         Q_ASSERT(invalidHandles.size() == 1);
         warning().nospace() << "Error retrieving media stream contact (invalid handle)";
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
-                TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid contact handle");
+                QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Invalid contact handle"));
     }
 }
 
@@ -1042,7 +1045,7 @@ void MediaStream::gotCallMainProperties(QDBusPendingCallWatcher *watcher)
 
     QVariantMap props = reply.value();
     TpFuture::ContactSendingStateMap senders =
-        qdbus_cast<TpFuture::ContactSendingStateMap>(props["Senders"]);
+        qdbus_cast<TpFuture::ContactSendingStateMap>(props[QLatin1String("Senders")]);
 
     mPriv->callSendersChangedQueue.enqueue(
             new Private::CallSendersChangedInfo(
@@ -1288,8 +1291,8 @@ void PendingMediaContent::onContentRemoved(const MediaContentPtr &content)
 
     if (mPriv->content == content) {
         // the content was removed before becoming ready
-        setFinishedWithError(TELEPATHY_ERROR_CANCELLED,
-                "Content removed before ready");
+        setFinishedWithError(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+                QLatin1String("Content removed before ready"));
     }
 }
 
@@ -1374,7 +1377,7 @@ void MediaContent::Private::introspectCallMainProperties(
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 self->callPropertiesInterface->GetAll(
-                    TP_FUTURE_INTERFACE_CALL_CONTENT),
+                    QLatin1String(TP_FUTURE_INTERFACE_CALL_CONTENT)),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
@@ -1414,7 +1417,7 @@ void MediaContent::Private::addStream(const MediaStreamPtr &stream)
             SLOT(onStreamReady(Tp::PendingOperation*)));
 }
 
-const Feature MediaContent::FeatureCore = Feature(MediaStream::staticMetaObject.className(), 0);
+const Feature MediaContent::FeatureCore = Feature(QLatin1String(MediaStream::staticMetaObject.className()), 0);
 
 MediaContent::MediaContent(const StreamedMediaChannelPtr &channel,
         const QString &name,
@@ -1540,10 +1543,10 @@ void MediaContent::gotCallMainProperties(QDBusPendingCallWatcher *watcher)
     debug() << "Got reply to Properties.GetAll(Call.Content)";
 
     QVariantMap props = reply.value();
-    mPriv->name = qdbus_cast<QString>(props["Name"]);
-    mPriv->type = qdbus_cast<uint>(props["Type"]);
-    mPriv->creatorHandle = qdbus_cast<uint>(props["Creator"]);
-    ObjectPathList streamsPaths = qdbus_cast<ObjectPathList>(props["Streams"]);
+    mPriv->name = qdbus_cast<QString>(props[QLatin1String("Name")]);
+    mPriv->type = qdbus_cast<uint>(props[QLatin1String("Type")]);
+    mPriv->creatorHandle = qdbus_cast<uint>(props[QLatin1String("Creator")]);
+    ObjectPathList streamsPaths = qdbus_cast<ObjectPathList>(props[QLatin1String("Streams")]);
 
     if (streamsPaths.size() == 0 && mPriv->creatorHandle == 0) {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
@@ -1654,7 +1657,7 @@ StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
 {
     QString channelType = parent->immutableProperties().value(QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-    if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) {
+    if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA)) {
         ifaceType = IfaceTypeStreamedMedia;
     } else {
         ifaceType = IfaceTypeCall;
@@ -1671,9 +1674,9 @@ StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
     introspectables[FeatureContents] = introspectableContents;
 
     ReadinessHelper::Introspectable introspectableLocalHoldState(
-        QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
-        QStringList(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD),                // dependsOnInterfaces
+        QSet<uint>() << 0,                                                          // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
+        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD), // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectLocalHoldState,
         this);
     introspectables[FeatureLocalHoldState] = introspectableLocalHoldState;
@@ -1735,7 +1738,7 @@ void StreamedMediaChannel::Private::introspectCallContents()
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
                 parent->propertiesInterface()->GetAll(
-                    TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL),
+                    QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL)),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
@@ -1768,8 +1771,8 @@ void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChanne
  * StreamedMedia channel type.
  */
 
-const Feature StreamedMediaChannel::FeatureContents = Feature(StreamedMediaChannel::staticMetaObject.className(), 0);
-const Feature StreamedMediaChannel::FeatureLocalHoldState = Feature(StreamedMediaChannel::staticMetaObject.className(), 1);
+const Feature StreamedMediaChannel::FeatureContents = Feature(QLatin1String(StreamedMediaChannel::staticMetaObject.className()), 0);
+const Feature StreamedMediaChannel::FeatureLocalHoldState = Feature(QLatin1String(StreamedMediaChannel::staticMetaObject.className()), 1);
 const Feature StreamedMediaChannel::FeatureStreams = FeatureContents;
 
 StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connection,
@@ -1864,8 +1867,8 @@ PendingOperation *StreamedMediaChannel::acceptCall()
 PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &stream)
 {
     if (!stream) {
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Unable to remove a null stream", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Unable to remove a null stream"), this);
     }
 
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
@@ -1877,8 +1880,8 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
                 this);
     } else {
         // TODO add Call iface support once RemoveContent is implement
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Removing streams is not supported", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Removing streams is not supported"), this);
     }
 }
 
@@ -1901,8 +1904,8 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
         }
 
         if (ids.isEmpty()) {
-            return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                    "Unable to remove invalid streams", this);
+            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                    QLatin1String("Unable to remove invalid streams"), this);
         }
 
         return new PendingVoid(
@@ -1910,8 +1913,8 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
                 this);
     } else {
         // TODO add Call iface support once RemoveContent is implement
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Removing streams is not supported", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Removing streams is not supported"), this);
     }
 }
 
@@ -2015,8 +2018,8 @@ PendingMediaContent *StreamedMediaChannel::requestContent(
 PendingOperation *StreamedMediaChannel::removeContent(const MediaContentPtr &content)
 {
     if (!content) {
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Unable to remove a null content", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Unable to remove a null content"), this);
     }
 
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
@@ -2047,7 +2050,7 @@ bool StreamedMediaChannel::handlerStreamingRequired() const
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
         return interfaces().contains(
-                TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING);
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MEDIA_SIGNALLING));
     } else {
         return !mPriv->callHardwareStreaming;
     }
@@ -2065,7 +2068,7 @@ LocalHoldState StreamedMediaChannel::localHoldState() const
 {
     if (!isReady(FeatureLocalHoldState)) {
         warning() << "StreamedMediaChannel::localHoldState() used with FeatureLocalHoldState not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD))) {
         warning() << "StreamedMediaChannel::localHoldStateReason() used with no hold interface";
     }
 
@@ -2084,7 +2087,7 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
 {
     if (!isReady(FeatureLocalHoldState)) {
         warning() << "StreamedMediaChannel::localHoldStateReason() used with FeatureLocalHoldState not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD))) {
         warning() << "StreamedMediaChannel::localHoldStateReason() used with no hold interface";
     }
 
@@ -2125,10 +2128,10 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  */
 PendingOperation *StreamedMediaChannel::requestHold(bool hold)
 {
-    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD)) {
+    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD))) {
         warning() << "StreamedMediaChannel::requestHold() used with no hold interface";
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "StreamedMediaChannel does not support hold interface",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("StreamedMediaChannel does not support hold interface"),
                 this);
     }
     return new PendingVoid(holdInterface()->RequestHold(hold), this);
@@ -2339,8 +2342,8 @@ void StreamedMediaChannel::gotCallMainProperties(
     debug() << "Got reply to Properties.GetAll(Call)";
 
     QVariantMap props = reply.value();
-    mPriv->callHardwareStreaming = qdbus_cast<bool>(props["HardwareStreaming"]);
-    ObjectPathList contentsPaths = qdbus_cast<ObjectPathList>(props["Contents"]);
+    mPriv->callHardwareStreaming = qdbus_cast<bool>(props[QLatin1String("HardwareStreaming")]);
+    ObjectPathList contentsPaths = qdbus_cast<ObjectPathList>(props[QLatin1String("Contents")]);
     if (contentsPaths.size() > 0) {
         foreach (const QDBusObjectPath &contentPath, contentsPaths) {
             MediaContentPtr content = lookupContentByCallObjectPath(
@@ -2448,8 +2451,9 @@ MediaContentPtr StreamedMediaChannel::addContentForSMStream(
      * fake content */
     MediaContentPtr content = MediaContentPtr(
             new MediaContent(StreamedMediaChannelPtr(this),
-                QString("%1 %2 %3")
-                    .arg(streamInfo.type == MediaStreamTypeAudio ? "audio" : "video")
+                QString(QLatin1String("%1 %2 %3"))
+                    .arg(streamInfo.type == MediaStreamTypeAudio ?
+                        QLatin1String("audio") : QLatin1String("video"))
                     .arg((qulonglong) this)
                     .arg(mPriv->numContents++),
                 streamInfo));

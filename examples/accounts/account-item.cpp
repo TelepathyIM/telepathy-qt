@@ -47,13 +47,16 @@ AccountItem::~AccountItem()
 
 void AccountItem::setupGui()
 {
-    mTable->setItem(mRow, ColumnValid, new QTableWidgetItem(mAcc->isValid() ? "true" : "false"));
-    mTable->setItem(mRow, ColumnEnabled, new QTableWidgetItem(mAcc->isEnabled() ? "true" : "false"));
+    mTable->setItem(mRow, ColumnValid, new QTableWidgetItem(mAcc->isValid() ?
+                QLatin1String("true") : QLatin1String("false")));
+    mTable->setItem(mRow, ColumnEnabled, new QTableWidgetItem(mAcc->isEnabled() ?
+                QLatin1String("true") : QLatin1String("false")));
     mTable->setItem(mRow, ColumnConnectionManager, new QTableWidgetItem(mAcc->cmName()));
     mTable->setItem(mRow, ColumnProtocol, new QTableWidgetItem(mAcc->protocol()));
     mTable->setItem(mRow, ColumnDisplayName, new QTableWidgetItem(mAcc->displayName()));
     mTable->setItem(mRow, ColumnNickname, new QTableWidgetItem(mAcc->nickname()));
-    mTable->setItem(mRow, ColumnConnectsAutomatically, new QTableWidgetItem(mAcc->connectsAutomatically() ? "true" : "false"));
+    mTable->setItem(mRow, ColumnConnectsAutomatically, new QTableWidgetItem(mAcc->connectsAutomatically() ?
+                QLatin1String("true") : QLatin1String("false")));
     mTable->setItem(mRow, ColumnAutomaticPresence, new QTableWidgetItem(mAcc->automaticPresence().status));
     mTable->setItem(mRow, ColumnCurrentPresence, new QTableWidgetItem(mAcc->currentPresence().status));
     mTable->setItem(mRow, ColumnRequestedPresence, new QTableWidgetItem(mAcc->requestedPresence().status));
@@ -101,13 +104,13 @@ void AccountItem::onReady(Tp::PendingOperation *op)
 void AccountItem::onValidityChanged(bool valid)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnValid);
-    item->setText((valid ? "true" : "false"));
+    item->setText((valid ? QLatin1String("true") : QLatin1String("false")));
 }
 
 void AccountItem::onStateChanged(bool enabled)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnEnabled);
-    item->setText((enabled ? "true" : "false"));
+    item->setText((enabled ? QLatin1String("true") : QLatin1String("false")));
 }
 
 void AccountItem::onDisplayNameChanged(const QString &name)
@@ -125,7 +128,7 @@ void AccountItem::onNicknameChanged(const QString &name)
 void AccountItem::onConnectsAutomaticallyPropertyChanged(bool value)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnConnectsAutomatically);
-    item->setText((value ? "true" : "false"));
+    item->setText((value ? QLatin1String("true") : QLatin1String("false")));
 }
 
 void AccountItem::onAutomaticPresenceChanged(const Tp::SimplePresence &presence)

@@ -335,7 +335,8 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
     ConnectionPtr conn = mPriv->manager->connection();
     foreach (uint handle, mPriv->handlesToInspect) {
         QVariantMap handleAttributes;
-        handleAttributes.insert(TELEPATHY_INTERFACE_CONNECTION "/contact-id", names[i++]);
+        handleAttributes.insert(QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id"),
+                names[i++]);
         ReferencedHandles referencedHandle(conn, HandleTypeContact,
                 UIntList() << handle);
         mPriv->satisfyingContacts.insert(handle, manager()->ensureContact(referencedHandle,
@@ -360,7 +361,7 @@ PendingContacts::PendingContacts(ContactManager *manager,
                                << otherContacts.size() << "contacts";
 
         ConnectionPtr conn = manager->connection();
-        if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        if (conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
             debug() << " Building contacts using contact attributes";
             PendingContactAttributes *attributes =
                 conn->contactAttributes(otherContacts.toList(),

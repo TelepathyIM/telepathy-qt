@@ -66,7 +66,7 @@ void TestCmBasics::init()
 {
     initImpl();
 
-    mCM = ConnectionManager::create("simple");
+    mCM = ConnectionManager::create(QLatin1String("simple"));
     QCOMPARE(mCM->isReady(), false);
 }
 
@@ -86,15 +86,15 @@ void TestCmBasics::testBasics()
     QCOMPARE(mCM->isReady(), true);
 
     QCOMPARE(mCM->interfaces(), QStringList());
-    QCOMPARE(mCM->supportedProtocols(), QStringList() << "simple");
+    QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("simple"));
 
     Q_FOREACH (ProtocolInfo *info, mCM->protocols()) {
         QVERIFY(info != 0);
-        QVERIFY(info->cmName() == "simple");
-        QVERIFY(info->name() == "simple");
+        QVERIFY(info->cmName() == QLatin1String("simple"));
+        QVERIFY(info->name() == QLatin1String("simple"));
 
-        QCOMPARE(info->hasParameter("account"), true);
-        QCOMPARE(info->hasParameter("not-there"), false);
+        QCOMPARE(info->hasParameter(QLatin1String("account")), true);
+        QCOMPARE(info->hasParameter(QLatin1String("not-there")), false);
 
         Q_FOREACH (ProtocolParameter *param, info->parameters()) {
             QCOMPARE(param->name(), QString::fromAscii("account"));
@@ -106,7 +106,7 @@ void TestCmBasics::testBasics()
         QCOMPARE(info->canRegister(), false);
     }
 
-    QCOMPARE(mCM->supportedProtocols(), QStringList() << "simple");
+    QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("simple"));
 }
 
 void TestCmBasics::cleanup()

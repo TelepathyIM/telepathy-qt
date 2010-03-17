@@ -115,17 +115,17 @@ public:
         bool hasActor() const;
         ContactPtr actor() const;
 
-        bool hasReason() const { return allDetails().contains("change-reason"); }
-        uint reason() const { return qdbus_cast<uint>(allDetails().value("change-reason")); }
+        bool hasReason() const { return allDetails().contains(QLatin1String("change-reason")); }
+        uint reason() const { return qdbus_cast<uint>(allDetails().value(QLatin1String("change-reason"))); }
 
-        bool hasMessage() const { return allDetails().contains("message"); }
-        QString message () const { return qdbus_cast<QString>(allDetails().value("message")); }
+        bool hasMessage() const { return allDetails().contains(QLatin1String("message")); }
+        QString message () const { return qdbus_cast<QString>(allDetails().value(QLatin1String("message"))); }
 
-        bool hasError() const { return allDetails().contains("error"); }
-        QString error() const { return qdbus_cast<QString>(allDetails().value("error")); }
+        bool hasError() const { return allDetails().contains(QLatin1String("error")); }
+        QString error() const { return qdbus_cast<QString>(allDetails().value(QLatin1String("error"))); }
 
-        bool hasDebugMessage() const { return allDetails().contains("debug-message"); }
-        QString debugMessage() const { return qdbus_cast<QString>(allDetails().value("debug-message")); }
+        bool hasDebugMessage() const { return allDetails().contains(QLatin1String("debug-message")); }
+        QString debugMessage() const { return qdbus_cast<QString>(allDetails().value(QLatin1String("debug-message"))); }
 
         QVariantMap allDetails() const;
 
@@ -218,7 +218,7 @@ public:
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         // Check for the remote object having the correct channel type
-        QString name(Interface::staticInterfaceName());
+        QString name(QLatin1String(Interface::staticInterfaceName()));
         if (check == CheckInterfaceSupported && channelType() != name)
             return 0;
 

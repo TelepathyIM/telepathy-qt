@@ -128,11 +128,11 @@ QString Contact::avatarToken() const
     if (!mPriv->requestedFeatures.contains(FeatureAvatarToken)) {
         warning() << "Contact::avatarToken() used on" << this
             << "for which FeatureAvatarToken hasn't been requested - returning \"\"";
-        return QString("");
+        return QString();
     } else if (!isAvatarTokenKnown()) {
         warning() << "Contact::avatarToken() used on" << this
             << "for which the avatar token is not (yet) known - returning \"\"";
-        return QString("");
+        return QString();
     }
 
     return mPriv->avatarToken;
@@ -143,7 +143,7 @@ QString Contact::presenceStatus() const
     if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
         warning() << "Contact::presenceStatus() used on" << this
             << "for which FeatureSimplePresence hasn't been requested - returning \"unknown\"";
-        return QString("unknown");
+        return QLatin1String("unknown");
     }
 
     return mPriv->simplePresence.status;
@@ -165,7 +165,7 @@ QString Contact::presenceMessage() const
     if (!mPriv->requestedFeatures.contains(FeatureSimplePresence)) {
         warning() << "Contact::presenceMessage() used on" << this
             << "for which FeatureSimplePresence hasn't been requested - returning \"\"";
-        return QString("");
+        return QString();
     }
 
     return mPriv->simplePresence.statusMessage;
@@ -326,7 +326,8 @@ Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
 void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes) {
     mPriv->requestedFeatures.unite(requestedFeatures);
 
-    mPriv->id = qdbus_cast<QString>(attributes[TELEPATHY_INTERFACE_CONNECTION "/contact-id"]);
+    mPriv->id = qdbus_cast<QString>(attributes[
+            QLatin1String(TELEPATHY_INTERFACE_CONNECTION "/contact-id")]);
 
     foreach (Feature feature, requestedFeatures) {
         QString maybeAlias;
@@ -336,7 +337,7 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
         switch (feature) {
             case FeatureAlias:
                 maybeAlias = qdbus_cast<QString>(attributes.value(
-                            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING "/alias"));
+                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING "/alias")));
 
                 if (!maybeAlias.isEmpty()) {
                     receiveAlias(maybeAlias);
@@ -347,9 +348,9 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
 
             case FeatureAvatarToken:
                 if (attributes.contains(
-                            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token")) {
+                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token"))) {
                     receiveAvatarToken(qdbus_cast<QString>(attributes.value(
-                                    TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token")));
+                                    QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS "/token"))));
                 } else {
                     if (manager()->supportedFeatures().contains(FeatureAvatarToken)) {
                         // AvatarToken being supported but not included in the mapping indicates
@@ -358,26 +359,26 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                     }
                     // In either case, the avatar token can't be known
                     mPriv->isAvatarTokenKnown = false;
-                    mPriv->avatarToken = "";
+                    mPriv->avatarToken = QLatin1String("");
                 }
                 break;
 
             case FeatureSimplePresence:
                 maybePresence = qdbus_cast<SimplePresence>(attributes.value(
-                            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE "/presence"));
+                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE "/presence")));
 
                 if (!maybePresence.status.isEmpty()) {
                     receiveSimplePresence(maybePresence);
                 } else {
                     mPriv->simplePresence.type = ConnectionPresenceTypeUnknown;
-                    mPriv->simplePresence.status = "unknown";
-                    mPriv->simplePresence.statusMessage = "";
+                    mPriv->simplePresence.status = QLatin1String("unknown");
+                    mPriv->simplePresence.statusMessage = QLatin1String("");
                 }
                 break;
 
             case FeatureCapabilities:
                 maybeCaps = qdbus_cast<RequestableChannelClassList>(attributes.value(
-                            TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES "/capabilities"));
+                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES "/capabilities")));
 
                 if (!maybeCaps.isEmpty()) {
                     receiveCapabilities(maybeCaps);

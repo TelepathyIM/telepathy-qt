@@ -43,9 +43,9 @@ CallWindow::CallWindow(const QString &username, const QString &password,
       mUsername(username),
       mPassword(password)
 {
-    setWindowTitle("Call");
+    setWindowTitle(QLatin1String("Call"));
 
-    mCM = ConnectionManager::create("gabble");
+    mCM = ConnectionManager::create(QLatin1String("gabble"));
     connect(mCM->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onCMReady(Tp::PendingOperation *)));
@@ -79,9 +79,10 @@ void CallWindow::onCMReady(Tp::PendingOperation *op)
 
     qDebug() << "CM ready";
     QVariantMap params;
-    params.insert("account", QVariant(mUsername));
-    params.insert("password", QVariant(mPassword));
-    PendingConnection *pconn = mCM->requestConnection("jabber", params);
+    params.insert(QLatin1String("account"), QVariant(mUsername));
+    params.insert(QLatin1String("password"), QVariant(mPassword));
+    PendingConnection *pconn = mCM->requestConnection(QLatin1String("jabber"),
+            params);
     connect(pconn,
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onConnectionCreated(Tp::PendingOperation *)));
@@ -117,9 +118,9 @@ void CallWindow::onConnectionConnected(Tp::PendingOperation *op)
     PendingReady *pr = qobject_cast<PendingReady *>(op);
     ConnectionPtr conn = ConnectionPtr(qobject_cast<Connection *>(pr->object()));
 
-    if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES)) {
+    if (conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CAPABILITIES))) {
         Tp::CapabilityPair capability = {
-            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA),
             Tp::ChannelMediaCapabilityAudio |
             Tp::ChannelMediaCapabilityVideo |
                 Tp::ChannelMediaCapabilityNATTraversalSTUN |
@@ -131,7 +132,7 @@ void CallWindow::onConnectionConnected(Tp::PendingOperation *op)
                 QStringList());
     }
 
-    if (conn->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+    if (conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
         qDebug() << "CallWindow::onConnectionConnected: connecting to Connection.Interface.NewChannels";
         connect(conn->requestsInterface(),
                 SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
@@ -159,7 +160,7 @@ void CallWindow::onNewChannels(const Tp::ChannelDetailsList &channels)
         qDebug() << " channelType:" << channelType;
         qDebug() << " requested  :" << requested;
 
-        if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
             !requested) {
             StreamedMediaChannelPtr channel = StreamedMediaChannel::create(mConn,
                         details.channel.path(),

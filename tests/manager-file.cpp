@@ -18,24 +18,24 @@ private Q_SLOTS:
 
 void TestManagerFile::testManagerFile()
 {
-    ManagerFile notFoundManagerFile("test-manager-file-not-found");
+    ManagerFile notFoundManagerFile(QLatin1String("test-manager-file-not-found"));
     QCOMPARE(notFoundManagerFile.isValid(), false);
 
-    ManagerFile invalidManagerFile("test-manager-file-malformed-keyfile");
+    ManagerFile invalidManagerFile(QLatin1String("test-manager-file-malformed-keyfile"));
     QCOMPARE(invalidManagerFile.isValid(), false);
 
-    ManagerFile invalidManagerFile2("test-manager-file-invalid-signature");
+    ManagerFile invalidManagerFile2(QLatin1String("test-manager-file-invalid-signature"));
     QCOMPARE(invalidManagerFile2.isValid(), false);
 
-    ManagerFile managerFile("test-manager-file");
+    ManagerFile managerFile(QLatin1String("test-manager-file"));
     QCOMPARE(managerFile.isValid(), true);
 
     QStringList protocols = managerFile.protocols();
     protocols.sort();
     QCOMPARE(protocols,
-             QStringList() << "bar" << "foo" << "somewhat-pathological");
+             QStringList() << QLatin1String("bar") << QLatin1String("foo") << QLatin1String("somewhat-pathological"));
 
-    ParamSpecList params = managerFile.parameters("foo");
+    ParamSpecList params = managerFile.parameters(QLatin1String("foo"));
     QCOMPARE(containsParam(params, "account"), true);
     QCOMPARE(containsParam(params, "encryption-key"), true);
     QCOMPARE(containsParam(params, "password"), true);
@@ -45,17 +45,17 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(containsParam(params, "non-existant"), false);
 
     const ParamSpec *param;
-    param = getParam(params, "account");
+    param = getParam(params, QLatin1String("account"));
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagRequired | ConnMgrParamFlagHasDefault);
-    QCOMPARE(param->signature, QString("s"));
-    param = getParam(params, "password");
+    QCOMPARE(param->signature, QString(QLatin1String("s")));
+    param = getParam(params, QLatin1String("password"));
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagRequired | ConnMgrParamFlagSecret);
-    QCOMPARE(param->signature, QString("s"));
-    param = getParam(params, "encryption-key");
+    QCOMPARE(param->signature, QString(QLatin1String("s")));
+    param = getParam(params, QLatin1String("encryption-key"));
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagSecret);
-    QCOMPARE(param->signature, QString("s"));
+    QCOMPARE(param->signature, QString(QLatin1String("s")));
 
-    params = managerFile.parameters("somewhat-pathological");
+    params = managerFile.parameters(QLatin1String("somewhat-pathological"));
     QCOMPARE(containsParam(params, "foo"), true);
     QCOMPARE(containsParam(params, "semicolons"), true);
     QCOMPARE(containsParam(params, "list"), true);
@@ -69,34 +69,34 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(containsParam(params, "object"), true);
     QCOMPARE(containsParam(params, "non-existant"), false);
 
-    param = getParam(params, "foo");
+    param = getParam(params, QLatin1String("foo"));
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagRequired | ConnMgrParamFlagHasDefault);
-    QCOMPARE(param->signature, QString("s"));
-    param = getParam(params, "semicolons");
+    QCOMPARE(param->signature, QString(QLatin1String("s")));
+    param = getParam(params, QLatin1String("semicolons"));
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagSecret | ConnMgrParamFlagHasDefault);
-    QCOMPARE(param->signature, QString("s"));
-    param = getParam(params, "list");
-    QCOMPARE(param->signature, QString("as"));
+    QCOMPARE(param->signature, QString(QLatin1String("s")));
+    param = getParam(params, QLatin1String("list"));
+    QCOMPARE(param->signature, QString(QLatin1String("as")));
     QCOMPARE(param->defaultValue.variant().toStringList(),
-             QStringList() << "list" << "of" << "misc");
-    param = getParam(params, "escaped-semicolon-in-list");
-    QCOMPARE(param->signature, QString("as"));
+             QStringList() << QLatin1String("list") << QLatin1String("of") << QLatin1String("misc"));
+    param = getParam(params, QLatin1String("escaped-semicolon-in-list"));
+    QCOMPARE(param->signature, QString(QLatin1String("as")));
     QCOMPARE(param->defaultValue.variant().toStringList(),
-             QStringList() << "list;of" << "misc");
-    param = getParam(params, "doubly-escaped-semicolon-in-list");
-    QCOMPARE(param->signature, QString("as"));
+             QStringList() << QLatin1String("list;of") << QLatin1String("misc"));
+    param = getParam(params, QLatin1String("doubly-escaped-semicolon-in-list"));
+    QCOMPARE(param->signature, QString(QLatin1String("as")));
     QCOMPARE(param->defaultValue.variant().toStringList(),
-             QStringList() << "list\\" << "of" << "misc");
-    param = getParam(params, "triply-escaped-semicolon-in-list");
-    QCOMPARE(param->signature, QString("as"));
+             QStringList() << QLatin1String("list\\") << QLatin1String("of") << QLatin1String("misc"));
+    param = getParam(params, QLatin1String("triply-escaped-semicolon-in-list"));
+    QCOMPARE(param->signature, QString(QLatin1String("as")));
     QCOMPARE(param->defaultValue.variant().toStringList(),
-             QStringList() << "list\\;of" << "misc");
-    param = getParam(params, "empty-list");
-    QCOMPARE(param->signature, QString("as"));
+             QStringList() << QLatin1String("list\\;of") << QLatin1String("misc"));
+    param = getParam(params, QLatin1String("empty-list"));
+    QCOMPARE(param->signature, QString(QLatin1String("as")));
     QCOMPARE(param->defaultValue.variant().toStringList(),
              QStringList());
-    param = getParam(params, "list-of-empty-string");
-    QCOMPARE(param->signature, QString("as"));
+    param = getParam(params, QLatin1String("list-of-empty-string"));
+    QCOMPARE(param->signature, QString(QLatin1String("as")));
     QCOMPARE(param->defaultValue.variant().toStringList(),
              QStringList() << QString());
 }
@@ -104,7 +104,7 @@ void TestManagerFile::testManagerFile()
 bool containsParam(const ParamSpecList &params, const char *name)
 {
     Q_FOREACH (const ParamSpec &param, params) {
-        if (param.name == name) {
+        if (param.name == QLatin1String(name)) {
             return true;
         }
     }

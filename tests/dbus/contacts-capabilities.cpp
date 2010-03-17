@@ -99,8 +99,8 @@ void TestContactsCapabilities::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = name;
-    mConnPath = connPath;
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);
@@ -126,7 +126,8 @@ void TestContactsCapabilities::init()
 
 void TestContactsCapabilities::testCapabilities()
 {
-    QStringList validIDs = QStringList() << "foo" << "bar";
+    QStringList validIDs = QStringList() << QLatin1String("foo")
+        << QLatin1String("bar");
 
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(
             validIDs, QSet<Contact::Feature>() << Contact::FeatureCapabilities);

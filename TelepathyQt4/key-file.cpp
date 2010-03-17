@@ -82,7 +82,7 @@ void KeyFile::Private::setFileName(const QString &fName)
 
 void KeyFile::Private::setError(KeyFile::Status st, const QString &reason)
 {
-    warning() << QString("ERROR: filename(%1) reason(%2)")
+    warning() << QString(QLatin1String("ERROR: filename(%1) reason(%2)"))
                          .arg(fileName).arg(reason);
     status = st;
     groups.clear();
@@ -93,13 +93,13 @@ bool KeyFile::Private::read()
     QFile file(fileName);
     if (!file.exists()) {
         setError(KeyFile::NotFoundError,
-                 "file does not exist");
+                 QLatin1String("file does not exist"));
         return false;
     }
 
     if (!file.open(QFile::ReadOnly)) {
         setError(KeyFile::AccessError,
-                 "cannot open file for readonly access");
+                 QLatin1String("cannot open file for readonly access"));
         return false;
     }
 
@@ -134,23 +134,23 @@ bool KeyFile::Private::read()
             if (idx == -1) {
                 // line starts with [ and it's not a group
                 setError(KeyFile::FormatError,
-                         QString("invalid group at line %2 - missing ']'")
+                         QString(QLatin1String("invalid group at line %2 - missing ']'"))
                                  .arg(line));
                 return false;
             }
 
             group = data.mid(1, idx - 1).trimmed();
-            if (groups.contains(group)) {
+            if (groups.contains(QLatin1String(group))) {
                 setError(KeyFile::FormatError,
-                         QString("duplicated group '%1' at line %2")
-                                 .arg(group.constData()).arg(line));
+                         QString(QLatin1String("duplicated group '%1' at line %2"))
+                                 .arg(QLatin1String(group)).arg(line));
                 return false;
             }
 
-            currentGroup = "";
+            currentGroup = QLatin1String("");
             if (!unescapeString(group, 0, group.size(), currentGroup)) {
                 setError(KeyFile::FormatError,
-                         QString("invalid group '%1' at line %2")
+                         QString(QLatin1String("invalid group '%1' at line %2"))
                                  .arg(currentGroup).arg(line));
                 return false;
             }
@@ -159,7 +159,7 @@ bool KeyFile::Private::read()
             idx = data.indexOf('=');
             if (idx == -1) {
                 setError(KeyFile::FormatError,
-                         QString("format error at line %1 - missing '='")
+                         QString(QLatin1String("format error at line %1 - missing '='"))
                                  .arg(line));
                 return false;
             }
@@ -174,14 +174,14 @@ bool KeyFile::Private::read()
             QString key;
             if (!validateKey(data, 0, idxKeyEnd, key)) {
                 setError(KeyFile::FormatError,
-                         QString("invalid key '%1' at line %2")
+                         QString(QLatin1String("invalid key '%1' at line %2"))
                                  .arg(key).arg(line));
                 return false;
             }
 
             if (groupMap.contains(key)) {
                 setError(KeyFile::FormatError,
-                         QString("duplicated key '%1' on group '%2' at line %3")
+                         QString(QLatin1String("duplicated key '%1' on group '%2' at line %3"))
                                  .arg(key).arg(currentGroup).arg(line));
                 return false;
             }
@@ -230,29 +230,29 @@ bool KeyFile::Private::unescapeString(const QByteArray &data, int from, int to, 
 
         if (ch == '\\') {
             if (i == to) {
-                result += '\\';
+                result += QLatin1String("\\");
                 return true;
             }
 
             char nextCh = data.at(i++);
             switch (nextCh) {
                 case 's':
-                    result += ' ';
+                    result += QLatin1String(" ");
                     break;
                 case 'n':
-                    result += '\n';
+                    result += QLatin1String("\n");
                     break;
                 case 't':
-                    result += '\t';
+                    result += QLatin1String("\t");
                     break;
                 case 'r':
-                    result += '\r';
+                    result += QLatin1String("\r");
                     break;
                 case ';':
-                    result += ";";
+                    result += QLatin1String(";");
                     break;
                 case '\\':
-                    result += '\\';
+                    result += QLatin1String("\\");
                     break;
                 default:
                     return false;
@@ -271,7 +271,7 @@ bool KeyFile::Private::unescapeStringList(const QByteArray &data, int from, int 
     QByteArray value;
     QList<QByteArray> valueList;
     int i = from;
-    QChar ch;
+    char ch;
     while (i < to) {
         ch = data.at(i++);
 
@@ -338,7 +338,7 @@ QString KeyFile::Private::rawValue(const QString &key) const
 {
     QHash<QString, QByteArray> groupMap = groups[currentGroup];
     QByteArray rawValue = groupMap.value(key);
-    return QString(rawValue);
+    return QLatin1String(rawValue);
 }
 
 QString KeyFile::Private::value(const QString &key) const

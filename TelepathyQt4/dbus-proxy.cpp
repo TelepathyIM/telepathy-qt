@@ -88,8 +88,8 @@ DBusProxy::DBusProxy(const QDBusConnection &dbusConnection,
       mPriv(new Private(dbusConnection, busName, path))
 {
     if (!dbusConnection.isConnected()) {
-        invalidate("org.freedesktop.DBus.Error.Disconnected",
-            "DBus connection disconnected");
+        invalidate(QLatin1String(TELEPATHY_ERROR_DISCONNECTED),
+                QLatin1String("DBus connection disconnected"));
     }
 }
 
@@ -264,7 +264,7 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
     connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
             this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
 
-    if (!busName.startsWith(QChar(':'))) {
+    if (!busName.startsWith(QLatin1String(":"))) {
         // For a stateful interface, it makes no sense to follow name-owner
         // changes, so we want to bind to the unique name.
         QDBusReply<QString> reply = dbusConnection.interface()->serviceOwner(
@@ -287,9 +287,9 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
 {
     // We only want to invalidate this object if it is not already invalidated,
     // and its (not any other object's) name owner changed signal is emitted.
-    if (isValid() && name == busName() && newOwner == "") {
-        invalidate(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER,
-            "Name owner lost (service crashed?)");
+    if (isValid() && name == busName() && newOwner == QLatin1String("")) {
+        invalidate(QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER),
+                QLatin1String("Name owner lost (service crashed?)"));
     }
 }
 
@@ -316,7 +316,7 @@ StatelessDBusProxy::StatelessDBusProxy(const QDBusConnection &dbusConnection,
     : DBusProxy(dbusConnection, busName, objectPath, parent),
       mPriv(0)
 {
-    if (busName.startsWith(QChar(':'))) {
+    if (busName.startsWith(QLatin1String(":"))) {
         warning() <<
             "Using StatelessDBusProxy for a unique name does not make sense";
     }

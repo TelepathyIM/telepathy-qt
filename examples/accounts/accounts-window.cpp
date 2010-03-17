@@ -61,18 +61,18 @@ void AccountsWindow::setupGui()
     mTable->setColumnCount(AccountItem::NumColumns);
     QStringList headerLabels;
     headerLabels <<
-        "Valid" <<
-        "Enabled" <<
-        "Connection Manager" <<
-        "Protocol" <<
-        "Display Name" <<
-        "Nickname" <<
-        "Connects Automatically" <<
-        "Automatic Presence" <<
-        "Current Presence" <<
-        "Requested Presence" <<
-        "Connection Status" <<
-        "Connection";
+        QLatin1String("Valid") <<
+        QLatin1String("Enabled") <<
+        QLatin1String("Connection Manager") <<
+        QLatin1String("Protocol") <<
+        QLatin1String("Display Name") <<
+        QLatin1String("Nickname") <<
+        QLatin1String("Connects Automatically") <<
+        QLatin1String("Automatic Presence") <<
+        QLatin1String("Current Presence") <<
+        QLatin1String("Requested Presence") <<
+        QLatin1String("Connection Status") <<
+        QLatin1String("Connection");
     mTable->setHorizontalHeaderLabels(headerLabels);
 
     setCentralWidget(mTable);

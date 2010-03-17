@@ -111,8 +111,8 @@ void TestConnRosterGroups::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = name;
-    mConnPath = connPath;
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);
@@ -144,7 +144,8 @@ void TestConnRosterGroups::testRosterGroups()
     ContactManager *contactManager = mConn->contactManager();
 
     QStringList expectedGroups;
-    expectedGroups << "Cambridge" << "Francophones" << "Montreal";
+    expectedGroups << QLatin1String("Cambridge") << QLatin1String("Francophones")
+        << QLatin1String("Montreal");
     expectedGroups.sort();
     QStringList groups = contactManager->allKnownGroups();
     groups.sort();
@@ -153,11 +154,13 @@ void TestConnRosterGroups::testRosterGroups()
     // Cambridge
     {
         QStringList expectedContacts;
-        expectedContacts << "geraldine@example.com" << "helen@example.com"
-            << "guillaume@example.com" << "sjoerd@example.com";
+        expectedContacts << QLatin1String("geraldine@example.com")
+            << QLatin1String("helen@example.com")
+            << QLatin1String("guillaume@example.com")
+            << QLatin1String("sjoerd@example.com");
         expectedContacts.sort();
         QStringList contacts;
-        foreach (const ContactPtr &contact, contactManager->groupContacts("Cambridge")) {
+        foreach (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Cambridge"))) {
             contacts << contact->id();
         }
         contacts.sort();
@@ -167,11 +170,12 @@ void TestConnRosterGroups::testRosterGroups()
     // Francophones
     {
         QStringList expectedContacts;
-        expectedContacts << "olivier@example.com" << "geraldine@example.com"
-            << "guillaume@example.com";
+        expectedContacts << QLatin1String("olivier@example.com")
+            << QLatin1String("geraldine@example.com")
+            << QLatin1String("guillaume@example.com");
         expectedContacts.sort();
         QStringList contacts;
-        foreach (const ContactPtr &contact, contactManager->groupContacts("Francophones")) {
+        foreach (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Francophones"))) {
             contacts << contact->id();
         }
         contacts.sort();
@@ -181,17 +185,17 @@ void TestConnRosterGroups::testRosterGroups()
     // Montreal
     {
         QStringList expectedContacts;
-        expectedContacts << "olivier@example.com";
+        expectedContacts << QLatin1String("olivier@example.com");
         expectedContacts.sort();
         QStringList contacts;
-        foreach (const ContactPtr &contact, contactManager->groupContacts("Montreal")) {
+        foreach (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Montreal"))) {
             contacts << contact->id();
         }
         contacts.sort();
         QCOMPARE(contacts, expectedContacts);
     }
 
-    QString group("foo");
+    QString group(QLatin1String("foo"));
     QVERIFY(contactManager->groupContacts(group).isEmpty());
 
     // add group foo
@@ -214,7 +218,7 @@ void TestConnRosterGroups::testRosterGroups()
     QCOMPARE(groups, expectedGroups);
 
     // add Montreal contacts to group foo
-    Contacts contacts = contactManager->groupContacts("Montreal");
+    Contacts contacts = contactManager->groupContacts(QLatin1String("Montreal"));
     foreach (const ContactPtr &contact, contacts) {
         QVERIFY(connect(contact.data(),
                         SIGNAL(addedToGroup(const QString&)),

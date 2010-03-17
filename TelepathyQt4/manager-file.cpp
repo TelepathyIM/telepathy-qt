@@ -70,7 +70,7 @@ void ManagerFile::Private::init()
 
     QString xdgDataHome = QString::fromLocal8Bit(qgetenv("XDG_DATA_HOME"));
     if (xdgDataHome.isEmpty()) {
-        configDirs << QDir::homePath() + "/.local/share/data/telepathy/managers/";
+        configDirs << QDir::homePath() + QLatin1String("/.local/share/data/telepathy/managers/");
     }
     else {
         configDirs << xdgDataHome + QLatin1String("/telepathy/managers/");
@@ -78,8 +78,8 @@ void ManagerFile::Private::init()
 
     QString xdgDataDirsEnv = QString::fromLocal8Bit(qgetenv("XDG_DATA_DIRS"));
     if (xdgDataDirsEnv.isEmpty()) {
-        configDirs << "/usr/local/share/telepathy/managers/";
-        configDirs << "/usr/share/telepathy/managers/";
+        configDirs << QLatin1String("/usr/local/share/telepathy/managers/");
+        configDirs << QLatin1String("/usr/share/telepathy/managers/");
     }
     else {
         QStringList xdgDataDirs = xdgDataDirsEnv.split(QLatin1Char(':'));
@@ -114,7 +114,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
     QString protocol;
     QStringList groups = keyFile.allGroups();
     foreach (const QString group, groups) {
-        if (group.startsWith("Protocol ")) {
+        if (group.startsWith(QLatin1String("Protocol "))) {
             protocol = group.right(group.length() - 9);
             keyFile.setGroup(group);
 
@@ -124,26 +124,26 @@ bool ManagerFile::Private::parse(const QString &fileName)
             foreach (param, params) {
                 ParamSpec spec;
                 spec.flags = 0;
-                if (param.startsWith("param-")) {
+                if (param.startsWith(QLatin1String("param-"))) {
                     spec.name = param.right(param.length() - 6);
 
-                    if (spec.name.endsWith("password")) {
+                    if (spec.name.endsWith(QLatin1String("password"))) {
                         spec.flags |= ConnMgrParamFlagSecret;
                     }
 
-                    QStringList values = keyFile.value(param).split(QChar(' '));
+                    QStringList values = keyFile.value(param).split(QLatin1String(" "));
 
                     spec.signature = values[0];
-                    if (values.contains("secret")) {
+                    if (values.contains(QLatin1String("secret"))) {
                         spec.flags |= ConnMgrParamFlagSecret;
                     }
-                    if (values.contains("dbus-property")) {
+                    if (values.contains(QLatin1String("dbus-property"))) {
                         spec.flags |= ConnMgrParamFlagDBusProperty;
                     }
-                    if (values.contains("required")) {
+                    if (values.contains(QLatin1String("required"))) {
                         spec.flags |= ConnMgrParamFlagRequired;
                     }
-                    if (values.contains("register")) {
+                    if (values.contains(QLatin1String("register"))) {
                         spec.flags |= ConnMgrParamFlagRegister;
                     }
 
@@ -155,7 +155,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
 
             /* now that we have all param-* created, let's find their default values */
             foreach (param, params) {
-                if (param.startsWith("default-")) {
+                if (param.startsWith(QLatin1String("default-"))) {
                     QString paramName = param.right(param.length() - 8);
 
                     if (!hasParameter(protocol, paramName)) {
@@ -238,7 +238,8 @@ QVariant ManagerFile::Private::valueForKey(const QString &param,
         case QVariant::Bool:
             {
                 QString value = keyFile.value(param);
-                if (value.toLower() == "true" || value == "1") {
+                if (value.toLower() == QLatin1String("true") ||
+                    value == QLatin1String("1")) {
                     return QVariant(true);
                 }
                 else {
@@ -346,21 +347,21 @@ ParamSpecList ManagerFile::parameters(const QString &protocol) const
 QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
 {
     QVariant::Type type;
-    if (signature == "b")
+    if (signature == QLatin1String("b"))
         type = QVariant::Bool;
-    else if (signature == "n" || signature == "i")
+    else if (signature == QLatin1String("n") || signature == QLatin1String("i"))
         type = QVariant::Int;
-    else if (signature == "q" || signature == "u")
+    else if (signature == QLatin1String("q") || signature == QLatin1String("u"))
         type = QVariant::UInt;
-    else if (signature == "x")
+    else if (signature == QLatin1String("x"))
         type = QVariant::LongLong;
-    else if (signature == "t")
+    else if (signature == QLatin1String("t"))
         type = QVariant::ULongLong;
-    else if (signature == "d")
+    else if (signature == QLatin1String("d"))
         type = QVariant::Double;
-    else if (signature == "as")
+    else if (signature == QLatin1String("as"))
         type = QVariant::StringList;
-    else if (signature == "s" || signature == "o")
+    else if (signature == QLatin1String("s") || signature == QLatin1String("o"))
         type = QVariant::String;
     else
         type = QVariant::Invalid;

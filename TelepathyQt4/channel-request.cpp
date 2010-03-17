@@ -128,7 +128,7 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
     debug() << "Calling Properties::GetAll(ChannelRequest)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_REQUEST),
+                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST)),
                 self->parent);
     // FIXME: This is a Qt bug fixed upstream, should be in the next Qt release.
     //        We should not need to check watcher->isFinished() here, remove the
@@ -144,24 +144,24 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
 
 void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 {
-    parent->setInterfaces(qdbus_cast<QStringList>(props.value("Interfaces")));
+    parent->setInterfaces(qdbus_cast<QStringList>(props.value(QLatin1String("Interfaces"))));
 
-    if (!account && props.contains("Account")) {
+    if (!account && props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
-            qdbus_cast<QDBusObjectPath>(props.value("Account"));
+            qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
         account = Account::create(
-                TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
+                QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
                 accountObjectPath.path());
     }
 
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    uint stamp = (uint) qdbus_cast<qlonglong>(props.value("UserActionTime"));
+    uint stamp = (uint) qdbus_cast<qlonglong>(props.value(QLatin1String("UserActionTime")));
     if (stamp != 0) {
         userActionTime = QDateTime::fromTime_t(stamp);
     }
 
-    preferredHandler = qdbus_cast<QString>(props.value("PreferredHandler"));
-    requests = qdbus_cast<QualifiedPropertyValueMapList>(props.value("Requests"));
+    preferredHandler = qdbus_cast<QString>(props.value(QLatin1String("PreferredHandler")));
+    requests = qdbus_cast<QualifiedPropertyValueMapList>(props.value(QLatin1String("Requests")));
 }
 
 /**
@@ -172,7 +172,7 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
  * High-level proxy object for accessing remote Telepathy ChannelRequest objects.
  */
 
-const Feature ChannelRequest::FeatureCore = Feature(ChannelRequest::staticMetaObject.className(), 0, true);
+const Feature ChannelRequest::FeatureCore = Feature(QLatin1String(ChannelRequest::staticMetaObject.className()), 0, true);
 
 ChannelRequestPtr ChannelRequest::create(const QString &objectPath,
         const QVariantMap &immutableProperties)
@@ -191,7 +191,7 @@ ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus,
 ChannelRequest::ChannelRequest(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties)
     : StatefulDBusProxy(bus,
-            "org.freedesktop.Telepathy.ChannelDispatcher",
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
             objectPath),
       OptionalInterfaceFactory<ChannelRequest>(this),
       ReadyObject(this, FeatureCore),
