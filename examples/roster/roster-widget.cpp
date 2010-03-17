@@ -49,7 +49,7 @@ using namespace Tp;
 RosterWidget::RosterWidget(QWidget *parent)
     : QWidget(parent)
 {
-    setWindowTitle("Roster");
+    setWindowTitle(QLatin1String("Roster"));
 
     createActions();
     setupGui();
@@ -129,7 +129,7 @@ void RosterWidget::setupGui()
 
     QHBoxLayout *hbox = new QHBoxLayout;
 
-    mAddBtn = new QPushButton("+");
+    mAddBtn = new QPushButton(QLatin1String("+"));
     mAddBtn->setEnabled(false);
     connect(mAddBtn,
             SIGNAL(clicked(bool)),
@@ -142,11 +142,11 @@ void RosterWidget::setupGui()
     setLayout(vbox);
 
     mAddDlg = new QDialog(this);
-    mAddDlg->setWindowTitle("Add Contact");
+    mAddDlg->setWindowTitle(QLatin1String("Add Contact"));
     QVBoxLayout *addDlgVBox = new QVBoxLayout;
 
     QHBoxLayout *addDlgEntryHBox = new QHBoxLayout;
-    QLabel *label = new QLabel("Username");
+    QLabel *label = new QLabel(QLatin1String("Username"));
     addDlgEntryHBox->addWidget(label);
     mAddDlgEdt = new QLineEdit();
     addDlgEntryHBox->addWidget(mAddDlgEdt);
@@ -311,7 +311,7 @@ void RosterWidget::onContactRetrieved(Tp::PendingOperation *op)
     QString username = pcontacts->identifiers().first();
     if (contacts.size() != 1 || !contacts.first()) {
         QMessageBox msgBox;
-        msgBox.setText(QString("Unable to add contact \"%1\"").arg(username));
+        msgBox.setText(QString(QLatin1String("Unable to add contact \"%1\"")).arg(username));
         msgBox.exec();
         return;
     }

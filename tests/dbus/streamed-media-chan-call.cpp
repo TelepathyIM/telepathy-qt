@@ -176,7 +176,7 @@ void TestStreamedMediaChan::onNewChannels(const Tp::ChannelDetailsList &channels
         qDebug() << " channelType:" << channelType;
         qDebug() << " requested  :" << requested;
 
-        if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA &&
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
             !requested) {
             mChan = StreamedMediaChannel::create(mConn,
                         details.channel.path(),
@@ -252,7 +252,7 @@ void TestStreamedMediaChan::init()
 
 void TestStreamedMediaChan::testOutgoingCall()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "alice"),
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -262,7 +262,7 @@ void TestStreamedMediaChan::testOutgoingCall()
 
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL);
+                   QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -292,19 +292,19 @@ void TestStreamedMediaChan::testOutgoingCall()
     QVERIFY(mChan->groupContacts().contains(otherContact));
 
     // RequestContent with bad type must fail
-    QVERIFY(connect(mChan->requestContent("content1", (Tp::MediaStreamType) -1),
+    QVERIFY(connect(mChan->requestContent(QLatin1String("content1"), (Tp::MediaStreamType) -1),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContentFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 2);
     QVERIFY(!mRequestContentReturn);
 
     // Request video content
-    QVERIFY(connect(mChan->requestContent("content2", Tp::MediaStreamTypeVideo),
+    QVERIFY(connect(mChan->requestContent(QLatin1String("content2"), Tp::MediaStreamTypeVideo),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContentFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(!mRequestContentReturn.isNull());
-    QCOMPARE(mRequestContentReturn->name(), QString("content2"));
+    QCOMPARE(mRequestContentReturn->name(), QString(QLatin1String("content2")));
     QCOMPARE(mRequestContentReturn->type(), Tp::MediaStreamTypeVideo);
 
     MediaContentPtr content;
@@ -390,7 +390,7 @@ void TestStreamedMediaChan::testOutgoingCall()
 
 void TestStreamedMediaChan::testHold()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "bob"),
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -400,7 +400,7 @@ void TestStreamedMediaChan::testHold()
 
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL);
+                   QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -461,7 +461,7 @@ void TestStreamedMediaChan::testHold()
 
 void TestStreamedMediaChan::testHoldNoUnhold()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "bob (no unhold)"),
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob (no unhold)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -471,7 +471,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
 
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL);
+                   QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -527,7 +527,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
 
 void TestStreamedMediaChan::testHoldInabilityUnhold()
 {
-    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << "bob (inability to unhold)"),
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob (inability to unhold)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -537,7 +537,7 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
 
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL);
+                   QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),

@@ -100,12 +100,12 @@ private:
 
 QString TestStatefulProxy::wellKnownName()
 {
-    return "org.freedesktop.Telepathy.Qt4.TestStatefulProxy";
+    return QLatin1String("org.freedesktop.Telepathy.Qt4.TestStatefulProxy");
 }
 
 QString TestStatefulProxy::objectPath()
 {
-    return "/org/freedesktop/Telepathy/Qt4/TestStatefulProxy/Object";
+    return QLatin1String("/org/freedesktop/Telepathy/Qt4/TestStatefulProxy/Object");
 }
 
 TestStatefulProxy::TestStatefulProxy(QObject *parent)
@@ -188,8 +188,8 @@ void TestStatefulProxy::testBasics()
                 this, SLOT(expectInvalidated(
                         Tp::DBusProxy *,
                         const QString &, const QString &))));
-    mProxy->invalidate("com.example.DomainSpecificError",
-            "Because I said so");
+    mProxy->invalidate(QLatin1String("com.example.DomainSpecificError"),
+            QLatin1String("Because I said so"));
 
     QVERIFY(!mProxy->isValid());
     QCOMPARE(mProxy->invalidationReason(),
@@ -264,7 +264,7 @@ void TestStatefulProxy::testNameOwnerChanged()
 {
     QString otherUniqueName = QDBusConnection::connectToBus(
             QDBusConnection::SessionBus,
-            "another unique name").baseService();
+            QLatin1String("another unique name")).baseService();
 
     mProxy = new MyStatefulDBusProxy(QDBusConnection::sessionBus(),
             otherUniqueName, objectPath());
@@ -279,7 +279,7 @@ void TestStatefulProxy::testNameOwnerChanged()
                 this, SLOT(expectInvalidated(
                         Tp::DBusProxy *,
                         const QString &, const QString &))));
-    QDBusConnection::disconnectFromBus("another unique name");
+    QDBusConnection::disconnectFromBus(QLatin1String("another unique name"));
     QCOMPARE(mLoop->exec(), EXPECT_INVALIDATED_SUCCESS);
     QVERIFY(disconnect(mProxy, SIGNAL(invalidated(
                         Tp::DBusProxy *,

@@ -351,9 +351,9 @@ void TestClient::initTestCase()
     QCOMPARE(mAM->isReady(), true);
 
     QVariantMap parameters;
-    parameters["account"] = "foobar";
-    PendingAccount *pacc = mAM->createAccount("foo",
-            "bar", "foobar", parameters);
+    parameters[QLatin1String("account")] = QLatin1String("foobar");
+    PendingAccount *pacc = mAM->createAccount(QLatin1String("foo"),
+            QLatin1String("bar"), QLatin1String("foobar"), parameters);
     QVERIFY(connect(pacc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -429,8 +429,8 @@ void TestClient::initTestCase()
     mClientRegistrar = ClientRegistrar::create();
 
     QDBusConnection bus = mClientRegistrar->dbusConnection();
-    mChannelRequestBusName = "org.freedesktop.Telepathy.ChannelDispatcher";
-    mChannelRequestPath = "/org/freedesktop/Telepathy/ChannelRequest/Request1";
+    mChannelRequestBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    mChannelRequestPath = QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/Request1");
     QObject *request = new QObject(this);
     mUserActionTime = QDateTime::currentDateTime().toTime_t();
     new ChannelRequestAdaptor(QDBusObjectPath(mAccount->objectPath()),
@@ -451,7 +451,7 @@ void TestClient::init()
 void TestClient::testRegister()
 {
     // invalid client
-    QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), "foo"));
+    QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), QLatin1String("foo")));
 
     mClientCapabilities.append(
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".MediaSignalling/ice-udp=true"));
@@ -461,45 +461,45 @@ void TestClient::testRegister()
     ChannelClassList filters;
     QMap<QString, QDBusVariant> filter;
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                  QDBusVariant(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+                  QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)));
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant((uint) Tp::HandleTypeContact));
     filters.append(filter);
     mClientObject1 = MyClient::create(filters, mClientCapabilities, false, true);
-    QVERIFY(mClientRegistrar->registerClient(mClientObject1, "foo"));
+    QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject1));
 
     // no op - client already registered
-    QVERIFY(mClientRegistrar->registerClient(mClientObject1, "foo"));
+    QVERIFY(mClientRegistrar->registerClient(mClientObject1, QLatin1String("foo")));
 
     filters.clear();
     filter.clear();
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                  QDBusVariant(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
+                  QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA)));
     filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                   QDBusVariant((uint) Tp::HandleTypeContact));
     filters.append(filter);
     mClientObject2 = MyClient::create(filters, mClientCapabilities, true, true);
-    QVERIFY(mClientRegistrar->registerClient(mClientObject2, "foo", true));
+    QVERIFY(mClientRegistrar->registerClient(mClientObject2, QLatin1String("foo"), true));
     QVERIFY(mClientRegistrar->registeredClients().contains(mClientObject2));
 
     // no op - client already registered
-    QVERIFY(mClientRegistrar->registerClient(mClientObject2, "foo", true));
+    QVERIFY(mClientRegistrar->registerClient(mClientObject2, QLatin1String("foo"), true));
 
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     QDBusConnectionInterface *busIface = bus.interface();
     QStringList registeredServicesNames = busIface->registeredServiceNames();
     QVERIFY(registeredServicesNames.filter(
-                QRegExp("^" "org.freedesktop.Telepathy.Client.foo"
-                        ".([_A-Za-z][_A-Za-z0-9]*)")).size() == 1);
+                QRegExp(QLatin1String("^" "org.freedesktop.Telepathy.Client.foo"
+                        ".([_A-Za-z][_A-Za-z0-9]*)"))).size() == 1);
 
-    mClientObject1BusName = "org.freedesktop.Telepathy.Client.foo";
-    mClientObject1Path = "/org/freedesktop/Telepathy/Client/foo";
+    mClientObject1BusName = QLatin1String("org.freedesktop.Telepathy.Client.foo");
+    mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
 
     mClientObject2BusName = registeredServicesNames.filter(
-            QRegExp("org.freedesktop.Telepathy.Client.foo._*")).first();
-    mClientObject2Path = QString("/%1").arg(mClientObject2BusName);
-    mClientObject2Path.replace('.', '/');
+            QRegExp(QLatin1String("org.freedesktop.Telepathy.Client.foo._*"))).first();
+    mClientObject2Path = QString(QLatin1String("/%1")).arg(mClientObject2BusName);
+    mClientObject2Path.replace(QLatin1String("."), QLatin1String("/"));
 }
 
 void TestClient::testCapabilities()
@@ -540,16 +540,17 @@ void TestClient::testRequests()
                                   const QString &)),
             SLOT(expectSignalEmission()));
     handlerRequestsIface->RemoveRequest(QDBusObjectPath(mChannelRequestPath),
-            TELEPATHY_ERROR_NOT_AVAILABLE, "Not available");
+            QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+            QLatin1String("Not available"));
     if (!client->mRemoveRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(client->mRemoveRequestRequest->objectPath(),
              mChannelRequestPath);
     QCOMPARE(client->mRemoveRequestErrorName,
-             QString(TELEPATHY_ERROR_NOT_AVAILABLE));
+             QString(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)));
     QCOMPARE(client->mRemoveRequestErrorMessage,
-             QString("Not available"));
+             QString(QLatin1String("Not available")));
 }
 
 void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject,
@@ -577,7 +578,7 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     QCOMPARE(client->mObserveChannelsAccount->objectPath(), mAccount->objectPath());
     QCOMPARE(client->mObserveChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
-    QCOMPARE(client->mObserveChannelsDispatchOperation->objectPath(), QString("/"));
+    QCOMPARE(client->mObserveChannelsDispatchOperation->objectPath(), QString(QLatin1String("/")));
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
 }
 
@@ -603,17 +604,17 @@ void TestClient::testAddDispatchOperation()
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
     channelDetailsList.append(channelDetails);
     QVariantMap dispatchOperationProperties;
-    dispatchOperationProperties.insert(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection",
+    dispatchOperationProperties.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
             QVariant::fromValue(QDBusObjectPath(mConn->objectPath())));
-    dispatchOperationProperties.insert(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account",
+    dispatchOperationProperties.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
             QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
     approverIface->AddDispatchOperation(channelDetailsList,
-            QDBusObjectPath("/"),
+            QDBusObjectPath(QLatin1String("/")),
             dispatchOperationProperties);
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mAddDispatchOperationChannels.first()->objectPath(), mText1ChanPath);
-    QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), QString("/"));
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), QString(QLatin1String("/")));
 }
 
 void TestClient::testHandleChannels()

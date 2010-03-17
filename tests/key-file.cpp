@@ -16,38 +16,43 @@ void TestKeyFile::testKeyFile()
 {
     QString top_srcdir = QString::fromLocal8Bit(::getenv("abs_top_srcdir"));
     if (!top_srcdir.isEmpty()) {
-        QDir::setCurrent(top_srcdir + "/tests");
+        QDir::setCurrent(top_srcdir + QLatin1String("/tests"));
     }
 
     KeyFile defaultKeyFile;
     QCOMPARE(defaultKeyFile.status(), KeyFile::None);
 
-    KeyFile notFoundkeyFile("test-key-file-not-found.ini");
+    KeyFile notFoundkeyFile(QLatin1String("test-key-file-not-found.ini"));
     QCOMPARE(notFoundkeyFile.status(), KeyFile::NotFoundError);
 
-    KeyFile formatErrorkeyFile("test-key-file-format-error.ini");
+    KeyFile formatErrorkeyFile(QLatin1String("test-key-file-format-error.ini"));
     QCOMPARE(formatErrorkeyFile.status(), KeyFile::FormatError);
 
-    KeyFile keyFile("test-key-file.ini");
+    KeyFile keyFile(QLatin1String("test-key-file.ini"));
     QCOMPARE(keyFile.status(), KeyFile::NoError);
 
     QCOMPARE(keyFile.allGroups(),
              QStringList() << QString() <<
-                              "test group 1" <<
-                              "test group 2");
+                              QLatin1String("test group 1") <<
+                              QLatin1String("test group 2"));
 
     QStringList allKeys = keyFile.allKeys();
     allKeys.sort();
     QCOMPARE(allKeys,
-             QStringList() << "a" << "b" << "c" << "d" << "e");
+             QStringList() <<
+             QLatin1String("a") <<
+             QLatin1String("b") <<
+             QLatin1String("c") <<
+             QLatin1String("d") <<
+             QLatin1String("e"));
 
-    keyFile.setGroup("test group 1");
-    QCOMPARE(keyFile.contains("f"), false);
-    QCOMPARE(keyFile.value("c").length(), 5);
+    keyFile.setGroup(QLatin1String("test group 1"));
+    QCOMPARE(keyFile.contains(QLatin1String("f")), false);
+    QCOMPARE(keyFile.value(QLatin1String("c")).length(), 5);
 
-    keyFile.setGroup("test group 2");
-    QCOMPARE(keyFile.contains("e"), true);
-    QCOMPARE(keyFile.value("e"), QString("space"));
+    keyFile.setGroup(QLatin1String("test group 2"));
+    QCOMPARE(keyFile.contains(QLatin1String("e")), true);
+    QCOMPARE(keyFile.value(QLatin1String("e")), QString(QLatin1String("space")));
 }
 
 QTEST_MAIN(TestKeyFile)

@@ -229,9 +229,9 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
           remotePending(remotePending),
           details(details),
           // TODO most of these probably should be removed once the rest of the code using them is sanitized
-          actor(qdbus_cast<uint>(details.value("actor"))),
-          reason(qdbus_cast<uint>(details.value("change-reason"))),
-          message(qdbus_cast<QString>(details.value("message")))
+          actor(qdbus_cast<uint>(details.value(QLatin1String("actor")))),
+          reason(qdbus_cast<uint>(details.value(QLatin1String("change-reason")))),
+          message(qdbus_cast<QString>(details.value(QLatin1String("message"))))
     {
     }
 
@@ -293,8 +293,8 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
     else {
         warning() << "Connection given as the owner for a Channel was "
             "invalid! Channel will be stillborn.";
-        parent->invalidate(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                   "Connection given as the owner of this channel was invalid");
+        parent->invalidate(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Connection given as the owner of this channel was invalid"));
     }
 
     ReadinessHelper::Introspectables introspectables;
@@ -310,9 +310,9 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
 
     // As Channel does not have predefined statuses let's simulate one (0)
     ReadinessHelper::Introspectable introspectableConferenceInitialInviteeContacts(
-        QSet<uint>() << 0,                                                 // makesSenseForStatuses
-        Features() << FeatureCore,                                         // dependsOnFeatures
-        QStringList() << TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE, // dependsOnInterfaces
+        QSet<uint>() << 0,                                                                // makesSenseForStatuses
+        Features() << FeatureCore,                                                        // dependsOnFeatures
+        QStringList() << QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE), // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectConferenceInitialInviteeContacts,
         this);
     introspectables[FeatureConferenceInitialInviteeContacts] =
@@ -350,7 +350,7 @@ void Channel::Private::introspectMainProperties()
     debug() << "Calling Properties::GetAll(Channel)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                properties->GetAll(TELEPATHY_INTERFACE_CHANNEL),
+                properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL)),
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -425,7 +425,7 @@ void Channel::Private::introspectGroup()
     debug() << "Calling Properties::GetAll(Channel.Interface.Group)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP),
+                properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)),
                 parent);
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -505,7 +505,7 @@ void Channel::Private::introspectConference()
     debug() << "Calling Properties::GetAll(Channel.Interface.Conference)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                properties->GetAll(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE),
+                properties->GetAll(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)),
                 parent);
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -548,11 +548,11 @@ void Channel::Private::continueIntrospection()
 void Channel::Private::extract0177MainProps(const QVariantMap &props)
 {
     bool haveProps = props.size() >= 4
-                  && props.contains("ChannelType")
-                  && !qdbus_cast<QString>(props["ChannelType"]).isEmpty()
-                  && props.contains("Interfaces")
-                  && props.contains("TargetHandle")
-                  && props.contains("TargetHandleType");
+                  && props.contains(QLatin1String("ChannelType"))
+                  && !qdbus_cast<QString>(props[QLatin1String("ChannelType")]).isEmpty()
+                  && props.contains(QLatin1String("Interfaces"))
+                  && props.contains(QLatin1String("TargetHandle"))
+                  && props.contains(QLatin1String("TargetHandleType"));
 
     if (!haveProps) {
         warning() << " Properties specified in 0.17.7 not found";
@@ -564,16 +564,16 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
     else {
         debug() << " Found properties specified in 0.17.7";
 
-        parent->setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
+        parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
         readinessHelper->setInterfaces(parent->interfaces());
-        channelType = qdbus_cast<QString>(props["ChannelType"]);
-        targetHandle = qdbus_cast<uint>(props["TargetHandle"]);
-        targetHandleType = qdbus_cast<uint>(props["TargetHandleType"]);
-        requested = qdbus_cast<uint>(props["Requested"]);
-        initiatorHandle = qdbus_cast<uint>(props["InitiatorHandle"]);
+        channelType = qdbus_cast<QString>(props[QLatin1String("ChannelType")]);
+        targetHandle = qdbus_cast<uint>(props[QLatin1String("TargetHandle")]);
+        targetHandleType = qdbus_cast<uint>(props[QLatin1String("TargetHandleType")]);
+        requested = qdbus_cast<uint>(props[QLatin1String("Requested")]);
+        initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
 
         if (!fakeGroupInterfaceIfNeeded() &&
-            !parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP) &&
+            !parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) &&
             initiatorHandle) {
             // No group interface, so nobody will build the poor fellow for us. Will do it ourselves
             // out of pity for him.
@@ -591,14 +591,14 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
 void Channel::Private::extract0176GroupProps(const QVariantMap &props)
 {
     bool haveProps = props.size() >= 6
-                  && (props.contains("GroupFlags")
-                  && (qdbus_cast<uint>(props["GroupFlags"]) &
+                  && (props.contains(QLatin1String("GroupFlags"))
+                  && (qdbus_cast<uint>(props[QLatin1String("GroupFlags")]) &
                       ChannelGroupFlagProperties))
-                  && props.contains("HandleOwners")
-                  && props.contains("LocalPendingMembers")
-                  && props.contains("Members")
-                  && props.contains("RemotePendingMembers")
-                  && props.contains("SelfHandle");
+                  && props.contains(QLatin1String("HandleOwners"))
+                  && props.contains(QLatin1String("LocalPendingMembers"))
+                  && props.contains(QLatin1String("Members"))
+                  && props.contains(QLatin1String("RemotePendingMembers"))
+                  && props.contains(QLatin1String("SelfHandle"));
 
     if (!haveProps) {
         warning() << " Properties specified in 0.17.6 not found";
@@ -614,14 +614,14 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         groupAreHandleOwnersAvailable = true;
         groupIsSelfHandleTracked = true;
 
-        setGroupFlags(qdbus_cast<uint>(props["GroupFlags"]));
-        groupHandleOwners = qdbus_cast<HandleOwnerMap>(props["HandleOwners"]);
+        setGroupFlags(qdbus_cast<uint>(props[QLatin1String("GroupFlags")]));
+        groupHandleOwners = qdbus_cast<HandleOwnerMap>(props[QLatin1String("HandleOwners")]);
 
-        groupInitialMembers = qdbus_cast<UIntList>(props["Members"]);
-        groupInitialLP = qdbus_cast<LocalPendingInfoList>(props["LocalPendingMembers"]);
-        groupInitialRP = qdbus_cast<UIntList>(props["RemotePendingMembers"]);
+        groupInitialMembers = qdbus_cast<UIntList>(props[QLatin1String("Members")]);
+        groupInitialLP = qdbus_cast<LocalPendingInfoList>(props[QLatin1String("LocalPendingMembers")]);
+        groupInitialRP = qdbus_cast<UIntList>(props[QLatin1String("RemotePendingMembers")]);
 
-        groupSelfHandle = qdbus_cast<uint>(props["SelfHandle"]);
+        groupSelfHandle = qdbus_cast<uint>(props[QLatin1String("SelfHandle")]);
 
         nowHaveInitialMembers();
     }
@@ -634,11 +634,11 @@ void Channel::Private::nowHaveInterfaces()
 
     QStringList interfaces = parent->interfaces();
 
-    if (interfaces.contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (interfaces.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         introspectQueue.enqueue(&Private::introspectGroup);
     }
 
-    if (interfaces.contains(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+    if (interfaces.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
         introspectQueue.enqueue(&Private::introspectConference);
     }
 }
@@ -674,15 +674,15 @@ void Channel::Private::nowHaveInitialMembers()
         QVariantMap details;
 
         if (info.actor != 0) {
-            details.insert("actor", info.actor);
+            details.insert(QLatin1String("actor"), info.actor);
         }
 
         if (info.reason != ChannelGroupChangeReasonNone) {
-            details.insert("change-reason", info.reason);
+            details.insert(QLatin1String("change-reason"), info.reason);
         }
 
         if (!info.message.isEmpty()) {
-            details.insert("message", info.message);
+            details.insert(QLatin1String("message"), info.message);
         }
 
         groupMembersChangedQueue.enqueue(new GroupMembersChangedInfo(UIntList(), UIntList(),
@@ -702,7 +702,7 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
     groupFlags = newGroupFlags;
 
     // this shouldn't happen but let's make sure
-    if (!parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         return false;
     }
 
@@ -1011,7 +1011,7 @@ void Channel::Private::updateContacts(const QList<ContactPtr> &contacts)
 
 bool Channel::Private::fakeGroupInterfaceIfNeeded()
 {
-    if (parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         return false;
     } else if (targetHandleType != HandleTypeContact) {
         return false;
@@ -1045,7 +1045,7 @@ void Channel::Private::setReady()
     debug() << " Target handle" << targetHandle;
     debug() << " Target handle type" << targetHandleType;
 
-    if (parent->interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         debug() << " Group: flags" << groupFlags;
         if (groupAreHandleOwnersAvailable) {
             debug() << " Group: Number of handle owner mappings" <<
@@ -1074,25 +1074,25 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
     uint reason = details.reason();
     switch (reason) {
         case ChannelGroupChangeReasonOffline:
-            error = TELEPATHY_ERROR_OFFLINE;
+            error = QLatin1String(TELEPATHY_ERROR_OFFLINE);
             break;
         case ChannelGroupChangeReasonKicked:
-            error = TELEPATHY_ERROR_CHANNEL_KICKED;
+            error = QLatin1String(TELEPATHY_ERROR_CHANNEL_KICKED);
             break;
         case ChannelGroupChangeReasonBanned:
-            error = TELEPATHY_ERROR_CHANNEL_BANNED;
+            error = QLatin1String(TELEPATHY_ERROR_CHANNEL_BANNED);
             break;
         case ChannelGroupChangeReasonBusy:
-            error = TELEPATHY_ERROR_BUSY;
+            error = QLatin1String(TELEPATHY_ERROR_BUSY);
             break;
         case ChannelGroupChangeReasonNoAnswer:
-            error = TELEPATHY_ERROR_NO_ANSWER;
+            error = QLatin1String(TELEPATHY_ERROR_NO_ANSWER);
             break;
         case ChannelGroupChangeReasonPermissionDenied:
-            error = TELEPATHY_ERROR_PERMISSION_DENIED;
+            error = QLatin1String(TELEPATHY_ERROR_PERMISSION_DENIED);
             break;
         case ChannelGroupChangeReasonInvalidContact:
-            error = TELEPATHY_ERROR_DOES_NOT_EXIST;
+            error = QLatin1String(TELEPATHY_ERROR_DOES_NOT_EXIST);
             break;
         // The following change reason are being mapped to default
         // case ChannelGroupChangeReasonNone:
@@ -1103,8 +1103,9 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
         default:
             // let's use the actor handle and selfHandle here instead of the
             // contacts, as the contacts may not be ready.
-            error = ((qdbus_cast<uint>(details.allDetails().value("actor")) == groupSelfHandle) ?
-                     TELEPATHY_ERROR_CANCELLED : TELEPATHY_ERROR_TERMINATED);
+            error = ((qdbus_cast<uint>(details.allDetails().value(QLatin1String("actor"))) == groupSelfHandle) ?
+                     QLatin1String(TELEPATHY_ERROR_CANCELLED) :
+                     QLatin1String(TELEPATHY_ERROR_TERMINATED));
             break;
     }
 
@@ -1145,8 +1146,8 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
  * will transition to closed too.
  */
 
-const Feature Channel::FeatureCore = Feature(Channel::staticMetaObject.className(), 0, true);
-const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(Channel::staticMetaObject.className(), 1, true);
+const Feature Channel::FeatureCore = Feature(QLatin1String(Channel::staticMetaObject.className()), 0, true);
+const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(QLatin1String(Channel::staticMetaObject.className()), 1, true);
 
 ChannelPtr Channel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
@@ -1469,27 +1470,27 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
 {
     if (!isReady()) {
         warning() << "Channel::groupAddContacts() used channel not ready";
-        return new PendingFailure(TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel not ready", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Channel not ready"), this);
     } else if (contacts.isEmpty()) {
         warning() << "Channel::groupAddContacts() used with empty contacts param";
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "contacts cannot be an empty list", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("contacts cannot be an empty list"), this);
     }
 
     foreach (const ContactPtr &contact, contacts) {
         if (!contact) {
             warning() << "Channel::groupAddContacts() used but contacts param contains "
                 "invalid contact";
-            return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                    "Unable to add invalid contacts", this);
+            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                    QLatin1String("Unable to add invalid contacts"), this);
         }
     }
 
-    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupAddContacts() used with no group interface";
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support group interface", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Channel does not support group interface"), this);
     }
 
     UIntList handles;
@@ -1642,29 +1643,29 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
 {
     if (!isReady()) {
         warning() << "Channel::groupRemoveContacts() used channel not ready";
-        return new PendingFailure(TELEPATHY_ERROR_NOT_AVAILABLE,
-                "Channel not ready", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Channel not ready"), this);
     }
 
     if (contacts.isEmpty()) {
         warning() << "Channel::groupRemoveContacts() used with empty contacts param";
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "contacts param cannot be an empty list", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("contacts param cannot be an empty list"), this);
     }
 
     foreach (const ContactPtr &contact, contacts) {
         if (!contact) {
             warning() << "Channel::groupRemoveContacts() used but contacts param contains "
                 "invalid contact:";
-            return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                    "Unable to remove invalid contacts", this);
+            return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                    QLatin1String("Unable to remove invalid contacts"), this);
         }
     }
 
-    if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupRemoveContacts() used with no group interface";
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support group interface", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Channel does not support group interface"), this);
     }
 
     UIntList handles;
@@ -1700,7 +1701,7 @@ Contacts Channel::groupLocalPendingContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupLocalPending() used channel not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupLocalPending() used with no group interface";
     }
 
@@ -1717,7 +1718,7 @@ Contacts Channel::groupRemotePendingContacts() const
 {
     if (!isReady()) {
         warning() << "Channel::groupRemotePending() used channel not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupRemotePending() used with no "
             "group interface";
     }
@@ -1788,7 +1789,7 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
 {
     if (!isReady()) {
         warning() << "Channel::groupLocalPending() used channel not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupLocalPending() used with no group interface";
     }
     else if (!contact) {
@@ -1820,7 +1821,7 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
 {
     if (!isReady()) {
         warning() << "Channel::groupSelfContactRemoveInfo() used channel not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupSelfContactRemoveInfo() used with "
             "no group interface";
     }
@@ -1854,7 +1855,7 @@ bool Channel::groupAreHandleOwnersAvailable() const
 {
     if (!isReady()) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used channel not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with "
             "no group interface";
     }
@@ -1878,7 +1879,7 @@ HandleOwnerMap Channel::groupHandleOwners() const
 {
     if (!isReady()) {
         warning() << "Channel::groupHandleOwners() used channel not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupAreHandleOwnersAvailable() used with no "
             "group interface";
     }
@@ -1903,7 +1904,7 @@ bool Channel::groupIsSelfContactTracked() const
 {
     if (!isReady()) {
         warning() << "Channel::groupIsSelfHandleTracked() used channel not ready";
-    } else if (!interfaces().contains(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) {
+    } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
         warning() << "Channel::groupIsSelfHandleTracked() used with "
             "no group interface";
     }
@@ -1963,8 +1964,8 @@ PendingOperation *Channel::groupAddSelfHandle()
     if (!isReady()) {
         warning() << "Channel::groupAddSelfHandle() used when channel not "
             "ready";
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Channel object not ready", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Channel object not ready"), this);
     }
 
     UIntList handles;
@@ -1976,7 +1977,7 @@ PendingOperation *Channel::groupAddSelfHandle()
     }
 
     return new PendingVoid(
-            mPriv->group->AddMembers(handles, ""),
+            mPriv->group->AddMembers(handles, QLatin1String("")),
             this);
 }
 
@@ -2081,8 +2082,9 @@ bool Channel::hasMergeableConferenceInterface() const
 PendingOperation *Channel::conferenceMergeChannel(const ChannelPtr &channel)
 {
     if (!hasMergeableConferenceInterface()) {
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support MergeableConference interface", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Channel does not support MergeableConference interface"),
+                this);
     }
 
     return new PendingVoid(mPriv->mergeableConferenceInterface()->Merge(
@@ -2115,8 +2117,8 @@ bool Channel::hasSplittableInterface() const
 PendingOperation *Channel::splitChannel()
 {
     if (!hasSplittableInterface()) {
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Channel does not support Splittable interface", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Channel does not support Splittable interface"), this);
     }
 
     return new PendingVoid(mPriv->splittableInterface()->Split(), this);
@@ -2467,8 +2469,8 @@ void Channel::onClosed()
         message = mPriv->groupSelfContactRemoveInfo.message();
     } else {
         // I think this is the nearest error code we can get at the moment
-        error = TELEPATHY_ERROR_TERMINATED;
-        message = "Closed";
+        error = QLatin1String(TELEPATHY_ERROR_TERMINATED);
+        message = QLatin1String("Closed");
     }
 
     invalidate(error, message);
@@ -2484,16 +2486,16 @@ void Channel::onConnectionInvalidated()
 {
     debug() << "Owning connection died leaving an orphan Channel, "
         "changing to closed";
-    invalidate(TELEPATHY_ERROR_CANCELLED,
-               "Connection given as the owner of this channel was invalidate");
+    invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+               QLatin1String("Connection given as the owner of this channel was invalidate"));
 }
 
 void Channel::onConnectionDestroyed()
 {
     debug() << "Owning connection destroyed, cutting off dangling pointer";
     mPriv->connection.reset();
-    invalidate(TELEPATHY_ERROR_CANCELLED,
-               "Connection given as the owner of this channel was destroyed");
+    invalidate(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+               QLatin1String("Connection given as the owner of this channel was destroyed"));
 }
 
 void Channel::gotGroupProperties(QDBusPendingCallWatcher *watcher)
@@ -2553,7 +2555,8 @@ void Channel::gotAllMembers(QDBusPendingCallWatcher *watcher)
         mPriv->groupInitialRP = reply.argumentAt<2>();
 
         foreach (uint handle, reply.argumentAt<1>()) {
-            LocalPendingInfo info = {handle, 0, ChannelGroupChangeReasonNone, ""};
+            LocalPendingInfo info = {handle, 0, ChannelGroupChangeReasonNone,
+                QLatin1String("")};
             mPriv->groupInitialLP.push_back(info);
         }
     }
@@ -2681,14 +2684,14 @@ void Channel::onMembersChanged(const QString &message,
     QVariantMap details;
 
     if (!message.isEmpty()) {
-        details.insert("message", message);
+        details.insert(QLatin1String("message"), message);
     }
 
     if (actor != 0) {
-        details.insert("actor", actor);
+        details.insert(QLatin1String("actor"), actor);
     }
 
-    details.insert("change-reason", reason);
+    details.insert(QLatin1String("change-reason"), reason);
 
     onMembersChangedDetailed(added, removed, localPending, remotePending, details);
 }
@@ -2719,7 +2722,8 @@ void Channel::onMembersChangedDetailed(
     // to build the contacts in case self contact is removed,
     // as Closed will be emitted right after
     if (removed.contains(mPriv->groupSelfHandle)) {
-        if (qdbus_cast<uint>(details.value("change-reason")) == ChannelGroupChangeReasonRenamed) {
+        if (qdbus_cast<uint>(details.value(QLatin1String("change-reason"))) ==
+                ChannelGroupChangeReasonRenamed) {
             if (removed.size() != 1 ||
                 (added.size() + localPending.size() + remotePending.size()) != 1) {
                 // spec-incompliant CM, ignoring members changed
@@ -2743,7 +2747,7 @@ void Channel::onMembersChangedDetailed(
         // let's try to get the actor contact from contact manager if available
         mPriv->groupSelfContactRemoveInfo = GroupMemberChangeDetails(
                 mPriv->connection->contactManager()->lookupContactByHandle(
-                    qdbus_cast<uint>(details.value("actor"))),
+                    qdbus_cast<uint>(details.value(QLatin1String("actor")))),
                 details);
     }
 
@@ -2833,7 +2837,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         props = reply.value();
 
         ObjectPathList channels =
-            qdbus_cast<ObjectPathList>(props["Channels"]);
+            qdbus_cast<ObjectPathList>(props[QLatin1String("Channels")]);
         foreach (const QDBusObjectPath &channel, channels) {
             if (mPriv->conferenceChannels.contains(channel.path())) {
                 continue;
@@ -2845,7 +2849,7 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         }
 
         ObjectPathList initialChannels =
-            qdbus_cast<ObjectPathList>(props["InitialChannels"]);
+            qdbus_cast<ObjectPathList>(props[QLatin1String("InitialChannels")]);
         foreach (const QDBusObjectPath &channel, initialChannels) {
             if (mPriv->conferenceInitialChannels.contains(channel.path())) {
                 continue;
@@ -2857,12 +2861,12 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         }
 
         mPriv->conferenceInitialInviteeHandles =
-            qdbus_cast<UIntList>(props["InitialInviteeHandles"]);
+            qdbus_cast<UIntList>(props[QLatin1String("InitialInviteeHandles")]);
 
         mPriv->conferenceInvitationMessage =
-            qdbus_cast<QString>(props["InvitationMessage"]);
+            qdbus_cast<QString>(props[QLatin1String("InvitationMessage")]);
         mPriv->conferenceSupportsNonMerges =
-            qdbus_cast<bool>(props["SupportsNonMerges"]);
+            qdbus_cast<bool>(props[QLatin1String("SupportsNonMerges")]);
     }
     else {
         warning().nospace() << "Properties::GetAll(Channel.Interface.Conference) "

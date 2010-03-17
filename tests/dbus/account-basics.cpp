@@ -43,7 +43,7 @@ void TestAccountBasics::onAvatarChanged(const Tp::Avatar &avatar)
 {
     qDebug() << "on avatar changed";
     QCOMPARE(avatar.avatarData, QByteArray("asdfg"));
-    QCOMPARE(avatar.MIMEType, QString("image/jpeg"));
+    QCOMPARE(avatar.MIMEType, QString(QLatin1String("image/jpeg")));
     mLoop->exit(0);
 }
 
@@ -69,9 +69,9 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mAM->isReady(), true);
 
     QVariantMap parameters;
-    parameters["account"] = "foobar";
-    PendingAccount *pacc = mAM->createAccount("foo",
-            "bar", "foobar", parameters);
+    parameters[QLatin1String("account")] = QLatin1String("foobar");
+    PendingAccount *pacc = mAM->createAccount(QLatin1String("foo"),
+            QLatin1String("bar"), QLatin1String("foobar"), parameters);
     QVERIFY(connect(pacc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -81,22 +81,22 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mAM->interfaces(), QStringList());
 
     QCOMPARE(mAM->validAccountPaths(),
-             QStringList() <<
-               "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
+            QStringList() <<
+            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
     QCOMPARE(mAM->invalidAccountPaths(),
-             QStringList());
+            QStringList());
     QCOMPARE(mAM->allAccountPaths(),
-             QStringList() <<
-               "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
+            QStringList() <<
+            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
 
     AccountPtr acc = mAM->accountForPath(
-            "/org/freedesktop/Telepathy/Account/foo/bar/Account0");
+            QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QCOMPARE(acc->displayName(), QString("foobar (account 0)"));
+    QCOMPARE(acc->displayName(), QString(QLatin1String("foobar (account 0)")));
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -104,13 +104,13 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
 
-    QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
+    QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
 
     QVERIFY(connect(acc.data(),
                     SIGNAL(avatarChanged(const Tp::Avatar &)),
                     SLOT(onAvatarChanged(const Tp::Avatar &))));
 
-    Tp::Avatar avatar = { QByteArray("asdfg"), "image/jpeg" };
+    Tp::Avatar avatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
     QVERIFY(connect(acc->setAvatar(avatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -125,22 +125,22 @@ void TestAccountBasics::testBasics()
     // wait for avatarChanged signal
     QCOMPARE(mLoop->exec(), 0);
 
-    pacc = mAM->createAccount("spurious",
-            "normal", "foobar", parameters);
+    pacc = mAM->createAccount(QLatin1String("spurious"),
+            QLatin1String("normal"), QLatin1String("foobar"), parameters);
     QVERIFY(connect(pacc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     acc = mAM->accountForPath(
-            "/org/freedesktop/Telepathy/Account/spurious/normal/Account0");
+            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
     acc = mAM->accountForPath(
-            "/org/freedesktop/Telepathy/Account/spurious/normal/Account0");
+            QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
     QVERIFY(connect(acc->becomeReady(Account::FeatureProtocolInfo),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -149,9 +149,9 @@ void TestAccountBasics::testBasics()
 
     ProtocolInfo *protocolInfo = acc->protocolInfo();
     QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
-    QCOMPARE(protocolInfo->hasParameter("account"), true);
-    QCOMPARE(protocolInfo->hasParameter("password"), true);
-    QCOMPARE(protocolInfo->hasParameter("register"), true);
+    QCOMPARE(protocolInfo->hasParameter(QLatin1String("account")), true);
+    QCOMPARE(protocolInfo->hasParameter(QLatin1String("password")), true);
+    QCOMPARE(protocolInfo->hasParameter(QLatin1String("register")), true);
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -159,7 +159,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
 
-    QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
+    QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
 
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar | Account::FeatureProtocolInfo),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -167,7 +167,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(acc->isReady(Account::FeatureAvatar | Account::FeatureProtocolInfo), true);
 
-    QCOMPARE(acc->avatar().MIMEType, QString("image/png"));
+    QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
     protocolInfo = acc->protocolInfo();
     QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
 }

@@ -313,8 +313,8 @@ void TestChanGroup::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = name;
-    mConnPath = connPath;
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);
@@ -355,7 +355,7 @@ void TestChanGroup::testRequestHandle()
     // Test identifiers
     QStringList ids;
     for (uint i = 0; i < mRoomCount; ++i) {
-        ids << QString("#room%1").arg(i);
+        ids << QString(QLatin1String("#room%1")).arg(i);
     }
 
     // Request handles for the identifiers and wait for the request to process
@@ -411,7 +411,7 @@ void TestChanGroup::doTestCreateChannel()
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -431,7 +431,8 @@ void TestChanGroup::doTestCreateChannel()
 
     QCOMPARE(mChan->isRequested(), mRequested);
     QCOMPARE(mChan->initiatorContact().isNull(), true);
-    QCOMPARE(mChan->groupSelfContact()->id(), QString("me@#room%1").arg(mRoomNumber));
+    QCOMPARE(mChan->groupSelfContact()->id(),
+            QString(QLatin1String("me@#room%1")).arg(mRoomNumber));
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupFlagsChanged(uint, uint, uint)),
@@ -468,21 +469,21 @@ void TestChanGroup::doTestCreateChannel()
 
     QCOMPARE(mChan->groupContacts().count(), 5);
 
-    QString roomName = QString("#room%1").arg(mRoomNumber);
+    QString roomName = QString(QLatin1String("#room%1")).arg(mRoomNumber);
 
     QStringList expectedIds;
-    expectedIds << QString("me@") + roomName <<
-        QString("alice@") + roomName <<
-        QString("bob@") + roomName <<
-        QString("chris@") + roomName <<
-        QString("anonymous coward@") + roomName;
+    expectedIds << QString(QLatin1String("me@")) + roomName <<
+        QString(QLatin1String("alice@")) + roomName <<
+        QString(QLatin1String("bob@")) + roomName <<
+        QString(QLatin1String("chris@")) + roomName <<
+        QString(QLatin1String("anonymous coward@")) + roomName;
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
 
     QStringList ids = QStringList() <<
-        QString("john@#room%1").arg(mRoomNumber) <<
-        QString("mary@#room%1").arg(mRoomNumber) <<
-        QString("another anonymous coward@#room%1").arg(mRoomNumber);
+        QString(QLatin1String("john@#room%1")).arg(mRoomNumber) <<
+        QString(QLatin1String("mary@#room%1")).arg(mRoomNumber) <<
+        QString(QLatin1String("another anonymous coward@#room%1")).arg(mRoomNumber);
     QVERIFY(connect(mConn->requestHandles(Tp::HandleTypeContact, ids),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactHandlesFinished(Tp::PendingOperation*))));
@@ -498,7 +499,7 @@ void TestChanGroup::doTestCreateChannel()
     ids.sort();
     checkExpectedIds(Contacts::fromList(mContacts), ids);
 
-    QString message("I want to add them");
+    QString message(QLatin1String("I want to add them"));
     mChan->groupAddContacts(mContacts, message);
 
     // expect contacts to be added to remote pending, the csh test emits one at
@@ -514,16 +515,16 @@ void TestChanGroup::doTestCreateChannel()
     QCOMPARE(mDetails.message(), message);
 
     expectedIds.clear();
-    expectedIds << QString("john@") + roomName <<
-            QString("mary@") + roomName <<
-            QString("another anonymous coward@") + roomName;
+    expectedIds << QString(QLatin1String("john@")) + roomName <<
+            QString(QLatin1String("mary@")) + roomName <<
+            QString(QLatin1String("another anonymous coward@")) + roomName;
     expectedIds.sort();
     checkExpectedIds(mChan->groupRemotePendingContacts(), expectedIds);
 
     QList<ContactPtr> toRemove;
     toRemove.append(mContacts[1]);
     toRemove.append(mContacts[2]);
-    mChan->groupRemoveContacts(toRemove, "I want to remove some of them");
+    mChan->groupRemoveContacts(toRemove, QLatin1String("I want to remove some of them"));
 
     // expect mary and another anonymous coward to be removed
     // CSH emits these as two signals though, so waiting for one membersChanged isn't enough
@@ -531,30 +532,30 @@ void TestChanGroup::doTestCreateChannel()
     QCOMPARE(mLoop->exec(), 0);
 
     expectedIds.clear();
-    expectedIds << QString("me@") + roomName <<
-        QString("alice@") + roomName <<
-        QString("bob@") + roomName <<
-        QString("chris@") + roomName <<
-        QString("anonymous coward@") + roomName;
+    expectedIds << QString(QLatin1String("me@")) + roomName <<
+        QString(QLatin1String("alice@")) + roomName <<
+        QString(QLatin1String("bob@")) + roomName <<
+        QString(QLatin1String("chris@")) + roomName <<
+        QString(QLatin1String("anonymous coward@")) + roomName;
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
     expectedIds.clear();
-    expectedIds << QString("john@") + roomName;
+    expectedIds << QString(QLatin1String("john@")) + roomName;
     checkExpectedIds(mChan->groupRemotePendingContacts(), expectedIds);
 
     example_csh_connection_accept_invitations(mConnService);
 
     // expect john to accept invite
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mDetails.message(), QString("Invitation accepted"));
+    QCOMPARE(mDetails.message(), QString(QLatin1String("Invitation accepted")));
 
     expectedIds.clear();
-    expectedIds << QString("me@") + roomName <<
-            QString("alice@") + roomName <<
-            QString("bob@") + roomName <<
-            QString("chris@") + roomName <<
-            QString("anonymous coward@") + roomName <<
-            QString("john@") + roomName;
+    expectedIds << QString(QLatin1String("me@")) + roomName <<
+            QString(QLatin1String("alice@")) + roomName <<
+            QString(QLatin1String("bob@")) + roomName <<
+            QString(QLatin1String("chris@")) + roomName <<
+            QString(QLatin1String("anonymous coward@")) + roomName <<
+            QString(QLatin1String("john@")) + roomName;
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
 
@@ -568,7 +569,8 @@ void TestChanGroup::doTestCreateChannel()
         }
     }
 
-    mChan->groupRemoveContacts(toRemove, "Checking removal of a contact in current list");
+    mChan->groupRemoveContacts(toRemove,
+            QLatin1String("Checking removal of a contact in current list"));
     QCOMPARE(mLoop->exec(), 0);
     expectedIds.sort();
     checkExpectedIds(mChan->groupContacts(), expectedIds);
@@ -577,20 +579,22 @@ void TestChanGroup::doTestCreateChannel()
             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
             SLOT(expectChanInvalidated(Tp::DBusProxy *, const QString &, const QString &))));
 
-    mChan->groupRemoveContacts(QList<ContactPtr>() << mChan->groupSelfContact(), "I want to remove myself");
+    mChan->groupRemoveContacts(QList<ContactPtr>() << mChan->groupSelfContact(),
+            QLatin1String("I want to remove myself"));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->groupSelfContactRemoveInfo().hasActor(), true);
     QCOMPARE(mChan->groupSelfContactRemoveInfo().actor(), mChan->groupSelfContact());
     QCOMPARE(mChan->groupSelfContactRemoveInfo().hasMessage(), true);
-    QCOMPARE(mChan->groupSelfContactRemoveInfo().message(), QString("I want to remove myself"));
+    QCOMPARE(mChan->groupSelfContactRemoveInfo().message(),
+            QString(QLatin1String("I want to remove myself")));
     QCOMPARE(mChan->groupSelfContactRemoveInfo().hasError(), false);
 
     // wait until chan gets invalidated
     while (mChan->isValid()) {
         QCOMPARE(mLoop->exec(), 0);
     }
-    QCOMPARE(mChanInvalidatedErrorName, QString(TELEPATHY_ERROR_CANCELLED));
-    QCOMPARE(mChanInvalidatedErrorMessage, QString("I want to remove myself"));
+    QCOMPARE(mChanInvalidatedErrorName, QString(QLatin1String(TELEPATHY_ERROR_CANCELLED)));
+    QCOMPARE(mChanInvalidatedErrorMessage, QString(QLatin1String("I want to remove myself")));
 
     mChan.reset();
 }

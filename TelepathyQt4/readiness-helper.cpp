@@ -160,7 +160,7 @@ ReadinessHelper::Private::Private(
 
 ReadinessHelper::Private::~Private()
 {
-    abortOperations(TELEPATHY_ERROR_CANCELLED, "Destroyed");
+    abortOperations(QLatin1String(TELEPATHY_ERROR_CANCELLED), QLatin1String("Destroyed"));
 }
 
 void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
@@ -250,8 +250,8 @@ void ReadinessHelper::Private::iterateIntrospection()
         if (!dependsOnFeatures.intersect(missingFeatures).isEmpty()) {
             missingFeatures.insert(feature);
             missingFeaturesErrors.insert(feature,
-                    QPair<QString, QString>(TELEPATHY_ERROR_NOT_AVAILABLE,
-                        "Feature depend on other features that are not available"));
+                    QPair<QString, QString>(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                        QLatin1String("Feature depend on other features that are not available")));
         }
         ++i;
     }

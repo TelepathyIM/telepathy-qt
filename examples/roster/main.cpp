@@ -3,6 +3,7 @@
 #include <TelepathyQt4/Types>
 
 #include <QDebug>
+#include <QtCore>
 #include <QtGui>
 
 #include "roster-window.h"
@@ -20,7 +21,9 @@ int main(int argc, char **argv)
     Tp::enableDebug(true);
     Tp::enableWarnings(true);
 
-    RosterWindow w(argv[1], argv[2]);
+    QString username = QLatin1String(argv[1]);
+    QString password = QLatin1String(argv[2]);
+    RosterWindow w(username, password);
     w.show();
 
     return app.exec();

@@ -114,8 +114,8 @@ void TestConnRoster::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = name;
-    mConnPath = connPath;
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);
@@ -146,14 +146,14 @@ void TestConnRoster::testRoster()
     QCOMPARE(mConn->isReady(features), true);
 
     QStringList toCheck = QStringList() <<
-        "sjoerd@example.com" <<
-        "travis@example.com" <<
-        "wim@example.com" <<
-        "olivier@example.com" <<
-        "helen@example.com" <<
-        "geraldine@example.com" <<
-        "guillaume@example.com" <<
-        "christian@example.com";
+        QLatin1String("sjoerd@example.com") <<
+        QLatin1String("travis@example.com") <<
+        QLatin1String("wim@example.com") <<
+        QLatin1String("olivier@example.com") <<
+        QLatin1String("helen@example.com") <<
+        QLatin1String("geraldine@example.com") <<
+        QLatin1String("guillaume@example.com") <<
+        QLatin1String("christian@example.com");
     QStringList ids;
     QList<ContactPtr> pendingSubscription;
     QList<ContactPtr> pendingPublish;
@@ -176,7 +176,8 @@ void TestConnRoster::testRoster()
     QCOMPARE(pendingPublish.size(), 2);
 
     // Wait for the contacts to be built
-    ids = QStringList() << QString("john@example.com") << QString("mary@example.com");
+    ids = QStringList() << QString(QLatin1String("john@example.com"))
+        << QString(QLatin1String("mary@example.com"));
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
@@ -191,9 +192,9 @@ void TestConnRoster::testRoster()
                         SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
         if ((i % 2) == 0) {
-            contact->requestPresenceSubscription("please add me");
+            contact->requestPresenceSubscription(QLatin1String("please add me"));
         } else {
-            contact->requestPresenceSubscription("add me now");
+            contact->requestPresenceSubscription(QLatin1String("add me now"));
         }
 
         QCOMPARE(mLoop->exec(), 0);

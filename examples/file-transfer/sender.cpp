@@ -54,7 +54,7 @@ Sender::Sender(const QString &username, const QString &password,
         return;
     }
 
-    mCM = ConnectionManager::create("gabble");
+    mCM = ConnectionManager::create(QLatin1String("gabble"));
     connect(mCM->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onCMReady(Tp::PendingOperation *)));
@@ -77,9 +77,10 @@ void Sender::onCMReady(PendingOperation *op)
 
     qDebug() << "Creating connection...";
     QVariantMap params;
-    params.insert("account", QVariant(mUsername));
-    params.insert("password", QVariant(mPassword));
-    PendingConnection *pconn = mCM->requestConnection("jabber", params);
+    params.insert(QLatin1String("account"), QVariant(mUsername));
+    params.insert(QLatin1String("password"), QVariant(mPassword));
+    PendingConnection *pconn = mCM->requestConnection(QLatin1String("jabber"),
+            params);
     connect(pconn,
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onConnectionCreated(Tp::PendingOperation *)));
@@ -228,7 +229,7 @@ void Sender::createFileTransferChannel()
     qDebug() << "Creating file transfer channel...";
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -238,7 +239,7 @@ void Sender::createFileTransferChannel()
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".Size"),
                    (qulonglong) fileInfo.size());
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER ".ContentType"),
-                   "application/octet-stream");
+                   QLatin1String("application/octet-stream"));
     qDebug() << "Request:" << request;
     connect(mConn->createChannel(request),
             SIGNAL(finished(Tp::PendingOperation*)),
@@ -317,7 +318,8 @@ int main(int argc, char **argv)
     Tp::registerTypes();
     Tp::enableDebug(true);
 
-    new Sender(argv[1], argv[2], argv[3], argv[4]);
+    new Sender(QLatin1String(argv[1]), QLatin1String(argv[2]),
+            QLatin1String(argv[3]), QLatin1String(argv[4]));
 
     return app.exec();
 }

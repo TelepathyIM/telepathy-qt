@@ -30,7 +30,9 @@ int main(int argc, char **argv)
     Tp::enableWarnings(true);
     qRegisterMetaType<Tp::FarsightChannel::Status>();
 
-    CallWindow w(argv[1], argv[2]);
+    QString username = QLatin1String(argv[1]);
+    QString password = QLatin1String(argv[2]);
+    CallWindow w(username, password);
     w.show();
 
     return app.exec();

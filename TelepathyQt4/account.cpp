@@ -126,11 +126,11 @@ Account::Private::Private(Account *parent)
 {
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
-    QRegExp rx("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
-               "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
-               "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
-               "/([_A-Za-z][_A-Za-z0-9]*)"  // account-specific part
-               );
+    QRegExp rx(QLatin1String("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
+                "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
+                "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
+                "/([_A-Za-z][_A-Za-z0-9]*)"  // account-specific part
+                ));
 
     if (rx.exactMatch(parent->objectPath())) {
         cmName = rx.cap(1);
@@ -139,11 +139,11 @@ Account::Private::Private(Account *parent)
         warning() << "Account object path is not spec-compliant, "
             "trying again with a different account-specific part check";
 
-        rx = QRegExp("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
-               "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
-               "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
-               "/([_A-Za-z0-9]*)"  // account-specific part
-               );
+        rx = QRegExp(QLatin1String("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
+                    "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
+                    "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
+                    "/([_A-Za-z0-9]*)"  // account-specific part
+                    ));
         if (rx.exactMatch(parent->objectPath())) {
             cmName = rx.cap(1);
             protocol = rx.cap(2);
@@ -165,9 +165,9 @@ Account::Private::Private(Account *parent)
     introspectables[FeatureCore] = introspectableCore;
 
     ReadinessHelper::Introspectable introspectableAvatar(
-        QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        Features() << FeatureCore,                                              // dependsOnFeatures (core)
-        QStringList() << TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,          // dependsOnInterfaces
+        QSet<uint>() << 0,                                                            // makesSenseForStatuses
+        Features() << FeatureCore,                                                    // dependsOnFeatures (core)
+        QStringList() << QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR), // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectAvatar,
         this);
     introspectables[FeatureAvatar] = introspectableAvatar;
@@ -246,9 +246,9 @@ void Account::Private::addConferenceRequestParameters(QVariantMap &request,
  * be useful.
  */
 
-const Feature Account::FeatureCore = Feature(Account::staticMetaObject.className(), 0, true);
-const Feature Account::FeatureAvatar = Feature(Account::staticMetaObject.className(), 1);
-const Feature Account::FeatureProtocolInfo = Feature(Account::staticMetaObject.className(), 2);
+const Feature Account::FeatureCore = Feature(QLatin1String(Account::staticMetaObject.className()), 0, true);
+const Feature Account::FeatureAvatar = Feature(QLatin1String(Account::staticMetaObject.className()), 1);
+const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::staticMetaObject.className()), 2);
 
 AccountPtr Account::create(const QString &busName,
         const QString &objectPath)
@@ -342,8 +342,10 @@ bool Account::isEnabled() const
 PendingOperation *Account::setEnabled(bool value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "Enabled", QDBusVariant(value)),
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("Enabled"),
+                QDBusVariant(value)),
             this);
 }
 
@@ -402,8 +404,10 @@ bool Account::hasBeenOnline() const
 PendingOperation *Account::setDisplayName(const QString &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "DisplayName", QDBusVariant(value)),
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("DisplayName"),
+                QDBusVariant(value)),
             this);
 }
 
@@ -427,8 +431,10 @@ QString Account::icon() const
 PendingOperation *Account::setIcon(const QString &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "Icon", QDBusVariant(value)),
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("Icon"),
+                QDBusVariant(value)),
             this);
 }
 
@@ -452,8 +458,10 @@ QString Account::nickname() const
 PendingOperation *Account::setNickname(const QString &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "Nickname", QDBusVariant(value)),
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("Nickname"),
+                QDBusVariant(value)),
             this);
 }
 
@@ -486,15 +494,17 @@ const Avatar &Account::avatar() const
  */
 PendingOperation *Account::setAvatar(const Avatar &avatar)
 {
-    if (!interfaces().contains(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR)) {
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Account does not support Avatar", this);
+    if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR))) {
+        return new PendingFailure(
+                QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Account does not support Avatar"), this);
     }
 
     return new PendingVoid(
             propertiesInterface()->Set(
-                TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
-                "Avatar", QDBusVariant(QVariant::fromValue(avatar))),
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR),
+                QLatin1String("Avatar"),
+                QDBusVariant(QVariant::fromValue(avatar))),
             this);
 }
 
@@ -570,8 +580,10 @@ bool Account::connectsAutomatically() const
 PendingOperation *Account::setConnectsAutomatically(bool value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "ConnectAutomatically", QDBusVariant(value)),
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("ConnectAutomatically"),
+                QDBusVariant(value)),
             this);
 }
 
@@ -624,7 +636,8 @@ ConnectionPtr Account::connection() const
         return ConnectionPtr();
     }
     QString objectPath = mPriv->connectionObjectPath;
-    QString busName = objectPath.mid(1).replace('/', '.');
+    QString busName = objectPath.mid(1).replace(
+            QLatin1String("/"), QLatin1String("."));
     if (!mPriv->connection) {
         mPriv->connection = Connection::create(dbusConnection(),
                 busName, objectPath);
@@ -658,8 +671,10 @@ PendingOperation *Account::setAutomaticPresence(
         const SimplePresence &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "AutomaticPresence", QDBusVariant(QVariant::fromValue(value))),
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("AutomaticPresence"),
+                QDBusVariant(QVariant::fromValue(value))),
             this);
 }
 
@@ -701,8 +716,10 @@ PendingOperation *Account::setRequestedPresence(
         const SimplePresence &value)
 {
     return new PendingVoid(
-            propertiesInterface()->Set(TELEPATHY_INTERFACE_ACCOUNT,
-                "RequestedPresence", QDBusVariant(QVariant::fromValue(value))),
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("RequestedPresence"),
+                QDBusVariant(QVariant::fromValue(value))),
             this);
 }
 
@@ -783,7 +800,7 @@ PendingChannelRequest *Account::ensureTextChat(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -815,7 +832,7 @@ PendingChannelRequest *Account::ensureTextChat(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -847,7 +864,7 @@ PendingChannelRequest *Account::ensureTextChatroom(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -879,7 +896,7 @@ PendingChannelRequest *Account::ensureMediaCall(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -911,7 +928,7 @@ PendingChannelRequest *Account::ensureMediaCall(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -946,7 +963,7 @@ PendingChannelRequest *Account::ensureAudioCall(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
@@ -983,7 +1000,7 @@ PendingChannelRequest *Account::ensureAudioCall(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialAudio"),
@@ -1023,7 +1040,7 @@ PendingChannelRequest *Account::ensureVideoCall(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
@@ -1069,7 +1086,7 @@ PendingChannelRequest *Account::ensureVideoCall(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitialVideo"),
@@ -1110,7 +1127,7 @@ PendingChannelRequest *Account::createFileTransfer(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -1168,7 +1185,7 @@ PendingChannelRequest *Account::createFileTransfer(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
@@ -1213,7 +1230,7 @@ PendingChannelRequest *Account::createConferenceMediaCall(
     // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
     //      should be used?
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
 
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContactsIdentifiers);
@@ -1232,7 +1249,7 @@ PendingChannelRequest *Account::createConferenceMediaCall(
     // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
     //      should be used?
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
 
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContacts);
@@ -1249,7 +1266,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
 
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContactsIdentifiers);
@@ -1266,7 +1283,7 @@ PendingChannelRequest *Account::createConferenceTextChat(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
 
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContacts);
@@ -1284,7 +1301,7 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -1306,7 +1323,7 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT);
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                    (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -1455,7 +1472,7 @@ void Account::Private::introspectMain(Account::Private *self)
     debug() << "Calling Properties::GetAll(Account)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->GetAll(
-                TELEPATHY_INTERFACE_ACCOUNT), self->parent);
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT)), self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
@@ -1495,65 +1512,65 @@ void Account::Private::updateProperties(const QVariantMap &props)
 {
     debug() << "Account::updateProperties: changed:";
 
-    if (props.contains("Interfaces")) {
-        parent->setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
+    if (props.contains(QLatin1String("Interfaces"))) {
+        parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
         debug() << " Interfaces:" << parent->interfaces();
     }
 
-    if (props.contains("DisplayName") &&
-        displayName != qdbus_cast<QString>(props["DisplayName"])) {
-        displayName = qdbus_cast<QString>(props["DisplayName"]);
+    if (props.contains(QLatin1String("DisplayName")) &&
+        displayName != qdbus_cast<QString>(props[QLatin1String("DisplayName")])) {
+        displayName = qdbus_cast<QString>(props[QLatin1String("DisplayName")]);
         debug() << " Display Name:" << displayName;
         emit parent->displayNameChanged(displayName);
     }
 
-    if (props.contains("Icon") &&
-        icon != qdbus_cast<QString>(props["Icon"])) {
-        icon = qdbus_cast<QString>(props["Icon"]);
+    if (props.contains(QLatin1String("Icon")) &&
+        icon != qdbus_cast<QString>(props[QLatin1String("Icon")])) {
+        icon = qdbus_cast<QString>(props[QLatin1String("Icon")]);
         debug() << " Icon:" << icon;
         emit parent->iconChanged(icon);
     }
 
-    if (props.contains("Nickname") &&
-        nickname != qdbus_cast<QString>(props["Nickname"])) {
-        nickname = qdbus_cast<QString>(props["Nickname"]);
+    if (props.contains(QLatin1String("Nickname")) &&
+        nickname != qdbus_cast<QString>(props[QLatin1String("Nickname")])) {
+        nickname = qdbus_cast<QString>(props[QLatin1String("Nickname")]);
         debug() << " Nickname:" << nickname;
         emit parent->nicknameChanged(nickname);
     }
 
-    if (props.contains("NormalizedName") &&
-        normalizedName != qdbus_cast<QString>(props["NormalizedName"])) {
-        normalizedName = qdbus_cast<QString>(props["NormalizedName"]);
+    if (props.contains(QLatin1String("NormalizedName")) &&
+        normalizedName != qdbus_cast<QString>(props[QLatin1String("NormalizedName")])) {
+        normalizedName = qdbus_cast<QString>(props[QLatin1String("NormalizedName")]);
         debug() << " Normalized Name:" << normalizedName;
         emit parent->normalizedNameChanged(normalizedName);
     }
 
-    if (props.contains("Valid") &&
-        valid != qdbus_cast<bool>(props["Valid"])) {
-        valid = qdbus_cast<bool>(props["Valid"]);
+    if (props.contains(QLatin1String("Valid")) &&
+        valid != qdbus_cast<bool>(props[QLatin1String("Valid")])) {
+        valid = qdbus_cast<bool>(props[QLatin1String("Valid")]);
         debug() << " Valid:" << (valid ? "true" : "false");
         emit parent->validityChanged(valid);
     }
 
-    if (props.contains("Enabled") &&
-        enabled != qdbus_cast<bool>(props["Enabled"])) {
-        enabled = qdbus_cast<bool>(props["Enabled"]);
+    if (props.contains(QLatin1String("Enabled")) &&
+        enabled != qdbus_cast<bool>(props[QLatin1String("Enabled")])) {
+        enabled = qdbus_cast<bool>(props[QLatin1String("Enabled")]);
         debug() << " Enabled:" << (enabled ? "true" : "false");
         emit parent->stateChanged(enabled);
     }
 
-    if (props.contains("ConnectAutomatically") &&
+    if (props.contains(QLatin1String("ConnectAutomatically")) &&
         connectsAutomatically !=
-                qdbus_cast<bool>(props["ConnectAutomatically"])) {
+                qdbus_cast<bool>(props[QLatin1String("ConnectAutomatically")])) {
         connectsAutomatically =
-                qdbus_cast<bool>(props["ConnectAutomatically"]);
+                qdbus_cast<bool>(props[QLatin1String("ConnectAutomatically")]);
         debug() << " Connects Automatically:" << (connectsAutomatically ? "true" : "false");
         emit parent->connectsAutomaticallyPropertyChanged(connectsAutomatically);
     }
 
-    if (props.contains("HasBeenOnline") &&
+    if (props.contains(QLatin1String("HasBeenOnline")) &&
         !hasBeenOnline &&
-        qdbus_cast<bool>(props["HasBeenOnline"])) {
+        qdbus_cast<bool>(props[QLatin1String("HasBeenOnline")])) {
         hasBeenOnline = true;
         debug() << " HasBeenOnline changed to true";
         // don't emit firstOnline unless we're already ready, that would be
@@ -1564,49 +1581,49 @@ void Account::Private::updateProperties(const QVariantMap &props)
         }
     }
 
-    if (props.contains("Parameters") &&
-        parameters != qdbus_cast<QVariantMap>(props["Parameters"])) {
-        parameters = qdbus_cast<QVariantMap>(props["Parameters"]);
+    if (props.contains(QLatin1String("Parameters")) &&
+        parameters != qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")])) {
+        parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
         debug() << " Parameters:" << parameters;
         emit parent->parametersChanged(parameters);
     }
 
-    if (props.contains("AutomaticPresence") &&
+    if (props.contains(QLatin1String("AutomaticPresence")) &&
         automaticPresence != qdbus_cast<SimplePresence>(
-                props["AutomaticPresence"])) {
+                props[QLatin1String("AutomaticPresence")])) {
         automaticPresence = qdbus_cast<SimplePresence>(
-                props["AutomaticPresence"]);
+                props[QLatin1String("AutomaticPresence")]);
         debug() << " Automatic Presence:" << automaticPresence.type <<
             "-" << automaticPresence.status;
         emit parent->automaticPresenceChanged(automaticPresence);
     }
 
-    if (props.contains("CurrentPresence") &&
+    if (props.contains(QLatin1String("CurrentPresence")) &&
         currentPresence != qdbus_cast<SimplePresence>(
-                props["CurrentPresence"])) {
+                props[QLatin1String("CurrentPresence")])) {
         currentPresence = qdbus_cast<SimplePresence>(
-                props["CurrentPresence"]);
+                props[QLatin1String("CurrentPresence")]);
         debug() << " Current Presence:" << currentPresence.type <<
             "-" << currentPresence.status;
         emit parent->currentPresenceChanged(currentPresence);
     }
 
-    if (props.contains("RequestedPresence") &&
+    if (props.contains(QLatin1String("RequestedPresence")) &&
         requestedPresence != qdbus_cast<SimplePresence>(
-                props["RequestedPresence"])) {
+                props[QLatin1String("RequestedPresence")])) {
         requestedPresence = qdbus_cast<SimplePresence>(
-                props["RequestedPresence"]);
+                props[QLatin1String("RequestedPresence")]);
         debug() << " Requested Presence:" << requestedPresence.type <<
             "-" << requestedPresence.status;
         emit parent->requestedPresenceChanged(requestedPresence);
     }
 
-    if (props.contains("Connection")) {
-        QString path = qdbus_cast<QDBusObjectPath>(props["Connection"]).path();
+    if (props.contains(QLatin1String("Connection"))) {
+        QString path = qdbus_cast<QDBusObjectPath>(props[QLatin1String("Connection")]).path();
         if (path.isEmpty()) {
             debug() << " The map contains \"Connection\" but it's empty as a QDBusObjectPath!";
             debug() << " Trying QString (known bug in some MC/dbus-glib versions)";
-            path = qdbus_cast<QString>(props["Connection"]);
+            path = qdbus_cast<QString>(props[QLatin1String("Connection")]);
         }
 
         debug() << " Connection Object Path:" << path;
@@ -1621,23 +1638,24 @@ void Account::Private::updateProperties(const QVariantMap &props)
         }
     }
 
-    if (props.contains("ConnectionStatus") || props.contains("ConnectionStatusReason")) {
+    if (props.contains(QLatin1String("ConnectionStatus")) ||
+        props.contains(QLatin1String("ConnectionStatusReason"))) {
         bool changed = false;
 
-        if (props.contains("ConnectionStatus") &&
+        if (props.contains(QLatin1String("ConnectionStatus")) &&
             connectionStatus != ConnectionStatus(
-                    qdbus_cast<uint>(props["ConnectionStatus"]))) {
+                    qdbus_cast<uint>(props[QLatin1String("ConnectionStatus")]))) {
             connectionStatus = ConnectionStatus(
-                    qdbus_cast<uint>(props["ConnectionStatus"]));
+                    qdbus_cast<uint>(props[QLatin1String("ConnectionStatus")]));
             debug() << " Connection Status:" << connectionStatus;
             changed = true;
         }
 
-        if (props.contains("ConnectionStatusReason") &&
+        if (props.contains(QLatin1String("ConnectionStatusReason")) &&
             connectionStatusReason != ConnectionStatusReason(
-                    qdbus_cast<uint>(props["ConnectionStatusReason"]))) {
+                    qdbus_cast<uint>(props[QLatin1String("ConnectionStatusReason")]))) {
             connectionStatusReason = ConnectionStatusReason(
-                    qdbus_cast<uint>(props["ConnectionStatusReason"]));
+                    qdbus_cast<uint>(props[QLatin1String("ConnectionStatusReason")]));
             debug() << " Connection StatusReason:" << connectionStatusReason;
             changed = true;
         }
@@ -1653,8 +1671,8 @@ void Account::Private::retrieveAvatar()
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             parent->propertiesInterface()->Get(
-                TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR,
-                "Avatar"), parent);
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR),
+                QLatin1String("Avatar")), parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotAvatar(QDBusPendingCallWatcher *)));

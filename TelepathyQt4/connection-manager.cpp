@@ -252,7 +252,7 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
     }
 
     uint flags = spec.flags;
-    if (spec.name.endsWith("password")) {
+    if (spec.name.endsWith(QLatin1String("password"))) {
         flags |= ConnMgrParamFlagSecret;
     }
 
@@ -315,7 +315,7 @@ void ConnectionManager::Private::PendingNames::invokeMethod(const QLatin1String 
 void ConnectionManager::Private::PendingNames::parseResult(const QStringList &names)
 {
     foreach (const QString name, names) {
-        if (name.startsWith("org.freedesktop.Telepathy.ConnectionManager.")) {
+        if (name.startsWith(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_MANAGER "."))) {
             mResult << name.right(name.length() - 44);
         }
     }
@@ -388,7 +388,7 @@ ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
  * applications.
  */
 
-const Feature ConnectionManager::FeatureCore = Feature(ConnectionManager::staticMetaObject.className(), 0, true);
+const Feature ConnectionManager::FeatureCore = Feature(QLatin1String(ConnectionManager::staticMetaObject.className()), 0, true);
 
 ConnectionManagerPtr ConnectionManager::create(const QString &name)
 {
@@ -583,7 +583,8 @@ void ConnectionManager::Private::introspectMain(ConnectionManager::Private *self
     debug() << "Calling Properties::GetAll(ConnectionManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->GetAll(
-                TELEPATHY_INTERFACE_CONNECTION_MANAGER), self->parent);
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_MANAGER)),
+            self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
@@ -622,8 +623,8 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
 
         // If Interfaces is not supported, the spec says to assume it's
         // empty, so keep the empty list mPriv was initialized with
-        if (props.contains("Interfaces")) {
-            setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
+        if (props.contains(QLatin1String("Interfaces"))) {
+            setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
             mPriv->readinessHelper->setInterfaces(interfaces());
         }
     } else {
@@ -671,7 +672,7 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
     ProtocolInfo *info = mPriv->protocol(protocolName);
 
     if (!reply.isError()) {
-        debug() << QString("Got reply to ConnectionManager.GetParameters(%1)").arg(protocolName);
+        debug() << QString(QLatin1String("Got reply to ConnectionManager.GetParameters(%1)")).arg(protocolName);
         ParamSpecList parameters = reply.value();
         foreach (const ParamSpec &spec, parameters) {
             debug() << "Parameter" << spec.name << "has flags" << spec.flags
@@ -684,7 +685,7 @@ void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
         mPriv->protocols.removeOne(info);
 
         warning().nospace() <<
-            QString("ConnectionManager.GetParameters(%1) failed: ").arg(protocolName) <<
+            QString(QLatin1String("ConnectionManager.GetParameters(%1) failed: ")).arg(protocolName) <<
             reply.error().name() << ": " << reply.error().message();
     }
 

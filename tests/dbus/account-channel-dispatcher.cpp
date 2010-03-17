@@ -116,7 +116,7 @@ public Q_SLOTS: // Methods
 
     void Cancel()
     {
-        emit Failed(TELEPATHY_ERROR_CANCELLED, "Cancelled");
+        emit Failed(QLatin1String(TELEPATHY_ERROR_CANCELLED), QLatin1String("Cancelled"));
     }
 
 Q_SIGNALS: // Signals
@@ -126,7 +126,7 @@ Q_SIGNALS: // Signals
 private Q_SLOTS:
     void fail()
     {
-        emit Failed(TELEPATHY_ERROR_NOT_AVAILABLE, "Not available");
+        emit Failed(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE), QLatin1String("Not available"));
     }
 
 private:
@@ -218,9 +218,9 @@ private:
                 mChannelRequestProceedNoop,
                 request);
         QString channelRequestPath =
-            QString("/org/freedesktop/Telepathy/ChannelRequest/_%1")
+            QString(QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/_%1"))
                 .arg(mRequests++);
-        mBus.registerService("org.freedesktop.Telepathy.ChannelDispatcher");
+        mBus.registerService(QLatin1String("org.freedesktop.Telepathy.ChannelDispatcher"));
         mBus.registerObject(channelRequestPath, request);
         return QDBusObjectPath(channelRequestPath);
     }
@@ -308,9 +308,9 @@ void TestAccountChannelDispatcher::initTestCase()
     QCOMPARE(mAM->isReady(), true);
 
     QVariantMap parameters;
-    parameters["account"] = "foobar";
-    PendingAccount *pacc = mAM->createAccount("foo",
-            "bar", "foobar", parameters);
+    parameters[QLatin1String("account")] = QLatin1String("foobar");
+    PendingAccount *pacc = mAM->createAccount(QLatin1String("foo"),
+            QLatin1String("bar"), QLatin1String("foobar"), parameters);
     QVERIFY(connect(pacc,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -324,8 +324,8 @@ void TestAccountChannelDispatcher::initTestCase()
     QCOMPARE(mAccount->isReady(), true);
 
     QDBusConnection bus = mAccount->dbusConnection();
-    QString channelDispatcherBusName = "org.freedesktop.Telepathy.ChannelDispatcher";
-    QString channelDispatcherPath = "/org/freedesktop/Telepathy/ChannelDispatcher";
+    QString channelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    QString channelDispatcherPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatcher");
     QObject *dispatcher = new QObject(this);
     mChannelDispatcherAdaptor = new ChannelDispatcherAdaptor(bus, dispatcher);
     QVERIFY(bus.registerService(channelDispatcherBusName));
@@ -361,21 +361,21 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
 #define TEST_ENSURE_CHANNEL_SPECIFIC(method_name, shouldFail, proceedNoop, expectedError) \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
-    PendingChannelRequest *pcr = mAccount->method_name("foo@bar", \
+    PendingChannelRequest *pcr = mAccount->method_name(QLatin1String("foo@bar"), \
             mUserActionTime, QString()); \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) \
-        QCOMPARE(mChannelRequestFinishedErrorName, QString(expectedError));
+        QCOMPARE(mChannelRequestFinishedErrorName, QString(QLatin1String(expectedError)));
 
 #define TEST_CREATE_ENSURE_CHANNEL(method_name, shouldFail, proceedNoop, expectedError) \
     QVariantMap request; \
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"), \
-                                 TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT); \
+                                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)); \
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"), \
                                  (uint) Tp::HandleTypeContact); \
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"), \
-                                 "foo@bar"); \
+                                 QLatin1String("foo@bar")); \
     mChannelDispatcherAdaptor->mChannelRequestShouldFail = shouldFail; \
     mChannelDispatcherAdaptor->mChannelRequestProceedNoop = proceedNoop; \
     PendingChannelRequest *pcr = mAccount->method_name(request, \
@@ -383,7 +383,7 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
     if (shouldFail) \
-        QCOMPARE(mChannelRequestFinishedErrorName, QString(expectedError));
+        QCOMPARE(mChannelRequestFinishedErrorName, QString(QLatin1String(expectedError)));
 
 void TestAccountChannelDispatcher::testEnsureTextChat()
 {

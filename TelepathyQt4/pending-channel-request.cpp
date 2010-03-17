@@ -96,11 +96,11 @@ PendingChannelRequest::PendingChannelRequest(const QDBusConnection &dbusConnecti
       mPriv(new Private(dbusConnection))
 {
     QString channelDispatcherObjectPath =
-        QString("/%1").arg(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
-    channelDispatcherObjectPath.replace('.', '/');
+        QString(QLatin1String("/%1")).arg(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER));
+    channelDispatcherObjectPath.replace(QLatin1String("."), QLatin1String("/"));
     Client::ChannelDispatcherInterface *channelDispatcherInterface =
         new Client::ChannelDispatcherInterface(mPriv->dbusConnection,
-                TELEPATHY_INTERFACE_CHANNEL_DISPATCHER,
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
                 channelDispatcherObjectPath,
                 this);
     QDBusPendingCallWatcher *watcher;
@@ -150,8 +150,8 @@ PendingOperation *PendingChannelRequest::cancel()
 {
     if (isFinished()) {
         // CR has already succeeded or failed, so let's just fail here
-        return new PendingFailure(TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD,
-                "ChannnelRequest already finished", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_DBUS_ERROR_UNKNOWN_METHOD),
+                QLatin1String("ChannnelRequest already finished"), this);
     }
 
     if (!mPriv->cancelOperation) {
@@ -182,8 +182,8 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
 
         if (mPriv->cancelOperation) {
             mPriv->cancelOperation->go(mPriv->channelRequest);
-            setFinishedWithError(TELEPATHY_ERROR_CANCELLED,
-                    "ChannelRequest cancelled");
+            setFinishedWithError(QLatin1String(TELEPATHY_ERROR_CANCELLED),
+                    QLatin1String("ChannelRequest cancelled"));
         } else {
             emit channelRequestCreated(mPriv->channelRequest);
 

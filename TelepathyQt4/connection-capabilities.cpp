@@ -86,7 +86,7 @@ bool ConnectionCapabilities::supportsTextChatrooms() const
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
         targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
-        if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT &&
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
             targetHandleType == HandleTypeRoom) {
             return true;
         }

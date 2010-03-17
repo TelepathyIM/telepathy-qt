@@ -42,7 +42,7 @@ Receiver::Receiver(const QString &username, const QString &password,
       mPassword(password),
       mOffset(offset)
 {
-    mCM = ConnectionManager::create("gabble");
+    mCM = ConnectionManager::create(QLatin1String("gabble"));
     connect(mCM->becomeReady(),
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onCMReady(Tp::PendingOperation *)));
@@ -64,9 +64,10 @@ void Receiver::onCMReady(PendingOperation *op)
 
     qDebug() << "Creating connection...";
     QVariantMap params;
-    params.insert("account", QVariant(mUsername));
-    params.insert("password", QVariant(mPassword));
-    PendingConnection *pconn = mCM->requestConnection("jabber", params);
+    params.insert(QLatin1String("account"), QVariant(mUsername));
+    params.insert(QLatin1String("password"), QVariant(mPassword));
+    PendingConnection *pconn = mCM->requestConnection(QLatin1String("jabber"),
+            params);
     connect(pconn,
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onConnectionCreated(Tp::PendingOperation *)));
@@ -117,7 +118,7 @@ void Receiver::onNewChannels(const Tp::ChannelDetailsList &channels)
         qDebug() << " channelType:" << channelType;
         qDebug() << " requested  :" << requested;
 
-        if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER &&
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) &&
             !requested) {
             ReceiverChannel *channel = new ReceiverChannel(mConn,
                     details.channel.path(),
@@ -148,7 +149,10 @@ int main(int argc, char **argv)
     Tp::registerTypes();
     Tp::enableDebug(true);
 
-    new Receiver(argv[1], argv[2], QString(argv[3]).toULongLong());
+    new Receiver(
+            QLatin1String(argv[1]),
+            QLatin1String(argv[2]),
+            QString(QLatin1String(argv[3])).toULongLong());
 
     return app.exec();
 }

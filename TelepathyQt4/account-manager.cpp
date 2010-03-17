@@ -251,7 +251,7 @@ void AccountManager::Private::setAccountPaths(QSet<QString> &set,
  * When calling isReady(), becomeReady(), this feature is implicitly added
  * to the requested features.
  */
-const Feature AccountManager::FeatureCore = Feature(AccountManager::staticMetaObject.className(), 0, true);
+const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager::staticMetaObject.className()), 0, true);
 
 /**
  * Create a new account manager object using QDBusConnection::sessionBus().
@@ -550,7 +550,8 @@ void AccountManager::Private::introspectMain(AccountManager::Private *self)
     debug() << "Calling Properties::GetAll(AccountManager)";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->GetAll(
-                TELEPATHY_INTERFACE_ACCOUNT_MANAGER), self->parent);
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER)),
+            self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
@@ -565,20 +566,20 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to Properties.GetAll(AccountManager)";
         props = reply.value();
 
-        if (props.contains("Interfaces")) {
-            setInterfaces(qdbus_cast<QStringList>(props["Interfaces"]));
+        if (props.contains(QLatin1String("Interfaces"))) {
+            setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
         }
-        if (props.contains("ValidAccounts")) {
+        if (props.contains(QLatin1String("ValidAccounts"))) {
             mPriv->setAccountPaths(mPriv->validAccountPaths,
-                    props["ValidAccounts"]);
+                    props[QLatin1String("ValidAccounts")]);
         }
-        if (props.contains("InvalidAccounts")) {
+        if (props.contains(QLatin1String("InvalidAccounts"))) {
             mPriv->setAccountPaths(mPriv->invalidAccountPaths,
-                    props["InvalidAccounts"]);
+                    props[QLatin1String("InvalidAccounts")]);
         }
-        if (props.contains("SupportedAccountProperties")) {
+        if (props.contains(QLatin1String("SupportedAccountProperties"))) {
             mPriv->supportedAccountProperties =
-                qdbus_cast<QStringList>(props["SupportedAccountProperties"]);
+                qdbus_cast<QStringList>(props[QLatin1String("SupportedAccountProperties")]);
         }
     } else {
         warning().nospace() <<

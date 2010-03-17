@@ -117,10 +117,11 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         ", connection:" << connectionPath.path();
 
     AccountPtr account = Account::create(mBus,
-            TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
+            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             accountPath.path());
 
-    QString connectionBusName = connectionPath.path().mid(1).replace('/', '.');
+    QString connectionBusName = connectionPath.path().mid(1).replace(
+            QLatin1String("/"), QLatin1String("."));
     ConnectionPtr connection = Connection::create(mBus, connectionBusName,
             connectionPath.path());
 
@@ -171,9 +172,11 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
         const QDBusMessage &message)
 {
     QDBusObjectPath connectionPath = qdbus_cast<QDBusObjectPath>(
-            properties.value(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"));
+            properties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection")));
     debug() << "addDispatchOperation: connection:" << connectionPath.path();
-    QString connectionBusName = connectionPath.path().mid(1).replace('/', '.');
+    QString connectionBusName = connectionPath.path().mid(1).replace(
+            QLatin1String("/"), QLatin1String("."));
     ConnectionPtr connection = Connection::create(mBus, connectionBusName,
             connectionPath.path());
 
@@ -234,10 +237,11 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
         ", connection:" << connectionPath.path();
 
     AccountPtr account = Account::create(mBus,
-            TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
+            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             accountPath.path());
 
-    QString connectionBusName = connectionPath.path().mid(1).replace('/', '.');
+    QString connectionBusName = connectionPath.path().mid(1).replace(
+            QLatin1String("/"), QLatin1String("."));
     ConnectionPtr connection = Connection::create(mBus, connectionBusName,
             connectionPath.path());
 
@@ -508,10 +512,10 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     if (unique) {
         // o.f.T.Client.<unique_bus_name>_<pointer> should be enough to identify
         // an unique identifier
-        busName.append(QString(".%1.x%2")
+        busName.append(QString(QLatin1String(".%1.x%2"))
                 .arg(mPriv->bus.baseService()
-                    .replace(':', '_')
-                    .replace('.', "._"))
+                    .replace(QLatin1String(":"), QLatin1String("_"))
+                    .replace(QLatin1String("."), QLatin1String("._")))
                 .arg((intptr_t) client.data(), 0, 16));
     }
 
@@ -569,8 +573,8 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     // export o.f.T.Client interface
     new ClientAdaptor(interfaces, object);
 
-    QString objectPath = QString("/%1").arg(busName);
-    objectPath.replace('.', '/');
+    QString objectPath = QString(QLatin1String("/%1")).arg(busName);
+    objectPath.replace(QLatin1String("."), QLatin1String("/"));
     if (!mPriv->bus.registerObject(objectPath, object)) {
         // this shouldn't happen, but let's make sure
         warning() << "Unable to register client: objectPath" <<
@@ -616,7 +620,8 @@ bool ClientRegistrar::unregisterClient(const AbstractClientPtr &client)
     delete object;
     mPriv->clientObjects.remove(client);
 
-    QString busName = objectPath.mid(1).replace('/', '.');
+    QString busName = objectPath.mid(1).replace(QLatin1String("/"),
+            QLatin1String("."));
     mPriv->bus.unregisterService(busName);
     mPriv->services.remove(busName);
 

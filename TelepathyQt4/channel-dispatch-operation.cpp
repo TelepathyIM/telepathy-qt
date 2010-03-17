@@ -131,7 +131,7 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
     debug() << "Calling Properties::GetAll(ChannelDispatchOperation)";
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
-                self->properties->GetAll(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION),
+                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION)),
                 self->parent);
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -141,29 +141,30 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
 void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &props,
         bool immutableProperties)
 {
-    parent->setInterfaces(qdbus_cast<QStringList>(props.value("Interfaces")));
+    parent->setInterfaces(qdbus_cast<QStringList>(props.value(QLatin1String("Interfaces"))));
 
-    if (!connection && props.contains("Connection")) {
+    if (!connection && props.contains(QLatin1String("Connection"))) {
         QDBusObjectPath connectionObjectPath =
-            qdbus_cast<QDBusObjectPath>(props.value("Connection"));
+            qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Connection")));
         QString connectionBusName =
-            connectionObjectPath.path().mid(1).replace('/', '.');
+            connectionObjectPath.path().mid(1).replace(QLatin1String("/"),
+                    QLatin1String("."));
         connection = Connection::create(
                 connectionBusName,
                 connectionObjectPath.path());
     }
 
-    if (!account && props.contains("Account")) {
+    if (!account && props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
-            qdbus_cast<QDBusObjectPath>(props.value("Account"));
+            qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
         account = Account::create(
-                TELEPATHY_ACCOUNT_MANAGER_BUS_NAME,
+                QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
                 accountObjectPath.path());
     }
 
     if (!immutableProperties) {
         ChannelDetailsList channelDetailsList =
-            qdbus_cast<ChannelDetailsList>(props.value("Channels"));
+            qdbus_cast<ChannelDetailsList>(props.value(QLatin1String("Channels")));
         ChannelPtr channel;
         foreach (const ChannelDetails &channelDetails, channelDetailsList) {
             channel = ChannelFactory::create(connection,
@@ -173,7 +174,7 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         }
     }
 
-    possibleHandlers = qdbus_cast<QStringList>(props.value("PossibleHandlers"));
+    possibleHandlers = qdbus_cast<QStringList>(props.value(QLatin1String("PossibleHandlers")));
 }
 
 void ChannelDispatchOperation::Private::checkReady()
@@ -239,7 +240,7 @@ void ChannelDispatchOperation::Private::checkReady()
  * will be notified again.
  */
 
-const Feature ChannelDispatchOperation::FeatureCore = Feature(ChannelDispatchOperation::staticMetaObject.className(), 0, true);
+const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(ChannelDispatchOperation::staticMetaObject.className()), 0, true);
 
 ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QString &objectPath,
         const QVariantMap &immutableProperties)
@@ -259,7 +260,7 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
 ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties)
     : StatefulDBusProxy(bus,
-            "org.freedesktop.Telepathy.ChannelDispatcher",
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
             objectPath),
       OptionalInterfaceFactory<ChannelDispatchOperation>(this),
       ReadyObject(this, FeatureCore),
@@ -329,8 +330,8 @@ Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterfa
 void ChannelDispatchOperation::onFinished()
 {
     debug() << "ChannelDispatchOperation finished and was removed";
-    invalidate(TELEPATHY_QT4_ERROR_OBJECT_REMOVED,
-               "ChannelDispatchOperation finished and was removed");
+    invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
+               QLatin1String("ChannelDispatchOperation finished and was removed"));
 }
 
 void ChannelDispatchOperation::gotMainProperties(QDBusPendingCallWatcher *watcher)

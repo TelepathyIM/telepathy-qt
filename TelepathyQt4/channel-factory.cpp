@@ -43,23 +43,23 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
 {
     QString channelType = immutableProperties.value(QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
-    if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) {
+    if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)) {
         return ChannelPtr(dynamic_cast<Channel*>(
                     TextChannel::create(connection,
                         channelPath, immutableProperties).data()));
     }
-    else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ||
-             channelType == TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL) {
+    else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) ||
+             channelType == QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL)) {
         return ChannelPtr(dynamic_cast<Channel*>(
                     StreamedMediaChannel::create(connection,
                         channelPath, immutableProperties).data()));
     }
-    else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST) {
+    else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST)) {
         return ChannelPtr(dynamic_cast<Channel*>(
                     RoomListChannel::create(connection,
                         channelPath, immutableProperties).data()));
     }
-    else if (channelType == TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER) {
+    else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER)) {
         if (immutableProperties.contains(QLatin1String(
                         TELEPATHY_INTERFACE_CHANNEL ".Requested"))) {
             bool requested = immutableProperties.value(QLatin1String(

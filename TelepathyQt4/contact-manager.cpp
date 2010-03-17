@@ -135,13 +135,13 @@ QString featureToInterface(Contact::Feature feature)
 {
     switch (feature) {
         case Contact::FeatureAlias:
-            return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING;
+            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING);
         case Contact::FeatureAvatarToken:
-            return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS;
+            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
         case Contact::FeatureSimplePresence:
-            return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE;
+            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
         case Contact::FeatureCapabilities:
-            return TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES;
+            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES);
         default:
             warning() << "ContactManager doesn't know which interface corresponds to feature"
                 << feature;
@@ -152,9 +152,8 @@ QString featureToInterface(Contact::Feature feature)
 
 QSet<Contact::Feature> ContactManager::supportedFeatures() const
 {
-
     if (mPriv->supportedFeatures.isEmpty() &&
-        connection()->interfaces().contains(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        connection()->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
         QList<Contact::Feature> allFeatures = QList<Contact::Feature>()
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
@@ -227,7 +226,7 @@ PendingOperation *ContactManager::addGroup(const QString &group)
 {
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                                  TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST);
+                                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
                                  (uint) Tp::HandleTypeGroup);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
@@ -248,8 +247,8 @@ PendingOperation *ContactManager::addGroup(const QString &group)
 PendingOperation *ContactManager::removeGroup(const QString &group)
 {
     if (!mPriv->contactListGroupChannels.contains(group)) {
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid group", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Invalid group"), this);
     }
 
     ChannelPtr channel = mPriv->contactListGroupChannels[group];
@@ -294,8 +293,8 @@ PendingOperation *ContactManager::addContactsToGroup(const QString &group,
         const QList<ContactPtr> &contacts)
 {
     if (!mPriv->contactListGroupChannels.contains(group)) {
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid group", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Invalid group"), this);
     }
 
     ChannelPtr channel = mPriv->contactListGroupChannels[group];
@@ -317,8 +316,8 @@ PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
         const QList<ContactPtr> &contacts)
 {
     if (!mPriv->contactListGroupChannels.contains(group)) {
-        return new PendingFailure(TELEPATHY_ERROR_INVALID_ARGUMENT,
-                "Invalid group", this);
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
+                QLatin1String("Invalid group"), this);
     }
 
     ChannelPtr channel = mPriv->contactListGroupChannels[group];
@@ -388,8 +387,8 @@ PendingOperation *ContactManager::requestPresenceSubscription(
         const QList<ContactPtr> &contacts, const QString &message)
 {
     if (!mPriv->subscribeChannel) {
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot subscribe to contacts' presence on this protocol",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Cannot subscribe to contacts' presence on this protocol"),
                 this);
     }
 
@@ -476,8 +475,8 @@ PendingOperation *ContactManager::removePresenceSubscription(
         const QList<ContactPtr> &contacts, const QString &message)
 {
     if (!mPriv->subscribeChannel) {
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot subscribe to contacts' presence on this protocol",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Cannot subscribe to contacts' presence on this protocol"),
                 this);
     }
 
@@ -534,8 +533,8 @@ PendingOperation *ContactManager::authorizePresencePublication(
         const QList<ContactPtr> &contacts, const QString &message)
 {
     if (!mPriv->publishChannel) {
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot control publication of presence on this protocol",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Cannot control publication of presence on this protocol"),
                 this);
     }
 
@@ -617,8 +616,8 @@ PendingOperation *ContactManager::removePresencePublication(
         const QList<ContactPtr> &contacts, const QString &message)
 {
     if (!mPriv->publishChannel) {
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot control publication of presence on this protocol",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Cannot control publication of presence on this protocol"),
                 this);
     }
 
@@ -651,8 +650,8 @@ PendingOperation *ContactManager::blockContacts(
         const QList<ContactPtr> &contacts, bool value)
 {
     if (!mPriv->denyChannel) {
-        return new PendingFailure(TELEPATHY_ERROR_NOT_IMPLEMENTED,
-                "Cannot block contacts on this protocol",
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("Cannot block contacts on this protocol"),
                 this);
     }
 
