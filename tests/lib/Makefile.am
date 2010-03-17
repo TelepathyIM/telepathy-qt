@@ -16,7 +16,6 @@ AM_CPPFLAGS = \
     $(QTTEST_CFLAGS) \
     $(TP_QT4_CFLAGS)
 
-AM_CFLAGS = $(ERROR_CFLAGS)
 AM_CXXFLAGS = $(ERROR_CXXFLAGS)
 
 noinst_LTLIBRARIES = libtp-qt4-tests.la
