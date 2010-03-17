@@ -11,7 +11,6 @@ AM_CPPFLAGS = \
     -I$(top_builddir) -I$(top_srcdir)
 
 AM_CFLAGS = $(ERROR_CFLAGS)
-AM_CXXFLAGS = $(ERROR_CXXFLAGS)
 
 if ENABLE_TP_GLIB_TESTS
 
