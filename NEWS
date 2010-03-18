@@ -1,8 +1,32 @@
-telepathy-qt4 0.2.3/0.3.0 (UNRELEASED)
+telepathy-qt4 0.3.0 (2010-03-18)
 ================================
 
-...
+The "With My Own Two Hands" release.
 
+Dependencies:
+
+* Full regression tests now require telepathy-glib >= 0.10.0 (telepathy-glib
+  is still optional)
+
+New API:
+
+* Channel: Added Conference/MergeableConference/Spplitabble interfaces support.
+* StreamedMediaChannel: Added Call interface support.
+
+Enhancements:
+
+* Updated to 0.19.1 spec.
+* Better tests directories organization (complete separation of glib/python
+  specific code).
+
+Fixes:
+
+* fd.o#25422: generate code for Call draft API.
+* fd.o#26117: Add Call interface support to StreamedMediaChannel.
+* fd.o#26881: Remove the usage of QString::fromAscii.
+* fd.o#27124: Missing docs for some classes.
+* fd.o#27125: Add support to QT_NO_CAST_FROM_ASCII.
+* Fixed bug when Channel was never getting ready.
 
 telepathy-qt4 0.2.2 (2010-02-22)
 ================================
