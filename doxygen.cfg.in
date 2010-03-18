@@ -1,5 +1,3 @@
-# Doxyfile 1.5.6
-
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project
 #
@@ -86,7 +84,16 @@ REPEAT_BRIEF           = YES
 # "The $name file" "is" "provides" "specifies" "contains" 
 # "represents" "a" "an" "the"
 
-ABBREVIATE_BRIEF       = 
+ABBREVIATE_BRIEF       = "The \$name class" \
+                         "The \$name file" \
+                         is \
+                         provides \
+                         specifies \
+                         contains \
+                         represents \
+                         a \
+                         an \
+                         the
 
 # If the ALWAYS_DETAILED_SEC and REPEAT_BRIEF tags are both set to YES then 
 # Doxygen will generate a detailed section even if there is only a brief 
@@ -351,7 +358,7 @@ CASE_SENSE_NAMES       = YES
 # will show members with their full class and namespace scopes in the 
 # documentation. If set to YES the scope will be hidden.
 
-HIDE_SCOPE_NAMES       = YES
+HIDE_SCOPE_NAMES       = NO
 
 # If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen 
 # will put a list of the files that are included by a file in the documentation 
@@ -510,7 +517,7 @@ WARN_NO_PARAMDOC       = YES
 # $version, which will be replaced by the version of the file (if it could 
 # be obtained via FILE_VERSION_FILTER)
 
-WARN_FORMAT            = "$file:$line: $text"
+WARN_FORMAT            = "\$file:\$line: \$text"
 
 # The WARN_LOGFILE tag can be used to specify a file to which warning 
 # and error messages should be written. If left blank the output is written 
@@ -544,7 +551,14 @@ INPUT_ENCODING         = UTF-8
 # *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx 
 # *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90
 
-FILE_PATTERNS          = *.h *.cpp *.dox
+FILE_PATTERNS          = *.cpp \
+                         *.cc \
+                         *.cxx \
+                         *.h \
+                         *.hh \
+                         *.hxx \
+                         *.hpp \
+                         *.dox
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
@@ -556,7 +570,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = @abs_top_srcdir@/TelepathyQt4/Prototype @abs_top_builddir@/TelepathyQt4/Prototype
+EXCLUDE                =
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -570,7 +584,12 @@ EXCLUDE_SYMLINKS       = NO
 # against the file with absolute path, so to exclude all test directories 
 # for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = 
+EXCLUDE_PATTERNS       = */.svn/* \
+                         */.git/* \
+                         */cmake/* \
+                         *.moc.* \
+                         */tests/* \
+                         *-internal.*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
@@ -591,7 +610,7 @@ EXAMPLE_PATH           = @abs_top_srcdir@/examples
 # and *.h) to filter out the source-files in the directories. If left 
 # blank all files are included.
 
-EXAMPLE_PATTERNS       = 
+EXAMPLE_PATTERNS       = *
 
 # If the EXAMPLE_RECURSIVE tag is set to YES then subdirectories will be 
 # searched for input files to be used with the \include or \dontinclude 
@@ -1123,6 +1142,7 @@ MACRO_EXPANSION        = NO
 # then the macro expansion is limited to the macros specified with the 
 # PREDEFINED and EXPAND_AS_DEFINED tags.
 
+MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = NO
 
 # If the SEARCH_INCLUDES tag is set to YES (the default) the includes files 
@@ -1213,6 +1233,7 @@ PERL_PATH              = $(PERL_PATH)
 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool   
+# Configuration options related to the dot tool
 #---------------------------------------------------------------------------
 
 # If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will 
@@ -1401,12 +1422,10 @@ GENERATE_LEGEND        = YES
 DOT_CLEANUP            = YES
 
 #---------------------------------------------------------------------------
-# Configuration::additions related to the search engine   
+# Configuration::additions related to the search engine
 #---------------------------------------------------------------------------
-
-# The SEARCHENGINE tag specifies whether or not a search engine should be 
+# The SEARCHENGINE tag specifies whether or not a search engine should be
 # used. If set to NO the values of all tags below this one will be ignored.
-
 SEARCHENGINE           = NO
 
 GENERATE_QHP           = YES
@@ -1414,3 +1433,36 @@ QHP_NAMESPACE          = "org.freedesktop.Telepathy.Qt4"
 QHP_VIRTUAL_FOLDER     = "$(PROJECT)"
 QCH_FILE               = "../$(PROJECT).qch"
 QHG_LOCATION           = "qhelpgenerator"
+
+### TelepathyQt4 Settings
+ALIASES = \
+	"intern=\par<b>Internal use only.</b>" \
+	"reimp=\par<b>Reimplemented from superclass.</b>" \
+	"obsolete=@deprecated" \
+	"feature=\xrefitem features \"Feature(s)\" \"Features\"" \
+	"maintainer=\xrefitem maintainers \"Maintainer(s)\" \"Maintainers\"" \
+	"unmaintained=\xrefitem unmaintained \"Unmaintained\" \"Unmaintained\"" \
+	"requirement=\xrefitem requirements \"Requirement(s)\" \"Requirements\"" \
+	"faq=\xrefitem FAQ \"F.A.Q.\" \"F.A.Q.\"" \
+	"authors=\xrefitem authors \"Author(s)\" \"Authors\"" \
+	"maintainers=\xrefitem maintainers \"Maintainer(s)\" \"Maintainers\"" \
+	"glossary=\xrefitem glossary \"TelepathyQt4 Glossary\" \"TelepathyQt4 Glossary\"" \
+	"acronym=\b "\
+	"licenses=\xrefitem licenses \"License(s)\" \"Licenses\"" \
+	"short=@brief "\
+	"FIXME=\xrefitem fixme \"Fixme\" \"Fixme\"" \
+	"bc=\xrefitem bc \"Binary Compatible\" \"Binary Compatible\"" \
+	"telepathy=<a href=\"http://telepathy.freedesktop.org\">Telepathy</a>" \
+	"dbus=<a href=\"http://dbus.freedesktop.org\">D-Bus</a>" \
+	"artistic=<a href=\"http://www.opensource.org/licenses/artistic-license.php\">Artistic</a>" \
+	"bsd=<a href=\"http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5\">BSD</a>" \
+	"x11=<a href=\"http://www.xfree86.org/3.3.6/COPYRIGHT2.html#3\">X11</a>" \
+	"gpl=<a href=\"http://www.fsf.org/licensing/licenses/gpl.html#SEC1\">GPL</a>" \
+	"lgpl=<a href=\"http://www.fsf.org/licensing/licenses/lgpl.html#SEC1\">LGPL</a>" \
+	"qpl=<a href=\"http://www.trolltech.com/products/qt/licenses\">QPL</a>"
+
+PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS \
+	TELEPATHY_QT4_EXPORT="" \
+	TELEPATHY_QT4_NO_EXPORT="" \
+	Q_SLOTS="slots" \
+	Q_SIGNALS="signals"
