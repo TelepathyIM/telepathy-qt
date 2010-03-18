@@ -102,8 +102,8 @@ void TestConferenceChan::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = QString::fromAscii(name);
-    mConnPath = QString::fromAscii(connPath);
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);

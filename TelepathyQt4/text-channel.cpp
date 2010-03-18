@@ -46,7 +46,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingSendMessage::Private
 };
 
 inline PendingSendMessage::Private::Private(const Message &message)
-    : token(QString::fromAscii("")), message(message)
+    : token(QLatin1String("")), message(message)
 {
 }
 
@@ -1032,7 +1032,7 @@ void TextChannel::onPendingMessagesRemoved(const UIntList &ids)
 void TextChannel::onTextSent(uint timestamp, uint type, const QString &text)
 {
     emit messageSent(Message(timestamp, type, text), 0,
-            QString::fromAscii(""));
+            QLatin1String(""));
 }
 
 void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
@@ -1047,28 +1047,28 @@ void TextChannel::onTextReceived(uint id, uint timestamp, uint sender,
     if (timestamp == 0) {
         timestamp = QDateTime::currentDateTime().toTime_t();
     }
-    header.insert(QString::fromAscii("message-received"),
+    header.insert(QLatin1String("message-received"),
             QDBusVariant(static_cast<qlonglong>(timestamp)));
 
-    header.insert(QString::fromAscii("pending-message-id"), QDBusVariant(id));
-    header.insert(QString::fromAscii("message-sender"), QDBusVariant(sender));
-    header.insert(QString::fromAscii("message-type"), QDBusVariant(type));
+    header.insert(QLatin1String("pending-message-id"), QDBusVariant(id));
+    header.insert(QLatin1String("message-sender"), QDBusVariant(sender));
+    header.insert(QLatin1String("message-type"), QDBusVariant(type));
 
     if (flags & ChannelTextMessageFlagScrollback) {
-        header.insert(QString::fromAscii("scrollback"), QDBusVariant(true));
+        header.insert(QLatin1String("scrollback"), QDBusVariant(true));
     }
     if (flags & ChannelTextMessageFlagRescued) {
-        header.insert(QString::fromAscii("rescued"), QDBusVariant(true));
+        header.insert(QLatin1String("rescued"), QDBusVariant(true));
     }
 
     MessagePart body;
 
-    body.insert(QString::fromAscii("content-type"),
-            QDBusVariant(QString::fromAscii("text/plain")));
-    body.insert(QString::fromAscii("content"), QDBusVariant(text));
+    body.insert(QLatin1String("content-type"),
+            QDBusVariant(QLatin1String("text/plain")));
+    body.insert(QLatin1String("content"), QDBusVariant(text));
 
     if (flags & ChannelTextMessageFlagTruncated) {
-        header.insert(QString::fromAscii("truncated"), QDBusVariant(true));
+        header.insert(QLatin1String("truncated"), QDBusVariant(true));
     }
 
     MessagePartList parts;
@@ -1095,10 +1095,10 @@ void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
 
     MessagePart header;
 
-    header.insert(QString::fromAscii("message-received"),
+    header.insert(QLatin1String("message-received"),
             QDBusVariant(static_cast<qlonglong>(
                     QDateTime::currentDateTime().toTime_t())));
-    header.insert(QString::fromAscii("message-type"),
+    header.insert(QLatin1String("message-type"),
             QDBusVariant(static_cast<uint>(
                     ChannelTextMessageTypeDeliveryReport)));
 
@@ -1123,25 +1123,25 @@ void TextChannel::onTextSendError(uint error, uint timestamp, uint type,
             break;
     }
 
-    header.insert(QString::fromAscii("delivery-status"),
+    header.insert(QLatin1String("delivery-status"),
             QDBusVariant(deliveryStatus));
-    header.insert(QString::fromAscii("delivery-error"), QDBusVariant(error));
+    header.insert(QLatin1String("delivery-error"), QDBusVariant(error));
 
     MessagePart echoHeader;
-    echoHeader.insert(QString::fromAscii("message-sent"),
+    echoHeader.insert(QLatin1String("message-sent"),
             QDBusVariant(timestamp));
-    echoHeader.insert(QString::fromAscii("message-type"),
+    echoHeader.insert(QLatin1String("message-type"),
             QDBusVariant(type));
 
     MessagePart echoBody;
-    echoBody.insert(QString::fromAscii("content-type"),
-            QDBusVariant(QString::fromAscii("text/plain")));
-    echoBody.insert(QString::fromAscii("content"), QDBusVariant(text));
+    echoBody.insert(QLatin1String("content-type"),
+            QDBusVariant(QLatin1String("text/plain")));
+    echoBody.insert(QLatin1String("content"), QDBusVariant(text));
 
     MessagePartList echo;
     echo << echoHeader;
     echo << echoBody;
-    header.insert(QString::fromAscii("delivery-echo"),
+    header.insert(QLatin1String("delivery-echo"),
             QDBusVariant(QVariant::fromValue(echo)));
 
     MessagePartList parts;

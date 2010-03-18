@@ -78,7 +78,7 @@ inline QString Message::Private::getStringOrEmpty(uint index, const char *key)
 {
     QString s = value(index, key).toString();
     if (s.isNull()) {
-        s = QString::fromAscii("");
+        s = QLatin1String("");
     }
     return s;
 }
@@ -152,14 +152,14 @@ Message::Message(const MessagePartList &parts)
 Message::Message(uint timestamp, uint type, const QString &text)
     : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
 {
-    mPriv->parts[0].insert(QString::fromAscii("message-sent"),
+    mPriv->parts[0].insert(QLatin1String("message-sent"),
             QDBusVariant(static_cast<qlonglong>(timestamp)));
-    mPriv->parts[0].insert(QString::fromAscii("message-type"),
+    mPriv->parts[0].insert(QLatin1String("message-type"),
             QDBusVariant(type));
 
-    mPriv->parts[1].insert(QString::fromAscii("content-type"),
-            QDBusVariant(QString::fromAscii("text/plain")));
-    mPriv->parts[1].insert(QString::fromAscii("content"), QDBusVariant(text));
+    mPriv->parts[1].insert(QLatin1String("content-type"),
+            QDBusVariant(QLatin1String("text/plain")));
+    mPriv->parts[1].insert(QLatin1String("content"), QDBusVariant(text));
 }
 
 /**
@@ -171,12 +171,12 @@ Message::Message(uint timestamp, uint type, const QString &text)
 Message::Message(ChannelTextMessageType type, const QString &text)
     : mPriv(new Private(MessagePartList() << MessagePart() << MessagePart()))
 {
-    mPriv->parts[0].insert(QString::fromAscii("message-type"),
+    mPriv->parts[0].insert(QLatin1String("message-type"),
             QDBusVariant(static_cast<uint>(type)));
 
-    mPriv->parts[1].insert(QString::fromAscii("content-type"),
-            QDBusVariant(QString::fromAscii("text/plain")));
-    mPriv->parts[1].insert(QString::fromAscii("content"), QDBusVariant(text));
+    mPriv->parts[1].insert(QLatin1String("content-type"),
+            QDBusVariant(QLatin1String("text/plain")));
+    mPriv->parts[1].insert(QLatin1String("content"), QDBusVariant(text));
 }
 
 /**

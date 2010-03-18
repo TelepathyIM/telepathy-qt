@@ -138,8 +138,8 @@ void TestTextChan::initTestCase()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    mConnName = QString::fromAscii(name);
-    mConnPath = QString::fromAscii(connPath);
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
 
     g_free(name);
     g_free(connPath);
@@ -249,22 +249,22 @@ void TestTextChan::commonTest(bool withMessages)
     // We should have received "Two", but not "One"
     QCOMPARE(sent.size(), 1);
     QCOMPARE(static_cast<uint>(sent.at(0).flags), 0U);
-    QCOMPARE(sent.at(0).token, QString::fromAscii(""));
+    QCOMPARE(sent.at(0).token, QLatin1String(""));
 
     Message m(sent.at(0).message);
     QCOMPARE(static_cast<uint>(m.messageType()),
             static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!m.isTruncated());
     QVERIFY(!m.hasNonTextContent());
-    QCOMPARE(m.messageToken(), QString::fromAscii(""));
+    QCOMPARE(m.messageToken(), QLatin1String(""));
     QVERIFY(!m.isSpecificToDBusInterface());
-    QCOMPARE(m.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(m.dbusInterface(), QLatin1String(""));
     QCOMPARE(m.size(), 2);
     QCOMPARE(m.header().value(QLatin1String("message-type")).variant().toUInt(),
             0U);
     QCOMPARE(m.part(1).value(QLatin1String("content-type")).variant().toString(),
-            QString::fromAscii("text/plain"));
-    QCOMPARE(m.text(), QString::fromAscii("Two"));
+            QLatin1String("text/plain"));
+    QCOMPARE(m.text(), QLatin1String("Two"));
 
     // Make capabilities become ready
     features = Features() << TextChannel::FeatureMessageCapabilities;
@@ -320,24 +320,24 @@ void TestTextChan::commonTest(bool withMessages)
             static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
     QVERIFY(!r.hasNonTextContent());
-    QCOMPARE(r.messageToken(), QString::fromAscii(""));
+    QCOMPARE(r.messageToken(), QLatin1String(""));
     QVERIFY(!r.isSpecificToDBusInterface());
-    QCOMPARE(r.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(r.dbusInterface(), QLatin1String(""));
     QCOMPARE(r.size(), 2);
     QCOMPARE(r.header().value(QLatin1String("message-type")).variant().toUInt(),
             0U);
     QCOMPARE(r.part(1).value(QLatin1String("content-type")).variant().toString(),
-            QString::fromAscii("text/plain"));
-    QCOMPARE(r.sender()->id(), QString::fromAscii("someone@localhost"));
+            QLatin1String("text/plain"));
+    QCOMPARE(r.sender()->id(), QLatin1String("someone@localhost"));
     QVERIFY(!r.isScrollback());
     QVERIFY(!r.isRescued());
 
     // one "echo" implementation echoes the message literally, the other edits
     // it slightly
     if (withMessages) {
-        QCOMPARE(r.text(), QString::fromAscii("One"));
+        QCOMPARE(r.text(), QLatin1String("One"));
     } else {
-        QCOMPARE(r.text(), QString::fromAscii("You said: One"));
+        QCOMPARE(r.text(), QLatin1String("You said: One"));
     }
 
     r = received.at(1);
@@ -345,22 +345,22 @@ void TestTextChan::commonTest(bool withMessages)
             static_cast<uint>(Tp::ChannelTextMessageTypeNormal));
     QVERIFY(!r.isTruncated());
     QVERIFY(!r.hasNonTextContent());
-    QCOMPARE(r.messageToken(), QString::fromAscii(""));
+    QCOMPARE(r.messageToken(), QLatin1String(""));
     QVERIFY(!r.isSpecificToDBusInterface());
-    QCOMPARE(r.dbusInterface(), QString::fromAscii(""));
+    QCOMPARE(r.dbusInterface(), QLatin1String(""));
     QCOMPARE(r.size(), 2);
     QCOMPARE(r.header().value(QLatin1String("message-type")).variant().toUInt(),
             0U);
     QCOMPARE(r.part(1).value(QLatin1String("content-type")).variant().toString(),
-            QString::fromAscii("text/plain"));
-    QCOMPARE(r.sender()->id(), QString::fromAscii("someone@localhost"));
+            QLatin1String("text/plain"));
+    QCOMPARE(r.sender()->id(), QLatin1String("someone@localhost"));
     QVERIFY(!r.isScrollback());
     QVERIFY(!r.isRescued());
 
     if (withMessages) {
-        QCOMPARE(r.text(), QString::fromAscii("Two"));
+        QCOMPARE(r.text(), QLatin1String("Two"));
     } else {
-        QCOMPARE(r.text(), QString::fromAscii("You said: Two"));
+        QCOMPARE(r.text(), QLatin1String("You said: Two"));
     }
 
     uint id = received.at(0).header().value(

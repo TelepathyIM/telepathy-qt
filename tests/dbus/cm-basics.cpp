@@ -97,7 +97,7 @@ void TestCmBasics::testBasics()
         QCOMPARE(info->hasParameter(QLatin1String("not-there")), false);
 
         Q_FOREACH (ProtocolParameter *param, info->parameters()) {
-            QCOMPARE(param->name(), QString::fromAscii("account"));
+            QCOMPARE(param->name(), QLatin1String("account"));
             QCOMPARE(param->dbusSignature().signature(),
                          QLatin1String("s"));
             QCOMPARE(param->isRequired(), true);
