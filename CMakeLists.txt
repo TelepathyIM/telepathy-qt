@@ -114,7 +114,7 @@ else(TP_FARSIGHT_FOUND)
 endif(TP_FARSIGHT_FOUND)
 
 # Find telepathy-glib
-set(REQUIRED_TP_GLIB 0.7.28)
+set(REQUIRED_TP_GLIB 0.10.0)
 pkg_check_modules(TPGLIB telepathy-glib>=${REQUIRED_TP_GLIB})
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
