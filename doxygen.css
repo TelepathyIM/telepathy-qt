@@ -18,6 +18,11 @@ h3 {
 	font-size: 100%;
 }
 
+h3.version {
+	font-size: 100%;
+	text-align: center;
+}
+
 /* @end */
 
 caption {
