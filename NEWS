@@ -1,7 +1,16 @@
-telepathy-qt4 0.3.1 (UNRELEASED)
+telepathy-qt4 0.3.1 (2010-03-30)
 ================================
 
-...
+The "it's all about coffee" release.
+
+Enhancements:
+
+* Added/Improved documentation for various classes and some minor documentation
+  style fixes.
+
+Fixes:
+* Fixed bug where StreamedMediaChannel::requestStream returned PendingOperation
+  was never finishing.
 
 telepathy-qt4 0.3.0 (2010-03-18)
 ================================
