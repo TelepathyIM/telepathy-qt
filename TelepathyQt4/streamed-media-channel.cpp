@@ -39,6 +39,28 @@ namespace Tp
 {
 
 /* ====== PendingMediaStreams ====== */
+
+/**
+ * \class PendingMediaStreams
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
+ *
+ * \brief Class containing the result of an asynchronous media stream creation
+ * request.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is via StreamedMediaChannel.
+ *
+ * See \ref async_model
+ */
+
+/**
+ * Construct a new PendingMediaStreams object.
+ *
+ * \param channel StreamedMediaChannel to use.
+ * \param contact The contact who the media stream is with.
+ * \param types A list of stream types to request.
+ */
 PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
         const ContactPtr &contact,
         const QList<MediaStreamType> &types)
@@ -60,6 +82,12 @@ PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
             SLOT(gotSMStreams(QDBusPendingCallWatcher*)));
 }
 
+/**
+ * Construct a new PendingMediaStreams object.
+ *
+ * \param channel StreamedMediaChannel to use.
+ * \param types A list of stream types to request.
+ */
 PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
         const QList<MediaStreamType> &types)
     : PendingOperation(channel.data()),
@@ -83,11 +111,20 @@ PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
     }
 }
 
+/**
+ * Class destructor.
+ */
 PendingMediaStreams::~PendingMediaStreams()
 {
     delete mPriv;
 }
 
+/**
+ * Return a list of the newly created MediaStreamPtr objects.
+ *
+ * \return A list of the MediaStreamPtr objects pointing to the newly created
+ *         MediaStream objects, or an empty list if an error occurred.
+ */
 MediaStreams PendingMediaStreams::streams() const
 {
     if (!isFinished()) {
@@ -209,6 +246,20 @@ void PendingMediaStreams::onContentReady(PendingOperation *op)
 }
 
 /* ====== MediaStream ====== */
+/**
+ * \class MediaStream
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
+ *
+ * \brief The MediaStream class provides an object representing a Telepathy
+ * media stream.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is via StreamedMediaChannel.
+ *
+ * See \ref async_model
+ */
+
 MediaStream::Private::Private(MediaStream *parent,
         const MediaContentPtr &content,
         const MediaStreamInfo &streamInfo)
@@ -421,8 +472,24 @@ void MediaStream::Private::CallProxy::onCallSendersChanged(
     mPriv->processCallSendersChanged();
 }
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * MediaStream object usable.
+ *
+ * Note that this feature must be enabled in order to use most MediaStream
+ * methods. See specific methods documentation for more details.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature MediaStream::FeatureCore = Feature(QLatin1String(MediaStream::staticMetaObject.className()), 0);
 
+/**
+ * Construct a new MediaStream object.
+ *
+ * \param content The content ownding this media stream.
+ * \param streamInfo The stream info of this media stream.
+ */
 MediaStream::MediaStream(const MediaContentPtr &content,
         const MediaStreamInfo &streamInfo)
     : QObject(),
@@ -433,6 +500,12 @@ MediaStream::MediaStream(const MediaContentPtr &content,
     gotSMStreamState(streamInfo.state);
 }
 
+/**
+ * Construct a new MediaStream object.
+ *
+ * \param content The content owning this media stream.
+ * \param objectPath The object path of this media stream.
+ */
 MediaStream::MediaStream(const MediaContentPtr &content,
         const QDBusObjectPath &objectPath)
     : QObject(),
@@ -441,20 +514,28 @@ MediaStream::MediaStream(const MediaContentPtr &content,
 {
 }
 
+/**
+ * Class destructor.
+ */
 MediaStream::~MediaStream()
 {
     delete mPriv;
 }
 
+/**
+ * Return the channel owning this media stream.
+ *
+ * \return The channel owning this media stream.
+ */
 StreamedMediaChannelPtr MediaStream::channel() const
 {
     return content()->channel();
 }
 
 /**
- * Return the stream id.
+ * Return the id of this media stream.
  *
- * \return An integer representing the stream id.
+ * \return An integer representing the media stream id.
  */
 uint MediaStream::id() const
 {
@@ -466,9 +547,9 @@ uint MediaStream::id() const
 }
 
 /**
- * Return the contact who the stream is with.
+ * Return the contact who this media stream is with.
  *
- * \return The contact who the stream is with.
+ * \return The contact who this media stream is with.
  */
 ContactPtr MediaStream::contact() const
 {
@@ -497,9 +578,9 @@ ContactPtr MediaStream::contact() const
 }
 
 /**
- * Return the stream state.
+ * Return the state of this media stream.
  *
- * \return The stream state.
+ * \return The state of this media stream.
  */
 MediaStreamState MediaStream::state() const
 {
@@ -511,9 +592,9 @@ MediaStreamState MediaStream::state() const
 }
 
 /**
- * Return the stream type.
+ * Return the type of this media stream.
  *
- * \return The stream type.
+ * \return The type of this media stream.
  */
 MediaStreamType MediaStream::type() const
 {
@@ -521,9 +602,10 @@ MediaStreamType MediaStream::type() const
 }
 
 /**
- * Return whether media is being sent on this stream.
+ * Return whether media is being sent on this media stream.
  *
- * \return A boolean indicating whether media is being sent on this stream.
+ * \return \c true if media being sent on this media stream, \c false otherwise.
+ * \sa localSendingStateChanged()
  */
 bool MediaStream::sending() const
 {
@@ -552,9 +634,11 @@ bool MediaStream::sending() const
 }
 
 /**
- * Return whether media is being received on this stream.
+ * Return whether media is being received on this media stream.
  *
- * \return A boolean indicating whether media is being received on this stream.
+ * \return \c true if media is being received on this media stream, \c false
+ *         otherwise.
+ * \sa remoteSendingStateChanged()
  */
 bool MediaStream::receiving() const
 {
@@ -584,10 +668,12 @@ bool MediaStream::receiving() const
 }
 
 /**
- * Return whether the local user has been asked to send media by the remote user.
+ * Return whether the local user has been asked to send media by the
+ * remote user on this media stream.
  *
- * \return A boolean indicating whether the local user has been asked to
- *         send media by the remote user.
+ * \return \c true if the local user has been asked to send media by the
+ *         remote user on this media stream, \c false otherwise.
+ * \sa localSendingStateChanged()
  */
 bool MediaStream::localSendingRequested() const
 {
@@ -616,10 +702,12 @@ bool MediaStream::localSendingRequested() const
 }
 
 /**
- * Return whether the remote user has been asked to send media by the local user.
+ * Return whether the remote user has been asked to send media by the local
+ * user on this media stream.
  *
- * \return A boolean indicating whether the remote user has been asked to
- *         send media by the local user.
+ * \return \c true if the remote user has been asked to send media by the
+ *         local user on this media stream, \c false otherwise.
+ * \sa remoteSendingStateChanged()
  */
 bool MediaStream::remoteSendingRequested() const
 {
@@ -649,9 +737,10 @@ bool MediaStream::remoteSendingRequested() const
 }
 
 /**
- * Return the stream direction.
+ * Return the direction of this media stream.
  *
- * \return The stream direction.
+ * \return The direction of this media stream.
+ * \sa localSendingStateChanged(), remoteSendingStateChanged()
  */
 MediaStreamDirection MediaStream::direction() const
 {
@@ -670,9 +759,10 @@ MediaStreamDirection MediaStream::direction() const
 }
 
 /**
- * Return the stream pending send flags.
+ * Return the pending send flags of this media stream.
  *
- * \return The stream pending send flags.
+ * \return The pending send flags of this media stream.
+ * \sa localSendingStateChanged()
  */
 MediaStreamPendingSend MediaStream::pendingSend() const
 {
@@ -692,12 +782,14 @@ MediaStreamPendingSend MediaStream::pendingSend() const
 }
 
 /**
- * Request a change in the direction of this stream. In particular, this
+ * Request a change in the direction of this media stream. In particular, this
  * might be useful to stop sending media of a particular type, or inform the
  * peer that you are no longer using media that is being sent to you.
  *
+ * \param direction The new direction.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa localSendingStateChanged(), remoteSendingStateChanged()
  */
 PendingOperation *MediaStream::requestDirection(
         MediaStreamDirection direction)
@@ -731,17 +823,17 @@ PendingOperation *MediaStream::requestDirection(
 }
 
 /**
- * Start sending a DTMF tone on this stream. Where possible, the tone will
+ * Start sending a DTMF tone on this media stream. Where possible, the tone will
  * continue until stopDTMFTone() is called. On certain protocols, it may only be
  * possible to send events with a predetermined length. In this case, the
  * implementation may emit a fixed-length tone, and the stopDTMFTone() method
- * call should return %TELEPATHY_ERROR_NOT_AVAILABLE.
+ * call should return #TELEPATHY_ERROR_NOT_AVAILABLE.
  *
- * If the channel() does not support the %TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF
+ * If the channel() does not support the #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF
  * interface, the resulting PendingOperation will fail with error code
- * %TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ * #TELEPATHY_ERROR_NOT_IMPLEMENTED.
 
- * \param event A numeric event code from the %DTMFEvent enum.
+ * \param event A numeric event code from the DTMFEvent enum.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request finishes.
  * \sa stopDTMFTone()
@@ -771,12 +863,12 @@ PendingOperation *MediaStream::startDTMFTone(DTMFEvent event)
  * method. If there is no current tone, the resulting PendingOperation will
  * finish successfully.
  *
- * If continuous tones are not supported by this stream, the resulting
- * PendingOperation will fail with error code %TELEPATHY_ERROR_NOT_AVAILABLE.
+ * If continuous tones are not supported by this media stream, the resulting
+ * PendingOperation will fail with error code #TELEPATHY_ERROR_NOT_AVAILABLE.
  *
- * If the channel() does not support the %TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF
+ * If the channel() does not support the #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_DTMF
  * interface, the resulting PendingOperation will fail with error code
- * %TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ * #TELEPATHY_ERROR_NOT_IMPLEMENTED.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the request finishes.
@@ -803,13 +895,14 @@ PendingOperation *MediaStream::stopDTMFTone()
 }
 
 /**
- * Request a change in the direction of this stream. In particular, this
+ * Request a change in the direction of this media stream. In particular, this
  * might be useful to stop sending media of a particular type, or inform the
  * peer that you are no longer using media that is being sent to you.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa requestDirection(Tp::MediaStreamDirection direction)
+ * \sa localSendingStateChanged(), remoteSendingStateChanged()
  */
 PendingOperation *MediaStream::requestDirection(bool send, bool receive)
 {
@@ -824,15 +917,21 @@ PendingOperation *MediaStream::requestDirection(bool send, bool receive)
     return requestDirection((MediaStreamDirection) dir);
 }
 
+/**
+ * Return the content owning this media stream.
+ *
+ * \return The content owning this media stream.
+ */
 MediaContentPtr MediaStream::content() const
 {
     return MediaContentPtr(mPriv->content);
 }
 
 /**
- * Return the contacts whose the stream is with.
+ * Return the contacts whose the media stream is with.
  *
- * \return The contacts whose the stream is with.
+ * \return The contacts whose the media stream is with.
+ * \sa membersRemoved()
  */
 Contacts MediaStream::members() const
 {
@@ -844,9 +943,10 @@ Contacts MediaStream::members() const
 }
 
 /**
- * Return the stream local sending state.
+ * Return the media stream local sending state.
  *
- * \return The stream local sending state.
+ * \return The media stream local sending state.
+ * \sa localSendingStateChanged()
  */
 MediaStream::SendingState MediaStream::localSendingState() const
 {
@@ -875,9 +975,10 @@ MediaStream::SendingState MediaStream::localSendingState() const
 }
 
 /**
- * Return the stream remote sending state for a given \a contact.
+ * Return the media stream remote sending state for a given \a contact.
  *
- * \return The stream remote sending state for a contact.
+ * \return The media stream remote sending state for a contact.
+ * \sa remoteSendingStateChanged()
  */
 MediaStream::SendingState MediaStream::remoteSendingState(
         const ContactPtr &contact) const
@@ -910,10 +1011,11 @@ MediaStream::SendingState MediaStream::remoteSendingState(
 }
 
 /**
- * Request that media starts or stops being sent on this stream.
+ * Request that media starts or stops being sent on this media stream.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa localSendingStateChanged()
  */
 PendingOperation *MediaStream::requestSending(bool send)
 {
@@ -930,10 +1032,11 @@ PendingOperation *MediaStream::requestSending(bool send)
 }
 
 /**
- * Request that a remote \a contact stops or starts sending on this stream.
+ * Request that a remote \a contact stops or starts sending on this media stream.
  *
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa remoteSendingStateChanged()
  */
 PendingOperation *MediaStream::requestReceiving(const ContactPtr &contact,
         bool receive)
@@ -959,6 +1062,35 @@ PendingOperation *MediaStream::requestReceiving(const ContactPtr &contact,
                     contact->handle()[0], receive), this);
     }
 }
+
+/**
+ * \fn void MediaStream::localSendingStateChanged(Tp::MediaStream::SendingState localSendingState);
+ *
+ * This signal is emitted when the local sending state of this media stream
+ * changes.
+ *
+ * \param localSendingState The new local sending state of this media stream.
+ * \sa localSendingState()
+ */
+
+/**
+ * \fn void MediaStream::remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &remoteSendingStates);
+ *
+ * This signal is emitted when any remote sending state of this media stream
+ * changes.
+ *
+ * \param remoteSendingStates The new remote sending states of this media stream.
+ * \sa remoteSendingState()
+ */
+
+/**
+ * \fn void MediaStream::membersRemoved(const Tp::Contacts &members);
+ *
+ * This signal is emitted when one or more members of this stream are removed.
+ *
+ * \param members The members that were removed from this media stream.
+ * \sa members()
+ */
 
 void MediaStream::gotSMContact(PendingOperation *op)
 {
@@ -1298,6 +1430,20 @@ void PendingMediaContent::onContentRemoved(const MediaContentPtr &content)
 }
 
 /* ====== MediaContent ====== */
+/**
+ * \class MediaContent
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
+ *
+ * \brief The MediaContent class provides an object representing a Telepathy
+ * media content.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is via StreamedMediaChannel.
+ *
+ * See \ref async_model
+ */
+
 MediaContent::Private::Private(MediaContent *parent,
         const StreamedMediaChannelPtr &channel,
         const QString &name,
@@ -1418,8 +1564,25 @@ void MediaContent::Private::addStream(const MediaStreamPtr &stream)
             SLOT(onStreamReady(Tp::PendingOperation*)));
 }
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * MediaContent object usable.
+ *
+ * Note that this feature must be enabled in order to use most MediaContent
+ * methods. See specific methods documentation for more details.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature MediaContent::FeatureCore = Feature(QLatin1String(MediaStream::staticMetaObject.className()), 0);
 
+/**
+ * Construct a new MediaContent object.
+ *
+ * \param channel The channel owning this media content.
+ * \param name The name of this media content.
+ * \param name The streamInfo used by this media content.
+ */
 MediaContent::MediaContent(const StreamedMediaChannelPtr &channel,
         const QString &name,
         const MediaStreamInfo &streamInfo)
@@ -1429,6 +1592,12 @@ MediaContent::MediaContent(const StreamedMediaChannelPtr &channel,
 {
 }
 
+/**
+ * Construct a new MediaContent object.
+ *
+ * \param channel The channel owning this media content.
+ * \param name The object path of this media content.
+ */
 MediaContent::MediaContent(const StreamedMediaChannelPtr &channel,
         const QDBusObjectPath &objectPath)
     : QObject(),
@@ -1437,20 +1606,28 @@ MediaContent::MediaContent(const StreamedMediaChannelPtr &channel,
 {
 }
 
+/**
+ * Class destructor.
+ */
 MediaContent::~MediaContent()
 {
     delete mPriv;
 }
 
+/**
+ * Return the channel owning this media content.
+ *
+ * \return The channel owning this media content.
+ */
 StreamedMediaChannelPtr MediaContent::channel() const
 {
     return StreamedMediaChannelPtr(mPriv->channel);
 }
 
 /**
- * Return the content name.
+ * Return the name of this media content.
  *
- * \return The content name.
+ * \return The name of this media content.
  */
 QString MediaContent::name() const
 {
@@ -1458,9 +1635,9 @@ QString MediaContent::name() const
 }
 
 /**
- * Return the content type.
+ * Return the type of this media content.
  *
- * \return The content type.
+ * \return The type of this media content.
  */
 MediaStreamType MediaContent::type() const
 {
@@ -1468,9 +1645,9 @@ MediaStreamType MediaContent::type() const
 }
 
 /**
- * Return the content creator.
+ * Return the contact who created this media content.
  *
- * \return The content creator.
+ * \return The contact who created this media content.
  */
 ContactPtr MediaContent::creator() const
 {
@@ -1479,14 +1656,35 @@ ContactPtr MediaContent::creator() const
 }
 
 /**
- * Return the content streams.
+ * Return the media streams of this media content.
  *
- * \return A list of content streams.
+ * \return A list of media streams of this media content.
+ * \sa streamAdded(), streamRemoved()
  */
 MediaStreams MediaContent::streams() const
 {
     return mPriv->streams;
 }
+
+/**
+ * \fn void MediaContent::streamAdded(const Tp::MediaStreamPtr &stream);
+ *
+ * This signal is emitted when a new media stream is added to this media
+ * content.
+ *
+ * \param stream The media stream that was added.
+ * \sa streams()
+ */
+
+/**
+ * \fn void MediaContent::streamRemoved(const Tp::MediaStreamPtr &stream);
+ *
+ * This signal is emitted when a new media stream is removed from this media
+ * content.
+ *
+ * \param stream The media stream that was removed.
+ * \sa streams()
+ */
 
 void MediaContent::onStreamReady(Tp::PendingOperation *op)
 {
@@ -1766,16 +1964,43 @@ void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChanne
 /**
  * \class StreamedMediaChannel
  * \ingroup clientchannel
- * \headerfile <TelepathyQt4/streamed-media-channel.h> <TelepathyQt4/StreamedMediaChannel>
+ * \headerfile TelepathyQt4/streamed-media-channel.h <TelepathyQt4/StreamedMediaChannel>
  *
- * High-level proxy object for accessing remote %Channel objects of the
- * StreamedMedia channel type.
+ * \brief The StreamedMediaChannel class provides an object representing a
+ * Telepathy channel of type StreamedMedia or Call.
  */
 
+/**
+ * Feature used in order to access media content specific methods.
+ *
+ * See media content specific methods' documentation for more details.
+ */
 const Feature StreamedMediaChannel::FeatureContents = Feature(QLatin1String(StreamedMediaChannel::staticMetaObject.className()), 0);
+
+/**
+ * Feature used in order to access local hold state info.
+ *
+ * See local hold state specific methods' documentation for more details.
+ */
 const Feature StreamedMediaChannel::FeatureLocalHoldState = Feature(QLatin1String(StreamedMediaChannel::staticMetaObject.className()), 1);
+
+/**
+ * Feature used in order to access media stream specific methods.
+ *
+ * See media stream specific methods' documentation for more details.
+ */
 const Feature StreamedMediaChannel::FeatureStreams = FeatureContents;
 
+/**
+ * Create a new StreamedMediaChannel object.
+ *
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
+ * \return A StreamedMediaChannelPtr object pointing to the newly created
+ *         StreamedMediaChannel object.
+ */
 StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
@@ -1784,15 +2009,13 @@ StreamedMediaChannelPtr StreamedMediaChannel::create(const ConnectionPtr &connec
 }
 
 /**
- * Creates a StreamedMediaChannel associated with the given object on the same
+ * Construct a new StreamedMediaChannel associated with the given object on the same
  * service as the given connection.
  *
- * \param connection  Connection owning this StreamedMediaChannel, and
- *                    specifying the service.
- * \param objectPath  Path to the object on the service.
- * \param immutableProperties  The immutable properties of the channel, as
- *                             signalled by NewChannels or returned by
- *                             CreateChannel or EnsureChannel
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
  */
 StreamedMediaChannel::StreamedMediaChannel(const ConnectionPtr &connection,
         const QString &objectPath,
@@ -1811,13 +2034,12 @@ StreamedMediaChannel::~StreamedMediaChannel()
 }
 
 /**
- * Return a list of streams in this channel. This list is empty unless
- * the FeatureStreams Feature has been enabled.
+ * Return a list of media streams in this channel.
  *
- * Streams are added to the list when they are received; the streamAdded signal
- * is emitted.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
- * \return The streams in this channel.
+ * \return The media streams in this channel.
+ * \sa streamAdded(), streamRemoved(), streamsForType(), requestStreams()
  */
 MediaStreams StreamedMediaChannel::streams() const
 {
@@ -1828,6 +2050,15 @@ MediaStreams StreamedMediaChannel::streams() const
     return ret;
 }
 
+/**
+ * Return a list of media streams in this channel for the given type \a type.
+ *
+ * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ *
+ * \param type The interested type.
+ * \return A list of media streams in this channel for the given type \a type.
+ * \sa streamAdded(), streamRemoved(), streams(), requestStreams()
+ */
 MediaStreams StreamedMediaChannel::streamsForType(MediaStreamType type) const
 {
     MediaStreams ret;
@@ -1839,16 +2070,34 @@ MediaStreams StreamedMediaChannel::streamsForType(MediaStreamType type) const
     return ret;
 }
 
+/**
+ * Return whether this channel is awaiting local answer.
+ *
+ * \return \c true if awaiting local answer, \c false otherwise.
+ * \sa awaitingRemoteAnswer()
+ */
 bool StreamedMediaChannel::awaitingLocalAnswer() const
 {
     return groupSelfHandleIsLocalPending();
 }
 
+/**
+ * Return whether this channel is awaiting remote answer.
+ *
+ * \return \c true if awaiting remote answer, \c false otherwise.
+ * \sa awaitingLocalAnswer()
+ */
 bool StreamedMediaChannel::awaitingRemoteAnswer() const
 {
     return !groupRemotePendingContacts().isEmpty();
 }
 
+/**
+ * Accept an incoming call.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *StreamedMediaChannel::acceptCall()
 {
     if (mPriv->ifaceType == IfaceTypeStreamedMedia) {
@@ -1859,11 +2108,14 @@ PendingOperation *StreamedMediaChannel::acceptCall()
 }
 
 /**
- * Remove the specified stream from this channel.
+ * Remove the specified media stream from this channel.
  *
- * \param stream Stream to remove.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ *
+ * \param stream Media stream to remove.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa streamRemoved(), streams(), streamsForType()
  */
 PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &stream)
 {
@@ -1887,11 +2139,14 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
 }
 
 /**
- * Remove the specified streams from this channel.
+ * Remove the specified media streams from this channel.
  *
- * \param streams List of streams to remove.
+ * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ *
+ * \param streams List of media streams to remove.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa streamRemoved(), streams(), streamsForType()
  */
 PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &streams)
 {
@@ -1919,6 +2174,16 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
     }
 }
 
+/**
+ * Request that media streams be established to exchange the given type \a type
+ * of media with the given contact \a contact.
+ *
+ * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ *
+ * \return A PendingMediaStreams which will emit PendingMediaStreams::finished
+ *         when the call has finished.
+ * \sa streamAdded(), streams(), streamsForType()
+ */
 PendingMediaStreams *StreamedMediaChannel::requestStream(
         const ContactPtr &contact,
         MediaStreamType type)
@@ -1933,6 +2198,16 @@ PendingMediaStreams *StreamedMediaChannel::requestStream(
     }
 }
 
+/**
+ * Request that media streams be established to exchange the given types \a
+ * types of media with the given contact \a contact.
+ *
+ * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
+ *
+ * \return A PendingMediaStreams which will emit PendingMediaStreams::finished
+ *         when the call has finished.
+ * \sa streamAdded(), streams(), streamsForType()
+ */
 PendingMediaStreams *StreamedMediaChannel::requestStreams(
         const ContactPtr &contact,
         QList<MediaStreamType> types)
@@ -1946,6 +2221,16 @@ PendingMediaStreams *StreamedMediaChannel::requestStreams(
     }
 }
 
+/**
+ * Request that the call is ended.
+ *
+ * \param reason A generic hangup reason.
+ * \param detailedReason A more specific reason for the call hangup, if one is
+ *                       available, or an empty string otherwise.
+ * \param message A human-readable message to be sent to the remote contact(s).
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *StreamedMediaChannel::hangupCall(StateChangeReason reason,
         const QString &detailedReason, const QString &message)
 {
@@ -1958,19 +2243,27 @@ PendingOperation *StreamedMediaChannel::hangupCall(StateChangeReason reason,
 }
 
 /**
- * Return a list of contents in this channel. This list is empty unless
- * the FeatureContents Feature has been enabled.
+ * Return a list of media contents in this channel.
  *
- * Contents are added to the list when they are received; the contentAdded
- * signal is emitted.
+ * This methods requires StreamedMediaChannel::FeatureContents to be enabled.
  *
  * \return The contents in this channel.
+ * \sa contentAdded(), contentRemoved(), contentsForType(), requestContent()
  */
 MediaContents StreamedMediaChannel::contents() const
 {
     return mPriv->contents;
 }
 
+/**
+ * Return a list of media contents in this channel for the given type \a type.
+ *
+ * This methods requires StreamedMediaChannel::FeatureContents to be enabled.
+ *
+ * \param type The interested type.
+ * \return A list of media contents in this channel for the given type \a type.
+ * \sa contentAdded(), contentRemoved(), contents(), requestContent()
+ */
 MediaContents StreamedMediaChannel::contentsForType(MediaStreamType type) const
 {
     MediaContents contents;
@@ -1982,6 +2275,16 @@ MediaContents StreamedMediaChannel::contentsForType(MediaStreamType type) const
     return contents;
 }
 
+/**
+ * Request that media content be established to exchange the given type \a type
+ * of media.
+ *
+ * This methods requires StreamedMediaChannel::FeatureContents to be enabled.
+ *
+ * \return A PendingMediaContent which will emit PendingMediaContent::finished
+ *         when the call has finished.
+ * \sa contentAdded(), contents(), contentsForType()
+ */
 PendingMediaContent *StreamedMediaChannel::requestContent(
         const QString &name,
         MediaStreamType type)
@@ -2010,11 +2313,12 @@ PendingMediaContent *StreamedMediaChannel::requestContent(
 }
 
 /**
- * Remove the specified content from this channel.
+ * Remove the specified media content from this channel.
  *
- * \param content Content to remove.
+ * \param content Media content to remove.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa contentRemoved(), contents(), contentsForType()
  */
 PendingOperation *StreamedMediaChannel::removeContent(const MediaContentPtr &content)
 {
@@ -2042,7 +2346,7 @@ PendingOperation *StreamedMediaChannel::removeContent(const MediaContentPtr &con
  *
  * For channels with the MediaSignalling interface, the main handler of the
  * channel is responsible for doing the actual streaming, for instance by
- * calling Tp::createFarsightChannel(channel) from TelepathyQt4-Farsight library
+ * calling createFarsightChannel(channel) from TelepathyQt4-Farsight library
  * and using the telepathy-farsight API on the resulting TfChannel.
  *
  * \return \c true if required, \c false otherwise.
@@ -2063,7 +2367,7 @@ bool StreamedMediaChannel::handlerStreamingRequired() const
  * This method requires StreamedMediaChannel::FeatureHoldState to be enabled.
  *
  * \return The channel local hold state.
- * \sa requestHold()
+ * \sa requestHold(), localHoldStateChanged()
  */
 LocalHoldState StreamedMediaChannel::localHoldState() const
 {
@@ -2082,7 +2386,7 @@ LocalHoldState StreamedMediaChannel::localHoldState() const
  * This method requires StreamedMediaChannel::FeatureLocalHoldState to be enabled.
  *
  * \return The channel local hold state reason.
- * \sa requestHold()
+ * \sa requestHold(), localHoldStateChanged()
  */
 LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
 {
@@ -2101,7 +2405,7 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  *
  * If the connection manager can immediately tell that the requested state
  * change could not possibly succeed, the resulting PendingOperation will fail
- * with error code %TELEPATHY_ERROR_NOT_AVAILABLE.
+ * with error code #TELEPATHY_ERROR_NOT_AVAILABLE.
  * If the requested state is the same as the current state, the resulting
  * PendingOperation will finish successfully.
  *
@@ -2118,14 +2422,14 @@ LocalHoldStateReason StreamedMediaChannel::localHoldStateReason() const
  * another, it will attempt to revert all streams to their previous hold
  * states.
  *
- * If the channel does not support the %TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD
+ * If the channel does not support the #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_HOLD
  * interface, the PendingOperation will fail with error code
- * %TELEPATHY_ERROR_NOT_IMPLEMENTED.
+ * #TELEPATHY_ERROR_NOT_IMPLEMENTED.
  *
  * \param hold A boolean indicating whether or not the channel should be on hold
  * \return A %PendingOperation, which will emit PendingOperation::finished
  *         when the request finishes.
- * \sa localHoldState(), localHoldStateReason()
+ * \sa localHoldState(), localHoldStateReason(), localHoldStateChanged()
  */
 PendingOperation *StreamedMediaChannel::requestHold(bool hold)
 {
@@ -2137,6 +2441,81 @@ PendingOperation *StreamedMediaChannel::requestHold(bool hold)
     }
     return new PendingVoid(holdInterface()->RequestHold(hold), this);
 }
+
+/**
+ * \fn void StreamedMediaChannel::contentAdded(const Tp::MediaContentPtr &content);
+ *
+ * This signal is emitted when a media content is added to this channel.
+ *
+ * \param content The media content that was added.
+ * \sa contents(), contentsForType()
+ */
+
+/**
+ * \fn void StreamedMediaChannel::contentRemoved(const Tp::MediaContentPtr &content);
+ *
+ * This signal is emitted when a media content is removed from this channel.
+ *
+ * \param content The media content that was removed.
+ * \sa contents(), contentsForType()
+ */
+
+/**
+ * \fn void StreamedMediaChannel::streamAdded(const Tp::MediaStreamPtr &stream);
+ *
+ * This signal is emitted when a media stream is added to this channel.
+ *
+ * \param stream The media stream that was added.
+ * \sa streams(), streamsForType()
+ */
+
+/**
+ * \fn void StreamedMediaChannel::streamRemoved(const Tp::MediaStreamPtr &stream);
+ *
+ * This signal is emitted when a media stream is removed from this channel.
+ *
+ * \param content The media stream that was removed.
+ * \sa streams(), streamsForType()
+ */
+
+/**
+ * \fn void StreamedMediaChannel::streamDirectionChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamDirection direction, Tp::MediaStreamPendingSend pendingSend);
+ *
+ * This signal is emitted when a media stream direction changes.
+ *
+ * \param stream The media stream which the direction changed.
+ * \param direction The new direction of the stream that changed.
+ * \param pendingSend the new pending send flags of the stream that changed.
+ */
+
+/**
+ * \fn void StreamedMediaChannel::streamStateChanged(const Tp::MediaStreamPtr &stream, Tp::MediaStreamState state);
+ *
+ * This signal is emitted when a media stream state changes.
+ *
+ * \param stream The media stream which the state changed.
+ * \param state The new state of the stream that changed.
+ */
+
+/**
+ * \fn void StreamedMediaChannel::streamError(const Tp::MediaStreamPtr &stream, Tp::MediaStreamError errorCode, const QString &errorMessage);
+ *
+ * This signal is emitted when an error occurs on a media stream.
+ *
+ * \param stream The media stream which the error occurred.
+ * \param errorCode The error code.
+ * \param errorMessage The error message.
+ */
+
+/**
+ * \fn void StreamedMediaChannel::localHoldStateChanged(Tp::LocalHoldState state, Tp::LocalHoldStateReason reason);
+ *
+ * This signal is emitted when the local hold state of this channel changes.
+ *
+ * \param state The new local hold state of this channel.
+ * \param reason The reason why the change occurred.
+ * \sa localHoldState(), localHoldStateReason()
+ */
 
 void StreamedMediaChannel::onContentReady(PendingOperation *op)
 {
