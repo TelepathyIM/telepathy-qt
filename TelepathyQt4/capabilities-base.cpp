@@ -50,18 +50,18 @@ CapabilitiesBase::Private::Private(const RequestableChannelClassList &classes,
 
 /**
  * \class CapabilitiesBase
- * \ingroup client
- * \headerfile <TelepathyQt4/capabilities-base.h> <TelepathyQt4/CapabilitiesBase>
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/capabilities-base.h <TelepathyQt4/CapabilitiesBase>
  *
  * \brief The CapabilitiesBase class provides an object representing the
- * capabilities a Tp::Connection or a Tp::Contact supports.
+ * capabilities a Connection or a Contact supports.
  */
 
 /**
  * Construct a new CapabilitiesBase object.
  *
  * \param specificToContact Whether this object describes the capabilities of a
- *                          particular Tp::Contact,
+ *                          particular contact.
  */
 CapabilitiesBase::CapabilitiesBase(bool specificToContact)
     : mPriv(new Private(specificToContact))
@@ -74,7 +74,7 @@ CapabilitiesBase::CapabilitiesBase(bool specificToContact)
  * \param classes RequestableChannelClassList representing the capabilities of a
  *                connection or contact.
  * \param specificToContact Whether this object describes the capabilities of a
- *                          particular Tp::Contact,
+ *                          particular contact.
  */
 CapabilitiesBase::CapabilitiesBase(const RequestableChannelClassList &classes,
         bool specificToContact)
@@ -102,8 +102,8 @@ CapabilitiesBase::~CapabilitiesBase()
  * useful to the majority of clients.
  *
  * \return A RequestableChannelClassList indicating the parameters to
- *         Tp::Account::createChannel, Tp::Account::ensureChannel,
- *         Tp::Connection::createChannel and Tp::Connection::ensureChannel
+ *         Account::createChannel, Account::ensureChannel,
+ *         Connection::createChannel and Connection::ensureChannel
  *         that can be expected to work.
  */
 RequestableChannelClassList CapabilitiesBase::requestableChannelClasses() const
@@ -118,26 +118,26 @@ void CapabilitiesBase::updateRequestableChannelClasses(
 }
 
 /**
- * Return true if this object accurately describes the capabilities of a
- * particular Tp::Contact, or false if it's only a guess based on the
- * capabilities of the underlying Tp::Connection.
+ * Return whether this object accurately describes the capabilities of a
+ * particular contact, or if it's only a guess based on the
+ * capabilities of the underlying connection.
  *
  * In protocols like XMPP where each contact advertises their capabilities
- * to others, Tp::Contact::capabilities will generally return an object where
+ * to others, Contact::capabilities() will generally return an object where
  * this method returns true.
  *
  * In protocols like SIP where contacts' capabilities are not known,
- * Tp::Contact::capabilities() will return an object where this method returns
+ * Contact::capabilities() will return an object where this method returns
  * false, whose methods supportsTextChats() etc. are based on what the
- * underlying Tp::Connection supports.
+ * underlying connection supports.
  *
  * This reflects the fact that the best assumption an application can make is
  * that every contact supports every channel type supported by the connection,
  * while indicating that requests to communicate might fail if the contact
  * does not actually have the necessary functionality.
  *
- * \return true if this object describes the capabilities of a particular Tp::Contact,
- *         false otherwise.
+ * \return \c true if this object describes the capabilities of a particular
+ *         contact, \c false otherwise.
  */
 bool CapabilitiesBase::isSpecificToContact() const
 {
@@ -145,14 +145,15 @@ bool CapabilitiesBase::isSpecificToContact() const
 }
 
 /**
- * Return true if private text channels can be established by providing
+ * Return whether private text channels can be established by providing
  * a contact identifier.
  *
  * If the protocol is such that text chats can be established, but only via
  * a more elaborate D-Bus API than normal (because more information is needed),
  * then this method will return false.
  *
- * \return true if Tp::Account::ensureTextChat() can be expected to work.
+ * \return \c true if Account::ensureTextChat() can be expected to work,
+ *         \c false otherwise.
  */
 bool CapabilitiesBase::supportsTextChats() const
 {
@@ -176,14 +177,15 @@ bool CapabilitiesBase::supportsTextChats() const
 }
 
 /**
- * Return true if private audio and/or video calls can be established by
+ * Return whether private audio and/or video calls can be established by
  * providing a contact identifier.
  *
  * If the protocol is such that these calls can be established, but only via
  * a more elaborate D-Bus API than normal (because more information is needed),
  * then this method will return false.
  *
- * \return true if Tp::Account::ensureMediaCall() can be expected to work.
+ * \return \c true if Account::ensureMediaCall() can be expected to work,
+ *         \c false otherwise.
  * \sa supportsAudioCalls(), supportsVideoCalls()
  */
 bool CapabilitiesBase::supportsMediaCalls() const
@@ -208,7 +210,7 @@ bool CapabilitiesBase::supportsMediaCalls() const
 }
 
 /**
- * Return true if private audio calls can be established by providing a
+ * Return whether private audio calls can be established by providing a
  * contact identifier.
  *
  * Call supportsUpgradingCalls() to determine whether such calls are
@@ -222,10 +224,11 @@ bool CapabilitiesBase::supportsMediaCalls() const
  * supportsVideoCalls() might both return false, even though
  * supportsMediaCalls() returns true. This indicates that only an older
  * API is supported - clients of these connection managers must call
- * Tp::Account::ensureMediaCall() to get an empty call, then add audio and/or
+ * Account::ensureMediaCall() to get an empty call, then add audio and/or
  * video streams to it.
  *
- * \return true if Tp::Account::ensureAudioCall() can be expected to work.
+ * \return \c true if Account::ensureAudioCall() can be expected to work,
+ *         \c false otherwise.
  * \sa supportsMediaCalls(), supportsVideoCalls()
  */
 bool CapabilitiesBase::supportsAudioCalls() const
@@ -252,7 +255,7 @@ bool CapabilitiesBase::supportsAudioCalls() const
 }
 
 /**
- * Return true if private video calls can be established by providing a
+ * Return whether private video calls can be established by providing a
  * contact identifier.
  *
  * The same comments as for supportsAudioCalls() apply to this method.
@@ -260,8 +263,8 @@ bool CapabilitiesBase::supportsAudioCalls() const
  * \param withAudio If true (the default), check for the ability to make calls
  *                  with both audio and video; if false, do not require the
  *                  ability to include an audio stream.
- * \return true if Tp::Account::ensureVideoCall() can be expected to work,
- *         if given the same withAudio parameter.
+ * \return \c true if Account::ensureVideoCall() can be expected to work,
+ *         if given the same \a withAudio parameter, \c false otherwise
  * \sa supportsMediaCalls(), supportsAudioCalls()
  */
 bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
@@ -311,7 +314,8 @@ bool CapabilitiesBase::supportsVideoCalls(bool withAudio) const
  * (The underlying Telepathy feature is the ImmutableStreams property; if this
  * method returns true, then ImmutableStreams is false, and vice versa).
  *
- * \return true if audio calls can be upgraded to audio + video
+ * \return \c true if audio calls can be upgraded to audio + video,
+ *         \c false otherwise.
  */
 bool CapabilitiesBase::supportsUpgradingCalls() const
 {

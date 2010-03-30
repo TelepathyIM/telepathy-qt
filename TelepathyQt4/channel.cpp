@@ -43,25 +43,6 @@
 #include <QSharedData>
 #include <QTimer>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientchannel Channel proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Channels and their optional
- * interfaces.
- */
-
 namespace Tp
 {
 
@@ -1115,40 +1096,149 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
 /**
  * \class Channel
  * \ingroup clientchannel
- * \headerfile <TelepathyQt4/channel.h> <TelepathyQt4/Channel>
+ * \headerfile TelepathyQt4/channel.h <TelepathyQt4/Channel>
  *
- * High-level proxy object for accessing remote Telepathy Channel objects.
+ * \brief The Channel class provides an object representing a Telepathy channel.
  *
- * It adds the following features compared to using ChannelInterface directly:
+ * All communication in the Telepathy framework is carried out via channel
+ * objects which are created and managed by connections. Specialized classes for
+ * some specific channel types such as StreamedMediaChannel, TextChannel,
+ * FileTransferChannel are provided.
+ *
+ * It adds the following features compared to using Client::ChannelInterface
+ * directly:
  * <ul>
  *  <li>Life cycle tracking</li>
- *  <li>Getting the channel type, handle type, handle and interfaces automatically</li>
- *  <li>High-level methods for the group interface</li>
- *  <li>A fake group implementation when handle type != Contact</li>
- *  <li>Shared optional interface proxy instances</li>
+ *  <li>Getting the channel type, handle type, handle and interfaces
+ *  automatically</li>
+ *  <li>High-level methods for the
+ *  Group/Conference/MergeableConference/Splittable interfaces</li>
+ *  <li>A fake group implementation when handle type is HandleTypeContact</li>
  * </ul>
  *
  * The remote object state accessor functions on this object (interfaces(),
  * channelType(), targetHandleType(), targetHandle(), requested(),
- * initiatorContact(), etc) don't make any DBus calls;
- * instead, they return values cached from a previous introspection run. The
+ * initiatorContact(), and so on) don't make any D-Bus calls;
+ * instead, they return/use values cached from a previous introspection run. The
  * introspection process populates their values in the most efficient way
- * possible based on what the service implements. However, their value is not
- * defined unless the object is ready, as returned by
- * isReady(). becomeReady should be used to make sure channel is ready.
+ * possible based on what the service implements. Their return value is mostly
+ * undefined until the introspection process is completed, i.e. isReady()
+ * returns true. See the individual accessor descriptions for more details.
  *
- * Additionally, the state of the Group interface on the remote object (if
+ * Additionally, the state of the group interface on the remote object (if
  * present) will be cached in the introspection process, and also tracked for
  * any changes.
  *
- * Each Channel is owned by a Connection. If the Connection becomes dead (as
- * signaled by Connection::statusChanged(Disconnected)) or is deleted, the Channel object
- * will transition to closed too.
+ * To avoid unnecessary D-Bus traffic, some methods only return valid
+ * information after a specific feature has been enabled by calling
+ * becomeReady() with the desired set of features as an argument, and waiting
+ * for the resulting PendingOperation to finish. For instance, to retrieve the
+ * initial invitee contacts of a conference channel, it is necessary to call
+ * becomeReady() with Channel::FeatureConferenceInitialInviteeContacts included
+ * in the argument.
+ * The required features are documented by each method.
+ *
+ * Each channel is owned by a connection. If the Connection object becomes dead
+ * (as signaled by Connection::invalidated()), the Channel object will also get
+ * invalidated.
+ *
+ * \section chan_usage_sec Usage
+ *
+ * \subsection chan_create_sec Creating a channel object
+ *
+ * Channel objects can be created in various ways, but the preferred way is
+ * trough Account channel creation methods such as Account::ensureTextChat(),
+ * Account::createFileTransfer(), which uses the channel dispatcher.
+ *
+ * If you already know the object path, you can just call create().
+ * For example:
+ *
+ * \code
+ *
+ * ChannelPtr chan = Channel::create(connection, objectPath,
+ *         immutableProperties);
+ *
+ * \endcode
+ *
+ * \subsection chan_ready_sec Making channel ready to use
+ *
+ * A Channel object needs to become ready before usage, meaning that the
+ * introspection process finished and the object accessors can be used.
+ *
+ * To make the object ready, use becomeReady() and wait for the
+ * PendingOperation::finished() signal to be emitted.
+ *
+ * \code
+ *
+ * class MyClass : public QObject
+ * {
+ *     QOBJECT
+ *
+ * public:
+ *     MyClass(QObject *parent = 0);
+ *     ~MyClass() { }
+ *
+ * private Q_SLOTS:
+ *     void onChannelReady(Tp::PendingOperation*);
+ *
+ * private:
+ *     ChannelPtr chan;
+ * };
+ *
+ * MyClass::MyClass(const ConnectionPtr &connection,
+ *         const QString &objectPath, const QVariantMap &immutableProperties)
+ *     : QObject(parent)
+ *       chan(Channel::create(connection, objectPath, immutableProperties))
+ * {
+ *     connect(chan->becomeReady(),
+ *             SIGNAL(finished(Tp::PendingOperation*)),
+ *             SLOT(onChannelReady(Tp::PendingOperation*)));
+ * }
+ *
+ * void MyClass::onChannelReady(Tp::PendingOperation *op)
+ * {
+ *     if (op->isError()) {
+ *         qWarning() << "Channel cannot become ready:" <<
+ *             op->errorName() << "-" << op->errorMessage();
+ *         return;
+ *     }
+ *
+ *     // Channel is now ready
+ * }
+ *
+ * \endcode
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the Channel
+ * object usable.
+ *
+ * Note that this feature must be enabled in order to use most Channel methods.
+ * See specific methods documentation for more details.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature Channel::FeatureCore = Feature(QLatin1String(Channel::staticMetaObject.className()), 0, true);
+
+/**
+ * Feature used in order to access the conference initial invitee contacts info.
+ *
+ * See conferenceInitialInviteeContacts() documentation for more details.
+ */
 const Feature Channel::FeatureConferenceInitialInviteeContacts = Feature(QLatin1String(Channel::staticMetaObject.className()), 1, true);
 
+/**
+ * Create a new Channel object.
+ *
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
+ * \return A ChannelPtr object pointing to the newly created Channel object.
+ */
 ChannelPtr Channel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
@@ -1158,12 +1248,10 @@ ChannelPtr Channel::create(const ConnectionPtr &connection,
 /**
  * Construct a new Channel object.
  *
- * \param connection  Connection owning this Channel, and specifying the
- *                    service.
- * \param objectPath  Path to the object on the service.
- * \param immutableProperties  The immutable properties of the channel, as
- *                             signalled by NewChannels or returned by
- *                             CreateChannel or EnsureChannel
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
  */
 Channel::Channel(const ConnectionPtr &connection,
                  const QString &objectPath,
@@ -1188,9 +1276,11 @@ Channel::~Channel()
 }
 
 /**
- * Return the owning Connection of the Channel.
+ * Return the connection owning this channel.
  *
- * \return A pointer to the Connection object that owns this Channel.
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return The connection owning this channel.
  */
 ConnectionPtr Channel::connection() const
 {
@@ -1245,9 +1335,11 @@ QVariantMap Channel::immutableProperties() const
 }
 
 /**
- * Return the type of this channel.
+ * Return the D-Bus interface name for the type of this channel.
  *
- * \return D-Bus interface name for the type of the channel.
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return D-Bus interface name for the type of this channel.
  */
 QString Channel::channelType() const
 {
@@ -1265,9 +1357,12 @@ QString Channel::channelType() const
 }
 
 /**
- * Return the type of the handle returned by targetHandle().
+ * Return the type of the handle returned by targetHandle() as specified in
+ * HandleType.
  *
- * \return The type of the handle, as specified in HandleType.
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return The type of the handle returned by targetHandle().
  */
 uint Channel::targetHandleType() const
 {
@@ -1281,6 +1376,8 @@ uint Channel::targetHandleType() const
 /**
  * Return the handle of the remote party with which this channel
  * communicates.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return The handle, which is of the type targetHandleType() indicates.
  */
@@ -1297,7 +1394,7 @@ uint Channel::targetHandle() const
  * Return whether this channel was created in response to a
  * local request.
  *
- * Note that the value is undefined until the channel is ready.
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return \c true if this channel was created in response to a local request,
  *         \c false otherwise.
@@ -1312,12 +1409,12 @@ bool Channel::isRequested() const
 }
 
 /**
- * Return the contact who initiated the channel.
+ * Return the contact who initiated this channel.
  *
- * Note that the value is undefined until the channel is ready.
+ * This method requires Channel::FeatureCore to be enabled.
  *
- * \return A Contact object representing the contact who initiated the channel,
- *         or ContactPtr that points to null(0) if it can't be retrieved.
+ * \return The contact who initiated this channel,
+ *         or a null ContactPtr object if it can't be retrieved.
  */
 ContactPtr Channel::initiatorContact() const
 {
@@ -1329,13 +1426,14 @@ ContactPtr Channel::initiatorContact() const
 }
 
 /**
- * Start an asynchronous request that the channel be closed.
+ * Start an asynchronous request that this channel be closed.
+ *
  * The returned PendingOperation object will signal the success or failure
  * of this request; under normal circumstances, it can be expected to
  * succeed.
  *
- * \return A %PendingOperation, which will emit finished when the
- *         request finishes.
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
  */
 PendingOperation *Channel::requestClose()
 {
@@ -1352,8 +1450,8 @@ PendingOperation *Channel::requestClose()
  * \name Group interface
  *
  * Cached access to state of the group interface on the associated remote
- * object, if the interface is present. Almost all methods return undefined values
- * if the list returned by interfaces() doesn't include
+ * object, if the interface is present. Almost all methods return undefined
+ * values if the list returned by interfaces() doesn't include
  * #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP or if the object is not ready.
  *
  * Some methods can be used when targetHandleType() == HandleTypeContact, such
@@ -1361,19 +1459,14 @@ PendingOperation *Channel::requestClose()
  * groupSelfContact() and groupContacts().
  *
  * As the Group interface state can change freely during the lifetime of the
- * group due to events like new contacts joining the group, the cached state
+ * channel due to events like new contacts joining the group, the cached state
  * is automatically kept in sync with the remote object's state by hooking
  * to the change notification signals present in the D-Bus interface.
  *
  * As the cached value changes, change notification signals are emitted.
  *
- * There is a change notification signal &lt;attribute&gt;Changed
- * corresponding to each cached attribute. The first parameter for each of
- * these signals is the new value of the attribute, which is suited for
- * displaying the value of the attribute in a widget in a model-view
- * fashion. The remaining arguments depend on the attribute, but in general
- * include at least the delta from the previous state of the attribute to
- * the new state.
+ * Signals are emitted to indicate that properties have changed, for
+ * groupMembersChanged(), groupSelfContactChanged(), etc.
  *
  * Check the individual signals' descriptions for details.
  */
@@ -1382,12 +1475,12 @@ PendingOperation *Channel::requestClose()
 
 /**
  * Return a set of flags indicating the capabilities and behaviour of the
- * group represented by the remote object.
+ * group on this channel.
  *
- * Change notification is via groupFlagsChanged().
+ * This method requires Channel::FeatureCore to be enabled.
  *
- * \return Bitfield combination of flags, as defined in
- *         #ChannelGroupFlag
+ * \return Bitfield combination of flags, as defined in ChannelGroupFlag.
+ * \sa groupFlagsChanged()
  */
 uint Channel::groupFlags() const
 {
@@ -1399,9 +1492,12 @@ uint Channel::groupFlags() const
 }
 
 /**
- * Return if contacts can be added or invited to this channel.
+ * Return whether contacts can be added or invited to this channel.
  *
- * \return \c true if contacts can be added, \c false otherwise.
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return \c true if contacts can be added or invited to this channel,
+ *         \c false otherwise.
  * \sa groupAddContacts()
  */
 bool Channel::groupCanAddContacts() const
@@ -1414,8 +1510,10 @@ bool Channel::groupCanAddContacts() const
 }
 
 /**
- * Return whether a message is expected when inviting contacts who
- * are not already members to this channel.
+ * Return whether a message is expected when adding/inviting contacts, who
+ * are not already members, to this channel.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupAddContacts()
@@ -1432,6 +1530,8 @@ bool Channel::groupCanAddContactsWithMessage() const
 /**
  * Return whether a message is expected when accepting contacts' requests to
  * join this channel.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupAddContacts()
@@ -1458,6 +1558,8 @@ bool Channel::groupCanAcceptContactsWithMessage() const
  * If groupCanAddContactsWithMessage() returns \c true, an optional message is
  * expected when doing this, and if not, the message parameter is likely to be
  * ignored.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \param contacts Contacts to be added.
  * \param message A string message, which can be blank if desired.
@@ -1506,6 +1608,8 @@ PendingOperation *Channel::groupAddContacts(const QList<ContactPtr> &contacts,
  * Return whether contacts in groupRemotePendingContacts() can be removed from
  * this channel (i.e. whether an invitation can be rescinded).
  *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
  * \return \c true if contacts can be removed, \c false otherwise.
  * \sa groupRemoveContacts()
  */
@@ -1522,6 +1626,8 @@ bool Channel::groupCanRescindContacts() const
  * Return whether a message is expected when removing contacts who are in
  * groupRemotePendingContacts() from this channel, i.e. rescinding an
  * invitation.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupRemoveContacts()
@@ -1541,6 +1647,8 @@ bool Channel::groupCanRescindContactsWithMessage() const
  * Note that contacts in local pending lists, and the groupSelfContact(), can
  * always be removed from the channel.
  *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
  * \return \c true if contacts can be removed, \c false otherwise.
  * \sa groupRemoveContacts()
  */
@@ -1556,6 +1664,8 @@ bool Channel::groupCanRemoveContacts() const
 /**
  * Return whether a message is expected when removing contacts who are in
  * groupContacts() from this channel.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupRemoveContacts()
@@ -1573,6 +1683,8 @@ bool Channel::groupCanRemoveContactsWithMessage() const
  * Return whether a message is expected when removing contacts who are in
  * groupLocalPendingContacts() from this channel, i.e. rejecting a request to
  * join.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return \c true if a message is expected, \c false otherwise.
  * \sa groupRemoveContacts()
@@ -1630,6 +1742,8 @@ bool Channel::groupCanDepartWithMessage() const
  * expected when doing this, and if not, the message parameter is likely to be
  * ignored.
  *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
  * \param contacts Contacts to be removed.
  * \param message A string message, which can be blank if desired.
  * \param reason Reason of the change, as specified in
@@ -1680,7 +1794,9 @@ PendingOperation *Channel::groupRemoveContacts(const QList<ContactPtr> &contacts
 /**
  * Return the current contacts of the group.
  *
- * \return List of contact objects.
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return List of contact of the group.
  */
 Contacts Channel::groupContacts() const
 {
@@ -1695,7 +1811,10 @@ Contacts Channel::groupContacts() const
  * Return the contacts currently waiting for local approval to join the
  * group.
  *
- * \return List of contacts.
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return List of contacts currently waiting for local approval to join the
+ *         group.
  */
 Contacts Channel::groupLocalPendingContacts() const
 {
@@ -1712,7 +1831,10 @@ Contacts Channel::groupLocalPendingContacts() const
  * Return the contacts currently waiting for remote approval to join the
  * group.
  *
- * \return List of contacts.
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return List of contacts currently waiting for remote approval to join the
+ *         group.
  */
 Contacts Channel::groupRemotePendingContacts() const
 {
@@ -1781,6 +1903,8 @@ Channel::GroupMemberChangeDetails::GroupMemberChangeDetails(const ContactPtr &ac
  * no information is available, an object for which
  * GroupMemberChangeDetails::isValid() returns <code>false</code> is returned.
  *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
  * \param contact A Contact object that is on the local pending contacts list.
  * \return The change info in a GroupMemberChangeDetails object.
  */
@@ -1814,6 +1938,8 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
  * The returned information is not guaranteed to be correct if
  * groupIsSelfHandleTracked() Return false and a self handle change has
  * occurred on the remote object.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return The remove info in a GroupMemberChangeDetails object.
  */
@@ -1849,6 +1975,8 @@ Channel::GroupMemberChangeDetails Channel::groupSelfContactRemoveInfo() const
  * The value returned by this function will stay fixed for the entire time
  * the object is ready, so no change notification is provided.
  *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
  * \return If handle owner lookup functionality is available.
  */
 bool Channel::groupAreHandleOwnersAvailable() const
@@ -1872,6 +2000,8 @@ bool Channel::groupAreHandleOwnersAvailable() const
  * handle not in the keys of this mapping is not channel-specific in this
  * channel. Handles which are channel-specific, but for which the owner is
  * unknown, appear in this mapping with 0 as owner.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return A mapping from group-specific handles to globally valid handles.
  */
@@ -1898,6 +2028,8 @@ HandleOwnerMap Channel::groupHandleOwners() const
  * emit the SelfHandleChanged signal either, so self contact changes can't be
  * reliably tracked.
  *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
  * \return Whether or not changes to the self contact are tracked.
  */
 bool Channel::groupIsSelfContactTracked() const
@@ -1917,6 +2049,8 @@ bool Channel::groupIsSelfContactTracked() const
  * member of the group, otherwise either a Contact object representing the user or
  * 0.
  *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
  * \return A contact handle representing the user, if possible.
  */
 ContactPtr Channel::groupSelfContact() const
@@ -1932,6 +2066,8 @@ ContactPtr Channel::groupSelfContact() const
  * Return whether the local user is in the "local pending" state. This
  * indicates that the local user needs to take action to accept an invitation,
  * an incoming call, etc.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return Whether the local user is in this channel's local-pending set.
  */
@@ -1956,6 +2092,8 @@ bool Channel::groupSelfHandleIsLocalPending() const
  * Attempt to add the local user to this channel. In some channel types,
  * such as Text and StreamedMedia, this is used to accept an invitation or an
  * incoming call.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
  *
  * \return A pending operation which will emit finished on success or failure
  */
@@ -2156,7 +2294,8 @@ PendingOperation *Channel::splitChannel()
  */
 
 /**
- * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners, const Tp::UIntList &added, const Tp::UIntList &removed)
+ * \fn void Channel::groupHandleOwnersChanged(const HandleOwnerMap &owners,
+ *            const Tp::UIntList &added, const Tp::UIntList &removed)
  *
  * Emitted when the value returned by groupHandleOwners() changes.
  *
@@ -2365,7 +2504,7 @@ PendingOperation *Channel::splitChannel()
  */
 
 /**
- * Get the ChannelInterface for this Channel class. This method is
+ * Return the ChannelInterface for this Channel class. This method is
  * protected since the convenience methods provided by this class should
  * always be used instead of the interface by users of the class.
  *

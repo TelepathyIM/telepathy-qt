@@ -70,10 +70,10 @@ public:
     static const Feature FeatureAvatar;
     static const Feature FeatureProtocolInfo;
 
-    static AccountPtr create(const QDBusConnection &bus,
-            const QString &busName, const QString &objectPath);
     static AccountPtr create(const QString &busName,
             const QString &objectPath);
+    static AccountPtr create(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath);
 
     virtual ~Account();
 
@@ -248,21 +248,21 @@ public:
     }
 
 Q_SIGNALS:
-    void displayNameChanged(const QString &);
-    void iconChanged(const QString &);
-    void nicknameChanged(const QString &);
-    void normalizedNameChanged(const QString &);
-    void validityChanged(bool);
-    void stateChanged(bool);
-    void connectsAutomaticallyPropertyChanged(bool);
+    void displayNameChanged(const QString &displayName);
+    void iconChanged(const QString &icon);
+    void nicknameChanged(const QString &nickname);
+    void normalizedNameChanged(const QString &normalizedName);
+    void validityChanged(bool validity);
+    void stateChanged(bool state);
+    void connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
     void firstOnline();
-    void parametersChanged(const QVariantMap &);
-    void automaticPresenceChanged(const Tp::SimplePresence &) const;
-    void currentPresenceChanged(const Tp::SimplePresence &) const;
-    void requestedPresenceChanged(const Tp::SimplePresence &) const;
-    void avatarChanged(const Tp::Avatar &);
-    void connectionStatusChanged(Tp::ConnectionStatus,
-            Tp::ConnectionStatusReason);
+    void parametersChanged(const QVariantMap &parameters);
+    void automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
+    void currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
+    void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
+    void avatarChanged(const Tp::Avatar &avatar);
+    void connectionStatusChanged(Tp::ConnectionStatus status,
+            Tp::ConnectionStatusReason statusReason);
     void haveConnectionChanged(bool haveConnection);
 
 protected:

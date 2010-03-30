@@ -50,9 +50,9 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOperation::Private
 
 /**
  * \class PendingOperation
- * \headerfile <TelepathyQt4/pending-operation.h> <TelepathyQt4/PendingOperation>
+ * \headerfile TelepathyQt4/pending-operation.h <TelepathyQt4/PendingOperation>
  *
- * Abstract base class for pending asynchronous operations.
+ * \brief Abstract base class for pending asynchronous operations.
  *
  * This class represents an incomplete asynchronous operation, such as a
  * D-Bus method call. When the operation has finished, it emits
@@ -76,7 +76,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOperation::Private
  */
 
 /**
- * Protected constructor. Only subclasses of this class may be constructed
+ * Protected constructor. Only subclasses of this class may be constructed.
  *
  * \param parent The object on which this pending operation takes place
  */
@@ -259,25 +259,25 @@ QString PendingOperation::errorMessage() const
 
 /**
  * \class PendingSuccess
- * \headerfile <TelepathyQt4/simple-pending-operations.h> <TelepathyQt4/PendingSuccess>
+ * \headerfile TelepathyQt4/simple-pending-operations.h <TelepathyQt4/PendingSuccess>
  *
- * A PendingOperation that is always successful.
+ * \brief A PendingOperation that is always successful.
  */
 
 /**
  * \class PendingFailure
- * \headerfile <TelepathyQt4/simple-pending-operations.h> <TelepathyQt4/PendingFailure>
+ * \headerfile TelepathyQt4/simple-pending-operations.h <TelepathyQt4/PendingFailure>
  *
- * A PendingOperation that always fails with the error passed to the
+ * \brief A PendingOperation that always fails with the error passed to the
  * constructor.
  */
 
 /**
  * \class PendingVoid
- * \headerfile <TelepathyQt4/simple-pending-operations.h> <TelepathyQt4/PendingVoid>
+ * \headerfile TelepathyQt4/simple-pending-operations.h <TelepathyQt4/PendingVoid>
  *
- * Generic subclass of PendingOperation representing a pending D-Bus method
- * call that does not return anything (or returns a result that is not
+ * \brief Generic subclass of PendingOperation representing a pending D-Bus
+ * method call that does not return anything (or returns a result that is not
  * interesting).
  *
  * Objects of this class indicate the success or failure of the method call,

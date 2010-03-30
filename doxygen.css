@@ -11,11 +11,17 @@ h1 {
 }
 
 h2 {
-	font-size: 120%;
+	font-size: 110%;
+	font-weight: bold;
 }
 
 h3 {
 	font-size: 100%;
+}
+
+h3.version {
+	font-size: 100%;
+	text-align: center;
 }
 
 /* @end */
@@ -73,7 +79,6 @@ a.qindexHL {
 }
 
 a.el {
-	font-weight: bold;
 }
 
 a.elRef {
@@ -93,7 +98,7 @@ dl.el {
 
 .fragment {
 	font-family: monospace, fixed;
-	font-size: 105%;
+	font-size: 100%;
 }
 
 pre.fragment {

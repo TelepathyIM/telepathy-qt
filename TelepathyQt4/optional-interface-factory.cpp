@@ -28,17 +28,6 @@
 #include <QMap>
 #include <QString>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
 namespace Tp
 {
 
@@ -124,10 +113,11 @@ void OptionalInterfaceCache::cache(AbstractInterface *interface) const
 /**
  * \class OptionalInterfaceFactory
  * \ingroup clientsideproxies
- * \headerfile <TelepathyQt4/optional-interface-factory.h> <TelepathyQt4/OptionalInterfaceFactory>
+ * \headerfile TelepathyQt4/optional-interface-factory.h <TelepathyQt4/OptionalInterfaceFactory>
  *
- * Implementation helper class for high-level proxy classes willing to offer
- * access to shared instances of interface proxies for optional interfaces.
+ * \brief Implementation helper class for high-level proxy classes willing to
+ * offer access to shared instances of interface proxies for optional
+ * interfaces.
  *
  * This class is included in the public API for the benefit of high-level
  * proxies in extensions.

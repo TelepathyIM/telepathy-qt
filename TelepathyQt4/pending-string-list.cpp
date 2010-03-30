@@ -36,7 +36,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStringList::Private
 
 /**
  * \class PendingStringList
- * \headerfile <TelepathyQt4/pending-string-list.h> <TelepathyQt4/PendingStringList>
+ * \headerfile TelepathyQt4/pending-string-list.h <TelepathyQt4/PendingStringList>
  */
 
 PendingStringList::PendingStringList(QObject *parent)

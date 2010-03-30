@@ -28,36 +28,19 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientconn Connection proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Connections and their optional
- * interfaces.
- */
-
 namespace Tp
 {
 
 /**
  * \class PendingContactAttributes
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/pending-contact-attributes.h> <TelepathyQt4/PendingContactAttributes>
+ * \headerfile TelepathyQt4/pending-contact-attributes.h <TelepathyQt4/PendingContactAttributes>
  *
- * Class containing the parameters of and the reply to an asynchronous request for raw contact
- * attributes, as used in the Connection::contactAttributes() low-level convenience method
- * wrapping the ConnectionInterfaceContactsInterface::GetContactAttributes() D-Bus method.
+ * \brief Class containing the parameters of and the reply to an asynchronous
+ * request for raw contact attributes, as used in the
+ * Connection::contactAttributes() low-level convenience method wrapping the
+ * Client::ConnectionInterfaceContactsInterface::GetContactAttributes() D-Bus
+ * method.
  */
 
 struct TELEPATHY_QT4_NO_EXPORT PendingContactAttributes::Private

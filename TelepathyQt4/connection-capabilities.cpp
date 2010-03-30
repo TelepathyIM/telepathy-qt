@@ -29,11 +29,11 @@ namespace Tp
 
 /**
  * \class ConnectionCapabilities
- * \ingroup client
- * \headerfile <TelepathyQt4/connection-capabilities.h> <TelepathyQt4/ConnectionCapabilities>
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/connection-capabilities.h <TelepathyQt4/ConnectionCapabilities>
  *
  * \brief The ConnectionCapabilities class provides an object representing the
- * capabilities of a Tp::Connection.
+ * capabilities of a Connection.
  */
 
 /**
@@ -70,7 +70,7 @@ ConnectionCapabilities::~ConnectionCapabilities()
  * a more elaborate D-Bus API than normal (because more information is needed),
  * then this method will return false.
  *
- * \return true if Tp::Account::ensureTextChatroom() can be expected to work.
+ * \return true if Account::ensureTextChatroom() can be expected to work.
  */
 bool ConnectionCapabilities::supportsTextChatrooms() const
 {

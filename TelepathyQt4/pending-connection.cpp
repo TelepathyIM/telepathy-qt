@@ -32,17 +32,6 @@
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
 namespace Tp
 {
 
@@ -61,12 +50,12 @@ struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
 
 /**
  * \class PendingConnection
- * \ingroup clientconnection
- * \headerfile <TelepathyQt4/pending-connection.h> <TelepathyQt4/PendingConnection>
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/pending-connection.h <TelepathyQt4/PendingConnection>
  *
- * Class containing the parameters of and the reply to an asynchronous connection
- * request. Instances of this class cannot be constructed directly; the only
- * way to get one is via ConnectionManager.
+ * \brief Class containing the parameters of and the reply to an asynchronous
+ * connection request. Instances of this class cannot be constructed directly;
+ * the only way to get one is via ConnectionManager.
  */
 
 /**

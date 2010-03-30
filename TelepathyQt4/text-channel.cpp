@@ -535,40 +535,37 @@ void TextChannel::Private::contactFound(ContactPtr contact)
 /**
  * \class TextChannel
  * \ingroup clientchannel
- * \headerfile <TelepathyQt4/text-channel.h> <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
  *
- * High-level proxy object for accessing remote %Channel objects of the Text
- * channel type.
- *
- * This subclass of Channel will eventually provide a high-level API for the
- * Text and Messages interface. Until then, it's just a Channel.
+ * \brief The TextChannel class provides an object representing a
+ * Telepathy channel of type Text.
  */
 
 /**
- * \var Feature TextChannel::FeatureMessageQueue
- * The messageQueue method can be called, and the messageReceived and
- * pendingMessageRemoved methods can be called
+ * Feature used in order to access the message queue info.
+ *
+ * Se message queue methods' documentation for more details.
  */
+const Feature TextChannel::FeatureMessageQueue = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 0);
+
 /**
- * \var Feature TextChannel::FeatureMessageCapabilities
- * The supportedContentTypes, messagePartSupport and deliveryReportingSupport
- * methods can be called
+ * Feature used in order to access message capabilities info.
+ *
+ * Se message capabilities methods' documentation for more details.
  */
+const Feature TextChannel::FeatureMessageCapabilities = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 1);
+
 /**
- * \var Feature TextChannel::FeatureMessageSentSignal
- * The messageSent signal will be emitted when a message is sent
+ * Feature used in order to receive notification when a message is sent.
  */
+const Feature TextChannel::FeatureMessageSentSignal = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 2);
+
 /**
- * \var Feature TextChannel::FeatureChatState
- * Enable this feature in order to receive notifications of remote contacts'
- * state.
+ * Feature used in order to keep track of chat state changes.
+ *
  * The chatStateChanged() signal will be emitted when a remote contact chat
  * state changes.
  */
-
-const Feature TextChannel::FeatureMessageQueue = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 0);
-const Feature TextChannel::FeatureMessageCapabilities = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 1);
-const Feature TextChannel::FeatureMessageSentSignal = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 2);
 const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel::staticMetaObject.className()), 3);
 
 /**
@@ -621,6 +618,16 @@ const Feature TextChannel::FeatureChatState = Feature(QLatin1String(TextChannel:
  * This includes local state.
  */
 
+/**
+ * Create a new IncomingFileTransfer channel.
+ *
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
+ * \return A TextChannelPtr object pointing to the newly created
+ *         TextChannel object.
+ */
 TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
@@ -629,15 +636,12 @@ TextChannelPtr TextChannel::create(const ConnectionPtr &connection,
 }
 
 /**
- * Creates a TextChannel associated with the given object on the same service
- * as the given connection.
+ * Construct a new TextChannel object.
  *
- * \param connection  Connection owning this TextChannel, and specifying the
- *                    service.
- * \param objectPath  Path to the object on the service.
- * \param immutableProperties The immutable D-Bus properties of the channel
- *                    (as announced in the NewChannels D-Bus signal), used to
- *                    reduce D-Bus round trips
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
  */
 TextChannel::TextChannel(const ConnectionPtr &connection,
         const QString &objectPath,

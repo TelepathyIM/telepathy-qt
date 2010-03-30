@@ -50,24 +50,6 @@
 #include <QTimer>
 #include <QtGlobal>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientconn Connection proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Connection objects.
- */
-
 namespace Tp
 {
 
@@ -504,42 +486,183 @@ QMutex Connection::Private::handleContextsLock;
 /**
  * \class Connection
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/connection.h> <TelepathyQt4/Connection>
+ * \headerfile TelepathyQt4/connection.h <TelepathyQt4/Connection>
  *
- * Object representing a Telepathy connection.
+ * \brief The Connection class provides an object representing a Telepathy
+ * connection.
  *
- * It adds the following features compared to using ConnectionInterface
- * directly:
+ * Connection adds the following features compared to using
+ * Client::ConnectionInterface directly:
  * <ul>
- *  <li>%Connection status tracking</li>
+ *  <li>Status tracking</li>
  *  <li>Getting the list of supported interfaces automatically</li>
  *  <li>Getting the valid presence statuses automatically</li>
- *  <li>Shared optional interface proxy instances</li>
  * </ul>
+ *
+ * This models a connection to a single user account on a communication service.
+ * Its basic capability is to provide the facility to request and receive
+ * channels of differing types (such as text channels or streaming media
+ * channels) which are used to carry out further communication.
+ *
+ * Contacts, and server-stored lists (such as subscribed contacts,
+ * block lists, or allow lists) on a service are all represented using the
+ * ContactManager object on the connection, which is valid only for the lifetime
+ * of the connection object.
  *
  * The remote object state accessor functions on this object (status(),
  * statusReason(), and so on) don't make any DBus calls; instead,
  * they return values cached from a previous introspection run. The
  * introspection process populates their values in the most efficient way
- * possible based on what the service implements. Their return value is mostly
- * undefined until the introspection process is completed; a status change to
- * StatusConnected indicates that the introspection process is finished. See the
- * individual accessor descriptions for details on which functions can be used
- * in the different states.
+ * possible based on what the service implements.
+ * Their return value is mostly undefined until the
+ * introspection process is completed, i.e. isReady() returns true. See the
+ * individual accessor descriptions for more details. A status change to
+ * StatusConnected indicates that the introspection process is finished
+ *
+ * Signals are emitted to indicate that properties have changed for example
+ * statusChanged()(), selfContactChanged(), etc.
+ *
+ * \section conn_usage_sec Usage
+ *
+ * \subsection conn_create_sec Creating a connection object
+ *
+ * The easiest way to create connection objects is through Account. One can
+ * just use the Account::connection method to get an account active connection.
+ *
+ * If you already know the object path, you can just call create().
+ * For example:
+ *
+ * \code ConnectionPtr conn = Connection::create(busName, objectPath); \endcode
+ *
+ * A ConnectionPtr object is returned, which will automatically keep
+ * track of object lifetime.
+ *
+ * You can also provide a D-Bus connection as a QDBusConnection:
+ *
+ * \code
+ *
+ * ConnectionPtr conn = Connection::create(QDBusConnection::sessionBus(),
+ *         busName, objectPath);
+ *
+ * \endcode
+ *
+ * \subsection conn_ready_sec Making connection ready to use
+ *
+ * A Connection object needs to become ready before usage, meaning that the
+ * introspection process finished and the object accessors can be used.
+ *
+ * To make the object ready, use becomeReady() and wait for the
+ * PendingOperation::finished() signal to be emitted.
+ *
+ * \code
+ *
+ * class MyClass : public QObject
+ * {
+ *     QOBJECT
+ *
+ * public:
+ *     MyClass(QObject *parent = 0);
+ *     ~MyClass() { }
+ *
+ * private Q_SLOTS:
+ *     void onConnectionReady(Tp::PendingOperation*);
+ *
+ * private:
+ *     ConnectionPtr conn;
+ * };
+ *
+ * MyClass::MyClass(const QString &busName, const QString &objectPath,
+ *         QObject *parent)
+ *     : QObject(parent)
+ *       conn(Connection::create(busName, objectPath))
+ * {
+ *     // connect and become ready
+ *     connect(conn->requestConnect(),
+ *             SIGNAL(finished(Tp::PendingOperation*)),
+ *             SLOT(onConnectionReady(Tp::PendingOperation*)));
+ * }
+ *
+ * void MyClass::onConnectionReady(Tp::PendingOperation *op)
+ * {
+ *     if (op->isError()) {
+ *         qWarning() << "Account cannot become ready:" <<
+ *             op->errorName() << "-" << op->errorMessage();
+ *         return;
+ *     }
+ *
+ *     // Connection is now ready
+ * }
+ *
+ * \endcode
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * Connection object usable.
+ *
+ * Note that this feature must be enabled in order to use most Connection
+ * methods.
+ * See specific methods documentation for more details.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature Connection::FeatureCore = Feature(QLatin1String(Connection::staticMetaObject.className()), 0, true);
+
+/**
+ * Feature used to retrieve the connection self contact.
+ *
+ * See self contact specific methods' documentation for more details.
+ */
 const Feature Connection::FeatureSelfContact = Feature(QLatin1String(Connection::staticMetaObject.className()), 1);
+
+/**
+ * Feature used to retrieve/keep track of the connection self presence.
+ *
+ * See simple presence specific methods' documentation for more details.
+ */
 const Feature Connection::FeatureSimplePresence = Feature(QLatin1String(Connection::staticMetaObject.className()), 2);
+
+/**
+ * Feature used to enable roster support on Connection::contactManager.
+ *
+ * See ContactManager roster specific methods' documentation for more details.
+ */
 const Feature Connection::FeatureRoster = Feature(QLatin1String(Connection::staticMetaObject.className()), 4);
+
+/**
+ * Feature used to enable roster groups support on Connection::contactManager.
+ *
+ * See ContactManager roster groups specific methods' documentation for more
+ * details.
+ */
 const Feature Connection::FeatureRosterGroups = Feature(QLatin1String(Connection::staticMetaObject.className()), 5);
 
+/**
+ * Create a new connection object using QDBusConnection::sessionBus().
+ *
+ * \param busName The connection well-known bus name (sometimes called a
+ *                "service name").
+ * \param objectPath The connection object path.
+ * \return A ConnectionPtr pointing to the newly created Connection.
+ */
 ConnectionPtr Connection::create(const QString &busName,
         const QString &objectPath)
 {
     return ConnectionPtr(new Connection(busName, objectPath));
 }
 
+/**
+ * Create a new connection object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param busName The connection well-known bus name (sometimes called a
+ *                "service name").
+ * \param objectPath The connection object path.
+ * \return A ConnectionPtr pointing to the newly created Connection.
+ */
 ConnectionPtr Connection::create(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath)
 {
@@ -547,11 +670,11 @@ ConnectionPtr Connection::create(const QDBusConnection &bus,
 }
 
 /**
- * Construct a new Connection object.
+ * Construct a new connection object using QDBusConnection::sessionBus().
  *
- * \param busName The connection's well-known or unique bus name
- *                (sometimes called a "service name")
- * \param objectPath The connection's object path
+ * \param busName The connection's well-known bus name (sometimes called a
+ *                "service name").
+ * \param objectPath The connection object path.
  */
 Connection::Connection(const QString &busName,
                        const QString &objectPath)
@@ -564,12 +687,12 @@ Connection::Connection(const QString &busName,
 }
 
 /**
- * Construct a new Connection object.
+ * Construct a new connection object using the given \bus.
  *
- * \param bus QDBusConnection to use
- * \param busName The connection's well-known or unique bus name
- *                (sometimes called a "service name")
- * \param objectPath The connection's object path
+ * \param bus QDBusConnection to use.
+ * \param busName The connection's well-known bus name (sometimes called a
+ *                "service name").
+ * \param objectPath The connection object path.
  */
 Connection::Connection(const QDBusConnection &bus,
                        const QString &busName,
@@ -590,12 +713,12 @@ Connection::~Connection()
 }
 
 /**
- * Return the connection's status.
+ * Return the status of this connection.
  *
- * The returned value may have changed whenever statusChanged() is
- * emitted.
+ * This method requires Connection::FeatureCore to be enabled.
  *
- * \return The status, as defined in Connection::Status.
+ * \return The status of this connection, as defined in Connection::Status.
+ * \sa statusChanged()
  */
 Connection::Status Connection::status() const
 {
@@ -603,8 +726,10 @@ Connection::Status Connection::status() const
 }
 
 /**
- * Return the reason for the connection's status (which is returned by
+ * Return the reason for this connection's status (which is returned by
  * status()). The validity and change rules are the same as for status().
+ *
+ * This method requires Connection::FeatureCore to be enabled.
  *
  * \return The reason, as defined in ConnectionStatusReason.
  */
@@ -614,10 +739,13 @@ ConnectionStatusReason Connection::statusReason() const
 }
 
 /**
- * Return the handle which represents the user on this connection, which will remain
- * valid for the lifetime of this connection, or until a change in the user's
- * identifier is signalled by the selfHandleChanged signal. If the connection is
- * not yet in the StatusConnected state, the value of this property MAY be zero.
+ * Return the handle which represents the user on this connection, which will
+ * remain valid for the lifetime of this connection, or until a change in the
+ * user's identifier is signalled by the selfHandleChanged() signal. If the
+ * connection is not yet in the StatusConnected state, the value of this
+ * property may be zero.
+ *
+ * This method requires Connection::FeatureCore to be enabled.
  *
  * \return Self handle.
  */
@@ -627,15 +755,13 @@ uint Connection::selfHandle() const
 }
 
 /**
- * Return a dictionary of presence statuses valid for use with the new(er)
- * Telepathy SimplePresence interface on the remote object.
- *
- * The value is undefined if the list returned by interfaces() doesn't
- * contain %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE.
+ * Return a dictionary of presence statuses valid for use in this connection.
  *
  * The value may have changed arbitrarily during the time the
  * Connection spends in status StatusConnecting,
  * again staying fixed for the entire time in StatusConnected.
+ *
+ * This method requires Connection::FeatureSimplePresence to be enabled.
  *
  * \return Dictionary from string identifiers to structs for each valid
  * status.
@@ -657,9 +783,9 @@ SimpleStatusSpecMap Connection::allowedPresenceStatuses() const
  * \a status must be one of the allowed statuses returned by
  * allowedPresenceStatuses().
  *
- * Note that clients SHOULD set the status message for the local user to the empty string,
- * unless the user has actually provided a specific message (i.e. one that
- * conveys more information than the Status).
+ * Note that clients SHOULD set the status message for the local user to the
+ * empty string, unless the user has actually provided a specific message (i.e.
+ * one that conveys more information than the Status).
  *
  * \param status The desired status.
  * \param statusMessage The desired status message.
@@ -680,6 +806,13 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
             this);
 }
 
+/**
+ * Return the object that represents the contact of this connection.
+ *
+ * This method requires Connection::FeatureSelfContact to be enabled.
+ *
+ * \return The connection self contact.
+ */
 ContactPtr Connection::selfContact() const
 {
     if (!isReady()) {
@@ -1233,7 +1366,7 @@ void Connection::gotChannels(QDBusPendingCallWatcher *watcher)
 }
 
 /**
- * Get the ConnectionInterface for this Connection. This
+ * Return the ConnectionInterface for this Connection. This
  * method is protected since the convenience methods provided by this
  * class should generally be used instead of calling D-Bus methods
  * directly.
@@ -1250,8 +1383,8 @@ Client::ConnectionInterface *Connection::baseInterface() const
  * Asynchronously creates a channel satisfying the given request.
  *
  * The request MUST contain the following keys:
- *   org.freedesktop.Telepathy.Account.ChannelType
- *   org.freedesktop.Telepathy.Account.TargetHandleType
+ *   org.freedesktop.Telepathy.Channel.ChannelType
+ *   org.freedesktop.Telepathy.Channel.TargetHandleType
  *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingChannel object. The object also provides access to the
@@ -1305,8 +1438,8 @@ PendingChannel *Connection::createChannel(const QVariantMap &request)
  * Asynchronously ensures a channel exists satisfying the given request.
  *
  * The request MUST contain the following keys:
- *   org.freedesktop.Telepathy.Account.ChannelType
- *   org.freedesktop.Telepathy.Account.TargetHandleType
+ *   org.freedesktop.Telepathy.Channel.ChannelType
+ *   org.freedesktop.Telepathy.Channel.TargetHandleType
  *
  * Upon completion, the reply to the request can be retrieved through the
  * returned PendingChannel object. The object also provides access to the
@@ -1483,32 +1616,37 @@ PendingOperation *Connection::requestDisconnect()
 }
 
 /**
- * Requests attributes for contacts. Optionally, the handles of the contacts will be referenced
- * automatically. Essentially, this method wraps
- * ConnectionInterfaceContactsInterface::GetContactAttributes(), integrating it with the rest of the
- * handle-referencing machinery.
+ * Requests attributes for contacts. Optionally, the handles of the contacts
+ * will be referenced automatically. Essentially, this method wraps
+ * ConnectionInterfaceContactsInterface::GetContactAttributes(), integrating it
+ * with the rest of the handle-referencing machinery.
  *
- * Upon completion, the reply to the request can be retrieved through the returned
- * PendingContactAttributes object. The object also provides access to the parameters with which the
- * call was made and a signal to connect to to get notification of the request finishing processing.
- * See the documentation for that class for more info.
+ * Upon completion, the reply to the request can be retrieved through the
+ * returned PendingContactAttributes object. The object also provides access to
+ * the parameters with which the call was made and a signal to connect to to get
+ * notification of the request finishing processing. See the documentation for
+ * that class for more info.
  *
- * If the remote object doesn't support the Contacts interface (as signified by the list returned by
- * interfaces() not containing TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS), the returned
+ * If the remote object doesn't support the Contacts interface (as signified by
+ * the list returned by interfaces() not containing
+ * %TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS), the returned
  * PendingContactAttributes instance will fail instantly with the error
  * TELEPATHY_ERROR_NOT_IMPLEMENTED.
  *
- * Similarly, if the connection isn't both connected and ready (<code>status() == StatusConnected &&
- * isReady()</code>), the returned PendingContactAttributes instance will fail instantly with the
- * error TELEPATHY_ERROR_NOT_AVAILABLE.
+ * Similarly, if the connection isn't both connected and ready
+ * (<code>status() == StatusConnected && isReady()</code>), the returned
+ * PendingContactAttributes instance will fail instantly with the
+ * error %TELEPATHY_ERROR_NOT_AVAILABLE.
+ *
+ * This method requires Connection::FeatureCore to be enabled.
  *
  * \sa PendingContactAttributes
  *
  * \param handles A list of handles of type HandleTypeContact
  * \param interfaces D-Bus interfaces for which the client requires information
  * \param reference Whether the handles should additionally be referenced.
- * \return Pointer to a newly constructed PendingContactAttributes, tracking the progress of the
- *         request.
+ * \return Pointer to a newly constructed PendingContactAttributes, tracking the
+ *         progress of the request.
  */
 PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
         const QStringList &interfaces, bool reference)
@@ -1565,6 +1703,16 @@ QStringList Connection::contactAttributeInterfaces() const
     return mPriv->contactAttributeInterfaces;
 }
 
+/**
+ * Return the ContactManager object for this connection.
+ *
+ * The contact manager is responsible for all contact handling in this
+ * connection, including adding, removing, authorizing, etc.
+ *
+ * \return A pointer to this connection ContactManager object.
+ *         The returned object is owned by this connection and should not be
+ *         freed.
+ */
 ContactManager *Connection::contactManager() const
 {
     if (!isReady()) {

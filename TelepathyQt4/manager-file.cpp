@@ -287,10 +287,10 @@ QVariant ManagerFile::Private::valueForKey(const QString &param,
 
 /**
  * \class ManagerFile
- * \headerfile <TelepathyQt4/manager-file.h> <TelepathyQt4/ManagerFile>
+ * \headerfile TelepathyQt4/manager-file.h <TelepathyQt4/ManagerFile>
  *
- * The ManagerFile class provides an easy way to read telepathy manager files
- * according to http://telepathy.freedesktop.org/spec.html.
+ * \brief The ManagerFile class provides an easy way to read telepathy manager
+ * files according to http://telepathy.freedesktop.org/spec.html.
  */
 
 /**

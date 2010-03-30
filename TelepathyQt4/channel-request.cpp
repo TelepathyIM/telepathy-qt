@@ -34,25 +34,6 @@
 
 #include <QDateTime>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientchannelrequest ChannelRequest proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Channel Requests and their
- * optional interfaces.
- */
-
 namespace Tp
 {
 
@@ -167,13 +148,40 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 /**
  * \class ChannelRequest
  * \ingroup clientchannelrequest
- * \headerfile <TelepathyQt4/channel-request.h> <TelepathyQt4/ChannelRequest>
+ * \headerfile TelepathyQt4/channel-request.h <TelepathyQt4/ChannelRequest>
  *
- * High-level proxy object for accessing remote Telepathy ChannelRequest objects.
+ * \brief The ChannelRequest class provides an object representing a Telepathy
+ * channel request.
+ *
+ * A channel request is an object in the channel dispatcher representing an
+ * ongoing request for some channels to be created or found. There can be any
+ * number of channel request objects at the same time.
+ *
+ * A channel request can be cancelled by any client (not just the one that
+ * requested it). This means that the channel dispatcher will close the
+ * resulting channel, or refrain from requesting it at all, rather than
+ * dispatching it to a handler.
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * ChannelRequest object usable.
+ *
+ * Note that this feature must be enabled in order to use most
+ * ChannelRequest methods.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature ChannelRequest::FeatureCore = Feature(QLatin1String(ChannelRequest::staticMetaObject.className()), 0, true);
 
+/**
+ * Create a new channel request object using QDBusConnection::sessionBus().
+ *
+ * \param objectPath The channel request object path.
+ * \param immutableProperties The immutable properties of the channel request.
+ * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ */
 ChannelRequestPtr ChannelRequest::create(const QString &objectPath,
         const QVariantMap &immutableProperties)
 {
@@ -181,6 +189,14 @@ ChannelRequestPtr ChannelRequest::create(const QString &objectPath,
                 objectPath, immutableProperties));
 }
 
+/**
+ * Create a new channel request object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param objectPath The channel request object path.
+ * \param immutableProperties The immutable properties of the channel request.
+ * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ */
 ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
@@ -188,6 +204,14 @@ ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus,
                 immutableProperties));
 }
 
+/**
+ * Construct a new channel request object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param objectPath The channel request object path.
+ * \param immutableProperties The immutable properties of the channel request.
+ * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ */
 ChannelRequest::ChannelRequest(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties)
     : StatefulDBusProxy(bus,
@@ -208,38 +232,104 @@ ChannelRequest::~ChannelRequest()
     delete mPriv;
 }
 
+/**
+ * Return the Account on which this request was made.
+ *
+ * This method requires ChannelRequest::FeatureCore to be enabled.
+ *
+ * \return The account on which this request was made.
+ */
 AccountPtr ChannelRequest::account() const
 {
     return mPriv->account;
 }
 
+/**
+ * Return the time at which the user action occurred, or 0 if this channel
+ * request is for some reason not involving user action.
+ *
+ * Unix developers: this corresponds to the _NET_WM_USER_TIME property in EWMH.
+ *
+ * This property is set when the channel request is created, and can never
+ * change.
+ *
+ * This method requires ChannelRequest::FeatureCore to be enabled.
+ *
+ * \return The time at which the user action occurred.
+ */
 QDateTime ChannelRequest::userActionTime() const
 {
     return mPriv->userActionTime;
 }
 
+/**
+ * Return either the well-known bus name (starting with
+ * org.freedesktop.Telepathy.Client.) of the preferred handler for this channel,
+ * or an empty string to indicate that any handler would be acceptable.
+ *
+ * This property is set when the channel request is created, and can never
+ * change.
+ *
+ * This method requires ChannelRequest::FeatureCore to be enabled.
+ *
+ * \return The preferred handler or an empty string if any handler would be
+ *         acceptable.
+ */
 QString ChannelRequest::preferredHandler() const
 {
     return mPriv->preferredHandler;
 }
 
+/**
+ * Return the desirable properties for the channel or channels to be created.
+ *
+ * This property is set when the channel request is created, and can never
+ * change.
+ *
+ * This method requires ChannelRequest::FeatureCore to be enabled.
+ *
+ * \return The preferred handler or an empty string if any handler would be
+ *         acceptable.
+ */
 QualifiedPropertyValueMapList ChannelRequest::requests() const
 {
     return mPriv->requests;
 }
 
+/**
+ * Cancel the channel request.
+ *
+ * If failed() is emitted in response to this method, the error will be
+ * #TELEPATHY_ERROR_CANCELLED.
+ *
+ * If the channel has already been dispatched to a handler, then it's too late
+ * to call this method, and the channel request will no longer exist.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *ChannelRequest::cancel()
 {
     return new PendingVoid(mPriv->baseInterface->Cancel(), this);
 }
 
+/**
+ * Proceed with the channel request.
+ *
+ * The client that created this object calls this method when it has connected
+ * signal handlers for succeeded() and failed(). Note that this is done
+ * automatically when using PendingChannelRequest.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *ChannelRequest::proceed()
 {
     return new PendingVoid(mPriv->baseInterface->Proceed(), this);
 }
 
 /**
- * Get the ChannelRequestInterface for this ChannelRequest class. This method is
+ * Return the ChannelRequestInterface for this ChannelRequest class. This method is
  * protected since the convenience methods provided by this class should
  * always be used instead of the interface by users of the class.
  *
@@ -250,6 +340,35 @@ Client::ChannelRequestInterface *ChannelRequest::baseInterface() const
 {
     return mPriv->baseInterface;
 }
+
+/**
+ * \fn void ChannelRequest::failed(const QString &errorName,
+ *             const QString &errorMessage);
+ *
+ * This signal is emitted when the channel request has failed. No further
+ * methods must not be called on it.
+ *
+ * \param errorName The name of a D-Bus error.
+ * \param errorMessage The error message.
+ */
+
+/**
+ * \fn void ChannelRequest::succeeded();
+ *
+ * This signals is emitted when the channel request has succeeded. No further
+ * methods must not be called on it.
+ */
+
+/**
+ * \fn Client::DBus::PropertiesInterface *ChannelRequest::propertiesInterface() const
+ *
+ * Convenience function for getting a PropertiesInterface interface proxy object
+ * for this account. The ChannelRequest interface relies on
+ * properties, so this interface is always assumed to be present.
+ *
+ * \return A pointer to the existing Client::DBus::PropertiesInterface object
+ *         for this ChannelRequest object.
+ */
 
 void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {

@@ -28,17 +28,6 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
 namespace Tp
 {
 
@@ -65,11 +54,11 @@ struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
 /**
  * \class PendingHandles
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/pending-handles.h>  <TelepathyQt4/PendingHandles>
+ * \headerfile TelepathyQt4/pending-handles.h <TelepathyQt4/PendingHandles>
  *
- * Class containing the parameters of and the reply to an asynchronous handle
- * request/hold. Instances of this class cannot be constructed directly; the
- * only ways to get one are to use Connection::requestHandles() or
+ * \brief Class containing the parameters of and the reply to an asynchronous
+ * handle request/hold. Instances of this class cannot be constructed directly;
+ * the only way to get one is to use Connection::requestHandles() or
  * Connection::referenceHandles().
  */
 

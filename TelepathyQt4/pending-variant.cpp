@@ -38,7 +38,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingVariant::Private
 
 /**
  * \class PendingVariant
- * \headerfile <TelepathyQt4/pending-variant.h> <TelepathyQt4/PendingVariant>
+ * \headerfile TelepathyQt4/pending-variant.h <TelepathyQt4/PendingVariant>
  */
 
 PendingVariant::PendingVariant(QDBusPendingCall call, QObject *parent)

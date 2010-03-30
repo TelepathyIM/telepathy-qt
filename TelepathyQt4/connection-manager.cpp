@@ -41,24 +41,6 @@
 #include <QStringList>
 #include <QTimer>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientcm Connection manager proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy ConnectionManager objects.
- */
-
 namespace Tp
 {
 
@@ -151,7 +133,7 @@ struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private
  * \ingroup clientcm
  * \headerfile TelepathyQt4/connection-manager.h <TelepathyQt4/ConnectionManager>
  *
- * Object representing a Telepathy protocol info.
+ * \brief Object representing a Telepathy protocol info.
  */
 
 /**
@@ -380,21 +362,49 @@ ProtocolInfo *ConnectionManager::Private::protocol(const QString &protocolName)
  * \ingroup clientcm
  * \headerfile TelepathyQt4/connection-manager.h <TelepathyQt4/ConnectionManager>
  *
- * Object representing a Telepathy connection manager. Connection managers
- * allow connections to be made on one or more protocols.
+ * \brief The ConnectionManager class provides an object representing a
+ * Telepathy connection manager.
+ *
+ * Connection managers allow connections to be made on one or more protocols.
  *
  * Most client applications should use this functionality via the
  * %AccountManager, to allow connections to be shared between client
  * applications.
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * ConnectionManager object usable.
+ *
+ * Note that this feature must be enabled in order to use most ConnectionManager
+ * methods.
+ * See specific methods documentation for more details.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature ConnectionManager::FeatureCore = Feature(QLatin1String(ConnectionManager::staticMetaObject.className()), 0, true);
 
+/**
+ * Create a new ConnectionManager object.
+ *
+ * \param name Name of the connection manager.
+ * \return A ConnectionManagerPtr object pointing to the newly created
+ *         ConnectionManager object.
+ */
 ConnectionManagerPtr ConnectionManager::create(const QString &name)
 {
     return ConnectionManagerPtr(new ConnectionManager(name));
 }
 
+/**
+ * Create a new ConnectionManager object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param name Name of the connection manager.
+ * \return A ConnectionManagerPtr object pointing to the newly created
+ *         ConnectionManager object.
+ */
 ConnectionManagerPtr ConnectionManager::create(const QDBusConnection &bus,
         const QString &name)
 {
@@ -416,7 +426,7 @@ ConnectionManager::ConnectionManager(const QString &name)
 }
 
 /**
- * Construct a new ConnectionManager object.
+ * Construct a new ConnectionManager object using the given \a bus.
  *
  * \param bus QDBusConnection to use.
  * \param name Name of the connection manager.
