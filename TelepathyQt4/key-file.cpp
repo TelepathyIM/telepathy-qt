@@ -365,10 +365,10 @@ QStringList KeyFile::Private::valueAsStringList(const QString &key) const
 
 /**
  * \class KeyFile
- * \headerfile <TelepathyQt4/key-file.h> <TelepathyQt4/KeyFile>
+ * \headerfile TelepathyQt4/key-file.h <TelepathyQt4/KeyFile>
  *
- * The KeyFile class provides an easy way to read key-pair files such as INI
- * style files and .desktop files.
+ * \brief The KeyFile class provides an easy way to read key-pair files such as
+ * INI style files and .desktop files.
  *
  * It follows the rules regarding string escaping as defined in
  * http://standards.freedesktop.org/desktop-entry-spec/latest/index.html
