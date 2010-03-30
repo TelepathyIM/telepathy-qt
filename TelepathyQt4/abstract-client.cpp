@@ -26,10 +26,63 @@
 namespace Tp
 {
 
+/**
+ * \class AbstractClient
+ * \ingroup clientclient
+ * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClient>
+ *
+ * \brief The AbstractClient class provides an object representing a Telepathy
+ * client.
+ *
+ * Clients are programs used to process channels, approving, handling or
+ * observing them. User interface processes are the obvious example of clients,
+ * but they can provide other functionality, such as address-book
+ * synchronization, message logging, etc.
+ *
+ * Each client is either an observer, an approver, a handler, or some
+ * combination of these.
+ *
+ * Clients can be activatable services (those with a D-Bus .service file)
+ * so that they can run in response to channel creation, or non-activatable
+ * services (those that do not register a D-Bus .service file
+ * for their well-known name, but do request it at runtime) so
+ * that they can process channels, but only if they are already
+ * running - for instance, a full-screen media center application might do this.
+ *
+ * As an optimization, service-activatable clients should install a file
+ * $XDG_DATA_DIRS/telepathy/clients/clientname.client containing a cached version
+ * of their immutable properties. The syntax of these files is <a
+ * href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.html">
+ * documented in the Telepathy D-Bus API Specification</a>.
+ *
+ * Non-activatable clients may install a .client file, but there's not much
+ * point in them doing so.
+ *
+ * This is a base class and should not be used directly, use the
+ * specialized classes AbstractClientObserver, AbstractClientApprover and
+ * AbstractClientHandler instead.
+ *
+ * If the same process wants to be either a mix of observer, approver and
+ * handler, or a combination of those it can multiple inherit the specialized
+ * abstract classes.
+ *
+ * \sa AbstractClientObserver, AbstractClientApprover, AbstractClientHandler
+ */
+
+/**
+ * Construct a new AbstractClient object.
+ *
+ * Note that this is a base class and should not be used directly, use the
+ * specialized classes AbstractClientObserver, AbstractClientApprover and
+ * AbstractClientHandler instead.
+ */
 AbstractClient::AbstractClient()
 {
 }
 
+/**
+ * Class destructor.
+ */
 AbstractClient::~AbstractClient()
 {
 }
@@ -39,6 +92,114 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
     ChannelClassList channelFilter;
 };
 
+/**
+ * \class AbstractClientObserver
+ * \ingroup clientclient
+ * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientObserver>
+ *
+ * \brief The AbstractClientObserver class provides an object representing a
+ * Telepathy observer.
+ *
+ * Observers are clients that monitor the creation of new channels.
+ * This functionality can be used for things like message logging.
+ *
+ * Observers should not modify the state of a channel except via user
+ * interaction.
+ *
+ * Observers must not carry out actions that exactly one process must take
+ * responsibility for (e.g. acknowledging text messages, or carrying out
+ * the actual file transfer), since arbitrarily many observers can be
+ * activated for each channel. The handler is responsible for such tasks.
+ *
+ * Handlers may, of course, delegate responsibility for these tasks to other
+ * clients (including those run as observers), but this must be done
+ * explicitly via a request from the handler to the observer.
+ *
+ * Whenever a collection of new channels is signalled, the channel dispatcher
+ * will notify all running or activatable observers whose filter indicates that
+ * they are interested in some of the channels.
+ *
+ * Observers are activated for all channels in which they have registered an
+ * interest - incoming, outgoing or automatically created - although of course
+ * the filter property can be set to filter specific channels.
+ *
+ * To become an observer one should inherit AbstractClientObserver and
+ * implement the pure virtual observeChannels() method. After that the object
+ * representing the observer must be registered using
+ * ClientRegistrar::registerClient().
+ *
+ * When new channels in which the observer has registered an interest are
+ * announced, the method observeChannels() is invoked. All observers are
+ * notified simultaneously.
+ *
+ * \section observer_usage_sec Usage
+ *
+ * \subsection observer_create_sec Implementing an observer
+ *
+ * \code
+ *
+ * class MyObserver : public AbstractClientObserver
+ * {
+ * public:
+ *     MyObserver(const ChannelClassList &channelFilter);
+ *     ~MyObserver() { }
+ *
+ *     void observeChannels(const MethodInvocationContextPtr<> &context,
+ *             const AccountPtr &account,
+ *             const ConnectionPtr &connection,
+ *             const QList<ChannelPtr> &channels,
+ *             const ChannelDispatchOperationPtr &dispatchOperation,
+ *             const QList<ChannelRequestPtr> &requestsSatisfied,
+ *             const QVariantMap &observerInfo);
+ * };
+ *
+ * MyObserver::MyObserver(const ChannelClassList &channelFilter)
+ *     : AbstractClientObserver(channelFilter)
+ * {
+ * }
+ *
+ * void MyObserver::observeChannels(const MethodInvocationContextPtr<> &context,
+ *         const AccountPtr &account,
+ *         const ConnectionPtr &connection,
+ *         const QList<ChannelPtr> &channels,
+ *         const ChannelDispatchOperationPtr &dispatchOperation,
+ *         const QList<ChannelRequestPtr> &requestsSatisfied,
+ *         const QVariantMap &observerInfo)
+ * {
+ *     // do something, log messages, ...
+ *
+ *     context->setFinished();
+ * }
+ *
+ * \endcode
+ *
+ * \subsection observer_register_sec Registering an observer
+ *
+ * \code
+ *
+ * ChannelClassList filters;
+ * QMap<QString, QDBusVariant> filter;
+ * filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+ *               QDBusVariant(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+ * filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+ *               QDBusVariant((uint) Tp::HandleTypeContact));
+ * filters.append(filter);
+ * ClientRegistrar registrar = ClientRegistrar::create();
+ * AbstractClientPtr observer = AbstractClientPtr::dynamicCast(
+ *         SharedPtr<MyObserver>(new MyObserver(filter)));
+ * registrar->registerClient(observer, "myobserver");
+ *
+ * \endcode
+ *
+ * \sa AbstractClient
+ */
+
+/**
+ * Construct a new AbstractClientObserver object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ */
 AbstractClientObserver::AbstractClientObserver(
         const ChannelClassList &channelFilter)
     : mPriv(new Private)
@@ -46,21 +207,223 @@ AbstractClientObserver::AbstractClientObserver(
     mPriv->channelFilter = channelFilter;
 }
 
+/**
+ * Class destructor.
+ */
 AbstractClientObserver::~AbstractClientObserver()
 {
     delete mPriv;
 }
 
+/**
+ * Return the property containing a specification of the channels that this
+ * channel observer is interested. The observeChannels() method should be called
+ * by the channel dispatcher whenever any of the newly created channels match
+ * this description.
+ *
+ * Only certain types have useful semantics for matching like this,
+ * so only certain types are allowed:
+ *
+ * See <a
+ * href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.Observer.html#org.freedesktop.Telepathy.Client.Observer.ObserverChannelFilter">
+ * the Telepathy D-Bus API Specification</a> for documentation about the allowed
+ * types and how to define filters.
+ *
+ * This property never changes while the observer process owns its client bus
+ * name. If an observer wants to add extra channels to its list of interests at
+ * runtime, it can register an additional client bus name using
+ * ClientRegistrar::registerClient().
+ * To remove those filters, it can release the bus name using
+ * ClientRegistrar::unregisterClient().
+ *
+ * The same principle is applied to approvers and handlers.
+ *
+ * \return A specification of the channels that this channel observer is
+ *         interested.
+ * \sa observeChannels()
+ */
 ChannelClassList AbstractClientObserver::observerChannelFilter() const
 {
     return mPriv->channelFilter;
 }
+
+/**
+ * \fn void AbstractClientObserver::observeChannels(
+ *                  const MethodInvocationContextPtr<> &context,
+ *                  const AccountPtr &account,
+ *                  const ConnectionPtr &connection,
+ *                  const QList<ChannelPtr> &channels,
+ *                  const ChannelDispatchOperationPtr &dispatchOperation,
+ *                  const QList<ChannelRequestPtr> &requestsSatisfied,
+ *                  const QVariantMap &observerInfo);
+ *
+ * Called by the channel dispatcher when channels in which the observer has
+ * registered an interest are announced.
+ *
+ * If the announced channels contains channels that match the
+ * observerChannelFilter(), and some that do not, then only a subset of the
+ * channels (those that do match the filter) are passed to this method.
+ *
+ * If the channel dispatcher will split up the channels from a single
+ * announcement and dispatch them separately (for instance because no
+ * installed handler can handle all of them), it will call this method
+ * several times.
+ *
+ * The observer must not call MethodInvocationContext::setFinished() until it
+ * is ready for a handler for the channel to run (which may change the
+ * channel's state). For instance the received \a context object should be
+ * stored until this method is finished processing and then
+ * MethodInvocationContext::setFinished() or
+ * MethodInvocationContext::setFinishedWithError() should be called on the
+ * received \a context object.
+ *
+ * Specialized observers must reimplement this method.
+ *
+ * \param context A MethodInvocationContextPtr object that must be used to
+ *                indicate whether this method finished processing.
+ * \param account The account with which the channels are associated.
+ * \param connection The connection with which the channels are associated.
+ * \param channels The channels to be observed.
+ * \param dispatchOperation The dispatch operation for these channels.
+ *                          The object will be invalid (DBusProxy::isValid()
+ *                          will be false) if there is no dispatch
+ *                          operation in place (because the channels were
+ *                          requested, not incoming).
+ *                          If the Observer calls
+ *                          ChannelDispatchOperation::claim() or
+ *                          ChannelDispatchOperation::handleWith() on this
+ *                          object, it must be careful to avoid deadlock, since
+ *                          these methods cannot return until the observer has
+ *                          returned from observeChannels().
+ * \param requestsSatisfied The requests satisfied by these channels.
+ * \param observerInfo Additional information about these channels. No keys are
+ *                     currently defined.
+ *                     If keys are defined for this dictionary, all will be
+ *                     optional; observers may safely ignore any entry in this
+ *                     dictionary.
+ */
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientApprover::Private
 {
     ChannelClassList channelFilter;
 };
 
+/**
+ * \class AbstractClientApprover
+ * \ingroup clientclient
+ * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientApprover>
+ *
+ * \brief The AbstractClientApprover class provides an object representing a
+ * Telepathy approver.
+ *
+ * Approvers are clients that notify the user that new channels have been
+ * created, and allow the user to accept or reject those channels.
+ *
+ * Approvers can also select which channel handler will be used for the channel,
+ * for instance by offering the user a list of possible handlers rather than
+ * just an accept/reject choice. However, the channel dispatcher must be able to
+ * prioritize possible handlers on its own using some reasonable heuristic,
+ * probably based on user configuration.
+ *
+ * It is possible (and useful) to have an approver and a channel handler in the
+ * same process; this is particularly useful if a channel handler wants to claim
+ * responsibility for particular channels itself.
+ *
+ * All approvers are notified simultaneously. For instance, in a desktop system,
+ * there might be one approver that displays a notification-area icon, one that
+ * is part of a contact list window and highlights contacts there, and one that
+ * is part of a full-screen media player.
+ *
+ * Any approver can approve the handling of a channel dispatch operation with a
+ * particular channel handler by calling the
+ * ChannelDispatchOperation::handleWith() method. Approvers can also attempt to
+ * claim channels by calling ChannelDispatchOperation::claim(). If this
+ * succeeds, the approver may handle the channels itself (if it is also a
+ * handler), or close the channels in order to reject them.
+ *
+ * Approvers wishing to reject channels should call the
+ * ChannelDispatchOperation::claim() method, then (if it succeeds) close the
+ * channels in any way they see fit.
+ *
+ * The first approver to reply gets its decision acted on; any other approvers
+ * that reply at approximately the same time will get an error, indicating that
+ * the channel has already been dealt with.
+ *
+ * Approvers should usually prompt the user and ask for confirmation, rather
+ * than dispatching the channel to a handler straight away.
+ *
+ * To become an approver one should inherit AbstractClientApprover and
+ * implement the pure virtual addDispatchOperation() method. After that the
+ * object representing the approver must be registered using
+ * ClientRegistrar::registerClient().
+ *
+ * When new channels in which the approver has registered an interest are
+ * ready to be dispatched, the method addDispatchOperation() is invoked.
+ * The new channels are represented by a ChannelDispatchOperation object, which
+ * is passed to the addDispatchOperation() method.
+ * All approvers are notified simultaneously.
+ *
+ * \section approver_usage_sec Usage
+ *
+ * \subsection approver_create_sec Implementing an approver
+ *
+ * \code
+ *
+ * class MyApprover : public AbstractClientApprover
+ * {
+ * public:
+ *     MyApprover(const ChannelClassList &channelFilter);
+ *     ~MyApprover() { }
+ *
+ *     void addDispatchOperation(const MethodInvocationContextPtr<> &context,
+ *             const QList<ChannelPtr> &channels,
+ *             const ChannelDispatchOperationPtr &dispatchOperation);
+ * };
+ *
+ * MyApprover::MyApprover(const ChannelClassList &channelFilter)
+ *     : AbstractClientApprover(channelFilter)
+ * {
+ * }
+ *
+ * void MyApprover::addDispatchOperation(
+ *         const MethodInvocationContextPtr<> &context,
+ *         const QList<ChannelPtr> &channels,
+ *         const ChannelDispatchOperationPtr &dispatchOperation)
+ * {
+ *     // do something with dispatchOperation
+ *
+ *     context->setFinished();
+ * }
+ *
+ * \endcode
+ *
+ * \subsection approver_register_sec Registering an approver
+ *
+ * \code
+ *
+ * ChannelClassList filters;
+ * QMap<QString, QDBusVariant> filter;
+ * filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+ *               QDBusVariant(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+ * filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+ *               QDBusVariant((uint) Tp::HandleTypeContact));
+ * filters.append(filter);
+ * ClientRegistrar registrar = ClientRegistrar::create();
+ * AbstractClientPtr approver = AbstractClientPtr::dynamicCast(
+ *         SharedPtr<MyApprover>(new MyApprover(filter)));
+ * registrar->registerClient(approver, "myapprover");
+ *
+ * \endcode
+ *
+ * \sa AbstractClient
+ */
+
+/**
+ * Construct a new AbstractClientApprover object.
+ *
+ * \param channelFilter A specification of the channels in which this approver
+ *                      is interested.
+ */
 AbstractClientApprover::AbstractClientApprover(
         const ChannelClassList &channelFilter)
     : mPriv(new Private)
@@ -68,15 +431,74 @@ AbstractClientApprover::AbstractClientApprover(
     mPriv->channelFilter = channelFilter;
 }
 
+/**
+ * Class destructor.
+ */
 AbstractClientApprover::~AbstractClientApprover()
 {
     delete mPriv;
 }
 
+/**
+ * Return the property containing a specification of the channels that this
+ * channel approver is interested. The addDispatchOperation() method should be
+ * called by the channel dispatcher whenever at least one of the channels in
+ * a channel dispatch operation matches this description.
+ *
+ * This method works in exactly the same way as the
+ * AbstractClientObserver::observerChannelFilter() method. In particular, the
+ * returned value cannot change while the handler process continues to own the
+ * corresponding client bus name.
+ *
+ * In the .client file, represented in the same way as observer channel
+ * filter, the group is #TELEPATHY_INTERFACE_CLIENT_APPROVER followed by
+ * ApproverChannelFilter instead.
+ *
+ * \return A specification of the channels that this channel approver is
+ *         interested.
+ * \sa addDispatchOperation()
+ */
 ChannelClassList AbstractClientApprover::approverChannelFilter() const
 {
     return mPriv->channelFilter;
 }
+
+/**
+ * \fn void AbstractClientApprover::addDispatchOperation(
+ *                  const MethodInvocationContextPtr<> &context,
+ *                  const QList<ChannelPtr> &channels,
+ *                  const ChannelDispatchOperationPtr &dispatchOperation);
+ *
+ * Called by the channel dispatcher when a dispatch operation in which the
+ * approver has registered an interest is created, or when the approver starts
+ * up while such channel dispatch operations already exist.
+ *
+ * The received \a context object should be stored until this
+ * method is finished processing and then MethodInvocationContext::setFinished()
+ * or MethodInvocationContext::setFinishedWithError() should be called on the
+ * received \a context object.
+ *
+ * Specialized approvers must reimplement this method.
+ *
+ * \param context A MethodInvocationContextPtr object that must be used to
+ *                indicate whether this method finished processing.
+ * \param channels The channels to be dispatched.
+ *                 This argument always contains all of the channels in the
+ *                 channel dispatch operation, even if not all of them actually
+ *                 match the approver filter.
+ *                 The actual channels to be dispatched may reduce as channels
+ *                 are closed: this is signalled by
+ *                 ChannelDispatchOperation::channelLost signal on the received
+ *                 \a dispatchOperation object.
+ *                 Approvers should connect to
+ *                 ChannelDispatchOperation::channelLost() and
+ *                 ChannelDispatchOperation::invalidated() signals (if desired)
+ *                 before returning from addDispatchOperation, since those
+ *                 signals are guaranteed not to be emitted
+ *                 until after all addDispatchOperation() calls have returned
+ *                 (with success or failure) or timed out.
+ * \param dispatchOperation The dispatch operation to be processed.
+ */
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
 {
@@ -85,6 +507,121 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientHandler::Private
     bool wantsRequestNotification;
 };
 
+/**
+ * \class AbstractClientHandler
+ * \ingroup clientclient
+ * \headerfile TelepathyQt4/abstract-client.h <TelepathyQt4/AbstractClientHandler>
+ *
+ * \brief The AbstractClientHandler class provides an object representing a
+ * Telepathy handler.
+ *
+ * Handlers are the user interface for a channel. They turn an abstract
+ * channel into something the user wants to see, like a text message
+ * stream or an audio and/or video call.
+ *
+ * For its entire lifetime, each channel on a connection known to the channel
+ * dispatcher is either being processed by the channel dispatcher, or being
+ * handled by precisely one handler.
+ *
+ * Because each channel is only handled by one handler, handlers may perform
+ * actions that only make sense to do once, such as acknowledging text messages,
+ * transferring the file, etc.
+ *
+ * When a new incoming channel is offered to approvers by the channel
+ * dispatcher, it also offers the approvers a list of all the running or
+ * activatable handlers whose filter indicates that they are able to handle
+ * the channel. The approvers can choose one of those channel handlers to
+ * handle the channel.
+ *
+ * When a new outgoing channel appears, the channel dispatcher passes it to
+ * an appropriate channel handler automatically.
+ *
+ * To become an handler one should inherit AbstractClientHandler and
+ * implement the pure virtual bypassApproval() and handleChannels() methods.
+ * After that the object representing the handler must be registered using
+ * ClientRegistrar::registerClient().
+ *
+ * When new channels in which the approver has registered an interest are
+ * ready to be handled, the method handleChannels() is invoked.
+ *
+ * \section handler_usage_sec Usage
+ *
+ * \subsection handler_create_sec Implementing a handler
+ *
+ * \code
+ *
+ * class MyHandler : public AbstractClientHandler
+ * {
+ * public:
+ *     MyHandler(const ChannelClassList &channelFilter);
+ *     ~MyHandler() { }
+ *
+ *     void bypassApproval() const;
+ *
+ *     void handleChannels(const MethodInvocationContextPtr<> &context,
+ *             const AccountPtr &account,
+ *             const ConnectionPtr &connection,
+ *             const QList<ChannelPtr> &channels,
+ *             const QList<ChannelRequestPtr> &requestsSatisfied,
+ *             const QDateTime &userActionTime,
+ *             const QVariantMap &handlerInfo);
+ * };
+ *
+ * MyHandler::MyHandler(const ChannelClassList &channelFilter)
+ *     : AbstractClientHandler(channelFilter)
+ * {
+ * }
+ *
+ * void MyHandler::bypassApproval() const
+ * {
+ *     return false;
+ * }
+ *
+ * void MyHandler::handleChannels(const MethodInvocationContextPtr<> &context,
+ *         const AccountPtr &account,
+ *         const ConnectionPtr &connection,
+ *         const QList<ChannelPtr> &channels,
+ *         const QList<ChannelRequestPtr> &requestsSatisfied,
+ *         const QDateTime &userActionTime,
+ *         const QVariantMap &handlerInfo)
+ * {
+ *     // do something
+ *
+ *     context->setFinished();
+ * }
+ *
+ * \endcode
+ *
+ * \subsection handler_register_sec Registering a handler
+ *
+ * \code
+ *
+ * ChannelClassList filters;
+ * QMap<QString, QDBusVariant> filter;
+ * filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+ *               QDBusVariant(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+ * filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+ *               QDBusVariant((uint) Tp::HandleTypeContact));
+ * filters.append(filter);
+ * ClientRegistrar registrar = ClientRegistrar::create();
+ * AbstractClientPtr handler = AbstractClientPtr::dynamicCast(
+ *         SharedPtr<MyHandler>(new MyHandler(filter)));
+ * registrar->registerClient(handler, "myhandler");
+ *
+ * \endcode
+ *
+ * \sa AbstractClient
+ */
+
+/**
+ * Construct a new AbstractClientHandler object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param wantsRequestNotification Whether this handler wants to receive channel
+ *                                 requests notification via addRequest() and
+ *                                 removeRequest().
+ */
 AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilter,
         bool wantsRequestNotification)
     : mPriv(new Private)
@@ -93,6 +630,18 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilt
     mPriv->wantsRequestNotification = wantsRequestNotification;
 }
 
+/**
+ * Construct a new AbstractClientHandler object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param wantsRequestNotification Whether this handler wants to receive channel
+ *                                 requests notification via addRequest() and
+ *                                 removeRequest().
+ * \param capabilities The set of additional capabilities supported by this
+ *                     handler. See the capabilities() method documetation for
+ *                     more details.
+ */
 AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilter,
         const QStringList &capabilities,
         bool wantsRequestNotification)
@@ -103,27 +652,164 @@ AbstractClientHandler::AbstractClientHandler(const ChannelClassList &channelFilt
     mPriv->wantsRequestNotification = wantsRequestNotification;
 }
 
-
+/**
+ * Class destructor.
+ */
 AbstractClientHandler::~AbstractClientHandler()
 {
     delete mPriv;
 }
 
+/**
+ * Return the property containing a specification of the channels that this
+ * channel handler can deal with. It will be offered to approvers as a potential
+ * channel handler for bundles that contain only suitable channels, or for
+ * suitable channels that must be handled separately.
+ *
+ * This method works in exactly the same way as the
+ * AbstractClientObserver::observerChannelFilter() method. In particular, the
+ * returned value cannot change while the handler process continues to own the
+ * corresponding client bus name.
+ *
+ * In the .client file, represented in the same way as observer channel
+ * filter, the group is #TELEPATHY_INTERFACE_CLIENT_HANDLER suffixed
+ * by HandlerChannelFilter instead.
+ *
+ * \return A specification of the channels that this channel handler can deal
+ *         with.
+ */
 ChannelClassList AbstractClientHandler::handlerChannelFilter() const
 {
     return mPriv->channelFilter;
 }
 
+/**
+ * Return the set of additional capabilities supported by this handler. This
+ * describes things like support for streamed media codecs and NAT traversal
+ * mechanisms.
+ *
+ * See <a href="http://telepathy.freedesktop.org/spec/org.freedesktop.Telepathy.Client.Handler.html#org.freedesktop.Telepathy.Client.Handler.Capabilities">
+ * the Telepathy D-Bus API Specification</a> for more details.
+ *
+ * \return The set of additional capabilities supported by this handler.
+ */
 QStringList AbstractClientHandler::capabilities() const
 {
     return mPriv->capabilities;
 }
 
+/**
+ * \fn bool AbstractClientHandler::bypassApproval() const;
+ *
+ * Return whether channels destined for this handler are automatically
+ * handled, without invoking approvers.
+ *
+ * \return Whether channels destined for this handler are automatically handled.
+ */
+
+/**
+ * \fn void AbstractClientHandler::handleChannels(
+ *                  const MethodInvocationContextPtr<> &context,
+ *                  const AccountPtr &account,
+ *                  const ConnectionPtr &connection,
+ *                  const QList<ChannelPtr> &channels,
+ *                  const QList<ChannelRequestPtr> &requestsSatisfied,
+ *                  const QDateTime &userActionTime,
+ *                  const QVariantMap &handlerInfo);
+ *
+ * Called by the channel dispatcher when this handler should handle these
+ * channels, or when this handler should present channels that it is already
+ * handling to the user (e.g. bring them into the foreground).
+ *
+ * Clients are expected to know what channels they're already handling, and
+ * which channel object corresponds to which window or tab.
+ *
+ * After handleChannels() replies successfully by calling
+ * MethodInvocationContext::setFinished(), the client process is considered
+ * to be responsible for the channel until it its unique name disappears from
+ * the bus.
+ *
+ * If a process has multiple client bus names - some temporary and some
+ * long-lived - and drops one of the temporary bus names in order to reduce the
+ * set of channels that it will handle, any channels that it is already handling
+ * will remain unaffected.
+ *
+ * The received \a context object should be stored until this
+ * method is finished processing and then MethodInvocationContext::setFinished()
+ * or MethodInvocationContext::setFinishedWithError() should be called on the
+ * received \a context object.
+ *
+ * Specialized handlers must reimplement this method.
+ *
+ * \param context A MethodInvocationContextPtr object that must be used to
+ *                indicate whether this method finished processing.
+ * \param account The account with which the channels are associated.
+ * \param connection The connection with which the channels are associated.
+ * \param channels The channels to be handled.
+ * \param dispatchOperation The dispatch operation for these channels.
+ *                          The object will be invalid (DBusProxy::isValid()
+ *                          will be false) if there is no dispatch
+ *                          operation in place (because the channels were
+ *                          requested, not incoming).
+ * \param requestsSatisfied The requests satisfied by these channels.
+ * \param userActionTime The time at which user action occurred, or 0 if this
+ *                       channel is to be handled for some reason not involving
+ *                       user action. Handlers should use this for
+ *                       focus-stealing prevention, if applicable.
+ * \param handlerInfo Additional information about these channels. No keys are
+ *                    currently defined.
+ *                    If keys are defined for this dictionary, all will be
+ *                    optional; handlers may safely ignore any entry in this
+ *                    dictionary.
+ */
+
+/**
+ * Return whether this handler wants to receive notification of channel requests
+ * via addRequest() and removeRequest().
+ *
+ * This property is set by the constructor and cannot be changed after that.
+ *
+ * \return Whether this handler wants to receive channel requests notification.
+ */
 bool AbstractClientHandler::wantsRequestNotification() const
 {
     return mPriv->wantsRequestNotification;
 }
 
+/**
+ * Called by the channel dispatcher to indicate that channels have been
+ * requested, and that if the request is successful, they will probably be
+ * handled by this handler.
+ *
+ * This allows the UI to start preparing to handle the channels in advance
+ * (e.g. render a window with an "in progress" message), improving perceived
+ * responsiveness.
+ *
+ * If the request succeeds and is given to the expected handler, the
+ * requestsSatisfied parameter to handleChannels() can be used to match the
+ * channel to a previous addRequest() call.
+ *
+ * This lets the UI direct the channels to the window that it already opened.
+ *
+ * If the request fails, the expected handler is notified by the channel
+ * dispatcher calling its removeRequest() method.
+ *
+ * This lets the UI close the window or display the error.
+ *
+ * The channel dispatcher will attempt to ensure that handleChannels() is called
+ * on the same handler that received addRequest(). If that isn't possible,
+ * removeRequest() will be called on the handler that previously received
+ * addRequest(), with the special error #TELEPATHY_ERROR_NOT_YOURS, which
+ * indicates that some other handler received the channel instead.
+ *
+ * Expected handling is for the UI to close the window it previously opened.
+ *
+ * Specialized handlers that want to be notified of newly requested channel
+ * should reimplement this method.
+ *
+ * \param channelRequest The newly created channel request.
+ * \sa removeRequest()
+ */
 void AbstractClientHandler::addRequest(
         const ChannelRequestPtr &channelRequest)
 {
@@ -131,6 +817,20 @@ void AbstractClientHandler::addRequest(
     // this method
 }
 
+/**
+ * Called by the ChannelDispatcher to indicate that a request previously passed
+ * to addRequest() has failed and should be disregarded.
+ *
+ * Specialized handlers that want to be notified of removed channel requests
+ * should reimplement this method.
+ *
+ * \param channelRequest The channel request that failed.
+ * \param errorName The name of the D-Bus error with which the request failed.
+ *                  If this is #TELEPATHY_ERROR_NOT_YOURS, this indicates that
+ *                  the request succeeded, but all the resulting channels were
+ *                  given to some other handler.
+ * \param errorMessage Any message supplied with the D-Bus error.
+ */
 void AbstractClientHandler::removeRequest(
         const ChannelRequestPtr &channelRequest,
         const QString &errorName, const QString &errorMessage)
