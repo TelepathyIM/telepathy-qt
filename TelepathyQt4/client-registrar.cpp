@@ -352,11 +352,10 @@ struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
 
 /**
  * \class ClientRegistrar
- * \ingroup clientclient
- * \headerfile <TelepathyQt4/client-registrar.h> <TelepathyQt4/ClientRegistrar>
+ * \ingroup serverclient
+ * \headerfile TelepathyQt4/client-registrar.h <TelepathyQt4/ClientRegistrar>
  *
- * Object responsible for registering
- * <a href="http://telepathy.freedesktop.org">Telepathy</a>
+ * \brief The ClientRegistrar class is responsible for registering Telepathy
  * clients (Observer, Approver, Handler).
  *
  * Clients should inherit AbstractClientObserver, AbstractClientApprover,
@@ -365,9 +364,9 @@ struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
  *
  * See the individual classes descriptions for more details.
  *
- * \section usage_sec Usage
+ * \section cr_usage_sec Usage
  *
- * \subsection create_sec Creating a client registrar object
+ * \subsection cr_create_sec Creating a client registrar object
  *
  * One way to create a ClientRegistrar object is to just call the create method.
  * For example:
@@ -378,7 +377,7 @@ struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
  *
  * \code ClientRegistrarPtr cr = ClientRegistrar::create(QDBusConnection::systemBus()); \endcode
  *
- * \subsection registering_sec Registering a client
+ * \subsection cr_registering_sec Registering a client
  *
  * To register a client, just call registerClient with a given AbstractClientPtr
  * pointing to a valid AbstractClient instance.
@@ -426,7 +425,7 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
 }
 
 /**
- * Construct a new client registrar object  using the given \a bus.
+ * Construct a new client registrar object using the given \a bus.
  *
  * \param bus QDBusConnection to use.
  */
@@ -459,7 +458,8 @@ QDBusConnection ClientRegistrar::dbusConnection() const
 }
 
 /**
- * Return a list of clients registered using registerClient on this client registrar.
+ * Return a list of clients registered using registerClient() on this client
+ * registrar.
  *
  * \return A list of registered clients.
  * \sa registerClient()
@@ -596,7 +596,8 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
 }
 
 /**
- * Unregister a client registered using registerClient on this client registrar.
+ * Unregister a client registered using registerClient() on this client
+ * registrar.
  *
  * If \a client was not registered previously, \c false will be returned.
  *
@@ -632,7 +633,8 @@ bool ClientRegistrar::unregisterClient(const AbstractClientPtr &client)
 }
 
 /**
- * Unregister all clients registered using registerClient on this client registrar.
+ * Unregister all clients registered using registerClient() on this client
+ * registrar.
  *
  * \sa registeredClients(), registerClient(), unregisterClient()
  */
