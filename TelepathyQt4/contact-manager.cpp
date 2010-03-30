@@ -40,31 +40,15 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientconn Connection proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Connection objects.
- */
-
 namespace Tp
 {
 
 /**
  * \class ContactManager
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/contact-manager.h> <TelepathyQt4/ContactManager>
+ * \headerfile TelepathyQt4/contact-manager.h <TelepathyQt4/ContactManager>
+ *
+ * \brief The ContactManager class is responsible for managing contacts.
  */
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
