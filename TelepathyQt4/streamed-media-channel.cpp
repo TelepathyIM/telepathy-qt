@@ -202,7 +202,8 @@ void PendingMediaStreams::onContentReady(PendingOperation *op)
         return;
     }
 
-    if (mPriv->contentsReady++ == mPriv->numContents) {
+    mPriv->contentsReady++;
+    if (mPriv->contentsReady == mPriv->numContents) {
         setFinished();
     }
 }
