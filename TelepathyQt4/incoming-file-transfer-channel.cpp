@@ -68,19 +68,35 @@ IncomingFileTransferChannel::Private::~Private()
 /**
  * \class IncomingFileTransferChannel
  * \ingroup clientchannel
- * \headerfile <TelepathyQt4/incoming-file-transfer-channel.h> <TelepathyQt4/IncomingFileTransferChannel>
+ * \headerfile TelepathyQt4/incoming-file-transfer-channel.h <TelepathyQt4/IncomingFileTransferChannel>
  *
  * \brief The IncomingFileTransferChannel class provides an object representing
- * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
- * channel for incoming file transfers.
- *
- * IncomingFileTransferChannel is a high-level class representing a
- * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
- * channel for incoming file transfers.
+ * a Telepathy channel of type FileTransfer for incoming file transfers.
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * IncomingFileTransferChannel object usable.
+ *
+ * Note that this feature must be enabled in order to use most
+ * IncomingFileTransferChannel methods.
+ * See specific methods documentation for more details.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature IncomingFileTransferChannel::FeatureCore = Feature(QLatin1String(IncomingFileTransferChannel::staticMetaObject.className()), 0);
 
+/**
+ * Create a new InconmingFileTransferChannel object.
+ *
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
+ * \return A StreamedMediaChannelPtr object pointing to the newly created
+ *         StreamedMediaChannel object.
+ */
 IncomingFileTransferChannelPtr IncomingFileTransferChannel::create(
         const ConnectionPtr &connection, const QString &objectPath,
         const QVariantMap &immutableProperties)
@@ -90,12 +106,12 @@ IncomingFileTransferChannelPtr IncomingFileTransferChannel::create(
 }
 
 /**
- * Construct a new incoming file transfer channel associated with the given
- * \a objectPath on the same service as the given \a connection.
+ * Construct a new IncomingFileTransfer channel.
  *
- * \param connection Connection owning this channel, and specifying the service.
- * \param objectPath Path to the object on the service.
- * \param immutableProperties The immutable properties of the channel.
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
  */
 IncomingFileTransferChannel::IncomingFileTransferChannel(
         const ConnectionPtr &connection, const QString &objectPath,
