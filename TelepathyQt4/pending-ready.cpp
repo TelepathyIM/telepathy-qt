@@ -25,17 +25,6 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
 namespace Tp
 {
 
@@ -53,9 +42,9 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
 
 /**
  * \class PendingReady
- * \headerfile <TelepathyQt4/pending-ready.h> <TelepathyQt4/PendingReady>
+ * \headerfile TelepathyQt4/pending-ready.h <TelepathyQt4/PendingReady>
  *
- * Class containing the features requested and the reply to a request
+ * \brief Class containing the features requested and the reply to a request
  * for an object to become ready. Instances of this class cannot be
  * constructed directly; the only way to get one is via Object::becomeReady().
  */
@@ -83,7 +72,7 @@ PendingReady::~PendingReady()
 /**
  * Return the object through which the request was made.
  *
- * \return QObject representing the object through which the request was made.
+ * \return The object through which the request was made.
  */
 QObject *PendingReady::object() const
 {
@@ -94,7 +83,7 @@ QObject *PendingReady::object() const
  * Return the Features that were requested to become ready on the
  * object.
  *
- * \return Features.
+ * \return Features The requested features
  */
 Features PendingReady::requestedFeatures() const
 {
