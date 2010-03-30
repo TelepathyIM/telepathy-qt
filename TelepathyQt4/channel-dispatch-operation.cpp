@@ -34,25 +34,6 @@
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingVoid>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientchanneldispatchoperation ChannelDispatchOperation proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Channel Dispatch Operations and
- * their optional interfaces.
- */
-
 namespace Tp
 {
 
@@ -196,10 +177,10 @@ void ChannelDispatchOperation::Private::checkReady()
 /**
  * \class ChannelDispatchOperation
  * \ingroup clientchanneldispatchoperation
- * \headerfile <TelepathyQt4/channel-dispatch-operation.h> <TelepathyQt4/ChannelDispatchOperation>
+ * \headerfile TelepathyQt4/channel-dispatch-operation.h <TelepathyQt4/ChannelDispatchOperation>
  *
- * High-level proxy object for accessing remote Telepathy
- * ChannelDispatchOperation objects.
+ * \brief The ChannelDispatchOperation class provides an object representing a
+ * Telepathy channel dispatch operation.
  *
  * One of the channel dispatcher's functions is to offer incoming channels to
  * Approver clients for approval. An approver should generally ask the user
@@ -226,22 +207,42 @@ void ChannelDispatchOperation::Private::checkReady()
  *
  * Because all approvers are launched simultaneously, the user might respond
  * to another approver; if this happens, the invalidated signal will be
- * emitted with the error code %TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * emitted with the error code #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
  *
  * If a channel closes, the signal channelLost() is emitted. If all channels
  * close, there is nothing more to dispatch, so the invalidated signal will be
- * emitted with the error code %TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ * emitted with the error code #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
  *
  * If the channel dispatcher crashes or exits, the invalidated
  * signal will be emitted with the error code
- * %TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
+ * #TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER. In a high-quality implementation,
  * the dispatcher should be restarted, at which point it will create new
  * channel dispatch operations for any undispatched channels, and the approver
  * will be notified again.
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * ChannelDispatchOperation object usable.
+ *
+ * Note that this feature must be enabled in order to use most
+ * ChannelDispatchOperation methods.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature ChannelDispatchOperation::FeatureCore = Feature(QLatin1String(ChannelDispatchOperation::staticMetaObject.className()), 0, true);
 
+/**
+ * Create a new channel dispatch operation object using
+ * QDBusConnection::sessionBus().
+ *
+ * \param objectPath The channel dispatch operation object path.
+ * \param immutableProperties The immutable properties of the channel dispatch
+ *        operation.
+ * \return A ChannelDispatchOperationPtr pointing to the newly created
+ *         ChannelDispatchOperation.
+ */
 ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QString &objectPath,
         const QVariantMap &immutableProperties)
 {
@@ -250,6 +251,16 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QString &obje
                 immutableProperties));
 }
 
+/**
+ * Create a new channel dispatch operation object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param objectPath The channel dispatch operation object path.
+ * \param immutableProperties The immutable properties of the channel dispatch
+ *        operation.
+ * \return A ChannelDispatchOperationPtr pointing to the newly created
+ *         ChannelDispatchOperation.
+ */
 ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
@@ -257,6 +268,14 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
                 bus, objectPath, immutableProperties));
 }
 
+/**
+ * Construct a new channel dispatch operation object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use
+ * \param objectPath The channel dispatch operation object path.
+ * \param immutableProperties The immutable properties of the channel dispatch
+ *        operation.
+ */
 ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
         const QString &objectPath, const QVariantMap &immutableProperties)
     : StatefulDBusProxy(bus,
@@ -277,16 +296,39 @@ ChannelDispatchOperation::~ChannelDispatchOperation()
     delete mPriv;
 }
 
+/**
+ * Return the connection with which the channels for this dispatch
+ * operation are associated.
+ *
+ * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ *
+ * \return Connection with which the channels are associated.
+ */
 ConnectionPtr ChannelDispatchOperation::connection() const
 {
     return mPriv->connection;
 }
 
+/**
+ * Return the account with which the connection and channels for this dispatch
+ * operation are associated.
+ *
+ * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ *
+ * \return Account with which the connection and channels are associated.
+ */
 AccountPtr ChannelDispatchOperation::account() const
 {
     return mPriv->account;
 }
 
+/**
+ * Return the channels to be dispatched.
+ *
+ * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ *
+ * \return The channels to be dispatched.
+ */
 QList<ChannelPtr> ChannelDispatchOperation::channels() const
 {
     if (!isReady()) {
@@ -296,11 +338,47 @@ QList<ChannelPtr> ChannelDispatchOperation::channels() const
     return mPriv->channels;
 }
 
+/**
+ * Return the well known bus names (starting with
+ * org.freedesktop.Telepathy.Client.) of the possible Handlers for this
+ * dispatch operation channels with the preferred handlers first.
+ *
+ * As a result, approvers should use the first handler by default, unless they
+ * have a reason to do otherwise.
+ *
+ * This method requires ChannelDispatchOperation::FeatureCore to be enabled.
+ *
+ * \return Possible handlers for this dispatch operation channels.
+ */
 QStringList ChannelDispatchOperation::possibleHandlers() const
 {
     return mPriv->possibleHandlers;
 }
 
+/**
+ * Called by an approver to accept a channel bundle and request that the given
+ * handler be used to handle it.
+ *
+ * If successful, this method will cause the ChannelDispatchOperation object to
+ * disappear, emitting invalidated with error
+ * #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ *
+ * However, this method may fail because the dispatch has already been completed
+ * and the object has already gone. If this occurs, it indicates that another
+ * approver has asked for the bundle to be handled by a particular handler. The
+ * approver must not attempt to interact with the channels further in this case,
+ * unless it is separately invoked as the handler.
+ *
+ * Approvers which are also channel handlers should use claim() instead of
+ * this method to request that they can handle a channel bundle themselves.
+ *
+ * \param handler The well-known bus name (starting with
+ *                org.freedesktop.Telepathy.Client.) of the channel handler that
+ *                should handle the channel, or an empty string if
+ *                the client has no preferred channel handler.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
 {
     return new PendingVoid(
@@ -308,13 +386,61 @@ PendingOperation *ChannelDispatchOperation::handleWith(const QString &handler)
             this);
 }
 
+/**
+ * Called by an approver to claim channels for handling internally. If this
+ * method is called successfully, the process calling this method becomes the
+ * handler for the channel, but does not have the
+ * AbstractClientHandler::handleChannels() method called on it.
+ *
+ * Clients that call claim() on channels but do not immediately close them
+ * should implement the AbstractClientHandler interface.
+ *
+ * Approvers wishing to reject channels must call this method to claim ownership
+ * of them, and must not call requestClose() on the channels unless/until this
+ * method returns successfully.
+ *
+ * The channel dispatcher can't know how best to close arbitrary channel types,
+ * so it leaves it up to the approver to do so. For instance, for text channels
+ * it is necessary to acknowledge any messages that have already been displayed
+ * to the user first - ideally, the approver would display and then acknowledge
+ * the messages - or to call Channel::requestClose() if the destructive
+ * behaviour of that method is desired.
+ *
+ * Similarly, an approver for streamed media channels can close the channel with
+ * a reason (e.g. "busy") if desired. The channel dispatcher, which is designed
+ * to have no specific knowledge of particular channel types, can't do that.
+ *
+ * If successful, this method will cause the ChannelDispatchOperation object to
+ * disappear, emitting Finished, in the same way as for handleWith().
+ *
+ * This method may fail because the dispatch operation has already been
+ * completed. Again, see handleWith() for more details. The approver must not
+ * attempt to interact with the channels further in this case.
+ *
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
 PendingOperation *ChannelDispatchOperation::claim()
 {
     return new PendingVoid(mPriv->baseInterface->Claim(), this);
 }
 
 /**
- * Get the ChannelDispatchOperationInterface for this ChannelDispatchOperation
+ * \fn void ChannelDispatchOperation::channelLost(const ChannelPtr &channel,
+ *             const QString &errorName, const QString &errorMessage);
+ *
+ * A channel has closed before it could be claimed or handled. If this is
+ * emitted for the last remaining channel in a channel dispatch operation, it
+ * will immediately be followed by invalidated() with error
+ * #TELEPATHY_QT4_ERROR_OBJECT_REMOVED.
+ *
+ * \param channel The Channel that closed.
+ * \param error The name of a D-Bus error indicating why the channel closed.
+ * \param errorMessage The error message.
+ */
+
+/**
+ * Return the ChannelDispatchOperationInterface for this ChannelDispatchOperation
  * class. This method is protected since the convenience methods provided by
  * this class should always be used instead of the interface by users of the
  * class.
@@ -326,6 +452,17 @@ Client::ChannelDispatchOperationInterface *ChannelDispatchOperation::baseInterfa
 {
     return mPriv->baseInterface;
 }
+
+/**
+ * \fn Client::DBus::PropertiesInterface *ChannelDispatchOperation::propertiesInterface() const
+ *
+ * Convenience function for getting a PropertiesInterface interface proxy object
+ * for this account. The ChannelDispatchOperation interface relies on
+ * properties, so this interface is always assumed to be present.
+ *
+ * \return A pointer to the existing Client::DBus::PropertiesInterface object
+ *         for this ChannelDispatchOperation object.
+ */
 
 void ChannelDispatchOperation::onFinished()
 {
