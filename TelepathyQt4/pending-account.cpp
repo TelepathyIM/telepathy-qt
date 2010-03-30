@@ -31,17 +31,6 @@
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
 namespace Tp
 {
 
@@ -60,21 +49,29 @@ struct TELEPATHY_QT4_NO_EXPORT PendingAccount::Private
 /**
  * \class PendingAccount
  * \ingroup clientaccount
- * \headerfile <TelepathyQt4/pending-account.h> <TelepathyQt4/PendingAccount>
+ * \headerfile TelepathyQt4/pending-account.h <TelepathyQt4/PendingAccount>
  *
- * Class containing the parameters of and the reply to an asynchronous account
- * request. Instances of this class cannot be constructed directly; the only
- * way to get one is via AccountManager.
+ * \brief Class containing the parameters of and the reply to an asynchronous
+ * account request.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get
+ * one is via AccountManager.
+ *
+ * See \ref async_model
  */
 
 /**
- * Construct a PendingAccount object.
+ * Construct a new PendingAccount object.
  *
  * \param manager AccountManager to use.
- * \param connectionManager Name of the connection manager to create the account for.
+ * \param connectionManager Name of the connection manager to create the account
+ *                          for.
  * \param protocol Name of the protocol to create the account for.
  * \param displayName Account display name.
  * \param parameters Account parameters.
+ * \param properties An optional map from fully qualified D-Bus property
+ *                   names such as "org.freedesktop.Telepathy.Account.Enabled"
+ *                   to their values.
  */
 PendingAccount::PendingAccount(const AccountManagerPtr &manager,
         const QString &connectionManager, const QString &protocol,
@@ -100,9 +97,9 @@ PendingAccount::~PendingAccount()
 }
 
 /**
- * Return the AccountManager object through which the request was made.
+ * Return the AccountManagerPtr object through which the request was made.
  *
- * \return Account Manager object.
+ * \return An AccountManagerPtr object.
  */
 AccountManagerPtr PendingAccount::manager() const
 {
@@ -110,9 +107,11 @@ AccountManagerPtr PendingAccount::manager() const
 }
 
 /**
- * Returns the newly created Account object.
+ * Returns the newly created AccountPtr object.
  *
- * \return Account object.
+ * \return An AccountPtr object pointing to the newly create Account object, or
+ *         a null AccountPtr if an error occurred.
+ * \sa objectPath()
  */
 AccountPtr PendingAccount::account() const
 {
@@ -134,13 +133,13 @@ AccountPtr PendingAccount::account() const
 }
 
 /**
- * Returns the account object path or an empty string on error.
+ * Returns the account object path.
  *
- * This method is useful for creating custom Account objects, so instead of using
- * PendingAccount::account, one could construct a new custom account with
+ * This method is useful for creating custom Account objects, so instead of
+ * using PendingAccount::account, one could construct a new custom account with
  * the object path.
  *
- * \return Account object path.
+ * \return Account object path or an empty string an error occurred.
  */
 QString PendingAccount::objectPath() const
 {
