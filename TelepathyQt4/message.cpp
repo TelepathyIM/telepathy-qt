@@ -117,10 +117,10 @@ void Message::Private::clearSenderHandle()
 /**
  * \class Message
  * \ingroup clientchannel
- * \headerfile <TelepathyQt4/text-channel.h> <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
  *
- * Object representing a message. These objects are implicitly shared, like
- * QString.
+ * \brief The Message class represents a Telepathy message in a text channel.
+ * These objects are implicitly shared, like QString.
  */
 
 /**
@@ -208,7 +208,7 @@ bool Message::operator==(const Message &other) const
 }
 
 /**
- * Destructor.
+ * Class destructor.
  */
 Message::~Message()
 {
@@ -417,9 +417,12 @@ MessagePartList Message::parts() const
 /**
  * \class ReceivedMessage
  * \ingroup clientchannel
- * \headerfile <TelepathyQt4/text-channel.h> <TelepathyQt4/TextChannel>
+ * \headerfile TelepathyQt4/text-channel.h <TelepathyQt4/TextChannel>
  *
- * Subclass of Message, with additional information that's generally only
+ * \brief The ReceivedMessage class is a subclass of Message, representing a
+ * received message.
+ *
+ * It contains additional information that's generally only
  * available on received messages.
  */
 
