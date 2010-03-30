@@ -316,7 +316,7 @@ Q_SIGNALS:
             Tp::MediaStreamDirection direction,
             Tp::MediaStreamPendingSend pendingSend);
     void streamStateChanged(const Tp::MediaStreamPtr &stream,
-            Tp::MediaStreamState);
+            Tp::MediaStreamState state);
     void streamError(const Tp::MediaStreamPtr &stream,
             Tp::MediaStreamError errorCode,
             const QString &errorMessage);
