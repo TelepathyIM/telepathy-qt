@@ -147,22 +147,38 @@ void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
 /**
  * \class FileTransferChannel
  * \ingroup clientchannel
- * \headerfile <TelepathyQt4/file-transfer-channel.h> <TelepathyQt4/FileTransferChannel>
+ * \headerfile TelepathyQt4/file-transfer-channel.h <TelepathyQt4/FileTransferChannel>
  *
- * \brief The FileTransferChannel class provides an object representing
- * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
- * channel.
+ * \brief The FileTransferChannel class provides an object representing a
+ * Telepathy channel of type FileTransfer.
  *
- * FileTransferChannel is a high-level class representing a
- * <a href="http://telepathy.freedesktop.org">Telepathy</a> file transfer
- * channel.
-
  * For more specialized file transfer classes, please refer to
  * OutgoingFileTransferChannel and IncomingFileTransferChannel.
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the
+ * FileTransferChannel object usable.
+ *
+ * Note that this feature must be enabled in order to use most
+ * FileTransferChannel methods.
+ * See specific methods documentation for more details.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature FileTransferChannel::FeatureCore = Feature(QLatin1String(FileTransferChannel::staticMetaObject.className()), 0);
 
+/**
+ * Create a new FileTransferChannel object.
+ *
+ * \param connection Connection owning this channel, and specifying the
+ *                   service.
+ * \param objectPath The object path of this channel.
+ * \param immutableProperties The immutable properties of this channel.
+ * \return A StreamedMediaChannelPtr object pointing to the newly created
+ *         StreamedMediaChannel object.
+ */
 FileTransferChannelPtr FileTransferChannel::create(const ConnectionPtr &connection,
         const QString &objectPath, const QVariantMap &immutableProperties)
 {
