@@ -44,17 +44,6 @@
 #include <QRegExp>
 #include <QTimer>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
 namespace Tp
 {
 
@@ -236,39 +225,186 @@ void Account::Private::addConferenceRequestParameters(QVariantMap &request,
 /**
  * \class Account
  * \ingroup clientaccount
- * \headerfile <TelepathyQt4/account.h> <TelepathyQt4/Account>
+ * \headerfile TelepathyQt4/account.h <TelepathyQt4/Account>
  *
- * Object representing a Telepathy account.
+ * \brief The Account class provides an object representing a Telepathy account.
+ *
+ * Account adds the following features compared to using
+ * Client::AccountManagerInterface directly:
+ * <ul>
+ *  <li>Status tracking</li>
+ *  <li>Getting the list of supported interfaces automatically</li>
+ * </ul>
+ *
+ * The remote object accessor functions on this object (isValidAccount(),
+ * isEnabled(), and so on) don't make any D-Bus calls; instead, they return/use
+ * values cached from a previous introspection run. The introspection process
+ * populates their values in the most efficient way possible based on what the
+ * service implements. Their return value is mostly undefined until the
+ * introspection process is completed, i.e. isReady() returns true. See the
+ * individual accessor descriptions for more details.
+ *
+ * Signals are emitted to indicate that properties have changed, for example
+ * displayNameChanged(), iconChanged(), etc.
+ *
+ * Convenience methods to create channels using the channel dispatcher such as
+ * ensureTextChat(), createFileTransfer() are provided.
+ *
+ * To avoid unnecessary D-Bus traffic, some methods only return valid
+ * information after a specific feature has been enabled by calling
+ * becomeReady() with the desired set of features as an argument, and waiting
+ * for the resulting PendingOperation to finish. For instance, to retrieve the
+ * account protocol information, it is necessary to call becomeReady() with
+ * Account::FeatureProtocolInfo included in the argument.
+ * The required features are documented by each method.
  *
  * If the account is deleted from the AccountManager, this object
  * will not be deleted automatically; however, it will emit invalidated()
- * with error code %TELEPATHY_QT4_ERROR_OBJECT_REMOVED and will cease to
+ * with error code #TELEPATHY_QT4_ERROR_OBJECT_REMOVED and will cease to
  * be useful.
+ *
+ * \section account_usage_sec Usage
+ *
+ * \subsection account_create_sec Creating an account object
+ *
+ * The easiest way to create account objects is through AccountManager. One can
+ * just use the AccountManager convenience methods such as
+ * AccountManager::validAccounts() to get a list of account objects representing
+ * valid accounts.
+ *
+ * If you already know the object path, you can just call create().
+ * For example:
+ *
+ * \code AccountPtr acc = Account::create(busName, objectPath); \endcode
+ *
+ * An AccountPtr object is returned, which will automatically keep
+ * track of object lifetime.
+ *
+ * You can also provide a D-Bus connection as a QDBusConnection:
+ *
+ * \code
+ *
+ * AccountPtr acc = Account::create(QDBusConnection::sessionBus(),
+ *         busName, objectPath);
+ *
+ * \endcode
+ *
+ * \subsection account_ready_sec Making account ready to use
+ *
+ * An Account object needs to become ready before usage, meaning that the
+ * introspection process finished and the object accessors can be used.
+ *
+ * To make the object ready, use becomeReady() and wait for the
+ * PendingOperation::finished() signal to be emitted.
+ *
+ * \code
+ *
+ * class MyClass : public QObject
+ * {
+ *     QOBJECT
+ *
+ * public:
+ *     MyClass(QObject *parent = 0);
+ *     ~MyClass() { }
+ *
+ * private Q_SLOTS:
+ *     void onAccountReady(Tp::PendingOperation*);
+ *
+ * private:
+ *     AccountPtr acc;
+ * };
+ *
+ * MyClass::MyClass(const QString &busName, const QString &objectPath,
+ *         QObject *parent)
+ *     : QObject(parent)
+ *       acc(Account::create(busName, objectPath))
+ * {
+ *     connect(acc->becomeReady(),
+ *             SIGNAL(finished(Tp::PendingOperation*)),
+ *             SLOT(onAccountReady(Tp::PendingOperation*)));
+ * }
+ *
+ * void MyClass::onAccountReady(Tp::PendingOperation *op)
+ * {
+ *     if (op->isError()) {
+ *         qWarning() << "Account cannot become ready:" <<
+ *             op->errorName() << "-" << op->errorMessage();
+ *         return;
+ *     }
+ *
+ *     // Account is now ready
+ *     qDebug() << "Display name:" << acc->displayName();
+ * }
+ *
+ * \endcode
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
+/**
+ * Feature representing the core that needs to become ready to make the Account
+ * object usable.
+ *
+ * Note that this feature must be enabled in order to use most Account methods.
+ * See specific methods documentation for more details.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
 const Feature Account::FeatureCore = Feature(QLatin1String(Account::staticMetaObject.className()), 0, true);
+
+/**
+ * Feature used in order to access account avatar info.
+ *
+ * See avatar specific methods' documentation for more details.
+ */
 const Feature Account::FeatureAvatar = Feature(QLatin1String(Account::staticMetaObject.className()), 1);
+
+/**
+ * Feature used in order to access account protocol info.
+ *
+ * See protocol info specific methods' documentation for more details.
+ */
 const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::staticMetaObject.className()), 2);
 
+/**
+ * Create a new Account object using QDBusConnection::sessionBus().
+ *
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
+ * \return An AccountPtr object pointing to the newly created Account object.
+ */
 AccountPtr Account::create(const QString &busName,
         const QString &objectPath)
 {
     return AccountPtr(new Account(busName, objectPath));
 }
 
+/**
+ * Create a new Account object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
+ * \return An AccountPtr object pointing to the newly created Account object.
+ */
 AccountPtr Account::create(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath)
 {
     return AccountPtr(new Account(bus, busName, objectPath));
 }
 
-
 /**
- * Construct a new Account object.
+ * Construct a new Account object using QDBusConnection::sessionBus().
  *
- * \param busName The account's well-known bus name
- *                (sometimes called a "service name").
- * \param objectPath Account object path.
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
  */
 Account::Account(const QString &busName, const QString &objectPath)
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
@@ -280,12 +416,13 @@ Account::Account(const QString &busName, const QString &objectPath)
 }
 
 /**
- * Construct a new Account object.
+ * Construct a new Account object using the given \bus.
  *
- * \param bus QDBusConnection to use
- * \param busName The account's well-known bus name
- *                (sometimes called a "service name").
- * \param objectPath Account object path.
+ * \param bus QDBusConnection to use.
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
  */
 Account::Account(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath)
@@ -305,14 +442,17 @@ Account::~Account()
 }
 
 /**
- * Get whether this is a valid account.
+ * Return whether this is a valid account.
  *
  * If true, this account is considered by the account manager to be complete
  * and usable. If false, user action is required to make it usable, and it will
  * never attempt to connect (for instance, this might be caused by the absence
  * of a required parameter).
  *
+ * This method requires Account::FeatureCore to be enabled.
+ *
  * \return \c true if the account is valid, \c false otherwise.
+ * \sa validityChanged()
  */
 bool Account::isValidAccount() const
 {
@@ -320,12 +460,15 @@ bool Account::isValidAccount() const
 }
 
 /**
- * Get whether this account is enabled.
+ * Return whether this account is enabled.
  *
  * Gives the users the possibility to prevent an account from
  * being used. This flag does not change the validity of the account.
  *
+ * This method requires Account::FeatureCore to be enabled.
+ *
  * \return \c true if the account is enabled, \c false otherwise.
+ * \sa stateChanged()
  */
 bool Account::isEnabled() const
 {
@@ -333,11 +476,12 @@ bool Account::isEnabled() const
 }
 
 /**
- * Set whether this account is enabled.
+ * Set whether this account should be enabled or disabled.
  *
  * \param value Whether this account should be enabled or disabled.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa stateChanged()
  */
 PendingOperation *Account::setEnabled(bool value)
 {
@@ -350,9 +494,11 @@ PendingOperation *Account::setEnabled(bool value)
 }
 
 /**
- * Get this account connection manager name.
+ * Return the connection manager name of this account.
  *
- * \return Account connection manager name.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The connection manager name of this account.
  */
 QString Account::cmName() const
 {
@@ -360,9 +506,11 @@ QString Account::cmName() const
 }
 
 /**
- * Get this account protocol name.
+ * Return the protocol name of this account.
  *
- * \return Account protocol name.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The protocol name of this account.
  */
 QString Account::protocol() const
 {
@@ -370,9 +518,12 @@ QString Account::protocol() const
 }
 
 /**
- * Get this account display name.
+ * Return the display name of this account.
  *
- * \return Account display name.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The display name of this account.
+ * \sa displayNameChanged()
  */
 QString Account::displayName() const
 {
@@ -380,14 +531,16 @@ QString Account::displayName() const
 }
 
 /**
- * Check whether this account has ever been put online successfully.
+ * Return whether this account has ever been put online successfully.
  *
  * This property cannot change from true to false, only from false to true.
  * When the account successfully goes online for the first time, or when it
  * is detected that this has already happened, the firstOnline() signal is
  * emitted.
  *
- * \return Whether the account has even been online.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return Whether the account has ever been online.
  */
 bool Account::hasBeenOnline() const
 {
@@ -395,11 +548,12 @@ bool Account::hasBeenOnline() const
 }
 
 /**
- * Set this account display name.
+ * Set the display name of this account.
  *
- * \param value Account display name.
+ * \param value The display name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa displayNameChanged()
  */
 PendingOperation *Account::setDisplayName(const QString &value)
 {
@@ -412,9 +566,12 @@ PendingOperation *Account::setDisplayName(const QString &value)
 }
 
 /**
- * Get this account icon name.
+ * Return the icon name of this account.
  *
- * \return Account icon name.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The icon name of this account.
+ * \sa iconChanged()
  */
 QString Account::icon() const
 {
@@ -422,11 +579,12 @@ QString Account::icon() const
 }
 
 /**
- * Set this account icon.
+ * Set the icon name of this account.
  *
- * \param value Account icon name.
+ * \param value The icon name of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa iconChanged()
  */
 PendingOperation *Account::setIcon(const QString &value)
 {
@@ -439,9 +597,12 @@ PendingOperation *Account::setIcon(const QString &value)
 }
 
 /**
- * Get this account nickname.
+ * Return the nickname of this account.
  *
- * \return Account nickname.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The nickname of this account.
+ * \sa nicknameChanged()
  */
 QString Account::nickname() const
 {
@@ -449,11 +610,12 @@ QString Account::nickname() const
 }
 
 /**
- * Set the account nickname.
+ * Set the nickname of this account.
  *
- * \param value Account nickname.
+ * \param value The nickname of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa nicknameChanged()
  */
 PendingOperation *Account::setNickname(const QString &value)
 {
@@ -466,13 +628,12 @@ PendingOperation *Account::setNickname(const QString &value)
 }
 
 /**
- * Get this account avatar.
+ * Return the avatar of this account.
  *
- * Note that in order to make this method works you should call
- * Account::becomeReady(FeatureAvatar) and wait for it to finish
- * successfully.
+ * This method requires Account::FeatureAvatar to be enabled.
  *
- * \return Account avatar.
+ * \return The avatar of this account.
+ * \sa avatarChanged()
  */
 const Avatar &Account::avatar() const
 {
@@ -486,11 +647,12 @@ const Avatar &Account::avatar() const
 }
 
 /**
- * Set this account avatar.
+ * Set avatar of this account.
  *
- * \param avatar The avatar's MIME type and data.
+ * \param avatar The avatar of this account.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa avatarChanged()
  */
 PendingOperation *Account::setAvatar(const Avatar &avatar)
 {
@@ -509,9 +671,12 @@ PendingOperation *Account::setAvatar(const Avatar &avatar)
 }
 
 /**
- * Get this account parameters.
+ * Return the parameters of this account.
  *
- * \return Account parameters.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The parameters of this account.
+ * \sa parametersChanged()
  */
 QVariantMap Account::parameters() const
 {
@@ -524,12 +689,13 @@ QVariantMap Account::parameters() const
  * On success, the pending operation returned by this method will produce a
  * list of strings, which are the names of parameters whose changes will not
  * take effect until the account is disconnected and reconnected (for instance
- * by calling Account::reconnect()).
+ * by calling reconnect()).
  *
  * \param set Parameters to set.
  * \param unset Parameters to unset.
- * \return A PendingStringList which will emit PendingOperation::finished
+ * \return A PendingStringList which will emit PendingStringList::finished
  *         when the call has finished
+ * \sa parametersChanged(), reconnect()
  */
 PendingStringList *Account::updateParameters(const QVariantMap &set,
         const QStringList &unset)
@@ -540,13 +706,11 @@ PendingStringList *Account::updateParameters(const QVariantMap &set,
 }
 
 /**
- * Get the protocol info for this account protocol.
+ * Return the protocol info of this account protocol.
  *
- * Note that in order to make this method works you should call
- * Account::becomeReady(FeatureProtocolInfo) and wait for it to finish
- * successfully.
+ * This method requires Account::FeatureProtocolInfo to be enabled.
  *
- * \return ProtocolInfo for this account protocol.
+ * \return The protocol info of this account protocol.
  */
 ProtocolInfo *Account::protocolInfo() const
 {
@@ -560,9 +724,14 @@ ProtocolInfo *Account::protocolInfo() const
 }
 
 /**
- * Get whether this account should be put online automatically whenever possible.
+ * Return whether this account should be put online automatically whenever
+ * possible.
  *
- * \return \c true if it should try to connect automatically, \c false otherwise.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return \c true if it should try to connect automatically, \c false
+ *         otherwise.
+ * \sa connectsAutomaticallyPropertyChanged()
  */
 bool Account::connectsAutomatically() const
 {
@@ -570,12 +739,14 @@ bool Account::connectsAutomatically() const
 }
 
 /**
- * Set whether this account should be put online automatically whenever possible.
+ * Set whether this account should be put online automatically whenever
+ * possible.
  *
  * \param value Value indicating if this account should be put online whenever
  *              possible.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
+ * \sa connectsAutomaticallyPropertyChanged()
  */
 PendingOperation *Account::setConnectsAutomatically(bool value)
 {
@@ -588,9 +759,12 @@ PendingOperation *Account::setConnectsAutomatically(bool value)
 }
 
 /**
- * Get the connection status of this account.
+ * Return the status of this account connection.
  *
- * \return Value indication the status of this account conneciton.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The status of this account connection.
+ * \sa connectionStatusChanged()
  */
 ConnectionStatus Account::connectionStatus() const
 {
@@ -598,9 +772,12 @@ ConnectionStatus Account::connectionStatus() const
 }
 
 /**
- * Get the connection status reason of this account.
+ * Return the status reason of this account connection.
  *
- * \return Value indication the status reason of this account conneciton.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The status reason of this account connection.
+ * \sa connectionStatusChanged()
  */
 ConnectionStatusReason Account::connectionStatusReason() const
 {
@@ -611,7 +788,10 @@ ConnectionStatusReason Account::connectionStatusReason() const
  * Return whether this account has a connection object that can be retrieved
  * using connection().
  *
- * \return \c true if a connection object can be retrieved, \c false otherwise
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return \c true if a connection object can be retrieved, \c false otherwise.
+ * \sa connection(), haveConnectionChanged()
  */
 bool Account::haveConnection() const
 {
@@ -619,16 +799,20 @@ bool Account::haveConnection() const
 }
 
 /**
- * Get the Connection object for this account.
+ * Return the ConnectionPtr object of this account.
  *
- * The Connection object will not be cached by the Account instance;
- * applications should do this themselves.
+ * Note that the returned ConnectionPtr object will not be cached by the Account
+ * instance; applications should do it themselves.
  *
  * Remember to call Connection::becomeReady on the new connection to
  * make sure it is ready before using it.
  *
- * \return Connection object, or a null ConnectionPtr if the account does
- * not currently have a Connection or if an error occurred.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return A ConnectionPtr object pointing to the Connection object of this
+ *         account, or a null ConnectionPtr if this account does not currently
+ *         have a connection or if an error occurred.
+ * \sa haveConnection(), haveConnectionChanged()
  */
 ConnectionPtr Account::connection() const
 {
@@ -646,11 +830,14 @@ ConnectionPtr Account::connection() const
 }
 
 /**
- * Get the presence status that this account will have set on it by the account
- * manager if it brings it online automatically.
+ * Return the presence status that this account will have set on it by the
+ * account manager if it brings it online automatically.
  *
- * \return Presence status that will be set by the account manager if this
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The presence status that will be set by the account manager if this
  *         account is brought online automatically by it.
+ * \sa automaticPresenceChanged()
  */
 SimplePresence Account::automaticPresence() const
 {
@@ -661,11 +848,11 @@ SimplePresence Account::automaticPresence() const
  * Set the presence status that this account should have if it is brought
  * online automatically by the account manager.
  *
- * \param value Presence status to set when this account is brought online
- *        automatically by the account manager.
+ * \param value The presence status to set when this account is brought
+ *        online automatically by the account manager.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa setRequestedPresence()
+ * \sa automaticPresenceChanged(), setRequestedPresence()
  */
 PendingOperation *Account::setAutomaticPresence(
         const SimplePresence &value)
@@ -679,10 +866,12 @@ PendingOperation *Account::setAutomaticPresence(
 }
 
 /**
- * Get the actual presence of this account.
+ * Return the actual presence of this account.
+ *
+ * This method requires Account::FeatureCore to be enabled.
  *
  * \return The actual presence of this account.
- * \sa requestedPresence(), automaticPresence()
+ * \sa currentPresenceChanged(), setRequestedPresence(), requestedPresence(), automaticPresence()
  */
 SimplePresence Account::currentPresence() const
 {
@@ -690,14 +879,12 @@ SimplePresence Account::currentPresence() const
 }
 
 /**
- * Get the requested presence of this account.
+ * Return the requested presence of this account.
  *
- * When this is changed, the account manager should attempt to manipulate the
- * connection manager to make CurrentPresence match RequestedPresence as closely
- * as possible.
+ * This method requires Account::FeatureCore to be enabled.
  *
  * \return The requested presence of this account.
- * \sa currentPresence(), automaticPresence()
+ * \sa requestedPresenceChanged(), setRequestedPresence(), currentPresence(), automaticPresence()
  */
 SimplePresence Account::requestedPresence() const
 {
@@ -707,10 +894,14 @@ SimplePresence Account::requestedPresence() const
 /**
  * Set the requested presence.
  *
+ * When requested presence is changed, the account manager should attempt to
+ * manipulate the connection to make currentPresence() match requestedPresence()
+ * as closely as possible.
+ *
  * \param value The requested presence.
  * \return A PendingOperation which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa setAutomaticPresence()
+ * \sa requestedPresenceChanged(), currentPresence(), automaticPresence(), setAutomaticPresence()
  */
 PendingOperation *Account::setRequestedPresence(
         const SimplePresence &value)
@@ -724,12 +915,12 @@ PendingOperation *Account::setRequestedPresence(
 }
 
 /**
- * Get the unique identifier for this account.
+ * Return the unique identifier of this account.
  *
  * This identifier should be unique per AccountManager implementation,
  * i.e. at least per QDBusConnection.
  *
- * \return Account unique identifier.
+ * \return The unique identifier of this account.
  */
 QString Account::uniqueIdentifier() const
 {
@@ -739,15 +930,38 @@ QString Account::uniqueIdentifier() const
 }
 
 /**
- * Get the connection object path of this account.
+ * Return the connection object path of this account.
  *
- * \return Account connection object path.
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The connection object path of this account.
+ * \sa haveConnectionChanged(), haveConnection(), connection()
  */
 QString Account::connectionObjectPath() const
 {
     return mPriv->connectionObjectPath;
 }
 
+/**
+ * Return the normalized user ID of the local user of this account.
+ *
+ * It is unspecified whether this user ID is globally unique.
+ *
+ * As currently implemented, IRC user IDs are only unique within the same
+ * IRCnet. On some saner protocols, the user ID includes a DNS name which
+ * provides global uniqueness.
+ *
+ * If this value is not known yet (which will always be the case for accounts
+ * that have never been online), it will be an empty string.
+ *
+ * It is possible that this value will change if the connection manager's
+ * normalization algorithm changes.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return Account normalized user ID of the local user.
+ * \sa normalizedNameChanged()
+ */
 QString Account::normalizedName() const
 {
     return mPriv->normalizedName;
@@ -791,6 +1005,8 @@ PendingOperation *Account::remove()
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureTextChat(
@@ -823,6 +1039,8 @@ PendingChannelRequest *Account::ensureTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureTextChat(
@@ -855,6 +1073,8 @@ PendingChannelRequest *Account::ensureTextChat(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureTextChatroom(
@@ -887,6 +1107,8 @@ PendingChannelRequest *Account::ensureTextChatroom(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureMediaCall(
@@ -919,6 +1141,8 @@ PendingChannelRequest *Account::ensureMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureMediaCall(
@@ -954,6 +1178,8 @@ PendingChannelRequest *Account::ensureMediaCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureAudioCall(
@@ -991,6 +1217,8 @@ PendingChannelRequest *Account::ensureAudioCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureAudioCall(
@@ -1030,6 +1258,8 @@ PendingChannelRequest *Account::ensureAudioCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureVideoCall(
@@ -1076,6 +1306,8 @@ PendingChannelRequest *Account::ensureVideoCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::ensureVideoCall(
@@ -1117,6 +1349,8 @@ PendingChannelRequest *Account::ensureVideoCall(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createFileTransfer(
@@ -1175,6 +1409,8 @@ PendingChannelRequest *Account::createFileTransfer(
  *                         org.freedesktop.Telepathy.Client.) of the preferred
  *                         handler for this channel, or an empty string to
  *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
 PendingChannelRequest *Account::createFileTransfer(
@@ -1220,6 +1456,25 @@ PendingChannelRequest *Account::createFileTransfer(
             request, userActionTime, preferredHandler, true, this);
 }
 
+/**
+ * Start a request to create a conference media call with the given
+ * channels \a channels.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          identifiers to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::createConferenceMediaCall(
         const QList<ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers,
@@ -1239,6 +1494,25 @@ PendingChannelRequest *Account::createConferenceMediaCall(
             request, userActionTime, preferredHandler, true, this);
 }
 
+/**
+ * Start a request to create a conference media call with the given
+ * channels \a channels.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::createConferenceMediaCall(
         const QList<ChannelPtr> &channels,
         const QList<ContactPtr> &initialInviteeContacts,
@@ -1258,6 +1532,25 @@ PendingChannelRequest *Account::createConferenceMediaCall(
             request, userActionTime, preferredHandler, true, this);
 }
 
+/**
+ * Start a request to create a conference text chat with the given
+ * channels \a channels.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          identifiers to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::createConferenceTextChat(
         const QList<ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers,
@@ -1275,6 +1568,25 @@ PendingChannelRequest *Account::createConferenceTextChat(
             request, userActionTime, preferredHandler, true, this);
 }
 
+/**
+ * Start a request to create a conference text chat with the given
+ * channels \a channels.
+ *
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::createConferenceTextChat(
         const QList<ChannelPtr> &channels,
         const QList<ContactPtr> &initialInviteeContacts,
@@ -1292,6 +1604,26 @@ PendingChannelRequest *Account::createConferenceTextChat(
             request, userActionTime, preferredHandler, true, this);
 }
 
+/**
+ * Start a request to create a conference text chat room with the given
+ * channels \a channels and room name \a roomName.
+ *
+ * \param roomName The room name.
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          identifiers to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QString &roomName,
         const QList<ChannelPtr> &channels,
@@ -1314,6 +1646,26 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
             request, userActionTime, preferredHandler, true, this);
 }
 
+/**
+ * Start a request to create a conference text chat room with the given
+ * channels \a channels and room name \a roomName.
+ *
+ * \param roomName The room name.
+ * \param channels The conference channels.
+ * \param initialInviteeContactsIdentifiers A list of additional contacts
+ *                                          to be invited to this
+ *                                          conference when it is created.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
 PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QString &roomName,
         const QList<ChannelPtr> &channels,
@@ -1342,8 +1694,8 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  * which can be used to track the success or failure of the request,
  * or to cancel it.
  *
- * Helper methods for text chat, text chat room and media call are provided and
- * should be used if appropriate.
+ * Helper methods for text chat, text chat room, media call and conference are
+ * provided and should be used if appropriate.
  *
  * \param request A dictionary containing desirable properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
@@ -1370,8 +1722,8 @@ PendingChannelRequest *Account::createChannel(
  * which can be used to track the success or failure of the request,
  * or to cancel it.
  *
- * Helper methods for text chat, text chat room and media call are provided and
- * should be used if appropriate.
+ * Helper methods for text chat, text chat room, media call and conference are
+ * provided and should be used if appropriate.
  *
  * \param request A dictionary containing desirable properties.
  * \param userActionTime The time at which user action occurred, or QDateTime()
@@ -1393,56 +1745,186 @@ PendingChannelRequest *Account::ensureChannel(
 }
 
 /**
- * \fn Account::optionalInterface(InterfaceSupportedChecking check) const
+ * \fn void Account::displayNameChanged(const QString &displayName);
  *
- * Get a pointer to a valid instance of a given %Account optional
- * interface class, associated with the same remote object the Account is
- * associated with, and destroyed at the same time the Account is
- * destroyed.
+ * This signal is emitted when the value of displayName() of this account
+ * changes.
  *
- * If the list returned by interfaces() doesn't contain the name of the
- * interface requested <code>0</code> is returned. This check can be
- * bypassed by specifying #BypassInterfaceCheck for <code>check</code>, in
- * which case a valid instance is always returned.
- *
- * If the object is not ready, the list returned by interfaces() isn't
- * guaranteed to yet represent the full set of interfaces supported by the
- * remote object.
- * Hence the check might fail even if the remote object actually supports
- * the requested interface; using #BypassInterfaceCheck is suggested when
- * the Account is not suitably ready.
- *
- * \see OptionalInterfaceFactory::interface
- *
- * \tparam Interface Class of the optional interface to get.
- * \param check Should an instance be returned even if it can't be
- *              determined that the remote object supports the
- *              requested interface.
- * \return Pointer to an instance of the interface class, or <code>0</code>.
+ * \param displayName The new display name of this account.
+ * \sa displayName(), setDisplayName()
  */
 
 /**
- * \fn DBus::propertiesInterface *Account::propertiesInterface() const
+ * \fn void Account::iconChanged(const QString &icon);
  *
- * Convenience function for getting a Properties interface proxy. The
- * Account interface relies on properties, so this interface is
- * always assumed to be present.
+ * This signal is emitted when the value of icon() of this account changes.
+ *
+ * \param icon The new icon name of this account.
+ * \sa icon(), setIcon()
  */
 
 /**
- * \fn AccountInterfaceAvatarInterface *Account::avatarInterface(InterfaceSupportedChecking check) const
+ * \fn void Account::nicknameChanged(const QString &nickname);
  *
- * Convenience function for getting a Avatar interface proxy.
+ * This signal is emitted when the value of nickname() of this account changes.
+ *
+ * \param nickname The new nickname of this account.
+ * \sa nickname(), setNickname()
  */
 
 /**
- * Get the AccountInterface for this Account. This
- * method is protected since the convenience methods provided by this
+ * \fn void Account::normalizedNameChanged(const QString &normalizedName);
+ *
+ * This signal is emitted when the value of normalizedName() of this account
+ * changes.
+ *
+ * \param normalizedName The new normalized name of this account.
+ * \sa normalizedName()
+ */
+
+/**
+ * \fn void Account::validityChanged(bool validity);
+ *
+ * This signal is emitted when the value of isValidAccount() of this account
+ * changes.
+ *
+ * \param validity The new validity of this account.
+ * \sa isValidAccount()
+ */
+
+/**
+ * \fn void Account::stateChanged(bool state);
+ *
+ * This signal is emitted when the value of isEnabled() of this account
+ * changes.
+ *
+ * \param state The new state of this account.
+ * \sa isEnabled()
+ */
+
+/**
+ * \fn void Account::connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
+ *
+ * This signal is emitted when the value of connectsAutomatically() of this
+ * account changes.
+ *
+ * \param connectsAutomatically The new value of connects automatically property
+ *                              of this account.
+ * \sa isEnabled()
+ */
+
+/**
+ * \fn void Account::firstOnline();
+ *
+ * This signal is emitted when this account is first put online.
+ *
+ * \sa hasBeenOnline()
+ */
+
+/**
+ * \fn void Account::parametersChanged(const QVariantMap &parameters);
+ *
+ * This signal is emitted when the value of parameters() of this
+ * account changes.
+ *
+ * \param parameters The new parameters of this account.
+ * \sa parameters()
+ */
+
+/**
+ * \fn void Account::automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
+ *
+ * This signal is emitted when the value of automaticPresence() of this
+ * account changes.
+ *
+ * \param automaticPresence The new value of automatic presence property of this
+ *                          account.
+ * \sa automaticPresence()
+ */
+
+/**
+ * \fn void Account::currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
+ *
+ * This signal is emitted when the value of currentPresence() of this
+ * account changes.
+ *
+ * \param currentPresence The new value of current presence property of this
+ *                        account.
+ * \sa currentPresence()
+ */
+
+/**
+ * \fn void Account::requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
+ *
+ * This signal is emitted when the value of requestedPresence() of this
+ * account changes.
+ *
+ * \param requestedPresence The new value of requested presence property of this
+ *                          account.
+ * \sa requestedPresence()
+ */
+
+/**
+ * \fn void Account::avatarChanged(const Tp::Avatar &avatar);
+ *
+ * This signal is emitted when the value of avatar() of this
+ * account changes.
+ *
+ * \param avatar The new avatar of this account.
+ * \sa avatar()
+ */
+
+/**
+ * \fn void Account::connectionStatusChanged(Tp::ConnectionStatus status, Tp::ConnectionStatusReason statusReason);
+ *
+ * This signal is emitted when the value of connectionStatus() of this
+ * account changes.
+ *
+ * \param status The new status of this account connection.
+ * \param statusReason The new status reason of this account connection.
+ * \sa connectionStatus(), connectionStatusReason()
+ */
+
+/**
+ * \fn void Account::haveConnectionChanged(bool haveConnection);
+ *
+ * This signal is emitted when the value of haveConnection() of this
+ * account changes.
+ *
+ * \param haveConnection Whether this account have a connection.
+ * \sa haveConnection(), connection()
+ */
+
+/**
+ * \fn Client::DBus::PropertiesInterface *Account::propertiesInterface() const
+ *
+ * Convenience function for getting a PropertiesInterface interface proxy object
+ * for this account. The Account interface relies on properties, so this
+ * interface is always assumed to be present.
+ *
+ * \return A pointer to the existing Client::DBus::PropertiesInterface object
+ *         for this Account object.
+ */
+
+/**
+ * \fn Client::AccountInterfaceAvatarInterface *Account::avatarInterface(
+ *             InterfaceSupportedChecking check) const;
+ *
+ * Convenience function for getting a AvatarInterface interface proxy object for
+ * this account.
+ *
+ * \return A pointer to the existing Client::AccountInterfaceAvatarInterface
+ *         object for this Account object.
+ */
+
+/**
+ * Return the Client::AccountInterface interface proxy object for this account.
+ * This method is protected since the convenience methods provided by this
  * class should generally be used instead of calling D-Bus methods
  * directly.
  *
- * \return A pointer to the existing AccountInterface for this
- *         Account.
+ * \return A pointer to the existing Client::AccountInterface object for this
+ *         Account object.
  */
 Client::AccountInterface *Account::baseInterface() const
 {
