@@ -32,17 +32,6 @@
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
 namespace Tp
 {
 
@@ -61,10 +50,10 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
 
 /**
  * \class PendingChannelRequest
- * \ingroup clientconn
- * \headerfile <TelepathyQt4/pending-channel-request.h> <TelepathyQt4/PendingChannelRequest>
+ * \ingroup clientchannelrequest
+ * \headerfile TelepathyQt4/pending-channel-request.h <TelepathyQt4/PendingChannelRequest>
  *
- * Class containing the parameters of and the reply to an asynchronous
+ * \brief Class containing the parameters of and the reply to an asynchronous
  * ChannelRequest request. Instances of this class cannot be constructed
  * directly; the only way to get one is trough Account.
  */
