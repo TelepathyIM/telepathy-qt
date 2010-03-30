@@ -28,25 +28,6 @@
 #include <QPointer>
 #include <QSharedData>
 
-/**
- * \addtogroup clientsideproxies Client-side proxies
- *
- * Proxy objects representing remote service objects accessed via D-Bus.
- *
- * In addition to providing direct access to methods, signals and properties
- * exported by the remote objects, some of these proxies offer features like
- * automatic inspection of remote object capabilities, property tracking,
- * backwards compatibility helpers for older services and other utilities.
- */
-
-/**
- * \defgroup clientconn Connection proxies
- * \ingroup clientsideproxies
- *
- * Proxy objects representing remote Telepathy Connections and their optional
- * interfaces.
- */
-
 namespace Tp
 {
 
@@ -116,11 +97,11 @@ private:
 /**
  * \class ReferencedHandles
  * \ingroup clientconn
- * \headerfile <TelepathyQt4/referenced-handles.h> <TelepathyQt4/ReferencedHandles>
+ * \headerfile TelepathyQt4/referenced-handles.h <TelepathyQt4/ReferencedHandles>
  *
- * Helper container for safe management of handle lifetimes. Every handle in a
- * ReferencedHandles container is guaranteed to be valid (and stay valid, as
- * long it's in at least one ReferencedHandles container).
+ * \brief Helper container for safe management of handle lifetimes. Every handle
+ * in a ReferencedHandles container is guaranteed to be valid (and stay valid,
+ * as long it's in at least one ReferencedHandles container).
  *
  * The class offers a QList-style API. However, from the mutable operations,
  * only the operations for which the validity guarantees can be preserved are
