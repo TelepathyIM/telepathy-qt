@@ -279,6 +279,7 @@ AC_OUTPUT([
     examples/call/Makefile
     examples/extensions/Makefile
     examples/file-transfer/Makefile
+    examples/protocols/Makefile
     examples/roster/Makefile
     m4/Makefile
     spec/Makefile
