@@ -91,6 +91,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     ContactManager *parent;
     WeakPtr<Connection> connection;
     QMap<uint, QWeakPointer<Contact> > contacts;
+    Contacts cachedAllKnownContacts;
 
     QMap<Contact::Feature, bool> tracking;
     void ensureTracking(Contact::Feature feature);
@@ -106,6 +107,10 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
 
     Contacts allKnownContacts() const;
     void updateContactsPresenceState();
+    void computeKnownContactsChanges(const Contacts &added,
+        const Contacts &pendingAdded,
+        const Contacts &remotePendingAdded,
+        const Contacts &removed);
 };
 
 ConnectionPtr ContactManager::connection() const
@@ -797,6 +802,12 @@ void ContactManager::onSubscribeChannelMembersChanged(
         debug() << "Contact" << contact->id() << "removed from subscribe list";
         contact->setSubscriptionState(Contact::PresenceStateNo);
     }
+
+    // Perform the needed computation for allKnownContactsChanged
+    mPriv->computeKnownContactsChanges(groupMembersAdded,
+                                       groupLocalPendingMembersAdded,
+                                       groupRemotePendingMembersAdded,
+                                       groupMembersRemoved);
 }
 
 void ContactManager::onPublishChannelMembersChanged(
@@ -830,6 +841,12 @@ void ContactManager::onPublishChannelMembersChanged(
     if (!groupLocalPendingMembersAdded.isEmpty()) {
         emit presencePublicationRequested(groupLocalPendingMembersAdded);
     }
+
+    // Perform the needed computation for allKnownContactsChanged
+    mPriv->computeKnownContactsChanges(groupMembersAdded,
+                                       groupLocalPendingMembersAdded,
+                                       groupRemotePendingMembersAdded,
+                                       groupMembersRemoved);
 }
 
 void ContactManager::onDenyChannelMembersChanged(
@@ -949,6 +966,8 @@ void ContactManager::setContactListChannels(
     }
 
     mPriv->updateContactsPresenceState();
+    // Refresh the cache for the current known contacts
+    mPriv->cachedAllKnownContacts = allKnownContacts();
 
     QMap<uint, ContactListChannel>::const_iterator i = contactListChannels.constBegin();
     QMap<uint, ContactListChannel>::const_iterator end = contactListChannels.constEnd();
@@ -1093,6 +1112,40 @@ Contacts ContactManager::Private::allKnownContacts() const
         contacts.unite(channel->groupRemotePendingContacts());
     }
     return contacts;
+}
+
+void ContactManager::Private::computeKnownContactsChanges(const Tp::Contacts& added,
+                                                          const Tp::Contacts& pendingAdded,
+                                                          const Tp::Contacts& remotePendingAdded,
+                                                          const Tp::Contacts& removed)
+{
+    // First of all, compute the real additions/removals based upon our cache
+    Tp::Contacts realAdded;
+    realAdded.unite(added);
+    realAdded.unite(pendingAdded);
+    realAdded.unite(remotePendingAdded);
+    realAdded.subtract(cachedAllKnownContacts);
+    Tp::Contacts realRemoved = removed;
+    realRemoved.intersect(cachedAllKnownContacts);
+
+    // Check if realRemoved have been _really_ removed from all lists
+    foreach (const ContactListChannel &contactListChannel, contactListChannels) {
+        ChannelPtr channel = contactListChannel.channel;
+        if (!channel) {
+            continue;
+        }
+        realRemoved.subtract(channel->groupContacts());
+        realRemoved.subtract(channel->groupLocalPendingContacts());
+        realRemoved.subtract(channel->groupRemotePendingContacts());
+    }
+
+    // Are there any real changes?
+    if (!realAdded.isEmpty() || !realRemoved.isEmpty()) {
+        // Yes, update our "cache" and emit the signal
+        cachedAllKnownContacts.unite(realAdded);
+        cachedAllKnownContacts.subtract(realRemoved);
+        emit parent->allKnownContactsChanged(realAdded, realRemoved);
+    }
 }
 
 void ContactManager::Private::updateContactsPresenceState()

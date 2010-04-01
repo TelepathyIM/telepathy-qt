@@ -113,6 +113,20 @@ Q_SIGNALS:
     void groupMembersChanged(const QString &group,
             const Tp::Contacts &groupMembersAdded,
             const Tp::Contacts &groupMembersRemoved);
+    /**
+     * This signal is emitted whenever some contacts got removed or added from
+     * ContactManager's known contact list. It is useful for monitoring which contacts
+     * are currently known by ContactManager.
+     *
+     * \param contactsAdded A set of contacts which were added to the known contact list
+     * \param contactsRemoved A set of contacts which were removed from the known contact list
+     *
+     * \note Please note that, in some protocols, this signal could stream newly added contacts
+     *       with both presence subscription and publication state set to No. Be sure to watch
+     *       over publication and/or subscription state changes if that is the case.
+     */
+    void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
+            const Tp::Contacts &contactsRemoved);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);

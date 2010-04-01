@@ -33,6 +33,7 @@ protected Q_SLOTS:
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
     void expectPresenceStateChanged(Tp::Contact::PresenceState);
+    void expectAllKnownContactsChanged(const Tp::Contacts &added, const Tp::Contacts &removed);
 
 private Q_SLOTS:
     void initTestCase();
@@ -48,6 +49,7 @@ private:
     ExampleContactListConnection *mConnService;
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
+    int mHowManyKnownContacts;
 };
 
 void TestConnRoster::expectConnInvalidated()
@@ -81,6 +83,20 @@ void TestConnRoster::expectPendingContactsFinished(PendingOperation *op)
     mContacts = pending->contacts();
 
     mLoop->exit(0);
+}
+
+void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, const Tp::Contacts& removed)
+{
+    qDebug() << added.size() << " contacts added, " << removed.size() << " contacts removed";
+    mHowManyKnownContacts += added.size();
+    mHowManyKnownContacts -= removed.size();
+    if (mConn->contactManager()->allKnownContacts().size() != mHowManyKnownContacts) {
+        qWarning() << "Contacts number mismatch! Watched value: " << mHowManyKnownContacts
+                   << "allKnownContacts(): " << mConn->contactManager()->allKnownContacts().size();
+        mLoop->exit(1);
+    } else {
+        mLoop->exit(0);
+    }
 }
 
 void TestConnRoster::expectPresenceStateChanged(Contact::PresenceState state)
@@ -184,6 +200,7 @@ void TestConnRoster::testRoster()
     QCOMPARE(mLoop->exec(), 0);
 
     int i = 0;
+
     foreach (const ContactPtr &contact, mContacts) {
         QVERIFY(connect(contact.data(),
                         SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
@@ -251,6 +268,30 @@ void TestConnRoster::testRoster()
                  static_cast<uint>(expectedPresenceState));
 
         ++i;
+    }
+
+    // Test allKnownContactsChanged.
+    // In this test, everytime a subscription is requested or rejected, allKnownContacts changes
+    // Cache the current value
+    mHowManyKnownContacts = mConn->contactManager()->allKnownContacts().size();
+    // Watch for contacts changed
+    QVERIFY(connect(mConn->contactManager(),
+                    SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts)),
+                    SLOT(expectAllKnownContactsChanged(Tp::Contacts,Tp::Contacts))));
+
+    // Wait for the contacts to be built
+    ids = QStringList() << QString(QLatin1String("kctest1@example.com"))
+        << QString(QLatin1String("kctest2@example.com"));
+    QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(ids),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    foreach (const ContactPtr &contact, mContacts) {
+        contact->requestPresenceSubscription(QLatin1String("add me now"));
+
+        // allKnownContacts is supposed to change here.
+        QCOMPARE(mLoop->exec(), 0);
     }
 }
 
