@@ -131,6 +131,11 @@ namespace %s
         # End namespace
         self.hb(''.join(['}\n' for ns in self.namespace.split('::')]))
 
+        # Add metatype declaration - otherwise QTBUG #2151 might be triggered
+        for ifacenode in self.ifacenodes:
+            classname = ifacenode.getAttribute('name').replace('/', '').replace('_', '') + 'Interface'
+            self.h("Q_DECLARE_METATYPE(" + self.namespace + "::" + classname + "*)\n")
+
         # Write output to files
         (codecs.getwriter('utf-8')(open(self.headerfile, 'w'))).write(''.join(self.hs))
         (codecs.getwriter('utf-8')(open(self.implfile, 'w'))).write(''.join(self.bs))

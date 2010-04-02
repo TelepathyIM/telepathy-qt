@@ -277,4 +277,10 @@ private:
 
 } // Tp
 
+Q_DECLARE_METATYPE(Tp::ClientAdaptor*)
+Q_DECLARE_METATYPE(Tp::ClientApproverAdaptor*)
+Q_DECLARE_METATYPE(Tp::ClientHandlerAdaptor*)
+Q_DECLARE_METATYPE(Tp::ClientHandlerRequestsAdaptor*)
+Q_DECLARE_METATYPE(Tp::ClientObserverAdaptor*)
+
 #endif
