@@ -39,12 +39,8 @@ include(Doxygen)
 
 # Required dependencies
 # Find qt4 version >= 4.5
+set (QT_MIN_VERSION "4.5.0")
 find_package(Qt4 REQUIRED)
-if(${QT_VERSION_MINOR} GREATER 4)
-    message(STATUS "Qt 4.${QT_VERSION_MINOR} found")
-else(${QT_VERSION_MINOR} GREATER 4)
-    message(SEND_ERROR "Qt >= 4.5 is required")
-endif(${QT_VERSION_MINOR} GREATER 4)
 
 # Check for Qt4 Glib support
 include(CheckCXXSourceCompiles)
