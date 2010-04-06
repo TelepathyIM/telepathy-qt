@@ -388,7 +388,8 @@ foreach(spec ${SPECS})
              ${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml
              > ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
         DEPENDS ${spec}.xml
-                ${CMAKE_SOURCE_DIR}/tools/xincludator.py)
+                ${CMAKE_SOURCE_DIR}/tools/xincludator.py
+                ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
     set(NEW_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
@@ -406,7 +407,9 @@ foreach(spec ${FUTURE_SPECS})
              ${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml
              > ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
         DEPENDS future-${spec}.xml
-                ${CMAKE_SOURCE_DIR}/tools/xincludator.py)
+                ${CMAKE_SOURCE_DIR}/tools/xincludator.py
+                ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h
+                ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h)
     set(NEW_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp)
@@ -443,8 +446,14 @@ function(CLIENT_GENERATOR spec group pretty_include namespace main_iface)
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    qt4_generate_moc_i(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
-                       ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
+    # Tell CMake the source won't be available until build time.
+    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp PROPERTIES GENERATED 1)
+    add_custom_target(generate_cli-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp)
+    qt4_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
+                       ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp
+                       "generate_cli-${spec}-body")
+    # Tell CMake the source won't be available until build time.
+    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp PROPERTIES GENERATED 1)
     list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
 endfunction(CLIENT_GENERATOR spec group pretty_include main_iface)
 
@@ -485,22 +494,39 @@ function(FUTURE_CLIENT_GENERATOR spec namespace main_iface)
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    qt4_generate_moc_i(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
-                       ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp)
+    # Tell CMake the source won't be available until build time.
+    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp PROPERTIES GENERATED 1)
+    add_custom_target(generate_future-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp)
+    qt4_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
+                       ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp
+                       "generate_future-${spec}-body")
+    # Tell CMake the source won't be available until build time.
+    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp PROPERTIES GENERATED 1)
 endfunction(FUTURE_CLIENT_GENERATOR spec group pretty_include main_iface)
 
 future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface)
 future_client_generator(misc TpFuture::Client '')
 
+foreach(spec ${SPECS})
+    list(APPEND telepathy_qt4_generated_specs_mocs "moc-cli-${spec}.moc.hpp")
+endforeach(spec ${SPECS})
+foreach(spec ${FUTURE_SPECS})
+    list(APPEND telepathy_qt4_generated_specs_mocs "moc-future-${spec}.moc.hpp")
+endforeach(spec ${FUTURE_SPECS})
+
+add_library(telepathy-qt4 SHARED ${telepathy_qt4_SRCS})
+
 # generate client moc files
 foreach(moc_src ${telepathy_qt4_MOC_SRCS})
     set(generated_file _gen/${moc_src})
     string(REPLACE ".h" ".moc.hpp" generated_file ${generated_file})
-    qt4_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
+    qt4_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
+                                   ${telepathy_qt4_generated_specs_mocs})
     list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
+    string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
+    add_dependencies(telepathy-qt4 "moc-${moc_src}")
 endforeach(moc_src ${telepathy_qt4_MOC_SRCS})
 
-add_library(telepathy-qt4 SHARED ${telepathy_qt4_SRCS})
 target_link_libraries(telepathy-qt4
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
