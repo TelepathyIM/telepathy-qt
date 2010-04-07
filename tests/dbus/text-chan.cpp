@@ -363,30 +363,18 @@ void TestTextChan::commonTest(bool withMessages)
         QCOMPARE(r.text(), QLatin1String("You said: Two"));
     }
 
-    uint id = received.at(0).header().value(
-            QLatin1String("pending-message-id")).variant().toUInt();
     // go behind the TextChannel's back to acknowledge the first message:
     // this emulates another client doing so
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            mChan->textInterface()->AcknowledgePendingMessages(
-                UIntList() << id));
-    QVERIFY(connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(expectSuccessfulCall(QDBusPendingCallWatcher *))));
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(pendingMessageRemoved(Tp::ReceivedMessage)),
+                    mLoop,
+                    SLOT(quit())));
+    mChan->acknowledge(QList< ReceivedMessage >() << received.at(0));
     QCOMPARE(mLoop->exec(), 0);
-    delete watcher;
-
-    // on a channel with Messages, we're notified; on a channel with only Text,
-    // we're not notified, so exercise forget() instead to get back to the
-    // same state
-    if (!withMessages) {
-        QCOMPARE(mChan->messageQueue().size(), 2);
-        QVERIFY(mChan->messageQueue().at(0) == received.at(0));
-        QVERIFY(mChan->messageQueue().at(1) == received.at(1));
-        QCOMPARE(removed.size(), 0);
-
-        mChan->forget(QList<ReceivedMessage>() << received.at(0));
-    }
+    QVERIFY(disconnect(mChan.data(),
+                       SIGNAL(pendingMessageRemoved(Tp::ReceivedMessage)),
+                       mLoop,
+                       SLOT(quit())));
 
     QCOMPARE(mChan->messageQueue().size(), 1);
     QVERIFY(mChan->messageQueue().at(0) == received.at(1));
