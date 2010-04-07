@@ -6,7 +6,8 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh "
 ${test_environment}
-sh ${CMAKE_SOURCE_DIR}/tools/with-session-bus.sh --session -- $@
+sh ${CMAKE_SOURCE_DIR}/tools/with-session-bus.sh \\
+    --config-file=${CMAKE_BINARY_DIR}/tests/dbus-1/session.conf -- $@
 ")
 set(with_session_bus ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
 
