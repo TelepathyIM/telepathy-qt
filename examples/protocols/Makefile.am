@@ -26,7 +26,7 @@ protocols_SOURCES = \
 	protocols.h
 
 nodist_protocols_SOURCES = \
-	_gen/cm-wrapper.moc.hpp
+	_gen/cm-wrapper.moc.hpp \
 	_gen/protocols.moc.hpp
 
 BUILT_SOURCES = \
