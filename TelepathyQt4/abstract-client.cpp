@@ -90,6 +90,7 @@ AbstractClient::~AbstractClient()
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 {
     ChannelClassList channelFilter;
+    bool recover;
 };
 
 /**
@@ -197,6 +198,10 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 /**
  * Construct a new AbstractClientObserver object.
  *
+ * Note that using this constructor the recover() method will return \c false,
+ * meaning that on crash the observer won't be able to "catch up" on channels
+ * that match its observerChannelFilter() automatically.
+ *
  * \param channelFilter A specification of the channels in which this observer
  *                      is interested.
  */
@@ -205,8 +210,26 @@ AbstractClientObserver::AbstractClientObserver(
     : mPriv(new Private)
 {
     mPriv->channelFilter = channelFilter;
+    mPriv->recover = false;
 }
 
+/**
+ * Construct a new AbstractClientObserver object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param recover Whether upon the startup of this observer, observeChannels()
+ *                will be called for every already existing channel matching
+ *                its observerChannelFilter().
+ */
+AbstractClientObserver::AbstractClientObserver(
+        const ChannelClassList &channelFilter,
+        bool recover)
+    : mPriv(new Private)
+{
+    mPriv->channelFilter = channelFilter;
+    mPriv->recover = recover;
+}
 /**
  * Class destructor.
  */
@@ -245,6 +268,20 @@ AbstractClientObserver::~AbstractClientObserver()
 ChannelClassList AbstractClientObserver::observerChannelFilter() const
 {
     return mPriv->channelFilter;
+}
+
+/**
+ * Return whether upon the startup of this observer, observeChannels()
+ * will be called for every already existing channel matching its
+ * observerChannelFilter().
+ *
+ * \param \c true if this observer observerChannels() will be called for every
+ *        already existing channel matching its observerChannelFilter(),
+ *        \c false otherwise.
+ */
+bool AbstractClientObserver::recover() const
+{
+    return mPriv->recover;
 }
 
 /**
