@@ -68,6 +68,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     QString avatarToken;
     SimplePresence simplePresence;
     ContactCapabilities *caps;
+    QVariantMap location;
 
     PresenceState subscriptionState;
     PresenceState publishState;
@@ -198,6 +199,25 @@ ContactCapabilities *Contact::capabilities() const
     }
 
     return mPriv->caps;
+}
+
+/**
+ * Return the location for this contact.
+ *
+ * This method requires Contact::FeatureLocation to be enabled.
+ *
+ * @return A map representing the contact location or an empty map if
+ *         FeatureLocation is not ready.
+ */
+QVariantMap Contact::location() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureLocation)) {
+        warning() << "Contact::location() used on" << this
+            << "for which FeatureLocation hasn't been requested - returning 0";
+        return 0;
+    }
+
+    return mPriv->location;
 }
 
 Contact::PresenceState Contact::subscriptionState() const
@@ -333,6 +353,7 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
         QString maybeAlias;
         SimplePresence maybePresence;
         RequestableChannelClassList maybeCaps;
+        QVariantMap maybeLocation;
 
         switch (feature) {
             case FeatureAlias:
@@ -382,6 +403,23 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
 
                 if (!maybeCaps.isEmpty()) {
                     receiveCapabilities(maybeCaps);
+                }
+                break;
+
+            case FeatureLocation:
+                maybeLocation = qdbus_cast<QVariantMap>(attributes.value(
+                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION "/location")));
+
+                if (!maybeLocation.isEmpty()) {
+                    receiveLocation(maybeLocation);
+                } else {
+                    if (manager()->supportedFeatures().contains(FeatureLocation) &&
+                        mPriv->requestedFeatures.contains(FeatureLocation)) {
+                        // Location being supported but not updated in the
+                        // mapping indicates that the location is not known -
+                        // however, the feature is working fine
+                        mPriv->actualFeatures.insert(FeatureLocation);
+                    }
                 }
                 break;
 
@@ -447,6 +485,20 @@ void Contact::receiveCapabilities(const RequestableChannelClassList &caps)
     if (mPriv->caps->requestableChannelClasses() != caps) {
         mPriv->caps->updateRequestableChannelClasses(caps);
         emit capabilitiesChanged(mPriv->caps);
+    }
+}
+
+void Contact::receiveLocation(const QVariantMap &location)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureLocation)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureLocation);
+
+    if (mPriv->location != location) {
+        mPriv->location = location;
+        emit locationUpdated(mPriv->location);
     }
 }
 
