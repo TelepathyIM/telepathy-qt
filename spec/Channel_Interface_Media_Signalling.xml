@@ -152,39 +152,39 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:docstring>
     </tp:property>
 
-    <tp:handler-capability-token name="gtalk-p2p">
+    <tp:hct name="gtalk-p2p">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client can implement streaming for streams whose <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
           property is <code>gtalk-p2p</code>.</p>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
-    <tp:handler-capability-token name="ice-udp">
+    <tp:hct name="ice-udp">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client can implement streaming for streams whose <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
           property is <code>ice-udp</code>.</p>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
-    <tp:handler-capability-token name="wlm-8.5">
+    <tp:hct name="wlm-8.5">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client can implement streaming for streams whose <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
           property is <code>wlm-8.5</code>.</p>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
-    <tp:handler-capability-token name="wlm-2009">
+    <tp:hct name="wlm-2009">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client can implement streaming for streams whose <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Media.StreamHandler">NATTraversal</tp:dbus-ref>
           property is <code>wlm-2009</code>.</p>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
-    <tp:handler-capability-token name="video/h264" is-family="yes">
+    <tp:hct name="video/h264" is-family="yes">
       <tp:docstring>
         <p>The client supports media streaming with H264 (etc.).</p>
 
@@ -228,7 +228,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             known to the gatewaying process.</p>
         </tp:rationale>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
   </interface>
 </node>

@@ -355,7 +355,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       access="read" tp:name-for-bindings="Initiator_Handle">
       <tp:added version="0.17.13">(as stable API)</tp:added>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The contact who initiated the channel. For channels requested by the
+        <p>The contact who initiated the channel; for instance, the contact
+          who invited the local user to a chatroom, or the contact who
+          initiated a call.</p>
+
+        <p>This does <em>not</em> necessarily represent the contact who
+          created the underlying protocol-level construct. For instance, if
+          Rob creates a chatroom, Will joins that chatroom, and Will invites Simon
+          to join it, then Simon will see Will as the InitiatorHandle of the
+          channel representing the chatroom.</p>
+
+        <tp:rationale>
+          <p>The room creator is generally a less useful piece of information
+            than the inviter, is less likely to be available at invitation
+            time (i.e. can't necessarily be an immutable property), and is
+            less likely to be available at all. The creator of a chatroom
+            is not currently available via Telepathy; if added in future, it
+            is likely to be made available as a property on the Chatroom
+            interface (<a
+              href="http://bugs.freedesktop.org/show_bug.cgi?id=23151">bug 23151</a>).</p>
+        </tp:rationale>
+
+        <p>For channels requested by the
           local user, this MUST be the value of
           <tp:dbus-ref namespace="org.freedesktop.Telepathy">Connection.SelfHandle</tp:dbus-ref>
           at the time the channel was created (i.e. not a channel-specific

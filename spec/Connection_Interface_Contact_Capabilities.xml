@@ -161,7 +161,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="GetContactCapabilities"
             tp:name-for-bindings="Get_Contact_Capabilities">
-      <arg direction="in" name="handles" type="au" tp:type="Contact_Handle[]">
+      <arg direction="in" name="Handles" type="au" tp:type="Contact_Handle[]">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>An array of contact handles for this connection.</p>
 
@@ -171,15 +171,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <arg direction="out" type="a{ua(a{sv}as)}"
            tp:type="Contact_Capabilities_Map" name="Contact_Capabilities">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          An array of structures containing:
-          <ul>
-            <li>a dictionary mapping the channel properties to their values.</li>
-            <li>an array of additional allowed properties</li>
-          </ul>
+          <p>A map from contact handles to lists of requestable channel
+            classes, representing the channel requests that are expected
+            to succeed for that contact.</p>
+
+          <p>Contacts listed among Handles whose capabilities are unknown
+            SHOULD be omitted from this map; contacts known to have an empty
+            set of capabilities SHOULD be included in the keys of this map,
+            with an empty array as the corresponding value.</p>
         </tp:docstring>
       </arg>
-      <tp:docstring>
-        Returns an array of enhanced capabilities for the given contact handles.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Returns an array of requestable channel classes for the given
+          contact handles, representing the channel requests that are
+          expected to succeed.</p>
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>

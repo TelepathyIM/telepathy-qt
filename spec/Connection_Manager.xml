@@ -318,6 +318,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             pings.</dd>
         </dl>
 
+        <p>Connection manager authors SHOULD avoid introducing parameters
+          whose default values would not be serializable in a
+          <code>.manager</code> file.</p>
+
+        <tp:rationale>
+          <p>The same serialization format is used in Mission Control
+            to store accounts.</p>
+        </tp:rationale>
+
         <p>Every successful RequestConnection call will cause the emission of a
         <tp:member-ref>NewConnection</tp:member-ref> signal for the same newly
         created connection. The
@@ -462,7 +471,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <dd>The object path as an ASCII string</dd>
       <dt>b (boolean)</dt>
         <dd>"true" (case-insensitively) or "1" means True, "false"
-          (case-insensitively) or "0" means False</dd>
+          (case-insensitively) or "0" means False; when writing a file,
+          "true" and "false" SHOULD be used</dd>
       <dt>y, q, u, t (8-, 16-, 32-, 64-bit unsigned integer)</dt>
         <dd>ASCII decimal integer</dd>
       <dt>n, i, x (16-, 32-, 64-bit signed integer)</dt>

@@ -388,9 +388,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>An array of fields representing information about this
             contact, in the same format used in the <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection.Interface">ContactInfo.DRAFT</tp:dbus-ref>
+              namespace="org.freedesktop.Telepathy.Connection.Interface">ContactInfo</tp:dbus-ref>
             interface. It is possible that a separate call to <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection.Interface.ContactInfo.DRAFT">RequestContactInfo</tp:dbus-ref>
+              namespace="org.freedesktop.Telepathy.Connection.Interface.ContactInfo">RequestContactInfo</tp:dbus-ref>
             would return more information than this signal provides.</p>
 
           <p>This array SHOULD include the <code>x-telepathy-identifier</code>

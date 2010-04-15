@@ -147,15 +147,16 @@
 
         <p>For observers that have a .client file, the channel dispatcher
           may discover this property from keys of the form
-          <code><em>propertyname</em>/<em>type</em></code>,
+          "<code><em>propertyname</em> <em>type</em></code>",
           in groups in the .client file whose name is the name of this
           interface followed by <code>.ObserverChannelFilter</code>,
           a space and an ASCII decimal number starting from 0.</p>
 
-        <p>Integers in the .client file are encoded in ASCII decimal, booleans
-          are encoded as "true" or "false", and strings are encoded in the usual
-          way for desktop files (including the C-style backslash escapes
-          documented in the Desktop Entry specification).</p>
+        <p>Values in the .client file are encoded in exactly the same way as
+          the <code>default-<em>p</em></code> keys in .manager files, as
+          described in the <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >ConnectionManager</tp:dbus-ref> interface (but note that not all
+          types supported in .manager files can appear in .client files).</p>
 
         <p>For instance, a .client file for an observer that is only interested
           in Text channels, with CONTACT or ROOM handles, that were requested by
@@ -176,6 +177,43 @@ org.freedesktop.Telepathy.Channel.TargetHandleType u=2
 org.freedesktop.Telepathy.Channel.Requested b=true
 </pre>
 
+      </tp:docstring>
+    </property>
+
+    <property name="Recover" tp:name-for-bindings="Recover" type="b"
+      access="read">
+      <tp:added version="0.19.4">
+        When using telepathy-mission-control, version 5.4.0 or later is
+        needed for this property to be useful.
+      </tp:added>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If true, upon the startup of this observer, <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Client.Observer">ObserveChannels</tp:dbus-ref>
+        will be called for every already existing channel matching
+        its <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Client.Observer">ObserverChannelFilter</tp:dbus-ref></p>
+
+        <p>When activatable client having this property disappears from the bus
+        and there are channels matching its ObserverChannelFilter,
+        ObserveChannels will be called immediately to reactivate it again.</p>
+        <tp:rationale>
+          <p>This means that if an activatable Observer crashes, it will
+            be restarted as soon as possible; while there is an unavoidable
+            possibility that it will miss some events during this process
+            (particularly <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type">Text</tp:dbus-ref>
+            messages), this window of event loss is kept to a minimum.</p>
+
+           <p>Non-activatable observers can't take advantage of this
+            mechanism, but setting this property on a non-activatable
+            observer does allow it to "catch up" on channels that are
+            currently active at the time that it starts up.</p>
+        </tp:rationale>
+
+        <p>When the ObserveChannels method is called due to observer recovery,
+        the "Observer_Info" dictionary will contain one extra item with key
+        "recovering" and boolean value of True.</p>
       </tp:docstring>
     </property>
 
@@ -293,10 +331,23 @@ org.freedesktop.Telepathy.Channel.Requested b=true
 
       <arg name="Observer_Info" type="a{sv}" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>Additional information about these channels. No keys are
-            currently defined.</p>
+          <p>Additional information about these channels. Currently defined
+            keys are:</p>
 
-          <p>If keys are defined for this dictionary, all will be optional;
+          <dl>
+            <dt><code>recovering</code> - b</dt>
+            <dd>True if ObserveChannels was called on existing channel due to
+              observer recovery, otherwise False.
+              <tp:rationale>
+                This allows observers to distinguish between new channels (the normal
+                case), and existing channels that were given to the observer in order
+                to catch up on previous events (perhaps after a previous instance of
+                the same observer crashed).
+              </tp:rationale>
+            </dd>
+          </dl>
+
+          <p>All defined keys for this dictionary are optional;
             observers MAY safely ignore any entry in this dictionary.</p>
         </tp:docstring>
       </arg>

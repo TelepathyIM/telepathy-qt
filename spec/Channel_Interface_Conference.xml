@@ -61,7 +61,7 @@
           which returns a Conference channel.</p>
 
         <p>Either of the XMPP cases could work for Call channels, to
-          upgrade from 1-1 Jingle to multi-user Muji. Any of the XMPP cases
+          upgrade from 1-1 Jingle to multi-user Jingle. Any of the XMPP cases
           could in principle work for link-local XMPP (XEP-0174).</p>
 
         <p>The underlying switchboard representing an MSN 1-1 conversation C1
@@ -270,7 +270,7 @@
           invited into the new channel, as if they had been added with
           <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface"
             >Group.AddMembers</tp:dbus-ref>(InitialInviteeHandles,
-          <tp:member-ref>InvitationMessage</tp:member-ref> immediately after
+          <tp:member-ref>InvitationMessage</tp:member-ref>) immediately after
           the channel was created.</p>
 
         <tp:rationale>
@@ -279,9 +279,6 @@
             someone else to participate.</p>
         </tp:rationale>
 
-        <p>At most one of InitialInviteeHandles and InitialInviteeIDs may
-          appear in each request.</p>
-
         <p>If the local user was not the initiator of this channel, the
           <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface"
             >Group.SelfHandle</tp:dbus-ref> SHOULD appear in the value of this
@@ -289,6 +286,36 @@
           (if that information is known).</p>
 
         <p>This property is immutable.</p>
+
+        <p>InitialInviteeHandles, InitialInviteeIDs and InitialChannels MAY be
+          combined in a single request.</p>
+
+        <tp:rationale>
+          <p>For example, if you have a 1-1 channel C1 with Rob, and you want
+            to invite Sjoerd to join the discussion, you can do so by
+            requesting a channel with InitialChannels=[C1] and
+            InitialInviteeHandles=[sjoerd],
+            or InitialChannels=[C1] and
+            InitialInviteeIDs=["sjoerd@example.com"].</p>
+        </tp:rationale>
+
+        <p>If a request includes some combination of InitialInviteeHandles,
+          InitialInviteeIDs and InitialChannels, then the value of
+          InitialInviteeHandles on the resulting channel SHOULD be the union of
+          the handles from InitialInviteeHandles, the handles corresponding
+          to the InitialInviteeIDs, and the target handles of the
+          InitialChannels, with any duplicate handles removed. Because this
+          property is immutable, its value SHOULD be computed before the
+          channel is announced via the NewChannels signal.</p>
+
+        <tp:rationale>
+          <p>This simplifies identification of new channels in clients - they
+            only have to look at one of the properties, not both. For example,
+            after either of the requests mentioned above, the NewChannels
+            signal would announce the channel with InitialChannels=[C1],
+            InitialInviteeHandles=[rob, sjoerd], and
+            InitialInviteeIDs=["rob@example.net", "sjoerd.example.com"].</p>
+        </tp:rationale>
       </tp:docstring>
     </property>
 
@@ -299,16 +326,17 @@
         <p>A list of additional contacts invited to this conference when it
           was created.</p>
 
-        <p>This property SHOULD be requestable, as an alternative to
-          <tp:member-ref>InitialInviteeHandles</tp:member-ref>. Its semantics
-          are the same, except that it takes a list of the string
-          representations of contact handles.</p>
-
-        <p>At most one of InitialInviteeHandles and InitialInviteeIDs may
-          appear in each request.</p>
+        <p>This property SHOULD be requestable as an alternative to, or
+          combined with, <tp:member-ref>InitialInviteeHandles</tp:member-ref>.
+          Its semantics are the same, except that it takes a list of the
+          string representations of contact handles; invitations are sent to
+          any contact present in either or both of these properties.</p>
 
         <p>When a channel is created, the values of InitialInviteeHandles and
-          InitialInviteeIDs MUST correspond to each other.</p>
+          InitialInviteeIDs MUST correspond to each other. In particular, this
+          means that the value of InitialInviteeIDs will include the TargetID
+          of each channel in InitialChannels, and the ID corresponding to each
+          handle in InitialInviteeHandles.</p>
 
         <p>This property is immutable.</p>
       </tp:docstring>
