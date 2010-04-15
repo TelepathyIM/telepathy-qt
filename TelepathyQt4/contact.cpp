@@ -25,6 +25,7 @@
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ContactCapabilities>
+#include <TelepathyQt4/ContactLocation>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
@@ -49,11 +50,14 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
                     manager->connection()->capabilities()->requestableChannelClasses(),
                     false);
         }
+
+        location = new ContactLocation();
     }
 
     ~Private()
     {
         delete caps;
+        delete location;
     }
 
     ContactManager *manager;
@@ -68,7 +72,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     QString avatarToken;
     SimplePresence simplePresence;
     ContactCapabilities *caps;
-    QVariantMap location;
+    ContactLocation *location;
 
     PresenceState subscriptionState;
     PresenceState publishState;
@@ -204,12 +208,14 @@ ContactCapabilities *Contact::capabilities() const
 /**
  * Return the location for this contact.
  *
+ * Change notification is advertised through locationUpdated().
+ *
  * This method requires Contact::FeatureLocation to be enabled.
  *
- * @return A map representing the contact location or an empty map if
+ * @return An object representing the contact location or 0 if
  *         FeatureLocation is not ready.
  */
-QVariantMap Contact::location() const
+ContactLocation *Contact::location() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureLocation)) {
         warning() << "Contact::location() used on" << this
@@ -496,8 +502,8 @@ void Contact::receiveLocation(const QVariantMap &location)
 
     mPriv->actualFeatures.insert(FeatureLocation);
 
-    if (mPriv->location != location) {
-        mPriv->location = location;
+    if (mPriv->location->data() != location) {
+        mPriv->location->updateData(location);
         emit locationUpdated(mPriv->location);
     }
 }

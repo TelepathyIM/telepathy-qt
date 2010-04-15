@@ -37,6 +37,7 @@ namespace Tp
 {
 
 class ContactCapabilities;
+class ContactLocation;
 class ContactManager;
 class PendingOperation;
 class ReferencedHandles;
@@ -81,7 +82,7 @@ public:
 
     ContactCapabilities *capabilities() const;
 
-    QVariantMap location() const;
+    ContactLocation *location() const;
 
     PresenceState subscriptionState() const;
     PresenceState publishState() const;
@@ -105,7 +106,7 @@ Q_SIGNALS:
     void avatarTokenChanged(const QString &avatarToken);
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
     void capabilitiesChanged(Tp::ContactCapabilities *caps);
-    void locationUpdated(const QVariantMap &location);
+    void locationUpdated(Tp::ContactLocation *location);
 
     void subscriptionStateChanged(Tp::Contact::PresenceState state);
     void publishStateChanged(Tp::Contact::PresenceState state);
