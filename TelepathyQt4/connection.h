@@ -141,6 +141,12 @@ public:
         return optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>(check);
     }
 
+    inline Client::ConnectionInterfaceLocationInterface *locationInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceLocationInterface>(check);
+    }
+
     inline Client::ConnectionInterfacePresenceInterface *presenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
