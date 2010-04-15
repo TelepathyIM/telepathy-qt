@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from sys import argv, stdout, stderr
+import codecs
 import xml.dom.minidom
 from getopt import gnu_getopt
 
@@ -35,31 +36,32 @@ class Generator(object):
             assert False, 'Missing required parameter %s' % k.args[0]
 
         self.spec = get_by_path(dom, "spec")[0]
+        self.out = codecs.getwriter('utf-8')(stdout)
 
-    def write(self, text):
-        stdout.write(text.encode('utf-8'))
+    def h(self, code):
+        self.out.write(code)
 
     def __call__(self):
         # Header
-        self.write('/* Generated from ')
-        self.write(get_descendant_text(get_by_path(self.spec, 'title')))
+        self.h('/* Generated from ')
+        self.h(get_descendant_text(get_by_path(self.spec, 'title')))
         version = get_by_path(self.spec, "version")
 
         if version:
-            self.write(', version ' + get_descendant_text(version))
+            self.h(', version ' + get_descendant_text(version))
 
-        self.write("""
+        self.h("""
  */
  """)
 
         if self.must_define:
-            self.write("""
+            self.h("""
 #ifndef %s
 #error %s
 #endif
 """ % (self.must_define, self.must_define))
 
-        self.write("""
+        self.h("""
 #include <QFlags>
 
 /**
@@ -100,7 +102,7 @@ class Generator(object):
 """)
 
         # Begin namespace
-        self.write("""
+        self.h("""
 namespace %s
 {
 """ % self.namespace)
@@ -114,14 +116,14 @@ namespace %s
             self.do_enum(enum)
 
         # End namespace
-        self.write("""\
+        self.h("""\
 }
 
 """)
 
         # Interface names
         for iface in self.spec.getElementsByTagName('interface'):
-            self.write("""\
+            self.h("""\
 /**
  * \\ingroup ifacestrconsts
  *
@@ -137,7 +139,7 @@ namespace %s
             name = error.getAttribute('name')
             fullname = get_by_path(error, '../@namespace') + '.' + name.replace(' ', '')
             define = self.prefix + 'ERROR_' + name.replace(' ', '_').replace('.', '_').upper()
-            self.write("""\
+            self.h("""\
 /**
  * \\ingroup errorstrconsts
  *
@@ -160,7 +162,7 @@ namespace %s
 
         singular = singular.replace('_', '')
         plural = (flags.getAttribute('plural') or flags.getAttribute('name') or singular + 's').replace('_', '')
-        self.write("""\
+        self.h("""\
 /**
  * \\ingroup flagtypeconsts
  *
@@ -175,7 +177,7 @@ enum %(singular)s
         for flag in flagvalues:
             self.do_val(flag, singular, flag == flagvalues[-1])
 
-        self.write("""\
+        self.h("""\
 };
 
 /**
@@ -202,7 +204,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(%(plural)s)
         singular = singular.replace('_', '')
         vals = get_by_path(enum, 'enumvalue')
 
-        self.write("""\
+        self.h("""\
 /**
  * \\enum %(singular)s
  * \\ingroup enumtypeconsts
@@ -217,7 +219,7 @@ enum %(singular)s
         for val in vals:
             self.do_val(val, singular, val == vals[-1])
 
-        self.write("""\
+        self.h("""\
 };
 
 /**
@@ -233,7 +235,7 @@ const int NUM_%(upper-plural)s = (%(last-val)s+1);
 
     def do_val(self, val, prefix, last):
         name = (val.getAttribute('suffix') or val.getAttribute('name')).replace('_', '')
-        self.write("""\
+        self.h("""\
 %s\
      %s = %s%s
 """ % (format_docstring(val, indent='     * ', brackets=('    /**', '     */')), prefix + name, val.getAttribute('value'), (not last and ',\n') or ''))
