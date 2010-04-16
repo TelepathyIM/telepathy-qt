@@ -89,6 +89,11 @@ AbstractClient::~AbstractClient()
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 {
+    Private(const ChannelClassList &channelFilter, bool shouldRecover)
+        : channelFilter(channelFilter), shouldRecover(shouldRecover)
+    {
+    }
+
     ChannelClassList channelFilter;
     bool shouldRecover;
 };
@@ -207,10 +212,8 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  */
 AbstractClientObserver::AbstractClientObserver(
         const ChannelClassList &channelFilter)
-    : mPriv(new Private)
+    : mPriv(new Private(channelFilter, false))
 {
-    mPriv->channelFilter = channelFilter;
-    mPriv->shouldRecover = false;
 }
 
 /**
@@ -225,10 +228,8 @@ AbstractClientObserver::AbstractClientObserver(
 AbstractClientObserver::AbstractClientObserver(
         const ChannelClassList &channelFilter,
         bool shouldRecover)
-    : mPriv(new Private)
+    : mPriv(new Private(channelFilter, shouldRecover))
 {
-    mPriv->channelFilter = channelFilter;
-    mPriv->shouldRecover = shouldRecover;
 }
 /**
  * Class destructor.
