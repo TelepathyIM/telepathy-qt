@@ -23,7 +23,9 @@ if(HAVE_TEST_PYTHON)
 endif(HAVE_TEST_PYTHON)
 
 if(ENABLE_TP_GLIB_TESTS)
-    include_directories(${TPGLIB_INCLUDE_DIRS})
+    include_directories(${TELEPATHY_GLIB_INCLUDE_DIR}
+                        ${GLIB2_INCLUDE_DIR}
+                        ${DBUS_INCLUDE_DIR})
 
     if(HAVE_TEST_PYTHON)
         add_dbus_unit_test(AccountChannelDispatcher account-channel-dispatcher tp-glib-tests)

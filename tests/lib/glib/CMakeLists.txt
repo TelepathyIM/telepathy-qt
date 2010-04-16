@@ -2,7 +2,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${TPGLIB_INCLUDE_DIRS})
+    ${TELEPATHY_GLIB_INCLUDE_DIR}
+    ${GLIB2_INCLUDE_DIR}
+    ${DBUS_INCLUDE_DIR})
 
 if(ENABLE_TP_GLIB_TESTS)
     add_subdirectory(callable)
@@ -21,7 +23,7 @@ if(ENABLE_TP_GLIB_TESTS)
         simple-manager.c
         simple-manager.h)
     add_library(tp-glib-tests SHARED ${tp_glib_tests_SRCS})
-    target_link_libraries(tp-glib-tests ${TPGLIB_LIBRARIES}
+    target_link_libraries(tp-glib-tests ${TELEPATHY_GLIB_LIBRARIES}
                           example-cm-callable
                           example-cm-contactlist
                           example-cm-csh

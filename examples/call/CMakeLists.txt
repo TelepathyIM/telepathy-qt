@@ -1,9 +1,13 @@
-if(TP_FARSIGHT_FOUND)
+if(FARSIGHT_COMPONENTS_FOUND)
     include_directories(
                 ${CMAKE_BINARY_DIR}
                 ${CMAKE_SOURCE_DIR}
                 ${QT_INCLUDES}
-                ${TP_FARSIGHT_INCLUDE_DIRS})
+                ${TELEPATHY_FARSIGHT_INCLUDE_DIR}
+                ${GSTREAMER_INCLUDE_DIR}
+                ${GLIB2_INCLUDE_DIR}
+                ${LIBXML2_INCLUDE_DIR}
+                ${DBUS_INCLUDE_DIR})
 
     set(call_SRCS
         main.cpp
@@ -34,8 +38,7 @@ if(TP_FARSIGHT_FOUND)
         ${QT_QTCORE_LIBRARIES}
         ${QT_QTGUI_LIBRARIES}
         ${QT_QTCORE_LIBRARIES}
-        ${TP_FARSIGHT_LIBRARIES}
         telepathy-qt4
         telepathy-qt4-farsight
         telepathy-qt4-examples-roster)
-endif(TP_FARSIGHT_FOUND)
+endif(FARSIGHT_COMPONENTS_FOUND)

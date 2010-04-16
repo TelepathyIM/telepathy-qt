@@ -141,31 +141,42 @@ else(PYTHON_DBUS_RESULT EQUAL 0)
     set(HAVE_TEST_PYTHON 0)
 endif(PYTHON_DBUS_RESULT EQUAL 0)
 
-# Optional dependencies
-find_package(PkgConfig)
+# Find GLib2, DBus and LibXml2
+# Those are needed for the insane include dir dependency hell
+find_package(GLIB2)
+find_package(DBus)
+find_package(LibXml2)
 
 # Find tp-farsight
-pkg_check_modules(TP_FARSIGHT telepathy-farsight>=0.0.4 gstreamer-0.10 gstreamer-interfaces-0.10)
-if(TP_FARSIGHT_FOUND)
+set(TELEPATHY_FARSIGHT_MIN_VERSION "0.0.4")
+find_package(TelepathyFarsight)
+find_package(GStreamer)
+if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+    set (FARSIGHT_COMPONENTS_FOUND 1)
+else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+    set (FARSIGHT_COMPONENTS_FOUND 0)
+endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+
+if(FARSIGHT_COMPONENTS_FOUND)
     message(STATUS "telepathy-farsight and gstreamer libraries found, building additional examples")
-else(TP_FARSIGHT_FOUND)
+else(FARSIGHT_COMPONENTS_FOUND)
     message(STATUS "telepathy-farsight or gstreamer libraries not found, not building some examples")
-endif(TP_FARSIGHT_FOUND)
+endif(FARSIGHT_COMPONENTS_FOUND)
 
 # Find telepathy-glib
-set(REQUIRED_TP_GLIB 0.10.0)
-pkg_check_modules(TPGLIB telepathy-glib>=${REQUIRED_TP_GLIB})
+set(TELEPATHY_GLIB_MIN_VERSION 0.10.0)
+find_package(TelepathyGlib)
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
 
 # process results...
-if(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
-    message(STATUS "Qt4 compiled with Glib support and telepathy-glib >= ${REQUIRED_TP_GLIB} found, running additional tests")
+if(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+    message(STATUS "Qt4 compiled with Glib support and telepathy-glib >= ${TELEPATHY_GLIB_MIN_VERSION} found, running additional tests")
     set(ENABLE_TP_GLIB_TESTS 1)
-else(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
-    message(STATUS "Qt4 not compiled with Glib support or telepathy-glib >= ${REQUIRED_TP_GLIB} not found, skipping some tests")
+else(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
+    message(STATUS "Qt4 not compiled with Glib support or telepathy-glib >= ${TELEPATHY_GLIB_MIN_VERSION} not found, skipping some tests")
     set(ENABLE_TP_GLIB_TESTS 0)
-endif(QT4_GLIB_SUPPORT AND TPGLIB_FOUND)
+endif(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
 
 add_subdirectory(TelepathyQt4)
 add_subdirectory(examples)
