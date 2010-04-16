@@ -34,6 +34,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 include(TelepathyDefaults)
 include(Doxygen)
+include(MacroLogFeature)
 
 # external dependencies
 
@@ -58,6 +59,10 @@ int main()
 return 0;
 }"
 QT4_GLIB_SUPPORT)
+macro_log_feature(QT4_GLIB_SUPPORT "Qt4 Glib Support"
+                  "QtCore library using Glib's main event loop"
+                  "http://qt.nokia.com/" FALSE ""
+                  "Needed, together with Telepathy-Glib, to build some additional test cases")
 
 SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTDBUS_LIBRARY})
 CHECK_CXX_SOURCE_COMPILES("
@@ -134,12 +139,14 @@ endif(${PYTHON_SHORT_VERSION} VERSION_GREATER ${REQUIRED_PY} OR ${PYTHON_SHORT_V
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import dbus.mainloop.glib"
                 RESULT_VARIABLE PYTHON_DBUS_RESULT)
 if(PYTHON_DBUS_RESULT EQUAL 0)
-    message(STATUS "dbus-python installed, running additional tests")
     set(HAVE_TEST_PYTHON 1)
 else(PYTHON_DBUS_RESULT EQUAL 0)
-    message(STATUS "dbus-python not installed, skipping some tests")
     set(HAVE_TEST_PYTHON 0)
 endif(PYTHON_DBUS_RESULT EQUAL 0)
+macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
+                  "GLib-based Python DBus support"
+                  "http://www.python.org/" FALSE ""
+                  "Needed to build some additional test cases")
 
 # Find GLib2, DBus and LibXml2
 # Those are needed for the insane include dir dependency hell
@@ -150,31 +157,35 @@ find_package(LibXml2)
 # Find tp-farsight
 set(TELEPATHY_FARSIGHT_MIN_VERSION "0.0.4")
 find_package(TelepathyFarsight)
+macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
+                  "A Framework for dealing with audio/video conferencing protocols"
+                  "http://farsight.freedesktop.org/wiki/" FALSE "0.0.4"
+                  "Needed, together with GStreamer, to build telepathy-qt4-farsight and some additional examples")
 find_package(GStreamer)
+macro_log_feature(GSTREAMER_FOUND "GStreamer"
+                  "An open source multimedia framework"
+                  "Needed, together with Tp-Farsight, to build telepathy-qt4-farsight and some additional examples"
+                  "http://www.gstreamer.net/" FALSE)
 if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
     set (FARSIGHT_COMPONENTS_FOUND 1)
 else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
     set (FARSIGHT_COMPONENTS_FOUND 0)
 endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
 
-if(FARSIGHT_COMPONENTS_FOUND)
-    message(STATUS "telepathy-farsight and gstreamer libraries found, building additional examples")
-else(FARSIGHT_COMPONENTS_FOUND)
-    message(STATUS "telepathy-farsight or gstreamer libraries not found, not building some examples")
-endif(FARSIGHT_COMPONENTS_FOUND)
-
 # Find telepathy-glib
 set(TELEPATHY_GLIB_MIN_VERSION 0.10.0)
 find_package(TelepathyGlib)
+macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
+                  "Glib bindings for Telepathy"
+                  "http://telepathy.freedesktop.org/" FALSE "0.10.0"
+                  "Needed, together with Qt Glib integration, to build some additional test cases")
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
 
 # process results...
 if(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
-    message(STATUS "Qt4 compiled with Glib support and telepathy-glib >= ${TELEPATHY_GLIB_MIN_VERSION} found, running additional tests")
     set(ENABLE_TP_GLIB_TESTS 1)
 else(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
-    message(STATUS "Qt4 not compiled with Glib support or telepathy-glib >= ${TELEPATHY_GLIB_MIN_VERSION} not found, skipping some tests")
     set(ENABLE_TP_GLIB_TESTS 0)
 endif(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
 
@@ -191,3 +202,5 @@ configure_file(
 
 add_custom_target(uninstall
     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+
+macro_display_feature_log()
