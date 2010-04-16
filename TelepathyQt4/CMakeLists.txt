@@ -1,7 +1,3 @@
-include_directories(${CMAKE_SOURCE_DIR}
-                    ${CMAKE_BINARY_DIR}
-                    ${QT_INCLUDES})
-
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
 set(telepathy_qt4_SRCS

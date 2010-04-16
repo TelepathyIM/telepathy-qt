@@ -43,6 +43,10 @@ include(MacroLogFeature)
 set (QT_MIN_VERSION "4.5.0")
 find_package(Qt4 REQUIRED)
 
+include_directories(${CMAKE_SOURCE_DIR}
+                    ${CMAKE_BINARY_DIR}
+                    ${QT_INCLUDES})
+
 # Check for Qt4 Glib support
 include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_INCLUDES ${QT_INCLUDES})

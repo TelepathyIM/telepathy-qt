@@ -1,8 +1,5 @@
 include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${QT_INCLUDES})
+    ${CMAKE_CURRENT_BINARY_DIR})
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 qt4_generate_moc_i(test.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/test.h.moc.hpp)

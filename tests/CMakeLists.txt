@@ -1,8 +1,3 @@
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}
-    ${QT_INCLUDES})
-
 find_program(SH sh)
 
 set(test_environment "

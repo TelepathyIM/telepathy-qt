@@ -1,8 +1,3 @@
-include_directories(
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}
-    ${QT_INCLUDES})
-
 set(roster_SRCS
     main.cpp
     roster-window.cpp

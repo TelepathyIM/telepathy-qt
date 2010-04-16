@@ -1,8 +1,4 @@
 if(ENABLE_TP_GLIB_TESTS)
-    include_directories(
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_BINARY_DIR})
-
     set(example_cm_csh_SRCS
         conn.c
         conn.h

@@ -1,8 +1,3 @@
-include_directories(
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}
-    ${QT_INCLUDES})
-
 set(protocols_SRCS
     main.cpp
     cm-wrapper.cpp

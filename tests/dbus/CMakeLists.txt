@@ -1,7 +1,3 @@
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR})
-
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh "

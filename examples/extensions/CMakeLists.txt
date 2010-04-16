@@ -14,11 +14,6 @@
 # the main interface) --mainiface should be specified as fully namespaced name
 # of the interface class itself.
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}
-    ${QT_INCLUDES})
-
 set(example_extensions_SRCS
     cli-connection.cpp
     cli-connection.h

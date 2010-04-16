@@ -1,8 +1,4 @@
 if(ENABLE_TP_GLIB_TESTS)
-    include_directories(${CMAKE_SOURCE_DIR}
-                        ${CMAKE_BINARY_DIR}
-                        ${TPGLIB_INCLUDE_DIRS})
-
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
     set(tp_glib_tests_future_extensions_SRCS

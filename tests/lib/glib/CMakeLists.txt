@@ -1,6 +1,4 @@
 include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${TELEPATHY_GLIB_INCLUDE_DIR}
     ${GLIB2_INCLUDE_DIR}

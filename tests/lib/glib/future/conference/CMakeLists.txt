@@ -1,8 +1,6 @@
 if(ENABLE_TP_GLIB_TESTS)
     include_directories(
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/tests/lib/glib/future
-        ${CMAKE_BINARY_DIR})
+        ${CMAKE_SOURCE_DIR}/tests/lib/glib/future)
 
     set(future_example_cm_conference_SRCS
         chan.c

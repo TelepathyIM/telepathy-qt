@@ -1,8 +1,5 @@
 if(FARSIGHT_COMPONENTS_FOUND)
-    include_directories(${CMAKE_SOURCE_DIR}
-                        ${CMAKE_BINARY_DIR}
-                        ${QT_INCLUDES}
-                        ${TELEPATHY_FARSIGHT_INCLUDE_DIR}
+    include_directories(${TELEPATHY_FARSIGHT_INCLUDE_DIR}
                         ${GSTREAMER_INCLUDE_DIR}
                         ${GLIB2_INCLUDE_DIR}
                         ${LIBXML2_INCLUDE_DIR}
