@@ -89,7 +89,13 @@ AbstractClient::~AbstractClient()
 
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 {
+    Private(const ChannelClassList &channelFilter, bool shouldRecover)
+        : channelFilter(channelFilter), shouldRecover(shouldRecover)
+    {
+    }
+
     ChannelClassList channelFilter;
+    bool shouldRecover;
 };
 
 /**
@@ -197,16 +203,34 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 /**
  * Construct a new AbstractClientObserver object.
  *
+ * Note that using this constructor the shouldRecover() method will return
+ * \c false, meaning that on crash the observer won't be able to "catch up"
+ * on channels that match its observerChannelFilter() automatically.
+ *
  * \param channelFilter A specification of the channels in which this observer
  *                      is interested.
  */
 AbstractClientObserver::AbstractClientObserver(
         const ChannelClassList &channelFilter)
-    : mPriv(new Private)
+    : mPriv(new Private(channelFilter, false))
 {
-    mPriv->channelFilter = channelFilter;
 }
 
+/**
+ * Construct a new AbstractClientObserver object.
+ *
+ * \param channelFilter A specification of the channels in which this observer
+ *                      is interested.
+ * \param shouldRecover Whether upon the startup of this observer,
+ *                      observeChannels() will be called for every already
+ *                      existing channel matching its observerChannelFilter().
+ */
+AbstractClientObserver::AbstractClientObserver(
+        const ChannelClassList &channelFilter,
+        bool shouldRecover)
+    : mPriv(new Private(channelFilter, shouldRecover))
+{
+}
 /**
  * Class destructor.
  */
@@ -245,6 +269,20 @@ AbstractClientObserver::~AbstractClientObserver()
 ChannelClassList AbstractClientObserver::observerChannelFilter() const
 {
     return mPriv->channelFilter;
+}
+
+/**
+ * Return whether upon the startup of this observer, observeChannels()
+ * will be called for every already existing channel matching its
+ * observerChannelFilter().
+ *
+ * \param \c true if this observer observerChannels() will be called for every
+ *        already existing channel matching its observerChannelFilter(),
+ *        \c false otherwise.
+ */
+bool AbstractClientObserver::shouldRecover() const
+{
+    return mPriv->shouldRecover;
 }
 
 /**

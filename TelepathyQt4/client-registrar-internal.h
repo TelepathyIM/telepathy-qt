@@ -67,6 +67,7 @@ class TELEPATHY_QT4_NO_EXPORT ClientObserverAdaptor : public QDBusAbstractAdapto
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"org.freedesktop.Telepathy.Client.Observer\" >\n"
 "    <property name=\"ObserverChannelFilter\" type=\"aa{sv}\" access=\"read\" />\n"
+"    <property name=\"Recover\" type=\"b\" access=\"read\" />\n"
 "    <method name=\"ObserveChannels\" >\n"
 "      <arg name=\"Account\" type=\"o\" direction=\"in\" />\n"
 "      <arg name=\"Connection\" type=\"o\" direction=\"in\" />\n"
@@ -91,6 +92,11 @@ public: // Properties
     inline Tp::ChannelClassList ObserverChannelFilter() const
     {
         return mClient->observerChannelFilter();
+    }
+
+    inline bool Recover() const
+    {
+        return mClient->shouldRecover();
     }
 
 public Q_SLOTS: // Methods
