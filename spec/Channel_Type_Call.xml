@@ -737,26 +737,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <tp:rationale><p>This reduces D-Bus round trips.</p></tp:rationale>
 
-        <p>Connection managers capable of signalling audio calls to contacts
-          SHOULD include a channel class in <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>
-          with <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>
-           <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel.Type">Call.DRAFT</tp:dbus-ref>
-          and <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>
-          = Contact in the fixed properties dictionary, and InitialAudio
-          (and also InitialVideo, if applicable) in the allowed properties
-          list. Clients wishing to discover whether a connection manager
-          can signal audio and/or video calls SHOULD use this information.</p>
-
-        <tp:rationale>
-          <p>Not all protocols support signalling video calls, and it would be
-            possible (although unlikely) to have a protocol where only video,
-            and not audio, could be signalled.</p>
-        </tp:rationale>
-
         <p>Connection managers that support the <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface">ContactCapabilities</tp:dbus-ref>
           interface SHOULD represent the capabilities of receiving audio
@@ -848,40 +828,52 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <tp:handler-capability-token name="gtalk-p2p">
+    <tp:hct name="audio">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>This client supports audio calls.</p>
+      </tp:docstring>
+    </tp:hct>
+
+    <tp:hct name="video">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>This client supports video calls.</p>
+      </tp:docstring>
+    </tp:hct>
+
+    <tp:hct name="gtalk-p2p">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client can implement streaming for streams whose <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT">Transport</tp:dbus-ref>
           property is Stream_Transport_Type_GTalk_P2P.</p>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
-    <tp:handler-capability-token name="ice">
+    <tp:hct name="ice">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client can implement streaming for streams whose <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT">Transport</tp:dbus-ref>
           property is Stream_Transport_Type_ICE.</p>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
-    <tp:handler-capability-token name="wlm-8.5">
+    <tp:hct name="wlm-8.5">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client can implement streaming for streams whose <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT">Transport</tp:dbus-ref>
           property is Stream_Transport_Type_WLM_8_5.</p>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
-    <tp:handler-capability-token name="wlm-2009">
+    <tp:hct name="wlm-2009">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client can implement streaming for streams whose <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Call.Stream.Interface.Media.DRAFT">Transport</tp:dbus-ref>
           property is Stream_Transport_Type_WLM_2009.</p>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
-    <tp:handler-capability-token name="video/h264" is-family="yes">
-      <tp:docstring>
+    <tp:hct name="video/h264" is-family="yes">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The client supports media streaming with H264 (etc.).</p>
 
         <p>This handler capability token is a one of a family
@@ -904,15 +896,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             <code>video/h264</code> on Call channels.</p>
         </tp:rationale>
 
-        <p>For example, a client could advertise support for
-          Speex, Theora and H264 by having three
-          handler capability tokens,
-          <code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/audio/speex</code>,
-          <code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/video/theora</code> and
-          <code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/video/h264</code>,
-          in its <tp:dbus-ref
+        <p>For example, a client could advertise support for audio and video
+          calls using Speex, Theora and H264 by having five handler capability
+          tokens in its <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Client.Handler">Capabilities</tp:dbus-ref>
-          property.</p>
+          property:</p>
+
+        <ul>
+          <li><code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/audio</code></li>
+          <li><code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/audio/speex</code></li>
+          <li><code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/video</code></li>
+          <li><code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/video/theora</code></li>
+          <li><code>org.freedesktop.Telepathy.Channel.Type.Call.DRAFT/video/h264</code></li>
+        </ul>
 
         <p>Clients MAY have media signalling abilities without explicitly
           supporting any particular codec, and connection managers SHOULD
@@ -924,7 +920,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             known to the gatewaying process.</p>
         </tp:rationale>
       </tp:docstring>
-    </tp:handler-capability-token>
+    </tp:hct>
 
   </interface>
 </node>

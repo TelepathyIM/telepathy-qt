@@ -17,9 +17,8 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactInfo.DRAFT"
-    tp:causes-havoc="experimental">
-    <tp:added version="0.17.18">(as a draft)</tp:added>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactInfo">
+    <tp:added version="0.19.4">(as stable API)</tp:added>
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
 
     <tp:struct name="Contact_Info_Field" array-name="Contact_Info_Field_List">
@@ -110,6 +109,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             city), region (e.g., state or province), the postal code, and the
             country name.</dd>
 
+          <dt>label</dt>
+          <dd>A free-form street address for the contact, formatted as a
+            single value (with embedded newlines where necessary) suitable for
+            printing on an address label</dd>
+
           <dt>tel</dt>
           <dd>A telephone number for the contact.</dd>
 
@@ -124,9 +128,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    VERSION:3.0
    FN:Wee Ninja
    N;LANGUAGE=ja:Ninja;Wee;;;-san
-   ORG:Collabora, Ltd.;Human Resources\; Company Policy Enforcement
+   ORG:Collabora, Ltd.;Management Division;Human Resources\; Company Policy Enforcement
    ADR;TYPE=WORK,POSTAL,PARCEL:;;11 Kings Parade;Cambridge;Cambridgeshire
     ;CB2 1SJ;UK
+   LABEL;TYPE=WORK,POSTAL,PARCEL:11 Kings Parade\nCambridge\nCambridgeshire\nUK\nCB2 1SJ
    TEL;TYPE=VOICE,WORK:+44 1223 362967, +44 7700 900753
    EMAIL;TYPE=INTERNET,PREF:wee.ninja@collabora.co.uk
    EMAIL;TYPE=INTERNET:wee.ninja@example.com
@@ -140,9 +145,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 [
   ('fn', [], ['Wee Ninja']),
   ('n', ['language=ja'], ['Ninja', 'Wee', '', '', '-san']),
-  ('org', [], ['Collabora, Ltd.', 'Human Resources; Company Policy Enforcement']),
+  ('org', [], ['Collabora, Ltd.', 'Management Division',
+    'Human Resources; Company Policy Enforcement']),
   ('adr', ['type=work','type=postal','type=parcel'],
    ['','','11 Kings Parade','Cambridge', 'Cambridgeshire','CB2 1SJ','UK']),
+  ('label', ['type=work','type=postal','type=parcel'],
+   ['''11 Kings Parade
+  Cambridge
+  Cambridgeshire
+  UK
+  CB2 1SJ''']),
   ('tel', ['type=voice','type=work'], ['+44 1223 362967']),
   ('tel', ['type=voice','type=work'], ['+44 7700 900753']),
   ('email', ['type=internet','type=pref'], ['wee.ninja@collabora.co.uk']),
@@ -162,7 +174,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         name="Contact_Info"/>
     </tp:mapping>
 
-    <signal name="ContactInfoChanged" tp:name-for-bindings="ContactInfoChanged">
+    <signal name="ContactInfoChanged" tp:name-for-bindings="Contact_Info_Changed">
       <arg name="Contact" type="u" tp:type="Contact_Handle">
         <tp:docstring>
           An integer handle for the contact whose info has changed.
@@ -197,10 +209,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         Request information on several contacts at once.  This SHOULD only
         return cached information, omitting handles for which no information is
-        cached from the returned map.  For contacts without cached information,
-        the information SHOULD be requested from the network, with the result
-        signalled later by <tp:member-ref>ContactInfoChanged</tp:member-ref>.
+        cached from the returned map.
       </tp:docstring>
+    </method>
+
+    <method name="RefreshContactInfo"
+      tp:name-for-bindings="Refresh_Contact_Info">
+      <arg direction="in" name="Contacts" type="au" tp:type="Contact_Handle[]">
+        <tp:docstring>
+          Integer handles for contacts.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Retrieve information for the given contact, requesting it from the
+        network if an up-to-date version is not cached locally. This method
+        SHOULD return immediately, emitting
+        <tp:member-ref>ContactInfoChanged</tp:member-ref> when the contacts'
+        updated contact information is returned.
+
+        <tp:rationale>
+          This method allows a client with cached contact information to
+          update its cache after a number of days.
+        </tp:rationale>
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+      </tp:possible-errors>
     </method>
 
     <method name="RequestContactInfo"
@@ -219,8 +254,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring>
         Retrieve information for a contact, requesting it from the network if
         it is not cached locally.
+
+        <tp:rationale>
+          This method is appropriate for an explicit user request to show
+          a contact's information; it allows a UI to wait for the contact
+          info to be returned.
+        </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
             The contact's information could not be retrieved.
@@ -262,7 +306,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
-    <tp:enum name="Contact_Info_Flag" value-prefix="Contact_Info_Flag"
+    <tp:flags name="Contact_Info_Flags" value-prefix="Contact_Info_Flag"
       type="u">
       <tp:docstring>
         Flags defining the behaviour of contact information on this protocol.
@@ -271,24 +315,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         and when it changes.
       </tp:docstring>
 
-      <tp:enumvalue suffix="Can_Set" value="1">
+      <tp:flag suffix="Can_Set" value="1">
         <tp:docstring>
           Indicates that <tp:member-ref>SetContactInfo</tp:member-ref> is
           supported on this connection.
         </tp:docstring>
-      </tp:enumvalue>
+      </tp:flag>
 
-      <tp:enumvalue suffix="Push" value="2">
+      <tp:flag suffix="Push" value="2">
         <tp:docstring>
           Indicates that the protocol pushes all contacts' information to the
           connection manager without prompting. If set,
-          <tp:member-ref>RequestContactInfo</tp:member-ref> will not cause a
-          network roundtrip and
           <tp:member-ref>ContactInfoChanged</tp:member-ref> will be emitted
           whenever contacts' information changes.
         </tp:docstring>
-      </tp:enumvalue>
-    </tp:enum>
+      </tp:flag>
+    </tp:flags>
 
     <tp:simple-type name="VCard_Field" type="s">
       <tp:docstring>
@@ -309,10 +351,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:simple-type>
 
     <property name="ContactInfoFlags" type="u" access="read"
-      tp:type="Contact_Info_Flag" tp:name-for-bindings="Contact_Info_Flags">
-      <tp:docstring>
-        An integer representing the bitwise-OR of flags on this connection.
-        This property should be constant over the lifetime of a connection.
+      tp:type="Contact_Info_Flags" tp:name-for-bindings="Contact_Info_Flags">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>An integer representing the bitwise-OR of flags on this
+          connection.</p>
+
+        <p>This property MAY change, without change notification, at any time
+          before the connection moves to status Connection_Status_Connected.
+          It MUST NOT change after that point.</p>
+
+        <tp:rationale>
+          <p>Some XMPP servers, like Facebook Chat, do not allow the vCard to
+            be changed (and so would not have the Can_Set flag). Whether the
+            user's server is one of these cannot necessarily be detected until
+            quite late in the connection process.</p>
+        </tp:rationale>
+
       </tp:docstring>
     </property>
 
@@ -328,8 +382,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:member type="as" name="Parameters" tp:type="VCard_Type_Parameter[]">
         <tp:docstring>The set of vCard type parameters which may be set on this
           field. If this list is empty and the
-          Contact_Info_Field_Flag_Parameters_Mandatory
-          flag is unset, any vCard type parameters may be used.</tp:docstring>
+          Contact_Info_Field_Flag_Parameters_Exact flag is not set, any vCard type
+          parameters may be used.</tp:docstring>
       </tp:member>
 
       <tp:member type="u" name="Flags" tp:type="Contact_Info_Field_Flags">
@@ -352,10 +406,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           list indicates that arbitrary vCard fields are permitted.  This
           property SHOULD be the empty list, and be ignored by clients, if
           <tp:member-ref>ContactInfoFlags</tp:member-ref> does not contain the
-          Can_Set <tp:type>Contact_Info_Flag</tp:type>.</p>
+          Can_Set flag.</p>
 
-        <p>For example, an implementation of XEP-0054, which defines a mapping
-          of vCards to XML for use over XMPP, would set this property to the
+        <p>For example, a protocol in which arbitrary vCards were stored
+          as-is would set this property to the
           empty list. A protocol whose notion of contact information is one
           each of personal phone number, mobile phone number, location, email
           address and date of birth, with no attributes allowed on each piece
@@ -364,22 +418,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
         <pre>
 [
-  ('tel', ['home'], Parameters_Mandatory, 1),
-  ('tel', ['cell'], Parameters_Mandatory, 1),
-  ('adr', [], Parameters_Mandatory, 1),
-  ('bday', [], Parameters_Mandatory, 1),
-  ('email', ['internet'], Parameters_Mandatory, 1),
+  ('tel', ['type=home'], Parameters_Exact, 1),
+  ('tel', ['type=cell'], Parameters_Exact, 1),
+  ('adr', [], Parameters_Exact, 1),
+  ('bday', [], Parameters_Exact, 1),
+  ('email', ['type=internet'], Parameters_Exact, 1),
 ]</pre>
 
         <p>A protocol which allows users to specify up to four phone numbers,
           which may be labelled as personal and/or mobile, would set this
-          property to <code>[ ('tel', ['home', 'cell'], 0, 4), ]</code>.</p>
+          property to
+          <code>[ ('tel', ['type=home', 'type=cell'], 0, 4), ]</code>.</p>
 
         <tp:rationale>
           <p>Studying existing IM protocols shows that in practice protocols
             allow either a very restricted set of fields (such as MSN, which
-            seems to correspond roughly to the largest example above) or
-            something mapping 1-1 to vCard (such as XMPP).</p>
+            seems to correspond roughly to the largest example above), or
+            something mapping 1:1 to a large subset of vCard (such as XMPP's
+            XEP-0054).</p>
+        </tp:rationale>
+
+        <p>This property MAY change, without change notification, at any time
+          before the connection moves to status Connection_Status_Connected.
+          It MUST NOT change after that point.</p>
+
+        <tp:rationale>
+          <p>Some XMPP servers, like Google Talk, only allow a small subset of
+            the "vcard-temp" protocol. Whether the user's server is one of
+            these cannot be detected until quite late in the connection
+            process.</p>
         </tp:rationale>
       </tp:docstring>
     </property>
@@ -389,7 +456,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         Flags describing the behaviour of a vCard field.
       </tp:docstring>
-      <tp:flag suffix="Parameters_Mandatory" value="1">
+      <tp:flag suffix="Parameters_Exact" value="1">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>If present, exactly the parameters indicated must be set on this
             field; in the case of an empty list of parameters, this implies that
@@ -411,6 +478,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:type>Contact_Info_Field</tp:type>s forming a
         structured representation of a vCard (as defined by RFC 2426), using
         field names and semantics defined therein.</p>
+
+      <p>On some protocols, information about your contacts is pushed to you,
+        with change notification; on others, like XMPP, the client must
+        explicitly request the avatar, and has no way to tell whether it has
+        changed without retrieving it in its entirety. This distinction is
+        exposed by <tp:member-ref>ContactInfoFlags</tp:member-ref> containing
+        the Push flag.</p>
+
+      <p>On protocols with the Push flag set, UIs can connect to
+        <tp:member-ref>ContactInfoChanged</tp:member-ref>, call
+        <tp:member-ref>GetContactInfo</tp:member-ref> once at login for the set
+        of contacts they are interested in, and then be sure they will receive
+        the latest contact info. On protocols like XMPP, clients can do the
+        same, but will receive (at most) opportunistic updates if the info is
+        retrieved for other reasons. Clients may call
+        <tp:member-ref>RequestContactInfo</tp:member-ref> or
+        <tp:member-ref>RefreshContactInfo</tp:member-ref> to force a contact's
+        info to be updated, but MUST NOT do so unless this is either in
+        response to direct user action, or to refresh their own cache after a
+        number of days.</p>
+
+      <tp:rationale>
+        <p>We don't want clients to accidentally cause a ridiculous amount of
+          network traffic.</p>
+      </tp:rationale>
     </tp:docstring>
   </interface>
 </node>

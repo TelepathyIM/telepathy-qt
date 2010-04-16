@@ -353,17 +353,30 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>If <tt>Thread_Based</tt> appears in the
           <tp:member-ref>MailNotificationFlags</tp:member-ref>, this property
           counts the number of threads, not the number of mails.</p>
+
+        <p>Note that this count MAY be bigger than the number of items in
+          <tp:member-ref>UnreadMails</tp:member-ref>. See
+          <tp:member-ref>UnreadMails</tp:member-ref> for more details.</p>
       </tp:docstring>
     </property>
 
     <property name="UnreadMails" type="aa{sv}" tp:type="Mail[]"
       tp:name-for-bindings="Unread_Mails" access="read">
       <tp:docstring>
-        A array of unread <tp:type>Mail</tp:type>s. Change notification is via
-        <tp:member-ref>UnreadMailsChanged</tp:member-ref>. This property is
-        only useful if <tt>Supports_Unread_Mails</tt> is set in
-        <tp:member-ref>MailNotificationFlags</tp:member-ref>; otherwise, it MUST be
-        an empty list.
+        <p>An array of unread <tp:type>Mail</tp:type>s. Change notification is
+          via <tp:member-ref>UnreadMailsChanged</tp:member-ref>. This property
+          is only useful if <tt>Supports_Unread_Mails</tt> is set in
+          <tp:member-ref>MailNotificationFlags</tp:member-ref>; otherwise, it
+          MUST be an empty list.</p>
+        <p>The array size MAY be shorter than
+          <tp:member-ref>UnreadMailCount</tp:member-ref>.</p>
+        <tp:rationale>
+          <p>Some servers may limits the amount of detailed e-mails sent. This
+            can significantly reduce the network traffic for large inbox. For
+            this reason, it is normal that
+            <tp:member-ref>UnreadMailCount</tp:member-ref> be bigger or equal
+            to the size of this array.</p>
+          </tp:rationale>
       </tp:docstring>
     </property>
 

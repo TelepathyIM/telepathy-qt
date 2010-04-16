@@ -33,6 +33,20 @@
 
     </tp:docstring>
 
+    <method name="Remove" tp:name-for-bindings="Remove">
+      <tp:docstring>Remove the content from the call.</tp:docstring>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError">
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Raised when a Call doesn't support removing contents (e.g. a Google Talk video call)
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
     <property name="Name" tp:name-for-bindings="Name" type="s" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The name of the content.

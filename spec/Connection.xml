@@ -66,20 +66,14 @@ USA.</p>
       </tp:docstring>
     </method>
 
-    <method name="GetInterfaces" tp:name-for-bindings="Get_Interfaces">
-      <arg direction="out" type="as" tp:type="DBus_Interface[]"
-        name="Interfaces">
-        <tp:docstring>
-          An array of D-Bus interface names
-        </tp:docstring>
-      </arg>
-
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      access="read" type="as" tp:type="DBus_Interface[]">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Get the optional interfaces supported by this connection.
-          Before the connection status changes to CONNECTED, the return
-          from this method may change at any time, but it is guaranteed that
+        <p>The set of optional interfaces supported by this connection.
+          Before the connection status changes to CONNECTED,
+          this property may change at any time, but it is guaranteed that
           interfaces will only be added, not removed. After the connection
-          status changes to CONNECTED, the return from this method cannot
+          status changes to CONNECTED, this property cannot
           change further.</p>
 
         <p>There is no explicit change notification; reasonable behaviour
@@ -96,6 +90,24 @@ USA.</p>
             to have evaluated the server's functionality and enabled any extra
             interfaces for the remainder of the Connection's lifetime.</p>
         </tp:rationale>
+      </tp:docstring>
+      <tp:added version="0.19.2">Clients SHOULD fall back
+        to calling <tp:member-ref>GetInterfaces</tp:member-ref> if this
+        property is not supported.</tp:added>
+    </property>
+
+    <method name="GetInterfaces" tp:name-for-bindings="Get_Interfaces">
+      <arg direction="out" type="as" tp:type="DBus_Interface[]"
+        name="Interfaces">
+        <tp:docstring>
+          The value of the <tp:member-ref>Interfaces</tp:member-ref> property
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Returns the set of optional interfaces supported by this
+          connection. See <tp:member-ref>Interfaces</tp:member-ref> for more
+          details.</p>
       </tp:docstring>
 
       <tp:possible-errors>
@@ -178,11 +190,28 @@ USA.</p>
       </tp:possible-errors>
     </method>
 
+    <property name="Status" tp:name-for-bindings="Status"
+      access="read" type="u" tp:type="Connection_Status">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The current status of the connection. Change notification is via
+          the <tp:member-ref>StatusChanged</tp:member-ref> signal.</p>
+
+        <p>If retrieval of property succeeds and yields the value Disconnected,
+          this indicates that the connection has not yet been established.
+          If connection has been attempted and failed, the Connection object
+          SHOULD be removed from the bus entirely, meaning that retrieval of
+          this property SHOULD fail.</p>
+      </tp:docstring>
+      <tp:added version="0.19.2">Clients SHOULD fall back
+        to calling <tp:member-ref>GetStatus</tp:member-ref> if this
+        property is not supported.</tp:added>
+    </property>
+
     <method name="GetStatus" tp:name-for-bindings="Get_Status">
       <arg direction="out" type="u" tp:type="Connection_Status"
         name="Status">
         <tp:docstring>
-          An integer representing the current status
+          The value of the <tp:member-ref>Status</tp:member-ref> property
         </tp:docstring>
       </arg>
 
@@ -657,20 +686,25 @@ USA.</p>
     <tp:enum name="Connection_Status" plural="Connection_Statuses" type="u">
       <tp:enumvalue suffix="Connected" value="0">
         <tp:docstring>
-            The connection is alive and all methods are available.
+          The connection is fully connected and all methods are available.
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Connecting" value="1">
         <tp:docstring>
-            The connection has not yet been established, or has been
-            severed and reconnection is being attempted. Some methods may fail
-            until the connection has been established.
+          <tp:member-ref>Connect</tp:member-ref> has been called but the
+          connection has not yet been established. Some methods may fail
+          until the connection has been established.
         </tp:docstring>
       </tp:enumvalue>
       <tp:enumvalue suffix="Disconnected" value="2">
         <tp:docstring>
-            The connection has been severed and no method calls are
-            valid. The object may be removed from the bus at any time.
+          If this is retrieved from <tp:member-ref>GetStatus</tp:member-ref> or
+          <tp:member-ref>Status</tp:member-ref>, it indicates that connection
+          has not yet been attempted. If seen in a
+          <tp:member-ref>StatusChanged</tp:member-ref> signal, it indicates
+          that the connection has failed; the Connection object SHOULD be
+          removed from D-Bus immediately, and all subsequent method calls
+          SHOULD fail.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>

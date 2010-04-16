@@ -666,6 +666,54 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     handled by specialised hardware which is controlled directly by the
     connection manager), the signalling interface can be omitted and this
     channel type used simply to control the streams.</p>
+
+    <h4>Handler filters</h4>
+
+    <p>For historical reasons, handlers must specify more than one filter if
+      they want to correctly advertise support for audio and/or video calls. If
+      they can handle channels using the <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Interface">MediaSignalling</tp:dbus-ref>
+      interface, they should also advertise various
+      <tp:type>Handler_Capability_Token</tp:type>s to indicate which codecs and
+      transports they support. See <tp:member-ref>InitialAudio</tp:member-ref>
+      and <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Interface">MediaSignalling/video/h264</tp:dbus-ref>
+      for the gory details. In summary:</p>
+
+    <dl>
+      <dt>To advertise support for streamed media in general, include the
+        following filter in <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client.Handler">HandlerChannelFilter</tp:dbus-ref>:</dt>
+      <dd><pre>
+{ '...Channel.Type': '...Channel.Type.StreamedMedia' ,
+  '...Channel.TargetHandleType': Contact,
+}</pre></dd>
+
+      <dt>To advertise support for audio calls, also include the following
+        filter:</dt>
+      <dd><pre>
+{ '...Channel.Type': '...Channel.Type.StreamedMedia' ,
+  '...Channel.TargetHandleType': Contact,
+  '...Channel.Type.StreamedMedia.InitialAudio': True,
+}</pre></dd>
+
+      <dt>To advertise support for video calls, also include the following
+        filter:</dt>
+      <dd><pre>
+{ '...Channel.Type': '...Channel.Type.StreamedMedia' ,
+  '...Channel.TargetHandleType': Contact,
+  '...Channel.Type.StreamedMedia.InitialVideo': True,
+}</pre></dd>
+
+      <dt>If you use telepathy-farsight, and have H.264 support, you probably
+        want these <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Client.Handler">Capabilities</tp:dbus-ref>:</dt>
+      <dd><pre>
+[ "org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/ice-udp",
+  "org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/gtalk-p2p",
+  "org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/video/h264",
+]</pre></dd>
+    </dl>
     </tp:docstring>
 
     <tp:flags name="Channel_Media_Capabilities" value-prefix="Channel_Media_Capability" type="u">

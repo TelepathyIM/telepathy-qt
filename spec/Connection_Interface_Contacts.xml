@@ -111,16 +111,18 @@
             interfaces, whose values can be obtained without additional network
             activity, will be in the reply.</p>
 
-          <p>It is an error to request interfaces that are not supported by
-            this Connection (i.e. mentioned in the
+          <p>Connection managers SHOULD ignore interfaces requested which they
+            do not support (i.e. those not mentioned in the
             <tp:member-ref>ContactAttributeInterfaces</tp:member-ref>
-            property).</p>
+            property.)</p>
 
           <tp:rationale>
-            <p>This makes it possible to distinguish between interfaces for
-              which the Connection has nothing to say (e.g. we don't know the
-              avatar tokens of any of the contacts, so we omitted them all),
-              and interfaces for which this API isn't supported.</p>
+            <p>This simplifies client-side code. Clients which care may
+              distinguish between unsupported interfaces (e.g. this Connection
+              does not support Avatars), and interfaces on which no information
+              is known for these contacts (e.g. we don't know the avatar tokens
+              of any of the contacts, so we omitted them all) by inspecting
+              <tp:member-ref>ContactAttributeInterfaces</tp:member-ref>.</p>
           </tp:rationale>
 
           <p>Attributes from the interface
@@ -141,6 +143,12 @@
             attributes.
           </tp:rationale>
         </tp:docstring>
+        <tp:changed version="0.19.2">
+          requesting information for interfaces not mentioned in
+          <tp:member-ref>ContactAttributeInterfaces</tp:member-ref> is no
+          longer an error. Be aware that older connection managers may still
+          consider this an error.
+        </tp:changed>
       </arg>
 
       <arg direction="in" name="Hold" type="b">
@@ -173,12 +181,6 @@
 
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
-          <tp:docstring>
-            One of the requested interfaces is not supported (mentioned in
-            <tp:member-ref>ContactAttributeInterfaces</tp:member-ref>).
-          </tp:docstring>
-        </tp:error>
       </tp:possible-errors>
     </method>
   </interface>
