@@ -55,7 +55,7 @@ public:
 
     ChannelClassList observerChannelFilter() const;
 
-    bool recover() const;
+    bool shouldRecover() const;
 
     virtual void observeChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
@@ -68,7 +68,7 @@ public:
 protected:
     AbstractClientObserver(const ChannelClassList &channelFilter);
     AbstractClientObserver(const ChannelClassList &channelFilter,
-            bool recover);
+            bool shouldRecover);
 
 private:
     struct Private;

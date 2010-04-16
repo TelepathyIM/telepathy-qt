@@ -90,7 +90,7 @@ AbstractClient::~AbstractClient()
 struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 {
     ChannelClassList channelFilter;
-    bool recover;
+    bool shouldRecover;
 };
 
 /**
@@ -198,9 +198,9 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
 /**
  * Construct a new AbstractClientObserver object.
  *
- * Note that using this constructor the recover() method will return \c false,
- * meaning that on crash the observer won't be able to "catch up" on channels
- * that match its observerChannelFilter() automatically.
+ * Note that using this constructor the shouldRecover() method will return
+ * \c false, meaning that on crash the observer won't be able to "catch up"
+ * on channels that match its observerChannelFilter() automatically.
  *
  * \param channelFilter A specification of the channels in which this observer
  *                      is interested.
@@ -210,7 +210,7 @@ AbstractClientObserver::AbstractClientObserver(
     : mPriv(new Private)
 {
     mPriv->channelFilter = channelFilter;
-    mPriv->recover = false;
+    mPriv->shouldRecover = false;
 }
 
 /**
@@ -218,17 +218,17 @@ AbstractClientObserver::AbstractClientObserver(
  *
  * \param channelFilter A specification of the channels in which this observer
  *                      is interested.
- * \param recover Whether upon the startup of this observer, observeChannels()
- *                will be called for every already existing channel matching
- *                its observerChannelFilter().
+ * \param shouldRecover Whether upon the startup of this observer,
+ *                      observeChannels() will be called for every already
+ *                      existing channel matching its observerChannelFilter().
  */
 AbstractClientObserver::AbstractClientObserver(
         const ChannelClassList &channelFilter,
-        bool recover)
+        bool shouldRecover)
     : mPriv(new Private)
 {
     mPriv->channelFilter = channelFilter;
-    mPriv->recover = recover;
+    mPriv->shouldRecover = shouldRecover;
 }
 /**
  * Class destructor.
@@ -279,9 +279,9 @@ ChannelClassList AbstractClientObserver::observerChannelFilter() const
  *        already existing channel matching its observerChannelFilter(),
  *        \c false otherwise.
  */
-bool AbstractClientObserver::recover() const
+bool AbstractClientObserver::shouldRecover() const
 {
-    return mPriv->recover;
+    return mPriv->shouldRecover;
 }
 
 /**

@@ -96,7 +96,7 @@ public: // Properties
 
     inline bool Recover() const
     {
-        return mClient->recover();
+        return mClient->shouldRecover();
     }
 
 public Q_SLOTS: // Methods
