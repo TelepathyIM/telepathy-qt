@@ -81,6 +81,14 @@ void contacts_connection_change_presences (ContactsConnection *self, guint n,
 void contacts_connection_change_avatar_tokens (ContactsConnection *self,
     guint n, const TpHandle *handles, const gchar * const *tokens);
 
+void contacts_connection_change_locations (ContactsConnection *self,
+    guint n,
+    const TpHandle *handles,
+    GHashTable **locations);
+
+void contacts_connection_change_capabilities (ContactsConnection *self,
+    GHashTable *capabilities);
+
 /* Legacy version (no Contacts interface) */
 
 typedef struct _LegacyContactsConnection LegacyContactsConnection;
@@ -116,6 +124,42 @@ GType legacy_contacts_connection_get_type (void);
 #define LEGACY_CONTACTS_CONNECTION_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), LEGACY_CONTACTS_TYPE_CONNECTION, \
                               LegacyContactsConnectionClass))
+
+/* No Requests version */
+
+typedef struct _NoRequestsConnection NoRequestsConnection;
+typedef struct _NoRequestsConnectionClass NoRequestsConnectionClass;
+typedef struct _NoRequestsConnectionPrivate
+  NoRequestsConnectionPrivate;
+
+struct _NoRequestsConnectionClass {
+    ContactsConnectionClass parent_class;
+};
+
+struct _NoRequestsConnection {
+    ContactsConnection parent;
+
+    NoRequestsConnectionPrivate *priv;
+};
+
+GType no_requests_connection_get_type (void);
+
+/* TYPE MACROS */
+#define NO_REQUESTS_TYPE_CONNECTION \
+  (no_requests_connection_get_type ())
+#define NO_REQUESTS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), NO_REQUESTS_TYPE_CONNECTION, \
+                              NoRequestsConnection))
+#define NO_REQUESTS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass), NO_REQUESTS_TYPE_CONNECTION, \
+                           NoRequestsConnectionClass))
+#define NO_REQUESTS_IS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), NO_REQUESTS_TYPE_CONNECTION))
+#define NO_REQUESTS_IS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass), NO_REQUESTS_TYPE_CONNECTION))
+#define NO_REQUESTS_CONNECTION_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), NO_REQUESTS_TYPE_CONNECTION, \
+                              NoRequestsConnectionClass))
 
 G_END_DECLS
 
