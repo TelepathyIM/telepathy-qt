@@ -32,6 +32,9 @@ EXTRA_DIST = \
     dbus-peer.xml \
     dbus-properties.xml \
     examples.dox \
+    future-channel.xml \
+    future-interfaces.xml \
+    future-misc.xml \
     main.dox \
     media-session-handler.xml \
     media-stream-handler.xml \
