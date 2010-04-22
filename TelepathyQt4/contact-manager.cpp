@@ -131,6 +131,8 @@ QString featureToInterface(Contact::Feature feature)
             return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
         case Contact::FeatureCapabilities:
             return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES);
+        case Contact::FeatureLocation:
+            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION);
         default:
             warning() << "ContactManager doesn't know which interface corresponds to feature"
                 << feature;
@@ -147,7 +149,8 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
             << Contact::FeatureSimplePresence
-            << Contact::FeatureCapabilities;
+            << Contact::FeatureCapabilities
+            << Contact::FeatureLocation;
         QStringList interfaces = connection()->contactAttributeInterfaces();
         foreach (Contact::Feature feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
@@ -775,6 +778,17 @@ void ContactManager::onCapabilitiesChanged(const ContactCapabilitiesMap &caps)
     }
 }
 
+void ContactManager::onLocationUpdated(uint handle, const QVariantMap &location)
+{
+    debug() << "Got LocationUpdated for contact with handle" << handle;
+
+    ContactPtr contact = lookupContactByHandle(handle);
+
+    if (contact) {
+        contact->receiveLocation(location);
+    }
+}
+
 void ContactManager::onSubscribeChannelMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -1088,6 +1102,14 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
                     SIGNAL(ContactCapabilitiesChanged(const Tp::ContactCapabilitiesMap &)),
                     conn->contactManager(),
                     SLOT(onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &)));
+            break;
+
+        case Contact::FeatureLocation:
+            QObject::connect(
+                    conn->locationInterface(),
+                    SIGNAL(LocationUpdated(uint, const QVariantMap &)),
+                    conn->contactManager(),
+                    SLOT(onLocationUpdated(uint, const QVariantMap &)));
             break;
 
         default:
