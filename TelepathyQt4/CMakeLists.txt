@@ -23,8 +23,9 @@ set(telepathy_qt4_SRCS
     connection-internal.h
     connection-manager.cpp
     connection-manager-internal.h
-    contact-capabilities.cpp
     contact.cpp
+    contact-capabilities.cpp
+    contact-location.cpp
     contact-manager.cpp
     contact-manager-internal.h
     dbus.cpp
@@ -136,9 +137,11 @@ set(telepathy_qt4_HEADERS
     Constants
     constants.h
     Contact
+    contact.h
     ContactCapabilities
     contact-capabilities.h
-    contact.h
+    ContactLocation
+    contact-location.h
     ContactManager
     contact-manager.h
     DBus
