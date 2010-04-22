@@ -210,6 +210,9 @@ ContactCapabilities *Contact::capabilities() const
  *
  * Change notification is advertised through locationUpdated().
  *
+ * Note that the returned ContactLocation object should not be deleted. Its
+ * lifetime is the same as this contact lifetime.
+ *
  * This method requires Contact::FeatureLocation to be enabled.
  *
  * @return An object representing the contact location or 0 if
