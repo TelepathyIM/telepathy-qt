@@ -11,6 +11,7 @@
 <xi:include href="../spec/Connection_Interface_Capabilities.xml"/>
 <xi:include href="../spec/Connection_Interface_Contacts.xml"/>
 <xi:include href="../spec/Connection_Interface_Contact_Capabilities.xml"/>
+<xi:include href="../spec/Connection_Interface_Location.xml"/>
 <xi:include href="../spec/Connection_Interface_Presence.xml"/>
 <xi:include href="../spec/Connection_Interface_Requests.xml"/>
 <xi:include href="../spec/Connection_Interface_Simple_Presence.xml"/>
