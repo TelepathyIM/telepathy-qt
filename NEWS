@@ -1,7 +1,22 @@
-telepathy-qt4 0.3.2 (UNRELEASED)
+telepathy-qt4 0.3.2 (2010-04-23)
 ================================
 
-...
+The "poisoned with anti-coffee" release.
+
+New API:
+* fd.o#27379: Add a new signal, allKnownContactsChanged. (drf)
+* fd.o#27677: Add Observer.Recover support.
+* Added support for retrieving contacts location.
+
+Enhancements:
+* Added example application to list all supported protocols.
+* fd.o#27670: Updated to spec 0.19.5.
+
+Fixes:
+* Fixed compilation (more specific, moc generation). The code was
+  triggering QTBUG #2151. (drf)
+* Correctly handle UTF-8 in code generator. (wjt)
+* Fixed text-chan test race condition. (drf)
 
 telepathy-qt4 0.3.1 (2010-03-30)
 ================================
