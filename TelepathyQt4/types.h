@@ -75,6 +75,7 @@ class ProfileManager;
 class RoomListChannel;
 class StreamedMediaChannel;
 class StreamedMediaStream;
+class StreamTubeChannel;
 class TextChannel;
 class TubeChannel;
 
@@ -120,8 +121,10 @@ typedef SharedPtr<ProfileManager> ProfileManagerPtr;
 typedef SharedPtr<RoomListChannel> RoomListChannelPtr;
 typedef SharedPtr<StreamedMediaChannel> StreamedMediaChannelPtr;
 typedef SharedPtr<StreamedMediaStream> StreamedMediaStreamPtr;
+typedef SharedPtr<StreamTubeChannel> StreamTubeChannelPtr;
 typedef SharedPtr<TextChannel> TextChannelPtr;
 typedef SharedPtr<TubeChannel> TubeChannelPtr;
+typedef SharedPtr<StreamTubeChannel> StreamTubeChannelPtr;
 
 template<typename T1 = MethodInvocationContextTypes::Nil, typename T2 = MethodInvocationContextTypes::Nil,
          typename T3 = MethodInvocationContextTypes::Nil, typename T4 = MethodInvocationContextTypes::Nil,

@@ -88,6 +88,7 @@ set(telepathy_qt4_SRCS
     ready-object.cpp
     referenced-handles.cpp
     room-list-channel.cpp
+    stream-tube-channel.cpp
     streamed-media-channel.cpp
     test-backdoors.cpp
     test-backdoors.h
@@ -346,6 +347,8 @@ set(telepathy_qt4_HEADERS
     simple-pending-operations.h
     StatefulDBusProxy
     StatelessDBusProxy
+    StreamTubeChannel
+    stream-tube-channel.h
     StreamedMediaChannel
     streamed-media-channel.h
     TextChannel
@@ -424,6 +427,7 @@ set(telepathy_qt4_MOC_SRCS
     readiness-helper.h
     room-list-channel.h
     simple-pending-operations.h
+    stream-tube-channel.h
     streamed-media-channel.h
     text-channel.h
     tube-channel.h)
