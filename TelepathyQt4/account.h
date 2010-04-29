@@ -118,6 +118,8 @@ public:
     bool haveConnection() const;
     ConnectionPtr connection() const;
 
+    bool isChangingPresence() const;
+
     SimplePresence automaticPresence() const;
     PendingOperation *setAutomaticPresence(
             const SimplePresence &value);
@@ -257,6 +259,7 @@ Q_SIGNALS:
     void connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
     void firstOnline();
     void parametersChanged(const QVariantMap &parameters);
+    void changingPresence(bool value);
     void automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
     void currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;

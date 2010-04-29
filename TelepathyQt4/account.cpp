@@ -84,6 +84,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     bool enabled;
     bool connectsAutomatically;
     bool hasBeenOnline;
+    bool changingPresence;
     QString cmName;
     QString protocol;
     QString displayName;
@@ -829,6 +830,19 @@ ConnectionPtr Account::connection() const
                 busName, objectPath);
     }
     return mPriv->connection;
+}
+
+/**
+ * Return whether this account's connection is changing presence.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return Whether this account's connection is changing presence.
+ * \sa changingPresence(), currentPresenceChanged(), setRequestedPresence()
+ */
+bool Account::isChangingPresence() const
+{
+    return mPriv->changingPresence;
 }
 
 /**
@@ -1834,6 +1848,16 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
+ * \fn void Account::changingPresence(bool value);
+ *
+ * This signal is emitted when the value of isChangingPresence() of this
+ * account changes.
+ *
+ * \param value Whether this account's connection is changing presence.
+ * \sa isChangingPresence()
+ */
+
+/**
  * \fn void Account::automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
  *
  * This signal is emitted when the value of automaticPresence() of this
@@ -2100,6 +2124,15 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Requested Presence:" << requestedPresence.type <<
             "-" << requestedPresence.status;
         emit parent->requestedPresenceChanged(requestedPresence);
+    }
+
+    if (props.contains(QLatin1String("ChangingPresence")) &&
+        changingPresence != qdbus_cast<bool>(
+                props[QLatin1String("ChangingPresence")])) {
+        changingPresence = qdbus_cast<bool>(
+                props[QLatin1String("ChangingPresence")]);
+        debug() << " Changing Presence:" << changingPresence;
+        emit parent->changingPresence(changingPresence);
     }
 
     if (props.contains(QLatin1String("Connection"))) {
