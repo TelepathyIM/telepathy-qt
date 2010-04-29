@@ -70,6 +70,7 @@ class DBusProxy;
 class FileTransferChannel;
 class IncomingFileTransferChannel;
 class OutgoingFileTransferChannel;
+class OutgoingStreamTubeChannel;
 class Profile;
 class ProfileManager;
 class RoomListChannel;
@@ -116,6 +117,7 @@ typedef SharedPtr<DBusProxy> DBusProxyPtr;
 typedef SharedPtr<FileTransferChannel> FileTransferChannelPtr;
 typedef SharedPtr<IncomingFileTransferChannel> IncomingFileTransferChannelPtr;
 typedef SharedPtr<OutgoingFileTransferChannel> OutgoingFileTransferChannelPtr;
+typedef SharedPtr<OutgoingStreamTubeChannel> OutgoingStreamTubeChannelPtr;
 typedef SharedPtr<Profile> ProfilePtr;
 typedef SharedPtr<ProfileManager> ProfileManagerPtr;
 typedef SharedPtr<RoomListChannel> RoomListChannelPtr;
@@ -124,7 +126,6 @@ typedef SharedPtr<StreamedMediaStream> StreamedMediaStreamPtr;
 typedef SharedPtr<StreamTubeChannel> StreamTubeChannelPtr;
 typedef SharedPtr<TextChannel> TextChannelPtr;
 typedef SharedPtr<TubeChannel> TubeChannelPtr;
-typedef SharedPtr<StreamTubeChannel> StreamTubeChannelPtr;
 
 template<typename T1 = MethodInvocationContextTypes::Nil, typename T2 = MethodInvocationContextTypes::Nil,
          typename T3 = MethodInvocationContextTypes::Nil, typename T4 = MethodInvocationContextTypes::Nil,

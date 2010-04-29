@@ -63,6 +63,7 @@ set(telepathy_qt4_SRCS
     object.cpp
     optional-interface-factory.cpp
     outgoing-file-transfer-channel.cpp
+    outgoing-stream-tube-channel.cpp
     pending-account.cpp
     pending-channel.cpp
     pending-channel-request.cpp
@@ -283,6 +284,8 @@ set(telepathy_qt4_HEADERS
     or-filter.h
     OutgoingFileTransferChannel
     outgoing-file-transfer-channel.h
+    OutgoingStreamTubeChannel
+    outgoing-stream-tube-channel.h
     PeerInterface
     PendingAccount
     pending-account.h
@@ -409,6 +412,8 @@ set(telepathy_qt4_MOC_SRCS
     incoming-file-transfer-channel.h
     object.h
     outgoing-file-transfer-channel.h
+    outgoing-stream-tube-channel.h
+    outgoing-stream-tube-channel-internal.h
     pending-account.h
     pending-channel.h
     pending-channel-request.h
