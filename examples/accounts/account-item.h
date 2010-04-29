@@ -47,6 +47,7 @@ public:
         ColumnDisplayName,
         ColumnNickname,
         ColumnConnectsAutomatically,
+        ColumnChangingPresence,
         ColumnAutomaticPresence,
         ColumnCurrentPresence,
         ColumnRequestedPresence,
@@ -69,6 +70,7 @@ private Q_SLOTS:
     void onDisplayNameChanged(const QString &);
     void onNicknameChanged(const QString &);
     void onConnectsAutomaticallyPropertyChanged(bool);
+    void onChangingPresenceChanged(bool);
     void onAutomaticPresenceChanged(const Tp::SimplePresence &);
     void onCurrentPresenceChanged(const Tp::SimplePresence &);
     void onRequestedPresenceChanged(const Tp::SimplePresence &);

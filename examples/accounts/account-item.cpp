@@ -60,6 +60,8 @@ void AccountItem::setupGui()
     mTable->setItem(mRow, ColumnAutomaticPresence, new QTableWidgetItem(mAcc->automaticPresence().status));
     mTable->setItem(mRow, ColumnCurrentPresence, new QTableWidgetItem(mAcc->currentPresence().status));
     mTable->setItem(mRow, ColumnRequestedPresence, new QTableWidgetItem(mAcc->requestedPresence().status));
+    mTable->setItem(mRow, ColumnChangingPresence, new QTableWidgetItem(mAcc->isChangingPresence() ?
+                QLatin1String("true") : QLatin1String("false")));
     mTable->setItem(mRow, ColumnConnectionStatus, new QTableWidgetItem(QString::number(mAcc->connectionStatus())));
     mTable->setItem(mRow, ColumnConnection, new QTableWidgetItem(mAcc->connectionObjectPath()));
 }
@@ -84,6 +86,9 @@ void AccountItem::onReady(Tp::PendingOperation *op)
     connect(acc,
             SIGNAL(connectsAutomaticallyPropertyChanged(bool)),
             SLOT(onConnectsAutomaticallyPropertyChanged(bool)));
+    connect(acc,
+            SIGNAL(changingPresence(bool)),
+            SLOT(onChangingPresenceChanged(bool)));
     connect(acc,
             SIGNAL(automaticPresenceChanged(const Tp::SimplePresence &)),
             SLOT(onAutomaticPresenceChanged(const Tp::SimplePresence &)));
@@ -128,6 +133,12 @@ void AccountItem::onNicknameChanged(const QString &name)
 void AccountItem::onConnectsAutomaticallyPropertyChanged(bool value)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnConnectsAutomatically);
+    item->setText((value ? QLatin1String("true") : QLatin1String("false")));
+}
+
+void AccountItem::onChangingPresenceChanged(bool value)
+{
+    QTableWidgetItem *item = mTable->item(mRow, ColumnChangingPresence);
     item->setText((value ? QLatin1String("true") : QLatin1String("false")));
 }
 
