@@ -54,6 +54,7 @@ set(telepathy_qt4_SRCS
     future.cpp
     future-internal.h
     incoming-file-transfer-channel.cpp
+    incoming-stream-tube-channel.cpp
     key-file.cpp
     location-info.cpp
     manager-file.cpp
@@ -257,6 +258,8 @@ set(telepathy_qt4_HEADERS
     global.h
     IncomingFileTransferChannel
     incoming-file-transfer-channel.h
+    IncomingStreamTubeChannel
+    incoming-stream-tube-channel.h
     IntrospectableInterface
     KeyFile
     key-file.h
@@ -410,6 +413,7 @@ set(telepathy_qt4_MOC_SRCS
     dbus-proxy-factory-internal.h
     file-transfer-channel.h
     incoming-file-transfer-channel.h
+    incoming-stream-tube-channel.h
     object.h
     outgoing-file-transfer-channel.h
     outgoing-stream-tube-channel.h
