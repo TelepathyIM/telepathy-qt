@@ -92,6 +92,7 @@ set(telepathy_qt4_SRCS
     test-backdoors.cpp
     test-backdoors.h
     text-channel.cpp
+    tube-channel.cpp
     types.cpp
     types-internal.h
     utils.cpp)
@@ -349,6 +350,8 @@ set(telepathy_qt4_HEADERS
     streamed-media-channel.h
     TextChannel
     text-channel.h
+    TubeChannel
+    tube-channel.h
     Types
     types.h
     Utils
@@ -422,7 +425,8 @@ set(telepathy_qt4_MOC_SRCS
     room-list-channel.h
     simple-pending-operations.h
     streamed-media-channel.h
-    text-channel.h)
+    text-channel.h
+    tube-channel.h)
 
 # Generate the spec files for both stable and future spec
 set(gen_stable_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml)

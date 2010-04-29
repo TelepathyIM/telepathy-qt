@@ -76,6 +76,7 @@ class RoomListChannel;
 class StreamedMediaChannel;
 class StreamedMediaStream;
 class TextChannel;
+class TubeChannel;
 
 typedef SharedPtr<AbstractClient> AbstractClientPtr;
 typedef SharedPtr<Account> AccountPtr;
@@ -120,6 +121,7 @@ typedef SharedPtr<RoomListChannel> RoomListChannelPtr;
 typedef SharedPtr<StreamedMediaChannel> StreamedMediaChannelPtr;
 typedef SharedPtr<StreamedMediaStream> StreamedMediaStreamPtr;
 typedef SharedPtr<TextChannel> TextChannelPtr;
+typedef SharedPtr<TubeChannel> TubeChannelPtr;
 
 template<typename T1 = MethodInvocationContextTypes::Nil, typename T2 = MethodInvocationContextTypes::Nil,
          typename T3 = MethodInvocationContextTypes::Nil, typename T4 = MethodInvocationContextTypes::Nil,

@@ -2268,6 +2268,84 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
 }
 
 /**
+ * Start a request to create a stream tube channel with the given
+ * contact identifier \a contactIdentifier.
+ *
+ * \param contactIdentifier The contact identifier of the contact to open a stream tube with.
+ * \param properties The desired properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest* Account::createStreamTube(
+        const QString& contactIdentifier,
+        const QString& serviceName,
+        const QDateTime& userActionTime,
+        const QString& preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   contactIdentifier);
+
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                   serviceName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true, hints);
+}
+
+/**
+ * Start a request to create a stream tube channel with the given
+ * contact \a contact.
+ *
+ * \param contact The contact to open a stream tube with.
+ * \param properties The desired properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa ensureChannel(), createChannel()
+ */
+PendingChannelRequest* Account::createStreamTube(
+        const Tp::ContactPtr& contact,
+        const QString& serviceName,
+        const QDateTime& userActionTime,
+        const QString& preferredHandler,
+        const ChannelRequestHints &hints)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                   (uint) Tp::HandleTypeContact);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
+                   contact ? contact->handle().at(0) : (uint) 0);
+
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE ".Service"),
+                   serviceName);
+
+    return new PendingChannelRequest(AccountPtr(this), request, userActionTime,
+            preferredHandler, true, hints);
+}
+
+/**
  * Start a request to create a conference media call with the given
  * channels \a channels.
  *

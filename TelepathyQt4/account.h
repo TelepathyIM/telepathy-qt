@@ -321,6 +321,19 @@ public:
             const QString &preferredHandler,
             const ChannelRequestHints &hints);
 
+    PendingChannelRequest *createStreamTube(
+            const QString &contactIdentifier,
+            const QString &serviceName,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+    PendingChannelRequest *createStreamTube(
+            const ContactPtr &contact,
+            const QString &serviceName,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString(),
+            const ChannelRequestHints &hints = ChannelRequestHints());
+
     PendingChannelRequest *createConferenceStreamedMediaCall(
             const QList<ChannelPtr> &channels,
             const QStringList &initialInviteeContactsIdentifiers = QStringList(),
