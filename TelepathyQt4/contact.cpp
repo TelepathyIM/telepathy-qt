@@ -260,12 +260,22 @@ ContactInfoFieldList Contact::info() const
  *
  * Once the information is retrieved infoChanged() will be emitted.
  *
+ * This method requires Contact::FeatureInfo to be enabled.
+ *
  * \return A PendingOperation, which will emit PendingOperation::finished
  *         when the call has finished.
  * \sa infoChanged()
  */
 PendingOperation *Contact::refreshInfo()
 {
+   if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
+        warning() << "Contact::refreshInfo() used on" << this
+            << "for which FeatureInfo hasn't been requested - failing";
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("FeatureInfo needs to be enabled in order to "
+                    "use this method"), this);
+    }
+
     ConnectionPtr connection = mPriv->manager->connection();
     return new PendingVoid(
             connection->contactInfoInterface()->RefreshContactInfo(
