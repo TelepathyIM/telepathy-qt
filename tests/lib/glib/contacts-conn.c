@@ -931,6 +931,41 @@ my_refresh_contact_info (TpSvcConnectionInterfaceContactInfo *obj,
 }
 
 static void
+my_request_contact_info (TpSvcConnectionInterfaceContactInfo *obj,
+    guint handle,
+    DBusGMethodInvocation *context)
+{
+  ContactsConnection *self = CONTACTS_CONNECTION (obj);
+  TpBaseConnection *base = TP_BASE_CONNECTION (obj);
+  TpHandleRepoIface *contact_repo = tp_base_connection_get_handles (base,
+      TP_HANDLE_TYPE_CONTACT);
+  GError *error = NULL;
+  GPtrArray *ret;
+
+  TP_BASE_CONNECTION_ERROR_IF_NOT_CONNECTED (base, context);
+
+  if (!tp_handle_is_valid (contact_repo, handle, &error))
+    {
+      dbus_g_method_return_error (context, error);
+      g_error_free (error);
+      return;
+    }
+
+  ret = g_hash_table_lookup (self->priv->infos,
+    GUINT_TO_POINTER (handle));
+  if (ret == NULL)
+    {
+       ret = dbus_g_type_specialized_construct (
+               TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST);
+       g_hash_table_insert (self->priv->infos,
+               GUINT_TO_POINTER (handle), ret);
+    }
+
+  tp_svc_connection_interface_contact_info_return_from_request_contact_info (
+      context, ret);
+}
+
+static void
 init_contact_info (gpointer g_iface,
     gpointer iface_data)
 {
@@ -939,6 +974,7 @@ init_contact_info (gpointer g_iface,
 #define IMPLEMENT(x) tp_svc_connection_interface_contact_info_implement_##x (\
     klass, my_##x)
   IMPLEMENT(refresh_contact_info);
+  IMPLEMENT(request_contact_info);
 #undef IMPLEMENT
 }
 
