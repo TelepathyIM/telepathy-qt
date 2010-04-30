@@ -27,6 +27,7 @@
 #include <TelepathyQt4/ContactCapabilities>
 #include <TelepathyQt4/ContactLocation>
 #include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
 
@@ -235,6 +236,9 @@ ContactLocation *Contact::location() const
  *
  * Change notification is advertised through infoChanged().
  *
+ * Note that this method only return cached information. In order to refresh the
+ * information use refreshInfo().
+ *
  * This method requires Contact::FeatureInfo to be enabled.
  *
  * @return An object representing the contact information.
@@ -249,6 +253,23 @@ ContactInfoFieldList Contact::info() const
     }
 
     return mPriv->info;
+}
+
+/**
+ * Refresh information for the given contact.
+ *
+ * Once the information is retrieved infoChanged() will be emitted.
+ *
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa infoChanged()
+ */
+PendingOperation *Contact::refreshInfo()
+{
+    ConnectionPtr connection = mPriv->manager->connection();
+    return new PendingVoid(
+            connection->contactInfoInterface()->RefreshContactInfo(
+                UIntList() << mPriv->handle[0]), this);
 }
 
 Contact::PresenceState Contact::subscriptionState() const

@@ -86,6 +86,7 @@ public:
     ContactLocation *location() const;
 
     ContactInfoFieldList info() const;
+    PendingOperation *refreshInfo();
 
     PresenceState subscriptionState() const;
     PresenceState publishState() const;
