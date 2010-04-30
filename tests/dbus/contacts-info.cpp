@@ -2,6 +2,7 @@
 #include <TelepathyQt4/Contact>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
+#include <TelepathyQt4/PendingContactInfo>
 #include <TelepathyQt4/PendingReady>
 
 #include <telepathy-glib/telepathy-glib.h>
@@ -235,6 +236,28 @@ void TestContactsInfo::testInfo()
     QCOMPARE(contactBar->info()[0].fieldValue[0], QLatin1String("Bar"));
     QCOMPARE(contactBar->info()[1].fieldName, QLatin1String("url"));
     QCOMPARE(contactBar->info()[1].fieldValue[0], QLatin1String("http://telepathy.freedesktop.org"));
+
+    for (int i = 0; i < mContacts.size(); i++) {
+        ContactPtr contact = mContacts[i];
+        disconnect(contact.data(),
+                SIGNAL(infoChanged(const Tp::ContactInfoFieldList &)),
+                this,
+                SLOT(onContactInfoChanged(const Tp::ContactInfoFieldList &)));
+    }
+
+    PendingContactInfo *pci = contactFoo->requestInfo();
+    QVERIFY(connect(pci,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    while (!pci->isFinished()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QCOMPARE(pci->info().size(), 2);
+    QCOMPARE(pci->info()[0].fieldName, QLatin1String("n"));
+    QCOMPARE(pci->info()[0].fieldValue[0], QLatin1String("Foo"));
+    QCOMPARE(pci->info()[1].fieldName, QLatin1String("url"));
+    QCOMPARE(pci->info()[1].fieldValue[0], QLatin1String("http://telepathy.freedesktop.org"));
 
     g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_1);
     g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_2);
