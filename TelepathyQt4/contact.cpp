@@ -73,6 +73,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     SimplePresence simplePresence;
     ContactCapabilities *caps;
     ContactLocation *location;
+    ContactInfoFieldList info;
 
     PresenceState subscriptionState;
     PresenceState publishState;
@@ -229,6 +230,27 @@ ContactLocation *Contact::location() const
     return mPriv->location;
 }
 
+/**
+ * Return the information for this contact.
+ *
+ * Change notification is advertised through infoChanged().
+ *
+ * This method requires Contact::FeatureInfo to be enabled.
+ *
+ * @return An object representing the contact information.
+ */
+ContactInfoFieldList Contact::info() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
+        warning() << "Contact::info() used on" << this
+            << "for which FeatureInfo hasn't been requested - returning empty "
+               "ContactInfoFieldList";
+        return ContactInfoFieldList();
+    }
+
+    return mPriv->info;
+}
+
 Contact::PresenceState Contact::subscriptionState() const
 {
     return mPriv->subscriptionState;
@@ -363,6 +385,7 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
         SimplePresence maybePresence;
         RequestableChannelClassList maybeCaps;
         QVariantMap maybeLocation;
+        ContactInfoFieldList maybeInfo;
 
         switch (feature) {
             case FeatureAlias:
@@ -428,6 +451,23 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                         // mapping indicates that the location is not known -
                         // however, the feature is working fine
                         mPriv->actualFeatures.insert(FeatureLocation);
+                    }
+                }
+                break;
+
+            case FeatureInfo:
+                maybeInfo = qdbus_cast<ContactInfoFieldList>(attributes.value(
+                            QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_INFO "/info")));
+
+                if (!maybeInfo.isEmpty()) {
+                    receiveInfo(maybeInfo);
+                } else {
+                    if (manager()->supportedFeatures().contains(FeatureInfo) &&
+                        mPriv->requestedFeatures.contains(FeatureInfo)) {
+                        // Info being supported but not updated in the
+                        // mapping indicates that the info is not known -
+                        // however, the feature is working fine
+                        mPriv->actualFeatures.insert(FeatureInfo);
                     }
                 }
                 break;
@@ -508,6 +548,20 @@ void Contact::receiveLocation(const QVariantMap &location)
     if (mPriv->location->data() != location) {
         mPriv->location->updateData(location);
         emit locationUpdated(mPriv->location);
+    }
+}
+
+void Contact::receiveInfo(const ContactInfoFieldList &info)
+{
+    if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
+        return;
+    }
+
+    mPriv->actualFeatures.insert(FeatureInfo);
+
+    if (mPriv->info != info) {
+        mPriv->info = info;
+        emit infoChanged(mPriv->info);
     }
 }
 

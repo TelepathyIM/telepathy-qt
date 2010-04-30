@@ -133,6 +133,8 @@ QString featureToInterface(Contact::Feature feature)
             return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_CAPABILITIES);
         case Contact::FeatureLocation:
             return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_LOCATION);
+        case Contact::FeatureInfo:
+            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACT_INFO);
         default:
             warning() << "ContactManager doesn't know which interface corresponds to feature"
                 << feature;
@@ -150,7 +152,8 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
             << Contact::FeatureAvatarToken
             << Contact::FeatureSimplePresence
             << Contact::FeatureCapabilities
-            << Contact::FeatureLocation;
+            << Contact::FeatureLocation
+            << Contact::FeatureInfo;
         QStringList interfaces = connection()->contactAttributeInterfaces();
         foreach (Contact::Feature feature, allFeatures) {
             if (interfaces.contains(featureToInterface(feature))) {
@@ -789,6 +792,18 @@ void ContactManager::onLocationUpdated(uint handle, const QVariantMap &location)
     }
 }
 
+void ContactManager::onContactInfoChanged(uint handle,
+        const Tp::ContactInfoFieldList &info)
+{
+    debug() << "Got ContactInfoChanged for contact with handle" << handle;
+
+    ContactPtr contact = lookupContactByHandle(handle);
+
+    if (contact) {
+        contact->receiveInfo(info);
+    }
+}
+
 void ContactManager::onSubscribeChannelMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -1110,6 +1125,14 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
                     SIGNAL(LocationUpdated(uint, const QVariantMap &)),
                     conn->contactManager(),
                     SLOT(onLocationUpdated(uint, const QVariantMap &)));
+            break;
+
+        case Contact::FeatureInfo:
+            QObject::connect(
+                    conn->contactInfoInterface(),
+                    SIGNAL(ContactInfoChanged(uint, const Tp::ContactInfoFieldList &)),
+                    conn->contactManager(),
+                    SLOT(onContactInfoChanged(uint, const Tp::ContactInfoFieldList &)));
             break;
 
         default:
