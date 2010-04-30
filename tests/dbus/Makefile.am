@@ -68,6 +68,7 @@ TESTS += \
     test-conn-roster-groups \
     test-contacts \
     test-contacts-capabilities \
+    test-contacts-info \
     test-contacts-location \
     test-handles \
     test-stateful-proxy \
@@ -87,6 +88,7 @@ BUILT_SOURCES += \
     _gen/conn-roster-groups.cpp.moc.hpp \
     _gen/contacts.cpp.moc.hpp \
     _gen/contacts-capabilities.cpp.moc.hpp \
+    _gen/contacts-info.cpp.moc.hpp \
     _gen/contacts-location.cpp.moc.hpp \
     _gen/handles.cpp.moc.hpp \
     _gen/stateful-proxy.cpp.moc.hpp \
@@ -128,6 +130,9 @@ test_contacts_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.l
 
 test_contacts_capabilities_SOURCES = contacts-capabilities.cpp
 test_contacts_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
+
+test_contacts_info_SOURCES = contacts-info.cpp
+test_contacts_info_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_contacts_location_SOURCES = contacts-location.cpp
 test_contacts_location_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
