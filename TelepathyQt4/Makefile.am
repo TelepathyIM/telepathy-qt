@@ -99,6 +99,7 @@ libtelepathy_qt4_la_SOURCES = \
     pending-channel-request-internal.h \
     pending-connection.cpp \
     pending-contact-attributes.cpp \
+    pending-contact-info.cpp \
     pending-contacts.cpp \
     pending-handles.cpp \
     pending-operation.cpp \
@@ -169,6 +170,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/pending-channel-request-internal.moc.hpp \
     _gen/pending-connection.moc.hpp \
     _gen/pending-contact-attributes.moc.hpp \
+    _gen/pending-contact-info.moc.hpp \
     _gen/pending-contacts.moc.hpp \
     _gen/pending-handles.moc.hpp \
     _gen/pending-operation.moc.hpp \
@@ -237,6 +239,7 @@ tpqt4include_HEADERS = \
     PendingConnection \
     PendingContacts \
     PendingContactAttributes \
+    PendingContactInfo \
     PendingFailure \
     PendingHandles \
     PendingOperation \
@@ -342,6 +345,7 @@ tpqt4include_HEADERS = \
     pending-channel-request.h \
     pending-connection.h \
     pending-contact-attributes.h \
+    pending-contact-info.h \
     pending-contacts.h \
     pending-handles.h \
     pending-operation.h \

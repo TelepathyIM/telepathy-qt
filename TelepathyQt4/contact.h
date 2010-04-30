@@ -39,6 +39,7 @@ namespace Tp
 class ContactCapabilities;
 class ContactLocation;
 class ContactManager;
+class PendingContactInfo;
 class PendingOperation;
 class ReferencedHandles;
 
@@ -87,6 +88,7 @@ public:
 
     ContactInfoFieldList info() const;
     PendingOperation *refreshInfo();
+    PendingContactInfo *requestInfo();
 
     PresenceState subscriptionState() const;
     PresenceState publishState() const;

@@ -27,6 +27,7 @@
 #include <TelepathyQt4/ContactCapabilities>
 #include <TelepathyQt4/ContactLocation>
 #include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingContactInfo>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
@@ -280,6 +281,23 @@ PendingOperation *Contact::refreshInfo()
     return new PendingVoid(
             connection->contactInfoInterface()->RefreshContactInfo(
                 UIntList() << mPriv->handle[0]), this);
+}
+
+/**
+ * Request information for the given contact.
+ *
+ * This method is useful for UIs that don't care about notification of changes
+ * in the contact information but want to show the contact information
+ * (e.g. right-click on a contact and show the contact info).
+ *
+ * \return A PendingContactInfo, which will emit PendingContactInfo::finished
+ *         when the information has been retrieved or an error occurred.
+ */
+PendingContactInfo *Contact::requestInfo()
+{
+    ContactPtr self =
+        mPriv->manager->lookupContactByHandle(mPriv->handle[0]);
+    return new PendingContactInfo(self);
 }
 
 Contact::PresenceState Contact::subscriptionState() const
