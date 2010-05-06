@@ -1,8 +1,8 @@
 /*
  * contacts-conn.h - header for a connection with contact info
  *
- * Copyright (C) 2007-2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2007-2008 Nokia Corporation
+ * Copyright (C) 2007-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2007-2010 Nokia Corporation
  *
  * Copying and distribution of this file, with or without modification,
  * are permitted in any medium without royalty provided the copyright
@@ -88,6 +88,11 @@ void contacts_connection_change_locations (ContactsConnection *self,
 
 void contacts_connection_change_capabilities (ContactsConnection *self,
     GHashTable *capabilities);
+
+void contacts_connection_change_infos (ContactsConnection *self,
+    guint n,
+    const TpHandle *handles,
+    GPtrArray **infos);
 
 /* Legacy version (no Contacts interface) */
 

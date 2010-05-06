@@ -39,6 +39,7 @@ namespace Tp
 class ContactCapabilities;
 class ContactLocation;
 class ContactManager;
+class PendingContactInfo;
 class PendingOperation;
 class ReferencedHandles;
 
@@ -54,6 +55,7 @@ public:
         FeatureSimplePresence,
         FeatureCapabilities,
         FeatureLocation,
+        FeatureInfo,
         _Padding = 0xFFFFFFFF
     };
 
@@ -84,6 +86,10 @@ public:
 
     ContactLocation *location() const;
 
+    ContactInfoFieldList info() const;
+    PendingOperation *refreshInfo();
+    PendingContactInfo *requestInfo();
+
     PresenceState subscriptionState() const;
     PresenceState publishState() const;
 
@@ -107,6 +113,7 @@ Q_SIGNALS:
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
     void capabilitiesChanged(Tp::ContactCapabilities *caps);
     void locationUpdated(Tp::ContactLocation *location);
+    void infoChanged(const Tp::ContactInfoFieldList &info);
 
     void subscriptionStateChanged(Tp::Contact::PresenceState state);
     void publishStateChanged(Tp::Contact::PresenceState state);
@@ -132,6 +139,7 @@ private:
     void receiveSimplePresence(const SimplePresence &presence);
     void receiveCapabilities(const RequestableChannelClassList &caps);
     void receiveLocation(const QVariantMap &location);
+    void receiveInfo(const ContactInfoFieldList &info);
 
     void setSubscriptionState(PresenceState state);
     void setPublishState(PresenceState state);
