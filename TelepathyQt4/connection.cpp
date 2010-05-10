@@ -217,6 +217,8 @@ Connection::Private::~Private()
     // Clear selfContact so its handle will be released cleanly before the handleContext
     selfContact.clear();
 
+    delete caps;
+
     // FIXME: This doesn't look right! In fact, looks absolutely horrendous.
     if (!handleContext) {
         // initial introspection is not done
