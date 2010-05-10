@@ -242,6 +242,7 @@ private:
     void removeSMStream();
 
     QDBusObjectPath callObjectPath() const;
+    PendingOperation *callRemove();
 
     struct Private;
     friend struct Private;

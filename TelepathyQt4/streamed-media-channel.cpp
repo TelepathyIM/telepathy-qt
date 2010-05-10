@@ -1845,6 +1845,13 @@ QDBusObjectPath MediaContent::callObjectPath() const
     return mPriv->callObjectPath;
 }
 
+PendingOperation *MediaContent::callRemove()
+{
+    return new PendingVoid(
+            mPriv->callBaseInterface->Remove(),
+            this);
+}
+
 /* ====== StreamedMediaChannel ====== */
 StreamedMediaChannel::Private::Private(StreamedMediaChannel *parent)
     : parent(parent),
@@ -2110,6 +2117,9 @@ PendingOperation *StreamedMediaChannel::acceptCall()
 /**
  * Remove the specified media stream from this channel.
  *
+ * Note that removing a stream from a call will also remove the content the
+ * stream belongs to.
+ *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
  * \param stream Media stream to remove.
@@ -2132,14 +2142,15 @@ PendingOperation *StreamedMediaChannel::removeStream(const MediaStreamPtr &strea
                     UIntList() << stream->id()),
                 this);
     } else {
-        // TODO add Call iface support once RemoveContent is implement
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Removing streams is not supported"), this);
+        return stream->content()->callRemove();
     }
 }
 
 /**
  * Remove the specified media streams from this channel.
+ *
+ * Note that removing a stream from a call will also remove the content the
+ * stream belongs to.
  *
  * This methods requires StreamedMediaChannel::FeatureStreams to be enabled.
  *
@@ -2168,9 +2179,20 @@ PendingOperation *StreamedMediaChannel::removeStreams(const MediaStreams &stream
                 streamedMediaInterface()->RemoveStreams(ids),
                 this);
     } else {
-        // TODO add Call iface support once RemoveContent is implement
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("Removing streams is not supported"), this);
+        // make sure we don't call remove on the same content
+        MediaContents contents;
+        foreach (const MediaStreamPtr &stream, streams) {
+            if (!contents.contains(stream->content())) {
+                contents.append(stream->content());
+            }
+        }
+
+        QList<PendingOperation*> ops;
+        foreach (const MediaContentPtr &content, contents) {
+            ops << content->callRemove();
+        }
+
+        return new PendingComposite(ops, this);
     }
 }
 
@@ -2336,8 +2358,7 @@ PendingOperation *StreamedMediaChannel::removeContent(const MediaContentPtr &con
                     UIntList() << stream->id()),
             this);
     } else {
-        // TODO add Call iface support
-        return NULL;
+        return content->callRemove();
     }
 }
 
