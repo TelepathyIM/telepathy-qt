@@ -1,7 +1,17 @@
-telepathy-qt4 0.3.3 (UNRELEASED)
+telepathy-qt4 0.3.3 (2010-05-09)
 ================================
 
-...
+The "generic fun" release.
+
+New API:
+* fd.o#27671: ContactInfo high-level API.
+
+Enhancements:
+- Added Call.Content.Remove support to StreamedMediaChannel.
+
+Fixes:
+- Fixed a leak in Connection::gotCapabilities,
+- Correctly remove object path from Account::uniqueIdentifier.
 
 telepathy-qt4 0.3.2 (2010-04-23)
 ================================
