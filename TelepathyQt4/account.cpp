@@ -44,6 +44,8 @@
 #include <QRegExp>
 #include <QTimer>
 
+#include <string.h>
+
 namespace Tp
 {
 
@@ -925,8 +927,8 @@ PendingOperation *Account::setRequestedPresence(
 QString Account::uniqueIdentifier() const
 {
     QString path = objectPath();
-    // 25 = len("/org/freedesktop/Account/")
-    return path.right(path.length() - 25);
+    return path.right(path.length() -
+            strlen("/org/freedesktop/Telepathy/Account/"));
 }
 
 /**
