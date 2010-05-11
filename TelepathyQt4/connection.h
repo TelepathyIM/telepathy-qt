@@ -171,6 +171,12 @@ public:
         return optionalInterface<Client::ConnectionInterfaceRequestsInterface>(check);
     }
 
+    inline Client::ConnectionInterfaceBalanceInterface *balanceInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceBalanceInterface>(check);
+    }
+
 Q_SIGNALS:
     void statusChanged(Tp::Connection::Status newStatus,
             Tp::ConnectionStatusReason newStatusReason);
