@@ -68,6 +68,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     static void introspectSimplePresence(Private *self);
     static void introspectRoster(Private *self);
     static void introspectRosterGroups(Private *self);
+    static void introspectBalance(Private *self);
 
     void checkFeatureRosterGroupsReady();
 
@@ -106,6 +107,8 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     // Number of things left to do before the Groups feature is ready
     // 1 for Get("Channels") + 1 per channel not ready
     uint featureRosterGroupsTodo;
+
+    CurrencyAmount accountBalance;
 
     // (Bus connection name, service name) -> HandleContext
     static QMap<QPair<QString, QString>, HandleContext *> handleContexts;
@@ -201,6 +204,14 @@ Connection::Private::Private(Connection *parent)
         (ReadinessHelper::IntrospectFunc) &Private::introspectRosterGroups,
         this);
     introspectables[FeatureRosterGroups] = introspectableRosterGroups;
+
+    ReadinessHelper::Introspectable introspectableBalance(
+        QSet<uint>() << Connection::StatusConnected,                                                // makesSenseForStatuses
+        Features() << FeatureCore,                                                                  // dependsOnFeatures (core)
+        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_BALANCE),           // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectBalance,
+        this);
+    introspectables[FeatureRosterGroups] = introspectableBalance;
 
     readinessHelper->addIntrospectables(introspectables);
     readinessHelper->setCurrentStatus(status);
@@ -435,6 +446,30 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
             SLOT(gotChannels(QDBusPendingCallWatcher*)));
 }
 
+void Connection::Private::introspectBalance(Connection::Private *self)
+{
+    debug() << "Introspecting balance";
+
+    // we already checked if balance interface exists, so bypass requests
+    // interface checking
+    Client::ConnectionInterfaceBalanceInterface *iface =
+        self->parent->balanceInterface(BypassInterfaceCheck);
+
+    debug() << "Connecting to Balance.BalanceChanged";
+    self->parent->connect(iface,
+            SIGNAL(BalanceChanged(const Tp::CurrencyAmount&)),
+            SLOT(onBalanceChanged(const Tp::CurrencyAmount&)));
+
+    debug() << "Retrieving balance";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            self->parent->propertiesInterface()->Get(
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_BALANCE),
+                QLatin1String("AccountBalance")), self->parent);
+    self->parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotBalance(QDBusPendingCallWatcher*)));
+}
+
 void Connection::Private::checkFeatureRosterGroupsReady()
 {
     if (featureRosterGroupsTodo != 0) {
@@ -643,6 +678,13 @@ const Feature Connection::FeatureRoster = Feature(QLatin1String(Connection::stat
 const Feature Connection::FeatureRosterGroups = Feature(QLatin1String(Connection::staticMetaObject.className()), 5);
 
 /**
+ * Feature used to retrieve/keep track of the connection account balance.
+ *
+ * See account balance specific methods' documentation for more details.
+ */
+const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connection::staticMetaObject.className()), 6);
+
+/**
  * Create a new connection object using QDBusConnection::sessionBus().
  *
  * \param busName The connection well-known bus name (sometimes called a
@@ -827,6 +869,24 @@ ContactPtr Connection::selfContact() const
 }
 
 /**
+ * Return the user's balance on the account corresponding to this connection. A
+ * negative amount may be possible on some services, and indicates that the user
+ * owes money to the service provider.
+ *
+ * \return The user's balance.
+ * \sa accountBalanceChanged()
+ */
+CurrencyAmount Connection::accountBalance() const
+{
+    if (!isReady(FeatureAccountBalance)) {
+        warning() << "Connection::accountBalance() used before connection "
+            "FeatureAccountBalance is ready";
+    }
+
+    return mPriv->accountBalance;
+}
+
+/**
  * Return the capabilities that are expected to be available on this connection,
  * i.e. those for which createChannel() can reasonably be expected to succeed.
  * User interfaces can use this information to show or hide UI components.
@@ -934,6 +994,16 @@ ConnectionCapabilities *Connection::capabilities() const
  * \sa optionalInterface()
  *
  * \return <code>optionalInterface<DBus::PropertiesInterface>(BypassInterfaceCheck)</code>
+ */
+
+/**
+ * \fn void Connection::accountBalanceChanged(const Tp::CurrencyAmount &accountBalance) const
+ *
+ * Signal emitted when the user's balance on the account corresponding to this
+ * connection changes.
+ *
+ * \param accountBalance The new user's balance.
+ * \sa accountBalance()
  */
 
 void Connection::onStatusReady(uint status)
@@ -1363,6 +1433,24 @@ void Connection::gotChannels(QDBusPendingCallWatcher *watcher)
     }
 
     mPriv->checkFeatureRosterGroupsReady();
+
+    watcher->deleteLater();
+}
+
+void Connection::gotBalance(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariant> reply = *watcher;
+
+    if (!reply.isError()) {
+        debug() << "Got balance";
+        mPriv->accountBalance = qdbus_cast<CurrencyAmount>(reply.value());
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureAccountBalance, true);
+    } else {
+        warning().nospace() << "Getting balance failed with " <<
+            reply.error().name() << ":" << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureAccountBalance, false,
+                reply.error().name(), reply.error().message());
+    }
 
     watcher->deleteLater();
 }
@@ -1812,6 +1900,12 @@ void Connection::onSelfHandleChanged(uint handle)
     if (mPriv->readinessHelper->actualFeatures().contains(FeatureSelfContact)) {
         Private::introspectSelfContact(mPriv);
     }
+}
+
+void Connection::onBalanceChanged(const Tp::CurrencyAmount &value)
+{
+    mPriv->accountBalance = value;
+    emit accountBalanceChanged(value);
 }
 
 } // Tp
