@@ -32,8 +32,11 @@
 #include <TelepathyQt4/ContactSearchChannel>
 #include <TelepathyQt4/FileTransferChannel>
 #include <TelepathyQt4/IncomingFileTransferChannel>
+#include <TelepathyQt4/IncomingStreamTubeChannel>
 #include <TelepathyQt4/OutgoingFileTransferChannel>
+#include <TelepathyQt4/OutgoingStreamTubeChannel>
 #include <TelepathyQt4/RoomListChannel>
+#include <TelepathyQt4/StreamTubeChannel>
 #include <TelepathyQt4/StreamedMediaChannel>
 #include <TelepathyQt4/TextChannel>
 
@@ -98,6 +101,8 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
     setSubclassForRoomLists<RoomListChannel>();
     setSubclassForIncomingFileTransfers<IncomingFileTransferChannel>();
     setSubclassForOutgoingFileTransfers<OutgoingFileTransferChannel>();
+    setSubclassForIncomingStreamTubes<IncomingStreamTubeChannel>();
+    setSubclassForOutgoingStreamTubes<OutgoingStreamTubeChannel>();
     setSubclassForContactSearches<ContactSearchChannel>();
     setFallbackSubclass<Channel>();
 }
@@ -256,6 +261,52 @@ void ChannelFactory::setConstructorForIncomingFileTransfers(const ConstructorCon
         const QVariantMap &additionalProps)
 {
     setConstructorFor(ChannelClassSpec::incomingFileTransfer(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForOutgoingStreamTubes(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::outgoingStreamTube(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForOutgoingStreamTubes(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::outgoingStreamTube(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForOutgoingStreamTubes(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::outgoingStreamTube(additionalProps));
+}
+
+void ChannelFactory::setConstructorForOutgoingStreamTubes(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::outgoingStreamTube(additionalProps), ctor);
+}
+
+Features ChannelFactory::featuresForIncomingStreamTubes(const QVariantMap &additionalProps) const
+{
+    return featuresFor(ChannelClassSpec::incomingStreamTube(additionalProps));
+}
+
+void ChannelFactory::addFeaturesForIncomingStreamTubes(const Features &features,
+        const QVariantMap &additionalProps)
+{
+    addFeaturesFor(ChannelClassSpec::incomingStreamTube(additionalProps), features);
+}
+
+ChannelFactory::ConstructorConstPtr ChannelFactory::constructorForIncomingStreamTubes(
+        const QVariantMap &additionalProps) const
+{
+    return constructorFor(ChannelClassSpec::incomingStreamTube(additionalProps));
+}
+
+void ChannelFactory::setConstructorForIncomingStreamTubes(const ConstructorConstPtr &ctor,
+        const QVariantMap &additionalProps)
+{
+    setConstructorFor(ChannelClassSpec::incomingStreamTube(additionalProps), ctor);
 }
 
 Features ChannelFactory::featuresForContactSearches(const QVariantMap &additionalProps) const

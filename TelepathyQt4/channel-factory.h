@@ -157,6 +157,38 @@ public:
     void setConstructorForIncomingFileTransfers(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
+    Features featuresForOutgoingStreamTubes(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForOutgoingStreamTubes(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForOutgoingStreamTubes(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForOutgoingStreamTubes(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForOutgoingStreamTubes(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForOutgoingStreamTubes(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForIncomingStreamTubes(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForIncomingStreamTubes(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForIncomingStreamTubes(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForIncomingStreamTubes(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForIncomingStreamTubes(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForIncomingStreamTubes(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
     Features featuresForContactSearches(const QVariantMap &additionalProps = QVariantMap()) const;
     void addFeaturesForContactSearches(const Features &features,
             const QVariantMap &additionalProps = QVariantMap());

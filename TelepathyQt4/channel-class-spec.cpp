@@ -425,6 +425,38 @@ ChannelClassSpec ChannelClassSpec::incomingFileTransfer(const QVariantMap &addit
     }
 }
 
+ChannelClassSpec ChannelClassSpec::outgoingStreamTube(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+                HandleTypeContact, true);
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
+ChannelClassSpec ChannelClassSpec::incomingStreamTube(const QVariantMap &additionalProperties)
+{
+    static ChannelClassSpec spec;
+
+    if (!spec.isValid()) {
+        spec = ChannelClassSpec(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE),
+                HandleTypeContact, false);
+    }
+
+    if (additionalProperties.isEmpty()) {
+        return spec;
+    } else {
+        return ChannelClassSpec(spec, additionalProperties);
+    }
+}
+
 ChannelClassSpec ChannelClassSpec::contactSearch(const QVariantMap &additionalProperties)
 {
     static ChannelClassSpec spec;
