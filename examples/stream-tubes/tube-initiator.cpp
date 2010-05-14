@@ -273,7 +273,7 @@ void TubeInitiator::onStreamTubeChannelReady(PendingOperation *op)
     connect(mChan.data(),
             SIGNAL(newRemoteConnection(Tp::ContactPtr,QVariant,uint)),
             SLOT(onStreamTubeChannelNewRemoteConnection(Tp::ContactPtr,QVariant,uint)));
-    connect(mChan->offerTube(mServer, QVariantMap()),
+    connect(mChan->offerTubeAsTcpSocket(mServer, QVariantMap()),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onOfferTubeFinished(Tp::PendingOperation*)));
 }

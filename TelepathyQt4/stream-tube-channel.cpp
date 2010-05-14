@@ -247,21 +247,107 @@ QString StreamTubeChannel::service() const
 }
 
 /**
- * \returns A mapping from address types to lists of access-control type
- *          that the connection manager supports for stream tubes with that address type
+ * \returns The IP protocols this stream tube is capable of handling.
+ *
+ * \note You will be able to call either IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
+ *       OutgoingStreamTubeChannel::offerTubeAsTcpSocket with an address belonging to one
+ *       of the protocols returned.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
+ * \see OutgoingStreamTubeChannel::offerTubeAsTcpSocket
+ * \see supportedTcpProtocolsWithAllowedAddress
  */
-SupportedSocketMap StreamTubeChannel::supportedSocketTypes() const
+StreamTubeChannel::TcpProtocols StreamTubeChannel::supportedTcpProtocols() const
 {
     if (!isReady(FeatureStreamTube)) {
-        warning() << "StreamTubeChannel::supportedSocketTypes() used with "
+        warning() << "StreamTubeChannel::supportedTcpProtocols() used with "
             "FeatureStreamTube not ready";
-        return SupportedSocketMap();
+        return NoProtocol;
     }
 
     Q_D(const StreamTubeChannel);
 
-    return d->socketTypes;
+    TcpProtocols protocols = NoProtocol;
+    if (d->socketTypes.contains(SocketAddressTypeIPv4)) {
+        protocols |= StreamTubeChannel::IPv4Protocol;
+    }
+    if (d->socketTypes.contains(SocketAddressTypeIPv6)) {
+        protocols |= StreamTubeChannel::IPv6Protocol;
+    }
+    return protocols;
 }
+
+/**
+ * \returns The IP protocols this stream tube is capable of handling when specifying an allowed
+ *          address for connecting to the socket.
+ *
+ * \note You will be able to call OutgoingStreamTubeChannel::offerTubeAsTcpSocket with an address
+ *       and an allowed address+port belonging to one of the protocols returned.
+ *
+ * \see OutgoingStreamTubeChannel::offerTubeAsTcpSocket
+ * \see supportedTcpProtocols
+ */
+StreamTubeChannel::TcpProtocols StreamTubeChannel::supportedTcpProtocolsWithAllowedAddress() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportedTcpProtocolsWithAllowedAddress() used with "
+            "FeatureStreamTube not ready";
+        return NoProtocol;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    TcpProtocols protocols = NoProtocol;
+    if (d->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlPort)) {
+        protocols |= StreamTubeChannel::IPv4Protocol;
+    }
+    if (d->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlPort)) {
+        protocols |= StreamTubeChannel::IPv6Protocol;
+    }
+    return protocols;
+}
+
+/**
+ * \returns Whether this Stream tube supports offering or accepting it as an Unix socket.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
+ * \see OutgoingStreamTubeChannel::offerTubeAsUnixSocket
+ * \see supportsUnixSocketsWithCredentials
+ */
+bool StreamTubeChannel::supportsUnixSockets() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportsUnixSockets() used with "
+            "FeatureStreamTube not ready";
+        return false;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    return d->socketTypes.contains(SocketAddressTypeUnix);
+}
+
+/**
+ * \returns Whether this Stream tube supports offering or accepting it as an Unix socket and requiring
+ *          credentials for connecting to it.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
+ * \see OutgoingStreamTubeChannel::offerTubeAsUnixSocket
+ * \see supportsUnixSockets
+ */
+bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportsUnixSocketsWithCredentials() used with "
+            "FeatureStreamTube not ready";
+        return false;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    return d->socketTypes.value(SocketAddressTypeUnix).contains(SocketAccessControlCredentials);
+}
+
 
 void StreamTubeChannel::connectNotify(const char* signal)
 {

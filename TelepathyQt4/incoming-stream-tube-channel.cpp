@@ -45,8 +45,6 @@ public:
     IncomingStreamTubeChannel *parent;
 
     // Properties
-    QHostAddress allowedAddress;
-    quint16 allowedPort;
     QIODevice *device;
 
     // Private slots
@@ -56,8 +54,6 @@ public:
 
 IncomingStreamTubeChannelPrivate::IncomingStreamTubeChannelPrivate(IncomingStreamTubeChannel *parent)
     : StreamTubeChannelPrivate(parent)
-    , allowedAddress(QHostAddress::Null)
-    , allowedPort(0)
     , device(0)
 {
     baseType = IncomingTubeType;
@@ -396,55 +392,6 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
 {
 }
 
-/**
- * Call this function if you want the socket to be accessed only if the connecting process
- * has the address specified; all other connection attempts will be rejected.
- *
- * This function must be called \b before %acceptTube to be effective, and will take effect
- * only if the tube will be accepted with \c SocketAccessControlPort.
- *
- * \param address The address to accept connections from
- * \param port The port to accept connections from
- *
- * \see unsetAllowedAddress
- */
-void IncomingStreamTubeChannel::setAllowedAddress(const QHostAddress& address, quint16 port)
-{
-    Q_D(IncomingStreamTubeChannel);
-
-    d->allowedAddress = address;
-    d->allowedPort = port;
-}
-
-/**
- * This function allows to unset a previously specified with setAllowedAddress.
- *
- * This function must be called \b before %acceptTube to be effective, and will prevent
- * the tube from being accepted with \c SocketAccessControlPort.
- *
- * \see setAllowedAddress
- */
-void IncomingStreamTubeChannel::unsetAllowedAddress()
-{
-    Q_D(IncomingStreamTubeChannel);
-
-    d->allowedAddress = QHostAddress::Null;
-    d->allowedPort = 0;
-}
-
-/**
- * \returns The address allowed to access the created socket, or a null QHostAddress if no
- *          access control has been imposed over this StreamTube.
- *
- * \see setAllowedAddress
- */
-QPair< QHostAddress, quint16 > IncomingStreamTubeChannel::allowedAddress() const
-{
-    Q_D(const IncomingStreamTubeChannel);
-
-    return qMakePair< QHostAddress, quint16 >(d->allowedAddress, d->allowedPort);
-}
-
 
 /**
  * \brief Accept an incoming Stream tube
@@ -469,7 +416,9 @@ QPair< QHostAddress, quint16 > IncomingStreamTubeChannel::allowedAddress() const
  * \param accessControl The type of access control the connection manager should apply to the socket.
  *
  */
-PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTube(SocketAccessControl accessControl)
+PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
+        const QHostAddress& allowedAddress,
+        quint16 allowedPort)
 {
     if (!isReady(StreamTubeChannel::FeatureCore)) {
         warning() << "IncomingStreamTubeChannel::FeatureCore must be ready before "
@@ -487,40 +436,39 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTube(SocketAccessC
                 IncomingStreamTubeChannelPtr(this));
     }
 
-    Q_D(IncomingStreamTubeChannel);
-
     QVariant controlParameter;
+    SocketAccessControl accessControl;
 
     // Now, let's check what we need to do with accessControl. There is just one special case, Port.
-    if (accessControl == SocketAccessControlPort) {
+    if (allowedAddress != QHostAddress::Any) {
         // We need to have a valid QHostAddress
-        if (d->allowedAddress.isNull()) {
-            warning() << "You have to set an allowed address to use Port access control";
+        if (allowedAddress.isNull()) {
+            warning() << "You have to set a valid allowed address to use Port access control";
             return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
-                    QLatin1String("No allowed address specified even though Port access control was requested"),
+                    QLatin1String("The supplied allowed address was invalid"),
                     IncomingStreamTubeChannelPtr(this));
         }
 
+        accessControl = SocketAccessControlPort;
+
         // IPv4 or IPv6?
-        if (d->allowedAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+        if (allowedAddress.protocol() == QAbstractSocket::IPv4Protocol) {
             // IPv4 case
             SocketAddressIPv4 addr;
-            addr.address = d->allowedAddress.toString();
-            addr.port = d->allowedPort;
+            addr.address = allowedAddress.toString();
+            addr.port = allowedPort;
 
-            d->addressType = SocketAddressTypeIPv4;
             controlParameter = QVariant::fromValue(addr);
-        } else if (d->allowedAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+        } else if (allowedAddress.protocol() == QAbstractSocket::IPv6Protocol) {
             // IPv6 case
             SocketAddressIPv6 addr;
-            addr.address = d->allowedAddress.toString();
-            addr.port = d->allowedPort;
+            addr.address = allowedAddress.toString();
+            addr.port = allowedPort;
 
-            d->addressType = SocketAddressTypeIPv6;
             controlParameter = QVariant::fromValue(addr);
         } else {
             // We're handling an IPv4/IPv6 socket only
-            warning() << "acceptTube can be called only with a QHostAddress representing "
+            warning() << "acceptTubeAsTcpSocket can be called only with a QHostAddress representing "
                     "an IPv4 or IPv6 address";
             return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                     QLatin1String("Invalid host given"),
@@ -528,29 +476,20 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTube(SocketAccessC
         }
     } else {
         // We have to do no special stuff here
+        accessControl = SocketAccessControlLocalhost;
         // Since QDBusMarshaller does not like null variants, just add an empty string.
         controlParameter = QVariant(QString());
-        // Use unix sockets where possible, then fall back to IPv6/IPv4
-        if (supportedSocketTypes().value(SocketAddressTypeUnix, UIntList()).contains(accessControl)) {
-            debug() << "Using an Unix socket";
-            d->addressType = SocketAddressTypeUnix;
-        } else if (supportedSocketTypes().value(SocketAddressTypeIPv6, UIntList()).contains(accessControl)) {
-            debug() << "Using an IPv6 socket";
-            d->addressType = SocketAddressTypeIPv6;
-        } else if (supportedSocketTypes().value(SocketAddressTypeIPv4, UIntList()).contains(accessControl)) {
-            debug() << "Using an IPv4 socket";
-            d->addressType = SocketAddressTypeIPv4;
-        } else {
-            // There are no sockets available for the chosen accessControl
-            warning() << "You requested an address type/access control combination "
-                    "not supported by this channel";
-            return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                    QLatin1String("The requested address type/access control combination is not supported"),
-                    IncomingStreamTubeChannelPtr(this));
-        }
     }
 
-    if (!supportedSocketTypes().value(d->addressType, UIntList()).contains(accessControl)) {
+    Q_D(IncomingStreamTubeChannel);
+
+    // Set the correct address type
+    d->addressType = allowedAddress.protocol() == QAbstractSocket::IPv4Protocol ?
+                     SocketAddressTypeIPv4 :
+                     SocketAddressTypeIPv6;
+
+    // Fail early if the combination is not supported
+    if (!d->socketTypes.value(d->addressType, UIntList()).contains(accessControl)) {
         warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -572,6 +511,57 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTube(SocketAccessC
             this, SLOT(__k__onAcceptTubeFinished(Tp::PendingOperation*)));
     return op;
 }
+
+PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
+        bool requireCredentials)
+{
+    if (!isReady(StreamTubeChannel::FeatureCore)) {
+        warning() << "IncomingStreamTubeChannel::FeatureCore must be ready before "
+            "calling acceptTube";
+        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+            QLatin1String("Channel not ready"),
+            IncomingStreamTubeChannelPtr(this));
+    }
+
+    // The tube must be in local pending state
+    if (tubeState() != TubeChannelStateLocalPending) {
+        warning() << "You can accept tubes only when they are in LocalPending state";
+        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Channel not ready"),
+                IncomingStreamTubeChannelPtr(this));
+    }
+
+    Q_D(IncomingStreamTubeChannel);
+
+    SocketAccessControl accessControl = requireCredentials ?
+            SocketAccessControlCredentials :
+            SocketAccessControlLocalhost;
+    d->addressType = SocketAddressTypeUnix;
+
+    // Fail early if the combination is not supported
+    if (!d->socketTypes.value(d->addressType, UIntList()).contains(accessControl)) {
+        warning() << "You requested an address type/access control combination "
+                "not supported by this channel";
+        return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("The requested address type/access control combination is not supported"),
+                IncomingStreamTubeChannelPtr(this));
+    }
+
+    // Perform the actual call
+    PendingVariant *pv = new PendingVariant(
+            interface<Client::ChannelTypeStreamTubeInterface>()->Accept(
+                    d->addressType,
+                    accessControl,
+                    QDBusVariant(QVariant(QString()))),
+            IncomingStreamTubeChannelPtr(this));
+
+    PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, d->addressType,
+            IncomingStreamTubeChannelPtr(this));
+    connect(op, SIGNAL(finished(Tp::PendingOperation*)),
+            this, SLOT(__k__onAcceptTubeFinished(Tp::PendingOperation*)));
+    return op;
+}
+
 
 /**
  * \returns A valid QIODevice if the tube is in the \c Open state, 0 otherwise.

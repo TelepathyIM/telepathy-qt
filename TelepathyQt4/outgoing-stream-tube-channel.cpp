@@ -213,16 +213,14 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * \param port The port the socket is listening for connections to
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
  *                   Please read the specification for more details.
- * \param accessControl The access control the local service applies to the local socket.
  *
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTube(
+PendingOperation* OutgoingStreamTubeChannel::offerTubeAsTcpSocket(
         const QHostAddress& address,
         quint16 port,
-        const QVariantMap& parameters,
-        SocketAccessControl accessControl)
+        const QVariantMap& parameters)
 {
     if (!isReady(OutgoingStreamTubeChannel::FeatureCore)) {
         warning() << "OutgoingStreamTubeChannel::FeatureCore must be ready before "
@@ -246,7 +244,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
     if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         // IPv4 case
         // Check if the combination type/access control is supported
-        if (!supportedSocketTypes().value(SocketAddressTypeIPv4, UIntList()).contains(accessControl)) {
+        if (!d->socketTypes.value(SocketAddressTypeIPv4, UIntList()).contains(SocketAccessControlLocalhost)) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -265,8 +263,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
                 interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
                         SocketAddressTypeIPv4,
                         QDBusVariant(QVariant::fromValue(addr)),
-                        accessControl,
-                    parameters),
+                        SocketAccessControlLocalhost,
+                        parameters),
                 OutgoingStreamTubeChannelPtr(this));
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
@@ -274,7 +272,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
     } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
         // IPv6 case
         // Check if the combination type/access control is supported
-        if (!supportedSocketTypes().value(SocketAddressTypeIPv6, UIntList()).contains(accessControl)) {
+        if (!d->socketTypes.value(SocketAddressTypeIPv6, UIntList()).contains(SocketAccessControlLocalhost)) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -293,7 +291,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
                 interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
                         SocketAddressTypeIPv6,
                         QDBusVariant(QVariant::fromValue(addr)),
-                        accessControl,
+                        SocketAccessControlLocalhost,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
         PendingOpenTube *op = new PendingOpenTube(pv,
@@ -319,23 +317,21 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
  * The %PendingOperation returned by this method will be completed as soon as the tube is
  * open and ready to be used.
  *
- * \param address A valid IPv4 or IPv6 address pointing to an existing socket
+ * \param server A valid QTcpServer already listening
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
  *                   Please read the specification for more details.
- * \param accessControl The access control the local service applies to the local socket.
  *
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTube(
+PendingOperation* OutgoingStreamTubeChannel::offerTubeAsTcpSocket(
         QTcpServer* server,
-        const QVariantMap& parameters,
-        SocketAccessControl accessControl)
+        const QVariantMap& parameters)
 {
     // In this overload, we're handling a superset of QHostAddress.
     // Let's redirect the call to QHostAddress's overload
-    return offerTube(server->serverAddress(), server->serverPort(),
-            parameters, accessControl);
+    return offerTubeAsTcpSocket(server->serverAddress(), server->serverPort(),
+            parameters);
 }
 
 
@@ -355,16 +351,21 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
  * \param address A valid path to an existing Unix socket or abstract Unix socket
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
  *                   Please read the specification for more details.
- * \param accessControl The access control the local service applies to the local socket.
+ * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
+ *                           upon connection.
  *
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTube(
+PendingOperation* OutgoingStreamTubeChannel::offerTubeAsUnixSocket(
         const QByteArray& socketAddress,
         const QVariantMap& parameters,
-        SocketAccessControl accessControl)
+        bool requireCredentials)
 {
+    SocketAccessControl accessControl = requireCredentials ?
+            SocketAccessControlCredentials :
+            SocketAccessControlLocalhost;
+
     if (!isReady(OutgoingStreamTubeChannel::FeatureStreamTube)) {
         warning() << "OutgoingStreamTubeChannel::FeatureStreamTube must be ready before "
                 "calling offerTube";
@@ -386,7 +387,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
     if (socketAddress.at(0) == '\0') {
         // Abstract Unix socket case
         // Check if the combination type/access control is supported
-        if (!supportedSocketTypes().value(SocketAddressTypeAbstractUnix, UIntList()).contains(accessControl)) {
+        if (!d->socketTypes.value(SocketAddressTypeAbstractUnix, UIntList()).contains(accessControl)) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -410,7 +411,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
     } else {
         // Unix socket case
         // Check if the combination type/access control is supported
-        if (!supportedSocketTypes().value(SocketAddressTypeUnix, UIntList()).contains(accessControl)) {
+        if (!d->socketTypes.value(SocketAddressTypeUnix, UIntList()).contains(accessControl)) {
             warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -443,22 +444,23 @@ PendingOperation* OutgoingStreamTubeChannel::offerTube(
  * The %PendingOperation returned by this method will be completed as soon as the tube is
  * open and ready to be used.
  *
- * \param address A valid path to an existing Unix socket or abstract Unix socket
+ * \param server A valid QLocalServer, already listening
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
  *                   Please read the specification for more details.
- * \param accessControl The access control the local service applies to the local socket.
+ * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
+ *                           upon connection.
  *
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTube(
+PendingOperation* OutgoingStreamTubeChannel::offerTubeAsUnixSocket(
         QLocalServer* server,
         const QVariantMap& parameters,
-        SocketAccessControl accessControl)
+        bool requireCredentials)
 {
     // In this overload, we're handling a superset of a local socket
     // Let's redirect the call to QByteArray's overload
-    return offerTube(server->fullServerName().toUtf8(), parameters, accessControl);
+    return offerTubeAsUnixSocket(server->fullServerName().toUtf8(), parameters, requireCredentials);
 }
 
 void OutgoingStreamTubeChannel::connectNotify(const char* signal)

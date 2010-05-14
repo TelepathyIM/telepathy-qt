@@ -28,7 +28,8 @@
 #include <TelepathyQt4/StreamTubeChannel>
 #include <TelepathyQt4/PendingOperation>
 
-class QHostAddress;
+#include <QtNetwork/QHostAddress>
+
 class QIODevice;
 namespace Tp {
 
@@ -89,11 +90,9 @@ public:
 
     virtual ~IncomingStreamTubeChannel();
 
-    QPair< QHostAddress, quint16 > allowedAddress() const;
-    void unsetAllowedAddress();
-    void setAllowedAddress(const QHostAddress &address, quint16 port);
-
-    PendingStreamTubeConnection *acceptTube(SocketAccessControl accessControl = SocketAccessControlLocalhost);
+    PendingStreamTubeConnection *acceptTubeAsTcpSocket(const QHostAddress &allowedAddress = QHostAddress::Any,
+                                                       quint16 allowedPort = 0);
+    PendingStreamTubeConnection *acceptTubeAsUnixSocket(bool requireCredentials = false);
 
     QIODevice *device();
 

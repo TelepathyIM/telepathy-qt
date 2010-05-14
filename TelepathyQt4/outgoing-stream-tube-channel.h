@@ -48,14 +48,13 @@ public:
 
     virtual ~OutgoingStreamTubeChannel();
 
-    PendingOperation *offerTube(const QHostAddress &address, quint16 port, const QVariantMap &parameters,
-                                SocketAccessControl accessControl = SocketAccessControlLocalhost);
-    PendingOperation *offerTube(const QByteArray &socketAddress, const QVariantMap &parameters,
-                                SocketAccessControl accessControl = SocketAccessControlLocalhost);
-    PendingOperation *offerTube(QTcpServer *server, const QVariantMap &parameters,
-                                SocketAccessControl accessControl = SocketAccessControlLocalhost);
-    PendingOperation *offerTube(QLocalServer *server, const QVariantMap &parameters,
-                                SocketAccessControl accessControl = SocketAccessControlLocalhost);
+    PendingOperation *offerTubeAsTcpSocket(const QHostAddress &address, quint16 port, const QVariantMap &parameters);
+    PendingOperation *offerTubeAsTcpSocket(QTcpServer *server, const QVariantMap &parameters);
+
+    PendingOperation *offerTubeAsUnixSocket(const QByteArray &socketAddress, const QVariantMap &parameters,
+                                            bool requireCredentials = false);
+    PendingOperation *offerTubeAsUnixSocket(QLocalServer *server, const QVariantMap &parameters,
+                                            bool requireCredentials = false);
 
 protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,

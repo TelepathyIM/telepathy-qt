@@ -42,6 +42,13 @@ class TELEPATHY_QT4_EXPORT StreamTubeChannel : public TubeChannel
     Q_PRIVATE_SLOT(d_func(), void __k__onConnectionClosed(uint,QString,QString))
 
 public:
+    enum TcpProtocol {
+        NoProtocol = 0,
+        IPv4Protocol = 1,
+        IPv6Protocol = 2
+    };
+    Q_DECLARE_FLAGS(TcpProtocols, TcpProtocol)
+
     static const Feature FeatureStreamTube;
     static const Feature FeatureConnectionMonitoring;
 
@@ -52,7 +59,11 @@ public:
 
     QString service() const;
 
-    SupportedSocketMap supportedSocketTypes() const;
+    TcpProtocols supportedTcpProtocols() const;
+    TcpProtocols supportedTcpProtocolsWithAllowedAddress() const;
+
+    bool supportsUnixSockets() const;
+    bool supportsUnixSocketsWithCredentials() const;
 
     UIntList connections() const;
 
@@ -81,5 +92,7 @@ Q_SIGNALS:
 };
 
 }
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Tp::StreamTubeChannel::TcpProtocols)
 
 #endif

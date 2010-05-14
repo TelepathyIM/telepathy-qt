@@ -147,7 +147,7 @@ void TubeReceiver::onStreamTubeChannelReady(PendingOperation* op)
 
     qDebug() << "Stream tube channel ready!";
 
-    connect(mChan->acceptTube(),
+    connect(mChan->acceptTubeAsUnixSocket(),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onStreamTubeAccepted(Tp::PendingOperation*)));
 }
