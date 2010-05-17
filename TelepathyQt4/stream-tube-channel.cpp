@@ -27,10 +27,21 @@ namespace Tp
 
 StreamTubeChannelPrivate::StreamTubeChannelPrivate(StreamTubeChannel *parent)
     : q_ptr(parent)
-    , readinessHelper(parent->readinessHelper())
     , baseType(NoKnownType)
     , addressType(SocketAddressTypeUnix)
 {
+}
+
+StreamTubeChannelPrivate::~StreamTubeChannelPrivate()
+{
+}
+
+void StreamTubeChannelPrivate::init()
+{
+    Q_Q(StreamTubeChannel);
+    // Initialize readinessHelper + introspectables here
+    readinessHelper = q->readinessHelper();
+
     ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableStreamTube(
@@ -50,10 +61,6 @@ StreamTubeChannelPrivate::StreamTubeChannelPrivate(StreamTubeChannel *parent)
     introspectables[StreamTubeChannel::FeatureConnectionMonitoring] = introspectableConnectionMonitoring;
 
     readinessHelper->addIntrospectables(introspectables);
-}
-
-StreamTubeChannelPrivate::~StreamTubeChannelPrivate()
-{
 }
 
 void StreamTubeChannelPrivate::__k__onConnectionClosed(
@@ -209,6 +216,9 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
     : TubeChannel(connection, objectPath, immutableProperties, coreFeature),
       d_ptr(new StreamTubeChannelPrivate(this))
 {
+    // Initialize
+    Q_D(StreamTubeChannel);
+    d->init();
 }
 
 StreamTubeChannel::StreamTubeChannel(const ConnectionPtr& connection,
@@ -219,6 +229,9 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr& connection,
     : TubeChannel(connection, objectPath, immutableProperties, coreFeature)
     , d_ptr(&dd)
 {
+    // Initialize
+    Q_D(StreamTubeChannel);
+    d->init();
 }
 
 

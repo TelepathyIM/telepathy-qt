@@ -40,9 +40,10 @@ class TELEPATHY_QT4_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
     Q_DISABLE_COPY(OutgoingStreamTubeChannel)
     Q_DECLARE_PRIVATE(OutgoingStreamTubeChannel)
 
-public:
-//     static const Feature FeatureCore;
+//private slots:
+    Q_PRIVATE_SLOT(d_func(), void __k__onNewRemoteConnection(uint,QDBusVariant,uint))
 
+public:
     static OutgoingStreamTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 

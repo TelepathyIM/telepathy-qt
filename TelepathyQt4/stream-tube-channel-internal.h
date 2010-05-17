@@ -43,6 +43,8 @@ public:
     StreamTubeChannelPrivate(StreamTubeChannel *parent);
     virtual ~StreamTubeChannelPrivate();
 
+    void init();
+
     void extractProperties(const QVariantMap &props);
 
     static void introspectConnectionMonitoring(StreamTubeChannelPrivate *self);

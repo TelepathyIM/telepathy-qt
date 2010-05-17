@@ -254,7 +254,8 @@ void TubeInitiator::onStreamTubeChannelCreated(PendingOperation *op)
     connect(mChan.data(),
             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
             SLOT(onInvalidated()));
-    Features features = Features() << StreamTubeChannel::FeatureStreamTube
+    Features features = Features() << TubeChannel::FeatureTube
+                                   << StreamTubeChannel::FeatureStreamTube
                                    << StreamTubeChannel::FeatureConnectionMonitoring;
     connect(mChan->becomeReady(features),
             SIGNAL(finished(Tp::PendingOperation *)),

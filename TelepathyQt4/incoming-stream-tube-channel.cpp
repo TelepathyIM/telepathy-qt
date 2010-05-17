@@ -420,9 +420,9 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         const QHostAddress& allowedAddress,
         quint16 allowedPort)
 {
-    if (!isReady(StreamTubeChannel::FeatureCore)) {
-        warning() << "IncomingStreamTubeChannel::FeatureCore must be ready before "
-                "calling acceptTube";
+    if (!isReady(StreamTubeChannel::FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::FeatureStreamTube must be ready before "
+                "calling acceptTubeAsTcpSocket";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Channel not ready"),
                 IncomingStreamTubeChannelPtr(this));
@@ -515,12 +515,12 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
 PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
         bool requireCredentials)
 {
-    if (!isReady(StreamTubeChannel::FeatureCore)) {
-        warning() << "IncomingStreamTubeChannel::FeatureCore must be ready before "
-            "calling acceptTube";
+    if (!isReady(StreamTubeChannel::FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::FeatureStreamTube must be ready before "
+                "calling acceptTubeAsUnixSocket";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-            QLatin1String("Channel not ready"),
-            IncomingStreamTubeChannelPtr(this));
+                QLatin1String("Channel not ready"),
+                IncomingStreamTubeChannelPtr(this));
     }
 
     // The tube must be in local pending state

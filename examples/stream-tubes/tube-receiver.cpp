@@ -128,7 +128,8 @@ void TubeReceiver::onNewChannels(const Tp::ChannelDetailsList &channels)
             connect(mChan.data(),
                     SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
                     SLOT(onInvalidated()));
-            Features features = Features() << StreamTubeChannel::FeatureStreamTube;
+            Features features = Features() << TubeChannel::FeatureTube
+                                           << StreamTubeChannel::FeatureStreamTube;
             connect(mChan->becomeReady(features),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(onStreamTubeChannelReady(Tp::PendingOperation*)));
