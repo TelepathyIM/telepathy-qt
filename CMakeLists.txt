@@ -152,9 +152,10 @@ macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
                   "http://www.python.org/" FALSE ""
                   "Needed to build some additional test cases")
 
-# Find GLib2, DBus and LibXml2
+# Find GLib2, GObject, DBus and LibXml2
 # Those are needed for the insane include dir dependency hell
 find_package(GLIB2)
+find_package(GObject)
 find_package(DBus)
 find_package(LibXml2)
 
@@ -170,11 +171,11 @@ macro_log_feature(GSTREAMER_FOUND "GStreamer"
                   "An open source multimedia framework"
                   "Needed, together with Tp-Farsight, to build telepathy-qt4-farsight and some additional examples"
                   "http://www.gstreamer.net/" FALSE)
-if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
     set (FARSIGHT_COMPONENTS_FOUND 1)
-else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
     set (FARSIGHT_COMPONENTS_FOUND 0)
-endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
+endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
 
 # Find telepathy-glib
 set(TELEPATHY_GLIB_MIN_VERSION 0.10.0)

@@ -16,25 +16,22 @@ if(GLIB2_INCLUDE_DIR AND GLIB2_LIBRARIES)
     set(GLIB2_FIND_QUIETLY TRUE)
 endif(GLIB2_INCLUDE_DIR AND GLIB2_LIBRARIES)
 
-if (NOT WIN32)
-   find_package(PkgConfig)
-   if (PKG_CONFIG_FOUND)
-     pkg_check_modules(PC_LibGLIB2 glib-2.0)
-   endif (PKG_CONFIG_FOUND)
-endif(NOT WIN32)
+find_package(PkgConfig)
+pkg_check_modules(PC_LibGLIB2 glib-2.0)
 
-if (PC_LibGLIB2_INCLUDEDIR)
-    set(GLIB2_MAIN_INCLUDE_DIR ${PC_LibGLIB2_INCLUDEDIR})
-else (PC_LibGLIB2_INCLUDEDIR)
-    find_path(GLIB2_MAIN_INCLUDE_DIR  NAMES glib.h PATH_SUFFIXES glib-2.0)
-endif (PC_LibGLIB2_INCLUDEDIR)
+find_path(GLIB2_MAIN_INCLUDE_DIR
+          NAMES glib.h
+          HINTS ${PC_LibGLIB2_INCLUDEDIR}
+          PATH_SUFFIXES glib-2.0)
 
-# search the glibconfig.h include dir under the same root where the library is found
-find_library(GLIB2_LIBRARIES
-             NAMES glib-2.0
+find_library(GLIB2_LIBRARY 
+             NAMES glib-2.0 
              HINTS ${PC_LibGLIB2_LIBDIR}
 )
 
+set(GLIB2_LIBRARIES ${GLIB2_LIBRARY})
+
+# search the glibconfig.h include dir under the same root where the library is found
 get_filename_component(glib2LibDir "${GLIB2_LIBRARIES}" PATH)
 
 find_path(GLIB2_INTERNAL_INCLUDE_DIR glibconfig.h
