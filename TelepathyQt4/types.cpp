@@ -22,6 +22,8 @@
 #include "config.h"
 #include <TelepathyQt4/Types>
 
+#include <TelepathyQt4/types-internal.h>
+
 #ifndef HAVE_QDBUSVARIANT_OPERATOR_EQUAL
 
 /* FIXME This is a workaround that should be removed when Qt has support for
@@ -39,6 +41,7 @@ inline bool operator==(const QDBusVariant &v1, const QDBusVariant &v2)
 #include "TelepathyQt4/future-internal.h"
 #include "TelepathyQt4/_gen/future-types-body.hpp"
 
+namespace Tp {
 /**
  * \\ingroup types
  * \headerfile TelepathyQt4/types.h <TelepathyQt4/Types>
@@ -48,8 +51,35 @@ inline bool operator==(const QDBusVariant &v1, const QDBusVariant &v2)
  * Call this function to register the types used before using anything else in
  * the library.
  */
-void Tp::registerTypes()
+void registerTypes()
 {
+    qDBusRegisterMetaType<Tp::SUSocketAddress>();
+
     Tp::_registerTypes();
     TpFuture::_registerTypes();
+}
+
+TELEPATHY_QT4_EXPORT bool operator==(const SUSocketAddress& v1, const SUSocketAddress& v2)
+{
+    return ((v1.address == v2.address)
+            && (v1.port == v2.port)
+            );
+}
+
+TELEPATHY_QT4_EXPORT QDBusArgument& operator<<(QDBusArgument& arg, const SUSocketAddress& val)
+{
+    arg.beginStructure();
+    arg << val.address << val.port;
+    arg.endStructure();
+    return arg;
+}
+
+TELEPATHY_QT4_EXPORT const QDBusArgument& operator>>(const QDBusArgument& arg, SUSocketAddress& val)
+{
+    arg.beginStructure();
+    arg >> val.address >> val.port;
+    arg.endStructure();
+    return arg;
+}
+
 }
