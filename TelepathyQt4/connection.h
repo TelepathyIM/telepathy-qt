@@ -72,6 +72,7 @@ public:
     static const Feature FeatureSimplePresence;
     static const Feature FeatureRoster;
     static const Feature FeatureRosterGroups;
+    static const Feature FeatureAccountBalance;
 
     enum Status {
         StatusDisconnected = ConnectionStatusDisconnected,
@@ -95,6 +96,8 @@ public:
 
     SimpleStatusSpecMap allowedPresenceStatuses() const;
     PendingOperation *setSelfPresence(const QString &status, const QString &statusMessage);
+
+    CurrencyAmount accountBalance() const;
 
     ConnectionCapabilities *capabilities() const;
 
@@ -171,12 +174,20 @@ public:
         return optionalInterface<Client::ConnectionInterfaceRequestsInterface>(check);
     }
 
+    inline Client::ConnectionInterfaceBalanceInterface *balanceInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceBalanceInterface>(check);
+    }
+
 Q_SIGNALS:
     void statusChanged(Tp::Connection::Status newStatus,
             Tp::ConnectionStatusReason newStatusReason);
     void selfHandleChanged(uint newHandle);
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts
     void selfContactChanged();
+
+    void accountBalanceChanged(const Tp::CurrencyAmount &accountBalance);
 
 protected:
     Connection(const QString &busName, const QString &objectPath);
@@ -206,6 +217,9 @@ private Q_SLOTS:
     void doReleaseSweep(uint type);
 
     void onSelfHandleChanged(uint);
+
+    void gotBalance(QDBusPendingCallWatcher *watcher);
+    void onBalanceChanged(const Tp::CurrencyAmount &);
 
 private:
     class PendingConnect;

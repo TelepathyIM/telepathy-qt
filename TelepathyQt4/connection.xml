@@ -8,6 +8,7 @@
 
 <xi:include href="../spec/Connection_Interface_Aliasing.xml"/>
 <xi:include href="../spec/Connection_Interface_Avatars.xml"/>
+<xi:include href="../spec/Connection_Interface_Balance.xml"/>
 <xi:include href="../spec/Connection_Interface_Capabilities.xml"/>
 <xi:include href="../spec/Connection_Interface_Contacts.xml"/>
 <xi:include href="../spec/Connection_Interface_Contact_Capabilities.xml"/>
