@@ -1,7 +1,14 @@
-telepathy-qt4 0.3.4 (UNRELEASED)
+telepathy-qt4 0.3.4 (2010-05-23)
 ================================
 
-...
+The "Cause time takes time, ya know" release.
+
+New API:
+* fd.o#28143: Implement Connection.Balance interface support.
+
+Fixes:
+* Fix strict QtDBus demarshalling which was causing crashes when using
+  qdbus_cast from a SocketAddressIP*. (drf)
 
 telepathy-qt4 0.3.3 (2010-05-09)
 ================================
