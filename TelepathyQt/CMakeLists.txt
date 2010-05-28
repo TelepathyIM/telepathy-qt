@@ -81,6 +81,7 @@ set(telepathy_qt_SRCS
     message-content-part.cpp
     object.cpp
     optional-interface-factory.cpp
+    outgoing-dbus-tube-channel.cpp
     outgoing-file-transfer-channel.cpp
     outgoing-stream-tube-channel.cpp
     pending-account.cpp
@@ -371,6 +372,8 @@ set(telepathy_qt_HEADERS
     optional-interface-factory.h
     OrFilter
     or-filter.h
+    OutgoingDBusTubeChannel
+    outgoing-dbus-tube-channel.h
     OutgoingFileTransferChannel
     outgoing-file-transfer-channel.h
     OutgoingStreamTubeChannel
@@ -556,6 +559,7 @@ set(telepathy_qt_MOC_SRCS
     incoming-file-transfer-channel.h
     incoming-stream-tube-channel.h
     object.h
+    outgoing-dbus-tube-channel.h
     outgoing-file-transfer-channel.h
     outgoing-stream-tube-channel.h
     outgoing-stream-tube-channel-internal.h
