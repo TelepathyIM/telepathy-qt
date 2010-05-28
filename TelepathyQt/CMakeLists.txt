@@ -68,6 +68,7 @@ set(telepathy_qt_SRCS
     future.cpp
     future-internal.h
     handled-channel-notifier.cpp
+    incoming-dbus-tube-channel.cpp
     incoming-file-transfer-channel.cpp
     incoming-stream-tube-channel.cpp
     key-file.cpp
@@ -344,6 +345,8 @@ set(telepathy_qt_HEADERS
     global.h
     HandledChannelNotifier
     handled-channel-notifier.h
+    IncomingDBusTubeChannel
+    incoming-dbus-tube-channel.h
     IncomingFileTransferChannel
     incoming-file-transfer-channel.h
     IncomingStreamTubeChannel
@@ -556,6 +559,7 @@ set(telepathy_qt_MOC_SRCS
     file-transfer-channel.h
     fixed-feature-factory.h
     handled-channel-notifier.h
+    incoming-dbus-tube-channel.h
     incoming-file-transfer-channel.h
     incoming-stream-tube-channel.h
     object.h
