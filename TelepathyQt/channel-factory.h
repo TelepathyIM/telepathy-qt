@@ -238,6 +238,38 @@ public:
     void setConstructorForIncomingRoomStreamTubes(const ConstructorConstPtr &ctor,
             const QVariantMap &additionalProps = QVariantMap());
 
+    Features featuresForOutgoingDBusTubes(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForOutgoingDBusTubes(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForOutgoingDBusTubes(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForOutgoingDBusTubes(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForOutgoingDBusTubes(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForOutgoingDBusTubes(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    Features featuresForIncomingDBusTubes(const QVariantMap &additionalProps = QVariantMap()) const;
+    void addFeaturesForIncomingDBusTubes(const Features &features,
+            const QVariantMap &additionalProps = QVariantMap());
+
+    ConstructorConstPtr constructorForIncomingDBusTubes(
+            const QVariantMap &additionalProps = QVariantMap()) const;
+
+    template<typename Subclass>
+    void setSubclassForIncomingDBusTubes(const QVariantMap &additionalProps = QVariantMap())
+    {
+        setConstructorForIncomingDBusTubes(SubclassCtor<Subclass>::create(), additionalProps);
+    }
+
+    void setConstructorForIncomingDBusTubes(const ConstructorConstPtr &ctor,
+            const QVariantMap &additionalProps = QVariantMap());
+
     Features featuresForContactSearches(const QVariantMap &additionalProps = QVariantMap()) const;
     void addFeaturesForContactSearches(const Features &features,
             const QVariantMap &additionalProps = QVariantMap());
