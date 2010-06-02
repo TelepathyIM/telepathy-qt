@@ -252,7 +252,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
     if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         // IPv4 case
         // Check if the combination type/access control is supported
-        if (!d->socketTypes.value(SocketAddressTypeIPv4, UIntList()).contains(SocketAccessControlLocalhost)) {
+        if (!supportsIPv4SocketsOnLocalhost()) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -282,7 +282,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
     } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
         // IPv6 case
         // Check if the combination type/access control is supported
-        if (!d->socketTypes.value(SocketAddressTypeIPv6, UIntList()).contains(SocketAccessControlLocalhost)) {
+        if (!supportsIPv6SocketsOnLocalhost()) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -399,7 +399,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
     if (socketAddress.at(0) == '\0') {
         // Abstract Unix socket case
         // Check if the combination type/access control is supported
-        if (!d->socketTypes.value(SocketAddressTypeAbstractUnix, UIntList()).contains(accessControl)) {
+        if ( (accessControl == SocketAccessControlLocalhost && !supportsAbstractUnixSocketsOnLocalhost()) ||
+             (accessControl == SocketAccessControlCredentials && !supportsAbstractUnixSocketsWithCredentials()) ) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -425,7 +426,9 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
     } else {
         // Unix socket case
         // Check if the combination type/access control is supported
-        if (!d->socketTypes.value(SocketAddressTypeUnix, UIntList()).contains(accessControl)) {
+        if ( (accessControl == SocketAccessControlLocalhost && !supportsUnixSocketsOnLocalhost()) ||
+             (accessControl == SocketAccessControlCredentials && !supportsUnixSocketsWithCredentials()) ||
+             (accessControl != SocketAccessControlLocalhost && accessControl != SocketAccessControlCredentials) ) {
             warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),

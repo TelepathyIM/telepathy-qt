@@ -249,94 +249,123 @@ QString StreamTubeChannel::service() const
     return d->serviceName;
 }
 
+
 /**
- * \returns The IP protocols this stream tube is capable of handling.
- *
- * \note You will be able to call either IncomingStreamTubeChannel::acceptTubeAsTcpSocket or
- *       OutgoingStreamTubeChannel::offerTubeAsTcpSocket with an address belonging to one
- *       of the protocols returned.
+ * \returns Whether this stream tube is capable to accept or offer an IPv4 socket
+ *          accepting all incoming connections coming from localhost.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
- * \see OutgoingStreamTubeChannel::offerTubeAsTcpSocket
- * \see supportedTcpProtocolsWithAllowedAddress
+ * \see OutgoingStreamTubeChannel::offerTcpSocket
+ * \see supportsIPv4SocketsWithAllowedAddress
  */
-StreamTubeChannel::TcpProtocols StreamTubeChannel::supportedTcpProtocols() const
+bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 {
     if (!isReady(FeatureStreamTube)) {
-        warning() << "StreamTubeChannel::supportedTcpProtocols() used with "
-            "FeatureStreamTube not ready";
-        return NoProtocol;
-    }
-
-    Q_D(const StreamTubeChannel);
-
-    TcpProtocols protocols = NoProtocol;
-    if (d->socketTypes.contains(SocketAddressTypeIPv4)) {
-        protocols |= StreamTubeChannel::IPv4Protocol;
-    }
-    if (d->socketTypes.contains(SocketAddressTypeIPv6)) {
-        protocols |= StreamTubeChannel::IPv6Protocol;
-    }
-    return protocols;
-}
-
-/**
- * \returns The IP protocols this stream tube is capable of handling when specifying an allowed
- *          address for connecting to the socket.
- *
- * \note You will be able to call OutgoingStreamTubeChannel::offerTubeAsTcpSocket with an address
- *       and an allowed address+port belonging to one of the protocols returned.
- *
- * \see OutgoingStreamTubeChannel::offerTubeAsTcpSocket
- * \see supportedTcpProtocols
- */
-StreamTubeChannel::TcpProtocols StreamTubeChannel::supportedTcpProtocolsWithAllowedAddress() const
-{
-    if (!isReady(FeatureStreamTube)) {
-        warning() << "StreamTubeChannel::supportedTcpProtocolsWithAllowedAddress() used with "
-            "FeatureStreamTube not ready";
-        return NoProtocol;
-    }
-
-    Q_D(const StreamTubeChannel);
-
-    TcpProtocols protocols = NoProtocol;
-    if (d->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlPort)) {
-        protocols |= StreamTubeChannel::IPv4Protocol;
-    }
-    if (d->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlPort)) {
-        protocols |= StreamTubeChannel::IPv6Protocol;
-    }
-    return protocols;
-}
-
-/**
- * \returns Whether this Stream tube supports offering or accepting it as an Unix socket.
- *
- * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
- * \see OutgoingStreamTubeChannel::offerTubeAsUnixSocket
- * \see supportsUnixSocketsWithCredentials
- */
-bool StreamTubeChannel::supportsUnixSockets() const
-{
-    if (!isReady(FeatureStreamTube)) {
-        warning() << "StreamTubeChannel::supportsUnixSockets() used with "
+        warning() << "StreamTubeChannel::supportedIPv4SocketsOnLocalhost() used with "
             "FeatureStreamTube not ready";
         return false;
     }
 
     Q_D(const StreamTubeChannel);
 
-    return d->socketTypes.contains(SocketAddressTypeUnix);
+    return d->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlLocalhost);
+}
+
+
+/**
+ * \returns Whether this stream tube is capable to accept or offer an IPv4 socket
+ *          when specifying an allowed address for connecting to the socket.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
+ * \see OutgoingStreamTubeChannel::offerTcpSocket
+ * \see supportsIPv4SocketsOnLocalhost
+ */
+bool StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress() used with "
+            "FeatureStreamTube not ready";
+        return false;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    return d->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlPort);
+}
+
+
+/**
+ * \returns Whether this stream tube is capable to accept or offer an IPv6 socket
+ *          accepting all incoming connections coming from localhost.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
+ * \see OutgoingStreamTubeChannel::offerTcpSocket
+ * \see supportsIPv6SocketsWithAllowedAddress
+ */
+bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportsIPv6SocketsOnLocalhost() used with "
+            "FeatureStreamTube not ready";
+        return false;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    return d->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlLocalhost);
+}
+
+
+/**
+ * \returns Whether this stream tube is capable to accept or offer an IPv6 socket
+ *          when specifying an allowed address for connecting to the socket.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
+ * \see OutgoingStreamTubeChannel::offerTcpSocket
+ * \see supportsIPv6SocketsOnLocalhost
+ */
+bool StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress() used with "
+            "FeatureStreamTube not ready";
+        return false;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    return d->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlPort);
+}
+
+
+/**
+ * \returns Whether this stream tube is capable to accept or offer an Unix socket
+ *          accepting all incoming connections coming from localhost.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
+ * \see OutgoingStreamTubeChannel::offerUnixSocket
+ * \see supportsUnixSocketsWithCredentials
+ */
+bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportsUnixSocketsOnLocalhost() used with "
+            "FeatureStreamTube not ready";
+        return false;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    return d->socketTypes.value(SocketAddressTypeUnix).contains(SocketAccessControlLocalhost);
 }
 
 /**
- * \returns Whether this Stream tube supports offering or accepting it as an Unix socket and requiring
- *          credentials for connecting to it.
+ * \returns Whether this stream tube is capable to accept or offer an Unix socket
+ *          requiring credentials for connecting to it.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
- * \see OutgoingStreamTubeChannel::offerTubeAsUnixSocket
- * \see supportsUnixSockets
+ * \see OutgoingStreamTubeChannel::offerUnixSocket
+ * \see supportsUnixSocketsOnLocalhost
  */
 bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
 {
@@ -348,7 +377,51 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
 
     Q_D(const StreamTubeChannel);
 
-    return d->socketTypes.value(SocketAddressTypeUnix).contains(SocketAccessControlCredentials);
+    return d->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlCredentials);
+}
+
+
+/**
+ * \returns Whether this stream tube is capable to accept or offer an Abstract Unix socket
+ *          accepting all incoming connections coming from localhost.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
+ * \see OutgoingStreamTubeChannel::offerUnixSocket
+ * \see supportsUnixSocketsWithCredentials
+ */
+bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() used with "
+            "FeatureStreamTube not ready";
+        return false;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    return d->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlLocalhost);
+}
+
+
+/**
+ * \returns Whether this Stream tube supports offering or accepting it as an
+ *          Abstract Unix socket and requiring credentials for connecting to it.
+ *
+ * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
+ * \see OutgoingStreamTubeChannel::offerUnixSocket
+ * \see supportsUnixSockets
+ */
+bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
+{
+    if (!isReady(FeatureStreamTube)) {
+        warning() << "StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() used with "
+            "FeatureStreamTube not ready";
+        return false;
+    }
+
+    Q_D(const StreamTubeChannel);
+
+    return d->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlCredentials);
 }
 
 
