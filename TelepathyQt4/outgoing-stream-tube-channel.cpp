@@ -126,6 +126,14 @@ void OutgoingStreamTubeChannelPrivate::__k__onNewRemoteConnection(
             connectionId);
 }
 
+void OutgoingStreamTubeChannelPrivate::__k__onPendingOpenTubeFinished(Tp::PendingOperation* operation)
+{
+    // If the operation finished successfully, let's reintrospect the parameters
+    if (!operation->isError()) {
+        reintrospectParameters();
+    }
+}
+
 /**
  * \class OutgoingStreamTubeChannel
  * \headerfile TelepathyQt4/stream-tube.h <TelepathyQt4/OutgoingStreamTubeChannel>
@@ -268,6 +276,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTubeAsTcpSocket(
                 OutgoingStreamTubeChannelPtr(this));
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
+        connect(op, SIGNAL(finished(Tp::PendingOperation*)),
+                this, SLOT(__k__onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
         // IPv6 case
@@ -296,6 +306,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTubeAsTcpSocket(
                 OutgoingStreamTubeChannelPtr(this));
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
+        connect(op, SIGNAL(finished(Tp::PendingOperation*)),
+                this, SLOT(__k__onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else {
         // We're handling an IPv4/IPv6 socket only
@@ -407,6 +419,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTubeAsUnixSocket(
                 OutgoingStreamTubeChannelPtr(this));
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
+        connect(op, SIGNAL(finished(Tp::PendingOperation*)),
+                this, SLOT(__k__onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else {
         // Unix socket case
@@ -431,6 +445,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTubeAsUnixSocket(
                 OutgoingStreamTubeChannelPtr(this));
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
+        connect(op, SIGNAL(finished(Tp::PendingOperation*)),
+                this, SLOT(__k__onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     }
 }

@@ -84,8 +84,6 @@ protected:
 
     virtual void connectNotify(const char* signal);
 
-    StreamTubeChannelPrivate * const d_ptr;
-
 Q_SIGNALS:
     void connectionClosed(uint connectionId, const QString &error, const QString &message);
 

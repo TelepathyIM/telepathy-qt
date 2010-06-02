@@ -22,16 +22,15 @@
 #define _TelepathyQt4_stream_tube_channel_internal_h_HEADER_GUARD_
 
 #include <TelepathyQt4/StreamTubeChannel>
+#include "TelepathyQt4/tube-channel-internal.h"
 
 #include <QtNetwork/QHostAddress>
 
 namespace Tp {
 
-class TELEPATHY_QT4_NO_EXPORT StreamTubeChannelPrivate
+class TELEPATHY_QT4_NO_EXPORT StreamTubeChannelPrivate : public TubeChannelPrivate
 {
     Q_DECLARE_PUBLIC(StreamTubeChannel)
-protected:
-    StreamTubeChannel * const q_ptr;
 
 public:
     enum BaseTubeType {
@@ -43,14 +42,12 @@ public:
     StreamTubeChannelPrivate(StreamTubeChannel *parent);
     virtual ~StreamTubeChannelPrivate();
 
-    void init();
+    virtual void init();
 
-    void extractProperties(const QVariantMap &props);
+    void extractStreamTubeProperties(const QVariantMap &props);
 
     static void introspectConnectionMonitoring(StreamTubeChannelPrivate *self);
     static void introspectStreamTube(StreamTubeChannelPrivate *self);
-
-    ReadinessHelper *readinessHelper;
 
     UIntList connections;
 

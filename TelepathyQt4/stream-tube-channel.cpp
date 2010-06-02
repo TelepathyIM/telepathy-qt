@@ -26,7 +26,7 @@ namespace Tp
 {
 
 StreamTubeChannelPrivate::StreamTubeChannelPrivate(StreamTubeChannel *parent)
-    : q_ptr(parent)
+    : TubeChannelPrivate(parent)
     , baseType(NoKnownType)
     , addressType(SocketAddressTypeUnix)
 {
@@ -38,9 +38,7 @@ StreamTubeChannelPrivate::~StreamTubeChannelPrivate()
 
 void StreamTubeChannelPrivate::init()
 {
-    Q_Q(StreamTubeChannel);
-    // Initialize readinessHelper + introspectables here
-    readinessHelper = q->readinessHelper();
+    TubeChannelPrivate::init();
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -72,7 +70,7 @@ void StreamTubeChannelPrivate::__k__onConnectionClosed(
     emit q->connectionClosed(connectionId, error, message);
 }
 
-void StreamTubeChannelPrivate::extractProperties(const QVariantMap& props)
+void StreamTubeChannelPrivate::extractStreamTubeProperties(const QVariantMap& props)
 {
     serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
     socketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
@@ -84,7 +82,7 @@ void StreamTubeChannelPrivate::__k__gotStreamTubeProperties(QDBusPendingCallWatc
 
     if (!reply.isError()) {
         QVariantMap props = reply.value();
-        extractProperties(props);
+        extractStreamTubeProperties(props);
         debug() << "Got reply to Properties::GetAll(StreamTubeChannel)";
         readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, true);
     }
@@ -213,12 +211,9 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties,
         const Feature &coreFeature)
-    : TubeChannel(connection, objectPath, immutableProperties, coreFeature),
-      d_ptr(new StreamTubeChannelPrivate(this))
+    : TubeChannel(connection, objectPath, immutableProperties,
+            coreFeature, *new StreamTubeChannelPrivate(this))
 {
-    // Initialize
-    Q_D(StreamTubeChannel);
-    d->init();
 }
 
 StreamTubeChannel::StreamTubeChannel(const ConnectionPtr& connection,
@@ -226,12 +221,8 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr& connection,
         const QVariantMap& immutableProperties,
         const Feature &coreFeature,
         StreamTubeChannelPrivate& dd)
-    : TubeChannel(connection, objectPath, immutableProperties, coreFeature)
-    , d_ptr(&dd)
+    : TubeChannel(connection, objectPath, immutableProperties, coreFeature, dd)
 {
-    // Initialize
-    Q_D(StreamTubeChannel);
-    d->init();
 }
 
 
@@ -240,7 +231,6 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr& connection,
  */
 StreamTubeChannel::~StreamTubeChannel()
 {
-    delete d_ptr;
 }
 
 /**

@@ -71,6 +71,7 @@ public:
 
     // Private slots
     void __k__onNewRemoteConnection(uint contactId, const QDBusVariant &parameter, uint connectionId);
+    void __k__onPendingOpenTubeFinished(Tp::PendingOperation* operation);
 };
 
 }
