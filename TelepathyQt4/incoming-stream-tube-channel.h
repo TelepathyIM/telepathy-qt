@@ -49,7 +49,7 @@ public:
     SocketAddressType addressType() const;
 
     QPair< QHostAddress, quint16 > ipAddress() const;
-    QByteArray localAddress() const;
+    QString localAddress() const;
 
 private:
     PendingStreamTubeConnection(PendingVariant *variant,

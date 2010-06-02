@@ -69,7 +69,7 @@ public:
     SocketAddressType addressType() const;
 
     QPair< QHostAddress, quint16 > ipAddress() const;
-    QByteArray localAddress() const;
+    QString localAddress() const;
 
 protected:
     StreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,

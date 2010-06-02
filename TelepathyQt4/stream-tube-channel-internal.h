@@ -58,7 +58,7 @@ public:
     BaseTubeType baseType;
 
     QPair< QHostAddress, quint16 > ipAddress;
-    QByteArray unixAddress;
+    QString unixAddress;
     SocketAddressType addressType;
 
     // Private slots

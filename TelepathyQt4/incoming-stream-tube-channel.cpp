@@ -93,7 +93,7 @@ public:
     SocketAddressType type;
     QHostAddress hostAddress;
     quint16 port;
-    QByteArray socketPath;
+    QString socketPath;
 
     QIODevice *device;
 
@@ -195,7 +195,7 @@ void PendingStreamTubeConnectionPrivate::__k__onAcceptFinished(PendingOperation*
         port = addr.port;
     } else {
         // Unix socket
-        socketPath = qdbus_cast<QByteArray>(pv->result());
+        socketPath = QLatin1String(qdbus_cast<QByteArray>(pv->result()));
         debug() << "Got socket " << socketPath;
     }
 
@@ -233,7 +233,7 @@ void PendingStreamTubeConnectionPrivate::__k__onTubeStateChanged(TubeChannelStat
             tube->d_func()->unixAddress = socketPath;
 
             QLocalSocket *socket = new QLocalSocket(tube.data());
-            socket->connectToServer(QLatin1String(socketPath));
+            socket->connectToServer(socketPath);
             device = socket;
 
             // The local socket might already be connected
@@ -304,7 +304,7 @@ SocketAddressType PendingStreamTubeConnection::addressType() const
  *
  * \see addressType
  */
-QByteArray PendingStreamTubeConnection::localAddress() const
+QString PendingStreamTubeConnection::localAddress() const
 {
     return mPriv->tube->localAddress();
 }

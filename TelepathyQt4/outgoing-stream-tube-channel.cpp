@@ -351,7 +351,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \brief Offer a Unix socket over the tube
  *
  * This method offers a Unix socket over this tube. The socket is represented through
- * a QByteArray, which should contain the path to the socket. You can also expose an
+ * a QString, which should contain the path to the socket. You can also expose an
  * abstract Unix socket, by including the leading null byte in the address
  *
  * If you are already handling a local socket logic in your application, you can also
@@ -370,7 +370,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  *          (hence in the Open state)
  */
 PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
-        const QByteArray& socketAddress,
+        const QString& socketAddress,
         const QVariantMap& parameters,
         bool requireCredentials)
 {
@@ -396,7 +396,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
     Q_D(OutgoingStreamTubeChannel);
 
     // In this specific overload, we're handling an Unix/AbstractUnix socket
-    if (socketAddress.at(0) == '\0') {
+    if (socketAddress.startsWith(QLatin1Char('\0'))) {
         // Abstract Unix socket case
         // Check if the combination type/access control is supported
         if ( (accessControl == SocketAccessControlLocalhost && !supportsAbstractUnixSocketsOnLocalhost()) ||
@@ -414,7 +414,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         PendingVoid *pv = new PendingVoid(
                 interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
                         SocketAddressTypeAbstractUnix,
-                        QDBusVariant(QVariant(socketAddress)),
+                        QDBusVariant(QVariant(socketAddress.toLatin1())),
                         accessControl,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
@@ -442,7 +442,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         PendingVoid *pv = new PendingVoid(
                 interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
                         SocketAddressTypeUnix,
-                        QDBusVariant(QVariant(socketAddress)),
+                        QDBusVariant(QVariant(socketAddress.toLatin1())),
                         accessControl,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
@@ -478,8 +478,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         bool requireCredentials)
 {
     // In this overload, we're handling a superset of a local socket
-    // Let's redirect the call to QByteArray's overload
-    return offerUnixSocket(server->fullServerName().toUtf8(), parameters, requireCredentials);
+    // Let's redirect the call to QString's overload
+    return offerUnixSocket(server->fullServerName(), parameters, requireCredentials);
 }
 
 void OutgoingStreamTubeChannel::connectNotify(const char* signal)

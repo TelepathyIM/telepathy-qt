@@ -53,7 +53,7 @@ public:
     PendingOperation *offerTcpSocket(const QHostAddress &address, quint16 port, const QVariantMap &parameters);
     PendingOperation *offerTcpSocket(QTcpServer *server, const QVariantMap &parameters);
 
-    PendingOperation *offerUnixSocket(const QByteArray &socketAddress, const QVariantMap &parameters,
+    PendingOperation *offerUnixSocket(const QString &socketAddress, const QVariantMap &parameters,
                                       bool requireCredentials = false);
     PendingOperation *offerUnixSocket(QLocalServer *server, const QVariantMap &parameters,
                                       bool requireCredentials = false);

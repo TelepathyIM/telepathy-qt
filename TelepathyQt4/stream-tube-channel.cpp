@@ -465,10 +465,10 @@ UIntList StreamTubeChannel::connections() const
  *
  * \see addressType
  */
-QByteArray StreamTubeChannel::localAddress() const
+QString StreamTubeChannel::localAddress() const
 {
     if (tubeState() != TubeChannelStateOpen) {
-        return QByteArray();
+        return QString();
     }
 
     Q_D(const StreamTubeChannel);
