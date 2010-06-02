@@ -22,8 +22,72 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingContacts>
+
 namespace Tp
 {
+
+QueuedContactFactory::QueuedContactFactory(Tp::ContactManagerPtr contactManager, QObject* parent)
+    : QObject(parent)
+    , m_isProcessing(false)
+    , m_manager(contactManager)
+{
+}
+
+QueuedContactFactory::~QueuedContactFactory()
+{
+}
+
+void QueuedContactFactory::processNextRequest()
+{
+    if (m_isProcessing || m_queue.isEmpty()) {
+        // Return, nothing to do
+        return;
+    }
+
+    m_isProcessing = true;
+
+    Entry entry = m_queue.dequeue();
+
+    PendingContacts *pc = m_manager->contactsForHandles(entry.handles);
+    pc->setProperty("__TpQt4__QueuedContactFactoryUuid", entry.uuid.toString());
+    connect(pc, SIGNAL(finished(Tp::PendingOperation*)),
+            this, SLOT(onPendingContactsFinished(Tp::PendingOperation*)));
+}
+
+QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList& handles)
+{
+    // Create a new entry
+    Entry entry;
+    entry.uuid = QUuid::createUuid();
+    entry.handles = handles;
+    m_queue.enqueue(entry);
+
+    // Check if we can process a request
+    processNextRequest();
+
+    // Return the UUID
+    return entry.uuid;
+}
+
+void QueuedContactFactory::onPendingContactsFinished(PendingOperation* op)
+{
+    PendingContacts *pc = qobject_cast< PendingContacts* >(op);
+
+    QUuid uuid = QUuid(pc->property("__TpQt4__QueuedContactFactoryUuid").toString());
+
+    emit contactsRetrieved(uuid, pc->contacts());
+
+    // No longer processing
+    m_isProcessing = false;
+
+    // Go for next one
+    processNextRequest();
+}
+
+
 
 StreamTubeChannelPrivate::StreamTubeChannelPrivate(StreamTubeChannel *parent)
     : TubeChannelPrivate(parent)
@@ -38,6 +102,10 @@ StreamTubeChannelPrivate::~StreamTubeChannelPrivate()
 
 void StreamTubeChannelPrivate::init()
 {
+    Q_Q(StreamTubeChannel);
+
+    queuedContactFactory = new QueuedContactFactory(q->connection()->contactManager(), q);
+
     TubeChannelPrivate::init();
 
     ReadinessHelper::Introspectables introspectables;
@@ -168,6 +236,8 @@ const Feature StreamTubeChannel::FeatureStreamTube = Feature(QLatin1String(Strea
  * Feature used in order to monitor connections to this tube.
  *
  * %connectionClosed will be emitted when an existing connection gets closed
+ * OutgoingStreamTubeChannel::newRemoteConnection will be emitted upon a new connection
+ * IncomingStreamTubeChannel::newLocalConnection will be emitted upon a new connection
  */
 const Feature StreamTubeChannel::FeatureConnectionMonitoring = Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 1);
 
@@ -458,7 +528,7 @@ UIntList StreamTubeChannel::connections() const
 
 
 /**
- * \returns The local address used by this StreamTube as a QByteArray, if this tube is using
+ * \returns The local address used by this StreamTube as a QString, if this tube is using
  *          a SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
  *
  * \note This function will return a valid value only after the tube has been opened
@@ -515,3 +585,4 @@ SocketAddressType StreamTubeChannel::addressType() const
 }
 
 #include "TelepathyQt4/_gen/stream-tube-channel.moc.hpp"
+#include "TelepathyQt4/_gen/stream-tube-channel-internal.moc.hpp"

@@ -272,8 +272,8 @@ void TubeInitiator::onStreamTubeChannelReady(PendingOperation *op)
 
     qDebug() << "Stream tube channel ready!";
     connect(mChan.data(),
-            SIGNAL(newRemoteConnection(Tp::ContactPtr,QVariant,uint)),
-            SLOT(onStreamTubeChannelNewRemoteConnection(Tp::ContactPtr,QVariant,uint)));
+            SIGNAL(newRemoteConnection(uint)),
+            SLOT(onStreamTubeChannelNewRemoteConnection(uint)));
     connect(mChan->offerTcpSocket(mServer, QVariantMap()),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onOfferTubeFinished(Tp::PendingOperation*)));
@@ -290,10 +290,11 @@ void TubeInitiator::onOfferTubeFinished(PendingOperation* op)
     qDebug() << "Stream tube channel opened!";
 }
 
-void TubeInitiator::onStreamTubeChannelNewRemoteConnection(
-        const Tp::ContactPtr &handle, const QVariant &parameter, uint connectionId)
+void TubeInitiator::onStreamTubeChannelNewRemoteConnection(uint connectionId)
 {
-    qDebug() << "New remote connection from "<< handle << parameter << connectionId;
+    qDebug() << "New remote connection with ID " << connectionId;
+    qDebug() << mChan->connectionsForSourceAddresses();
+    qDebug() << mChan->contactsForConnections();
 }
 
 void TubeInitiator::onTcpServerNewConnection()

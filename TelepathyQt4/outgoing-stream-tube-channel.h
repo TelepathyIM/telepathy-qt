@@ -43,6 +43,8 @@ class TELEPATHY_QT4_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
 //private slots:
     Q_PRIVATE_SLOT(d_func(), void __k__onNewRemoteConnection(uint,QDBusVariant,uint))
     Q_PRIVATE_SLOT(d_func(), void __k__onPendingOpenTubeFinished(Tp::PendingOperation*))
+    Q_PRIVATE_SLOT(d_func(), void __k__onContactsRetrieved(QUuid,QList<Tp::ContactPtr>))
+    Q_PRIVATE_SLOT(d_func(), void __k__onConnectionClosed(uint,QString,QString))
 
 public:
     static OutgoingStreamTubeChannelPtr create(const ConnectionPtr &connection,
@@ -58,6 +60,10 @@ public:
     PendingOperation *offerUnixSocket(QLocalServer *server, const QVariantMap &parameters,
                                       bool requireCredentials = false);
 
+    QHash< uint, Tp::ContactPtr > contactsForConnections() const;
+
+    QHash< QPair< QHostAddress, quint16 >, uint > connectionsForSourceAddresses() const;
+
 protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
@@ -66,7 +72,7 @@ protected:
     virtual void connectNotify(const char* signal);
 
 Q_SIGNALS:
-    void newRemoteConnection(const Tp::ContactPtr &contact, const QVariant &parameter, uint connectionId);
+    void newRemoteConnection(uint connectionId);
 };
 
 }

@@ -69,9 +69,16 @@ public:
     OutgoingStreamTubeChannelPrivate(OutgoingStreamTubeChannel *parent);
     virtual ~OutgoingStreamTubeChannelPrivate();
 
+    QHash< uint, Tp::ContactPtr > contactsForConnections;
+    QHash< QPair< QHostAddress, quint16 >, uint > connectionsForSourceAddresses;
+
+    QHash< QUuid, QPair< uint, QDBusVariant > > pendingNewConnections;
+
     // Private slots
     void __k__onNewRemoteConnection(uint contactId, const QDBusVariant &parameter, uint connectionId);
     void __k__onPendingOpenTubeFinished(Tp::PendingOperation* operation);
+    void __k__onContactsRetrieved(const QUuid &uuid, const QList< Tp::ContactPtr > &contacts);
+    void __k__onConnectionClosed(uint connectionId,const QString&,const QString&);
 };
 
 }

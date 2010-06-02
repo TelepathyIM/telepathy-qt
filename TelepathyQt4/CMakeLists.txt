@@ -437,6 +437,7 @@ set(telepathy_qt4_MOC_SRCS
     room-list-channel.h
     simple-pending-operations.h
     stream-tube-channel.h
+    stream-tube-channel-internal.h
     streamed-media-channel.h
     text-channel.h
     tube-channel.h)

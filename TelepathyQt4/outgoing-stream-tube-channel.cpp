@@ -26,6 +26,7 @@
 #include <TelepathyQt4/Types>
 
 #include "TelepathyQt4/debug-internal.h"
+#include "TelepathyQt4/types-internal.h"
 
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QTcpServer>
@@ -116,14 +117,75 @@ void OutgoingStreamTubeChannelPrivate::__k__onNewRemoteConnection(
         const QDBusVariant &parameter,
         uint connectionId)
 {
-    Q_Q(OutgoingStreamTubeChannel);
+    // Request the handles from our queued contact factory
+    QUuid uuid = queuedContactFactory->appendNewRequest(UIntList() << contactId);
+
+    // Add a pending connection
+    pendingNewConnections.insert(uuid, qMakePair(connectionId, parameter));
+}
+
+void OutgoingStreamTubeChannelPrivate::__k__onContactsRetrieved(
+        const QUuid &uuid,
+        const QList< Tp::ContactPtr > &contacts)
+{
+    // Retrieve our hash
+    if (!pendingNewConnections.contains(uuid)) {
+        warning() << "Contacts retrieved but no pending connections were found";
+        return;
+    }
+
+    QPair< uint, QDBusVariant > connectionProperties = pendingNewConnections.take(uuid);
 
     // Add the connection to our list
-    connections << connectionId;
+    connections << connectionProperties.first;
 
-    emit q->newRemoteConnection(q->connection()->contactManager()->lookupContactByHandle(contactId),
-            parameter.variant(),
-            connectionId);
+    // Add it to our connections hash
+    foreach (const Tp::ContactPtr &contact, contacts) {
+        contactsForConnections.insertMulti(connectionProperties.first, contact);
+    }
+
+    QPair< QHostAddress, quint16 > address;
+    address.first = QHostAddress::Null;
+
+    // Now let's try to track the parameter
+    if (addressType == SocketAddressTypeIPv4) {
+        // Try a qdbus_cast to our address struct: we're shielded from crashes due to our specification
+        SocketAddressIPv4 addr = qdbus_cast< Tp::SocketAddressIPv4 >(connectionProperties.second.variant());
+        address.first = QHostAddress(addr.address);
+        address.second = addr.port;
+    } else if (addressType == SocketAddressTypeIPv6) {
+        SocketAddressIPv6 addr = qdbus_cast< Tp::SocketAddressIPv6 >(connectionProperties.second.variant());
+        address.first = QHostAddress(addr.address);
+        address.second = addr.port;
+    }
+
+    if (address.first != QHostAddress::Null) {
+        // We can map it to a source address as well
+        connectionsForSourceAddresses.insertMulti(address, connectionProperties.first);
+    }
+
+    // Time for us to emit the signal
+    Q_Q(OutgoingStreamTubeChannel);
+    emit q->newRemoteConnection(connectionProperties.first);
+}
+
+void OutgoingStreamTubeChannelPrivate::__k__onConnectionClosed(
+        uint connectionId,
+        const QString&,
+        const QString&)
+{
+    // Remove stuff from our hashes
+    contactsForConnections.remove(connectionId);
+
+    QHash< QPair< QHostAddress, quint16 >, uint >::iterator i = connectionsForSourceAddresses.begin();
+
+    while (i != connectionsForSourceAddresses.end()) {
+        if (i.value() == connectionId) {
+            i = connectionsForSourceAddresses.erase(i);
+        } else {
+            ++i;
+        }
+    }
 }
 
 void OutgoingStreamTubeChannelPrivate::__k__onPendingOpenTubeFinished(Tp::PendingOperation* operation)
@@ -151,8 +213,7 @@ void OutgoingStreamTubeChannelPrivate::__k__onPendingOpenTubeFinished(Tp::Pendin
 
 // Signals documentation
 /**
- * \fn void StreamTubeChannel::newRemoteConnection(const Tp::ContactPtr &contact, const QVariant &parameter, uint
-connectionId)
+ * \fn void StreamTubeChannel::newRemoteConnection(uint connectionId)
  *
  * Emitted when a new participant opens a connection to this tube
  *
@@ -198,6 +259,12 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
     : StreamTubeChannel(connection, objectPath, immutableProperties,
                         coreFeature, *new OutgoingStreamTubeChannelPrivate(this))
 {
+    Q_D(OutgoingStreamTubeChannel);
+
+    connect(this, SIGNAL(connectionClosed(uint,QString,QString)),
+            this, SLOT(__k__onConnectionClosed(uint,QString,QString)));
+    connect(d->queuedContactFactory, SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
+            this, SLOT(__k__onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
 }
 
 /**
@@ -246,13 +313,23 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
                 OutgoingStreamTubeChannelPtr(this));
     }
 
+    SocketAccessControl accessControl = SocketAccessControlLocalhost;
+    // Check if port is supported
+
     Q_D(OutgoingStreamTubeChannel);
 
     // In this specific overload, we're handling an IPv4/IPv6 socket
     if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         // IPv4 case
-        // Check if the combination type/access control is supported
-        if (!supportsIPv4SocketsOnLocalhost()) {
+        SocketAccessControl accessControl;
+        // Do some heuristics to find out the best access control. We always prefer port for tracking
+        // connections and source addresses.
+        if (supportsIPv4SocketsWithAllowedAddress()) {
+            accessControl = SocketAccessControlPort;
+        } else if (supportsIPv4SocketsOnLocalhost()) {
+            accessControl = SocketAccessControlLocalhost;
+        } else {
+            // There are no combinations supported for this socket
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -271,7 +348,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
                 interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
                         SocketAddressTypeIPv4,
                         QDBusVariant(QVariant::fromValue(addr)),
-                        SocketAccessControlLocalhost,
+                        accessControl,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
         PendingOpenTube *op = new PendingOpenTube(pv,
@@ -281,8 +358,14 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         return op;
     } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
         // IPv6 case
-        // Check if the combination type/access control is supported
-        if (!supportsIPv6SocketsOnLocalhost()) {
+        // Do some heuristics to find out the best access control. We always prefer port for tracking
+        // connections and source addresses.
+        if (supportsIPv6SocketsWithAllowedAddress()) {
+            accessControl = SocketAccessControlPort;
+        } else if (supportsIPv6SocketsOnLocalhost()) {
+            accessControl = SocketAccessControlLocalhost;
+        } else {
+            // There are no combinations supported for this socket
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
@@ -301,7 +384,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
                 interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
                         SocketAddressTypeIPv6,
                         QDBusVariant(QVariant::fromValue(addr)),
-                        SocketAccessControlLocalhost,
+                        accessControl,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
         PendingOpenTube *op = new PendingOpenTube(pv,
@@ -482,9 +565,53 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
     return offerUnixSocket(server->fullServerName(), parameters, requireCredentials);
 }
 
+QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
+{
+    Q_D(const OutgoingStreamTubeChannel);
+
+    if (d->addressType != SocketAddressTypeIPv4 && d->addressType != SocketAddressTypeIPv6) {
+        warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
+            "just when offering a TCP socket";
+        return QHash< QPair< QHostAddress, quint16 >, uint >();
+    }
+
+    if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
+        warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
+            "calling connectionsForSourceAddresses";
+        return QHash< QPair< QHostAddress, quint16 >, uint >();
+    }
+
+    if (tubeState() != TubeChannelStateOpen) {
+        warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
+            "just when the tube is open";
+        return QHash< QPair< QHostAddress, quint16 >, uint >();
+    }
+
+    return d->connectionsForSourceAddresses;
+}
+
+QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() const
+{
+    if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
+        warning() << "StreamTubeChannel::FeatureConnectionMonitoring must be ready before "
+            "calling contactsForConnections";
+        return QHash< uint, ContactPtr >();
+    }
+
+    if (tubeState() != TubeChannelStateOpen) {
+        warning() << "OutgoingStreamTubeChannel::contactsForConnections() makes sense "
+            "just when the tube is open";
+        return QHash< uint, ContactPtr >();
+    }
+
+    Q_D(const OutgoingStreamTubeChannel);
+
+    return d->contactsForConnections;
+}
+
 void OutgoingStreamTubeChannel::connectNotify(const char* signal)
 {
-    if (QLatin1String(signal) == SIGNAL(newRemoteConnection(Tp::ContactPtr,QVariant,uint)) &&
+    if (QLatin1String(signal) == SIGNAL(newRemoteConnection(uint)) &&
         !isReady(FeatureConnectionMonitoring)) {
         warning() << "Connected to the signal newRemoteConnection, but FeatureConnectionMonitoring is "
             "not ready. The signal won't be emitted until the mentioned feature is ready.";
