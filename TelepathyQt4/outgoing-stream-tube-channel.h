@@ -50,13 +50,13 @@ public:
 
     virtual ~OutgoingStreamTubeChannel();
 
-    PendingOperation *offerTubeAsTcpSocket(const QHostAddress &address, quint16 port, const QVariantMap &parameters);
-    PendingOperation *offerTubeAsTcpSocket(QTcpServer *server, const QVariantMap &parameters);
+    PendingOperation *offerTcpSocket(const QHostAddress &address, quint16 port, const QVariantMap &parameters);
+    PendingOperation *offerTcpSocket(QTcpServer *server, const QVariantMap &parameters);
 
-    PendingOperation *offerTubeAsUnixSocket(const QByteArray &socketAddress, const QVariantMap &parameters,
-                                            bool requireCredentials = false);
-    PendingOperation *offerTubeAsUnixSocket(QLocalServer *server, const QVariantMap &parameters,
-                                            bool requireCredentials = false);
+    PendingOperation *offerUnixSocket(const QByteArray &socketAddress, const QVariantMap &parameters,
+                                      bool requireCredentials = false);
+    PendingOperation *offerUnixSocket(QLocalServer *server, const QVariantMap &parameters,
+                                      bool requireCredentials = false);
 
 protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,

@@ -225,7 +225,7 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTubeAsTcpSocket(
+PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         const QHostAddress& address,
         quint16 port,
         const QVariantMap& parameters)
@@ -336,13 +336,13 @@ PendingOperation* OutgoingStreamTubeChannel::offerTubeAsTcpSocket(
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTubeAsTcpSocket(
+PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         QTcpServer* server,
         const QVariantMap& parameters)
 {
     // In this overload, we're handling a superset of QHostAddress.
     // Let's redirect the call to QHostAddress's overload
-    return offerTubeAsTcpSocket(server->serverAddress(), server->serverPort(),
+    return offerTcpSocket(server->serverAddress(), server->serverPort(),
             parameters);
 }
 
@@ -369,7 +369,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTubeAsTcpSocket(
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTubeAsUnixSocket(
+PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         const QByteArray& socketAddress,
         const QVariantMap& parameters,
         bool requireCredentials)
@@ -469,14 +469,14 @@ PendingOperation* OutgoingStreamTubeChannel::offerTubeAsUnixSocket(
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTubeAsUnixSocket(
+PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         QLocalServer* server,
         const QVariantMap& parameters,
         bool requireCredentials)
 {
     // In this overload, we're handling a superset of a local socket
     // Let's redirect the call to QByteArray's overload
-    return offerTubeAsUnixSocket(server->fullServerName().toUtf8(), parameters, requireCredentials);
+    return offerUnixSocket(server->fullServerName().toUtf8(), parameters, requireCredentials);
 }
 
 void OutgoingStreamTubeChannel::connectNotify(const char* signal)
