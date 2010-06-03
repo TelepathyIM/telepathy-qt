@@ -52,9 +52,9 @@ public:
     QVariantMap parameters;
 
     // Private slots
-    void __k__onTubeChannelStateChanged(uint newstate);
-    void __k__gotTubeProperties(QDBusPendingCallWatcher *watcher);
-    void __k__gotTubeParameters(QDBusPendingCallWatcher *watcher);
+    void onTubeChannelStateChanged(uint newstate);
+    void gotTubeProperties(QDBusPendingCallWatcher *watcher);
+    void gotTubeParameters(QDBusPendingCallWatcher *watcher);
 
 };
 

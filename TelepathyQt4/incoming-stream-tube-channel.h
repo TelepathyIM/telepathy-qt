@@ -63,11 +63,11 @@ private:
     friend class IncomingStreamTubeChannel;
 
 // private slots:
-    Q_PRIVATE_SLOT(mPriv, void __k__onAcceptFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(mPriv, void __k__onTubeStateChanged(Tp::TubeChannelState))
-    Q_PRIVATE_SLOT(mPriv, void __k__onDeviceConnected())
-    Q_PRIVATE_SLOT(mPriv, void __k__onAbstractSocketError(QAbstractSocket::SocketError))
-    Q_PRIVATE_SLOT(mPriv, void __k__onLocalSocketError(QLocalSocket::LocalSocketError))
+    Q_PRIVATE_SLOT(mPriv, void onAcceptFinished(Tp::PendingOperation*))
+    Q_PRIVATE_SLOT(mPriv, void onTubeStateChanged(Tp::TubeChannelState))
+    Q_PRIVATE_SLOT(mPriv, void onDeviceConnected())
+    Q_PRIVATE_SLOT(mPriv, void onAbstractSocketError(QAbstractSocket::SocketError))
+    Q_PRIVATE_SLOT(mPriv, void onLocalSocketError(QLocalSocket::LocalSocketError))
 };
 
 
@@ -79,8 +79,8 @@ class TELEPATHY_QT4_EXPORT IncomingStreamTubeChannel : public StreamTubeChannel
     Q_DECLARE_PRIVATE(IncomingStreamTubeChannel)
 
 // private slots:
-    Q_PRIVATE_SLOT(d_func(), void __k__onAcceptTubeFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(d_func(), void __k__onNewLocalConnection(uint))
+    Q_PRIVATE_SLOT(d_func(), void onAcceptTubeFinished(Tp::PendingOperation*))
+    Q_PRIVATE_SLOT(d_func(), void onNewLocalConnection(uint))
 
     friend class PendingStreamTubeConnectionPrivate;
 

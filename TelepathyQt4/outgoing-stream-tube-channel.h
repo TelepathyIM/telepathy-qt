@@ -41,10 +41,10 @@ class TELEPATHY_QT4_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
     Q_DECLARE_PRIVATE(OutgoingStreamTubeChannel)
 
 //private slots:
-    Q_PRIVATE_SLOT(d_func(), void __k__onNewRemoteConnection(uint,QDBusVariant,uint))
-    Q_PRIVATE_SLOT(d_func(), void __k__onPendingOpenTubeFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(d_func(), void __k__onContactsRetrieved(QUuid,QList<Tp::ContactPtr>))
-    Q_PRIVATE_SLOT(d_func(), void __k__onConnectionClosed(uint,QString,QString))
+    Q_PRIVATE_SLOT(d_func(), void onNewRemoteConnection(uint,QDBusVariant,uint))
+    Q_PRIVATE_SLOT(d_func(), void onPendingOpenTubeFinished(Tp::PendingOperation*))
+    Q_PRIVATE_SLOT(d_func(), void onContactsRetrieved(QUuid,QList<Tp::ContactPtr>))
+    Q_PRIVATE_SLOT(d_func(), void onConnectionClosed(uint,QString,QString))
 
 public:
     static OutgoingStreamTubeChannelPtr create(const ConnectionPtr &connection,

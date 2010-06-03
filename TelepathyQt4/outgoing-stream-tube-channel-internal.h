@@ -43,8 +43,8 @@ private:
     Private *mPriv;
 
 // private Q_SLOTS:
-    Q_PRIVATE_SLOT(mPriv, void __k__onOfferFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(mPriv, void __k__onTubeStateChanged(Tp::TubeChannelState))
+    Q_PRIVATE_SLOT(mPriv, void onOfferFinished(Tp::PendingOperation*))
+    Q_PRIVATE_SLOT(mPriv, void onTubeStateChanged(Tp::TubeChannelState))
 };
 
 struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
@@ -58,8 +58,8 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
     OutgoingStreamTubeChannelPtr tube;
 
     // Private slots
-    void __k__onOfferFinished(Tp::PendingOperation* op);
-    void __k__onTubeStateChanged(Tp::TubeChannelState state);
+    void onOfferFinished(Tp::PendingOperation* op);
+    void onTubeStateChanged(Tp::TubeChannelState state);
 };
 
 class TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannelPrivate : public StreamTubeChannelPrivate
@@ -75,10 +75,10 @@ public:
     QHash< QUuid, QPair< uint, QDBusVariant > > pendingNewConnections;
 
     // Private slots
-    void __k__onNewRemoteConnection(uint contactId, const QDBusVariant &parameter, uint connectionId);
-    void __k__onPendingOpenTubeFinished(Tp::PendingOperation* operation);
-    void __k__onContactsRetrieved(const QUuid &uuid, const QList< Tp::ContactPtr > &contacts);
-    void __k__onConnectionClosed(uint connectionId,const QString&,const QString&);
+    void onNewRemoteConnection(uint contactId, const QDBusVariant &parameter, uint connectionId);
+    void onPendingOpenTubeFinished(Tp::PendingOperation* operation);
+    void onContactsRetrieved(const QUuid &uuid, const QList< Tp::ContactPtr > &contacts);
+    void onConnectionClosed(uint connectionId,const QString&,const QString&);
 };
 
 }

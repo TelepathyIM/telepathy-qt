@@ -49,8 +49,8 @@ public:
     QIODevice *device;
 
     // Private slots
-    void __k__onAcceptTubeFinished(Tp::PendingOperation* op);
-    void __k__onNewLocalConnection(uint connectionId);
+    void onAcceptTubeFinished(Tp::PendingOperation* op);
+    void onNewLocalConnection(uint connectionId);
 };
 
 IncomingStreamTubeChannelPrivate::IncomingStreamTubeChannelPrivate(IncomingStreamTubeChannel *parent)
@@ -64,14 +64,14 @@ IncomingStreamTubeChannelPrivate::~IncomingStreamTubeChannelPrivate()
 {
 }
 
-void IncomingStreamTubeChannelPrivate::__k__onAcceptTubeFinished(PendingOperation* op)
+void IncomingStreamTubeChannelPrivate::onAcceptTubeFinished(PendingOperation* op)
 {
     PendingStreamTubeConnection *pendingDevice = qobject_cast< PendingStreamTubeConnection* >(op);
 
     device = pendingDevice->device();
 }
 
-void IncomingStreamTubeChannelPrivate::__k__onNewLocalConnection(uint connectionId)
+void IncomingStreamTubeChannelPrivate::onNewLocalConnection(uint connectionId)
 {
     Q_Q(IncomingStreamTubeChannel);
 
@@ -99,11 +99,11 @@ public:
     QIODevice *device;
 
     // Private slots
-    void __k__onAcceptFinished(Tp::PendingOperation* op);
-    void __k__onTubeStateChanged(Tp::TubeChannelState state);
-    void __k__onDeviceConnected();
-    void __k__onAbstractSocketError(QAbstractSocket::SocketError error);
-    void __k__onLocalSocketError(QLocalSocket::LocalSocketError error);
+    void onAcceptFinished(Tp::PendingOperation* op);
+    void onTubeStateChanged(Tp::TubeChannelState state);
+    void onDeviceConnected();
+    void onAbstractSocketError(QAbstractSocket::SocketError error);
+    void onLocalSocketError(QLocalSocket::LocalSocketError error);
 };
 
 PendingStreamTubeConnectionPrivate::PendingStreamTubeConnectionPrivate(PendingStreamTubeConnection *parent)
@@ -130,7 +130,7 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
 
     // Connect the pending void
     connect(acceptOperation, SIGNAL(finished(Tp::PendingOperation*)),
-            this, SLOT(__k__onAcceptFinished(Tp::PendingOperation*)));
+            this, SLOT(onAcceptFinished(Tp::PendingOperation*)));
 }
 
 /**
@@ -171,7 +171,7 @@ QIODevice* PendingStreamTubeConnection::device()
     return mPriv->device;
 }
 
-void PendingStreamTubeConnectionPrivate::__k__onAcceptFinished(PendingOperation* op)
+void PendingStreamTubeConnectionPrivate::onAcceptFinished(PendingOperation* op)
 {
     if (op->isError()) {
         parent->setFinishedWithError(op->errorName(), op->errorMessage());
@@ -202,15 +202,15 @@ void PendingStreamTubeConnectionPrivate::__k__onAcceptFinished(PendingOperation*
 
     // It might have been already opened - check
     if (tube->tubeState() == TubeChannelStateOpen) {
-        __k__onTubeStateChanged(tube->tubeState());
+        onTubeStateChanged(tube->tubeState());
     } else {
         // Wait until the tube gets opened on the other side
         parent->connect(tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
-                        parent, SLOT(__k__onTubeStateChanged(Tp::TubeChannelState)));
+                        parent, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
     }
 }
 
-void PendingStreamTubeConnectionPrivate::__k__onTubeStateChanged(TubeChannelState state)
+void PendingStreamTubeConnectionPrivate::onTubeStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
@@ -225,9 +225,9 @@ void PendingStreamTubeConnectionPrivate::__k__onTubeStateChanged(TubeChannelStat
             device = socket;
 
             parent->connect(socket, SIGNAL(connected()),
-                            parent, SLOT(__k__onDeviceConnected()));
+                            parent, SLOT(onDeviceConnected()));
             parent->connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
-                            parent, SLOT(__k__onAbstractSocketError(QAbstractSocket::SocketError)));
+                            parent, SLOT(onAbstractSocketError(QAbstractSocket::SocketError)));
             debug() << "QTcpSocket built";
         } else {
             // Unix socket
@@ -239,12 +239,12 @@ void PendingStreamTubeConnectionPrivate::__k__onTubeStateChanged(TubeChannelStat
 
             // The local socket might already be connected
             if (socket->state() == QLocalSocket::ConnectedState) {
-                __k__onDeviceConnected();
+                onDeviceConnected();
             } else {
                 parent->connect(socket, SIGNAL(connected()),
-                                parent, SLOT(__k__onDeviceConnected()));
+                                parent, SLOT(onDeviceConnected()));
                 parent->connect(socket, SIGNAL(error(QLocalSocket::LocalSocketError)),
-                                parent, SLOT(__k__onLocalSocketError(QLocalSocket::LocalSocketError)));
+                                parent, SLOT(onLocalSocketError(QLocalSocket::LocalSocketError)));
             }
         }
     } else if (state != TubeChannelStateLocalPending) {
@@ -254,7 +254,7 @@ void PendingStreamTubeConnectionPrivate::__k__onTubeStateChanged(TubeChannelStat
     }
 }
 
-void PendingStreamTubeConnectionPrivate::__k__onAbstractSocketError(QAbstractSocket::SocketError error)
+void PendingStreamTubeConnectionPrivate::onAbstractSocketError(QAbstractSocket::SocketError error)
 {
     // TODO: Use error to provide more detailed error messages
     Q_UNUSED(error)
@@ -264,7 +264,7 @@ void PendingStreamTubeConnectionPrivate::__k__onAbstractSocketError(QAbstractSoc
                       QLatin1String("Could not connect to the new socket"));
 }
 
-void PendingStreamTubeConnectionPrivate::__k__onLocalSocketError(QLocalSocket::LocalSocketError error)
+void PendingStreamTubeConnectionPrivate::onLocalSocketError(QLocalSocket::LocalSocketError error)
 {
     // TODO: Use error to provide more detailed error messages
     Q_UNUSED(error)
@@ -274,7 +274,7 @@ void PendingStreamTubeConnectionPrivate::__k__onLocalSocketError(QLocalSocket::L
                       QLatin1String("Could not connect to the new socket"));
 }
 
-void PendingStreamTubeConnectionPrivate::__k__onDeviceConnected()
+void PendingStreamTubeConnectionPrivate::onDeviceConnected()
 {
     // Our IODevice is ready! Let's just set finished
     debug() << "Device connected!";
@@ -527,7 +527,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, d->addressType,
             IncomingStreamTubeChannelPtr(this));
     connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-            this, SLOT(__k__onAcceptTubeFinished(Tp::PendingOperation*)));
+            this, SLOT(onAcceptTubeFinished(Tp::PendingOperation*)));
     return op;
 }
 
@@ -614,7 +614,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, d->addressType,
             IncomingStreamTubeChannelPtr(this));
     connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-            this, SLOT(__k__onAcceptTubeFinished(Tp::PendingOperation*)));
+            this, SLOT(onAcceptTubeFinished(Tp::PendingOperation*)));
     return op;
 }
 

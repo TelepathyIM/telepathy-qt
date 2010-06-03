@@ -55,11 +55,11 @@ PendingOpenTube::PendingOpenTube(
     mPriv->tube = OutgoingStreamTubeChannelPtr::dynamicCast(object);
 
     if (offerOperation->isFinished()) {
-        mPriv->__k__onOfferFinished(offerOperation);
+        mPriv->onOfferFinished(offerOperation);
     } else {
         // Connect the pending void
         connect(offerOperation, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(__k__onOfferFinished(Tp::PendingOperation*)));
+                this, SLOT(onOfferFinished(Tp::PendingOperation*)));
     }
 }
 
@@ -68,7 +68,7 @@ PendingOpenTube::~PendingOpenTube()
     delete mPriv;
 }
 
-void PendingOpenTube::Private::__k__onOfferFinished(PendingOperation* op)
+void PendingOpenTube::Private::onOfferFinished(PendingOperation* op)
 {
     if (op->isError()) {
         // Fail
@@ -80,15 +80,15 @@ void PendingOpenTube::Private::__k__onOfferFinished(PendingOperation* op)
 
     // It might have been already opened - check
     if (tube->tubeState() == TubeChannelStateOpen) {
-        __k__onTubeStateChanged(tube->tubeState());
+        onTubeStateChanged(tube->tubeState());
     } else {
         // Wait until the tube gets opened on the other side
         parent->connect(tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
-                        parent, SLOT(__k__onTubeStateChanged(Tp::TubeChannelState)));
+                        parent, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
     }
 }
 
-void PendingOpenTube::Private::__k__onTubeStateChanged(TubeChannelState state)
+void PendingOpenTube::Private::onTubeStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
@@ -112,7 +112,7 @@ OutgoingStreamTubeChannelPrivate::~OutgoingStreamTubeChannelPrivate()
 {
 }
 
-void OutgoingStreamTubeChannelPrivate::__k__onNewRemoteConnection(
+void OutgoingStreamTubeChannelPrivate::onNewRemoteConnection(
         uint contactId,
         const QDBusVariant &parameter,
         uint connectionId)
@@ -124,7 +124,7 @@ void OutgoingStreamTubeChannelPrivate::__k__onNewRemoteConnection(
     pendingNewConnections.insert(uuid, qMakePair(connectionId, parameter));
 }
 
-void OutgoingStreamTubeChannelPrivate::__k__onContactsRetrieved(
+void OutgoingStreamTubeChannelPrivate::onContactsRetrieved(
         const QUuid &uuid,
         const QList< Tp::ContactPtr > &contacts)
 {
@@ -169,7 +169,7 @@ void OutgoingStreamTubeChannelPrivate::__k__onContactsRetrieved(
     emit q->newConnection(connectionProperties.first);
 }
 
-void OutgoingStreamTubeChannelPrivate::__k__onConnectionClosed(
+void OutgoingStreamTubeChannelPrivate::onConnectionClosed(
         uint connectionId,
         const QString&,
         const QString&)
@@ -188,7 +188,7 @@ void OutgoingStreamTubeChannelPrivate::__k__onConnectionClosed(
     }
 }
 
-void OutgoingStreamTubeChannelPrivate::__k__onPendingOpenTubeFinished(Tp::PendingOperation* operation)
+void OutgoingStreamTubeChannelPrivate::onPendingOpenTubeFinished(Tp::PendingOperation* operation)
 {
     // If the operation finished successfully, let's reintrospect the parameters
     if (!operation->isError()) {
@@ -256,9 +256,9 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
     Q_D(OutgoingStreamTubeChannel);
 
     connect(this, SIGNAL(connectionClosed(uint,QString,QString)),
-            this, SLOT(__k__onConnectionClosed(uint,QString,QString)));
+            this, SLOT(onConnectionClosed(uint,QString,QString)));
     connect(d->queuedContactFactory, SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
-            this, SLOT(__k__onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
+            this, SLOT(onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
 }
 
 /**
@@ -353,7 +353,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
         connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(__k__onPendingOpenTubeFinished(Tp::PendingOperation*)));
+                this, SLOT(onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
         // IPv6 case
@@ -389,7 +389,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
         connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(__k__onPendingOpenTubeFinished(Tp::PendingOperation*)));
+                this, SLOT(onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else {
         // We're handling an IPv4/IPv6 socket only
@@ -513,7 +513,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
         connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(__k__onPendingOpenTubeFinished(Tp::PendingOperation*)));
+                this, SLOT(onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else {
         // Unix socket case
@@ -541,7 +541,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         PendingOpenTube *op = new PendingOpenTube(pv,
                 OutgoingStreamTubeChannelPtr(this));
         connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(__k__onPendingOpenTubeFinished(Tp::PendingOperation*)));
+                this, SLOT(onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     }
 }

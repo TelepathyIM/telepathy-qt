@@ -93,8 +93,8 @@ public:
     QueuedContactFactory *queuedContactFactory;
 
     // Private slots
-    void __k__gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
-    void __k__onConnectionClosed(uint connectionId, const QString &error, const QString &message);
+    void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
+    void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
 
 };
 

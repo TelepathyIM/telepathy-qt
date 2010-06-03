@@ -129,7 +129,7 @@ void StreamTubeChannelPrivate::init()
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void StreamTubeChannelPrivate::__k__onConnectionClosed(
+void StreamTubeChannelPrivate::onConnectionClosed(
         uint connectionId,
         const QString& error,
         const QString& message)
@@ -144,7 +144,7 @@ void StreamTubeChannelPrivate::extractStreamTubeProperties(const QVariantMap& pr
     socketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
 }
 
-void StreamTubeChannelPrivate::__k__gotStreamTubeProperties(QDBusPendingCallWatcher* watcher)
+void StreamTubeChannelPrivate::gotStreamTubeProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
@@ -174,15 +174,15 @@ void StreamTubeChannelPrivate::introspectConnectionMonitoring(
     Q_ASSERT(streamTubeInterface);
 
     parent->connect(streamTubeInterface, SIGNAL(ConnectionClosed(uint,QString,QString)),
-                    parent, SLOT(__k__onConnectionClosed(uint,QString,QString)));
+                    parent, SLOT(onConnectionClosed(uint,QString,QString)));
 
     // Depending on the base type given by the inheriter, let's connect to some additional signals
     if (self->baseType == OutgoingTubeType) {
         parent->connect(streamTubeInterface, SIGNAL(NewRemoteConnection(uint,QDBusVariant,uint)),
-                        parent, SLOT(__k__onNewRemoteConnection(uint,QDBusVariant,uint)));
+                        parent, SLOT(onNewRemoteConnection(uint,QDBusVariant,uint)));
     } else if (self->baseType == IncomingTubeType) {
         parent->connect(streamTubeInterface, SIGNAL(NewLocalConnection(uint)),
-                        parent, SLOT(__k__onNewLocalConnection(uint)));
+                        parent, SLOT(onNewLocalConnection(uint)));
     }
 
     self->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureConnectionMonitoring, true);
@@ -206,7 +206,7 @@ void StreamTubeChannelPrivate::introspectStreamTube(
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             parent,
-            SLOT(__k__gotStreamTubeProperties(QDBusPendingCallWatcher *)));
+            SLOT(gotStreamTubeProperties(QDBusPendingCallWatcher *)));
 }
 
 /**

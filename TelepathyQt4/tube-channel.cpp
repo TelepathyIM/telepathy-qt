@@ -69,7 +69,7 @@ void TubeChannelPrivate::reintrospectParameters()
 
     q->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(__k__gotTubeParameters(QDBusPendingCallWatcher *)));
+            SLOT(gotTubeParameters(QDBusPendingCallWatcher *)));
 }
 
 void TubeChannelPrivate::extractTubeProperties(const QVariantMap& props)
@@ -79,14 +79,14 @@ void TubeChannelPrivate::extractTubeProperties(const QVariantMap& props)
     parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
 }
 
-void TubeChannelPrivate::__k__gotTubeParameters(QDBusPendingCallWatcher *watcher)
+void TubeChannelPrivate::gotTubeParameters(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusVariant> reply = *watcher;
 
     parameters = qdbus_cast<QVariantMap>(reply.value().variant());
 }
 
-void TubeChannelPrivate::__k__gotTubeProperties(QDBusPendingCallWatcher* watcher)
+void TubeChannelPrivate::gotTubeProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
@@ -104,7 +104,7 @@ void TubeChannelPrivate::__k__gotTubeProperties(QDBusPendingCallWatcher* watcher
     }
 }
 
-void TubeChannelPrivate::__k__onTubeChannelStateChanged(uint newstate)
+void TubeChannelPrivate::onTubeChannelStateChanged(uint newstate)
 {
     Q_Q(TubeChannel);
 
@@ -125,7 +125,7 @@ void TubeChannelPrivate::introspectTube(TubeChannelPrivate* self)
     Q_ASSERT(tubeInterface);
 
     parent->connect(tubeInterface, SIGNAL(TubeChannelStateChanged(uint)),
-                    parent, SLOT(__k__onTubeChannelStateChanged(uint)));
+                    parent, SLOT(onTubeChannelStateChanged(uint)));
 
     Client::DBus::PropertiesInterface *properties =
             parent->interface<Client::DBus::PropertiesInterface>();
@@ -137,7 +137,7 @@ void TubeChannelPrivate::introspectTube(TubeChannelPrivate* self)
                 parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(__k__gotTubeProperties(QDBusPendingCallWatcher *)));
+            SLOT(gotTubeProperties(QDBusPendingCallWatcher *)));
 }
 
 /**

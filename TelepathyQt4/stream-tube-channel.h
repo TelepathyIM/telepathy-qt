@@ -38,8 +38,8 @@ class TELEPATHY_QT4_EXPORT StreamTubeChannel : public TubeChannel
     Q_DECLARE_PRIVATE(StreamTubeChannel)
 
     // private Q_SLOTS:
-    Q_PRIVATE_SLOT(d_func(), void __k__gotStreamTubeProperties(QDBusPendingCallWatcher *))
-    Q_PRIVATE_SLOT(d_func(), void __k__onConnectionClosed(uint,QString,QString))
+    Q_PRIVATE_SLOT(d_func(), void gotStreamTubeProperties(QDBusPendingCallWatcher *))
+    Q_PRIVATE_SLOT(d_func(), void onConnectionClosed(uint,QString,QString))
 
 public:
     static const Feature FeatureStreamTube;
