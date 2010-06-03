@@ -395,7 +395,7 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
 
 
 /**
- * \brief Accept an incoming Stream tube
+ * \brief Accept an incoming Stream tube as a TCP socket
  *
  * This method accepts an incoming connection request for a stream tube. It can be called
  * only if the tube is in the \c LocalPending state.
@@ -405,17 +405,19 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * read/write when the resulting \c PendingStreamTubeConnection finishes successfully. You can then
  * access the device right from \c PendingStreamTubeConnection or from %device().
  *
- * If you want to specify a different access control method than \c LocalHost, you will
- * have to satisfy some specific requirements: in the \c Port case, you will need to
- * call %setAllowedAddress first to set the allowed address/port combination.
- * Please refer to the spec for more details.
+ * You can also specify an allowed address/port combination for connecting to this socket
+ * instead of accepting every incoming connection from localhost.
  *
- * \note If you plan to establish more than one connection through the tube,
- *       the \c Port access control can't be used as you can't connect more
- *       than once from the same port.
+ * \param allowedAddress an allowed address for connecting to this socket, or QHostAddress::Any
+ * \param allowedPort an allowed port for connecting to this socket
  *
- * \param accessControl The type of access control the connection manager should apply to the socket.
+ * \returns A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
+ *          (hence in the Open state)
  *
+ * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv4SocketsOnLocalhost
+ * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
 PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         const QHostAddress& allowedAddress,
@@ -529,6 +531,32 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     return op;
 }
 
+
+/**
+ * \brief Accept an incoming Stream tube as a Unix socket
+ *
+ * This method accepts an incoming connection request for a stream tube. It can be called
+ * only if the tube is in the \c LocalPending state.
+ *
+ * Once called, this method will try opening the tube, and will create a QIODevice which
+ * can be used to communicate with the other end. The device is guaranteed to be opened
+ * read/write when the resulting \c PendingStreamTubeConnection finishes successfully. You can then
+ * access the device right from \c PendingStreamTubeConnection or from %device().
+ *
+ * You can also specify whether the server should require an SCM_CREDENTIALS message
+ * upon connection instead of accepting every incoming connection from localhost.
+ *
+ * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
+ *                           upon connection.
+ *
+ * \returns A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
+ *          (hence in the Open state)
+ *
+ * \see StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost
+ * \see StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials
+ * \see StreamTubeChannel::supportsUnixSocketsOnLocalhost
+ * \see StreamTubeChannel::supportsUnixSocketsWithCredentials
+ */
 PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
         bool requireCredentials)
 {

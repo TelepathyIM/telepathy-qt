@@ -217,12 +217,6 @@ void OutgoingStreamTubeChannelPrivate::__k__onPendingOpenTubeFinished(Tp::Pendin
  *
  * Emitted when a new participant opens a connection to this tube
  *
- * \param contact The participant who opened the new connection
- * \param parameter A parameter which can be used by the listening process to identify
- *                  the connection. Note that this parameter has a meaningful value
- *                  only if SocketAccessControl is \c Port or \c Credentials. In the
- *                  \c Port case, \p parameter is a QHostAddress. Otherwise, it is
- *                  a byte that has been sent with the credential.
  * \param connectionId The unique ID associated with this connection.
  */
 
@@ -291,6 +285,11 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  *
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
+ *
+ * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv4SocketsOnLocalhost
+ * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
 PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         const QHostAddress& address,
@@ -418,6 +417,11 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  *
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
+ *
+ * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv4SocketsOnLocalhost
+ * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
 PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         QTcpServer* server,
@@ -451,6 +455,11 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  *
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
+ *
+ * \see StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost
+ * \see StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials
+ * \see StreamTubeChannel::supportsUnixSocketsOnLocalhost
+ * \see StreamTubeChannel::supportsUnixSocketsWithCredentials
  */
 PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         const QString& socketAddress,
@@ -554,6 +563,11 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
  *
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
+ *
+ * \see StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost
+ * \see StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials
+ * \see StreamTubeChannel::supportsUnixSocketsOnLocalhost
+ * \see StreamTubeChannel::supportsUnixSocketsWithCredentials
  */
 PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
         QLocalServer* server,
@@ -565,6 +579,22 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
     return offerUnixSocket(server->fullServerName(), parameters, requireCredentials);
 }
 
+
+/**
+ * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, the socket address type of this
+ * tube is IPv4 or IPv6, and if the tube supports connection with an allowed address, this function
+ * returns a map from a source address to its connection ID. It is useful to track an address
+ * which connected to your socket to a contact (by using contactsForConnections).
+ *
+ * \returns an hash mapping a source address to its connection ID
+ *
+ * \note The tube has to be open for calling this function
+ *
+ * \see contactsForConnections
+ * \see StreamTubeChannel::addressType
+ * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
+ */
 QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
 {
     Q_D(const OutgoingStreamTubeChannel);
@@ -590,6 +620,20 @@ QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connect
     return d->connectionsForSourceAddresses;
 }
 
+
+/**
+ * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, this function
+ * returns a map from a connection ID to the associated contact.
+ *
+ * \returns an hash mapping a connection ID to the associated contact.
+ *
+ * \note The tube has to be open for calling this function
+ *
+ * \see connectionsForSourceAddresses
+ * \see StreamTubeChannel::addressType
+ * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
+ */
 QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() const
 {
     if (!isReady(StreamTubeChannel::FeatureConnectionMonitoring)) {
