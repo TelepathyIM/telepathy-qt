@@ -84,6 +84,7 @@ protected:
     virtual void connectNotify(const char* signal);
 
 Q_SIGNALS:
+    void newConnection(uint connectionId);
     void connectionClosed(uint connectionId, const QString &error, const QString &message);
 
 };

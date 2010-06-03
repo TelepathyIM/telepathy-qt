@@ -102,11 +102,6 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
 
-    virtual void connectNotify(const char* signal);
-
-Q_SIGNALS:
-    void newLocalConnection(uint connectionId);
-
 };
 
 }

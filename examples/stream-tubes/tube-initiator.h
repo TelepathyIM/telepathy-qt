@@ -55,7 +55,7 @@ private Q_SLOTS:
     */
     void onStreamTubeChannelCreated(Tp::PendingOperation *op);
     void onStreamTubeChannelReady(Tp::PendingOperation *op);
-    void onStreamTubeChannelNewRemoteConnection(uint);
+    void onStreamTubeChannelNewConnection(uint);
     void onOfferTubeFinished(Tp::PendingOperation*);
     void onTcpServerNewConnection();
     void onDataFromSocket();

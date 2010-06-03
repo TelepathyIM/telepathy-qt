@@ -68,11 +68,6 @@ protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
-
-    virtual void connectNotify(const char* signal);
-
-Q_SIGNALS:
-    void newRemoteConnection(uint connectionId);
 };
 
 }

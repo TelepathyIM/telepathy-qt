@@ -78,7 +78,7 @@ void IncomingStreamTubeChannelPrivate::__k__onNewLocalConnection(uint connection
     // Add the connection to our list
     connections << connectionId;
 
-    emit q->newLocalConnection(connectionId);
+    emit q->newConnection(connectionId);
 }
 
 class TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnectionPrivate
@@ -630,17 +630,6 @@ QIODevice* IncomingStreamTubeChannel::device()
     } else {
         return 0;
     }
-}
-
-void IncomingStreamTubeChannel::connectNotify(const char* signal)
-{
-    if (QLatin1String(signal) == SIGNAL(newLocalConnection(uint)) &&
-        !isReady(FeatureConnectionMonitoring)) {
-        warning() << "Connected to the signal newLocalConnection, but FeatureConnectionMonitoring is "
-            "not ready. The signal won't be emitted until the mentioned feature is ready.";
-    }
-
-    Tp::StreamTubeChannel::connectNotify(signal);
 }
 
 }

@@ -235,9 +235,8 @@ const Feature StreamTubeChannel::FeatureStreamTube = Feature(QLatin1String(Strea
 /**
  * Feature used in order to monitor connections to this tube.
  *
+ * %newConnection will be emitted upon a new connection
  * %connectionClosed will be emitted when an existing connection gets closed
- * OutgoingStreamTubeChannel::newRemoteConnection will be emitted upon a new connection
- * IncomingStreamTubeChannel::newLocalConnection will be emitted upon a new connection
  */
 const Feature StreamTubeChannel::FeatureConnectionMonitoring = Feature(QLatin1String(StreamTubeChannel::staticMetaObject.className()), 1);
 
@@ -500,6 +499,12 @@ void StreamTubeChannel::connectNotify(const char* signal)
     if (QLatin1String(signal) == SIGNAL(connectionClosed(uint,QString,QString)) &&
         !isReady(FeatureConnectionMonitoring)) {
         warning() << "Connected to the signal connectionClosed, but FeatureConnectionMonitoring is "
+            "not ready. The signal won't be emitted until the mentioned feature is ready.";
+    }
+
+    if (QLatin1String(signal) == SIGNAL(newConnection(uint)) &&
+        !isReady(FeatureConnectionMonitoring)) {
+        warning() << "Connected to the signal newConnection, but FeatureConnectionMonitoring is "
             "not ready. The signal won't be emitted until the mentioned feature is ready.";
     }
 

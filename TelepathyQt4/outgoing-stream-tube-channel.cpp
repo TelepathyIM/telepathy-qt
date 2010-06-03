@@ -166,7 +166,7 @@ void OutgoingStreamTubeChannelPrivate::__k__onContactsRetrieved(
 
     // Time for us to emit the signal
     Q_Q(OutgoingStreamTubeChannel);
-    emit q->newRemoteConnection(connectionProperties.first);
+    emit q->newConnection(connectionProperties.first);
 }
 
 void OutgoingStreamTubeChannelPrivate::__k__onConnectionClosed(
@@ -651,17 +651,6 @@ QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() co
     Q_D(const OutgoingStreamTubeChannel);
 
     return d->contactsForConnections;
-}
-
-void OutgoingStreamTubeChannel::connectNotify(const char* signal)
-{
-    if (QLatin1String(signal) == SIGNAL(newRemoteConnection(uint)) &&
-        !isReady(FeatureConnectionMonitoring)) {
-        warning() << "Connected to the signal newRemoteConnection, but FeatureConnectionMonitoring is "
-            "not ready. The signal won't be emitted until the mentioned feature is ready.";
-    }
-
-    Tp::StreamTubeChannel::connectNotify(signal);
 }
 
 }
