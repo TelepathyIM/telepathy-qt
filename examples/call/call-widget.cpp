@@ -237,7 +237,7 @@ void CallWidget::onStreamCreated(PendingOperation *op)
         qWarning() << "CallWidget::onStreamCreated: unable to create stream:" <<
             op->errorName() << "-" << op->errorMessage();
 
-        QPushButton *btn = 0;
+        QPushButton *btn;
 
         // we cannot create the stream for some reason, update buttons
         if (!streamForType(Tp::MediaStreamTypeAudio)) {
@@ -245,7 +245,8 @@ void CallWidget::onStreamCreated(PendingOperation *op)
         } else if (!streamForType(Tp::MediaStreamTypeVideo)) {
             btn = mBtnSendVideo;
         } else {
-            Q_ASSERT(false);
+            // we only handle audio and video, so ignore here
+            return;
         }
 
         btn->blockSignals(true);
@@ -344,7 +345,8 @@ void CallWidget::onStreamStateChanged(const MediaStreamPtr &stream,
     } else if (stream->type() == Tp::MediaStreamTypeVideo) {
         lbl = mLblVideoState;
     } else {
-        Q_ASSERT(false);
+        // ignore unknown streams
+        return;
     }
     if (state == Tp::MediaStreamStateDisconnected) {
         lbl->setText(QLatin1String("State: Disconnected"));
