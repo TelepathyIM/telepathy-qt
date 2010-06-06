@@ -502,13 +502,13 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
           !supportsIPv4SocketsOnLocalhost()) ||
          (accessControl == SocketAccessControlPort &&
           d->addressType == SocketAddressTypeIPv4 &&
-          !supportsIPv4SocketsWithAllowedAddress()) ||
+          !supportsIPv4SocketsWithSpecifiedAddress()) ||
          (accessControl == SocketAccessControlLocalhost &&
           d->addressType == SocketAddressTypeIPv6 &&
           !supportsIPv6SocketsOnLocalhost()) ||
          (accessControl == SocketAccessControlPort &&
           d->addressType == SocketAddressTypeIPv6 &&
-          !supportsIPv6SocketsWithAllowedAddress())) {
+          !supportsIPv6SocketsWithSpecifiedAddress())) {
         warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
         return new PendingStreamTubeConnection(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),

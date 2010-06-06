@@ -282,9 +282,12 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
- * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
+ * \note The library will try to use Port access control whenever possible, as it allows to
+ *       map connections to the socket's source address.
+ *
+ * \see StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
  * \see StreamTubeChannel::supportsIPv4SocketsOnLocalhost
- * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress
  * \see StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
 PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
@@ -319,7 +322,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         SocketAccessControl accessControl;
         // Do some heuristics to find out the best access control. We always prefer port for tracking
         // connections and source addresses.
-        if (supportsIPv4SocketsWithAllowedAddress()) {
+        if (supportsIPv4SocketsWithSpecifiedAddress()) {
             accessControl = SocketAccessControlPort;
         } else if (supportsIPv4SocketsOnLocalhost()) {
             accessControl = SocketAccessControlLocalhost;
@@ -353,7 +356,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         // IPv6 case
         // Do some heuristics to find out the best access control. We always prefer port for tracking
         // connections and source addresses.
-        if (supportsIPv6SocketsWithAllowedAddress()) {
+        if (supportsIPv6SocketsWithSpecifiedAddress()) {
             accessControl = SocketAccessControlPort;
         } else if (supportsIPv6SocketsOnLocalhost()) {
             accessControl = SocketAccessControlLocalhost;
@@ -410,9 +413,12 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
- * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
+ * \note The library will try to use Port access control whenever possible, as it allows to
+ *       map connections to the socket's source address.
+ *
+ * \see StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
  * \see StreamTubeChannel::supportsIPv4SocketsOnLocalhost
- * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress
  * \see StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
 PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
@@ -570,7 +576,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
 
 /**
  * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, the socket address type of this
- * tube is IPv4 or IPv6, and if the tube supports connection with an allowed address, this function
+ * tube is IPv4 or IPv6, and if the tube supports connection with an specified address, this function
  * returns a map from a source address to its connection ID. It is useful to track an address
  * which connected to your socket to a contact (by using contactsForConnections).
  *
@@ -580,8 +586,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
  *
  * \see contactsForConnections
  * \see StreamTubeChannel::addressType
- * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
- * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
+ * \see StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
+ * \see StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress
  */
 QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
 {
@@ -619,8 +625,6 @@ QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connect
  *
  * \see connectionsForSourceAddresses
  * \see StreamTubeChannel::addressType
- * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
- * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
  */
 QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() const
 {

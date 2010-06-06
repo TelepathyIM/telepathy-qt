@@ -53,10 +53,10 @@ public:
     QString service() const;
 
     bool supportsIPv4SocketsOnLocalhost() const;
-    bool supportsIPv4SocketsWithAllowedAddress() const;
+    bool supportsIPv4SocketsWithSpecifiedAddress() const;
 
     bool supportsIPv6SocketsOnLocalhost() const;
-    bool supportsIPv6SocketsWithAllowedAddress() const;
+    bool supportsIPv6SocketsWithSpecifiedAddress() const;
 
     bool supportsUnixSocketsOnLocalhost() const;
     bool supportsUnixSocketsWithCredentials() const;

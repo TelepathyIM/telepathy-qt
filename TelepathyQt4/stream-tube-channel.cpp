@@ -325,12 +325,12 @@ QString StreamTubeChannel::service() const
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
  * \see OutgoingStreamTubeChannel::offerTcpSocket
- * \see supportsIPv4SocketsWithAllowedAddress
+ * \see supportsIPv4SocketsWithSpecifiedAddress
  */
 bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 {
     if (!isReady(FeatureStreamTube)) {
-        warning() << "StreamTubeChannel::supportedIPv4SocketsOnLocalhost() used with "
+        warning() << "StreamTubeChannel::supportsIPv4SocketsOnLocalhost() used with "
             "FeatureStreamTube not ready";
         return false;
     }
@@ -342,17 +342,21 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 
 
 /**
- * \returns Whether this stream tube is capable to accept or offer an IPv4 socket
- *          when specifying an allowed address for connecting to the socket.
+ * \returns When dealing with an incoming tube, whether this tube is capable
+ *          to accept or offer an IPv4 socket when specifying an allowed address
+ *          for connecting to thesocket.
+ *          When dealing with an outgoing tube, whether this tube will be able to
+ *          map connections to the socket's source address.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
  * \see OutgoingStreamTubeChannel::offerTcpSocket
+ * \see OutgoingStreamTubeChannel::connectionsForSourceAddresses
  * \see supportsIPv4SocketsOnLocalhost
  */
-bool StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress() const
+bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
 {
     if (!isReady(FeatureStreamTube)) {
-        warning() << "StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress() used with "
+        warning() << "StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() used with "
             "FeatureStreamTube not ready";
         return false;
     }
@@ -369,7 +373,7 @@ bool StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress() const
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
  * \see OutgoingStreamTubeChannel::offerTcpSocket
- * \see supportsIPv6SocketsWithAllowedAddress
+ * \see supportsIPv6SocketsWithSpecifiedAddress
  */
 bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
 {
@@ -386,17 +390,21 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
 
 
 /**
- * \returns Whether this stream tube is capable to accept or offer an IPv6 socket
- *          when specifying an allowed address for connecting to the socket.
+ * \returns When dealing with an incoming tube, whether this tube is capable
+ *          to accept or offer an IPv6 socket when specifying an allowed address
+ *          for connecting to thesocket.
+ *          When dealing with an outgoing tube, whether this tube will be able to
+ *          map connections to the socket's source address.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
  * \see OutgoingStreamTubeChannel::offerTcpSocket
+ * \see OutgoingStreamTubeChannel::connectionsForSourceAddresses
  * \see supportsIPv6SocketsOnLocalhost
  */
-bool StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress() const
+bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
 {
     if (!isReady(FeatureStreamTube)) {
-        warning() << "StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress() used with "
+        warning() << "StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() used with "
             "FeatureStreamTube not ready";
         return false;
     }
