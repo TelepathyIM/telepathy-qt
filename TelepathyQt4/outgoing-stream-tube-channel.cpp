@@ -35,22 +35,24 @@
 namespace Tp
 {
 
-PendingOpenTube::Private::Private(PendingOpenTube* parent)
+PendingOpenTubePrivate::PendingOpenTubePrivate(const QVariantMap &parameters, PendingOpenTube* parent)
     : parent(parent)
+    , parameters(parameters)
 {
 
 }
 
-PendingOpenTube::Private::~Private()
+PendingOpenTubePrivate::~PendingOpenTubePrivate()
 {
 
 }
 
 PendingOpenTube::PendingOpenTube(
         PendingVoid* offerOperation,
+        const QVariantMap &parameters,
         const SharedPtr<RefCounted> &object)
     : PendingOperation(object)
-    , mPriv(new Private(this))
+    , mPriv(new PendingOpenTubePrivate(parameters, this))
 {
     mPriv->tube = OutgoingStreamTubeChannelPtr::dynamicCast(object);
 
@@ -68,7 +70,7 @@ PendingOpenTube::~PendingOpenTube()
     delete mPriv;
 }
 
-void PendingOpenTube::Private::onOfferFinished(PendingOperation* op)
+void PendingOpenTubePrivate::onOfferFinished(PendingOperation* op)
 {
     if (op->isError()) {
         // Fail
@@ -88,10 +90,12 @@ void PendingOpenTube::Private::onOfferFinished(PendingOperation* op)
     }
 }
 
-void PendingOpenTube::Private::onTubeStateChanged(TubeChannelState state)
+void PendingOpenTubePrivate::onTubeStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
+        // Inject the parameters into the tube
+        tube->d_func()->parameters = parameters;
         // The tube is ready: let's notify
         parent->setFinished();
     } else if (state != TubeChannelStateRemotePending) {
@@ -185,14 +189,6 @@ void OutgoingStreamTubeChannelPrivate::onConnectionClosed(
         } else {
             ++i;
         }
-    }
-}
-
-void OutgoingStreamTubeChannelPrivate::onPendingOpenTubeFinished(Tp::PendingOperation* operation)
-{
-    // If the operation finished successfully, let's reintrospect the parameters
-    if (!operation->isError()) {
-        reintrospectParameters();
     }
 }
 
@@ -350,10 +346,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
                         accessControl,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
-        PendingOpenTube *op = new PendingOpenTube(pv,
+        PendingOpenTube *op = new PendingOpenTube(pv, parameters,
                 OutgoingStreamTubeChannelPtr(this));
-        connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
         // IPv6 case
@@ -386,10 +380,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
                         accessControl,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
-        PendingOpenTube *op = new PendingOpenTube(pv,
+        PendingOpenTube *op = new PendingOpenTube(pv, parameters,
                 OutgoingStreamTubeChannelPtr(this));
-        connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else {
         // We're handling an IPv4/IPv6 socket only
@@ -510,10 +502,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
                         accessControl,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
-        PendingOpenTube *op = new PendingOpenTube(pv,
+        PendingOpenTube *op = new PendingOpenTube(pv, parameters,
                 OutgoingStreamTubeChannelPtr(this));
-        connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     } else {
         // Unix socket case
@@ -538,10 +528,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
                         accessControl,
                         parameters),
                 OutgoingStreamTubeChannelPtr(this));
-        PendingOpenTube *op = new PendingOpenTube(pv,
+        PendingOpenTube *op = new PendingOpenTube(pv, parameters,
                 OutgoingStreamTubeChannelPtr(this));
-        connect(op, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(onPendingOpenTubeFinished(Tp::PendingOperation*)));
         return op;
     }
 }

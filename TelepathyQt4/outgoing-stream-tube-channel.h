@@ -42,9 +42,10 @@ class TELEPATHY_QT4_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
 
 //private slots:
     Q_PRIVATE_SLOT(d_func(), void onNewRemoteConnection(uint,QDBusVariant,uint))
-    Q_PRIVATE_SLOT(d_func(), void onPendingOpenTubeFinished(Tp::PendingOperation*))
     Q_PRIVATE_SLOT(d_func(), void onContactsRetrieved(QUuid,QList<Tp::ContactPtr>))
     Q_PRIVATE_SLOT(d_func(), void onConnectionClosed(uint,QString,QString))
+
+    friend class PendingOpenTubePrivate;
 
 public:
     static OutgoingStreamTubeChannelPtr create(const ConnectionPtr &connection,

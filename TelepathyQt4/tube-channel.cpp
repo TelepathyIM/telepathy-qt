@@ -53,37 +53,11 @@ void TubeChannelPrivate::init()
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void TubeChannelPrivate::reintrospectParameters()
-{
-    Q_Q(TubeChannel);
-
-    Client::DBus::PropertiesInterface *properties =
-            q->interface<Client::DBus::PropertiesInterface>();
-
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                properties->Get(
-                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE),
-                    QLatin1String("Parameters")),
-                q);
-
-    q->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotTubeParameters(QDBusPendingCallWatcher *)));
-}
-
 void TubeChannelPrivate::extractTubeProperties(const QVariantMap& props)
 {
     state = (Tp::TubeChannelState)qdbus_cast<uint>(props[QLatin1String("State")]);
     debug() << state << qdbus_cast<uint>(props[QLatin1String("State")]);
     parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
-}
-
-void TubeChannelPrivate::gotTubeParameters(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QDBusVariant> reply = *watcher;
-
-    parameters = qdbus_cast<QVariantMap>(reply.value().variant());
 }
 
 void TubeChannelPrivate::gotTubeProperties(QDBusPendingCallWatcher* watcher)
@@ -238,9 +212,18 @@ TubeChannel::~TubeChannel()
 
 /**
  * \returns A dictionary of arbitrary parameters. Please refer to the spec for more details.
+ *
+ * \note For outgoing tubes, this function will return a valid value only after the tube has
+ *       been offered successfully.
  */
 QVariantMap TubeChannel::parameters() const
 {
+    if (!isReady(FeatureTube)) {
+        warning() << "TubeChannel::parameters() used with "
+            "FeatureTube not ready";
+        return QVariantMap();
+    }
+
     Q_D(const TubeChannel);
     return d->parameters;
 }

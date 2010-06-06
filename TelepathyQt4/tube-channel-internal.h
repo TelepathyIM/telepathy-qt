@@ -42,8 +42,6 @@ public:
 
     static void introspectTube(TubeChannelPrivate *self);
 
-    void reintrospectParameters();
-
     ReadinessHelper *readinessHelper;
 
     // Properties
@@ -54,7 +52,6 @@ public:
     // Private slots
     void onTubeChannelStateChanged(uint newstate);
     void gotTubeProperties(QDBusPendingCallWatcher *watcher);
-    void gotTubeParameters(QDBusPendingCallWatcher *watcher);
 
 };
 

@@ -39,7 +39,6 @@ class TELEPATHY_QT4_EXPORT TubeChannel : public Channel
 // private Q_SLOTS:
     Q_PRIVATE_SLOT(d_func(), void onTubeChannelStateChanged(uint))
     Q_PRIVATE_SLOT(d_func(), void gotTubeProperties(QDBusPendingCallWatcher *))
-    Q_PRIVATE_SLOT(d_func(), void gotTubeParameters(QDBusPendingCallWatcher *))
 
 public:
     static const Feature FeatureTube;

@@ -29,33 +29,36 @@
 namespace Tp {
 class PendingVoid;
 
+struct PendingOpenTubePrivate;
 class TELEPATHY_QT4_NO_EXPORT PendingOpenTube : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingOpenTube)
 public:
-    PendingOpenTube(PendingVoid *offerOperation, const SharedPtr<RefCounted> &object);
+    PendingOpenTube(PendingVoid *offerOperation,
+            const QVariantMap &parameters,
+            const SharedPtr<RefCounted> &object);
     virtual ~PendingOpenTube();
 
 private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
+    friend struct PendingOpenTubePrivate;
+    PendingOpenTubePrivate *mPriv;
 
 // private Q_SLOTS:
     Q_PRIVATE_SLOT(mPriv, void onOfferFinished(Tp::PendingOperation*))
     Q_PRIVATE_SLOT(mPriv, void onTubeStateChanged(Tp::TubeChannelState))
 };
 
-struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
+struct TELEPATHY_QT4_NO_EXPORT PendingOpenTubePrivate
 {
-    Private(PendingOpenTube *parent);
-    ~Private();
+    PendingOpenTubePrivate(const QVariantMap &parameters, PendingOpenTube *parent);
+    ~PendingOpenTubePrivate();
 
     // Public object
     PendingOpenTube *parent;
 
     OutgoingStreamTubeChannelPtr tube;
+    QVariantMap parameters;
 
     // Private slots
     void onOfferFinished(Tp::PendingOperation* op);
