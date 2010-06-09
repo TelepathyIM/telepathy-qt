@@ -233,8 +233,11 @@ AC_SUBST(TP_FARSIGHT_LIBS)
 if test no = "$have_tp_fs"; then
   AC_MSG_WARN([telepathy-farsight not found: not all examples will be built])
 fi
+# tp-qt4-farsight does not require the last telepathy-glib
+PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.8.1], [have_old_tp_glib=yes],
+                  [have_old_tp_glib=no])
 AM_CONDITIONAL([ENABLE_TP_FARSIGHT],
-  [test yes = "$have_tp_glib" && test yes = "$have_tp_fs" &&
+  [test yes = "$have_old_tp_glib" && test yes = "$have_tp_fs" &&
    test yes = "$have_qt_glib_main_loop"])
 
 dnl Check for code generation tools
