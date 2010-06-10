@@ -186,7 +186,7 @@ struct TELEPATHY_QT4_NO_EXPORT AbstractClientObserver::Private
  * ChannelClassList filters;
  * QMap<QString, QDBusVariant> filter;
  * filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
- *               QDBusVariant(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+ *               QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)));
  * filter.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
  *               QDBusVariant((uint) Tp::HandleTypeContact));
  * filters.append(filter);
