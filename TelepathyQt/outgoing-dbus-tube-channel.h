@@ -55,8 +55,8 @@ private:
     friend class OutgoingDBusTubeChannel;
 
 // private slots:
-    Q_PRIVATE_SLOT(mPriv, void __k__onOfferFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(mPriv, void __k__onTubeStateChanged(Tp::TubeChannelState))
+    Q_PRIVATE_SLOT(mPriv, void onOfferFinished(Tp::PendingOperation*))
+    Q_PRIVATE_SLOT(mPriv, void onStateChanged(Tp::TubeChannelState))
 };
 
 class OutgoingDBusTubeChannelPrivate;

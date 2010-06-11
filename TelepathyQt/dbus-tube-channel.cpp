@@ -85,7 +85,7 @@ void DBusTubeChannelPrivate::extractParticipants(const Tp::DBusTubeParticipants&
 }
 
 
-void DBusTubeChannelPrivate::__k__gotDBusTubeProperties(QDBusPendingCallWatcher* watcher)
+void DBusTubeChannelPrivate::gotDBusTubeProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
@@ -102,7 +102,7 @@ void DBusTubeChannelPrivate::__k__gotDBusTubeProperties(QDBusPendingCallWatcher*
     }
 }
 
-void DBusTubeChannelPrivate::__k__onDBusNamesChanged(
+void DBusTubeChannelPrivate::onDBusNamesChanged(
         const Tp::DBusTubeParticipants& added,
         const Tp::UIntList& removed)
 {
@@ -145,7 +145,7 @@ void DBusTubeChannelPrivate::introspectBusNamesMonitoring(
     // It makes sense only if this is a room, if that's not the case just spit a warning
     if (parent->targetHandleType() == static_cast<uint>(Tp::HandleTypeRoom)) {
         parent->connect(dbusTubeInterface, SIGNAL(DBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)),
-                        parent, SLOT(__k__onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)));
+                        parent, SLOT(onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList)));
     } else {
         warning() << "FeatureBusNamesMonitoring does not make sense in a P2P context";
     }
@@ -171,7 +171,7 @@ void DBusTubeChannelPrivate::introspectDBusTube(
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             parent,
-            SLOT(__k__gotDBusTubeProperties(QDBusPendingCallWatcher *)));
+            SLOT(gotDBusTubeProperties(QDBusPendingCallWatcher *)));
 }
 
 /**

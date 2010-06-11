@@ -64,8 +64,8 @@ struct TP_QT_NO_EXPORT PendingDBusTubeOfferPrivate
     OutgoingDBusTubeChannelPtr tube;
 
     // Private slots
-    void __k__onOfferFinished(Tp::PendingOperation* op);
-    void __k__onTubeStateChanged(Tp::TubeChannelState state);
+    void onOfferFinished(Tp::PendingOperation* op);
+    void onStateChanged(Tp::TubeChannelState state);
 };
 
 PendingDBusTubeOfferPrivate::PendingDBusTubeOfferPrivate(PendingDBusTubeOffer* parent)
@@ -77,7 +77,7 @@ PendingDBusTubeOfferPrivate::~PendingDBusTubeOfferPrivate()
 {
 }
 
-void PendingDBusTubeOfferPrivate::__k__onOfferFinished(PendingOperation* op)
+void PendingDBusTubeOfferPrivate::onOfferFinished(PendingOperation* op)
 {
     if (op->isError()) {
         // Fail
@@ -93,15 +93,15 @@ void PendingDBusTubeOfferPrivate::__k__onOfferFinished(PendingOperation* op)
 
     // It might have been already opened - check
     if (tube->state() == TubeChannelStateOpen) {
-        __k__onTubeStateChanged(tube->state());
+        onStateChanged(tube->state());
     } else {
         // Wait until the tube gets opened on the other side
         parent->connect(tube.data(), SIGNAL(stateChanged(Tp::TubeChannelState)),
-                        parent, SLOT(__k__onTubeStateChanged(Tp::TubeChannelState)));
+                        parent, SLOT(onStateChanged(Tp::TubeChannelState)));
     }
 }
 
-void PendingDBusTubeOfferPrivate::__k__onTubeStateChanged(TubeChannelState state)
+void PendingDBusTubeOfferPrivate::onStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
@@ -133,11 +133,11 @@ PendingDBusTubeOffer::PendingDBusTubeOffer(
     mPriv->tube = object;
 
     if (string->isFinished()) {
-        mPriv->__k__onOfferFinished(string);
+        mPriv->onOfferFinished(string);
     } else {
         // Connect the pending void
         connect(string, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(__k__onOfferFinished(Tp::PendingOperation*)));
+                this, SLOT(onOfferFinished(Tp::PendingOperation*)));
     }
 }
 

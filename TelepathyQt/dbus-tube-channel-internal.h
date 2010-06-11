@@ -52,8 +52,8 @@ public:
     QString address;
 
     // Private slots
-    void __k__gotDBusTubeProperties(QDBusPendingCallWatcher *watcher);
-    void __k__onDBusNamesChanged(const Tp::DBusTubeParticipants &added, const Tp::UIntList &removed);
+    void gotDBusTubeProperties(QDBusPendingCallWatcher *watcher);
+    void onDBusNamesChanged(const Tp::DBusTubeParticipants &added, const Tp::UIntList &removed);
 
 };
 

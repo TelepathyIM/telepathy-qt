@@ -64,8 +64,8 @@ struct TP_QT_NO_EXPORT PendingDBusTubeAcceptPrivate
     IncomingDBusTubeChannelPtr tube;
 
     // Private slots
-    void __k__onAcceptFinished(Tp::PendingOperation* op);
-    void __k__onTubeStateChanged(Tp::TubeChannelState state);
+    void onAcceptFinished(Tp::PendingOperation* op);
+    void onStateChanged(Tp::TubeChannelState state);
 };
 
 PendingDBusTubeAcceptPrivate::PendingDBusTubeAcceptPrivate(PendingDBusTubeAccept* parent)
@@ -77,7 +77,7 @@ PendingDBusTubeAcceptPrivate::~PendingDBusTubeAcceptPrivate()
 {
 }
 
-void PendingDBusTubeAcceptPrivate::__k__onAcceptFinished(PendingOperation* op)
+void PendingDBusTubeAcceptPrivate::onAcceptFinished(PendingOperation* op)
 {
     if (op->isError()) {
         // Fail
@@ -93,15 +93,15 @@ void PendingDBusTubeAcceptPrivate::__k__onAcceptFinished(PendingOperation* op)
 
     // It might have been already opened - check
     if (tube->state() == TubeChannelStateOpen) {
-        __k__onTubeStateChanged(tube->state());
+        onStateChanged(tube->state());
     } else {
         // Wait until the tube gets opened on the other side
         parent->connect(tube.data(), SIGNAL(stateChanged(Tp::TubeChannelState)),
-                        parent, SLOT(__k__onTubeStateChanged(Tp::TubeChannelState)));
+                        parent, SLOT(onStateChanged(Tp::TubeChannelState)));
     }
 }
 
-void PendingDBusTubeAcceptPrivate::__k__onTubeStateChanged(TubeChannelState state)
+void PendingDBusTubeAcceptPrivate::onStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
@@ -135,11 +135,11 @@ PendingDBusTubeAccept::PendingDBusTubeAccept(
     mPriv->tube = object;
 
     if (string->isFinished()) {
-        mPriv->__k__onAcceptFinished(string);
+        mPriv->onAcceptFinished(string);
     } else {
         // Connect the pending void
         connect(string, SIGNAL(finished(Tp::PendingOperation*)),
-                this, SLOT(__k__onAcceptFinished(Tp::PendingOperation*)));
+                this, SLOT(onAcceptFinished(Tp::PendingOperation*)));
     }
 }
 

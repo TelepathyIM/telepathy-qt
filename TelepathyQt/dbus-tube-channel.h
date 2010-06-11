@@ -39,8 +39,8 @@ class TP_QT_EXPORT DBusTubeChannel : public TubeChannel
     Q_DECLARE_PRIVATE(DBusTubeChannel)
 
     // private slots:
-    Q_PRIVATE_SLOT(d_func(), void __k__gotDBusTubeProperties(QDBusPendingCallWatcher*))
-    Q_PRIVATE_SLOT(d_func(), void __k__onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList))
+    Q_PRIVATE_SLOT(d_func(), void gotDBusTubeProperties(QDBusPendingCallWatcher*))
+    Q_PRIVATE_SLOT(d_func(), void onDBusNamesChanged(Tp::DBusTubeParticipants,Tp::UIntList))
 
 public:
     static const Feature FeatureDBusTube;
