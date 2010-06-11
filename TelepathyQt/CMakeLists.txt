@@ -400,6 +400,8 @@ set(telepathy_qt_HEADERS
     pending-contact-info.h
     PendingContacts
     pending-contacts.h
+    PendingDBusTubeAccept
+    PendingDBusTubeOffer
     PendingDebugMessageList
     pending-debug-message-list.h
     PendingFailure
