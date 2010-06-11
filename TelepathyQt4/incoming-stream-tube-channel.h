@@ -90,8 +90,9 @@ public:
 
     virtual ~IncomingStreamTubeChannel();
 
-    PendingStreamTubeConnection *acceptTubeAsTcpSocket(const QHostAddress &allowedAddress = QHostAddress::Any,
-                                                       quint16 allowedPort = 0);
+    PendingStreamTubeConnection *acceptTubeAsTcpSocket();
+    PendingStreamTubeConnection *acceptTubeAsTcpSocket(const QHostAddress &allowedAddress,
+                                                       quint16 allowedPort);
     PendingStreamTubeConnection *acceptTubeAsUnixSocket(bool requireCredentials = false);
 
     QIODevice *device();
