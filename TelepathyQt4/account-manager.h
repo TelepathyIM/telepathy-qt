@@ -102,6 +102,7 @@ protected:
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
+    void onAccountReady(Tp::PendingOperation *);
     void onAccountValidityChanged(const QDBusObjectPath &, bool);
     void onAccountRemoved(const QDBusObjectPath &);
 

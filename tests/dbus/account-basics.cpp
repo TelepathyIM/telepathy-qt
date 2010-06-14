@@ -20,10 +20,11 @@ class TestAccountBasics : public Test
 
 public:
     TestAccountBasics(QObject *parent = 0)
-        : Test(parent)
+        : Test(parent), mAccountsCount(0)
     { }
 
 protected Q_SLOTS:
+    void onAccountCreated(const QString &);
     void onAvatarChanged(const Tp::Avatar &);
 
 private Q_SLOTS:
@@ -37,7 +38,16 @@ private Q_SLOTS:
 
 private:
     AccountManagerPtr mAM;
+    int mAccountsCount;
 };
+
+void TestAccountBasics::onAccountCreated(const QString &acc)
+{
+    Q_UNUSED(acc);
+
+    mAccountsCount++;
+    mLoop->exit(0);
+}
 
 void TestAccountBasics::onAvatarChanged(const Tp::Avatar &avatar)
 {
@@ -68,6 +78,10 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAM->isReady(), true);
 
+    QVERIFY(connect(mAM.data(),
+                    SIGNAL(accountCreated(const QString &)),
+                    SLOT(onAccountCreated(const QString &))));
+
     QVariantMap parameters;
     parameters[QLatin1String("account")] = QLatin1String("foobar");
     PendingAccount *pacc = mAM->createAccount(QLatin1String("foo"),
@@ -77,6 +91,10 @@ void TestAccountBasics::testBasics()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(pacc->account());
+
+    while (mAccountsCount != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
 
     QCOMPARE(mAM->interfaces(), QStringList());
 
@@ -131,6 +149,10 @@ void TestAccountBasics::testBasics()
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
+
+    while (mAccountsCount != 2) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
 
     acc = mAM->accountForPath(
             QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
