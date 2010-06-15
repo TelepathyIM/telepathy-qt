@@ -293,8 +293,12 @@ tpqt4include_HEADERS = \
     ConnectionInterfaceAliasingInterface \
     ConnectionInterfaceAnonymityInterface \
     ConnectionInterfaceAvatarsInterface \
+    ConnectionInterfaceBalanceInterface \
     ConnectionInterfaceCapabilitiesInterface \
+    ConnectionInterfaceContactCapabilitiesInterface \
+    ConnectionInterfaceContactInfoInterface \
     ConnectionInterfaceContactsInterface \
+    ConnectionInterfaceLocationInterface \
     ConnectionInterfacePresenceInterface \
     ConnectionInterfaceRequestsInterface \
     ConnectionInterfaceServicePointInterface \
