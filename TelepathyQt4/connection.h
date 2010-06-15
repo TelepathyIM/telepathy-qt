@@ -126,6 +126,12 @@ public:
         return optionalInterface<Client::ConnectionInterfaceAliasingInterface>(check);
     }
 
+    inline Client::ConnectionInterfaceAnonymityInterface *anonymityInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceAnonymityInterface>(check);
+    }
+
     inline Client::ConnectionInterfaceAvatarsInterface *avatarsInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
