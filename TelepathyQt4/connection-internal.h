@@ -43,6 +43,13 @@ private Q_SLOTS:
     void onBecomeReadyReply(Tp::PendingOperation *);
 };
 
+class ConnectionHelper
+{
+public:
+    static QString statusReasonToErrorName(Tp::ConnectionStatusReason reason,
+        Tp::ConnectionStatus oldStatus);
+};
+
 } // Tp
 
 #endif
