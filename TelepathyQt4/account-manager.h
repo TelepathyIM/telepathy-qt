@@ -73,6 +73,17 @@ public:
     QList<AccountPtr> invalidAccounts();
     QList<AccountPtr> allAccounts();
 
+    AccountSetPtr enabledAccounts() const;
+    AccountSetPtr disabledAccounts() const;
+
+    AccountSetPtr onlineAccounts() const;
+    AccountSetPtr offlineAccounts() const;
+
+    AccountSetPtr accountsByProtocol(
+            const QString &protocolName) const;
+
+    AccountSetPtr filterAccounts(const QVariantMap &filter) const;
+
     AccountPtr accountForPath(const QString &path);
     QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
@@ -81,8 +92,6 @@ public:
             const QString &protocol, const QString &displayName,
             const QVariantMap &parameters,
             const QVariantMap &properties = QVariantMap());
-
-    // TODO: enabledAccounts(), accountsByProtocol(), ... ?
 
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {

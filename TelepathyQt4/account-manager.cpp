@@ -27,6 +27,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Constants>
@@ -451,6 +452,105 @@ QList<AccountPtr> AccountManager::allAccounts()
         ret << account;
     }
     return ret;
+}
+
+/**
+ * Return a set of accounts containing all enabled accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all enabled accounts.
+ */
+AccountSetPtr AccountManager::enabledAccounts() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("enabled"), true);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all disabled accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all disabled accounts.
+ */
+AccountSetPtr AccountManager::disabledAccounts() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("enabled"), false);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all online accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all online accounts.
+ */
+AccountSetPtr AccountManager::onlineAccounts() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("online"), true);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all offline accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all offline accounts.
+ */
+AccountSetPtr AccountManager::offlineAccounts() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("online"), false);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts for the given \a
+ * protocolName.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \param protocolName The name of the protocol used to filter accounts.
+ * \return A set of accounts containing all accounts for the given \a
+ *         protocolName.
+ */
+AccountSetPtr AccountManager::accountsByProtocol(
+        const QString &protocolName) const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("protocol"), protocolName);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts that match the given \a
+ * filter criteria.
+ *
+ * The \a filter is composed by Account property names and values as map items.
+ *
+ *     QVariantMap filter;
+ *     filter.insert(QLatin1String("protocol"), QLatin1String("jabber"));
+ *     filter.insert(QLatin1String("enabled"), true);
+ *
+ * \param filter The desired filter
+ * \return A set of accounts containing all accounts that match the given \a
+ *         filter criteria.
+ */
+AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
+{
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
 }
 
 /**
