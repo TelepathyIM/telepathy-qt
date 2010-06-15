@@ -194,9 +194,17 @@ org.freedesktop.Telepathy.Channel.Requested b=true
         its <tp:dbus-ref
         namespace="org.freedesktop.Telepathy.Client.Observer">ObserverChannelFilter</tp:dbus-ref></p>
 
-        <p>When activatable client having this property disappears from the bus
-        and there are channels matching its ObserverChannelFilter,
-        ObserveChannels will be called immediately to reactivate it again.</p>
+        <p>When an activatable client having this property disappears from the
+          bus and there are channels matching its ObserverChannelFilter,
+          ObserveChannels will be called immediately to reactivate it
+          again. Such clients should specify this property in their
+          <tt>.client</tt> file as follows:</p>
+
+<pre>
+[org.freedesktop.Telepathy.Client.Observer]
+Recover=true
+</pre>
+
         <tp:rationale>
           <p>This means that if an activatable Observer crashes, it will
             be restarted as soon as possible; while there is an unavoidable
@@ -212,8 +220,8 @@ org.freedesktop.Telepathy.Channel.Requested b=true
         </tp:rationale>
 
         <p>When the ObserveChannels method is called due to observer recovery,
-        the "Observer_Info" dictionary will contain one extra item with key
-        "recovering" and boolean value of True.</p>
+        the <var>Observer_Info</var> dictionary will contain one extra item
+        mapping the key <code>"recovering"</code> to <code>True</code>.</p>
       </tp:docstring>
     </property>
 
@@ -336,8 +344,11 @@ org.freedesktop.Telepathy.Channel.Requested b=true
 
           <dl>
             <dt><code>recovering</code> - b</dt>
-            <dd>True if ObserveChannels was called on existing channel due to
-              observer recovery, otherwise False.
+            <dd><code>True</code> if ObserveChannels was called for an existing
+              channel (due to the <tp:member-ref>Recover</tp:member-ref>
+              property being <code>True</code>); <code>False</code> or omitted
+              otherwise.
+
               <tp:rationale>
                 This allows observers to distinguish between new channels (the normal
                 case), and existing channels that were given to the observer in order

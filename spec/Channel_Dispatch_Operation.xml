@@ -370,6 +370,72 @@
       </tp:possible-errors>
     </method>
 
+    <method name="HandleWithTime" tp:name-for-bindings="Handle_With_Time">
+      <tp:added version="0.19.6">
+        At the time of writing, no released implementation of the
+        Channel Dispatcher implements this method; clients should fall
+        back to calling <tp:member-ref>HandleWith</tp:member-ref>.
+      </tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A variant of <tp:member-ref>HandleWith</tp:member-ref> allowing the
+          approver to pass an user action time. This timestamp will be passed
+          to the Handler when <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client.Handler">HandleChannels</tp:dbus-ref>
+          is called.</p>
+      </tp:docstring>
+
+      <arg direction="in" type="s" tp:type="DBus_Bus_Name" name="Handler">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The well-known bus name (starting with
+            <code>org.freedesktop.Telepathy.Client.</code>) of the channel
+            handler that should handle the channel, or the empty string
+            if the client has no preferred channel handler.</p>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="in" type="x" tp:type="User_Action_Timestamp" name="UserActionTime">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+           <p>The time at which user action occurred.</p>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+            The selected handler is non-empty, but is not a syntactically
+            correct <tp:type>DBus_Bus_Name</tp:type> or does not start with
+            "<code>org.freedesktop.Telepathy.Client.</code>".
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            The selected handler is temporarily unable to handle these
+            channels.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The selected handler is syntactically correct, but will never
+            be able to handle these channels (for instance because the channels
+            do not match its HandlerChannelFilter, or because HandleChannels
+            raised NotImplemented).
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotYours">
+          <tp:docstring>
+            At the time that HandleWith was called, this dispatch operation was
+            processing an earlier call to HandleWith. The earlier call has
+            now succeeded, so some Handler nominated by another approver is
+            now responsible for the channels. In this situation, the second
+            call to HandleWith MUST NOT return until the first one has
+            returned successfully or unsuccessfully, and if the first call
+            to HandleChannels fails, the channel dispatcher SHOULD try to obey
+            the choice of Handler made by the second call to HandleWith.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
     <signal name="Finished" tp:name-for-bindings="Finished">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Emitted when this dispatch operation finishes. The dispatch

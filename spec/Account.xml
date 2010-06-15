@@ -442,6 +442,58 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
+    <property name="ConnectionError" tp:name-for-bindings="Connection_Error"
+      access="read" type="s" tp:type="DBus_Error_Name">
+      <tp:added version="0.19.7"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If the last connection to this account failed with an error,
+          the D-Bus error name of that error; otherwise, the empty string.
+          The account manager is expected to set this by observing the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Connection.ConnectionError</tp:dbus-ref> and
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Connection.StatusChanged</tp:dbus-ref>
+          signals.</p>
+
+        <p>If ConnectionError is received before the connection disconnects,
+          its first argument should be used to set this property;
+          otherwise, the Reason argument of StatusChanged should be converted
+          to a suitable D-Bus error name.</p>
+
+        <p>Whenever the Connection connects successfully, this property should
+          be reset to the empty string.</p>
+
+        <tp:rationale>
+          <p>This combines the state-recoverability of
+            <tp:member-ref>ConnectionStatusReason</tp:member-ref> with the
+            extensibility of Connection.ConnectionError.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="ConnectionErrorDetails"
+      tp:name-for-bindings="Connection_Error_Details"
+      access="read" type="a{sv}" tp:type="String_Variant_Map">
+      <tp:added version="0.19.7"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If the last connection to this account failed with an error,
+          a mapping representing any additional information about the last
+          disconnection; otherwise, the empty map. The keys and values are
+          the same as for the second argument of
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Connection.ConnectionError</tp:dbus-ref>.</p>
+
+        <p>Whenever the Connection connects successfully, this property should
+          be reset to the empty map.</p>
+
+        <tp:rationale>
+          <p>This combines the state-recoverability of
+            <tp:member-ref>ConnectionStatusReason</tp:member-ref> with the
+            extensibility of Connection.ConnectionError.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
     <property name="CurrentPresence" type="(uss)" access="read"
       tp:type="Simple_Presence" tp:name-for-bindings="Current_Presence">
       <tp:docstring>
@@ -477,6 +529,44 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           This corresponds to e.g. GetPresence and GetPresenceMessage
           in NMC 4.x.
         </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="ChangingPresence" tp:name-for-bindings="Changing_Presence"
+      type="b" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If true, a change to the presence of this account is
+        in progress.</p>
+
+        <p>Whenever <tp:member-ref>RequestedPresence</tp:member-ref> is set on
+        an account that could go online, or whenever an account with a
+        non-offline <tp:member-ref>RequestedPresence</tp:member-ref> becomes
+        able to go online (for instance because
+        <tp:member-ref>Enabled</tp:member-ref> or
+        <tp:member-ref>Valid</tp:member-ref> changes to True),
+        ChangingPresence MUST change to True, and the two property changes MUST
+        be emitted in the same
+        <tp:member-ref>AccountPropertyChanged</tp:member-ref> signal, before the
+        Set method returns.</p>
+
+        <p>When the account manager succeeds or fails in changing the presence,
+        or the connection disconnects due to an error, ChangingPresence MUST
+        change to False as part of the same
+        <tp:member-ref>AccountPropertyChanged</tp:member-ref> signal.</p>
+
+        <tp:rationale>
+          <p>This allows UIs to indicate that a presence change is in progress
+          or has finished, even if the change was initiated by a different
+          UI.</p>
+
+          <p>For instance, Maemo 5 and Empathy indicate a presence change by
+          having the presence indicator alternate between the
+          <tp:member-ref>RequestedPresence</tp:member-ref>
+          and the <tp:member-ref>CurrentPresence</tp:member-ref>; they should
+          start blinking when ChangingPresence becomes true, and stop when it
+          becomes false.</p>
+        </tp:rationale>
+
       </tp:docstring>
     </property>
 

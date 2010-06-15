@@ -165,4 +165,34 @@
     </tp:member>
   </tp:struct>
 
+  <tp:simple-type name="User_Action_Timestamp" type="x">
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>The time at which an user action occurred. This type has the 2
+      following special values:</p>
+
+      <p>0: the action doesn't involve any user action. Clients
+      SHOULD avoid stealing focus when presenting the channel.</p>
+
+      <p>MAX_INT64: clients SHOULD behave as though the user action happened
+      at the current time, e.g. a client MAY request that its window gains
+      focus.
+      </p>
+
+      <tp:rationale>
+      <p>This can be used by clients that can't know the X server time like
+      command line applications for example.</p>
+      </tp:rationale>
+
+      <p>For all the other values it corresponds to the time of the user
+      action. Clients SHOULD use this for focus-stealing prevention,
+      if applicable.
+      Note that the time is dependant on the local
+      environment and so is not necessarily a wall-clock time.
+      For example in an X environment it's expected to be the X timestamp
+      of events.
+      This corresponds to the _NET_WM_USER_TIME property in
+      <a href="http://standards.freedesktop.org/wm-spec/wm-spec-latest.html">EWMH</a>.</p>
+    </tp:docstring>
+  </tp:simple-type>
+
 </tp:generic-types>

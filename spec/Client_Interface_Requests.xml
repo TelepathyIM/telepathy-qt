@@ -119,9 +119,11 @@
             properties as possible, given that constraint.</p>
 
           <p>In particular, the properties <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.ChannelRequest">Requests</tp:dbus-ref>
-            and <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelRequest">Requests</tp:dbus-ref>,
+            <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.ChannelRequest">UserActionTime</tp:dbus-ref>
+            and <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.ChannelRequest">Account</tp:dbus-ref>
             MUST be included.</p>
         </tp:docstring>
       </arg>

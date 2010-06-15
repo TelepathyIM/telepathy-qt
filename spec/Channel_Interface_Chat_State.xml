@@ -19,6 +19,49 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Interface.ChatState">
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Text"/>
 
+    <tp:mapping name="Chat_State_Map">
+      <tp:added version="0.19.7"/>
+      <tp:docstring>A map from contacts to their chat states.</tp:docstring>
+      <tp:member name="Contact" type="u" tp:type="Contact_Handle">
+        <tp:docstring>A contact</tp:docstring>
+      </tp:member>
+      <tp:member name="State" type="u" tp:type="Channel_Chat_State">
+        <tp:docstring>The contact's chat state</tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <property name="ChatStates" tp:name-for-bindings="Chat_States"
+      access="read" type="a{uu}" tp:type="Chat_State_Map">
+      <tp:added version="0.19.7"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A map containing the chat states of all contacts in this
+          channel whose chat state is not Inactive.</p>
+
+        <p>Contacts in this channel, but who are not listed in this map,
+          may be assumed to be in the Inactive state.</p>
+
+        <p>In implementations that do not have this property, its value may be
+          assumed to be empty until a
+          <tp:member-ref>ChatStateChanged</tp:member-ref> signal indicates
+          otherwise.</p>
+
+        <tp:rationale>
+          <p>This property was not present in older versions of telepathy-spec,
+            because chat states in XMPP are not state-recoverable (if you
+            miss the change notification signal, there's no way to know the
+            state). However, this property still allows clients to recover
+            state changes that were seen by the CM before the client started
+            to deal with the channel.</p>
+
+          <p>In CMs that follow older spec versions, assuming Inactive will
+            mean that initial chat states will always be assumed to be
+            Inactive, which is the best we can do. XEP 0085 specifies
+            Inactive as the "neutral" state to be assumed unless told
+            otherwise.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
     <method name="SetChatState" tp:name-for-bindings="Set_Chat_State">
       <arg direction="in" name="State" type="u" tp:type="Channel_Chat_State">
         <tp:docstring>

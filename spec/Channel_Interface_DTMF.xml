@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Interface_DTMF" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright (C) 2005, 2006 Collabora Limited</tp:copyright>
-  <tp:copyright>Copyright (C) 2005, 2006 Nokia Corporation</tp:copyright>
-  <tp:copyright>Copyright (C) 2006 INdT</tp:copyright>
+  <tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
+  <tp:copyright>Copyright © 2005-2010 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2006 INdT</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -21,31 +21,57 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <interface name="org.freedesktop.Telepathy.Channel.Interface.DTMF">
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
 
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      An interface that gives a Channel the ability to send DTMF events over
+      audio streams which have been established using the StreamedMedia channel
+      type. The event codes used are in common with those defined in <a
+      href="http://www.rfc-editor.org/rfc/rfc4733.txt">RFC4733</a>, and are
+      listed in the <tp:type>DTMF_Event</tp:type> enumeration.
+    </tp:docstring>
+
     <method name="StartTone" tp:name-for-bindings="Start_Tone">
       <arg direction="in" name="Stream_ID" type="u" tp:type="Stream_ID">
-        <tp:docstring>A stream ID as defined in the StreamedMedia channel type.</tp:docstring>
+        <tp:docstring>A stream ID as defined in the StreamedMedia channel
+        type. This argument is included for backwards compatibility and MUST
+        be ignored by the implementations - the tone SHOULD be sent to all
+        eligible streams in the channel.</tp:docstring>
       </arg>
       <arg direction="in" name="Event" type="y" tp:type="DTMF_Event">
         <tp:docstring>A numeric event code from the DTMF_Event enum.</tp:docstring>
       </arg>
+
       <tp:docstring>
-        Start sending a DTMF tone on this stream. Where possible, the tone
-        will continue until <tp:member-ref>StopTone</tp:member-ref> is called.
-        On certain protocols, it may
-        only be possible to send events with a predetermined length. In this
-        case, the implementation may emit a fixed-length tone, and the StopTone
-        method call should return NotAvailable.
+        <p>Start sending a DTMF tone to all eligible streams in the channel.
+          Where possible, the tone will continue until
+          <tp:member-ref>StopTone</tp:member-ref> is called. On certain protocols,
+          it may only be possible to send events with a predetermined length. In
+          this case, the implementation MAY emit a fixed-length tone, and the
+          StopTone method call SHOULD return NotAvailable.</p>
+          <tp:rationale>
+            The client may wish to control the exact duration and timing of the
+            tones sent as a result of user's interaction with the dialpad, thus
+            starting and stopping the tone sending explicitly.
+          </tp:rationale>
+
+        <p>Tone overlaping or queueing is not supported, so this method can only
+          be called if no DTMF tones are already being played.</p>
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError" />
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
           <tp:docstring>
-            The given stream ID was invalid.
+            The given stream ID was invalid. Deprecated, since stream IDs
+            are ignored.
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
-            The requested event is not available on this stream.
+            There are no eligible audio streams.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.ServiceBusy">
+          <tp:docstring>
+            DTMF tones are already being played.
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>
@@ -53,27 +79,135 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
     <method name="StopTone" tp:name-for-bindings="Stop_Tone">
       <arg direction="in" name="Stream_ID" type="u" tp:type="Stream_ID">
-        <tp:docstring>A stream ID as defined in the StreamedMedia channel type.</tp:docstring>
+        <tp:docstring>A stream ID as defined in the StreamedMedia channel
+        type. This argument is included for backwards compatibility and MUST
+        be ignored by the implementations - the sending SHOULD be stoped in
+        all eligible streams in the channel.</tp:docstring>
       </arg>
+
       <tp:docstring>
-        Stop sending any DTMF tone which has been started using the
-        <tp:member-ref>StartTone</tp:member-ref>
-        method. If there is no current tone, this method will do nothing.
+        Stop sending any DTMF tones which have been started using the
+        <tp:member-ref>StartTone</tp:member-ref> or
+        <tp:member-ref>MultipleTones</tp:member-ref> methods.
+        If there is no current tone, this method will do nothing.
+        If MultipleTones was used, the client should not assume the
+        sending has stopped immediately; instead, the client should wait
+        for the StoppedTones signal.
+        <tp:rationale>
+          On some protocols it might be impossible to cancel queued tones
+          immediately.
+        </tp:rationale>
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.NetworkError" />
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
           <tp:docstring>
-            The given stream ID was invalid.
+            The given stream ID was invalid. Deprecated, since stream IDs
+            are ignored.
           </tp:docstring>
         </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
           <tp:docstring>
-            Continuous tones are not supported by this stream.
+            Continuous tones are not supported by this stream. Deprecated,
+            since stream IDs are ignored.
           </tp:docstring>
         </tp:error>
       </tp:possible-errors>
     </method>
+
+    <method name="MultipleTones" tp:name-for-bindings="Multiple_Tones">
+      <tp:added version="0.19.6" />
+      <arg direction="in" name="Tones" type="s">
+        <tp:docstring>A string representation of one or more DTMF
+          events.</tp:docstring>
+      </arg>
+      <tp:docstring>
+        <p>Send multiple DTMF events to all eligible streams in the channel.
+        Each character in the Tones string must be a valid DTMF event
+        (as defined by
+        <a href="http://www.rfc-editor.org/rfc/rfc4733.txt">RFC4733</a>).
+        Each tone will be played for a pre-defined number of milliseconds,
+        followed by a pause before the next tone is played.  The
+        duration/pause is defined by the protocol or connection manager.</p>
+        <tp:rationale>
+          In cases where the client knows in advance the tone sequence it wants
+          to send, it's easier to use this method than manually start and stop
+          each tone in the sequence.
+        </tp:rationale>
+
+        <p>Tone overlaping or queueing is not supported, so this method can only
+          be called if no DTMF tones are already being played.</p>
+      </tp:docstring>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError" />
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            The supplied Tones string was invalid.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            There are no eligible audio streams.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.ServiceBusy">
+          <tp:docstring>
+            DTMF tones are already being played.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <property name="CurrentlySendingTones"
+        tp:name-for-bindings="Currently_Sending_Tones" type="b" access="read">
+      <tp:added version="0.19.6" />
+      <tp:docstring>
+        Indicates whether there are DTMF tones currently being sent in the
+        channel. If so, the client should wait for
+        <tp:member-ref>StoppedTones</tp:member-ref> signal before trying to
+        send more tones.
+      </tp:docstring>
+    </property>
+
+    <property name="InitialTones" tp:name-for-bindings="Initial_Tones"
+        type="s" access="read">
+      <tp:added version="0.19.6" />
+      <tp:docstring>
+        <p>If non-empty in a channel request that will create a new channel,
+          the connection manager should send the tones immediately after
+          at least one eligible audio stream has been created in the
+          channel.</p>
+
+        <p>This property is immutable (cannot change).</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="SendingTones" tp:name-for-bindings="Sending_Tones">
+      <tp:added version="0.19.6" />
+      <arg name="Tones" type="s">
+        <tp:docstring>DTMF string (one or more events) that is to be played.
+        </tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>DTMF tone(s)are being sent to all eligible streams in the channel.
+        The signal is provided to indicating the fact that the streams are
+        currently being used to send one or more DTMF tones, so any other
+        media input is not getting through to the audio stream. It also
+        serves as a cue for the
+        <tp:member-ref>StopTone</tp:member-ref> method.</p>
+      </tp:docstring>
+    </signal>
+
+    <signal name="StoppedTones" tp:name-for-bindings="Stopped_Tones">
+      <tp:added version="0.19.6" />
+      <arg name="Cancelled" type="b">
+        <tp:docstring>True if the DTMF tones were actively cancelled via
+          <tp:member-ref>StopTone</tp:member-ref>.</tp:docstring>
+      </arg>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>DTMF tones have finished playing on streams in this channel.</p>
+      </tp:docstring>
+    </signal>
 
     <tp:enum name="DTMF_Event" type="y">
       <tp:enumvalue suffix="Digit_0" value="0">
@@ -125,15 +259,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <tp:docstring>D</tp:docstring>
       </tp:enumvalue>
     </tp:enum>
-
-    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      An interface that gives a Channel the ability to send DTMF events over
-      audio streams which have been established using the StreamedMedia channel
-      type. The event codes used are in common with those defined in <a
-      href="http://www.rfc-editor.org/rfc/rfc4733.txt">RFC4733</a>, and are
-      listed in the <tp:type>DTMF_Event</tp:type> enumeration.
-    </tp:docstring>
-
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

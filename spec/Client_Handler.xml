@@ -106,6 +106,14 @@
             matches closely related Text channels by their Bundle property.
             (This is use-case dis5)</p>
         </tp:rationale>
+
+        <p>For service-activatable handlers, this property should be specified
+          in the handler's <tt>.client</tt> file as follows:</p>
+
+<pre>
+[org.freedesktop.Telepathy.Client.Handler]
+BypassApproval=true
+</pre>
       </tp:docstring>
     </property>
 
@@ -264,6 +272,8 @@ org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/video/h264=true
           is to be handled for some reason not involving user action.
           Handlers SHOULD use this for focus-stealing prevention,
           if applicable.
+          This property has the same semantic as <tp:type>User_Action_Timestamp</tp:type>
+          but is unsigned for historical reasons.
         </tp:docstring>
       </arg>
 

@@ -231,7 +231,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <tp:contact-attribute name="caps"
-      type="a(usuu)" tp:type="Contact_Capability">
+      type="a(usuu)" tp:type="Contact_Capability[]">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The same structs that would be returned by
           <tp:member-ref>GetCapabilities</tp:member-ref>

@@ -365,7 +365,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
-        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The user's server does not support publishing their own location.
+            If it is possible to determine this ahead of time, the
+            <code>Can_Set</code> flag will not be set in
+            <tp:member-ref>SupportedLocationFeatures</tp:member-ref>.
+          </tp:docstring>
+        </tp:error>
         <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
       </tp:possible-errors>
     </method>
@@ -384,6 +391,33 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         set it to be as restrictive as possible (an empty whitelist, if
         supported).</tp:docstring>
     </property>
+
+    <property name="SupportedLocationFeatures"
+        tp:name-for-bindings="Supported_Location_Features"
+        type="u" tp:type="Location_Features" access="read">
+      <tp:added version="0.19.6"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        Indicates the Location features supported by this connection. This
+        property MAY be undefined before <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection">Status</tp:dbus-ref>
+        becomes <code>Connected</code>, but MUST remain constant thereafter.
+      </tp:docstring>
+    </property>
+
+    <tp:flags name="Location_Features" type="u" value-prefix="Location_Feature">
+      <tp:flag suffix="Can_Set" value="1">
+        <tp:docstring>
+          Indicates that setting your own location with
+          <tp:member-ref>SetLocation</tp:member-ref> is supported on this
+          connection.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        Flags describing the Location features which may be supported on any
+        given connection.
+      </tp:docstring>
+    </tp:flags>
 
     <tp:contact-attribute name="location"
       type="a{sv}" tp:type="Location">

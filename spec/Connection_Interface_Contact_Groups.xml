@@ -1,0 +1,412 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Contact_Groups" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2009-2010 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2009 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+      USA.</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactGroups.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection.Interface.ContactList.DRAFT"/>
+    <tp:added version="0.19.6">(draft 1)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>An interface for connections in which contacts can be placed in
+        user-defined groups.</p>
+    </tp:docstring>
+
+    <property name="DisjointGroups" tp:name-for-bindings="Disjoint_Groups"
+      access="read" type="b">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>True if each contact can be in at most one group; false if each
+          contact can be in many groups.</p>
+
+        <p>This property cannot change after the connection has moved to the
+          Connected state. Until then, its value is undefined, and it may
+          change at any time, without notification.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="GroupStorage" tp:name-for-bindings="Group_Storage"
+      type="u" tp:type="Contact_Metadata_Storage_Type" access="read">
+      <tp:docstring>
+        <p>Indicates the extent to which contacts' groups can be set and
+          stored.</p>
+
+        <p>This property cannot change after the connection has moved to the
+          Connected state. Until then, its value is undefined, and it may
+          change at any time, without notification.</p>
+      </tp:docstring>
+    </property>
+
+    <tp:contact-attribute name="groups" type="as">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The names of groups of which a contact is a member.</p>
+
+        <p>Change notification is via
+          <tp:member-ref>GroupsChanged</tp:member-ref>,
+          <tp:member-ref>GroupRenamed</tp:member-ref> and
+          <tp:member-ref>GroupsRemoved</tp:member-ref>.</p>
+      </tp:docstring>
+    </tp:contact-attribute>
+
+    <property name="Groups" type="as" access="read"
+      tp:name-for-bindings="Groups">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The names of all groups that currently exist. This may be a
+          larger set than the union of all contacts' <code>groups</code>
+          contact attributes, if the connection allows groups to be
+          empty.</p>
+
+        <p>Change notification is via
+          <tp:member-ref>GroupsCreated</tp:member-ref>,
+          <tp:member-ref>GroupRenamed</tp:member-ref> and
+          <tp:member-ref>GroupsRemoved</tp:member-ref>.</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="GroupsCreated" tp:name-for-bindings="Groups_Created">
+      <tp:docstring>
+        Emitted when new, empty groups are created. This will often be
+        followed by <tp:member-ref>GroupsChanged</tp:member-ref> signals that
+        add some members.
+      </tp:docstring>
+
+      <arg name="Names" type="as">
+        <tp:docstring>The names of the new groups.</tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="GroupRenamed" tp:name-for-bindings="Group_Renamed">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when a group is renamed. If the group was not empty,
+          immediately after this signal is emitted,
+          <tp:member-ref>GroupsChanged</tp:member-ref> MUST signal
+          that the members of that group were removed from the old name
+          and added to the new name.</p>
+
+        <p>On connection managers where groups behave like tags, this signal
+          will probably only be emitted when
+          <tp:member-ref>RenameGroup</tp:member-ref> is called, and renaming a
+          group from another client MAY be signalled as a
+          <tp:member-ref>GroupsChanged</tp:member-ref> signal instead.</p>
+
+        <tp:rationale>
+          <p>On protocols like XMPP, another resource "renaming a group" is
+            indistinguishable from changing contacts' groups individually.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg name="Old_Name" type="s">
+        <tp:docstring>The old name of the group.</tp:docstring>
+      </arg>
+
+      <arg name="New_Name" type="s">
+        <tp:docstring>The new name of the group.</tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="GroupsRemoved" tp:name-for-bindings="Groups_Removed">
+      <tp:docstring>
+        Emitted when one or more groups are removed. If they had members at
+        the time that they were removed, then immediately after this signal is
+        emitted, <tp:member-ref>GroupsChanged</tp:member-ref> MUST signal
+        that their members were removed.
+      </tp:docstring>
+
+      <arg name="Names" type="as">
+        <tp:docstring>The names of the groups.</tp:docstring>
+      </arg>
+    </signal>
+
+    <signal name="GroupsChanged" tp:name-for-bindings="Groups_Changed">
+      <tp:docstring>
+        Emitted when contacts' groups change.
+      </tp:docstring>
+
+      <arg name="Contact" type="au" tp:type="Contact_Handle">
+        <tp:docstring>The relevant contacts.</tp:docstring>
+      </arg>
+
+      <arg name="Added" type="as">
+        <tp:docstring>The names of groups to which the contacts were
+          added.</tp:docstring>
+      </arg>
+
+      <arg name="Removed" type="as">
+        <tp:docstring>The names of groups from which the contacts were
+          removed.</tp:docstring>
+      </arg>
+    </signal>
+
+    <method name="SetContactGroups" tp:name-for-bindings="Set_Contact_Groups">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Add the given contact to the given groups (creating new groups
+          if necessary), and remove them from all other groups.</p>
+
+        <tp:rationale>
+          <p>This is the easiest and most correct way to implement user
+            interfaces that display a single contact with a list of groups,
+            resulting in a user expectation that when they apply the changes,
+            the contact's set of groups will become exactly what was
+            displayed.</p>
+        </tp:rationale>
+
+        <p>If the user is removed from a group of which they were the only
+          member, the group MAY be removed automatically.</p>
+
+        <tp:rationale>
+          <p>In protocols like XMPP where groups behave like tags, a group
+            with no members has no protocol representation.</p>
+        </tp:rationale>
+
+        <p>Any <tp:member-ref>GroupsCreated</tp:member-ref>,
+          <tp:member-ref>GroupsChanged</tp:member-ref> and
+          <tp:member-ref>GroupsRemoved</tp:member-ref> signals that result from
+          this method call MUST be emitted before the method returns.</p>
+      </tp:docstring>
+
+      <arg name="Contact" type="u" tp:type="Contact_Handle" direction="in">
+        <tp:docstring>The contact to alter.</tp:docstring>
+      </arg>
+
+      <arg name="Groups" type="as" direction="in">
+        <tp:docstring>The set of groups which the contact should be
+          in.</tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>Raised if <tp:member-ref>DisjointGroups</tp:member-ref>
+            is true and the list of groups has more than one
+            member.</tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Raised if <tp:member-ref>GroupStorage</tp:member-ref>
+            is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="SetGroupMembers" tp:name-for-bindings="Set_Group_Members">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Add the given members to the given group (creating it if necessary),
+          and remove all other members.</p>
+
+        <tp:rationale>
+          <p>This is the easiest and most correct way to implement user
+            interfaces that display a single group with a list of contacts,
+            resulting in a user expectation that when they apply the changes,
+            the groups's set of members will become exactly what was
+            displayed.</p>
+        </tp:rationale>
+
+        <p>If <tp:member-ref>DisjointGroups</tp:member-ref> is true,
+          this will also remove each member from their previous group.</p>
+
+        <p>If the user is removed from a group of which they were the only
+          member, the group MAY be removed automatically.</p>
+
+        <p>Any <tp:member-ref>GroupsCreated</tp:member-ref>,
+          <tp:member-ref>GroupsChanged</tp:member-ref> and
+          <tp:member-ref>GroupsRemoved</tp:member-ref> signals that result from
+          this method call MUST be emitted before the method returns.</p>
+      </tp:docstring>
+
+      <arg name="Group" type="s" direction="in">
+        <tp:docstring>The group to alter.</tp:docstring>
+      </arg>
+
+      <arg name="Members" type="au" tp:type="Contact_Handle[]" direction="in">
+        <tp:docstring>The set of members for the group. If this set is
+          empty, this method MAY remove the group.</tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Raised if <tp:member-ref>GroupStorage</tp:member-ref>
+            is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="AddToGroup" tp:name-for-bindings="Add_To_Group">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Add the given members to the given group, creating it if
+          necessary.</p>
+
+        <p>If <tp:member-ref>DisjointGroups</tp:member-ref> is true,
+          this will also remove each member from their previous group.</p>
+
+        <tp:rationale>
+          <p>This is good for user interfaces in which you can edit groups
+            via drag-and-drop.</p>
+        </tp:rationale>
+
+        <p>Any <tp:member-ref>GroupsCreated</tp:member-ref>,
+          <tp:member-ref>GroupsChanged</tp:member-ref> and
+          <tp:member-ref>GroupsRemoved</tp:member-ref> signals that result from
+          this method call MUST be emitted before the method returns.</p>
+      </tp:docstring>
+
+      <arg name="Group" type="s" direction="in">
+        <tp:docstring>The group to alter.</tp:docstring>
+      </arg>
+
+      <arg name="Members" type="au" tp:type="Contact_Handle[]" direction="in">
+        <tp:docstring>The set of members to include in the group.</tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Raised if <tp:member-ref>GroupStorage</tp:member-ref>
+            is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="RemoveFromGroup" tp:name-for-bindings="Remove_From_Group">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Remove the given members from the given group.</p>
+
+        <tp:rationale>
+          <p>This is good for user interfaces in which you can edit groups
+            via drag-and-drop.</p>
+        </tp:rationale>
+
+        <p>Any <tp:member-ref>GroupsChanged</tp:member-ref> or
+          <tp:member-ref>GroupsRemoved</tp:member-ref> signals that result from
+          this method call MUST be emitted before the method returns.</p>
+      </tp:docstring>
+
+      <arg name="Group" type="s" direction="in">
+        <tp:docstring>The group to alter. If it does not exist, then it has
+          no members by definition, so this method SHOULD return
+          successfully.</tp:docstring>
+      </arg>
+
+      <arg name="Members" type="au" tp:type="Contact_Handle[]" direction="in">
+        <tp:docstring>The set of members to remove from the group. It is not
+          an error to remove members who are already not in the group.
+          If there are no members left in the group afterwards, the group MAY
+          itself be removed.</tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Raised if <tp:member-ref>GroupStorage</tp:member-ref>
+            is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="RemoveGroup" tp:name-for-bindings="Remove_Group">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Remove all members from the given group, then remove the group
+          itself. If the group already does not exist, this method SHOULD
+          return successfully.</p>
+
+        <p>Any <tp:member-ref>GroupsChanged</tp:member-ref> or
+          <tp:member-ref>GroupsRemoved</tp:member-ref> signals that result from
+          this method call MUST be emitted before the method returns.</p>
+      </tp:docstring>
+
+      <arg name="Group" type="s" direction="in">
+        <tp:docstring>The group to remove.</tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Raised if <tp:member-ref>GroupStorage</tp:member-ref>
+            is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="RenameGroup" tp:name-for-bindings="Rename_Group">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Rename the given group.</p>
+
+        <p>On protocols where groups behave like tags, this is an API
+          short-cut for adding all of the group's members to a group with
+          the new name, then removing the old group.</p>
+
+        <tp:rationale>
+          <p>Otherwise, clients can't perform this operation atomically, even
+            if the connection could.</p>
+        </tp:rationale>
+
+        <p>Any <tp:member-ref>GroupRenamed</tp:member-ref> or
+          <tp:member-ref>GroupsRemoved</tp:member-ref> signals that result from
+          this method call MUST be emitted before the method returns.</p>
+      </tp:docstring>
+
+      <arg name="Old_Name" type="s" direction="in">
+        <tp:docstring>The group to rename.</tp:docstring>
+      </arg>
+
+      <arg name="New_Name" type="s" direction="in">
+        <tp:docstring>The new name for the group.</tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            Raised if <tp:member-ref>GroupStorage</tp:member-ref>
+            is Contact_Metadata_Storage_Type_None, i.e. groups cannot be edited.
+          </tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.DoesNotExist">
+          <tp:docstring>Raised if there is no group with that
+            name.</tp:docstring>
+        </tp:error>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>Raised if there is already a group with the new
+            name.</tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

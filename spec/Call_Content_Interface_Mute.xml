@@ -1,0 +1,83 @@
+<?xml version="1.0" ?>
+<node name="/Call_Content_Interface_Mute" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright> Copyright © 2005-2010 Nokia Corporation </tp:copyright>
+  <tp:copyright> Copyright © 2005-2010 Collabora Ltd </tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Call.Content.Interface.Mute.DRAFT" tp:causes-havoc="experimental">
+    <tp:added version="0.19.6">(draft version, not API-stable)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Interface for calls which may be muted.  This only makes sense
+        for channels where audio or video is streaming between members.</p>
+
+      <p>Muting a call content indicates that the user does not wish to send
+        outgoing audio or video.</p>
+
+      <p>Although it's client's responsibility to actually mute the microphone
+        or turn off the camera, using this interface the client can also
+        inform the CM and other clients of that fact.</p>
+        <tp:rationale>
+          <p>For some protocols, the fact that the content is muted needs to be
+          transmitted to the peer; for others, the notification to the peer is
+          only informational (eg. XMPP), and some protocols may have no notion
+          of muting at all.</p>
+        </tp:rationale>
+    </tp:docstring>
+
+   <signal name="MuteStateChanged" tp:name-for-bindings="Mute_State_Changed">
+      <tp:docstring>
+        Emitted to indicate that the mute state has changed for this call content.
+        This may occur as a consequence of the client calling
+        <tp:member-ref>Muted</tp:member-ref>, or as an indication that another
+        client has (un)muted the content.
+      </tp:docstring>
+
+      <arg name="MuteState" type="b">
+        <tp:docstring>
+          True if the content is now muted.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <property name="MuteState" type="b"
+      access="read" tp:name-for-bindings="Mute_State">
+      <tp:docstring>
+        True if the content is muted.
+      </tp:docstring>
+    </property>
+
+    <method name="Muted" tp:name-for-bindings="Muted">
+      <arg direction="in" name="Muted" type="b">
+        <tp:docstring>
+          True if the client has muted the content.
+        </tp:docstring>
+      </arg>
+
+      <tp:docstring>
+        <p>Inform the CM that the call content has been muted or unmuted by
+          che client.</p>
+
+        <p>It is the client's responsibility to actually mute or unmute the
+          microphone or camera used for the content. However, the client
+          MUST call this whenever it mutes or unmutes the content.</p>
+      </tp:docstring>
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->
