@@ -297,6 +297,7 @@ tpqt4include_HEADERS = \
     ConnectionInterfaceContactsInterface \
     ConnectionInterfacePresenceInterface \
     ConnectionInterfaceRequestsInterface \
+    ConnectionInterfaceServicePointInterface \
     ConnectionInterfaceSimplePresenceInterface \
     ConnectionManagerInterface \
     DBusDaemonInterface \

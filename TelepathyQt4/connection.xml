@@ -17,6 +17,7 @@
 <xi:include href="../spec/Connection_Interface_Location.xml"/>
 <xi:include href="../spec/Connection_Interface_Presence.xml"/>
 <xi:include href="../spec/Connection_Interface_Requests.xml"/>
+<xi:include href="../spec/Connection_Interface_Service_Point.xml"/>
 <xi:include href="../spec/Connection_Interface_Simple_Presence.xml"/>
 
 </tp:spec>
