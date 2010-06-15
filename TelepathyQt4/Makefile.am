@@ -291,6 +291,7 @@ tpqt4include_HEADERS = \
     ClientInterfaceRequestsInterface \
     ConnectionInterface \
     ConnectionInterfaceAliasingInterface \
+    ConnectionInterfaceAnonymityInterface \
     ConnectionInterfaceAvatarsInterface \
     ConnectionInterfaceCapabilitiesInterface \
     ConnectionInterfaceContactsInterface \
