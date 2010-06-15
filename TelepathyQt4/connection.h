@@ -168,6 +168,12 @@ public:
         return optionalInterface<Client::ConnectionInterfacePresenceInterface>(check);
     }
 
+    inline Client::ConnectionInterfaceServicePointInterface *servicePointInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceServicePointInterface>(check);
+    }
+
     inline Client::ConnectionInterfaceSimplePresenceInterface *simplePresenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
