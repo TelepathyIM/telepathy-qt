@@ -115,6 +115,8 @@ public:
 
     ConnectionStatus connectionStatus() const;
     ConnectionStatusReason connectionStatusReason() const;
+    QString connectionError() const;
+    QVariantMap connectionErrorDetails() const;
     bool haveConnection() const;
     ConnectionPtr connection() const;
 
@@ -261,8 +263,11 @@ Q_SIGNALS:
     void currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
     void avatarChanged(const Tp::Avatar &avatar);
-    void connectionStatusChanged(Tp::ConnectionStatus status,
+    TELEPATHY_QT4_DEPRECATED void connectionStatusChanged(Tp::ConnectionStatus status,
             Tp::ConnectionStatusReason statusReason);
+    void statusChanged(Tp::ConnectionStatus status,
+            Tp::ConnectionStatusReason statusReason,
+            const QString &error, const QVariantMap &errorDetails);
     void haveConnectionChanged(bool haveConnection);
 
 protected:
