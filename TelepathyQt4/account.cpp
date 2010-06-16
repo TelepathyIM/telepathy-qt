@@ -2185,7 +2185,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("ConnectionStatus")) ||
-        props.contains(QLatin1String("ConnectionStatusReason"))) {
+        props.contains(QLatin1String("ConnectionStatusReason")) ||
+        props.contains(QLatin1String("ConnectionError")) ||
+        props.contains(QLatin1String("ConnectionErrorDetails"))) {
         bool changed = false;
         ConnectionStatus oldConnectionStatus = connectionStatus;
 
@@ -2234,7 +2236,18 @@ void Account::Private::updateProperties(const QVariantMap &props)
         }
 
         if (changed) {
-            if (connectionStatus == ConnectionStatusConnected) {
+            /* Something other than status changed, let's not emit statusChanged
+             * and keep the error/errorDetails, for the next interaction.
+             * It may happen if ConnectionError changes and in another property
+             * change the status changes to Disconnected, so we use the error
+             * previously signalled. If the status changes to something other
+             * than Disconnected later, the error is cleared. */
+            if (oldConnectionStatus == connectionStatus) {
+                return;
+            }
+
+            /* We don't signal error for status other than Disconnected */
+            if (connectionStatus != ConnectionStatusDisconnected) {
                 connectionError = QString();
                 connectionErrorDetails.clear();
             } else if (connectionError.isEmpty()) {
