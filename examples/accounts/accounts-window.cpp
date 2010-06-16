@@ -68,6 +68,7 @@ void AccountsWindow::setupGui()
         QLatin1String("Display Name") <<
         QLatin1String("Nickname") <<
         QLatin1String("Connects Automatically") <<
+        QLatin1String("Changing Presence") <<
         QLatin1String("Automatic Presence") <<
         QLatin1String("Current Presence") <<
         QLatin1String("Requested Presence") <<
