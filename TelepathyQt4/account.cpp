@@ -27,6 +27,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include "TelepathyQt4/connection-internal.h"
 #include "TelepathyQt4/future-internal.h"
 
 #include <TelepathyQt4/AccountManager>
@@ -97,6 +98,8 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     ProtocolInfo *protocolInfo;
     ConnectionStatus connectionStatus;
     ConnectionStatusReason connectionStatusReason;
+    QString connectionError;
+    QVariantMap connectionErrorDetails;
     SimplePresence automaticPresence;
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
@@ -785,6 +788,48 @@ ConnectionStatus Account::connectionStatus() const
 ConnectionStatusReason Account::connectionStatusReason() const
 {
     return mPriv->connectionStatusReason;
+}
+
+/**
+ * Return the D-Bus error name for the last disconnection or connection failure,
+ * (in particular, #TELEPATHY_ERROR_CANCELLED if it was disconnected by user
+ * request), or an empty string if the account is connected.
+ *
+ * One can receive change notifications on this property by connecting
+ * to the statusChanged() signal.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The D-Bus error name for the last disconnection or connection failure.
+ * \sa connectionErrorDetails(), connectionStatus(), connectionStatusReason(), statusChanged()
+ */
+QString Account::connectionError() const
+{
+    return mPriv->connectionError;
+}
+
+/**
+ * Return a map containing extensible error details related to
+ * connectionError().
+ *
+ * The keys for this map are defined by
+ * <a href="http://telepathy.freedesktop.org/spec/">the Telepathy D-Bus
+ * Interface Specification</a>. They will typically include
+ * <literal>debug-message</literal>, which is a debugging message in the C
+ * locale.
+ *
+ * One can receive change notifications on this property by connecting
+ * to the statusChanged() signal.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return A map containing extensible error details related to
+ *         connectionError().
+ * \sa connectionError(), connectionStatus(), connectionStatusReason(), statusChanged()
+ */
+QVariantMap Account::connectionErrorDetails() const
+{
+    return mPriv->connectionErrorDetails;
 }
 
 /**
@@ -1912,6 +1957,23 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
+ * \fn void Account::statusChanged(Tp::ConnectionStatus status,
+ *                                 Tp::ConnectionStatusReason statusReason,
+ *                                 const QString &errorName,
+ *                                 const QVariantMap &errorDetails);
+ *
+ * This signal is emitted when the connection status of this account changes.
+ *
+ * \param status The new status of this account connection.
+ * \param statusReason The new status reason of this account connection.
+ * \param errorName The D-Bus error name for the last disconnection or
+ *                   connection failure,
+ * \param errorDetails A map containing extensible error details related to
+ *                     errorName.
+ * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails()
+ */
+
+/**
  * \fn void Account::haveConnectionChanged(bool haveConnection);
  *
  * This signal is emitted when the value of haveConnection() of this
@@ -2156,8 +2218,11 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("ConnectionStatus")) ||
-        props.contains(QLatin1String("ConnectionStatusReason"))) {
+        props.contains(QLatin1String("ConnectionStatusReason")) ||
+        props.contains(QLatin1String("ConnectionError")) ||
+        props.contains(QLatin1String("ConnectionErrorDetails"))) {
         bool changed = false;
+        ConnectionStatus oldConnectionStatus = connectionStatus;
 
         if (props.contains(QLatin1String("ConnectionStatus")) &&
             connectionStatus != ConnectionStatus(
@@ -2177,9 +2242,54 @@ void Account::Private::updateProperties(const QVariantMap &props)
             changed = true;
         }
 
+        /* FIXME (API-BREAK)
+         * Remove signal connectionStatusChanged in favor of statusChanged
+         * signal */
         if (changed) {
             emit parent->connectionStatusChanged(
                     connectionStatus, connectionStatusReason);
+        }
+
+        if (props.contains(QLatin1String("ConnectionError")) &&
+            connectionError != qdbus_cast<QString>(
+                props[QLatin1String("ConnectionError")])) {
+            connectionError = qdbus_cast<QString>(
+                    props[QLatin1String("ConnectionError")]);
+            debug() << " Connection Error:" << connectionError;
+            changed = true;
+        }
+
+        if (props.contains(QLatin1String("ConnectionErrorDetails")) &&
+            connectionErrorDetails != qdbus_cast<QVariantMap>(
+                props[QLatin1String("ConnectionErrorDetails")])) {
+            connectionErrorDetails = qdbus_cast<QVariantMap>(
+                    props[QLatin1String("ConnectionErrorDetails")]);
+            debug() << " Connection Error Details:" << connectionErrorDetails;
+            changed = true;
+        }
+
+        if (changed) {
+            /* Something other than status changed, let's not emit statusChanged
+             * and keep the error/errorDetails, for the next interaction.
+             * It may happen if ConnectionError changes and in another property
+             * change the status changes to Disconnected, so we use the error
+             * previously signalled. If the status changes to something other
+             * than Disconnected later, the error is cleared. */
+            if (oldConnectionStatus == connectionStatus) {
+                return;
+            }
+
+            /* We don't signal error for status other than Disconnected */
+            if (connectionStatus != ConnectionStatusDisconnected) {
+                connectionError = QString();
+                connectionErrorDetails.clear();
+            } else if (connectionError.isEmpty()) {
+                connectionError = ConnectionHelper::statusReasonToErrorName(
+                        connectionStatusReason, oldConnectionStatus);
+            }
+
+            emit parent->statusChanged(connectionStatus, connectionStatusReason,
+                    connectionError, connectionErrorDetails);
         }
     }
 }
