@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.19.5</tp:version>
+<tp:version>0.19.7</tp:version>
 
 <tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2010 Nokia Corporation</tp:copyright>
@@ -42,13 +42,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <xi:include href="Connection.xml"/>
   <xi:include href="Connection_Future.xml"/>
   <xi:include href="Connection_Interface_Aliasing.xml"/>
+  <xi:include href="Connection_Interface_Anonymity.xml"/>
   <xi:include href="Connection_Interface_Avatars.xml"/>
   <xi:include href="Connection_Interface_Balance.xml"/>
   <xi:include href="Connection_Interface_Capabilities.xml"/>
+  <xi:include href="Connection_Interface_Cellular.xml"/>
   <xi:include href="Connection_Interface_Contact_Capabilities.xml"/>
+  <xi:include href="Connection_Interface_Contact_Groups.xml"/>
   <xi:include href="Connection_Interface_Contact_Info.xml"/>
+  <xi:include href="Connection_Interface_Contact_List.xml"/>
   <xi:include href="Connection_Interface_Contacts.xml"/>
+  <xi:include href="Connection_Interface_Forwarding.xml"/>
   <xi:include href="Connection_Interface_Location.xml"/>
+  <xi:include href="Connection_Interface_Service_Point.xml"/>
   <xi:include href="Connection_Interface_Mail_Notification.xml"/>
   <xi:include href="Connection_Interface_Presence.xml"/>
   <xi:include href="Connection_Interface_Renaming.xml"/>
@@ -99,6 +105,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
      depending on its type:
     </p>
    </tp:docstring>
+   <xi:include href="Channel_Interface_Anonymity.xml"/>
    <xi:include href="Channel_Interface_Call_State.xml"/>
    <xi:include href="Channel_Interface_Chat_State.xml"/>
    <xi:include href="Channel_Interface_Conference.xml"/>
@@ -107,6 +114,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_Group.xml"/>
    <xi:include href="Channel_Interface_Hold.xml"/>
    <xi:include href="Channel_Interface_HTML.xml"/>
+   <xi:include href="Channel_Interface_Service_Point.xml"/>
    <xi:include href="Channel_Interface_Password.xml"/>
    <xi:include href="Channel_Interface_Media_Signalling.xml"/>
    <xi:include href="Channel_Interface_Mergeable_Conference.xml"/>
@@ -124,6 +132,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <tp:section name="Calls">
    <xi:include href="Call_Content.xml"/>
    <xi:include href="Call_Content_Interface_Media.xml"/>
+   <xi:include href="Call_Content_Interface_Mute.xml"/>
    <xi:include href="Call_Content_Codec_Offer.xml"/>
    <xi:include href="Call_Stream.xml"/>
    <xi:include href="Call_Stream_Interface_Media.xml"/>
@@ -185,8 +194,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 <xi:include href="errors.xml"/>
 <xi:include href="generic-types.xml"/>
 
-<!-- Never implemented, insufficient (needs conditions)
-<xi:include href="Connection_Interface_Forwarding.xml"/> -->
 <!-- Never implemented, vague
 <xi:include href="Connection_Interface_Privacy.xml"/> -->
 <!-- Causes havoc, never implemented, unclear requirements

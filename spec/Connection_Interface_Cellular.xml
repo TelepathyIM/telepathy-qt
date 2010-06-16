@@ -1,0 +1,110 @@
+<?xml version="1.0" ?>
+<node name="/Connection_Interface_Cellular"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:copyright>Copyright © 2008-2010 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2010 Collabora Ltd.</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.Cellular.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:added version="0.19.6">(draft version, not API-stable)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface is for various cellular things (GSM and/or CDMA) that
+        aren't really applicable to other protocols.</p>
+    </tp:docstring>
+
+    <property name="MessageValidityPeriod" tp:name-for-bindings="Message_Validity_Period"
+      type="u" access="readwrite">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Define how long should the service centre try message delivery before
+          giving up, failing delivery and deleting the message. A value of 0
+          means to use the service centre's default period.</p>
+
+        <p>The value specified is in seconds. Note that various protocols or
+          implementations may round the value up (eg. to a minute or hour
+          precision). The maximum validity period may vary depending on
+          protocol or provider.</p>
+
+        <p>Connections with this interface SHOULD provide this property as a
+          parameter for <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
+          <code>DBus_Property</code> flag.</p>
+
+        <p>For connections managed by the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
+          this property SHOULD be set via the Account Manager, by calling
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Account.UpdateParameters</tp:dbus-ref>; the AccountManager
+          provides change-notification, as long as all other clients cooperate
+          by using it instead of setting this property directly.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="MessageServiceCentre" tp:name-for-bindings="Message_Service_Centre"
+      type="s" access="readwrite">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Address for the messaging service centre. Typically (as is the case
+          for GSM's SMSC), it's the ISDN / telephony address (ie. a phone
+          number).</p>
+
+        <p>Connections with this interface SHOULD provide this property as a
+          parameter for <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
+          <code>DBus_Property</code> flag.</p>
+
+        <p>For connections managed by the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
+          this property SHOULD be set via the Account Manager, by calling
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Account.UpdateParameters</tp:dbus-ref>; the AccountManager
+          provides change-notification, as long as all other clients cooperate
+          by using it instead of setting this property directly.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="IMSI" tp:name-for-bindings="IMSI" type="s" access="read">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The International Mobile Subscriber Identifier, if it exists. This
+          would originate from a SIM card.  If the IMSI is unknown, this will
+          contain an empty string ("").</p>
+      </tp:docstring>
+    </property>
+
+    <signal name="IMSIChanged" tp:name-for-bindings="IMSI_Changed">
+      <tp:docstring>
+        Emitted when the IMSI for the connection changes.  This sort of thing
+        is rare, but could happen on cellular phones that allow hot-swapping
+        of SIM cards.  In the case of SIM swapping, this signal would be
+        emitted twice; the first time while the SIM is being ejected (with an
+        empty string), and the second time after a new SIM has been inserted
+        (assuming that the IMSI can be determined from the new SIM).
+      </tp:docstring>
+
+      <arg name="IMSI" type="s">
+        <tp:docstring>
+          The new IMSI value.  This may be an empty string in the case where
+          the IMSI is being reset or removed.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

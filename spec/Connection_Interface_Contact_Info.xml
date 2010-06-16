@@ -504,6 +504,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           network traffic.</p>
       </tp:rationale>
     </tp:docstring>
+
+    <tp:contact-attribute name="info"
+      type="a(sasas)" tp:type="Contact_Info_Field[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The same value that would be returned by
+          <tp:member-ref>GetContactInfo</tp:member-ref> for this contact.
+          Omitted from the result if the contact's info
+          is not known.</p>
+      </tp:docstring>
+    </tp:contact-attribute>
+
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

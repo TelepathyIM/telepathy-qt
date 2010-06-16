@@ -159,9 +159,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:struct>
 
     <tp:struct name="Mail_Address" array-name="Mail_Address_List">
-      <tp:docstring>
-        A pair (name, address) representing an e-mail address,
-        such as ("Nicolas Dufresne", "nicolas.dufresne@collabora.co.uk").
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A pair (name, address) representing an e-mail address,
+        such as ("Nicolas Dufresne", "nicolas.dufresne@collabora.co.uk"). At
+        least one of name and address MUST be provided. A missing element will
+        be represented by the empty string.</p>
+        <tp:rationale>
+	  <p>The CM should provide as much information as possible, but not all
+            protocols provide both the displayed name and the address. (If a
+            protocol doesn't provide either, it should omit the appropriate
+            field from the <tp:type>Mail</tp:type> entirely.)</p>
+        </tp:rationale>
       </tp:docstring>
       <tp:member type="s" name="Name">
         <tp:docstring>The displayed name corresponding to the e-mail

@@ -314,6 +314,10 @@ USA.</p>
             <dd>The contact who sent the message. If 0 or omitted, the contact
               who sent the message could not be determined.</dd>
 
+            <dt>sender-nickname (s)</dt>
+            <dd>The nickname chosen by the sender of the message, which can be
+              different for each message in a conversation.</dd>
+
             <dt>message-type (u - <tp:type>Channel_Text_Message_Type</tp:type>)
             </dt>
             <dd>The type of message; if omitted,

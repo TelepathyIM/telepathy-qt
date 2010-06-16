@@ -381,6 +381,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           </tp:rationale>
         </tp:docstring>
       </tp:flag>
+
+      <tp:flag suffix="Muted" value="64">
+        <tp:docstring>
+          The call has been muted by the local user, e.g. using the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Call.Content.Interface"
+            >Mute.DRAFT</tp:dbus-ref> interface. This flag SHOULD only be set if
+          there is at least one Content, and all Contents are locally muted;
+          it makes sense on calls in state Call_State_Pending_Receiver or
+          Call_State_Accepted.
+        </tp:docstring>
+      </tp:flag>
     </tp:flags>
 
     <property name="CallStateDetails"
@@ -475,6 +486,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
             string if the call was terminated normally, but MAY be a non-empty
             error name to indicate error-like call termination reasons (call
             rejected as busy, kicked from a conference by a moderator, etc.).</p>
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Forwarded" value="2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The call was forwarded. If known, the handle of the contact
+            the call was forwarded to will be indicated by the Actor member
+            of a <tp:type>Call_State_Reason</tp:type> struct.</p>
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
