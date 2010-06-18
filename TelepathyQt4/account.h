@@ -297,6 +297,8 @@ Q_SIGNALS:
             const QString &error, const QVariantMap &errorDetails);
     void haveConnectionChanged(bool haveConnection);
 
+    void propertyChanged(const QString &propertyName);
+
 protected:
     Account(const QString &busName, const QString &objectPath);
     Account(const QDBusConnection &bus,
@@ -315,6 +317,9 @@ private Q_SLOTS:
 private:
     struct Private;
     friend struct Private;
+
+    void notify(const char *propertyName);
+
     Private *mPriv;
 };
 

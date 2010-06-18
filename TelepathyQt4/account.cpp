@@ -2092,6 +2092,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         displayName = qdbus_cast<QString>(props[QLatin1String("DisplayName")]);
         debug() << " Display Name:" << displayName;
         emit parent->displayNameChanged(displayName);
+        parent->notify("displayName");
     }
 
     if (props.contains(QLatin1String("Icon")) &&
@@ -2099,6 +2100,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         icon = qdbus_cast<QString>(props[QLatin1String("Icon")]);
         debug() << " Icon:" << icon;
         emit parent->iconChanged(icon);
+        parent->notify("icon");
     }
 
     if (props.contains(QLatin1String("Nickname")) &&
@@ -2106,6 +2108,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         nickname = qdbus_cast<QString>(props[QLatin1String("Nickname")]);
         debug() << " Nickname:" << nickname;
         emit parent->nicknameChanged(nickname);
+        parent->notify("nickname");
     }
 
     if (props.contains(QLatin1String("NormalizedName")) &&
@@ -2113,6 +2116,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         normalizedName = qdbus_cast<QString>(props[QLatin1String("NormalizedName")]);
         debug() << " Normalized Name:" << normalizedName;
         emit parent->normalizedNameChanged(normalizedName);
+        parent->notify("normalizedName");
     }
 
     if (props.contains(QLatin1String("Valid")) &&
@@ -2120,6 +2124,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         valid = qdbus_cast<bool>(props[QLatin1String("Valid")]);
         debug() << " Valid:" << (valid ? "true" : "false");
         emit parent->validityChanged(valid);
+        parent->notify("valid");
     }
 
     if (props.contains(QLatin1String("Enabled")) &&
@@ -2127,6 +2132,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         enabled = qdbus_cast<bool>(props[QLatin1String("Enabled")]);
         debug() << " Enabled:" << (enabled ? "true" : "false");
         emit parent->stateChanged(enabled);
+        parent->notify("enabled");
     }
 
     if (props.contains(QLatin1String("ConnectAutomatically")) &&
@@ -2136,6 +2142,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 qdbus_cast<bool>(props[QLatin1String("ConnectAutomatically")]);
         debug() << " Connects Automatically:" << (connectsAutomatically ? "true" : "false");
         emit parent->connectsAutomaticallyPropertyChanged(connectsAutomatically);
+        parent->notify("connectsAutomatically");
     }
 
     if (props.contains(QLatin1String("HasBeenOnline")) &&
@@ -2149,6 +2156,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         if (parent->isReady()) {
             emit parent->firstOnline();
         }
+        parent->notify("hasBeenOnline");
     }
 
     if (props.contains(QLatin1String("Parameters")) &&
@@ -2156,6 +2164,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
         debug() << " Parameters:" << parameters;
         emit parent->parametersChanged(parameters);
+        parent->notify("parameters");
     }
 
     if (props.contains(QLatin1String("AutomaticPresence")) &&
@@ -2166,6 +2175,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Automatic Presence:" << automaticPresence.type <<
             "-" << automaticPresence.status;
         emit parent->automaticPresenceChanged(automaticPresence);
+        parent->notify("automaticPresence");
     }
 
     if (props.contains(QLatin1String("CurrentPresence")) &&
@@ -2176,6 +2186,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Current Presence:" << currentPresence.type <<
             "-" << currentPresence.status;
         emit parent->currentPresenceChanged(currentPresence);
+        parent->notify("currentPresence");
     }
 
     if (props.contains(QLatin1String("RequestedPresence")) &&
@@ -2186,6 +2197,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Requested Presence:" << requestedPresence.type <<
             "-" << requestedPresence.status;
         emit parent->requestedPresenceChanged(requestedPresence);
+        parent->notify("requestedPresence");
     }
 
     if (props.contains(QLatin1String("ChangingPresence")) &&
@@ -2195,6 +2207,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 props[QLatin1String("ChangingPresence")]);
         debug() << " Changing Presence:" << changingPresence;
         emit parent->changingPresence(changingPresence);
+        parent->notify("changingPresence");
     }
 
     if (props.contains(QLatin1String("Connection"))) {
@@ -2214,6 +2227,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
             connection.reset();
             connectionObjectPath = path;
             emit parent->haveConnectionChanged(!path.isEmpty());
+            parent->notify("haveConnection");
+            parent->notify("connection");
+            parent->notify("connectionObjectPath");
         }
     }
 
@@ -2248,6 +2264,8 @@ void Account::Private::updateProperties(const QVariantMap &props)
         if (changed) {
             emit parent->connectionStatusChanged(
                     connectionStatus, connectionStatusReason);
+            parent->notify("connectionStatus");
+            parent->notify("connectionStatusReason");
         }
 
         if (props.contains(QLatin1String("ConnectionError")) &&
@@ -2290,6 +2308,8 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
             emit parent->statusChanged(connectionStatus, connectionStatusReason,
                     connectionError, connectionErrorDetails);
+            parent->notify("connectionError");
+            parent->notify("connectionErrorDetails");
         }
     }
 }
@@ -2342,6 +2362,7 @@ void Account::gotAvatar(QDBusPendingCallWatcher *watcher)
         }
 
         emit avatarChanged(mPriv->avatar);
+        notify("avatar");
     } else {
         // check if the feature is already there, and for some reason retrieveAvatar
         // failed when called the second time
@@ -2397,6 +2418,11 @@ void Account::onRemoved()
     mPriv->enabled = false;
     invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
             QLatin1String("Account removed from AccountManager"));
+}
+
+void Account::notify(const char *propertyName)
+{
+    emit propertyChanged(QLatin1String(propertyName));
 }
 
 } // Tp
