@@ -976,6 +976,26 @@ PendingOperation *Account::setRequestedPresence(
 }
 
 /**
+ * Return whether this account is online.
+ *
+ * \return \c true if this account is online, otherwise \c false.
+ */
+bool Account::isOnline() const
+{
+    switch (mPriv->currentPresence.type) {
+        case ConnectionPresenceTypeAvailable:
+        case ConnectionPresenceTypeAway:
+        case ConnectionPresenceTypeExtendedAway:
+        case ConnectionPresenceTypeHidden:
+        case ConnectionPresenceTypeBusy:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+/**
  * Return the unique identifier of this account.
  *
  * This identifier should be unique per AccountManager implementation,
@@ -1936,6 +1956,16 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
+ * \fn void Account::onlinenessChanged(bool online) const;
+ *
+ * This signal is emitted when the value of isOnline() of this
+ * account changes.
+ *
+ * \param online Whether this account is online.
+ * \sa currentPresence()
+ */
+
+/**
  * \fn void Account::avatarChanged(const Tp::Avatar &avatar);
  *
  * This signal is emitted when the value of avatar() of this
@@ -2187,6 +2217,8 @@ void Account::Private::updateProperties(const QVariantMap &props)
             "-" << currentPresence.status;
         emit parent->currentPresenceChanged(currentPresence);
         parent->notify("currentPresence");
+        emit parent->onlinenessChanged(parent->isOnline());
+        parent->notify("online");
     }
 
     if (props.contains(QLatin1String("RequestedPresence")) &&

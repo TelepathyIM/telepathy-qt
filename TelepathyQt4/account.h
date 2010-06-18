@@ -85,6 +85,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(SimplePresence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
     Q_PROPERTY(SimplePresence currentPresence READ currentPresence NOTIFY currentPresenceChanged)
     Q_PROPERTY(SimplePresence requestedPresence READ requestedPresence NOTIFY requestedPresenceChanged)
+    Q_PROPERTY(bool online READ isOnline NOTIFY onlinenessChanged)
     Q_PROPERTY(QString uniqueIdentifier READ uniqueIdentifier)
     Q_PROPERTY(QString connectionObjectPath READ connectionObjectPath)
     Q_PROPERTY(QString normalizedName READ normalizedName NOTIFY normalizedNameChanged)
@@ -155,6 +156,8 @@ public:
     SimplePresence requestedPresence() const;
     PendingOperation *setRequestedPresence(
             const SimplePresence &value);
+
+    bool isOnline() const;
 
     QString uniqueIdentifier() const;
 
@@ -289,6 +292,7 @@ Q_SIGNALS:
     void automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
     void currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
+    void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
     TELEPATHY_QT4_DEPRECATED void connectionStatusChanged(Tp::ConnectionStatus status,
             Tp::ConnectionStatusReason statusReason);
