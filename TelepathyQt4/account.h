@@ -64,6 +64,30 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
 {
     Q_OBJECT
     Q_DISABLE_COPY(Account)
+    Q_PROPERTY(bool valid READ isValidAccount NOTIFY validityChanged)
+    Q_PROPERTY(bool enabled READ isEnabled NOTIFY stateChanged)
+    Q_PROPERTY(QString cmName READ cmName)
+    Q_PROPERTY(QString protocol READ protocol)
+    Q_PROPERTY(QString displayName READ displayName NOTIFY displayNameChanged)
+    Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
+    Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
+    Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
+    Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
+    Q_PROPERTY(bool hasBeenOnline READ hasBeenOnline)
+    Q_PROPERTY(bool connectsAutomatically READ connectsAutomatically NOTIFY connectsAutomaticallyPropertyChanged)
+    Q_PROPERTY(ConnectionStatus connectionStatus READ connectionStatus)
+    Q_PROPERTY(ConnectionStatusReason connectionStatusReason READ connectionStatusReason)
+    Q_PROPERTY(QString connectionError READ connectionError)
+    Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
+    Q_PROPERTY(bool haveConnection READ haveConnection NOTIFY haveConnectionChanged)
+    Q_PROPERTY(ConnectionPtr connection READ connection)
+    Q_PROPERTY(bool changingPresence READ isChangingPresence NOTIFY changingPresence)
+    Q_PROPERTY(SimplePresence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
+    Q_PROPERTY(SimplePresence currentPresence READ currentPresence NOTIFY currentPresenceChanged)
+    Q_PROPERTY(SimplePresence requestedPresence READ requestedPresence NOTIFY requestedPresenceChanged)
+    Q_PROPERTY(QString uniqueIdentifier READ uniqueIdentifier)
+    Q_PROPERTY(QString connectionObjectPath READ connectionObjectPath)
+    Q_PROPERTY(QString normalizedName READ normalizedName NOTIFY normalizedNameChanged)
 
 public:
     static const Feature FeatureCore;
