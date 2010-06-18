@@ -40,6 +40,7 @@ TELEPATHY_QT4_EXPORT void registerTypes();
 
 class AbstractClient;
 class Account;
+class AccountSet;
 class AccountManager;
 class Channel;
 class ChannelDispatchOperation;
@@ -60,6 +61,7 @@ class TextChannel;
 
 typedef SharedPtr<AbstractClient> AbstractClientPtr;
 typedef SharedPtr<Account> AccountPtr;
+typedef SharedPtr<AccountSet> AccountSetPtr;
 typedef SharedPtr<AccountManager> AccountManagerPtr;
 typedef SharedPtr<Channel> ChannelPtr;
 typedef SharedPtr<ChannelDispatchOperation> ChannelDispatchOperationPtr;

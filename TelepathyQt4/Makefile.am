@@ -57,6 +57,7 @@ libtelepathy_qt4_la_SOURCES = \
     abstract-interface.cpp \
     account.cpp \
     account-manager.cpp \
+    account-set.cpp \
     capabilities-base.cpp \
     channel.cpp \
     channel-factory.cpp \
@@ -148,6 +149,8 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/abstract-interface.moc.hpp \
     _gen/account.moc.hpp \
     _gen/account-manager.moc.hpp \
+    _gen/account-set.moc.hpp \
+    _gen/account-set-internal.moc.hpp \
     _gen/channel.moc.hpp \
     _gen/channel-dispatch-operation.moc.hpp \
     _gen/channel-request.moc.hpp \
@@ -202,6 +205,7 @@ tpqt4include_HEADERS = \
     AbstractInterface \
     Account \
     AccountManager \
+    AccountSet \
     CapabilitiesBase \
     Channel \
     ChannelDispatcher \
@@ -315,6 +319,7 @@ tpqt4include_HEADERS = \
     abstract-interface.h \
     account.h \
     account-manager.h \
+    account-set.h \
     capabilities-base.h \
     channel.h \
     channel-dispatcher.h \
