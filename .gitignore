@@ -30,6 +30,7 @@
 /examples/call/call
 /examples/file-transfer/receiver
 /examples/file-transfer/sender
+/examples/protocols/protocols
 /examples/roster/roster
 /install-sh
 /lcov.info
