@@ -1,7 +1,21 @@
-telepathy-qt4 0.3.5 (UNRELEASED)
+telepathy-qt4 0.3.5 (2010-06-21)
 ================================
 
-...
+The "Think I'll get it done yesterday" release.
+
+New API:
+* fd.o#28018: Bind Account.ChangingPresence.
+* fd.o#28552: Bind Account.ConnectionError/Details.
+
+Enhancements:
+* fd.o#28536: update to spec 0.19.7 (ConnectionError, Anonymity, ServicePoint,
+  ChatStates).
+
+Fixes:
+* Update with-session-bus.sh from telepathy-glib, fixing a bashism. (smcv)
+* Fixed coverity issues with call example.
+* Fixed AbstractClient documentation. (albanc)
+* telepathy-qt4-farsight telepathy-glib dependency is now >= 0.8.1. (albanc)
 
 telepathy-qt4 0.3.4 (2010-05-23)
 ================================
