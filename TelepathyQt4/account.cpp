@@ -87,7 +87,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     bool hasBeenOnline;
     bool changingPresence;
     QString cmName;
-    QString protocol;
+    QString protocolName;
     QString displayName;
     QString nickname;
     QString icon;
@@ -129,7 +129,7 @@ Account::Private::Private(Account *parent)
 
     if (rx.exactMatch(parent->objectPath())) {
         cmName = rx.cap(1);
-        protocol = rx.cap(2);
+        protocolName = rx.cap(2);
     } else {
         warning() << "Account object path is not spec-compliant, "
             "trying again with a different account-specific part check";
@@ -141,7 +141,7 @@ Account::Private::Private(Account *parent)
                     ));
         if (rx.exactMatch(parent->objectPath())) {
             cmName = rx.cap(1);
-            protocol = rx.cap(2);
+            protocolName = rx.cap(2);
         } else {
             warning() << "Not a valid Account object path:" <<
                 parent->objectPath();
@@ -520,7 +520,19 @@ QString Account::cmName() const
  */
 QString Account::protocol() const
 {
-    return mPriv->protocol;
+    return mPriv->protocolName;
+}
+
+/**
+ * Return the protocol name of this account.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The protocol name of this account.
+ */
+QString Account::protocolName() const
+{
+    return mPriv->protocolName;
 }
 
 /**
@@ -2411,7 +2423,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
     bool error = operation->isError();
     if (!error) {
         foreach (ProtocolInfo *info, mPriv->cm->protocols()) {
-            if (info->name() == mPriv->protocol) {
+            if (info->name() == mPriv->protocolName) {
                 mPriv->protocolInfo = info;
                 break;
             }
