@@ -461,7 +461,7 @@ QList<AccountPtr> AccountManager::allAccounts()
  *
  * \return A set of accounts containing all enabled accounts.
  */
-AccountSetPtr AccountManager::enabledAccounts() const
+AccountSetPtr AccountManager::enabledAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("enabled"), true);
@@ -476,7 +476,7 @@ AccountSetPtr AccountManager::enabledAccounts() const
  *
  * \return A set of accounts containing all disabled accounts.
  */
-AccountSetPtr AccountManager::disabledAccounts() const
+AccountSetPtr AccountManager::disabledAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("enabled"), false);
@@ -491,7 +491,7 @@ AccountSetPtr AccountManager::disabledAccounts() const
  *
  * \return A set of accounts containing all online accounts.
  */
-AccountSetPtr AccountManager::onlineAccounts() const
+AccountSetPtr AccountManager::onlineAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("online"), true);
@@ -506,7 +506,7 @@ AccountSetPtr AccountManager::onlineAccounts() const
  *
  * \return A set of accounts containing all offline accounts.
  */
-AccountSetPtr AccountManager::offlineAccounts() const
+AccountSetPtr AccountManager::offlineAccountsSet() const
 {
     QVariantMap filter;
     filter.insert(QLatin1String("online"), false);

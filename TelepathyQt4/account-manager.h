@@ -73,11 +73,11 @@ public:
     QList<AccountPtr> invalidAccounts();
     QList<AccountPtr> allAccounts();
 
-    AccountSetPtr enabledAccounts() const;
-    AccountSetPtr disabledAccounts() const;
+    AccountSetPtr enabledAccountsSet() const;
+    AccountSetPtr disabledAccountsSet() const;
 
-    AccountSetPtr onlineAccounts() const;
-    AccountSetPtr offlineAccounts() const;
+    AccountSetPtr onlineAccountsSet() const;
+    AccountSetPtr offlineAccountsSet() const;
 
     AccountSetPtr accountsByProtocol(
             const QString &protocolName) const;
