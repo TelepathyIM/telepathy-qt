@@ -455,6 +455,36 @@ QList<AccountPtr> AccountManager::allAccounts()
 }
 
 /**
+ * Return a set of accounts containing all valid accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all valid accounts.
+ */
+AccountSetPtr AccountManager::validAccountsSet() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("valid"), true);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all invalid accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all invalid accounts.
+ */
+AccountSetPtr AccountManager::invalidAccountsSet() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("valid"), false);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
  * Return a set of accounts containing all enabled accounts.
  *
  * Note that the returned account already has the Account::FeatureCore enabled.

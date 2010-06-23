@@ -73,6 +73,9 @@ public:
     QList<AccountPtr> invalidAccounts();
     QList<AccountPtr> allAccounts();
 
+    AccountSetPtr validAccountsSet() const;
+    AccountSetPtr invalidAccountsSet() const;
+
     AccountSetPtr enabledAccountsSet() const;
     AccountSetPtr disabledAccountsSet() const;
 
