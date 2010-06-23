@@ -42,33 +42,29 @@ AccountSet::Private::Private(AccountSet *parent,
       ready(false)
 {
     parent->connect(accountManager.data(),
-            SIGNAL(accountCreated(const QString &)),
-            SLOT(onAccountCreated(const QString &)));
-    parent->connect(accountManager.data(),
-            SIGNAL(accountRemoved(const QString &)),
-            SLOT(onAccountRemoved(const QString &)));
+            SIGNAL(newAccount(const Tp::AccountPtr &)),
+            SLOT(onNewAccount(const Tp::AccountPtr &)));
 
-    foreach (const QString &accountPath, accountManager->allAccountPaths()) {
-        insertAccount(accountPath);
+    foreach (const Tp::AccountPtr &account, accountManager->allAccounts()) {
+        insertAccount(account);
         ready = true;
     }
 }
 
-void AccountSet::Private::insertAccount(const QString &accountPath)
+void AccountSet::Private::insertAccount(const Tp::AccountPtr &account)
 {
+    QString accountPath = account->objectPath();
     Q_ASSERT(!wrappers.contains(accountPath));
-    AccountPtr account = Account::create(accountManager->dbusConnection(),
-                accountManager->busName(), accountPath);
     wrapAccount(account);
     filterAccount(account);
 }
 
-void AccountSet::Private::removeAccount(const QString &accountPath)
+void AccountSet::Private::removeAccount(const Tp::AccountPtr &account)
 {
+    QString accountPath = account->objectPath();
     Q_ASSERT(wrappers.contains(accountPath));
     accounts.remove(accountPath);
     AccountWrapper *wrapper = wrappers[accountPath];
-    AccountPtr account = wrapper->account();
     delete wrapper;
     emit parent->accountRemoved(account);
 }
@@ -76,6 +72,9 @@ void AccountSet::Private::removeAccount(const QString &accountPath)
 void AccountSet::Private::wrapAccount(const AccountPtr &account)
 {
     AccountWrapper *wrapper = new AccountWrapper(account, parent);
+    parent->connect(wrapper,
+            SIGNAL(accountRemoved(const Tp::AccountPtr &)),
+            SLOT(onAccountRemoved(const Tp::AccountPtr &)));
     parent->connect(wrapper,
             SIGNAL(accountPropertyChanged(const Tp::AccountPtr &, const QString &)),
             SLOT(onAccountPropertyChanged(const Tp::AccountPtr &, const QString &)));
@@ -132,12 +131,20 @@ AccountSet::Private::AccountWrapper::AccountWrapper(
       mAccount(account)
 {
     connect(account.data(),
+            SIGNAL(removed()),
+            SLOT(onAccountRemoved()));
+    connect(account.data(),
             SIGNAL(propertyChanged(const QString &)),
             SLOT(onAccountPropertyChanged(const QString &)));
 }
 
 AccountSet::Private::AccountWrapper::~AccountWrapper()
 {
+}
+
+void AccountSet::Private::AccountWrapper::onAccountRemoved()
+{
+    emit accountRemoved(mAccount);
 }
 
 void AccountSet::Private::AccountWrapper::onAccountPropertyChanged(
@@ -172,17 +179,17 @@ QList<AccountPtr> AccountSet::accounts() const
     return mPriv->accounts.values();
 }
 
-void AccountSet::onAccountCreated(const QString &accountPath)
+void AccountSet::onNewAccount(const AccountPtr &account)
 {
-    mPriv->insertAccount(accountPath);
+    mPriv->insertAccount(account);
 }
 
-void AccountSet::onAccountRemoved(const QString &accountPath)
+void AccountSet::onAccountRemoved(const AccountPtr &account)
 {
-    mPriv->removeAccount(accountPath);
+    mPriv->removeAccount(account);
 }
 
-void AccountSet::onAccountPropertyChanged(const Tp::AccountPtr &account,
+void AccountSet::onAccountPropertyChanged(const AccountPtr &account,
         const QString &propertyName)
 {
     mPriv->filterAccount(account);

@@ -60,8 +60,8 @@ Q_SIGNALS:
     void accountRemoved(const Tp::AccountPtr &account);
 
 private Q_SLOTS:
-    void onAccountCreated(const QString &accountPath);
-    void onAccountRemoved(const QString &accountPath);
+    void onNewAccount(const Tp::AccountPtr &account);
+    void onAccountRemoved(const Tp::AccountPtr &account);
     void onAccountPropertyChanged(const Tp::AccountPtr &account,
             const QString &propertyName);
 

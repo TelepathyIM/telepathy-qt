@@ -29,8 +29,8 @@ struct AccountSet::Private
     Private(AccountSet *parent, const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
 
-    void insertAccount(const QString &accountPath);
-    void removeAccount(const QString &accountPath);
+    void insertAccount(const AccountPtr &account);
+    void removeAccount(const AccountPtr &account);
     void wrapAccount(const AccountPtr &account);
     void filterAccount(const AccountPtr &account);
     bool accountMatchFilter(const AccountPtr &account, const QVariantMap &filter);
@@ -54,10 +54,12 @@ public:
     AccountPtr account() { return mAccount; }
 
 Q_SIGNALS:
+    void accountRemoved(const Tp::AccountPtr &account);
     void accountPropertyChanged(const Tp::AccountPtr &account,
             const QString &propertyName);
 
 private Q_SLOTS:
+    void onAccountRemoved();
     void onAccountPropertyChanged(const QString &propertyName);
 
 private:
