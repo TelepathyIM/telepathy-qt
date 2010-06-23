@@ -69,7 +69,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QString cmName READ cmName)
     Q_PROPERTY(QString protocolName READ protocolName)
     Q_PROPERTY(QString displayName READ displayName NOTIFY displayNameChanged)
-    Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
+    Q_PROPERTY(QString iconName READ iconName NOTIFY iconNameChanged)
     Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
     Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
     Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
@@ -115,8 +115,10 @@ public:
     QString displayName() const;
     PendingOperation *setDisplayName(const QString &value);
 
-    QString icon() const;
-    PendingOperation *setIcon(const QString &value);
+    TELEPATHY_QT4_DEPRECATED QString icon() const;
+    QString iconName() const;
+    TELEPATHY_QT4_DEPRECATED PendingOperation *setIcon(const QString &value);
+    PendingOperation *setIconName(const QString &value);
 
     QString nickname() const;
     PendingOperation *setNickname(const QString &value);
@@ -282,7 +284,8 @@ public:
 Q_SIGNALS:
     void removed();
     void displayNameChanged(const QString &displayName);
-    void iconChanged(const QString &icon);
+    TELEPATHY_QT4_DEPRECATED void iconChanged(const QString &iconName);
+    void iconNameChanged(const QString &iconName);
     void nicknameChanged(const QString &nickname);
     void normalizedNameChanged(const QString &normalizedName);
     void validityChanged(bool validity);

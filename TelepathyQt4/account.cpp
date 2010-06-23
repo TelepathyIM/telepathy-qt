@@ -90,7 +90,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     QString protocolName;
     QString displayName;
     QString nickname;
-    QString icon;
+    QString iconName;
     QString connectionObjectPath;
     QString normalizedName;
     Avatar avatar;
@@ -251,7 +251,7 @@ void Account::Private::addConferenceRequestParameters(QVariantMap &request,
  * individual accessor descriptions for more details.
  *
  * Signals are emitted to indicate that properties have changed, for example
- * displayNameChanged(), iconChanged(), etc.
+ * displayNameChanged(), iconNameChanged(), etc.
  *
  * Convenience methods to create channels using the channel dispatcher such as
  * ensureTextChat(), createFileTransfer() are provided.
@@ -593,7 +593,20 @@ PendingOperation *Account::setDisplayName(const QString &value)
  */
 QString Account::icon() const
 {
-    return mPriv->icon;
+    return mPriv->iconName;
+}
+
+/**
+ * Return the icon name of this account.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The icon name of this account.
+ * \sa iconNameChanged()
+ */
+QString Account::iconName() const
+{
+    return mPriv->iconName;
 }
 
 /**
@@ -605,6 +618,24 @@ QString Account::icon() const
  * \sa iconChanged()
  */
 PendingOperation *Account::setIcon(const QString &value)
+{
+    return new PendingVoid(
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("Icon"),
+                QDBusVariant(value)),
+            this);
+}
+
+/**
+ * Set the icon name of this account.
+ *
+ * \param value The icon name of this account.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa iconNameChanged()
+ */
+PendingOperation *Account::setIconName(const QString &value)
 {
     return new PendingVoid(
             propertiesInterface()->Set(
@@ -1847,6 +1878,15 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
+ * \fn void Account::iconNameChanged(const QString &iconName);
+ *
+ * This signal is emitted when the value of iconName() of this account changes.
+ *
+ * \param iconName The new icon name of this account.
+ * \sa iconName(), setIconName()
+ */
+
+/**
  * \fn void Account::nicknameChanged(const QString &nickname);
  *
  * This signal is emitted when the value of nickname() of this account changes.
@@ -2128,11 +2168,12 @@ void Account::Private::updateProperties(const QVariantMap &props)
     }
 
     if (props.contains(QLatin1String("Icon")) &&
-        icon != qdbus_cast<QString>(props[QLatin1String("Icon")])) {
-        icon = qdbus_cast<QString>(props[QLatin1String("Icon")]);
-        debug() << " Icon:" << icon;
-        emit parent->iconChanged(icon);
-        parent->notify("icon");
+        iconName != qdbus_cast<QString>(props[QLatin1String("Icon")])) {
+        iconName = qdbus_cast<QString>(props[QLatin1String("Icon")]);
+        debug() << " Icon:" << iconName;
+        emit parent->iconChanged(iconName);
+        emit parent->iconNameChanged(iconName);
+        parent->notify("iconName");
     }
 
     if (props.contains(QLatin1String("Nickname")) &&
