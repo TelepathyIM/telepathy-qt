@@ -56,8 +56,8 @@ public:
     QList<AccountPtr> accounts() const;
 
 Q_SIGNALS:
-    void accountAdded(const AccountPtr &account);
-    void accountRemoved(const AccountPtr &account);
+    void accountAdded(const Tp::AccountPtr &account);
+    void accountRemoved(const Tp::AccountPtr &account);
 
 private Q_SLOTS:
     void onAccountCreated(const QString &accountPath);
