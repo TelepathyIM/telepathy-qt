@@ -445,6 +445,7 @@ QList<AccountPtr> AccountManager::invalidAccounts()
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
+/* FIXME (API-BREAK) Add const qualifier */
 QList<AccountPtr> AccountManager::allAccounts()
 {
     QList<AccountPtr> ret;
@@ -768,8 +769,7 @@ void AccountManager::onAccountReady(Tp::PendingOperation *op)
     mPriv->accounts.insert(path, account);
 
     if (isReady(FeatureCore)) {
-        /* FIXME (API-BREAK)
-         * Remove accountCreated signal */
+        /* FIXME (API-BREAK) Remove accountCreated signal */
         emit accountCreated(path);
         emit newAccount(account);
     }
@@ -794,8 +794,7 @@ void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
         /* Only emit accountValidityChanged if both the AM and the account
          * are ready */
         if (isReady(FeatureCore) && mPriv->accounts.contains(path)) {
-            /* FIXME (API-BREAK)
-             * Use AccountPtr instead of QString in the accountValidityChanged signal */
+            /* FIXME (API-BREAK) Remove accountValidityChanged signal */
             emit accountValidityChanged(path, valid);
         }
     }
@@ -811,8 +810,7 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
 
         /* Only emit accountRemoved if both the AM and the account are ready */
         if (isReady(FeatureCore)) {
-            /* FIXME (API-BREAK)
-             * Use AccountPtr instead of QString in the accountRemoved signal */
+            /* FIXME (API-BREAK) Remove accountRemoved signal */
             emit accountRemoved(path);
             debug() << "Account" << path << "removed";
         } else {
