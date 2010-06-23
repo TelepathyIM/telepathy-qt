@@ -77,8 +77,8 @@ void AccountSet::Private::wrapAccount(const AccountPtr &account)
 {
     AccountWrapper *wrapper = new AccountWrapper(account, parent);
     parent->connect(wrapper,
-            SIGNAL(accountPropertyChanged(const AccountPtr &, const QString &)),
-            SLOT(onAccountPropertyChanged(const AccountPtr &, const QString &)));
+            SIGNAL(accountPropertyChanged(const Tp::AccountPtr &, const QString &)),
+            SLOT(onAccountPropertyChanged(const Tp::AccountPtr &, const QString &)));
     wrappers.insert(account->objectPath(), wrapper);
 }
 
