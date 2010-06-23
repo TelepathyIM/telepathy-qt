@@ -2440,6 +2440,7 @@ void Account::onRemoved()
     mPriv->enabled = false;
     invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
             QLatin1String("Account removed from AccountManager"));
+    emit removed();
 }
 
 void Account::notify(const char *propertyName)
