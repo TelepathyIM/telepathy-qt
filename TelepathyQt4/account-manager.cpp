@@ -769,8 +769,9 @@ void AccountManager::onAccountReady(Tp::PendingOperation *op)
 
     if (isReady(FeatureCore)) {
         /* FIXME (API-BREAK)
-         * Use AccountPtr instead of QString in the accountCreated signal */
+         * Remove accountCreated signal */
         emit accountCreated(path);
+        emit newAccount(account);
     }
 
     mPriv->checkIntrospectionCompleted();

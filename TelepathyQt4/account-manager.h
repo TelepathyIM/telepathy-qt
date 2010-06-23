@@ -106,6 +106,8 @@ Q_SIGNALS:
     void accountRemoved(const QString &path);
     void accountValidityChanged(const QString &path, bool valid);
 
+    void newAccount(const Tp::AccountPtr &account);
+
 protected:
     AccountManager();
     AccountManager(const QDBusConnection &bus);
