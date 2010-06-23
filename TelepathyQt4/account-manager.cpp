@@ -786,13 +786,13 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
             debug() << "Account" << path << "removed";
         } else {
             debug() << "Account" << path << "removed while the AM "
-                "or the account itself were not completelly introspected, "
+                "or the account itself were not completely introspected, "
                 "ignoring";
         }
     } else if (mPriv->incompleteAccounts.contains(path)) {
         mPriv->incompleteAccounts.remove(path);
         debug() << "Account" << path << "was removed, but it was "
-            "not completelly introspected, ignoring";
+            "not completely introspected, ignoring";
     }
 }
 
