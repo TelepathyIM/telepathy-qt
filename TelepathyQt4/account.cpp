@@ -982,17 +982,7 @@ PendingOperation *Account::setRequestedPresence(
  */
 bool Account::isOnline() const
 {
-    switch (mPriv->currentPresence.type) {
-        case ConnectionPresenceTypeAvailable:
-        case ConnectionPresenceTypeAway:
-        case ConnectionPresenceTypeExtendedAway:
-        case ConnectionPresenceTypeHidden:
-        case ConnectionPresenceTypeBusy:
-            return true;
-
-        default:
-            return false;
-    }
+    return mPriv->currentPresence.type != ConnectionPresenceTypeOffline;
 }
 
 /**
