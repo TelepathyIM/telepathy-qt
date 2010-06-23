@@ -65,12 +65,13 @@ public:
 
     virtual ~AccountManager();
 
-    QStringList validAccountPaths() const;
-    QStringList invalidAccountPaths() const;
-    QStringList allAccountPaths() const;
+    TELEPATHY_QT4_DEPRECATED QStringList validAccountPaths() const;
+    TELEPATHY_QT4_DEPRECATED QStringList invalidAccountPaths() const;
+    TELEPATHY_QT4_DEPRECATED QStringList allAccountPaths() const;
 
-    QList<AccountPtr> validAccounts();
-    QList<AccountPtr> invalidAccounts();
+    TELEPATHY_QT4_DEPRECATED QList<AccountPtr> validAccounts();
+    TELEPATHY_QT4_DEPRECATED QList<AccountPtr> invalidAccounts();
+
     QList<AccountPtr> allAccounts();
 
     AccountSetPtr validAccountsSet() const;
@@ -102,9 +103,10 @@ public:
     }
 
 Q_SIGNALS:
-    void accountCreated(const QString &path);
-    void accountRemoved(const QString &path);
-    void accountValidityChanged(const QString &path, bool valid);
+    TELEPATHY_QT4_DEPRECATED void accountCreated(const QString &path);
+    TELEPATHY_QT4_DEPRECATED void accountRemoved(const QString &path);
+    TELEPATHY_QT4_DEPRECATED void accountValidityChanged(const QString &path,
+            bool valid);
 
     void newAccount(const Tp::AccountPtr &account);
 
