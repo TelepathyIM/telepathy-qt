@@ -328,14 +328,33 @@ void Channel::Private::introspectMainProperties()
         Q_ASSERT(properties != 0);
     }
 
-    debug() << "Calling Properties::GetAll(Channel)";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL)),
-                parent);
-    parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    QString key;
+    bool needIntrospectMainProps = false;
+    const char *propertiesNames[] = { "ChannelType", "Interfaces",
+        "TargetHandleType", "TargetHandle", "Requested",
+        "InitiatorHandle", NULL };
+    for (unsigned i = 0; propertiesNames[i] != NULL; ++i) {
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".");
+        key += QLatin1String(propertiesNames[i]);
+        if (!immutableProperties.contains(key)) {
+            needIntrospectMainProps = true;
+            break;
+        }
+    }
+
+    if (needIntrospectMainProps) {
+        debug() << "Calling Properties::GetAll(Channel)";
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(
+                    properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL)),
+                    parent);
+        parent->connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    } else {
+        extract0177MainProps(immutableProperties);
+        continueIntrospection();
+    }
 }
 
 void Channel::Private::introspectMainFallbackChannelType()
@@ -1262,9 +1281,6 @@ Channel::Channel(const ConnectionPtr &connection,
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, connection, immutableProperties))
 {
-    // FIXME: remember the immutableProperties, and use them to reduce the
-    // number of D-Bus calls we need to make (but we should make at least
-    // one, to check that the channel does in fact exist)
 }
 
 /**
@@ -1315,6 +1331,11 @@ QVariantMap Channel::immutableProperties() const
             mPriv->immutableProperties.insert(key, mPriv->channelType);
         }
 
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Interfaces");
+        if (!mPriv->immutableProperties.contains(key)) {
+            mPriv->immutableProperties.insert(key, interfaces());
+        }
+
         key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->targetHandleType);
@@ -1328,6 +1349,11 @@ QVariantMap Channel::immutableProperties() const
         key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested");
         if (!mPriv->immutableProperties.contains(key)) {
             mPriv->immutableProperties.insert(key, mPriv->requested);
+        }
+
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle");
+        if (!mPriv->immutableProperties.contains(key)) {
+            mPriv->immutableProperties.insert(key, mPriv->initiatorHandle);
         }
     }
 
