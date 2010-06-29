@@ -41,6 +41,7 @@ public:
 
 private:
     friend class Connection;
+    friend class ProtocolInfo;
 
     ConnectionCapabilities();
     ConnectionCapabilities(const RequestableChannelClassList &classes);

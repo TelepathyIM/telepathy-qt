@@ -42,6 +42,7 @@
 namespace Tp
 {
 
+class ConnectionCapabilities;
 class PendingConnection;
 class PendingReady;
 class PendingStringList;
@@ -94,12 +95,24 @@ public:
 
     bool canRegister() const;
 
+    ConnectionCapabilities *capabilities() const;
+
+    QString vcardField() const;
+
+    QString englishName() const;
+
+    QString iconName() const;
+
 private:
     Q_DISABLE_COPY(ProtocolInfo);
 
     ProtocolInfo(const QString &cmName, const QString &name);
 
     void addParameter(const ParamSpec &spec);
+    void setRequestableChannelClasses(const RequestableChannelClassList &caps);
+    void setVCardField(const QString &vcardField);
+    void setEnglishName(const QString &englishName);
+    void setIconName(const QString &iconName);
 
     struct Private;
     friend struct Private;

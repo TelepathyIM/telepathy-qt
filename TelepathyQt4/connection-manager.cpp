@@ -29,6 +29,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingReady>
@@ -121,11 +122,25 @@ bool ProtocolParameter::operator==(const QString &name) const
 struct TELEPATHY_QT4_NO_EXPORT ProtocolInfo::Private
 {
     Private(const QString &cmName, const QString &name)
-        : cmName(cmName), name(name) {}
+        : cmName(cmName),
+          name(name),
+          caps(new ConnectionCapabilities()),
+          iconName(QString(QLatin1String("im-%1")).arg(name))
+    {
+    }
+
+    ~Private()
+    {
+        delete caps;
+    }
 
     QString cmName;
     QString name;
     ProtocolParameterList params;
+    ConnectionCapabilities *caps;
+    QString vcardField;
+    QString englishName;
+    QString iconName;
 };
 
 /**
@@ -226,6 +241,55 @@ bool ProtocolInfo::canRegister() const
     return hasParameter(QLatin1String("register"));
 }
 
+/**
+ * Return the capabilities that are expected to be available from a connection
+ * to this protocol, i.e. those for which Connection::createChannel() can
+ * reasonably be expected to succeed.
+ * User interfaces can use this information to show or hide UI components.
+ *
+ * @return An object representing the capabilities expected to be available from
+ *         a connection to this protocol.
+ */
+ConnectionCapabilities *ProtocolInfo::capabilities() const
+{
+    return mPriv->caps;
+}
+
+/**
+ * Return the name of the most common vCard field used for this protocol's
+ * contact identifiers, normalized to lower case.
+ *
+ * \return The most common vCard field used for this protocol's contact
+ *         identifiers, or an empty string if there is no such field.
+ */
+QString ProtocolInfo::vcardField() const
+{
+    return mPriv->vcardField;
+}
+
+/**
+ * Return the name of this protocol in a form suitable for display to users,
+ * such as "AIM" or "Yahoo!".
+ *
+ * \return The name of this protocol in a form suitable for display to users or
+ *         an empty string if none is available.
+ */
+QString ProtocolInfo::englishName() const
+{
+    return mPriv->englishName;
+}
+
+/**
+ * Return the name of an icon for this protocol in the system's icon theme,
+ * such as "im-msn".
+ *
+ * \return The name of an icon for this protocol in the system's icon theme.
+ */
+QString ProtocolInfo::iconName() const
+{
+    return mPriv->iconName;
+}
+
 void ProtocolInfo::addParameter(const ParamSpec &spec)
 {
     QVariant defaultValue;
@@ -244,6 +308,27 @@ void ProtocolInfo::addParameter(const ParamSpec &spec)
             (ConnMgrParamFlag) flags);
 
     mPriv->params.append(param);
+}
+
+void ProtocolInfo::setVCardField(const QString &vcardField)
+{
+    mPriv->vcardField = vcardField;
+}
+
+void ProtocolInfo::setEnglishName(const QString &englishName)
+{
+    mPriv->englishName = englishName;
+}
+
+void ProtocolInfo::setIconName(const QString &iconName)
+{
+    mPriv->iconName = iconName;
+}
+
+void ProtocolInfo::setRequestableChannelClasses(
+        const RequestableChannelClassList &caps)
+{
+    mPriv->caps->updateRequestableChannelClasses(caps);
 }
 
 ConnectionManager::Private::PendingNames::PendingNames(const QDBusConnection &bus)
