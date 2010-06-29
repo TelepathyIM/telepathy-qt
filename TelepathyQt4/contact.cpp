@@ -24,13 +24,13 @@
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ContactCapabilities>
 #include <TelepathyQt4/ContactLocation>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContactInfo>
 #include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/ReferencedHandles>
-#include <TelepathyQt4/Constants>
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -423,7 +423,8 @@ Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
     augment(requestedFeatures, attributes);
 }
 
-void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes) {
+void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap &attributes)
+{
     mPriv->requestedFeatures.unite(requestedFeatures);
 
     mPriv->id = qdbus_cast<QString>(attributes[
@@ -484,6 +485,14 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
 
                 if (!maybeCaps.isEmpty()) {
                     receiveCapabilities(maybeCaps);
+                } else {
+                    if (manager()->supportedFeatures().contains(FeatureCapabilities) &&
+                        mPriv->requestedFeatures.contains(FeatureCapabilities)) {
+                        // Capabilities being supported but not updated in the
+                        // mapping indicates that the capabilities is not known -
+                        // however, the feature is working fine.
+                        mPriv->actualFeatures.insert(FeatureCapabilities);
+                    }
                 }
                 break;
 

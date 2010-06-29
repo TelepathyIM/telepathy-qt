@@ -211,7 +211,7 @@ Connection::Private::Private(Connection *parent)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_BALANCE),           // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectBalance,
         this);
-    introspectables[FeatureRosterGroups] = introspectableBalance;
+    introspectables[FeatureAccountBalance] = introspectableBalance;
 
     readinessHelper->addIntrospectables(introspectables);
     readinessHelper->setCurrentStatus(status);
