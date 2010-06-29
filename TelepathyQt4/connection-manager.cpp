@@ -175,7 +175,7 @@ ProtocolInfo::~ProtocolInfo()
 }
 
 /**
- * Get the short name of the connection manager (e.g. "gabble").
+ * Return the short name of the connection manager (e.g. "gabble").
  *
  * \return The name of the connection manager.
  */
@@ -185,7 +185,7 @@ QString ProtocolInfo::cmName() const
 }
 
 /**
- * Get the string identifying the protocol as described in the Telepathy
+ * Return the string identifying the protocol as described in the Telepathy
  * D-Bus API Specification (e.g. "jabber").
  *
  * This identifier is not intended to be displayed to users directly; user
@@ -712,7 +712,7 @@ ConnectionManager::~ConnectionManager()
 }
 
 /**
- * Get the short name of the connection manager (e.g. "gabble").
+ * Return the short name of the connection manager (e.g. "gabble").
  *
  * \return The name of the connection manager.
  */
@@ -722,12 +722,14 @@ QString ConnectionManager::name() const
 }
 
 /**
- * Get a list of strings identifying the protocols supported by this
+ * Return a list of strings identifying the protocols supported by this
  * connection manager, as described in the Telepathy
  * D-Bus API Specification (e.g. "jabber").
  *
  * These identifiers are not intended to be displayed to users directly; user
  * interfaces are responsible for mapping them to localized strings.
+ *
+ * This method requires ConnectionManager::FeatureCore to be enabled.
  *
  * \return A list of supported protocols.
  */
@@ -741,7 +743,11 @@ QStringList ConnectionManager::supportedProtocols() const
 }
 
 /**
- * Get a list of protocols info for this connection manager.
+ * Return a list of protocols info for this connection manager.
+ *
+ * Note that the returned ProtocolInfoList contents should not be freed.
+ *
+ * This method requires ConnectionManager::FeatureCore to be enabled.
  *
  * \return A list of ṔrotocolInfo.
  */
@@ -832,13 +838,13 @@ PendingStringList *ConnectionManager::listNames(const QDBusConnection &bus)
 }
 
 /**
- * Get the ConnectionManagerInterface for this ConnectionManager. This
- * method is protected since the convenience methods provided by this
+ * Return the Client::ConnectionManagerInterface for this ConnectionManager.
+ * This method is protected since the convenience methods provided by this
  * class should generally be used instead of calling D-Bus methods
  * directly.
  *
- * \return A pointer to the existing ConnectionManagerInterface for this
- *         ConnectionManager.
+ * \return A pointer to the existing Client::ConnectionManagerInterface for this
+ *         ConnectionManager object.
  */
 Client::ConnectionManagerInterface *ConnectionManager::baseInterface() const
 {
