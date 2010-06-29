@@ -293,6 +293,9 @@ bool KeyFile::Private::unescapeStringList(const QByteArray &data, int from, int 
         }
         else {
             value += ch;
+            if (i == to) {
+                valueList << value;
+            }
         }
     }
 
