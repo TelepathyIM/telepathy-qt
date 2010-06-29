@@ -144,8 +144,10 @@ public:
 
     QStringList supportedProtocols() const;
     const ProtocolInfoList &protocols() const;
+    bool hasProtocol(const QString &protocolName) const;
+    ProtocolInfo *protocol(const QString &protocolName) const;
 
-    PendingConnection *requestConnection(const QString &protocol,
+    PendingConnection *requestConnection(const QString &protocolName,
             const QVariantMap &parameters);
 
     static PendingStringList *listNames(

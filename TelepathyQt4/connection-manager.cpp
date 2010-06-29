@@ -751,6 +751,45 @@ const ProtocolInfoList &ConnectionManager::protocols() const
 }
 
 /**
+ * Return whether this connection manager implements the protocol specified by
+ * \a protocolName.
+ *
+ * This method requires ConnectionManager::FeatureCore to be enabled.
+ *
+ * \return \c true if the protocol is supported, \c false otherwise.
+ * \sa protocol(), protocols()
+ */
+bool ConnectionManager::hasProtocol(const QString &protocolName) const
+{
+    foreach (const ProtocolInfo *info, mPriv->protocols) {
+        if (info->name() == protocolName) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return the ProtocolInfo object for the protocol specified by
+ * \a protocolName.
+ *
+ * This method requires ConnectionManager::FeatureCore to be enabled.
+ *
+ * \return A ProtocolInfo object or 0 if the protocol specified by \a
+ *         protocolName is not supported.
+ * \sa hasProtocol()
+ */
+ProtocolInfo *ConnectionManager::protocol(const QString &protocolName) const
+{
+    foreach (ProtocolInfo *info, mPriv->protocols) {
+        if (info->name() == protocolName) {
+            return info;
+        }
+    }
+    return 0;
+}
+
+/**
  * Request a Connection object representing a given account on a given protocol
  * with the given parameters.
  *
