@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,11 @@ public:
     bool isValid() const;
     QStringList protocols() const;
     ParamSpecList parameters(const QString &protocol) const;
+    QString vcardField(const QString &protocol) const;
+    QString englishName(const QString &protocol) const;
+    QString iconName(const QString &protocol) const;
+    RequestableChannelClassList requestableChannelClasses(
+            const QString &protocol) const;
 
     static QVariant::Type variantTypeFromDBusSignature(const QString &signature);
 

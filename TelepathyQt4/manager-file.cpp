@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008-2009 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008-2009 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -50,9 +50,24 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
 
     QVariant valueForKey(const QString &param, const QString &signature);
 
+    struct ProtocolInfo
+    {
+        ProtocolInfo() {}
+        ProtocolInfo(const ParamSpecList &params)
+            : params(params)
+        {
+        }
+
+        ParamSpecList params;
+        QString vcardField;
+        QString englishName;
+        QString iconName;
+        RequestableChannelClassList rccs;
+    };
+
     QString cmName;
     KeyFile keyFile;
-    QHash<QString, ParamSpecList> protocolParams;
+    QHash<QString, ProtocolInfo> protocolsMap;
     bool valid;
 };
 
@@ -92,7 +107,7 @@ void ManagerFile::Private::init()
         QString fileName = configDir + cmName + QLatin1String(".manager");
         if (QFile::exists(fileName)) {
             debug() << "parsing manager file" << fileName;
-            protocolParams.clear();
+            protocolsMap.clear();
             if (!parse(fileName)) {
                 warning() << "error parsing manager file" << fileName;
                 continue;
@@ -151,7 +166,7 @@ bool ManagerFile::Private::parse(const QString &fileName)
                 }
             }
 
-            protocolParams[protocol] = paramSpecList;
+            protocolsMap.insert(protocol, ProtocolInfo(paramSpecList));
 
             /* now that we have all param-* created, let's find their default values */
             foreach (param, params) {
@@ -174,10 +189,41 @@ bool ManagerFile::Private::parse(const QString &fileName)
                     if (value.type() == QVariant::Invalid) {
                         warning() << "param" << paramName
                                   << "has invalid signature";
+                        protocolsMap.clear();
                         return false;
                     }
                     spec->defaultValue = QDBusVariant(value);
                 }
+            }
+
+            ProtocolInfo &info = protocolsMap[protocol];
+            info.vcardField = keyFile.value(QLatin1String("VCardField"));
+            info.englishName = keyFile.value(QLatin1String("EnglishName"));
+            info.iconName = keyFile.value(QLatin1String("Icon"));
+
+            QStringList rccGroups = keyFile.valueAsStringList(
+                    QLatin1String("RequestableChannelClasses"));
+            RequestableChannelClass rcc;
+            foreach (const QString &rccGroup, rccGroups) {
+                keyFile.setGroup(rccGroup);
+
+                foreach (const QString &key, keyFile.keys()) {
+                    int spaceIdx = key.indexOf(QLatin1String(" "));
+                    if (spaceIdx == -1) {
+                        continue;
+                    }
+
+                    QString propertyName = key.mid(0, spaceIdx);
+                    QString signature = key.mid(spaceIdx + 1);
+                    QString param = keyFile.value(key);
+                    QVariant value = valueForKey(key, signature);
+                    rcc.fixedProperties.insert(propertyName, value);
+                }
+
+                rcc.allowedProperties = keyFile.valueAsStringList(
+                        QLatin1String("allowed"));
+
+                info.rccs.append(rcc);
             }
         }
     }
@@ -193,8 +239,8 @@ bool ManagerFile::Private::isValid() const
 bool ManagerFile::Private::hasParameter(const QString &protocol,
                                         const QString &paramName) const
 {
-    ParamSpecList paramSpecList = protocolParams[protocol];
-    foreach (ParamSpec paramSpec, paramSpecList) {
+    ParamSpecList paramSpecList = protocolsMap[protocol].params;
+    foreach (const ParamSpec &paramSpec, paramSpecList) {
         if (paramSpec.name == paramName) {
             return true;
         }
@@ -205,7 +251,7 @@ bool ManagerFile::Private::hasParameter(const QString &protocol,
 ParamSpec *ManagerFile::Private::getParameter(const QString &protocol,
                                               const QString &paramName)
 {
-    ParamSpecList &paramSpecList = protocolParams[protocol];
+    ParamSpecList &paramSpecList = protocolsMap[protocol].params;
     for (int i = 0; i < paramSpecList.size(); ++i) {
         ParamSpec &paramSpec = paramSpecList[i];
         if (paramSpec.name == paramName) {
@@ -217,12 +263,12 @@ ParamSpec *ManagerFile::Private::getParameter(const QString &protocol,
 
 QStringList ManagerFile::Private::protocols() const
 {
-    return protocolParams.keys();
+    return protocolsMap.keys();
 }
 
 ParamSpecList ManagerFile::Private::parameters(const QString &protocol) const
 {
-    return protocolParams.value(protocol);
+    return protocolsMap.value(protocol).params;
 }
 
 QVariant ManagerFile::Private::valueForKey(const QString &param,
@@ -333,7 +379,7 @@ QStringList ManagerFile::protocols() const
 }
 
 /**
- * Return a list of all protocols defined in the manager file.
+ * Return a list of parameters for the given \a protocol.
  *
  * \param protocol Name of the protocol to look for.
  * \return List of ParamSpec of a specific protocol defined in the file, or an
@@ -342,6 +388,63 @@ QStringList ManagerFile::protocols() const
 ParamSpecList ManagerFile::parameters(const QString &protocol) const
 {
     return mPriv->parameters(protocol);
+}
+
+/**
+ * Return the name of the most common vCard field used for the given \a protocol's
+ * contact identifiers, normalized to lower case.
+ *
+ * \param protocol Name of the protocol to look for.
+ * \return The most common vCard field used for the given protocol's contact
+ *         identifiers, or an empty string if there is no such field or the
+ *         protocol is not defined.
+ */
+QString ManagerFile::vcardField(const QString &protocol) const
+{
+    return mPriv->protocolsMap[protocol].vcardField;
+}
+
+/**
+ * Return the name of the given \a protocol in a form suitable for display to
+ * users, such as "AIM" or "Yahoo!".
+ *
+ * \param protocol Name of the protocol to look for.
+ * \return The name of the given \a protocol in a form suitable for display to
+ *         users or an empty string if none is available or the protocol is not
+ *         defined.
+ */
+QString ManagerFile::englishName(const QString &protocol) const
+{
+    return mPriv->protocolsMap[protocol].englishName;
+}
+
+/**
+ * Return the name of an icon for the given \a protocol in the system's icon
+ * theme, such as "im-msn".
+ *
+ * \param protocol Name of the protocol to look for.
+ * \return The name of an icon for the given \a protocol in the system's icon
+ *         theme or an empty string if none is available or the protocol is not
+ *         defined.
+ */
+QString ManagerFile::iconName(const QString &protocol) const
+{
+    return mPriv->protocolsMap[protocol].iconName;
+}
+
+/**
+ * Return a list of channel classes which might be requestable from a connection
+ * to the given \a protocol.
+ *
+ * \param protocol Name of the protocol to look for.
+ * \return A list of channel classes which might be requestable from a
+ *         connection to the given \a protocol or a default constructed
+ *         RequestableChannelClassList instance if the protocol is not defined.
+ */
+RequestableChannelClassList ManagerFile::requestableChannelClasses(
+        const QString &protocol) const
+{
+    return mPriv->protocolsMap[protocol].rccs;
 }
 
 QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
