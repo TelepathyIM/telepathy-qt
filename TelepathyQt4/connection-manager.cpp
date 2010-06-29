@@ -434,6 +434,11 @@ bool ConnectionManager::Private::parseConfigFile()
         foreach (ParamSpec spec, f.parameters(protocol)) {
             info->addParameter(spec);
         }
+        info->setRequestableChannelClasses(
+                f.requestableChannelClasses(protocol));
+        info->setVCardField(f.vcardField(protocol));
+        info->setEnglishName(f.englishName(protocol));
+        info->setIconName(f.iconName(protocol));
     }
 
 #if 0
