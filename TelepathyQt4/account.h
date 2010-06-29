@@ -123,15 +123,12 @@ public:
     QString nickname() const;
     PendingOperation *setNickname(const QString &value);
 
-    // requires spec 0.17.16
     const Avatar &avatar() const;
     PendingOperation *setAvatar(const Avatar &avatar);
 
     QVariantMap parameters() const;
     PendingStringList *updateParameters(const QVariantMap &set,
             const QStringList &unset);
-    // requires spec 0.17.24
-    PendingOperation *reconnect();
 
     // comes from the ConnectionManager
     ProtocolInfo *protocolInfo() const;
@@ -168,6 +165,8 @@ public:
     QString connectionObjectPath() const;
 
     QString normalizedName() const;
+
+    PendingOperation *reconnect();
 
     PendingOperation *remove();
 

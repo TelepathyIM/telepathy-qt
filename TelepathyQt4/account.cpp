@@ -549,23 +549,6 @@ QString Account::displayName() const
 }
 
 /**
- * Return whether this account has ever been put online successfully.
- *
- * This property cannot change from true to false, only from false to true.
- * When the account successfully goes online for the first time, or when it
- * is detected that this has already happened, the firstOnline() signal is
- * emitted.
- *
- * This method requires Account::FeatureCore to be enabled.
- *
- * \return Whether the account has ever been online.
- */
-bool Account::hasBeenOnline() const
-{
-    return mPriv->hasBeenOnline;
-}
-
-/**
  * Set the display name of this account.
  *
  * \param value The display name of this account.
@@ -805,6 +788,23 @@ PendingOperation *Account::setConnectsAutomatically(bool value)
                 QLatin1String("ConnectAutomatically"),
                 QDBusVariant(value)),
             this);
+}
+
+/**
+ * Return whether this account has ever been put online successfully.
+ *
+ * This property cannot change from true to false, only from false to true.
+ * When the account successfully goes online for the first time, or when it
+ * is detected that this has already happened, the firstOnline() signal is
+ * emitted.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return Whether the account has ever been online.
+ */
+bool Account::hasBeenOnline() const
+{
+    return mPriv->hasBeenOnline;
 }
 
 /**
