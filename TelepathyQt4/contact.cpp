@@ -485,6 +485,14 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
 
                 if (!maybeCaps.isEmpty()) {
                     receiveCapabilities(maybeCaps);
+                } else {
+                    if (manager()->supportedFeatures().contains(FeatureCapabilities) &&
+                        mPriv->requestedFeatures.contains(FeatureCapabilities)) {
+                        // Capabilities being supported but not updated in the
+                        // mapping indicates that the capabilities is not known -
+                        // however, the feature is working fine.
+                        mPriv->actualFeatures.insert(FeatureCapabilities);
+                    }
                 }
                 break;
 
