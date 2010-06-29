@@ -501,9 +501,17 @@ ConnectionManager::Private::Private(ConnectionManager *parent, const QString &na
 
 ConnectionManager::Private::~Private()
 {
+    foreach (ProtocolWrapper *wrapper, wrappers) {
+        /* wrapper->info() is not deleted by ProtocolWrapper as we borrow it in
+         * case it gets ready */
+        delete wrapper->info();
+        delete wrapper;
+    }
+
     foreach (ProtocolInfo *info, protocols) {
         delete info;
     }
+
     delete baseInterface;
 }
 
@@ -822,7 +830,26 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         // FIXME shouldn't this invalidate the CM or fall back to calling the individual methods?
     }
 
-    mPriv->introspectProtocolsLegacy();
+    ProtocolPropertiesMap protocolsMap =
+        qdbus_cast<ProtocolPropertiesMap>(props[QLatin1String("Protocols")]);
+    if (!protocolsMap.isEmpty()) {
+        ProtocolPropertiesMap::const_iterator i = protocolsMap.constBegin();
+        ProtocolPropertiesMap::const_iterator end = protocolsMap.constEnd();
+        while (i != end) {
+            QString protocolPath = QString(
+                    QLatin1String("%1/%2")).arg(objectPath()).arg(i.key());
+            Private::ProtocolWrapper *wrapper = new Private::ProtocolWrapper(
+                        dbusConnection(), busName(), protocolPath,
+                        mPriv->name, i.key());
+            connect(wrapper->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(onProtocolReady(Tp::PendingOperation *)));
+            mPriv->wrappers.insert(wrapper, wrapper);
+            ++i;
+        }
+    } else {
+        mPriv->introspectProtocolsLegacy();
+    }
 
     watcher->deleteLater();
 }
@@ -903,6 +930,32 @@ void ConnectionManager::gotParametersLegacy(QDBusPendingCallWatcher *watcher)
     }
 
     watcher->deleteLater();
+}
+
+void ConnectionManager::onProtocolReady(Tp::PendingOperation *op)
+{
+    PendingReady *pr = qobject_cast<PendingReady*>(op);
+    Private::ProtocolWrapper *wrapper =
+        qobject_cast<Private::ProtocolWrapper*>(pr->object());
+    ProtocolInfo *info = wrapper->info();
+
+    delete mPriv->wrappers.take(wrapper);
+
+    if (!op->isError()) {
+        mPriv->protocols.append(info);
+    } else {
+        delete info;
+    }
+
+    if (mPriv->wrappers.isEmpty()) {
+        if (!mPriv->protocols.isEmpty()) {
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        } else {
+            // we could not make any Protocol objects ready, fail core.
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
+                    op->errorName(), op->errorMessage());
+        }
+    }
 }
 
 } // Tp

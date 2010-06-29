@@ -166,6 +166,7 @@ private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
     void gotProtocolsLegacy(QDBusPendingCallWatcher *);
     void gotParametersLegacy(QDBusPendingCallWatcher *);
+    void onProtocolReady(Tp::PendingOperation *);
 
 private:
     friend class PendingConnection;
