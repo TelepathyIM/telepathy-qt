@@ -44,6 +44,25 @@ void TestManagerFile::testManagerFile()
     QCOMPARE(containsParam(params, "server-list"), true);
     QCOMPARE(containsParam(params, "non-existant"), false);
 
+    QCOMPARE(QLatin1String("x-foo"), managerFile.vcardField(QLatin1String("foo")));
+    QCOMPARE(QLatin1String("Foo"), managerFile.englishName(QLatin1String("foo")));
+    QCOMPARE(QLatin1String("im-foo"), managerFile.iconName(QLatin1String("foo")));
+
+    RequestableChannelClass expectedRcc;
+    expectedRcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    expectedRcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            HandleTypeContact);
+    expectedRcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    expectedRcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"));
+    RequestableChannelClassList expectedRccs;
+    expectedRccs.append(expectedRcc);
+    QCOMPARE(expectedRccs, managerFile.requestableChannelClasses(QLatin1String("foo")));
+
     const ParamSpec *param;
     param = getParam(params, QLatin1String("account"));
     QCOMPARE(param->flags, (uint) ConnMgrParamFlagRequired | ConnMgrParamFlagHasDefault);

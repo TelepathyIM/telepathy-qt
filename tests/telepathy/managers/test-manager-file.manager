@@ -9,6 +9,16 @@ default-account = foo@default
 default-port = 1234
 default-server-list = foo;bar;
 
+VCardField=x-foo
+EnglishName=Foo
+Icon=im-foo
+RequestableChannelClasses=foo text
+
+[foo text]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
+org.freedesktop.Telepathy.Channel.TargetHandleType u=1
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+
 [Protocol bar]
 param-account = s required
 param-encryption-key = s required secret
