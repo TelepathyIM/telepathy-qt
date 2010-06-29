@@ -37,11 +37,6 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
 {
-    QString cmName;
-    KeyFile keyFile;
-    QHash<QString, ParamSpecList> protocolParams;
-    bool valid;
-
     Private(const QString &cnName);
 
     void init();
@@ -54,6 +49,11 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
     ParamSpecList parameters(const QString &protocol) const;
 
     QVariant valueForKey(const QString &param, const QString &signature);
+
+    QString cmName;
+    KeyFile keyFile;
+    QHash<QString, ParamSpecList> protocolParams;
+    bool valid;
 };
 
 ManagerFile::Private::Private(const QString &cmName)
