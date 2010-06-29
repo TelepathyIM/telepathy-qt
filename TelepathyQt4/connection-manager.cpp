@@ -388,6 +388,93 @@ void ConnectionManager::Private::PendingNames::parseResult(const QStringList &na
     }
 }
 
+const Feature ConnectionManager::Private::ProtocolWrapper::FeatureCore =
+    Feature(QLatin1String(ConnectionManager::Private::ProtocolWrapper::staticMetaObject.className()),
+            0, true);
+
+ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
+        const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath,
+        const QString &cmName, const QString &name)
+    : StatelessDBusProxy(bus, busName, objectPath),
+      OptionalInterfaceFactory<ProtocolWrapper>(this),
+      ReadyObject(this, FeatureCore),
+      mReadinessHelper(readinessHelper()),
+      mInfo(new ProtocolInfo(cmName, name))
+{
+    ReadinessHelper::Introspectables introspectables;
+
+    // As ConnectionManager does not have predefined statuses let's simulate one (0)
+    ReadinessHelper::Introspectable introspectableCore(
+        QSet<uint>() << 0,                                           // makesSenseForStatuses
+        Features(),                                                  // dependsOnFeatures
+        QStringList(),                                               // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
+        this);
+    introspectables[FeatureCore] = introspectableCore;
+
+    mReadinessHelper->addIntrospectables(introspectables);
+    mReadinessHelper->becomeReady(Features() << FeatureCore);
+}
+
+ConnectionManager::Private::ProtocolWrapper::~ProtocolWrapper()
+{
+}
+
+void ConnectionManager::Private::ProtocolWrapper::introspectMain(
+        ConnectionManager::Private::ProtocolWrapper *self)
+{
+    Client::DBus::PropertiesInterface *properties = self->propertiesInterface();
+    Q_ASSERT(properties != 0);
+
+    debug() << "Calling Properties::GetAll(Protocol)";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            properties->GetAll(
+                QLatin1String(TELEPATHY_INTERFACE_PROTOCOL)),
+            self);
+    self->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
+}
+
+void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
+        QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties.GetAll(Protocol)";
+        props = reply.value();
+
+        setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
+        mReadinessHelper->setInterfaces(interfaces());
+
+        ParamSpecList parameters = qdbus_cast<ParamSpecList>(
+                props[QLatin1String("Parameters")]);
+        foreach (const ParamSpec &spec, parameters) {
+            mInfo->addParameter(spec);
+        }
+
+        mInfo->setVCardField(qdbus_cast<QString>(
+                    props[QLatin1String("VCardField")]));
+        mInfo->setEnglishName(qdbus_cast<QString>(
+                    props[QLatin1String("EnglishName")]));
+        mInfo->setIconName(qdbus_cast<QString>(
+                    props[QLatin1String("IconName")]));
+        mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
+                    props[QLatin1String("RequestableChannelClasses")]));
+    } else {
+        warning().nospace() <<
+            "Properties.GetAll(Protocol) failed: " <<
+            reply.error().name() << ": " << reply.error().message();
+    }
+
+    mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
+
+    watcher->deleteLater();
+}
+
 ConnectionManager::Private::Private(ConnectionManager *parent, const QString &name)
     : parent(parent),
       name(name),

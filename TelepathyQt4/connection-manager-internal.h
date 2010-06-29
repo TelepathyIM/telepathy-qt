@@ -53,6 +53,7 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
     ProtocolInfo *protocol(const QString &protocolName);
 
     class PendingNames;
+    class ProtocolWrapper;
 
     // Public object
     ConnectionManager *parent;
@@ -88,6 +89,38 @@ private:
     QQueue<QLatin1String> mMethodsQueue;
     QSet<QString> mResult;
     QDBusConnection mBus;
+};
+
+class TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private::ProtocolWrapper :
+                          public StatelessDBusProxy,
+                          public OptionalInterfaceFactory<ProtocolWrapper>,
+                          public ReadyObject
+{
+    Q_OBJECT
+
+public:
+    static const Feature FeatureCore;
+
+    ProtocolWrapper(const QDBusConnection &bus, const QString &busName,
+            const QString &objectPath,
+            const QString &cmName, const QString &name);
+    ~ProtocolWrapper();
+
+    ProtocolInfo *info() const { return mInfo; }
+
+    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    {
+        return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
+    }
+
+private Q_SLOTS:
+    void gotMainProperties(QDBusPendingCallWatcher *);
+
+private:
+    static void introspectMain(ProtocolWrapper *self);
+
+    ReadinessHelper *mReadinessHelper;
+    ProtocolInfo *mInfo;
 };
 
 } // Tp
