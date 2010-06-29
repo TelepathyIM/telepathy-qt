@@ -480,17 +480,17 @@ void ConnectionManager::Private::introspectMain(ConnectionManager::Private *self
             SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
 }
 
-void ConnectionManager::Private::introspectProtocols()
+void ConnectionManager::Private::introspectProtocolsLegacy()
 {
     debug() << "Calling ConnectionManager::ListProtocols";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             baseInterface->ListProtocols(), parent);
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotProtocols(QDBusPendingCallWatcher *)));
+            SLOT(gotProtocolsLegacy(QDBusPendingCallWatcher *)));
 }
 
-void ConnectionManager::Private::introspectParameters()
+void ConnectionManager::Private::introspectParametersLegacy()
 {
     foreach (const QString &protocolName, parametersQueue) {
         debug() << "Calling ConnectionManager::GetParameters(" << protocolName << ")";
@@ -498,7 +498,7 @@ void ConnectionManager::Private::introspectParameters()
                 baseInterface->GetParameters(protocolName), parent);
         parent->connect(watcher,
                 SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(gotParameters(QDBusPendingCallWatcher *)));
+                SLOT(gotParametersLegacy(QDBusPendingCallWatcher *)));
     }
 }
 
@@ -735,12 +735,12 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         // FIXME shouldn't this invalidate the CM or fall back to calling the individual methods?
     }
 
-    mPriv->introspectProtocols();
+    mPriv->introspectProtocolsLegacy();
 
     watcher->deleteLater();
 }
 
-void ConnectionManager::gotProtocols(QDBusPendingCallWatcher *watcher)
+void ConnectionManager::gotProtocolsLegacy(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QStringList> reply = *watcher;
     QStringList protocolsNames;
@@ -755,7 +755,7 @@ void ConnectionManager::gotProtocols(QDBusPendingCallWatcher *watcher)
             mPriv->parametersQueue.enqueue(protocolName);
         }
 
-        mPriv->introspectParameters();
+        mPriv->introspectParametersLegacy();
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
 
@@ -769,7 +769,7 @@ void ConnectionManager::gotProtocols(QDBusPendingCallWatcher *watcher)
     watcher->deleteLater();
 }
 
-void ConnectionManager::gotParameters(QDBusPendingCallWatcher *watcher)
+void ConnectionManager::gotParametersLegacy(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<ParamSpecList> reply = *watcher;
     QString protocolName = mPriv->parametersQueue.dequeue();

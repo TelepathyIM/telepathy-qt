@@ -44,8 +44,8 @@ struct TELEPATHY_QT4_NO_EXPORT ConnectionManager::Private
     bool parseConfigFile();
 
     static void introspectMain(Private *self);
-    void introspectProtocols();
-    void introspectParameters();
+    void introspectProtocolsLegacy();
+    void introspectParametersLegacy();
 
     static QString makeBusName(const QString &name);
     static QString makeObjectPath(const QString &name);

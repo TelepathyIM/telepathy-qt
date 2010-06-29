@@ -164,8 +164,8 @@ protected:
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
-    void gotProtocols(QDBusPendingCallWatcher *);
-    void gotParameters(QDBusPendingCallWatcher *);
+    void gotProtocolsLegacy(QDBusPendingCallWatcher *);
+    void gotParametersLegacy(QDBusPendingCallWatcher *);
 
 private:
     friend class PendingConnection;
