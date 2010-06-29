@@ -328,6 +328,7 @@ void Channel::Private::introspectMainProperties()
         Q_ASSERT(properties != 0);
     }
 
+    QVariantMap props;
     QString key;
     bool needIntrospectMainProps = false;
     const char *propertiesNames[] = { "ChannelType", "Interfaces",
@@ -340,6 +341,7 @@ void Channel::Private::introspectMainProperties()
             needIntrospectMainProps = true;
             break;
         }
+        props.insert(QLatin1String(propertiesNames[i]), immutableProperties[key]);
     }
 
     if (needIntrospectMainProps) {
@@ -352,7 +354,7 @@ void Channel::Private::introspectMainProperties()
                 SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
     } else {
-        extract0177MainProps(immutableProperties);
+        extract0177MainProps(props);
         continueIntrospection();
     }
 }
