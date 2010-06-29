@@ -4,7 +4,7 @@
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingReady>
 
-#include <telepathy-glib/debug.h>
+#include <telepathy-glib/telepathy-glib.h>
 
 #include <tests/lib/glib/contacts-conn.h>
 #include <tests/lib/test.h>
@@ -35,7 +35,7 @@ private Q_SLOTS:
 
 private:
     QString mConnName, mConnPath;
-    ContactsConnection *mConnService;
+    TpTestsContactsConnection *mConnService;
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
 };
@@ -86,8 +86,8 @@ void TestContactsCapabilities::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = CONTACTS_CONNECTION(g_object_new(
-            CONTACTS_TYPE_CONNECTION,
+    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "foo",
             0));
@@ -124,13 +124,71 @@ void TestContactsCapabilities::init()
     initImpl();
 }
 
+static void freeRccList(GPtrArray *rccs)
+{
+    g_boxed_free(TP_ARRAY_TYPE_REQUESTABLE_CHANNEL_CLASS_LIST, rccs);
+}
+
+static void addTextChatClass(GPtrArray *classes, TpHandleType handle_type)
+{
+    GHashTable *fixed = tp_asv_new(
+        TP_PROP_CHANNEL_CHANNEL_TYPE, G_TYPE_STRING, TP_IFACE_CHANNEL_TYPE_TEXT,
+        TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, G_TYPE_UINT, handle_type,
+        NULL);
+
+    const gchar * const allowed[] = { NULL };
+    GValueArray *arr = tp_value_array_build(2,
+        TP_HASH_TYPE_STRING_VARIANT_MAP, fixed,
+        G_TYPE_STRV, allowed,
+        G_TYPE_INVALID);
+
+    g_hash_table_unref(fixed);
+
+    g_ptr_array_add(classes, arr);
+}
+
+static GHashTable *createContactCapabilities(TpHandle *handles)
+{
+    GHashTable *capabilities = g_hash_table_new_full(NULL, NULL, NULL,
+        (GDestroyNotify) freeRccList);
+
+    /* Support private text chats */
+    GPtrArray *caps1 = g_ptr_array_sized_new(2);
+    addTextChatClass(caps1, TP_HANDLE_TYPE_CONTACT);
+    g_hash_table_insert(capabilities, GUINT_TO_POINTER(handles[0]), caps1);
+
+    /* Support text chatrooms */
+    GPtrArray *caps2 = g_ptr_array_sized_new(1);
+    g_hash_table_insert(capabilities, GUINT_TO_POINTER(handles[1]), caps2);
+
+    /* Don't support anything */
+    GPtrArray *caps3 = g_ptr_array_sized_new(0);
+    g_hash_table_insert(capabilities, GUINT_TO_POINTER(handles[2]), caps3);
+
+    return capabilities;
+}
+
 void TestContactsCapabilities::testCapabilities()
 {
-    QStringList validIDs = QStringList() << QLatin1String("foo")
-        << QLatin1String("bar");
+    QStringList ids = QStringList() << QLatin1String("alice")
+        << QLatin1String("bob") << QLatin1String("chris");
+
+    gboolean supportTextChat[] = { TRUE, FALSE, FALSE };
+
+    TpHandleRepoIface *serviceRepo =
+        tp_base_connection_get_handles(TP_BASE_CONNECTION(mConnService),
+                TP_HANDLE_TYPE_CONTACT);
+    TpHandle handles[] = { 0, 0, 0 };
+    for (int i = 0; i < 3; i++) {
+        handles[i] = tp_handle_ensure(serviceRepo, ids[i].toLatin1().constData(),
+                NULL, NULL);
+    }
+
+    GHashTable *capabilities = createContactCapabilities(handles);
+    tp_tests_contacts_connection_change_capabilities(mConnService, capabilities);
 
     PendingContacts *pending = mConn->contactManager()->contactsForIdentifiers(
-            validIDs, QSet<Contact::Feature>() << Contact::FeatureCapabilities);
+            ids, QSet<Contact::Feature>() << Contact::FeatureCapabilities);
     QVERIFY(connect(pending,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
@@ -145,7 +203,7 @@ void TestContactsCapabilities::testCapabilities()
                  QSet<Contact::Feature>() << Contact::FeatureCapabilities);
 
         QVERIFY(contact->capabilities() != 0);
-        QCOMPARE(contact->capabilities()->supportsTextChats(), true);
+        QCOMPARE(contact->capabilities()->supportsTextChats(), supportTextChat[i]);
         QCOMPARE(contact->capabilities()->supportsMediaCalls(), false);
         QCOMPARE(contact->capabilities()->supportsAudioCalls(), false);
         QCOMPARE(contact->capabilities()->supportsVideoCalls(false), false);

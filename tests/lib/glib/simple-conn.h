@@ -9,51 +9,58 @@
  * notice and this notice are preserved.
  */
 
-#ifndef __SIMPLE_CONN_H__
-#define __SIMPLE_CONN_H__
+#ifndef __TP_TESTS_SIMPLE_CONN_H__
+#define __TP_TESTS_SIMPLE_CONN_H__
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection.h>
 
 G_BEGIN_DECLS
 
-typedef struct _SimpleConnection SimpleConnection;
-typedef struct _SimpleConnectionClass SimpleConnectionClass;
-typedef struct _SimpleConnectionPrivate SimpleConnectionPrivate;
+typedef struct _TpTestsSimpleConnection TpTestsSimpleConnection;
+typedef struct _TpTestsSimpleConnectionClass TpTestsSimpleConnectionClass;
+typedef struct _TpTestsSimpleConnectionPrivate TpTestsSimpleConnectionPrivate;
 
-struct _SimpleConnectionClass {
+struct _TpTestsSimpleConnectionClass {
     TpBaseConnectionClass parent_class;
 };
 
-struct _SimpleConnection {
+struct _TpTestsSimpleConnection {
     TpBaseConnection parent;
 
-    SimpleConnectionPrivate *priv;
+    TpTestsSimpleConnectionPrivate *priv;
 };
 
-GType simple_connection_get_type (void);
+GType tp_tests_simple_connection_get_type (void);
 
 /* TYPE MACROS */
-#define SIMPLE_TYPE_CONNECTION \
-  (simple_connection_get_type ())
-#define SIMPLE_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), SIMPLE_TYPE_CONNECTION, \
-                              SimpleConnection))
-#define SIMPLE_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass), SIMPLE_TYPE_CONNECTION, \
-                           SimpleConnectionClass))
-#define SIMPLE_IS_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj), SIMPLE_TYPE_CONNECTION))
-#define SIMPLE_IS_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass), SIMPLE_TYPE_CONNECTION))
-#define SIMPLE_CONNECTION_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), SIMPLE_TYPE_CONNECTION, \
-                              SimpleConnectionClass))
+#define TP_TESTS_TYPE_SIMPLE_CONNECTION \
+  (tp_tests_simple_connection_get_type ())
+#define TP_TESTS_SIMPLE_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), TP_TESTS_TYPE_SIMPLE_CONNECTION, \
+                              TpTestsSimpleConnection))
+#define TP_TESTS_SIMPLE_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass), TP_TESTS_TYPE_SIMPLE_CONNECTION, \
+                           TpTestsSimpleConnectionClass))
+#define TP_TESTS_SIMPLE_IS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), TP_TESTS_TYPE_SIMPLE_CONNECTION))
+#define TP_TESTS_SIMPLE_IS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass), TP_TESTS_TYPE_SIMPLE_CONNECTION))
+#define TP_TESTS_SIMPLE_CONNECTION_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), TP_TESTS_TYPE_SIMPLE_CONNECTION, \
+                              TpTestsSimpleConnectionClass))
+
+TpTestsSimpleConnection * tp_tests_simple_connection_new (const gchar *account,
+    const gchar *protocol);
 
 /* Cause "network events", for debugging/testing */
 
-void simple_connection_inject_disconnect (SimpleConnection *self);
+void tp_tests_simple_connection_inject_disconnect (
+    TpTestsSimpleConnection *self);
+
+void tp_tests_simple_connection_set_identifier (TpTestsSimpleConnection *self,
+    const gchar *identifier);
 
 G_END_DECLS
 
-#endif /* #ifndef __SIMPLE_CONN_H__ */
+#endif /* #ifndef __TP_TESTS_SIMPLE_CONN_H__ */

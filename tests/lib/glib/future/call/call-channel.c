@@ -244,23 +244,16 @@ constructed (GObject *object)
   ExampleCallChannel *self = EXAMPLE_CALL_CHANNEL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-  TpDBusDaemon *dbus_daemon;
 
   if (chain_up != NULL)
     chain_up (object);
 
-  dbus_daemon = tp_dbus_daemon_dup (NULL);
-  g_return_if_fail (dbus_daemon != NULL);
-
   tp_handle_ref (contact_repo, self->priv->handle);
   tp_handle_ref (contact_repo, self->priv->initiator);
 
-  dbus_g_connection_register_g_object (
-      tp_proxy_get_dbus_connection (dbus_daemon),
-      self->priv->object_path, object);
-
-  g_object_unref (dbus_daemon);
-  dbus_daemon = NULL;
+  tp_dbus_daemon_register_object (
+      tp_base_connection_get_dbus_daemon (self->priv->conn),
+      self->priv->object_path, self);
 
   if (self->priv->locally_requested)
     {
@@ -1129,7 +1122,7 @@ example_call_channel_add_content (ExampleCallChannel *self,
       return NULL;
     }
 
-  if (requested_name == NULL || requested_name[0] == '\0')
+  if (tp_str_empty (requested_name))
     {
       requested_name = type_str;
     }

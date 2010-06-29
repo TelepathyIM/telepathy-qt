@@ -16,17 +16,23 @@
 G_BEGIN_DECLS
 
 typedef struct _ExampleEchoConnectionManager ExampleEchoConnectionManager;
+typedef struct _ExampleEchoConnectionManagerPrivate
+    ExampleEchoConnectionManagerPrivate;
 typedef struct _ExampleEchoConnectionManagerClass
     ExampleEchoConnectionManagerClass;
+typedef struct _ExampleEchoConnectionManagerClassPrivate
+    ExampleEchoConnectionManagerClassPrivate;
 
 struct _ExampleEchoConnectionManagerClass {
     TpBaseConnectionManagerClass parent_class;
+
+    ExampleEchoConnectionManagerClassPrivate *priv;
 };
 
 struct _ExampleEchoConnectionManager {
     TpBaseConnectionManager parent;
 
-    gpointer priv;
+    ExampleEchoConnectionManagerPrivate *priv;
 };
 
 GType example_echo_connection_manager_get_type (void);

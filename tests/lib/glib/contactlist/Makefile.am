@@ -5,6 +5,8 @@
 # copy-and-modify (moving it to a better namespace), or make changes in the
 # copy in telepathy-glib first.
 
+# Example connection manager with ContactList channels.
+
 noinst_LTLIBRARIES = libexample-cm-contactlist.la
 
 libexample_cm_contactlist_la_SOURCES = \
@@ -17,11 +19,17 @@ libexample_cm_contactlist_la_SOURCES = \
     contact-list-manager.c \
     contact-list-manager.h
 
+# In an external project you'd use $(TP_GLIB_LIBS) (obtained from
+# pkg-config via autoconf) instead of the .la path
 libexample_cm_contactlist_la_LIBADD = \
+    $(GLIB_LIBS) \
+    $(DBUS_LIBS) \
     $(TP_GLIB_LIBS)
 
 AM_CFLAGS = \
     $(ERROR_CFLAGS) \
+    $(DBUS_CFLAGS) \
+    $(GLIB_CFLAGS) \
     $(TP_GLIB_CFLAGS)
 
 EXTRA_DIST = manager-file.py
@@ -31,7 +39,7 @@ _gen/example_contact_list.manager _gen/param-spec-struct.h: \
 	$(AM_V_at)$(mkdir_p) _gen
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/manager-file.py $(srcdir)/manager-file.py _gen
 
-BUILT_SOURCES = _gen/param-spec-struct.h _gen/example_contact_list.manager
+BUILT_SOURCES = _gen/example_contact_list.manager _gen/param-spec-struct.h
 CLEANFILES = $(BUILT_SOURCES)
 
 clean-local:

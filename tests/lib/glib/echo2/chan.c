@@ -13,13 +13,9 @@
 
 #include "chan.h"
 
-#include <telepathy-glib/base-connection.h>
+#include <telepathy-glib/telepathy-glib.h>
 #include <telepathy-glib/channel-iface.h>
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/gtypes.h>
-#include <telepathy-glib/interfaces.h>
 #include <telepathy-glib/svc-channel.h>
-#include <telepathy-glib/svc-generic.h>
 
 static void channel_iface_init (gpointer iface, gpointer data);
 static void destroyable_iface_init (gpointer iface, gpointer data);
@@ -198,7 +194,6 @@ constructor (GType type,
   ExampleEcho2Channel *self = EXAMPLE_ECHO_2_CHANNEL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-  DBusGConnection *bus;
   static TpChannelTextMessageType const types[] = {
       TP_CHANNEL_TEXT_MESSAGE_TYPE_NORMAL,
       TP_CHANNEL_TEXT_MESSAGE_TYPE_ACTION,
@@ -211,8 +206,9 @@ constructor (GType type,
   if (self->priv->initiator != 0)
     tp_handle_ref (contact_repo, self->priv->initiator);
 
-  bus = tp_get_bus ();
-  dbus_g_connection_register_g_object (bus, self->priv->object_path, object);
+  tp_dbus_daemon_register_object (
+      tp_base_connection_get_dbus_daemon (self->priv->conn),
+      self->priv->object_path, self);
 
   tp_message_mixin_init (object, G_STRUCT_OFFSET (ExampleEcho2Channel, text),
       self->priv->conn);

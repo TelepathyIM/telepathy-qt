@@ -44,7 +44,7 @@ private Q_SLOTS:
 
 private:
     QString mConnName, mConnPath;
-    SimpleConnection *mConnService;
+    TpTestsSimpleConnection *mConnService;
     ConnectionPtr mConn;
     ReferencedHandles mHandles;
 };
@@ -117,8 +117,8 @@ void TestHandles::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = SIMPLE_CONNECTION(g_object_new(
-            SIMPLE_TYPE_CONNECTION,
+    mConnService = TP_TESTS_SIMPLE_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_SIMPLE_CONNECTION,
             "account", "me@example.com",
             "protocol", "simple",
             0));

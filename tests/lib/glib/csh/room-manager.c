@@ -13,10 +13,7 @@
 
 #include <dbus/dbus-glib.h>
 
-#include <telepathy-glib/base-connection.h>
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/errors.h>
-#include <telepathy-glib/interfaces.h>
+#include <telepathy-glib/telepathy-glib.h>
 
 #include "room.h"
 
@@ -33,19 +30,18 @@ G_DEFINE_TYPE_WITH_CODE (ExampleCSHRoomManager,
 enum
 {
   PROP_CONNECTION = 1,
+  PROP_SIMULATION_DELAY,
   N_PROPS
 };
 
 struct _ExampleCSHRoomManagerPrivate
 {
   TpBaseConnection *conn;
+  guint simulation_delay;
 
   /* GUINT_TO_POINTER (room handle) => ExampleCSHRoomChannel */
   GHashTable *channels;
   gulong status_changed_id;
-
-  unsigned enable_change_members_detailed:1;
-  unsigned use_properties_room:1;
 };
 
 static void
@@ -84,6 +80,11 @@ get_property (GObject *object,
     case PROP_CONNECTION:
       g_value_set_object (value, self->priv->conn);
       break;
+
+    case PROP_SIMULATION_DELAY:
+      g_value_set_uint (value, self->priv->simulation_delay);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -105,6 +106,11 @@ set_property (GObject *object,
        * less than its lifetime */
       self->priv->conn = g_value_get_object (value);
       break;
+
+    case PROP_SIMULATION_DELAY:
+      self->priv->simulation_delay = g_value_get_uint (value);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -134,8 +140,6 @@ constructed (GObject *object)
 
   self->priv->status_changed_id = g_signal_connect (self->priv->conn,
       "status-changed", (GCallback) status_changed_cb, self);
-  self->priv->enable_change_members_detailed = FALSE;
-  self->priv->use_properties_room = TRUE;
 }
 
 static void
@@ -155,6 +159,13 @@ example_csh_room_manager_class_init (ExampleCSHRoomManagerClass *klass)
       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_CONNECTION, param_spec);
+
+  param_spec = g_param_spec_uint ("simulation-delay", "Simulation delay",
+      "Delay between simulated network events",
+      0, G_MAXUINT32, 500,
+      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_SIMULATION_DELAY,
+      param_spec);
 
   g_type_class_add_private (klass, sizeof (ExampleCSHRoomManagerPrivate));
 }
@@ -214,7 +225,7 @@ channel_closed_cb (ExampleCSHRoomChannel *chan,
     }
 }
 
-static ExampleCSHRoomChannel *
+static void
 new_channel (ExampleCSHRoomManager *self,
              TpHandle handle,
              TpHandle initiator,
@@ -223,23 +234,16 @@ new_channel (ExampleCSHRoomManager *self,
   ExampleCSHRoomChannel *chan;
   gchar *object_path;
   GSList *requests = NULL;
-  GType room_type;
 
   object_path = g_strdup_printf ("%s/CSHRoomChannel%u",
       self->priv->conn->object_path, handle);
 
-  if (self->priv->use_properties_room)
-    room_type = EXAMPLE_TYPE_CSH_ROOM_PROPERTIES_CHANNEL;
-  else
-    room_type = EXAMPLE_TYPE_CSH_ROOM_CHANNEL;
-  chan = g_object_new (room_type,
+  chan = g_object_new (EXAMPLE_TYPE_CSH_ROOM_CHANNEL,
       "connection", self->priv->conn,
       "object-path", object_path,
       "handle", handle,
       /* FIXME: initiator */
       NULL);
-  example_csh_room_set_enable_change_members_detailed(
-    chan, self->priv->enable_change_members_detailed);
 
   g_free (object_path);
 
@@ -253,19 +257,17 @@ new_channel (ExampleCSHRoomManager *self,
   tp_channel_manager_emit_new_channel (self, TP_EXPORTABLE_CHANNEL (chan),
       requests);
   g_slist_free (requests);
-
-  return chan;
 }
 
 static const gchar * const fixed_properties[] = {
-    TP_IFACE_CHANNEL ".ChannelType",
-    TP_IFACE_CHANNEL ".TargetHandleType",
+    TP_PROP_CHANNEL_CHANNEL_TYPE,
+    TP_PROP_CHANNEL_TARGET_HANDLE_TYPE,
     NULL
 };
 
 static const gchar * const allowed_properties[] = {
-    TP_IFACE_CHANNEL ".TargetHandle",
-    TP_IFACE_CHANNEL ".TargetID",
+    TP_PROP_CHANNEL_TARGET_HANDLE,
+    TP_PROP_CHANNEL_TARGET_ID,
     NULL
 };
 
@@ -274,17 +276,11 @@ example_csh_room_manager_foreach_channel_class (TpChannelManager *manager,
     TpChannelManagerChannelClassFunc func,
     gpointer user_data)
 {
-    GHashTable *table = g_hash_table_new_full (g_str_hash, g_str_equal,
-        NULL, (GDestroyNotify) tp_g_value_slice_free);
-    GValue *value;
-
-    value = tp_g_value_slice_new (G_TYPE_STRING);
-    g_value_set_static_string (value, TP_IFACE_CHANNEL_TYPE_TEXT);
-    g_hash_table_insert (table, TP_IFACE_CHANNEL ".ChannelType", value);
-
-    value = tp_g_value_slice_new (G_TYPE_UINT);
-    g_value_set_uint (value, TP_HANDLE_TYPE_ROOM);
-    g_hash_table_insert (table, TP_IFACE_CHANNEL ".TargetHandleType", value);
+    GHashTable *table = tp_asv_new (
+        TP_PROP_CHANNEL_CHANNEL_TYPE,
+            G_TYPE_STRING, TP_IFACE_CHANNEL_TYPE_TEXT,
+        TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, G_TYPE_UINT, TP_HANDLE_TYPE_ROOM,
+        NULL);
 
     func (manager, table, allowed_properties, user_data);
 
@@ -302,20 +298,20 @@ example_csh_room_manager_request (ExampleCSHRoomManager *self,
   GError *error = NULL;
 
   if (tp_strdiff (tp_asv_get_string (request_properties,
-          TP_IFACE_CHANNEL ".ChannelType"),
+          TP_PROP_CHANNEL_CHANNEL_TYPE),
       TP_IFACE_CHANNEL_TYPE_TEXT))
     {
       return FALSE;
     }
 
   if (tp_asv_get_uint32 (request_properties,
-      TP_IFACE_CHANNEL ".TargetHandleType", NULL) != TP_HANDLE_TYPE_ROOM)
+      TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, NULL) != TP_HANDLE_TYPE_ROOM)
     {
       return FALSE;
     }
 
   handle = tp_asv_get_uint32 (request_properties,
-      TP_IFACE_CHANNEL ".TargetHandle", NULL);
+      TP_PROP_CHANNEL_TARGET_HANDLE, NULL);
   g_assert (handle != 0);
 
   if (tp_channel_manager_asv_has_unknown_properties (request_properties,
@@ -328,7 +324,7 @@ example_csh_room_manager_request (ExampleCSHRoomManager *self,
 
   if (chan == NULL)
     {
-      chan = new_channel (self, handle, self->priv->conn->self_handle,
+      new_channel (self, handle, self->priv->conn->self_handle,
           request_token);
     }
   else if (require_new)
@@ -385,47 +381,4 @@ channel_manager_iface_init (gpointer g_iface,
   iface->ensure_channel = example_csh_room_manager_ensure_channel;
   /* In this channel manager, Request has the same semantics as Ensure */
   iface->request_channel = example_csh_room_manager_ensure_channel;
-}
-
-void
-example_csh_room_manager_set_enable_change_members_detailed (ExampleCSHRoomManager *self,
-                                                             gboolean enable)
-{
-  GHashTableIter iter;
-  gpointer handle, channel;
-
-  g_return_if_fail (EXAMPLE_IS_CSH_ROOM_MANAGER (self));
-
-  self->priv->enable_change_members_detailed = enable;
-
-  g_hash_table_iter_init (&iter, self->priv->channels);
-
-  while (g_hash_table_iter_next (&iter, &handle, &channel))
-    {
-      example_csh_room_set_enable_change_members_detailed (EXAMPLE_CSH_ROOM_CHANNEL (channel),
-                                                           enable);
-    }
-}
-
-void
-example_csh_room_manager_accept_invitations (ExampleCSHRoomManager *self)
-{
-  GHashTableIter iter;
-  gpointer handle, channel;
-
-  g_return_if_fail (EXAMPLE_IS_CSH_ROOM_MANAGER (self));
-
-  g_hash_table_iter_init (&iter, self->priv->channels);
-
-  while (g_hash_table_iter_next (&iter, &handle, &channel))
-    example_csh_room_accept_invitations (EXAMPLE_CSH_ROOM_CHANNEL (channel));
-}
-
-void
-example_csh_room_manager_set_use_properties_room (ExampleCSHRoomManager *self,
-                                                  gboolean use_properties_room)
-{
-  g_return_if_fail (EXAMPLE_IS_CSH_ROOM_MANAGER (self));
-
-  self->priv->use_properties_room = use_properties_room;
 }

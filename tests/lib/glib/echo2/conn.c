@@ -13,16 +13,14 @@
 
 #include <dbus/dbus-glib.h>
 
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/errors.h>
+#include <telepathy-glib/telepathy-glib.h>
 #include <telepathy-glib/handle-repo-dynamic.h>
-#include <telepathy-glib/interfaces.h>
 
 #include "im-manager.h"
 
 G_DEFINE_TYPE (ExampleEcho2Connection,
     example_echo_2_connection,
-    CONTACTS_TYPE_CONNECTION)
+    TP_TYPE_BASE_CONNECTION)
 
 enum
 {
@@ -167,11 +165,6 @@ example_echo_2_connection_class_init (ExampleEcho2ConnectionClass *klass)
 {
   static const gchar *interfaces_always_present[] = {
       TP_IFACE_CONNECTION_INTERFACE_REQUESTS,
-      TP_IFACE_CONNECTION_INTERFACE_ALIASING,
-      TP_IFACE_CONNECTION_INTERFACE_AVATARS,
-      TP_IFACE_CONNECTION_INTERFACE_CONTACTS,
-      TP_IFACE_CONNECTION_INTERFACE_PRESENCE,
-      TP_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
       NULL };
   TpBaseConnectionClass *base_class =
       (TpBaseConnectionClass *) klass;

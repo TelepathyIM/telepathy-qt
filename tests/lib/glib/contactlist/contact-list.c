@@ -11,14 +11,10 @@
 
 #include "contact-list.h"
 
-#include <telepathy-glib/base-connection.h>
+#include <telepathy-glib/telepathy-glib.h>
 #include <telepathy-glib/channel-iface.h>
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/enums.h>
 #include <telepathy-glib/exportable-channel.h>
-#include <telepathy-glib/interfaces.h>
 #include <telepathy-glib/svc-channel.h>
-#include <telepathy-glib/svc-generic.h>
 
 #include "contact-list-manager.h"
 
@@ -133,8 +129,9 @@ constructed (GObject *object)
   g_assert (TP_IS_BASE_CONNECTION (self->priv->conn));
   g_assert (EXAMPLE_IS_CONTACT_LIST_MANAGER (self->priv->manager));
 
-  dbus_g_connection_register_g_object (tp_get_bus (), self->priv->object_path,
-      object);
+  tp_dbus_daemon_register_object (
+      tp_base_connection_get_dbus_daemon (self->priv->conn),
+      self->priv->object_path, self);
 
   tp_handle_ref (handle_repo, self->priv->handle);
   tp_group_mixin_init (object, G_STRUCT_OFFSET (ExampleContactListBase, group),

@@ -101,11 +101,12 @@ void TestConnRosterGroups::initTestCase()
     mConnService = EXAMPLE_CONTACT_LIST_CONNECTION(g_object_new(
             EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,
             "account", "me@example.com",
-            "protocol", "contactlist",
+            "simulation-delay", 0,
+            "protocol", "example-contact-list",
             0));
     QVERIFY(mConnService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "contacts", &name, &connPath, &error));
+                "foo", &name, &connPath, &error));
     QVERIFY(error == 0);
 
     QVERIFY(name != 0);

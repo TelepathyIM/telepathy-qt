@@ -13,8 +13,7 @@
 #include <dbus/dbus-protocol.h>
 #include <dbus/dbus-glib.h>
 
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/errors.h>
+#include <telepathy-glib/telepathy-glib.h>
 
 #include "conn.h"
 
@@ -35,14 +34,7 @@ typedef struct {
     gchar *account;
 } ExampleParams;
 
-static const TpCMParamSpec example_params[] = {
-  { "account", DBUS_TYPE_STRING_AS_STRING, G_TYPE_STRING,
-    TP_CONN_MGR_PARAM_FLAG_REQUIRED | TP_CONN_MGR_PARAM_FLAG_REGISTER, NULL,
-    G_STRUCT_OFFSET (ExampleParams, account),
-    tp_cm_param_filter_string_nonempty, NULL },
-
-  { NULL }
-};
+#include "_gen/param-spec-struct.h"
 
 static gpointer
 alloc_params (void)
@@ -61,7 +53,7 @@ free_params (gpointer p)
 }
 
 static const TpCMProtocolSpec example_protocols[] = {
-  { "example", example_params, alloc_params, free_params },
+  { "example", example_echo_example_params, alloc_params, free_params },
   { NULL, NULL }
 };
 

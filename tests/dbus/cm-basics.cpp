@@ -51,7 +51,7 @@ void TestCmBasics::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     mCMService = TP_BASE_CONNECTION_MANAGER(g_object_new(
-        SIMPLE_TYPE_CONNECTION_MANAGER,
+        TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER,
         NULL));
     QVERIFY(mCMService != 0);
 

@@ -302,7 +302,7 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    ContactsConnection *mConnService;
+    TpTestsContactsConnection *mConnService;
     TpBaseConnection *mBaseConnService;
     TpHandleRepoIface *mContactRepo;
     ExampleEchoChannel *mText1ChanService;
@@ -365,8 +365,8 @@ void TestClient::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = CONTACTS_CONNECTION(g_object_new(
-            CONTACTS_TYPE_CONNECTION,
+    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
             0));

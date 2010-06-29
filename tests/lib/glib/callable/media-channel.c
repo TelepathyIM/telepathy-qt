@@ -42,6 +42,7 @@
 #include <telepathy-glib/base-connection.h>
 #include <telepathy-glib/channel-iface.h>
 #include <telepathy-glib/dbus.h>
+#include <telepathy-glib/gtypes.h>
 #include <telepathy-glib/interfaces.h>
 #include <telepathy-glib/svc-channel.h>
 #include <telepathy-glib/svc-generic.h>
@@ -160,7 +161,6 @@ constructed (GObject *object)
   ExampleCallableMediaChannel *self = EXAMPLE_CALLABLE_MEDIA_CHANNEL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
-  DBusGConnection *bus;
   TpIntSet *members;
   TpIntSet *local_pending;
 
@@ -170,8 +170,9 @@ constructed (GObject *object)
   tp_handle_ref (contact_repo, self->priv->handle);
   tp_handle_ref (contact_repo, self->priv->initiator);
 
-  bus = tp_get_bus ();
-  dbus_g_connection_register_g_object (bus, self->priv->object_path, object);
+  tp_dbus_daemon_register_object (
+      tp_base_connection_get_dbus_daemon (self->priv->conn),
+      self->priv->object_path, self);
 
   tp_group_mixin_init (object,
       G_STRUCT_OFFSET (ExampleCallableMediaChannel, group),
@@ -476,6 +477,9 @@ dispose (GObject *object)
 
   self->priv->disposed = TRUE;
 
+  g_hash_table_destroy (self->priv->streams);
+  self->priv->streams = NULL;
+
   example_callable_media_channel_close (self, self->group.self_handle,
       TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
 
@@ -537,6 +541,8 @@ add_member (GObject *object,
           NULL /* nobody added to local pending */,
           NULL /* nobody added to remote pending */,
           member /* actor */, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+
+      tp_intset_destroy (set);
 
       g_hash_table_iter_init (&iter, self->priv->streams);
 
@@ -1205,7 +1211,7 @@ media_request_streams (TpSvcChannelTypeStreamedMedia *iface,
 
   tp_svc_channel_type_streamed_media_return_from_request_streams (context,
       array);
-  g_ptr_array_free (array, TRUE);
+  g_boxed_free (TP_ARRAY_TYPE_MEDIA_STREAM_INFO_LIST, array);
 
   return;
 

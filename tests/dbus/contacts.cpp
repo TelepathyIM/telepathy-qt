@@ -56,7 +56,7 @@ private Q_SLOTS:
 
 private:
     QString mConnName, mConnPath;
-    ContactsConnection *mConnService;
+    TpTestsContactsConnection *mConnService;
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
     Tp::UIntList mInvalidHandles;
@@ -135,8 +135,8 @@ void TestContacts::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = CONTACTS_CONNECTION(g_object_new(
-            CONTACTS_TYPE_CONNECTION,
+    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "simple",
             0));
@@ -441,14 +441,14 @@ void TestContacts::testFeatures()
         "AAAA",
         "BBBB"
     };
-    static ContactsConnectionPresenceStatusIndex initialStatuses[] = {
-        CONTACTS_CONNECTION_STATUS_AVAILABLE,
-        CONTACTS_CONNECTION_STATUS_BUSY,
-        CONTACTS_CONNECTION_STATUS_AWAY
+    static TpTestsContactsConnectionPresenceStatusIndex initialStatuses[] = {
+        TP_TESTS_CONTACTS_CONNECTION_STATUS_AVAILABLE,
+        TP_TESTS_CONTACTS_CONNECTION_STATUS_BUSY,
+        TP_TESTS_CONTACTS_CONNECTION_STATUS_AWAY
     };
-    static ContactsConnectionPresenceStatusIndex latterStatuses[] = {
-        CONTACTS_CONNECTION_STATUS_AWAY,
-        CONTACTS_CONNECTION_STATUS_AVAILABLE,
+    static TpTestsContactsConnectionPresenceStatusIndex latterStatuses[] = {
+        TP_TESTS_CONTACTS_CONNECTION_STATUS_AWAY,
+        TP_TESTS_CONTACTS_CONNECTION_STATUS_AVAILABLE,
     };
     const char *initialMessages[] = {
         "",
@@ -474,11 +474,11 @@ void TestContacts::testFeatures()
     }
 
     // Set the initial attributes
-    contacts_connection_change_aliases(mConnService, 3, handles.toVector().constData(),
+    tp_tests_contacts_connection_change_aliases(mConnService, 3, handles.toVector().constData(),
             initialAliases);
-    contacts_connection_change_avatar_tokens(mConnService, 2, handles.toVector().constData() + 1,
+    tp_tests_contacts_connection_change_avatar_tokens(mConnService, 2, handles.toVector().constData() + 1,
             initialTokens);
-    contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(),
+    tp_tests_contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(),
             initialStatuses, initialMessages);
 
     // Build contacts
@@ -523,11 +523,11 @@ void TestContacts::testFeatures()
     QCOMPARE(mContacts[2]->presenceType(), uint(Tp::ConnectionPresenceTypeAway));
 
     // Change some of the contacts to a new set of attributes
-    contacts_connection_change_aliases(mConnService, 2, handles.toVector().constData(),
+    tp_tests_contacts_connection_change_aliases(mConnService, 2, handles.toVector().constData(),
             latterAliases);
-    contacts_connection_change_avatar_tokens(mConnService, 2, handles.toVector().constData(),
+    tp_tests_contacts_connection_change_avatar_tokens(mConnService, 2, handles.toVector().constData(),
             latterTokens);
-    contacts_connection_change_presences(mConnService, 2, handles.toVector().constData(),
+    tp_tests_contacts_connection_change_presences(mConnService, 2, handles.toVector().constData(),
             latterStatuses, latterMessages);
     mLoop->processEvents();
     processDBusQueue(mConn.data());
@@ -647,10 +647,10 @@ void TestContacts::testUpgrade()
         "bbbbb",
         "ccccc"
     };
-    static ContactsConnectionPresenceStatusIndex statuses[] = {
-        CONTACTS_CONNECTION_STATUS_AVAILABLE,
-        CONTACTS_CONNECTION_STATUS_BUSY,
-        CONTACTS_CONNECTION_STATUS_AWAY
+    static TpTestsContactsConnectionPresenceStatusIndex statuses[] = {
+        TP_TESTS_CONTACTS_CONNECTION_STATUS_AVAILABLE,
+        TP_TESTS_CONTACTS_CONNECTION_STATUS_BUSY,
+        TP_TESTS_CONTACTS_CONNECTION_STATUS_AWAY
     };
     const char *messages[] = {
         "",
@@ -666,9 +666,9 @@ void TestContacts::testUpgrade()
         QVERIFY(handles[i] != 0);
     }
 
-    contacts_connection_change_aliases(mConnService, 3, handles.toVector().constData(), aliases);
-    contacts_connection_change_avatar_tokens(mConnService, 3, handles.toVector().constData(), tokens);
-    contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(), statuses,
+    tp_tests_contacts_connection_change_aliases(mConnService, 3, handles.toVector().constData(), aliases);
+    tp_tests_contacts_connection_change_avatar_tokens(mConnService, 3, handles.toVector().constData(), tokens);
+    tp_tests_contacts_connection_change_presences(mConnService, 3, handles.toVector().constData(), statuses,
             messages);
 
     PendingContacts *pending = mConn->contactManager()->contactsForHandles(handles);
@@ -756,9 +756,9 @@ void TestContacts::testSelfContactFallback()
     gchar *connPath;
     GError *error = 0;
 
-    SimpleConnection *connService;
-    connService = SIMPLE_CONNECTION(g_object_new(
-            SIMPLE_TYPE_CONNECTION,
+    TpTestsSimpleConnection *connService;
+    connService = TP_TESTS_SIMPLE_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_SIMPLE_CONNECTION,
             "account", "me@example.com",
             "protocol", "simple",
             0));

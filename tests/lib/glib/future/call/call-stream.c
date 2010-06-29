@@ -91,25 +91,15 @@ static void
 constructed (GObject *object)
 {
   ExampleCallStream *self = EXAMPLE_CALL_STREAM (object);
-  TpDBusDaemon *dbus_daemon;
   void (*chain_up) (GObject *) =
       ((GObjectClass *) example_call_stream_parent_class)->constructed;
-
-  dbus_daemon = tp_dbus_daemon_dup (NULL);
-  g_return_if_fail (dbus_daemon != NULL);
 
   if (chain_up != NULL)
     chain_up (object);
 
-  dbus_daemon = tp_dbus_daemon_dup (NULL);
-  g_return_if_fail (dbus_daemon != NULL);
-
-  dbus_g_connection_register_g_object (
-      tp_proxy_get_dbus_connection (dbus_daemon),
-      self->priv->object_path, object);
-
-  g_object_unref (dbus_daemon);
-  dbus_daemon = NULL;
+  tp_dbus_daemon_register_object (
+      tp_base_connection_get_dbus_daemon (self->priv->conn),
+      self->priv->object_path, self);
 
   if (self->priv->locally_requested)
     {
