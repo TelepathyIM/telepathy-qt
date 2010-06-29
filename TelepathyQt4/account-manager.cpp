@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Constants>
@@ -47,7 +48,11 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
 
     static void introspectMain(Private *self);
 
-    void setAccountPaths(QSet<QString> &set, const QVariant &variant);
+    void checkIntrospectionCompleted();
+
+    QSet<QString> getAccountPathsFromProp(const QVariant &prop);
+    QSet<QString> getAccountPathsFromProps(const QVariantMap &props);
+    void addAccountForPath(const QString &accountObjectPath);
 
     // Public object
     AccountManager *parent;
@@ -58,9 +63,8 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
-    QSet<QString> validAccountPaths;
-    QSet<QString> invalidAccountPaths;
-    QMap<QString, AccountPtr> accounts;
+    QHash<QString, AccountPtr> incompleteAccounts;
+    QHash<QString, AccountPtr> accounts;
     QStringList supportedAccountProperties;
 };
 
@@ -94,30 +98,90 @@ AccountManager::Private::~Private()
     delete baseInterface;
 }
 
-void AccountManager::Private::setAccountPaths(QSet<QString> &set,
-        const QVariant &variant)
+void AccountManager::Private::init()
 {
-    ObjectPathList paths = qdbus_cast<ObjectPathList>(variant);
+    if (!parent->isValid()) {
+        return;
+    }
 
+    parent->connect(baseInterface,
+            SIGNAL(AccountValidityChanged(const QDBusObjectPath &, bool)),
+            SLOT(onAccountValidityChanged(const QDBusObjectPath &, bool)));
+    parent->connect(baseInterface,
+            SIGNAL(AccountRemoved(const QDBusObjectPath &)),
+            SLOT(onAccountRemoved(const QDBusObjectPath &)));
+}
+
+void AccountManager::Private::introspectMain(AccountManager::Private *self)
+{
+    Client::DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
+    Q_ASSERT(properties != 0);
+
+    debug() << "Calling Properties::GetAll(AccountManager)";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            properties->GetAll(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER)),
+            self->parent);
+    self->parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
+}
+
+void AccountManager::Private::checkIntrospectionCompleted()
+{
+    if (!parent->isReady(FeatureCore) &&
+        incompleteAccounts.size() == 0) {
+        readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
+}
+
+QSet<QString> AccountManager::Private::getAccountPathsFromProp(
+        const QVariant &prop)
+{
+    QSet<QString> set;
+
+    ObjectPathList paths = qdbus_cast<ObjectPathList>(prop);
     if (paths.size() == 0) {
-        // maybe the AccountManager is buggy, like Mission Control
-        // 5.0.beta45, and returns an array of strings rather than
-        // an array of object paths?
-
-        QStringList wronglyTypedPaths = qdbus_cast<QStringList>(variant);
+        /* maybe the AccountManager is buggy, like Mission Control
+         * 5.0.beta45, and returns an array of strings rather than
+         * an array of object paths? */
+        QStringList wronglyTypedPaths = qdbus_cast<QStringList>(prop);
         if (wronglyTypedPaths.size() > 0) {
-            warning() << "AccountManager returned wrong type "
-                "(expected 'ao', got 'as'); working around it";
+            warning() << "AccountManager returned wrong type for"
+                "Valid/InvalidAccounts (expected 'ao', got 'as'); "
+                "working around it";
             foreach (QString path, wronglyTypedPaths) {
                 set << path;
             }
         }
-    }
-    else {
+    } else {
         foreach (const QDBusObjectPath &path, paths) {
             set << path.path();
         }
     }
+
+    return set;
+}
+
+QSet<QString> AccountManager::Private::getAccountPathsFromProps(
+        const QVariantMap &props)
+{
+    return getAccountPathsFromProp(props[QLatin1String("ValidAccounts")]).unite(
+            getAccountPathsFromProp(props[QLatin1String("InvalidAccounts")]));
+}
+
+void AccountManager::Private::addAccountForPath(const QString &path)
+{
+    if (accounts.contains(path)) {
+        return;
+    }
+
+    AccountPtr account = Account::create(parent->dbusConnection(),
+                parent->busName(), path);
+    parent->connect(account->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onAccountReady(Tp::PendingOperation *)));
+    incompleteAccounts.insert(path, account);
 }
 
 /**
@@ -296,7 +360,13 @@ AccountManager::~AccountManager()
  */
 QStringList AccountManager::validAccountPaths() const
 {
-    return mPriv->validAccountPaths.values();
+    QStringList ret;
+    foreach (const AccountPtr &account, mPriv->accounts) {
+        if (account->isValid()) {
+            ret << account->objectPath();
+        }
+    }
+    return ret;
 }
 
 /**
@@ -306,7 +376,13 @@ QStringList AccountManager::validAccountPaths() const
  */
 QStringList AccountManager::invalidAccountPaths() const
 {
-    return mPriv->invalidAccountPaths.values();
+    QStringList ret;
+    foreach (const AccountPtr &account, mPriv->accounts) {
+        if (!account->isValid()) {
+            ret << account->objectPath();
+        }
+    }
+    return ret;
 }
 
 /**
@@ -316,59 +392,202 @@ QStringList AccountManager::invalidAccountPaths() const
  */
 QStringList AccountManager::allAccountPaths() const
 {
-    QStringList result;
-    result.append(mPriv->validAccountPaths.values());
-    result.append(mPriv->invalidAccountPaths.values());
-    return result;
+    QStringList ret;
+    foreach (const AccountPtr &account, mPriv->accounts) {
+        ret << account->objectPath();
+    }
+    return ret;
 }
 
 /**
  * Return a list of AccountPtr objects for all valid accounts.
  *
- * Remember to call Account::becomeReady on the new accounts, to
- * make sure they are ready before using them.
+ * Note that the returned account already has the Account::FeatureCore enabled.
  *
  * \return A list of AccountPtr objects.
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
  */
 QList<AccountPtr> AccountManager::validAccounts()
 {
-    return accountsForPaths(validAccountPaths());
+    QList<AccountPtr> ret;
+    foreach (const AccountPtr &account, mPriv->accounts) {
+        if (account->isValid()) {
+            ret << account;
+        }
+    }
+    return ret;
 }
 
 /**
  * Return a list of AccountPtr objects for all invalid accounts.
  *
- * Remember to call Account::becomeReady on the new accounts, to
- * make sure they are ready before using them.
+ * Note that the returned account already has the Account::FeatureCore enabled.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), allAccounts(), accountsForPaths()
  */
 QList<AccountPtr> AccountManager::invalidAccounts()
 {
-    return accountsForPaths(invalidAccountPaths());
+    QList<AccountPtr> ret;
+    foreach (const AccountPtr &account, mPriv->accounts) {
+        if (!account->isValid()) {
+            ret << account;
+        }
+    }
+    return ret;
 }
 
 /**
  * Return a list of AccountPtr objects for all accounts.
  *
- * Remember to call Account::becomeReady on the new accounts, to
- * make sure they are ready before using them.
+ * Note that the returned account already has the Account::FeatureCore enabled.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
  */
+/* FIXME (API-BREAK) Add const qualifier */
 QList<AccountPtr> AccountManager::allAccounts()
 {
-    return accountsForPaths(allAccountPaths());
+    QList<AccountPtr> ret;
+    foreach (const AccountPtr &account, mPriv->accounts) {
+        ret << account;
+    }
+    return ret;
+}
+
+/**
+ * Return a set of accounts containing all valid accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all valid accounts.
+ */
+AccountSetPtr AccountManager::validAccountsSet() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("valid"), true);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all invalid accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all invalid accounts.
+ */
+AccountSetPtr AccountManager::invalidAccountsSet() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("valid"), false);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all enabled accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all enabled accounts.
+ */
+AccountSetPtr AccountManager::enabledAccountsSet() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("enabled"), true);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all disabled accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all disabled accounts.
+ */
+AccountSetPtr AccountManager::disabledAccountsSet() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("enabled"), false);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all online accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all online accounts.
+ */
+AccountSetPtr AccountManager::onlineAccountsSet() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("online"), true);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all offline accounts.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \return A set of accounts containing all offline accounts.
+ */
+AccountSetPtr AccountManager::offlineAccountsSet() const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("online"), false);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts for the given \a
+ * protocolName.
+ *
+ * Note that the returned account already has the Account::FeatureCore enabled.
+ *
+ * \param protocolName The name of the protocol used to filter accounts.
+ * \return A set of accounts containing all accounts for the given \a
+ *         protocolName.
+ */
+AccountSetPtr AccountManager::accountsByProtocol(
+        const QString &protocolName) const
+{
+    QVariantMap filter;
+    filter.insert(QLatin1String("protocol"), protocolName);
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts that match the given \a
+ * filter criteria.
+ *
+ * The \a filter is composed by Account property names and values as map items.
+ *
+ *     QVariantMap filter;
+ *     filter.insert(QLatin1String("protocol"), QLatin1String("jabber"));
+ *     filter.insert(QLatin1String("enabled"), true);
+ *
+ * \param filter The desired filter
+ * \return A set of accounts containing all accounts that match the given \a
+ *         filter criteria.
+ */
+AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
+{
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
 }
 
 /**
  * Return an AccountPtr object for the given \a path.
  *
- * Remember to call Account::becomeReady on the new account, to
- * make sure it is ready before using it.
+ * Note that the returned account already has the Account::FeatureCore enabled.
  *
  * \param path The account object path.
  * \return An AccountPtr object pointing to the Account object for the given
@@ -377,18 +596,11 @@ QList<AccountPtr> AccountManager::allAccounts()
  */
 AccountPtr AccountManager::accountForPath(const QString &path)
 {
-    if (mPriv->accounts.contains(path)) {
-        return mPriv->accounts[path];
-    }
-
-    if (!mPriv->validAccountPaths.contains(path) &&
-        !mPriv->invalidAccountPaths.contains(path)) {
+    if (!mPriv->accounts.contains(path)) {
         return AccountPtr();
     }
 
-    AccountPtr account = Account::create(dbusConnection(), busName(), path);
-    mPriv->accounts[path] = account;
-    return account;
+    return mPriv->accounts[path];
 }
 
 /**
@@ -398,8 +610,8 @@ AccountPtr AccountManager::accountForPath(const QString &path)
  * a given path is invalid the returned AccountPtr object will point to 0.
  * AccountPtr::isNull() will return true.
  *
- * Remember to call Account::becomeReady on the new accounts, to
- * make sure they are ready before using them.
+ * Note that the returned accounts already have the Account::FeatureCore
+ * enabled.
  *
  * \param paths List of accounts object paths.
  * \return A list of AccountPtr objects.
@@ -507,35 +719,6 @@ Client::AccountManagerInterface *AccountManager::baseInterface() const
 }
 
 /**** Private ****/
-void AccountManager::Private::init()
-{
-    if (!parent->isValid()) {
-        return;
-    }
-
-    parent->connect(baseInterface,
-            SIGNAL(AccountValidityChanged(const QDBusObjectPath &, bool)),
-            SLOT(onAccountValidityChanged(const QDBusObjectPath &, bool)));
-    parent->connect(baseInterface,
-            SIGNAL(AccountRemoved(const QDBusObjectPath &)),
-            SLOT(onAccountRemoved(const QDBusObjectPath &)));
-}
-
-void AccountManager::Private::introspectMain(AccountManager::Private *self)
-{
-    Client::DBus::PropertiesInterface *properties = self->parent->propertiesInterface();
-    Q_ASSERT(properties != 0);
-
-    debug() << "Calling Properties::GetAll(AccountManager)";
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->GetAll(
-                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER)),
-            self->parent);
-    self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
-}
-
 void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -548,17 +731,15 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         if (props.contains(QLatin1String("Interfaces"))) {
             setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
         }
-        if (props.contains(QLatin1String("ValidAccounts"))) {
-            mPriv->setAccountPaths(mPriv->validAccountPaths,
-                    props[QLatin1String("ValidAccounts")]);
-        }
-        if (props.contains(QLatin1String("InvalidAccounts"))) {
-            mPriv->setAccountPaths(mPriv->invalidAccountPaths,
-                    props[QLatin1String("InvalidAccounts")]);
-        }
+
         if (props.contains(QLatin1String("SupportedAccountProperties"))) {
             mPriv->supportedAccountProperties =
                 qdbus_cast<QStringList>(props[QLatin1String("SupportedAccountProperties")]);
+        }
+
+        QSet<QString> paths = mPriv->getAccountPathsFromProps(props);
+        foreach (const QString &path, paths) {
+            mPriv->addAccountForPath(path);
         }
     } else {
         warning().nospace() <<
@@ -566,43 +747,56 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ": " << reply.error().message();
     }
 
-    mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-
     watcher->deleteLater();
+
+    mPriv->checkIntrospectionCompleted();
+}
+
+void AccountManager::onAccountReady(Tp::PendingOperation *op)
+{
+    PendingReady *pr = qobject_cast<PendingReady*>(op);
+    AccountPtr account = AccountPtr(qobject_cast<Account*>(pr->object()));
+    QString path = account->objectPath();
+
+    /* Some error occurred or the account was removed before become ready */
+    if (op->isError() || !mPriv->incompleteAccounts.contains(path)) {
+        mPriv->incompleteAccounts.remove(path);
+        mPriv->checkIntrospectionCompleted();
+        return;
+    }
+
+    mPriv->incompleteAccounts.remove(path);
+    mPriv->accounts.insert(path, account);
+
+    if (isReady(FeatureCore)) {
+        /* FIXME (API-BREAK) Remove accountCreated signal */
+        emit accountCreated(path);
+        emit newAccount(account);
+    }
+
+    mPriv->checkIntrospectionCompleted();
 }
 
 void AccountManager::onAccountValidityChanged(const QDBusObjectPath &objectPath,
-        bool nowValid)
+        bool valid)
 {
     QString path = objectPath.path();
     bool newAccount = false;
 
-    if (!mPriv->validAccountPaths.contains(path) &&
-        !mPriv->invalidAccountPaths.contains(path)) {
+    if (!mPriv->incompleteAccounts.contains(path) &&
+        !mPriv->accounts.contains(path)) {
         newAccount = true;
     }
 
-    if (nowValid) {
-        debug() << "Account created or became valid:" << path;
-        mPriv->invalidAccountPaths.remove(path);
-        mPriv->validAccountPaths.insert(path);
-    }
-    else {
-        debug() << "Account became invalid:" << path;
-        mPriv->validAccountPaths.remove(path);
-        mPriv->invalidAccountPaths.insert(path);
-    }
-
     if (newAccount) {
-        emit accountCreated(path);
-        // if the newly created account is invalid (shouldn't be the case)
-        // emit also accountValidityChanged indicating this
-        if (!nowValid) {
-            emit accountValidityChanged(path, nowValid);
+        mPriv->addAccountForPath(path);
+    } else {
+        /* Only emit accountValidityChanged if both the AM and the account
+         * are ready */
+        if (isReady(FeatureCore) && mPriv->accounts.contains(path)) {
+            /* FIXME (API-BREAK) Remove accountValidityChanged signal */
+            emit accountValidityChanged(path, valid);
         }
-    }
-    else {
-        emit accountValidityChanged(path, nowValid);
     }
 }
 
@@ -610,13 +804,25 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
 {
     QString path = objectPath.path();
 
-    debug() << "Account removed:" << path;
-    mPriv->validAccountPaths.remove(path);
-    mPriv->invalidAccountPaths.remove(path);
+    /* the account is either in mPriv->incompleteAccounts or mPriv->accounts */
     if (mPriv->accounts.contains(path)) {
         mPriv->accounts.remove(path);
+
+        /* Only emit accountRemoved if both the AM and the account are ready */
+        if (isReady(FeatureCore)) {
+            /* FIXME (API-BREAK) Remove accountRemoved signal */
+            emit accountRemoved(path);
+            debug() << "Account" << path << "removed";
+        } else {
+            debug() << "Account" << path << "removed while the AM "
+                "or the account itself were not completely introspected, "
+                "ignoring";
+        }
+    } else if (mPriv->incompleteAccounts.contains(path)) {
+        mPriv->incompleteAccounts.remove(path);
+        debug() << "Account" << path << "was removed, but it was "
+            "not completely introspected, ignoring";
     }
-    emit accountRemoved(path);
 }
 
 } // Tp

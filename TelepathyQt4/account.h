@@ -64,6 +64,31 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
 {
     Q_OBJECT
     Q_DISABLE_COPY(Account)
+    Q_PROPERTY(bool valid READ isValidAccount NOTIFY validityChanged)
+    Q_PROPERTY(bool enabled READ isEnabled NOTIFY stateChanged)
+    Q_PROPERTY(QString cmName READ cmName)
+    Q_PROPERTY(QString protocolName READ protocolName)
+    Q_PROPERTY(QString displayName READ displayName NOTIFY displayNameChanged)
+    Q_PROPERTY(QString iconName READ iconName NOTIFY iconNameChanged)
+    Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
+    Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
+    Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
+    Q_PROPERTY(bool hasBeenOnline READ hasBeenOnline)
+    Q_PROPERTY(bool connectsAutomatically READ connectsAutomatically NOTIFY connectsAutomaticallyPropertyChanged)
+    Q_PROPERTY(ConnectionStatus connectionStatus READ connectionStatus)
+    Q_PROPERTY(ConnectionStatusReason connectionStatusReason READ connectionStatusReason)
+    Q_PROPERTY(QString connectionError READ connectionError)
+    Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
+    Q_PROPERTY(bool haveConnection READ haveConnection NOTIFY haveConnectionChanged)
+    Q_PROPERTY(ConnectionPtr connection READ connection)
+    Q_PROPERTY(bool changingPresence READ isChangingPresence NOTIFY changingPresence)
+    Q_PROPERTY(SimplePresence automaticPresence READ automaticPresence NOTIFY automaticPresenceChanged)
+    Q_PROPERTY(SimplePresence currentPresence READ currentPresence NOTIFY currentPresenceChanged)
+    Q_PROPERTY(SimplePresence requestedPresence READ requestedPresence NOTIFY requestedPresenceChanged)
+    Q_PROPERTY(bool online READ isOnline NOTIFY onlinenessChanged)
+    Q_PROPERTY(QString uniqueIdentifier READ uniqueIdentifier)
+    Q_PROPERTY(QString connectionObjectPath READ connectionObjectPath)
+    Q_PROPERTY(QString normalizedName READ normalizedName NOTIFY normalizedNameChanged)
 
 public:
     static const Feature FeatureCore;
@@ -84,13 +109,16 @@ public:
 
     QString cmName() const;
 
-    QString protocol() const;
+    TELEPATHY_QT4_DEPRECATED QString protocol() const;
+    QString protocolName() const;
 
     QString displayName() const;
     PendingOperation *setDisplayName(const QString &value);
 
-    QString icon() const;
-    PendingOperation *setIcon(const QString &value);
+    TELEPATHY_QT4_DEPRECATED QString icon() const;
+    QString iconName() const;
+    TELEPATHY_QT4_DEPRECATED PendingOperation *setIcon(const QString &value);
+    PendingOperation *setIconName(const QString &value);
 
     QString nickname() const;
     PendingOperation *setNickname(const QString &value);
@@ -131,6 +159,8 @@ public:
     SimplePresence requestedPresence() const;
     PendingOperation *setRequestedPresence(
             const SimplePresence &value);
+
+    bool isOnline() const;
 
     QString uniqueIdentifier() const;
 
@@ -252,8 +282,10 @@ public:
     }
 
 Q_SIGNALS:
+    void removed();
     void displayNameChanged(const QString &displayName);
-    void iconChanged(const QString &icon);
+    TELEPATHY_QT4_DEPRECATED void iconChanged(const QString &iconName);
+    void iconNameChanged(const QString &iconName);
     void nicknameChanged(const QString &nickname);
     void normalizedNameChanged(const QString &normalizedName);
     void validityChanged(bool validity);
@@ -265,6 +297,7 @@ Q_SIGNALS:
     void automaticPresenceChanged(const Tp::SimplePresence &automaticPresence) const;
     void currentPresenceChanged(const Tp::SimplePresence &currentPresence) const;
     void requestedPresenceChanged(const Tp::SimplePresence &requestedPresence) const;
+    void onlinenessChanged(bool online);
     void avatarChanged(const Tp::Avatar &avatar);
     TELEPATHY_QT4_DEPRECATED void connectionStatusChanged(Tp::ConnectionStatus status,
             Tp::ConnectionStatusReason statusReason);
@@ -272,6 +305,8 @@ Q_SIGNALS:
             Tp::ConnectionStatusReason statusReason,
             const QString &error, const QVariantMap &errorDetails);
     void haveConnectionChanged(bool haveConnection);
+
+    void propertyChanged(const QString &propertyName);
 
 protected:
     Account(const QString &busName, const QString &objectPath);
@@ -291,6 +326,9 @@ private Q_SLOTS:
 private:
     struct Private;
     friend struct Private;
+
+    void notify(const char *propertyName);
+
     Private *mPriv;
 };
 

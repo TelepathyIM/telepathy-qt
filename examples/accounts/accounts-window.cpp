@@ -64,7 +64,7 @@ void AccountsWindow::setupGui()
         QLatin1String("Valid") <<
         QLatin1String("Enabled") <<
         QLatin1String("Connection Manager") <<
-        QLatin1String("Protocol") <<
+        QLatin1String("Protocol Name") <<
         QLatin1String("Display Name") <<
         QLatin1String("Nickname") <<
         QLatin1String("Connects Automatically") <<

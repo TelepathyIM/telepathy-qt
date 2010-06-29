@@ -74,8 +74,8 @@ private Q_SLOTS:
     void onAutomaticPresenceChanged(const Tp::SimplePresence &);
     void onCurrentPresenceChanged(const Tp::SimplePresence &);
     void onRequestedPresenceChanged(const Tp::SimplePresence &);
-    void onConnectionStatusChanged(Tp::ConnectionStatus,
-            Tp::ConnectionStatusReason);
+    void onStatusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason,
+            const QString &error, const QVariantMap &errorDetails);
     void onHaveConnectionChanged(bool);
 
 private:

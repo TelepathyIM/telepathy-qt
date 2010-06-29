@@ -52,7 +52,7 @@ void AccountItem::setupGui()
     mTable->setItem(mRow, ColumnEnabled, new QTableWidgetItem(mAcc->isEnabled() ?
                 QLatin1String("true") : QLatin1String("false")));
     mTable->setItem(mRow, ColumnConnectionManager, new QTableWidgetItem(mAcc->cmName()));
-    mTable->setItem(mRow, ColumnProtocol, new QTableWidgetItem(mAcc->protocol()));
+    mTable->setItem(mRow, ColumnProtocol, new QTableWidgetItem(mAcc->protocolName()));
     mTable->setItem(mRow, ColumnDisplayName, new QTableWidgetItem(mAcc->displayName()));
     mTable->setItem(mRow, ColumnNickname, new QTableWidgetItem(mAcc->nickname()));
     mTable->setItem(mRow, ColumnConnectsAutomatically, new QTableWidgetItem(mAcc->connectsAutomatically() ?
@@ -99,8 +99,10 @@ void AccountItem::onReady(Tp::PendingOperation *op)
             SIGNAL(requestedPresenceChanged(const Tp::SimplePresence &)),
             SLOT(onRequestedPresenceChanged(const Tp::SimplePresence &)));
     connect(acc,
-            SIGNAL(connectionStatusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)),
-            SLOT(onConnectionStatusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason)));
+            SIGNAL(statusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason,
+                    const QString &, const QVariantMap &)),
+            SLOT(onStatusChanged(Tp::ConnectionStatus, Tp::ConnectionStatusReason,
+                    const QString &, const QVariantMap &)));
     connect(acc,
             SIGNAL(haveConnectionChanged(bool)),
             SLOT(onHaveConnectionChanged(bool)));
@@ -160,8 +162,9 @@ void AccountItem::onRequestedPresenceChanged(const Tp::SimplePresence &presence)
     item->setText(presence.status);
 }
 
-void AccountItem::onConnectionStatusChanged(Tp::ConnectionStatus status,
-        Tp::ConnectionStatusReason reason)
+void AccountItem::onStatusChanged(Tp::ConnectionStatus status,
+        Tp::ConnectionStatusReason reason, const QString &error,
+        const QVariantMap &errorDetails)
 {
     QTableWidgetItem *item = mTable->item(mRow, ColumnConnectionStatus);
     item->setText(QString::number(status));

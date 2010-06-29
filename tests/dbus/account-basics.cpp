@@ -5,6 +5,7 @@
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
@@ -20,10 +21,11 @@ class TestAccountBasics : public Test
 
 public:
     TestAccountBasics(QObject *parent = 0)
-        : Test(parent)
+        : Test(parent), mAccountsCount(0)
     { }
 
 protected Q_SLOTS:
+    void onNewAccount(const Tp::AccountPtr &);
     void onAvatarChanged(const Tp::Avatar &);
 
 private Q_SLOTS:
@@ -36,8 +38,20 @@ private Q_SLOTS:
     void cleanupTestCase();
 
 private:
-    AccountManagerPtr mAM;
+    QStringList pathsForAccountList(const QList<Tp::AccountPtr> &list);
+    QStringList pathsForAccountSet(const Tp::AccountSetPtr &set);
+
+    Tp::AccountManagerPtr mAM;
+    int mAccountsCount;
 };
+
+void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
+{
+    Q_UNUSED(acc);
+
+    mAccountsCount++;
+    mLoop->exit(0);
+}
 
 void TestAccountBasics::onAvatarChanged(const Tp::Avatar &avatar)
 {
@@ -45,6 +59,24 @@ void TestAccountBasics::onAvatarChanged(const Tp::Avatar &avatar)
     QCOMPARE(avatar.avatarData, QByteArray("asdfg"));
     QCOMPARE(avatar.MIMEType, QString(QLatin1String("image/jpeg")));
     mLoop->exit(0);
+}
+
+QStringList TestAccountBasics::pathsForAccountList(const QList<Tp::AccountPtr> &list)
+{
+    QStringList ret;
+    foreach (const AccountPtr &account, list) {
+        ret << account->objectPath();
+    }
+    return ret;
+}
+
+QStringList TestAccountBasics::pathsForAccountSet(const Tp::AccountSetPtr &set)
+{
+    QStringList ret;
+    foreach (const AccountPtr &account, set->accounts()) {
+        ret << account->objectPath();
+    }
+    return ret;
 }
 
 void TestAccountBasics::initTestCase()
@@ -68,6 +100,10 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mAM->isReady(), true);
 
+    QVERIFY(connect(mAM.data(),
+                    SIGNAL(newAccount(const Tp::AccountPtr &)),
+                    SLOT(onNewAccount(const Tp::AccountPtr &))));
+
     QVariantMap parameters;
     parameters[QLatin1String("account")] = QLatin1String("foobar");
     PendingAccount *pacc = mAM->createAccount(QLatin1String("foo"),
@@ -78,18 +114,23 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(pacc->account());
 
+    while (mAccountsCount != 1) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
     QCOMPARE(mAM->interfaces(), QStringList());
 
-    QCOMPARE(mAM->validAccountPaths(),
+    QStringList paths;
+    QCOMPARE(pathsForAccountSet(mAM->validAccountsSet()),
             QStringList() <<
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
-    QCOMPARE(mAM->invalidAccountPaths(),
+    QCOMPARE(pathsForAccountSet(mAM->invalidAccountsSet()),
             QStringList());
-    QCOMPARE(mAM->allAccountPaths(),
+    QCOMPARE(pathsForAccountList(mAM->allAccounts()),
             QStringList() <<
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
 
-    AccountPtr acc = mAM->accountForPath(
+    AccountPtr acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/foo/bar/Account0"));
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -132,14 +173,18 @@ void TestAccountBasics::testBasics()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    acc = mAM->accountForPath(
+    while (mAccountsCount != 2) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
-    acc = mAM->accountForPath(
+    acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
     QVERIFY(connect(acc->becomeReady(Account::FeatureProtocolInfo),
                     SIGNAL(finished(Tp::PendingOperation *)),

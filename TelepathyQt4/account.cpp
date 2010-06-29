@@ -87,10 +87,10 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     bool hasBeenOnline;
     bool changingPresence;
     QString cmName;
-    QString protocol;
+    QString protocolName;
     QString displayName;
     QString nickname;
-    QString icon;
+    QString iconName;
     QString connectionObjectPath;
     QString normalizedName;
     Avatar avatar;
@@ -129,7 +129,7 @@ Account::Private::Private(Account *parent)
 
     if (rx.exactMatch(parent->objectPath())) {
         cmName = rx.cap(1);
-        protocol = rx.cap(2);
+        protocolName = rx.cap(2);
     } else {
         warning() << "Account object path is not spec-compliant, "
             "trying again with a different account-specific part check";
@@ -141,7 +141,7 @@ Account::Private::Private(Account *parent)
                     ));
         if (rx.exactMatch(parent->objectPath())) {
             cmName = rx.cap(1);
-            protocol = rx.cap(2);
+            protocolName = rx.cap(2);
         } else {
             warning() << "Not a valid Account object path:" <<
                 parent->objectPath();
@@ -251,7 +251,7 @@ void Account::Private::addConferenceRequestParameters(QVariantMap &request,
  * individual accessor descriptions for more details.
  *
  * Signals are emitted to indicate that properties have changed, for example
- * displayNameChanged(), iconChanged(), etc.
+ * displayNameChanged(), iconNameChanged(), etc.
  *
  * Convenience methods to create channels using the channel dispatcher such as
  * ensureTextChat(), createFileTransfer() are provided.
@@ -520,7 +520,19 @@ QString Account::cmName() const
  */
 QString Account::protocol() const
 {
-    return mPriv->protocol;
+    return mPriv->protocolName;
+}
+
+/**
+ * Return the protocol name of this account.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The protocol name of this account.
+ */
+QString Account::protocolName() const
+{
+    return mPriv->protocolName;
 }
 
 /**
@@ -581,7 +593,20 @@ PendingOperation *Account::setDisplayName(const QString &value)
  */
 QString Account::icon() const
 {
-    return mPriv->icon;
+    return mPriv->iconName;
+}
+
+/**
+ * Return the icon name of this account.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The icon name of this account.
+ * \sa iconNameChanged()
+ */
+QString Account::iconName() const
+{
+    return mPriv->iconName;
 }
 
 /**
@@ -593,6 +618,24 @@ QString Account::icon() const
  * \sa iconChanged()
  */
 PendingOperation *Account::setIcon(const QString &value)
+{
+    return new PendingVoid(
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("Icon"),
+                QDBusVariant(value)),
+            this);
+}
+
+/**
+ * Set the icon name of this account.
+ *
+ * \param value The icon name of this account.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa iconNameChanged()
+ */
+PendingOperation *Account::setIconName(const QString &value)
 {
     return new PendingVoid(
             propertiesInterface()->Set(
@@ -973,6 +1016,16 @@ PendingOperation *Account::setRequestedPresence(
                 QLatin1String("RequestedPresence"),
                 QDBusVariant(QVariant::fromValue(value))),
             this);
+}
+
+/**
+ * Return whether this account is online.
+ *
+ * \return \c true if this account is online, otherwise \c false.
+ */
+bool Account::isOnline() const
+{
+    return mPriv->currentPresence.type != ConnectionPresenceTypeOffline;
 }
 
 /**
@@ -1825,6 +1878,15 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
+ * \fn void Account::iconNameChanged(const QString &iconName);
+ *
+ * This signal is emitted when the value of iconName() of this account changes.
+ *
+ * \param iconName The new icon name of this account.
+ * \sa iconName(), setIconName()
+ */
+
+/**
  * \fn void Account::nicknameChanged(const QString &nickname);
  *
  * This signal is emitted when the value of nickname() of this account changes.
@@ -1933,6 +1995,16 @@ PendingChannelRequest *Account::ensureChannel(
  * \param requestedPresence The new value of requested presence property of this
  *                          account.
  * \sa requestedPresence()
+ */
+
+/**
+ * \fn void Account::onlinenessChanged(bool online) const;
+ *
+ * This signal is emitted when the value of isOnline() of this
+ * account changes.
+ *
+ * \param online Whether this account is online.
+ * \sa currentPresence()
  */
 
 /**
@@ -2092,13 +2164,16 @@ void Account::Private::updateProperties(const QVariantMap &props)
         displayName = qdbus_cast<QString>(props[QLatin1String("DisplayName")]);
         debug() << " Display Name:" << displayName;
         emit parent->displayNameChanged(displayName);
+        parent->notify("displayName");
     }
 
     if (props.contains(QLatin1String("Icon")) &&
-        icon != qdbus_cast<QString>(props[QLatin1String("Icon")])) {
-        icon = qdbus_cast<QString>(props[QLatin1String("Icon")]);
-        debug() << " Icon:" << icon;
-        emit parent->iconChanged(icon);
+        iconName != qdbus_cast<QString>(props[QLatin1String("Icon")])) {
+        iconName = qdbus_cast<QString>(props[QLatin1String("Icon")]);
+        debug() << " Icon:" << iconName;
+        emit parent->iconChanged(iconName);
+        emit parent->iconNameChanged(iconName);
+        parent->notify("iconName");
     }
 
     if (props.contains(QLatin1String("Nickname")) &&
@@ -2106,6 +2181,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         nickname = qdbus_cast<QString>(props[QLatin1String("Nickname")]);
         debug() << " Nickname:" << nickname;
         emit parent->nicknameChanged(nickname);
+        parent->notify("nickname");
     }
 
     if (props.contains(QLatin1String("NormalizedName")) &&
@@ -2113,6 +2189,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         normalizedName = qdbus_cast<QString>(props[QLatin1String("NormalizedName")]);
         debug() << " Normalized Name:" << normalizedName;
         emit parent->normalizedNameChanged(normalizedName);
+        parent->notify("normalizedName");
     }
 
     if (props.contains(QLatin1String("Valid")) &&
@@ -2120,6 +2197,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         valid = qdbus_cast<bool>(props[QLatin1String("Valid")]);
         debug() << " Valid:" << (valid ? "true" : "false");
         emit parent->validityChanged(valid);
+        parent->notify("valid");
     }
 
     if (props.contains(QLatin1String("Enabled")) &&
@@ -2127,6 +2205,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         enabled = qdbus_cast<bool>(props[QLatin1String("Enabled")]);
         debug() << " Enabled:" << (enabled ? "true" : "false");
         emit parent->stateChanged(enabled);
+        parent->notify("enabled");
     }
 
     if (props.contains(QLatin1String("ConnectAutomatically")) &&
@@ -2136,6 +2215,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 qdbus_cast<bool>(props[QLatin1String("ConnectAutomatically")]);
         debug() << " Connects Automatically:" << (connectsAutomatically ? "true" : "false");
         emit parent->connectsAutomaticallyPropertyChanged(connectsAutomatically);
+        parent->notify("connectsAutomatically");
     }
 
     if (props.contains(QLatin1String("HasBeenOnline")) &&
@@ -2149,6 +2229,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         if (parent->isReady()) {
             emit parent->firstOnline();
         }
+        parent->notify("hasBeenOnline");
     }
 
     if (props.contains(QLatin1String("Parameters")) &&
@@ -2156,6 +2237,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
         debug() << " Parameters:" << parameters;
         emit parent->parametersChanged(parameters);
+        parent->notify("parameters");
     }
 
     if (props.contains(QLatin1String("AutomaticPresence")) &&
@@ -2166,6 +2248,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Automatic Presence:" << automaticPresence.type <<
             "-" << automaticPresence.status;
         emit parent->automaticPresenceChanged(automaticPresence);
+        parent->notify("automaticPresence");
     }
 
     if (props.contains(QLatin1String("CurrentPresence")) &&
@@ -2176,6 +2259,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Current Presence:" << currentPresence.type <<
             "-" << currentPresence.status;
         emit parent->currentPresenceChanged(currentPresence);
+        parent->notify("currentPresence");
+        emit parent->onlinenessChanged(parent->isOnline());
+        parent->notify("online");
     }
 
     if (props.contains(QLatin1String("RequestedPresence")) &&
@@ -2186,6 +2272,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Requested Presence:" << requestedPresence.type <<
             "-" << requestedPresence.status;
         emit parent->requestedPresenceChanged(requestedPresence);
+        parent->notify("requestedPresence");
     }
 
     if (props.contains(QLatin1String("ChangingPresence")) &&
@@ -2195,6 +2282,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 props[QLatin1String("ChangingPresence")]);
         debug() << " Changing Presence:" << changingPresence;
         emit parent->changingPresence(changingPresence);
+        parent->notify("changingPresence");
     }
 
     if (props.contains(QLatin1String("Connection"))) {
@@ -2214,6 +2302,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
             connection.reset();
             connectionObjectPath = path;
             emit parent->haveConnectionChanged(!path.isEmpty());
+            parent->notify("haveConnection");
+            parent->notify("connection");
+            parent->notify("connectionObjectPath");
         }
     }
 
@@ -2248,6 +2339,8 @@ void Account::Private::updateProperties(const QVariantMap &props)
         if (changed) {
             emit parent->connectionStatusChanged(
                     connectionStatus, connectionStatusReason);
+            parent->notify("connectionStatus");
+            parent->notify("connectionStatusReason");
         }
 
         if (props.contains(QLatin1String("ConnectionError")) &&
@@ -2290,6 +2383,8 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
             emit parent->statusChanged(connectionStatus, connectionStatusReason,
                     connectionError, connectionErrorDetails);
+            parent->notify("connectionError");
+            parent->notify("connectionErrorDetails");
         }
     }
 }
@@ -2342,6 +2437,7 @@ void Account::gotAvatar(QDBusPendingCallWatcher *watcher)
         }
 
         emit avatarChanged(mPriv->avatar);
+        notify("avatar");
     } else {
         // check if the feature is already there, and for some reason retrieveAvatar
         // failed when called the second time
@@ -2368,7 +2464,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
     bool error = operation->isError();
     if (!error) {
         foreach (ProtocolInfo *info, mPriv->cm->protocols()) {
-            if (info->name() == mPriv->protocol) {
+            if (info->name() == mPriv->protocolName) {
                 mPriv->protocolInfo = info;
                 break;
             }
@@ -2397,6 +2493,12 @@ void Account::onRemoved()
     mPriv->enabled = false;
     invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
             QLatin1String("Account removed from AccountManager"));
+    emit removed();
+}
+
+void Account::notify(const char *propertyName)
+{
+    emit propertyChanged(QLatin1String(propertyName));
 }
 
 } // Tp

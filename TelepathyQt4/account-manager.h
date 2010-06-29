@@ -1,8 +1,8 @@
 /*
  * This file is part of TelepathyQt4
  *
- * Copyright (C) 2008 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2008 Nokia Corporation
+ * Copyright (C) 2008-2010 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2008-2010 Nokia Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -65,16 +65,31 @@ public:
 
     virtual ~AccountManager();
 
-    QStringList validAccountPaths() const;
-    QStringList invalidAccountPaths() const;
-    QStringList allAccountPaths() const;
+    TELEPATHY_QT4_DEPRECATED QStringList validAccountPaths() const;
+    TELEPATHY_QT4_DEPRECATED QStringList invalidAccountPaths() const;
+    TELEPATHY_QT4_DEPRECATED QStringList allAccountPaths() const;
 
-    QList<AccountPtr> validAccounts();
-    QList<AccountPtr> invalidAccounts();
+    TELEPATHY_QT4_DEPRECATED QList<AccountPtr> validAccounts();
+    TELEPATHY_QT4_DEPRECATED QList<AccountPtr> invalidAccounts();
+
     QList<AccountPtr> allAccounts();
 
-    AccountPtr accountForPath(const QString &path);
-    QList<AccountPtr> accountsForPaths(const QStringList &paths);
+    AccountSetPtr validAccountsSet() const;
+    AccountSetPtr invalidAccountsSet() const;
+
+    AccountSetPtr enabledAccountsSet() const;
+    AccountSetPtr disabledAccountsSet() const;
+
+    AccountSetPtr onlineAccountsSet() const;
+    AccountSetPtr offlineAccountsSet() const;
+
+    AccountSetPtr accountsByProtocol(
+            const QString &protocolName) const;
+
+    AccountSetPtr filterAccounts(const QVariantMap &filter) const;
+
+    TELEPATHY_QT4_DEPRECATED AccountPtr accountForPath(const QString &path);
+    TELEPATHY_QT4_DEPRECATED QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
     QStringList supportedAccountProperties() const;
     PendingAccount *createAccount(const QString &connectionManager,
@@ -82,17 +97,18 @@ public:
             const QVariantMap &parameters,
             const QVariantMap &properties = QVariantMap());
 
-    // TODO: enabledAccounts(), accountsByProtocol(), ... ?
-
     inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return OptionalInterfaceFactory<AccountManager>::interface<Client::DBus::PropertiesInterface>();
     }
 
 Q_SIGNALS:
-    void accountCreated(const QString &path);
-    void accountRemoved(const QString &path);
-    void accountValidityChanged(const QString &path, bool valid);
+    TELEPATHY_QT4_DEPRECATED void accountCreated(const QString &path);
+    TELEPATHY_QT4_DEPRECATED void accountRemoved(const QString &path);
+    TELEPATHY_QT4_DEPRECATED void accountValidityChanged(const QString &path,
+            bool valid);
+
+    void newAccount(const Tp::AccountPtr &account);
 
 protected:
     AccountManager();
@@ -102,6 +118,7 @@ protected:
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
+    void onAccountReady(Tp::PendingOperation *);
     void onAccountValidityChanged(const QDBusObjectPath &, bool);
     void onAccountRemoved(const QDBusObjectPath &);
 
