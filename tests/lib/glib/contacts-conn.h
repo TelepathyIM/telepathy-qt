@@ -1,16 +1,16 @@
 /*
  * contacts-conn.h - header for a connection with contact info
  *
- * Copyright (C) 2007-2010 Collabora Ltd. <http://www.collabora.co.uk/>
- * Copyright (C) 2007-2010 Nokia Corporation
+ * Copyright (C) 2007-2008 Collabora Ltd. <http://www.collabora.co.uk/>
+ * Copyright (C) 2007-2008 Nokia Corporation
  *
  * Copying and distribution of this file, with or without modification,
  * are permitted in any medium without royalty provided the copyright
  * notice and this notice are preserved.
  */
 
-#ifndef TESTS_LIB_CONTACTS_CONN_H
-#define TESTS_LIB_CONTACTS_CONN_H
+#ifndef __TP_TESTS_CONTACTS_CONN_H__
+#define __TP_TESTS_CONTACTS_CONN_H__
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection.h>
@@ -21,151 +21,164 @@
 
 G_BEGIN_DECLS
 
-typedef struct _ContactsConnection ContactsConnection;
-typedef struct _ContactsConnectionClass ContactsConnectionClass;
-typedef struct _ContactsConnectionPrivate ContactsConnectionPrivate;
+typedef struct _TpTestsContactsConnection TpTestsContactsConnection;
+typedef struct _TpTestsContactsConnectionClass TpTestsContactsConnectionClass;
+typedef struct _TpTestsContactsConnectionPrivate TpTestsContactsConnectionPrivate;
 
-struct _ContactsConnectionClass {
-    SimpleConnectionClass parent_class;
+struct _TpTestsContactsConnectionClass {
+    TpTestsSimpleConnectionClass parent_class;
 
     TpPresenceMixinClass presence_mixin;
     TpContactsMixinClass contacts_mixin;
+    TpDBusPropertiesMixinClass properties_class;
 };
 
-struct _ContactsConnection {
-    SimpleConnection parent;
+struct _TpTestsContactsConnection {
+    TpTestsSimpleConnection parent;
 
     TpPresenceMixin presence_mixin;
     TpContactsMixin contacts_mixin;
 
-    ContactsConnectionPrivate *priv;
+    TpTestsContactsConnectionPrivate *priv;
 };
 
-GType contacts_connection_get_type (void);
+GType tp_tests_contacts_connection_get_type (void);
 
 /* Must match my_statuses in the .c */
 typedef enum {
-    CONTACTS_CONNECTION_STATUS_AVAILABLE,
-    CONTACTS_CONNECTION_STATUS_BUSY,
-    CONTACTS_CONNECTION_STATUS_AWAY,
-    CONTACTS_CONNECTION_STATUS_OFFLINE,
-    CONTACTS_CONNECTION_STATUS_UNKNOWN,
-    CONTACTS_CONNECTION_STATUS_ERROR
-} ContactsConnectionPresenceStatusIndex;
+    TP_TESTS_CONTACTS_CONNECTION_STATUS_AVAILABLE,
+    TP_TESTS_CONTACTS_CONNECTION_STATUS_BUSY,
+    TP_TESTS_CONTACTS_CONNECTION_STATUS_AWAY,
+    TP_TESTS_CONTACTS_CONNECTION_STATUS_OFFLINE,
+    TP_TESTS_CONTACTS_CONNECTION_STATUS_UNKNOWN,
+    TP_TESTS_CONTACTS_CONNECTION_STATUS_ERROR
+} TpTestsContactsConnectionPresenceStatusIndex;
 
 /* TYPE MACROS */
-#define CONTACTS_TYPE_CONNECTION \
-  (contacts_connection_get_type ())
-#define CONTACTS_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), CONTACTS_TYPE_CONNECTION, \
-                              ContactsConnection))
-#define CONTACTS_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass), CONTACTS_TYPE_CONNECTION, \
-                           ContactsConnectionClass))
-#define CONTACTS_IS_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj), CONTACTS_TYPE_CONNECTION))
-#define CONTACTS_IS_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass), CONTACTS_TYPE_CONNECTION))
-#define CONTACTS_CONNECTION_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), CONTACTS_TYPE_CONNECTION, \
-                              ContactsConnectionClass))
+#define TP_TESTS_TYPE_CONTACTS_CONNECTION \
+  (tp_tests_contacts_connection_get_type ())
+#define TP_TESTS_CONTACTS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), TP_TESTS_TYPE_CONTACTS_CONNECTION, \
+                              TpTestsContactsConnection))
+#define TP_TESTS_CONTACTS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass), TP_TESTS_TYPE_CONTACTS_CONNECTION, \
+                           TpTestsContactsConnectionClass))
+#define TP_TESTS_IS_CONTACTS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), TP_TESTS_TYPE_CONTACTS_CONNECTION))
+#define TP_TESTS_IS_CONTACTS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass), TP_TESTS_TYPE_CONTACTS_CONNECTION))
+#define TP_TESTS_CONTACTS_CONNECTION_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), TP_TESTS_TYPE_CONTACTS_CONNECTION, \
+                              TpTestsContactsConnectionClass))
 
-void contacts_connection_change_aliases (ContactsConnection *self, guint n,
+void tp_tests_contacts_connection_change_aliases (
+    TpTestsContactsConnection *self, guint n,
     const TpHandle *handles, const gchar * const *aliases);
 
-void contacts_connection_change_presences (ContactsConnection *self, guint n,
-    const TpHandle *handles,
-    const ContactsConnectionPresenceStatusIndex *indexes,
+void tp_tests_contacts_connection_change_presences (
+    TpTestsContactsConnection *self, guint n, const TpHandle *handles,
+    const TpTestsContactsConnectionPresenceStatusIndex *indexes,
     const gchar * const *messages);
 
-void contacts_connection_change_avatar_tokens (ContactsConnection *self,
-    guint n, const TpHandle *handles, const gchar * const *tokens);
+void tp_tests_contacts_connection_change_avatar_tokens (
+    TpTestsContactsConnection *self, guint n, const TpHandle *handles,
+    const gchar * const *tokens);
 
-void contacts_connection_change_locations (ContactsConnection *self,
+void tp_tests_contacts_connection_change_avatar_data (
+    TpTestsContactsConnection *self,
+    TpHandle handle,
+    GArray *data,
+    const gchar *mime_type,
+    const gchar *token);
+
+void tp_tests_contacts_connection_change_locations (
+    TpTestsContactsConnection *self,
     guint n,
     const TpHandle *handles,
     GHashTable **locations);
 
-void contacts_connection_change_capabilities (ContactsConnection *self,
-    GHashTable *capabilities);
+void tp_tests_contacts_connection_change_capabilities (
+    TpTestsContactsConnection *self, GHashTable *capabilities);
 
-void contacts_connection_change_infos (ContactsConnection *self,
-    guint n,
-    const TpHandle *handles,
-    GPtrArray **infos);
+void tp_tests_contacts_connection_change_contact_info (
+    TpTestsContactsConnection *self, TpHandle handle, GPtrArray *info);
+
+void tp_tests_contacts_connection_set_default_contact_info (
+    TpTestsContactsConnection *self,
+    GPtrArray *info);
 
 /* Legacy version (no Contacts interface) */
 
-typedef struct _LegacyContactsConnection LegacyContactsConnection;
-typedef struct _LegacyContactsConnectionClass LegacyContactsConnectionClass;
-typedef struct _LegacyContactsConnectionPrivate
-  LegacyContactsConnectionPrivate;
+typedef struct _TpTestsLegacyContactsConnection TpTestsLegacyContactsConnection;
+typedef struct _TpTestsLegacyContactsConnectionClass TpTestsLegacyContactsConnectionClass;
+typedef struct _TpTestsLegacyContactsConnectionPrivate
+  TpTestsLegacyContactsConnectionPrivate;
 
-struct _LegacyContactsConnectionClass {
-    ContactsConnectionClass parent_class;
+struct _TpTestsLegacyContactsConnectionClass {
+    TpTestsContactsConnectionClass parent_class;
 };
 
-struct _LegacyContactsConnection {
-    ContactsConnection parent;
+struct _TpTestsLegacyContactsConnection {
+    TpTestsContactsConnection parent;
 
-    LegacyContactsConnectionPrivate *priv;
+    TpTestsLegacyContactsConnectionPrivate *priv;
 };
 
-GType legacy_contacts_connection_get_type (void);
+GType tp_tests_legacy_contacts_connection_get_type (void);
 
 /* TYPE MACROS */
-#define LEGACY_CONTACTS_TYPE_CONNECTION \
-  (legacy_contacts_connection_get_type ())
-#define LEGACY_CONTACTS_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), LEGACY_CONTACTS_TYPE_CONNECTION, \
-                              LegacyContactsConnection))
-#define LEGACY_CONTACTS_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass), LEGACY_CONTACTS_TYPE_CONNECTION, \
-                           LegacyContactsConnectionClass))
-#define LEGACY_CONTACTS_IS_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj), LEGACY_CONTACTS_TYPE_CONNECTION))
-#define LEGACY_CONTACTS_IS_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass), LEGACY_CONTACTS_TYPE_CONNECTION))
-#define LEGACY_CONTACTS_CONNECTION_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), LEGACY_CONTACTS_TYPE_CONNECTION, \
-                              LegacyContactsConnectionClass))
+#define TP_TESTS_TYPE_LEGACY_CONTACTS_CONNECTION \
+  (tp_tests_legacy_contacts_connection_get_type ())
+#define LEGACY_TP_TESTS_CONTACTS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), TP_TESTS_TYPE_LEGACY_CONTACTS_CONNECTION, \
+                              TpTestsLegacyContactsConnection))
+#define LEGACY_TP_TESTS_CONTACTS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass), TP_TESTS_TYPE_LEGACY_CONTACTS_CONNECTION, \
+                           TpTestsLegacyContactsConnectionClass))
+#define TP_TESTS_LEGACY_CONTACTS_IS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), TP_TESTS_TYPE_LEGACY_CONTACTS_CONNECTION))
+#define TP_TESTS_LEGACY_CONTACTS_IS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass), TP_TESTS_TYPE_LEGACY_CONTACTS_CONNECTION))
+#define LEGACY_TP_TESTS_CONTACTS_CONNECTION_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), TP_TESTS_TYPE_LEGACY_CONTACTS_CONNECTION, \
+                              TpTestsLegacyContactsConnectionClass))
 
 /* No Requests version */
 
-typedef struct _NoRequestsConnection NoRequestsConnection;
-typedef struct _NoRequestsConnectionClass NoRequestsConnectionClass;
-typedef struct _NoRequestsConnectionPrivate
-  NoRequestsConnectionPrivate;
+typedef struct _TpTestsNoRequestsConnection TpTestsNoRequestsConnection;
+typedef struct _TpTestsNoRequestsConnectionClass TpTestsNoRequestsConnectionClass;
+typedef struct _TpTestsNoRequestsConnectionPrivate
+  TpTestsNoRequestsConnectionPrivate;
 
-struct _NoRequestsConnectionClass {
-    ContactsConnectionClass parent_class;
+struct _TpTestsNoRequestsConnectionClass {
+    TpTestsContactsConnectionClass parent_class;
 };
 
-struct _NoRequestsConnection {
-    ContactsConnection parent;
+struct _TpTestsNoRequestsConnection {
+    TpTestsContactsConnection parent;
 
-    NoRequestsConnectionPrivate *priv;
+    TpTestsNoRequestsConnectionPrivate *priv;
 };
 
-GType no_requests_connection_get_type (void);
+GType tp_tests_no_requests_connection_get_type (void);
 
 /* TYPE MACROS */
-#define NO_REQUESTS_TYPE_CONNECTION \
-  (no_requests_connection_get_type ())
-#define NO_REQUESTS_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), NO_REQUESTS_TYPE_CONNECTION, \
-                              NoRequestsConnection))
-#define NO_REQUESTS_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass), NO_REQUESTS_TYPE_CONNECTION, \
-                           NoRequestsConnectionClass))
-#define NO_REQUESTS_IS_CONNECTION(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj), NO_REQUESTS_TYPE_CONNECTION))
-#define NO_REQUESTS_IS_CONNECTION_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass), NO_REQUESTS_TYPE_CONNECTION))
-#define NO_REQUESTS_CONNECTION_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), NO_REQUESTS_TYPE_CONNECTION, \
-                              NoRequestsConnectionClass))
+#define TP_TESTS_TYPE_NO_REQUESTS_CONNECTION \
+  (tp_tests_no_requests_connection_get_type ())
+#define TP_TESTS_NO_REQUESTS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), TP_TESTS_TYPE_NO_REQUESTS_CONNECTION, \
+                              TpTestsNoRequestsConnection))
+#define TP_TESTS_NO_REQUESTS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass), TP_TESTS_TYPE_NO_REQUESTS_CONNECTION, \
+                           TpTestsNoRequestsConnectionClass))
+#define TP_TESTS_NO_REQUESTS_IS_CONNECTION(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), TP_TESTS_TYPE_NO_REQUESTS_CONNECTION))
+#define TP_TESTS_NO_REQUESTS_IS_CONNECTION_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass), TP_TESTS_TYPE_NO_REQUESTS_CONNECTION))
+#define TP_TESTS_NO_REQUESTS_CONNECTION_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), TP_TESTS_TYPE_NO_REQUESTS_CONNECTION, \
+                              TpTestsNoRequestsConnectionClass))
 
 G_END_DECLS
 
-#endif
+#endif /* ifndef __TP_TESTS_CONTACTS_CONN_H__ */

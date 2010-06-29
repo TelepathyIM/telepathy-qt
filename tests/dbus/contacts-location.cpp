@@ -37,7 +37,7 @@ private Q_SLOTS:
 
 private:
     QString mConnName, mConnPath;
-    ContactsConnection *mConnService;
+    TpTestsContactsConnection *mConnService;
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
     int mContactsLocationUpdated;
@@ -96,8 +96,8 @@ void TestContactsLocation::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = CONTACTS_CONNECTION(g_object_new(
-            CONTACTS_TYPE_CONNECTION,
+    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "foo",
             0));
@@ -181,7 +181,7 @@ void TestContactsLocation::testLocation()
                 NULL, NULL);
     }
 
-    contacts_connection_change_locations(mConnService, 2, handles, locations);
+    tp_tests_contacts_connection_change_locations(mConnService, 2, handles, locations);
 
     while (mContactsLocationUpdated != 2)  {
         QCOMPARE(mLoop->exec(), 0);

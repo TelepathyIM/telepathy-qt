@@ -172,7 +172,7 @@ void TestChanBasics::initTestCase()
     initTestCaseImpl();
 
     g_type_init();
-    g_set_prgname("conn-basics");
+    g_set_prgname("chan-basics");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
@@ -187,7 +187,7 @@ void TestChanBasics::initTestCase()
             0));
     QVERIFY(mConnService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "contacts", &name, &connPath, &error));
+                "foo", &name, &connPath, &error));
     QVERIFY(error == 0);
 
     QVERIFY(name != 0);

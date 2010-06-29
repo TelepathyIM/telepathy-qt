@@ -23,12 +23,18 @@ libexample_cm_call_la_SOURCES = \
     call-stream.c \
     call-stream.h
 
+# In an external project you'd use $(TP_GLIB_LIBS) (obtained from
+# pkg-config via autoconf) instead of the .la path
 libexample_cm_call_la_LIBADD = \
+    $(GLIB_LIBS) \
+    $(DBUS_LIBS) \
     $(TP_GLIB_LIBS)
 
 AM_CFLAGS = \
     -I$(top_srcdir)/tests/lib/glib/future \
     $(ERROR_CFLAGS) \
+    $(DBUS_CFLAGS) \
+    $(GLIB_CFLAGS) \
     $(TP_GLIB_CFLAGS)
 
 EXTRA_DIST = manager-file.py

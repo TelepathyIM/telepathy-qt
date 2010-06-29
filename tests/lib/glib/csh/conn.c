@@ -15,28 +15,28 @@
 
 #include <dbus/dbus-glib.h>
 
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/errors.h>
+#include <telepathy-glib/telepathy-glib.h>
 #include <telepathy-glib/handle-repo-dynamic.h>
-#include <telepathy-glib/interfaces.h>
 
 #include "room-manager.h"
 
 G_DEFINE_TYPE (ExampleCSHConnection,
     example_csh_connection,
-    CONTACTS_TYPE_CONNECTION)
+    TP_TYPE_BASE_CONNECTION)
 
 /* type definition stuff */
 
 enum
 {
   PROP_ACCOUNT = 1,
+  PROP_SIMULATION_DELAY,
   N_PROPS
 };
 
 struct _ExampleCSHConnectionPrivate
 {
   gchar *account;
+  guint simulation_delay;
 };
 
 static void
@@ -58,6 +58,11 @@ get_property (GObject *object,
     case PROP_ACCOUNT:
       g_value_set_string (value, self->priv->account);
       break;
+
+    case PROP_SIMULATION_DELAY:
+      g_value_set_uint (value, self->priv->simulation_delay);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, spec);
   }
@@ -76,6 +81,11 @@ set_property (GObject *object,
       g_free (self->priv->account);
       self->priv->account = g_utf8_strdown (g_value_get_string (value), -1);
       break;
+
+    case PROP_SIMULATION_DELAY:
+      self->priv->simulation_delay = g_value_get_uint (value);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, spec);
   }
@@ -200,10 +210,12 @@ create_handle_repos (TpBaseConnection *conn,
 static GPtrArray *
 create_channel_managers (TpBaseConnection *conn)
 {
+  ExampleCSHConnection *self = EXAMPLE_CSH_CONNECTION (conn);
   GPtrArray *ret = g_ptr_array_sized_new (1);
 
   g_ptr_array_add (ret, g_object_new (EXAMPLE_TYPE_CSH_ROOM_MANAGER,
         "connection", conn,
+        "simulation-delay", self->priv->simulation_delay,
         NULL));
 
   return ret;
@@ -247,11 +259,6 @@ example_csh_connection_class_init (ExampleCSHConnectionClass *klass)
 {
   static const gchar *interfaces_always_present[] = {
       TP_IFACE_CONNECTION_INTERFACE_REQUESTS,
-      TP_IFACE_CONNECTION_INTERFACE_ALIASING,
-      TP_IFACE_CONNECTION_INTERFACE_AVATARS,
-      TP_IFACE_CONNECTION_INTERFACE_CONTACTS,
-      TP_IFACE_CONNECTION_INTERFACE_PRESENCE,
-      TP_IFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE,
       NULL };
   TpBaseConnectionClass *base_class =
       (TpBaseConnectionClass *) klass;
@@ -275,66 +282,11 @@ example_csh_connection_class_init (ExampleCSHConnectionClass *klass)
       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_ACCOUNT, param_spec);
-}
 
-void
-example_csh_connection_set_enable_change_members_detailed (ExampleCSHConnection *self,
-                                                           gboolean enable)
-{
-  TpChannelManagerIter iter;
-  TpChannelManager *channel_manager;
-
-  g_return_if_fail (EXAMPLE_IS_CSH_CONNECTION (self));
-
-  tp_base_connection_channel_manager_iter_init (&iter, (TpBaseConnection *) self);
-
-  while (tp_base_connection_channel_manager_iter_next (&iter, &channel_manager))
-    {
-      if (EXAMPLE_IS_CSH_ROOM_MANAGER (channel_manager))
-        {
-          example_csh_room_manager_set_enable_change_members_detailed (
-            (ExampleCSHRoomManager *) channel_manager, enable);
-        }
-    }
-}
-
-void
-example_csh_connection_accept_invitations (ExampleCSHConnection *self)
-{
-  TpChannelManagerIter iter;
-  TpChannelManager *channel_manager;
-
-  g_return_if_fail (EXAMPLE_IS_CSH_CONNECTION (self));
-
-  tp_base_connection_channel_manager_iter_init (&iter, (TpBaseConnection *) self);
-
-  while (tp_base_connection_channel_manager_iter_next (&iter, &channel_manager))
-    {
-      if (EXAMPLE_IS_CSH_ROOM_MANAGER (channel_manager))
-        {
-          example_csh_room_manager_accept_invitations (
-            (ExampleCSHRoomManager *) channel_manager);
-        }
-    }
-}
-
-void
-example_csh_connection_set_use_properties_room (ExampleCSHConnection *self,
-                                                gboolean use_properties_room)
-{
-  TpChannelManagerIter iter;
-  TpChannelManager *channel_manager;
-
-  g_return_if_fail (EXAMPLE_IS_CSH_CONNECTION (self));
-
-  tp_base_connection_channel_manager_iter_init (&iter, (TpBaseConnection *) self);
-
-  while (tp_base_connection_channel_manager_iter_next (&iter, &channel_manager))
-    {
-      if (EXAMPLE_IS_CSH_ROOM_MANAGER (channel_manager))
-        {
-          example_csh_room_manager_set_use_properties_room (
-            (ExampleCSHRoomManager *) channel_manager, use_properties_room);
-        }
-    }
+  param_spec = g_param_spec_uint ("simulation-delay", "Simulation delay",
+      "Delay between simulated network events",
+      0, G_MAXUINT32, 500,
+      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_SIMULATION_DELAY,
+      param_spec);
 }

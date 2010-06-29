@@ -17,7 +17,7 @@
 
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/glib/csh/conn.h>
+#include <tests/lib/glib/contactlist/conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
@@ -28,19 +28,13 @@ class TestChanGroup : public Test
 
 public:
     TestChanGroup(QObject *parent = 0)
-        : Test(parent), mConnService(0),
-          mRoomNumber(0), mRoomCount(4), mRequested(false)
+        : Test(parent), mConnService(0)
     { }
 
 protected Q_SLOTS:
-    void expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason);
     void expectConnInvalidated();
-    void expectChanInvalidated(Tp::DBusProxy*,const QString &, const QString &);
-    void expectPendingRoomHandlesFinished(Tp::PendingOperation*);
-    void expectPendingContactHandlesFinished(Tp::PendingOperation*);
-    void expectCreateChannelFinished(Tp::PendingOperation *);
+    void expectEnsureChannelFinished(Tp::PendingOperation *);
     void expectPendingContactsFinished(Tp::PendingOperation *);
-    void onChannelGroupFlagsChanged(uint, uint, uint);
     void onGroupMembersChanged(
             const Tp::Contacts &groupMembersAdded,
             const Tp::Contacts &groupLocalPendingMembersAdded,
@@ -52,134 +46,34 @@ private Q_SLOTS:
     void initTestCase();
     void init();
 
-    void testRequestHandle();
+    void testCreateContacts();
     void testCreateChannel();
-    void testCreateChannelDetailed();
-    void testCreateChannelFallback();
-    void testCreateChannelFallbackDetailed();
 
     void cleanup();
     void cleanupTestCase();
 
 private:
-    void checkExpectedIds(const Contacts &contacts,
-        const QStringList &expectedIds);
     void debugContacts();
-    void doTestCreateChannel();
 
     QString mConnName, mConnPath;
-    ExampleCSHConnection *mConnService;
+    ExampleContactListConnection *mConnService;
     ConnectionPtr mConn;
     ChannelPtr mChan;
     QString mChanObjectPath;
-    uint mRoomNumber;
-    uint mRoomCount;
-    ReferencedHandles mRoomHandles;
-    ReferencedHandles mContactHandles;
     QList<ContactPtr> mContacts;
     Contacts mChangedCurrent;
     Contacts mChangedLP;
     Contacts mChangedRP;
     Contacts mChangedRemoved;
     Channel::GroupMemberChangeDetails mDetails;
-    bool mRequested;
-    QString mChanInvalidatedErrorName;
-    QString mChanInvalidatedErrorMessage;
 };
-
-void TestChanGroup::expectConnReady(Tp::Connection::Status newStatus,
-        Tp::ConnectionStatusReason newStatusReason)
-{
-    qDebug() << "connection changed to status" << newStatus;
-    switch (newStatus) {
-    case Connection::StatusDisconnected:
-        qWarning() << "Disconnected";
-        mLoop->exit(1);
-        break;
-    case Connection::StatusConnecting:
-        /* do nothing */
-        break;
-    case Connection::StatusConnected:
-        qDebug() << "Ready";
-        mLoop->exit(0);
-        break;
-    default:
-        qWarning().nospace() << "What sort of status is "
-            << newStatus << "?!";
-        mLoop->exit(2);
-        break;
-    }
-}
 
 void TestChanGroup::expectConnInvalidated()
 {
     mLoop->exit(0);
 }
 
-void TestChanGroup::expectChanInvalidated(Tp::DBusProxy *proxy,
-        const QString &errorName, const QString &errorMessage)
-{
-    Q_UNUSED(proxy);
-    mChanInvalidatedErrorName = errorName;
-    mChanInvalidatedErrorMessage = errorMessage;
-    mLoop->exit(0);
-}
-
-void TestChanGroup::expectPendingRoomHandlesFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
-    PendingHandles *pending = qobject_cast<PendingHandles*>(op);
-    mRoomHandles = pending->handles();
-    mLoop->exit(0);
-}
-
-void TestChanGroup::expectPendingContactHandlesFinished(PendingOperation *op)
-{
-    if (!op->isFinished()) {
-        qWarning() << "unfinished";
-        mLoop->exit(1);
-        return;
-    }
-
-    if (op->isError()) {
-        qWarning().nospace() << op->errorName()
-            << ": " << op->errorMessage();
-        mLoop->exit(2);
-        return;
-    }
-
-    if (!op->isValid()) {
-        qWarning() << "inconsistent results";
-        mLoop->exit(3);
-        return;
-    }
-
-    qDebug() << "finished";
-    PendingHandles *pending = qobject_cast<PendingHandles*>(op);
-    mContactHandles = pending->handles();
-    mLoop->exit(0);
-}
-
-void TestChanGroup::expectCreateChannelFinished(PendingOperation* op)
+void TestChanGroup::expectEnsureChannelFinished(PendingOperation* op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -234,12 +128,6 @@ void TestChanGroup::expectPendingContactsFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestChanGroup::onChannelGroupFlagsChanged(uint flags, uint added, uint removed)
-{
-    qDebug() << "group flags changed";
-    mLoop->exit(0);
-}
-
 void TestChanGroup::onGroupMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -255,18 +143,6 @@ void TestChanGroup::onGroupMembersChanged(
     mDetails = details;
     debugContacts();
     mLoop->exit(0);
-}
-
-void TestChanGroup::checkExpectedIds(const Contacts &contacts,
-        const QStringList &expectedIds)
-{
-    QStringList ids;
-    foreach (const ContactPtr &contact, contacts) {
-        ids << contact->id();
-    }
-
-    ids.sort();
-    QCOMPARE(ids, expectedIds);
 }
 
 void TestChanGroup::debugContacts()
@@ -300,14 +176,14 @@ void TestChanGroup::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = EXAMPLE_CSH_CONNECTION(g_object_new(
-            EXAMPLE_TYPE_CSH_CONNECTION,
+    mConnService = EXAMPLE_CONTACT_LIST_CONNECTION(g_object_new(
+            EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,
             "account", "me@example.com",
-            "protocol", "contacts",
+            "protocol", "example-contact-list",
             0));
     QVERIFY(mConnService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
-                "csh", &name, &connPath, &error));
+                "foo", &name, &connPath, &error));
     QVERIFY(error == 0);
 
     QVERIFY(name != 0);
@@ -324,25 +200,13 @@ void TestChanGroup::initTestCase()
 
     mConn->requestConnect();
 
-    QVERIFY(connect(mConn->becomeReady(),
+    QVERIFY(connect(mConn->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
-
-    if (mConn->status() != Connection::StatusConnected) {
-        QVERIFY(connect(mConn.data(),
-                        SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
-                        SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
-        QCOMPARE(mLoop->exec(), 0);
-        QVERIFY(disconnect(mConn.data(),
-                           SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
-                           this,
-                           SLOT(expectConnReady(Tp::Connection::Status, Tp::ConnectionStatusReason))));
-        QCOMPARE(mConn->status(), Connection::StatusConnected);
-    }
-
-    QVERIFY(mConn->requestsInterface() != 0);
+    QCOMPARE(static_cast<uint>(mConn->status()),
+             static_cast<uint>(Connection::StatusConnected));
 }
 
 void TestChanGroup::init()
@@ -350,76 +214,36 @@ void TestChanGroup::init()
     initImpl();
 }
 
-void TestChanGroup::testRequestHandle()
+void TestChanGroup::testCreateContacts()
 {
-    // Test identifiers
     QStringList ids;
-    for (uint i = 0; i < mRoomCount; ++i) {
-        ids << QString(QLatin1String("#room%1")).arg(i);
-    }
+    ids << QLatin1String("sjoerd@example.com");
 
-    // Request handles for the identifiers and wait for the request to process
-    PendingHandles *pending = mConn->requestHandles(Tp::HandleTypeRoom, ids);
-    QVERIFY(connect(pending,
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectPendingRoomHandlesFinished(Tp::PendingOperation*))));
+    // Wait for the contacts to be built
+    PendingOperation *op = mConn->contactManager()->contactsForIdentifiers(ids);
+    QVERIFY(connect(op,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QVERIFY(disconnect(pending,
-                       SIGNAL(finished(Tp::PendingOperation*)),
-                       this,
-                       SLOT(expectPendingRoomHandlesFinished(Tp::PendingOperation*))));
+    QVERIFY(disconnect(op,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                this,
+                SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
 }
 
 void TestChanGroup::testCreateChannel()
 {
-    mRequested = true;
-    example_csh_connection_set_enable_change_members_detailed(mConnService, false);
-    example_csh_connection_set_use_properties_room (mConnService, true);
-    doTestCreateChannel();
-    mRoomNumber++;
-}
-
-void TestChanGroup::testCreateChannelDetailed()
-{
-    mRequested = true;
-    example_csh_connection_set_enable_change_members_detailed(mConnService, true);
-    example_csh_connection_set_use_properties_room (mConnService, true);
-    doTestCreateChannel();
-    mRoomNumber++;
-}
-
-void TestChanGroup::testCreateChannelFallback()
-{
-    mRequested = false;
-    example_csh_connection_set_enable_change_members_detailed(mConnService, false);
-    example_csh_connection_set_use_properties_room (mConnService, false);
-    doTestCreateChannel();
-    mRoomNumber++;
-}
-
-void TestChanGroup::testCreateChannelFallbackDetailed()
-{
-    mRequested = false;
-    example_csh_connection_set_enable_change_members_detailed(mConnService, true);
-    example_csh_connection_set_use_properties_room (mConnService, false);
-    doTestCreateChannel();
-    mRoomNumber++;
-}
-
-
-void TestChanGroup::doTestCreateChannel()
-{
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeRoom);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
-                   mRoomHandles[mRoomNumber]);
+                   (uint) Tp::HandleTypeGroup);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+                   QLatin1String("Cambridge"));
 
-    QVERIFY(connect(mConn->createChannel(request),
+    QVERIFY(connect(mConn->ensureChannel(request),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
+                    SLOT(expectEnsureChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan);
 
@@ -429,24 +253,15 @@ void TestChanGroup::doTestCreateChannel()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mChan->isReady(), true);
 
-    QCOMPARE(mChan->isRequested(), mRequested);
-    QCOMPARE(mChan->initiatorContact().isNull(), true);
-    QCOMPARE(mChan->groupSelfContact()->id(),
-            QString(QLatin1String("me@#room%1")).arg(mRoomNumber));
-
-    QVERIFY(connect(mChan.data(),
-                    SIGNAL(groupFlagsChanged(uint, uint, uint)),
-                    SLOT(onChannelGroupFlagsChanged(uint, uint, uint))));
-
-    if (!mChan->groupCanAddContacts() || !mChan->groupCanRemoveContacts()) {
-        // wait the group flags change
-        QCOMPARE(mLoop->exec(), 0);
-    }
+    QCOMPARE(mChan->isRequested(), false);
+    QVERIFY(mChan->groupContacts().contains(mContacts.first()));
 
     QCOMPARE(mChan->groupCanAddContacts(), true);
     QCOMPARE(mChan->groupCanRemoveContacts(), true);
 
     debugContacts();
+
+    QCOMPARE(mChan->groupContacts().count(), 4);
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
@@ -462,141 +277,19 @@ void TestChanGroup::doTestCreateChannel()
                             const Tp::Contacts &,
                             const Tp::Channel::GroupMemberChangeDetails &))));
 
-    if (mChan->groupContacts().count() != 5) {
-        // wait the initial contacts to be added to the group
-        QCOMPARE(mLoop->exec(), 0);
-    }
-
-    QCOMPARE(mChan->groupContacts().count(), 5);
-
-    QString roomName = QString(QLatin1String("#room%1")).arg(mRoomNumber);
-
-    QStringList expectedIds;
-    expectedIds << QString(QLatin1String("me@")) + roomName <<
-        QString(QLatin1String("alice@")) + roomName <<
-        QString(QLatin1String("bob@")) + roomName <<
-        QString(QLatin1String("chris@")) + roomName <<
-        QString(QLatin1String("anonymous coward@")) + roomName;
-    expectedIds.sort();
-    checkExpectedIds(mChan->groupContacts(), expectedIds);
-
-    QStringList ids = QStringList() <<
-        QString(QLatin1String("john@#room%1")).arg(mRoomNumber) <<
-        QString(QLatin1String("mary@#room%1")).arg(mRoomNumber) <<
-        QString(QLatin1String("another anonymous coward@#room%1")).arg(mRoomNumber);
-    QVERIFY(connect(mConn->requestHandles(Tp::HandleTypeContact, ids),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectPendingContactHandlesFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    // Wait for the contacts to be built
-    QVERIFY(connect(mConn->contactManager()->contactsForHandles(mContactHandles),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    QCOMPARE(mContacts.size(), 3);
-    ids.sort();
-    checkExpectedIds(Contacts::fromList(mContacts), ids);
-
-    QString message(QLatin1String("I want to add them"));
-    mChan->groupAddContacts(mContacts, message);
-
-    // expect contacts to be added to remote pending, the csh test emits one at
-    // a time
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mDetails.actor(), mChan->groupSelfContact());
-    QCOMPARE(mDetails.message(), message);
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mDetails.actor(), mChan->groupSelfContact());
-    QCOMPARE(mDetails.message(), message);
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mDetails.actor(), mChan->groupSelfContact());
-    QCOMPARE(mDetails.message(), message);
-
-    expectedIds.clear();
-    expectedIds << QString(QLatin1String("john@")) + roomName <<
-            QString(QLatin1String("mary@")) + roomName <<
-            QString(QLatin1String("another anonymous coward@")) + roomName;
-    expectedIds.sort();
-    checkExpectedIds(mChan->groupRemotePendingContacts(), expectedIds);
-
     QList<ContactPtr> toRemove;
-    toRemove.append(mContacts[1]);
-    toRemove.append(mContacts[2]);
-    mChan->groupRemoveContacts(toRemove, QLatin1String("I want to remove some of them"));
-
-    // expect mary and another anonymous coward to be removed
-    // CSH emits these as two signals though, so waiting for one membersChanged isn't enough
-    QCOMPARE(mLoop->exec(), 0);
+    toRemove.append(mContacts[0]);
+    connect(mChan->groupRemoveContacts(toRemove, QLatin1String("I want to remove some of them")),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(expectSuccessfulCall(Tp::PendingOperation *)));
     QCOMPARE(mLoop->exec(), 0);
 
-    expectedIds.clear();
-    expectedIds << QString(QLatin1String("me@")) + roomName <<
-        QString(QLatin1String("alice@")) + roomName <<
-        QString(QLatin1String("bob@")) + roomName <<
-        QString(QLatin1String("chris@")) + roomName <<
-        QString(QLatin1String("anonymous coward@")) + roomName;
-    expectedIds.sort();
-    checkExpectedIds(mChan->groupContacts(), expectedIds);
-    expectedIds.clear();
-    expectedIds << QString(QLatin1String("john@")) + roomName;
-    checkExpectedIds(mChan->groupRemotePendingContacts(), expectedIds);
-
-    example_csh_connection_accept_invitations(mConnService);
-
-    // expect john to accept invite
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mDetails.message(), QString(QLatin1String("Invitation accepted")));
-
-    expectedIds.clear();
-    expectedIds << QString(QLatin1String("me@")) + roomName <<
-            QString(QLatin1String("alice@")) + roomName <<
-            QString(QLatin1String("bob@")) + roomName <<
-            QString(QLatin1String("chris@")) + roomName <<
-            QString(QLatin1String("anonymous coward@")) + roomName <<
-            QString(QLatin1String("john@")) + roomName;
-    expectedIds.sort();
-    checkExpectedIds(mChan->groupContacts(), expectedIds);
-
-    toRemove.clear();
-    ids.clear();
-    foreach (const ContactPtr &contact, mChan->groupContacts()) {
-        ids << contact->id();
-        if (contact != mChan->groupSelfContact() && toRemove.isEmpty()) {
-            toRemove.append(contact);
-            expectedIds.removeOne(contact->id());
-        }
-    }
-
-    mChan->groupRemoveContacts(toRemove,
-            QLatin1String("Checking removal of a contact in current list"));
-    QCOMPARE(mLoop->exec(), 0);
-    expectedIds.sort();
-    checkExpectedIds(mChan->groupContacts(), expectedIds);
-
-    QVERIFY(connect(mChan.data(),
-            SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-            SLOT(expectChanInvalidated(Tp::DBusProxy *, const QString &, const QString &))));
-
-    mChan->groupRemoveContacts(QList<ContactPtr>() << mChan->groupSelfContact(),
-            QLatin1String("I want to remove myself"));
-    QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasActor(), true);
-    QCOMPARE(mChan->groupSelfContactRemoveInfo().actor(), mChan->groupSelfContact());
-    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasMessage(), true);
-    QCOMPARE(mChan->groupSelfContactRemoveInfo().message(),
-            QString(QLatin1String("I want to remove myself")));
-    QCOMPARE(mChan->groupSelfContactRemoveInfo().hasError(), false);
-
-    // wait until chan gets invalidated
-    while (mChan->isValid()) {
+    while (mChangedRemoved.isEmpty()) {
         QCOMPARE(mLoop->exec(), 0);
     }
-    QCOMPARE(mChanInvalidatedErrorName, QString(QLatin1String(TELEPATHY_ERROR_CANCELLED)));
-    QCOMPARE(mChanInvalidatedErrorMessage, QString(QLatin1String("I want to remove myself")));
+    QVERIFY(mChangedRemoved.contains(mContacts[0]));
 
-    mChan.reset();
+    QCOMPARE(mChan->groupContacts().count(), 3);
 }
 
 void TestChanGroup::cleanup()

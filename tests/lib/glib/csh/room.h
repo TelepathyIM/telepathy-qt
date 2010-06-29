@@ -26,10 +26,6 @@ typedef struct _ExampleCSHRoomChannelPrivate ExampleCSHRoomChannelPrivate;
 
 GType example_csh_room_channel_get_type (void);
 
-void example_csh_room_set_enable_change_members_detailed (ExampleCSHRoomChannel *channel,
-                                                          gboolean enable);
-void example_csh_room_accept_invitations (ExampleCSHRoomChannel *channel);
-
 #define EXAMPLE_TYPE_CSH_ROOM_CHANNEL \
   (example_csh_room_channel_get_type ())
 #define EXAMPLE_CSH_ROOM_CHANNEL(obj) \
@@ -61,35 +57,6 @@ struct _ExampleCSHRoomChannel {
     TpGroupMixin group;
 
     ExampleCSHRoomChannelPrivate *priv;
-};
-
-typedef struct _ExampleCSHRoomPropertiesChannel ExampleCSHRoomPropertiesChannel;
-typedef struct _ExampleCSHRoomPropertiesChannelClass ExampleCSHRoomPropertiesChannelClass;
-
-GType example_csh_room_properties_channel_get_type (void);
-
-#define EXAMPLE_TYPE_CSH_ROOM_PROPERTIES_CHANNEL \
-  (example_csh_room_properties_channel_get_type ())
-#define EXAMPLE_CSH_ROOM_PROPERTIES_CHANNEL(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), EXAMPLE_TYPE_CSH_ROOM_PROPERTIES_CHANNEL, \
-                               ExampleCSHRoomPropertiesChannel))
-#define EXAMPLE_CSH_ROOM_PROPERTIES_CHANNEL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), EXAMPLE_TYPE_CSH_ROOM_PROPERTIES_CHANNEL, \
-                            ExampleCSHRoomPropertiesChannelClass))
-#define EXAMPLE_IS_CSH_ROOM_PROPERTIES_CHANNEL(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), EXAMPLE_TYPE_CSH_ROOM_PROPERTIES_CHANNEL))
-#define EXAMPLE_IS_CSH_ROOM_PROPERTIES_CHANNEL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), EXAMPLE_TYPE_CSH_ROOM_PROPERTIES_CHANNEL))
-#define EXAMPLE_CSH_ROOM_PROPERTIES_CHANNEL_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), EXAMPLE_TYPE_CSH_ROOM_PROPERTIES_CHANNEL, \
-                              ExampleCSHRoomPropertiesChannelClass))
-
-struct _ExampleCSHRoomPropertiesChannelClass {
-    ExampleCSHRoomChannelClass parent_class;
-};
-
-struct _ExampleCSHRoomPropertiesChannel {
-    ExampleCSHRoomChannel parent;
 };
 
 G_END_DECLS

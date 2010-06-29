@@ -69,7 +69,7 @@ private:
     QList<ReceivedMessage> received;
     QList<ReceivedMessage> removed;
 
-    ContactsConnection *mConnService;
+    TpTestsContactsConnection *mConnService;
     TpBaseConnection *mBaseConnService;
     TpHandleRepoIface *mContactRepo;
     ExampleEchoChannel *mTextChanService;
@@ -122,8 +122,8 @@ void TestTextChan::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = CONTACTS_CONNECTION(g_object_new(
-            CONTACTS_TYPE_CONNECTION,
+    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
             0));

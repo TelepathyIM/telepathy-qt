@@ -15,11 +15,7 @@
 
 #include <dbus/dbus-glib.h>
 
-#include <telepathy-glib/base-connection.h>
-#include <telepathy-glib/channel-manager.h>
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/errors.h>
-#include <telepathy-glib/interfaces.h>
+#include <telepathy-glib/telepathy-glib.h>
 
 #include "chan.h"
 
@@ -225,7 +221,7 @@ channel_closed_cb (ExampleEcho2Channel *chan,
     }
 }
 
-static ExampleEcho2Channel *
+static void
 new_channel (ExampleEcho2ImManager *self,
              TpHandle handle,
              TpHandle initiator,
@@ -257,19 +253,17 @@ new_channel (ExampleEcho2ImManager *self,
   tp_channel_manager_emit_new_channel (self, TP_EXPORTABLE_CHANNEL (chan),
       requests);
   g_slist_free (requests);
-
-  return chan;
 }
 
 static const gchar * const fixed_properties[] = {
-    TP_IFACE_CHANNEL ".ChannelType",
-    TP_IFACE_CHANNEL ".TargetHandleType",
+    TP_PROP_CHANNEL_CHANNEL_TYPE,
+    TP_PROP_CHANNEL_TARGET_HANDLE_TYPE,
     NULL
 };
 
 static const gchar * const allowed_properties[] = {
-    TP_IFACE_CHANNEL ".TargetHandle",
-    TP_IFACE_CHANNEL ".TargetID",
+    TP_PROP_CHANNEL_TARGET_HANDLE,
+    TP_PROP_CHANNEL_TARGET_ID,
     NULL
 };
 
@@ -278,17 +272,11 @@ example_echo_2_im_manager_foreach_channel_class (TpChannelManager *manager,
     TpChannelManagerChannelClassFunc func,
     gpointer user_data)
 {
-  GHashTable *table = g_hash_table_new_full (g_str_hash, g_str_equal,
-      NULL, (GDestroyNotify) tp_g_value_slice_free);
-  GValue *value;
-
-  value = tp_g_value_slice_new (G_TYPE_STRING);
-  g_value_set_static_string (value, TP_IFACE_CHANNEL_TYPE_TEXT);
-  g_hash_table_insert (table, TP_IFACE_CHANNEL ".ChannelType", value);
-
-  value = tp_g_value_slice_new (G_TYPE_UINT);
-  g_value_set_uint (value, TP_HANDLE_TYPE_CONTACT);
-  g_hash_table_insert (table, TP_IFACE_CHANNEL ".TargetHandleType", value);
+  GHashTable *table = tp_asv_new (
+      TP_PROP_CHANNEL_CHANNEL_TYPE,
+          G_TYPE_STRING, TP_IFACE_CHANNEL_TYPE_TEXT,
+      TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, G_TYPE_UINT, TP_HANDLE_TYPE_CONTACT,
+      NULL);
 
   func (manager, table, allowed_properties, user_data);
 
@@ -306,20 +294,20 @@ example_echo_2_im_manager_request (ExampleEcho2ImManager *self,
   GError *error = NULL;
 
   if (tp_strdiff (tp_asv_get_string (request_properties,
-          TP_IFACE_CHANNEL ".ChannelType"),
+          TP_PROP_CHANNEL_CHANNEL_TYPE),
       TP_IFACE_CHANNEL_TYPE_TEXT))
     {
       return FALSE;
     }
 
   if (tp_asv_get_uint32 (request_properties,
-      TP_IFACE_CHANNEL ".TargetHandleType", NULL) != TP_HANDLE_TYPE_CONTACT)
+      TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, NULL) != TP_HANDLE_TYPE_CONTACT)
     {
       return FALSE;
     }
 
   handle = tp_asv_get_uint32 (request_properties,
-      TP_IFACE_CHANNEL ".TargetHandle", NULL);
+      TP_PROP_CHANNEL_TARGET_HANDLE, NULL);
   g_assert (handle != 0);
 
   if (tp_channel_manager_asv_has_unknown_properties (request_properties,
@@ -332,7 +320,7 @@ example_echo_2_im_manager_request (ExampleEcho2ImManager *self,
 
   if (chan == NULL)
     {
-      chan = new_channel (self, handle, self->priv->conn->self_handle,
+      new_channel (self, handle, self->priv->conn->self_handle,
           request_token);
     }
   else if (require_new)

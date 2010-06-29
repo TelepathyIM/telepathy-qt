@@ -8,48 +8,51 @@
  * notice and this notice are preserved.
  */
 
-#ifndef __SIMPLE_CONNECTION_MANAGER_H__
-#define __SIMPLE_CONNECTION_MANAGER_H__
+#ifndef __TP_TESTS_SIMPLE_CONNECTION_MANAGER_H__
+#define __TP_TESTS_SIMPLE_CONNECTION_MANAGER_H__
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection-manager.h>
 
 G_BEGIN_DECLS
 
-typedef struct _SimpleConnectionManager SimpleConnectionManager;
-typedef struct _SimpleConnectionManagerClass SimpleConnectionManagerClass;
+typedef struct _TpTestsSimpleConnectionManager TpTestsSimpleConnectionManager;
+typedef struct _TpTestsSimpleConnectionManagerPrivate TpTestsSimpleConnectionManagerPrivate;
+typedef struct _TpTestsSimpleConnectionManagerClass TpTestsSimpleConnectionManagerClass;
+typedef struct _TpTestsSimpleConnectionManagerClassPrivate
+  TpTestsSimpleConnectionManagerClassPrivate;
 
-struct _SimpleConnectionManagerClass {
+struct _TpTestsSimpleConnectionManagerClass {
     TpBaseConnectionManagerClass parent_class;
 
-    gpointer priv;
+    TpTestsSimpleConnectionManagerClassPrivate *priv;
 };
 
-struct _SimpleConnectionManager {
+struct _TpTestsSimpleConnectionManager {
     TpBaseConnectionManager parent;
 
-    gpointer priv;
+    TpTestsSimpleConnectionManagerPrivate *priv;
 };
 
-GType simple_connection_manager_get_type (void);
+GType tp_tests_simple_connection_manager_get_type (void);
 
 /* TYPE MACROS */
-#define SIMPLE_TYPE_CONNECTION_MANAGER \
-  (simple_connection_manager_get_type ())
-#define SIMPLE_CONNECTION_MANAGER(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj), SIMPLE_TYPE_CONNECTION_MANAGER, \
+#define TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER \
+  (tp_tests_simple_connection_manager_get_type ())
+#define TP_TESTS_SIMPLE_CONNECTION_MANAGER(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER, \
                               simpleConnectionManager))
-#define SIMPLE_CONNECTION_MANAGER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass), SIMPLE_TYPE_CONNECTION_MANAGER, \
-                           SimpleConnectionManagerClass))
-#define SIMPLE_IS_CONNECTION_MANAGER(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj), SIMPLE_TYPE_CONNECTION_MANAGER))
-#define SIMPLE_IS_CONNECTION_MANAGER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass), SIMPLE_TYPE_CONNECTION_MANAGER))
-#define SIMPLE_CONNECTION_MANAGER_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), SIMPLE_TYPE_CONNECTION_MANAGER, \
-                              SimpleConnectionManagerClass))
+#define TP_TESTS_SIMPLE_CONNECTION_MANAGER_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass), TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER, \
+                           TpTestsSimpleConnectionManagerClass))
+#define TP_TESTS_SIMPLE_IS_CONNECTION_MANAGER(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER))
+#define TP_TESTS_SIMPLE_IS_CONNECTION_MANAGER_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass), TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER))
+#define TP_TESTS_SIMPLE_CONNECTION_MANAGER_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER, \
+                              TpTestsSimpleConnectionManagerClass))
 
 G_END_DECLS
 
-#endif /* #ifndef __SIMPLE_CONNECTION_MANAGER_H__*/
+#endif /* #ifndef __TP_TESTS_SIMPLE_CONNECTION_MANAGER_H__*/

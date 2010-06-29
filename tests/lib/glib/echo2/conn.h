@@ -14,7 +14,6 @@
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection.h>
-#include <tests/lib/glib/contacts-conn.h>
 
 G_BEGIN_DECLS
 
@@ -23,11 +22,11 @@ typedef struct _ExampleEcho2ConnectionClass ExampleEcho2ConnectionClass;
 typedef struct _ExampleEcho2ConnectionPrivate ExampleEcho2ConnectionPrivate;
 
 struct _ExampleEcho2ConnectionClass {
-    ContactsConnectionClass parent_class;
+    TpBaseConnectionClass parent_class;
 };
 
 struct _ExampleEcho2Connection {
-    ContactsConnection parent;
+    TpBaseConnection parent;
 
     ExampleEcho2ConnectionPrivate *priv;
 };

@@ -37,7 +37,7 @@ private Q_SLOTS:
 
 private:
     QString mConnName, mConnPath;
-    ContactsConnection *mConnService;
+    TpTestsContactsConnection *mConnService;
     ConnectionPtr mConn;
     QList<ContactPtr> mContacts;
     int mContactsInfoUpdated;
@@ -96,8 +96,8 @@ void TestContactsInfo::initTestCase()
     gchar *connPath;
     GError *error = 0;
 
-    mConnService = CONTACTS_CONNECTION(g_object_new(
-            CONTACTS_TYPE_CONNECTION,
+    mConnService = TP_TESTS_CONTACTS_CONNECTION(g_object_new(
+            TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "foo",
             0));
@@ -186,7 +186,6 @@ void TestContactsInfo::testInfo()
                     G_TYPE_STRV, field_values,
                     G_TYPE_INVALID));
     }
-    GPtrArray *infos[] = { info_1, info_2 };
 
     TpHandle handles[] = { 0, 0 };
     TpHandleRepoIface *serviceRepo = tp_base_connection_get_handles(
@@ -197,7 +196,8 @@ void TestContactsInfo::testInfo()
                 NULL, NULL);
     }
 
-    contacts_connection_change_infos(mConnService, 2, handles, infos);
+    tp_tests_contacts_connection_change_contact_info(mConnService, handles[0], info_1);
+    tp_tests_contacts_connection_change_contact_info(mConnService, handles[1], info_2);
 
     while (mContactsInfoUpdated != 2)  {
         QCOMPARE(mLoop->exec(), 0);
@@ -222,20 +222,8 @@ void TestContactsInfo::testInfo()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    while (mContactsInfoUpdated != 2)  {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-
-    QCOMPARE(contactFoo->info().size(), 2);
-    QCOMPARE(contactFoo->info()[0].fieldName, QLatin1String("n"));
-    QCOMPARE(contactFoo->info()[0].fieldValue[0], QLatin1String("Foo"));
-    QCOMPARE(contactFoo->info()[1].fieldName, QLatin1String("url"));
-    QCOMPARE(contactFoo->info()[1].fieldValue[0], QLatin1String("http://telepathy.freedesktop.org"));
-    QCOMPARE(contactBar->info().size(), 2);
-    QCOMPARE(contactBar->info()[0].fieldName, QLatin1String("n"));
-    QCOMPARE(contactBar->info()[0].fieldValue[0], QLatin1String("Bar"));
-    QCOMPARE(contactBar->info()[1].fieldName, QLatin1String("url"));
-    QCOMPARE(contactBar->info()[1].fieldValue[0], QLatin1String("http://telepathy.freedesktop.org"));
+    /* nothing changed */
+    QCOMPARE(mContactsInfoUpdated, 0);
 
     for (int i = 0; i < mContacts.size(); i++) {
         ContactPtr contact = mContacts[i];
@@ -253,11 +241,9 @@ void TestContactsInfo::testInfo()
         QCOMPARE(mLoop->exec(), 0);
     }
 
-    QCOMPARE(pci->info().size(), 2);
+    QCOMPARE(pci->info().size(), 1);
     QCOMPARE(pci->info()[0].fieldName, QLatin1String("n"));
     QCOMPARE(pci->info()[0].fieldValue[0], QLatin1String("Foo"));
-    QCOMPARE(pci->info()[1].fieldName, QLatin1String("url"));
-    QCOMPARE(pci->info()[1].fieldValue[0], QLatin1String("http://telepathy.freedesktop.org"));
 
     g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_1);
     g_boxed_free (TP_ARRAY_TYPE_CONTACT_INFO_FIELD_LIST, info_2);

@@ -14,7 +14,6 @@
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection.h>
-#include <tests/lib/glib/contacts-conn.h>
 
 G_BEGIN_DECLS
 
@@ -23,23 +22,16 @@ typedef struct _ExampleCSHConnectionClass ExampleCSHConnectionClass;
 typedef struct _ExampleCSHConnectionPrivate ExampleCSHConnectionPrivate;
 
 struct _ExampleCSHConnectionClass {
-    ContactsConnectionClass parent_class;
+    TpBaseConnectionClass parent_class;
 };
 
 struct _ExampleCSHConnection {
-    ContactsConnection parent;
+    TpBaseConnection parent;
 
     ExampleCSHConnectionPrivate *priv;
 };
 
 GType example_csh_connection_get_type (void);
-
-void example_csh_connection_set_enable_change_members_detailed (ExampleCSHConnection *self,
-                                                                gboolean enable);
-void example_csh_connection_accept_invitations (ExampleCSHConnection *self);
-
-void example_csh_connection_set_use_properties_room (ExampleCSHConnection *self,
-                                                     gboolean use_properties_room);
 
 /* TYPE MACROS */
 #define EXAMPLE_TYPE_CSH_CONNECTION \

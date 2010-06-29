@@ -14,8 +14,7 @@
 #include <dbus/dbus-protocol.h>
 #include <dbus/dbus-glib.h>
 
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/errors.h>
+#include <telepathy-glib/telepathy-glib.h>
 
 #include "conn.h"
 
@@ -39,6 +38,7 @@ example_contact_list_connection_manager_init (
 
 typedef struct {
     gchar *account;
+    guint simulation_delay;
 } ExampleParams;
 
 static gboolean
@@ -94,6 +94,7 @@ new_connection (TpBaseConnectionManager *self,
   conn = EXAMPLE_CONTACT_LIST_CONNECTION
       (g_object_new (EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,
           "account", params->account,
+          "simulation-delay", params->simulation_delay,
           "protocol", proto,
           NULL));
 

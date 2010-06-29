@@ -15,10 +15,7 @@
 
 #include <dbus/dbus-glib.h>
 
-#include <telepathy-glib/base-connection.h>
-#include <telepathy-glib/dbus.h>
-#include <telepathy-glib/errors.h>
-#include <telepathy-glib/interfaces.h>
+#include <telepathy-glib/telepathy-glib.h>
 
 #include "contact-list.h"
 
@@ -104,12 +101,14 @@ static guint signals[N_SIGNALS] = { 0 };
 enum
 {
   PROP_CONNECTION = 1,
+  PROP_SIMULATION_DELAY,
   N_PROPS
 };
 
 struct _ExampleContactListManagerPrivate
 {
   TpBaseConnection *conn;
+  guint simulation_delay;
   TpHandleRepoIface *contact_repo;
   TpHandleRepoIface *group_repo;
 
@@ -167,14 +166,14 @@ example_contact_list_manager_close_all (ExampleContactListManager *self)
       while (g_hash_table_iter_next (&iter, &key, &value))
         {
           GSList *requests = value;
-          GSList *link;
+          GSList *l;
 
           requests = g_slist_reverse (requests);
 
-          for (link = requests; link != NULL; link = link->next)
+          for (l = requests; l != NULL; l = l->next)
             {
               tp_channel_manager_emit_request_failed (self,
-                  link->data, TP_ERRORS, TP_ERROR_DISCONNECTED,
+                  l->data, TP_ERRORS, TP_ERROR_DISCONNECTED,
                   "Unable to complete channel request due to disconnection");
             }
 
@@ -255,6 +254,11 @@ get_property (GObject *object,
     case PROP_CONNECTION:
       g_value_set_object (value, self->priv->conn);
       break;
+
+    case PROP_SIMULATION_DELAY:
+      g_value_set_uint (value, self->priv->simulation_delay);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -276,6 +280,11 @@ set_property (GObject *object,
        * less than its lifetime */
       self->priv->conn = g_value_get_object (value);
       break;
+
+    case PROP_SIMULATION_DELAY:
+      self->priv->simulation_delay = g_value_get_uint (value);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -321,6 +330,13 @@ ensure_contact (ExampleContactListManager *self,
 
       g_hash_table_insert (self->priv->contact_details,
           GUINT_TO_POINTER (contact), ret);
+
+      if (created != NULL)
+        *created = TRUE;
+    }
+  else if (created != NULL)
+    {
+      *created = FALSE;
     }
 
   return ret;
@@ -363,7 +379,7 @@ receive_contact_lists (gpointer p)
   TpHandle handle, cambridge, montreal, francophones;
   ExampleContactDetails *d;
   TpIntSet *set, *cam_set, *mtl_set, *fr_set;
-  TpIntSetIter iter;
+  TpIntSetFastIter iter;
   ExampleContactList *subscribe, *publish, *stored;
   ExampleContactGroup *cambridge_group, *montreal_group,
       *francophones_group;
@@ -465,12 +481,12 @@ receive_contact_lists (gpointer p)
       set, NULL, NULL, NULL,
       0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
 
-  tp_intset_iter_init (&iter, set);
+  tp_intset_fast_iter_init (&iter, set);
 
-  while (tp_intset_iter_next (&iter))
+  while (tp_intset_fast_iter_next (&iter, &handle))
     {
-      g_signal_emit (self, signals[ALIAS_UPDATED], 0, iter.element);
-      g_signal_emit (self, signals[PRESENCE_UPDATED], 0, iter.element);
+      g_signal_emit (self, signals[ALIAS_UPDATED], 0, handle);
+      g_signal_emit (self, signals[PRESENCE_UPDATED], 0, handle);
     }
 
   tp_intset_destroy (set);
@@ -510,15 +526,15 @@ receive_contact_lists (gpointer p)
       NULL, NULL, NULL, set,
       0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
   tp_group_mixin_change_members ((GObject *) stored, "",
-      NULL, NULL, NULL, set,
+      set, NULL, NULL, NULL,
       0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
 
-  tp_intset_iter_init (&iter, set);
+  tp_intset_fast_iter_init (&iter, set);
 
-  while (tp_intset_iter_next (&iter))
+  while (tp_intset_fast_iter_next (&iter, &handle))
     {
-      g_signal_emit (self, signals[ALIAS_UPDATED], 0, iter.element);
-      g_signal_emit (self, signals[PRESENCE_UPDATED], 0, iter.element);
+      g_signal_emit (self, signals[ALIAS_UPDATED], 0, handle);
+      g_signal_emit (self, signals[PRESENCE_UPDATED], 0, handle);
     }
 
   tp_intset_destroy (set);
@@ -539,6 +555,9 @@ receive_contact_lists (gpointer p)
       "I'm more metal than you!",
       NULL, NULL, set, NULL,
       handle, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  tp_group_mixin_change_members ((GObject *) stored, "",
+      set, NULL, NULL, NULL,
+      handle, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
   tp_intset_destroy (set);
   g_signal_emit (self, signals[ALIAS_UPDATED], 0, handle);
   g_signal_emit (self, signals[PRESENCE_UPDATED], 0, handle);
@@ -555,6 +574,9 @@ receive_contact_lists (gpointer p)
   tp_group_mixin_change_members ((GObject *) publish,
       "I have some fermented herring for you",
       NULL, NULL, set, NULL,
+      handle, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  tp_group_mixin_change_members ((GObject *) stored, "",
+      set, NULL, NULL, NULL,
       handle, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
   tp_intset_destroy (set);
   g_signal_emit (self, signals[ALIAS_UPDATED], 0, handle);
@@ -603,7 +625,8 @@ status_changed_cb (TpBaseConnection *conn,
           /* Do network I/O to get the contact list. This connection manager
            * doesn't really have a server, so simulate a small network delay
            * then invent a contact list */
-          g_timeout_add_full (G_PRIORITY_DEFAULT, 1000, receive_contact_lists,
+          g_timeout_add_full (G_PRIORITY_DEFAULT,
+              2 * self->priv->simulation_delay, receive_contact_lists,
               g_object_ref (self), g_object_unref);
         }
       break;
@@ -655,6 +678,13 @@ example_contact_list_manager_class_init (ExampleContactListManagerClass *klass)
       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_CONNECTION, param_spec);
+
+  param_spec = g_param_spec_uint ("simulation-delay", "Simulation delay",
+      "Delay between simulated network events",
+      0, G_MAXUINT32, 1000,
+      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_SIMULATION_DELAY,
+      param_spec);
 
   g_type_class_add_private (klass, sizeof (ExampleContactListManagerPrivate));
 
@@ -827,14 +857,14 @@ ensure_group (ExampleContactListManager *self,
 }
 
 static const gchar * const fixed_properties[] = {
-    TP_IFACE_CHANNEL ".ChannelType",
-    TP_IFACE_CHANNEL ".TargetHandleType",
+    TP_PROP_CHANNEL_CHANNEL_TYPE,
+    TP_PROP_CHANNEL_TARGET_HANDLE_TYPE,
     NULL
 };
 
 static const gchar * const allowed_properties[] = {
-    TP_IFACE_CHANNEL ".TargetHandle",
-    TP_IFACE_CHANNEL ".TargetID",
+    TP_PROP_CHANNEL_TARGET_HANDLE,
+    TP_PROP_CHANNEL_TARGET_ID,
     NULL
 };
 
@@ -843,17 +873,15 @@ example_contact_list_manager_foreach_channel_class (TpChannelManager *manager,
     TpChannelManagerChannelClassFunc func,
     gpointer user_data)
 {
-    GHashTable *table = g_hash_table_new_full (g_str_hash, g_str_equal,
-        NULL, (GDestroyNotify) tp_g_value_slice_free);
+    GHashTable *table = tp_asv_new (
+        TP_PROP_CHANNEL_CHANNEL_TYPE,
+            G_TYPE_STRING, TP_IFACE_CHANNEL_TYPE_CONTACT_LIST,
+        TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, G_TYPE_UINT, TP_HANDLE_TYPE_LIST,
+        NULL);
 
-    g_hash_table_insert (table, TP_IFACE_CHANNEL ".ChannelType",
-        tp_g_value_slice_new_static_string (
-          TP_IFACE_CHANNEL_TYPE_CONTACT_LIST));
-    g_hash_table_insert (table, TP_IFACE_CHANNEL ".TargetHandleType",
-        tp_g_value_slice_new_uint (TP_HANDLE_TYPE_LIST));
     func (manager, table, allowed_properties, user_data);
 
-    g_hash_table_insert (table, TP_IFACE_CHANNEL ".TargetHandleType",
+    g_hash_table_insert (table, TP_PROP_CHANNEL_TARGET_HANDLE_TYPE,
         tp_g_value_slice_new_uint (TP_HANDLE_TYPE_GROUP));
     func (manager, table, allowed_properties, user_data);
 
@@ -872,14 +900,14 @@ example_contact_list_manager_request (ExampleContactListManager *self,
   GError *error = NULL;
 
   if (tp_strdiff (tp_asv_get_string (request_properties,
-          TP_IFACE_CHANNEL ".ChannelType"),
+          TP_PROP_CHANNEL_CHANNEL_TYPE),
       TP_IFACE_CHANNEL_TYPE_CONTACT_LIST))
     {
       return FALSE;
     }
 
   handle_type = tp_asv_get_uint32 (request_properties,
-      TP_IFACE_CHANNEL ".TargetHandleType", NULL);
+      TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, NULL);
 
   if (handle_type != TP_HANDLE_TYPE_LIST &&
       handle_type != TP_HANDLE_TYPE_GROUP)
@@ -888,7 +916,7 @@ example_contact_list_manager_request (ExampleContactListManager *self,
     }
 
   handle = tp_asv_get_uint32 (request_properties,
-      TP_IFACE_CHANNEL ".TargetHandle", NULL);
+      TP_PROP_CHANNEL_TARGET_HANDLE, NULL);
   g_assert (handle != 0);
 
   if (tp_channel_manager_asv_has_unknown_properties (request_properties,
@@ -912,7 +940,7 @@ example_contact_list_manager_request (ExampleContactListManager *self,
 
   if (chan == NULL)
     {
-      chan = new_channel (self, handle_type, handle, request_token);
+      new_channel (self, handle_type, handle, request_token);
     }
   else if (require_new)
     {
@@ -1005,12 +1033,15 @@ send_updated_roster (ExampleContactListManager *self,
       else
         {
           TpIntSet *set = tp_handle_set_peek (d->tags);
-          TpIntSetIter iter = TP_INTSET_ITER_INIT (set);
+          TpIntSetFastIter iter;
+          TpHandle member;
 
-          while (tp_intset_iter_next (&iter))
+          tp_intset_fast_iter_init (&iter, set);
+
+          while (tp_intset_fast_iter_next (&iter, &member))
             {
               g_message ("\tin group: %s",
-                  tp_handle_inspect (self->priv->group_repo, iter.element));
+                  tp_handle_inspect (self->priv->group_repo, member));
             }
         }
     }
@@ -1117,6 +1148,8 @@ receive_auth_request (ExampleContactListManager *self,
   TpIntSet *set;
   ExampleContactList *publish = self->priv->lists[
     EXAMPLE_CONTACT_LIST_PUBLISH];
+  ExampleContactList *stored = self->priv->lists[
+    EXAMPLE_CONTACT_LIST_STORED];
 
   /* if shutting down, do nothing */
   if (publish == NULL)
@@ -1142,6 +1175,9 @@ receive_auth_request (ExampleContactListManager *self,
       "May I see your presence, please?",
       NULL, NULL, set, NULL,
       contact, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  tp_group_mixin_change_members ((GObject *) stored, "",
+      set, NULL, NULL, NULL,
+      contact, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
   tp_intset_destroy (set);
 }
 
@@ -1153,6 +1189,8 @@ receive_authorized (gpointer p)
   TpIntSet *set;
   ExampleContactList *subscribe = s->self->priv->lists[
     EXAMPLE_CONTACT_LIST_SUBSCRIBE];
+  ExampleContactList *stored = s->self->priv->lists[
+    EXAMPLE_CONTACT_LIST_STORED];
 
   /* A remote contact has accepted our request to see their presence.
    *
@@ -1173,6 +1211,9 @@ receive_authorized (gpointer p)
 
   set = tp_intset_new_containing (s->contact);
   tp_group_mixin_change_members ((GObject *) subscribe, "",
+      set, NULL, NULL, NULL,
+      s->contact, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+  tp_group_mixin_change_members ((GObject *) stored, "",
       set, NULL, NULL, NULL,
       s->contact, TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
   tp_intset_destroy (set);
@@ -1240,6 +1281,7 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
                                           GError **error)
 {
   TpIntSet *set;
+  ExampleContactList *stored = self->priv->lists[EXAMPLE_CONTACT_LIST_STORED];
 
   switch (list)
     {
@@ -1270,9 +1312,14 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
               NULL, NULL, NULL, set,
               self->priv->conn->self_handle,
               TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+          /* subscribing to someone implicitly puts them on Stored, too */
+          tp_group_mixin_change_members ((GObject *) stored, "",
+              set, NULL, NULL, NULL,
+              self->priv->conn->self_handle,
+              TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
           tp_intset_destroy (set);
 
-          /* Pretend that after 500ms, the contact notices the request
+          /* Pretend that after a delay, the contact notices the request
            * and allows or rejects it. In this example connection manager,
            * empty requests are allowed, as are requests that contain "please"
            * case-insensitively. All other requests are denied. */
@@ -1280,13 +1327,15 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
 
           if (message[0] == '\0' || strstr (message_lc, "please") != NULL)
             {
-              g_timeout_add_full (G_PRIORITY_DEFAULT, 500, receive_authorized,
+              g_timeout_add_full (G_PRIORITY_DEFAULT,
+                  self->priv->simulation_delay, receive_authorized,
                   self_and_contact_new (self, member),
                   self_and_contact_destroy);
             }
           else
             {
-              g_timeout_add_full (G_PRIORITY_DEFAULT, 500,
+              g_timeout_add_full (G_PRIORITY_DEFAULT,
+                  self->priv->simulation_delay,
                   receive_unauthorized,
                   self_and_contact_new (self, member),
                   self_and_contact_destroy);
@@ -1304,6 +1353,8 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
 
           if (d == NULL || !d->publish_requested)
             {
+              /* the group mixin won't actually allow this to be reached,
+               * because of the flags we set */
               g_set_error (error, TP_ERRORS, TP_ERROR_NOT_AVAILABLE,
                   "Can't unilaterally send presence to %s",
                   tp_handle_inspect (self->priv->contact_repo, member));
@@ -1318,6 +1369,10 @@ example_contact_list_manager_add_to_list (ExampleContactListManager *self,
 
               set = tp_intset_new_containing (member);
               tp_group_mixin_change_members (channel, "",
+                  set, NULL, NULL, NULL,
+                  self->priv->conn->self_handle,
+                  TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+              tp_group_mixin_change_members ((GObject *) stored, "",
                   set, NULL, NULL, NULL,
                   self->priv->conn->self_handle,
                   TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
@@ -1405,9 +1460,10 @@ example_contact_list_manager_remove_from_list (ExampleContactListManager *self,
                       TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
                   tp_intset_destroy (set);
 
-                  /* Pretend that after 500ms, the contact notices the change
+                  /* Pretend that after a delay, the contact notices the change
                    * and asks for our presence again */
-                  g_timeout_add_full (G_PRIORITY_DEFAULT, 500, auth_request_cb,
+                  g_timeout_add_full (G_PRIORITY_DEFAULT,
+                      self->priv->simulation_delay, auth_request_cb,
                       self_and_contact_new (self, member),
                       self_and_contact_destroy);
                 }
@@ -1476,7 +1532,9 @@ example_contact_list_manager_remove_from_list (ExampleContactListManager *self,
     case EXAMPLE_CONTACT_LIST_STORED:
       /* we would like to remove member from the roster altogether */
         {
-          if (lookup_contact (self, member) != NULL)
+          ExampleContactDetails *d = lookup_contact (self, member);
+
+          if (d != NULL)
             {
               g_hash_table_remove (self->priv->contact_details,
                   GUINT_TO_POINTER (member));
@@ -1487,6 +1545,16 @@ example_contact_list_manager_remove_from_list (ExampleContactListManager *self,
                   NULL, set, NULL, NULL,
                   self->priv->conn->self_handle,
                   TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+              tp_group_mixin_change_members (
+                  (GObject *) self->priv->lists[EXAMPLE_CONTACT_LIST_SUBSCRIBE],
+                  "", NULL, set, NULL, NULL,
+                  self->priv->conn->self_handle,
+                  TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
+              tp_group_mixin_change_members (
+                  (GObject *) self->priv->lists[EXAMPLE_CONTACT_LIST_PUBLISH],
+                  "", NULL, set, NULL, NULL,
+                  self->priv->conn->self_handle,
+                  TP_CHANNEL_GROUP_CHANGE_REASON_NONE);
               tp_intset_destroy (set);
 
               tp_handle_set_remove (self->priv->contacts, member);
@@ -1495,6 +1563,7 @@ example_contact_list_manager_remove_from_list (ExampleContactListManager *self,
                * see their presence, so emit a signal changing it to
                * UNKNOWN */
               g_signal_emit (self, signals[PRESENCE_UPDATED], 0, member);
+
             }
         }
       return TRUE;

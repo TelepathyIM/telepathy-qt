@@ -5,13 +5,7 @@
 # copy-and-modify (moving it to a better namespace), or make changes in the
 # copy in telepathy-glib first.
 
-AM_CFLAGS = \
-	$(ERROR_CFLAGS) \
-	-I$(top_builddir) -I$(top_srcdir)
-
-if ENABLE_TP_GLIB_TESTS
-
-AM_CFLAGS += $(TP_GLIB_CFLAGS)
+# Example connection manager with audio/video calls.
 
 noinst_LTLIBRARIES = libexample-cm-callable.la
 
@@ -27,8 +21,18 @@ libexample_cm_callable_la_SOURCES = \
     media-stream.c \
     media-stream.h
 
+# In an external project you'd use $(TP_GLIB_LIBS) (obtained from
+# pkg-config via autoconf) instead of the .la path
 libexample_cm_callable_la_LIBADD = \
-	$(TP_GLIB_LIBS)
+    $(GLIB_LIBS) \
+    $(DBUS_LIBS) \
+    $(TP_GLIB_LIBS)
+
+AM_CFLAGS = \
+    $(ERROR_CFLAGS) \
+    $(DBUS_CFLAGS) \
+    $(GLIB_CFLAGS) \
+    $(TP_GLIB_CFLAGS)
 
 EXTRA_DIST = manager-file.py
 
@@ -42,5 +46,3 @@ CLEANFILES = $(BUILT_SOURCES)
 
 clean-local:
 	rm -rf _gen
-
-endif
