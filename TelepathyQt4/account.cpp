@@ -88,6 +88,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     bool changingPresence;
     QString cmName;
     QString protocolName;
+    QString serviceName;
     QString displayName;
     QString nickname;
     QString iconName;
@@ -533,6 +534,37 @@ QString Account::protocol() const
 QString Account::protocolName() const
 {
     return mPriv->protocolName;
+}
+
+/**
+ * Return the service name of this account.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The service name of this account.
+ * \sa serviceNameChanged()
+ */
+QString Account::serviceName() const
+{
+    return mPriv->serviceName;
+}
+
+/**
+ * Set the service name of this account.
+ *
+ * \param value The service name of this account.
+ * \return A PendingOperation which will emit PendingOperation::finished
+ *         when the call has finished.
+ * \sa serviceNameChanged()
+ */
+PendingOperation *Account::setServiceName(const QString &value)
+{
+    return new PendingVoid(
+            propertiesInterface()->Set(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                QLatin1String("Service"),
+                QDBusVariant(value)),
+            this);
 }
 
 /**
@@ -1859,6 +1891,16 @@ PendingChannelRequest *Account::ensureChannel(
 }
 
 /**
+ * \fn void Account::serviceNameChanged(const QString &serviceName);
+ *
+ * This signal is emitted when the value of serviceName() of this account
+ * changes.
+ *
+ * \param serviceName The new service name of this account.
+ * \sa serviceName(), setServiceName()
+ */
+
+/**
  * \fn void Account::displayNameChanged(const QString &displayName);
  *
  * This signal is emitted when the value of displayName() of this account
@@ -2157,6 +2199,14 @@ void Account::Private::updateProperties(const QVariantMap &props)
     if (props.contains(QLatin1String("Interfaces"))) {
         parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
         debug() << " Interfaces:" << parent->interfaces();
+    }
+
+    if (props.contains(QLatin1String("Service")) &&
+        serviceName != qdbus_cast<QString>(props[QLatin1String("Service")])) {
+        serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
+        debug() << " Service Name:" << serviceName;
+        emit parent->serviceNameChanged(serviceName);
+        parent->notify("serviceName");
     }
 
     if (props.contains(QLatin1String("DisplayName")) &&
