@@ -978,13 +978,18 @@ void ConnectionManager::onProtocolReady(Tp::PendingOperation *op)
         qobject_cast<Private::ProtocolWrapper*>(pr->object());
     ProtocolInfo *info = wrapper->info();
 
-    delete mPriv->wrappers.take(wrapper);
+    mPriv->wrappers.remove(wrapper);
 
     if (!op->isError()) {
         mPriv->protocols.append(info);
     } else {
+        warning().nospace() << "Protocol::becomeReady failed: " <<
+            op->errorName() << ": " << op->errorMessage();
         delete info;
     }
+
+    /* use deleteLater as "op" is a child of wrapper, so we don't crash */
+    wrapper->deleteLater();
 
     if (mPriv->wrappers.isEmpty()) {
         if (!mPriv->protocols.isEmpty()) {
