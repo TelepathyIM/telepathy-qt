@@ -114,6 +114,9 @@ class TELEPATHY_QT4_EXPORT ConnectionManager : public StatelessDBusProxy,
 {
     Q_OBJECT
     Q_DISABLE_COPY(ConnectionManager);
+    Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(QStringList supportedProtocols READ supportedProtocols)
+    Q_PROPERTY(ProtocolInfoList protocols READ protocols)
 
 public:
     static const Feature FeatureCore;
