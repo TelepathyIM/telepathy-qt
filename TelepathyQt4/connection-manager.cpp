@@ -409,7 +409,7 @@ ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
         QSet<uint>() << 0,                                           // makesSenseForStatuses
         Features(),                                                  // dependsOnFeatures
         QStringList(),                                               // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
+        (ReadinessHelper::IntrospectFunc) &ProtocolWrapper::introspectMain,
         this);
     introspectables[FeatureCore] = introspectableCore;
 
