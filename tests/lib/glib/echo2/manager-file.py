@@ -15,5 +15,5 @@ PARAMS = {
             },
         }
 STRUCTS = {
-        'example': 'ExampleParams'
+        'example': None
         }

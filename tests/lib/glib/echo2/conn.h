@@ -49,6 +49,11 @@ GType example_echo_2_connection_get_type (void);
   (G_TYPE_INSTANCE_GET_CLASS ((obj), EXAMPLE_TYPE_ECHO_2_CONNECTION, \
                               ExampleEcho2ConnectionClass))
 
+const gchar * const *example_echo_2_connection_get_guaranteed_interfaces (
+    void);
+const gchar * const *example_echo_2_connection_get_possible_interfaces (
+    void);
+
 G_END_DECLS
 
 #endif

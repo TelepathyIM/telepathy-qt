@@ -15,7 +15,9 @@ libexample_cm_echo_2_la_SOURCES = \
     connection-manager.c \
     connection-manager.h \
     im-manager.c \
-    im-manager.h
+    im-manager.h \
+    protocol.c \
+    protocol.h
 
 # In an external project you'd use $(TP_GLIB_LIBS) (obtained from
 # pkg-config via autoconf) instead of the .la path

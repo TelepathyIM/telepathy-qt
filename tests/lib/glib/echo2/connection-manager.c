@@ -1,7 +1,7 @@
 /*
  * manager.c - an example connection manager
  *
- * Copyright (C) 2007 Collabora Ltd.
+ * Copyright © 2007-2010 Collabora Ltd.
  *
  * Copying and distribution of this file, with or without modification,
  * are permitted in any medium without royalty provided the copyright
@@ -15,7 +15,7 @@
 
 #include <telepathy-glib/telepathy-glib.h>
 
-#include "conn.h"
+#include "protocol.h"
 
 G_DEFINE_TYPE (ExampleEcho2ConnectionManager,
     example_echo_2_connection_manager,
@@ -29,32 +29,27 @@ example_echo_2_connection_manager_init (
 {
 }
 
-/* private data */
-
-typedef struct {
-    gchar *account;
-} ExampleParams;
-
-#include "_gen/param-spec-struct.h"
-
-static gpointer
-alloc_params (void)
-{
-  return g_slice_new0 (ExampleParams);
-}
-
 static void
-free_params (gpointer p)
+example_echo_2_connection_manager_constructed (GObject *object)
 {
-  ExampleParams *params = p;
+  ExampleEcho2ConnectionManager *self =
+    EXAMPLE_ECHO_2_CONNECTION_MANAGER (object);
+  TpBaseConnectionManager *base = (TpBaseConnectionManager *) self;
+  void (*constructed) (GObject *) =
+    ((GObjectClass *) example_echo_2_connection_manager_parent_class)->constructed;
+  TpBaseProtocol *protocol;
 
-  g_free (params->account);
+  if (constructed != NULL)
+    constructed (object);
 
-  g_slice_free (ExampleParams, params);
+  protocol = g_object_new (EXAMPLE_TYPE_ECHO_2_PROTOCOL,
+      "name", "example",
+      NULL);
+  tp_base_connection_manager_add_protocol (base, protocol);
+  g_object_unref (protocol);
 }
 
-static const TpCMProtocolSpec example_protocols[] = {
-  { "example", example_echo_2_example_params, alloc_params, free_params },
+static const TpCMProtocolSpec no_protocols[] = {
   { NULL, NULL }
 };
 
@@ -65,24 +60,22 @@ new_connection (TpBaseConnectionManager *self,
                 gpointer parsed_params,
                 GError **error)
 {
-  ExampleParams *params = parsed_params;
-  ExampleEcho2Connection *conn =
-      EXAMPLE_ECHO_2_CONNECTION (g_object_new (EXAMPLE_TYPE_ECHO_2_CONNECTION,
-            "account", params->account,
-            "protocol", proto,
-            NULL));
-
-  return (TpBaseConnection *) conn;
+  g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_ARGUMENT,
+      "Protocol's new_connection() should be called instead");
+  return NULL;
 }
 
 static void
 example_echo_2_connection_manager_class_init (
     ExampleEcho2ConnectionManagerClass *klass)
 {
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
   TpBaseConnectionManagerClass *base_class =
       (TpBaseConnectionManagerClass *) klass;
 
+  object_class->constructed = example_echo_2_connection_manager_constructed;
+
   base_class->new_connection = new_connection;
   base_class->cm_dbus_name = "example_echo_2";
-  base_class->protocol_params = example_protocols;
+  base_class->protocol_params = no_protocols;
 }

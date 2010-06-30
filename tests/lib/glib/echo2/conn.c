@@ -17,6 +17,7 @@
 #include <telepathy-glib/handle-repo-dynamic.h>
 
 #include "im-manager.h"
+#include "protocol.h"
 
 G_DEFINE_TYPE (ExampleEcho2Connection,
     example_echo_2_connection,
@@ -95,19 +96,12 @@ get_unique_connection_name (TpBaseConnection *conn)
 }
 
 static gchar *
-example_normalize_contact (TpHandleRepoIface *repo,
+example_normalize_contact (TpHandleRepoIface *repo G_GNUC_UNUSED,
                            const gchar *id,
-                           gpointer context,
+                           gpointer context G_GNUC_UNUSED,
                            GError **error)
 {
-  if (id[0] == '\0')
-    {
-      g_set_error (error, TP_ERRORS, TP_ERROR_INVALID_HANDLE,
-          "ID must not be empty");
-      return NULL;
-    }
-
-  return g_utf8_strdown (id, -1);
+  return example_echo_2_protocol_normalize_contact (id, error);
 }
 
 static void
@@ -160,12 +154,21 @@ shut_down (TpBaseConnection *conn)
   tp_base_connection_finish_shutdown (conn);
 }
 
+static const gchar *interfaces_always_present[] = {
+    TP_IFACE_CONNECTION_INTERFACE_REQUESTS,
+    NULL };
+
+const gchar * const *
+example_echo_2_connection_get_possible_interfaces (void)
+{
+  /* in this example CM we don't have any extra interfaces that are sometimes,
+   * but not always, present */
+  return interfaces_always_present;
+}
+
 static void
 example_echo_2_connection_class_init (ExampleEcho2ConnectionClass *klass)
 {
-  static const gchar *interfaces_always_present[] = {
-      TP_IFACE_CONNECTION_INTERFACE_REQUESTS,
-      NULL };
   TpBaseConnectionClass *base_class =
       (TpBaseConnectionClass *) klass;
   GObjectClass *object_class = (GObjectClass *) klass;
