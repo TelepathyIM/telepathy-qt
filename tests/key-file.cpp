@@ -53,6 +53,57 @@ void TestKeyFile::testKeyFile()
     keyFile.setGroup(QLatin1String("test group 2"));
     QCOMPARE(keyFile.contains(QLatin1String("e")), true);
     QCOMPARE(keyFile.value(QLatin1String("e")), QString(QLatin1String("space")));
+
+    keyFile.setFileName(QLatin1String("telepathy/managers/test-manager-file.manager"));
+    QCOMPARE(keyFile.status(), KeyFile::NoError);
+
+    keyFile.setGroup(QLatin1String("Protocol somewhat-pathological"));
+    QCOMPARE(keyFile.value(QLatin1String("param-foo")), QString(QLatin1String("s required")));
+    QCOMPARE(keyFile.value(QLatin1String("default-foo")), QString(QLatin1String("hello world")));
+
+    QCOMPARE(keyFile.value(QLatin1String("param-semicolons")), QString(QLatin1String("s secret")));
+    QCOMPARE(keyFile.value(QLatin1String("default-semicolons")), QString(QLatin1String("list;of;misc;")));
+
+    QCOMPARE(keyFile.value(QLatin1String("param-list")), QString(QLatin1String("as")));
+    QCOMPARE(keyFile.value(QLatin1String("default-list")), QString(QLatin1String("list;of;misc;")));
+    QCOMPARE(keyFile.valueAsStringList(QLatin1String("default-list")),
+             QStringList() << QLatin1String("list") << QLatin1String("of") << QLatin1String("misc"));
+
+    QCOMPARE(keyFile.value(QLatin1String("param-unterminated-list")), QString(QLatin1String("as")));
+    QCOMPARE(keyFile.value(QLatin1String("default-unterminated-list")), QString(QLatin1String("list;of;misc")));
+    QCOMPARE(keyFile.valueAsStringList(QLatin1String("default-unterminated-list")),
+             QStringList() << QLatin1String("list") << QLatin1String("of") << QLatin1String("misc"));
+
+    QCOMPARE(keyFile.value(QLatin1String("param-spaces-in-list")), QString(QLatin1String("as")));
+    QCOMPARE(keyFile.value(QLatin1String("default-spaces-in-list")), QString(QLatin1String("list; of; misc ;")));
+    QCOMPARE(keyFile.valueAsStringList(QLatin1String("default-spaces-in-list")),
+             QStringList() << QLatin1String("list") << QLatin1String(" of") << QLatin1String(" misc "));
+
+    QCOMPARE(keyFile.value(QLatin1String("param-escaped-semicolon-in-list")), QString(QLatin1String("as")));
+    QCOMPARE(keyFile.value(QLatin1String("default-escaped-semicolon-in-list")), QString(QLatin1String("list;of;misc;")));
+    QCOMPARE(keyFile.valueAsStringList(QLatin1String("default-escaped-semicolon-in-list")),
+             QStringList() << QLatin1String("list;of") << QLatin1String("misc"));
+
+    QCOMPARE(keyFile.value(QLatin1String("param-doubly-escaped-semicolon-in-list")), QString(QLatin1String("as")));
+    QCOMPARE(keyFile.value(QLatin1String("default-doubly-escaped-semicolon-in-list")), QString(QLatin1String("list\\;of;misc;")));
+    QCOMPARE(keyFile.valueAsStringList(QLatin1String("default-doubly-escaped-semicolon-in-list")),
+             QStringList() << QLatin1String("list\\") << QLatin1String("of") << QLatin1String("misc"));
+
+    QCOMPARE(keyFile.value(QLatin1String("param-triply-escaped-semicolon-in-list")), QString(QLatin1String("as")));
+    QCOMPARE(keyFile.value(QLatin1String("default-triply-escaped-semicolon-in-list")), QString(QLatin1String("list\\;of;misc;")));
+    QCOMPARE(keyFile.valueAsStringList(QLatin1String("default-triply-escaped-semicolon-in-list")),
+             QStringList() << QLatin1String("list\\;of") << QLatin1String("misc"));
+
+    QCOMPARE(keyFile.value(QLatin1String("param-empty-list")), QString(QLatin1String("as")));
+    QCOMPARE(keyFile.value(QLatin1String("default-empty-list")), QString(QLatin1String("")));
+    QCOMPARE(keyFile.valueAsStringList(QLatin1String("default-empty-list")), QStringList());
+
+    QCOMPARE(keyFile.value(QLatin1String("param-list-of-empty-string")), QString(QLatin1String("as")));
+    QCOMPARE(keyFile.value(QLatin1String("default-list-of-empty-string")), QString(QLatin1String(";")));
+    QCOMPARE(keyFile.valueAsStringList(QLatin1String("default-list-of-empty-string")), QStringList() << QString());
+
+    QCOMPARE(keyFile.value(QLatin1String("param-escaped-semicolon")), QString(QLatin1String("s")));
+    QCOMPARE(keyFile.value(QLatin1String("default-escaped-semicolon")), QString(QLatin1String("foo;bar")));
 }
 
 QTEST_MAIN(TestKeyFile)
