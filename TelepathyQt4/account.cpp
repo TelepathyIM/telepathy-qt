@@ -546,6 +546,9 @@ QString Account::protocolName() const
  */
 QString Account::serviceName() const
 {
+    if (mPriv->serviceName.isEmpty()) {
+        return mPriv->protocolName;
+    }
     return mPriv->serviceName;
 }
 
