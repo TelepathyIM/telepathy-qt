@@ -141,16 +141,20 @@ def write_c_params(f, manager, proto, struct, params):
         else:
             flags = '0'
 
+        if struct is None or struct_field is None:
+            struct_offset = '0'
+        else:
+            struct_offset = 'G_STRUCT_OFFSET (%s, %s)' % (struct, struct_field)
+
         print >> f, ('''  { %s, %s, %s,
     %s,
     %s, /* default */
-    G_STRUCT_OFFSET (%s, %s),
+    %s, /* struct offset */
     %s, /* filter */
     %s, /* filter data */
     %s /* setter data */ },''' %
                 (c_string(param), c_string(dtype), gtypes[dtype], flags,
-                    default, struct, struct_field, filter, filter_data,
-                    setter_data))
+                    default, struct_offset, filter, filter_data, setter_data))
 
     print >> f, "  { NULL }"
     print >> f, "};"
