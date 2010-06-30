@@ -5,15 +5,16 @@
 
 #include <QtTest/QtTest>
 
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/Debug>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
-#include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
 
-#include <tests/lib/glib/simple-manager.h>
+#include <tests/lib/glib/echo2/connection-manager.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
@@ -51,7 +52,7 @@ void TestCmBasics::initTestCase()
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
     mCMService = TP_BASE_CONNECTION_MANAGER(g_object_new(
-        TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER,
+        EXAMPLE_TYPE_ECHO_2_CONNECTION_MANAGER,
         NULL));
     QVERIFY(mCMService != 0);
 
@@ -66,7 +67,7 @@ void TestCmBasics::init()
 {
     initImpl();
 
-    mCM = ConnectionManager::create(QLatin1String("simple"));
+    mCM = ConnectionManager::create(QLatin1String("example_echo_2"));
     QCOMPARE(mCM->isReady(), false);
 }
 
@@ -86,12 +87,12 @@ void TestCmBasics::testBasics()
     QCOMPARE(mCM->isReady(), true);
 
     QCOMPARE(mCM->interfaces(), QStringList());
-    QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("simple"));
+    QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 
     Q_FOREACH (ProtocolInfo *info, mCM->protocols()) {
         QVERIFY(info != 0);
-        QVERIFY(info->cmName() == QLatin1String("simple"));
-        QVERIFY(info->name() == QLatin1String("simple"));
+        QCOMPARE(info->cmName(), QLatin1String("example_echo_2"));
+        QCOMPARE(info->name(), QLatin1String("example"));
 
         QCOMPARE(info->hasParameter(QLatin1String("account")), true);
         QCOMPARE(info->hasParameter(QLatin1String("not-there")), false);
@@ -104,9 +105,22 @@ void TestCmBasics::testBasics()
             QCOMPARE(param->isSecret(), false);
         }
         QCOMPARE(info->canRegister(), false);
+
+        QVERIFY(info->capabilities() != 0);
+        QCOMPARE(info->capabilities()->isSpecificToContact(), false);
+        QCOMPARE(info->capabilities()->supportsTextChatrooms(), false);
+        QCOMPARE(info->capabilities()->supportsTextChats(), true);
+        QCOMPARE(info->capabilities()->supportsMediaCalls(), false);
+        QCOMPARE(info->capabilities()->supportsAudioCalls(), false);
+        QCOMPARE(info->capabilities()->supportsVideoCalls(false), false);
+        QCOMPARE(info->capabilities()->supportsVideoCalls(true), false);
+        QCOMPARE(info->capabilities()->supportsUpgradingCalls(), false);
+        QCOMPARE(info->vcardField(), QLatin1String("x-telepathy-example"));
+        QCOMPARE(info->englishName(), QLatin1String("Echo II example"));
+        QCOMPARE(info->iconName(), QLatin1String("im-icq"));
     }
 
-    QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("simple"));
+    QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
 
 void TestCmBasics::cleanup()
