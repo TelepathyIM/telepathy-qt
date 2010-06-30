@@ -18,10 +18,10 @@
       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
       USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactList.DRAFT"
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactList.DRAFT2"
     tp:causes-havoc="experimental">
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
-    <tp:added version="0.19.6">(draft 1)</tp:added>
+    <tp:added version="0.19.8">(draft 2)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for connections that have any concept of a list of
@@ -46,21 +46,23 @@
       </tp:rationale>
 
       <p>The list of contacts is not exposed as a D-Bus property; it can be
-        fetched using <tp:member-ref>GetContactListAttributes</tp:member-ref>.
+        fetched using <tp:member-ref>RequestContactList</tp:member-ref>.
       </p>
 
       <tp:rationale>
         <p>In some protocols, such as XMPP, the contact list may not be
           available immediately. The
-          <tp:member-ref>GetContactListAttributes</tp:member-ref> method
+          <tp:member-ref>RequestContactList</tp:member-ref> method
           will wait until the contact list is available before returning.
           Using a method also allows extra attributes to be retrieved at
           the same time.</p>
       </tp:rationale>
     </tp:docstring>
 
-    <method name="GetContactListAttributes"
-      tp:name-for-bindings="Get_Contact_List_Attributes">
+    <method name="RequestContactList"
+      tp:name-for-bindings="Request_Contact_List">
+      <tp:changed version="0.19.8">(in draft: renamed from
+        GetContactListAttributes)</tp:changed>
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Return some contact attributes for a list of contacts somehow
           associated with the user.</p>
@@ -133,16 +135,19 @@
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A list of strings indicating which D-Bus interfaces the calling
             process is interested in. Equivalent to the corresponding argument
-            to <tp:dbus-ref 
+            to <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.Connection.Interface.Contacts"
-              >GetContactAttributes</tp:dbus-ref>.</p>
+              >GetContactAttributes</tp:dbus-ref>,
+            except that if this list does not contain the ContactList
+            interface itself, it is treated as though that interface was also
+            requested.</p>
         </tp:docstring>
       </arg>
 
       <arg direction="in" name="Hold" type="b">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>Whether to hold the handles on behalf of the calling process.
-            Equivalent to the corresponding argument to <tp:dbus-ref 
+            Equivalent to the corresponding argument to <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.Connection.Interface.Contacts"
               >GetContactAttributes</tp:dbus-ref>.</p>
 
@@ -158,7 +163,7 @@
         tp:type="Contact_Attributes_Map">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>A dictionary mapping the contact handles to contact attributes,
-            equivalent to the result of <tp:dbus-ref 
+            equivalent to the result of <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.Connection.Interface.Contacts"
               >GetContactAttributes</tp:dbus-ref>.</p>
 
@@ -223,6 +228,14 @@
             indefinitely. On other protocols, only contacts who have been
             asked during the current session will ever have Ask status.</p>
         </tp:rationale>
+
+        <p>This attribute SHOULD be omitted from the
+          <tp:type>Contact_Attributes_Map</tp:type> returned by
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.Contacts"
+            >GetContactAttributes</tp:dbus-ref> until the initial contact
+          list has been received, in protocols where this is applicable.
+          Clients MAY wait for this by calling
+          <tp:member-ref>RequestContactList</tp:member-ref>.</p>
       </tp:docstring>
     </tp:contact-attribute>
 
@@ -256,6 +269,14 @@
             indefinitely. On other protocols, only contacts who have asked
             during the current session will ever have Ask status.</p>
         </tp:rationale>
+
+        <p>This attribute SHOULD be omitted from the
+          <tp:type>Contact_Attributes_Map</tp:type> returned by
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.Contacts"
+            >GetContactAttributes</tp:dbus-ref> until the initial contact
+          list has been received, in protocols where this is applicable.
+          Clients MAY wait for this by calling
+          <tp:member-ref>RequestContactList</tp:member-ref>.</p>
       </tp:docstring>
     </tp:contact-attribute>
 
@@ -272,6 +293,13 @@
         </tp:rationale>
 
         <p>Otherwise, this SHOULD be omitted.</p>
+
+        <p>This attribute SHOULD be omitted from the
+          <tp:type>Contact_Attributes_Map</tp:type> returned by
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.Contacts"
+            >GetContactAttributes</tp:dbus-ref> until the initial contact
+          list has been received. Clients MAY wait for this by calling
+          <tp:member-ref>RequestContactList</tp:member-ref>.</p>
       </tp:docstring>
     </tp:contact-attribute>
 
@@ -472,8 +500,8 @@
         <p>Emitted when the contact list becomes available, when contacts'
           basic stored properties change, when new contacts are added to the
           list that would be returned by
-          <tp:member-ref>GetContactListAttributes</tp:member-ref>,
-          or when contact are removed from that list.</p>
+          <tp:member-ref>RequestContactList</tp:member-ref>,
+          or when contacts are removed from that list.</p>
 
         <tp:rationale>
           <p>This provides change notification for that list, and for
@@ -494,7 +522,7 @@
         <tp:docstring>
           The contacts that have been removed from the list that would be
           returned by
-          <tp:member-ref>GetContactListAttributes</tp:member-ref>.
+          <tp:member-ref>RequestContactList</tp:member-ref>.
           This also implies that they have subscribe = No and publish = No;
           contacts MUST NOT be listed both here and in Changes.
         </tp:docstring>
@@ -538,7 +566,7 @@
           identify the contact in future, and store it using <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface.Aliasing"
             >SetAliases</tp:dbus-ref>.
-          
+
           The user MAY be
           prompted using the contact's current self-assigned nickname, or
           something derived from the contact's (presumably self-assigned)
@@ -717,7 +745,7 @@
         <p>If possible, this method SHOULD set the contacts' subscribe and
           publish attributes to No, remove any stored aliases for those
           contacts, and remove the contacts from the result of
-          <tp:member-ref>GetContactListAttributes</tp:member-ref>.</p>
+          <tp:member-ref>RequestContactList</tp:member-ref>.</p>
 
         <p>This method SHOULD succeed even if it was not possible to carry out
           the request entirely or for all contacts (for instance, if there is an

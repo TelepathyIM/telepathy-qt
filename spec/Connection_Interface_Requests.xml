@@ -550,6 +550,16 @@
             available to old or minimal clients SHOULD have a channel class
             with the minimum number of Fixed_Properties, and MAY additionally
             have channel classes with extra Fixed_Properties.</p>
+
+          <p>Interface designers SHOULD avoid introducing fixed properties
+            whose types are not serializable in a <code>.manager</code>
+            file.</p>
+
+          <tp:rationale>
+            <p>Connection managers with a fixed property that is not
+              serializable cannot have a complete <code>.manager</code>
+              file.</p>
+          </tp:rationale>
         </tp:docstring>
       </tp:member>
 

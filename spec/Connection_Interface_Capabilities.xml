@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Connection.Interface.Capabilities">
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection.Interface.ContactCapabilities"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for connections where it is possible to know what channel
@@ -55,6 +56,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       open chatroom lists or chatrooms). However, this was never very
       well-defined or consistent, and as far as we know it was never
       implemented correctly. This usage is now deprecated.</tp:changed>
+
+    <tp:deprecated version="0.19.8">Client implementations SHOULD use <tp:dbus-ref
+      namespace="org.freedesktop.Telepathy.Connection.Interface">ContactCapabilities</tp:dbus-ref>
+      instead.</tp:deprecated>
+    <tp:changed version="0.19.8">Connection managers implementing
+      Capabilities MUST implement ContactCapabilities too.</tp:changed>
 
     <tp:flags name="Connection_Capability_Flags"
       value-prefix="Connection_Capability_Flag" type="u">
