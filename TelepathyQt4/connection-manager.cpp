@@ -878,8 +878,8 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
             QString protocolPath = QString(
                     QLatin1String("%1/%2")).arg(objectPath()).arg(i.key());
             Private::ProtocolWrapper *wrapper = new Private::ProtocolWrapper(
-                        dbusConnection(), busName(), protocolPath,
-                        mPriv->name, i.key());
+                    dbusConnection(), busName(), protocolPath,
+                    mPriv->name, i.key());
             connect(wrapper->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(onProtocolReady(Tp::PendingOperation *)));
