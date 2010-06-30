@@ -20,6 +20,9 @@ check-local::
 		$(srcdir)/TelepathyQt4/*.[ch]* \
 		> FIXME.out || true
 
+check-valgrind:
+	$(MAKE) -C tests check-valgrind 2>&1 | tee valgrind.log
+
 doc/html: doxygen-doc
 
 BRANCH = $(shell sh tools/git-which-branch.sh misc | tr -d '\n' | tr -C "[:alnum:]" _)
