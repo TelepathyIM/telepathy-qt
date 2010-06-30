@@ -461,7 +461,7 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         mInfo->setEnglishName(qdbus_cast<QString>(
                     props[QLatin1String("EnglishName")]));
         mInfo->setIconName(qdbus_cast<QString>(
-                    props[QLatin1String("IconName")]));
+                    props[QLatin1String("Icon")]));
         mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
                     props[QLatin1String("RequestableChannelClasses")]));
     } else {
