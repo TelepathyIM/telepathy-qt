@@ -175,6 +175,19 @@ TESTS_ENVIRONMENT = \
     sh $(top_srcdir)/tools/with-session-bus.sh \
         --config-file=$(top_builddir)/tests/dbus-1/session.conf --
 
+include $(top_srcdir)/tools/valgrind.mk
+
+VALGRIND_TESTS_ENVIRONMENT = \
+    $(TESTS_ENVIRONMENT) \
+    env G_SLICE=always-malloc \
+    $(top_builddir)/libtool --mode=execute \
+    $(VALGRIND) $(VALGRIND_FLAGS)
+
+check-valgrind:
+	$(MAKE) check-TESTS \
+		maybe_gc_friendly=,gc-friendly \
+		TESTS_ENVIRONMENT="$(VALGRIND_TESTS_ENVIRONMENT)"
+
 CLEANFILES = \
     $(BUILT_SOURCES)
 

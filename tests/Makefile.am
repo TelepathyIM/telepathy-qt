@@ -52,6 +52,20 @@ TESTS_ENV = \
 TESTS_ENVIRONMENT = \
     $(TESTS_ENV)
 
+include $(top_srcdir)/tools/valgrind.mk
+
+VALGRIND_TESTS_ENVIRONMENT = \
+    $(TESTS_ENVIRONMENT) \
+    env G_SLICE=always-malloc \
+    $(top_builddir)/libtool --mode=execute \
+    $(VALGRIND) $(VALGRIND_FLAGS)
+
+check-valgrind:
+	$(MAKE) check-TESTS \
+		maybe_gc_friendly=,gc-friendly \
+		TESTS_ENVIRONMENT="$(VALGRIND_TESTS_ENVIRONMENT)"
+	$(MAKE) -C dbus check-valgrind
+
 CLEANFILES = \
     $(BUILT_SOURCES)
 
