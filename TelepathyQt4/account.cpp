@@ -539,10 +539,13 @@ QString Account::protocolName() const
 /**
  * Return the service name of this account.
  *
+ * Note that this method will fallback to protocolName() if service name
+ * is not known.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return The service name of this account.
- * \sa serviceNameChanged()
+ * \sa serviceNameChanged(), protocolName()
  */
 QString Account::serviceName() const
 {
