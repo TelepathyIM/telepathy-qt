@@ -156,6 +156,7 @@ class Account(Object):
         Object.__init__(self, am.connection, path)
         self._am = am
 
+        self._service = u'bob_service'
         self._display_name = display_name
         self._icon = u'bob.png'
         self._enabled = True
@@ -220,6 +221,7 @@ class Account(Object):
     def _account_props(self):
         return dbus.Dictionary({
             'Interfaces': dbus.Array(self._interfaces, signature='s'),
+            'Service': self._service,
             'DisplayName': self._display_name,
             'Icon': self._icon,
             'Valid': self._is_valid(),
@@ -272,7 +274,9 @@ class Account(Object):
             in_signature='ssv', byte_arrays=True)
     def Set(self, iface, prop, value):
         if iface == ACCOUNT_IFACE:
-            if prop == 'DisplayName':
+            if prop == 'Service':
+                self._service = unicode(value)
+            elif prop == 'DisplayName':
                 self._display_name = unicode(value)
             elif prop == 'Icon':
                 self._icon = unicode(value)
