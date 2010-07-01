@@ -261,6 +261,53 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
+    <property name="Service" tp:name-for-bindings="Service" type="s"
+        access="readwrite">
+      <tp:added version="0.19.8"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Some protocols, like XMPP and SIP, are used by various different
+          user-recognised brands, such as <i>Google Talk</i> and <i>Ovi by
+          Nokia</i>. On accounts for such services, this property SHOULD be
+          set to a string describing the service, which MUST consist only of
+          ASCII letters, numbers and hyphen/minus signs, and start with a
+          letter (matching the requirements for <tp:type>Protocol</tp:type>).
+          For the <tt>jabber</tt> protocol, one of the following service names
+          should be used if possible:</p>
+
+        <ul>
+          <li><tt>google-talk</tt> (for <a
+            href="http://www.google.com/talk/">Google's IM service</a>)</li>
+          <li><tt>ovi-chat</tt> (for <a href="http://www.ovi.com/">Ovi</a>'s IM
+            service)</li>
+          <li><tt>facebook</tt> (for <a
+            href="http://www.facebook.com/sitetour/chat.php">Facebook's IM
+            service</a>)</li>
+          <li><tt>lj-talk</tt> (for <a
+            href="http://www.livejournal.com/chat/">LiveJournal's IM
+            service</a>)</li>
+
+        </ul>
+
+        <p>The <tp:member-ref>Icon</tp:member-ref> property SHOULD be set to a
+          corresponding brand-specific icon name, if possible. In the future,
+          this property may be used as an index into additional
+          service-specific customizations. If this property is the empty string
+          (or missing), the service is determined by the protocol name (either
+          because this is a single-service protocol like <tt>msn</tt>, or
+          because this is just a generic <tt>jabber</tt> or <tt>sip</tt>
+          account without specific branding).</p>
+
+        <p>This property MAY be set, if appropriate, when calling
+          <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.AccountManager"
+            >CreateAccount</tp:dbus-ref>. Updating this property will fail on
+          externally-stored accounts whose <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Account.Interface.Storage"
+            >StorageRestrictions</tp:dbus-ref> include
+          <code>Cannot_Set_Service</code>.</p>
+      </tp:docstring>
+    </property>
+
     <property name="Parameters" tp:name-for-bindings="Parameters"
       type="a{sv}" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -273,10 +320,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         </p>
         <p>This property cannot be altered using Set() - use
           <tp:member-ref>UpdateParameters</tp:member-ref> instead.</p>
-
-        <tp:rationale>
-          This avoids NMC being tied to gconf as a matter of API.
-        </tp:rationale>
       </tp:docstring>
     </property>
 
@@ -405,8 +448,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="ConnectionStatus" type="u" access="read"
-      tp:name-for-bindings="Connection_Status">
+    <property name="ConnectionStatus" type="u" tp:type="Connection_Status"
+      access="read" tp:name-for-bindings="Connection_Status">
       <tp:docstring>
         If the <tp:member-ref>Connection</tp:member-ref> property is non-empty,
         the status of that connection.
@@ -426,7 +469,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="ConnectionStatusReason" type="u" access="read"
+    <property name="ConnectionStatusReason" type="u"
+      tp:type="Connection_Status_Reason" access="read"
       tp:name-for-bindings="Connection_Status_Reason">
       <tp:docstring>
         The reason for the last change to

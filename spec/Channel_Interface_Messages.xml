@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <node name="/Channel_Interface_Messages"
   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <tp:copyright>Copyright © 2008-2009 Collabora Ltd.</tp:copyright>
-  <tp:copyright>Copyright © 2008-2009 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2008–2010 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2008–2010 Nokia Corporation</tp:copyright>
   <tp:license xmlns="http://www.w3.org/1999/xhtml">
     <p>This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -25,15 +25,58 @@ USA.</p>
     <tp:added version="0.17.16">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>This interface extends the Text interface to support more general
-        messages, including:</p>
+      <p>This interface extends the <tp:dbus-ref
+          namespace='org.freedesktop.Telepathy.Channel.Type'>Text</tp:dbus-ref>
+        interface to support more general messages, including:</p>
 
       <ul>
         <li>messages with attachments (like MIME multipart/mixed)</li>
         <li>groups of alternatives (like MIME multipart/alternative)</li>
-        <li>delivery reports</li>
+        <li>delivery reports (which replace <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Type">Text.SendError</tp:dbus-ref>),
+          addding support for protocols where the message content is not echoed
+          back to the sender on failure and for receiving positive
+          acknowledgements, as well as ensuring that incoming delivery reports
+          are not lost if no client is handling the channel yet;</li>
         <li>any extra types of message we need in future</li>
       </ul>
+
+      <p>Incoming messages, outgoing messages, and delivery reports are all
+        represented as lists of <tp:type>Message_Part</tp:type> structures,
+        with a format reminiscent of e-mail. Messages are sent by calling
+        <tp:member-ref>SendMessage</tp:member-ref>; outgoing messages are
+        announced to other clients which may be interested in the channel by
+        the <tp:member-ref>MessageSent</tp:member-ref> signal. Incoming
+        messages and delivery reports are signalled by
+        <tp:member-ref>MessageReceived</tp:member-ref>, and are stored in the
+        the <tp:member-ref>PendingMessages</tp:member-ref> property until
+        acknowledged by calling <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">Text.AcknowledgePendingMessages</tp:dbus-ref>.
+        Only the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client">Handler</tp:dbus-ref>
+        for a channel should acknowledge messages; <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client">Observer</tp:dbus-ref>s
+        (such as loggers) and <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Client">Approver</tp:dbus-ref>s
+        for the channel may listen for incoming messages, and send messages of their own, but SHOULD NOT acknowledge messages.</p>
+
+      <tp:rationale>
+        <p>If observers were allowed to acknowledge messages, then messages
+          might have been acknowledged before the handler even got to see the
+          channel, and hence could not be shown to the user.</p>
+      </tp:rationale>
+
+      <p>If this interface is present, clients that support it SHOULD
+        listen for the <tp:member-ref>MessageSent</tp:member-ref> and
+        <tp:member-ref>MessageReceived</tp:member-ref> signals, and
+        ignore the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type.Text">Sent</tp:dbus-ref>,
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type.Text">SendError</tp:dbus-ref>
+        and <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type.Text">Received</tp:dbus-ref>
+        signals on the Text interface (which are guaranteed to duplicate
+        signals from this interface).</p>
 
       <p>Although this specification supports formatted (rich-text)
         messages with unformatted alternatives, implementations SHOULD NOT
@@ -49,27 +92,6 @@ USA.</p>
         Until we can tell UIs what controls to offer to the user, it's
         unfriendly to offer the user controls that may have no effect.
       </tp:rationale>
-
-      <p>This interface also replaces <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Type">Text.SendError</tp:dbus-ref>,
-        adding support for
-        protocols where the message content is not echoed back to the sender on
-        failure, adding support for receiving positive acknowledgements,
-        and using the Messages queue for state-recovery
-        (ensuring that incoming delivery reports are not lost if there is not
-        currently a process handling them).</p>
-
-      <p>If this interface is present, clients that support it SHOULD
-        listen for the <tp:member-ref>MessageSent</tp:member-ref> and
-        <tp:member-ref>MessageReceived</tp:member-ref> signals, and
-        ignore the <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Type.Text">Sent</tp:dbus-ref>,
-        <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Type.Text">SendError</tp:dbus-ref>
-        and <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Type.Text">Received</tp:dbus-ref>
-        signals on the Text interface (which are guaranteed to duplicate
-        signals from this interface).</p>
     </tp:docstring>
 
     <property name="SupportedContentTypes" type="as" access="read"
@@ -182,11 +204,93 @@ USA.</p>
       array-depth="2">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Part of a message's content. In practice, this mapping never
-          appears in isolation - messages are represented by a list of
-          <tp:type>Message_Part</tp:type> mappings.</p>
+          appears in isolation: incoming messages are represented by a list of
+          <tp:type>Message_Part</tp:type> mappings in the
+          <tp:member-ref>MessageReceived</tp:member-ref> signal, and outgoing
+          messages are passed to <tp:member-ref>SendMessage</tp:member-ref> as
+          a list of these mappings.</p>
 
-        <p>An example of how a rich-text message, with an embedded image, might
-          look, in a Python-like syntax:</p>
+        <p>The first part of the message contains "headers", which refer
+          to the entire message. The second and subsequent parts contain the
+          message's content, including plain text, formatted text and/or
+          attached files. Well-known keys for the header and body parts are
+          defined by the <tp:type>Message_Header_Key</tp:type> and
+          <tp:type>Message_Body_Key</tp:type> types, respectively.  It is an
+          error for a connection manager to put keys referring to the message
+          as a whole in the second or subsequent Message_Part, or keys intended
+          for body parts in the first Message_Part; clients MUST recover from
+          this error by ignoring these mis-placed keys.</p>
+
+        <tp:rationale>
+          <p>Instead of representing messages as aa{sv} where the first
+            dictionary is special (a dictionary of headers), we could have
+            used a signature like (a{sv}aa{sv}) to separate out the headers
+            and the body parts.</p>
+
+          <p>However, this would make access to the messages more awkward.
+            In Python, the syntax for access to a header field would remain
+            <code>message[0]['message-type']</code>, but access to a body
+            field in the second body part would change from
+            <code>message[2]['content'] to message[1][1]['content']</code>. In
+            GLib, the message would change from being a
+            <code>GPtrArray(GHashTable)</code> to being a
+            <code>GValueArray(GHashTable, GPtrArray(GHashTable))</code> which
+            is rather inconvenient to dereference.</p>
+        </tp:rationale>
+
+        <p>In any group of parts with the same non-empty value for the
+          <tt>alternative</tt> key (which represent alternative versions of the
+          same content), more faithful versions of the intended message MUST
+          come before less faithful versions (note that this order is the
+          opposite of MIME <tt>multipart/alternative</tt> parts). Clients
+          SHOULD display the first alternative that they understand.</p>
+
+        <tp:rationale>
+          <p>Specifying the preference order means that if the underlying
+            protocol doesn't support alternatives, the CM can safely delete
+            everything apart from the first supported alternative when
+            sending messages.</p>
+
+          <p>The order is the reverse of MIME because MIME's rationale for
+            placing the "plainest" part first (legibility in pre-MIME UAs)
+            does not apply to us, and placing the most preferred part
+            first simplifies display (a client can iterate the message
+            in order, display the first alternative that it understands,
+            and skip displaying all subsequent parts with the same
+            "alternative" key).</p>
+        </tp:rationale>
+
+        <p>Clients SHOULD present all parts that are not redundant
+          alternatives in the order they appear in this array, possibly
+          excluding parts that are referenced by another displayed part.
+          It is implementation-specific how the parts are presented to the
+          user.</p>
+
+        <tp:rationale>
+          <p>This allows CMs to assume that all parts are actually shown to
+            the user, even if they are not explicitly referenced - we do
+            not yet recommend formatted text, and there is no way for
+            plain text to reference an attachment since it has no concept of
+            markup or references. This also forces clients to do something
+            sensible with messages that consist entirely of "attachments",
+            with no "body" at all.</p>
+
+          <p>For instance, when displaying the above example, a client that
+            understands the HTML part should display the JPEG image once,
+            between the two lines "Here is a photo of my cat:" and
+            "Isn't it cute?"; it may additionally present the image in some
+            way for a second time, after "Isn't it cute?", or may choose
+            not to.</p>
+
+          <p>A client that does not understand HTML, displaying the same
+            message, should display the plain-text part, followed by the JPEG
+            image.</p>
+        </tp:rationale>
+
+        <h4>Example messages</h4>
+
+        <p>A rich-text message, with an embedded image, might be represented
+          as:</p>
 
           <pre>
 [
@@ -215,9 +319,8 @@ USA.</p>
   },
 ]</pre>
 
-        <p>An example of how a non-text message — in particular, a vCard sent
-          via SMS as implemented by telepathy-ring on Nokia's Maemo 5 —
-          looks:</p>
+        <p>telepathy-ring, Nokia's GSM connection manager, represents vCards
+          sent via SMS as:</p>
 
         <pre>
 [
@@ -234,34 +337,164 @@ USA.</p>
   },
 ]</pre>
 
+        <h3>Delivery reports</h3>
+
         <div>
-          <p>The first part of the message contains "headers" which refer
-            to the entire message.</p>
+          <p>Delivery reports are also represented as messages with the
+            <tt>message-type</tt> header mapping to
+            <tp:type>Channel_Text_Message_Type</tp:type> Delivery_Report.
+            Delivery reports SHOULD contain the <tt>message-sender</tt> header,
+            mapping to the intended recipient of the original message, if
+            possible; other headers specific to delivery reports are defined by
+            the <tp:type>Delivery_Report_Header_Key</tp:type> type. The second
+            and subsequent parts, if present, are a human-readable report from
+            the IM service.</p>
 
-          <p>It is an error for a connection manager to put keys referring
-            to the message as a whole in the second or subsequent
-            Message_Part, but clients MUST recover from this error by ignoring
-            these keys in the second and subsequent parts.</p>
+          <p>For backwards- and forwards-compatibility, whenever a delivery
+            error report is signalled—that is, with <tt>delivery-status</tt>
+            mapping to <tp:type>Delivery_Status</tp:type> Temporarily_Failed or
+            Permanently_Failed—<tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type.Text">SendError</tp:dbus-ref>
+            SHOULD also be emitted; whenever <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type.Text">SendError</tp:dbus-ref>
+            is emitted, a delivery report MUST also be signalled.
+            Delivery report messages on this interface MUST be represented in
+            emissions of <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Channel.Type.Text">Received</tp:dbus-ref>
+            as messages with the Non_Text_Content
+            <tp:type>Channel_Text_Message_Flags</tp:type>; clients which
+            understand this interface SHOULD ignore the SendError signal in
+            favour of listening for delivery reports, as mentioned in the
+            introduction.</p>
 
-          <tp:rationale>
-            <p>Instead of representing messages as aa{sv} where the first
-              dictionary is special (a dictionary of headers), we could have
-              used a signature like (a{sv}aa{sv}) to separate out the headers
-              and the body parts.</p>
+          <p>The result of attempting to send delivery reports using
+            <tp:member-ref>SendMessage</tp:member-ref> is currently
+            undefined.</p>
 
-            <p>However, this would make access to the messages more awkward.
-              In Python, the syntax for access to a header field would remain
-              <code>message[0]['message-type']</code>, but access to a body
-              field in the second body part would change from
-              message[2]['content'] to message[1][1]['content']. In GLib,
-              the message would change from being a
-              GPtrArray(GHashTable) to being a
-              GValueArray(GHashTable, GPtrArray(GHashTable)) which is rather
-              inconvenient to dereference.</p>
-          </tp:rationale>
+          <h4>Example delivery reports</h4>
 
-          <p>Well-known keys for the message as a whole, and the corresponding
-            value types, include:</p>
+          <dl>
+            <dt>A minimal delivery report indicating permanent failure of the
+              sent message whose token was
+              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code> for an unknown
+              reason</dt>
+            <dd><pre>
+[{
+# header
+'message-sender': 123,
+'message-type': Channel_Text_Message_Type_Delivery_Report,
+'delivery-status': Delivery_Status_Permanently_Failed,
+'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
+}
+# no body
+]</pre></dd>
+
+            <dt>A delivery report where the failed message is echoed back to the
+              sender rather than being referenced by ID, and the failure reason
+              is that this protocol cannot send messages to offline contacts
+              such as the contact with handle 123</dt>
+            <dd><pre>
+[{ # header
+'message-sender': 123,
+'message-type': Channel_Text_Message_Type_Delivery_Report,
+'delivery-status': Delivery_Status_Temporarily_Failed,
+'delivery-error': Channel_Text_Send_Error_Offline,
+'delivery-echo':
+    [{ # header of original message
+    'message-sender': 1,
+    'message-sent': 1210067943,
+    },
+    { # body of original message
+    'content-type': 'text/plain',
+    'content': 'Hello, world!',
+    }]
+  ],
+
+# no body
+]</pre></dd>
+
+            <dt>A maximally complex delivery report: the server reports a
+              bilingual human-readable failure message because the user sent
+              a message "Hello, world!" with token
+              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code> to a contact
+              with handle 123, but that handle represents a contact who does not
+              actually exist</dt>
+            <dd><pre>
+[{ # header
+'message-sender': 123,
+'message-type': Channel_Text_Message_Type_Delivery_Report,
+'delivery-status': Delivery_Status_Permanently_Failed,
+'delivery-error': Channel_Text_Send_Error_Invalid_Contact,
+'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
+'delivery-echo':
+    [{ # header of original message
+    'message-sender': 1,
+    'message-sent': 1210067943,
+    },
+    { # body of original message
+    'content-type': 'text/plain',
+    'content': 'Hello, world!',
+    }]
+  ],
+},
+{ # message from server (alternative in English)
+'alternative': '404',
+'content-type': 'text/plain',
+'lang': 'en',
+'content': 'I have no contact with that name',
+},
+{ # message from server (alternative in German)
+'alternative': '404'.
+'content-type': 'text/plain',
+'lang': 'de',
+'content', 'Ich habe keinen Kontakt mit diesem Namen',
+}
+]</pre></dd>
+
+            <dt>A minimal delivery report indicating successful delivery
+              of the sent message whose token was
+              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code></dt>
+            <dd><pre>
+[{
+# header
+'message-sender': 123,
+'message-type': Channel_Text_Message_Type_Delivery_Report,
+'delivery-status': Delivery_Status_Delivered,
+'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
+}
+# no body
+]</pre></dd>
+
+          </dl>
+
+        </div>
+      </tp:docstring>
+
+      <tp:member name="Key" type="s">
+        <tp:docstring>
+          A key, which SHOULD be one of the well-known keys specified by
+          <tp:type>Message_Header_Key</tp:type>,
+          <tp:type>Message_Body_Key</tp:type> or
+          <tp:type>Delivery_Report_Header_Key</tp:type> if possible.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Value" type="v">
+        <tp:docstring>
+          The value corresponding to the given key, which SHOULD be one of the
+          specified types for well-known keys.
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <tp:simple-type type="s" name="Message_Header_Key">
+      <tp:added version="0.19.8"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Well-known keys for the first <tp:type>Message_Part</tp:type> of a
+          message, which contains metadata about the message as a whole, along
+          with the corresponding value types. Some keys make sense for both
+          incoming and outgoing messages, while others are only meaningful for
+          one or the other.</p>
 
           <dl>
             <dt>message-token (s)</dt>
@@ -354,72 +587,19 @@ USA.</p>
               does not make sense on outgoing messages, and SHOULD NOT
               appear there.</dd>
           </dl>
-        </div>
+          </tp:docstring>
+    </tp:simple-type>
 
-        <div>
-          <p>The second and subsequent parts contain the message's
-            content, including plain text, formatted text and/or attached
-            files.</p>
-
-          <p>It is an error for a connection manager to put keys referring
-            to the message body in the first Message_Part;
-            clients MUST recover from this error by ignoring
-            these keys in first part.</p>
-
-          <p>In any group of parts with the same non-empty value for the
-            "alternative" key (which represent alternative versions of the
-            same content), more faithful versions of the intended message MUST
-            come before less faithful versions (note that this order is the
-            opposite of MIME "multipart/alternative" parts). Clients SHOULD
-            display the first alternative that they understand.</p>
-
-          <tp:rationale>
-            <p>Specifying the preference order means that if the underlying
-              protocol doesn't support alternatives, the CM can safely delete
-              everything apart from the first supported alternative when
-              sending messages.</p>
-
-            <p>The order is the reverse of MIME because MIME's rationale for
-              placing the "plainest" part first (legibility in pre-MIME UAs)
-              does not apply to us, and placing the most preferred part
-              first simplifies display (a client can iterate the message
-              in order, display the first alternative that it understands,
-              and skip displaying all subsequent parts with the same
-              "alternative" key).</p>
-          </tp:rationale>
-
-          <p>Clients SHOULD present all parts that are not redundant
-            alternatives in the order they appear in this array, possibly
-            excluding parts that are referenced by another displayed part.
-            It is implementation-specific how the parts are presented to the
-            user.</p>
-
-          <tp:rationale>
-            <p>This allows CMs to assume that all parts are actually shown to
-              the user, even if they are not explicitly referenced - we do
-              not yet recommend formatted text, and there is no way for
-              plain text to reference an attachment since it has no concept of
-              markup or references. This also forces clients to do something
-              sensible with messages that consist entirely of "attachments",
-              with no "body" at all.</p>
-
-            <p>For instance, when displaying the above example, a client that
-              understands the HTML part should display the JPEG image once,
-              between the two lines "Here is a photo of my cat:" and
-              "Isn't it cute?"; it may additionally present the image in some
-              way for a second time, after "Isn't it cute?", or may choose
-              not to.</p>
-
-            <p>A client that does not understand HTML, displaying the same
-              message, should display the plain-text part, followed by the JPEG
-              image.</p>
-          </tp:rationale>
-
-          <p>Well-known keys for the second and subsequent parts, and the
-            corresponding value types, include:</p>
+    <tp:simple-type type="s" name="Message_Body_Key">
+      <tp:added version="0.19.8"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Well-known keys for the second and subsequent
+          <tp:type>Message_Part</tp:type>s of a message, which contain the
+          message content, along with the corresponding value types.</p>
 
           <dl>
-            <dt>identifier (s)</dt>
+            <dt>identifier (s —
+              <tp:type>Protocol_Content_Identifier</tp:type>)</dt>
             <dd>An opaque identifier for this part.
               Parts of a message MAY reference other parts by treating
               this identifier as if it were a MIME Content-ID and using
@@ -502,8 +682,7 @@ USA.</p>
     'content': [0xFF, 0xD8, ... 0xFF 0xD9],
   },
   ...
-]
-              </pre>
+]</pre>
             </dd>
 
             <dt>needs-retrieval (b)</dt>
@@ -547,38 +726,30 @@ USA.</p>
               can also appear on the first part, where it indicates that the
               entire message should be ignored if unsupported.)</dd>
           </dl>
+      </tp:docstring>
+    </tp:simple-type>
 
-        </div>
-
-
-        <div>
-          <p>Delivery reports are also represented as messages, of type
-            Channel_Text_Message_Type_Delivery_Report, with the
-            Non_Text_Content flag in the Text interface.</p>
-
-          <p>Whenever a message of type
-            Channel_Text_Message_Type_Delivery_Report is signalled for a
-            delivery error report, Channel.Type.Text.SendError SHOULD also
-            be emitted; whenever Channel.Type.Text.SendError is emitted by a
-            channel which supports this interface, a message of type
-            Channel_Text_Message_Type_Delivery_Report MUST also be emitted.</p>
-
-          <p>The corresponding message in the Messages interface MUST contain
-            "headers" for the delivery report, as specified below, in its
-            first Message_Part.</p>
+    <tp:simple-type type="s" name="Delivery_Report_Header_Key">
+      <tp:added version="0.19.8"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Well-known keys for the first <tp:type>Message_Part</tp:type> of a
+          delivery report, along with the corresponding value types. Some of
+          these are special-cases of headers defined by
+          <tp:type>Message_Header_Key</tp:type>.</p>
 
           <dl>
-            <dt>message-sender (u - Contact_Handle as defined above)</dt>
+            <dt>message-sender (u - <tp:type>Contact_Handle</tp:type>, as
+              defined by <tp:type>Message_Header_Key</tp:type>)</dt>
             <dd>MUST be the intended recipient of the original message, if
               available (zero or omitted if the intended recipient is
               unavailable or is not a contact, e.g. a chatroom), even if the
               delivery report actually came from an intermediate server.</dd>
 
-            <dt>message-type (u - Channel_Text_Message_Type as defined
-              above)</dt>
+            <dt>message-type (u - <tp:type>Channel_Text_Message_Type</tp:type>,
+              as defined by <tp:type>Message_Header_Key</tp:type>)</dt>
             <dd>MUST be Channel_Text_Message_Type_Delivery_Report.</dd>
 
-            <dt>delivery-status (u - Delivery_Status)</dt>
+            <dt>delivery-status (u - <tp:type>Delivery_Status</tp:type>)</dt>
             <dd>The status of the message. All delivery reports MUST contain
               this key in the first Message_Part.</dd>
 
@@ -603,14 +774,16 @@ USA.</p>
               </tp:rationale>
             </dd>
 
-            <dt>delivery-error (u - Channel_Text_Send_Error)</dt>
+            <dt>delivery-error (u -
+              <tp:type>Channel_Text_Send_Error</tp:type>)</dt>
             <dd>
               The reason for the failure. MUST be omitted if this was a
               successful delivery; SHOULD be omitted if it would be
               Channel_Text_Send_Error_Unknown.
             </dd>
 
-            <dt>delivery-dbus-error (s - DBus_Error_Name)</dt>
+            <dt>delivery-dbus-error (s -
+              <tp:type>DBus_Error_Name</tp:type>)</dt>
             <dd>
               The reason for the failure, specified as a (possibly
               implementation-specific) D-Bus error. MUST be omitted if this was
@@ -625,7 +798,7 @@ USA.</p>
               omitted.
             </dd>
 
-            <dt>delivery-echo (aa{sv} - Message_Part[])</dt>
+            <dt>delivery-echo (aa{sv} - <tp:type>Message_Part[]</tp:type>)</dt>
             <dd>
               <p>The message content, as defined by the Messages interface.
                 Omitted if no content is available. Content MAY have been
@@ -655,134 +828,8 @@ USA.</p>
             </dd>
 
           </dl>
-
-          <p>The second and subsequent Message_Part dictionaries, if present,
-            are a human-readable report from the IM service.</p>
-
-          <p>Clients MUST NOT attempt to send delivery reports using the
-            SendMessage method in the Messages API, and connection managers
-            MUST NOT allow this to be done. If support for sending delivery
-            reports is later added, it will be part of this interface.</p>
-
-          <p>Some example delivery reports in a Python-like syntax (in which
-            arrays are indicated by [a, b] and dictionaries by {k1: v1, k2: v2})
-            follow.</p>
-
-          <dl>
-            <dt>A minimal delivery report indicating permanent failure of the
-              sent message whose token was
-              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code> for an unknown
-              reason</dt>
-            <dd><pre>
-[{
-# header
-'message-sender': 123,
-'message-type': Channel_Text_Message_Type_Delivery_Report,
-'delivery-status': Delivery_Status_Permanently_Failed,
-'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
-}
-# no body
-]
-</pre></dd>
-
-            <dt>A delivery report where the failed message is echoed back to the
-              sender rather than being referenced by ID, and the failure reason
-              is that this protocol cannot send messages to offline contacts
-              such as the contact with handle 123</dt>
-            <dd><pre>
-[{ # header
-'message-sender': 123,
-'message-type': Channel_Text_Message_Type_Delivery_Report,
-'delivery-status': Delivery_Status_Temporarily_Failed,
-'delivery-error': Channel_Text_Send_Error_Offline,
-'delivery-echo':
-    [{ # header of original message
-    'message-sender': 1,
-    'message-sent': 1210067943,
-    },
-    { # body of original message
-    'content-type': 'text/plain',
-    'content': 'Hello, world!',
-    }]
-  ],
-
-# no body
-]
-</pre></dd>
-
-            <dt>A maximally complex delivery report: the server reports a
-              bilingual human-readable failure message because the user sent
-              a message "Hello, world!" with token
-              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code> to a contact
-              with handle 123, but that handle represents a contact who does not
-              actually exist</dt>
-            <dd><pre>
-[{ # header
-'message-sender': 123,
-'message-type': Channel_Text_Message_Type_Delivery_Report,
-'delivery-status': Delivery_Status_Permanently_Failed,
-'delivery-error': Channel_Text_Send_Error_Invalid_Contact,
-'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
-'delivery-echo':
-    [{ # header of original message
-    'message-sender': 1,
-    'message-sent': 1210067943,
-    },
-    { # body of original message
-    'content-type': 'text/plain',
-    'content': 'Hello, world!',
-    }]
-  ],
-},
-{ # message from server (alternative in English)
-'alternative': '404',
-'content-type': 'text/plain',
-'lang': 'en',
-'content': 'I have no contact with that name',
-},
-{ # message from server (alternative in German)
-'alternative': '404'.
-'content-type': 'text/plain',
-'lang': 'de',
-'content', 'Ich habe keinen Kontakt mit diesem Namen',
-}
-]
-</pre></dd>
-
-            <dt>A minimal delivery report indicating successful delivery
-              of the sent message whose token was
-              <code>b9a991bd-8845-4d7f-a704-215186f43bb4</code></dt>
-            <dd><pre>
-[{
-# header
-'message-sender': 123,
-'message-type': Channel_Text_Message_Type_Delivery_Report,
-'delivery-status': Delivery_Status_Delivered,
-'delivery-token': 'b9a991bd-8845-4d7f-a704-215186f43bb4',
-}
-# no body
-]
-</pre></dd>
-
-          </dl>
-
-        </div>
       </tp:docstring>
-
-      <tp:member name="Key" type="s">
-        <tp:docstring>
-          A key, which SHOULD be one of the well-known keys specified, if
-          possible.
-        </tp:docstring>
-      </tp:member>
-
-      <tp:member name="Value" type="v">
-        <tp:docstring>
-          The value corresponding to the given key, which must be of one of
-          the types indicated.
-        </tp:docstring>
-      </tp:member>
-    </tp:mapping>
+    </tp:simple-type>
 
     <tp:simple-type type="u" name="Message_Part_Index"
       array-name="Message_Part_Index_List">
@@ -818,7 +865,8 @@ USA.</p>
       </tp:member>
     </tp:mapping>
 
-    <tp:simple-type type="s" name="Protocol_Message_Token">
+    <tp:simple-type type="s" name="Protocol_Message_Token"
+                    array-name="Protocol_Message_Token_List">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>An opaque token used to identify messages in the underlying.
           protocol. As a special case, the empty string indicates that there
@@ -839,6 +887,23 @@ USA.</p>
           reports to messages, such as matching on message content or
           timestamp (if available), or assuming that the delivery report
           refers to the most recent message with that ID.</p>
+      </tp:docstring>
+    </tp:simple-type>
+
+    <tp:simple-type name="Protocol_Content_Identifier" type="s">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A protocol-specific identifier for a blob of content, as used for
+          the <tt>identifier</tt> key in a <tp:type>Message_Part</tp:type>. The
+          same identifier MAY be re-used if the same content, byte-for-byte,
+          appears as a part of several messages.</p>
+
+        <tp:rationale>
+          <p>On XMPP, these identifiers might be Content-IDs for custom
+            smileys implemented using <a
+              href="http://xmpp.org/extensions/xep-0231.html">XEP-0232 Bits of
+            Binary</a>; the same smiley might well appear in multiple
+            messages.</p>
+        </tp:rationale>
       </tp:docstring>
     </tp:simple-type>
 
@@ -933,28 +998,29 @@ USA.</p>
         <p>Signals that a message has been submitted for sending. This
           MUST be emitted exactly once per emission of the <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Channel.Type.Text">Sent</tp:dbus-ref>
-          signal on the Text interface. This SHOULD be emitted as soon as
-          the CM determines it's theoretically possible to send the message
-          (e.g. the parameters are supported and correct).</p>
+          signal on the Text interface, for backwards-compatibility; clients
+          SHOULD ignore the latter if this interface is present, as mentioned
+          in the introduction.</p>
+
+        <p>This SHOULD be emitted as soon as the CM determines it's
+          theoretically possible to send the message (e.g. the parameters are
+          supported and correct).</p>
 
         <tp:rationale>
           <p>This signal allows a process that is not the caller of
-            SendMessage to log sent messages. The double signal-emission
-            provides compatibility with older clients. Clients supporting
-            Messages should listen for Messages.MessageSent only (if the
-            channel has the Messages interface) or Text.Sent only
-            (otherwise).</p>
+            SendMessage to log sent messages.</p>
         </tp:rationale>
       </tp:docstring>
 
       <arg type="aa{sv}" tp:type="Message_Part[]" name="Content">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The message content (see <tp:type>Message_Part</tp:type> for full
-            details). If the message that was passed to SendMessage has a
-            formatted text part that the connection manager recognises, but no
-            text/plain alternative, the CM MUST use the formatted text part to
-            generate a text/plain alternative which is also included in this
-            signal argument.</p>
+            details). If the message that was passed to
+            <tp:member-ref>SendMessage</tp:member-ref> has a formatted text
+            part that the connection manager recognises, but no
+            <tt>text/plain</tt> alternative, the CM MUST use the formatted text
+            part to generate a <tt>text/plain</tt> alternative which is also
+            included in this signal argument.</p>
 
           <p>If the connection manager can predict that the message will be
             altered during transmission, this argument SHOULD reflect what
@@ -1078,14 +1144,9 @@ USA.</p>
         messages queue. This MUST be emitted exactly once per emission of the
         <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Channel.Type.Text">Received</tp:dbus-ref>
-        signal on the Text interface.
-
-        <tp:rationale>
-          The double signal-emission provides compatibility with older
-          clients. Clients supporting Messages should listen for
-          Messages.MessageReceived only (if the channel has the Messages
-          interface) or Text.Received only (otherwise).
-        </tp:rationale>
+        signal on the Text interface, for backwards-compatibility; clients
+        SHOULD ignore the latter in favour of this signal if this interface is
+        present, as mentioned in the introduction.
       </tp:docstring>
 
       <arg type="aa{sv}" tp:type="Message_Part[]" name="Message">
@@ -1105,7 +1166,8 @@ USA.</p>
           should still be signalled as either Temporarily_Failed
           or Permanently_Failed). If additional detail is required (e.g.
           distinguishing between the various types of permanent failure) this
-          will be done using additional keys in the Message_Part.</p>
+          will be done using additional
+          <tp:type>Delivery_Report_Header_Key</tp:type>s.</p>
       </tp:docstring>
 
       <tp:enumvalue suffix="Unknown" value="0">

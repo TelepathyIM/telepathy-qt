@@ -21,7 +21,7 @@
   <interface name="org.freedesktop.Telepathy.Connection.Interface.ContactGroups.DRAFT"
     tp:causes-havoc="experimental">
     <tp:requires interface="org.freedesktop.Telepathy.Connection"/>
-    <tp:requires interface="org.freedesktop.Telepathy.Connection.Interface.ContactList.DRAFT"/>
+    <tp:requires interface="org.freedesktop.Telepathy.Connection.Interface.ContactList.DRAFT2"/>
     <tp:added version="0.19.6">(draft 1)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
@@ -58,7 +58,8 @@
         <p>The names of groups of which a contact is a member.</p>
 
         <p>Change notification is via
-          <tp:member-ref>GroupsChanged</tp:member-ref>,
+          <tp:member-ref>GroupsChanged</tp:member-ref>; clients can also
+          get extra context for group membership changes by receiving
           <tp:member-ref>GroupRenamed</tp:member-ref> and
           <tp:member-ref>GroupsRemoved</tp:member-ref>.</p>
       </tp:docstring>
@@ -73,9 +74,16 @@
           empty.</p>
 
         <p>Change notification is via
-          <tp:member-ref>GroupsCreated</tp:member-ref>,
-          <tp:member-ref>GroupRenamed</tp:member-ref> and
-          <tp:member-ref>GroupsRemoved</tp:member-ref>.</p>
+          <tp:member-ref>GroupsCreated</tp:member-ref> and
+          <tp:member-ref>GroupsRemoved</tp:member-ref>; clients can also
+          distinguish between a create/remove pair and a renamed group by
+          receiving <tp:member-ref>GroupRenamed</tp:member-ref>.</p>
+
+        <p>This property's value is not meaningful until the initial contact
+          list has been received, in protocols where this is applicable.
+          Clients MAY wait for this property to be meaningful by calling
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.ContactList.DRAFT2"
+            >RequestContactList</tp:dbus-ref>.</p>
       </tp:docstring>
     </property>
 
@@ -93,17 +101,32 @@
 
     <signal name="GroupRenamed" tp:name-for-bindings="Group_Renamed">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>Emitted when a group is renamed. If the group was not empty,
-          immediately after this signal is emitted,
-          <tp:member-ref>GroupsChanged</tp:member-ref> MUST signal
+        <p>Emitted when a group is renamed.</p>
+
+        <p>Immediately after this signal is emitted,
+          <tp:member-ref>GroupsCreated</tp:member-ref> MUST signal the
+          creation of a group with the new name, and
+          <tp:member-ref>GroupsRemoved</tp:member-ref> MUST signal the
+          removal of a group with the old name.</p>
+
+        <tp:rationale>
+          <p>Emitting these extra signals, in this order, means that clients
+            that are interested in the set of groups that exist (but treat a
+            rename and a create/remove pair identically) to ignore the
+            GroupRenamed signal entirely.</p>
+        </tp:rationale>
+
+        <p>If the group was not empty, immediately after those signals are
+          emitted, <tp:member-ref>GroupsChanged</tp:member-ref> MUST signal
           that the members of that group were removed from the old name
           and added to the new name.</p>
 
-        <p>On connection managers where groups behave like tags, this signal
-          will probably only be emitted when
-          <tp:member-ref>RenameGroup</tp:member-ref> is called, and renaming a
-          group from another client MAY be signalled as a
-          <tp:member-ref>GroupsChanged</tp:member-ref> signal instead.</p>
+        <p>On connection managers where groups behave like tags, renaming a
+          group MAY be signalled as a set of
+          <tp:member-ref>GroupsCreated</tp:member-ref>,
+          <tp:member-ref>GroupsRemoved</tp:member-ref> and
+          <tp:member-ref>GroupsChanged</tp:member-ref> signals, instead of
+          emitting this signal.</p>
 
         <tp:rationale>
           <p>On protocols like XMPP, another resource "renaming a group" is
@@ -121,11 +144,23 @@
     </signal>
 
     <signal name="GroupsRemoved" tp:name-for-bindings="Groups_Removed">
-      <tp:docstring>
-        Emitted when one or more groups are removed. If they had members at
-        the time that they were removed, then immediately after this signal is
-        emitted, <tp:member-ref>GroupsChanged</tp:member-ref> MUST signal
-        that their members were removed.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Emitted when one or more groups are removed. If they had members at
+          the time that they were removed, then immediately after this signal
+          is emitted, <tp:member-ref>GroupsChanged</tp:member-ref> MUST signal
+          that their members were removed.</p>
+
+        <tp:rationale>
+          <p>Emitting the signals in this order allows for two modes of
+            operation. A client interested only in a contact's set of groups
+            can ignore <tp:member-ref>GroupsRemoved</tp:member-ref> and rely
+            on the <tp:member-ref>GroupsChanged</tp:member-ref> signal that
+            will follow; a more elaborate client wishing to distinguish between
+            all of a group's members being removed, and the group itself
+            being removed, can additionally watch for
+            <tp:member-ref>GroupsRemoved</tp:member-ref> and use it to
+            disambiguate.</p>
+        </tp:rationale>
       </tp:docstring>
 
       <arg name="Names" type="as">

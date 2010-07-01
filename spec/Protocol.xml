@@ -1,0 +1,370 @@
+<?xml version="1.0" ?>
+<node name="/Protocol"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+
+  <tp:copyright>Copyright © 2009-2010 Collabora Ltd.</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+    <p>This library is free software; you can redistribute it and/or
+      modify it under the terms of the GNU Lesser General Public
+      License as published by the Free Software Foundation; either
+      version 2.1 of the License, or (at your option) any later version.</p>
+
+    <p>This library is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      Lesser General Public License for more details.</p>
+
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+      02110-1301, USA.</p>
+  </tp:license>
+
+  <interface name="org.freedesktop.Telepathy.Protocol.DRAFT"
+    tp:causes-havoc="experimental">
+    <tp:added version="0.19.8">(draft 1)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>An object representing a protocol for which this <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">ConnectionManager</tp:dbus-ref>
+        can create <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>s.</p>
+
+      <p>Each Protocol object has the same well-known bus name as its parent
+        ConnectionManager. Its object path is formed by taking the
+        ConnectionManager's object path and appending '/', followed by the
+        <tp:type>Protocol</tp:type> name with any hyphen/minus '-' converted
+        to underscores '_'.</p>
+
+      <tp:rationale>
+        <p>This is the same as the representation of protocol names
+          in Account object paths, and in Connection object paths and bus
+          names. For instance, telepathy-gabble and telepathy-salut would
+          implement objects at
+          <code>/org/freedesktop/Telepathy/ConnectionManager/gabble/jabber</code>
+          and
+          <code>/org/freedesktop/Telepathy/ConnectionManager/salut/local_xmpp</code>,
+          respectively.</p>
+      </tp:rationale>
+    </tp:docstring>
+
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      access="read" type="as" tp:type="DBus_Interface[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of interfaces supported by this Protocol object.</p>
+
+        <p>This property is immutable, and should not be confused with
+          <tp:member-ref>ConnectionInterfaces</tp:member-ref>,
+          which refers to the interfaces of <em>connections</em> to this
+          protocol.</p>
+
+        <p>Connection managers with a <code>.manager</code> file
+          (as described as part of the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >ConnectionManager</tp:dbus-ref> interface) MUST cache this
+          property in the protocol's section of the <code>.manager</code>
+          file, using the key <code>Interfaces</code>. The corresponding value
+          is a list of D-Bus interface names, each followed by a semicolon.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="Parameters" tp:name-for-bindings="Parameters"
+      access="read" type="a(susv)" tp:type="Param_Spec[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The parameters which must or may be provided to the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.ConnectionManager"
+            >RequestConnection</tp:dbus-ref> method when connecting to the
+          given protocol. This property is immutable.</p>
+
+        <p>Connection managers with a <code>.manager</code> file
+          (as described as part of the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >ConnectionManager</tp:dbus-ref> interface) MUST cache this
+          property in the protocol's section of the <code>.manager</code>
+          file via keys of the form <code>param-<em>p</em></code> and
+          <code>default-<em>p</em></code>, as documented in the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >ConnectionManager</tp:dbus-ref> interface.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="ConnectionInterfaces"
+      tp:name-for-bindings="Connection_Interfaces"
+      access="read" type="as" tp:type="DBus_Interface[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of interface names which might be in the
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection"
+            >Interfaces</tp:dbus-ref> property of a
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Connection</tp:dbus-ref> to this protocol. Whether a Connection
+          will have all, some or none of these interfaces depends on server
+          capabilities.</p>
+
+        <p>This property is immutable, and should not be confused with
+          <tp:member-ref>Interfaces</tp:member-ref>.</p>
+
+        <p>Connection managers with a <code>.manager</code> file
+          MUST cache this property in the protocol's section of the
+          <code>.manager</code> file, using the key
+          <code>ConnectionInterfaces</code>. The corresponding value
+          is a list of D-Bus interface names, each followed by a semicolon.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="RequestableChannelClasses"
+      tp:name-for-bindings="Requestable_Channel_Classes"
+      access="read" type="a(a{sv}as)" tp:type="Requestable_Channel_Class[]">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A list of channel classes which might be requestable from a
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Connection</tp:dbus-ref> to this protocol (i.e. they will,
+          or might, appear in the Connection's <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Connection.Interface.Requests"
+            >RequestableChannelClasses</tp:dbus-ref> property).</p>
+
+        <p>Whether a Connection will have all, some or none of these
+          requestable channel classes depends on server capabilities;
+          similarly, individual contacts are not guaranteed to support
+          all of these channel classes.</p>
+
+        <p>This property is immutable.</p>
+
+        <p>Connection managers with a <code>.manager</code> file
+          MUST cache this property in the protocol's section of the
+          <code>.manager</code> file, using the key
+          <code>RequestableChannelClasses</code>. The corresponding value
+          is a list of opaque strings, each followed by a semicolon; each
+          of those strings is the name of a group in the <code>.manager</code>
+          file which represents a channel class.</p>
+
+        <p>Each group representing a channel class has a key
+          <code>allowed</code> which is a list of D-Bus property names
+          representing allowed parameters. Any other keys that do not contain
+          a space MUST be ignored. Any key containing a space represents
+          a fixed property; the key has the form
+          "<code><em>propertyname</em> <em>type</em></code>", and the value
+          is encoded in the same way as for the <code>default-<em>p</em></code>
+          keys described in the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
+            >ConnectionManager</tp:dbus-ref> documentation.</p>
+
+        <p>Connection managers that have channel classes whose fixed
+          properties are not representable in this form SHOULD NOT have
+          <code>.manager</code> files.</p>
+
+        <p>For instance, this <code>.manager</code> file could represent
+          a simple Text-only connection manager:</p>
+
+<pre>[Protocol jabber]
+param-account=s required
+param-password=s required
+RequestableChannelClasses=text
+
+[text]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
+org.freedesktop.Telepathy.Channel.TargetHandleType u=1
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+</pre>
+      </tp:docstring>
+    </property>
+
+    <property name="VCardField" tp:name-for-bindings="VCard_Field"
+      access="read" type="s">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The name of the most common vCard field used for this protocol's
+          contact identifiers, normalized to lower case, or the empty string
+          if there is no such field.</p>
+
+        <p>For example, this would be <code>x-jabber</code> for
+          Jabber/XMPP (including Google Talk), or <code>tel</code> for
+          the <abbr title="Public Switched Telephone Network">PSTN</abbr>.</p>
+
+        <tp:rationale>
+          <p>This is taken from Mission Control profiles as used on Maemo 5.
+            One valid use of this field is to answer the question: given a
+            contact's vCard containing an X-JABBER field, how can you
+            communicate with the contact? By iterating through protocols
+            looking for an x-jabber VCardField, one can build up a list of
+            protocols that handle x-jabber, then offer the user a list of
+            accounts for those protocols and/or the option to create a new
+            account for one of those protocols.</p>
+
+          <p>It is not necessarily valid to interpret contacts' identifiers
+            as values of this vCard field. For instance, telepathy-sofiasip
+            supports contacts whose identifiers are of the form
+            sip:jenny@example.com or tel:8675309, which would not normally
+            both be represented by any single vCard field. Representing
+            arbitrary handles/identifiers as vCard fields is a topic for
+            future work.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+
+    <property name="EnglishName" tp:name-for-bindings="English_Name"
+      access="read" type="s">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The name of the protocol in a form suitable for display to users,
+          such as "AIM" or "Yahoo!", or the empty string if none is
+          available.</p>
+
+        <p>This is effectively in the C locale (international English);
+          user interfaces requiring a localized protocol name SHOULD look
+          one up in their own message catalog based on either the Telepathy
+          <tp:type>Protocol</tp:type> name or this property, but SHOULD use
+          this English version as a fallback if no translated version can be
+          found.</p>
+
+        <tp:rationale>
+          <p>Many protocols are named after a company or product which isn't
+            translated in non-English locales. This also provides a fallback
+            display name, for UIs with no prior knowledge of a particular
+            protocol.</p>
+        </tp:rationale>
+
+        <p>If this property's value is empty, clients MAY fall back to using
+          the Telepathy <tp:type>Protocol</tp:type> name, possibly with its
+          capitalization adjusted.</p>
+      </tp:docstring>
+    </property>
+
+    <property name="Icon" tp:name-for-bindings="Icon"
+      access="read" type="s">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The name of an icon in the system's icon theme, such as "im-msn", or
+          the empty string.</p>
+
+        <tp:rationale>
+          <p>This can be used as a default if the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Account">Icon</tp:dbus-ref>
+            property is not set on an Account, or used by the <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>
+            to choose a default icon if none is set during account
+            creation.</p>
+        </tp:rationale>
+
+        <p>If this property's value is empty, clients MAY fall back to
+          generating a name based on the <tp:type>Protocol</tp:type> name.</p>
+      </tp:docstring>
+    </property>
+
+    <method name="IdentifyAccount"
+      tp:name-for-bindings="Identify_Account">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Return a string which uniquely identifies the account to which the
+          given parameters would connect.</p>
+
+        <tp:rationale>
+          <p>For many protocols, this would return the well-known 'account'
+            parameter. However, for IRC the returned string would be composed
+            from the 'account' (i.e. nickname) and 'server' parameters.
+            AccountManager implementations can use this to form the
+            account-specific part of an Account's object path.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg direction="in" name="Parameters"
+        type="a{sv}" tp:type="String_Variant_Map">
+        <tp:docstring>
+          A set of parameters as would be provided to <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.ConnectionManager"
+            >RequestConnection</tp:dbus-ref>
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" name="Account_ID" type="s">
+        <tp:docstring>
+          <p>An opaque string suitable for use as the account-specific part of
+            an <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+              >Account</tp:dbus-ref>'s object path. This is not necessarily
+            globally unique, but should represent a "best-effort"
+            identification of the account.</p>
+
+          <tp:rationale>
+            <p>For a pathological case, consider a user signing in as
+              'me@example.com' with 'server' set to either jabber1.example.com
+              or jabber2.example.com. Both of these should result in
+              me@example.com being returned from this method, even if the user
+              can actually be signed in to those two servers
+              simultaneously.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The IdentifyAccount method is not supported by this connection
+            manager. The caller SHOULD fall back to deriving identification
+            from the parameters.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+    <method name="NormalizeContact"
+      tp:name-for-bindings="Normalize_Contact">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Attempt to normalize the given contact ID. Where possible, this
+          SHOULD return the same thing that would be returned by
+          InspectHandles(RequestHandles(CONTACT, [Contact_ID])) on a connected
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Connection</tp:dbus-ref>.</p>
+
+        <p>If full normalization requires network activity or is otherwise
+          impossible to do without a <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>,
+          this method SHOULD perform a best-effort normalization.</p>
+
+        <tp:rationale>
+          <p>One common example of a best-effort offline normalization
+            differing from the ideal normalization is XMPP.</p>
+
+          <p>On XMPP, contacts' JIDs should normally have the resource removed
+            during normalization, but for contacts in a MUC (chatroom), the
+            resource is an integral part of the JID - so the contact JID
+            alice@example.com/Empathy should normalize to alice@example.com,
+            but the in-MUC JID wonderland@conference.example.com/Alice should
+            normalize to itself.</p>
+
+          <p>While online, the connection manager has enough context to know
+            which chatrooms the user is in, and can infer from that whether
+            to remove resources, but the best-effort normalization performed
+            while offline does not have this context, so the best that can be
+            done is to remove the resource from all JIDs.</p>
+        </tp:rationale>
+
+        <p>This method MAY simply raise NotImplemented on some protocols.</p>
+
+        <tp:rationale>
+          <p>In link-local XMPP, you can't talk to someone who isn't present
+            on your local network, so normalizing identifiers in advance is
+            meaningless.</p>
+        </tp:rationale>
+      </tp:docstring>
+
+      <arg direction="in" name="Contact_ID" type="s">
+        <tp:docstring>
+          The identifier of a contact in this protocol
+        </tp:docstring>
+      </arg>
+
+      <arg direction="out" name="Normalized_Contact_ID" type="s">
+        <tp:docstring>
+          The identifier of a contact in this protocol, normalized as much
+          as possible
+        </tp:docstring>
+      </arg>
+
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotImplemented">
+          <tp:docstring>
+            The NormalizeContact method is not supported by this connection
+            manager. The caller MAY recover by using the contact ID as-is.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

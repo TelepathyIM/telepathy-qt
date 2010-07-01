@@ -80,8 +80,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <li>sip - Session Initiation Protocol (SIP), with or without
             SIMPLE support</li>
           <li>skype - Skype</li>
-          <li>tel - telephony (the PSTN, including GSM, CDMA and fixed-line
-            telephony)</li>
+          <li>tel - telephony (the
+            <abbr title="Public Switched Telephone Network">PSTN</abbr>,
+            including GSM, CDMA and fixed-line telephony)</li>
           <li>trepia - Trepia</li>
           <li>yahoo - YMSG (Yahoo! Messenger)</li>
           <li>yahoojp - Japanese version of YMSG</li>
@@ -186,10 +187,50 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </tp:possible-errors>
     </method>
 
+    <tp:mapping name="Protocol_Properties_Map">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A map from protocol identifiers supported by a connection
+          manager to the immutable properties of the corresponding
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Protocol.DRAFT</tp:dbus-ref> objects.</p>
+      </tp:docstring>
+
+      <tp:member name="Protocol" type="s" tp:type="Protocol">
+        <tp:docstring>A protocol name</tp:docstring>
+      </tp:member>
+
+      <tp:member name="Properties" type="a{sv}"
+        tp:type="Qualified_Property_Value_Map">
+        <tp:docstring>The immutable properties of the corresponding
+          Protocol object</tp:docstring>
+      </tp:member>
+    </tp:mapping>
+
+    <property name="Protocols" tp:name-for-bindings="Protocols"
+      access="read" type="a{sa{sv}}" tp:type="Protocol_Properties_Map">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A map from protocol identifiers supported by this connection
+          manager to the immutable properties of the corresponding
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Protocol.DRAFT</tp:dbus-ref> objects.</p>
+
+        <tp:rationale>
+          <p>Providing the immutable properties here means that
+            when the API of Protocol objects has been finalized,
+            most clients will only need one D-Bus round trip to interrogate
+            the ConnectionManager about all its protocols.</p>
+        </tp:rationale>
+
+        <p>If this map is empty or missing, clients SHOULD fall back to
+          calling <tp:member-ref>ListProtocols</tp:member-ref> and
+          <tp:member-ref>GetParameters</tp:member-ref>.</p>
+      </tp:docstring>
+    </property>
+
     <method name="ListProtocols" tp:name-for-bindings="List_Protocols">
       <arg direction="out" type="as" tp:type="Protocol[]" name="Protocols">
         <tp:docstring>
-          A array of string protocol identifiers supported by this manager
+          The keys of the <tp:member-ref>Protocols</tp:member-ref> map.
         </tp:docstring>
       </arg>
       <tp:docstring>
@@ -369,16 +410,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>To be compatible with older connection managers, if retrieving
           this property fails, clients SHOULD assume that its value is
           an empty list.</p>
+
+        <p>Connection managers with a non-empty list of Interfaces MUST
+          represent them in the <code>.manager</code> file, if they have one,
+          as an <code>Interfaces</code> key in the
+          group headed <code>[ConnectionManager]</code>, whose value is a list
+          of strings each followed by a semicolon.</p>
       </tp:docstring>
       <tp:added version="0.17.8"/>
     </property>
-
-    <!-- FIXME: One thing we could perhaps use Interfaces for would be a
-    ConnectionManager.Interface.Capabilities that can give hints regarding
-    the capabilities (in the sense of
-    Connection.Interface.Requests.AvailableChannelClasses and/or
-    Connection.GetInterfaces()) that a Connection from this CM is likely
-    to have -->
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
     <p>A D-Bus service which allows connections to be created. The manager
@@ -435,6 +475,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       whose list of protocols can change at any time (for instance, via
       a plugin architecture) should not install a <code>.manager</code>
       file.</p>
+
+    <p>The <code>.manager</code> file SHOULD have a group headed
+      <code>[ConnectionManager]</code>, containing a key
+      <code>Interfaces</code> representing
+      <tp:member-ref>Interfaces</tp:member-ref> as a sequence of strings
+      each followed by a semicolon (the "localestrings" type from the Desktop
+      Entry Specification).</p>
+
+    <p>The <code>[ConnectionManager]</code> group SHOULD NOT contain keys
+      <code>ObjectPath</code> or <code>BusName</code>. If it does, they MUST
+      be ignored.</p>
+
+    <tp:rationale>
+      <p>The object path and bus name are derivable from the connection
+        manager's name, which is part of the filename, so these keys are
+        redundant. They were required in very old versions of Telepathy.</p>
+    </tp:rationale>
 
     <p>For each protocol name <em>proto</em> that would be returned by
       ListProtocols, the .manager file contains a group

@@ -21,9 +21,8 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Connection.Interface.Cellular.DRAFT"
-    tp:causes-havoc="experimental">
-    <tp:added version="0.19.6">(draft version, not API-stable)</tp:added>
+  <interface name="org.freedesktop.Telepathy.Connection.Interface.Cellular">
+    <tp:added version="0.19.8">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>This interface is for various cellular things (GSM and/or CDMA) that
@@ -105,6 +104,32 @@
       </arg>
     </signal>
 
+    <property name="MessageReducedCharacterSet"
+      tp:name-for-bindings="Message_Reduced_Character_Set"
+      type="b" access="readwrite">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Determines whether SMSes containing characters that do not fit into
+          a 7‐bit GSM character set should be sent as UCS‐2, or lossily
+          recoded. If <code>False</code> (which SHOULD be the default),
+          messages will be sent with no loss of fidelity (at the potential
+          financial cost of using twice as many SMSes); if <code>True</code>,
+          the message will be recoded in an implementation‐specific way to fit
+          into a country‐specific GSM reduced character set.</p>
+
+        <p>Connections with this interface SHOULD provide this property as a
+          parameter for <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
+          <code>DBus_Property</code> flag.</p>
+
+        <p>For connections managed by the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
+          this property SHOULD be set via the Account Manager, by calling
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+            >Account.UpdateParameters</tp:dbus-ref>; the AccountManager
+          provides change‐notification, as long as all other clients cooperate
+          by using it instead of setting this property directly.</p>
+      </tp:docstring>
+    </property>
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

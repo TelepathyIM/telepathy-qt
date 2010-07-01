@@ -325,9 +325,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <tp:enumvalue suffix="Delivery_Report" value="4">
         <tp:docstring>
-          This message type MUST NOT appear unless the channel supports the
-          DeliveryReporting interface. The message MUST be as defined by
-          the DeliveryReporting interface.
+          A delivery report. This message type MUST NOT appear unless the
+          channel supports the <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface">Messages</tp:dbus-ref>
+          interface; see <tp:type>Message_Part</tp:type> for the format that
+          delivery reports must take.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
