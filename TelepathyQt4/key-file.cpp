@@ -206,13 +206,14 @@ bool KeyFile::Private::validateKey(const QByteArray &data, int from, int to, QSt
     bool ret = true;
     while (i < to) {
         uint ch = data.at(i++);
-        // as an extension to the Desktop Entry spec, we allow "_", "." and "@"
+        // as an extension to the Desktop Entry spec, we allow " ", "_", "." and "@"
         // as valid key characters - "_" and "." are needed for keys that are
         // D-Bus property names, and GKeyFile and KConfigIniBackend also accept
-        // all three of those characters.
+        // all four of those characters.
         if (!((ch >= 'a' && ch <= 'z') ||
               (ch >= 'A' && ch <= 'Z') ||
               (ch >= '0' && ch <= '9') ||
+              (ch == ' ') ||
               (ch == '-') || (ch == '_') ||
               (ch == '.') || (ch == '@'))) {
             ret = false;
@@ -292,6 +293,9 @@ bool KeyFile::Private::unescapeStringList(const QByteArray &data, int from, int 
         }
         else {
             value += ch;
+            if (i == to) {
+                valueList << value;
+            }
         }
     }
 
