@@ -2,6 +2,8 @@ if(ENABLE_TP_GLIB_TESTS)
     set(example_cm_csh_SRCS
         conn.c
         conn.h
+        connection-manager.c
+        connection-manager.h
         room.c
         room.h
         room-manager.c

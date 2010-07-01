@@ -3,6 +3,8 @@ if(ENABLE_TP_GLIB_TESTS)
         chan.c
         chan.h
         conn.c
+        connection-manager.c
+        connection-manager.h
         conn.h
         im-manager.c
         im-manager.h)

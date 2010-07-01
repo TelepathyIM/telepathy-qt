@@ -17,10 +17,26 @@ if(ENABLE_TP_GLIB_TESTS)
         contacts-conn.c
         contacts-conn.h
         debug.h
+        params-cm.c
+        params-cm.h
+        simple-account.c
+        simple-account.h
+        simple-account-manager.c
+        simple-account-manager.h
+        simple-channel-dispatch-operation.c
+        simple-channel-dispatch-operation.h
+        simple-client.c
+        simple-client.h
         simple-conn.c
         simple-conn.h
         simple-manager.c
-        simple-manager.h)
+        simple-manager.h
+        textchan-group.c
+        textchan-group.h
+        textchan-null.c
+        textchan-null.h
+        util.c
+        util.h)
     add_library(tp-glib-tests SHARED ${tp_glib_tests_SRCS})
     target_link_libraries(tp-glib-tests ${TELEPATHY_GLIB_LIBRARIES}
                           example-cm-callable

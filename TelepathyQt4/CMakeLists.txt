@@ -5,6 +5,8 @@ set(telepathy_qt4_SRCS
     abstract-interface.cpp
     account.cpp
     account-manager.cpp
+    account-set.cpp
+    account-set-internal.h
     capabilities-base.cpp
     channel.cpp
     channel-dispatcher.cpp
@@ -47,6 +49,7 @@ set(telepathy_qt4_SRCS
     pending-channel-request-internal.h
     pending-connection.cpp
     pending-contact-attributes.cpp
+    pending-contact-info.cpp
     pending-contacts.cpp
     pending-handles.cpp
     pending-operation.cpp
@@ -58,10 +61,12 @@ set(telepathy_qt4_SRCS
     ready-object.cpp
     referenced-handles.cpp
     room-list-channel.cpp
+    shared-ptr.cpp
     streamed-media-channel.cpp
     streamed-media-channel-internal.h
     text-channel.cpp
-    types.cpp)
+    types.cpp
+    types-internal.h)
 
 set(telepathy_qt4_HEADERS
     AbstractClient
@@ -77,6 +82,8 @@ set(telepathy_qt4_HEADERS
     AccountManager
     account-manager.h
     AccountManagerInterface
+    AccountSet
+    account-set.h
     CapabilitiesBase
     capabilities-base.h
     Channel
@@ -121,11 +128,18 @@ set(telepathy_qt4_HEADERS
     connection.h
     ConnectionInterface
     ConnectionInterfaceAliasingInterface
+    ConnectionInterfaceAnonymityInterface
     ConnectionInterfaceAvatarsInterface
+    ConnectionInterfaceBalanceInterface
     ConnectionInterfaceCapabilitiesInterface
+    ConnectionInterfaceCellularInterface
+    ConnectionInterfaceContactCapabilitiesInterface
+    ConnectionInterfaceContactInfoInterface
     ConnectionInterfaceContactsInterface
+    ConnectionInterfaceLocationInterface
     ConnectionInterfacePresenceInterface
     ConnectionInterfaceRequestsInterface
+    ConnectionInterfaceServicePointInterface
     ConnectionInterfaceSimplePresenceInterface
     ConnectionManager
     connection-manager.h
@@ -188,6 +202,8 @@ set(telepathy_qt4_HEADERS
     pending-connection.h
     PendingContactAttributes
     pending-contact-attributes.h
+    PendingContactInfo
+    pending-contact-info.h
     PendingContacts
     pending-contacts.h
     PendingFailure
@@ -256,6 +272,8 @@ set(telepathy_qt4_MOC_SRCS
     abstract-interface.h
     account.h
     account-manager.h
+    account-set.h
+    account-set-internal.h
     channel.h
     channel-dispatch-operation.h
     channel-request.h

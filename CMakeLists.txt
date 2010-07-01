@@ -12,7 +12,7 @@ cmake_minimum_required(VERSION 2.6)
 #   set nano_version to 1
 set(TP_QT4_MAJOR_VERSION 0)
 set(TP_QT4_MINOR_VERSION 3)
-set(TP_QT4_MICRO_VERSION 2)
+set(TP_QT4_MICRO_VERSION 5)
 set(TP_QT4_NANO_VERSION  1)
 
 set(PACKAGE_NAME telepathy-qt4)
@@ -178,11 +178,11 @@ else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FO
 endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
 
 # Find telepathy-glib
-set(TELEPATHY_GLIB_MIN_VERSION 0.10.0)
+set(TELEPATHY_GLIB_MIN_VERSION 0.11.3)
 find_package(TelepathyGlib)
 macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
                   "Glib bindings for Telepathy"
-                  "http://telepathy.freedesktop.org/" FALSE "0.10.0"
+                  "http://telepathy.freedesktop.org/" FALSE "0.11.3"
                   "Needed, together with Qt Glib integration, to build some additional test cases")
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
