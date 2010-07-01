@@ -21,11 +21,12 @@ class TestAccountBasics : public Test
 
 public:
     TestAccountBasics(QObject *parent = 0)
-        : Test(parent), mAccountsCount(0)
+        : Test(parent), mServiceNameChanged(false), mAccountsCount(0)
     { }
 
 protected Q_SLOTS:
     void onNewAccount(const Tp::AccountPtr &);
+    void onAccountServiceNameChanged(const QString &);
     void onAvatarChanged(const Tp::Avatar &);
 
 private Q_SLOTS:
@@ -42,6 +43,8 @@ private:
     QStringList pathsForAccountSet(const Tp::AccountSetPtr &set);
 
     Tp::AccountManagerPtr mAM;
+    bool mServiceNameChanged;
+    QString mServiceName;
     int mAccountsCount;
 };
 
@@ -50,6 +53,13 @@ void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
     Q_UNUSED(acc);
 
     mAccountsCount++;
+    mLoop->exit(0);
+}
+
+void TestAccountBasics::onAccountServiceNameChanged(const QString &serviceName)
+{
+    mServiceNameChanged = true;
+    mServiceName = serviceName;
     mLoop->exit(0);
 }
 
@@ -191,6 +201,21 @@ void TestAccountBasics::testBasics()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(acc->isReady(Account::FeatureProtocolInfo), true);
+
+    QVERIFY(acc->serviceName() != acc->protocolName());
+    QCOMPARE(acc->serviceName(), QString(QLatin1String("bob_service")));
+    connect(acc.data(),
+            SIGNAL(serviceNameChanged(const QString &)),
+            SLOT(onAccountServiceNameChanged(const QString &)));
+    connect(acc->setServiceName(acc->protocolName()),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(expectSuccessfulCall(Tp::PendingOperation *)));
+    // wait for setServiceName finish
+    QCOMPARE(mLoop->exec(), 0);
+    // wait for serviceNameChanged
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->serviceName(), acc->protocolName());
+    QCOMPARE(mServiceName, acc->serviceName());
 
     ProtocolInfo *protocolInfo = acc->protocolInfo();
     QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));

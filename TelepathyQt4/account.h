@@ -68,6 +68,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(bool enabled READ isEnabled NOTIFY stateChanged)
     Q_PROPERTY(QString cmName READ cmName)
     Q_PROPERTY(QString protocolName READ protocolName)
+    Q_PROPERTY(QString serviceName READ serviceName NOTIFY serviceNameChanged)
     Q_PROPERTY(QString displayName READ displayName NOTIFY displayNameChanged)
     Q_PROPERTY(QString iconName READ iconName NOTIFY iconNameChanged)
     Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
@@ -111,6 +112,9 @@ public:
 
     TELEPATHY_QT4_DEPRECATED QString protocol() const;
     QString protocolName() const;
+
+    QString serviceName() const;
+    PendingOperation *setServiceName(const QString &value);
 
     QString displayName() const;
     PendingOperation *setDisplayName(const QString &value);
@@ -282,6 +286,7 @@ public:
 
 Q_SIGNALS:
     void removed();
+    void serviceNameChanged(const QString &serviceName);
     void displayNameChanged(const QString &displayName);
     TELEPATHY_QT4_DEPRECATED void iconChanged(const QString &iconName);
     void iconNameChanged(const QString &iconName);
