@@ -1,7 +1,35 @@
-telepathy-qt4 0.3.6 (UNRELEASED)
+telepathy-qt4 0.3.6 (2010-07-01)
 ================================
 
-...
+The "I've been thinkin' a lot today" release.
+
+New API:
+
+* Added Qt properties to Account.
+* Added filter API to AccountManager to filter accounts based on Qt properties.
+  Includes a new class AccountSet that represents a set of accounts that match a
+  certain filter and that updates automatically based on accounts Qt properties
+  changes.
+* fd.o#25035 - Add API to AccountManager to get a list of Account objects, all
+  ready.
+* fd.o#28825 - Bind Account.Service
+* fd.o#28828 - Add Qt properties to ConnectionManager
+* fd.o#28861 - Add auto generated interface and Connection accessor for
+  Connection.Cellular interface
+
+Enhancements:
+* fd.o#28302 - Sync test CM with telepathy-glib
+* fd.o#28827 - Add valgrind support to tests
+* fd.o#28850 - Update to spec 0.19.8
+
+Fixes:
+* fd.o#28489 - manager-file.py missing in tp-qt4 0.3.4 tarball
+* fd.o#28826 - KeyFile should support spaces in key names and string list params
+  that don't terminate with ;
+* fd.o#28829 - Contact should not fail if /capabilities attr is empty
+* fd.o#28830 - Channel does not parse immutable properties correctly
+* fd.o#28831 - Connection FeatureRosterGroups does not work after
+  FeatureAccountBalance support was added
 
 telepathy-qt4 0.3.5 (2010-06-21)
 ================================
