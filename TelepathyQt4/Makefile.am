@@ -58,6 +58,7 @@ libtelepathy_qt4_la_SOURCES = \
     account.cpp \
     account-manager.cpp \
     account-set.cpp \
+    account-set-internal.h \
     capabilities-base.cpp \
     channel.cpp \
     channel-factory.cpp \
