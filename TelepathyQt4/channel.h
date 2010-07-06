@@ -213,6 +213,12 @@ public:
         return optionalInterface<Client::ChannelInterfacePasswordInterface>(check);
     }
 
+    inline Client::ChannelInterfaceServicePointInterface *servicePointInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ChannelInterfaceServicePointInterface>(check);
+    }
+
     inline Client::ChannelInterfaceTubeInterface *tubeInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
