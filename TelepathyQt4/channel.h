@@ -165,6 +165,12 @@ public:
         return optionalInterface<Client::DBus::PropertiesInterface>(BypassInterfaceCheck);
     }
 
+    inline Client::ChannelInterfaceAnonymityInterface *anonymityInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ChannelInterfaceAnonymityInterface>(check);
+    }
+
     inline Client::ChannelInterfaceCallStateInterface *callStateInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
