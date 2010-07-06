@@ -14,6 +14,7 @@
 <xi:include href="../spec/Channel_Type_Tubes.xml"/>
 <xi:include href="../spec/Channel_Type_Stream_Tube.xml"/>
 
+<xi:include href="../spec/Channel_Interface_Anonymity.xml"/>
 <xi:include href="../spec/Channel_Interface_Call_State.xml"/>
 <xi:include href="../spec/Channel_Interface_Chat_State.xml"/>
 <xi:include href="../spec/Channel_Interface_DTMF.xml"/>
@@ -22,6 +23,7 @@
 <xi:include href="../spec/Channel_Interface_Media_Signalling.xml"/>
 <xi:include href="../spec/Channel_Interface_Messages.xml"/>
 <xi:include href="../spec/Channel_Interface_Password.xml"/>
+<xi:include href="../spec/Channel_Interface_Service_Point.xml"/>
 <xi:include href="../spec/Channel_Interface_Tube.xml"/>
 
 </tp:spec>
