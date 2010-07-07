@@ -559,7 +559,7 @@ AccountSetPtr AccountManager::accountsByProtocol(
         const QString &protocolName) const
 {
     QVariantMap filter;
-    filter.insert(QLatin1String("protocol"), protocolName);
+    filter.insert(QLatin1String("protocolName"), protocolName);
     return AccountSetPtr(new AccountSet(AccountManagerPtr(
                     (AccountManager *) this), filter));
 }
