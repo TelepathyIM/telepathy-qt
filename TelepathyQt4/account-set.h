@@ -49,6 +49,8 @@ public:
             const QVariantMap &filter);
     virtual ~AccountSet();
 
+    bool isFilterValid() const;
+
     AccountManagerPtr accountManager() const;
 
     QVariantMap filter() const;

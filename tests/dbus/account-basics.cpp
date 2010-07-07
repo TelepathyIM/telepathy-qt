@@ -240,6 +240,20 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
     protocolInfo = acc->protocolInfo();
     QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
+
+    QList<AccountPtr> allAccounts = mAM->allAccounts();
+
+    QVariantMap filter;
+    Tp::AccountSetPtr filteredAccountSet;
+
+    filter.insert(QLatin1String("protocolName"), QLatin1String("foo"));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+
+    filter.clear();
+    filter.insert(QLatin1String("protocolFoo"), acc->protocolName());
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(filteredAccountSet->isFilterValid(), false);
 }
 
 void TestAccountBasics::cleanup()
