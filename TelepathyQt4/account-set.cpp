@@ -183,6 +183,124 @@ void AccountSet::Private::AccountWrapper::onAccountPropertyChanged(
     emit accountPropertyChanged(mAccount, propertyName);
 }
 
+/**
+ * \class AccountSet
+ * \ingroup clientaccount
+ * \headerfile TelepathyQt4/account-set.h <TelepathyQt4/AccountSet>
+ *
+ * \brief The AccountSet class provides an object representing a set of
+ * Telepathy accounts filtered by a given criteria.
+ *
+ * AccountSet is automatically updated whenever accounts that match the given
+ * criteria are added, removed or updated.
+ *
+ * \section account_set_usage_sec Usage
+ *
+ * \subsection account_set_create_sec Creating an AccountSet object
+ *
+ * The easiest way to create AccountSet objects is through AccountManager. One
+ * can just use the AccountManager convenience methods such as
+ * AccountManager::validAccountsSet() to get a set of account objects
+ * representing valid accounts.
+ *
+ * For example:
+ *
+ * \code
+ *
+ * class MyClass : public QObject
+ * {
+ *     QOBJECT
+ *
+ * public:
+ *     MyClass(QObject *parent = 0);
+ *     ~MyClass() { }
+ *
+ * private Q_SLOTS:
+ *     void onAccountManagerReady(Tp::PendingOperation *);
+ *     void onValidAccountAdded(const Tp::AccountPtr &);
+ *     void onValidAccountRemoved(const Tp::AccountPtr &);
+ *
+ * private:
+ *     AccountManagerPtr am;
+ *     AccountSetPtr validAccountsSet;
+ * };
+ *
+ * MyClass::MyClass(QObject *parent)
+ *     : QObject(parent)
+ *       am(AccountManager::create())
+ * {
+ *     connect(am->becomeReady(),
+ *             SIGNAL(finished(Tp::PendingOperation*)),
+ *             SLOT(onAccountManagerReady(Tp::PendingOperation*)));
+ * }
+ *
+ * void MyClass::onAccountManagerReady(Tp::PendingOperation *op)
+ * {
+ *     if (op->isError()) {
+ *         qWarning() << "Account manager cannot become ready:" <<
+ *             op->errorName() << "-" << op->errorMessage();
+ *         return;
+ *     }
+ *
+ *     validAccountsSet = am->validAccountsSet();
+ *     connect(validAccountsSet.data(),
+ *             SIGNAL(accountAdded(const Tp::AccountPtr &)),
+ *             SLOT(onValidAccountAdded(const Tp::AccountPtr &)));
+ *     connect(validAccountsSet.data(),
+ *             SIGNAL(accountRemoved(const Tp::AccountPtr &)),
+ *             SLOT(onValidAccountRemoved(const Tp::AccountPtr &)));
+ *
+ *     QList<AccountPtr> accounts = validAccountsSet->accounts();
+ *     // do something with accounts
+ * }
+ *
+ * void MyClass::onValidAccountAdded(const Tp::AccountPtr &account)
+ * {
+ *     // do something with account
+ * }
+ *
+ * void MyClass::onValidAccountRemoved(const Tp::AccountPtr &account)
+ * {
+ *     // do something with account
+ * }
+ *
+ * \endcode
+ *
+ * You can also define your own filter using AccountManager::filterAccounts:
+ *
+ * \code
+ *
+ * void MyClass::onAccountManagerReady(Tp::PendingOperation *op)
+ * {
+ *     ...
+ *
+ *     QVariantMap filter;
+ *     filter.insert(QLatin1String("protocol"), QLatin1String("jabber"));
+ *     filter.insert(QLatin1String("protocolName"), QLatin1String("jabber"));
+ *     filter.insert(QLatin1String("enabled"), true);
+ *
+ *     AccountSetPtr filteredAccountSet = am->filterAccounts(filter);
+ *     // connect to AccountSet::accountAdded/accountRemoved signals
+ *     QList<AccountPtr> accounts = filteredAccountSet->accounts();
+ *     // do something with accounts
+ *
+ *     ....
+ * }
+ *
+ * \endcode
+ *
+ * AccountSet can also be instantiated directly, but note that when doing it,
+ * the AccountManager object passed as param must be ready for AccountSet
+ * properly work.
+ */
+
+/**
+ * Construct a new AccountSet object.
+ *
+ * \param accountManager An account manager object used to filter accounts.
+ *                       The account manager object must be ready.
+ * \param filter The desired filter.
+ */
 AccountSet::AccountSet(const AccountManagerPtr &accountManager,
         const QVariantMap &filter)
     : QObject(),
@@ -190,6 +308,9 @@ AccountSet::AccountSet(const AccountManagerPtr &accountManager,
 {
 }
 
+/**
+ * Class destructor.
+ */
 AccountSet::~AccountSet()
 {
 }
@@ -207,20 +328,56 @@ bool AccountSet::isFilterValid() const
     return mPriv->filterValid;
 }
 
+/**
+ * Return the account manager object used to filter accounts.
+ *
+ * \return The AccountManager object used to filter accounts.
+ */
 AccountManagerPtr AccountSet::accountManager() const
 {
     return mPriv->accountManager;
 }
 
+/**
+ * Return the filter used to filter accounts.
+ *
+ * The filter is composed by Account property names and values as map items.
+ *
+ * \return A QVariantMap representing the filter used to filter accounts.
+ * \sa isFilterValid()
+ */
 QVariantMap AccountSet::filter() const
 {
     return mPriv->filter;
 }
 
+/**
+ * Return a list of account objects that match filter().
+ *
+ * \return A list of account objects that match filter().
+ */
 QList<AccountPtr> AccountSet::accounts() const
 {
     return mPriv->accounts.values();
 }
+
+/**
+ * \fn void AccountSet::accountAdded(const Tp::AccountPtr &account);
+ *
+ * This signal is emitted whenever an account that matches filter() is added to
+ * this set.
+ *
+ * \param account The account that was added to this set.
+ */
+
+/**
+ * \fn void AccountSet::accountRemoved(const Tp::AccountPtr &account);
+ *
+ * This signal is emitted whenever an account that matches filter() is removed
+ * from this set.
+ *
+ * \param account The account that was removed from this set.
+ */
 
 void AccountSet::onNewAccount(const AccountPtr &account)
 {
