@@ -254,6 +254,31 @@ void TestAccountBasics::testBasics()
     filter.insert(QLatin1String("protocolFoo"), acc->protocolName());
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
     QCOMPARE(filteredAccountSet->isFilterValid(), false);
+
+    filter.clear();
+    filter.insert(QLatin1String("protocolName"), allAccounts.first()->protocolName());
+    filteredAccountSet = mAM->filterAccounts(filter);
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QVERIFY(filteredAccountSet->accounts().contains(allAccounts.first()));
+
+    filteredAccountSet = mAM->accountsByProtocol(allAccounts.first()->protocolName());
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QVERIFY(filteredAccountSet->accounts().contains(allAccounts.first()));
+
+    filter.clear();
+    filter.insert(QLatin1String("protocolFoo"), acc->protocolName());
+    filteredAccountSet = mAM->filterAccounts(filter);
+    QCOMPARE(filteredAccountSet->isFilterValid(), false);
+    QVERIFY(filteredAccountSet->accounts().isEmpty());
+
+    QCOMPARE(mAM->validAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->validAccountsSet()->accounts().isEmpty(), false);
+    QCOMPARE(mAM->invalidAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->invalidAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->enabledAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->enabledAccountsSet()->accounts().isEmpty(), false);
+    QCOMPARE(mAM->disabledAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->disabledAccountsSet()->accounts().isEmpty(), true);
 }
 
 void TestAccountBasics::cleanup()
