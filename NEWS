@@ -3,6 +3,14 @@ telepathy-qt4 0.3.7 (UNRELEASED)
 
 ...
 
+Enhancements:
+* fd.o#28927 - Generate code for Channel.Interface.{Anonymity,ServicePoint} (wjt)
+* fd.o#28942 - Refresh HACKING and README (wjt)
+
+Fixes:
+* fd.o#28945 - AccountManager::accountsByProtocol() returns an empty set
+* fd.o#28946 - AccountSet should indicate whether the filter used is valid
+
 telepathy-qt4 0.3.6 (2010-07-01)
 ================================
 
