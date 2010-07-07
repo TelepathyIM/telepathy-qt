@@ -41,6 +41,7 @@ class TELEPATHY_QT4_EXPORT AccountSet : public QObject,
     Q_OBJECT
     Q_DISABLE_COPY(AccountSet)
     Q_PROPERTY(AccountManagerPtr accountManager READ accountManager)
+    Q_PROPERTY(bool filterValid READ isFilterValid)
     Q_PROPERTY(QVariantMap filter READ filter)
     Q_PROPERTY(QList<AccountPtr> accounts READ accounts)
 
