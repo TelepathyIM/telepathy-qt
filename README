@@ -4,19 +4,20 @@ telepathy-qt4
 
 This is a library for Qt-based Telepathy clients.
 
-THIS LIBRARY IS NOT YET STABLE. THERE ARE NO ABI OR API GUARANTEES.
-Use it at your own risk! Version 0.2 will start the first stable branch.
-
 Telepathy is a D-Bus framework for unifying real time communication,
 including instant messaging, voice calls and video calls. It abstracts
 differences between protocols to provide a unified interface for
-applications.
+applications. See the Telepathy website for more information:
+
+  http://telepathy.freedesktop.org/
 
 Telepathy specification
 =======================
 
 The copy of the Telepathy specification in the spec/ directory indicates
-the specification that this library claims to implement.
+the specification that this library claims to implement. The HTML documentation for the latest version of the specification can be viewed at:
+
+  http://telepathy.freedesktop.org/spec/
 
 Requirements
 ============
@@ -47,7 +48,7 @@ Bugs, feature requests and to-do list
 =====================================
 
 Report all bugs, feature requests and "to-do" items here:
-  <https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=telepathy-qt4>
+  <https://bugs.freedesktop.org/enter_bug.cgi?product=Telepathy&component=tp-qt4>
 
 Running "make check" will produce FIXME.out, which lists all the mentions of
 FIXME, TODO or XXX in the source code. Ideally, all of these should be in
@@ -55,8 +56,6 @@ Bugzilla, but sometimes they're not.
 
 API stability policy
 ====================
-
-Telepathy-Qt4 is NOT STABLE YET. The following will apply to versions >= 0.2:
 
 We use an "odd/even" versioning scheme where the minor version (the y in
 x.y.z) determines stability - stable branches have y even, development
@@ -95,15 +94,4 @@ Telepathy development is supported by Collabora Ltd.
 Hacking
 =======
 
-The current development version of telepathy-qt4 is available from the
-'master' branch in the git repository:
-  <git://git.collabora.co.uk/git/telepathy-qt4.git>
-  <git+ssh://git.collabora.co.uk/git/telepathy-qt4.git> (for committers)
-  <http://git.collabora.co.uk/?p=telepathy-qt4.git> (gitweb)
-
-Stable branches are available from branches with names like
-'telepathy-qt4-0.2' in the same repository.
-
-Please follow <http://techbase.kde.org/Policies/Kdelibs_Coding_Style> in
-C++ code, and <http://telepathy.freedesktop.org/wiki/Style> in Python or C code
-(e.g. the regression tests and code generation).
+See HACKING for version control, coding style and patch submission information.
