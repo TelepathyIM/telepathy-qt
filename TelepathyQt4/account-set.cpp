@@ -33,6 +33,8 @@
 namespace Tp
 {
 
+QStringList AccountSet::Private::supportedAccountProperties;
+
 AccountSet::Private::Private(AccountSet *parent,
         const AccountManagerPtr &accountManager,
         const QVariantMap &filter)
@@ -41,6 +43,34 @@ AccountSet::Private::Private(AccountSet *parent,
       filter(filter),
       ready(false)
 {
+    /* initialize supportedAccountProperties */
+    if (supportedAccountProperties.isEmpty()) {
+        const QMetaObject metaObject = Account::staticMetaObject;
+        for (int i = metaObject.propertyOffset(); i < metaObject.propertyCount(); ++i) {
+            supportedAccountProperties << QLatin1String(metaObject.property(i).name());
+        }
+    }
+
+    /* check if filter is valid */
+    QVariantMap::const_iterator i = filter.constBegin();
+    QVariantMap::const_iterator end = filter.constEnd();
+    while (i != end) {
+        QString propertyName = i.key();
+
+        if (!supportedAccountProperties.contains(propertyName)) {
+            warning() << "Trying to filter accounts by" << propertyName <<
+                "which is not a valid Account property";
+            /* no need to check further or connect to signals as no account will
+             * match filter */
+            filterValid = false;
+            return;
+        }
+
+        ++i;
+    }
+
+    filterValid = true;
+
     parent->connect(accountManager.data(),
             SIGNAL(newAccount(const Tp::AccountPtr &)),
             SLOT(onNewAccount(const Tp::AccountPtr &)));
@@ -162,6 +192,19 @@ AccountSet::AccountSet(const AccountManagerPtr &accountManager,
 
 AccountSet::~AccountSet()
 {
+}
+
+/**
+ * Return whether the filter returned by filter() is valid.
+ *
+ * If the filter is invalid accounts() will always return an empty list.
+ *
+ * \return \c true if the filter returned by filter() is valid, otherwise \c
+ *         false.
+ */
+bool AccountSet::isFilterValid() const
+{
+    return mPriv->filterValid;
 }
 
 AccountManagerPtr AccountSet::accountManager() const

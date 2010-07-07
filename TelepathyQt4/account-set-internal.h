@@ -40,7 +40,10 @@ struct AccountSet::Private
     QVariantMap filter;
     QHash<QString, AccountWrapper *> wrappers;
     QHash<QString, AccountPtr> accounts;
+    bool filterValid;
     bool ready;
+
+    static QStringList supportedAccountProperties;
 };
 
 class TELEPATHY_QT4_NO_EXPORT AccountSet::Private::AccountWrapper : public QObject
