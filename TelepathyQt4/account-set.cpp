@@ -316,6 +316,16 @@ AccountSet::~AccountSet()
 }
 
 /**
+ * Return the account manager object used to filter accounts.
+ *
+ * \return The AccountManager object used to filter accounts.
+ */
+AccountManagerPtr AccountSet::accountManager() const
+{
+    return mPriv->accountManager;
+}
+
+/**
  * Return whether the filter returned by filter() is valid.
  *
  * If the filter is invalid accounts() will always return an empty list.
@@ -326,16 +336,6 @@ AccountSet::~AccountSet()
 bool AccountSet::isFilterValid() const
 {
     return mPriv->filterValid;
-}
-
-/**
- * Return the account manager object used to filter accounts.
- *
- * \return The AccountManager object used to filter accounts.
- */
-AccountManagerPtr AccountSet::accountManager() const
-{
-    return mPriv->accountManager;
 }
 
 /**
