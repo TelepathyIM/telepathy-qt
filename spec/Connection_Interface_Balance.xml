@@ -35,41 +35,45 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>An amount of money in a specified currency. For example,
           3.21 British pounds would conventionally be represented by
-          (Amount = 321, Scale = 2, Currency = "GBP"), but could be
-          represented by (Amount = 3210, Scale = 3, Currency = "GBP")
-          in a service that records balance in units of 0.001 pounds.</p>
+          (<var>Amount</var> = <tt>321</tt>, <var>Scale</var> = <tt>2</tt>,
+          <var>Currency</var> = <tt>"GBP"</tt>), but could be represented by
+          (<var>Amount</var> = <tt>3210</tt>, <var>Scale</var> = <tt>3</tt>,
+          <var>Currency</var> = <tt>"GBP"</tt>) in a service that records
+          balance in units of 0.001 pounds.</p>
 
-        <p>As a special case, if Amount = 0, Scale = 2**32 - 1 (i.e.
-          the largest possible 32-bit unsigned integer) and Currency = "",
-          this indicates an unknown amount.</p>
+        <p>As a special case, if <var>Amount</var> = <tt>0</tt>,
+          <var>Scale</var> = <tt>2**32 - 1</tt> (i.e.  the largest possible
+          32-bit unsigned integer) and <var>Currency</var> = <tt>""</tt>, this
+          indicates an unknown amount.</p>
       </tp:docstring>
 
       <tp:member type="i" name="Amount">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>The amount, expressed as a fixed-point number with decimal scale
-            defined by the Scale property; for instance, an Amount value of
-            1234 with Scale of 2 represents 12.34 in the currency unit given
-            by the Currency.</p>
+            defined by the <var>Scale</var> field; for instance, an
+            <var>Amount</var> value of <tt>1234</tt> with <var>Scale</var> of
+            <tt>2</tt> represents 12.34 in the currency unit given by the
+            <var>Currency</var> field.</p>
         </tp:docstring>
       </tp:member>
       <tp:member type="u" name="Scale">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>The decimal scale for the fixed point value of the Amount
-            property, defining the number of rightmost decimal digits from
-            the integer value which form the fractional part of the resulting
-            currency value.</p>
+          <p>The decimal scale for the fixed point value of the
+            <var>Amount</var> field, defining the number of rightmost decimal
+            digits from the integer value which form the fractional part of the
+            resulting currency value.</p>
 
-          <p>As well as defining the interpretation of Amount, user interfaces
-            may use this value to determine the precision with which to display
-            the amount.</p>
+          <p>As well as defining the interpretation of <var>Amount</var>, user
+            interfaces may use this value to determine the precision with which
+            to display the amount.</p>
         </tp:docstring>
       </tp:member>
       <tp:member type="s" name="Currency">
         <tp:docstring>
           The currency code represented by this amount, which SHOULD be an
-          international currency code such as "EUR", "USD", or "JPY" if
-          possible. An empty string can be used to indicate that the currency
-          is not known.
+          international currency code such as <tt>"EUR"</tt>, <tt>"USD"</tt>,
+          or <tt>"JPY"</tt> if possible. An empty string can be used to
+          indicate that the currency is not known.
         </tp:docstring>
       </tp:member>
     </tp:struct>
@@ -77,13 +81,15 @@
     <property name="AccountBalance" tp:name-for-bindings="Account_Balance"
       access="read" type="(ius)" tp:type="Currency_Amount">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>The user's balance on the account corresponding to this Connection.
+        <p>The user's balance on the account corresponding to this <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy">Connection</tp:dbus-ref>.
           A negative amount may be possible on some services, and indicates
           that the user owes money to the service provider.</p>
 
         <p>On initial connection, this property may have an unknown
-          value, represented by Amount = 0, Scale = 2**32 - 1 (the largest
-          possible 32-bit unsigned integer) and Currency = "".</p>
+          value, represented by <var>Amount</var> = <tt>0</tt>,
+          <var>Scale</var> = <tt>2**32 - 1</tt> (the largest possible 32-bit
+          unsigned integer) and <var>Currency</var> = <tt>""</tt>.</p>
       </tp:docstring>
     </property>
 

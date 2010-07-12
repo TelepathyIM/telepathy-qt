@@ -626,8 +626,9 @@ USA.</p>
             <dt>content-type (s)</dt>
             <dd>
               <p>The MIME type of this part. See the documentation
-                for ReceivedMessage for notes on the special status of
-                "text/plain" parts.</p>
+                for <tp:member-ref>MessageReceived</tp:member-ref> and
+                <tp:member-ref>MessageSent</tp:member-ref> for notes on the
+                special status of "text/plain" parts.</p>
 
               <p>Connection managers MUST NOT signal parts without a
                 'content-type' key; if a protocol provides no way to determine
@@ -942,7 +943,11 @@ USA.</p>
       <arg direction="in" name="Flags" type="u"
         tp:type="Message_Sending_Flags">
         <tp:docstring>
-          Flags affecting how the message is sent.
+          Flags affecting how the message is sent. The channel MAY ignore some
+          or all flags, depending on
+          <tp:member-ref>DeliveryReportingSupport</tp:member-ref>; the flags
+          that were handled by the CM are provided in
+          <tp:member-ref>MessageSent</tp:member-ref>.
         </tp:docstring>
       </arg>
 
@@ -971,7 +976,9 @@ USA.</p>
       type="u">
       <tp:docstring>
         Flags altering the way a message is sent. The "most usual" action
-        should always be to have these flags unset.
+        should always be to have these flags unset. Some indication of which
+        flags are supported is provided by the
+        <tp:member-ref>DeliveryReportingSupport</tp:member-ref> property.
       </tp:docstring>
 
       <tp:flag suffix="Report_Delivery" value="1">
@@ -989,6 +996,24 @@ USA.</p>
             is present, the connection manager MAY also try harder to obtain
             failed delivery reports or allow them to be matched to outgoing
             messages.</p>
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Report_Read" value="2">
+        <tp:added version="0.19.9"/>
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Provide a delivery report when the message is read by the
+            recipient, even if this is not the default for this protocol.
+            Ignored if read reports are not possible on this protocol.</p>
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Report_Deleted" value="4">
+        <tp:added version="0.19.9"/>
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Provide a delivery report when the message is deleted by the
+            recipient, even if this is not the default for this protocol.
+            Ignored if such reports are not possible on this protocol.</p>
         </tp:docstring>
       </tp:flag>
     </tp:flags>
@@ -1151,7 +1176,12 @@ USA.</p>
 
       <arg type="aa{sv}" tp:type="Message_Part[]" name="Message">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          The message content, including any attachments or alternatives
+          <p>The message content, including any attachments or alternatives. If
+            the incoming message contains formatted text without a plain text
+            alternative, the connection manager MUST generate a
+            <tt>text/plain</tt> alternative from the formatted text, and
+            include it in this message (both here, and in the
+            <tp:member-ref>PendingMessages</tp:member-ref> property).</p>
         </tp:docstring>
       </arg>
     </signal>
@@ -1224,28 +1254,49 @@ USA.</p>
           </tp:rationale>
         </tp:docstring>
       </tp:enumvalue>
+
+      <tp:enumvalue suffix="Read" value="5">
+        <tp:added version="0.19.9"/>
+        <tp:docstring>
+          The message has been read by the intended recipient.
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Deleted" value="6">
+        <tp:added version="0.19.9"/>
+        <tp:docstring>
+          The message has been deleted by the intended recipient. This MAY be
+          signalled on its own if the message is deleted without being read, or
+          after <code>Read</code> if the message was read before being deleted.
+        </tp:docstring>
+      </tp:enumvalue>
     </tp:enum>
 
     <tp:flags name="Delivery_Reporting_Support_Flags"
       value-prefix="Delivery_Reporting_Support_Flag" type="u">
       <tp:docstring>
         Flags indicating the level of support for delivery reporting on this
-        channel. Any future flags added to this set will conform to the
+        channel, as found on the
+        <tp:member-ref>DeliveryReportingSupport</tp:member-ref> property. Any
+        future flags added to this set will conform to the
         convention that the presence of an extra flag implies that
-        more operations will succeed.
+        more operations will succeed. Note that CMs may always provide more
+        reports than are requested in the
+        <tp:type>Message_Sending_Flags</tp:type> passed to
+        <tp:member-ref>SendMessage</tp:member-ref>.
+
+        <tp:rationale>
+          If senders want delivery reports, they should ask for them.  If they
+          don't want delivery reports, they can just ignore them, so there's no
+          need to have capability discovery for what will happen if a delivery
+          report isn't requested.
+        </tp:rationale>
       </tp:docstring>
 
       <tp:flag suffix="Receive_Failures" value="1">
         <tp:docstring>
           Clients MAY expect to receive negative delivery reports if
           Message_Sending_Flag_Report_Delivery is specified when sending.
-
-          <tp:rationale>
-            If senders want delivery reports, they should ask for them.
-            If they don't want delivery reports, they can just ignore them,
-            so there's no need to have capability discovery for what will
-            happen if a delivery report isn't requested.
-          </tp:rationale>
         </tp:docstring>
       </tp:flag>
 
@@ -1253,13 +1304,26 @@ USA.</p>
         <tp:docstring>
           Clients MAY expect to receive positive delivery reports if
           Message_Sending_Flag_Report_Delivery is specified when sending.
-
-          <tp:rationale>
-            Same rationale as Receive_Failures.
-          </tp:rationale>
         </tp:docstring>
       </tp:flag>
 
+      <tp:flag suffix="Receive_Read" value="4">
+        <tp:added version="0.19.9"/>
+        <tp:docstring>
+          Clients MAY expect to receive <tp:type>Delivery_Status</tp:type>
+          <code>Read</code> reports if Message_Sending_Flag_Report_Read
+          is specified when sending.
+        </tp:docstring>
+      </tp:flag>
+
+      <tp:flag suffix="Receive_Deleted" value="8">
+        <tp:added version="0.19.9"/>
+        <tp:docstring>
+          Clients MAY expect to receive <tp:type>Delivery_Status</tp:type>
+          <code>Deleted</code> reports if Message_Sending_Flag_Report_Deleted
+          is specified when sending.
+        </tp:docstring>
+      </tp:flag>
     </tp:flags>
 
     <property name="DeliveryReportingSupport" access="read"
