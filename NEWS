@@ -1,11 +1,15 @@
-telepathy-qt4 0.3.7 (UNRELEASED)
+telepathy-qt4 0.3.7 (2010-07-12)
 ================================
 
-...
+The “not as bad as Pepsi Max” release.
 
 Enhancements:
-* fd.o#28927 - Generate code for Channel.Interface.{Anonymity,ServicePoint} (wjt)
+* fd.o#28927 - Generate code for Channel.Interface.{Anonymity,ServicePoint}
+  (wjt)
 * fd.o#28942 - Refresh HACKING and README (wjt)
+* Update to spec version 0.19.9, adding Read and Deleted members to
+  MessageSendingFlagReport, DeliveryReportingSupportFlagReceive, and
+  DeliveryStatus (wjt)
 
 Fixes:
 * fd.o#28945 - AccountManager::accountsByProtocol() returns an empty set
