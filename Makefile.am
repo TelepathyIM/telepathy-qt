@@ -34,7 +34,7 @@ upload-branch-docs: doc/html
 
 maintainer-upload-release: _maintainer-upload-release-local
 _maintainer-upload-release-local: _maintainer-upload-release-check
-	rsync -rtvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ \
+	rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ \
 	telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt4/
 
 include doxygen.am
