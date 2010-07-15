@@ -57,6 +57,10 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     QSet<QString> getAccountPathsFromProps(const QVariantMap &props);
     void addAccountForPath(const QString &accountObjectPath);
 
+    AccountSetPtr filterAccountsByRequestableChannelClasses(
+            const RequestableChannelClassList &rccs,
+            const QVariantMap &additionalFilter) const;
+
     // Public object
     AccountManager *parent;
 
@@ -212,6 +216,23 @@ void AccountManager::Private::addAccountForPath(const QString &path)
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onAccountReady(Tp::PendingOperation *)));
     incompleteAccounts.insert(path, account);
+}
+
+AccountSetPtr AccountManager::Private::filterAccountsByRequestableChannelClasses(
+        const RequestableChannelClassList &rccs,
+        const QVariantMap &additionalFilter) const
+{
+    QVariantMap filter(additionalFilter);
+    if (filter.contains(QLatin1String("rccSubset"))) {
+        RequestableChannelClassList mergedRccs =
+            filter[QLatin1String("rccSubset")].value<RequestableChannelClassList>();
+        mergedRccs.append(rccs);
+        filter.insert(QLatin1String("rccSubset"), qVariantFromValue(mergedRccs));
+    } else {
+        filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    }
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) parent), filter));
 }
 
 /**
@@ -746,15 +767,18 @@ AccountSetPtr AccountManager::offlineAccountsSet() const
 
 /**
  * Return a set of accounts containing all accounts that support text chats by
- * providing a contact identifier.
+ * providing a contact identifier and that match the given \a additionalFilter
+ * criteria.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
  * Account::FeatureProtocolInfo enabled.
  *
+ * \param additionalFilter Additional filter.
  * \return A set of accounts containing all accounts that support text chats by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::supportsTextChatsAccountsSet() const
+AccountSetPtr AccountManager::supportsTextChatsAccountsSet(
+        const QVariantMap &additionalFilter) const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -766,22 +790,22 @@ AccountSetPtr AccountManager::supportsTextChatsAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return mPriv->filterAccountsByRequestableChannelClasses(rccs, additionalFilter);
 }
 
 /**
- * Return a set of accounts containing all accounts that support text chat
- * rooms.
+ * Return a set of accounts containing all accounts that support text chats by
+ * providing a contact identifier and that match the given \a additionalFilter
+ * criteria.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
  * Account::FeatureProtocolInfo enabled.
  *
+ * \param additionalFilter Additional filter.
  * \return A set of accounts containing all accounts that support text chat rooms.
  */
-AccountSetPtr AccountManager::supportsTextChatroomsAccountsSet() const
+AccountSetPtr AccountManager::supportsTextChatroomsAccountsSet(
+        const QVariantMap &additionalFilter) const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -793,23 +817,23 @@ AccountSetPtr AccountManager::supportsTextChatroomsAccountsSet() const
             (uint) HandleTypeRoom);
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return mPriv->filterAccountsByRequestableChannelClasses(rccs, additionalFilter);
 }
 
 /**
- * Return a set of accounts containing all accounts that support media calls by
- * providing a contact identifier.
+ * Return a set of accounts containing all accounts that support text chats by
+ * providing a contact identifier and that match the given \a additionalFilter
+ * criteria.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
  * Account::FeatureProtocolInfo enabled.
  *
+ * \param additionalFilter Additional filter.
  * \return A set of accounts containing all accounts that support media calls by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::supportsMediaCallsAccountsSet() const
+AccountSetPtr AccountManager::supportsMediaCallsAccountsSet(
+        const QVariantMap &additionalFilter) const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -821,23 +845,23 @@ AccountSetPtr AccountManager::supportsMediaCallsAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return mPriv->filterAccountsByRequestableChannelClasses(rccs, additionalFilter);
 }
 
 /**
- * Return a set of accounts containing all accounts that support audio calls by
- * providing a contact identifier.
+ * Return a set of accounts containing all accounts that support text chats by
+ * providing a contact identifier and that match the given \a additionalFilter
+ * criteria.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
  * Account::FeatureProtocolInfo enabled.
  *
+ * \param additionalFilter Additional filter.
  * \return A set of accounts containing all accounts that support audio calls by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::supportsAudioCallsAccountsSet() const
+AccountSetPtr AccountManager::supportsAudioCallsAccountsSet(
+        const QVariantMap &additionalFilter) const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -851,23 +875,25 @@ AccountSetPtr AccountManager::supportsAudioCallsAccountsSet() const
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return mPriv->filterAccountsByRequestableChannelClasses(rccs, additionalFilter);
 }
 
 /**
- * Return a set of accounts containing all accounts that support video calls by
- * providing a contact identifier.
+ * Return a set of accounts containing all accounts that support text chats by
+ * providing a contact identifier and that match the given \a additionalFilter
+ * criteria.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
  * Account::FeatureProtocolInfo enabled.
  *
+ * \param additionalFilter Additional filter.
+ * \param withAudio true if both audio and video are required, false for a
+ *                  video-only call.
  * \return A set of accounts containing all accounts that support video calls by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::supportsVideoCallsAccountsSet(bool withAudio) const
+AccountSetPtr AccountManager::supportsVideoCallsAccountsSet(bool withAudio,
+        const QVariantMap &additionalFilter) const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -884,23 +910,23 @@ AccountSetPtr AccountManager::supportsVideoCallsAccountsSet(bool withAudio) cons
     }
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return mPriv->filterAccountsByRequestableChannelClasses(rccs, additionalFilter);
 }
 
 /**
- * Return a set of accounts containing all accounts that support file transfers by
- * providing a contact identifier.
+ * Return a set of accounts containing all accounts that support text chats by
+ * providing a contact identifier and that match the given \a additionalFilter
+ * criteria.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
  * Account::FeatureProtocolInfo enabled.
  *
+ * \param additionalFilter Additional filter.
  * \return A set of accounts containing all accounts that support file transfers by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::supportsFileTransfersAccountsSet() const
+AccountSetPtr AccountManager::supportsFileTransfersAccountsSet(
+        const QVariantMap &additionalFilter) const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -912,10 +938,7 @@ AccountSetPtr AccountManager::supportsFileTransfersAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    return mPriv->filterAccountsByRequestableChannelClasses(rccs, additionalFilter);
 }
 
 /**
