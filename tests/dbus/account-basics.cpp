@@ -327,6 +327,23 @@ void TestAccountBasics::testBasics()
     AccountSetPtr spuriousAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
     QCOMPARE(spuriousAccountSet->isFilterValid(), true);
 
+    filteredAccountSet = mAM->supportsTextChatsAccountsSet();
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
+
+    QCOMPARE(mAM->supportsTextChatroomsAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->supportsTextChatroomsAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->supportsMediaCallsAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->supportsMediaCallsAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->supportsAudioCallsAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->supportsAudioCallsAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->supportsVideoCallsAccountsSet(false)->isFilterValid(), true);
+    QCOMPARE(mAM->supportsVideoCallsAccountsSet(false)->accounts().isEmpty(), true);
+    QCOMPARE(mAM->supportsVideoCallsAccountsSet(true)->isFilterValid(), true);
+    QCOMPARE(mAM->supportsVideoCallsAccountsSet(true)->accounts().isEmpty(), true);
+    QCOMPARE(mAM->supportsFileTransfersAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->supportsFileTransfersAccountsSet()->accounts().isEmpty(), true);
+
     /* match fixedProperties is complete and allowedProperties is a subset of
      * the allowed properties */
     filter.clear();
