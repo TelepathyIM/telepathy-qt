@@ -570,9 +570,38 @@ AccountSetPtr AccountManager::accountsByProtocol(
  *
  * The \a filter is composed by Account property names and values as map items.
  *
+ * The following example will return all jabber accounts that are enabled:
+ *
+ * \code
+ *
+ * void MyClass::init()
+ * {
+ *     am = AccountManager::create();
+ *     connect(am->becomeReady(),
+ *             SIGNAL(finished(Tp::PendingOperation*)),
+ *             SLOT(onAccountManagerReady(Tp::PendingOperation*)));
+ * }
+ *
+ * void MyClass::onAccountManagerReady(Tp::PendingOperation *op)
+ * {
+ *     if (op->isError()) {
+ *         qWarning() << "Account manager cannot become ready:" <<
+ *             op->errorName() << "-" << op->errorMessage();
+ *         return;
+ *     }
+ *
  *     QVariantMap filter;
- *     filter.insert(QLatin1String("protocol"), QLatin1String("jabber"));
+ *     filter.insert(QLatin1String("protocolName"), QLatin1String("jabber"));
  *     filter.insert(QLatin1String("enabled"), true);
+ *     filteredAccountSet = am->filterAccounts(filter);
+ *     // connect to AccountSet::accountAdded/accountRemoved signals
+ *     QList<AccountPtr> accounts = filteredAccountSet->accounts();
+ *     // do something with accounts
+ * }
+ *
+ * \endcode
+ *
+ * See AccountSet documentation for more details.
  *
  * \param filter The desired filter
  * \return A set of accounts containing all accounts that match the given \a
