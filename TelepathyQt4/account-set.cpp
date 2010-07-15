@@ -459,6 +459,9 @@ bool AccountSet::isFilterValid() const
  *
  * The filter is composed by Account property names and values as map items.
  *
+ * Additional filter map items allowed are:
+ *   key name: rccSubset - key value: Tp::RequestableChannelClassList
+ *
  * \return A QVariantMap representing the filter used to filter accounts.
  * \sa isFilterValid()
  */
