@@ -6,6 +6,13 @@ param-password=s required register secret
 param-register=b
 default-register=true
 
+RequestableChannelClasses=text
+
+[text]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
+org.freedesktop.Telepathy.Channel.TargetHandleType u=1
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+
 [Protocol weird]
 param-com.example.Bork.Bork.Bork=u dbus-property
 default-com.example.Bork.Bork.Bork=42
