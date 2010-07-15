@@ -592,7 +592,8 @@ QStringList AccountManager::allAccountPaths() const
 /**
  * Return a list of AccountPtr objects for all valid accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A list of AccountPtr objects.
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
@@ -611,7 +612,8 @@ QList<AccountPtr> AccountManager::validAccounts()
 /**
  * Return a list of AccountPtr objects for all invalid accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), allAccounts(), accountsForPaths()
@@ -630,7 +632,8 @@ QList<AccountPtr> AccountManager::invalidAccounts()
 /**
  * Return a list of AccountPtr objects for all accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
@@ -648,7 +651,8 @@ QList<AccountPtr> AccountManager::allAccounts()
 /**
  * Return a set of accounts containing all valid accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A set of accounts containing all valid accounts.
  */
@@ -663,7 +667,8 @@ AccountSetPtr AccountManager::validAccountsSet() const
 /**
  * Return a set of accounts containing all invalid accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A set of accounts containing all invalid accounts.
  */
@@ -678,7 +683,8 @@ AccountSetPtr AccountManager::invalidAccountsSet() const
 /**
  * Return a set of accounts containing all enabled accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A set of accounts containing all enabled accounts.
  */
@@ -693,7 +699,8 @@ AccountSetPtr AccountManager::enabledAccountsSet() const
 /**
  * Return a set of accounts containing all disabled accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A set of accounts containing all disabled accounts.
  */
@@ -708,7 +715,8 @@ AccountSetPtr AccountManager::disabledAccountsSet() const
 /**
  * Return a set of accounts containing all online accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A set of accounts containing all online accounts.
  */
@@ -723,7 +731,8 @@ AccountSetPtr AccountManager::onlineAccountsSet() const
 /**
  * Return a set of accounts containing all offline accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \return A set of accounts containing all offline accounts.
  */
@@ -739,7 +748,8 @@ AccountSetPtr AccountManager::offlineAccountsSet() const
  * Return a set of accounts containing all accounts for the given \a
  * protocolName.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \param protocolName The name of the protocol used to filter accounts.
  * \return A set of accounts containing all accounts for the given \a
@@ -793,6 +803,9 @@ AccountSetPtr AccountManager::accountsByProtocol(
  *
  * See AccountSet documentation for more details.
  *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
+ *
  * \param filter The desired filter
  * \return A set of accounts containing all accounts that match the given \a
  *         filter criteria.
@@ -806,7 +819,8 @@ AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
 /**
  * Return an AccountPtr object for the given \a path.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \param path The account object path.
  * \return An AccountPtr object pointing to the Account object for the given
@@ -829,8 +843,8 @@ AccountPtr AccountManager::accountForPath(const QString &path)
  * a given path is invalid the returned AccountPtr object will point to 0.
  * AccountPtr::isNull() will return true.
  *
- * Note that the returned accounts already have the Account::FeatureCore
- * enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
  *
  * \param paths List of accounts object paths.
  * \return A list of AccountPtr objects.
