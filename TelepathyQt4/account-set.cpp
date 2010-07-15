@@ -66,8 +66,6 @@ AccountSet::Private::Private(AccountSet *parent,
                 filterValid = false;
                 return;
             }
-
-            continue;
         } else if (!supportedAccountProperties.contains(filterKey)) {
             warning() << "Trying to filter accounts by" << filterKey <<
                 "which is not a valid Account property";
