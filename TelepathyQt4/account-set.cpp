@@ -275,7 +275,6 @@ void AccountSet::Private::AccountWrapper::onAccountPropertyChanged(
  *     ...
  *
  *     QVariantMap filter;
- *     filter.insert(QLatin1String("protocol"), QLatin1String("jabber"));
  *     filter.insert(QLatin1String("protocolName"), QLatin1String("jabber"));
  *     filter.insert(QLatin1String("enabled"), true);
  *
