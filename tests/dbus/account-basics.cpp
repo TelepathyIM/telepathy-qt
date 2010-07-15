@@ -320,6 +320,115 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mAM->enabledAccountsSet()->accounts().isEmpty(), false);
     QCOMPARE(mAM->disabledAccountsSet()->isFilterValid(), true);
     QCOMPARE(mAM->disabledAccountsSet()->accounts().isEmpty(), true);
+
+    filter.clear();
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    AccountSetPtr spuriousAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(spuriousAccountSet->isFilterValid(), true);
+
+    /* match fixedProperties is complete and allowedProperties is a subset of
+     * the allowed properties */
+    filter.clear();
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rccs.append(rcc);
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
+
+    /* match fixedProperties and allowedProperties is complete */
+    filter.clear();
+    rccs.clear();
+    rcc.fixedProperties.clear();
+    rcc.allowedProperties.clear();
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"));
+    rccs.append(rcc);
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
+
+    /* should not match as fixedProperties lack TargetHandleType */
+    filter.clear();
+    rccs.clear();
+    rcc.fixedProperties.clear();
+    rcc.allowedProperties.clear();
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rccs.append(rcc);
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
+
+    /* should not match as fixedProperties has more than expected */
+    filter.clear();
+    rccs.clear();
+    rcc.fixedProperties.clear();
+    rcc.allowedProperties.clear();
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rccs.append(rcc);
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
+
+    /* should not match as allowedProperties has TargetFoo that is not allowed */
+    filter.clear();
+    rccs.clear();
+    rcc.fixedProperties.clear();
+    rcc.allowedProperties.clear();
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetFoo"));
+    rccs.append(rcc);
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 }
 
 void TestAccountBasics::cleanup()
