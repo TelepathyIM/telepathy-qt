@@ -745,6 +745,180 @@ AccountSetPtr AccountManager::offlineAccountsSet() const
 }
 
 /**
+ * Return a set of accounts containing all accounts that support text chats by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
+ *
+ * \return A set of accounts containing all accounts that support text chats by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::supportsTextChatsAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rccs.append(rcc);
+
+    QVariantMap filter;
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts that support text chat
+ * rooms.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
+ *
+ * \return A set of accounts containing all accounts that support text chat rooms.
+ */
+AccountSetPtr AccountManager::supportsTextChatroomsAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeRoom);
+    rccs.append(rcc);
+
+    QVariantMap filter;
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts that support media calls by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
+ *
+ * \return A set of accounts containing all accounts that support media calls by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::supportsMediaCallsAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rccs.append(rcc);
+
+    QVariantMap filter;
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts that support audio calls by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
+ *
+ * \return A set of accounts containing all accounts that support audio calls by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::supportsAudioCallsAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+    rccs.append(rcc);
+
+    QVariantMap filter;
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts that support video calls by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
+ *
+ * \return A set of accounts containing all accounts that support video calls by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::supportsVideoCallsAccountsSet(bool withAudio) const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"));
+    if (withAudio) {
+        rcc.allowedProperties.append(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+    }
+    rccs.append(rcc);
+
+    QVariantMap filter;
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts that support file transfers by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * Account::FeatureProtocolInfo enabled.
+ *
+ * \return A set of accounts containing all accounts that support file transfers by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::supportsFileTransfersAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rccs.append(rcc);
+
+    QVariantMap filter;
+    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filter));
+}
+
+/**
  * Return a set of accounts containing all accounts for the given \a
  * protocolName.
  *
