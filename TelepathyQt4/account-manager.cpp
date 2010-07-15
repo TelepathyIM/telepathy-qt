@@ -967,6 +967,9 @@ AccountSetPtr AccountManager::accountsByProtocol(
  *
  * The \a filter is composed by Account property names and values as map items.
  *
+ * Additional filter map items allowed are:
+ *   key name: rccSubset - key value: Tp::RequestableChannelClassList
+ *
  * The following example will return all jabber accounts that are enabled:
  *
  * \code
