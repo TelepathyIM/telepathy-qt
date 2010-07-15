@@ -3,6 +3,9 @@ telepathy-qt4 0.3.8 (UNRELEASED)
 
 dot dot dot
 
+Fixes:
+- fd.o#28948 - Added docs/tests/missing Qt properties to AccountSet
+
 telepathy-qt4 0.3.7 (2010-07-12)
 ================================
 
