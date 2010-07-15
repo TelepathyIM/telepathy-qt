@@ -331,6 +331,18 @@ void TestAccountBasics::testBasics()
     QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
 
+    filter.clear();
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    filteredAccountSet = mAM->supportsTextChatsAccountsSet(filter);
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
+
+    filter.clear();
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    filteredAccountSet = mAM->supportsTextChatroomsAccountsSet(filter);
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
+
     QCOMPARE(mAM->supportsTextChatroomsAccountsSet()->isFilterValid(), true);
     QCOMPARE(mAM->supportsTextChatroomsAccountsSet()->accounts().isEmpty(), true);
     QCOMPARE(mAM->supportsMediaCallsAccountsSet()->isFilterValid(), true);
