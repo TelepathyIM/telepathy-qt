@@ -22,6 +22,8 @@
 namespace Tp
 {
 
+class ConnectionCapabilities;
+
 struct AccountSet::Private
 {
     class AccountWrapper;
@@ -33,7 +35,7 @@ struct AccountSet::Private
     void removeAccount(const AccountPtr &account);
     void wrapAccount(const AccountPtr &account);
     void filterAccount(const AccountPtr &account);
-    bool accountMatchFilter(const AccountPtr &account, const QVariantMap &filter);
+    bool accountMatchFilter(AccountWrapper *account, const QVariantMap &filter);
 
     AccountSet *parent;
     AccountManagerPtr accountManager;
@@ -54,19 +56,25 @@ public:
     AccountWrapper(const AccountPtr &account, QObject *parent = 0);
     ~AccountWrapper();
 
-    AccountPtr account() { return mAccount; }
+    AccountPtr account() const { return mAccount; }
+
+    ConnectionCapabilities *capabilities() const;
 
 Q_SIGNALS:
     void accountRemoved(const Tp::AccountPtr &account);
     void accountPropertyChanged(const Tp::AccountPtr &account,
             const QString &propertyName);
+    void accountCapabilitiesChanged(const Tp::AccountPtr &account);
 
 private Q_SLOTS:
     void onAccountRemoved();
     void onAccountPropertyChanged(const QString &propertyName);
+    void onAccountHaveConnectionChanged(bool);
+    void checkCapabilitiesChanged();
 
 private:
     AccountPtr mAccount;
+    bool mUsingConnectionCaps;
 };
 
 } // Tp

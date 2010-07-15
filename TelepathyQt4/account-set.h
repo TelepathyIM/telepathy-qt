@@ -65,8 +65,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onNewAccount(const Tp::AccountPtr &account);
     void onAccountRemoved(const Tp::AccountPtr &account);
-    void onAccountPropertyChanged(const Tp::AccountPtr &account,
-            const QString &propertyName);
+    void onAccountChanged(const Tp::AccountPtr &account);
 
 private:
     struct Private;

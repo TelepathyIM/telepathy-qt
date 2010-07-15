@@ -29,6 +29,8 @@
 
 #include <TelepathyQt4/Account>
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/ConnectionManager>
 
 namespace Tp
 {
@@ -53,10 +55,21 @@ AccountSet::Private::Private(AccountSet *parent,
 
     /* check if filter is valid */
     for (QVariantMap::const_iterator i = filter.constBegin(); i != filter.constEnd(); ++i) {
-        QString propertyName = i.key();
+        QString filterKey = i.key();
 
-        if (!supportedAccountProperties.contains(propertyName)) {
-            warning() << "Trying to filter accounts by" << propertyName <<
+        if (filterKey == QLatin1String("rccSubset")) {
+            if (!i.value().canConvert<RequestableChannelClassList>()) {
+                warning() << "Trying to filter accounts by RCC, but value for "
+                    "key 'rccSubset' is not a RequestableChannelClassList";
+                /* no need to check further or connect to signals as no account
+                 * will match filter */
+                filterValid = false;
+                return;
+            }
+
+            continue;
+        } else if (!supportedAccountProperties.contains(filterKey)) {
+            warning() << "Trying to filter accounts by" << filterKey <<
                 "which is not a valid Account property";
             /* no need to check further or connect to signals as no account will
              * match filter */
@@ -103,14 +116,21 @@ void AccountSet::Private::wrapAccount(const AccountPtr &account)
             SLOT(onAccountRemoved(const Tp::AccountPtr &)));
     parent->connect(wrapper,
             SIGNAL(accountPropertyChanged(const Tp::AccountPtr &, const QString &)),
-            SLOT(onAccountPropertyChanged(const Tp::AccountPtr &, const QString &)));
+            SLOT(onAccountChanged(const Tp::AccountPtr &)));
+    parent->connect(wrapper,
+            SIGNAL(accountCapabilitiesChanged(const Tp::AccountPtr &)),
+            SLOT(onAccountChanged(const Tp::AccountPtr &)));
     wrappers.insert(account->objectPath(), wrapper);
 }
 
 void AccountSet::Private::filterAccount(const AccountPtr &account)
 {
+    QString accountPath = account->objectPath();
+    Q_ASSERT(wrappers.contains(accountPath));
+    AccountWrapper *wrapper = wrappers[accountPath];
+
     /* account changed, let's check if it matches filter */
-    if (accountMatchFilter(account, filter)) {
+    if (accountMatchFilter(wrapper, filter)) {
         if (!accounts.contains(account->objectPath())) {
             accounts.insert(account->objectPath(), account);
             if (ready) {
@@ -127,20 +147,69 @@ void AccountSet::Private::filterAccount(const AccountPtr &account)
     }
 }
 
-bool AccountSet::Private::accountMatchFilter(const AccountPtr &account,
+bool AccountSet::Private::accountMatchFilter(AccountWrapper *wrapper,
         const QVariantMap &filter)
 {
     if (filter.isEmpty()) {
         return true;
     }
 
+    AccountPtr account = wrapper->account();
     bool match = true;
     for (QVariantMap::const_iterator i = filter.constBegin(); i != filter.constEnd(); ++i) {
-        QString propertyName = i.key();
-        QVariant propertyValue = i.value();
+        QString filterKey = i.key();
+        QVariant filterValue = i.value();
 
-        if (account->property(propertyName.toLatin1().constData()) != propertyValue) {
-            match = false;
+        if (filterKey == QLatin1String("rccSubset")) {
+            RequestableChannelClassList filterRccs =
+                filterValue.value<RequestableChannelClassList>();
+            RequestableChannelClassList accountRccs =
+                wrapper->capabilities() ?
+                    wrapper->capabilities()->requestableChannelClasses() :
+                    RequestableChannelClassList();
+            bool supportedRcc;
+
+            foreach (const RequestableChannelClass &filterRcc, filterRccs) {
+                supportedRcc = false;
+
+                foreach (const RequestableChannelClass &accountRcc, accountRccs) {
+                    /* check if fixed properties match */
+                    if (filterRcc.fixedProperties == accountRcc.fixedProperties) {
+                        supportedRcc = true;
+
+                        /* check if all allowed properties in the filter RCC
+                         * are in the account RCC allowed properties */
+                        foreach (const QString &value, filterRcc.allowedProperties) {
+                            if (!accountRcc.allowedProperties.contains(value)) {
+                                /* one of the properties in the filter RCC
+                                 * allowed properties is not in the account RCC
+                                 * allowed properties */
+                                supportedRcc = false;
+                                break;
+                            }
+                        }
+
+                        /* this RCC is supported, no need to check anymore */
+                        if (supportedRcc) {
+                            break;
+                        }
+                    }
+                }
+
+                /* one of the filter RCC is not supported, this account
+                 * won't match filter */
+                if (!supportedRcc) {
+                    match = false;
+                    break;
+                }
+            }
+        } else {
+           if (account->property(filterKey.toLatin1().constData()) != filterValue) {
+               match = false;
+           }
+        }
+
+        if (!match) {
             break;
         }
     }
@@ -151,7 +220,8 @@ bool AccountSet::Private::accountMatchFilter(const AccountPtr &account,
 AccountSet::Private::AccountWrapper::AccountWrapper(
         const AccountPtr &account, QObject *parent)
     : QObject(parent),
-      mAccount(account)
+      mAccount(account),
+      mUsingConnectionCaps(false)
 {
     connect(account.data(),
             SIGNAL(removed()),
@@ -159,10 +229,30 @@ AccountSet::Private::AccountWrapper::AccountWrapper(
     connect(account.data(),
             SIGNAL(propertyChanged(const QString &)),
             SLOT(onAccountPropertyChanged(const QString &)));
+    connect(account.data(),
+            SIGNAL(haveConnectionChanged(bool)),
+            SLOT(onAccountHaveConnectionChanged(bool)));
+
+    checkCapabilitiesChanged();
 }
 
 AccountSet::Private::AccountWrapper::~AccountWrapper()
 {
+}
+
+ConnectionCapabilities *AccountSet::Private::AccountWrapper::capabilities() const
+{
+    if (mAccount->haveConnection() &&
+        mAccount->connection()->status() == Connection::StatusConnected) {
+        return mAccount->connection()->capabilities();
+    } else {
+        if (mAccount->protocolInfo()) {
+            return mAccount->protocolInfo()->capabilities();
+        }
+    }
+    /* either we don't have a connected connection or
+     * Account::FeatureProtocolInfo is not ready */
+    return 0;
 }
 
 void AccountSet::Private::AccountWrapper::onAccountRemoved()
@@ -174,6 +264,42 @@ void AccountSet::Private::AccountWrapper::onAccountPropertyChanged(
         const QString &propertyName)
 {
     emit accountPropertyChanged(mAccount, propertyName);
+}
+
+void AccountSet::Private::AccountWrapper::onAccountHaveConnectionChanged(
+        bool haveConnection)
+{
+    if (haveConnection) {
+        /* check when the connection status changes, so we know if we should use
+         * the connection caps or the CM caps */
+        connect(mAccount->connection().data(),
+                SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
+                SLOT(checkCapabilitiesChanged()));
+    }
+    checkCapabilitiesChanged();
+}
+
+void AccountSet::Private::AccountWrapper::checkCapabilitiesChanged()
+{
+    /* when the capabilities changed:
+     *
+     * - We were using the connection caps and now we don't have connection or
+     *   the connection we have is not connected (changed to CM caps)
+     * - We were using the CM caps and now we have a connected connection
+     *   (changed to new connection caps)
+     */
+
+    if (mUsingConnectionCaps &&
+        (!mAccount->haveConnection() ||
+         mAccount->connection()->status() != Connection::StatusConnected)) {
+        mUsingConnectionCaps = false;
+        emit accountCapabilitiesChanged(mAccount);
+    } else if (!mUsingConnectionCaps &&
+        mAccount->haveConnection() &&
+        mAccount->connection()->status() == Connection::StatusConnected) {
+        mUsingConnectionCaps = true;
+        emit accountCapabilitiesChanged(mAccount);
+    }
 }
 
 /**
@@ -381,8 +507,7 @@ void AccountSet::onAccountRemoved(const AccountPtr &account)
     mPriv->removeAccount(account);
 }
 
-void AccountSet::onAccountPropertyChanged(const AccountPtr &account,
-        const QString &propertyName)
+void AccountSet::onAccountChanged(const AccountPtr &account)
 {
     mPriv->filterAccount(account);
 }
