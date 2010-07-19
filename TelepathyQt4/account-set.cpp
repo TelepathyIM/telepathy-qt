@@ -122,10 +122,11 @@ void AccountSet::Private::filterAccount(const AccountPtr &account)
             }
         }
     } else {
-        /* QHash::remove is no-op if the item is not in the hash */
-        accounts.remove(account->objectPath());
-        if (ready) {
-            emit parent->accountRemoved(account);
+        if (accounts.contains(account->objectPath())) {
+            accounts.remove(account->objectPath());
+            if (ready) {
+                emit parent->accountRemoved(account);
+            }
         }
     }
 }
