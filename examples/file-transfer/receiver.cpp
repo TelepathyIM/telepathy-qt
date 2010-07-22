@@ -105,6 +105,15 @@ void Receiver::onConnectionConnected(PendingOperation *op)
 
     qDebug() << "Connected!";
 
+    QMap<QString, QDBusVariant> filter;
+    filter[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")] =
+        QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
+    filter[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")] =
+        QDBusVariant(uint(1));
+    HandlerCapabilities capabilities;
+    capabilities.channelClasses << Tp::ChannelClass(filter);
+    mConn->contactCapabilitiesInterface()->UpdateCapabilities(HandlerCapabilitiesList() << capabilities);
+
     connect(mConn->requestsInterface(),
             SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
             SLOT(onNewChannels(const Tp::ChannelDetailsList&)));
