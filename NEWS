@@ -6,6 +6,7 @@ dot dot dot
 Fixes:
 - fd.o#28947 - Account::filterAccounts doc does not properly format the example code
 - fd.o#28948 - Added docs/tests/missing Qt properties to AccountSet
+- fd.o#28651 - Cannot receive files using gabble 0.9
 
 telepathy-qt4 0.3.7 (2010-07-12)
 ================================
