@@ -963,10 +963,11 @@ ConnectionPtr Account::connection() const
     if (mPriv->connectionObjectPath.isEmpty()) {
         return ConnectionPtr();
     }
-    QString objectPath = mPriv->connectionObjectPath;
-    QString busName = objectPath.mid(1).replace(
-            QLatin1String("/"), QLatin1String("."));
+
     if (!mPriv->connection) {
+        QString objectPath = mPriv->connectionObjectPath;
+        QString busName = objectPath.mid(1).replace(
+                QLatin1String("/"), QLatin1String("."));
         mPriv->connection = Connection::create(dbusConnection(),
                 busName, objectPath);
     }
