@@ -80,6 +80,16 @@ public:
 
     inline QStringList interfaces() const { return mInterfaces; }
 
+    inline bool hasInterface(const char *name)
+    {
+        return mInterfaces.contains(QLatin1String(name));
+    }
+
+    inline bool hasInterface(const QString &name)
+    {
+        return mInterfaces.contains(name);
+    }
+
     template <class Interface>
     inline Interface *optionalInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
