@@ -2645,7 +2645,11 @@ void Channel::onClosed()
 
 void Channel::onConnectionReady(PendingOperation *op)
 {
-    Q_UNUSED(op);
+    if (op->isError()) {
+        invalidate(op->errorName(), op->errorMessage());
+        return;
+    }
+
     mPriv->introspectMainProperties();
 }
 
