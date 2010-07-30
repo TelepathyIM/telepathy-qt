@@ -230,6 +230,9 @@ void TestConferenceChan::testConference()
         objectPaths << channel->objectPath();
     }
     QCOMPARE(expectedObjectPaths, objectPaths);
+
+    mChan.reset();
+    mChannelMerged.reset();
 }
 
 void TestConferenceChan::cleanup()
