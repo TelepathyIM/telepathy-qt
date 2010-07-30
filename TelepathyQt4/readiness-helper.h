@@ -83,6 +83,7 @@ public:
 
     uint currentStatus() const;
     void setCurrentStatus(uint currentStatus);
+    void forceCurrentStatus(uint currentStatus);
 
     QStringList interfaces() const;
     void setInterfaces(const QStringList &interfaces);

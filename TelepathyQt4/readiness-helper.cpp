@@ -163,6 +163,10 @@ ReadinessHelper::Private::~Private()
 
 void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
 {
+    if (currentStatus == newStatus) {
+        return;
+    }
+
     if (inFlightFeatures.isEmpty()) {
         currentStatus = newStatus;
         satisfiedFeatures.clear();
@@ -387,6 +391,23 @@ uint ReadinessHelper::currentStatus() const
 void ReadinessHelper::setCurrentStatus(uint currentStatus)
 {
     mPriv->setCurrentStatus(currentStatus);
+}
+
+/**
+ * Force the current internal status to \a currentStatus.
+ *
+ * Note that this method will not start a new introspection or restart the
+ * current one in case one is running.
+ *
+ * This is useful for example when the status is unknown initially but it will
+ * become known in the first introspection run and there is no need to re-run
+ * the introspection.
+ *
+ * \param currentStatus The status to set.
+ */
+void ReadinessHelper::forceCurrentStatus(uint currentStatus)
+{
+    mPriv->currentStatus = currentStatus;
 }
 
 QStringList ReadinessHelper::interfaces() const
