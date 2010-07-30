@@ -215,22 +215,23 @@ protected:
     Client::ConnectionInterface *baseInterface() const;
 
 private Q_SLOTS:
-    void onStatusReady(uint);
-    void onStatusChanged(uint, uint);
-    void onConnectionError(const QString &, const QVariantMap &);
+    void onStatusReady(uint status);
+    void onStatusChanged(uint status, uint reason);
+    void onConnectionError(const QString &error, const QVariantMap &details);
+    void gotMainProperties(QDBusPendingCallWatcher *watcher);
     void gotStatus(QDBusPendingCallWatcher *watcher);
     void gotInterfaces(QDBusPendingCallWatcher *watcher);
-    void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
-    void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
-    void gotSelfContact(Tp::PendingOperation *);
     void gotSelfHandle(QDBusPendingCallWatcher *watcher);
     void gotCapabilities(QDBusPendingCallWatcher *watcher);
-    void gotContactListsHandles(Tp::PendingOperation *);
-    void gotContactListChannel(Tp::PendingOperation *);
+    void gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher);
+    void gotSimpleStatuses(QDBusPendingCallWatcher *watcher);
+    void gotSelfContact(Tp::PendingOperation *op);
+    void gotContactListsHandles(Tp::PendingOperation *op);
+    void gotContactListChannel(Tp::PendingOperation *op);
     void contactListChannelReady();
-    void onNewChannels(const Tp::ChannelDetailsList &);
-    void onContactListGroupChannelReady(Tp::PendingOperation *);
-    void gotChannels(QDBusPendingCallWatcher *);
+    void onNewChannels(const Tp::ChannelDetailsList &channelDetailsList);
+    void onContactListGroupChannelReady(Tp::PendingOperation *op);
+    void gotChannels(QDBusPendingCallWatcher *watcher);
 
     void doReleaseSweep(uint type);
 

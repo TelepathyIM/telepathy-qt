@@ -61,14 +61,22 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     void init();
 
     static void introspectMain(Private *self);
+    void introspectMainProperties();
+    void introspectMainFallbackStatus();
+    void introspectMainFallbackInterfaces();
+    void introspectMainFallbackSelfHandle();
     void introspectCapabilities();
-    void introspectSelfHandle();
-    void introspectContacts();
+    void introspectContactAttributeInterfaces();
     static void introspectSelfContact(Private *self);
     static void introspectSimplePresence(Private *self);
     static void introspectRoster(Private *self);
     static void introspectRosterGroups(Private *self);
     static void introspectBalance(Private *self);
+
+    void continueMainIntrospection();
+    void setCurrentStatus(uint status);
+    void forceCurrentStatus(uint status);
+    void setInterfaces(const QStringList &interfaces);
 
     void checkFeatureRosterGroupsReady();
 
@@ -80,42 +88,59 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     // Instance of generated interface class
     Client::ConnectionInterface *baseInterface;
 
-    // Optional interface proxies
+    // Mandatory properties interface proxy
     Client::DBus::PropertiesInterface *properties;
+
+    // Optional interface proxies
     Client::ConnectionInterfaceSimplePresenceInterface *simplePresence;
 
     ReadinessHelper *readinessHelper;
 
     // Introspection
+    QQueue<void (Private::*)()> introspectMainQueue;
 
-    // Introspected properties
+    // FeatureCore
     // keep pendingStatus and pendingStatusReason until we emit statusChanged
     // so Connection::status() and Connection::statusReason() are consistent
+    bool introspectingMain;
+    bool statusChangedWhileIntrospectingMain;
+
     uint pendingStatus;
     uint pendingStatusReason;
     uint status;
     uint statusReason;
 
-    SimpleStatusSpecMap simplePresenceStatuses;
+    uint selfHandle;
+
+    ConnectionCapabilities *caps;
+
+    ContactManager *contactManager;
+
+    // FeatureSelfContact
     ContactPtr selfContact;
     QStringList contactAttributeInterfaces;
-    uint selfHandle;
-    ConnectionCapabilities *caps;
+
+    // FeatureSimplePresence
+    SimpleStatusSpecMap simplePresenceStatuses;
+
+    // FeatureRoster
     QMap<uint, ContactManager::ContactListChannel> contactListChannels;
     uint contactListChannelsReady;
+
+    // FeatureRosterGroups
     QList<ChannelPtr> contactListGroupChannels;
     // Number of things left to do before the Groups feature is ready
     // 1 for Get("Channels") + 1 per channel not ready
     uint featureRosterGroupsTodo;
 
+    // FeatureAccountBalance
     CurrencyAmount accountBalance;
 
+    // misc
     // (Bus connection name, service name) -> HandleContext
     static QMap<QPair<QString, QString>, HandleContext *> handleContexts;
     static QMutex handleContextsLock;
     HandleContext *handleContext;
-
-    ContactManager *contactManager;
 };
 
 // Handle tracking
@@ -149,24 +174,32 @@ Connection::Private::Private(Connection *parent)
     : parent(parent),
       baseInterface(new Client::ConnectionInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
-      properties(0),
+      properties(parent->propertiesInterface()),
       simplePresence(0),
       readinessHelper(parent->readinessHelper()),
+      introspectingMain(false),
+      statusChangedWhileIntrospectingMain(false),
       pendingStatus(Connection::StatusUnknown),
       pendingStatusReason(ConnectionStatusReasonNoneSpecified),
       status(Connection::StatusUnknown),
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
       caps(0),
+      contactManager(new ContactManager(parent)),
       contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
-      handleContext(0),
-      contactManager(new ContactManager(parent))
+      handleContext(0)
 {
+    Q_ASSERT(properties != 0);
+
+    init();
+
     ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableCore(
-        QSet<uint>() << Connection::StatusDisconnected << Connection::StatusConnected, // makesSenseForStatuses
+        QSet<uint>() << Connection::StatusUnknown <<
+                        Connection::StatusDisconnected <<
+                        Connection::StatusConnected,                                   // makesSenseForStatuses
         Features(),                                                                    // dependsOnFeatures (none)
         QStringList(),                                                                 // dependsOnInterfaces (none)
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
@@ -219,22 +252,15 @@ Connection::Private::Private(Connection *parent)
             SIGNAL(statusReady(uint)),
             SLOT(onStatusReady(uint)));
     readinessHelper->becomeReady(Features() << FeatureCore);
-
-    init();
 }
 
 Connection::Private::~Private()
 {
-    // Clear selfContact so its handle will be released cleanly before the handleContext
+    // Clear selfContact so its handle will be released cleanly before the
+    // handleContext
     selfContact.clear();
 
     delete caps;
-
-    // FIXME: This doesn't look right! In fact, looks absolutely horrendous.
-    if (!handleContext) {
-        // initial introspection is not done
-        return;
-    }
 
     QMutexLocker locker(&handleContextsLock);
 
@@ -261,28 +287,25 @@ Connection::Private::~Private()
         handleContexts.remove(qMakePair(baseInterface->connection().name(),
                     baseInterface->service()));
         delete handleContext;
-    }
-    else {
+    } else {
         Q_ASSERT(handleContext->refcount > 0);
     }
 }
 
 void Connection::Private::init()
 {
+    debug() << "Connecting to ConnectionError()";
+    parent->connect(baseInterface,
+            SIGNAL(ConnectionError(const QString &, const QVariantMap &)),
+            SLOT(onConnectionError(const QString &, const QVariantMap &)));
     debug() << "Connecting to StatusChanged()";
     parent->connect(baseInterface,
-                    SIGNAL(StatusChanged(uint, uint)),
-                    SLOT(onStatusChanged(uint, uint)));
+            SIGNAL(StatusChanged(uint, uint)),
+            SLOT(onStatusChanged(uint, uint)));
+    debug() << "Connecting to SelfHandleChanged()";
     parent->connect(baseInterface,
-                    SIGNAL(ConnectionError(const QString &, const QVariantMap &)),
-                    SLOT(onConnectionError(const QString &, const QVariantMap &)));
-
-    debug() << "Calling GetStatus()";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(baseInterface->GetStatus(), parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotStatus(QDBusPendingCallWatcher *)));
+            SIGNAL(SelfHandleChanged(uint)),
+            SLOT(onSelfHandleChanged(uint)));
 
     QMutexLocker locker(&handleContextsLock);
     QString busConnectionName = baseInterface->connection().name();
@@ -290,12 +313,13 @@ void Connection::Private::init()
 
     if (handleContexts.contains(qMakePair(busConnectionName, busName))) {
         debug() << "Reusing existing HandleContext";
-        handleContext = handleContexts[qMakePair(busConnectionName, busName)];
-    }
-    else {
+        handleContext = handleContexts[
+            qMakePair(busConnectionName, busName)];
+    } else {
         debug() << "Creating new HandleContext";
         handleContext = new HandleContext;
-        handleContexts[qMakePair(busConnectionName, busName)] = handleContext;
+        handleContexts[
+            qMakePair(busConnectionName, busName)] = handleContext;
     }
 
     // All handle contexts locked, so safe
@@ -304,53 +328,84 @@ void Connection::Private::init()
 
 void Connection::Private::introspectMain(Connection::Private *self)
 {
-    // Introspecting the main interface is currently just calling
-    // GetInterfaces(), but it might include other stuff in the future if we
-    // gain GetAll-able properties on the connection
+    if (!self->caps) {
+        self->caps = new ConnectionCapabilities();
+    }
+
+    self->introspectingMain = true;
+
+    self->introspectMainProperties();
+}
+
+void Connection::Private::introspectMainProperties()
+{
+    debug() << "Calling Properties::GetAll(Connection)";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CONNECTION)),
+                parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+}
+
+void Connection::Private::introspectMainFallbackStatus()
+{
+    debug() << "Calling GetStatus()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(baseInterface->GetStatus(),
+                parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotStatus(QDBusPendingCallWatcher *)));
+}
+
+void Connection::Private::introspectMainFallbackInterfaces()
+{
     debug() << "Calling GetInterfaces()";
     QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(self->baseInterface->GetInterfaces(),
-                self->parent);
-    self->parent->connect(watcher,
+        new QDBusPendingCallWatcher(baseInterface->GetInterfaces(),
+                parent);
+    parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotInterfaces(QDBusPendingCallWatcher *)));
 }
 
-void Connection::Private::introspectContacts()
+void Connection::Private::introspectMainFallbackSelfHandle()
 {
-    if (!properties) {
-        properties = parent->propertiesInterface();
-        Q_ASSERT(properties != 0);
-    }
+    debug() << "Calling GetSelfHandle()";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(baseInterface->GetSelfHandle(),
+                parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotSelfHandle(QDBusPendingCallWatcher *)));
+}
 
-    debug() << "Getting available interfaces for GetContactAttributes";
+void Connection::Private::introspectCapabilities()
+{
+    debug() << "Retrieving capabilities";
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+            properties->Get(
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),
+                QLatin1String("RequestableChannelClasses")), parent);
+    parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher *)),
+            SLOT(gotCapabilities(QDBusPendingCallWatcher *)));
+}
+
+void Connection::Private::introspectContactAttributeInterfaces()
+{
+    debug() << "Retrieving contact attribute interfaces";
     QDBusPendingCall call =
-        properties->Get(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS),
-                        QLatin1String("ContactAttributeInterfaces"));
+        properties->Get(
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS),
+                QLatin1String("ContactAttributeInterfaces"));
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, parent);
     parent->connect(watcher,
                     SIGNAL(finished(QDBusPendingCallWatcher *)),
                     SLOT(gotContactAttributeInterfaces(QDBusPendingCallWatcher *)));
-}
-
-void Connection::Private::introspectSimplePresence(Connection::Private *self)
-{
-    if (!self->properties) {
-        self->properties = self->parent->propertiesInterface();
-        Q_ASSERT(self->properties != 0);
-    }
-
-    debug() << "Getting available SimplePresence statuses";
-    QDBusPendingCall call =
-        self->properties->Get(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),
-                QLatin1String("Statuses"));
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(call, self->parent);
-    self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
 }
 
 void Connection::Private::introspectSelfContact(Connection::Private *self)
@@ -364,36 +419,24 @@ void Connection::Private::introspectSelfContact(Connection::Private *self)
             SLOT(gotSelfContact(Tp::PendingOperation *)));
 }
 
-void Connection::Private::introspectSelfHandle()
+void Connection::Private::introspectSimplePresence(Connection::Private *self)
 {
-    parent->connect(baseInterface,
-                    SIGNAL(SelfHandleChanged(uint)),
-                    SLOT(onSelfHandleChanged(uint)));
-
-    debug() << "Getting self handle";
-    QDBusPendingCall call = baseInterface->GetSelfHandle();
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(call, parent);
-    parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotSelfHandle(QDBusPendingCallWatcher *)));
-}
-
-void Connection::Private::introspectCapabilities()
-{
-    if (!properties) {
-        properties = parent->propertiesInterface();
-        Q_ASSERT(properties != 0);
+    if (!self->properties) {
+        self->properties = self->parent->propertiesInterface();
+        Q_ASSERT(self->properties != 0);
     }
 
-    debug() << "Retrieving capabilities";
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
-            properties->Get(
-                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),
-                QLatin1String("RequestableChannelClasses")), parent);
-    parent->connect(watcher,
+    debug() << "Calling Properties::Get("
+        "Connection.I.SimplePresence.Statuses)";
+    QDBusPendingCall call =
+        self->properties->Get(
+                QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE),
+                QLatin1String("Statuses"));
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(call, self->parent);
+    self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotCapabilities(QDBusPendingCallWatcher *)));
+            SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
 }
 
 void Connection::Private::introspectRoster(Connection::Private *self)
@@ -463,6 +506,56 @@ void Connection::Private::introspectBalance(Connection::Private *self)
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             SLOT(gotBalance(QDBusPendingCallWatcher*)));
+}
+
+void Connection::Private::continueMainIntrospection()
+{
+    if (introspectMainQueue.isEmpty()) {
+        readinessHelper->setIntrospectCompleted(FeatureCore, true);
+
+        introspectingMain = false;
+
+        if (statusChangedWhileIntrospectingMain) {
+            statusChangedWhileIntrospectingMain = false;
+            readinessHelper->setCurrentStatus(pendingStatus);
+        }
+    } else {
+        (this->*(introspectMainQueue.dequeue()))();
+    }
+}
+
+void Connection::Private::setCurrentStatus(uint status)
+{
+    // if the initial introspection is still running, only clear main
+    // introspection queue and wait for the last call to return, to avoid
+    // the return of the last call wrongly setting FeatureCore as ready for the
+    // new status, otherwise set the readinessHelper status to the new status,
+    // so it can re-run the introspection if needed.
+    if (introspectingMain) {
+        introspectMainQueue.clear();
+    } else {
+        readinessHelper->setCurrentStatus(status);
+    }
+}
+
+void Connection::Private::forceCurrentStatus(uint status)
+{
+    // only update the status if we did not get it from StatusChanged
+    if (pendingStatus == Connection::StatusUnknown) {
+        debug() << "Got status:" << status;
+        pendingStatus = status;
+        // No need to re-run introspection as we just received the status. Let
+        // the introspection continue normally but update readinessHelper with
+        // the correct status.
+        readinessHelper->forceCurrentStatus(status);
+    }
+}
+
+void Connection::Private::setInterfaces(const QStringList &interfaces)
+{
+    debug() << "Got interfaces:" << interfaces;
+    parent->setInterfaces(interfaces);
+    readinessHelper->setInterfaces(interfaces);
 }
 
 void Connection::Private::checkFeatureRosterGroupsReady()
@@ -1017,8 +1110,13 @@ void Connection::onStatusChanged(uint status, uint reason)
             << "to" << status << "with reason" << reason;
 
     if (mPriv->pendingStatus == status) {
-        warning() << "New status was the same as the old status! Ignoring redundant StatusChanged";
+        warning() << "New status was the same as the old status! Ignoring"
+            "redundant StatusChanged";
         return;
+    }
+
+    if (mPriv->introspectingMain) {
+        mPriv->statusChangedWhileIntrospectingMain = true;
     }
 
     uint oldStatus = mPriv->pendingStatus;
@@ -1028,11 +1126,11 @@ void Connection::onStatusChanged(uint status, uint reason)
     switch (status) {
         case ConnectionStatusConnected:
             debug() << "Performing introspection for the Connected status";
-            mPriv->readinessHelper->setCurrentStatus(status);
+            mPriv->setCurrentStatus(status);
             break;
 
         case ConnectionStatusConnecting:
-            mPriv->readinessHelper->setCurrentStatus(status);
+            mPriv->setCurrentStatus(status);
             break;
 
         case ConnectionStatusDisconnected:
@@ -1065,28 +1163,74 @@ void Connection::onConnectionError(const QString &error,
             details.value(QLatin1String("debug-message")).toString());
 }
 
+void Connection::gotMainProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QVariantMap props;
+
+    if (!reply.isError()) {
+        props = reply.value();
+    } else {
+        warning().nospace() << "Properties::GetAll(Connection) failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+        // let's try to fallback first before failing
+    }
+
+    if (props.contains(QLatin1String("Status"))) {
+        mPriv->forceCurrentStatus(qdbus_cast<uint>(
+                    props[QLatin1String("Status")]));
+    } else {
+        // only introspect status if we did not got it from StatusChanged
+        if (mPriv->pendingStatus == StatusUnknown) {
+            mPriv->introspectMainQueue.enqueue(
+                    &Private::introspectMainFallbackStatus);
+        }
+    }
+
+    if (props.contains(QLatin1String("Interfaces"))) {
+        mPriv->setInterfaces(qdbus_cast<QStringList>(
+                    props[QLatin1String("Interfaces")]));
+    } else {
+        mPriv->introspectMainQueue.enqueue(
+                &Private::introspectMainFallbackInterfaces);
+    }
+
+    if (props.contains(QLatin1String("SelfHandle"))) {
+        mPriv->selfHandle = qdbus_cast<uint>(
+                props[QLatin1String("SelfHandle")]);
+    } else {
+        mPriv->introspectMainQueue.enqueue(
+                &Private::introspectMainFallbackSelfHandle);
+    }
+
+    if (hasInterface(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS)) {
+        mPriv->introspectMainQueue.enqueue(
+                &Private::introspectCapabilities);
+    }
+
+    if (hasInterface(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS)) {
+        mPriv->introspectMainQueue.enqueue(
+                &Private::introspectContactAttributeInterfaces);
+    }
+
+    mPriv->continueMainIntrospection();
+
+    watcher->deleteLater();
+}
+
 void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<uint> reply = *watcher;
 
-    if (mPriv->pendingStatus != StatusUnknown) {
-        // we already got the status from StatusChanged, ignoring here
-        return;
-    }
+    if (!reply.isError()) {
+        mPriv->forceCurrentStatus(reply.value());
 
-    if (reply.isError()) {
+        mPriv->continueMainIntrospection();
+    } else {
         warning().nospace() << "GetStatus() failed with " <<
-            reply.error().name() << ":" << reply.error().message();
-
+            reply.error().name() << ": " << reply.error().message();
         invalidate(reply.error());
-        return;
     }
-
-    uint status = reply.value();
-    debug() << "Got connection status" << status;
-
-    mPriv->pendingStatus = status;
-    mPriv->readinessHelper->setCurrentStatus(status);
 
     watcher->deleteLater();
 }
@@ -1096,30 +1240,54 @@ void Connection::gotInterfaces(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QStringList> reply = *watcher;
 
     if (!reply.isError()) {
-        setInterfaces(reply.value());
-        debug() << "Got reply to GetInterfaces():" << interfaces();
-        mPriv->readinessHelper->setInterfaces(interfaces());
+        mPriv->setInterfaces(reply.value());
     }
     else {
         warning().nospace() << "GetInterfaces() failed with " <<
-            reply.error().name() << ":" << reply.error().message() <<
+            reply.error().name() << ": " << reply.error().message() <<
             " - assuming no new interfaces";
-        // do not fail if GetInterfaces fail
+        // let's not fail if GetInterfaces fail
     }
 
-    if (mPriv->pendingStatus == StatusConnected) {
-        if (interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS))) {
-            mPriv->introspectCapabilities();
-        } else {
-            // we don't support Requests interface, so let's create an empty
-            // ConnectionCapabilities object
-            mPriv->caps = new ConnectionCapabilities();
+    mPriv->continueMainIntrospection();
 
-            mPriv->introspectSelfHandle();
-        }
+    watcher->deleteLater();
+}
+
+void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<uint> reply = *watcher;
+
+    if (!reply.isError()) {
+        mPriv->selfHandle = reply.value();
+        debug() << "Got self handle:" << mPriv->selfHandle;
+
+        mPriv->continueMainIntrospection();
     } else {
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        warning().nospace() << "GetSelfHandle() failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
+                false, reply.error());
     }
+
+    watcher->deleteLater();
+}
+
+void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QDBusVariant> reply = *watcher;
+
+    if (!reply.isError()) {
+        debug() << "Got capabilities";
+        mPriv->caps->updateRequestableChannelClasses(
+                qdbus_cast<RequestableChannelClassList>(reply.value().variant()));
+    } else {
+        warning().nospace() << "Getting capabilities failed with " <<
+            reply.error().name() << ": " << reply.error().message();
+        // let's not fail if retrieving capabilities fail
+    }
+
+    mPriv->continueMainIntrospection();
 
     watcher->deleteLater();
 }
@@ -1129,18 +1297,34 @@ void Connection::gotContactAttributeInterfaces(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QDBusVariant> reply = *watcher;
 
     if (!reply.isError()) {
+        debug() << "Got contact attribute interfaces";
         mPriv->contactAttributeInterfaces = qdbus_cast<QStringList>(reply.value().variant());
-        debug() << "Got" << mPriv->contactAttributeInterfaces.size() << "contact attribute interfaces";
     } else {
         warning().nospace() << "Getting contact attribute interfaces failed with " <<
-            reply.error().name() << ":" << reply.error().message();
-
+            reply.error().name() << ": " << reply.error().message();
+        // let's not fail if retrieving contact attribute interfaces fail
         // TODO should we remove Contacts interface from interfaces?
-        warning() << "Connection supports Contacts interface but contactAttributeInterfaces "
-            "can't be retrieved";
     }
 
-    mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    mPriv->continueMainIntrospection();
+
+    watcher->deleteLater();
+}
+
+void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QDBusVariant> reply = *watcher;
+
+    if (!reply.isError()) {
+        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
+        debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, true);
+    }
+    else {
+        warning().nospace() << "Getting simple presence statuses failed with " <<
+            reply.error().name() << ":" << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, false, reply.error());
+    }
 
     watcher->deleteLater();
 }
@@ -1176,66 +1360,6 @@ void Connection::gotSelfContact(PendingOperation *op)
     }
 }
 
-void Connection::gotSimpleStatuses(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QDBusVariant> reply = *watcher;
-
-    if (!reply.isError()) {
-        mPriv->simplePresenceStatuses = qdbus_cast<SimpleStatusSpecMap>(reply.value().variant());
-        debug() << "Got" << mPriv->simplePresenceStatuses.size() << "simple presence statuses";
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, true);
-    }
-    else {
-        warning().nospace() << "Getting simple presence statuses failed with " <<
-            reply.error().name() << ":" << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureSimplePresence, false, reply.error());
-    }
-
-    watcher->deleteLater();
-}
-
-void Connection::gotSelfHandle(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<uint> reply = *watcher;
-
-    if (!reply.isError()) {
-        mPriv->selfHandle = reply.value();
-        debug() << "Got self handle" << mPriv->selfHandle;
-
-        if (interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
-            mPriv->introspectContacts();
-        } else {
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-        }
-    } else {
-        warning().nospace() << "Getting self handle failed with " <<
-            reply.error().name() << ":" << reply.error().message();
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
-    }
-
-    watcher->deleteLater();
-}
-
-void Connection::gotCapabilities(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<QDBusVariant> reply = *watcher;
-
-    if (!reply.isError()) {
-        debug() << "Got capabilities";
-        mPriv->caps = new ConnectionCapabilities(
-                qdbus_cast<RequestableChannelClassList>(reply.value().variant()));
-    } else {
-        warning().nospace() << "Getting capabilities failed with " <<
-            reply.error().name() << ":" << reply.error().message();
-        // Some error occurred, so let's create an empty
-        // ConnectionCapabilities object
-        mPriv->caps = new ConnectionCapabilities();
-    }
-
-    mPriv->introspectSelfHandle();
-
-    watcher->deleteLater();
-}
 
 void Connection::gotContactListsHandles(PendingOperation *op)
 {
