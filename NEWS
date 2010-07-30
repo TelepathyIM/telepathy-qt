@@ -4,9 +4,12 @@ telepathy-qt4 0.3.8 (UNRELEASED)
 dot dot dot
 
 Fixes:
-- fd.o#28947 - Account::filterAccounts doc does not properly format the example code
+- fd.o#28947 - Account::filterAccounts doc does not properly format the example
+  code
 - fd.o#28948 - Added docs/tests/missing Qt properties to AccountSet
 - fd.o#28651 - Cannot receive files using gabble 0.9
+- fd.o#29145 - AccountSet::accountRemoved is emitted for newly-created
+  non-matching accounts
 
 telepathy-qt4 0.3.7 (2010-07-12)
 ================================
