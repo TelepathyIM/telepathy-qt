@@ -451,7 +451,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     be implemented by all channel objects, along with one single channel type,
     such as <tp:dbus-ref
     namespace="org.freedesktop.Telepathy">Channel.Type.ContactList</tp:dbus-ref>
-    which represents a list of people (such as a buddy list) or a <tp:dbus-ref
+    which represents a list of people (such as a buddy list) or <tp:dbus-ref
     namespace="org.freedesktop.Telepathy">Channel.Type.Text</tp:dbus-ref> which
     represents a channel over which textual messages are sent and received.</p>
 
@@ -472,31 +472,58 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         information, by taking the first 7 components.</p>
     </tp:rationale>
 
-    <p>Each channel may have an immutable handle associated with it, which
-      may be any handle type, such as a contact, room or list handle,
-      indicating that the channel is for communicating with that handle.</p>
+    <p>Each channel has a number of immutable properties (which cannot vary
+      after the channel has been announced with <tp:dbus-ref
+        namespace='ofdT.Connection.Interface.Requests'>NewChannels</tp:dbus-ref>),
+      provided to clients in the
+      <tp:dbus-ref namespace='ofdT.Client.Observer'>ObserveChannels</tp:dbus-ref>,
+      <tp:dbus-ref namespace='ofdT.Client.Approver'>AddDispatchOperation</tp:dbus-ref> and
+      <tp:dbus-ref namespace='ofdT.Client.Handler'>HandleChannels</tp:dbus-ref>
+      methods to permit immediate identification of the channel. This interface
+      contains immutable properties common to all channels. In brief:</p>
 
-    <p>If a channel does not have a handle (an "anonymous channel" with
-      Target_Handle = 0 and Target_Handle_Type = Handle_Type_None), it
-      means that the channel is defined by some other terms, such as it
-      may be a transient group defined only by its members as visible
-      through the <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy">Channel.Interface.Group</tp:dbus-ref>
-      interface.</p>
+    <ul>
+      <li><tp:member-ref>ChannelType</tp:member-ref> specifies the kind of
+        communication carried out on this channel;</li>
+      <li><tp:member-ref>TargetHandleType</tp:member-ref>,
+        <tp:member-ref>TargetHandle</tp:member-ref> and
+        <tp:member-ref>TargetID</tp:member-ref> specify the entity with which
+        this channel communicates, such as the other party in a 1-1 call, or
+        the name of a multi-user chat room;</li>
+      <li><tp:member-ref>InitiatorHandle</tp:member-ref> and
+        <tp:member-ref>InitiatorID</tp:member-ref> specify who created this
+        channel;</li>
+      <li><tp:member-ref>Requested</tp:member-ref> indicates whether the local
+        user requested this channel, or whether it is an incoming call, a text
+        conversation started by a remote contact, a chatroom invitation,
+        etc.</li>
+    </ul>
 
-    <p>Other optional interfaces can be implemented to indicate other available
+    <p>Other optional <tp:member-ref>Interfaces</tp:member-ref> can be
+      implemented to indicate other available
       functionality, such as <tp:dbus-ref
         namespace="org.freedesktop.Telepathy">Channel.Interface.Group</tp:dbus-ref>
       if the channel contains a number of contacts, <tp:dbus-ref
         namespace="org.freedesktop.Telepathy">Channel.Interface.Password</tp:dbus-ref>
       to indicate that a channel may have a password set to require entry, and
       <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy">Properties</tp:dbus-ref> for
-      extra data about channels which represent chat rooms or voice calls. The
-      interfaces implemented may not vary after the channel's creation has been
-      signalled to the bus (with the connection's <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy.Connection">NewChannel</tp:dbus-ref>
-      signal).</p>
+        namespace="org.freedesktop.Telepathy">Channel.Interface.ChatState</tp:dbus-ref>
+      for typing notifications. The interfaces implemented may not vary after
+      the channel has been created. These other interfaces (along with the
+      interface named by <tp:member-ref>ChannelType</tp:member-ref>) may
+      themselves specify immutable properties to be announced up-front along
+      with the properties on this interface.</p>
+
+    <p>Some channels are “anonymous”, with
+      <tp:member-ref>TargetHandleType</tp:member-ref> set to <code>None</code>,
+      which indicates that the channel is defined by some other properties. For
+      instance, transient ad-hoc chat rooms may be defined only by their members (as visible
+      through the <tp:dbus-ref
+        namespace="ofdT.Channel.Interface">Group</tp:dbus-ref>
+      interface), and <tp:dbus-ref
+        namespace='ofdT.Channel.Type'>ContactSearch</tp:dbus-ref>
+      channels represent a single search attempt for a particular <tp:dbus-ref
+        namespace='ofdT.Channel.Type.ContactSearch'>Server</tp:dbus-ref>.</p>
 
     <p>Specific connection manager implementations may implement channel types and
     interfaces which are not contained within this specification in order to

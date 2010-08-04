@@ -20,9 +20,8 @@
       02110-1301, USA.</p>
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Protocol.DRAFT"
-    tp:causes-havoc="experimental">
-    <tp:added version="0.19.8">(draft 1)</tp:added>
+  <interface name="org.freedesktop.Telepathy.Protocol">
+    <tp:added version="0.19.10">(as stable API)</tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An object representing a protocol for which this <tp:dbus-ref

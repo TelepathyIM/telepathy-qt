@@ -598,46 +598,126 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </property>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-      <p>A channel that can send and receive streamed media such as audio or video.
-    Provides a number of methods for listing and requesting new streams, and
-    signals to indicate when streams have been added, removed and changed
-    status.</p>
+      <p>A channel that can send and receive streamed media such as audio or
+        video.  Provides a number of methods for listing and requesting new
+        streams, and signals to indicate when streams have been added, removed
+        and changed status. The state of the call (ringing remotely, ringing
+        locally, answered, missed, etc.) are represented using the properties
+        and signals of the Group interface.</p>
 
-      <p>To make a media call to a contact, clients should call <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>
-        with <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>
-        = <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>,
+      <p>In general this should be used in conjunction with the <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface">MediaSignalling</tp:dbus-ref>
+        interface to exchange connection candidates and codec choices with
+        whichever component is responsible for the streams. However, in certain
+        applications where no candidate exchange is necessary (eg the streams
+        are handled by specialised hardware which is controlled directly by the
+        connection manager), the signalling interface can be omitted and this
+        channel type used simply to control the streams.</p>
+
+      <h4>Outgoing calls</h4>
+
+      <p>To make an audio-only call to a contact <tt>foo@example.com</tt>,
+        clients should call:</p>
+
+      <blockquote>
+        <pre>
+<tp:dbus-ref
+    namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>({
+  <tp:dbus-ref
+    namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>: <tp:dbus-ref
+    namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>,
+  <tp:dbus-ref
+    namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>: Contact,
+  <tp:dbus-ref
+    namespace="org.freedesktop.Telepathy.Channel">TargetID</tp:dbus-ref>: 'foo@example.com',
+  <tp:member-ref>InitialAudio</tp:member-ref>: True,
+)</pre></blockquote>
+
+      <p>As always, <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref>
+        may be used in place of TargetID if the contact's handle is already
+        known. To make an audio-and-video call, the client should also specify
+        <tp:member-ref>InitialVideo</tp:member-ref>.  The connection manager
+        SHOULD return a channel whose immutable properties contain the local
+        user as the <tp:dbus-ref namespace='ofdT.Channel'>InitiatorHandle</tp:dbus-ref>,
+        the remote contact as the <tp:dbus-ref namespace='ofdT.Channel'>TargetHandle</tp:dbus-ref>,
+        <tp:dbus-ref namespace='ofdT.Channel'>Requested</tp:dbus-ref> = <code>True</code>
+        (indicating that the call is outgoing); the <tp:dbus-ref
+          namespace='ofdT.Channel.Interface'>Group</tp:dbus-ref> interface should
+        initially have the local user in <tp:dbus-ref
+          namespace='ofdT.Channel.Interface.Group'>Members</tp:dbus-ref> and the remote
+        contact in <tp:dbus-ref
+          namespace='ofdT.Channel.Interface.Group'>RemotePendingMembers</tp:dbus-ref>, to
+        indicate that we are awaiting their response.</p>
+
+      <p>The contact answering the call is represented by the CM signalling
         <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>
-        = Contact, and one of <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref>
-        or <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel">TargetID</tp:dbus-ref>
-        (which should yield a channel with the local user in <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">Members</tp:dbus-ref>,
-        and the remote contact as <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref>
-        but not in any group members list), then call
-        <tp:member-ref>RequestStreams</tp:member-ref> to initiate the call (at
-        which point the contact should appear in the channel's <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemotePendingMembers</tp:dbus-ref>).</p>
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">MembersChanged</tp:dbus-ref>,
+        moving the remote contact to Members, with the remote contact as the
+        <var>Actor</var> and <var>Reason</var> <code>None</code>. The contact
+        rejecting the call is represented by both contacts being removed from
+        the group, with the remote contact as the <var>Actor</var> and
+        <var>Reason</var> set appropriately. The local user may hang up at any
+        time by calling
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemoveMembersWithReason</tp:dbus-ref>
+        to remove themself, with an appropriate reason; the CM SHOULD relay the
+        reason to the remote contact, and emit MembersChanged removing both
+        contacts from the group with the self handle as the <var>Actor</var>.</p>
 
-      <p>In the past, several other patterns have been used to place outgoing
+      <p>(In the past, several other patterns have been used to place outgoing
         calls; see
         <a href="http://telepathy.freedesktop.org/wiki/Requesting%20StreamedMedia%20channels">'Requesting StreamedMedia Channels' on the Telepathy wiki</a>
-        for the details.</p>
+        for the details.)</p>
 
-      <p>Incoming calls should be signalled as <tp:dbus-ref
+      <h4>Incoming calls</h4>
+
+      <p>Incoming calls' immutable properties should contain <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>
-        = Contact, <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref>
-        set to the remote contact, with the local user in <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">LocalPendingMembers</tp:dbus-ref>;
-        to accept the call, <tp:dbus-ref
+        = Contact, both <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">TargetHandle</tp:dbus-ref> and
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">InitiatorHandle</tp:dbus-ref>
+        set to the remote contact, <tp:dbus-ref
+        namespace='ofdT.Channel'>Requested</tp:dbus-ref> = <code>False</code>
+        (indicating that this is an incoming call), and appropriate values of
+        <tp:member-ref>InitialAudio</tp:member-ref> and
+        <tp:member-ref>InitialVideo</tp:member-ref>; the Group interface should
+        initially have the local user in <tp:dbus-ref
+        namespace="ofdT.Channel.Interface.Group">LocalPendingMembers</tp:dbus-ref>
+        and the remote contact in <tp:dbus-ref
+        namespace="ofdT.Channel.Interface.Group">Members</tp:dbus-ref>,
+        indicating that the contact is awaiting our response.</p>
+
+      <p>To accept the call, use <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Channel.Interface.Group">AddMembers</tp:dbus-ref>
-        can be used to move the local user to the group's members.</p>
+        to move the local user to the group's members. To reject the call, use
+        <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemoveMembersWithReason</tp:dbus-ref>
+        to remove the local member from the group, with an appropriate reason.
+        If the remote user ends the call before it is answered, this is
+        represented by <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Interface.Group">MembersChanged</tp:dbus-ref>
+        removing both parties from the group with the remote contact as the
+        <var>Actor</var>, and <var>Reason</var> set appropriately.</p>
+
+      <p>Note that the call may end with the self handle as the
+        <var>Actor</var> without the user having chosen to reject the call, as
+        indicated by the nature of the <var>Reason</var>. Specifically, some
+        local component may time out the call (indicating this with reason
+        <code>No_Answer</code>; for example, the CM may have forwarded the call
+        to another number, as configured using <tp:dbus-ref
+        namespace='ofdT.Connection.Interface'>Forwarding.DRAFT</tp:dbus-ref>),
+        or something may have gone wrong with the call
+        (indicated by reason <code>Error</code>). Such calls SHOULD be
+        considered missed, just as if the remote contact had hung up before the
+        local user answered the call.</p>
+
+      <tp:rationale>
+        <p>This is a bit awkward, but these are the best ways we can represent
+          these situations. It's important to document which calls should be
+          considered missed, to ensure that the user can be notified.</p>
+      </tp:rationale>
 
       <p>When the local user accepts an incoming call, the connection manager
         SHOULD change the direction of any streams with pending local send
@@ -658,14 +738,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           should be removed when this specification is revised.</p>
       </tp:rationale>
 
-    <p>In general this should be used in conjunction with the <tp:dbus-ref
-      namespace="org.freedesktop.Telepathy.Channel.Interface">MediaSignalling</tp:dbus-ref>
-    interface to exchange connection candidates and codec choices with
-    whichever component is responsible for the streams. However, in certain
-    applications where no candidate exchange is necessary (eg the streams are
-    handled by specialised hardware which is controlled directly by the
-    connection manager), the signalling interface can be omitted and this
-    channel type used simply to control the streams.</p>
+    <h4>During a call</h4>
+
+    <p>If <tp:member-ref>ImmutableStreams</tp:member-ref> is
+      <code>False</code>, new streams may be requested using
+      <tp:member-ref>RequestStreams</tp:member-ref> (to add video to an
+      audio-only call, for instance), and existing streams may be removed using
+      <tp:member-ref>RemoveStreams</tp:member-ref> (for example, to downgrade
+      an audio-video call to audio-only). The call may be ended by calling
+      <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemoveMembers</tp:dbus-ref>
+      or <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Interface.Group">RemoveMembersWithReason</tp:dbus-ref>; the call ending is signalled by the CM emitting <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel.Interface.Group">MembersChanged</tp:dbus-ref>,
+      removing both parties from the group.</p>
 
     <h4>Handler filters</h4>
 

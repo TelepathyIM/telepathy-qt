@@ -42,17 +42,24 @@
           protocol or provider.</p>
 
         <p>Connections with this interface SHOULD provide this property as a
-          parameter for <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          parameter of the same (fully-qualified) name to <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
             >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
-          <code>DBus_Property</code> flag.</p>
+          <code>DBus_Property</code> flag. For connections managed by the
+          <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
+          this property SHOULD be set via the Account Manager as follows:</p>
 
-        <p>For connections managed by the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager, by calling
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
-            >Account.UpdateParameters</tp:dbus-ref>; the AccountManager
-          provides change-notification, as long as all other clients cooperate
-          by using it instead of setting this property directly.</p>
+        <blockquote>
+          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
+            >UpdateParameters</tp:dbus-ref>({
+              "org.freedesktop.Telepathy.Connection.Interface.Cellular.MessageValidityPeriod": <var>new_validity_period</var>
+              }, [])</code>
+        </blockquote>
+
+        <p>The AccountManager provides change-notification, as long as all
+          other clients cooperate by using it instead of setting this property
+          directly.</p>
       </tp:docstring>
     </property>
 
@@ -64,17 +71,24 @@
           number).</p>
 
         <p>Connections with this interface SHOULD provide this property as a
-          parameter for <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          parameter of the same (fully-qualified) name to <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
             >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
-          <code>DBus_Property</code> flag.</p>
+          <code>DBus_Property</code> flag. For connections managed by the
+          <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
+          this property SHOULD be set via the Account Manager as follows:</p>
 
-        <p>For connections managed by the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager, by calling
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
-            >Account.UpdateParameters</tp:dbus-ref>; the AccountManager
-          provides change-notification, as long as all other clients cooperate
-          by using it instead of setting this property directly.</p>
+        <blockquote>
+          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
+            >UpdateParameters</tp:dbus-ref>({
+              "org.freedesktop.Telepathy.Connection.Interface.Cellular.MessageServiceCentre": <var>new_smsc_address</var>
+              }, [])</code>
+        </blockquote>
+
+        <p>The AccountManager provides change-notification, as long as all
+          other clients cooperate by using it instead of setting this property
+          directly.</p>
       </tp:docstring>
     </property>
 
@@ -117,17 +131,24 @@
           into a country‐specific GSM reduced character set.</p>
 
         <p>Connections with this interface SHOULD provide this property as a
-          parameter for <tp:dbus-ref namespace="org.freedesktop.Telepathy"
+          parameter of the same (fully-qualified) name to <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
             >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
-          <code>DBus_Property</code> flag.</p>
+          <code>DBus_Property</code> flag. For connections managed by the
+          <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
+          this property SHOULD be set via the Account Manager as follows:</p>
 
-        <p>For connections managed by the <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          this property SHOULD be set via the Account Manager, by calling
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy"
-            >Account.UpdateParameters</tp:dbus-ref>; the AccountManager
-          provides change‐notification, as long as all other clients cooperate
-          by using it instead of setting this property directly.</p>
+        <blockquote>
+          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
+            >UpdateParameters</tp:dbus-ref>({
+              "org.freedesktop.Telepathy.Connection.Interface.Cellular.MessageReducedCharacterSet": <var>new_value</var>
+              }, [])</code>
+        </blockquote>
+
+        <p>The AccountManager provides change-notification, as long as all
+          other clients cooperate by using it instead of setting this property
+          directly.</p>
       </tp:docstring>
     </property>
   </interface>
