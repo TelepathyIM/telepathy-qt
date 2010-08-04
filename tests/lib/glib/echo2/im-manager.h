@@ -49,8 +49,6 @@ GType example_echo_2_im_manager_get_type (void);
   (G_TYPE_INSTANCE_GET_CLASS ((obj), EXAMPLE_TYPE_ECHO_2_IM_MANAGER, \
                               ExampleEcho2ImManagerClass))
 
-void example_echo_2_im_manager_append_channel_classes (GPtrArray *array);
-
 G_END_DECLS
 
 #endif

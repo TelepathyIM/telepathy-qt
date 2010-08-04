@@ -15,8 +15,6 @@
 #include "conn.h"
 #include "im-manager.h"
 
-#include "_gen/param-spec-struct.h"
-
 G_DEFINE_TYPE (ExampleEcho2Protocol,
     example_echo_2_protocol,
     TP_TYPE_BASE_PROTOCOL)
@@ -26,6 +24,17 @@ example_echo_2_protocol_init (
     ExampleEcho2Protocol *self)
 {
 }
+
+static const TpCMParamSpec example_echo_2_example_params[] = {
+  { "account", "s", G_TYPE_STRING,
+    TP_CONN_MGR_PARAM_FLAG_REQUIRED | TP_CONN_MGR_PARAM_FLAG_REGISTER,
+    NULL, /* no default */
+    0, /* formerly struct offset, now unused */
+    tp_cm_param_filter_string_nonempty, /* filter - empty strings disallowed */
+    NULL, /* filter data, unused for our filter */
+    NULL /* setter data, now unused */ },
+  { NULL }
+};
 
 static const TpCMParamSpec *
 get_parameters (TpBaseProtocol *self)
@@ -110,7 +119,7 @@ get_interfaces (TpBaseProtocol *self)
 static void
 get_connection_details (TpBaseProtocol *self G_GNUC_UNUSED,
     GStrv *connection_interfaces,
-    GPtrArray **requestable_channel_classes,
+    GType **channel_managers,
     gchar **icon_name,
     gchar **english_name,
     gchar **vcard_field)
@@ -121,11 +130,11 @@ get_connection_details (TpBaseProtocol *self G_GNUC_UNUSED,
           (GStrv) example_echo_2_connection_get_possible_interfaces ());
     }
 
-  if (requestable_channel_classes != NULL)
+  if (channel_managers != NULL)
     {
-      *requestable_channel_classes = g_ptr_array_new ();
-      example_echo_2_im_manager_append_channel_classes (
-          *requestable_channel_classes);
+      GType types[] = { EXAMPLE_TYPE_ECHO_2_IM_MANAGER, G_TYPE_INVALID };
+
+      *channel_managers = g_memdup (types, sizeof (types));
     }
 
   if (icon_name != NULL)

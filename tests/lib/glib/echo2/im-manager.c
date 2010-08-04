@@ -268,8 +268,8 @@ static const gchar * const allowed_properties[] = {
 };
 
 static void
-example_echo_2_im_manager_foreach_channel_class (TpChannelManager *manager,
-    TpChannelManagerChannelClassFunc func,
+example_echo_2_im_manager_type_foreach_channel_class (GType type,
+    TpChannelManagerTypeChannelClassFunc func,
     gpointer user_data)
 {
   GHashTable *table = tp_asv_new (
@@ -278,28 +278,9 @@ example_echo_2_im_manager_foreach_channel_class (TpChannelManager *manager,
       TP_PROP_CHANNEL_TARGET_HANDLE_TYPE, G_TYPE_UINT, TP_HANDLE_TYPE_CONTACT,
       NULL);
 
-  func (manager, table, allowed_properties, user_data);
+  func (type, table, allowed_properties, user_data);
 
   g_hash_table_destroy (table);
-}
-
-static void
-append_to_ptr_array (TpChannelManager *null G_GNUC_UNUSED,
-    GHashTable *table,
-    const gchar * const *allowed,
-    gpointer user_data)
-{
-  g_ptr_array_add (user_data, tp_value_array_build (2,
-        TP_HASH_TYPE_CHANNEL_CLASS, table,
-        G_TYPE_STRV, allowed,
-        G_TYPE_INVALID));
-}
-
-void
-example_echo_2_im_manager_append_channel_classes (GPtrArray *array)
-{
-  example_echo_2_im_manager_foreach_channel_class (NULL,
-      append_to_ptr_array, array);
 }
 
 static gboolean
@@ -388,7 +369,7 @@ channel_manager_iface_init (gpointer g_iface,
   TpChannelManagerIface *iface = g_iface;
 
   iface->foreach_channel = example_echo_2_im_manager_foreach_channel;
-  iface->foreach_channel_class = example_echo_2_im_manager_foreach_channel_class;
+  iface->type_foreach_channel_class = example_echo_2_im_manager_type_foreach_channel_class;
   iface->create_channel = example_echo_2_im_manager_create_channel;
   iface->ensure_channel = example_echo_2_im_manager_ensure_channel;
   /* In this channel manager, Request has the same semantics as Ensure */
