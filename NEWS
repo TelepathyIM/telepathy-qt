@@ -10,6 +10,7 @@ Fixes:
 - fd.o#28651 - Cannot receive files using gabble 0.9
 - fd.o#29145 - AccountSet::accountRemoved is emitted for newly-created
   non-matching accounts
+- fd.o#29395 - Update to spec 0.19.10
 
 telepathy-qt4 0.3.7 (2010-07-12)
 ================================
