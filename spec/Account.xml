@@ -330,7 +330,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
         <p>If any of the changed parameters'
           <tp:type>Conn_Mgr_Param_Flags</tp:type> include
-          <code>DBus_Property</code>, the change will be applied to the
+          <code>DBus_Property</code>, the change will be applied immediately to
+          the
           corresponding D-Bus Property on the active
           <tp:member-ref>Connection</tp:member-ref>, if there is one. Changes to
           other parameters will not take effect until the next time the account
@@ -372,14 +373,25 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </arg>
 
       <arg name="Reconnect_Required" type="as" direction="out">
-        <tp:docstring>
-          A list of the names of parameters with changes that will not take
-          effect until the account is reconnected (this may be empty, e.g. if
-          all the parameters are D-Bus properties or parameters for which the
-          account manager has specific support). User interfaces that
-          require "instant apply" semantics MAY call
-          <tp:member-ref>Reconnect</tp:member-ref> in response to receiving
-          a non-empty list.
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>If all of the parameters had the <code>DBus_Property</code> flag,
+            the empty list, signifying that no reconnection is required for the
+            new parameters to take effect. For example, if the only parameter
+            updated is <tt>...Cellular.<tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Connection.Interface.Cellular">MessageValidityPeriod</tp:dbus-ref></tt>,
+            the new value can be applied immediately to the connection.</p>
+
+          <p>Otherwise, a list of the names of parameters with changes that
+            will not take effect until the account is reconnected. User
+            interfaces that require "instant apply" semantics MAY call
+            <tp:member-ref>Reconnect</tp:member-ref> in response to receiving a
+            non-empty list. For example, if the caller updates both
+            <tt>...Anonymity.<tp:dbus-ref
+              namespace="org.freedesktop.Telepathy.Connection.Interface.Anonymity">AnonymityMandatory</tp:dbus-ref></tt>
+            and <tt>require-encryption</tt>, the former can be applied to the
+            current connection, but the latter needs a reconnect to take
+            effect, so this method should return
+            <code>["require-encryption"]</code>.</p>
         </tp:docstring>
       </arg>
 

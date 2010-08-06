@@ -192,7 +192,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>A map from protocol identifiers supported by a connection
           manager to the immutable properties of the corresponding
           <tp:dbus-ref namespace="org.freedesktop.Telepathy"
-            >Protocol.DRAFT</tp:dbus-ref> objects.</p>
+            >Protocol</tp:dbus-ref> objects.</p>
       </tp:docstring>
 
       <tp:member name="Protocol" type="s" tp:type="Protocol">
@@ -212,7 +212,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         <p>A map from protocol identifiers supported by this connection
           manager to the immutable properties of the corresponding
           <tp:dbus-ref namespace="org.freedesktop.Telepathy"
-            >Protocol.DRAFT</tp:dbus-ref> objects.</p>
+            >Protocol</tp:dbus-ref> objects.</p>
 
         <tp:rationale>
           <p>Providing the immutable properties here means that

@@ -238,6 +238,12 @@ public:
         return OptionalInterfaceFactory<Channel>::interface<Interface>();
     }
 
+    inline Client::ChannelTypeContactSearchInterface *contactSearchInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return typeInterface<Client::ChannelTypeContactSearchInterface>(check);
+    }
+
     inline Client::ChannelTypeRoomListInterface *roomListInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {

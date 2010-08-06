@@ -557,6 +557,18 @@ USA.</p>
               Channel_Text_Message_Type_Normal MUST be assumed. MAY
               be omitted for normal chat messages.</dd>
 
+            <dt>supersedes (s – <tp:type>Protocol_Message_Token</tp:type>)</dt>
+            <dd>If present, this message supersedes a previous message,
+              identified by its <tt>protocol-token</tt> or
+              <tt>message-token</tt> header. The user interface MAY, for
+              example, choose to replace the superseded message with this
+              message, or grey out the superseded message.
+
+              <tp:rationale>Skype, for example, allows the user to amend
+                messages they have already sent (to correct typos,
+                etc.).</tp:rationale>
+              </dd>
+
             <dt>pending-message-id (u - <tp:type>Message_ID</tp:type>)</dt>
             <dd>The incoming message ID. This MUST NOT be present on outgoing
               messages. Clients SHOULD NOT store this key - it is only valid

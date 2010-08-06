@@ -18,16 +18,20 @@ Lesser General Public License for more details.</p>
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
   </tp:license>
-  <interface name="org.freedesktop.Telepathy.Channel.Type.ContactSearch.DRAFT2"
-    tp:causes-havoc='experimental'>
+  <interface name="org.freedesktop.Telepathy.Channel.Type.ContactSearch">
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
-    <tp:changed version="0.17.27">(draft 2)</tp:changed>
+    <tp:added version="0.19.10">
+      as stable API. Changes from draft 2:
+      <tp:type>Contact_Search_Result_Map</tp:type> keys are now identifiers
+      rather than handles; consequently, the values need not include
+      <tt>x-telepathy-identifier</tt>.
+    </tp:added>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>A channel type for searching server-stored user directories. A new
         channel should be requested by a client for each search attempt, and
         closed when the search is completed or the required result has been
-        found in order to free unused handles.</p>
+        found.</p>
 
       <p>Before searching, the
         <tp:member-ref>AvailableSearchKeys</tp:member-ref> property should be
@@ -57,8 +61,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
       <p>The client should call the channel's <tp:dbus-ref
         namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref>
-        method when it is finished with the channel, so that any handles held
-        only by the channel can be released.</p>
+        method when it is finished with the channel.</p>
 
       <p>Each channel can only be used for a single search; a new channel
         should be requested for each subsequent search. Connection managers
@@ -377,10 +380,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <tp:mapping name="Contact_Search_Result_Map">
-      <tp:docstring>A map from contact handle to search result.</tp:docstring>
-      <tp:member name="Contact" type="u" tp:type="Contact_Handle">
-        <tp:docstring>
-          An integer handle for the contact.
+      <tp:docstring>A map from contact identifier to search result, emitted in
+        the <tp:member-ref>SearchResultReceived</tp:member-ref>
+        signal.</tp:docstring>
+
+      <tp:member name="Contact_Identifier" type="s">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The identifier of a contact matching the search terms.
+
+          <tp:rationale>
+            This is an identifier rather than a handle in case we make handles
+            immortal; see <a
+              href="https://bugs.freedesktop.org/show_bug.cgi?id=23155">fd.o#23155</a>
+            and <a
+              href="https://bugs.freedesktop.org/show_bug.cgi?id=13347#c5">fd.o#13347
+            comment 5</a>.
+          </tp:rationale>
         </tp:docstring>
       </tp:member>
 
@@ -392,29 +407,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             interface. It is possible that a separate call to <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.Connection.Interface.ContactInfo">RequestContactInfo</tp:dbus-ref>
             would return more information than this signal provides.</p>
-
-          <p>This array SHOULD include the <code>x-telepathy-identifier</code>
-            field, whose values matches the result of calling <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection">InspectHandles</tp:dbus-ref>
-            on the Contact handle.</p>
-
-          <tp:rationale>
-            <p>UIs will most likely want to show the identifier to the user;
-              while they could do this by inspecting the signalled handle,
-              including it in this signal is cheap and removes a roundtrip to
-              look it up.</p>
-          </tp:rationale>
         </tp:docstring>
       </tp:member>
     </tp:mapping>
 
     <signal name="SearchResultReceived"
       tp:name-for-bindings="Search_Result_Received">
-      <arg name="Result" type="a{ua(sasas)}" tp:type="Contact_Search_Result_Map">
-        <tp:docstring>A mapping from contact handle to an array of fields
-          representing information about this contact. Handles in this mapping
-          MUST remain valid until the Channel closes.</tp:docstring>
+      <arg name="Result" type="a{sa(sasas)}" tp:type="Contact_Search_Result_Map">
+        <tp:docstring>A mapping from contact identifier to an array of fields
+          representing information about this contact.</tp:docstring>
       </arg>
+
       <tp:docstring>
         Emitted when a some search results are received from the server.
         This signal can be fired arbitrarily many times so clients MUST NOT

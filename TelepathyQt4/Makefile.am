@@ -283,6 +283,7 @@ tpqt4include_HEADERS = \
     ChannelDispatchOperationInterface \
     ChannelRequestInterface \
     ChannelTypeContactListInterface \
+    ChannelTypeContactSearchInterface \
     ChannelTypeRoomListInterface \
     ChannelTypeStreamedMediaInterface \
     ChannelTypeTextInterface \

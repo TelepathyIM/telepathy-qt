@@ -580,6 +580,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </signal>
 
     <tp:enum name="Channel_Group_Change_Reason" type="u">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>The reason for a set of handles to move to one of
+          <tp:member-ref>Members</tp:member-ref>,
+          <tp:member-ref>LocalPendingMembers</tp:member-ref> or
+          <tp:member-ref>RemotePendingMembers</tp:member-ref>, or to be removed
+          from the group. A client may supply a reason when attempting to
+          remove members from a group with
+          <tp:member-ref>RemoveMembersWithReason</tp:member-ref>, and reasons
+          are supplied by the CM when emitting
+          <tp:member-ref>MembersChanged</tp:member-ref> and
+          <tp:member-ref>MembersChangedDetailed</tp:member-ref>. Some reason
+          codes have different meanings depending on the <var>Actor</var> in a
+          MembersChanged signal.</p>
+      </tp:docstring>
+
       <tp:enumvalue suffix="None" value="0">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
           <p>No reason was provided for this change.</p>
@@ -712,7 +727,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 
           <p>If a one-to-one <tp:dbus-ref
               namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
-            call fails because the contact being called did not respond, the
+            call fails because the contact being called did not respond, or the
+            local user did not respond to an incoming call, the
             connection manager SHOULD indicate this by removing both the
             <tp:member-ref>SelfHandle</tp:member-ref> and the other contact's
             handle from the Group interface with reason No_Answer.</p>
@@ -836,6 +852,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           channel-specific handles are added, but that it is emitted
           <em>after</em> emitting a MembersChanged signal in which
           channel-specific handles are removed.</p>
+
+        <p>See <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+          for an overview of how group state changes are used to indicate the
+          progress of a call.</p>
       </tp:docstring>
     </signal>
 
@@ -963,6 +984,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           channel-specific handles are added, but that it is emitted
           <em>after</em> emitting a MembersChangedDetailed signal in which
           channel-specific handles are removed.</p>
+
+        <p>See <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel.Type">StreamedMedia</tp:dbus-ref>
+          for an overview of how group state changes are used to indicate the
+          progress of a call.</p>
       </tp:docstring>
       <tp:added version="0.17.16"/>
     </signal>

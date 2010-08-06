@@ -123,17 +123,21 @@
           SHOULD also set this property first (rather than accepting the CM's
           default value).</p>
 
-        <p>This property SHOULD also be made available as a parameter to
-          <tp:dbus-ref
+        <p>This property SHOULD also be made available as a parameter of the
+          same (fully-qualified) name to <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.ConnectionManager">RequestConnection</tp:dbus-ref>,
           with the DBus_Property flag in its
           <tp:type>Conn_Mgr_Param_Flags</tp:type>. For connections managed
           by the <tp:dbus-ref
             namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          clients (other than the account manager itself) SHOULD set this
-          property via the Account's <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Account">UpdateParameters</tp:dbus-ref>
-          method.</p>
+          this property SHOULD be set via the Account Manager as follows:</p>
+
+        <blockquote>
+          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
+            >UpdateParameters</tp:dbus-ref>({
+              "org.freedesktop.Telepathy.Connection.Interface.Anonymity.AnonymityMandatory": <var>new_value</var>
+              }, [])</code>
+        </blockquote>
       </tp:docstring>
     </property>
 
@@ -146,17 +150,21 @@
           the modes will result in emission of
           <tp:member-ref>AnonymityModesChanged</tp:member-ref> signal.</p>
 
-        <p>This property SHOULD also be made available as a parameter to
-          <tp:dbus-ref
+        <p>This property SHOULD also be made available as a parameter of the
+          same (fully-qualified) name to <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.ConnectionManager">RequestConnection</tp:dbus-ref>,
           with the DBus_Property flag in its
           <tp:type>Conn_Mgr_Param_Flags</tp:type>. For connections managed
           by the <tp:dbus-ref
             namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
-          clients (other than the account manager itself) SHOULD set this
-          property via the Account's <tp:dbus-ref
-            namespace="org.freedesktop.Telepathy.Account">UpdateParameters</tp:dbus-ref>
-          method.</p>
+          this property SHOULD be set via the Account Manager as follows:</p>
+
+        <blockquote>
+          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
+            >UpdateParameters</tp:dbus-ref>({
+              "org.freedesktop.Telepathy.Connection.Interface.Anonymity.AnonymityModes": <var>new_value</var>
+              }, [])</code>
+        </blockquote>
       </tp:docstring>
       <tp:possible-errors>
         <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">

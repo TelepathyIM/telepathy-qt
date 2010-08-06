@@ -85,6 +85,16 @@
         CM then waits 30s for Handle #5 to accept the channel.  If after 30s it does
         not, the CM forwards the incoming channel to Handle #3, which will have
         20s to accept the channel.</p>
+
+      <p>When an unanswered <tp:dbus-ref
+          namespace='ofdT.Channel.Type'>StreamedMedia</tp:dbus-ref> call is
+        forwarded, both the contact and the self handle should be removed from
+        the group with the self handle as the actor, and
+        <tp:type>Channel_Group_Change_Reason</tp:type> <code>No_Answer</code> or
+        <code>Busy</code>, as appropriate. For <tp:dbus-ref
+        namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref> channels, the
+        <tp:type>Call_State_Change_Reason</tp:type> <code>Forwarded</code>
+        should be used.</p>
     </tp:docstring>
 
     <tp:enum name="Forwarding_Condition" type="u">
