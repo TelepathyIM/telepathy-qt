@@ -77,6 +77,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
     Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
     Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
+    Q_PROPERTY(ConnectionCapabilities* capabilities READ capabilities NOTIFY capabilitiesChanged)
     Q_PROPERTY(bool hasBeenOnline READ hasBeenOnline)
     Q_PROPERTY(bool connectsAutomatically READ connectsAutomatically NOTIFY connectsAutomaticallyPropertyChanged)
     Q_PROPERTY(ConnectionStatus connectionStatus READ connectionStatus)
@@ -99,6 +100,7 @@ public:
     static const Feature FeatureCore;
     static const Feature FeatureAvatar;
     static const Feature FeatureProtocolInfo;
+    static const Feature FeatureCapabilities;
 
     static AccountPtr create(const QString &busName,
             const QString &objectPath);
@@ -160,6 +162,8 @@ public:
 
     // comes from the ConnectionManager
     ProtocolInfo *protocolInfo() const;
+
+    ConnectionCapabilities *capabilities() const;
 
     bool connectsAutomatically() const;
     PendingOperation *setConnectsAutomatically(bool value);
@@ -318,6 +322,7 @@ Q_SIGNALS:
     void normalizedNameChanged(const QString &normalizedName);
     void validityChanged(bool validity);
     void stateChanged(bool state);
+    void capabilitiesChanged(Tp::ConnectionCapabilities *capabilities);
     void connectsAutomaticallyPropertyChanged(bool connectsAutomatically);
     void firstOnline();
     void parametersChanged(const QVariantMap &parameters);
@@ -353,6 +358,7 @@ private Q_SLOTS:
     void gotAvatar(QDBusPendingCallWatcher *);
     void onAvatarChanged();
     void onConnectionManagerReady(Tp::PendingOperation *);
+    void onConnectionReady(Tp::PendingOperation *);
     void onPropertyChanged(const QVariantMap &delta);
     void onRemoved();
     void onConnectionBuilt(Tp::PendingOperation *);

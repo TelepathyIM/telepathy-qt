@@ -96,7 +96,7 @@ void TestAccountBasics::initTestCase()
     initTestCaseImpl();
 
     mAM = AccountManager::create(AccountFactory::create(QDBusConnection::sessionBus(),
-                Account::FeatureCore | Account::FeatureProtocolInfo));
+                Account::FeatureCore | Account::FeatureCapabilities));
     QCOMPARE(mAM->isReady(), false);
 }
 
