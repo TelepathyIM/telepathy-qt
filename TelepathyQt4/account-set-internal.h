@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <TelepathyQt4/AccountPropertyFilter>
+
 namespace Tp
 {
 
@@ -29,23 +31,27 @@ struct AccountSet::Private
     class AccountWrapper;
 
     Private(AccountSet *parent, const AccountManagerPtr &accountManager,
+            const QList<Filter<Account> > &filters);
+    Private(AccountSet *parent, const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
 
+    void init();
+    bool checkFilters();
+    void connectSignals();
+    void insertAccounts();
     void insertAccount(const AccountPtr &account);
     void removeAccount(const AccountPtr &account);
     void wrapAccount(const AccountPtr &account);
     void filterAccount(const AccountPtr &account);
-    bool accountMatchFilter(AccountWrapper *account, const QVariantMap &filter);
+    bool accountMatchFilters(AccountWrapper *account);
 
     AccountSet *parent;
     AccountManagerPtr accountManager;
-    QVariantMap filter;
+    QList<Filter<Account> > filters;
     QHash<QString, AccountWrapper *> wrappers;
     QHash<QString, AccountPtr> accounts;
     bool filterValid;
     bool ready;
-
-    static QStringList supportedAccountProperties;
 };
 
 class TELEPATHY_QT4_NO_EXPORT AccountSet::Private::AccountWrapper : public QObject

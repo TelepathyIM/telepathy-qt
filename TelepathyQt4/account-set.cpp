@@ -35,56 +35,64 @@
 namespace Tp
 {
 
-QStringList AccountSet::Private::supportedAccountProperties;
+AccountSet::Private::Private(AccountSet *parent,
+        const AccountManagerPtr &accountManager,
+        const QList<Filter<Account> > &filters)
+    : parent(parent),
+      accountManager(accountManager),
+      filters(filters),
+      ready(false)
+{
+    init();
+}
 
 AccountSet::Private::Private(AccountSet *parent,
         const AccountManagerPtr &accountManager,
         const QVariantMap &filter)
     : parent(parent),
       accountManager(accountManager),
-      filter(filter),
       ready(false)
 {
-    /* initialize supportedAccountProperties */
-    if (supportedAccountProperties.isEmpty()) {
-        const QMetaObject metaObject = Account::staticMetaObject;
-        for (int i = metaObject.propertyOffset(); i < metaObject.propertyCount(); ++i) {
-            supportedAccountProperties << QLatin1String(metaObject.property(i).name());
+    AccountPropertyFilter filterObj;
+    for (QVariantMap::const_iterator i = filter.constBegin();
+            i != filter.constEnd(); ++i) {
+        filterObj.addProperty(i.key(), i.value());
+    }
+    filters.append(filterObj);
+    init();
+}
+
+void AccountSet::Private::init()
+{
+    if (checkFilters()) {
+        connectSignals();
+        insertAccounts();
+        ready = true;
+    }
+}
+
+bool AccountSet::Private::checkFilters()
+{
+    foreach (const Filter<Account> &filter, filters) {
+        if (!filter.isValid()) {
+            return false;
         }
     }
 
-    /* check if filter is valid */
-    for (QVariantMap::const_iterator i = filter.constBegin(); i != filter.constEnd(); ++i) {
-        QString filterKey = i.key();
+    return true;
+}
 
-        if (filterKey == QLatin1String("rccSubset")) {
-            if (!i.value().canConvert<RequestableChannelClassList>()) {
-                warning() << "Trying to filter accounts by RCC, but value for "
-                    "key 'rccSubset' is not a RequestableChannelClassList";
-                /* no need to check further or connect to signals as no account
-                 * will match filter */
-                filterValid = false;
-                return;
-            }
-        } else if (!supportedAccountProperties.contains(filterKey)) {
-            warning() << "Trying to filter accounts by" << filterKey <<
-                "which is not a valid Account property";
-            /* no need to check further or connect to signals as no account will
-             * match filter */
-            filterValid = false;
-            return;
-        }
-    }
-
-    filterValid = true;
-
+void AccountSet::Private::connectSignals()
+{
     parent->connect(accountManager.data(),
             SIGNAL(newAccount(const Tp::AccountPtr &)),
             SLOT(onNewAccount(const Tp::AccountPtr &)));
+}
 
+void AccountSet::Private::insertAccounts()
+{
     foreach (const Tp::AccountPtr &account, accountManager->allAccounts()) {
         insertAccount(account);
-        ready = true;
     }
 }
 
@@ -128,7 +136,7 @@ void AccountSet::Private::filterAccount(const AccountPtr &account)
     AccountWrapper *wrapper = wrappers[accountPath];
 
     /* account changed, let's check if it matches filter */
-    if (accountMatchFilter(wrapper, filter)) {
+    if (accountMatchFilters(wrapper)) {
         if (!accounts.contains(account->objectPath())) {
             accounts.insert(account->objectPath(), account);
             if (ready) {
@@ -145,74 +153,20 @@ void AccountSet::Private::filterAccount(const AccountPtr &account)
     }
 }
 
-bool AccountSet::Private::accountMatchFilter(AccountWrapper *wrapper,
-        const QVariantMap &filter)
+bool AccountSet::Private::accountMatchFilters(AccountWrapper *wrapper)
 {
-    if (filter.isEmpty()) {
+    if (filters.isEmpty()) {
         return true;
     }
 
     AccountPtr account = wrapper->account();
-    bool match = true;
-    for (QVariantMap::const_iterator i = filter.constBegin(); i != filter.constEnd(); ++i) {
-        QString filterKey = i.key();
-        QVariant filterValue = i.value();
-
-        if (filterKey == QLatin1String("rccSubset")) {
-            RequestableChannelClassList filterRccs =
-                filterValue.value<RequestableChannelClassList>();
-            RequestableChannelClassList accountRccs =
-                wrapper->capabilities() ?
-                    wrapper->capabilities()->requestableChannelClasses() :
-                    RequestableChannelClassList();
-            bool supportedRcc;
-
-            foreach (const RequestableChannelClass &filterRcc, filterRccs) {
-                supportedRcc = false;
-
-                foreach (const RequestableChannelClass &accountRcc, accountRccs) {
-                    /* check if fixed properties match */
-                    if (filterRcc.fixedProperties == accountRcc.fixedProperties) {
-                        supportedRcc = true;
-
-                        /* check if all allowed properties in the filter RCC
-                         * are in the account RCC allowed properties */
-                        foreach (const QString &value, filterRcc.allowedProperties) {
-                            if (!accountRcc.allowedProperties.contains(value)) {
-                                /* one of the properties in the filter RCC
-                                 * allowed properties is not in the account RCC
-                                 * allowed properties */
-                                supportedRcc = false;
-                                break;
-                            }
-                        }
-
-                        /* this RCC is supported, no need to check anymore */
-                        if (supportedRcc) {
-                            break;
-                        }
-                    }
-                }
-
-                /* one of the filter RCC is not supported, this account
-                 * won't match filter */
-                if (!supportedRcc) {
-                    match = false;
-                    break;
-                }
-            }
-        } else {
-           if (account->property(filterKey.toLatin1().constData()) != filterValue) {
-               match = false;
-           }
-        }
-
-        if (!match) {
-            break;
+    foreach (const Filter<Account> &filter, filters) {
+        if (!filter.matches(account)) {
+            return false;
         }
     }
 
-    return match;
+    return true;
 }
 
 AccountSet::Private::AccountWrapper::AccountWrapper(
@@ -358,9 +312,11 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  * {
  *     ...
  *
- *     QVariantMap filter;
- *     filter.insert(QLatin1String("protocolName"), QLatin1String("jabber"));
- *     filter.insert(QLatin1String("enabled"), true);
+ *     QList<Filter<Account> > filters;
+ *     AccountPropertyFilter filter;
+ *     filter.addProperty(QLatin1String("protocolName"), QLatin1String("jabber"));
+ *     filter.addProperty(QLatin1String("enabled"), true);
+ *     filters.append(filter);
  *
  *     AccountSetPtr filteredAccountSet = am->filterAccounts(filter);
  *     // connect to AccountSet::accountAdded/accountRemoved signals
@@ -372,13 +328,35 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  *
  * \endcode
  *
- * AccountSet can also be instantiated directly, but note that when doing it,
- * the AccountManager object passed as param must be ready for AccountSet
- * properly work.
+ * Note that for AccountSet to property work with AccountCapabilityFilter
+ * objects, the feature Account::FeatureCapabilities need to be enabled in all
+ * accounts return by the AccountManager passed as param in the constructor.
+ * The easiest way to do this is to enable AccountManager feature
+ * AccountManager::FeatureFilterByCapabilities.
+ *
+ * AccountSet can also be instantiated directly, but when doing it,
+ * the AccountManager object passed as param in the constructor must be ready
+ * for AccountSet properly work.
  */
 
 /**
  * Construct a new AccountSet object.
+ *
+ * \param accountManager An account manager object used to filter accounts.
+ *                       The account manager object must be ready.
+ * \param filters The desired filter.
+ */
+AccountSet::AccountSet(const AccountManagerPtr &accountManager,
+        const QList<Filter<Account> > &filters)
+    : QObject(),
+      mPriv(new Private(this, accountManager, filters))
+{
+}
+
+/**
+ * Construct a new AccountSet object.
+ *
+ * The \a filter must contain Account property names and values as map items.
  *
  * \param accountManager An account manager object used to filter accounts.
  *                       The account manager object must be ready.
@@ -413,6 +391,9 @@ AccountManagerPtr AccountSet::accountManager() const
  *
  * If the filter is invalid accounts() will always return an empty list.
  *
+ * This method is deprecated and should not be used in newly written code. Use
+ * Filter::isValid() instead.
+ *
  * \return \c true if the filter returned by filter() is valid, otherwise \c
  *         false.
  */
@@ -426,21 +407,38 @@ bool AccountSet::isFilterValid() const
  *
  * The filter is composed by Account property names and values as map items.
  *
- * Additional filter map items allowed are:
- *   key name: rccSubset - key value: Tp::RequestableChannelClassList
+ * This method is deprecated and should not be used in newly written code. Use
+ * filters() instead.
  *
  * \return A QVariantMap representing the filter used to filter accounts.
- * \sa isFilterValid()
  */
 QVariantMap AccountSet::filter() const
 {
-    return mPriv->filter;
+    QVariantMap result;
+    foreach (const Filter<Account> &filter, mPriv->filters) {
+        const AccountPropertyFilter *filterObj =
+            dynamic_cast<const AccountPropertyFilter *>(&filter);
+        if (filterObj) {
+            result.unite(filterObj->filter());
+        }
+    }
+    return result;
 }
 
 /**
- * Return a list of account objects that match filter().
+ * Return the filters used to filter accounts.
  *
- * \return A list of account objects that match filter().
+ * \return A list of filter objects used to filter accounts.
+ */
+QList<Filter<Account> > AccountSet::filters() const
+{
+    return mPriv->filters;
+}
+
+/**
+ * Return a list of account objects that match filters().
+ *
+ * \return A list of account objects that match filters().
  */
 QList<AccountPtr> AccountSet::accounts() const
 {
@@ -450,7 +448,7 @@ QList<AccountPtr> AccountSet::accounts() const
 /**
  * \fn void AccountSet::accountAdded(const Tp::AccountPtr &account);
  *
- * This signal is emitted whenever an account that matches filter() is added to
+ * This signal is emitted whenever an account that matches filters() is added to
  * this set.
  *
  * \param account The account that was added to this set.
@@ -459,7 +457,7 @@ QList<AccountPtr> AccountSet::accounts() const
 /**
  * \fn void AccountSet::accountRemoved(const Tp::AccountPtr &account);
  *
- * This signal is emitted whenever an account that matches filter() is removed
+ * This signal is emitted whenever an account that matches filters() is removed
  * from this set.
  *
  * \param account The account that was removed from this set.
