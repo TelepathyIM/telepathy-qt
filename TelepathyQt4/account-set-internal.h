@@ -64,7 +64,8 @@ Q_SIGNALS:
     void accountRemoved(const Tp::AccountPtr &account);
     void accountPropertyChanged(const Tp::AccountPtr &account,
             const QString &propertyName);
-    void accountCapabilitiesChanged(const Tp::AccountPtr &account);
+    void accountCapabilitiesChanged(const Tp::AccountPtr &account,
+            Tp::ConnectionCapabilities *capabilities);
 
 private Q_SLOTS:
     void onAccountRemoved();
