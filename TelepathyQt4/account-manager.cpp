@@ -625,7 +625,8 @@ QStringList AccountManager::allAccountPaths() const
  * Return a list of AccountPtr objects for all valid accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A list of AccountPtr objects.
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
@@ -645,7 +646,8 @@ QList<AccountPtr> AccountManager::validAccounts()
  * Return a list of AccountPtr objects for all invalid accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), allAccounts(), accountsForPaths()
@@ -665,7 +667,8 @@ QList<AccountPtr> AccountManager::invalidAccounts()
  * Return a list of AccountPtr objects for all accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
@@ -684,7 +687,8 @@ QList<AccountPtr> AccountManager::allAccounts()
  * Return a set of accounts containing all valid accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all valid accounts.
  */
@@ -700,7 +704,8 @@ AccountSetPtr AccountManager::validAccountsSet() const
  * Return a set of accounts containing all invalid accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all invalid accounts.
  */
@@ -716,7 +721,8 @@ AccountSetPtr AccountManager::invalidAccountsSet() const
  * Return a set of accounts containing all enabled accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all enabled accounts.
  */
@@ -732,7 +738,8 @@ AccountSetPtr AccountManager::enabledAccountsSet() const
  * Return a set of accounts containing all disabled accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all disabled accounts.
  */
@@ -748,7 +755,8 @@ AccountSetPtr AccountManager::disabledAccountsSet() const
  * Return a set of accounts containing all online accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all online accounts.
  */
@@ -764,7 +772,8 @@ AccountSetPtr AccountManager::onlineAccountsSet() const
  * Return a set of accounts containing all offline accounts.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all offline accounts.
  */
@@ -781,7 +790,8 @@ AccountSetPtr AccountManager::offlineAccountsSet() const
  * providing a contact identifier.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all accounts that support text chats by
  *         providing a contact identifier.
@@ -809,7 +819,8 @@ AccountSetPtr AccountManager::supportsTextChatsAccountsSet() const
  * rooms.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all accounts that support text chat rooms.
  */
@@ -836,7 +847,8 @@ AccountSetPtr AccountManager::supportsTextChatroomsAccountsSet() const
  * providing a contact identifier.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all accounts that support media calls by
  *         providing a contact identifier.
@@ -864,7 +876,8 @@ AccountSetPtr AccountManager::supportsMediaCallsAccountsSet() const
  * providing a contact identifier.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all accounts that support audio calls by
  *         providing a contact identifier.
@@ -894,7 +907,8 @@ AccountSetPtr AccountManager::supportsAudioCallsAccountsSet() const
  * providing a contact identifier.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all accounts that support video calls by
  *         providing a contact identifier.
@@ -927,7 +941,8 @@ AccountSetPtr AccountManager::supportsVideoCallsAccountsSet(bool withAudio) cons
  * providing a contact identifier.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all accounts that support file transfers by
  *         providing a contact identifier.
@@ -955,7 +970,8 @@ AccountSetPtr AccountManager::supportsFileTransfersAccountsSet() const
  * protocolName.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \param protocolName The name of the protocol used to filter accounts.
  * \return A set of accounts containing all accounts for the given \a
@@ -1010,7 +1026,8 @@ AccountSetPtr AccountManager::accountsByProtocol(
  * See AccountSet documentation for more details.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \param filter The desired filter
  * \return A set of accounts containing all accounts that match the given \a
@@ -1026,7 +1043,8 @@ AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
  * Return an AccountPtr object for the given \a path.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \param path The account object path.
  * \return An AccountPtr object pointing to the Account object for the given
@@ -1050,7 +1068,8 @@ AccountPtr AccountManager::accountForPath(const QString &path)
  * AccountPtr::isNull() will return true.
  *
  * Note that the returned accounts already have the Account::FeatureCore and
- * Account::FeatureProtocolInfo enabled.
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \param paths List of accounts object paths.
  * \return A list of AccountPtr objects.
