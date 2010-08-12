@@ -245,6 +245,7 @@ tpqt4include_HEADERS = \
     FileTransferChannelCreationProperties \
     Filter \
     FixedFeatureFactory \
+    GenericPropertyFilter \
     Global \
     IncomingFileTransferChannel \
     KeyFile \
@@ -370,6 +371,7 @@ tpqt4include_HEADERS = \
     file-transfer-channel-creation-properties.h \
     filter.h \
     fixed-feature-factory.h \
+    generic-property-filter.h \
     global.h \
     incoming-file-transfer-channel.h \
     key-file.h \
