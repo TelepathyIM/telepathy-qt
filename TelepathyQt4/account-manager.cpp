@@ -29,6 +29,7 @@
 
 #include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/PendingAccount>
+#include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Constants>
 
@@ -50,6 +51,7 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     void init();
 
     static void introspectMain(Private *self);
+    static void enableAccountsFeatureCapabilities(Private *self);
 
     void checkIntrospectionCompleted();
 
@@ -117,6 +119,15 @@ AccountManager::Private::Private(AccountManager *parent,
         this);
     introspectables[FeatureCore] = introspectableCore;
 
+    // As AccountManager does not have predefined statuses let's simulate one (0)
+    ReadinessHelper::Introspectable introspectableFeatureFilterByCapabilities(
+        QSet<uint>() << 0,                                           // makesSenseForStatuses
+        Features() << FeatureCore,                                   // dependsOnFeatures
+        QStringList(),                                               // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::enableAccountsFeatureCapabilities,
+        this);
+    introspectables[FeatureFilterByCapabilities] = introspectableFeatureFilterByCapabilities;
+
     readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
 
@@ -155,6 +166,20 @@ void AccountManager::Private::introspectMain(AccountManager::Private *self)
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
+}
+
+void AccountManager::Private::enableAccountsFeatureCapabilities(
+        AccountManager::Private *self)
+{
+    QList<PendingOperation *> ops;
+    foreach (const AccountPtr &account, self->accounts) {
+        ops.append(account->becomeReady(Account::FeatureCapabilities));
+    }
+
+    PendingComposite *opc = new PendingComposite(ops, self->parent);
+    self->parent->connect(opc,
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onAccountsCapabilitiesReady(Tp::PendingOperation *)));
 }
 
 void AccountManager::Private::checkIntrospectionCompleted()
@@ -344,6 +369,13 @@ AccountSetPtr AccountManager::Private::filterAccountsByRequestableChannelClasses
  * to the requested features.
  */
 const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager::staticMetaObject.className()), 0, true);
+
+/**
+ * Enable this feature so accounts return by this account manager can be
+ * filtered by capabilities using AccountCapabilityFilter or
+ * filterAccountsByCapabilities().
+ */
+const Feature AccountManager::FeatureFilterByCapabilities = Feature(QLatin1String(AccountManager::staticMetaObject.className()), 1);
 
 /**
  * Create a new AccountManager object using QDBusConnection::sessionBus().
@@ -1255,6 +1287,19 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
         mPriv->incompleteAccounts.remove(path);
         debug() << "Account" << path << "was removed, but it was "
             "not completely introspected, ignoring";
+    }
+}
+
+void AccountManager::onAccountsCapabilitiesReady(Tp::PendingOperation *op)
+{
+    if (!op->isError()) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureFilterByCapabilities, true);
+    } else {
+        warning().nospace() << "Unable to make one or more accounts "
+            "FeatureCapabilities ready" <<
+            op->errorName() << ":" << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureFilterByCapabilities,
+                false, op->errorName(), op->errorMessage());
     }
 }
 
