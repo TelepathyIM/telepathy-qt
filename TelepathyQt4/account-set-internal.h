@@ -69,12 +69,10 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onAccountRemoved();
     void onAccountPropertyChanged(const QString &propertyName);
-    void onAccountHaveConnectionChanged(bool);
-    void checkCapabilitiesChanged();
+    void onAccountCapalitiesChanged(Tp::ConnectionCapabilities *capabilities);
 
 private:
     AccountPtr mAccount;
-    bool mUsingConnectionCaps;
 };
 
 } // Tp

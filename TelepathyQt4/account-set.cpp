@@ -116,7 +116,7 @@ void AccountSet::Private::wrapAccount(const AccountPtr &account)
             SIGNAL(accountPropertyChanged(const Tp::AccountPtr &, const QString &)),
             SLOT(onAccountChanged(const Tp::AccountPtr &)));
     parent->connect(wrapper,
-            SIGNAL(accountCapabilitiesChanged(const Tp::AccountPtr &)),
+            SIGNAL(accountCapabilitiesChanged(const Tp::AccountPtr &, Tp::ConnectionCapabilities *)),
             SLOT(onAccountChanged(const Tp::AccountPtr &)));
     wrappers.insert(account->objectPath(), wrapper);
 }
@@ -218,8 +218,7 @@ bool AccountSet::Private::accountMatchFilter(AccountWrapper *wrapper,
 AccountSet::Private::AccountWrapper::AccountWrapper(
         const AccountPtr &account, QObject *parent)
     : QObject(parent),
-      mAccount(account),
-      mUsingConnectionCaps(false)
+      mAccount(account)
 {
     connect(account.data(),
             SIGNAL(removed()),
@@ -228,10 +227,8 @@ AccountSet::Private::AccountWrapper::AccountWrapper(
             SIGNAL(propertyChanged(const QString &)),
             SLOT(onAccountPropertyChanged(const QString &)));
     connect(account.data(),
-            SIGNAL(haveConnectionChanged(bool)),
-            SLOT(onAccountHaveConnectionChanged(bool)));
-
-    checkCapabilitiesChanged();
+            SIGNAL(capabilitiesChanged(Tp::ConnectionCapabilities *)),
+            SLOT(onAccountCapalitiesChanged(Tp::ConnectionCapabilities *)));
 }
 
 AccountSet::Private::AccountWrapper::~AccountWrapper()
@@ -264,40 +261,10 @@ void AccountSet::Private::AccountWrapper::onAccountPropertyChanged(
     emit accountPropertyChanged(mAccount, propertyName);
 }
 
-void AccountSet::Private::AccountWrapper::onAccountHaveConnectionChanged(
-        bool haveConnection)
+void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
+        ConnectionCapabilities *caps)
 {
-    if (haveConnection) {
-        /* check when the connection status changes, so we know if we should use
-         * the connection caps or the CM caps */
-        connect(mAccount->connection().data(),
-                SIGNAL(statusChanged(Tp::Connection::Status, Tp::ConnectionStatusReason)),
-                SLOT(checkCapabilitiesChanged()));
-    }
-    checkCapabilitiesChanged();
-}
-
-void AccountSet::Private::AccountWrapper::checkCapabilitiesChanged()
-{
-    /* when the capabilities changed:
-     *
-     * - We were using the connection caps and now we don't have connection or
-     *   the connection we have is not connected (changed to CM caps)
-     * - We were using the CM caps and now we have a connected connection
-     *   (changed to new connection caps)
-     */
-
-    if (mUsingConnectionCaps &&
-        (!mAccount->haveConnection() ||
-         mAccount->connection()->status() != Connection::StatusConnected)) {
-        mUsingConnectionCaps = false;
-        emit accountCapabilitiesChanged(mAccount);
-    } else if (!mUsingConnectionCaps &&
-        mAccount->haveConnection() &&
-        mAccount->connection()->status() == Connection::StatusConnected) {
-        mUsingConnectionCaps = true;
-        emit accountCapabilitiesChanged(mAccount);
-    }
+    emit accountCapabilitiesChanged(mAccount, caps);
 }
 
 /**
