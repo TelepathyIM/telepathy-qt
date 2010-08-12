@@ -115,18 +115,12 @@ public:
     AccountSetPtr onlineAccountsSet() const;
     AccountSetPtr offlineAccountsSet() const;
 
-    AccountSetPtr supportsTextChatsAccountsSet(
-            const QVariantMap &additionalFilter = QVariantMap()) const;
-    AccountSetPtr supportsTextChatroomsAccountsSet(
-            const QVariantMap &additionalFilter = QVariantMap()) const;
-    AccountSetPtr supportsMediaCallsAccountsSet(
-            const QVariantMap &additionalFilter = QVariantMap()) const;
-    AccountSetPtr supportsAudioCallsAccountsSet(
-            const QVariantMap &additionalFilter = QVariantMap()) const;
-    AccountSetPtr supportsVideoCallsAccountsSet(bool withAudio = true,
-            const QVariantMap &additionalFilter = QVariantMap()) const;
-    AccountSetPtr supportsFileTransfersAccountsSet(
-            const QVariantMap &additionalFilter = QVariantMap()) const;
+    AccountSetPtr supportsTextChatsAccountsSet() const;
+    AccountSetPtr supportsTextChatroomsAccountsSet() const;
+    AccountSetPtr supportsMediaCallsAccountsSet() const;
+    AccountSetPtr supportsAudioCallsAccountsSet() const;
+    AccountSetPtr supportsVideoCallsAccountsSet(bool withAudio = true) const;
+    AccountSetPtr supportsFileTransfersAccountsSet() const;
 
     AccountSetPtr accountsByProtocol(
             const QString &protocolName) const;
