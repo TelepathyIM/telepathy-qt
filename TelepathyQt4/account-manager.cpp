@@ -990,6 +990,45 @@ AccountSetPtr AccountManager::accountsByProtocol(
  * Return a set of accounts containing all accounts that match the given \a
  * filter criteria.
  *
+ * See AccountSet documentation for more details.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \param filter The desired filter
+ * \return A set of accounts containing all accounts that match the given \a
+ *         filter criteria.
+ */
+AccountSetPtr AccountManager::filterAccounts(const Filter<Account> &filter) const
+{
+    return filterAccounts(QList<Filter<Account> >() << filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that match the given \a
+ * filters criteria.
+ *
+ * See AccountSet documentation for more details.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \param filters The desired filters
+ * \return A set of accounts containing all accounts that match the given \a
+ *         filters criteria.
+ */
+AccountSetPtr AccountManager::filterAccounts(const QList<Filter<Account> > &filters) const
+{
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filters));
+}
+
+/**
+ * Return a set of accounts containing all accounts that match the given \a
+ * filter criteria.
+ *
  * The \a filter is composed by Account property names and values as map items.
  *
  * The following example will return all jabber accounts that are enabled:

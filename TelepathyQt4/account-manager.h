@@ -35,6 +35,7 @@
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
+#include <TelepathyQt4/Filter>
 #include <TelepathyQt4/OptionalInterfaceFactory>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/ReadyObject>
@@ -125,6 +126,8 @@ public:
     AccountSetPtr accountsByProtocol(
             const QString &protocolName) const;
 
+    AccountSetPtr filterAccounts(const Filter<Account> &filter) const;
+    AccountSetPtr filterAccounts(const QList<Filter<Account> > &filters) const;
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
     TELEPATHY_QT4_DEPRECATED AccountPtr accountForPath(const QString &path);
