@@ -58,6 +58,7 @@ libtelepathy_qt4_la_SOURCES = \
     account.cpp \
     account-factory.cpp \
     account-manager.cpp \
+    account-capability-filter.cpp \
     account-property-filter.cpp \
     account-set.cpp \
     account-set-internal.h \
@@ -218,6 +219,7 @@ tpqt4include_HEADERS = \
     Account \
     AccountFactory \
     AccountManager \
+    AccountCapabilityFilter \
     AccountPropertyFilter \
     AccountSet \
     CapabilitiesBase \
@@ -345,6 +347,7 @@ tpqt4include_HEADERS = \
     account.h \
     account-factory.h \
     account-manager.h \
+    account-capability-filter.h \
     account-property-filter.h \
     account-set.h \
     capabilities-base.h \
