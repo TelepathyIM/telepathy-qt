@@ -27,6 +27,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/AccountCapabilityFilter>
 #include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingComposite>
@@ -808,10 +809,9 @@ AccountSetPtr AccountManager::textChatsAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    AccountCapabilityFilter filter;
+    filter.setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
 }
 
 /**
@@ -836,10 +836,9 @@ AccountSetPtr AccountManager::textChatroomsAccountsSet() const
             (uint) HandleTypeRoom);
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    AccountCapabilityFilter filter;
+    filter.setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
 }
 
 /**
@@ -865,10 +864,9 @@ AccountSetPtr AccountManager::mediaCallsAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    AccountCapabilityFilter filter;
+    filter.setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
 }
 
 /**
@@ -896,10 +894,9 @@ AccountSetPtr AccountManager::audioCallsAccountsSet() const
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    AccountCapabilityFilter filter;
+    filter.setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
 }
 
 /**
@@ -930,10 +927,9 @@ AccountSetPtr AccountManager::videoCallsAccountsSet(bool withAudio) const
     }
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    AccountCapabilityFilter filter;
+    filter.setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
 }
 
 /**
@@ -959,10 +955,9 @@ AccountSetPtr AccountManager::fileTransfersAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    QVariantMap filter;
-    filter.insert(QLatin1String("rccSubset"), qVariantFromValue(rccs));
-    return AccountSetPtr(new AccountSet(AccountManagerPtr(
-                    (AccountManager *) this), filter));
+    AccountCapabilityFilter filter;
+    filter.setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
 }
 
 /**
