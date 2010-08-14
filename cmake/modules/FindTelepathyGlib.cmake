@@ -29,21 +29,26 @@ if (NOT WIN32)
     set(TELEPATHY_GLIB_DEFINITIONS ${PC_TELEPATHY_GLIB_CFLAGS_OTHER})
 endif (NOT WIN32)
 
-find_path(TELEPATHY_GLIB_INCLUDE_DIR telepathy-glib/client.h
-   PATHS
-   ${PC_TELEPATHY_GLIB_INCLUDEDIR}
-   ${PC_TELEPATHY_GLIB_INCLUDE_DIRS}
-   PATH_SUFFIXES telepathy-1.0
-   )
+if (TELEPATHY_GLIB_MIN_VERSION AND PKG_CONFIG_FOUND AND NOT PC_TELEPATHY_GLIB_FOUND)
+    message(STATUS "Telepathy-glib not found or its version is < ${TELEPATHY_GLIB_MIN_VERSION}")
+else (TELEPATHY_GLIB_MIN_VERSION AND PKG_CONFIG_FOUND AND NOT PC_TELEPATHY_GLIB_FOUND)
+    find_path(TELEPATHY_GLIB_INCLUDE_DIR telepathy-glib/client.h
+       PATHS
+       ${PC_TELEPATHY_GLIB_INCLUDEDIR}
+       ${PC_TELEPATHY_GLIB_INCLUDE_DIRS}
+       PATH_SUFFIXES telepathy-1.0
+    )
 
-find_library(TELEPATHY_GLIB_LIBRARIES NAMES telepathy-glib
-   PATHS
-   ${PC_TELEPATHY_GLIB_LIBDIR}
-   ${PC_TELEPATHY_GLIB_LIBRARY_DIRS}
-   )
+    find_library(TELEPATHY_GLIB_LIBRARIES NAMES telepathy-glib
+       PATHS
+       ${PC_TELEPATHY_GLIB_LIBDIR}
+       ${PC_TELEPATHY_GLIB_LIBRARY_DIRS}
+    )
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(TelepathyGlib DEFAULT_MSG TELEPATHY_GLIB_LIBRARIES
-                                                            TELEPATHY_GLIB_INCLUDE_DIR)
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(TelepathyGlib DEFAULT_MSG TELEPATHY_GLIB_LIBRARIES
+                                                                TELEPATHY_GLIB_INCLUDE_DIR)
 
-mark_as_advanced(TELEPATHY_GLIB_INCLUDE_DIR TELEPATHY_GLIB_LIBRARIES)
+    mark_as_advanced(TELEPATHY_GLIB_INCLUDE_DIR TELEPATHY_GLIB_LIBRARIES)
+
+endif (TELEPATHY_GLIB_MIN_VERSION AND PKG_CONFIG_FOUND AND NOT PC_TELEPATHY_GLIB_FOUND)
