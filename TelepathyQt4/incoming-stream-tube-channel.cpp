@@ -164,7 +164,7 @@ PendingStreamTubeConnection::~PendingStreamTubeConnection()
 }
 
 /**
- * \returns The opened QIODevice if the operation is finished and successful, 0 otherwise.
+ * \return The opened QIODevice if the operation is finished and successful, 0 otherwise.
  */
 QIODevice* PendingStreamTubeConnection::device()
 {
@@ -283,7 +283,7 @@ void PendingStreamTubeConnectionPrivate::onDeviceConnected()
 
 
 /**
- * \returns The type of socket this PendingStreamTubeConnection has created
+ * \return The type of socket this PendingStreamTubeConnection has created
  *
  * \note This function will return a valid value only after the operation has been finished successfully
  *
@@ -297,7 +297,7 @@ SocketAddressType PendingStreamTubeConnection::addressType() const
 
 
 /**
- * \returns The local address obtained from this PendingStreamTubeConnection as a QByteArray,
+ * \return The local address obtained from this PendingStreamTubeConnection as a QByteArray,
  *          if the connection has been estabilished through a SocketAddressTypeUnix or
  *          a SocketAddressTypeAbstractUnix.
  *
@@ -312,7 +312,7 @@ QString PendingStreamTubeConnection::localAddress() const
 
 
 /**
- * \returns The IP address and port obtained from this PendingStreamTubeConnection as a QHostAddress,
+ * \return The IP address and port obtained from this PendingStreamTubeConnection as a QHostAddress,
  *          if the connection has been estabilished through a SocketAddressTypeIpv4 or
  *          a SocketAddressTypeIPv6.
  *
@@ -414,7 +414,7 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * \param allowedAddress an allowed address for connecting to this socket, or QHostAddress::Any
  * \param allowedPort an allowed port for connecting to this socket
  *
- * \returns A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
+ * \return A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
  * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
@@ -549,7 +549,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
  * This overload will open a tube which accepts every incoming connection from Localhost. Please note
  * that this is the equivalent of calling acceptTubeAsTcpSocket(QHostAddress::Any, 0).
  *
- * \returns A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
+ * \return A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
  * \see StreamTubeChannel::supportsIPv4SocketsWithAllowedAddress
@@ -580,7 +580,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *
- * \returns A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
+ * \return A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
  * \see StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost
@@ -651,7 +651,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 
 
 /**
- * \returns A valid QIODevice if the tube is in the \c Open state, 0 otherwise.
+ * \return A valid QIODevice if the tube is in the \c Open state, 0 otherwise.
  */
 QIODevice* IncomingStreamTubeChannel::device()
 {

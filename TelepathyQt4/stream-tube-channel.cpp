@@ -303,7 +303,7 @@ StreamTubeChannel::~StreamTubeChannel()
 }
 
 /**
- * \returns the service name that will be used over the tube
+ * \return the service name that will be used over the tube
  */
 QString StreamTubeChannel::service() const
 {
@@ -320,7 +320,7 @@ QString StreamTubeChannel::service() const
 
 
 /**
- * \returns Whether this stream tube is capable to accept or offer an IPv4 socket
+ * \return Whether this stream tube is capable to accept or offer an IPv4 socket
  *          accepting all incoming connections coming from localhost.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
@@ -342,7 +342,7 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 
 
 /**
- * \returns When dealing with an incoming tube, whether this tube is capable
+ * \return When dealing with an incoming tube, whether this tube is capable
  *          to accept or offer an IPv4 socket when specifying an allowed address
  *          for connecting to thesocket.
  *          When dealing with an outgoing tube, whether this tube will be able to
@@ -368,7 +368,7 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
 
 
 /**
- * \returns Whether this stream tube is capable to accept or offer an IPv6 socket
+ * \return Whether this stream tube is capable to accept or offer an IPv6 socket
  *          accepting all incoming connections coming from localhost.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsTcpSocket
@@ -390,7 +390,7 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
 
 
 /**
- * \returns When dealing with an incoming tube, whether this tube is capable
+ * \return When dealing with an incoming tube, whether this tube is capable
  *          to accept or offer an IPv6 socket when specifying an allowed address
  *          for connecting to thesocket.
  *          When dealing with an outgoing tube, whether this tube will be able to
@@ -416,7 +416,7 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
 
 
 /**
- * \returns Whether this stream tube is capable to accept or offer an Unix socket
+ * \return Whether this stream tube is capable to accept or offer an Unix socket
  *          accepting all incoming connections coming from localhost.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
@@ -437,7 +437,7 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
 }
 
 /**
- * \returns Whether this stream tube is capable to accept or offer an Unix socket
+ * \return Whether this stream tube is capable to accept or offer an Unix socket
  *          requiring credentials for connecting to it.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
@@ -459,7 +459,7 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
 
 
 /**
- * \returns Whether this stream tube is capable to accept or offer an Abstract Unix socket
+ * \return Whether this stream tube is capable to accept or offer an Abstract Unix socket
  *          accepting all incoming connections coming from localhost.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
@@ -481,7 +481,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
 
 
 /**
- * \returns Whether this Stream tube supports offering or accepting it as an
+ * \return Whether this Stream tube supports offering or accepting it as an
  *          Abstract Unix socket and requiring credentials for connecting to it.
  *
  * \see IncomingStreamTubeChannel::acceptTubeAsUnixSocket
@@ -524,7 +524,7 @@ void StreamTubeChannel::connectNotify(const char* signal)
  * been enabled. For this method to return all known connections, you need to make
  * FeatureConnectionMonitoring ready before accepting or offering the tube.
  *
- * \returns A list of active connection ids known to this tube
+ * \return A list of active connection ids known to this tube
  */
 UIntList StreamTubeChannel::connections() const
 {
@@ -541,7 +541,7 @@ UIntList StreamTubeChannel::connections() const
 
 
 /**
- * \returns The local address used by this StreamTube as a QString, if this tube is using
+ * \return The local address used by this StreamTube as a QString, if this tube is using
  *          a SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
  *
  * \note This function will return a valid value only after the tube has been opened
@@ -561,7 +561,7 @@ QString StreamTubeChannel::localAddress() const
 
 
 /**
- * \returns The IP address and port used by this StreamTube as a QHostAddress, if this tube is using
+ * \return The IP address and port used by this StreamTube as a QHostAddress, if this tube is using
  *          a SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
  *
  * \note This function will return a valid value only after the tube has been opened
@@ -581,7 +581,7 @@ QPair< QHostAddress, quint16 > StreamTubeChannel::ipAddress() const
 
 
 /**
- * \returns The type of socket this StreamTube is using
+ * \return The type of socket this StreamTube is using
  *
  * \note This function will return a valid value only after the tube has been opened
  *

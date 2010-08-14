@@ -279,7 +279,7 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
  *                   Please read the specification for more details.
  *
- * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
+ * \return A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
  * \note The library will try to use Port access control whenever possible, as it allows to
@@ -410,7 +410,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \param parameters A dictionary of arbitrary Parameters to send with the tube offer.
  *                   Please read the specification for more details.
  *
- * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
+ * \return A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
  * \note The library will try to use Port access control whenever possible, as it allows to
@@ -451,7 +451,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *
- * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
+ * \return A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
  * \see StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost
@@ -555,7 +555,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
  *
- * \returns A %PendingOperation which will finish as soon as the tube is ready to be used
+ * \return A %PendingOperation which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
  * \see StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost
@@ -580,7 +580,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
  * returns a map from a source address to its connection ID. It is useful to track an address
  * which connected to your socket to a contact (by using contactsForConnections).
  *
- * \returns an hash mapping a source address to its connection ID
+ * \return an hash mapping a source address to its connection ID
  *
  * \note The tube has to be open for calling this function
  *
@@ -619,7 +619,7 @@ QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connect
  * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, this function
  * returns a map from a connection ID to the associated contact.
  *
- * \returns an hash mapping a connection ID to the associated contact.
+ * \return an hash mapping a connection ID to the associated contact.
  *
  * \note The tube has to be open for calling this function
  *

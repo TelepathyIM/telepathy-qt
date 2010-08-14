@@ -211,7 +211,7 @@ TubeChannel::~TubeChannel()
 }
 
 /**
- * \returns A dictionary of arbitrary parameters. Please refer to the spec for more details.
+ * \return A dictionary of arbitrary parameters. Please refer to the spec for more details.
  *
  * \note For outgoing tubes, this function will return a valid value only after the tube has
  *       been offered successfully.
@@ -229,7 +229,7 @@ QVariantMap TubeChannel::parameters() const
 }
 
 /**
- * \returns The State of the tube in this channel.
+ * \return The State of the tube in this channel.
  */
 TubeChannelState TubeChannel::tubeState() const
 {
