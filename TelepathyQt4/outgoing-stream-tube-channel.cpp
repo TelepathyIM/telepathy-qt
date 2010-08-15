@@ -32,9 +32,9 @@
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/Types>
 
-#include <QtNetwork/QHostAddress>
-#include <QtNetwork/QTcpServer>
-#include <QtNetwork/QLocalServer>
+#include <QHostAddress>
+#include <QTcpServer>
+#include <QLocalServer>
 
 namespace Tp
 {

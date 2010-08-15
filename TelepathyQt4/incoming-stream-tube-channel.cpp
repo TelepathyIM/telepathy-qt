@@ -30,8 +30,8 @@
 #include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/Types>
 
-#include <QtNetwork/QHostAddress>
-#include <QtNetwork/QTcpSocket>
+#include <QHostAddress>
+#include <QTcpSocket>
 
 namespace Tp
 {

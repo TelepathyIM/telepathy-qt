@@ -24,7 +24,7 @@
 #include <TelepathyQt4/IncomingStreamTubeChannel>
 #include "TelepathyQt4/stream-tube-channel-internal.h"
 
-#include <QtNetwork/QLocalSocket>
+#include <QLocalSocket>
 
 namespace Tp {
 
