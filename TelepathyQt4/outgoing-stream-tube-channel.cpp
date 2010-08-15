@@ -18,15 +18,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <TelepathyQt4/OutgoingStreamTubeChannel>
 #include "TelepathyQt4/outgoing-stream-tube-channel-internal.h"
+
+#include "TelepathyQt4/_gen/outgoing-stream-tube-channel.moc.hpp"
+#include "TelepathyQt4/_gen/outgoing-stream-tube-channel-internal.moc.hpp"
+
+#include "TelepathyQt4/debug-internal.h"
+#include "TelepathyQt4/types-internal.h"
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/Types>
-
-#include "TelepathyQt4/debug-internal.h"
-#include "TelepathyQt4/types-internal.h"
 
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QTcpServer>
@@ -646,6 +650,3 @@ QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() co
 }
 
 }
-
-#include "TelepathyQt4/_gen/outgoing-stream-tube-channel.moc.hpp"
-#include "TelepathyQt4/_gen/outgoing-stream-tube-channel-internal.moc.hpp"

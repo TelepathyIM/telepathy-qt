@@ -19,39 +19,22 @@
  */
 
 #include <TelepathyQt4/IncomingStreamTubeChannel>
-#include "TelepathyQt4/stream-tube-channel-internal.h"
+#include "TelepathyQt4/incoming-stream-tube-channel-internal.h"
+
+#include "TelepathyQt4/_gen/incoming-stream-tube-channel.moc.hpp"
+
+#include "TelepathyQt4/types-internal.h"
+#include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingVariant>
 #include <TelepathyQt4/Types>
 
-#include "TelepathyQt4/types-internal.h"
-#include "TelepathyQt4/debug-internal.h"
-
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QTcpSocket>
-#include <QtNetwork/QLocalSocket>
 
 namespace Tp
 {
-
-class TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannelPrivate : public StreamTubeChannelPrivate
-{
-    Q_DECLARE_PUBLIC(IncomingStreamTubeChannel)
-public:
-    IncomingStreamTubeChannelPrivate(IncomingStreamTubeChannel *parent);
-    virtual ~IncomingStreamTubeChannelPrivate();
-
-    // Public object
-    IncomingStreamTubeChannel *parent;
-
-    // Properties
-    QIODevice *device;
-
-    // Private slots
-    void onAcceptTubeFinished(Tp::PendingOperation* op);
-    void onNewLocalConnection(uint connectionId);
-};
 
 IncomingStreamTubeChannelPrivate::IncomingStreamTubeChannelPrivate(IncomingStreamTubeChannel *parent)
     : StreamTubeChannelPrivate(parent)
@@ -81,32 +64,7 @@ void IncomingStreamTubeChannelPrivate::onNewLocalConnection(uint connectionId)
     emit q->newConnection(connectionId);
 }
 
-class TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnectionPrivate
-{
-public:
-    PendingStreamTubeConnectionPrivate(PendingStreamTubeConnection *parent);
-    virtual ~PendingStreamTubeConnectionPrivate();
-
-    // Public object
-    PendingStreamTubeConnection *parent;
-
-    IncomingStreamTubeChannelPtr tube;
-    SocketAddressType type;
-    QHostAddress hostAddress;
-    quint16 port;
-    QString socketPath;
-
-    QIODevice *device;
-
-    // Private slots
-    void onAcceptFinished(Tp::PendingOperation* op);
-    void onTubeStateChanged(Tp::TubeChannelState state);
-    void onDeviceConnected();
-    void onAbstractSocketError(QAbstractSocket::SocketError error);
-    void onLocalSocketError(QLocalSocket::LocalSocketError error);
-};
-
-PendingStreamTubeConnectionPrivate::PendingStreamTubeConnectionPrivate(PendingStreamTubeConnection *parent)
+PendingStreamTubeConnectionPrivate::PendingStreamTubeConnectionPrivate(PendingStreamTubeConnection* parent)
     : parent(parent)
     , device(0)
 {
@@ -664,5 +622,3 @@ QIODevice* IncomingStreamTubeChannel::device()
 }
 
 }
-
-#include "TelepathyQt4/_gen/incoming-stream-tube-channel.moc.hpp"

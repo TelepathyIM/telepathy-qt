@@ -18,7 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <TelepathyQt4/StreamTubeChannel>
 #include "TelepathyQt4/stream-tube-channel-internal.h"
+
+#include "TelepathyQt4/_gen/stream-tube-channel.moc.hpp"
+#include "TelepathyQt4/_gen/stream-tube-channel-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -596,6 +600,3 @@ SocketAddressType StreamTubeChannel::addressType() const
 }
 
 }
-
-#include "TelepathyQt4/_gen/stream-tube-channel.moc.hpp"
-#include "TelepathyQt4/_gen/stream-tube-channel-internal.moc.hpp"
