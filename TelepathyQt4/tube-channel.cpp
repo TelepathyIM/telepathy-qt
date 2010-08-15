@@ -246,15 +246,4 @@ TubeChannelState TubeChannel::tubeState() const
     return d->state;
 }
 
-void TubeChannel::connectNotify(const char* signal)
-{
-    if (QLatin1String(signal) == SIGNAL(tubeStateChanged(Tp::TubeChannelState)) &&
-        !isReady(FeatureTube)) {
-        warning() << "Connected to the signal tubeStateChanged, but FeatureTube is "
-            "not ready. The signal won't be emitted until the mentioned feature is ready.";
-    }
-
-    Channel::connectNotify(signal);
-}
-
 } // Tp

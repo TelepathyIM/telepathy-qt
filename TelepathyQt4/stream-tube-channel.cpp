@@ -506,23 +506,6 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
 }
 
 
-void StreamTubeChannel::connectNotify(const char* signal)
-{
-    if (QLatin1String(signal) == SIGNAL(connectionClosed(uint,QString,QString)) &&
-        !isReady(FeatureConnectionMonitoring)) {
-        warning() << "Connected to the signal connectionClosed, but FeatureConnectionMonitoring is "
-            "not ready. The signal won't be emitted until the mentioned feature is ready.";
-    }
-
-    if (QLatin1String(signal) == SIGNAL(newConnection(uint)) &&
-        !isReady(FeatureConnectionMonitoring)) {
-        warning() << "Connected to the signal newConnection, but FeatureConnectionMonitoring is "
-            "not ready. The signal won't be emitted until the mentioned feature is ready.";
-    }
-
-    TubeChannel::connectNotify(signal);
-}
-
 /**
  * This function returns all the known active connections since FeatureConnectionMonitoring has
  * been enabled. For this method to return all known connections, you need to make

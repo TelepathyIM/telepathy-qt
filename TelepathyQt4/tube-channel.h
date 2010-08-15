@@ -62,8 +62,6 @@ protected:
                 const Feature &coreFeature,
                 TubeChannelPrivate &dd);
 
-    virtual void connectNotify(const char* signal);
-
 Q_SIGNALS:
     void tubeStateChanged(Tp::TubeChannelState newstate);
 
