@@ -46,9 +46,9 @@ void TubeChannelPrivate::init()
     ReadinessHelper::Introspectables introspectables;
 
     ReadinessHelper::Introspectable introspectableTube(
-        QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        Features() << Channel::FeatureCore,                                     // dependsOnFeatures (core)
-        QStringList(),                                                          // dependsOnInterfaces
+        QSet<uint>() << 0,                                                          // makesSenseForStatuses
+        Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
+        QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE), // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &TubeChannelPrivate::introspectTube,
         this);
     introspectables[TubeChannel::FeatureTube] = introspectableTube;
@@ -125,7 +125,7 @@ void TubeChannelPrivate::introspectTube(TubeChannelPrivate* self)
  * \brief A class representing an abstract Tube
  *
  * \c TubeChannel is an high level wrapper for managing Telepathy interface
- * org.freedesktop.Telepathy.Channel.Interface.Tube.
+ * #TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE.
  * A tube is a mechanism for arbitrary data transfer between two or more IM users,
  * used to allow applications on the users' systems to communicate without having
  * to establish network connections themselves.
@@ -214,6 +214,10 @@ TubeChannel::~TubeChannel()
 }
 
 /**
+ * Returns the parameters associated with this tube, if any.
+ *
+ * This method requires TubeChannel::FeatureTube to be enabled.
+ *
  * \return A dictionary of arbitrary parameters. Please refer to the spec for more details.
  *
  * \note For outgoing tubes, this function will return a valid value only after the tube has
@@ -233,6 +237,8 @@ QVariantMap TubeChannel::parameters() const
 
 /**
  * \return The State of the tube in this channel.
+ *
+ * \note This method requires TubeChannel::FeatureTube to be enabled.
  */
 TubeChannelState TubeChannel::tubeState() const
 {

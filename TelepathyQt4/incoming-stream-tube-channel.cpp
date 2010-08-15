@@ -287,16 +287,99 @@ QPair< QHostAddress, quint16 > PendingStreamTubeConnection::ipAddress() const
 
 /**
  * \class IncomingStreamTubeChannel
- * \headerfile TelepathyQt4/stream-tube.h <TelepathyQt4/IncomingStreamTubeChannel>
+ * \headerfile TelepathyQt4/incoming-stream-tube-channel.h <TelepathyQt4/IncomingStreamTubeChannel>
  *
- * \brief A class representing a Stream Tube
+ * \brief An high level wrapper for managing an incoming stream tube
  *
  * \c IncomingStreamTubeChannel is an high level wrapper for managing Telepathy interface
- * org.freedesktop.Telepathy.Channel.Type.StreamTubeChannel.
+ * #TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE.
  * In particular, this class is meant to be used as a comfortable way for accepting incoming.
  * It provides an easy way for obtaining a QIODevice which can be used for communication.
  *
- * For more details, please refer to Telepathy spec.
+ * \section incoming_stream_tube_usage_sec Usage
+ *
+ * \subsection incoming_stream_tube_create_sec Obtaining an incoming stream tube
+ *
+ * Whenever a contact invites you to open an incoming stream tube, if you are registered as a channel handler
+ * for the channel type #TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE, you will be notified of the offer and
+ * you will be able to handle the channel. Please refer to the documentation of #AbstractClientHandler for more
+ * details on channel handling.
+ *
+ * Supposing your channel handler has been created correctly, you would do:
+ *
+ * \code
+ * void MyChannelManager::handleChannels(const Tp::MethodInvocationContextPtr<>& context,
+ *                               const Tp::AccountPtr& account,
+ *                               const Tp::ConnectionPtr& connection,
+ *                               const QList< Tp::ChannelPtr >& channels,
+ *                               const QList< Tp::ChannelRequestPtr >& requestsSatisfied,
+ *                               const QDateTime& userActionTime,
+ *                               const QVariantMap& handlerInfo)
+ * {
+ *     foreach(const Tp::ChannelPtr &channel, channels) {
+ *         QVariantMap properties = channel->immutableProperties();
+ *
+ *         if (properties[TELEPATHY_INTERFACE_CHANNEL ".ChannelType"] ==
+ *                        TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE) {
+ *
+ *             // Handle the channel
+ *             Tp::IncomingStreamTubeChannelPtr myTube = Tp::IncomingStreamTubeChannelPtr::dynamicCast(channel);
+ *
+ *          }
+ *     }
+ *
+ *     context->setFinished();
+ * }
+ * \endcode
+ *
+ * \subsection incoming_stream_tube_accept_sec Accepting the tube
+ *
+ * Before being ready to accept the tube, we must be sure the required features on our object
+ * are ready. In this case, we need to enable TubeChannel::FeatureTube and StreamTubeChannel::FeatureStreamTube.
+ *
+ * \code
+ *
+ * Features features = Features() << TubeChannel::FeatureTube
+ *                                << StreamTubeChannel::FeatureStreamTube;
+ * connect(myTube->becomeReady(features),
+ *         SIGNAL(finished(Tp::PendingOperation *)),
+ *         SLOT(onStreamTubeChannelReady(Tp::PendingOperation *)));
+ *
+ * \endcode
+ *
+ * To learn more on how to use introspectable and features, please see \ref account_ready_sec.
+ *
+ * Once your object is ready, you can use one of the overloads of #acceptTubeAsTcpSocket or
+ * #acceptTubeAsUnixSocket to accept a socket over the tube. Please note that the socket type is \b not dependent on
+ * what has been offered on the other end: choosing whether you want to accept a TCP socket or an Unix socket boils
+ * down to your personal preference only and does not affect in any way the way the communication with the other end
+ * will be handled.
+ *
+ * Let's consider the case of accepting an Unix socket without applying any access control restriction.
+ * You would simply do:
+ *
+ * \code
+ * PendingStreamTubeConnection *pendingConnection = myTube->acceptTubeAsUnixSocket();
+ * \endcode
+ *
+ * The returned PendingOperation serves both for monitoring the state of the tube and for obtaining, upon success,
+ * either the address of the new socket or a QIODevice ready to be used. When the operation finishes, you can do:
+ *
+ * \code
+ * void MyTubeReceiver::onStreamTubeAccepted(PendingOperation* op)
+ * {
+ *     if (op->isError()) {
+ *        return;
+ *     }
+ *
+ *     PendingStreamTubeConnection *pendingConnection = qobject_cast< PendingStreamTubeConnection* >(op);
+ *
+ *     QIODevice *mySocketReadyToBeUsed = pendingConnection->device();
+ *     // Do some stuff here
+ * }
+ * \endcode
+ *
+ * See \ref async_model, \ref shared_ptr
  */
 
 
@@ -366,6 +449,8 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * This overload lets you specify an allowed address/port combination for connecting to this socket.
  * Otherwise, you can specify QHostAddress::Any to accept every incoming connection from localhost, or
  * use the other overload.
+ *
+ * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
  * \note When using QHostAddress::Any, the allowedPort parameter is ignored.
  *
@@ -507,6 +592,8 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
  * This overload will open a tube which accepts every incoming connection from Localhost. Please note
  * that this is the equivalent of calling acceptTubeAsTcpSocket(QHostAddress::Any, 0).
  *
+ * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
+ *
  * \return A %PendingStreamTubeConnection which will finish as soon as the tube is ready to be used
  *          (hence in the Open state)
  *
@@ -534,6 +621,8 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
  *
  * You can also specify whether the server should require an SCM_CREDENTIALS message
  * upon connection instead of accepting every incoming connection from localhost.
+ *
+ * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
  * \param requireCredentials Whether the server should require an SCM_CREDENTIALS message
  *                           upon connection.
