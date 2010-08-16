@@ -259,6 +259,17 @@ ConnectionCapabilities *ProtocolInfo::capabilities() const
  * Return the name of the most common vCard field used for this protocol's
  * contact identifiers, normalized to lower case.
  *
+ * One valid use of this field is to answer the question: given a contact's
+ * vCard containing an X-JABBER field, how can you communicate with the contact?
+ * By iterating through protocols looking for an x-jabber VCardField, one can
+ * build up a list of protocols that handle x-jabber, then offer the user a list
+ * of accounts for those protocols and/or the option to create a new account for
+ * one of those protocols.
+ * It is not necessarily valid to interpret contacts' identifiers as values of
+ * this vCard field. For instance, telepathy-sofiasip supports contacts whose
+ * identifiers are of the form sip:jenny@example.com or tel:8675309, which would
+ * not normally both be represented by any single vCard field.
+ *
  * \return The most common vCard field used for this protocol's contact
  *         identifiers, or an empty string if there is no such field.
  */
