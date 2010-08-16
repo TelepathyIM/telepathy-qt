@@ -458,10 +458,18 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
 
         mInfo->setVCardField(qdbus_cast<QString>(
                     props[QLatin1String("VCardField")]));
-        mInfo->setEnglishName(qdbus_cast<QString>(
-                    props[QLatin1String("EnglishName")]));
-        mInfo->setIconName(qdbus_cast<QString>(
-                    props[QLatin1String("Icon")]));
+        QString englishName = qdbus_cast<QString>(
+                props[QLatin1String("EnglishName")]);
+        if (englishName.isEmpty()) {
+            englishName = QString("%1").arg(mInfo->name());
+        }
+        mInfo->setEnglishName(englishName);
+        QString iconName = qdbus_cast<QString>(
+                    props[QLatin1String("Icon")]);
+        if (iconName.isEmpty()) {
+            iconName = QString("im-%1").arg(mInfo->name());
+        }
+        mInfo->setIconName(iconName);
         mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
                     props[QLatin1String("RequestableChannelClasses")]));
     } else {
