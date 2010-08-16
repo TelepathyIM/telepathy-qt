@@ -1008,8 +1008,8 @@ void ConnectionManager::onProtocolReady(Tp::PendingOperation *op)
     if (!op->isError()) {
         mPriv->protocols.append(info);
     } else {
-        warning().nospace() << "Protocol::becomeReady failed: " <<
-            op->errorName() << ": " << op->errorMessage();
+        warning().nospace() << "Protocol(" << info->name() << ")::becomeReady "
+            "failed: " << op->errorName() << ": " << op->errorMessage();
         delete info;
     }
 
