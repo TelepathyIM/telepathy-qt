@@ -199,7 +199,13 @@ bool ManagerFile::Private::parse(const QString &fileName)
             ProtocolInfo &info = protocolsMap[protocol];
             info.vcardField = keyFile.value(QLatin1String("VCardField"));
             info.englishName = keyFile.value(QLatin1String("EnglishName"));
+            if (info.englishName.isEmpty()) {
+                info.englishName = QString("%1").arg(protocol);
+            }
             info.iconName = keyFile.value(QLatin1String("Icon"));
+            if (info.iconName.isEmpty()) {
+                info.iconName = QString("im-%1").arg(protocol);
+            }
 
             QStringList rccGroups = keyFile.valueAsStringList(
                     QLatin1String("RequestableChannelClasses"));
@@ -410,8 +416,8 @@ QString ManagerFile::vcardField(const QString &protocol) const
  *
  * \param protocol Name of the protocol to look for.
  * \return The name of the given \a protocol in a form suitable for display to
- *         users or an empty string if none is available or the protocol is not
- *         defined.
+ *         users or the \a protocol if the protocol is defined and englishName
+ *         is absent.
  */
 QString ManagerFile::englishName(const QString &protocol) const
 {
@@ -424,8 +430,8 @@ QString ManagerFile::englishName(const QString &protocol) const
  *
  * \param protocol Name of the protocol to look for.
  * \return The name of an icon for the given \a protocol in the system's icon
- *         theme or an empty string if none is available or the protocol is not
- *         defined.
+ *         theme or the string im-\a protocol if the protocol is defined and
+ *         Icon is absent.
  */
 QString ManagerFile::iconName(const QString &protocol) const
 {
