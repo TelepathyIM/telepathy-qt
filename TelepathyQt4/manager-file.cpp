@@ -200,11 +200,11 @@ bool ManagerFile::Private::parse(const QString &fileName)
             info.vcardField = keyFile.value(QLatin1String("VCardField"));
             info.englishName = keyFile.value(QLatin1String("EnglishName"));
             if (info.englishName.isEmpty()) {
-                info.englishName = QString("%1").arg(protocol);
+                info.englishName = QString(QLatin1String("%1")).arg(protocol);
             }
             info.iconName = keyFile.value(QLatin1String("Icon"));
             if (info.iconName.isEmpty()) {
-                info.iconName = QString("im-%1").arg(protocol);
+                info.iconName = QString(QLatin1String("im-%1")).arg(protocol);
             }
 
             QStringList rccGroups = keyFile.valueAsStringList(

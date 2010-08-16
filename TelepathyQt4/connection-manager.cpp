@@ -472,13 +472,13 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         QString englishName = qdbus_cast<QString>(
                 props[QLatin1String("EnglishName")]);
         if (englishName.isEmpty()) {
-            englishName = QString("%1").arg(mInfo->name());
+            englishName = QString(QLatin1String("%1")).arg(mInfo->name());
         }
         mInfo->setEnglishName(englishName);
         QString iconName = qdbus_cast<QString>(
                     props[QLatin1String("Icon")]);
         if (iconName.isEmpty()) {
-            iconName = QString("im-%1").arg(mInfo->name());
+            iconName = QString(QLatin1String("im-%1")).arg(mInfo->name());
         }
         mInfo->setIconName(iconName);
         mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
