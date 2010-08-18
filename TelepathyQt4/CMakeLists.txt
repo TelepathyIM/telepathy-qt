@@ -71,6 +71,7 @@ set(telepathy_qt4_SRCS
     pending-ready.cpp
     pending-string-list.cpp
     pending-variant.cpp
+    profile.cpp
     properties.cpp
     readiness-helper.cpp
     ready-object.cpp
@@ -258,6 +259,8 @@ set(telepathy_qt4_HEADERS
     PendingVariant
     pending-variant.h
     PendingVoid
+    Profile
+    profile.h
     Properties
     properties.h
     PropertiesInterface
