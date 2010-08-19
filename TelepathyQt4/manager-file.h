@@ -54,7 +54,8 @@ public:
     RequestableChannelClassList requestableChannelClasses(
             const QString &protocol) const;
 
-    static QVariant::Type variantTypeFromDBusSignature(const QString &signature);
+    TELEPATHY_QT4_DEPRECATED static QVariant::Type variantTypeFromDBusSignature(
+            const QString &signature);
 
 private:
     struct Private;
