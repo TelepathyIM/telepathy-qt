@@ -26,9 +26,12 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QtCore/QObject>
-
 #include <TelepathyQt4/Types>
+
+#include <QDBusSignature>
+#include <QObject>
+#include <QString>
+#include <QVariant>
 
 namespace Tp
 {
@@ -52,8 +55,83 @@ public:
     QString cmName() const;
     QString protocolName() const;
 
-    // parameter
-    // presences
+    class Parameter
+    {
+    public:
+        Parameter();
+        Parameter(const Parameter &other);
+        Parameter(const QString &name,
+                  const QDBusSignature &dbusSignature,
+                  const QVariant &value,
+                  const QString &label,
+                  bool mandatory);
+        ~Parameter();
+
+        QString name() const;
+        QDBusSignature dbusSignature() const;
+        QVariant::Type type() const;
+        QVariant value() const;
+        QString label() const;
+
+        bool isMandatory() const;
+
+        Parameter &operator=(const Parameter &other);
+
+    private:
+        friend class Profile;
+
+        void setName(const QString &name);
+        void setDBusSignature(const QDBusSignature &dbusSignature);
+        void setValue(const QVariant &value);
+        void setLabel(const QString &label);
+        void setMandatory(bool mandatory);
+
+        struct Private;
+        friend struct Private;
+        Private *mPriv;
+    };
+    typedef QList<Parameter> ParameterList;
+
+    ParameterList parameters() const;
+
+    class Presence
+    {
+    public:
+        Presence();
+        Presence(const Presence &other);
+        Presence(const QString &id,
+                 const QString &label,
+                 const QString &iconName,
+                 const QString &message,
+                 bool disabled);
+        ~Presence();
+
+        QString id() const;
+        QString label() const;
+        QString iconName() const;
+        QString message() const;
+
+        bool isDisabled() const;
+
+        Presence &operator=(const Presence &other);
+
+    private:
+        friend class Profile;
+
+        void setId(const QString &id);
+        void setLabel(const QString &label);
+        void setIconName(const QString &iconName);
+        void setMessage(const QString &message);
+        void setDisabled(bool disabled);
+
+        struct Private;
+        friend struct Private;
+        Private *mPriv;
+    };
+    typedef QList<Presence> PresenceList;
+
+    bool allowOthersPresences() const;
+    PresenceList presences() const;
 
     RequestableChannelClassList unsupportedChannelClasses() const;
 
