@@ -58,11 +58,9 @@
 /tests/pinocchio/test-*
 /tests/prototype/test-*
 /tests/runGenericTest.sh
-/tests/test-key-file
-/tests/test-manager-file
-/tests/test-utils
+/tests/test-*
 /build
-Makefile
+akefile
 Makefile.in
 TAGS
 _gen
