@@ -20,6 +20,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_COVERAGE_FLAGS}")
 tpqt4_add_generic_unit_test(KeyFile key-file)
 tpqt4_add_generic_unit_test(ManagerFile manager-file)
 tpqt4_add_generic_unit_test(Profile profile)
+tpqt4_add_generic_unit_test(ProfileManager profile-manager)
 
 add_subdirectory(dbus-1)
 add_subdirectory(dbus)
