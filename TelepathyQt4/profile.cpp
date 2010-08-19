@@ -579,6 +579,16 @@ Profile::PresenceList Profile::presences() const
     return mPriv->data.presences;
 }
 
+Profile::Presence Profile::presence(const QString &id) const
+{
+    foreach (const Presence &presence, mPriv->data.presences) {
+        if (presence.id() == id) {
+            return presence;
+        }
+    }
+    return Profile::Presence();
+}
+
 RequestableChannelClassList Profile::unsupportedChannelClasses() const
 {
     return mPriv->data.unsupportedChannelClasses;
