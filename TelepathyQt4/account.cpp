@@ -37,6 +37,7 @@
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/PendingVoid>
+#include <TelepathyQt4/Profile>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
@@ -100,6 +101,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     QString cmName;
     QString protocolName;
     QString serviceName;
+    ProfilePtr profile;
     QString displayName;
     QString nickname;
     QString iconName;
@@ -793,6 +795,32 @@ PendingOperation *Account::setServiceName(const QString &value)
                 QLatin1String("Service"),
                 QDBusVariant(value)),
             this);
+}
+
+/**
+ * Return the profile used for this account.
+ *
+ * This method requires Account::FeatureCore to be enabled.
+ *
+ * \return The profile for this account.
+ */
+ProfilePtr Account::profile() const
+{
+    if (!isReady(FeatureCore)) {
+        // we don't even know the service name yet
+        return ProfilePtr();
+    }
+
+    if (!mPriv->profile) {
+        mPriv->profile = Profile::create(serviceName());
+        if (!mPriv->profile->isValid()) {
+            // there is no profile for service name or it can't be parsed, fake
+            // a profile
+            // TODO add fake profile
+            ;
+        }
+    }
+    return mPriv->profile;
 }
 
 /**
