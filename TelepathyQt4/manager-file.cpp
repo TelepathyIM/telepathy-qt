@@ -287,7 +287,7 @@ QVariant ManagerFile::Private::valueForKey(const QString &param,
                                            const QString &signature)
 {
     QString value = keyFile.value(param);
-    return variantFromValueWithDBusSignature(value, QDBusSignature(signature));
+    return parseValueWithSignature(value, QDBusSignature(signature));
 }
 
 

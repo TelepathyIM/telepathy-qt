@@ -44,8 +44,8 @@ TELEPATHY_QT4_EXPORT bool unescapeString(const QByteArray &data, int from, int t
 TELEPATHY_QT4_EXPORT bool unescapeStringList(const QByteArray &data, int from, int to,
         QStringList &result);
 
-TELEPATHY_QT4_EXPORT QVariant::Type variantTypeFromDBusSignature(const QDBusSignature &signature);
-TELEPATHY_QT4_EXPORT QVariant variantFromValueWithDBusSignature(const QString &value,
+TELEPATHY_QT4_EXPORT QVariant::Type variantTypeForSignature(const QDBusSignature &signature);
+TELEPATHY_QT4_EXPORT QVariant parseValueWithSignature(const QString &value,
         const QDBusSignature &signature);
 
 } // Tp

@@ -202,7 +202,7 @@ bool unescapeStringList(const QByteArray &data, int from, int to, QStringList &r
     return true;
 }
 
-QVariant::Type variantTypeFromDBusSignature(const QDBusSignature &dbusSignature)
+QVariant::Type variantTypeForSignature(const QDBusSignature &dbusSignature)
 {
     QVariant::Type type;
     QString str = dbusSignature.signature();
@@ -230,10 +230,10 @@ QVariant::Type variantTypeFromDBusSignature(const QDBusSignature &dbusSignature)
     return type;
 }
 
-QVariant variantFromValueWithDBusSignature(const QString &value,
+QVariant parseValueWithSignature(const QString &value,
         const QDBusSignature &dbusSignature)
 {
-    QVariant::Type type = variantTypeFromDBusSignature(dbusSignature);
+    QVariant::Type type = variantTypeForSignature(dbusSignature);
 
     if (type == QVariant::Invalid) {
         return QVariant(type);

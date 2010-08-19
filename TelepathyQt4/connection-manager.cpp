@@ -65,7 +65,7 @@ ProtocolParameter::ProtocolParameter(const QString &name,
                                      QVariant defaultValue,
                                      ConnMgrParamFlag flags)
     : mPriv(new Private(name, dbusSignature,
-                variantTypeFromDBusSignature(dbusSignature), defaultValue,
+                variantTypeForSignature(dbusSignature), defaultValue,
                 flags))
 {
 }
