@@ -154,8 +154,7 @@ bool unescapeString(const QByteArray &data, int from, int to, QString &result)
                 default:
                     return false;
             }
-        }
-        else {
+        } else {
             result += ch;
         }
     }
@@ -177,17 +176,14 @@ bool unescapeStringList(const QByteArray &data, int from, int to, QStringList &r
             if (i < to) {
                 value += data.at(i++);
                 continue;
-            }
-            else {
+            } else {
                 valueList << value;
                 break;
             }
-        }
-        else if (ch == ';') {
+        } else if (ch == ';') {
             valueList << value;
             value = "";
-        }
-        else {
+        } else {
             value += ch;
             if (i == to) {
                 valueList << value;
@@ -211,24 +207,25 @@ QVariant::Type variantTypeFromDBusSignature(const QDBusSignature &dbusSignature)
     QVariant::Type type;
     QString str = dbusSignature.signature();
 
-    if (str == QLatin1String("b"))
+    if (str == QLatin1String("b")) {
         type = QVariant::Bool;
-    else if (str == QLatin1String("n") || str == QLatin1String("i"))
+    } else if (str == QLatin1String("n") || str == QLatin1String("i")) {
         type = QVariant::Int;
-    else if (str == QLatin1String("q") || str == QLatin1String("u"))
+    } else if (str == QLatin1String("q") || str == QLatin1String("u")) {
         type = QVariant::UInt;
-    else if (str == QLatin1String("x"))
+    } else if (str == QLatin1String("x")) {
         type = QVariant::LongLong;
-    else if (str == QLatin1String("t"))
+    } else if (str == QLatin1String("t")) {
         type = QVariant::ULongLong;
-    else if (str == QLatin1String("d"))
+    } else if (str == QLatin1String("d")) {
         type = QVariant::Double;
-    else if (str == QLatin1String("as"))
+    } else if (str == QLatin1String("as")) {
         type = QVariant::StringList;
-    else if (str == QLatin1String("s") || str == QLatin1String("o"))
+    } else if (str == QLatin1String("s") || str == QLatin1String("o")) {
         type = QVariant::String;
-    else
+    } else {
         type = QVariant::Invalid;
+    }
 
     return type;
 }
