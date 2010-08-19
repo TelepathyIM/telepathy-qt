@@ -141,7 +141,14 @@ public:
     RequestableChannelClassList unsupportedChannelClasses() const;
 
 private:
+    friend class ProfileManager;
+
+    Profile();
     Profile(const QString &serviceName);
+
+    void setFileName(const QString &fileName);
+
+    static QStringList searchDirs();
 
     struct Private;
     friend struct Private;

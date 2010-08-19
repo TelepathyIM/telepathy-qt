@@ -38,9 +38,11 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT Profile::Private
 {
+    Private();
     Private(const QString &serviceName);
 
     void init();
+    void setFileName(const QString &fileName);
     bool parse(const QString &fileName);
 
     struct Data
@@ -401,6 +403,11 @@ bool Profile::Private::XmlHandler::attributeValueAsBoolean(
 }
 
 
+Profile::Private::Private()
+    : valid(false)
+{
+}
+
 Profile::Private::Private(const QString &serviceName)
     : serviceName(serviceName),
       valid(false)
@@ -410,25 +417,7 @@ Profile::Private::Private(const QString &serviceName)
 
 void Profile::Private::init()
 {
-    QStringList searchDirs;
-
-    QString xdgDataHome = QString::fromLocal8Bit(qgetenv("XDG_DATA_HOME"));
-    if (xdgDataHome.isEmpty()) {
-        searchDirs << QDir::homePath() + QLatin1String("/.local/share/data/telepathy/profiles/");
-    } else {
-        searchDirs << xdgDataHome + QLatin1String("/telepathy/profiles/");
-    }
-
-    QString xdgDataDirsEnv = QString::fromLocal8Bit(qgetenv("XDG_DATA_DIRS"));
-    if (xdgDataDirsEnv.isEmpty()) {
-        searchDirs << QLatin1String("/usr/local/share/telepathy/profiles/");
-        searchDirs << QLatin1String("/usr/share/telepathy/profiles/");
-    } else {
-        QStringList xdgDataDirs = xdgDataDirsEnv.split(QLatin1Char(':'));
-        foreach (const QString xdgDataDir, xdgDataDirs) {
-            searchDirs << xdgDataDir + QLatin1String("/telepathy/profiles/");
-        }
-    }
+    QStringList searchDirs = Profile::searchDirs();
 
     foreach (const QString searchDir, searchDirs) {
         QString fileName = searchDir + serviceName + QLatin1String(".profile");
@@ -436,11 +425,26 @@ void Profile::Private::init()
             debug() << "Parsing profile file" << fileName;
             data.clear();
             if (!parse(fileName)) {
+                data.clear();
                 continue;
             }
             valid = true;
             return;
         }
+    }
+}
+
+void Profile::Private::setFileName(const QString &fileName)
+{
+    QFileInfo fi(fileName);
+    serviceName = fi.baseName();
+    data.clear();
+    valid = false;
+    if (parse(fileName)) {
+        valid = true;
+    } else {
+        serviceName = QString();
+        data.clear();
     }
 }
 
@@ -494,6 +498,16 @@ bool Profile::Private::parse(const QString &fileName)
 ProfilePtr Profile::create(const QString &serviceName)
 {
     return ProfilePtr(new Profile(serviceName));
+}
+
+/**
+ * Construct a new Profile object used to read .profiles compliant files.
+ *
+ * \param serviceName The profile service name.
+ */
+Profile::Profile()
+    : mPriv(new Private())
+{
 }
 
 /**
@@ -612,6 +626,36 @@ Profile::Presence Profile::presence(const QString &id) const
 RequestableChannelClassList Profile::unsupportedChannelClasses() const
 {
     return mPriv->data.unsupportedChannelClasses;
+}
+
+void Profile::setFileName(const QString &fileName)
+{
+    mPriv->setFileName(fileName);
+}
+
+QStringList Profile::searchDirs()
+{
+    QStringList ret;
+
+    QString xdgDataHome = QString::fromLocal8Bit(qgetenv("XDG_DATA_HOME"));
+    if (xdgDataHome.isEmpty()) {
+        ret << QDir::homePath() + QLatin1String("/.local/share/data/telepathy/profiles/");
+    } else {
+        ret << xdgDataHome + QLatin1String("/telepathy/profiles/");
+    }
+
+    QString xdgDataDirsEnv = QString::fromLocal8Bit(qgetenv("XDG_DATA_DIRS"));
+    if (xdgDataDirsEnv.isEmpty()) {
+        ret << QLatin1String("/usr/local/share/telepathy/profiles/");
+        ret << QLatin1String("/usr/share/telepathy/profiles/");
+    } else {
+        QStringList xdgDataDirs = xdgDataDirsEnv.split(QLatin1Char(':'));
+        foreach (const QString xdgDataDir, xdgDataDirs) {
+            ret << xdgDataDir + QLatin1String("/telepathy/profiles/");
+        }
+    }
+
+    return ret;
 }
 
 
