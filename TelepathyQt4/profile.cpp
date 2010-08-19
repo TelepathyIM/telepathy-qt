@@ -559,6 +559,16 @@ Profile::ParameterList Profile::parameters() const
     return mPriv->data.parameters;
 }
 
+bool Profile::hasParameter(const QString &name) const
+{
+    foreach (const Parameter &parameter, mPriv->data.parameters) {
+        if (parameter.name() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 Profile::Parameter Profile::parameter(const QString &name) const
 {
     foreach (const Parameter &parameter, mPriv->data.parameters) {

@@ -94,6 +94,7 @@ public:
     typedef QList<Parameter> ParameterList;
 
     ParameterList parameters() const;
+    bool hasParameter(const QString &name) const;
     Parameter parameter(const QString &name) const;
 
     class Presence
