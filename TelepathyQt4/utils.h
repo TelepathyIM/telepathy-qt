@@ -50,5 +50,4 @@ TELEPATHY_QT4_EXPORT QVariant parseValueWithSignature(const QString &value,
 
 } // Tp
 
-
 #endif
