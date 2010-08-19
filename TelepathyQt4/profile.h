@@ -36,12 +36,13 @@
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT Profile
+class TELEPATHY_QT4_EXPORT Profile : public RefCounted
 {
     Q_DISABLE_COPY(Profile);
 
 public:
-    Profile(const QString &serviceName);
+    static ProfilePtr create(const QString &serviceName);
+
     ~Profile();
 
     QString serviceName() const;
@@ -136,6 +137,8 @@ public:
     RequestableChannelClassList unsupportedChannelClasses() const;
 
 private:
+    Profile(const QString &serviceName);
+
     struct Private;
     friend struct Private;
     Private *mPriv;

@@ -486,7 +486,20 @@ bool Profile::Private::parse(const QString &fileName)
  */
 
 /**
+ * Create a new Profile object used to read .profiles compliant files.
+ *
+ * \param serviceName The profile service name.
+ * \return A ProfilePtr object pointing to the newly created Profile object.
+ */
+ProfilePtr Profile::create(const QString &serviceName)
+{
+    return ProfilePtr(new Profile(serviceName));
+}
+
+/**
  * Construct a new Profile object used to read .profiles compliant files.
+ *
+ * \param serviceName The profile service name.
  */
 Profile::Profile(const QString &serviceName)
     : mPriv(new Private(serviceName))
