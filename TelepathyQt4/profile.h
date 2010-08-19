@@ -135,6 +135,7 @@ public:
 
     bool allowOthersPresences() const;
     PresenceList presences() const;
+    bool hasPresence(const QString &id) const;
     Presence presence(const QString &id) const;
 
     RequestableChannelClassList unsupportedChannelClasses() const;

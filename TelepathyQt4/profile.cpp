@@ -589,6 +589,16 @@ Profile::PresenceList Profile::presences() const
     return mPriv->data.presences;
 }
 
+bool Profile::hasPresence(const QString &id) const
+{
+    foreach (const Presence &presence, mPriv->data.presences) {
+        if (presence.id() == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
 Profile::Presence Profile::presence(const QString &id) const
 {
     foreach (const Presence &presence, mPriv->data.presences) {
