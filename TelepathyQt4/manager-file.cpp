@@ -21,16 +21,17 @@
 
 #include <TelepathyQt4/ManagerFile>
 
+#include "TelepathyQt4/debug-internal.h"
+
+#include <TelepathyQt4/Constants>
+#include <TelepathyQt4/KeyFile>
+#include <TelepathyQt4/Utils>
+
 #include <QtCore/QDir>
 #include <QtCore/QHash>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtDBus/QDBusVariant>
-
-#include <TelepathyQt4/KeyFile>
-#include <TelepathyQt4/Constants>
-
-#include "TelepathyQt4/debug-internal.h"
 
 namespace Tp
 {
@@ -285,60 +286,8 @@ ParamSpecList ManagerFile::Private::parameters(const QString &protocol) const
 QVariant ManagerFile::Private::valueForKey(const QString &param,
                                            const QString &signature)
 {
-    QVariant::Type type = ManagerFile::variantTypeFromDBusSignature(signature);
-
-    if (type == QVariant::Invalid) {
-        return QVariant(type);
-    }
-
-    switch (type) {
-        case QVariant::Bool:
-            {
-                QString value = keyFile.value(param);
-                if (value.toLower() == QLatin1String("true") ||
-                    value == QLatin1String("1")) {
-                    return QVariant(true);
-                }
-                else {
-                    return QVariant(false);
-                }
-                break;
-            }
-        case QVariant::Int:
-            {
-                QString value = keyFile.value(param);
-                return QVariant(value.toInt());
-            }
-        case QVariant::UInt:
-            {
-                QString value = keyFile.value(param);
-                return QVariant(value.toUInt());
-            }
-        case QVariant::LongLong:
-            {
-                QString value = keyFile.value(param);
-                return QVariant(value.toLongLong());
-            }
-        case QVariant::ULongLong:
-            {
-                QString value = keyFile.value(param);
-                return QVariant(value.toULongLong());
-            }
-        case QVariant::Double:
-            {
-                QString value = keyFile.value(param);
-                return QVariant(value.toDouble());
-            }
-        case QVariant::StringList:
-            {
-                QStringList value = keyFile.valueAsStringList(param);
-                return QVariant(value);
-            }
-        default:
-            break;
-    }
     QString value = keyFile.value(param);
-    return QVariant(value);
+    return variantFromValueWithDBusSignature(value, QDBusSignature(signature));
 }
 
 
