@@ -45,6 +45,39 @@ void TestProfile::testProfile()
     QCOMPARE(param.value(), QVariant(QLatin1String("1111")));
     QCOMPARE(param.label(), QString());
     QCOMPARE(param.isMandatory(), true);
+
+    QCOMPARE(profile->presences().isEmpty(), false);
+    QCOMPARE(profile->presences().count(), 4);
+
+    QCOMPARE(profile->hasPresence(QLatin1String("foo")), false);
+
+    QCOMPARE(profile->hasPresence(QLatin1String("available")), true);
+    Profile::Presence presence = profile->presence(QLatin1String("available"));
+    QCOMPARE(presence.id(), QLatin1String("available"));
+    QCOMPARE(presence.label(), QLatin1String("Online"));
+    QCOMPARE(presence.iconName(), QLatin1String("online"));
+    QCOMPARE(presence.isDisabled(), false);
+
+    QCOMPARE(profile->hasPresence(QLatin1String("offline")), true);
+    presence = profile->presence(QLatin1String("offline"));
+    QCOMPARE(presence.id(), QLatin1String("offline"));
+    QCOMPARE(presence.label(), QLatin1String("Offline"));
+    QCOMPARE(presence.iconName(), QString());
+    QCOMPARE(presence.isDisabled(), false);
+
+    QCOMPARE(profile->hasPresence(QLatin1String("away")), true);
+    presence = profile->presence(QLatin1String("away"));
+    QCOMPARE(presence.id(), QLatin1String("away"));
+    QCOMPARE(presence.label(), QLatin1String("Gone"));
+    QCOMPARE(presence.iconName(), QString());
+    QCOMPARE(presence.isDisabled(), false);
+
+    QCOMPARE(profile->hasPresence(QLatin1String("hidden")), true);
+    presence = profile->presence(QLatin1String("hidden"));
+    QCOMPARE(presence.id(), QLatin1String("hidden"));
+    QCOMPARE(presence.label(), QString());
+    QCOMPARE(presence.iconName(), QString());
+    QCOMPARE(presence.isDisabled(), true);
 }
 
 QTEST_MAIN(TestProfile)
