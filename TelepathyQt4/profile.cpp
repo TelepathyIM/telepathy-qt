@@ -344,6 +344,12 @@ bool Profile::Private::XmlHandler::endElement(const QString &namespaceURI,
     }
 
     if (qName == elemType) {
+        if (mCurrentText != QLatin1String("IM")) {
+            mErrorString = QString(QLatin1String("unknown value of element "
+                        "'type': %1"))
+                .arg(mCurrentText);
+            return false;
+        }
         mData->type = mCurrentText;
     } else if (qName == elemProvider) {
         mData->provider = mCurrentText;
@@ -491,7 +497,10 @@ void Profile::Private::setError(const QString &errorMessage)
  * \headerfile TelepathyQt4/profile.h <TelepathyQt4/Profile>
  *
  * \brief The Profile class provides an easy way to read telepathy profile
- * files according to http://telepathy.freedesktop.org/spec.html.
+ * files according to http://telepathy.freedesktop.org/wiki/service-profile-v1.
+ *
+ * Note that profiles with xml element <type> different than "IM" are considered
+ * invalid.
  */
 
 /**

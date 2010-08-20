@@ -23,6 +23,9 @@ void TestProfile::testProfile()
     profile = Profile::createForServiceName(QLatin1String("test-profile-invalid-service-id"));
     QCOMPARE(profile->isValid(), false);
 
+    profile = Profile::createForServiceName(QLatin1String("test-profile-invalid-type"));
+    QCOMPARE(profile->isValid(), false);
+
     profile = Profile::createForServiceName(QLatin1String("test-profile"));
     QCOMPARE(profile->isValid(), true);
 
