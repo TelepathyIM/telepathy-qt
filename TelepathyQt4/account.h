@@ -103,6 +103,7 @@ public:
     static const Feature FeatureAvatar;
     static const Feature FeatureProtocolInfo;
     static const Feature FeatureCapabilities;
+    static const Feature FeatureProfile;
 
     static AccountPtr create(const QString &busName,
             const QString &objectPath);

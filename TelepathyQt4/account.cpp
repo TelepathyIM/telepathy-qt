@@ -459,6 +459,16 @@ const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::stat
 const Feature Account::FeatureCapabilities = Feature(QLatin1String(Account::staticMetaObject.className()), 3);
 
 /**
+ * Feature used in order to access account profile info.
+ *
+ * See profile specific methods' documentation for more details.
+ */
+const Feature Account::FeatureProfile = FeatureProtocolInfo;
+// FeatureProfile is the same as FeatureProtocolInfo for now, as it only needs
+// the protocol info, cm name and protocol name to build a fake profile. Make it
+// a full-featured feature if needed later.
+
+/**
  * Create a new Account object using QDBusConnection::sessionBus().
  *
  * The instance will use a connection factory creating Tp::Connection objects with no features
@@ -800,24 +810,24 @@ PendingOperation *Account::setServiceName(const QString &value)
 /**
  * Return the profile used for this account.
  *
- * This method requires Account::FeatureCore to be enabled.
+ * This method requires Account::FeatureProfile to be enabled.
  *
  * \return The profile for this account.
  */
 ProfilePtr Account::profile() const
 {
-    if (!isReady(FeatureCore)) {
-        // we don't even know the service name yet
+    if (!isReady(FeatureProfile)) {
         return ProfilePtr();
     }
 
     if (!mPriv->profile) {
         mPriv->profile = Profile::createForServiceName(serviceName());
         if (!mPriv->profile->isValid()) {
-            // there is no profile for service name or it can't be parsed, fake
-            // a profile
-            // TODO add fake profile
-            ;
+            mPriv->profile = ProfilePtr(new Profile(
+                        serviceName(),
+                        mPriv->cmName,
+                        mPriv->protocolName,
+                        mPriv->protocolInfo));
         }
     }
     return mPriv->profile;
