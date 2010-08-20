@@ -594,56 +594,121 @@ Profile::~Profile()
     delete mPriv;
 }
 
+/**
+ * Return the unique name of the service to which this profile applies.
+ *
+ * \return The unique name of the service.
+ */
 QString Profile::serviceName() const
 {
     return mPriv->serviceName;
 }
 
+/**
+ * Return whether this profile is valid.
+ *
+ * \return \c true if valid, otherwise \c false.
+ */
 bool Profile::isValid() const
 {
     return mPriv->valid;
 }
 
+/**
+ * Return whether this profile is fake.
+ *
+ * Fake profiles are profiles created for services not providing a .profile
+ * file.
+ *
+ * \return \c true if fake, otherwise \c false.
+ */
 bool Profile::isFake() const
 {
     return mPriv->fake;
 }
 
+/**
+ * Return the type of the service to which this profile applies.
+ *
+ * In general, services of interest of telepathy should be of type 'IM'.
+ * Other service types exist but are unlikely to affect telepathy in any way.
+ *
+ * \return The type of the service.
+ */
 QString Profile::type() const
 {
     return mPriv->data.type;
 }
 
+/**
+ * Return the name of the vendor/organisation/provider who actually runs the
+ * service to which this profile applies.
+ *
+ * \return The provider of the service.
+ */
 QString Profile::provider() const
 {
     return mPriv->data.provider;
 }
 
+/**
+ * Return the human-readable name for the service to which this profile applies.
+ *
+ * \return The Human-readable name of the service.
+ */
 QString Profile::name() const
 {
     return mPriv->data.name;
 }
 
+/**
+ * Return the base name of the icon for the service to which this profile
+ * applies.
+ *
+ * \return The base name of the icon for the service.
+ */
 QString Profile::iconName() const
 {
     return mPriv->data.iconName;
 }
 
+/**
+ * Return the connection manager name for the service to which this profile
+ * applies.
+ *
+ * \return The connection manager name for the service.
+ */
 QString Profile::cmName() const
 {
     return mPriv->data.cmName;
 }
 
+/**
+ * Return the protocol name for the service to which this profile applies.
+ *
+ * \return The protocol name for the service.
+ */
 QString Profile::protocolName() const
 {
     return mPriv->data.protocolName;
 }
 
+/**
+ * Return a list of parameters defined for the service to which this profile
+ * applies.
+ *
+ * \return A list of Profile::Parameter.
+ */
 Profile::ParameterList Profile::parameters() const
 {
     return mPriv->data.parameters;
 }
 
+/**
+ * Return whether this profile defines the parameter named \a name.
+ *
+ * \return \c true if parameter is defined, otherwise \c false.
+ */
 bool Profile::hasParameter(const QString &name) const
 {
     foreach (const Parameter &parameter, mPriv->data.parameters) {
@@ -654,6 +719,11 @@ bool Profile::hasParameter(const QString &name) const
     return false;
 }
 
+/**
+ * Return the parameter for a given \a name.
+ *
+ * \return A Profile::Parameter.
+ */
 Profile::Parameter Profile::parameter(const QString &name) const
 {
     foreach (const Parameter &parameter, mPriv->data.parameters) {
@@ -664,16 +734,33 @@ Profile::Parameter Profile::parameter(const QString &name) const
     return Profile::Parameter();
 }
 
+/**
+ * Return whether the standard CM presences not defined in presences() are
+ * supported.
+ *
+ * \return \c true if standard CM presences are supported, otherwise \c false.
+ */
 bool Profile::allowOtherPresences() const
 {
     return mPriv->data.allowOtherPresences;
 }
 
+/**
+ * Return a list of presences defined for the service to which this profile
+ * applies.
+ *
+ * \return A list of Profile::Presence.
+ */
 Profile::PresenceList Profile::presences() const
 {
     return mPriv->data.presences;
 }
 
+/**
+ * Return whether this profile defines the presence with id \a id.
+ *
+ * \return \c true if presence is defined, otherwise \c false.
+ */
 bool Profile::hasPresence(const QString &id) const
 {
     foreach (const Presence &presence, mPriv->data.presences) {
@@ -684,6 +771,11 @@ bool Profile::hasPresence(const QString &id) const
     return false;
 }
 
+/**
+ * Return the presence for a given \a id.
+ *
+ * \return A Profile::Presence.
+ */
 Profile::Presence Profile::presence(const QString &id) const
 {
     foreach (const Presence &presence, mPriv->data.presences) {
@@ -694,6 +786,12 @@ Profile::Presence Profile::presence(const QString &id) const
     return Profile::Presence();
 }
 
+/**
+ * A list of channel classes not supported by the service to which this profile
+ * applies.
+ *
+ * \return A list of RequestableChannelClass.
+ */
 RequestableChannelClassList Profile::unsupportedChannelClasses() const
 {
     return mPriv->data.unsupportedChannelClasses;
@@ -744,12 +842,26 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Parameter::Private
     bool mandatory;
 };
 
+/**
+ * \class Profile::Parameter
+ * \headerfile TelepathyQt4/profile.h <TelepathyQt4/Profile>
+ *
+ * \brief The Profile::Parameter class represents a parameter defined in
+ * .profile files.
+ */
+
+/**
+ * Construct a new Profile::Parameter object.
+ */
 Profile::Parameter::Parameter()
     : mPriv(new Private)
 {
     mPriv->mandatory = false;
 }
 
+/**
+ * Construct a new Profile::Parameter object that is a copy of \a other.
+ */
 Profile::Parameter::Parameter(const Parameter &other)
     : mPriv(new Private)
 {
@@ -760,6 +872,15 @@ Profile::Parameter::Parameter(const Parameter &other)
     mPriv->mandatory = other.mPriv->mandatory;
 }
 
+/**
+ * Construct a new Profile::Parameter object.
+ *
+ * \param name The parameter name.
+ * \param dbusSignature The parameter dbus signature.
+ * \param value The parameter value.
+ * \param label The parameter label.
+ * \param mandatory Whether this parameter is mandatory.
+ */
 Profile::Parameter::Parameter(const QString &name,
         const QDBusSignature &dbusSignature,
         const QVariant &value,
@@ -774,11 +895,19 @@ Profile::Parameter::Parameter(const QString &name,
     mPriv->mandatory = mandatory;
 }
 
+/**
+ * Class destructor.
+ */
 Profile::Parameter::~Parameter()
 {
     delete mPriv;
 }
 
+/**
+ * Return the name of this parameter.
+ *
+ * \return The name of this parameter.
+ */
 QString Profile::Parameter::name() const
 {
     return mPriv->name;
@@ -789,6 +918,11 @@ void Profile::Parameter::setName(const QString &name)
     mPriv->name = name;
 }
 
+/**
+ * Return the D-Bus signature of this parameter.
+ *
+ * \return The D-Bus signature of this parameter.
+ */
 QDBusSignature Profile::Parameter::dbusSignature() const
 {
     return mPriv->dbusSignature;
@@ -799,11 +933,25 @@ void Profile::Parameter::setDBusSignature(const QDBusSignature &dbusSignature)
     mPriv->dbusSignature = dbusSignature;
 }
 
+/**
+ * Return the QVariant::Type of this parameter, constructed using
+ * dbusSignature().
+ *
+ * \return The QVariant::Type of this parameter.
+ */
 QVariant::Type Profile::Parameter::type() const
 {
     return variantTypeForSignature(mPriv->dbusSignature);
 }
 
+/**
+ * Return the value of this parameter.
+ *
+ * If mandatory() returns \c true, the value must not be modified and should be
+ * used as is when creating accounts for this profile.
+ *
+ * \return The value of this parameter.
+ */
 QVariant Profile::Parameter::value() const
 {
     return mPriv->value;
@@ -814,6 +962,11 @@ void Profile::Parameter::setValue(const QVariant &value)
     mPriv->value = value;
 }
 
+/**
+ * Return the human-readable label of this parameter.
+ *
+ * \return The human-readable label of this parameter.
+ */
 QString Profile::Parameter::label() const
 {
     return mPriv->label;
@@ -824,6 +977,12 @@ void Profile::Parameter::setLabel(const QString &label)
     mPriv->label = label;
 }
 
+/**
+ * Return whether this parameter is mandatory, or whether the value returned by
+ * value() should be used as is when creating accounts for this profile.
+ *
+ * \return \c true if mandatory, otherwise \c false.
+ */
 bool Profile::Parameter::isMandatory() const
 {
     return mPriv->mandatory;
@@ -854,12 +1013,26 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Presence::Private
     bool disabled;
 };
 
+/**
+ * \class Profile::Prsence
+ * \headerfile TelepathyQt4/profile.h <TelepathyQt4/Profile>
+ *
+ * \brief The Profile::Presence class represents a presence defined in
+ * .profile files.
+ */
+
+/**
+ * Construct a new Profile::Presence object.
+ */
 Profile::Presence::Presence()
     : mPriv(new Private)
 {
     mPriv->disabled = false;
 }
 
+/**
+ * Construct a new Profile::Presence object that is a copy of \a other.
+ */
 Profile::Presence::Presence(const Presence &other)
     : mPriv(new Private)
 {
@@ -870,6 +1043,15 @@ Profile::Presence::Presence(const Presence &other)
     mPriv->disabled = other.mPriv->disabled;
 }
 
+/**
+ * Construct a new Profile::Presence object.
+ *
+ * \param id The presence id.
+ * \param label The presence label.
+ * \param iconName The presence icon name.
+ * \param message The presence message.
+ * \param disabled Whether this presence is supported.
+ */
 Profile::Presence::Presence(const QString &id,
         const QString &label,
         const QString &iconName,
@@ -884,11 +1066,19 @@ Profile::Presence::Presence(const QString &id,
     mPriv->disabled = disabled;
 }
 
+/**
+ * Class destructor.
+ */
 Profile::Presence::~Presence()
 {
     delete mPriv;
 }
 
+/**
+ * Return the telepathy presence id for this presence.
+ *
+ * \return The telepathy presence id for this presence.
+ */
 QString Profile::Presence::id() const
 {
     return mPriv->id;
@@ -899,6 +1089,11 @@ void Profile::Presence::setId(const QString &id)
     mPriv->id = id;
 }
 
+/**
+ * Return the label that should be used for this presence.
+ *
+ * \return The label for this presence.
+ */
 QString Profile::Presence::label() const
 {
     return mPriv->label;
@@ -909,6 +1104,11 @@ void Profile::Presence::setLabel(const QString &label)
     mPriv->label = label;
 }
 
+/**
+ * Return the icon name of this presence.
+ *
+ * \return The icon name of this presence.
+ */
 QString Profile::Presence::iconName() const
 {
     return mPriv->iconName;
@@ -919,6 +1119,11 @@ void Profile::Presence::setIconName(const QString &iconName)
     mPriv->iconName = iconName;
 }
 
+/**
+ * Return the default text delivered with this presence.
+ *
+ * \return The default text delivered with this presence.
+ */
 QString Profile::Presence::message() const
 {
     return mPriv->message;
@@ -929,6 +1134,12 @@ void Profile::Presence::setMessage(const QString &message)
     mPriv->message = message;
 }
 
+/**
+ * Return whether this presence is supported for the service to which this
+ * profile applies.
+ *
+ * \return \c true if supported, otherwise \c false.
+ */
 bool Profile::Presence::isDisabled() const
 {
     return mPriv->disabled;
