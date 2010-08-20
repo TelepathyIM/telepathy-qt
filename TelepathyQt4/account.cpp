@@ -810,6 +810,22 @@ PendingOperation *Account::setServiceName(const QString &value)
 /**
  * Return the profile used for this account.
  *
+ * Note that if a profile for serviceName() is not available, a fake profile
+ * (Profile::isFake() will return \c true) will be returned.
+ *
+ * The fake profile will contain the following info:
+ *  - Profile::type() will return "IM"
+ *  - Profile::provider() will return an empty string
+ *  - Profile::serviceName() will return serviceName()
+ *  - Profile::name() and Profile::protocolName() will return protocolName()
+ *  - Profile::iconName() will return "im-protocolName()"
+ *  - Profile::cmName() will return cmName()
+ *  - Profile::parameters() will return a list matching CM default parameters
+ *  - Profile::presences() will return an empty list and
+ *    Profile::allowOtherPresences() will return \c true, meaning that CM
+ *    presences should be used
+ *  - Profile::unsupportedChannelClasses() will return an empty list
+ *
  * This method requires Account::FeatureProfile to be enabled.
  *
  * \return The profile for this account.
