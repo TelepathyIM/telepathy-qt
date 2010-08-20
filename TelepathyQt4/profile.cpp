@@ -63,7 +63,7 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Private
         QString cmName;
         QString protocolName;
         Profile::ParameterList parameters;
-        bool allowOthersPresences;
+        bool allowOtherPresences;
         Profile::PresenceList presences;
         RequestableChannelClassList unsupportedChannelClasses;
     };
@@ -77,7 +77,7 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Private
 };
 
 Profile::Private::Data::Data()
-    : allowOthersPresences(false)
+    : allowOtherPresences(false)
 {
 }
 
@@ -89,7 +89,7 @@ void Profile::Private::Data::clear()
     iconName = QString();
     protocolName = QString();
     parameters = Profile::ParameterList();
-    allowOthersPresences = false;
+    allowOtherPresences = false;
     presences = Profile::PresenceList();
     unsupportedChannelClasses = RequestableChannelClassList();
 }
@@ -281,7 +281,7 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
         QStringList allowedAttrs = QStringList() << elemAttrAllowOthers;
         CHECK_ELEMENT_ATTRIBUTES(allowedAttrs);
 
-        mData->allowOthersPresences = attributeValueAsBoolean(attributes,
+        mData->allowOtherPresences = attributeValueAsBoolean(attributes,
                 elemAttrAllowOthers);
     } else if (qName == elemPresence) {
         CHECK_ELEMENT_IS_CHILD_OF(elemPresences);
@@ -544,8 +544,7 @@ Profile::Profile()
  *  - iconName() will return "im-\a protocolName"
  *  - cmName() will return \a cmName
  *  - parameters() will return a list matching CM default parameters
- *    true, meaning that CM presences should be used
- *  - presences() will return an empty list and allowOthersPresences will return
+ *  - presences() will return an empty list and allowOtherPresences will return
  *    \c true, meaning that CM presences should be used
  *  - unsupportedChannelClasses() will return an empty list
  *
@@ -581,7 +580,7 @@ Profile::Profile(const QString &serviceName, const QString &cmName,
     // parameters will be the same as CM parameters
     // set allow others to true meaning that the standard CM presences are
     // supported
-    mPriv->data.allowOthersPresences = true;
+    mPriv->data.allowOtherPresences = true;
     // presences will be the same as CM presences
     // unsupported channel classes is empty
 
@@ -667,9 +666,9 @@ Profile::Parameter Profile::parameter(const QString &name) const
     return Profile::Parameter();
 }
 
-bool Profile::allowOthersPresences() const
+bool Profile::allowOtherPresences() const
 {
-    return mPriv->data.allowOthersPresences;
+    return mPriv->data.allowOtherPresences;
 }
 
 Profile::PresenceList Profile::presences() const

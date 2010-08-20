@@ -138,7 +138,7 @@ public:
     };
     typedef QList<Presence> PresenceList;
 
-    bool allowOthersPresences() const;
+    bool allowOtherPresences() const;
     PresenceList presences() const;
     bool hasPresence(const QString &id) const;
     Presence presence(const QString &id) const;
