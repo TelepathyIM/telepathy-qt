@@ -72,6 +72,7 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Private
 
     QString serviceName;
     bool valid;
+    bool fake;
     Data data;
 };
 
@@ -409,7 +410,8 @@ bool Profile::Private::XmlHandler::attributeValueAsBoolean(
 
 
 Profile::Private::Private()
-    : valid(false)
+    : valid(false),
+      fake(false)
 {
 }
 
@@ -442,6 +444,7 @@ bool Profile::Private::parse(const QString &fileName)
 {
     data.clear();
     valid = false;
+    fake = false;
 
     QFile file(fileName);
     if (!file.exists()) {
@@ -583,6 +586,7 @@ Profile::Profile(const QString &serviceName, const QString &cmName,
     // unsupported channel classes is empty
 
     mPriv->valid = true;
+    mPriv->fake = true;
 }
 
 /**
@@ -601,6 +605,11 @@ QString Profile::serviceName() const
 bool Profile::isValid() const
 {
     return mPriv->valid;
+}
+
+bool Profile::isFake() const
+{
+    return mPriv->fake;
 }
 
 QString Profile::type() const

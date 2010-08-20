@@ -52,6 +52,8 @@ public:
 
     bool isValid() const;
 
+    bool isFake() const;
+
     QString type() const;
     QString provider() const;
     QString name() const;
