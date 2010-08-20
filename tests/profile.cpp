@@ -14,6 +14,11 @@ private Q_SLOTS:
 
 void TestProfile::testProfile()
 {
+    QString top_srcdir = QString::fromLocal8Bit(::getenv("abs_top_srcdir"));
+    if (!top_srcdir.isEmpty()) {
+        QDir::setCurrent(top_srcdir + QLatin1String("/tests"));
+    }
+
     ProfilePtr profile = Profile::createForServiceName(QLatin1String("test-profile-file-not-found"));
     QCOMPARE(profile->isValid(), false);
 
@@ -23,8 +28,14 @@ void TestProfile::testProfile()
     profile = Profile::createForServiceName(QLatin1String("test-profile-invalid-service-id"));
     QCOMPARE(profile->isValid(), false);
 
-    profile = Profile::createForServiceName(QLatin1String("test-profile-invalid-type"));
+    profile = Profile::createForServiceName(QLatin1String("test-profile-non-im-type"));
     QCOMPARE(profile->isValid(), false);
+
+    profile = Profile::createForServiceName(QLatin1String("test-profile-non-im-type"));
+    QCOMPARE(profile->isValid(), false);
+
+    profile = Profile::createForFileName(QLatin1String("telepathy/profiles/test-profile-non-im-type.profile"));
+    QCOMPARE(profile->isValid(), true);
 
     profile = Profile::createForServiceName(QLatin1String("test-profile"));
     QCOMPARE(profile->isValid(), true);

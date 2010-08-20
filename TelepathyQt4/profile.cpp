@@ -73,6 +73,7 @@ struct TELEPATHY_QT4_NO_EXPORT Profile::Private
     QString serviceName;
     bool valid;
     bool fake;
+    bool allowNonIMType;
     Data data;
 };
 
@@ -99,7 +100,7 @@ class TELEPATHY_QT4_NO_EXPORT Profile::Private::XmlHandler :
                 public QXmlDefaultHandler
 {
 public:
-    XmlHandler(const QString &serviceName, Profile::Private::Data *outputData);
+    XmlHandler(const QString &serviceName, bool allowNonIMType, Profile::Private::Data *outputData);
 
     bool startElement(const QString &namespaceURI, const QString &localName,
             const QString &qName, const QXmlAttributes &attributes);
@@ -114,6 +115,7 @@ private:
             const QString &qName);
 
     QString mServiceName;
+    bool allowNonIMType;
     Profile::Private::Data *mData;
     QStack<QString> mElements;
     QString mCurrentText;
@@ -180,8 +182,10 @@ const QString Profile::Private::XmlHandler::elemAttrMessage = QLatin1String("mes
 const QString Profile::Private::XmlHandler::elemAttrDisabled = QLatin1String("disabled");
 
 Profile::Private::XmlHandler::XmlHandler(const QString &serviceName,
+        bool allowNonIMType,
         Profile::Private::Data *outputData)
     : mServiceName(serviceName),
+      allowNonIMType(allowNonIMType),
       mData(outputData),
       mMetServiceTag(false)
 {
@@ -344,7 +348,7 @@ bool Profile::Private::XmlHandler::endElement(const QString &namespaceURI,
     }
 
     if (qName == elemType) {
-        if (mCurrentText != QLatin1String("IM")) {
+        if (mCurrentText != QLatin1String("IM") && !allowNonIMType) {
             mErrorString = QString(QLatin1String("unknown value of element "
                         "'type': %1"))
                 .arg(mCurrentText);
@@ -415,18 +419,21 @@ bool Profile::Private::XmlHandler::attributeValueAsBoolean(
 
 Profile::Private::Private()
     : valid(false),
-      fake(false)
+      fake(false),
+      allowNonIMType(false)
 {
 }
 
 void Profile::Private::setServiceName(const QString &serviceName_)
 {
+    allowNonIMType = false;
     serviceName = serviceName_;
     lookupProfile();
 }
 
 void Profile::Private::setFileName(const QString &fileName)
 {
+    allowNonIMType = true;
     QFileInfo fi(fileName);
     serviceName = fi.baseName();
     parse(fileName);
@@ -466,7 +473,7 @@ bool Profile::Private::parse(const QString &fileName)
     }
 
     QFileInfo fi(file.fileName());
-    XmlHandler xmlHandler(serviceName, &data);
+    XmlHandler xmlHandler(serviceName, allowNonIMType, &data);
 
     QXmlSimpleReader xmlReader;
     xmlReader.setContentHandler(&xmlHandler);
