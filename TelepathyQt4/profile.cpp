@@ -39,11 +39,14 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT Profile::Private
 {
     Private();
-    Private(const QString &serviceName);
 
-    void init();
+    void setServiceName(const QString &serviceName);
     void setFileName(const QString &fileName);
+
+    void lookupProfile();
     bool parse(const QString &fileName);
+
+    void setError(const QString &errorMessage);
 
     struct Data
     {
@@ -93,7 +96,7 @@ class TELEPATHY_QT4_NO_EXPORT Profile::Private::XmlHandler :
                 public QXmlDefaultHandler
 {
 public:
-    XmlHandler(const QString &baseFileName, Profile::Private::Data *outputData);
+    XmlHandler(const QString &serviceName, Profile::Private::Data *outputData);
 
     bool startElement(const QString &namespaceURI, const QString &localName,
             const QString &qName, const QXmlAttributes &attributes);
@@ -107,7 +110,7 @@ private:
     bool attributeValueAsBoolean(const QXmlAttributes &attributes,
             const QString &qName);
 
-    QString mBaseFileName;
+    QString mServiceName;
     Profile::Private::Data *mData;
     QStack<QString> mElements;
     QString mCurrentText;
@@ -173,9 +176,9 @@ const QString Profile::Private::XmlHandler::elemAttrIcon = QLatin1String("icon")
 const QString Profile::Private::XmlHandler::elemAttrMessage = QLatin1String("message");
 const QString Profile::Private::XmlHandler::elemAttrDisabled = QLatin1String("disabled");
 
-Profile::Private::XmlHandler::XmlHandler(const QString &baseFileName,
+Profile::Private::XmlHandler::XmlHandler(const QString &serviceName,
         Profile::Private::Data *outputData)
-    : mBaseFileName(baseFileName),
+    : mServiceName(serviceName),
       mData(outputData),
       mMetServiceTag(false)
 {
@@ -243,7 +246,7 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
         CHECK_ELEMENT_ATTRIBUTES_COUNT(1);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrId);
 
-        if (attributes.value(elemAttrId) != mBaseFileName) {
+        if (attributes.value(elemAttrId) != mServiceName) {
             mErrorString = QString(QLatin1String("the '%1' attribute of the "
                         "element '%2' does not match the file name"))
                 .arg(elemAttrId)
@@ -408,63 +411,53 @@ Profile::Private::Private()
 {
 }
 
-Profile::Private::Private(const QString &serviceName)
-    : serviceName(serviceName),
-      valid(false)
+void Profile::Private::setServiceName(const QString &serviceName_)
 {
-    init();
-}
-
-void Profile::Private::init()
-{
-    QStringList searchDirs = Profile::searchDirs();
-
-    foreach (const QString searchDir, searchDirs) {
-        QString fileName = searchDir + serviceName + QLatin1String(".profile");
-        if (QFile::exists(fileName)) {
-            debug() << "Parsing profile file" << fileName;
-            data.clear();
-            if (!parse(fileName)) {
-                data.clear();
-                continue;
-            }
-            valid = true;
-            return;
-        }
-    }
+    serviceName = serviceName_;
+    lookupProfile();
 }
 
 void Profile::Private::setFileName(const QString &fileName)
 {
     QFileInfo fi(fileName);
     serviceName = fi.baseName();
-    data.clear();
-    valid = false;
-    if (parse(fileName)) {
-        valid = true;
-    } else {
-        serviceName = QString();
-        data.clear();
+    parse(fileName);
+}
+
+void Profile::Private::lookupProfile()
+{
+    QStringList searchDirs = Profile::searchDirs();
+
+    foreach (const QString searchDir, searchDirs) {
+        QString fileName = searchDir + serviceName + QLatin1String(".profile");
+        if (parse(fileName)) {
+            return;
+        }
     }
 }
 
 bool Profile::Private::parse(const QString &fileName)
 {
+    data.clear();
+    valid = false;
+
     QFile file(fileName);
     if (!file.exists()) {
-        warning().nospace() << "Error parsing profile file " << fileName <<
-            ": " << "file does not exist";
+        setError(QString(QLatin1String("Error parsing profile file %1: "
+                        "file does not exist"))
+                .arg(file.fileName()));
         return false;
     }
 
     if (!file.open(QFile::ReadOnly)) {
-        warning().nospace() << "Error parsing profile file " << fileName <<
-            ": " << "cannot open file for readonly access";
+        setError(QString(QLatin1String("Error parsing profile file %1: "
+                        "cannot open file for readonly access"))
+                .arg(file.fileName()));
         return false;
     }
 
-    QFileInfo fi(fileName);
-    XmlHandler xmlHandler(fi.baseName(), &data);
+    QFileInfo fi(file.fileName());
+    XmlHandler xmlHandler(serviceName, &data);
 
     QXmlSimpleReader xmlReader;
     xmlReader.setContentHandler(&xmlHandler);
@@ -472,12 +465,21 @@ bool Profile::Private::parse(const QString &fileName)
 
     QXmlInputSource xmlInputSource(&file);
     if (!xmlReader.parse(xmlInputSource)) {
-        warning().nospace() << "Error parsing profile file " << fileName <<
-            ": " << xmlHandler.errorString();
+        setError(QString(QLatin1String("Error parsing profile file %1: %2"))
+                .arg(file.fileName())
+                .arg(xmlHandler.errorString()));
         return false;
     }
 
+    valid = true;
     return true;
+}
+
+void Profile::Private::setError(const QString &errorMessage)
+{
+    warning() << errorMessage;
+    valid = false;
+    data.clear();
 }
 
 
@@ -495,9 +497,24 @@ bool Profile::Private::parse(const QString &fileName)
  * \param serviceName The profile service name.
  * \return A ProfilePtr object pointing to the newly created Profile object.
  */
-ProfilePtr Profile::create(const QString &serviceName)
+ProfilePtr Profile::createForServiceName(const QString &serviceName)
 {
-    return ProfilePtr(new Profile(serviceName));
+    ProfilePtr profile = ProfilePtr(new Profile());
+    profile->setServiceName(serviceName);
+    return profile;
+}
+
+/**
+ * Create a new Profile object used to read .profiles compliant files.
+ *
+ * \param fileName The profile file name.
+ * \return A ProfilePtr object pointing to the newly created Profile object.
+ */
+ProfilePtr Profile::createForFileName(const QString &fileName)
+{
+    ProfilePtr profile = ProfilePtr(new Profile());
+    profile->setFileName(fileName);
+    return profile;
 }
 
 /**
@@ -507,16 +524,6 @@ ProfilePtr Profile::create(const QString &serviceName)
  */
 Profile::Profile()
     : mPriv(new Private())
-{
-}
-
-/**
- * Construct a new Profile object used to read .profiles compliant files.
- *
- * \param serviceName The profile service name.
- */
-Profile::Profile(const QString &serviceName)
-    : mPriv(new Private(serviceName))
 {
 }
 
@@ -626,6 +633,11 @@ Profile::Presence Profile::presence(const QString &id) const
 RequestableChannelClassList Profile::unsupportedChannelClasses() const
 {
     return mPriv->data.unsupportedChannelClasses;
+}
+
+void Profile::setServiceName(const QString &serviceName)
+{
+    mPriv->setServiceName(serviceName);
 }
 
 void Profile::setFileName(const QString &fileName)

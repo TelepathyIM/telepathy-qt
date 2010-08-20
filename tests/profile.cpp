@@ -14,16 +14,16 @@ private Q_SLOTS:
 
 void TestProfile::testProfile()
 {
-    ProfilePtr profile = Profile::create(QLatin1String("test-profile-file-not-found"));
+    ProfilePtr profile = Profile::createForServiceName(QLatin1String("test-profile-file-not-found"));
     QCOMPARE(profile->isValid(), false);
 
-    profile = Profile::create(QLatin1String("test-profile-malformed"));
+    profile = Profile::createForServiceName(QLatin1String("test-profile-malformed"));
     QCOMPARE(profile->isValid(), false);
 
-    profile = Profile::create(QLatin1String("test-profile-invalid-service-id"));
+    profile = Profile::createForServiceName(QLatin1String("test-profile-invalid-service-id"));
     QCOMPARE(profile->isValid(), false);
 
-    profile = Profile::create(QLatin1String("test-profile"));
+    profile = Profile::createForServiceName(QLatin1String("test-profile"));
     QCOMPARE(profile->isValid(), true);
 
     QCOMPARE(profile->serviceName(), QLatin1String("test-profile"));

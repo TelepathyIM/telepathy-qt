@@ -812,7 +812,7 @@ ProfilePtr Account::profile() const
     }
 
     if (!mPriv->profile) {
-        mPriv->profile = Profile::create(serviceName());
+        mPriv->profile = Profile::createForServiceName(serviceName());
         if (!mPriv->profile->isValid()) {
             // there is no profile for service name or it can't be parsed, fake
             // a profile

@@ -41,7 +41,8 @@ class TELEPATHY_QT4_EXPORT Profile : public RefCounted
     Q_DISABLE_COPY(Profile);
 
 public:
-    static ProfilePtr create(const QString &serviceName);
+    static ProfilePtr createForServiceName(const QString &serviceName);
+    static ProfilePtr createForFileName(const QString &fileName);
 
     ~Profile();
 
@@ -144,8 +145,8 @@ private:
     friend class ProfileManager;
 
     Profile();
-    Profile(const QString &serviceName);
 
+    void setServiceName(const QString &serviceName);
     void setFileName(const QString &fileName);
 
     static QStringList searchDirs();

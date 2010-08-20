@@ -68,18 +68,17 @@ void ProfileManager::Private::init()
 
             if (profiles.contains(serviceName)) {
                 debug() << "Profile for service" << serviceName << "already "
-                    "exists. Ignoring profile file" << fileName;
+                    "exists. Ignoring profile file:" << fileName;
                 continue;
             }
 
-            ProfilePtr profile = ProfilePtr(new Profile());
-            profile->setFileName(fileName);
-            debug() << "parsing profile file" << fileName;
+            ProfilePtr profile = Profile::createForFileName(fileName);
             if (!profile->isValid()) {
-                warning() << "error parsing profile file" << fileName;
                 continue;
             }
 
+            debug() << "Found profile for service" << serviceName <<
+                "- profile file:" << fileName;
             profiles.insert(serviceName, profile);
         }
     }
