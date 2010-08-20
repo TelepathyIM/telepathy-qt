@@ -12,6 +12,7 @@
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/Profile>
 
 #include <tests/lib/test.h>
 
@@ -293,6 +294,26 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
     protocolInfo = acc->protocolInfo();
     QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
+
+    QVERIFY(connect(acc->becomeReady(Account::FeatureProfile),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureProfile), true);
+
+    ProfilePtr profile = acc->profile();
+    QCOMPARE(profile.isNull(), false);
+    QCOMPARE(profile->isValid(), true);
+    QCOMPARE(profile->serviceName(), acc->protocolName());
+    QCOMPARE(profile->type(), QLatin1String("IM"));
+    QCOMPARE(profile->provider(), QString());
+    QCOMPARE(profile->name(), acc->protocolName());
+    QCOMPARE(profile->cmName(), acc->cmName());
+    QCOMPARE(profile->protocolName(), acc->protocolName());
+    QCOMPARE(profile->parameters().isEmpty(), false);
+    QCOMPARE(profile->allowOtherPresences(), true);
+    QCOMPARE(profile->presences().isEmpty(), true);
+    QCOMPARE(profile->unsupportedChannelClasses().isEmpty(), true);
 
     QList<AccountPtr> allAccounts = mAM->allAccounts();
 
