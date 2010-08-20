@@ -315,15 +315,13 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
         if (qName != elemType && qName != elemProvider &&
             qName != elemName && qName != elemIcon &&
             qName != elemManager && qName != elemProtocol) {
-            mErrorString = QString(QLatin1String("unknown element '%1'"))
-                .arg(qName);
-            return false;
+            Tp::warning() << "Ignoring unknown element" << qName;
+        } else {
+            // check if we are inside <service>
+            CHECK_ELEMENT_IS_CHILD_OF(elemService);
+            // no element here supports attributes
+            CHECK_ELEMENT_ATTRIBUTES_COUNT(0);
         }
-
-        // check if we are inside <service>
-        CHECK_ELEMENT_IS_CHILD_OF(elemService);
-        // no element here supports attributes
-        CHECK_ELEMENT_ATTRIBUTES_COUNT(0);
     }
 
 #undef CHECK_ELEMENT_IS_CHILD_OF
