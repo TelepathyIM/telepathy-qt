@@ -19,6 +19,7 @@ void TestProfileManager::testProfileManager()
     QCOMPARE(pm->profiles().count(), 1);
     QCOMPARE(pm->profileForService(QLatin1String("test-profile")).isNull(), false);
     QCOMPARE(pm->profileForService(QLatin1String("test-profile-file-not-found")).isNull(), true);
+    QCOMPARE(pm->profileForService(QLatin1String("test-profile-non-im-type")).isNull(), true);
     QCOMPARE(pm->profilesForCM(QLatin1String("testprofilecm")).isEmpty(), false);
     QCOMPARE(pm->profilesForCM(QLatin1String("testprofilecm")).count(), 1);
     QCOMPARE(pm->profilesForProtocol(QLatin1String("testprofileproto")).isEmpty(), false);

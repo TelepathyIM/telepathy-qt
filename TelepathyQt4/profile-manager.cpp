@@ -77,6 +77,12 @@ void ProfileManager::Private::init()
                 continue;
             }
 
+            if (profile->type() != QLatin1String("IM")) {
+                debug() << "Ignoring profile for service" << serviceName <<
+                    ": type != IM. Profile file:" << fileName;
+                continue;
+            }
+
             debug() << "Found profile for service" << serviceName <<
                 "- profile file:" << fileName;
             profiles.insert(serviceName, profile);
