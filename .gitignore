@@ -65,3 +65,4 @@ _gen
 _tmp
 cscope.out
 tags
+/test-round-*.log
