@@ -286,7 +286,7 @@ ParamSpecList ManagerFile::Private::parameters(const QString &protocol) const
 QVariant ManagerFile::Private::valueForKey(const QString &param,
                                            const QString &signature)
 {
-    QString value = keyFile.value(param);
+    QString value = keyFile.rawValue(param);
     return parseValueWithSignature(value, QDBusSignature(signature));
 }
 
