@@ -215,9 +215,9 @@ void TestConnRoster::testRoster()
         }
 
         QCOMPARE(mLoop->exec(), 0);
-        // I asked to see his presence
-        QCOMPARE(static_cast<uint>(contact->subscriptionState()),
-                 static_cast<uint>(Contact::PresenceStateAsk));
+        // I asked to see his presence - he might have already accepted it, though
+        QVERIFY(contact->subscriptionState() == Contact::PresenceStateAsk
+                || contact->subscriptionState() == Contact::PresenceStateYes);
 
         if ((i % 2) == 0) {
             QCOMPARE(mLoop->exec(), 0);
