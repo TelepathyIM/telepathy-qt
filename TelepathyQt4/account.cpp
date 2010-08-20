@@ -120,6 +120,11 @@ Account::Private::Private(Account *parent)
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified)
 {
+    automaticPresence.type = currentPresence.type = requestedPresence.type
+        = ConnectionPresenceTypeUnknown;
+    automaticPresence.status = currentPresence.status = requestedPresence.status
+        = QLatin1String("unknown");
+
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
     QRegExp rx(QLatin1String("^" TELEPATHY_ACCOUNT_OBJECT_PATH_BASE
