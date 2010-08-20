@@ -73,7 +73,7 @@ alloc_params (void)
 {
   ExampleParams *params = g_slice_new0 (ExampleParams);
 
-  params->simulation_delay = 1000;
+  params->simulation_delay = 10;
   return params;
 }
 

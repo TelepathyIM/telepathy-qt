@@ -14,7 +14,7 @@ PARAMS = {
                 },
             'simulation-delay': {
                 'dtype': 'u',
-                'default': 500,
+                'default': 10,
                 },
             },
         }
