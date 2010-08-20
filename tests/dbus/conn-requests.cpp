@@ -158,7 +158,7 @@ void TestConnRequests::initTestCase()
             EXAMPLE_TYPE_ECHO_2_CONNECTION,
             "account", "me@example.com",
             "protocol", "contacts",
-            0));
+            NULL));
     QVERIFY(mConnService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
                 "contacts", &name, &connPath, &error));

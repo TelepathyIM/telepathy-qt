@@ -139,7 +139,7 @@ void TestContacts::initTestCase()
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "simple",
-            0));
+            NULL));
     QVERIFY(mConnService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService), "contacts", &name,
                 &connPath, &error));
@@ -761,7 +761,7 @@ void TestContacts::testSelfContactFallback()
             TP_TESTS_TYPE_SIMPLE_CONNECTION,
             "account", "me@example.com",
             "protocol", "simple",
-            0));
+            NULL));
     QVERIFY(connService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(connService), "simple", &name,
                 &connPath, &error));

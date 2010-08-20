@@ -369,7 +369,7 @@ void TestClient::initTestCase()
             TP_TESTS_TYPE_CONTACTS_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
-            0));
+            NULL));
     QVERIFY(mConnService != 0);
     mBaseConnService = TP_BASE_CONNECTION(mConnService);
     QVERIFY(mBaseConnService != 0);

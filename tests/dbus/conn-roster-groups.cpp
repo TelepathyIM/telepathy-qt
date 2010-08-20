@@ -103,7 +103,7 @@ void TestConnRosterGroups::initTestCase()
             "account", "me@example.com",
             "simulation-delay", 0,
             "protocol", "example-contact-list",
-            0));
+            NULL));
     QVERIFY(mConnService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
                 "foo", &name, &connPath, &error));

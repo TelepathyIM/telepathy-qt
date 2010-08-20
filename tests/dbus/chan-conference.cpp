@@ -90,7 +90,7 @@ void TestConferenceChan::initTestCase()
             EXAMPLE_TYPE_ECHO_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
-            0));
+            NULL));
     QVERIFY(mConnService != 0);
     mBaseConnService = TP_BASE_CONNECTION(mConnService);
     QVERIFY(mBaseConnService != 0);
