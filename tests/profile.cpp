@@ -31,9 +31,6 @@ void TestProfile::testProfile()
     profile = Profile::createForServiceName(QLatin1String("test-profile-non-im-type"));
     QCOMPARE(profile->isValid(), false);
 
-    profile = Profile::createForServiceName(QLatin1String("test-profile-non-im-type"));
-    QCOMPARE(profile->isValid(), false);
-
     profile = Profile::createForFileName(QLatin1String("telepathy/profiles/test-profile-non-im-type.profile"));
     QCOMPARE(profile->isValid(), true);
 
