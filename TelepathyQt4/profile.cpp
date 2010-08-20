@@ -24,6 +24,8 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Utils>
+#include <TelepathyQt4/ProtocolInfo>
+#include <TelepathyQt4/ProtocolParameter>
 
 #include <QFile>
 #include <QFileInfo>
@@ -525,6 +527,62 @@ ProfilePtr Profile::createForFileName(const QString &fileName)
 Profile::Profile()
     : mPriv(new Private())
 {
+}
+
+/**
+ * Construct a fake profile using the given \a serviceName, \a cmName,
+ * \a protocolName and \a protocolInfo.
+ *
+ *  - isFake() will return \c true
+ *  - type() will return "IM"
+ *  - provider() will return an empty string
+ *  - serviceName() will return \a serviceName
+ *  - name() and protocolName() will return \a protocolName
+ *  - iconName() will return "im-\a protocolName"
+ *  - cmName() will return \a cmName
+ *  - parameters() will return a list matching CM default parameters
+ *    true, meaning that CM presences should be used
+ *  - presences() will return an empty list and allowOthersPresences will return
+ *    \c true, meaning that CM presences should be used
+ *  - unsupportedChannelClasses() will return an empty list
+ *
+ * \param serviceName The service name.
+ * \param cmName The connection manager name.
+ * \param protocolName The protocol name.
+ * \param protocolInfo The protocol info for the protocol \a protocolName.
+ */
+Profile::Profile(const QString &serviceName, const QString &cmName,
+        const QString &protocolName, const ProtocolInfo *protocolInfo)
+    : mPriv(new Private())
+{
+    mPriv->serviceName = serviceName;
+
+    mPriv->data.type = QString(QLatin1String("IM"));
+    // provider is empty
+    mPriv->data.name = protocolName;
+    mPriv->data.iconName = QString(QLatin1String("im-%1")).arg(protocolName);
+    mPriv->data.cmName = cmName;
+    mPriv->data.protocolName = protocolName;
+
+    foreach (const ProtocolParameter *protocolParam, protocolInfo->parameters()) {
+        if (!protocolParam->defaultValue().isNull()) {
+            mPriv->data.parameters.append(Profile::Parameter(
+                        protocolParam->name(),
+                        protocolParam->dbusSignature(),
+                        protocolParam->defaultValue(),
+                        QString(), // label
+                        false));    // mandatory
+        }
+    }
+
+    // parameters will be the same as CM parameters
+    // set allow others to true meaning that the standard CM presences are
+    // supported
+    mPriv->data.allowOthersPresences = true;
+    // presences will be the same as CM presences
+    // unsupported channel classes is empty
+
+    mPriv->valid = true;
 }
 
 /**
