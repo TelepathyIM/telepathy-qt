@@ -641,6 +641,8 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
         warning().nospace() <<
             "Properties.GetAll(ConnectionManager) failed: " <<
             reply.error().name() << ": " << reply.error().message();
+
+        // FIXME shouldn't this invalidate the CM or fall back to calling the individual methods?
     }
 
     mPriv->introspectProtocols();
@@ -670,6 +672,8 @@ void ConnectionManager::gotProtocols(QDBusPendingCallWatcher *watcher)
         warning().nospace() <<
             "ConnectionManager.ListProtocols failed: " <<
             reply.error().name() << ": " << reply.error().message();
+
+        // FIXME shouldn't this invalidate the CM?
     }
 
     watcher->deleteLater();
