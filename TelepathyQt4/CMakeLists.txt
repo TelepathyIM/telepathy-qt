@@ -260,6 +260,7 @@ set(telepathy_qt4_HEADERS
     PendingVariant
     pending-variant.h
     PendingVoid
+    Parameter
     Profile
     profile.h
     ProfileManager
@@ -268,6 +269,7 @@ set(telepathy_qt4_HEADERS
     properties.h
     PropertiesInterface
     PropertiesInterfaceInterface
+    ProtocolInfo
     ReadinessHelper
     readiness-helper.h
     ReadyObject
