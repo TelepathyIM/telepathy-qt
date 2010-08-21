@@ -68,6 +68,17 @@ void Test::expectSuccessfulCall(QDBusPendingCallWatcher *watcher)
     mLoop->exit(0);
 }
 
+void Test::expectFailure(PendingOperation *op)
+{
+    if (!op->isError()) {
+        qWarning() << "expectFailure(): should have been an error, but wasn't";
+        mLoop->exit(1);
+        return;
+    }
+
+    mLoop->exit(0);
+}  
+
 void Test::processDBusQueue(Tp::DBusProxy *proxy)
 {
     // Call method Ping on the D-Bus Peer interface

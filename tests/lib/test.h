@@ -26,6 +26,7 @@ public:
 protected Q_SLOTS:
     void expectSuccessfulCall(QDBusPendingCallWatcher*);
     void expectSuccessfulCall(Tp::PendingOperation*);
+    void expectFailure(Tp::PendingOperation*);
 
     virtual void initTestCaseImpl();
     virtual void initImpl();
