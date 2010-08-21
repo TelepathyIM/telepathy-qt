@@ -215,6 +215,12 @@ QStringList ContactManager::allKnownGroups() const
  * The returned pending operation will finish successfully if the group already
  * exists.
  *
+ * FIXME: currently, the returned pending operation will finish as soon as the
+ * CM EnsureChannel has returned. At this point however the NewChannels
+ * mechanism hasn't yet populated our contactListGroupChannels member, which
+ * means one has to wait for groupAdded before being able to actually do
+ * something with the group (which is error-prone!). This is fd.o #29728.
+ *
  * \param group Group name.
  * \return A pending operation which will return when an attempt has been made
  *         to add an user-defined contact list group.
@@ -244,6 +250,13 @@ PendingOperation *ContactManager::addGroup(const QString &group)
  * Attempt to remove an user-defined contact list group named \a group.
  *
  * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
+ * FIXME: currently, the returned pending operation will finish as soon as the
+ * CM close() has returned. At this point however the invalidated()
+ * mechanism hasn't yet removed the channel from our contactListGroupChannels
+ * member, which means contacts can seemingly still be added to the group etc.
+ * until the change is picked up (and groupRemoved is emitted). This is fd.o
+ * #29728.
  *
  * \param group Group name.
  * \return A pending operation which will return when an attempt has been made
