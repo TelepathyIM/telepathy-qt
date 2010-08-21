@@ -793,6 +793,19 @@ void TestContacts::testSelfContactFallback()
     QCOMPARE(selfContact->alias(), QString(QLatin1String("me@example.com")));
     QVERIFY(!selfContact->isAvatarTokenKnown());
     QCOMPARE(selfContact->presenceStatus(), QString(QLatin1String("unknown")));
+
+    tp_tests_simple_connection_inject_disconnect(connService);
+
+    if (conn->isValid()) {
+        QVERIFY(connect(conn.data(),
+                    SIGNAL(invalidated(Tp::DBusProxy *,
+                            const QString &, const QString &)),
+                    mLoop,
+                    SLOT(quit())));
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    g_object_unref(connService);
 }
 
 void TestContacts::cleanup()
