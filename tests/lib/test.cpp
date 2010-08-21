@@ -16,6 +16,7 @@ using Tp::Client::DBus::PeerInterface;
 Test::Test(QObject *parent)
     : QObject(parent), mLoop(new QEventLoop(this))
 {
+    QTimer::singleShot(10 * 60 * 1000, this, SLOT(onWatchdog()));
 }
 
 Test::~Test()
@@ -90,6 +91,14 @@ void Test::processDBusQueue(Tp::DBusProxy *proxy)
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+}
+
+void Test::onWatchdog()
+{
+    // We can't use QFAIL because the test would then go to cleanup() and/or cleanupTestCase(),
+    // which would often hang too - so let's just use abort
+    qWarning() << "Test took over 10 minutes to finish, it's probably hung up - aborting";
+    std::abort();
 }
 
 #include "_gen/test.h.moc.hpp"
