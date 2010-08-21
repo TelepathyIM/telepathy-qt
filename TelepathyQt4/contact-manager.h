@@ -200,7 +200,7 @@ private:
         ChannelPtr channel;
     };
 
-    ContactManager(const ConnectionPtr &parent);
+    ContactManager(Connection *parent);
     ~ContactManager();
 
     ContactPtr ensureContact(const ReferencedHandles &handle,

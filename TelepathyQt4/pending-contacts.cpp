@@ -352,10 +352,17 @@ PendingContacts::PendingContacts(ContactManager *manager,
         const UIntList &handles, const QSet<Contact::Feature> &features,
         const QStringList &interfaces,
         const QMap<uint, ContactPtr> &satisfyingContacts,
-        const QSet<uint> &otherContacts)
+        const QSet<uint> &otherContacts,
+        const QString &errorName,
+        const QString &errorMessage)
     : PendingOperation(manager),
       mPriv(new Private(manager, handles, features, satisfyingContacts))
 {
+    if (!errorName.isEmpty()) {
+        setFinishedWithError(errorName, errorMessage);
+        return;
+    }
+
     if (!otherContacts.isEmpty()) {
         debug() << " Fetching" << interfaces.size() << "interfaces for"
                                << otherContacts.size() << "contacts";
@@ -385,9 +392,15 @@ PendingContacts::PendingContacts(ContactManager *manager,
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,
-        const QStringList &identifiers, const QSet<Contact::Feature> &features)
+        const QStringList &identifiers, const QSet<Contact::Feature> &features,
+        const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager), mPriv(new Private(manager, identifiers, features))
 {
+    if (!errorName.isEmpty()) {
+        setFinishedWithError(errorName, errorMessage);
+        return;
+    }
+
     ConnectionPtr conn = manager->connection();
     PendingHandles *handles = conn->requestHandles(HandleTypeContact, identifiers);
 
@@ -397,9 +410,15 @@ PendingContacts::PendingContacts(ContactManager *manager,
 }
 
 PendingContacts::PendingContacts(ContactManager *manager,
-        const QList<ContactPtr> &contacts, const QSet<Contact::Feature> &features)
+        const QList<ContactPtr> &contacts, const QSet<Contact::Feature> &features,
+        const QString &errorName, const QString &errorMessage)
     : PendingOperation(manager), mPriv(new Private(manager, contacts, features))
 {
+    if (!errorName.isEmpty()) {
+        setFinishedWithError(errorName, errorMessage);
+        return;
+    }
+
     UIntList handles;
     foreach (const ContactPtr &contact, contacts) {
         handles.push_back(contact->handle()[0]);

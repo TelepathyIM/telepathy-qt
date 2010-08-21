@@ -77,15 +77,22 @@ private Q_SLOTS:
 private:
     friend class ContactManager;
 
+    // If errorName is non-empty, these will fail instantly
     PendingContacts(ContactManager *manager, const UIntList &handles,
             const QSet<Contact::Feature> &features,
             const QStringList &interfaces,
             const QMap<uint, ContactPtr> &satisfyingContacts,
-            const QSet<uint> &otherContacts);
+            const QSet<uint> &otherContacts,
+            const QString &errorName = QString(),
+            const QString &errorMessage = QString());
     PendingContacts(ContactManager *manager, const QStringList &identifiers,
-            const QSet<Contact::Feature> &features);
+            const QSet<Contact::Feature> &features,
+            const QString &errorName = QString(),
+            const QString &errorMessage = QString());
     PendingContacts(ContactManager *manager, const QList<ContactPtr> &contacts,
-            const QSet<Contact::Feature> &features);
+            const QSet<Contact::Feature> &features,
+            const QString &errorName = QString(),
+            const QString &errorMessage = QString());
 
     void allAttributesFetched();
 

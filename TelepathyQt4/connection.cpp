@@ -161,7 +161,7 @@ Connection::Private::Private(Connection *parent)
       contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
       handleContext(0),
-      contactManager(0)
+      contactManager(new ContactManager(parent))
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -304,11 +304,6 @@ void Connection::Private::init()
 
 void Connection::Private::introspectMain(Connection::Private *self)
 {
-    if (!self->contactManager) {
-        self->contactManager = new ContactManager(
-                ConnectionPtr(self->parent));
-    }
-
     // Introspecting the main interface is currently just calling
     // GetInterfaces(), but it might include other stuff in the future if we
     // gain GetAll-able properties on the connection
@@ -1743,9 +1738,6 @@ QStringList Connection::contactAttributeInterfaces() const
  */
 ContactManager *Connection::contactManager() const
 {
-    if (!isReady()) {
-        return 0;
-    }
     return mPriv->contactManager;
 }
 

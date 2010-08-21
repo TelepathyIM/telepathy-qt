@@ -26,6 +26,7 @@
 #include "TelepathyQt4/_gen/contact-manager-internal.moc.hpp"
 
 #include <QMap>
+#include <QPointer>
 #include <QString>
 #include <QSet>
 #include <QWeakPointer>
@@ -53,7 +54,7 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
 {
-    Private(ContactManager *parent, const ConnectionPtr &connection)
+    Private(ContactManager *parent, Connection *connection)
         : parent(parent), connection(connection)
     {
     }
@@ -89,7 +90,7 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     class PendingContactManagerRemoveContactListGroup;
 
     ContactManager *parent;
-    WeakPtr<Connection> connection;
+    QPointer<Connection> connection;
     QMap<uint, QWeakPointer<Contact> > contacts;
     Contacts cachedAllKnownContacts;
 
@@ -668,6 +669,16 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<uint> otherContacts;
     QSet<Contact::Feature> missingFeatures;
 
+    if (!connection()->isValid()) {
+        return new PendingContacts(this, handles, features, QStringList(),
+                satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"));
+    } else if (!connection()->isReady(Connection::FeatureCore)) {
+        return new PendingContacts(this, handles, features, QStringList(),
+                satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureCore is not ready"));
+    }
+
     foreach (uint handle, handles) {
         ContactPtr contact = lookupContactByHandle(handle);
         if (contact) {
@@ -716,6 +727,16 @@ PendingContacts *ContactManager::contactsForHandles(const ReferencedHandles &han
 PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &identifiers,
         const QSet<Contact::Feature> &features)
 {
+    if (!connection()->isValid()) {
+        return new PendingContacts(this, identifiers, features,
+                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"));
+    } else if (!connection()->isReady(Connection::FeatureCore)) {
+        return new PendingContacts(this, identifiers, features,
+                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureCore is not ready"));
+    }
+
     debug() << "Building contacts for" << identifiers.size() << "identifiers" << "with" << features.size()
         << "features";
 
@@ -726,6 +747,16 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
 PendingContacts *ContactManager::upgradeContacts(const QList<ContactPtr> &contacts,
         const QSet<Contact::Feature> &features)
 {
+    if (!connection()->isValid()) {
+        return new PendingContacts(this, contacts, features,
+                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"));
+    } else if (!connection()->isReady(Connection::FeatureCore)) {
+        return new PendingContacts(this, contacts, features,
+                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureCore is not ready"));
+    }
+
     debug() << "Upgrading" << contacts.size() << "contacts to have at least"
                            << features.size() << "features";
 
@@ -945,8 +976,8 @@ void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
     emit groupRemoved(id);
 }
 
-ContactManager::ContactManager(const ConnectionPtr &connection)
-    : QObject(connection.data()),
+ContactManager::ContactManager(Connection *connection)
+    : QObject(connection),
       mPriv(new Private(this, connection))
 {
 }
