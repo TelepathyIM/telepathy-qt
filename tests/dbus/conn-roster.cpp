@@ -220,10 +220,10 @@ void TestConnRoster::testRoster()
                 || contact->subscriptionState() == Contact::PresenceStateYes);
 
         if ((i % 2) == 0) {
-            QCOMPARE(mLoop->exec(), 0);
-            // He asked to see my presence
-            QCOMPARE(static_cast<uint>(contact->publishState()),
-                     static_cast<uint>(Contact::PresenceStateAsk));
+            // if he accepted it already, one iteration won't be enough as the
+            // first iteration will just flush the subscription -> Yes event
+            while (contact->publishState() != Contact::PresenceStateAsk)
+                QCOMPARE(mLoop->exec(), 0);
 
             contact->authorizePresencePublication();
             QCOMPARE(mLoop->exec(), 0);
