@@ -21,7 +21,7 @@ class TestAccountBasics : public Test
 
 public:
     TestAccountBasics(QObject *parent = 0)
-        : Test(parent), mServiceNameChanged(false), mAccountsCount(0)
+        : Test(parent), mServiceNameChanged(false), mAccountsCount(0), mGotAvatarChanged(false)
     { }
 
 protected Q_SLOTS:
@@ -46,6 +46,7 @@ private:
     bool mServiceNameChanged;
     QString mServiceName;
     int mAccountsCount;
+    bool mGotAvatarChanged;
 };
 
 void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
@@ -66,6 +67,7 @@ void TestAccountBasics::onAccountServiceNameChanged(const QString &serviceName)
 void TestAccountBasics::onAvatarChanged(const Tp::Avatar &avatar)
 {
     qDebug() << "on avatar changed";
+    mGotAvatarChanged = true;
     QCOMPARE(avatar.avatarData, QByteArray("asdfg"));
     QCOMPARE(avatar.MIMEType, QString(QLatin1String("image/jpeg")));
     mLoop->exit(0);
@@ -99,6 +101,8 @@ void TestAccountBasics::initTestCase()
 
 void TestAccountBasics::init()
 {
+    mGotAvatarChanged = false;
+
     initImpl();
 }
 
@@ -149,6 +153,8 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->displayName(), QString(QLatin1String("foobar (account 0)")));
 
+    qDebug() << "making Account::FeatureAvatar ready";
+
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -157,9 +163,13 @@ void TestAccountBasics::testBasics()
 
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
 
+    qDebug() << "connecting to avatarChanged()";
+
     QVERIFY(connect(acc.data(),
                     SIGNAL(avatarChanged(const Tp::Avatar &)),
                     SLOT(onAvatarChanged(const Tp::Avatar &))));
+
+    qDebug() << "setting the avatar";
 
     Tp::Avatar avatar = { QByteArray("asdfg"), QLatin1String("image/jpeg") };
     QVERIFY(connect(acc->setAvatar(avatar),
@@ -167,14 +177,23 @@ void TestAccountBasics::testBasics()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
 
+    qDebug() << "making Account::FeatureAvatar ready again (redundantly)";
+
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
 
-    // wait for avatarChanged signal
-    QCOMPARE(mLoop->exec(), 0);
+    // We might have got it already in the earlier mainloop runs
+    if (!mGotAvatarChanged) {
+        qDebug() << "waiting for the avatarChanged signal";
+        QCOMPARE(mLoop->exec(), 0);
+    } else {
+        qDebug() << "not waiting for avatarChanged because we already got it";
+    }
+
+    qDebug() << "creating another account";
 
     pacc = mAM->createAccount(QLatin1String("spurious"),
             QLatin1String("normal"), QLatin1String("foobar"), parameters);
