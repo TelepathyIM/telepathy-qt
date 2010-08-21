@@ -1,5 +1,4 @@
 VALGRIND = valgrind --tool=memcheck \
-    --verbose \
     --leak-check=full \
     --leak-resolution=high \
     --child-silent-after-fork=yes \
