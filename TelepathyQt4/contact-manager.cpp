@@ -206,6 +206,8 @@ QStringList ContactManager::allKnownGroups() const
 /**
  * Attempt to add an user-defined contact list group named \a group.
  *
+ * This method requires Connection::FeatureRosterGroups to be enabled.
+ *
  * On some protocols (e.g. XMPP) empty groups are not represented on the server,
  * so disconnecting from the server and reconnecting might cause empty groups to
  * vanish.
@@ -220,6 +222,14 @@ QStringList ContactManager::allKnownGroups() const
  */
 PendingOperation *ContactManager::addGroup(const QString &group)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRosterGroups)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRosterGroups is not ready"), this);
+    }
+
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
                                  QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_LIST));
@@ -242,6 +252,14 @@ PendingOperation *ContactManager::addGroup(const QString &group)
  */
 PendingOperation *ContactManager::removeGroup(const QString &group)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRosterGroups)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRosterGroups is not ready"), this);
+    }
+
     if (!mPriv->contactListGroupChannels.contains(group)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Invalid group"), this);
@@ -288,6 +306,14 @@ Contacts ContactManager::groupContacts(const QString &group) const
 PendingOperation *ContactManager::addContactsToGroup(const QString &group,
         const QList<ContactPtr> &contacts)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRosterGroups)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRosterGroups is not ready"), this);
+    }
+
     if (!mPriv->contactListGroupChannels.contains(group)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Invalid group"), this);
@@ -311,6 +337,14 @@ PendingOperation *ContactManager::addContactsToGroup(const QString &group,
 PendingOperation *ContactManager::removeContactsFromGroup(const QString &group,
         const QList<ContactPtr> &contacts)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRosterGroups)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRosterGroups is not ready"), this);
+    }
+
     if (!mPriv->contactListGroupChannels.contains(group)) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_INVALID_ARGUMENT),
                 QLatin1String("Invalid group"), this);
@@ -363,6 +397,8 @@ bool ContactManager::subscriptionRequestHasMessage() const
  * This operation is sometimes called "adding contacts to the buddy
  * list" or "requesting authorization".
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * On most protocols, the contacts will need to give permission
  * before the user will be able to receive their presence: if so, they will
  * be in presence state Contact::PresenceStateAsk until they authorize
@@ -382,6 +418,14 @@ bool ContactManager::subscriptionRequestHasMessage() const
 PendingOperation *ContactManager::requestPresenceSubscription(
         const QList<ContactPtr> &contacts, const QString &message)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRoster)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRoster is not ready"), this);
+    }
+
     if (!mPriv->subscribeChannel) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Cannot subscribe to contacts' presence on this protocol"),
@@ -461,6 +505,8 @@ bool ContactManager::subscriptionRescindingHasMessage() const
  * Attempt to stop receiving the presence of the given contacts, or cancel
  * a request to subscribe to their presence that was previously sent.
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * \param contacts Contacts whose presence is no longer required
  * \message A message from the user which is either transmitted to the
  *          contacts, or ignored, depending on the protocol
@@ -470,6 +516,14 @@ bool ContactManager::subscriptionRescindingHasMessage() const
 PendingOperation *ContactManager::removePresenceSubscription(
         const QList<ContactPtr> &contacts, const QString &message)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRoster)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRoster is not ready"), this);
+    }
+
     if (!mPriv->subscribeChannel) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Cannot subscribe to contacts' presence on this protocol"),
@@ -518,6 +572,8 @@ bool ContactManager::publicationAuthorizationHasMessage() const
  * If the given contacts have asked the user to publish presence to them,
  * grant permission for this publication to take place.
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * \param contacts Contacts who should be allowed to receive the user's
  *                 presence
  * \message A message from the user which is either transmitted to the
@@ -528,6 +584,14 @@ bool ContactManager::publicationAuthorizationHasMessage() const
 PendingOperation *ContactManager::authorizePresencePublication(
         const QList<ContactPtr> &contacts, const QString &message)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRoster)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRoster is not ready"), this);
+    }
+
     if (!mPriv->publishChannel) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Cannot control publication of presence on this protocol"),
@@ -596,6 +660,8 @@ bool ContactManager::publicationRemovalHasMessage() const
  * deny this request (this should always succeed, unless a network error
  * occurs).
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * If the given contacts already have permission to receive
  * the user's presence, attempt to revoke that permission (this might not
  * be supported by the protocol - canRemovePresencePublication
@@ -611,6 +677,14 @@ bool ContactManager::publicationRemovalHasMessage() const
 PendingOperation *ContactManager::removePresencePublication(
         const QList<ContactPtr> &contacts, const QString &message)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRoster)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRoster is not ready"), this);
+    }
+
     if (!mPriv->publishChannel) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Cannot control publication of presence on this protocol"),
@@ -635,6 +709,8 @@ bool ContactManager::canBlockContacts() const
  * messages to the user; depending on the protocol, blocking a contact may
  * have other effects.
  *
+ * This method requires Connection::FeatureRoster to be ready.
+ *
  * \param contacts Contacts who should be added to, or removed from, the list
  *                 of blocked contacts
  * \param value If true, add the contacts to the list of blocked contacts;
@@ -645,6 +721,14 @@ bool ContactManager::canBlockContacts() const
 PendingOperation *ContactManager::blockContacts(
         const QList<ContactPtr> &contacts, bool value)
 {
+    if (!connection()->isValid()) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("the Connection is invalid"), this);
+    } else if (!connection()->isReady(Connection::FeatureRoster)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Connection::FeatureRoster is not ready"), this);
+    }
+
     if (!mPriv->denyChannel) {
         return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
                 QLatin1String("Cannot block contacts on this protocol"),
