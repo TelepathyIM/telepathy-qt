@@ -215,11 +215,12 @@ void TestConnRoster::testRoster()
         }
 
         QCOMPARE(mLoop->exec(), 0);
-        // I asked to see his presence - he might have already accepted it, though
-        QVERIFY(contact->subscriptionState() == Contact::PresenceStateAsk
-                || contact->subscriptionState() == Contact::PresenceStateYes);
 
         if ((i % 2) == 0) {
+            // I asked to see his presence - he might have already accepted it, though
+            QVERIFY(contact->subscriptionState() == Contact::PresenceStateAsk
+                    || contact->subscriptionState() == Contact::PresenceStateYes);
+
             // if he accepted it already, one iteration won't be enough as the
             // first iteration will just flush the subscription -> Yes event
             while (contact->publishState() != Contact::PresenceStateAsk)
@@ -239,13 +240,31 @@ void TestConnRoster::testRoster()
             QCOMPARE(static_cast<uint>(contact->subscriptionState()),
                      static_cast<uint>(Contact::PresenceStateNo));
         } else {
-            QCOMPARE(mLoop->exec(), 0);
-            // He replied the presence request
-            QCOMPARE(static_cast<uint>(contact->subscriptionState()),
-                     static_cast<uint>(Contact::PresenceStateNo));
+            // I asked to see his presence - she might have already rejected it, though
+            QVERIFY(contact->subscriptionState() == Contact::PresenceStateAsk
+                    || contact->subscriptionState() == Contact::PresenceStateNo);
+
+            // If she didn't already reject it, wait until she does
+            if (contact->subscriptionState() != Contact::PresenceStateNo) {
+                QCOMPARE(mLoop->exec(), 0);
+                QCOMPARE(static_cast<uint>(contact->subscriptionState()),
+                        static_cast<uint>(Contact::PresenceStateNo));
+            }
         }
 
         ++i;
+
+        // Disconnect the signals so the contacts doing something won't early-exit future mainloop
+        // iterations (the simulation CM does things like - after a delay since we removed them, try
+        // to re-add us - and such, which mess up the test if the simulated network event happens
+        // before we've finished with the next contact)
+        QVERIFY(contact->disconnect(this));
+
+        // TODO: The roster API, frankly speaking, seems rather error/race prone, as evidenced by
+        // this test. Should we perhaps change its semantics? Then again, this test also simulates
+        // the remote user accepting/rejecting the request with a quite unpredictable timer delay,
+        // while real-world applications don't do any such assumptions about the timing of the
+        // remote user actions, so most of the problems won't be applicable there.
     }
 
     i = 0;
