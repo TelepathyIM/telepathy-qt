@@ -52,9 +52,7 @@ AccountSet::Private::Private(AccountSet *parent,
     }
 
     /* check if filter is valid */
-    QVariantMap::const_iterator i = filter.constBegin();
-    QVariantMap::const_iterator end = filter.constEnd();
-    while (i != end) {
+    for (QVariantMap::const_iterator i = filter.constBegin(); i != filter.constEnd(); ++i) {
         QString propertyName = i.key();
 
         if (!supportedAccountProperties.contains(propertyName)) {
@@ -65,8 +63,6 @@ AccountSet::Private::Private(AccountSet *parent,
             filterValid = false;
             return;
         }
-
-        ++i;
     }
 
     filterValid = true;
@@ -139,9 +135,7 @@ bool AccountSet::Private::accountMatchFilter(const AccountPtr &account,
     }
 
     bool match = true;
-    QVariantMap::const_iterator i = filter.constBegin();
-    QVariantMap::const_iterator end = filter.constEnd();
-    while (i != end) {
+    for (QVariantMap::const_iterator i = filter.constBegin(); i != filter.constEnd(); ++i) {
         QString propertyName = i.key();
         QVariant propertyValue = i.value();
 
@@ -149,8 +143,6 @@ bool AccountSet::Private::accountMatchFilter(const AccountPtr &account,
             match = false;
             break;
         }
-
-        ++i;
     }
 
     return match;

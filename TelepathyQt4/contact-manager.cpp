@@ -1126,15 +1126,13 @@ void ContactManager::setContactListChannels(
     // Refresh the cache for the current known contacts
     mPriv->cachedAllKnownContacts = allKnownContacts();
 
-    QMap<uint, ContactListChannel>::const_iterator i = contactListChannels.constBegin();
-    QMap<uint, ContactListChannel>::const_iterator end = contactListChannels.constEnd();
     uint type;
     ChannelPtr channel;
     const char *method;
-    while (i != end) {
+    for (QMap<uint, ContactListChannel>::const_iterator i = contactListChannels.constBegin();
+            i != contactListChannels.constEnd(); ++i) {
         type = i.key();
         channel = i.value().channel;
-        ++i;
         if (!channel) {
             continue;
         }

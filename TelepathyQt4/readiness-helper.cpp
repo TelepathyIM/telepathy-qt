@@ -137,15 +137,13 @@ ReadinessHelper::Private::Private(
       pendingStatusChange(false),
       pendingStatus(-1)
 {
-    Introspectables::const_iterator i = introspectables.constBegin();
-    Introspectables::const_iterator end = introspectables.constEnd();
-    while (i != end) {
+    for (Introspectables::const_iterator i = introspectables.constBegin();
+            i != introspectables.constEnd(); ++i) {
         Feature feature = i.key();
         Introspectable introspectable = i.value();
         Q_ASSERT(introspectable.mPriv->introspectFunc != 0);
         supportedStatuses += introspectable.mPriv->makesSenseForStatuses;
         supportedFeatures += feature;
-        ++i;
     }
 
     if (proxy) {
@@ -241,9 +239,8 @@ void ReadinessHelper::Private::iterateIntrospection()
 
     // take care to flag anything with dependencies in missing, and the
     // stuff depending on them, as missing
-    Introspectables::const_iterator i = introspectables.constBegin();
-    Introspectables::const_iterator end = introspectables.constEnd();
-    while (i != end) {
+    for (Introspectables::const_iterator i = introspectables.constBegin();
+            i != introspectables.constEnd(); ++i) {
         Feature feature = i.key();
         Introspectable introspectable = i.value();
         Features dependsOnFeatures = introspectable.mPriv->dependsOnFeatures;
@@ -253,7 +250,6 @@ void ReadinessHelper::Private::iterateIntrospection()
                     QPair<QString, QString>(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                         QLatin1String("Feature depend on other features that are not available")));
         }
-        ++i;
     }
 
     // check if any pending operations for becomeReady should finish now
@@ -364,9 +360,8 @@ void ReadinessHelper::addIntrospectables(const Introspectables &introspectables)
 {
     // QMap::unite will create multiple items if the key is already in the map
     // so let's make sure we don't duplicate keys
-    Introspectables::const_iterator i = introspectables.constBegin();
-    Introspectables::const_iterator end = introspectables.constEnd();
-    while (i != end) {
+    for (Introspectables::const_iterator i = introspectables.constBegin();
+            i != introspectables.constEnd(); ++i) {
         Feature feature = i.key();
         if (mPriv->introspectables.contains(feature)) {
             warning() << "ReadinessHelper::addIntrospectables: trying to add an "
@@ -378,8 +373,6 @@ void ReadinessHelper::addIntrospectables(const Introspectables &introspectables)
             mPriv->supportedStatuses += introspectable.mPriv->makesSenseForStatuses;
             mPriv->supportedFeatures += feature;
         }
-
-        ++i;
     }
 
     debug() << "ReadinessHelper: new supportedStatuses =" << mPriv->supportedStatuses;

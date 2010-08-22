@@ -422,14 +422,12 @@ void MediaStream::Private::processCallSendersChanged()
 
     currentCallSendersChangedInfo = callSendersChangedQueue.dequeue();
 
-    TpFuture::ContactSendingStateMap::const_iterator i =
-        currentCallSendersChangedInfo->updates.constBegin();
-    TpFuture::ContactSendingStateMap::const_iterator end =
-        currentCallSendersChangedInfo->updates.constEnd();
     QSet<uint> pendingSenders;
-    while (i != end) {
+    for (TpFuture::ContactSendingStateMap::const_iterator i =
+            currentCallSendersChangedInfo->updates.constBegin();
+            i != currentCallSendersChangedInfo->updates.constEnd();
+            ++i) {
         pendingSenders.insert(i.key());
-        ++i;
     }
 
     if (!pendingSenders.isEmpty()) {
@@ -561,11 +559,10 @@ ContactPtr MediaStream::contact() const
             chan->groupSelfContact()->handle()[0] : 0;
         uint connSelfHandle = chan->connection()->selfHandle();
 
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->senders.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->senders.constEnd();
-        while (i != end) {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
             uint handle = i.key();
 
             if (handle != chanSelfHandle && handle != connSelfHandle) {
@@ -617,11 +614,10 @@ bool MediaStream::sending() const
             chan->groupSelfContact()->handle()[0] : 0;
         uint connSelfHandle = chan->connection()->selfHandle();
 
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->senders.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->senders.constEnd();
-        while (i != end) {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
@@ -650,11 +646,10 @@ bool MediaStream::receiving() const
             chan->groupSelfContact()->handle()[0] : 0;
         uint connSelfHandle = chan->connection()->selfHandle();
 
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->senders.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->senders.constEnd();
-        while (i != end) {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
@@ -685,11 +680,10 @@ bool MediaStream::localSendingRequested() const
             chan->groupSelfContact()->handle()[0] : 0;
         uint connSelfHandle = chan->connection()->selfHandle();
 
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->senders.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->senders.constEnd();
-        while (i != end) {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
@@ -719,11 +713,10 @@ bool MediaStream::remoteSendingRequested() const
             chan->groupSelfContact()->handle()[0] : 0;
         uint connSelfHandle = chan->connection()->selfHandle();
 
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->senders.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->senders.constEnd();
-        while (i != end) {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
@@ -806,11 +799,10 @@ PendingOperation *MediaStream::requestDirection(
                 mPriv->callBaseInterface->SetSending(direction & MediaStreamDirectionSend),
                 this));
 
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->senders.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->senders.constEnd();
-        while (i != end) {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
             uint handle = i.key();
             operations.append(new PendingVoid(
                     mPriv->callBaseInterface->RequestReceiving(handle,
@@ -958,11 +950,10 @@ MediaStream::SendingState MediaStream::localSendingState() const
             chan->groupSelfContact()->handle()[0] : 0;
         uint connSelfHandle = chan->connection()->selfHandle();
 
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->senders.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->senders.constEnd();
-        while (i != end) {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
@@ -991,13 +982,11 @@ MediaStream::SendingState MediaStream::remoteSendingState(
         if (mPriv->SMContact == contact) {
             return mPriv->remoteSendingStateFromSMDirection();
         }
-    }
-    else {
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->senders.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->senders.constEnd();
-        while (i != end) {
+    } else {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->senders.constBegin();
+                i != mPriv->senders.constEnd();
+                ++i) {
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
@@ -1204,13 +1193,12 @@ void MediaStream::gotCallSendersContacts(PendingOperation *op)
 
     QMap<uint, ContactPtr> removed;
 
-    TpFuture::ContactSendingStateMap::const_iterator i =
-        mPriv->currentCallSendersChangedInfo->updates.constBegin();
-    TpFuture::ContactSendingStateMap::const_iterator end =
-        mPriv->currentCallSendersChangedInfo->updates.constEnd();
-    while (i != end) {
+    for (TpFuture::ContactSendingStateMap::const_iterator i =
+            mPriv->currentCallSendersChangedInfo->updates.constBegin();
+            i !=
+            mPriv->currentCallSendersChangedInfo->updates.constEnd();
+            ++i) {
         mPriv->senders.insert(i.key(), i.value());
-        ++i;
     }
 
     foreach (const ContactPtr &contact, pending->contacts()) {
@@ -1247,11 +1235,11 @@ void MediaStream::gotCallSendersContacts(PendingOperation *op)
 
         QHash<ContactPtr, SendingState> remoteSendingStates;
 
-        TpFuture::ContactSendingStateMap::const_iterator i =
-            mPriv->currentCallSendersChangedInfo->updates.constBegin();
-        TpFuture::ContactSendingStateMap::const_iterator end =
-            mPriv->currentCallSendersChangedInfo->updates.constEnd();
-        while (i != end) {
+        for (TpFuture::ContactSendingStateMap::const_iterator i =
+                mPriv->currentCallSendersChangedInfo->updates.constBegin();
+                i !=
+                mPriv->currentCallSendersChangedInfo->updates.constEnd();
+                ++i) {
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
@@ -1264,7 +1252,6 @@ void MediaStream::gotCallSendersContacts(PendingOperation *op)
             }
 
             mPriv->senders.insert(i.key(), i.value());
-            ++i;
         }
 
         if (!remoteSendingStates.isEmpty()) {
