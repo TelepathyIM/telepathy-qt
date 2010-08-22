@@ -29,12 +29,24 @@ protected Q_SLOTS:
     void expectRequestContactsFinished(Tp::PendingOperation *);
     void expectCreateChannelFinished(Tp::PendingOperation *);
     void expectRequestStreamsFinished(Tp::PendingOperation *);
+
+    // Special event handlers for the OutgoingCall state-machine
+    void expectOutgoingRequestStreamsFinished(Tp::PendingOperation *);
+
+    void onOutgoingGroupMembersChanged(
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Channel::GroupMemberChangeDetails &);
+
     void onGroupMembersChanged(
             const Tp::Contacts &,
             const Tp::Contacts &,
             const Tp::Contacts &,
             const Tp::Contacts &,
             const Tp::Channel::GroupMemberChangeDetails &);
+
     void onStreamRemoved(const Tp::MediaStreamPtr &);
     void onStreamDirectionChanged(const Tp::MediaStreamPtr &,
             Tp::MediaStreamDirection,
@@ -101,6 +113,16 @@ private:
     Tp::MediaStreamState mSSCStateReturn;
     QQueue<uint> mLocalHoldStates;
     QQueue<uint> mLocalHoldStateReasons;
+
+    // state machine for the OutgoingCall test-case
+    enum {
+        OutgoingStateInitial,
+        OutgoingStateRequested,
+        OutgoingStateRinging,
+        OutgoingStateDone
+    } mOutgoingState;
+    bool mOutgoingGotRequestStreamsFinished;
+    bool mOutgoingAudioDone;
 
     // state machine for the OutgoingCallTerminate test-case
     enum {
@@ -190,6 +212,102 @@ void TestStreamedMediaChan::expectRequestStreamsFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
+void TestStreamedMediaChan::expectOutgoingRequestStreamsFinished(PendingOperation *op)
+{
+    QVERIFY(op->isFinished());
+    QVERIFY(!op->isError());
+    QVERIFY(op->isValid());
+
+    PendingMediaStreams *pms = qobject_cast<PendingMediaStreams*>(op);
+    mRequestStreamsReturn = pms->streams();
+
+    ContactPtr otherContact = mRequestContactsReturn.first();
+    QVERIFY(otherContact);
+
+    QCOMPARE(mRequestContactsReturn.size(), 1);
+    MediaStreamPtr stream = mRequestStreamsReturn.first();
+    QCOMPARE(stream->contact(), otherContact);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
+
+    // These checks can't work reliably, unless we add some complex backdoors to the test service,
+    // to only start changing state / direction when we explicitly tell it so (not automatically
+    // when we have requested the stream)
+    // QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
+    // QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
+
+    QCOMPARE(mChan->streams().size(), 1);
+    QVERIFY(mChan->streams().contains(stream));
+
+    qDebug() << "stream requested successfully";
+
+    // Only advance to Requested if the remote moving to RP hasn't already advanced it to Ringing or
+    // even Answered - tbf it seems the StreamedMediaChannel semantics are quite hard for
+    // application code to get right because the events can happen in whichever order. Should this
+    // be considered a bug by itself? It'd probably be pretty hard to fix so I hope not :D
+    if (mOutgoingState == OutgoingStateInitial)
+        mOutgoingState = OutgoingStateRequested;
+
+    if (mOutgoingState == OutgoingStateDone) {
+        // finished later than the membersChanged() - exit mainloop now
+        mLoop->exit(0);
+    } else {
+        // finished earlier than membersChanged() - it will exit
+        mOutgoingGotRequestStreamsFinished = true;
+    }
+}
+
+void TestStreamedMediaChan::onOutgoingGroupMembersChanged(
+        const Contacts &groupMembersAdded,
+        const Contacts &groupLocalPendingMembersAdded,
+        const Contacts &groupRemotePendingMembersAdded,
+        const Contacts &groupMembersRemoved,
+        const Channel::GroupMemberChangeDetails &details)
+{
+    // At this point, mRequestContactsReturn should still contain the contact we requested the
+    // stream for
+    ContactPtr otherContact = mRequestContactsReturn.first();
+
+    if (mOutgoingState == OutgoingStateInitial || mOutgoingState == OutgoingStateRequested) {
+        // The target should have become remote pending now
+        QVERIFY(groupMembersAdded.isEmpty());
+        QVERIFY(groupLocalPendingMembersAdded.isEmpty());
+        QCOMPARE(groupRemotePendingMembersAdded.size(), 1);
+        QVERIFY(groupMembersRemoved.isEmpty());
+
+        QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
+        QCOMPARE(mChan->awaitingRemoteAnswer(), true);
+
+        qDebug() << "call now ringing";
+
+        mOutgoingState = OutgoingStateRinging;
+    } else if (mOutgoingState == OutgoingStateRinging) {
+        QCOMPARE(groupMembersAdded.size(), 1);
+        QVERIFY(groupLocalPendingMembersAdded.isEmpty());
+        QVERIFY(groupRemotePendingMembersAdded.isEmpty());
+        QVERIFY(groupMembersRemoved.isEmpty());
+
+        QCOMPARE(mChan->groupContacts().size(), 2);
+        QVERIFY(mChan->groupContacts().contains(otherContact));
+        QCOMPARE(mChan->awaitingRemoteAnswer(), false);
+
+        qDebug() << "call now answered";
+
+        mOutgoingState = OutgoingStateDone;
+        mOutgoingAudioDone = true;
+
+        // Exit if we already got finished() from requestStreams() - otherwise the finish callback
+        // will exit
+        if (mOutgoingGotRequestStreamsFinished)
+            mLoop->exit(0);
+    }
+
+    qDebug() << "group members changed";
+    mChangedCurrent = groupMembersAdded;
+    mChangedLP = groupLocalPendingMembersAdded;
+    mChangedRP = groupRemotePendingMembersAdded;
+    mChangedRemoved = groupMembersRemoved;
+    mDetails = details;
+}
 void TestStreamedMediaChan::onGroupMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -324,9 +442,6 @@ void TestStreamedMediaChan::onTerminateGroupMembersChanged(
 void TestStreamedMediaChan::onTerminateChanInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
-    // The channel should only be invalidated after it has been answered
-    QCOMPARE(static_cast<int>(mTerminateState), static_cast<int>(TerminateStateAnswered));
-
     qDebug() << "chan invalidated:" << errorName << "-" << errorMessage;
     mTerminateState = TerminateStateTerminated;
     mLoop->exit(0);
@@ -480,36 +595,39 @@ void TestStreamedMediaChan::testOutgoingCall()
     QCOMPARE(mLoop->exec(), 2);
     QCOMPARE(mRequestStreamsReturn.size(), 0);
 
-    // Request audio stream
+    // Request audio stream, and wait for:
+    //  - the request to finish
+    //  - the contact to appear on RP
+    //  - the contact to accept the call
+    mOutgoingState = OutgoingStateInitial;
+    mOutgoingAudioDone = false;
+    mOutgoingGotRequestStreamsFinished = false;
+
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(groupMembersChanged(
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &)),
+                    SLOT(onOutgoingGroupMembersChanged(
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &))));
+
+    qDebug() << "requesting audio stream";
+
     QVERIFY(connect(mChan->requestStreams(otherContact,
                         QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
+                    SLOT(expectOutgoingRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mRequestStreamsReturn.size(), 1);
-    MediaStreamPtr stream = mRequestStreamsReturn.first();
-    QCOMPARE(stream->contact(), otherContact);
-    QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
-    QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
+    QCOMPARE(static_cast<int>(mOutgoingState), static_cast<int>(OutgoingStateDone));
+    QCOMPARE(mOutgoingAudioDone, true);
 
-    QCOMPARE(mChan->streams().size(), 1);
-    QVERIFY(mChan->streams().contains(stream));
-
-    // wait the contact to appear on RP
-    while (mChan->groupRemotePendingContacts().size() == 0) {
-        mLoop->processEvents();
-    }
-    QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
-    QCOMPARE(mChan->awaitingRemoteAnswer(), true);
-
-    // wait the contact to accept the call
-    while (mChan->groupContacts().size() != 2) {
-        mLoop->processEvents();
-    }
-    QCOMPARE(mChan->groupContacts().size(), 2);
-    QCOMPARE(mChan->awaitingRemoteAnswer(), false);
-    QVERIFY(mChan->groupContacts().contains(otherContact));
+    qDebug() << "requesting video stream";
 
     // Request video stream
     QVERIFY(connect(mChan->requestStream(otherContact, Tp::MediaStreamTypeVideo),
@@ -517,11 +635,15 @@ void TestStreamedMediaChan::testOutgoingCall()
                     SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mRequestStreamsReturn.size(), 1);
-    stream = mRequestStreamsReturn.first();
+    MediaStreamPtr stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
     QCOMPARE(stream->type(), Tp::MediaStreamTypeVideo);
-    QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
+
+    // These checks can't work reliably, unless we add some complex backdoors to the test service,
+    // to only start changing state / direction when we explicitly tell it so (not automatically
+    // when we have requested the stream)
+    // QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
+    // QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
 
     QCOMPARE(mChan->streams().size(), 2);
     QVERIFY(mChan->streams().contains(stream));
@@ -533,6 +655,8 @@ void TestStreamedMediaChan::testOutgoingCall()
     stream = mChan->streamsForType(Tp::MediaStreamTypeAudio).first();
     QVERIFY(stream);
 
+    qDebug() << "removing audio stream";
+
     QVERIFY(connect(mChan.data(),
                     SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)),
                     SLOT(onStreamRemoved(const Tp::MediaStreamPtr &))));
@@ -541,6 +665,7 @@ void TestStreamedMediaChan::testOutgoingCall()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     if (mChan->streams().size() == 2) {
+        qDebug() << "re-entering mainloop to wait for stream removal being signaled";
         // wait stream removed signal
         QCOMPARE(mLoop->exec(), 0);
     }
@@ -553,6 +678,23 @@ void TestStreamedMediaChan::testOutgoingCall()
     stream = mChan->streamsForType(Tp::MediaStreamTypeVideo).first();
     QVERIFY(stream);
 
+    qDebug() << "changing stream direction, currently" << stream->direction();
+    qDebug() << "state currently" << stream->state();
+
+    if (stream->state() != Tp::MediaStreamStateConnected) {
+        QVERIFY(connect(mChan.data(),
+                    SIGNAL(streamStateChanged(const Tp::MediaStreamPtr &,
+                            Tp::MediaStreamState)),
+                    SLOT(onStreamStateChanged(const Tp::MediaStreamPtr &,
+                            Tp::MediaStreamState))));
+    } else {
+        // Pretend that we saw the SSC to Connected (although it might have happened even before the
+        // stream request finished, in which case we have no change of catching it, because we don't
+        // have the stream yet)
+        mSSCStreamReturn = stream;
+        mSSCStateReturn = Tp::MediaStreamStateConnected;
+    }
+
     QVERIFY(connect(mChan.data(),
                     SIGNAL(streamDirectionChanged(const Tp::MediaStreamPtr &,
                                                   Tp::MediaStreamDirection,
@@ -560,16 +702,12 @@ void TestStreamedMediaChan::testOutgoingCall()
                     SLOT(onStreamDirectionChanged(const Tp::MediaStreamPtr &,
                                                   Tp::MediaStreamDirection,
                                                   Tp::MediaStreamPendingSend))));
-    QVERIFY(connect(mChan.data(),
-                    SIGNAL(streamStateChanged(const Tp::MediaStreamPtr &,
-                                              Tp::MediaStreamState)),
-                    SLOT(onStreamStateChanged(const Tp::MediaStreamPtr &,
-                                              Tp::MediaStreamState))));
     QVERIFY(connect(stream->requestDirection(Tp::MediaStreamDirectionReceive),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     while (!mSDCStreamReturn || !mSSCStreamReturn) {
+        qDebug() << "re-entering mainloop to wait for stream direction change and state change";
         // wait direction and state changed signal
         QCOMPARE(mLoop->exec(), 0);
     }
@@ -862,12 +1000,16 @@ void TestStreamedMediaChan::testIncomingCall()
     QCOMPARE(stream->channel(), mChan);
     QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
 
+    qDebug() << "requesting a stream with a bad type";
+
     // RequestStreams with bad type must fail
     QVERIFY(connect(mChan->requestStream(otherContact, (Tp::MediaStreamType) -1),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 2);
     QCOMPARE(mRequestStreamsReturn.size(), 0);
+
+    qDebug() << "requesting a video stream";
 
     // Request video stream
     QVERIFY(connect(mChan->requestStream(otherContact, Tp::MediaStreamTypeVideo),
@@ -878,8 +1020,12 @@ void TestStreamedMediaChan::testIncomingCall()
     stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
     QCOMPARE(stream->type(), Tp::MediaStreamTypeVideo);
-    QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
-    QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
+
+    // These checks can't work reliably, unless we add some complex backdoors to the test service,
+    // to only start changing state / direction when we explicitly tell it so (not automatically
+    // when we have requested the stream)
+    // QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
+    // QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
 
     QCOMPARE(mChan->streams().size(), 2);
     QVERIFY(mChan->streams().contains(stream));
@@ -890,6 +1036,8 @@ void TestStreamedMediaChan::testIncomingCall()
     // test stream removal
     stream = mChan->streamsForType(Tp::MediaStreamTypeAudio).first();
     QVERIFY(stream);
+
+    qDebug() << "removing the audio stream";
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)),
@@ -911,6 +1059,23 @@ void TestStreamedMediaChan::testIncomingCall()
     stream = mChan->streamsForType(Tp::MediaStreamTypeVideo).first();
     QVERIFY(stream);
 
+    qDebug() << "requesting direction (false, true) - currently" << stream->direction();
+    qDebug() << "current stream state" << stream->state();
+
+    if (stream->state() != Tp::MediaStreamStateConnected) {
+        QVERIFY(connect(mChan.data(),
+                    SIGNAL(streamStateChanged(const Tp::MediaStreamPtr &,
+                            Tp::MediaStreamState)),
+                    SLOT(onStreamStateChanged(const Tp::MediaStreamPtr &,
+                            Tp::MediaStreamState))));
+    } else {
+        // Pretend that we saw the SSC to Connected (although it might have happened even before the
+        // stream request finished, in which case we have no change of catching it, because we don't
+        // have the stream yet)
+        mSSCStreamReturn = stream;
+        mSSCStateReturn = Tp::MediaStreamStateConnected;
+    }
+
     QVERIFY(connect(mChan.data(),
                     SIGNAL(streamDirectionChanged(const Tp::MediaStreamPtr &,
                                                   Tp::MediaStreamDirection,
@@ -918,17 +1083,13 @@ void TestStreamedMediaChan::testIncomingCall()
                     SLOT(onStreamDirectionChanged(const Tp::MediaStreamPtr &,
                                                   Tp::MediaStreamDirection,
                                                   Tp::MediaStreamPendingSend))));
-    QVERIFY(connect(mChan.data(),
-                    SIGNAL(streamStateChanged(const Tp::MediaStreamPtr &,
-                                              Tp::MediaStreamState)),
-                    SLOT(onStreamStateChanged(const Tp::MediaStreamPtr &,
-                                              Tp::MediaStreamState))));
     QVERIFY(connect(stream->requestDirection(false, true),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     while (!mSDCStreamReturn || !mSSCStreamReturn) {
         // wait direction and state changed signal
+        qDebug() << "re-entering mainloop to wait for stream direction change and state change";
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mSDCStreamReturn, stream);
