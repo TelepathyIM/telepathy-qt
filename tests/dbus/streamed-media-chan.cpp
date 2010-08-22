@@ -510,12 +510,20 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
                     SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    QVERIFY(connect(mChan.data(),
+    if (mChan->isValid()) {
+        qDebug() << "waiting for the channel to become invalidated";
+
+        QVERIFY(connect(mChan.data(),
                     SIGNAL(invalidated(Tp::DBusProxy *,
-                                       const QString &, const QString &)),
+                            const QString &, const QString &)),
                     SLOT(onChanInvalidated(Tp::DBusProxy *,
-                                           const QString &, const QString &))));
-    QCOMPARE(mLoop->exec(), 0);
+                            const QString &, const QString &))));
+        QCOMPARE(mLoop->exec(), 0);
+    } else {
+        qDebug() << "not waiting for the channel to become invalidated, it has been invalidated" <<
+            "already";
+    }
+
     QCOMPARE(mChan->groupContacts().size(), 0);
     QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
     QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
