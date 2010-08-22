@@ -18,12 +18,12 @@
 
 using namespace Tp;
 
-class TestStreamedMediaChan : public Test
+class TestStreamedMediaChanCall : public Test
 {
     Q_OBJECT
 
 public:
-    TestStreamedMediaChan(QObject *parent = 0)
+    TestStreamedMediaChanCall(QObject *parent = 0)
         : Test(parent), mConnService(0)
     { }
 
@@ -66,7 +66,7 @@ private:
     QQueue<uint> mLocalHoldStateReasons;
 };
 
-void TestStreamedMediaChan::expectRequestContactsFinished(PendingOperation *op)
+void TestStreamedMediaChanCall::expectRequestContactsFinished(PendingOperation *op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -92,7 +92,7 @@ void TestStreamedMediaChan::expectRequestContactsFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::expectCreateChannelFinished(PendingOperation* op)
+void TestStreamedMediaChanCall::expectCreateChannelFinished(PendingOperation* op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -118,7 +118,7 @@ void TestStreamedMediaChan::expectCreateChannelFinished(PendingOperation* op)
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::expectRequestContentFinished(PendingOperation *op)
+void TestStreamedMediaChanCall::expectRequestContentFinished(PendingOperation *op)
 {
     if (!op->isFinished()) {
         qWarning() << "unfinished";
@@ -144,7 +144,7 @@ void TestStreamedMediaChan::expectRequestContentFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::onLocalSendingStateChanged(
+void TestStreamedMediaChanCall::onLocalSendingStateChanged(
         const MediaStream::SendingState state)
 {
     qDebug() << "local sending state changed";
@@ -152,7 +152,7 @@ void TestStreamedMediaChan::onLocalSendingStateChanged(
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::onRemoteSendingStateChanged(
+void TestStreamedMediaChanCall::onRemoteSendingStateChanged(
         const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &states)
 {
     qDebug() << "remote sending state changed";
@@ -160,14 +160,14 @@ void TestStreamedMediaChan::onRemoteSendingStateChanged(
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::onChanInvalidated(Tp::DBusProxy *proxy,
+void TestStreamedMediaChanCall::onChanInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
     qDebug() << "chan invalidated:" << errorName << "-" << errorMessage;
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::onNewChannels(const Tp::ChannelDetailsList &channels)
+void TestStreamedMediaChanCall::onNewChannels(const Tp::ChannelDetailsList &channels)
 {
     qDebug() << "new channels";
     foreach (const Tp::ChannelDetails &details, channels) {
@@ -186,7 +186,7 @@ void TestStreamedMediaChan::onNewChannels(const Tp::ChannelDetailsList &channels
     }
 }
 
-void TestStreamedMediaChan::onLocalHoldStateChanged(Tp::LocalHoldState localHoldState,
+void TestStreamedMediaChanCall::onLocalHoldStateChanged(Tp::LocalHoldState localHoldState,
         Tp::LocalHoldStateReason localHoldStateReason)
 {
     mLocalHoldStates.append(localHoldState);
@@ -194,7 +194,7 @@ void TestStreamedMediaChan::onLocalHoldStateChanged(Tp::LocalHoldState localHold
     mLoop->exit(0);
 }
 
-void TestStreamedMediaChan::initTestCase()
+void TestStreamedMediaChanCall::initTestCase()
 {
     initTestCaseImpl();
 
@@ -238,7 +238,7 @@ void TestStreamedMediaChan::initTestCase()
              static_cast<uint>(Connection::StatusConnected));
 }
 
-void TestStreamedMediaChan::init()
+void TestStreamedMediaChanCall::init()
 {
     initImpl();
 
@@ -250,7 +250,7 @@ void TestStreamedMediaChan::init()
     mLocalHoldStateReasons.clear();
 }
 
-void TestStreamedMediaChan::testOutgoingCall()
+void TestStreamedMediaChanCall::testOutgoingCall()
 {
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice")),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -388,7 +388,7 @@ void TestStreamedMediaChan::testOutgoingCall()
     QCOMPARE(mRSSCReturn.value(otherContact), MediaStream::SendingStateNone);
 }
 
-void TestStreamedMediaChan::testHold()
+void TestStreamedMediaChanCall::testHold()
 {
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob")),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -459,7 +459,7 @@ void TestStreamedMediaChan::testHold()
     QCOMPARE(static_cast<uint>(mChan->localHoldStateReason()), static_cast<uint>(LocalHoldStateReasonRequested));
 }
 
-void TestStreamedMediaChan::testHoldNoUnhold()
+void TestStreamedMediaChanCall::testHoldNoUnhold()
 {
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob (no unhold)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -525,7 +525,7 @@ void TestStreamedMediaChan::testHoldNoUnhold()
     QCOMPARE(static_cast<uint>(mChan->localHoldStateReason()), static_cast<uint>(LocalHoldStateReasonRequested));
 }
 
-void TestStreamedMediaChan::testHoldInabilityUnhold()
+void TestStreamedMediaChanCall::testHoldInabilityUnhold()
 {
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("bob (inability to unhold)")),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -609,13 +609,13 @@ void TestStreamedMediaChan::testHoldInabilityUnhold()
     QCOMPARE(mChan->localHoldStateReason(), LocalHoldStateReasonRequested);
 }
 
-void TestStreamedMediaChan::cleanup()
+void TestStreamedMediaChanCall::cleanup()
 {
     mChan.reset();
     cleanupImpl();
 }
 
-void TestStreamedMediaChan::cleanupTestCase()
+void TestStreamedMediaChanCall::cleanupTestCase()
 {
     if (mConn) {
         QVERIFY(connect(mConn->requestDisconnect(),
@@ -636,5 +636,5 @@ void TestStreamedMediaChan::cleanupTestCase()
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestStreamedMediaChan)
+QTEST_MAIN(TestStreamedMediaChanCall)
 #include "_gen/streamed-media-chan-call.cpp.moc.hpp"
