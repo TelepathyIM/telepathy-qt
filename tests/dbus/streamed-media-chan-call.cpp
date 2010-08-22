@@ -252,6 +252,8 @@ void TestStreamedMediaChanCall::init()
 
 void TestStreamedMediaChanCall::testOutgoingCall()
 {
+    qDebug() << "requesting contact for alice";
+
     QVERIFY(connect(mConn->contactManager()->contactsForIdentifiers(QStringList() << QLatin1String("alice")),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContactsFinished(Tp::PendingOperation*))));
@@ -259,6 +261,8 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QVERIFY(mRequestContactsReturn.size() == 1);
     ContactPtr otherContact = mRequestContactsReturn.first();
     QVERIFY(otherContact);
+
+    qDebug() << "creating the channel";
 
     QVariantMap request;
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
@@ -274,6 +278,8 @@ void TestStreamedMediaChanCall::testOutgoingCall()
                     SLOT(expectCreateChannelFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QVERIFY(mChan);
+
+    qDebug() << "making the channel ready";
 
     QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureContents),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -291,12 +297,16 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
     QVERIFY(mChan->groupContacts().contains(otherContact));
 
+    qDebug() << "calling requestContent with a bad type";
+
     // RequestContent with bad type must fail
     QVERIFY(connect(mChan->requestContent(QLatin1String("content1"), (Tp::MediaStreamType) -1),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContentFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 2);
     QVERIFY(!mRequestContentReturn);
+
+    qDebug() << "calling requestContent with Video";
 
     // Request video content
     QVERIFY(connect(mChan->requestContent(QLatin1String("content2"), Tp::MediaStreamTypeVideo),
@@ -324,6 +334,8 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QCOMPARE(mLoop->exec(), 0);
     */
 
+    qDebug() << "stopping sending";
+
     // test content sending changed
     content = mChan->contentsForType(Tp::MediaStreamTypeVideo).first();
     MediaStreamPtr stream = content->streams().first();
@@ -337,10 +349,13 @@ void TestStreamedMediaChanCall::testOutgoingCall()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     while (mLSSCReturn == (MediaStream::SendingState) -1) {
+        qDebug() << "re-entering mainloop to wait for SSC -> None";
         // wait sending state change
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mLSSCReturn, MediaStream::SendingStateNone);
+
+    qDebug() << "re-enabling sending";
 
     mLSSCReturn = (MediaStream::SendingState) -1;
 
@@ -349,10 +364,13 @@ void TestStreamedMediaChanCall::testOutgoingCall()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     while (mLSSCReturn == (MediaStream::SendingState) -1) {
+        qDebug() << "re-entering mainloop to wait for SSC -> Sending";
         // wait sending state change
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mLSSCReturn, MediaStream::SendingStateSending);
+
+    qDebug() << "enabling receiving";
 
     // test content receiving changed
     QVERIFY(connect(stream.data(),
@@ -364,17 +382,23 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QCOMPARE(mLoop->exec(), 0);
     while (mRSSCReturn.isEmpty()) {
         // wait remote sending state change
+        qDebug() << "re-entering mainloop to wait for remote SSC -> PendingSend";
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mRSSCReturn.value(otherContact), MediaStream::SendingStatePendingSend);
 
+    qDebug() << "waiting for the remote to start sending";
+
     mRSSCReturn.clear();
 
     while (mRSSCReturn.isEmpty()) {
-        // wait remote sending state change
+        // wait remote sending state chang
+        qDebug() << "re-entering mainloop to wait for remote SSC -> Sending";
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mRSSCReturn.value(otherContact), MediaStream::SendingStateSending);
+
+    qDebug() << "waiting for the remote to stop sending";
 
     mRSSCReturn.clear();
 
@@ -383,6 +407,7 @@ void TestStreamedMediaChanCall::testOutgoingCall()
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     while (mRSSCReturn.isEmpty()) {
         // wait remote sending state change
+        qDebug() << "re-entering mainloop to wait for remote SSC -> None";
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mRSSCReturn.value(otherContact), MediaStream::SendingStateNone);
