@@ -334,12 +334,12 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QCOMPARE(mLoop->exec(), 0);
     */
 
-    qDebug() << "stopping sending";
-
     // test content sending changed
     content = mChan->contentsForType(Tp::MediaStreamTypeVideo).first();
     MediaStreamPtr stream = content->streams().first();
     QVERIFY(content);
+
+    qDebug() << "stopping sending";
 
     QVERIFY(connect(stream.data(),
                     SIGNAL(localSendingStateChanged(Tp::MediaStream::SendingState)),
@@ -348,9 +348,20 @@ void TestStreamedMediaChanCall::testOutgoingCall()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    while (mLSSCReturn == (MediaStream::SendingState) -1) {
-        qDebug() << "re-entering mainloop to wait for SSC -> None";
-        // wait sending state change
+
+    qDebug() << "stopping receiving";
+
+    QVERIFY(connect(stream->requestReceiving(otherContact, false),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    qDebug() << "waiting until we're not sending and not receiving";
+
+    while (stream->localSendingState() != MediaStream::SendingStateNone
+            || stream->remoteSendingState(otherContact) != MediaStream::SendingStateNone) {
+        qDebug() << "re-entering mainloop to wait for local and remote SSC -> None";
+        // wait local and remote sending state change
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mLSSCReturn, MediaStream::SendingStateNone);
