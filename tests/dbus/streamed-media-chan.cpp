@@ -43,6 +43,20 @@ protected Q_SLOTS:
             Tp::MediaStreamState);
     void onChanInvalidated(Tp::DBusProxy *,
             const QString &, const QString &);
+
+    // Special event handlers for the OutgoingCallTerminate state-machine
+    void expectTerminateRequestStreamsFinished(Tp::PendingOperation *);
+
+    void onTerminateGroupMembersChanged(
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Contacts &,
+            const Tp::Channel::GroupMemberChangeDetails &);
+
+    void onTerminateChanInvalidated(Tp::DBusProxy *,
+            const QString &, const QString &);
+
     void onNewChannels(const Tp::ChannelDetailsList &);
     void onLocalHoldStateChanged(Tp::LocalHoldState,
             Tp::LocalHoldStateReason);
@@ -87,6 +101,15 @@ private:
     Tp::MediaStreamState mSSCStateReturn;
     QQueue<uint> mLocalHoldStates;
     QQueue<uint> mLocalHoldStateReasons;
+
+    // state machine for the OutgoingCallTerminate test-case
+    enum {
+        TerminateStateInitial,
+        TerminateStateRequested,
+        TerminateStateRinging,
+        TerminateStateAnswered,
+        TerminateStateTerminated
+    } mTerminateState;
 };
 
 void TestStreamedMediaChan::expectRequestContactsFinished(PendingOperation *op)
@@ -213,6 +236,99 @@ void TestStreamedMediaChan::onChanInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
     qDebug() << "chan invalidated:" << errorName << "-" << errorMessage;
+    mLoop->exit(0);
+}
+
+void TestStreamedMediaChan::expectTerminateRequestStreamsFinished(PendingOperation *op)
+{
+    QVERIFY(op->isFinished());
+    QVERIFY(!op->isError());
+    QVERIFY(op->isValid());
+
+    PendingMediaStreams *pms = qobject_cast<PendingMediaStreams*>(op);
+    mRequestStreamsReturn = pms->streams();
+
+    qDebug() << "stream requested successfully";
+
+    // Only advance to Requested if the remote moving to RP hasn't already advanced it to Ringing or
+    // even Answered - tbf it seems the StreamedMediaChannel semantics are quite hard for
+    // application code to get right because the events can happen in whichever order. Should this
+    // be considered a bug by itself? It'd probably be pretty hard to fix so I hope not :D
+    if (mTerminateState == TerminateStateInitial)
+        mTerminateState = TerminateStateRequested;
+}
+
+void TestStreamedMediaChan::onTerminateGroupMembersChanged(
+        const Contacts &groupMembersAdded,
+        const Contacts &groupLocalPendingMembersAdded,
+        const Contacts &groupRemotePendingMembersAdded,
+        const Contacts &groupMembersRemoved,
+        const Channel::GroupMemberChangeDetails &details)
+{
+    // At this point, mRequestContactsReturn should still contain the contact we requested the
+    // stream for
+    ContactPtr otherContact = mRequestContactsReturn.first();
+
+    if (mTerminateState == TerminateStateInitial || mTerminateState == TerminateStateRequested) {
+        // The target should have become remote pending now
+        QVERIFY(groupMembersAdded.isEmpty());
+        QVERIFY(groupLocalPendingMembersAdded.isEmpty());
+        QCOMPARE(groupRemotePendingMembersAdded.size(), 1);
+        QVERIFY(groupMembersRemoved.isEmpty());
+
+        QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
+        QCOMPARE(mChan->awaitingRemoteAnswer(), true);
+
+        qDebug() << "call now ringing";
+
+        mTerminateState = TerminateStateRinging;
+    } else if (mTerminateState == TerminateStateRinging) {
+        QCOMPARE(groupMembersAdded.size(), 1);
+        QVERIFY(groupLocalPendingMembersAdded.isEmpty());
+        QVERIFY(groupRemotePendingMembersAdded.isEmpty());
+        QVERIFY(groupMembersRemoved.isEmpty());
+
+        QCOMPARE(mChan->groupContacts().size(), 2);
+        QVERIFY(mChan->groupContacts().contains(otherContact));
+        QCOMPARE(mChan->awaitingRemoteAnswer(), false);
+
+        qDebug() << "call now answered";
+
+        mTerminateState = TerminateStateAnswered;
+    } else if (mTerminateState == TerminateStateAnswered) {
+        // It might be actually that currently this won't happen before invalidated() is emitted, so
+        // we'll never reach this due to having exited the mainloop already - but it's entirely
+        // valid for the library to signal either the invalidation or removing the members first, so
+        // let's verify the member change in case it does that first.
+
+        qDebug() << "membersChanged() after the call was answered - the remote probably hung up";
+
+        QVERIFY(groupMembersAdded.isEmpty());
+        QVERIFY(groupLocalPendingMembersAdded.isEmpty());
+        QVERIFY(groupRemotePendingMembersAdded.isEmpty());
+        QVERIFY(groupMembersRemoved.contains(otherContact) ||
+                groupMembersRemoved.contains(mChan->groupSelfContact())); // can be either, or both
+
+        // the invalidated handler will change state due to the fact that we might get 0-2 of these,
+        // but always exactly one invalidated()
+    }
+
+    qDebug() << "group members changed";
+    mChangedCurrent = groupMembersAdded;
+    mChangedLP = groupLocalPendingMembersAdded;
+    mChangedRP = groupRemotePendingMembersAdded;
+    mChangedRemoved = groupMembersRemoved;
+    mDetails = details;
+}
+
+void TestStreamedMediaChan::onTerminateChanInvalidated(Tp::DBusProxy *proxy,
+        const QString &errorName, const QString &errorMessage)
+{
+    // The channel should only be invalidated after it has been answered
+    QCOMPARE(static_cast<int>(mTerminateState), static_cast<int>(TerminateStateAnswered));
+
+    qDebug() << "chan invalidated:" << errorName << "-" << errorMessage;
+    mTerminateState = TerminateStateTerminated;
     mLoop->exit(0);
 }
 
@@ -652,6 +768,23 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
     QCOMPARE(mChan->awaitingLocalAnswer(), false);
     QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
 
+    // Request audio stream, and verify that following doing so, we get events for:
+    //  [0-2].5) the stream request finishing (sadly this can happen before, or between, any of the
+    //           following) - is this a bug?
+    //  1) the remote appearing on the RP contacts -> should be awaitingRemoteAnswer()
+    //  2) the remote answering the call -> should not be awaitingRemoteAnswer(), should have us and
+    //     them as the current members
+    //  3) the channel being invalidated (due to the remote having terminated the call) -> exits the
+    //     mainloop
+    //
+    //  Previously, this test used to spin the mainloop until each of the events had seemingly
+    //  happened, only checking for the events between the iterations. This is race-prone however,
+    //  as multiple events can happen in one mainloop iteration if the test executes slowly compared
+    //  with the simulated network events from the service (eg. in valgrind or under high system
+    //  load).
+
+    mTerminateState = TerminateStateInitial;
+
     QVERIFY(connect(mChan.data(),
                     SIGNAL(groupMembersChanged(
                             const Tp::Contacts &,
@@ -659,42 +792,29 @@ void TestStreamedMediaChan::testOutgoingCallTerminate()
                             const Tp::Contacts &,
                             const Tp::Contacts &,
                             const Tp::Channel::GroupMemberChangeDetails &)),
-                    SLOT(onGroupMembersChanged(
+                    SLOT(onTerminateGroupMembersChanged(
                             const Tp::Contacts &,
                             const Tp::Contacts &,
                             const Tp::Contacts &,
                             const Tp::Contacts &,
                             const Tp::Channel::GroupMemberChangeDetails &))));
 
-    // Request audio stream
-    QVERIFY(connect(mChan->requestStreams(otherContact,
-                        QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-
-    // wait the contact to appear on RP
-    while (mChan->groupRemotePendingContacts().size() == 0) {
-        mLoop->processEvents();
-    }
-    QVERIFY(mChan->groupRemotePendingContacts().contains(otherContact));
-    QCOMPARE(mChan->awaitingRemoteAnswer(), true);
-
-    // wait the contact to accept the call
-    while (mChan->groupContacts().size() != 2) {
-        mLoop->processEvents();
-    }
-    QCOMPARE(mChan->groupContacts().size(), 2);
-    QCOMPARE(mChan->awaitingRemoteAnswer(), false);
-    QVERIFY(mChan->groupContacts().contains(otherContact));
-
-    // wait the contact to terminate the call
     QVERIFY(connect(mChan.data(),
                     SIGNAL(invalidated(Tp::DBusProxy *,
                                        const QString &, const QString &)),
-                    SLOT(onChanInvalidated(Tp::DBusProxy *,
+                    SLOT(onTerminateChanInvalidated(Tp::DBusProxy *,
                                            const QString &, const QString &))));
+
+    qDebug() << "calling, hope somebody answers and doesn't immediately hang up!";
+
+    QVERIFY(connect(mChan->requestStreams(otherContact,
+                        QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectTerminateRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(static_cast<int>(mTerminateState), static_cast<int>(TerminateStateTerminated));
+
+    qDebug() << "oh crap, nobody wants to talk to me";
 }
 
 
