@@ -421,6 +421,8 @@ ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
       mInfo(new ProtocolInfo(cmName, name)),
       mImmutableProps(props)
 {
+    fillRCCs();
+
     ReadinessHelper::Introspectables introspectables;
 
     // As Protocol does not have predefined statuses let's simulate one (0)
@@ -495,6 +497,64 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
     watcher->deleteLater();
 }
 
+void ConnectionManager::Private::ProtocolWrapper::fillRCCs()
+{
+    RequestableChannelClassList classes;
+
+    QVariantMap fixedProps;
+    QStringList allowedProps;
+
+    // Text chatrooms
+    fixedProps.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    fixedProps.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            static_cast<uint>(HandleTypeRoom));
+
+    RequestableChannelClass textChatroom = {fixedProps, allowedProps};
+    classes.append(textChatroom);
+
+    // 1-1 text chats
+    fixedProps[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")] =
+        static_cast<uint>(HandleTypeContact);
+
+    RequestableChannelClass text = {fixedProps, allowedProps};
+    classes.append(text);
+
+    // Media calls
+    fixedProps[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")] =
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA);
+
+    RequestableChannelClass media = {fixedProps, allowedProps};
+    classes.append(media);
+
+    // Initially audio-only calls
+    allowedProps.push_back(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+
+    RequestableChannelClass initialAudio = {fixedProps, allowedProps};
+    classes.append(initialAudio);
+
+    // Initially AV calls
+    allowedProps.push_back(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"));
+
+    RequestableChannelClass initialAV = {fixedProps, allowedProps};
+    classes.append(initialAV);
+
+    // Initially video-only calls
+    allowedProps.removeAll(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+
+    RequestableChannelClass initialVideo = {fixedProps, allowedProps};
+    classes.append(initialVideo);
+
+    // That also settles upgrading calls, because the media classes don't have ImmutableStreams
+
+    mInfo->setRequestableChannelClasses(classes);
+}
+
 bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVariantMap &props)
 {
     bool gotEverything =
@@ -532,8 +592,12 @@ bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVaria
         iconName = QString(QLatin1String("im-%1")).arg(mInfo->name());
     }
     mInfo->setIconName(iconName);
-    mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
+
+    // Don't overwrite the everything-is-possible RCCs with an empty list if there is no RCCs key
+    if (props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses"))) {
+        mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
                 props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses")]));
+    }
 
     return gotEverything;
 }

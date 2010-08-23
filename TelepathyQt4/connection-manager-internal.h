@@ -120,6 +120,7 @@ private Q_SLOTS:
 private:
     static void introspectMain(ProtocolWrapper *self);
 
+    void fillRCCs();
     bool receiveProperties(const QVariantMap &props);
 
     ReadinessHelper *mReadinessHelper;
