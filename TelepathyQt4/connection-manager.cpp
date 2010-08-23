@@ -810,6 +810,9 @@ bool ConnectionManager::hasProtocol(const QString &protocolName) const
  *
  * This method requires ConnectionManager::FeatureCore to be enabled.
  *
+ * The returned pointer points to an internal data structure, which should not be deleted by the
+ * caller.
+ *
  * \return A ProtocolInfo object or 0 if the protocol specified by \a
  *         protocolName is not supported.
  * \sa hasProtocol()

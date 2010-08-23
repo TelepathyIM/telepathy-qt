@@ -785,6 +785,9 @@ PendingStringList *Account::updateParameters(const QVariantMap &set,
  *
  * This method requires Account::FeatureProtocolInfo to be enabled.
  *
+ * The returned pointer points to an internal data structure, which should not be deleted by the
+ * caller.
+ *
  * \return The protocol info of this account protocol.
  */
 ProtocolInfo *Account::protocolInfo() const
