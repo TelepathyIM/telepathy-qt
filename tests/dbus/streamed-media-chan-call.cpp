@@ -31,6 +31,7 @@ protected Q_SLOTS:
     void expectRequestContactsFinished(Tp::PendingOperation *);
     void expectCreateChannelFinished(Tp::PendingOperation *);
     void expectRequestContentFinished(Tp::PendingOperation *);
+    void expectSuccessfulRequestReceiving(Tp::PendingOperation *);
     void onLocalSendingStateChanged(Tp::MediaStream::SendingState);
     void onRemoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &);
     void onChanInvalidated(Tp::DBusProxy *,
@@ -61,9 +62,17 @@ private:
     QList<ContactPtr> mRequestContactsReturn;
     MediaContentPtr mRequestContentReturn;
     MediaStream::SendingState mLSSCReturn;
-    QHash<ContactPtr, MediaStream::SendingState> mRSSCReturn;
     QQueue<uint> mLocalHoldStates;
     QQueue<uint> mLocalHoldStateReasons;
+
+    // Remote sending state changed state-machine
+    enum {
+        RSSCStateInitial,
+        RSSCStatePendingSend,
+        RSSCStateSending,
+        RSSCStateDone
+    } mRSSCState;
+    int mSuccessfulRequestReceivings;
 };
 
 void TestStreamedMediaChanCall::expectRequestContactsFinished(PendingOperation *op)
@@ -152,12 +161,65 @@ void TestStreamedMediaChanCall::onLocalSendingStateChanged(
     mLoop->exit(0);
 }
 
+void TestStreamedMediaChanCall::expectSuccessfulRequestReceiving(PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    if (++mSuccessfulRequestReceivings == 2 && mRSSCState == RSSCStateDone)
+        mLoop->exit(0);
+}
+
 void TestStreamedMediaChanCall::onRemoteSendingStateChanged(
         const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &states)
 {
-    qDebug() << "remote sending state changed";
-    mRSSCReturn = states;
-    mLoop->exit(0);
+    // There should be no further events
+    QVERIFY(mRSSCState != RSSCStateDone);
+
+    QCOMPARE(states.size(), 1);
+    ContactPtr otherContact = states.keys().first();
+
+    MediaContentPtr content = mChan->contentsForType(Tp::MediaStreamTypeVideo).first();
+    QVERIFY(content);
+
+    MediaStreamPtr stream = content->streams().first();
+    QVERIFY(stream);
+
+    if (mRSSCState == RSSCStateInitial) {
+        QCOMPARE(states[otherContact], MediaStream::SendingStatePendingSend);
+        mRSSCState = RSSCStatePendingSend;
+    } else if (mRSSCState == RSSCStatePendingSend) {
+        QCOMPARE(states[otherContact], MediaStream::SendingStateSending);
+        mRSSCState = RSSCStateSending;
+
+        QVERIFY(connect(stream->requestReceiving(otherContact, false),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulRequestReceiving(Tp::PendingOperation*))));
+    } else if (mRSSCState == RSSCStateSending) {
+        QCOMPARE(states[otherContact], MediaStream::SendingStateNone);
+        mRSSCState = RSSCStateDone;
+
+        if (mSuccessfulRequestReceivings == 2)
+            mLoop->exit(0);
+    }
+
+    qDebug() << "remote sending state changed to" << states[otherContact];
 }
 
 void TestStreamedMediaChanCall::onChanInvalidated(Tp::DBusProxy *proxy,
@@ -246,7 +308,6 @@ void TestStreamedMediaChanCall::init()
     mRequestContactsReturn.clear();
     mRequestContentReturn.reset();
     mLSSCReturn = (MediaStream::SendingState) -1;
-    mRSSCReturn.clear();
     mLocalHoldStates.clear();
     mLocalHoldStateReasons.clear();
 }
@@ -384,45 +445,18 @@ void TestStreamedMediaChanCall::testOutgoingCall()
 
     qDebug() << "enabling receiving";
 
+    mRSSCState = RSSCStateInitial;
+    mSuccessfulRequestReceivings = 0;
+
     // test content receiving changed
     QVERIFY(connect(stream.data(),
                     SIGNAL(remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &)),
                     SLOT(onRemoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &))));
     QVERIFY(connect(stream->requestReceiving(otherContact, true),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+                    SLOT(expectSuccessfulRequestReceiving(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    while (mRSSCReturn.isEmpty()) {
-        // wait remote sending state change
-        qDebug() << "re-entering mainloop to wait for remote SSC -> PendingSend";
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QCOMPARE(mRSSCReturn.value(otherContact), MediaStream::SendingStatePendingSend);
-
-    qDebug() << "waiting for the remote to start sending";
-
-    mRSSCReturn.clear();
-
-    while (mRSSCReturn.isEmpty()) {
-        // wait remote sending state chang
-        qDebug() << "re-entering mainloop to wait for remote SSC -> Sending";
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QCOMPARE(mRSSCReturn.value(otherContact), MediaStream::SendingStateSending);
-
-    qDebug() << "waiting for the remote to stop sending";
-
-    mRSSCReturn.clear();
-
-    QVERIFY(connect(stream->requestReceiving(otherContact, false),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    while (mRSSCReturn.isEmpty()) {
-        // wait remote sending state change
-        qDebug() << "re-entering mainloop to wait for remote SSC -> None";
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    QCOMPARE(mRSSCReturn.value(otherContact), MediaStream::SendingStateNone);
+    QCOMPARE(static_cast<uint>(mRSSCState), static_cast<uint>(RSSCStateDone));
 }
 
 void TestStreamedMediaChanCall::testHold()
@@ -534,13 +568,11 @@ void TestStreamedMediaChanCall::testHoldNoUnhold()
                     SIGNAL(localHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason)),
                     SLOT(onLocalHoldStateChanged(Tp::LocalHoldState, Tp::LocalHoldStateReason))));
     // Request hold
-    QVERIFY(connect(mChan->requestHold(true),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    while (mLocalHoldStates.size() != 2) {
-        QCOMPARE(mLoop->exec(), 0);
+    QPointer<PendingOperation> holdOp = mChan->requestHold(true);
+    while (mLocalHoldStates.size() != 2 || (holdOp && !holdOp->isFinished())) {
+        mLoop->processEvents();
     }
+    QCOMPARE(!holdOp || holdOp->isValid(), true);
     QCOMPARE(mLocalHoldStates.first(), static_cast<uint>(LocalHoldStatePendingHold));
     QCOMPARE(mLocalHoldStateReasons.first(), static_cast<uint>(LocalHoldStateReasonRequested));
     QCOMPARE(mLocalHoldStates.last(), static_cast<uint>(LocalHoldStateHeld));
