@@ -14,6 +14,7 @@
 #include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
 
+#include <tests/lib/glib/simple-manager.h>
 #include <tests/lib/glib/echo2/connection-manager.h>
 #include <tests/lib/test.h>
 
@@ -33,6 +34,7 @@ private Q_SLOTS:
     void init();
 
     void testBasics();
+    void testLegacy();
 
     void cleanup();
     void cleanupTestCase();
@@ -40,6 +42,9 @@ private Q_SLOTS:
 private:
     TpBaseConnectionManager *mCMService;
     Tp::ConnectionManagerPtr mCM;
+
+    TpBaseConnectionManager *mCMServiceLegacy;
+    Tp::ConnectionManagerPtr mCMLegacy;
 };
 
 void TestCmBasics::initTestCase()
@@ -134,8 +139,80 @@ void TestCmBasics::testBasics()
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
 
+// Test for a CM which doesn't implement Protocol objects
+void TestCmBasics::testLegacy()
+{
+    mCMLegacy = ConnectionManager::create(QLatin1String("simple"));
+    QCOMPARE(mCMLegacy->isReady(), false);
+
+    QVERIFY(connect(mCMLegacy->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mCMLegacy->isReady(), true);
+
+    QCOMPARE(mCMLegacy->interfaces(), QStringList());
+    QCOMPARE(mCMLegacy->supportedProtocols(), QStringList() << QLatin1String("simple"));
+
+    QVERIFY(mCMLegacy->hasProtocol(QLatin1String("simple")));
+    QVERIFY(!mCMLegacy->hasProtocol(QLatin1String("not-there")));
+
+    ProtocolInfo *info = mCMLegacy->protocol(QLatin1String("simple"));
+    QVERIFY(info != 0);
+
+    QCOMPARE(info->cmName(), QLatin1String("simple"));
+    QCOMPARE(info->name(), QLatin1String("simple"));
+
+    QCOMPARE(info->hasParameter(QLatin1String("account")), true);
+    QCOMPARE(info->hasParameter(QLatin1String("not-there")), false);
+
+    QCOMPARE(info->parameters().size(), 1);
+
+    ProtocolParameter *param = info->parameters().at(0);
+    QCOMPARE(param->name(), QLatin1String("account"));
+    QCOMPARE(static_cast<uint>(param->type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(param->defaultValue().isNull(), true);
+    QCOMPARE(param->dbusSignature().signature(), QLatin1String("s"));
+    QCOMPARE(param->isRequired(), true);
+    QCOMPARE(param->isRequiredForRegistration(), true);
+    QCOMPARE(param->isSecret(), false);
+
+    QVERIFY(*param == QLatin1String("account"));
+
+    QCOMPARE(info->canRegister(), false);
+
+    QVERIFY(info->capabilities() != 0);
+
+    // Protocol capabilities semantics is "an actual connection supports whatever I claim, or
+    // less", so for a service with no actual Protocol implementation everything should be
+    // assumed to be possible at this point
+    QVERIFY(info->capabilities() != 0);
+    QCOMPARE(info->capabilities()->isSpecificToContact(), false);
+    QCOMPARE(info->capabilities()->supportsTextChatrooms(), true);
+    QCOMPARE(info->capabilities()->supportsTextChats(), true);
+    QCOMPARE(info->capabilities()->supportsMediaCalls(), true);
+    QCOMPARE(info->capabilities()->supportsAudioCalls(), true);
+    QCOMPARE(info->capabilities()->supportsVideoCalls(false), true);
+    QCOMPARE(info->capabilities()->supportsVideoCalls(true), true);
+    QCOMPARE(info->capabilities()->supportsUpgradingCalls(), true);
+
+    QCOMPARE(info->vcardField(), QLatin1String(""));
+    QCOMPARE(info->englishName(), QLatin1String("Simple"));
+    QCOMPARE(info->iconName(), QLatin1String("im-simple"));
+
+    QCOMPARE(mCMLegacy->supportedProtocols(), QStringList() << QLatin1String("simple"));
+}
+
+// TODO add a test for the case of getting the information from a .manager file, and if possible,
+// also for using the fallbacks for the CM::Protocols property not being present.
+
+// TODO also one for CM::listNames()
+
 void TestCmBasics::cleanup()
 {
+    mCM.reset();
+    mCMLegacy.reset();
+
     cleanupImpl();
 }
 
@@ -144,6 +221,11 @@ void TestCmBasics::cleanupTestCase()
     if (mCMService) {
         g_object_unref(mCMService);
         mCMService = 0;
+    }
+
+    if (mCMServiceLegacy) {
+        g_object_unref(mCMServiceLegacy);
+        mCMServiceLegacy = 0;
     }
 
     cleanupTestCaseImpl();
