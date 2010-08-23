@@ -30,6 +30,7 @@ protected Q_SLOTS:
     void expectRequestContactsFinished(Tp::PendingOperation *);
     void expectCreateChannelFinished(Tp::PendingOperation *);
     void expectRequestStreamsFinished(Tp::PendingOperation *);
+    void expectBusyRequestStreamsFinished(Tp::PendingOperation *);
 
     // Special event handlers for the OutgoingCall state-machine
     void expectOutgoingRequestStreamsFinished(Tp::PendingOperation *);
@@ -219,6 +220,31 @@ void TestStreamedMediaChan::expectRequestStreamsFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
+void TestStreamedMediaChan::expectBusyRequestStreamsFinished(PendingOperation *op)
+{
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        // The service signaled busy even before tp-qt4 finished introspection.
+        // FIXME: should the error be something else, actually? Such as, perchance,
+        // org.freedesktop.Telepathy.Error.Busy? (fd.o #29757).
+        QCOMPARE(op->errorName(), QLatin1String("org.freedesktop.Telepathy.Error.Cancelled"));
+        qDebug() << "request streams finished already busy";
+        mLoop->exit(0);
+        return;
+    }
+
+    qDebug() << "request streams finished successfully";
+
+    PendingMediaStreams *pms = qobject_cast<PendingMediaStreams*>(op);
+    mRequestStreamsReturn = pms->streams();
+    mLoop->exit(0);
+}
+
 void TestStreamedMediaChan::expectOutgoingRequestStreamsFinished(PendingOperation *op)
 {
     QVERIFY(op->isFinished());
@@ -315,6 +341,7 @@ void TestStreamedMediaChan::onOutgoingGroupMembersChanged(
     mChangedRemoved = groupMembersRemoved;
     mDetails = details;
 }
+
 void TestStreamedMediaChan::onGroupMembersChanged(
         const Contacts &groupMembersAdded,
         const Contacts &groupLocalPendingMembersAdded,
@@ -367,7 +394,17 @@ void TestStreamedMediaChan::onChanInvalidated(Tp::DBusProxy *proxy,
 void TestStreamedMediaChan::expectTerminateRequestStreamsFinished(PendingOperation *op)
 {
     QVERIFY(op->isFinished());
-    QVERIFY(!op->isError());
+
+    if (op->isError()) {
+        // FIXME: should the error be something else, actually? Such as, perchance,
+        // org.freedesktop.Telepathy.Error.Terminated? (fd.o #29757).
+        QCOMPARE(op->errorName(), QLatin1String("org.freedesktop.Telepathy.Error.Cancelled"));
+        qDebug() << "The remote hung up before we even got to take a look at the stream!";
+        mTerminateState = TerminateStateTerminated;
+        mLoop->exit(0);
+        return;
+    }
+
     QVERIFY(op->isValid());
 
     PendingMediaStreams *pms = qobject_cast<PendingMediaStreams*>(op);
@@ -770,7 +807,7 @@ void TestStreamedMediaChan::testOutgoingCallBusy()
     QVERIFY(connect(mChan->requestStreams(otherContact,
                         QList<Tp::MediaStreamType>() << Tp::MediaStreamTypeAudio),
                     SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
+                    SLOT(expectBusyRequestStreamsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
     if (mChan->isValid()) {
