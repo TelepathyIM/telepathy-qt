@@ -1002,9 +1002,7 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
             "Properties.GetAll(ConnectionManager) failed: " <<
             reply.error().name() << ": " << reply.error().message();
 
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
-                QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                QLatin1String("CM::GetAll failed - we don't support pre-GetAll CMs currently"));
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
         watcher->deleteLater();
         return;
     }
