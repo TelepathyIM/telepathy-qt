@@ -619,14 +619,7 @@ PendingOperation *Account::setDisplayName(const QString &value)
  */
 QString Account::icon() const
 {
-	if (mPriv->iconName.isEmpty()) {
-		if (isReady(Features() << FeatureProtocolInfo))
-			return protocolInfo()->iconName();
-		else
-			return QString(QLatin1String("im-%1")).arg(protocol());
-	}
-
-    return mPriv->iconName;
+	return iconName();
 }
 
 /**
@@ -639,6 +632,13 @@ QString Account::icon() const
  */
 QString Account::iconName() const
 {
+	if (mPriv->iconName.isEmpty()) {
+		if (isReady(Features() << FeatureProtocolInfo))
+			return protocolInfo()->iconName();
+		else
+			return QString(QLatin1String("im-%1")).arg(protocol());
+	}
+
     return mPriv->iconName;
 }
 
