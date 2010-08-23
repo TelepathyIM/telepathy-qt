@@ -56,23 +56,25 @@ void TestCmBasics::initTestCase()
         NULL));
     QVERIFY(mCMService != 0);
 
-    // This TpDBusDaemon is a workaround for fd.o#20165 (revert when we start
-    // to depend on a telepathy-glib without this bug)
-    TpDBusDaemon *dbus_daemon = tp_dbus_daemon_dup(0);
+    mCMServiceLegacy = TP_BASE_CONNECTION_MANAGER(g_object_new(
+        TP_TESTS_TYPE_SIMPLE_CONNECTION_MANAGER,
+        NULL));
+    QVERIFY(mCMServiceLegacy != 0);
+
     QVERIFY(tp_base_connection_manager_register(mCMService));
-    g_object_unref(dbus_daemon);
+    QVERIFY(tp_base_connection_manager_register(mCMServiceLegacy));
 }
 
 void TestCmBasics::init()
 {
     initImpl();
-
-    mCM = ConnectionManager::create(QLatin1String("example_echo_2"));
-    QCOMPARE(mCM->isReady(), false);
 }
 
 void TestCmBasics::testBasics()
 {
+    mCM = ConnectionManager::create(QLatin1String("example_echo_2"));
+    QCOMPARE(mCM->isReady(), false);
+
     QVERIFY(connect(mCM->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
@@ -89,36 +91,45 @@ void TestCmBasics::testBasics()
     QCOMPARE(mCM->interfaces(), QStringList());
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 
-    Q_FOREACH (ProtocolInfo *info, mCM->protocols()) {
-        QVERIFY(info != 0);
-        QCOMPARE(info->cmName(), QLatin1String("example_echo_2"));
-        QCOMPARE(info->name(), QLatin1String("example"));
+    QVERIFY(mCM->hasProtocol(QLatin1String("example")));
+    QVERIFY(!mCM->hasProtocol(QLatin1String("not-there")));
 
-        QCOMPARE(info->hasParameter(QLatin1String("account")), true);
-        QCOMPARE(info->hasParameter(QLatin1String("not-there")), false);
+    ProtocolInfo *info = mCM->protocol(QLatin1String("example"));
+    QVERIFY(info != 0);
 
-        Q_FOREACH (ProtocolParameter *param, info->parameters()) {
-            QCOMPARE(param->name(), QLatin1String("account"));
-            QCOMPARE(param->dbusSignature().signature(),
-                         QLatin1String("s"));
-            QCOMPARE(param->isRequired(), true);
-            QCOMPARE(param->isSecret(), false);
-        }
-        QCOMPARE(info->canRegister(), false);
+    QCOMPARE(info->cmName(), QLatin1String("example_echo_2"));
+    QCOMPARE(info->name(), QLatin1String("example"));
 
-        QVERIFY(info->capabilities() != 0);
-        QCOMPARE(info->capabilities()->isSpecificToContact(), false);
-        QCOMPARE(info->capabilities()->supportsTextChatrooms(), false);
-        QCOMPARE(info->capabilities()->supportsTextChats(), true);
-        QCOMPARE(info->capabilities()->supportsMediaCalls(), false);
-        QCOMPARE(info->capabilities()->supportsAudioCalls(), false);
-        QCOMPARE(info->capabilities()->supportsVideoCalls(false), false);
-        QCOMPARE(info->capabilities()->supportsVideoCalls(true), false);
-        QCOMPARE(info->capabilities()->supportsUpgradingCalls(), false);
-        QCOMPARE(info->vcardField(), QLatin1String("x-telepathy-example"));
-        QCOMPARE(info->englishName(), QLatin1String("Echo II example"));
-        QCOMPARE(info->iconName(), QLatin1String("im-icq"));
-    }
+    QCOMPARE(info->hasParameter(QLatin1String("account")), true);
+    QCOMPARE(info->hasParameter(QLatin1String("not-there")), false);
+
+    QCOMPARE(info->parameters().size(), 1);
+
+    ProtocolParameter *param = info->parameters().at(0);
+    QCOMPARE(param->name(), QLatin1String("account"));
+    QCOMPARE(static_cast<uint>(param->type()), static_cast<uint>(QVariant::String));
+    QCOMPARE(param->defaultValue().isNull(), true);
+    QCOMPARE(param->dbusSignature().signature(), QLatin1String("s"));
+    QCOMPARE(param->isRequired(), true);
+    QCOMPARE(param->isRequiredForRegistration(), true); // though it can't register!
+    QCOMPARE(param->isSecret(), false);
+
+    QVERIFY(*param == QLatin1String("account"));
+
+    QCOMPARE(info->canRegister(), false);
+
+    QCOMPARE(info->capabilities()->isSpecificToContact(), false);
+    QCOMPARE(info->capabilities()->supportsTextChatrooms(), false);
+    QCOMPARE(info->capabilities()->supportsTextChats(), true);
+    QCOMPARE(info->capabilities()->supportsMediaCalls(), false);
+    QCOMPARE(info->capabilities()->supportsAudioCalls(), false);
+    QCOMPARE(info->capabilities()->supportsVideoCalls(false), false);
+    QCOMPARE(info->capabilities()->supportsVideoCalls(true), false);
+    QCOMPARE(info->capabilities()->supportsUpgradingCalls(), false);
+
+    QCOMPARE(info->vcardField(), QLatin1String("x-telepathy-example"));
+    QCOMPARE(info->englishName(), QLatin1String("Echo II example"));
+    QCOMPARE(info->iconName(), QLatin1String("im-icq"));
 
     QCOMPARE(mCM->supportedProtocols(), QStringList() << QLatin1String("example"));
 }
