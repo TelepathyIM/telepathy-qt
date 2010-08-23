@@ -104,7 +104,7 @@ public:
 
     ProtocolWrapper(const QDBusConnection &bus, const QString &busName,
             const QString &objectPath,
-            const QString &cmName, const QString &name);
+            const QString &cmName, const QString &name, const QVariantMap &props);
     ~ProtocolWrapper();
 
     ProtocolInfo *info() const { return mInfo; }
@@ -120,8 +120,11 @@ private Q_SLOTS:
 private:
     static void introspectMain(ProtocolWrapper *self);
 
+    bool receiveProperties(const QVariantMap &props);
+
     ReadinessHelper *mReadinessHelper;
     ProtocolInfo *mInfo;
+    QVariantMap mImmutableProps;
 };
 
 } // Tp

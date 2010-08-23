@@ -413,16 +413,17 @@ const Feature ConnectionManager::Private::ProtocolWrapper::FeatureCore =
 ConnectionManager::Private::ProtocolWrapper::ProtocolWrapper(
         const QDBusConnection &bus,
         const QString &busName, const QString &objectPath,
-        const QString &cmName, const QString &name)
+        const QString &cmName, const QString &name, const QVariantMap &props)
     : StatelessDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<ProtocolWrapper>(this),
       ReadyObject(this, FeatureCore),
       mReadinessHelper(readinessHelper()),
-      mInfo(new ProtocolInfo(cmName, name))
+      mInfo(new ProtocolInfo(cmName, name)),
+      mImmutableProps(props)
 {
     ReadinessHelper::Introspectables introspectables;
 
-    // As ConnectionManager does not have predefined statuses let's simulate one (0)
+    // As Protocol does not have predefined statuses let's simulate one (0)
     ReadinessHelper::Introspectable introspectableCore(
         QSet<uint>() << 0,                                           // makesSenseForStatuses
         Features(),                                                  // dependsOnFeatures
@@ -445,7 +446,15 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
     Client::DBus::PropertiesInterface *properties = self->propertiesInterface();
     Q_ASSERT(properties != 0);
 
-    debug() << "Calling Properties::GetAll(Protocol)";
+    if (self->receiveProperties(self->mImmutableProps)) {
+        debug() << "Got everything we want from the immutable props for" <<
+            self->info()->name();
+        self->mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
+        return;
+    }
+
+    debug() << "Not enough immutable properties, calling Properties::GetAll(Protocol) for" <<
+        self->info()->name();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             properties->GetAll(
                 QLatin1String(TELEPATHY_INTERFACE_PROTOCOL)),
@@ -463,45 +472,70 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
 
     if (!reply.isError()) {
         debug() << "Got reply to Properties.GetAll(Protocol)";
-        props = reply.value();
 
-        setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
-        mReadinessHelper->setInterfaces(interfaces());
-
-        ParamSpecList parameters = qdbus_cast<ParamSpecList>(
-                props[QLatin1String("Parameters")]);
-        foreach (const ParamSpec &spec, parameters) {
-            mInfo->addParameter(spec);
+        QVariantMap unqualifiedProps = reply.value();
+        QVariantMap qualifiedProps;
+        foreach (QString unqualified, unqualifiedProps.keys()) {
+            qualifiedProps.insert(
+                    QString(QLatin1String("%1.%2")).
+                        arg(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL)).
+                        arg(unqualified),
+                    unqualifiedProps.value(unqualified));
         }
-
-        mInfo->setVCardField(qdbus_cast<QString>(
-                    props[QLatin1String("VCardField")]));
-        QString englishName = qdbus_cast<QString>(
-                props[QLatin1String("EnglishName")]);
-        if (englishName.isEmpty()) {
-            QStringList words = mInfo->name().split(QLatin1Char('-'));
-            for (int i = 0; i < words.size(); ++i)
-                words[i][0] = words[i].at(0).toUpper();
-            englishName = words.join(QLatin1String(" "));
-        }
-        mInfo->setEnglishName(englishName);
-        QString iconName = qdbus_cast<QString>(
-                    props[QLatin1String("Icon")]);
-        if (iconName.isEmpty()) {
-            iconName = QString(QLatin1String("im-%1")).arg(mInfo->name());
-        }
-        mInfo->setIconName(iconName);
-        mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
-                    props[QLatin1String("RequestableChannelClasses")]));
+        receiveProperties(qualifiedProps);
     } else {
         warning().nospace() <<
             "Properties.GetAll(Protocol) failed: " <<
             reply.error().name() << ": " << reply.error().message();
+        warning() << "  Full functionality requires CM support for the Protocol interface";
     }
 
     mReadinessHelper->setIntrospectCompleted(FeatureCore, true);
 
     watcher->deleteLater();
+}
+
+bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVariantMap &props)
+{
+    bool gotEverything =
+        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Interfaces")) &&
+        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Parameters")) &&
+        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".ConnectionInterfaces")) &&
+        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses")) &&
+        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".VCardField")) &&
+        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".EnglishName")) &&
+        props.contains(QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Icon"));
+
+    setInterfaces(qdbus_cast<QStringList>(props[QLatin1String(".Interfaces")]));
+    mReadinessHelper->setInterfaces(interfaces());
+
+    ParamSpecList parameters = qdbus_cast<ParamSpecList>(
+            props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Parameters")]);
+    foreach (const ParamSpec &spec, parameters) {
+        mInfo->addParameter(spec);
+    }
+
+    mInfo->setVCardField(qdbus_cast<QString>(
+                props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".VCardField")]));
+    QString englishName = qdbus_cast<QString>(
+            props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".EnglishName")]);
+    if (englishName.isEmpty()) {
+        QStringList words = mInfo->name().split(QLatin1Char('-'));
+        for (int i = 0; i < words.size(); ++i)
+            words[i][0] = words[i].at(0).toUpper();
+        englishName = words.join(QLatin1String(" "));
+    }
+    mInfo->setEnglishName(englishName);
+    QString iconName = qdbus_cast<QString>(
+            props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".Icon")]);
+    if (iconName.isEmpty()) {
+        iconName = QString(QLatin1String("im-%1")).arg(mInfo->name());
+    }
+    mInfo->setIconName(iconName);
+    mInfo->setRequestableChannelClasses(qdbus_cast<RequestableChannelClassList>(
+                props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".RequestableChannelClasses")]));
+
+    return gotEverything;
 }
 
 ConnectionManager::Private::Private(ConnectionManager *parent, const QString &name)
@@ -921,7 +955,7 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
                     QLatin1String("%1/%2")).arg(objectPath()).arg(i.key());
             Private::ProtocolWrapper *wrapper = new Private::ProtocolWrapper(
                     dbusConnection(), busName(), protocolPath,
-                    mPriv->name, i.key());
+                    mPriv->name, i.key(), i.value());
             connect(wrapper->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(onProtocolReady(Tp::PendingOperation *)));
