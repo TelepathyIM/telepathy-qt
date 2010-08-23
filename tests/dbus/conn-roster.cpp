@@ -121,6 +121,7 @@ void TestConnRoster::initTestCase()
             EXAMPLE_TYPE_CONTACT_LIST_CONNECTION,
             "account", "me@example.com",
             "protocol", "contactlist",
+            "simulation-delay", 1,
             NULL));
     QVERIFY(mConnService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),

@@ -399,7 +399,7 @@ example_call_connection_class_init (
 
   param_spec = g_param_spec_uint ("simulation-delay", "Simulation delay",
       "Delay between simulated network events",
-      0, G_MAXUINT32, 10,
+      0, G_MAXUINT32, 1000,
       G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_SIMULATION_DELAY,
       param_spec);

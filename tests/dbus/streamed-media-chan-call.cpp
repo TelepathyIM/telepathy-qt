@@ -211,6 +211,7 @@ void TestStreamedMediaChanCall::initTestCase()
             EXAMPLE_TYPE_CALL_CONNECTION,
             "account", "me@example.com",
             "protocol", "example",
+            "simulation-delay", 1,
             NULL));
     QVERIFY(mConnService != 0);
     QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
