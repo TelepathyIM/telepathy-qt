@@ -59,7 +59,7 @@ fi])dnl
 AC_DEFUN([COMPILER_COVERAGE],
 [AC_ARG_ENABLE(compiler-coverage,
 	AS_HELP_STRING([--enable-compiler-coverage],
-		       [Enable generation of coverage data]),
+		       [Enable generation of coverage data (implies --disable-shared)]),
 [if test "x$enable_compiler_coverage" = "xyes"; then
 	if test "x$GCC" = "xyes"; then
 		CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
@@ -67,5 +67,6 @@ AC_DEFUN([COMPILER_COVERAGE],
 	if test "x$GXX" = "xyes"; then
 		CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
 	fi
+	enable_shared=no
 fi])dnl
 ])# COMPILER_COVERAGE
