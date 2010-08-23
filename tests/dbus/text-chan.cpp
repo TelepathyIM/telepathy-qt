@@ -85,28 +85,33 @@ private:
 
 void TestTextChan::onMessageReceived(const ReceivedMessage &message)
 {
+    qDebug() << "message received";
     received << message;
     mLoop->exit(0);
 }
 
 void TestTextChan::onMessageRemoved(const ReceivedMessage &message)
 {
+    qDebug() << "message removed";
     removed << message;
 }
 
 void TestTextChan::onMessageSent(const Tp::Message &message,
         Tp::MessageSendingFlags flags, const QString &token)
 {
+    qDebug() << "message sent";
     sent << SentMessageDetails(message, flags, token);
 }
 
 void TestTextChan::sendText(const char *text)
 {
+    qDebug() << "sending message:" << text;
     QVERIFY(connect(mChan->send(QLatin1String(text),
                     Tp::ChannelTextMessageTypeNormal),
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
+    qDebug() << "message send mainloop finished";
 }
 
 void TestTextChan::initTestCase()
@@ -230,6 +235,12 @@ void TestTextChan::commonTest(bool withMessages)
 
     sendText("One");
 
+    // Flush the D-Bus queue to make sure we've got the Sent signal the service will send, even if
+    // we are scheduled to execute between the time it calls return_from_send and emit_sent
+    processDBusQueue(mChan.data());
+
+    qDebug() << "making the Sent signal ready";
+
     // Make the Sent signal become ready
     features = Features() << TextChannel::FeatureMessageSentSignal;
     QVERIFY(connect(mChan->becomeReady(features),
@@ -244,7 +255,13 @@ void TestTextChan::commonTest(bool withMessages)
     features = Features() << TextChannel::FeatureMessageQueue;
     QVERIFY(!mChan->isReady(features));
 
+    qDebug() << "the Sent signal is ready";
+
     sendText("Two");
+
+    // Flush the D-Bus queue to make sure we've got the Sent signal the service will send, even if
+    // we are scheduled to execute between the time it calls return_from_send and emit_sent
+    processDBusQueue(mChan.data());
 
     // We should have received "Two", but not "One"
     QCOMPARE(sent.size(), 1);
@@ -391,7 +408,7 @@ void TestTextChan::commonTest(bool withMessages)
                 G_OBJECT(mTextChanService), 0)
             || tp_message_mixin_has_pending_messages(
                 G_OBJECT(mMessagesChanService), 0)) {
-        QTest::qWait(100);
+        QTest::qWait(1);
     }
 
     QVERIFY(!tp_text_mixin_has_pending_messages(
