@@ -59,8 +59,6 @@ PendingContactAttributes::PendingContactAttributes(const ConnectionPtr &connecti
     : PendingOperation(connection.data()),
       mPriv(new Private)
 {
-    debug() << "PendingContactAttributes()";
-
     mPriv->connection = connection;
     mPriv->contactsRequested = handles;
     mPriv->interfacesRequested = interfaces;
@@ -184,10 +182,8 @@ void PendingContactAttributes::onCallFinished(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<ContactAttributesMap> reply = *watcher;
 
-    debug() << "Received reply to GetContactAttributes";
-
     if (reply.isError()) {
-        debug().nospace() << " Failure: error " << reply.error().name() << ": " << reply.error().message();
+        debug().nospace() << "GetCAs: error " << reply.error().name() << ": " << reply.error().message();
         setFinishedWithError(reply.error());
     } else {
         mPriv->attributes = reply.value();
@@ -205,9 +201,6 @@ void PendingContactAttributes::onCallFinished(QDBusPendingCallWatcher* watcher)
             mPriv->validHandles = ReferencedHandles(mPriv->connection, HandleTypeContact,
                     validHandles);
         }
-
-        debug() << " Success:" << validHandles.size() << "valid and" << mPriv->invalidHandles.size()
-            << "invalid handles";
 
         setFinished();
     }

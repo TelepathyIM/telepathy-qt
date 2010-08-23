@@ -39,14 +39,14 @@ TELEPATHY_QT4_EXPORT QDebug enabledWarning();
 inline QDebug debug()
 {
     QDebug debug = enabledDebug();
-    debug.nospace() << PACKAGE_NAME " (version " PACKAGE_VERSION ") DEBUG:";
+    debug.nospace() << "tp-qt4 " PACKAGE_VERSION " DEBUG:";
     return debug.space();
 }
 
 inline QDebug warning()
 {
     QDebug warning = enabledWarning();
-    warning.nospace() << PACKAGE_NAME " (version " PACKAGE_VERSION ") WARNING:";
+    warning.nospace() << "tp-qt4 " PACKAGE_VERSION " WARNING:";
     return warning.space();
 }
 

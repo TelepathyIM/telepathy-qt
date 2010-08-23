@@ -93,10 +93,8 @@ QObject *OptionalInterfaceCache::proxy() const
 AbstractInterface *OptionalInterfaceCache::getCached(const QString &name) const
 {
     if (mPriv->interfaces.contains(name)) {
-        debug() << "Returning cached interface for" << name;
         return mPriv->interfaces.value(name);
     } else {
-        debug() << "No interface found for" << name;
         return 0;
     }
 }
@@ -106,7 +104,6 @@ void OptionalInterfaceCache::cache(AbstractInterface *interface) const
     QString name = interface->interface();
     Q_ASSERT(!mPriv->interfaces.contains(name));
 
-    debug() << "Caching interface" << name;
     mPriv->interfaces[name] = interface;
 }
 

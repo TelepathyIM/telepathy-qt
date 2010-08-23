@@ -441,13 +441,11 @@ bool ReadinessHelper::isReady(const Feature &feature,
 
     if (feature.isCritical()) {
         if (!mPriv->satisfiedFeatures.contains(feature)) {
-            debug() << "ReadinessHelper::isReady: critical feature" << feature << "not ready";
             ret = false;
         }
     } else {
         if (!mPriv->satisfiedFeatures.contains(feature) &&
             !mPriv->missingFeatures.contains(feature)) {
-            debug() << "ReadinessHelper::isReady: feature" << feature << "not ready";
             ret = false;
         }
     }
@@ -493,7 +491,7 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
 
     Features supportedFeatures = mPriv->supportedFeatures;
     if (supportedFeatures.intersect(requestedFeatures) != requestedFeatures) {
-        debug() << "ReadinessHelper::becomeReady called with invalid features: requestedFeatures =" <<
+        warning() << "ReadinessHelper::becomeReady called with invalid features: requestedFeatures =" <<
             requestedFeatures << "- supportedFeatures =" << mPriv->supportedFeatures;
         PendingReady *operation =
             new PendingReady(requestedFeatures, mPriv->object, this);

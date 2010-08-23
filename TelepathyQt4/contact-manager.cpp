@@ -759,9 +759,6 @@ PendingOperation *ContactManager::blockContacts(
 PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
         const QSet<Contact::Feature> &features)
 {
-    debug() << "Building contacts for" << handles.size() << "handles" << "with" << features.size()
-        << "features";
-
     QMap<uint, ContactPtr> satisfyingContacts;
     QSet<uint> otherContacts;
     QSet<Contact::Feature> missingFeatures;
@@ -793,10 +790,6 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
             otherContacts.insert(handle);
         }
     }
-
-    debug() << " " << satisfyingContacts.size() << "satisfying and"
-                   << otherContacts.size() << "other contacts";
-    debug() << " " << missingFeatures.size() << "features missing";
 
     QSet<Contact::Feature> supported = supportedFeatures();
     QSet<QString> interfaces;
@@ -834,9 +827,6 @@ PendingContacts *ContactManager::contactsForIdentifiers(const QStringList &ident
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
 
-    debug() << "Building contacts for" << identifiers.size() << "identifiers" << "with" << features.size()
-        << "features";
-
     PendingContacts *contacts = new PendingContacts(this, identifiers, features);
     return contacts;
 }
@@ -853,9 +843,6 @@ PendingContacts *ContactManager::upgradeContacts(const QList<ContactPtr> &contac
                 QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
-
-    debug() << "Upgrading" << contacts.size() << "contacts to have at least"
-                           << features.size() << "features";
 
     return new PendingContacts(this, contacts, features);
 }

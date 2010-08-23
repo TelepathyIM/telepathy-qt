@@ -204,10 +204,8 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
     PendingContactAttributes *pendingAttributes =
         qobject_cast<PendingContactAttributes *>(operation);
 
-    debug() << "Attributes finished for" << this;
-
     if (pendingAttributes->isError()) {
-        debug() << " error" << pendingAttributes->errorName()
+        debug() << "PendingAttrs error" << pendingAttributes->errorName()
                 << "message" << pendingAttributes->errorMessage();
         setFinishedWithError(pendingAttributes->errorName(), pendingAttributes->errorMessage());
         return;
@@ -215,9 +213,6 @@ void PendingContacts::onAttributesFinished(PendingOperation *operation)
 
     ReferencedHandles validHandles = pendingAttributes->validHandles();
     ContactAttributesMap attributes = pendingAttributes->attributes();
-
-    debug() << " Success:" << validHandles.size() << "valid and"
-                           << pendingAttributes->invalidHandles().size() << "invalid handles";
 
     foreach (uint handle, mPriv->handles) {
         if (!mPriv->satisfyingContacts.contains(handle)) {
@@ -240,19 +235,15 @@ void PendingContacts::onRequestHandlesFinished(PendingOperation *operation)
 {
     PendingHandles *pendingHandles = qobject_cast<PendingHandles *>(operation);
 
-    debug() << "Handles finished for" << this;
-
     mPriv->validIds = pendingHandles->validNames();
     mPriv->invalidIds = pendingHandles->invalidNames();
 
     if (pendingHandles->isError()) {
-        debug() << " error" << operation->errorName()
+        debug() << "RequestHandles error" << operation->errorName()
                 << "message" << operation->errorMessage();
         setFinishedWithError(operation->errorName(), operation->errorMessage());
         return;
     }
-
-    debug() << " Success - doing nested contact query";
 
     mPriv->nested = manager()->contactsForHandles(pendingHandles->handles(), features());
     connect(mPriv->nested,
@@ -264,10 +255,8 @@ void PendingContacts::onReferenceHandlesFinished(PendingOperation *operation)
 {
     PendingHandles *pendingHandles = qobject_cast<PendingHandles *>(operation);
 
-    debug() << "Reference Handles finished for" << this;
-
     if (pendingHandles->isError()) {
-        debug() << " error" << operation->errorName()
+        debug() << "ReferenceHandles error" << operation->errorName()
                 << "message" << operation->errorMessage();
         setFinishedWithError(operation->errorName(), operation->errorMessage());
         return;
@@ -303,8 +292,6 @@ void PendingContacts::onNestedFinished(PendingOperation *operation)
 {
     Q_ASSERT(operation == mPriv->nested);
 
-    debug() << "Nested PendingContacts finished for" << this;
-
     if (operation->isError()) {
         debug() << " error" << operation->errorName()
                 << "message" << operation->errorMessage();
@@ -321,10 +308,8 @@ void PendingContacts::onInspectHandlesFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QStringList> reply = *watcher;
 
-    debug() << "Received reply to InspectHandles";
-
     if (reply.isError()) {
-        debug().nospace() << " Failure: error " << reply.error().name() << ": "
+        debug().nospace() << "InspectHandles: error " << reply.error().name() << ": "
             << reply.error().message();
         setFinishedWithError(reply.error());
         return;
@@ -364,12 +349,8 @@ PendingContacts::PendingContacts(ContactManager *manager,
     }
 
     if (!otherContacts.isEmpty()) {
-        debug() << " Fetching" << interfaces.size() << "interfaces for"
-                               << otherContacts.size() << "contacts";
-
         ConnectionPtr conn = manager->connection();
         if (conn->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
-            debug() << " Building contacts using contact attributes";
             PendingContactAttributes *attributes =
                 conn->contactAttributes(otherContacts.toList(),
                         interfaces, true);
@@ -378,7 +359,6 @@ PendingContacts::PendingContacts(ContactManager *manager,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(onAttributesFinished(Tp::PendingOperation*)));
         } else {
-            debug() << " Falling back to inspect contact handles";
             // fallback to just create the contacts
             PendingHandles *handles = conn->referenceHandles(HandleTypeContact,
                     otherContacts.toList());
