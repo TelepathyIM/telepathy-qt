@@ -443,6 +443,9 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     }
     QCOMPARE(mLSSCReturn, MediaStream::SendingStateSending);
 
+    qDebug() << "flushing D-Bus events";
+    processDBusQueue(mChan.data());
+
     qDebug() << "enabling receiving";
 
     mRSSCState = RSSCStateInitial;
@@ -455,7 +458,9 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QVERIFY(connect(stream->requestReceiving(otherContact, true),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulRequestReceiving(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
+    while (mSuccessfulRequestReceivings != 2 || mRSSCState != RSSCStateDone)
+        mLoop->processEvents();
+
     QCOMPARE(static_cast<uint>(mRSSCState), static_cast<uint>(RSSCStateDone));
 }
 
