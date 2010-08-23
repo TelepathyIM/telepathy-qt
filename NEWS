@@ -34,6 +34,7 @@ Fixes:
                - Fix broken iteration code in MediaStream resulting in busy-looping in many cases
                - Fix (harmless) uninitialized memory use reported by valgrind in Account internals
 * fd.o#25126 - Remove redundant debug output flooding all tp-qt4 debug logs with useless prints
+* fixed --enable-compiler-coverage; turns out we need to disable building the shared library for it
 
 telepathy-qt4 0.3.7 (2010-07-12)
 ================================
