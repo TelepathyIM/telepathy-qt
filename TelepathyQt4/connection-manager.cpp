@@ -904,7 +904,11 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
             "Properties.GetAll(ConnectionManager) failed: " <<
             reply.error().name() << ": " << reply.error().message();
 
-        // FIXME shouldn't this invalidate the CM or fall back to calling the individual methods?
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
+                QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
+                QLatin1String("CM::GetAll failed - we don't support pre-GetAll CMs currently"));
+        watcher->deleteLater();
+        return;
     }
 
     ProtocolPropertiesMap protocolsMap =
