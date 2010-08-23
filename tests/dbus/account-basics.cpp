@@ -215,11 +215,33 @@ void TestAccountBasics::testBasics()
 
     acc = Account::create(mAM->dbusConnection(), mAM->busName(),
             QLatin1String("/org/freedesktop/Telepathy/Account/spurious/normal/Account0"));
+
+    QVERIFY(connect(acc->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // At this point, there's a set icon
+    QCOMPARE(acc->iconName(), QLatin1String("bob.png")); // ?!??
+
+    // Unset that
+    QVERIFY(connect(acc->setIconName(QString()),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    // Now that it's unset, an icon name is formed from the protocol name
+    QCOMPARE(acc->iconName(), QLatin1String("im-normal"));
+
     QVERIFY(connect(acc->becomeReady(Account::FeatureProtocolInfo),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(acc->isReady(Account::FeatureProtocolInfo), true);
+
+    // This time it's fetched from the protocol object (although it probably internally just
+    // infers it from the protocol name too)
+    QCOMPARE(acc->iconName(), QLatin1String("im-normal"));
 
     QVERIFY(acc->serviceName() != acc->protocolName());
     QCOMPARE(acc->serviceName(), QString(QLatin1String("bob_service")));
