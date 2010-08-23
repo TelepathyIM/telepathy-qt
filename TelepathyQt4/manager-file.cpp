@@ -200,8 +200,12 @@ bool ManagerFile::Private::parse(const QString &fileName)
             info.vcardField = keyFile.value(QLatin1String("VCardField"));
             info.englishName = keyFile.value(QLatin1String("EnglishName"));
             if (info.englishName.isEmpty()) {
-                info.englishName = QString(QLatin1String("%1")).arg(protocol);
+				QStringList words = protocol.split(QLatin1Char('-'));
+				for (int i = 0; i < words.size(); ++i)
+					words[i][0] = words[i].at(0).toUpper();
+                info.englishName = words.join(QLatin1String(" "));
             }
+
             info.iconName = keyFile.value(QLatin1String("Icon"));
             if (info.iconName.isEmpty()) {
                 info.iconName = QString(QLatin1String("im-%1")).arg(protocol);
@@ -411,13 +415,16 @@ QString ManagerFile::vcardField(const QString &protocol) const
 }
 
 /**
- * Return the name of the given \a protocol in a form suitable for display to
- * users, such as "AIM" or "Yahoo!".
+ * Return the English-language name of the given \a protocol, such as "AIM" or "Yahoo!".
+ *
+ * The name can be used as a fallback if an application doesn't have a localized name for the
+ * protocol.
+ *
+ * If the manager file doesn't specify the english name, it is inferred from the protocol name, such
+ * that for example "google-talk" becomes "Google Talk", but "local-xmpp" becomes "Local Xmpp".
  *
  * \param protocol Name of the protocol to look for.
- * \return The name of the given \a protocol in a form suitable for display to
- *         users or the \a protocol if the protocol is defined and englishName
- *         is absent.
+ * \return An English-language name for the given \a protocol.
  */
 QString ManagerFile::englishName(const QString &protocol) const
 {
@@ -428,10 +435,10 @@ QString ManagerFile::englishName(const QString &protocol) const
  * Return the name of an icon for the given \a protocol in the system's icon
  * theme, such as "im-msn".
  *
+ * If the manager file doesn't specify the icon name, "im-<protocolname>" is assumed.
+ *
  * \param protocol Name of the protocol to look for.
- * \return The name of an icon for the given \a protocol in the system's icon
- *         theme or the string im-\a protocol if the protocol is defined and
- *         Icon is absent.
+ * \return The likely name of an icon for the given \a protocol.
  */
 QString ManagerFile::iconName(const QString &protocol) const
 {

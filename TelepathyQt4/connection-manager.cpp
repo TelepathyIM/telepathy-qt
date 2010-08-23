@@ -279,11 +279,16 @@ QString ProtocolInfo::vcardField() const
 }
 
 /**
- * Return the name of this protocol in a form suitable for display to users,
- * such as "AIM" or "Yahoo!".
+ * Return the English-language name of the protocol, such as "AIM" or "Yahoo!".
  *
- * \return The name of this protocol in a form suitable for display to users or
- *         an empty string if none is available.
+ * The name can be used as a fallback if an application doesn't have a localized name for the
+ * protocol.
+ *
+ * If the manager file or the CM service doesn't specify the english name, it is inferred from the
+ * protocol name, such that for example "google-talk" becomes "Google Talk", but "local-xmpp"
+ * becomes "Local Xmpp".
+ *
+ * \return An English-language name for the protocol.
  */
 QString ProtocolInfo::englishName() const
 {
@@ -291,10 +296,12 @@ QString ProtocolInfo::englishName() const
 }
 
 /**
- * Return the name of an icon for this protocol in the system's icon theme,
- * such as "im-msn".
+ * Return the name of an icon for the protocol in the system's icon theme, such as "im-msn".
  *
- * \return The name of an icon for this protocol in the system's icon theme.
+ * If the manager file or the CM service doesn't specify the icon name, "im-<protocolname>" is
+ * assumed.
+ *
+ * \return The likely name of an icon for the given \a protocol.
  */
 QString ProtocolInfo::iconName() const
 {
@@ -472,7 +479,10 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         QString englishName = qdbus_cast<QString>(
                 props[QLatin1String("EnglishName")]);
         if (englishName.isEmpty()) {
-            englishName = QString(QLatin1String("%1")).arg(mInfo->name());
+			QStringList words = mInfo->name().split(QLatin1Char('-'));
+			for (int i = 0; i < words.size(); ++i)
+				words[i][0] = words[i].at(0).toUpper();
+			englishName = words.join(QLatin1String(" "));
         }
         mInfo->setEnglishName(englishName);
         QString iconName = qdbus_cast<QString>(
