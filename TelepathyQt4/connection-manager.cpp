@@ -479,10 +479,10 @@ void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
         QString englishName = qdbus_cast<QString>(
                 props[QLatin1String("EnglishName")]);
         if (englishName.isEmpty()) {
-			QStringList words = mInfo->name().split(QLatin1Char('-'));
-			for (int i = 0; i < words.size(); ++i)
-				words[i][0] = words[i].at(0).toUpper();
-			englishName = words.join(QLatin1String(" "));
+            QStringList words = mInfo->name().split(QLatin1Char('-'));
+            for (int i = 0; i < words.size(); ++i)
+                words[i][0] = words[i].at(0).toUpper();
+            englishName = words.join(QLatin1String(" "));
         }
         mInfo->setEnglishName(englishName);
         QString iconName = qdbus_cast<QString>(

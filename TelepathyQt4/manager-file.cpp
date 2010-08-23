@@ -200,9 +200,9 @@ bool ManagerFile::Private::parse(const QString &fileName)
             info.vcardField = keyFile.value(QLatin1String("VCardField"));
             info.englishName = keyFile.value(QLatin1String("EnglishName"));
             if (info.englishName.isEmpty()) {
-				QStringList words = protocol.split(QLatin1Char('-'));
-				for (int i = 0; i < words.size(); ++i)
-					words[i][0] = words[i].at(0).toUpper();
+                QStringList words = protocol.split(QLatin1Char('-'));
+                for (int i = 0; i < words.size(); ++i)
+                    words[i][0] = words[i].at(0).toUpper();
                 info.englishName = words.join(QLatin1String(" "));
             }
 
