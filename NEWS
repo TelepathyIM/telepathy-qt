@@ -27,6 +27,8 @@ Fixes:
 * fd.o#28651 - Cannot receive files using gabble 0.9
 * fd.o#29145 - AccountSet::accountRemoved is emitted for newly-created
   non-matching accounts
+* fd.o#29699 - ChannelRequest incorrectly checks immutable properties, leading to needless
+  re-introspection
 * Broken iteration code in MediaStream resulting in busy-looping forever in many cases
 * (Harmless) uninitialized memory use reported by valgrind in Account internals
 
