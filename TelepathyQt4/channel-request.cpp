@@ -150,6 +150,8 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
 
 void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 {
+    Q_ASSERT(!account);
+
     if (props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
