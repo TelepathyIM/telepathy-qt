@@ -38,6 +38,7 @@ enum
 {
   PROP_OBJECT_PATH = 1,
   PROP_CONNECTION,
+  PROP_INTERFACES,
   PROP_NAME,
   PROP_TYPE,
   PROP_CREATOR,
@@ -85,6 +86,8 @@ constructed (GObject *object)
   tp_handle_ref (contact_repo, self->priv->creator);
 }
 
+static const gchar * const empty_strv[] = { NULL };
+
 static void
 get_property (GObject *object,
     guint property_id,
@@ -101,6 +104,10 @@ get_property (GObject *object,
 
     case PROP_CONNECTION:
       g_value_set_object (value, self->priv->conn);
+      break;
+
+    case PROP_INTERFACES:
+      g_value_set_static_boxed (value, empty_strv);
       break;
 
     case PROP_NAME:
@@ -236,6 +243,7 @@ example_call_content_class_init (ExampleCallContentClass *klass)
 {
   static TpDBusPropertiesMixinPropImpl content_props[] = {
       { "Name", "name", NULL },
+      { "Interfaces", "interfaces", NULL },
       { "Type", "type", NULL },
       { "Creator", "creator", NULL },
       { "Disposition", "disposition", NULL },
@@ -305,6 +313,11 @@ example_call_content_class_init (ExampleCallContentClass *klass)
       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_STREAM_PATHS,
       param_spec);
+
+  param_spec = g_param_spec_boxed ("interfaces", "Interfaces",
+      "List of D-Bus interfaces",
+      G_TYPE_STRV, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_INTERFACES, param_spec);
 
   klass->dbus_properties_class.interfaces = prop_interfaces;
   tp_dbus_properties_mixin_class_init (object_class,
