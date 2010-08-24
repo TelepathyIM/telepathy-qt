@@ -35,6 +35,7 @@ private Q_SLOTS:
     void initTestCase();
     void init();
 
+    void testBasics();
     void testSimplePresence();
 
     void cleanup();
@@ -92,6 +93,11 @@ void TestConnBasics::initTestCase()
     g_set_prgname("conn-basics");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+}
+
+void TestConnBasics::init()
+{
+    initImpl();
 
     gchar *name;
     gchar *connPath;
@@ -115,11 +121,6 @@ void TestConnBasics::initTestCase()
 
     g_free(name);
     g_free(connPath);
-}
-
-void TestConnBasics::init()
-{
-    initImpl();
 
     mConn = Connection::create(mConnName, mConnPath);
     QCOMPARE(mConn->isReady(), false);
@@ -147,8 +148,16 @@ void TestConnBasics::init()
     }
 }
 
+void TestConnBasics::testBasics()
+{
+    QCOMPARE(static_cast<uint>(mConn->statusReason()),
+            static_cast<uint>(ConnectionStatusReasonRequested));
+}
+
 void TestConnBasics::testSimplePresence()
 {
+    qDebug() << "Making SimplePresence ready";
+
     Features features = Features() << Connection::FeatureSimplePresence;
     QCOMPARE(mConn->isReady(features), false);
     QVERIFY(connect(mConn->becomeReady(features),
@@ -157,7 +166,46 @@ void TestConnBasics::testSimplePresence()
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(features), true);
 
+    qDebug() << "SimplePresence ready";
     qDebug() << "mConn->status:" << mConn->status();
+
+    const QStringList canSetNames = QStringList()
+        << QLatin1String("available")
+        << QLatin1String("busy")
+        << QLatin1String("away");
+
+    const QStringList cantSetNames = QStringList()
+        << QLatin1String("offline")
+        << QLatin1String("unknown")
+        << QLatin1String("error");
+
+    const QStringList expectedNames = canSetNames + cantSetNames;
+
+    const ConnectionPresenceType expectedTypes[] = {
+        ConnectionPresenceTypeAvailable,
+        ConnectionPresenceTypeBusy,
+        ConnectionPresenceTypeAway,
+        ConnectionPresenceTypeOffline,
+        ConnectionPresenceTypeUnknown,
+        ConnectionPresenceTypeError
+    };
+
+    SimpleStatusSpecMap statuses = mConn->allowedPresenceStatuses();
+    foreach (QString name, statuses.keys()) {
+        QVERIFY(expectedNames.contains(name));
+
+        if (canSetNames.contains(name)) {
+            QVERIFY(statuses[name].maySetOnSelf);
+            QVERIFY(statuses[name].canHaveMessage);
+        } else {
+            QVERIFY(cantSetNames.contains(name));
+            QVERIFY(!statuses[name].maySetOnSelf);
+            QVERIFY(!statuses[name].canHaveMessage);
+        }
+
+        QCOMPARE(statuses[name].type,
+                 static_cast<uint>(expectedTypes[expectedNames.indexOf(name)]));
+    }
 }
 
 void TestConnBasics::cleanup()
@@ -178,16 +226,16 @@ void TestConnBasics::cleanup()
         }
     }
 
-    cleanupImpl();
-}
-
-void TestConnBasics::cleanupTestCase()
-{
     if (mConnService != 0) {
         g_object_unref(mConnService);
         mConnService = 0;
     }
 
+    cleanupImpl();
+}
+
+void TestConnBasics::cleanupTestCase()
+{
     cleanupTestCaseImpl();
 }
 

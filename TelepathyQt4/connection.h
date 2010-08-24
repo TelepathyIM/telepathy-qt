@@ -72,7 +72,7 @@ public:
     static const Feature FeatureSimplePresence;
     static const Feature FeatureRoster;
     static const Feature FeatureRosterGroups;
-    static const Feature FeatureAccountBalance;
+    static const Feature FeatureAccountBalance; // TODO unit tests for this
 
     enum Status {
         StatusDisconnected = ConnectionStatusDisconnected,
