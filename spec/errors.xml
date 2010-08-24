@@ -182,7 +182,8 @@
       represent a self-signed certificate: see the Self Signed error for that.
       <tp:rationale>
         This corresponds to Cert_Untrusted in the
-        <tp:type>Connection_Status_Reason</tp:type> enum, with a clarification
+        <tp:type>Connection_Status_Reason</tp:type> enum and to Untrusted in the
+        <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum, with a clarification
         to avoid ambiguity.
       </tp:rationale>
     </tp:docstring>
@@ -193,7 +194,8 @@
       Raised if the server provided an expired SSL/TLS certificate.
       <tp:rationale>
         This corresponds to Cert_Expired in the
-        <tp:type>Connection_Status_Reason</tp:type> enum.
+        <tp:type>Connection_Status_Reason</tp:type> enum and to Expired in
+        the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
       </tp:rationale>
     </tp:docstring>
   </tp:error>
@@ -204,7 +206,8 @@
       valid at some point in the future.
       <tp:rationale>
         This corresponds to Cert_Not_Activated in the
-        <tp:type>Connection_Status_Reason</tp:type> enum.
+        <tp:type>Connection_Status_Reason</tp:type> enum and to
+        Not_Activated in the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
       </tp:rationale>
     </tp:docstring>
   </tp:error>
@@ -215,18 +218,23 @@
       the expected fingerprint.
       <tp:rationale>
         This corresponds to Cert_Fingerprint_Mismatch in the
-        <tp:type>Connection_Status_Reason</tp:type> enum.
+        <tp:type>Connection_Status_Reason</tp:type> enum and to
+        Fingerprint_Mismatch in the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
       </tp:rationale>
     </tp:docstring>
   </tp:error>
 
   <tp:error name="Cert.Hostname Mismatch">
-    <tp:docstring>
-      Raised if the server provided an SSL/TLS certificate that did not match
-      its hostname.
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>Raised if the server provided an SSL/TLS certificate that did not match
+      its hostname.</p>
+      <p>You MAY be able to get more details about the expected and certified
+      hostnames by looking up the 'expected-hostname' and 'certificate-hostname'
+      keys in the details map that came together with this error.</p>
       <tp:rationale>
         This corresponds to Cert_Hostname_Mismatch in the
-        <tp:type>Connection_Status_Reason</tp:type> enum.
+        <tp:type>Connection_Status_Reason</tp:type> enum and to Hostname_Mismatch
+        in the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
       </tp:rationale>
     </tp:docstring>
   </tp:error>
@@ -236,19 +244,61 @@
       Raised if the server provided an SSL/TLS certificate that is self-signed
       and untrusted.
       <tp:rationale>
-        This corresponds to Cert_Hostname_Mismatch in the
-        <tp:type>Connection_Status_Reason</tp:type> enum.
+        This corresponds to Cert_Self_Signed in the
+        <tp:type>Connection_Status_Reason</tp:type> enum and to Self_Signed
+        in the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Revoked">
+    <tp:docstring>
+      Raised if the server provided an SSL/TLS certificate that has been
+      revoked.
+      <tp:rationale>
+        This corresponds to Cert_Revoked in the
+        <tp:type>Connection_Status_Reason</tp:type> enum and to Revoked
+        in the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Insecure">
+    <tp:added version="0.19.11"/>
+    <tp:docstring>
+      Raised if the server provided an SSL/TLS certificate that uses an
+      insecure cipher algorithm or is cryptographically weak.
+      <tp:rationale>
+        This corresponds to Cert_Insecure in the
+        <tp:type>Connection_Status_Reason</tp:type> enum and to Insecure
+        in the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
       </tp:rationale>
     </tp:docstring>
   </tp:error>
 
   <tp:error name="Cert.Invalid">
+    <tp:added version="0.19.11"/>
     <tp:docstring>
       Raised if the server provided an SSL/TLS certificate that is
       unacceptable in some way that does not have a more specific error.
       <tp:rationale>
         This corresponds to Cert_Other_Error in the
-        <tp:type>Connection_Status_Reason</tp:type> enum.
+        <tp:type>Connection_Status_Reason</tp:type> enum and to Unknown
+        in the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
+      </tp:rationale>
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Cert.Limit Exceeded">
+    <tp:added version="0.19.11"/>
+    <tp:docstring>
+      Raised if the length in bytes of the server certificate, or the depth of the
+      sever certificate chain exceed the limits imposed by the crypto
+      library.
+      <tp:rationale>
+        This corresponds to Cert_Limit_Exceeded in the
+        <tp:type>Connection_Status_Reason</tp:type> enum and to Limit_Exceeded
+        in the <tp:type>TLS_Certificate_Reject_Reason</tp:type> enum.
       </tp:rationale>
     </tp:docstring>
   </tp:error>

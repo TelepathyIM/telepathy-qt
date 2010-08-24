@@ -47,6 +47,19 @@
       </tp:possible-errors>
     </method>
 
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      type="as" tp:type="DBus_Interface[]" access="read">
+      <tp:added version="0.19.11"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Extra interfaces provided by this content, such as <tp:dbus-ref
+            namespace="ofdT.Call">Content.Interface.Media.DRAFT</tp:dbus-ref> or
+          <tp:dbus-ref
+            namespace="ofdT.Call">Content.Interface.Mute.DRAFT</tp:dbus-ref>.
+          This SHOULD NOT include the Content interface itself, and cannot
+          change once the content has been created.</p>
+      </tp:docstring>
+    </property>
+
     <property name="Name" tp:name-for-bindings="Name" type="s" access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>The name of the content.

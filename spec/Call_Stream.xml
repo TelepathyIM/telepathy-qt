@@ -139,6 +139,17 @@
       </tp:member>
     </tp:mapping>
 
+    <property name="Interfaces" tp:name-for-bindings="Interfaces"
+      type="as" tp:type="DBus_Interface[]" access="read">
+      <tp:added version="0.19.11"/>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Extra interfaces provided by this stream, such as <tp:dbus-ref
+            namespace="ofdT.Call">Stream.Interface.Media.DRAFT</tp:dbus-ref>.
+          This SHOULD NOT include the Stream interface itself, and cannot
+          change once the stream has been created.</p>
+      </tp:docstring>
+    </property>
+
     <property name="Senders" tp:name-for-bindings="Senders"
         type="a{uu}" access="read" tp:type="Contact_Sending_State_Map">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">

@@ -896,7 +896,7 @@ USA.</p>
           <p>The server's SSL certificate is self-signed.</p>
 
           <p>When disconnected for this reason, the equivalent D-Bus error is
-            <code>org.freedesktop.Telepathy.Error.Cert.HostnameMismatch</code>.
+            <code>org.freedesktop.Telepathy.Error.Cert.SelfSigned</code>.
           </p>
         </tp:docstring>
       </tp:enumvalue>
@@ -910,6 +910,39 @@ USA.</p>
             <code>org.freedesktop.Telepathy.Error.Cert.Invalid</code>.
           </p>
         </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Cert_Revoked" value="14">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server's SSL certificate has been revoked.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.Revoked</code>.
+          </p>
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Cert_Insecure" value="15">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The server's SSL certificate uses an insecure algorithm,
+	  or is cryptographically weak.</p>
+
+          <p>When disconnected for this reason, the equivalent D-Bus error is
+            <code>org.freedesktop.Telepathy.Error.Cert.Insecure</code>.
+          </p>
+        </tp:docstring>
+      </tp:enumvalue>
+
+      <tp:enumvalue suffix="Cert_Limit_Exceeded" value="16">
+	<tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+	  <p>The length in bytes of the server certificate, or the depth of the
+	  sever certificate chain exceed the limits imposed by the crypto
+	  library.</p>
+
+	  <p>When disconnected for this reason, the equivalent D-Bus error is
+	    <code>org.freedesktop.Telepathy.Error.Cert.LimitExceeded</code>
+	  </p>
+	</tp:docstring>
       </tp:enumvalue>
     </tp:enum>
 
@@ -977,13 +1010,12 @@ USA.</p>
             <dd>Debugging information on the change, corresponding to the
               message part of a D-Bus error message, which SHOULD NOT be
               displayed to users under normal circumstances</dd>
+	    <dt>expected-hostname (s), certificate-hostname (s)</dt>
+	    <dd>The same details defined in <tp:dbus-ref
+	    namespace="org.freedesktop.Telepathy.Authentication">TLSCertificate.DRAFT.RejectDetails</tp:dbus-ref>
+	    </dd>
           </dl>
 
-          <tp:rationale>
-            <p>This argument allows for future extensions. For instance,
-              if indicating DNS lookup failure, we could define a key
-              that indicates the hostname that could not be found.</p>
-          </tp:rationale>
         </tp:docstring>
       </arg>
 

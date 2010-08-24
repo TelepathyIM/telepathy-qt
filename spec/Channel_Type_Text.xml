@@ -454,18 +454,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     <tp:property name="subject" type="s">
       <tp:docstring>
       A human-readable description of the current subject of conversation in
-      the channel, similar to /topic in IRC.
+      the channel, similar to /topic in IRC. This is equivalent to the
+      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
+      >Subject</tp:dbus-ref> property in the Room interface which will replace
+      this Telepathy property.
       </tp:docstring>
     </tp:property>
     <tp:property name="subject-contact" type="u" tp:type="Contact_Handle">
       <tp:docstring>
       A contact handle representing who last modified the subject, or 0
-      if it isn't known.
+      if it isn't known. This is equivalent to the
+      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
+      >Subject</tp:dbus-ref> property in the Room interface which will replace
+      this Telepathy property.
       </tp:docstring>
     </tp:property>
     <tp:property name="subject-timestamp" type="u" tp:type="Unix_Timestamp">
       <tp:docstring>
       A unix timestamp indicating when the subject was last modified.
+      This is equivalent to the
+      <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Room.DRAFT"
+      >Subject</tp:dbus-ref> property in the Room interface which will replace
+      this Telepathy property.
       </tp:docstring>
     </tp:property>
 

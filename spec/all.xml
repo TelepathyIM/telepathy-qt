@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.19.10</tp:version>
+<tp:version>0.19.11.1</tp:version>
 
 <tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2010 Nokia Corporation</tp:copyright>
@@ -50,6 +50,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <xi:include href="Connection_Interface_Balance.xml"/>
   <xi:include href="Connection_Interface_Capabilities.xml"/>
   <xi:include href="Connection_Interface_Cellular.xml"/>
+  <xi:include href="Connection_Interface_Client_Types.xml"/>
   <xi:include href="Connection_Interface_Contact_Capabilities.xml"/>
   <xi:include href="Connection_Interface_Contact_Groups.xml"/>
   <xi:include href="Connection_Interface_Contact_Info.xml"/>
@@ -95,6 +96,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Type_DBus_Tube.xml"/>
    <xi:include href="Channel_Type_File_Transfer.xml"/>
    <xi:include href="Channel_Type_Room_List.xml"/>
+   <xi:include href="Channel_Type_Server_TLS_Connection.xml"/>
    <xi:include href="Channel_Type_Stream_Tube.xml"/>
    <xi:include href="Channel_Type_Streamed_Media.xml"/>
    <xi:include href="Channel_Type_Text.xml"/>
@@ -121,10 +123,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_Mergeable_Conference.xml"/>
    <xi:include href="Channel_Interface_Messages.xml"/>
    <xi:include href="Channel_Interface_Password.xml"/>
+   <xi:include href="Channel_Interface_Room.xml"/>
    <xi:include href="Channel_Interface_Service_Point.xml"/>
    <xi:include href="Channel_Interface_Splittable.xml"/>
    <xi:include href="Channel_Interface_Tube.xml"/>
   </tp:section>
+ </tp:section>
+
+ <tp:section name="Authentication Objects">
+  <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+    <p>
+      A set of objects to be used for authentication purposes, such
+      as TLS certificates or handshakes for negotiating end-to-end
+      security.
+    </p>
+  </tp:docstring>
+  <xi:include href="Authentication_TLS_Certificate.xml"/>
  </tp:section>
 
  <tp:section name="Media">

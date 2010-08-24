@@ -45,6 +45,32 @@
           <code>/org/freedesktop/Telepathy/ConnectionManager/salut/local_xmpp</code>,
           respectively.</p>
       </tp:rationale>
+
+      <p>If the ConnectionManager has a <tt>.manager</tt> file, each
+        Protocol's immutable properties must be represented in that file;
+        the representation is described as part of the documentation for
+        each property. For instance, a very simple ConnectionManager with one
+        Protocol might be represented like this:</p>
+
+<pre>
+[ConnectionManager]
+Interfaces=
+
+[Protocol example]
+Interfaces=
+ConnectionInterfaces=org.freedesktop.Telepathy.Connection.Interface.Requests;
+param-account=s required
+param-password=s required secret
+RequestableChannelClasses=text;
+VCardField=x-example
+EnglishName=Example
+Icon=im-example
+
+[text]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
+org.freedesktop.Telepathy.Channel.TargetHandleType u=1
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+</pre>
     </tp:docstring>
 
     <property name="Interfaces" tp:name-for-bindings="Interfaces"
@@ -136,6 +162,12 @@
           of those strings is the name of a group in the <code>.manager</code>
           file which represents a channel class.</p>
 
+        <p>The names of the groups representing channel classes are not
+          significant, and MUST NOT be interpreted. When writing
+          <tt>.manager</tt> files, authors MAY choose mnemonic group names,
+          generate group names mechanically (e.g. with an incrementing
+          integer), or use some combination of these.</p>
+
         <p>Each group representing a channel class has a key
           <code>allowed</code> which is a list of D-Bus property names
           representing allowed parameters. Any other keys that do not contain
@@ -152,17 +184,23 @@
           <code>.manager</code> files.</p>
 
         <p>For instance, this <code>.manager</code> file could represent
-          a simple Text-only connection manager:</p>
+          a connection manager that supports 1-1 Text messages and
+          StreamedMedia audio calls:</p>
 
 <pre>[Protocol jabber]
 param-account=s required
 param-password=s required
-RequestableChannelClasses=text
+RequestableChannelClasses=rcc0;rcc1;
 
-[text]
+[rcc0]
 org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.Text
 org.freedesktop.Telepathy.Channel.TargetHandleType u=1
 allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;
+
+[rcc1]
+org.freedesktop.Telepathy.Channel.ChannelType s=org.freedesktop.Telepathy.Channel.Type.StreamedMedia
+org.freedesktop.Telepathy.Channel.TargetHandleType u=1
+allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy.Channel.TargetID;org.freedesktop.Telepathy.Channel.Type.StreamedMedia.InitialAudio;
 </pre>
       </tp:docstring>
     </property>
@@ -196,6 +234,13 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
             arbitrary handles/identifiers as vCard fields is a topic for
             future work.</p>
         </tp:rationale>
+
+        <p>Connection managers with a <code>.manager</code> file
+          MUST cache this property in the protocol's section of the
+          <code>.manager</code> file if it is non-empty, using the key
+          <code>VCardField</code>. The corresponding value
+          is a string, following the syntax of the "localestring" type from
+          the Desktop Entry Specification.</p>
       </tp:docstring>
     </property>
 
@@ -223,6 +268,13 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
         <p>If this property's value is empty, clients MAY fall back to using
           the Telepathy <tp:type>Protocol</tp:type> name, possibly with its
           capitalization adjusted.</p>
+
+        <p>Connection managers with a <code>.manager</code> file
+          MUST cache this property in the protocol's section of the
+          <code>.manager</code> file if it is non-empty, using the key
+          <code>EnglishName</code>. The corresponding value
+          is a string, following the syntax of the "localestring" type from
+          the Desktop Entry Specification.</p>
       </tp:docstring>
     </property>
 
@@ -243,6 +295,13 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
 
         <p>If this property's value is empty, clients MAY fall back to
           generating a name based on the <tp:type>Protocol</tp:type> name.</p>
+
+        <p>Connection managers with a <code>.manager</code> file
+          MUST cache this property in the protocol's section of the
+          <code>.manager</code> file if it is non-empty, using the key
+          <code>Icon</code>. The corresponding value
+          is a string, following the syntax of the "localestring" type from
+          the Desktop Entry Specification.</p>
       </tp:docstring>
     </property>
 
