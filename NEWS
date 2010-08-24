@@ -19,6 +19,7 @@ Enhancements:
   they now always return a non-NULL value, but operations on them fail with descriptive errors if
   the Connection isn't in a suitable state (such as when it's in the process of invalidating itself
   due to eg. the connection getting disconnected)
+* Account::connection() no longer does needless re-parsing of the object path every time it's called
 
 Fixes:
 * fd.o#28947 - Account::filterAccounts doc does not properly format the example
