@@ -39,7 +39,7 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
 {
-    Private(ChannelRequest *parent);
+    Private(ChannelRequest *parent, const QVariantMap &immutableProperties);
     ~Private();
 
     static void introspectMain(Private *self);
@@ -51,6 +51,8 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
 
     // Instance of generated interface class
     Client::ChannelRequestInterface *baseInterface;
+
+    QVariantMap immutableProperties;
 
     // Optional interface proxies
     Client::DBus::PropertiesInterface *properties;
@@ -64,11 +66,13 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
     QualifiedPropertyValueMapList requests;
 };
 
-ChannelRequest::Private::Private(ChannelRequest *parent)
+ChannelRequest::Private::Private(ChannelRequest *parent,
+        const QVariantMap &immutableProperties)
     : parent(parent),
       baseInterface(new Client::ChannelRequestInterface(
                     parent->dbusConnection(), parent->busName(),
                     parent->objectPath(), parent)),
+      immutableProperties(immutableProperties),
       properties(0),
       readinessHelper(parent->readinessHelper())
 {
@@ -106,20 +110,41 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
         Q_ASSERT(self->properties != 0);
     }
 
-    debug() << "Calling Properties::GetAll(ChannelRequest)";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST)),
-                self->parent);
-    // FIXME: This is a Qt bug fixed upstream, should be in the next Qt release.
-    //        We should not need to check watcher->isFinished() here, remove the
-    //        check when a fixed Qt version is released.
-    if (watcher->isFinished()) {
-        self->parent->gotMainProperties(watcher);
+    QVariantMap props;
+    QString key;
+    bool needIntrospectMainProps = false;
+    const char *propertiesNames[] = { "Account", "UserActionTime",
+        "PreferredHandler", "Requests", "Interfaces",
+        NULL };
+    for (unsigned i = 0; propertiesNames[i] != NULL; ++i) {
+        key = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".");
+        key += QLatin1String(propertiesNames[i]);
+        if (!self->immutableProperties.contains(key)) {
+            needIntrospectMainProps = true;
+            break;
+        }
+        props.insert(QLatin1String(propertiesNames[i]),
+                self->immutableProperties[key]);
+    }
+
+    if (needIntrospectMainProps) {
+        debug() << "Calling Properties::GetAll(ChannelRequest)";
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(
+                    self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST)),
+                    self->parent);
+        // FIXME: This is a Qt bug fixed upstream, should be in the next Qt release.
+        //        We should not need to check watcher->isFinished() here, remove the
+        //        check when a fixed Qt version is released.
+        if (watcher->isFinished()) {
+            self->parent->gotMainProperties(watcher);
+        } else {
+            self->parent->connect(watcher,
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+        }
     } else {
-        self->parent->connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+        self->extractMainProps(props);
     }
 }
 
@@ -127,7 +152,7 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 {
     parent->setInterfaces(qdbus_cast<QStringList>(props.value(QLatin1String("Interfaces"))));
 
-    if (!account && props.contains(QLatin1String("Account"))) {
+    if (props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
         account = Account::create(
@@ -143,6 +168,18 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 
     preferredHandler = qdbus_cast<QString>(props.value(QLatin1String("PreferredHandler")));
     requests = qdbus_cast<QualifiedPropertyValueMapList>(props.value(QLatin1String("Requests")));
+
+    parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
+    readinessHelper->setInterfaces(parent->interfaces());
+
+    if (account) {
+        parent->connect(account->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation *)),
+                SLOT(onAccountReady(Tp::PendingOperation *)));
+    } else {
+        warning() << "ChannelRequest.Account is missing or empty. Ignoring";
+        readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
 }
 
 /**
@@ -219,9 +256,8 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
             objectPath),
       OptionalInterfaceFactory<ChannelRequest>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(this, immutableProperties))
 {
-    mPriv->extractMainProps(immutableProperties);
 }
 
 /**
@@ -380,18 +416,7 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
         props = reply.value();
 
         mPriv->extractMainProps(props);
-
-        if (mPriv->account) {
-            connect(mPriv->account->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(onAccountReady(Tp::PendingOperation *)));
-        } else {
-            warning() << "Properties.GetAll(ChannelRequest) is missing "
-                "account property, ignoring";
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-        }
-    }
-    else {
+    } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
                 false, reply.error());
         warning().nospace() << "Properties::GetAll(ChannelRequest) failed with "
@@ -402,7 +427,7 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
 void ChannelRequest::onAccountReady(PendingOperation *op)
 {
     if (op->isError()) {
-        warning() << "Unable to make account ready";
+        warning() << "Unable to make ChannelRequest.Account ready";
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
                 op->errorName(), op->errorMessage());
         return;
