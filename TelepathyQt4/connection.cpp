@@ -78,6 +78,9 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     void forceCurrentStatus(uint status);
     void setInterfaces(const QStringList &interfaces);
 
+    // Should always be used instead of directly using baseclass invalidate()
+    void invalidateResetCaps(const QString &errorName, const QString &errorMessage);
+
     void checkFeatureRosterGroupsReady();
 
     struct HandleContext;
@@ -184,7 +187,7 @@ Connection::Private::Private(Connection *parent)
       status(Connection::StatusUnknown),
       statusReason(ConnectionStatusReasonNoneSpecified),
       selfHandle(0),
-      caps(0),
+      caps(new ConnectionCapabilities()),
       contactManager(new ContactManager(parent)),
       contactListChannelsReady(0),
       featureRosterGroupsTodo(0),
@@ -328,12 +331,7 @@ void Connection::Private::init()
 
 void Connection::Private::introspectMain(Connection::Private *self)
 {
-    if (!self->caps) {
-        self->caps = new ConnectionCapabilities();
-    }
-
     self->introspectingMain = true;
-
     self->introspectMainProperties();
 }
 
@@ -556,6 +554,12 @@ void Connection::Private::setInterfaces(const QStringList &interfaces)
     debug() << "Got interfaces:" << interfaces;
     parent->setInterfaces(interfaces);
     readinessHelper->setInterfaces(interfaces);
+}
+
+void Connection::Private::invalidateResetCaps(const QString &error, const QString &message)
+{
+    caps->updateRequestableChannelClasses(RequestableChannelClassList());
+    parent->invalidate(error, message);
 }
 
 void Connection::Private::checkFeatureRosterGroupsReady()
@@ -1145,7 +1149,7 @@ void Connection::onStatusChanged(uint status, uint reason)
                 //      user should just consider them to fail as the connection
                 //      is invalid
                 onStatusReady(StatusDisconnected);
-                invalidate(errorName,
+                mPriv->invalidateResetCaps(errorName,
                         QString(QLatin1String("ConnectionStatusReason = %1")).arg(uint(reason)));
             }
             break;
@@ -1159,7 +1163,7 @@ void Connection::onStatusChanged(uint status, uint reason)
 void Connection::onConnectionError(const QString &error,
         const QVariantMap &details)
 {
-    invalidate(error,
+    mPriv->invalidateResetCaps(error,
             details.value(QLatin1String("debug-message")).toString());
 }
 
@@ -1229,7 +1233,7 @@ void Connection::gotStatus(QDBusPendingCallWatcher *watcher)
     } else {
         warning().nospace() << "GetStatus() failed with " <<
             reply.error().name() << ": " << reply.error().message();
-        invalidate(reply.error());
+        mPriv->invalidateResetCaps(reply.error().name(), reply.error().message());
     }
 
     watcher->deleteLater();
