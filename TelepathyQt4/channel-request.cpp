@@ -150,8 +150,6 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
 
 void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 {
-    parent->setInterfaces(qdbus_cast<QStringList>(props.value(QLatin1String("Interfaces"))));
-
     if (props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
