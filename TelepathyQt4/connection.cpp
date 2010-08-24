@@ -409,7 +409,6 @@ void Connection::Private::introspectContactAttributeInterfaces()
 void Connection::Private::introspectSelfContact(Connection::Private *self)
 {
     debug() << "Building self contact";
-    // FIXME: these should be features when Connection is sanitized
     PendingContacts *contacts = self->contactManager->contactsForHandles(
             UIntList() << self->selfHandle);
     self->parent->connect(contacts,
@@ -948,11 +947,10 @@ PendingOperation *Connection::setSelfPresence(const QString &status,
  */
 ContactPtr Connection::selfContact() const
 {
-    if (!isReady()) {
-        warning() << "Connection::selfContact() used before the connection is ready!";
+    if (!isReady(FeatureSelfContact)) {
+        warning() << "Connection::selfContact() used, but becomeReady(FeatureSelfContact) "
+            "hasn't been completed!";
     }
-    // FIXME: add checks for the SelfContact feature having been requested when Connection features
-    // actually work sensibly and selfContact is made a feature
 
     return mPriv->selfContact;
 }
@@ -1809,12 +1807,12 @@ PendingContactAttributes *Connection::contactAttributes(const UIntList &handles,
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("The connection isn't ready"));
         return pending;
-    } /* FIXME: readd this check when Connection isn't FSCKING broken anymore: else if (status() != StatusConnected) {
+    } else if (mPriv->pendingStatus != StatusConnected) {
         warning() << "Connection::contactAttributes() used with status" << status() << "!= StatusConnected";
-        pending->failImmediately(TELEPATHY_ERROR_NOT_AVAILABLE,
-                "The connection isn't Connected");
+        pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("The connection isn't Connected"));
         return pending;
-    } */else if (!this->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
+    } else if (!this->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_CONTACTS))) {
         warning() << "Connection::contactAttributes() used without the remote object supporting"
                   << "the Contacts interface";
         pending->failImmediately(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
