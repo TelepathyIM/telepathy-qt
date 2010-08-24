@@ -34,10 +34,12 @@ private:
     QString mConnName, mConnPath;
     ExampleEcho2Connection *mConnService;
     ConnectionPtr mConn;
+    bool mConnInvalidated;
 };
 
 void TestConnCapabilities::expectConnInvalidated()
 {
+    mConnInvalidated = true;
     mLoop->exit(0);
 }
 
@@ -72,26 +74,40 @@ void TestConnCapabilities::initTestCase()
 
     g_free(name);
     g_free(connPath);
-
-    mConn = Connection::create(mConnName, mConnPath);
 }
 
 void TestConnCapabilities::init()
 {
+    mConnInvalidated = false;
+    mConn = Connection::create(mConnName, mConnPath);
+
     initImpl();
 }
 
 void TestConnCapabilities::testCapabilities()
 {
-    QVERIFY(mConn->capabilities() == 0);
+    // Before the connection is Ready, it doesn't guarantee support for anything but doesn't crash
+    // either if we ask it for something
+    QVERIFY(mConn->capabilities() != 0);
+    QCOMPARE(mConn->capabilities()->supportsTextChats(), false);
+    QCOMPARE(mConn->capabilities()->supportsTextChatrooms(), false);
+    QCOMPARE(mConn->capabilities()->supportsMediaCalls(), false);
+    QCOMPARE(mConn->capabilities()->supportsAudioCalls(), false);
+    QCOMPARE(mConn->capabilities()->supportsVideoCalls(false), false);
+    QCOMPARE(mConn->capabilities()->supportsVideoCalls(true), false);
+    QCOMPARE(mConn->capabilities()->supportsUpgradingCalls(), false);
+
     QVERIFY(connect(mConn->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
     QCOMPARE(mConn->isReady(), true);
     QCOMPARE(mConn->status(), Connection::StatusConnected);
+
     QVERIFY(mConn->requestsInterface() != 0);
     QVERIFY(mConn->capabilities() != 0);
+
+    // Now we should have the real information on what the connection supports
     QCOMPARE(mConn->capabilities()->supportsTextChats(), true);
     QCOMPARE(mConn->capabilities()->supportsTextChatrooms(), false);
     QCOMPARE(mConn->capabilities()->supportsMediaCalls(), false);
@@ -99,10 +115,38 @@ void TestConnCapabilities::testCapabilities()
     QCOMPARE(mConn->capabilities()->supportsVideoCalls(false), false);
     QCOMPARE(mConn->capabilities()->supportsVideoCalls(true), false);
     QCOMPARE(mConn->capabilities()->supportsUpgradingCalls(), false);
+
+    // Now, invalidate the connection by disconnecting it
+    QVERIFY(connect(mConn.data(),
+                SIGNAL(invalidated(Tp::DBusProxy *,
+                        const QString &, const QString &)),
+                SLOT(expectConnInvalidated())));
+    mConn->requestDisconnect();
+
+    // Check that capabilities doesn't go NULL in the process of the connection going invalidated
+    do {
+        QVERIFY(mConn->capabilities() != 0);
+        mLoop->processEvents();
+    } while (!mConnInvalidated);
+
+    QVERIFY(!mConn->isValid());
+    QCOMPARE(mConn->status(), Connection::StatusDisconnected);
+
+    // Check that no support for anything is again reported
+    QCOMPARE(mConn->capabilities()->supportsTextChats(), false);
+    QCOMPARE(mConn->capabilities()->supportsTextChatrooms(), false);
+    QCOMPARE(mConn->capabilities()->supportsMediaCalls(), false);
+    QCOMPARE(mConn->capabilities()->supportsAudioCalls(), false);
+    QCOMPARE(mConn->capabilities()->supportsVideoCalls(false), false);
+    QCOMPARE(mConn->capabilities()->supportsVideoCalls(true), false);
+    QCOMPARE(mConn->capabilities()->supportsUpgradingCalls(), false);
+
 }
 
 void TestConnCapabilities::cleanup()
 {
+    mConn.reset();
+
     cleanupImpl();
 }
 
