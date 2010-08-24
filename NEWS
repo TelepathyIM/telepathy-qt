@@ -3,38 +3,39 @@ telepathy-qt4 0.3.8 (UNRELEASED)
 
 The "a weekend (and quite a bit of the Monday early hours) well spent" release.
 
+Enhancements:
+* fd.o#29395 - Update to spec 0.19.10
+* fd.o#28948 - Added docs/tests/missing Qt properties to AccountSet
+* fd.o#29357 - Account::iconName() and icon() now always return sensible non-empty values
+* fd.o#28819 - Better {Account,ConnectionManager}::protocolInfo() powered by spec 0.19.10 API and
+               suitable fallbacks for older services
+                - Up-to-date CMs can now be introspected with less D-Bus round-trips
+                - New API capabilities(), vcardField(), englishName(), iconName() on ProtocolInfo
+                  and ManagerFile
+* fd.o#25126 - Some redundant debug output has been removed
+* Connection::contactManager() semantics are now less of a SIGSEGV death-trap
+
 Fixes:
 * fd.o#28947 - Account::filterAccounts doc does not properly format the example
   code
-* fd.o#28948 - Added docs/tests/missing Qt properties to AccountSet
 * fd.o#28651 - Cannot receive files using gabble 0.9
 * fd.o#29145 - AccountSet::accountRemoved is emitted for newly-created
   non-matching accounts
-* fd.o#29395 - Update to spec 0.19.10
-* fd.o#29702 - Make unit tests execute reliably, without race conditions
-               - Was a gazillion of broken assumptions about event timing and ordering in the tests
-               - The tests now execute 10-30 times faster due to being able to eliminate the delays
-                 between simulated network events (previously, the races would always happen if one
-                 did so)
-               - Fix amd64 memory use error (void * size != int size) for g_object_new() in tests
-               - Add a conservative 10 minute per test case watchdog to detect hung-up test logic
-                 - This should be plenty even for heavily loaded VM build bots, as the whole test
-                   suite now executes in 2.4-2.5 seconds on my laptop
-               - The StreamedMedia legacy and Future.Call tests now actually have different names to
-                 be able to distinguish between them in the test logs
-               - Make Connection::contactManager() semantics less of a SIGSEGV death-trap
-                 - Connection::contactManager() now never returns NULL, instead operations on the
-                   manager predictably fail with a descriptive error message if the Connection
-                   happens to have gone to an unsuitable state - which can happen from a variety of
-                   reasons with no possibility of the application code getting notified about it in
-                   time
-                 - this fixes a number of crashes in library operation for application use as well
-               - A new script repeat-tests.sh for re-running tests multiple times, saving the logs
-                 for the failed rounds has been added to the release procedure to detect races
-               - Fix broken iteration code in MediaStream resulting in busy-looping in many cases
-               - Fix (harmless) uninitialized memory use reported by valgrind in Account internals
-* fd.o#25126 - Remove redundant debug output flooding all tp-qt4 debug logs with useless prints
-* fixed --enable-compiler-coverage; turns out we need to disable building the shared library for it
+* Broken iteration code in MediaStream resulting in busy-looping forever in many cases
+* (Harmless) uninitialized memory use reported by valgrind in Account internals
+
+Test suite improvements:
+* fd.o#29702 - Unit tests now execute reliably, without race conditions, and 10-30x faster
+* A new script repeat-tests.sh for re-running tests multiple times, saving the logs for the failed
+  rounds has been added to the release procedure to detect races
+* Added a conservative 10 minute per test case watchdog to detect hung-up test logic
+  - This should be plenty even for heavily loaded VM build bots, as the whole test suite now
+    executes in 2.4-2.5 seconds on my laptop
+* The StreamedMedia legacy and Future.Call tests now actually have different names to be able to
+  distinguish between them in the test logs
+* Test coverage reporting now works again; turns out we need to disable building the shared library
+  when it is enabled
+* amd64 memory use errors (pointer size != int size) calling g_object_new() in tests have been fixed
 
 telepathy-qt4 0.3.7 (2010-07-12)
 ================================
