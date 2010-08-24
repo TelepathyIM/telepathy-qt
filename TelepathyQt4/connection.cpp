@@ -419,10 +419,7 @@ void Connection::Private::introspectSelfContact(Connection::Private *self)
 
 void Connection::Private::introspectSimplePresence(Connection::Private *self)
 {
-    if (!self->properties) {
-        self->properties = self->parent->propertiesInterface();
-        Q_ASSERT(self->properties != 0);
-    }
+    Q_ASSERT(self->properties != 0);
 
     debug() << "Calling Properties::Get("
         "Connection.I.SimplePresence.Statuses)";
