@@ -13,7 +13,11 @@ Enhancements:
                 - New API capabilities(), vcardField(), englishName(), iconName() on ProtocolInfo
                   and ManagerFile
 * fd.o#25126 - Some redundant debug output has been removed
-* Connection::contactManager() semantics are now less of a SIGSEGV death-trap
+* fd.o#27460 - Connection now introspects post-spec-0.19.2 services with less D-Bus round-trips
+* Connection::contactManager() and ::capabilities() semantics are now less of a SIGSEGV death-trap -
+  they now always return a non-NULL value, but operations on them fail with descriptive errors if
+  the Connection isn't in a suitable state (such as when it's in the process of invalidating itself
+  due to eg. the connection getting disconnected)
 
 Fixes:
 * fd.o#28947 - Account::filterAccounts doc does not properly format the example
