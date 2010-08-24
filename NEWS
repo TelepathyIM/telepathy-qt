@@ -5,6 +5,7 @@ The "a weekend (and quite a bit of the Monday early hours) well spent" release.
 
 Enhancements:
 * fd.o#29395 - Update to spec 0.19.10
+* fd.o#29461 - Update to spec 0.19.11
 * fd.o#28948 - Added docs/tests/missing Qt properties to AccountSet
 * fd.o#29357 - Account::iconName() and icon() now always return sensible non-empty values
 * fd.o#28819 - Better {Account,ConnectionManager}::protocolInfo() powered by spec 0.19.10 API and
