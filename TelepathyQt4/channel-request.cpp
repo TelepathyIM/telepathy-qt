@@ -422,6 +422,8 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
         warning().nospace() << "Properties::GetAll(ChannelRequest) failed with "
             << reply.error().name() << ": " << reply.error().message();
     }
+
+    watcher->deleteLater();
 }
 
 void ChannelRequest::onAccountReady(PendingOperation *op)
