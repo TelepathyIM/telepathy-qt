@@ -346,6 +346,11 @@ void Channel::Private::introspectMainProperties()
         props.insert(QLatin1String(propertiesNames[i]), immutableProperties[key]);
     }
 
+    // Save Requested and InitiatorHandle here, so even if the GetAll return doesn't have them but
+    // the given immutable props do (eg. due to the PendingChannel fallback guesses) we use them
+    requested = qdbus_cast<bool>(props[QLatin1String("Requested")]);
+    initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
+
     if (needIntrospectMainProps) {
         debug() << "Calling Properties::GetAll(Channel)";
         QDBusPendingCallWatcher *watcher =
