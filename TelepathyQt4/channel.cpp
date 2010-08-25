@@ -634,7 +634,10 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         groupInitialLP = qdbus_cast<LocalPendingInfoList>(props[QLatin1String("LocalPendingMembers")]);
         groupInitialRP = qdbus_cast<UIntList>(props[QLatin1String("RemotePendingMembers")]);
 
-        groupSelfHandle = qdbus_cast<uint>(props[QLatin1String("SelfHandle")]);
+        uint propSelfHandle = qdbus_cast<uint>(props[QLatin1String("SelfHandle")]);
+        // Don't overwrite the self handle we got from the Connection with 0
+        if (propSelfHandle)
+            groupSelfHandle = propSelfHandle;
 
         nowHaveInitialMembers();
     }
@@ -2071,13 +2074,12 @@ bool Channel::groupIsSelfContactTracked() const
 }
 
 /**
- * Return a Contact object representing the user in the group if the user is a
- * member of the group, otherwise either a Contact object representing the user or
- * 0.
+ * Return a Contact object representing the user in the group if at all possible, otherwise a
+ * Contact object representing the user globally.
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return A contact handle representing the user, if possible.
+ * \return A contact object representing the user.
  */
 ContactPtr Channel::groupSelfContact() const
 {
@@ -2105,13 +2107,7 @@ bool Channel::groupSelfHandleIsLocalPending() const
         return false;
     }
 
-    uint selfHandle = mPriv->groupSelfHandle;
-
-    if (selfHandle == 0) {
-        selfHandle = mPriv->connection->selfHandle();
-    }
-
-    return mPriv->groupLocalPendingContacts.contains(selfHandle);
+    return mPriv->groupLocalPendingContacts.contains(mPriv->groupSelfHandle);
 }
 
 /**
@@ -2648,6 +2644,21 @@ void Channel::onConnectionReady(PendingOperation *op)
         return;
     }
 
+    // FIXME: should connect to selfHandleChanged and act accordingly, but that is a PITA for
+    // keeping the Contacts built and even if we don't do it, the new code is better than the
+    // old one anyway because earlier on we just wouldn't have had a self contact.
+    //
+    // besides, the only thing which breaks without connecting in the world likely is if you're
+    // using idle and decide to change your nick, which I don't think we necessarily even have API
+    // to do from tp-qt4 anyway (or did I make idle change the nick when setting your alias? can't
+    // remember)
+    //
+    // Simply put, I just don't care ATM.
+
+    // Will be overwritten by the group self handle, if we can discover any.
+    Q_ASSERT(!mPriv->groupSelfHandle);
+    mPriv->groupSelfHandle = mPriv->connection->selfHandle();
+
     mPriv->introspectMainProperties();
 }
 
@@ -2761,7 +2772,9 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ": " << reply.error().message();
     } else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetSelfHandle()";
-        mPriv->groupSelfHandle = reply.value();
+        // Don't overwrite the self handle we got from the connection with 0
+        if (reply.value())
+            mPriv->groupSelfHandle = reply.value();
     }
 
     mPriv->nowHaveInitialMembers();
