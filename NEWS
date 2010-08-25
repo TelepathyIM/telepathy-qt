@@ -2,7 +2,9 @@ telepathy-qt4 0.3.9 (UNRELEASED)
 ================================
 
 Fixes:
-* Fixed yet another test suite race condition (freq: 6 in 20000 runs)
+* A race condition which could result in Channel ignoring a member change (only
+  applicable to services with Group.MembersChangedDetailed)
+* Yet another test suite race condition (freq: 6 in 20000 runs)
 
 telepathy-qt4 0.3.8 (2010-08-24)
 ================================
