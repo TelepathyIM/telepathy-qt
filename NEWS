@@ -1,5 +1,3 @@
-/* ex: set textwidth=80: */
-
 telepathy-qt4 0.3.8 (2010-08-24)
 ================================
 
@@ -723,3 +721,5 @@ includes:
 * Manipulating a server-stored contact list
 
 * Controlling VoIP calls in StreamedMedia channels
+
+/* ex: set textwidth=80: */
