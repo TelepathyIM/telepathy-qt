@@ -182,8 +182,9 @@ void TestStreamedMediaChanCall::expectSuccessfulRequestReceiving(PendingOperatio
         return;
     }
 
-    if (++mSuccessfulRequestReceivings == 2 && mRSSCState == RSSCStateDone)
+    if (++mSuccessfulRequestReceivings == 2 && mRSSCState == RSSCStateDone) {
         mLoop->exit(0);
+    }
 }
 
 void TestStreamedMediaChanCall::onRemoteSendingStateChanged(
@@ -215,8 +216,9 @@ void TestStreamedMediaChanCall::onRemoteSendingStateChanged(
         QCOMPARE(states[otherContact], MediaStream::SendingStateNone);
         mRSSCState = RSSCStateDone;
 
-        if (mSuccessfulRequestReceivings == 2)
+        if (mSuccessfulRequestReceivings == 2) {
             mLoop->exit(0);
+        }
     }
 
     qDebug() << "remote sending state changed to" << states[otherContact];
@@ -458,8 +460,9 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QVERIFY(connect(stream->requestReceiving(otherContact, true),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulRequestReceiving(Tp::PendingOperation*))));
-    while (mSuccessfulRequestReceivings != 2 || mRSSCState != RSSCStateDone)
+    while (mSuccessfulRequestReceivings != 2 || mRSSCState != RSSCStateDone) {
         mLoop->processEvents();
+    }
 
     QCOMPARE(static_cast<uint>(mRSSCState), static_cast<uint>(RSSCStateDone));
 }

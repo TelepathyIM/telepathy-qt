@@ -277,8 +277,9 @@ void TestStreamedMediaChan::expectOutgoingRequestStreamsFinished(PendingOperatio
     // even Answered - tbf it seems the StreamedMediaChannel semantics are quite hard for
     // application code to get right because the events can happen in whichever order. Should this
     // be considered a bug by itself? It'd probably be pretty hard to fix so I hope not :D
-    if (mOutgoingState == OutgoingStateInitial)
+    if (mOutgoingState == OutgoingStateInitial) {
         mOutgoingState = OutgoingStateRequested;
+    }
 
     if (mOutgoingState == OutgoingStateDone) {
         // finished later than the membersChanged() - exit mainloop now
@@ -330,8 +331,9 @@ void TestStreamedMediaChan::onOutgoingGroupMembersChanged(
 
         // Exit if we already got finished() from requestStreams() - otherwise the finish callback
         // will exit
-        if (mOutgoingGotRequestStreamsFinished)
+        if (mOutgoingGotRequestStreamsFinished) {
             mLoop->exit(0);
+        }
     }
 
     qDebug() << "group members changed";
@@ -416,8 +418,9 @@ void TestStreamedMediaChan::expectTerminateRequestStreamsFinished(PendingOperati
     // even Answered - tbf it seems the StreamedMediaChannel semantics are quite hard for
     // application code to get right because the events can happen in whichever order. Should this
     // be considered a bug by itself? It'd probably be pretty hard to fix so I hope not :D
-    if (mTerminateState == TerminateStateInitial)
+    if (mTerminateState == TerminateStateInitial) {
         mTerminateState = TerminateStateRequested;
+    }
 }
 
 void TestStreamedMediaChan::onTerminateGroupMembersChanged(
@@ -1542,8 +1545,10 @@ void TestStreamedMediaChan::cleanupTestCase()
         mConn.reset();
     }
 
-    if (mConnService)
+    if (mConnService) {
         g_object_unref(mConnService);
+        mConnService = 0;
+    }
 
     cleanupTestCaseImpl();
 }

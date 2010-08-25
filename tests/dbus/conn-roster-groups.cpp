@@ -518,8 +518,9 @@ void TestConnRosterGroups::testNotADeathTrap()
     qDebug() << "waiting for group to be added";
 
     // FIXME: Remove this once fd.o #29728 is fixed
-    while (!mConn->contactManager()->allKnownGroups().contains(QLatin1String("My successful entourage")))
+    while (!mConn->contactManager()->allKnownGroups().contains(QLatin1String("My successful entourage"))) {
         mLoop->processEvents();
+    }
 
     qDebug() << "group has been added";
 
@@ -644,8 +645,9 @@ void TestConnRosterGroups::cleanup()
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
 
-            while (!mConnInvalidated)
+            while (!mConnInvalidated) {
                 mLoop->processEvents();
+            }
         }
 
         mConn.reset();

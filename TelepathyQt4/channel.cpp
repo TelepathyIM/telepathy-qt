@@ -586,11 +586,13 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         // props were only added in 0.17.13... However, I won't bother writing separate extraction
         // functions now.
 
-        if (props.contains(QLatin1String("Requested")))
+        if (props.contains(QLatin1String("Requested"))) {
             requested = qdbus_cast<uint>(props[QLatin1String("Requested")]);
+        }
 
-        if (props.contains(QLatin1String("InitiatorHandle")))
+        if (props.contains(QLatin1String("InitiatorHandle"))) {
             initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
+        }
 
         if (!fakeGroupInterfaceIfNeeded() &&
             !parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) &&
@@ -643,8 +645,9 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
 
         uint propSelfHandle = qdbus_cast<uint>(props[QLatin1String("SelfHandle")]);
         // Don't overwrite the self handle we got from the Connection with 0
-        if (propSelfHandle)
+        if (propSelfHandle) {
             groupSelfHandle = propSelfHandle;
+        }
 
         nowHaveInitialMembers();
     }
@@ -2780,8 +2783,9 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
     } else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetSelfHandle()";
         // Don't overwrite the self handle we got from the connection with 0
-        if (reply.value())
+        if (reply.value()) {
             mPriv->groupSelfHandle = reply.value();
+        }
     }
 
     mPriv->nowHaveInitialMembers();
@@ -2865,8 +2869,9 @@ void Channel::onMembersChanged(const QString &message,
         uint actor, uint reason)
 {
     // Ignore the signal if we're using the MCD signal to not duplicate events
-    if (mPriv->usingMembersChangedDetailed)
+    if (mPriv->usingMembersChangedDetailed) {
         return;
+    }
 
     debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() <<
         "added," << removed.size() << "removed," << localPending.size() <<
