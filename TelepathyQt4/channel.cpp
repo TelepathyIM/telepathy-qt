@@ -81,6 +81,8 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     bool setGroupFlags(uint groupFlags);
 
     void buildContacts();
+    void doMembersChangedDetailed(const UIntList &, const UIntList &, const UIntList &,
+            const UIntList &, const QVariantMap &);
     void processMembersChanged();
     void updateContacts(const QList<ContactPtr> &contacts =
             QList<ContactPtr>());
@@ -253,7 +255,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       introspectingConference(false),
       conferenceSupportsNonMerges(false)
 {
-    debug() << "Creating new Channel:" << parent->busName();
+    debug() << "Creating new Channel:" << parent->objectPath();
 
     if (connection->isValid()) {
         debug() << " Connecting to Channel::Closed() signal";
@@ -344,6 +346,11 @@ void Channel::Private::introspectMainProperties()
         props.insert(QLatin1String(propertiesNames[i]), immutableProperties[key]);
     }
 
+    // Save Requested and InitiatorHandle here, so even if the GetAll return doesn't have them but
+    // the given immutable props do (eg. due to the PendingChannel fallback guesses) we use them
+    requested = qdbus_cast<bool>(props[QLatin1String("Requested")]);
+    initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
+
     if (needIntrospectMainProps) {
         debug() << "Calling Properties::GetAll(Channel)";
         QDBusPendingCallWatcher *watcher =
@@ -398,12 +405,12 @@ void Channel::Private::introspectGroup()
         Q_ASSERT(group != 0);
     }
 
-    debug() << "Connecting to Channel.Interface.Group::GroupFlagsChanged";
+    debug() << "Introspecting Channel.Interface.Group for" << parent->objectPath();
+
     parent->connect(group,
                     SIGNAL(GroupFlagsChanged(uint, uint)),
                     SLOT(onGroupFlagsChanged(uint, uint)));
 
-    debug() << "Connecting to Channel.Interface.Group::MembersChanged";
     parent->connect(group,
                     SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
                             const Tp::UIntList&, const Tp::UIntList&,
@@ -411,15 +418,20 @@ void Channel::Private::introspectGroup()
                     SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
                             const Tp::UIntList&, const Tp::UIntList&,
                             const Tp::UIntList&, uint, uint)));
+    parent->connect(group,
+                    SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
+                            const Tp::UIntList&, const Tp::UIntList&,
+                            const Tp::UIntList&, const QVariantMap&)),
+                    SLOT(onMembersChangedDetailed(const Tp::UIntList&,
+                            const Tp::UIntList&, const Tp::UIntList&,
+                            const Tp::UIntList&, const QVariantMap&)));
 
-    debug() << "Connecting to Channel.Interface.Group::HandleOwnersChanged";
     parent->connect(group,
                     SIGNAL(HandleOwnersChanged(const Tp::HandleOwnerMap&,
                             const Tp::UIntList&)),
                     SLOT(onHandleOwnersChanged(const Tp::HandleOwnerMap&,
                             const Tp::UIntList&)));
 
-    debug() << "Connecting to Channel.Interface.Group::SelfHandleChanged";
     parent->connect(group,
                     SIGNAL(SelfHandleChanged(uint)),
                     SLOT(onSelfHandleChanged(uint)));
@@ -564,15 +576,21 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
     }
     else {
-        debug() << " Found properties specified in 0.17.7";
-
         parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
         readinessHelper->setInterfaces(parent->interfaces());
         channelType = qdbus_cast<QString>(props[QLatin1String("ChannelType")]);
         targetHandle = qdbus_cast<uint>(props[QLatin1String("TargetHandle")]);
         targetHandleType = qdbus_cast<uint>(props[QLatin1String("TargetHandleType")]);
-        requested = qdbus_cast<uint>(props[QLatin1String("Requested")]);
-        initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
+
+        // FIXME: this is screwed up. See the name of the function? It says 0.17.7. The following
+        // props were only added in 0.17.13... However, I won't bother writing separate extraction
+        // functions now.
+
+        if (props.contains(QLatin1String("Requested")))
+            requested = qdbus_cast<uint>(props[QLatin1String("Requested")]);
+
+        if (props.contains(QLatin1String("InitiatorHandle")))
+            initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
 
         if (!fakeGroupInterfaceIfNeeded() &&
             !parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) &&
@@ -623,7 +641,10 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         groupInitialLP = qdbus_cast<LocalPendingInfoList>(props[QLatin1String("LocalPendingMembers")]);
         groupInitialRP = qdbus_cast<UIntList>(props[QLatin1String("RemotePendingMembers")]);
 
-        groupSelfHandle = qdbus_cast<uint>(props[QLatin1String("SelfHandle")]);
+        uint propSelfHandle = qdbus_cast<uint>(props[QLatin1String("SelfHandle")]);
+        // Don't overwrite the self handle we got from the Connection with 0
+        if (propSelfHandle)
+            groupSelfHandle = propSelfHandle;
 
         nowHaveInitialMembers();
     }
@@ -711,6 +732,8 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
     if ((groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
         !usingMembersChangedDetailed) {
         usingMembersChangedDetailed = true;
+        debug() << "Starting to exclusively listen to MembersChangedDetailed for" <<
+            parent->objectPath();
         parent->disconnect(group,
                            SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
                                    const Tp::UIntList&, const Tp::UIntList&,
@@ -719,25 +742,10 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
                            SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
                                    const Tp::UIntList&, const Tp::UIntList&,
                                    const Tp::UIntList&, uint, uint)));
-        parent->connect(group,
-                        SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
-                                const Tp::UIntList&, const Tp::UIntList&,
-                                const Tp::UIntList&, const QVariantMap&)),
-                        SLOT(onMembersChangedDetailed(const Tp::UIntList&,
-                                const Tp::UIntList&, const Tp::UIntList&,
-                                const Tp::UIntList&, const QVariantMap&)));
     } else if (!(groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
                usingMembersChangedDetailed) {
         warning() << " Channel service did spec-incompliant removal of MCD from GroupFlags";
         usingMembersChangedDetailed = false;
-        parent->disconnect(group,
-                           SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
-                                   const Tp::UIntList&, const Tp::UIntList&,
-                                   const Tp::UIntList&, const QVariantMap&)),
-                           parent,
-                           SLOT(onMembersChangedDetailed(const Tp::UIntList&,
-                                   const Tp::UIntList&, const Tp::UIntList&,
-                                   const Tp::UIntList&, const QVariantMap&)));
         parent->connect(group,
                         SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
                                 const Tp::UIntList&, const Tp::UIntList&,
@@ -2073,13 +2081,12 @@ bool Channel::groupIsSelfContactTracked() const
 }
 
 /**
- * Return a Contact object representing the user in the group if the user is a
- * member of the group, otherwise either a Contact object representing the user or
- * 0.
+ * Return a Contact object representing the user in the group if at all possible, otherwise a
+ * Contact object representing the user globally.
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
- * \return A contact handle representing the user, if possible.
+ * \return A contact object representing the user.
  */
 ContactPtr Channel::groupSelfContact() const
 {
@@ -2107,13 +2114,7 @@ bool Channel::groupSelfHandleIsLocalPending() const
         return false;
     }
 
-    uint selfHandle = mPriv->groupSelfHandle;
-
-    if (selfHandle == 0) {
-        selfHandle = mPriv->connection->selfHandle();
-    }
-
-    return mPriv->groupLocalPendingContacts.contains(selfHandle);
+    return mPriv->groupLocalPendingContacts.contains(mPriv->groupSelfHandle);
 }
 
 /**
@@ -2650,6 +2651,21 @@ void Channel::onConnectionReady(PendingOperation *op)
         return;
     }
 
+    // FIXME: should connect to selfHandleChanged and act accordingly, but that is a PITA for
+    // keeping the Contacts built and even if we don't do it, the new code is better than the
+    // old one anyway because earlier on we just wouldn't have had a self contact.
+    //
+    // besides, the only thing which breaks without connecting in the world likely is if you're
+    // using idle and decide to change your nick, which I don't think we necessarily even have API
+    // to do from tp-qt4 anyway (or did I make idle change the nick when setting your alias? can't
+    // remember)
+    //
+    // Simply put, I just don't care ATM.
+
+    // Will be overwritten by the group self handle, if we can discover any.
+    Q_ASSERT(!mPriv->groupSelfHandle);
+    mPriv->groupSelfHandle = mPriv->connection->selfHandle();
+
     mPriv->introspectMainProperties();
 }
 
@@ -2763,7 +2779,9 @@ void Channel::gotSelfHandle(QDBusPendingCallWatcher *watcher)
             reply.error().name() << ": " << reply.error().message();
     } else {
         debug() << "Got reply to fallback Channel.Interface.Group::GetSelfHandle()";
-        mPriv->groupSelfHandle = reply.value();
+        // Don't overwrite the self handle we got from the connection with 0
+        if (reply.value())
+            mPriv->groupSelfHandle = reply.value();
     }
 
     mPriv->nowHaveInitialMembers();
@@ -2846,6 +2864,10 @@ void Channel::onMembersChanged(const QString &message,
         const UIntList &localPending, const UIntList &remotePending,
         uint actor, uint reason)
 {
+    // Ignore the signal if we're using the MCD signal to not duplicate events
+    if (mPriv->usingMembersChangedDetailed)
+        return;
+
     debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() <<
         "added," << removed.size() << "removed," << localPending.size() <<
         "moved to LP," << remotePending.size() << "moved to RP," << actor <<
@@ -2864,7 +2886,7 @@ void Channel::onMembersChanged(const QString &message,
 
     details.insert(QLatin1String("change-reason"), reason);
 
-    onMembersChangedDetailed(added, removed, localPending, remotePending, details);
+    mPriv->doMembersChangedDetailed(added, removed, localPending, remotePending, details);
 }
 
 void Channel::onMembersChangedDetailed(
@@ -2872,12 +2894,25 @@ void Channel::onMembersChangedDetailed(
         const UIntList &localPending, const UIntList &remotePending,
         const QVariantMap &details)
 {
+    // Ignore the signal if we aren't (yet) using MCD to not duplicate events
+    if (!mPriv->usingMembersChangedDetailed) {
+        return;
+    }
+
     debug() << "Got Channel.Interface.Group::MembersChangedDetailed with" << added.size() <<
         "added," << removed.size() << "removed," << localPending.size() <<
         "moved to LP," << remotePending.size() << "moved to RP and with" << details.size() <<
         "details";
 
-    if (!mPriv->groupHaveMembers) {
+    mPriv->doMembersChangedDetailed(added, removed, localPending, remotePending, details);
+}
+
+void Channel::Private::doMembersChangedDetailed(
+        const UIntList &added, const UIntList &removed,
+        const UIntList &localPending, const UIntList &remotePending,
+        const QVariantMap &details)
+{
+    if (!groupHaveMembers) {
         debug() << "Still waiting for initial group members, "
             "so ignoring delta signal...";
         return;
@@ -2892,7 +2927,7 @@ void Channel::onMembersChangedDetailed(
     // let's store groupSelfContactRemoveInfo here as we may not have time
     // to build the contacts in case self contact is removed,
     // as Closed will be emitted right after
-    if (removed.contains(mPriv->groupSelfHandle)) {
+    if (removed.contains(groupSelfHandle)) {
         if (qdbus_cast<uint>(details.value(QLatin1String("change-reason"))) ==
                 ChannelGroupChangeReasonRenamed) {
             if (removed.size() != 1 ||
@@ -2911,27 +2946,27 @@ void Channel::onMembersChangedDetailed(
             } else if (!remotePending.isEmpty()) {
                 newHandle = remotePending.first();
             }
-            onSelfHandleChanged(newHandle);
+            parent->onSelfHandleChanged(newHandle);
             return;
         }
 
         // let's try to get the actor contact from contact manager if available
-        mPriv->groupSelfContactRemoveInfo = GroupMemberChangeDetails(
-                mPriv->connection->contactManager()->lookupContactByHandle(
+        groupSelfContactRemoveInfo = GroupMemberChangeDetails(
+                connection->contactManager()->lookupContactByHandle(
                     qdbus_cast<uint>(details.value(QLatin1String("actor")))),
                 details);
     }
 
-    mPriv->groupMembersChangedQueue.enqueue(
+    groupMembersChangedQueue.enqueue(
             new Private::GroupMembersChangedInfo(
                 added, removed,
                 localPending, remotePending,
                 details));
 
-    if (!mPriv->buildingContacts) {
+    if (!buildingContacts) {
         // if we are building contacts, we should wait it to finish so we don't
         // present the user with wrong information
-        mPriv->processMembersChanged();
+        processMembersChanged();
     }
 }
 

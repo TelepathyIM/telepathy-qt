@@ -215,7 +215,32 @@ uint PendingChannel::targetHandle() const
  */
 QVariantMap PendingChannel::immutableProperties() const
 {
-    return mPriv->immutableProperties;
+    QVariantMap props = mPriv->immutableProperties;
+
+    // This is a reasonable guess - if it's Yours it's guaranteedly Requested by us, and if it's not
+    // it could be either Requested by somebody else but also an incoming channel just as well.
+    if (!props.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"))) {
+        debug() << "CM didn't provide Requested in channel immutable props, guessing"
+            << mPriv->yours;
+        props[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")] =
+            mPriv->yours;
+    }
+
+    // Also, the spec says that if the channel was Requested by the local user, InitiatorHandle must
+    // be the Connection's self handle
+    if (!props.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle"))) {
+        if (qdbus_cast<bool>(props.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")))) {
+            ConnectionPtr conn(mPriv->connection);
+            if (conn && conn->isReady()) {
+                debug() << "CM didn't provide InitiatorHandle in channel immutable props, but we "
+                    "know it's the conn's self handle (and have it)";
+                props[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle")] =
+                    conn->selfHandle();
+            }
+        }
+    }
+
+    return props;
 }
 
 /**
@@ -242,7 +267,7 @@ ChannelPtr PendingChannel::channel() const
 
     SharedPtr<Connection> conn(mPriv->connection);
     mPriv->channel = ChannelFactory::create(conn,
-            mPriv->objectPath.path(), mPriv->immutableProperties);
+            mPriv->objectPath.path(), immutableProperties());
     return mPriv->channel;
 }
 
