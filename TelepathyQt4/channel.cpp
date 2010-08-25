@@ -81,6 +81,8 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     bool setGroupFlags(uint groupFlags);
 
     void buildContacts();
+    void doMembersChangedDetailed(const UIntList &, const UIntList &, const UIntList &,
+            const UIntList &, const QVariantMap &);
     void processMembersChanged();
     void updateContacts(const QList<ContactPtr> &contacts =
             QList<ContactPtr>());
@@ -2879,10 +2881,7 @@ void Channel::onMembersChanged(const QString &message,
 
     details.insert(QLatin1String("change-reason"), reason);
 
-    // Switch the ignoring of MCD off while delivering the fake MCD
-    mPriv->usingMembersChangedDetailed = true;
-    onMembersChangedDetailed(added, removed, localPending, remotePending, details);
-    mPriv->usingMembersChangedDetailed = false;
+    mPriv->doMembersChangedDetailed(added, removed, localPending, remotePending, details);
 }
 
 void Channel::onMembersChangedDetailed(
@@ -2891,15 +2890,24 @@ void Channel::onMembersChangedDetailed(
         const QVariantMap &details)
 {
     // Ignore the signal if we aren't (yet) using MCD to not duplicate events
-    if (!mPriv->usingMembersChangedDetailed)
+    if (!mPriv->usingMembersChangedDetailed) {
         return;
+    }
 
     debug() << "Got Channel.Interface.Group::MembersChangedDetailed with" << added.size() <<
         "added," << removed.size() << "removed," << localPending.size() <<
         "moved to LP," << remotePending.size() << "moved to RP and with" << details.size() <<
         "details";
 
-    if (!mPriv->groupHaveMembers) {
+    mPriv->doMembersChangedDetailed(added, removed, localPending, remotePending, details);
+}
+
+void Channel::Private::doMembersChangedDetailed(
+        const UIntList &added, const UIntList &removed,
+        const UIntList &localPending, const UIntList &remotePending,
+        const QVariantMap &details)
+{
+    if (!groupHaveMembers) {
         debug() << "Still waiting for initial group members, "
             "so ignoring delta signal...";
         return;
@@ -2914,7 +2922,7 @@ void Channel::onMembersChangedDetailed(
     // let's store groupSelfContactRemoveInfo here as we may not have time
     // to build the contacts in case self contact is removed,
     // as Closed will be emitted right after
-    if (removed.contains(mPriv->groupSelfHandle)) {
+    if (removed.contains(groupSelfHandle)) {
         if (qdbus_cast<uint>(details.value(QLatin1String("change-reason"))) ==
                 ChannelGroupChangeReasonRenamed) {
             if (removed.size() != 1 ||
@@ -2933,27 +2941,27 @@ void Channel::onMembersChangedDetailed(
             } else if (!remotePending.isEmpty()) {
                 newHandle = remotePending.first();
             }
-            onSelfHandleChanged(newHandle);
+            parent->onSelfHandleChanged(newHandle);
             return;
         }
 
         // let's try to get the actor contact from contact manager if available
-        mPriv->groupSelfContactRemoveInfo = GroupMemberChangeDetails(
-                mPriv->connection->contactManager()->lookupContactByHandle(
+        groupSelfContactRemoveInfo = GroupMemberChangeDetails(
+                connection->contactManager()->lookupContactByHandle(
                     qdbus_cast<uint>(details.value(QLatin1String("actor")))),
                 details);
     }
 
-    mPriv->groupMembersChangedQueue.enqueue(
+    groupMembersChangedQueue.enqueue(
             new Private::GroupMembersChangedInfo(
                 added, removed,
                 localPending, remotePending,
                 details));
 
-    if (!mPriv->buildingContacts) {
+    if (!buildingContacts) {
         // if we are building contacts, we should wait it to finish so we don't
         // present the user with wrong information
-        mPriv->processMembersChanged();
+        processMembersChanged();
     }
 }
 
