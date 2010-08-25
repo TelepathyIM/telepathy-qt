@@ -643,8 +643,12 @@ void TestConnRosterGroups::cleanup()
                             SIGNAL(invalidated(Tp::DBusProxy *,
                                                const QString &, const QString &)),
                             SLOT(expectConnInvalidated())));
-            QCOMPARE(mLoop->exec(), 0);
+
+            while (!mConnInvalidated)
+                mLoop->processEvents();
         }
+
+        mConn.reset();
     }
 
     if (mConnService != 0) {
