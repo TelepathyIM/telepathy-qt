@@ -569,15 +569,21 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
     }
     else {
-        debug() << " Found properties specified in 0.17.7";
-
         parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
         readinessHelper->setInterfaces(parent->interfaces());
         channelType = qdbus_cast<QString>(props[QLatin1String("ChannelType")]);
         targetHandle = qdbus_cast<uint>(props[QLatin1String("TargetHandle")]);
         targetHandleType = qdbus_cast<uint>(props[QLatin1String("TargetHandleType")]);
-        requested = qdbus_cast<uint>(props[QLatin1String("Requested")]);
-        initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
+
+        // FIXME: this is screwed up. See the name of the function? It says 0.17.7. The following
+        // props were only added in 0.17.13... However, I won't bother writing separate extraction
+        // functions now.
+
+        if (props.contains(QLatin1String("Requested")))
+            requested = qdbus_cast<uint>(props[QLatin1String("Requested")]);
+
+        if (props.contains(QLatin1String("InitiatorHandle")))
+            initiatorHandle = qdbus_cast<uint>(props[QLatin1String("InitiatorHandle")]);
 
         if (!fakeGroupInterfaceIfNeeded() &&
             !parent->interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP)) &&
