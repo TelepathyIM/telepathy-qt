@@ -1,10 +1,20 @@
 telepathy-qt4 0.3.9 (UNRELEASED)
 ================================
 
+Enhancements:
+* Channel::groupSelfContact() now always have some contact for the user as long
+  as the channel is ready (if the group has none, the Connection one is used)
+* (Side-effect from other work) Add fallbacks to channel requests in case the
+ service doesn't provide the InitiatorHandle or the Requested property
+* Channel debug output is now a bit cleaner
+
 Fixes:
 * A race condition which could result in Channel ignoring a member change (only
   applicable to services with Group.MembersChangedDetailed)
-* Yet another test suite race condition (freq: 6 in 20000 runs)
+* A bug where Channel::groupMembersChanged(only removed members) isn't always
+  emitted if the local user is not a member of the group - probably means
+  signaling contacts being removed from roster groups didn't work either
+* Yet another TestConnRosterGroup race condition (freq: 6 in 20000 runs)
 
 telepathy-qt4 0.3.8 (2010-08-24)
 ================================
