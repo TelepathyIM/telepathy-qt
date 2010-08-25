@@ -224,8 +224,9 @@ void TestConnRoster::testRoster()
 
             // if he accepted it already, one iteration won't be enough as the
             // first iteration will just flush the subscription -> Yes event
-            while (contact->publishState() != Contact::PresenceStateAsk)
+            while (contact->publishState() != Contact::PresenceStateAsk) {
                 QCOMPARE(mLoop->exec(), 0);
+            }
 
             contact->authorizePresencePublication();
             QCOMPARE(mLoop->exec(), 0);

@@ -365,8 +365,9 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
             mUserActionTime, QString()); \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
-    if (shouldFail) \
-        QCOMPARE(mChannelRequestFinishedErrorName, QString(QLatin1String(expectedError)));
+    if (shouldFail) {\
+        QCOMPARE(mChannelRequestFinishedErrorName, QString(QLatin1String(expectedError))); \
+    }
 
 #define TEST_CREATE_ENSURE_CHANNEL(method_name, shouldFail, proceedNoop, expectedError) \
     QVariantMap request; \
@@ -382,8 +383,9 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
             mUserActionTime, QString()); \
     testPCR(pcr); \
     QCOMPARE(mChannelRequestFinishedWithError, shouldFail); \
-    if (shouldFail) \
-        QCOMPARE(mChannelRequestFinishedErrorName, QString(QLatin1String(expectedError)));
+    if (shouldFail) {\
+        QCOMPARE(mChannelRequestFinishedErrorName, QString(QLatin1String(expectedError))); \
+    }
 
 void TestAccountChannelDispatcher::testEnsureTextChat()
 {

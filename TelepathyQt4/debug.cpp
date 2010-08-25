@@ -103,18 +103,20 @@ void enableWarnings(bool enable)
 
 QDebug enabledDebug()
 {
-    if (debugEnabled)
+    if (debugEnabled) {
         return qDebug();
-    else
+    } else {
         return QDebug(&discard);
+    }
 }
 
 QDebug enabledWarning()
 {
-    if (warningsEnabled)
+    if (warningsEnabled) {
         return qWarning();
-    else
+    } else {
         return QDebug(&discard);
+    }
 }
 
 #else /* !defined(ENABLE_DEBUG) */

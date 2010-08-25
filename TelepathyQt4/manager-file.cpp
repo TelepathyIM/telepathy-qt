@@ -201,8 +201,9 @@ bool ManagerFile::Private::parse(const QString &fileName)
             info.englishName = keyFile.value(QLatin1String("EnglishName"));
             if (info.englishName.isEmpty()) {
                 QStringList words = protocol.split(QLatin1Char('-'));
-                for (int i = 0; i < words.size(); ++i)
+                for (int i = 0; i < words.size(); ++i) {
                     words[i][0] = words[i].at(0).toUpper();
+                }
                 info.englishName = words.join(QLatin1String(" "));
             }
 
@@ -463,24 +464,25 @@ RequestableChannelClassList ManagerFile::requestableChannelClasses(
 QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signature)
 {
     QVariant::Type type;
-    if (signature == QLatin1String("b"))
+    if (signature == QLatin1String("b")) {
         type = QVariant::Bool;
-    else if (signature == QLatin1String("n") || signature == QLatin1String("i"))
+    } else if (signature == QLatin1String("n") || signature == QLatin1String("i")) {
         type = QVariant::Int;
-    else if (signature == QLatin1String("q") || signature == QLatin1String("u"))
+    } else if (signature == QLatin1String("q") || signature == QLatin1String("u")) {
         type = QVariant::UInt;
-    else if (signature == QLatin1String("x"))
+    } else if (signature == QLatin1String("x")) {
         type = QVariant::LongLong;
-    else if (signature == QLatin1String("t"))
+    } else if (signature == QLatin1String("t")) {
         type = QVariant::ULongLong;
-    else if (signature == QLatin1String("d"))
+    } else if (signature == QLatin1String("d")) {
         type = QVariant::Double;
-    else if (signature == QLatin1String("as"))
+    } else if (signature == QLatin1String("as")) {
         type = QVariant::StringList;
-    else if (signature == QLatin1String("s") || signature == QLatin1String("o"))
+    } else if (signature == QLatin1String("s") || signature == QLatin1String("o")) {
         type = QVariant::String;
-    else
+    } else {
         type = QVariant::Invalid;
+    }
 
     return type;
 }

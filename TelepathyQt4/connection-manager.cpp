@@ -581,8 +581,9 @@ bool ConnectionManager::Private::ProtocolWrapper::receiveProperties(const QVaria
             props[QLatin1String(TELEPATHY_INTERFACE_PROTOCOL ".EnglishName")]);
     if (englishName.isEmpty()) {
         QStringList words = mInfo->name().split(QLatin1Char('-'));
-        for (int i = 0; i < words.size(); ++i)
+        for (int i = 0; i < words.size(); ++i) {
             words[i][0] = words[i].at(0).toUpper();
+        }
         englishName = words.join(QLatin1String(" "));
     }
     mInfo->setEnglishName(englishName);
