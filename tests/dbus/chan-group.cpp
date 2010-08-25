@@ -16,8 +16,10 @@
 #include <TelepathyQt4/Debug>
 
 #include <telepathy-glib/debug.h>
+#include <telepathy-glib/handle.h>
 
 #include <tests/lib/glib/contactlist/conn.h>
+#include <tests/lib/glib/textchan-group.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
@@ -28,7 +30,7 @@ class TestChanGroup : public Test
 
 public:
     TestChanGroup(QObject *parent = 0)
-        : Test(parent), mConnService(0)
+        : Test(parent), mConnService(0), mChanService(0)
     { }
 
 protected Q_SLOTS:
@@ -48,6 +50,7 @@ private Q_SLOTS:
 
     void testCreateContacts();
     void testCreateChannel();
+    void testMCDGroup();
 
     void cleanup();
     void cleanupTestCase();
@@ -55,8 +58,11 @@ private Q_SLOTS:
 private:
     void debugContacts();
 
+    void commonTest();
+
     QString mConnName, mConnPath;
     ExampleContactListConnection *mConnService;
+    TpTestsTextChannelGroup *mChanService;
     ConnectionPtr mConn;
     ChannelPtr mChan;
     QString mChanObjectPath;
@@ -66,6 +72,7 @@ private:
     Contacts mChangedRP;
     Contacts mChangedRemoved;
     Channel::GroupMemberChangeDetails mDetails;
+    UIntList mInitialMembers;
 };
 
 void TestChanGroup::expectConnInvalidated()
@@ -257,6 +264,9 @@ void TestChanGroup::testCreateChannel()
     QCOMPARE(mChan->isRequested(), false);
     QVERIFY(mChan->groupContacts().contains(mContacts.first()));
 
+    foreach (ContactPtr contact, mChan->groupContacts())
+        mInitialMembers.push_back(contact->handle()[0]);
+
     QCOMPARE(mChan->groupCanAddContacts(), true);
     QCOMPARE(mChan->groupCanRemoveContacts(), true);
 
@@ -293,8 +303,59 @@ void TestChanGroup::testCreateChannel()
     QCOMPARE(mChan->groupContacts().count(), 3);
 }
 
+void TestChanGroup::testMCDGroup()
+{
+    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQt4MCDTest")).arg(mConn->objectPath());
+    QByteArray chanPathLatin1(mChanObjectPath.toLatin1());
+
+    mChanService = TP_TESTS_TEXT_CHANNEL_GROUP(g_object_new(
+                TP_TESTS_TYPE_TEXT_CHANNEL_GROUP,
+                "connection", mConnService,
+                "object-path", chanPathLatin1.data(),
+                "detailed", TRUE,
+                "properties", TRUE,
+                NULL));
+    QVERIFY(mChanService != 0);
+
+    TpIntSet *members = tp_intset_sized_new(mInitialMembers.length());
+    foreach (uint handle, mInitialMembers)
+        tp_intset_add(members, handle);
+
+    QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be there or be []",
+                members, NULL, NULL, NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
+
+    tp_intset_destroy(members);
+
+    mChan = Channel::create(mConn, mChanObjectPath, QVariantMap());
+    QVERIFY(mChan);
+
+    QVERIFY(connect(mChan->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->isReady(), true);
+
+    QCOMPARE(mChan->isRequested(), true);
+    QVERIFY(mChan->groupContacts().contains(mContacts.first()));
+
+    foreach (ContactPtr contact, mChan->groupContacts())
+        mInitialMembers.push_back(contact->handle()[0]);
+
+    QCOMPARE(mChan->groupCanAddContacts(), false);
+    QCOMPARE(mChan->groupCanRemoveContacts(), false);
+
+    debugContacts();
+
+    QCOMPARE(mChan->groupContacts().count(), 4);
+}
+
 void TestChanGroup::cleanup()
 {
+    if (mChanService) {
+        g_object_unref(mChanService);
+        mChanService = 0;
+    }
+
     cleanupImpl();
 }
 
