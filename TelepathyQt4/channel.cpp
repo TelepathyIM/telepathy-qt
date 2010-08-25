@@ -411,6 +411,13 @@ void Channel::Private::introspectGroup()
                     SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
                             const Tp::UIntList&, const Tp::UIntList&,
                             const Tp::UIntList&, uint, uint)));
+    parent->connect(group,
+                    SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
+                            const Tp::UIntList&, const Tp::UIntList&,
+                            const Tp::UIntList&, const QVariantMap&)),
+                    SLOT(onMembersChangedDetailed(const Tp::UIntList&,
+                            const Tp::UIntList&, const Tp::UIntList&,
+                            const Tp::UIntList&, const QVariantMap&)));
 
     parent->connect(group,
                     SIGNAL(HandleOwnersChanged(const Tp::HandleOwnerMap&,
@@ -719,25 +726,10 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
                            SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
                                    const Tp::UIntList&, const Tp::UIntList&,
                                    const Tp::UIntList&, uint, uint)));
-        parent->connect(group,
-                        SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
-                                const Tp::UIntList&, const Tp::UIntList&,
-                                const Tp::UIntList&, const QVariantMap&)),
-                        SLOT(onMembersChangedDetailed(const Tp::UIntList&,
-                                const Tp::UIntList&, const Tp::UIntList&,
-                                const Tp::UIntList&, const QVariantMap&)));
     } else if (!(groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
                usingMembersChangedDetailed) {
         warning() << " Channel service did spec-incompliant removal of MCD from GroupFlags";
         usingMembersChangedDetailed = false;
-        parent->disconnect(group,
-                           SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
-                                   const Tp::UIntList&, const Tp::UIntList&,
-                                   const Tp::UIntList&, const QVariantMap&)),
-                           parent,
-                           SLOT(onMembersChangedDetailed(const Tp::UIntList&,
-                                   const Tp::UIntList&, const Tp::UIntList&,
-                                   const Tp::UIntList&, const QVariantMap&)));
         parent->connect(group,
                         SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
                                 const Tp::UIntList&, const Tp::UIntList&,
@@ -2846,6 +2838,10 @@ void Channel::onMembersChanged(const QString &message,
         const UIntList &localPending, const UIntList &remotePending,
         uint actor, uint reason)
 {
+    // Ignore the signal if we're using the MCD signal to not duplicate events
+    if (mPriv->usingMembersChangedDetailed)
+        return;
+
     debug() << "Got Channel.Interface.Group::MembersChanged with" << added.size() <<
         "added," << removed.size() << "removed," << localPending.size() <<
         "moved to LP," << remotePending.size() << "moved to RP," << actor <<
@@ -2864,7 +2860,10 @@ void Channel::onMembersChanged(const QString &message,
 
     details.insert(QLatin1String("change-reason"), reason);
 
+    // Switch the ignoring of MCD off while delivering the fake MCD
+    mPriv->usingMembersChangedDetailed = true;
     onMembersChangedDetailed(added, removed, localPending, remotePending, details);
+    mPriv->usingMembersChangedDetailed = false;
 }
 
 void Channel::onMembersChangedDetailed(
@@ -2872,6 +2871,10 @@ void Channel::onMembersChangedDetailed(
         const UIntList &localPending, const UIntList &remotePending,
         const QVariantMap &details)
 {
+    // Ignore the signal if we aren't (yet) using MCD to not duplicate events
+    if (!mPriv->usingMembersChangedDetailed)
+        return;
+
     debug() << "Got Channel.Interface.Group::MembersChangedDetailed with" << added.size() <<
         "added," << removed.size() << "removed," << localPending.size() <<
         "moved to LP," << remotePending.size() << "moved to RP and with" << details.size() <<
