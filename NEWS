@@ -1,3 +1,5 @@
+/* ex: set textwidth=80: */
+
 telepathy-qt4 0.3.8 (2010-08-24)
 ================================
 
@@ -7,19 +9,19 @@ Enhancements:
 * fd.o#29395 - Update to spec 0.19.10
 * fd.o#29461 - Update to spec 0.19.11
 * fd.o#28948 - Added docs/tests/missing Qt properties to AccountSet
-* fd.o#29357 - Account::iconName() and icon() now always return sensible non-empty values
-* fd.o#28819 - Better {Account,ConnectionManager}::protocolInfo() powered by spec 0.19.10 API and
-               suitable fallbacks for older services
-                - Up-to-date CMs can now be introspected with less D-Bus round-trips
-                - New API capabilities(), vcardField(), englishName(), iconName() on ProtocolInfo
-                  and ManagerFile
+* fd.o#29357 - Account::iconName() and icon() now always return sensible
+               non-empty values
+* fd.o#28819 - {Account,ConnectionManager}::protocolInfo() has been improved
+                - Recent CMs are now introspected with less D-Bus calls
+                - New API capabilities(), vcardField(), englishName(),
+                  iconName() on ProtocolInfo and ManagerFile
 * fd.o#25126 - Some redundant debug output has been removed
-* fd.o#27460 - Connection now introspects post-spec-0.19.2 services with less D-Bus round-trips
-* Connection::contactManager() and ::capabilities() semantics are now less of a SIGSEGV death-trap -
-  they now always return a non-NULL value, but operations on them fail with descriptive errors if
-  the Connection isn't in a suitable state (such as when it's in the process of invalidating itself
-  due to eg. the connection getting disconnected)
-* Account::connection() no longer does needless re-parsing of the object path every time it's called
+* fd.o#27460 - Connection now introspects recent CMs with less D-Bus traffic
+* Connection::contactManager and ::capabilities are now less of a death-trap
+  - now always are non-NULL
+  - operations fail with descriptive errors if the Connection isn't valid
+  - they used to go NULL at an indeterminate time when eg. disconnecting
+* Account::connection() object path parsing has been optimized
 
 Fixes:
 * fd.o#28947 - Account::filterAccounts doc does not properly format the example
@@ -27,23 +29,22 @@ Fixes:
 * fd.o#28651 - Cannot receive files using gabble 0.9
 * fd.o#29145 - AccountSet::accountRemoved is emitted for newly-created
   non-matching accounts
-* fd.o#29699 - ChannelRequest incorrectly checks immutable properties, leading to needless
-  re-introspection
-* Broken iteration code in MediaStream resulting in busy-looping forever in many cases
+* fd.o#29699 - ChannelRequest incorrectly checks immutable properties
+* Broken iteration code in MediaStream which often led to busy-looping forever
 * (Harmless) uninitialized memory use reported by valgrind in Account internals
 
 Test suite improvements:
-* fd.o#29702 - Unit tests now execute reliably, without race conditions, and 10-30x faster
-* A new script repeat-tests.sh for re-running tests multiple times, saving the logs for the failed
-  rounds has been added to the release procedure to detect races
-* Added a conservative 10 minute per test case watchdog to detect hung-up test logic
-  - This should be plenty even for heavily loaded VM build bots, as the whole test suite now
-    executes in 2.4-2.5 seconds on my laptop
-* The StreamedMedia legacy and Future.Call tests now actually have different names to be able to
-  distinguish between them in the test logs
-* Test coverage reporting now works again; turns out we need to disable building the shared library
-  when it is enabled
-* amd64 memory use errors (pointer size != int size) calling g_object_new() in tests have been fixed
+* fd.o#29702 - Unit tests now execute reliably, and 10-30x faster
+* Added the script repeat-tests.sh for repeating tests to detect race conditions
+* Added a conservative 10 minute per test watchdog to detect hung-up test logic
+  - Should be plenty even for heavily loaded VM build bots, as the whole test
+    suite now executes in 2.4-2.5 seconds on my laptop
+* The StreamedMedia legacy and Future.Call tests now actually have different
+  names to be able to distinguish between them in the test logs
+* Test coverage reporting now works again; turns out we need to disable building
+ the shared library when it is enabled
+* amd64 memory use errors (pointer size != int size) calling g_object_new() in
+  tests have been fixed
 
 telepathy-qt4 0.3.7 (2010-07-12)
 ================================
@@ -402,7 +403,7 @@ Enhancements:
      protected Q_SLOTS
      private Q_SLOTS
      private
-  * Moved friend class xxx definitions to be placed right bellow private keyword.
+  * Moved friend class xxx definitions to be placed right below private keyword
 * ChannelDispatchOperation: Emit invalidated with
   TELEPATHY_QT4_ERROR_OBJECT_REMOVED when ChannelDispatchOperation.Finished is
   received.
