@@ -221,6 +221,12 @@ void TestChanGroup::initTestCase()
 void TestChanGroup::init()
 {
     initImpl();
+
+    mChangedCurrent.clear();
+    mChangedLP.clear();
+    mChangedRP.clear();
+    mChangedRemoved.clear();
+    mDetails = Channel::GroupMemberChangeDetails();
 }
 
 void TestChanGroup::testCreateContacts()
@@ -360,6 +366,34 @@ void TestChanGroup::commonTest(gboolean properties)
     debugContacts();
 
     QCOMPARE(mChan->groupContacts().count(), 4);
+
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(groupMembersChanged(
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &)),
+                    SLOT(onGroupMembersChanged(
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Contacts &,
+                            const Tp::Channel::GroupMemberChangeDetails &))));
+
+    TpIntSet *remove = tp_intset_new_containing(mContacts[0]->handle()[0]);
+
+    QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be a []",
+                NULL, remove, NULL, NULL, 0, TP_CHANNEL_GROUP_CHANGE_REASON_NONE));
+
+    tp_intset_destroy(remove);
+
+    while (mChangedRemoved.isEmpty()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QVERIFY(mChangedRemoved.contains(mContacts[0]));
+
+    QCOMPARE(mChan->groupContacts().count(), 3);
 }
 
 void TestChanGroup::cleanup()
