@@ -51,6 +51,7 @@ private Q_SLOTS:
     void testCreateContacts();
     void testCreateChannel();
     void testMCDGroup();
+    void testPropertylessGroup();
 
     void cleanup();
     void cleanupTestCase();
@@ -58,7 +59,7 @@ private Q_SLOTS:
 private:
     void debugContacts();
 
-    void commonTest();
+    void commonTest(gboolean properties);
 
     QString mConnName, mConnPath;
     ExampleContactListConnection *mConnService;
@@ -305,7 +306,19 @@ void TestChanGroup::testCreateChannel()
 
 void TestChanGroup::testMCDGroup()
 {
-    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQt4MCDTest")).arg(mConn->objectPath());
+    commonTest(true);
+}
+
+void TestChanGroup::testPropertylessGroup()
+{
+    commonTest(false);
+}
+
+void TestChanGroup::commonTest(gboolean properties)
+{
+    mChanObjectPath = QString(QLatin1String("%1/ChannelForTpQt4MCDTest%2"))
+        .arg(mConn->objectPath())
+        .arg(QLatin1String(properties ? "props" : ""));
     QByteArray chanPathLatin1(mChanObjectPath.toLatin1());
 
     mChanService = TP_TESTS_TEXT_CHANNEL_GROUP(g_object_new(
@@ -313,7 +326,7 @@ void TestChanGroup::testMCDGroup()
                 "connection", mConnService,
                 "object-path", chanPathLatin1.data(),
                 "detailed", TRUE,
-                "properties", TRUE,
+                "properties", properties,
                 NULL));
     QVERIFY(mChanService != 0);
 
