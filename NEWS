@@ -1,3 +1,9 @@
+telepathy-qt4 0.3.9 (UNRELEASED)
+================================
+
+Fixes:
+* Fixed yet another test suite race condition (freq: 6 in 20000 runs)
+
 telepathy-qt4 0.3.8 (2010-08-24)
 ================================
 
