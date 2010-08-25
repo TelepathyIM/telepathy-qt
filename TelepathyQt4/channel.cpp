@@ -253,7 +253,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       introspectingConference(false),
       conferenceSupportsNonMerges(false)
 {
-    debug() << "Creating new Channel:" << parent->busName();
+    debug() << "Creating new Channel:" << parent->objectPath();
 
     if (connection->isValid()) {
         debug() << " Connecting to Channel::Closed() signal";
@@ -398,12 +398,12 @@ void Channel::Private::introspectGroup()
         Q_ASSERT(group != 0);
     }
 
-    debug() << "Connecting to Channel.Interface.Group::GroupFlagsChanged";
+    debug() << "Introspecting Channel.Interface.Group for" << parent->objectPath();
+
     parent->connect(group,
                     SIGNAL(GroupFlagsChanged(uint, uint)),
                     SLOT(onGroupFlagsChanged(uint, uint)));
 
-    debug() << "Connecting to Channel.Interface.Group::MembersChanged";
     parent->connect(group,
                     SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
                             const Tp::UIntList&, const Tp::UIntList&,
@@ -412,14 +412,12 @@ void Channel::Private::introspectGroup()
                             const Tp::UIntList&, const Tp::UIntList&,
                             const Tp::UIntList&, uint, uint)));
 
-    debug() << "Connecting to Channel.Interface.Group::HandleOwnersChanged";
     parent->connect(group,
                     SIGNAL(HandleOwnersChanged(const Tp::HandleOwnerMap&,
                             const Tp::UIntList&)),
                     SLOT(onHandleOwnersChanged(const Tp::HandleOwnerMap&,
                             const Tp::UIntList&)));
 
-    debug() << "Connecting to Channel.Interface.Group::SelfHandleChanged";
     parent->connect(group,
                     SIGNAL(SelfHandleChanged(uint)),
                     SLOT(onSelfHandleChanged(uint)));
@@ -711,6 +709,8 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
     if ((groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
         !usingMembersChangedDetailed) {
         usingMembersChangedDetailed = true;
+        debug() << "Starting to exclusively listen to MembersChangedDetailed for" <<
+            parent->objectPath();
         parent->disconnect(group,
                            SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
                                    const Tp::UIntList&, const Tp::UIntList&,
