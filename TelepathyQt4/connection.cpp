@@ -112,6 +112,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     uint pendingStatusReason;
     uint status;
     uint statusReason;
+    ErrorDetails errorDetails;
 
     uint selfHandle;
 
@@ -870,6 +871,53 @@ ConnectionStatusReason Connection::statusReason() const
     return (ConnectionStatusReason) mPriv->statusReason;
 }
 
+struct Connection::ErrorDetails::Private : public QSharedData
+{
+    Private(const QVariantMap &details)
+        : details(details) {}
+
+    QVariantMap details;
+};
+
+Connection::ErrorDetails::ErrorDetails()
+    : mPriv(0)
+{
+}
+
+Connection::ErrorDetails::ErrorDetails(const ErrorDetails &other)
+    : mPriv(other.mPriv)
+{
+}
+
+Connection::ErrorDetails::~ErrorDetails()
+{
+}
+
+Connection::ErrorDetails &Connection::ErrorDetails::operator=(
+        const ErrorDetails &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+QVariantMap Connection::ErrorDetails::allDetails() const
+{
+    return isValid() ? mPriv->details : QVariantMap();
+}
+
+Connection::ErrorDetails::ErrorDetails(const QVariantMap &details)
+    : mPriv(new Private(details))
+{
+}
+
+const Connection::ErrorDetails &Connection::errorDetails() const
+{
+    if (isValid())
+        warning() << "Connection::errorDetails() used on" << objectPath() << "which is valid";
+
+    return mPriv->errorDetails;
+}
+
 /**
  * Return the handle which represents the user on this connection, which will
  * remain valid for the lifetime of this connection, or until a change in the
@@ -1158,6 +1206,10 @@ void Connection::onStatusChanged(uint status, uint reason)
 void Connection::onConnectionError(const QString &error,
         const QVariantMap &details)
 {
+    debug().nospace() << "Connection(" << objectPath() << ") got ConnectionError(" << error
+        << ") with " << details.size() << " details";
+
+    mPriv->errorDetails = details;
     mPriv->invalidateResetCaps(error,
             details.value(QLatin1String("debug-message")).toString());
 }
