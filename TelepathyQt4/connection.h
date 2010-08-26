@@ -260,7 +260,8 @@ public:
     }
 
 Q_SIGNALS:
-    void statusChanged(Tp::Connection::Status newStatus,
+    void statusChanged(Tp::Connection::Status newStatus);
+    TELEPATHY_QT4_DEPRECATED void statusChanged(Tp::Connection::Status newStatus,
             Tp::ConnectionStatusReason newStatusReason);
     void selfHandleChanged(uint newHandle);
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts

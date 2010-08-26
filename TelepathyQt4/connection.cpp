@@ -1235,6 +1235,7 @@ void Connection::onStatusReady(uint status)
 
     mPriv->status = status;
     mPriv->statusReason = mPriv->pendingStatusReason;
+    emit statusChanged((Connection::Status) mPriv->status);
     emit statusChanged((Connection::Status) mPriv->status,
             (ConnectionStatusReason) mPriv->statusReason);
 }
@@ -2174,5 +2175,41 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
 
     return QLatin1String(errorName);
 }
+
+/**
+ * \fn void Connection::statusChanged(Tp::Connection::Status newStatus)
+ *
+ * Indicates that the connection's status has changed and that all previously requested features are
+ * now ready to use for the new status.
+ *
+ * Legitimate uses for this signal, apart from waiting for a given connection status to be ready,
+ * include updating an animation based on the connection being in Status::Connecting, Status::Connected
+ * and Status::Disconnected, and otherwise showing progress indication to the user. It should,
+ * however, NEVER be used for error handling:
+ *
+ * This signal doesn't contain the status reason as an argument, because statusChanged() shouldn't
+ * be used for error-handling. There are numerous cases in which a Connection may become unusable
+ * without there being an status change to Status::Disconnected. All of these cases, and being
+ * disconnected itself, are signaled by invalidated() with appropriate error names. On the other
+ * hand, the reason for the status going to Status::Connecting or Status::Connected will always be
+ * ConnectionStatusReasonRequested, so signaling that would be useless.
+ *
+ * The status reason, as returned by statusReason(), may however be used as a fallback for error
+ * handling in slots connected to the invalidated() signal, if the client doesn't understand a
+ * particular (likely domain-specific if so) error name given by invalidateReason().
+ *
+ * \param newStatus The new status of the connection, as would be returned by status().
+ */
+
+/**
+ * \fn void Connection::statusChanged(Tp::Connection::Status newStatus, Tp::ConnectionStatusReason
+ * reason)
+ *
+ * \deprecated It is tempting to use the status reason parameter as a primary means of error
+ * handling, which must be avoided. Use statusReason(Tp::Connection::Status) instead.
+ *
+ * \param newStatus The new status of the connection, as would be returned by status().
+ * \param newStatusReason The reason for the change. Should not be used for error handling.
+ */
 
 } // Tp
