@@ -255,6 +255,8 @@ void TestConnBasics::cleanup()
         QCOMPARE(qdbus_cast<uint>(mConn->errorDetails().allDetails().value(
                         QLatin1String("x-tpqt4-test-rgba-herring-color"))),
                 0xff0000ffU);
+
+        mConn.reset();
     }
 
     if (mConnService != 0) {
