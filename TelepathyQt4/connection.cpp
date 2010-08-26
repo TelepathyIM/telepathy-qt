@@ -868,8 +868,18 @@ ConnectionStatusReason Connection::statusReason() const
     return (ConnectionStatusReason) mPriv->statusReason;
 }
 
+struct Connection::ErrorDetails::Private : public QSharedData
+{
+    Private(const QVariantMap &details)
+        : details(details) {}
+
+    QVariantMap details;
+};
+
 /**
  * \class Connection::ErrorDetails
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/connection.h <TelepathyQt4/Connection>
  *
  * Contains detailed information about the reason for the connection going invalidated().
  *
@@ -885,14 +895,6 @@ ConnectionStatusReason Connection::statusReason() const
  * Connection::errorDetails() can be used to return the instance containing the details for
  * invalidating that connection after invalidated() has been emitted.
  */
-
-struct Connection::ErrorDetails::Private : public QSharedData
-{
-    Private(const QVariantMap &details)
-        : details(details) {}
-
-    QVariantMap details;
-};
 
 /**
  * Constructs a new invalid ErrorDetails instance.
