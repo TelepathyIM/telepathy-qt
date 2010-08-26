@@ -7,6 +7,10 @@ Enhancements:
 * (Side-effect from other work) Add fallbacks to channel requests in case the
  service doesn't provide the InitiatorHandle or the Requested property
 * Channel debug output is now a bit cleaner
+* Added Connection::ErrorDetails to represent additional information about error
+  conditions causing Connection invalidation
+* Made the Connection API guide the applications better to correct error
+  handling practices (all error handling should be done in invalidated() slots)
 
 Fixes:
 * A race condition which could result in Channel ignoring a member change (only
