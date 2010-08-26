@@ -1007,8 +1007,9 @@ QVariantMap Connection::ErrorDetails::allDetails() const
  */
 const Connection::ErrorDetails &Connection::errorDetails() const
 {
-    if (isValid())
+    if (isValid()) {
         warning() << "Connection::errorDetails() used on" << objectPath() << "which is valid";
+    }
 
     return mPriv->errorDetails;
 }
