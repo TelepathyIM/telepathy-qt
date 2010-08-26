@@ -864,12 +864,35 @@ Connection::Status Connection::status() const
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
+ * The status reason should be only used as a fallback in error handling when the application
+ * doesn't understand an error name given as the invalidation reason, which may in some cases be
+ * domain/UI-specific.
+ *
+ * \sa invalidated(), invalidationReason()
  * \return The reason, as defined in ConnectionStatusReason.
  */
 ConnectionStatusReason Connection::statusReason() const
 {
     return (ConnectionStatusReason) mPriv->statusReason;
 }
+
+/**
+ * \class Connection::ErrorDetails
+ *
+ * Contains detailed information about the reason for the connection going invalidated().
+ *
+ * Some services may provide additional error information in the ConnectionError D-Bus signal, when
+ * a Connection is disconnected / has become unusable. If the service didn't provide any, or has not
+ * been invalidated yet, the instance will be invalid, as returned by isValid().
+ *
+ * The information provided by invalidationReason() and this class should always be used in error
+ * handling in preference to statusReason(). The status reason can be used as a fallback, however,
+ * if the client doesn't understand what a particular value returned by invalidationReason() means,
+ * as it may be domain-specific with some services.
+ *
+ * Connection::errorDetails() can be used to return the instance containing the details for
+ * invalidating that connection after invalidated() has been emitted.
+ */
 
 struct Connection::ErrorDetails::Private : public QSharedData
 {
@@ -879,27 +902,78 @@ struct Connection::ErrorDetails::Private : public QSharedData
     QVariantMap details;
 };
 
+/**
+ * Constructs a new invalid ErrorDetails instance.
+ */
 Connection::ErrorDetails::ErrorDetails()
     : mPriv(0)
 {
 }
 
+/**
+ * Copy-constructs an ErrorDetails instance, with value copy semantics.
+ */
 Connection::ErrorDetails::ErrorDetails(const ErrorDetails &other)
     : mPriv(other.mPriv)
 {
 }
 
+/**
+ * Destructs an ErrorDetails instance.
+ */
 Connection::ErrorDetails::~ErrorDetails()
 {
 }
 
+/**
+ * Assigns all information (validity, details) from other to this.
+ */
 Connection::ErrorDetails &Connection::ErrorDetails::operator=(
         const ErrorDetails &other)
 {
-    this->mPriv = other.mPriv;
+    if (this->mPriv.constData() != other.mPriv.constData())
+        this->mPriv = other.mPriv;
+
     return *this;
 }
 
+/**
+ * \fn bool Connection::ErrorDetails::isValid() const
+ *
+ * Returns whether or not the details are valid (have actually been received from the service).
+ *
+ * \return Validity of the details
+ */
+
+/**
+ * \fn bool Connection::ErrorDetails::hasDebugMessage() const
+ *
+ * Returns whether or not the details specify a debug message. If present, the debug message will
+ * likely be the same string as the one returned by invalidationMessage().
+ *
+ * The debug message is purely informational, offered for display for bug reporting purposes, and
+ * should not be attempted to be parsed.
+ *
+ * \returns Whether there is a debug message or not.
+ */
+
+/**
+ * \fn QString Connection::ErrorDetails::debugMessage() const
+ *
+ * Returns the debug message specified by the details, if any. If present, the debug message will
+ * likely be the same string as the one returned by invalidationMessage().
+ *
+ * The debug message is purely informational, offered for display for bug reporting purposes, and
+ * should not be attempted to be parsed.
+ *
+ * \returns The debug message, or an empty string if there is none.
+ */
+
+/**
+ * Returns a map containing all details given in the low-level ConnectionError signal.
+ *
+ * This is useful for accessing domain-specific additional details.
+ */
 QVariantMap Connection::ErrorDetails::allDetails() const
 {
     return isValid() ? mPriv->details : QVariantMap();
@@ -910,6 +984,20 @@ Connection::ErrorDetails::ErrorDetails(const QVariantMap &details)
 {
 }
 
+/**
+ * Returns detailed information about the reason for the connection going invalidated().
+ *
+ * Some services may provide additional error information in the ConnectionError D-Bus signal, when
+ * a Connection is disconnected / has become unusable. If the service didn't provide any, or has not
+ * been invalidated yet, an invalid instance is returned.
+ *
+ * The information provided by invalidationReason() and this method should always be used in error
+ * handling in preference to statusReason(). The status reason can be used as a fallback, however,
+ * if the client doesn't understand what a particular value returned by invalidationReason() means,
+ * as it may be domain-specific with some services.
+ *
+ * \return The error details.
+ */
 const Connection::ErrorDetails &Connection::errorDetails() const
 {
     if (isValid())
