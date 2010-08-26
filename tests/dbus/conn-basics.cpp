@@ -10,6 +10,7 @@
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Debug>
 
+#include <telepathy-glib/dbus.h>
 #include <telepathy-glib/debug.h>
 
 #include <tests/lib/glib/contacts-conn.h>
@@ -211,19 +212,49 @@ void TestConnBasics::testSimplePresence()
 void TestConnBasics::cleanup()
 {
     if (mConn) {
-        // Disconnect and wait for the readiness change
-        QVERIFY(connect(mConn->requestDisconnect(),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-        QCOMPARE(mLoop->exec(), 0);
+        QVERIFY(mConn->isValid());
 
-        if (mConn->isValid()) {
-            QVERIFY(connect(mConn.data(),
-                            SIGNAL(invalidated(Tp::DBusProxy *,
-                                               const QString &, const QString &)),
-                            SLOT(expectConnInvalidated())));
-            QCOMPARE(mLoop->exec(), 0);
-        }
+        GHashTable *details = tp_asv_new(
+                "debug-message", G_TYPE_STRING, "woo i'm going doooooown",
+                "x-tpqt4-test-rgba-herring-color", G_TYPE_UINT, 0xff0000ffU,
+                NULL
+                );
+
+        // Disconnect and wait for invalidation
+        tp_base_connection_disconnect_with_dbus_error(TP_BASE_CONNECTION(mConnService),
+                TELEPATHY_ERROR_CANCELLED,
+                details,
+                TP_CONNECTION_STATUS_REASON_REQUESTED);
+
+        g_hash_table_destroy(details);
+
+        QVERIFY(connect(mConn.data(),
+                    SIGNAL(invalidated(Tp::DBusProxy *,
+                            const QString &, const QString &)),
+                    SLOT(expectConnInvalidated())));
+        QCOMPARE(mLoop->exec(), 0);
+        QVERIFY(!mConn->isValid());
+
+        // Check that we got the connection error details
+        QCOMPARE(static_cast<uint>(mConn->statusReason()),
+                 static_cast<uint>(ConnectionStatusReasonRequested));
+
+        QVERIFY(mConn->errorDetails().isValid());
+
+        QVERIFY(mConn->errorDetails().hasDebugMessage());
+        QCOMPARE(mConn->errorDetails().debugMessage(), QLatin1String("woo i'm going doooooown"));
+
+#if 0
+        // Not yet there
+        QVERIFY(!mConn->errorDetails().hasExpectedHostname());
+        QVERIFY(!mConn->errorDetails().hasCertificateHostname());
+#endif
+
+        QVERIFY(mConn->errorDetails().allDetails().contains(
+                    QLatin1String("x-tpqt4-test-rgba-herring-color")));
+        QCOMPARE(qdbus_cast<uint>(mConn->errorDetails().allDetails().value(
+                        QLatin1String("x-tpqt4-test-rgba-herring-color"))),
+                0xff0000ffU);
     }
 
     if (mConnService != 0) {

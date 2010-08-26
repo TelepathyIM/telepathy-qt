@@ -79,6 +79,7 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(ConnectionStatus connectionStatus READ connectionStatus)
     Q_PROPERTY(ConnectionStatusReason connectionStatusReason READ connectionStatusReason)
     Q_PROPERTY(QString connectionError READ connectionError)
+    // TODO: in API/ABI break make this be a Connection::ErrorDetails
     Q_PROPERTY(QVariantMap connectionErrorDetails READ connectionErrorDetails)
     Q_PROPERTY(bool haveConnection READ haveConnection NOTIFY haveConnectionChanged)
     Q_PROPERTY(ConnectionPtr connection READ connection)

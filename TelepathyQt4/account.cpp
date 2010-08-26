@@ -918,11 +918,15 @@ QString Account::connectionError() const
  * One can receive change notifications on this property by connecting
  * to the statusChanged() signal.
  *
+ * Connection::ErrorDetails can be used to wrap the returned map for more convenient access. In a
+ * future API/ABI incompatible version we'll change this method to return one.
+ *
  * This method requires Account::FeatureCore to be enabled.
  *
  * \return A map containing extensible error details related to
  *         connectionError().
- * \sa connectionError(), connectionStatus(), connectionStatusReason(), statusChanged()
+ * \sa connectionError(), connectionStatus(), connectionStatusReason(), statusChanged(),
+ * Connection::ErrorDetails.
  */
 QVariantMap Account::connectionErrorDetails() const
 {
@@ -2101,13 +2105,17 @@ PendingChannelRequest *Account::ensureChannel(
  *
  * This signal is emitted when the connection status of this account changes.
  *
+ * Connection::ErrorDetails can be used to wrap the errorDetails map for more convenient access. In
+ * a future API/ABI incompatible version we'll change this signal to already include one.
+ *
  * \param status The new status of this account connection.
  * \param statusReason The new status reason of this account connection.
  * \param errorName The D-Bus error name for the last disconnection or
  *                   connection failure,
  * \param errorDetails A map containing extensible error details related to
  *                     errorName.
- * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails()
+ * \sa connectionStatus(), connectionStatusReason(), connectionError(), connectionErrorDetails(),
+ * Connection::ErrorDetails
  */
 
 /**

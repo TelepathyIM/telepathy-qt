@@ -91,6 +91,66 @@ public:
     Status status() const;
     ConnectionStatusReason statusReason() const;
 
+    class ErrorDetails
+    {
+        public:
+            ErrorDetails();
+            ErrorDetails(const QVariantMap &details);
+            ErrorDetails(const ErrorDetails &other);
+            ~ErrorDetails();
+
+            ErrorDetails &operator=(const ErrorDetails &other);
+
+            bool isValid() const { return mPriv.constData() != 0; }
+
+            bool hasDebugMessage() const
+            {
+                return allDetails().contains(QLatin1String("debug-message"));
+            }
+
+            QString debugMessage() const
+            {
+                return qdbus_cast<QString>(allDetails().value(QLatin1String("debug-message")));
+            }
+
+#if 0
+            /*
+             * TODO: these are actually specified in a draft interface only. Probably shouldn't
+             * include them yet.
+             */
+            bool hasExpectedHostname() const
+            {
+                return allDetails().contains(QLatin1String("expected-hostname"));
+            }
+
+            QString expectedHostname() const
+            {
+                return qdbus_cast<QString>(allDetails().value(QLatin1String("expected-hostname")));
+            }
+
+            bool hasCertificateHostname() const
+            {
+                return allDetails().contains(QLatin1String("certificate-hostname"));
+            }
+
+            QString certificateHostname() const
+            {
+                return qdbus_cast<QString>(allDetails().value(QLatin1String("certificate-hostname")));
+            }
+#endif
+
+            QVariantMap allDetails() const;
+
+        private:
+            friend class Connection;
+
+            struct Private;
+            friend struct Private;
+            QSharedDataPointer<Private> mPriv;
+    };
+
+    const ErrorDetails &errorDetails() const;
+
     uint selfHandle() const;
     ContactPtr selfContact() const;
 
@@ -199,7 +259,8 @@ public:
     }
 
 Q_SIGNALS:
-    void statusChanged(Tp::Connection::Status newStatus,
+    void statusChanged(Tp::Connection::Status newStatus);
+    TELEPATHY_QT4_DEPRECATED void statusChanged(Tp::Connection::Status newStatus,
             Tp::ConnectionStatusReason newStatusReason);
     void selfHandleChanged(uint newHandle);
     // FIXME: might not need this when Renaming is fixed and mapped to Contacts

@@ -112,6 +112,7 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     uint pendingStatusReason;
     uint status;
     uint statusReason;
+    ErrorDetails errorDetails;
 
     uint selfHandle;
 
@@ -616,14 +617,6 @@ QMutex Connection::Private::handleContextsLock;
  * \brief The Connection class provides an object representing a Telepathy
  * connection.
  *
- * Connection adds the following features compared to using
- * Client::ConnectionInterface directly:
- * <ul>
- *  <li>Status tracking</li>
- *  <li>Getting the list of supported interfaces automatically</li>
- *  <li>Getting the valid presence statuses automatically</li>
- * </ul>
- *
  * This models a connection to a single user account on a communication service.
  * Its basic capability is to provide the facility to request and receive
  * channels of differing types (such as text channels or streaming media
@@ -863,11 +856,156 @@ Connection::Status Connection::status() const
  *
  * This method requires Connection::FeatureCore to be enabled.
  *
+ * The status reason should be only used as a fallback in error handling when the application
+ * doesn't understand an error name given as the invalidation reason, which may in some cases be
+ * domain/UI-specific.
+ *
+ * \sa invalidated(), invalidationReason()
  * \return The reason, as defined in ConnectionStatusReason.
  */
 ConnectionStatusReason Connection::statusReason() const
 {
     return (ConnectionStatusReason) mPriv->statusReason;
+}
+
+struct Connection::ErrorDetails::Private : public QSharedData
+{
+    Private(const QVariantMap &details)
+        : details(details) {}
+
+    QVariantMap details;
+};
+
+/**
+ * \class Connection::ErrorDetails
+ * \ingroup clientconn
+ * \headerfile TelepathyQt4/connection.h <TelepathyQt4/Connection>
+ *
+ * Contains detailed information about the reason for the connection going invalidated().
+ *
+ * Some services may provide additional error information in the ConnectionError D-Bus signal, when
+ * a Connection is disconnected / has become unusable. If the service didn't provide any, or has not
+ * been invalidated yet, the instance will be invalid, as returned by isValid().
+ *
+ * The information provided by invalidationReason() and this class should always be used in error
+ * handling in preference to statusReason(). The status reason can be used as a fallback, however,
+ * if the client doesn't understand what a particular value returned by invalidationReason() means,
+ * as it may be domain-specific with some services.
+ *
+ * Connection::errorDetails() can be used to return the instance containing the details for
+ * invalidating that connection after invalidated() has been emitted.
+ */
+
+/**
+ * Constructs a new invalid ErrorDetails instance.
+ */
+Connection::ErrorDetails::ErrorDetails()
+    : mPriv(0)
+{
+}
+
+/**
+ * Construct a error details instance with the given details. The instance will indicate it's valid.
+ *
+ * This is primarily useful for wrapping lower-level APIs with, like presently
+ * Account::connectionErrorDetails() and Account::statusChanged(), neither of which we can
+ * compatibly change to return Connection::ErrorDetails yet.
+ */
+Connection::ErrorDetails::ErrorDetails(const QVariantMap &details)
+    : mPriv(new Private(details))
+{
+}
+
+/**
+ * Copy-constructs an ErrorDetails instance, with value copy semantics.
+ */
+Connection::ErrorDetails::ErrorDetails(const ErrorDetails &other)
+    : mPriv(other.mPriv)
+{
+}
+
+/**
+ * Destructs an ErrorDetails instance.
+ */
+Connection::ErrorDetails::~ErrorDetails()
+{
+}
+
+/**
+ * Assigns all information (validity, details) from other to this.
+ */
+Connection::ErrorDetails &Connection::ErrorDetails::operator=(
+        const ErrorDetails &other)
+{
+    if (this->mPriv.constData() != other.mPriv.constData())
+        this->mPriv = other.mPriv;
+
+    return *this;
+}
+
+/**
+ * \fn bool Connection::ErrorDetails::isValid() const
+ *
+ * Returns whether or not the details are valid (have actually been received from the service).
+ *
+ * \return Validity of the details
+ */
+
+/**
+ * \fn bool Connection::ErrorDetails::hasDebugMessage() const
+ *
+ * Returns whether or not the details specify a debug message. If present, the debug message will
+ * likely be the same string as the one returned by invalidationMessage().
+ *
+ * The debug message is purely informational, offered for display for bug reporting purposes, and
+ * should not be attempted to be parsed.
+ *
+ * \returns Whether there is a debug message or not.
+ */
+
+/**
+ * \fn QString Connection::ErrorDetails::debugMessage() const
+ *
+ * Returns the debug message specified by the details, if any. If present, the debug message will
+ * likely be the same string as the one returned by invalidationMessage().
+ *
+ * The debug message is purely informational, offered for display for bug reporting purposes, and
+ * should not be attempted to be parsed.
+ *
+ * \returns The debug message, or an empty string if there is none.
+ */
+
+/**
+ * Returns a map containing all details given in the low-level ConnectionError signal.
+ *
+ * This is useful for accessing domain-specific additional details.
+ */
+QVariantMap Connection::ErrorDetails::allDetails() const
+{
+    return isValid() ? mPriv->details : QVariantMap();
+}
+
+/**
+ * Returns detailed information about the reason for the connection going invalidated().
+ *
+ * Some services may provide additional error information in the ConnectionError D-Bus signal, when
+ * a Connection is disconnected / has become unusable. If the service didn't provide any, or has not
+ * been invalidated yet, an invalid instance is returned.
+ *
+ * The information provided by invalidationReason() and this method should always be used in error
+ * handling in preference to statusReason(). The status reason can be used as a fallback, however,
+ * if the client doesn't understand what a particular value returned by invalidationReason() means,
+ * as it may be domain-specific with some services.
+ *
+ * \return The error details.
+ */
+const Connection::ErrorDetails &Connection::errorDetails() const
+{
+    if (isValid()) {
+        warning() << "Connection::errorDetails() used on" << objectPath() << "which is valid";
+    }
+
+    return mPriv->errorDetails;
 }
 
 /**
@@ -1099,6 +1237,7 @@ void Connection::onStatusReady(uint status)
 
     mPriv->status = status;
     mPriv->statusReason = mPriv->pendingStatusReason;
+    emit statusChanged((Connection::Status) mPriv->status);
     emit statusChanged((Connection::Status) mPriv->status,
             (ConnectionStatusReason) mPriv->statusReason);
 }
@@ -1158,6 +1297,10 @@ void Connection::onStatusChanged(uint status, uint reason)
 void Connection::onConnectionError(const QString &error,
         const QVariantMap &details)
 {
+    debug().nospace() << "Connection(" << objectPath() << ") got ConnectionError(" << error
+        << ") with " << details.size() << " details";
+
+    mPriv->errorDetails = details;
     mPriv->invalidateResetCaps(error,
             details.value(QLatin1String("debug-message")).toString());
 }
@@ -2034,5 +2177,41 @@ QString ConnectionHelper::statusReasonToErrorName(Tp::ConnectionStatusReason rea
 
     return QLatin1String(errorName);
 }
+
+/**
+ * \fn void Connection::statusChanged(Tp::Connection::Status newStatus)
+ *
+ * Indicates that the connection's status has changed and that all previously requested features are
+ * now ready to use for the new status.
+ *
+ * Legitimate uses for this signal, apart from waiting for a given connection status to be ready,
+ * include updating an animation based on the connection being in Status::Connecting, Status::Connected
+ * and Status::Disconnected, and otherwise showing progress indication to the user. It should,
+ * however, NEVER be used for error handling:
+ *
+ * This signal doesn't contain the status reason as an argument, because statusChanged() shouldn't
+ * be used for error-handling. There are numerous cases in which a Connection may become unusable
+ * without there being an status change to Status::Disconnected. All of these cases, and being
+ * disconnected itself, are signaled by invalidated() with appropriate error names. On the other
+ * hand, the reason for the status going to Status::Connecting or Status::Connected will always be
+ * ConnectionStatusReasonRequested, so signaling that would be useless.
+ *
+ * The status reason, as returned by statusReason(), may however be used as a fallback for error
+ * handling in slots connected to the invalidated() signal, if the client doesn't understand a
+ * particular (likely domain-specific if so) error name given by invalidateReason().
+ *
+ * \param newStatus The new status of the connection, as would be returned by status().
+ */
+
+/**
+ * \fn void Connection::statusChanged(Tp::Connection::Status newStatus, Tp::ConnectionStatusReason
+ * reason)
+ *
+ * \deprecated It is tempting to use the status reason parameter as a primary means of error
+ * handling, which must be avoided. Use statusReason(Tp::Connection::Status) instead.
+ *
+ * \param newStatus The new status of the connection, as would be returned by status().
+ * \param newStatusReason The reason for the change. Should not be used for error handling.
+ */
 
 } // Tp
