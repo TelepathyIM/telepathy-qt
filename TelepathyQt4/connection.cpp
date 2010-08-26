@@ -617,14 +617,6 @@ QMutex Connection::Private::handleContextsLock;
  * \brief The Connection class provides an object representing a Telepathy
  * connection.
  *
- * Connection adds the following features compared to using
- * Client::ConnectionInterface directly:
- * <ul>
- *  <li>Status tracking</li>
- *  <li>Getting the list of supported interfaces automatically</li>
- *  <li>Getting the valid presence statuses automatically</li>
- * </ul>
- *
  * This models a connection to a single user account on a communication service.
  * Its basic capability is to provide the facility to request and receive
  * channels of differing types (such as text channels or streaming media
