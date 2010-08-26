@@ -112,6 +112,11 @@ public:
                 return qdbus_cast<QString>(allDetails().value(QLatin1String("debug-message")));
             }
 
+#if 0
+            /*
+             * TODO: these are actually specified in a draft interface only. Probably shouldn't
+             * include them yet.
+             */
             bool hasExpectedHostname() const
             {
                 return allDetails().contains(QLatin1String("expected-hostname"));
@@ -131,6 +136,7 @@ public:
             {
                 return qdbus_cast<QString>(allDetails().value(QLatin1String("certificate-hostname")));
             }
+#endif
 
             QVariantMap allDetails() const;
 
