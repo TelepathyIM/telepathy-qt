@@ -95,6 +95,7 @@ public:
     {
         public:
             ErrorDetails();
+            ErrorDetails(const QVariantMap &details);
             ErrorDetails(const ErrorDetails &other);
             ~ErrorDetails();
 
@@ -142,8 +143,6 @@ public:
 
         private:
             friend class Connection;
-
-            ErrorDetails(const QVariantMap &details);
 
             struct Private;
             friend struct Private;
