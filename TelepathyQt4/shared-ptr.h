@@ -137,6 +137,12 @@ public:
         return SharedPtr<T>(const_cast<T*>(src.data()));
     }
 
+    template <class X>
+    static inline SharedPtr<T> qObjectCast(const SharedPtr<X> &src)
+    {
+        return SharedPtr<T>(qobject_cast<T*>(src.data()));
+    }
+
 private:
     friend class WeakPtr<T>;
 
