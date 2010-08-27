@@ -256,7 +256,7 @@ void Sender::onFileTransferChannelCreated(PendingOperation *op)
 
     qDebug() << "File transfer channel created!";
     PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = OutgoingFileTransferChannelPtr::dynamicCast(pc->channel());
+    mChan = OutgoingFileTransferChannelPtr::qObjectCast(pc->channel());
     connect(mChan.data(),
             SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
             SLOT(onInvalidated()));
