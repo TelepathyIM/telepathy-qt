@@ -177,6 +177,21 @@ if test x$have_qdbusvariant_operator_equal = xyes; then
   AC_DEFINE(HAVE_QDBUSVARIANT_OPERATOR_EQUAL, [], [Have QDBusVariant operator==])
 fi
 
+save_CFLAGS="$CFLAGS"
+save_CXXFLAGS="$CXXFLAGS"
+CFLAGS="$CFLAGS $QTDBUS_CFLAGS"
+CXXFLAGS="$CXXFLAGS $QTDBUS_CFLAGS"
+AC_TRY_COMPILE([#include <QtDBus>],
+    [ QDBusServiceWatcher watcher; ],
+    [have_qdbusservicewatcher=yes],
+    [have_qdbusservicewatcher=no])
+CFLAGS="$save_CFLAGS"
+CXXFLAGS="$save_CXXFLAGS"
+
+if test x$have_qdbusservicewatcher = xyes; then
+  AC_DEFINE(HAVE_QDBUSSERVICEWATCHER, [], [Have QDBusServiceWatcher])
+fi
+
 dnl Check for QtNetwork
 PKG_CHECK_MODULES(QTNETWORK, [QtNetwork >= 4.5])
 AC_SUBST(QTNETWORK_CFLAGS)

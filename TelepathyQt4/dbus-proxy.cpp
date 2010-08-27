@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "config.h"
+
 #include <TelepathyQt4/DBusProxy>
 
 #include "TelepathyQt4/_gen/dbus-proxy.moc.hpp"
@@ -27,11 +29,14 @@
 
 #include <TelepathyQt4/Constants>
 
-#include <QTimer>
-
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusError>
+#include <QTimer>
+
+#ifdef HAVE_QDBUSSERVICEWATCHER
+#include <QDBusServiceWatcher>
+#endif
 
 namespace Tp
 {
@@ -259,9 +264,6 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
     : DBusProxy(dbusConnection, busName, objectPath, parent),
       mPriv(0)
 {
-    connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-            this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
-
     QString error, message;
     QString uniqueName = uniqueNameFrom(dbusConnection, busName, error, message);
     if (uniqueName.isEmpty()) {
@@ -269,6 +271,18 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
     }
 
     setBusName(uniqueName);
+
+#ifdef HAVE_QDBUSSERVICEWATCHER
+    QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(uniqueName,
+            dbusConnection, QDBusServiceWatcher::WatchForUnregistration, this);
+    connect(serviceWatcher,
+            SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            SLOT(onServiceOwnerChanged(QString, QString, QString)));
+#else
+    connect(dbusConnection.interface(),
+            SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            SLOT(onServiceOwnerChanged(QString, QString, QString)));
+#endif
 }
 
 StatefulDBusProxy::~StatefulDBusProxy()
