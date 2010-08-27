@@ -80,6 +80,7 @@ libtelepathy_qt4_la_SOURCES = \
     contact-manager.cpp \
     dbus.cpp \
     dbus-proxy.cpp \
+    dbus-proxy-factory.cpp \
     debug.cpp \
     debug-internal.h \
     feature.cpp \
@@ -226,6 +227,7 @@ tpqt4include_HEADERS = \
     Debug \
     DBus \
     DBusProxy \
+    DBusProxyFactory \
     Feature \
     FileTransferChannel \
     FileTransferChannelCreationProperties \
@@ -343,6 +345,7 @@ tpqt4include_HEADERS = \
     contact-manager-internal.h \
     dbus.h \
     dbus-proxy.h \
+    dbus-proxy-factory.h \
     debug.h \
     feature.h \
     file-transfer-channel.h \
