@@ -72,6 +72,8 @@ protected:
     virtual PendingOperation *prepare(const SharedPtr<RefCounted> &object) const;
 
 private:
+    class Cache;
+
     struct Private;
     friend struct Private;
     Private *mPriv;

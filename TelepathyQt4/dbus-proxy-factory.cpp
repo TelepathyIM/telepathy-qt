@@ -20,7 +20,13 @@
  */
 
 #include <TelepathyQt4/DBusProxyFactory>
+#include "TelepathyQt4/dbus-proxy-factory-internal.h"
 
+#include "TelepathyQt4/_gen/dbus-proxy-factory-internal.moc.hpp"
+
+#include "TelepathyQt4/debug-internal.h"
+
+#include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/Feature>
 
 #include <QDBusConnection>
@@ -31,11 +37,15 @@ struct DBusProxyFactory::Private
 {
     QDBusConnection bus;
     Features features;
-
-    // TODO implement cache (will be a separate QObject in a private header)
+    Cache *cache;
 
     Private(const QDBusConnection &bus)
-        : bus(bus) {}
+        : bus(bus), cache(new Cache) {}
+
+    ~Private()
+    {
+        delete cache;
+    }
 };
 
 void DBusProxyFactory::addFeature(const Feature &feature)
@@ -84,10 +94,50 @@ DBusProxyFactory::DBusProxyFactory(const QDBusConnection &bus)
 {
 }
 
-PendingOperation *DBusProxyFactory::prepare(const SharedPtr<DBusProxy> &object) const
+PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &object) const
 {
     // Nothing we could think about needs doing
     return NULL;
+}
+
+DBusProxyFactory::Cache::Cache()
+{
+}
+
+DBusProxyFactory::Cache::~Cache()
+{
+}
+
+SharedPtr<RefCounted> DBusProxyFactory::Cache::get(const Key &key) const
+{
+    return SharedPtr<RefCounted>(proxies.value(key));
+}
+
+void DBusProxyFactory::Cache::put(const Key &key, const SharedPtr<RefCounted> &obj)
+{
+    Q_ASSERT(!proxies.contains(key));
+
+    // This sucks because DBusProxy is not RefCounted...
+    connect(dynamic_cast<DBusProxy*>(obj.data()),
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            SLOT(onProxyInvalidated(Tp::DBusProxy*)));
+
+    debug() << "Inserting to factory cache proxy for" << key;
+
+    proxies.insert(key, obj);
+}
+
+void DBusProxyFactory::Cache::onProxyInvalidated(Tp::DBusProxy *proxy)
+{
+    Key key(proxy->busName(), proxy->objectPath());
+
+    // Not having it would indicate invalidated() signaled twice for the same proxy, or us having
+    // connected to two proxies with the same key, neither of which should happen
+    Q_ASSERT(proxies.contains(key));
+
+    debug() << "Removing from factory cache invalidated proxy for" << key;
+
+    proxies.remove(key);
 }
 
 }
