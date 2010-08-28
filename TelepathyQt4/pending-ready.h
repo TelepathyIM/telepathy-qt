@@ -40,6 +40,8 @@ class TELEPATHY_QT4_EXPORT PendingReady: public PendingOperation
     Q_DISABLE_COPY(PendingReady);
 
 public:
+    PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures, QObject *object,
+            QObject *parent = 0);
     PendingReady(const Features &requestedFeatures, QObject *object,
             QObject *parent = 0);
     ~PendingReady();
@@ -48,8 +50,13 @@ public:
 
     Features requestedFeatures() const;
 
+private Q_SLOTS:
+    void onFirstFinished(Tp::PendingOperation *);
+    void onNestedFinished(Tp::PendingOperation *);
+
 private:
     friend class ReadinessHelper;
+    friend class DBusProxyFactory;
 
     struct Private;
     friend struct Private;

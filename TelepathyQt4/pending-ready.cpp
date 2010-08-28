@@ -25,6 +25,8 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/ReadyObject>
+
 namespace Tp
 {
 
@@ -48,6 +50,34 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
  * for an object to become ready. Instances of this class cannot be
  * constructed directly; the only way to get one is via Object::becomeReady().
  */
+
+/**
+ * Construct a PendingReady object, which will first wait for an operation to finish.
+ *
+ * When the operation given as finishFirst finishes, the resulting PendingReady object will first
+ * wait for that operation to finish successfully, and then, if requestedFeatures is not empty,
+ * calls ReadyObject::becomeReady(requestedFeatures), and finishes when that finished.
+ *
+ * If either nested operation fails, this PendingReady object will fail too with the same error name
+ * and message as they reported.
+ *
+ * \param requestedFeatures Features to be made ready on the object.
+ * \param finishFirst The object to finish first.
+ * \param object The object that will become ready.
+ */
+PendingReady::PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures,
+        QObject *object, QObject *parent)
+    : PendingOperation(parent),
+      mPriv(new Private(requestedFeatures, object))
+{
+    if (!finishFirst || finishFirst->isFinished()) {
+        onFirstFinished(finishFirst);
+    } else {
+        connect(finishFirst,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onFirstFinished(Tp::PendingOperation*)));
+    }
+}
 
 /**
  * Construct a PendingReady object.
@@ -88,6 +118,43 @@ QObject *PendingReady::object() const
 Features PendingReady::requestedFeatures() const
 {
     return mPriv->requestedFeatures;
+}
+
+void PendingReady::onFirstFinished(Tp::PendingOperation *first)
+{
+    if (first) {
+        Q_ASSERT(first->isFinished());
+
+        if (first->isError()) {
+            warning() << "Prepare operation for" << object() << "failed with" <<
+                first->errorName() << ":" << first->errorMessage();
+            setFinishedWithError(first->errorName(), first->errorMessage());
+            return;
+        }
+    }
+
+    if (requestedFeatures().isEmpty()) {
+        setFinished();
+        return;
+    }
+
+    // API/ABI break TODO: Make some baseclass exist which is both a QObject and a ReadyObject...
+    connect(dynamic_cast<ReadyObject *>(object())->becomeReady(requestedFeatures()),
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onNestedFinished(Tp::PendingOperation*)));
+}
+
+void PendingReady::onNestedFinished(Tp::PendingOperation *nested)
+{
+    Q_ASSERT(nested->isFinished());
+
+    if (nested->isValid()) {
+        setFinished();
+    } else {
+        warning() << "Nested PendingReady for" << object() << "failed with"
+            << nested->errorName() << ":" << nested->errorMessage();
+        setFinishedWithError(nested->errorName(), nested->errorMessage());
+    }
 }
 
 } // Tp

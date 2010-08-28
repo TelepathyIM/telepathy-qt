@@ -28,6 +28,8 @@
 
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/Feature>
+#include <TelepathyQt4/ReadyObject>
+#include <TelepathyQt4/PendingReady>
 
 #include <QDBusConnection>
 
@@ -63,25 +65,54 @@ Features DBusProxyFactory::features() const
     return mPriv->features;
 }
 
-PendingReady *DBusProxyFactory::getProxy(const QString &serviceName, const QString &objectPath,
+PendingReady *DBusProxyFactory::getProxy(const QString &busName, const QString &objectPath,
         const QVariantMap &immutableProperties) const
 {
-    /*
-     * Should do the following:
-     *
-     * Find out if proxy identified by (serviceName, objectPath) is already in cache - if so, return
-     * it->becomeReady(mPriv->features)
-     *
-     * Otherwise, do:
-     * 1) put construct(serviceName, objectPath, immutableProperties) in cache, keying by
-     *   (serviceName, objectPath)
-     * 2) do prepare() and if it returns non-NULL, return PendingReady waiting for it and only then
-     *    doing becomeReady(mPriv->features) as a nested query (probably implement this only later,
-     *    no use-case for now)
-     * 3) If prepare() returned NULL, just return becomeReady(mPriv->features)
-     */
+    // I really hate the casts needed in this function - we must really do something about the
+    // DBusProxy class hierarchy so that every DBusProxy(Something) is always a ReadyObject and a
+    // RefCounted, in the API/ABI break - then most of these proxyMisc-> things become just proxy->
 
-    return NULL;
+    QString finalName = finalBusNameFrom(busName);
+
+    SharedPtr<RefCounted> proxy = mPriv->cache->get(Cache::Key(finalName, objectPath));
+    if (!proxy) {
+        proxy = construct(busName, objectPath, immutableProperties);
+
+        QString actualBusName = dynamic_cast<DBusProxy *>(proxy.data())->busName();
+        if (actualBusName != finalName) {
+            warning() << "Specified final name" << finalName
+                      << "doesn't match actual name" << actualBusName;
+            warning().nospace() << "For proxy caching to work, reimplement finalBusNameFrom() "
+                "correctly in your DBusProxyFactory subclass";
+        }
+
+        // We can still make invalidation work by storing it by the actual bus name
+        mPriv->cache->put(Cache::Key(actualBusName, objectPath), proxy);
+
+        PendingOperation *prepareOp = prepare(proxy);
+        if (prepareOp) {
+            QObject *proxyQObject = dynamic_cast<QObject *>(proxy.data());
+            Q_ASSERT(proxyQObject != NULL);
+            return new PendingReady(prepareOp, mPriv->features, proxyQObject, proxyQObject);
+        }
+    }
+
+    // This sucks ...
+    ReadyObject *proxyReady = dynamic_cast<ReadyObject *>(proxy.data());
+    Q_ASSERT(proxyReady != NULL);
+
+    // ... but this sucks even more!
+    QObject *proxyQObject = dynamic_cast<QObject *>(proxy.data());
+    Q_ASSERT(proxyQObject != NULL);
+
+    if (!mPriv->features.isEmpty() && !proxyReady->isReady(mPriv->features)) {
+        return proxyReady->becomeReady(mPriv->features);
+    }
+
+    // No features requested or they are all ready - optimize a bit by not calling ReadinessHelper
+    PendingReady *readyOp = new PendingReady(mPriv->features, proxyQObject, proxyQObject);
+    readyOp->setFinished();
+    return readyOp;
 }
 
 DBusProxyFactory::~DBusProxyFactory()
@@ -110,7 +141,15 @@ DBusProxyFactory::Cache::~Cache()
 
 SharedPtr<RefCounted> DBusProxyFactory::Cache::get(const Key &key) const
 {
-    return SharedPtr<RefCounted>(proxies.value(key));
+    SharedPtr<RefCounted> counted(proxies.value(key));
+
+    if (!counted || !dynamic_cast<DBusProxy *>(counted.data())->isValid()) {
+        // Weak pointer invalidated or proxy invalidated during this mainloop iteration and we still
+        // haven't got the invalidated() signal for it
+        return SharedPtr<RefCounted>();
+    }
+
+    return counted;
 }
 
 void DBusProxyFactory::Cache::put(const Key &key, const SharedPtr<RefCounted> &obj)
