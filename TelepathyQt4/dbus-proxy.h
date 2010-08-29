@@ -102,6 +102,10 @@ public:
 
     virtual ~StatefulDBusProxy();
 
+    static QString uniqueNameFrom(const QDBusConnection &bus, const QString &wellKnownOrUnique);
+    static QString uniqueNameFrom(const QDBusConnection &bus, const QString &wellKnownOrUnique,
+            QString &error, QString &message);
+
 private Q_SLOTS:
     void onServiceOwnerChanged(const QString &name, const QString &oldOwner,
             const QString &newOwner);
