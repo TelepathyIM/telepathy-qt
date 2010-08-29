@@ -76,7 +76,7 @@ PendingReady *DBusProxyFactory::getProxy(const QString &busName, const QString &
 
     SharedPtr<RefCounted> proxy = mPriv->cache->get(Cache::Key(finalName, objectPath));
     if (!proxy) {
-        proxy = construct(busName, objectPath, immutableProperties);
+        proxy = construct(bus(), busName, objectPath, immutableProperties);
 
         QString actualBusName = dynamic_cast<DBusProxy *>(proxy.data())->busName();
         if (actualBusName != finalName) {
@@ -118,6 +118,11 @@ PendingReady *DBusProxyFactory::getProxy(const QString &busName, const QString &
 DBusProxyFactory::~DBusProxyFactory()
 {
     delete mPriv;
+}
+
+const QDBusConnection &DBusProxyFactory::bus() const
+{
+    return mPriv->bus;
 }
 
 DBusProxyFactory::DBusProxyFactory(const QDBusConnection &bus)

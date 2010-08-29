@@ -57,9 +57,11 @@ public:
     Features features() const;
 
     PendingReady *getProxy(const QString &busName, const QString &objectPath,
-            const QVariantMap &immutableProperties) const;
+            const QVariantMap &immutableProperties = QVariantMap()) const;
 
     virtual ~DBusProxyFactory();
+
+    const QDBusConnection &bus() const;
 
 protected:
     DBusProxyFactory(const QDBusConnection &bus);
@@ -72,7 +74,8 @@ protected:
     // API/ABI break TODO: Make DBusProxy be a RefCounted so this can be SharedPtr<DBusProxy>
     // If we don't want DBusProxy itself be a RefCounted, let's add RefCountedDBusProxy or something
     // as an intermediate subclass?
-    virtual SharedPtr<RefCounted> construct(const QString &serviceName, const QString &objectPath,
+    virtual SharedPtr<RefCounted> construct(const QDBusConnection &busConnection,
+            const QString &busName, const QString &objectPath,
             const QVariantMap &immutableProperties) const = 0;
 
     virtual PendingOperation *prepare(const SharedPtr<RefCounted> &object) const;
