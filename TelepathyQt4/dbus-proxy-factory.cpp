@@ -195,6 +195,15 @@ AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus)
     return AccountFactoryPtr(new AccountFactory(bus));
 }
 
+AccountFactoryPtr AccountFactory::coreFactory(const QDBusConnection &bus)
+{
+    AccountFactoryPtr factory(new AccountFactory(bus));
+
+    factory->addFeature(Account::FeatureCore);
+
+    return factory;
+}
+
 AccountFactory::AccountFactory(const QDBusConnection &bus)
     : DBusProxyFactory(bus)
 {

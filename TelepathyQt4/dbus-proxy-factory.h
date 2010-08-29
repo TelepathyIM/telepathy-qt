@@ -95,6 +95,7 @@ class TELEPATHY_QT4_EXPORT AccountFactory : public DBusProxyFactory
         virtual ~AccountFactory();
 
         static AccountFactoryPtr create(const QDBusConnection &bus);
+        static AccountFactoryPtr coreFactory(const QDBusConnection &bus);
 
     protected:
         AccountFactory(const QDBusConnection &bus);
