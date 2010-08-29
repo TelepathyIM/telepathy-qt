@@ -44,20 +44,14 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
     QString channelType = immutableProperties.value(QLatin1String(
                 TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
     if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)) {
-        return ChannelPtr(dynamic_cast<Channel*>(
-                    TextChannel::create(connection,
-                        channelPath, immutableProperties).data()));
+        return TextChannel::create(connection, channelPath, immutableProperties);
     }
     else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) ||
              channelType == QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL)) {
-        return ChannelPtr(dynamic_cast<Channel*>(
-                    StreamedMediaChannel::create(connection,
-                        channelPath, immutableProperties).data()));
+        return StreamedMediaChannel::create(connection, channelPath, immutableProperties);
     }
     else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST)) {
-        return ChannelPtr(dynamic_cast<Channel*>(
-                    RoomListChannel::create(connection,
-                        channelPath, immutableProperties).data()));
+        return RoomListChannel::create(connection, channelPath, immutableProperties);
     }
     else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER)) {
         if (immutableProperties.contains(QLatin1String(
@@ -65,28 +59,24 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
             bool requested = immutableProperties.value(QLatin1String(
                         TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
             if (requested) {
-                return ChannelPtr(dynamic_cast<Channel*>(
-                            OutgoingFileTransferChannel::create(connection,
-                                channelPath, immutableProperties).data()));
+                return OutgoingFileTransferChannel::create(connection, channelPath,
+                        immutableProperties);
             } else {
-                return ChannelPtr(dynamic_cast<Channel*>(
-                            IncomingFileTransferChannel::create(connection,
-                                channelPath, immutableProperties).data()));
+                return IncomingFileTransferChannel::create(connection, channelPath,
+                        immutableProperties);
             }
         } else {
             warning() << "Trying to create a channel of type FileTransfer "
                 "without the " TELEPATHY_INTERFACE_CHANNEL ".Requested "
                 "property set in immutableProperties, returning a "
                 "FileTransferChannel instance";
-            return ChannelPtr(dynamic_cast<Channel*>(
-                        FileTransferChannel::create(connection,
-                            channelPath, immutableProperties).data()));
+            return FileTransferChannel::create(connection, channelPath,
+                    immutableProperties);
         }
     }
 
     // ContactList, old-style Tubes, or a future channel type
-    return Channel::create(connection,
-            channelPath, immutableProperties);
+    return Channel::create(connection, channelPath, immutableProperties);
 }
 
 } // Tp

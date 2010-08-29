@@ -75,6 +75,7 @@ PendingReady *DBusProxyFactory::getProxy(const QString &busName, const QString &
     // RefCounted, in the API/ABI break - then most of these proxyMisc-> things become just proxy->
 
     QString finalName = finalBusNameFrom(busName);
+    Features specificFeatures = featuresFor(busName, objectPath, immutableProperties);
 
     SharedPtr<RefCounted> proxy = mPriv->cache->get(Cache::Key(finalName, objectPath));
     if (!proxy) {
@@ -95,7 +96,7 @@ PendingReady *DBusProxyFactory::getProxy(const QString &busName, const QString &
         if (prepareOp) {
             QObject *proxyQObject = dynamic_cast<QObject *>(proxy.data());
             Q_ASSERT(proxyQObject != NULL);
-            return new PendingReady(prepareOp, mPriv->features, proxyQObject, proxyQObject);
+            return new PendingReady(prepareOp, specificFeatures, proxyQObject, proxyQObject);
         }
     }
 
@@ -107,12 +108,12 @@ PendingReady *DBusProxyFactory::getProxy(const QString &busName, const QString &
     QObject *proxyQObject = dynamic_cast<QObject *>(proxy.data());
     Q_ASSERT(proxyQObject != NULL);
 
-    if (!mPriv->features.isEmpty() && !proxyReady->isReady(mPriv->features)) {
-        return proxyReady->becomeReady(mPriv->features);
+    if (!specificFeatures.isEmpty() && !proxyReady->isReady(specificFeatures)) {
+        return proxyReady->becomeReady(specificFeatures);
     }
 
     // No features requested or they are all ready - optimize a bit by not calling ReadinessHelper
-    PendingReady *readyOp = new PendingReady(mPriv->features, proxyQObject, proxyQObject);
+    PendingReady *readyOp = new PendingReady(specificFeatures, proxyQObject, proxyQObject);
     readyOp->setFinished();
     return readyOp;
 }
@@ -136,6 +137,16 @@ PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &object)
 {
     // Nothing we could think about needs doing
     return NULL;
+}
+
+Features DBusProxyFactory::featuresFor(const QString &busName, const QString &objectPath,
+        const QVariantMap &immutableProperties) const
+{
+    Q_UNUSED(busName);
+    Q_UNUSED(objectPath);
+    Q_UNUSED(immutableProperties);
+
+    return features();
 }
 
 DBusProxyFactory::Cache::Cache()

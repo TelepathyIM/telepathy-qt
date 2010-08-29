@@ -81,6 +81,9 @@ protected:
 
     virtual PendingOperation *prepare(const SharedPtr<RefCounted> &object) const;
 
+    virtual Features featuresFor(const QString &busName, const QString &objectPath,
+            const QVariantMap &immutableProperties) const;
+
 private:
     class Cache;
 
@@ -105,6 +108,7 @@ class TELEPATHY_QT4_EXPORT AccountFactory : public DBusProxyFactory
             const QString &busName, const QString &objectPath,
             const QVariantMap &immutableProperties) const;
         // Nothing we'd like to prepare()
+        // We don't want to set any instance-specific features
 
     private:
         struct Private;
@@ -126,6 +130,7 @@ class TELEPATHY_QT4_EXPORT ConnectionFactory : public DBusProxyFactory
             const QString &busName, const QString &objectPath,
             const QVariantMap &immutableProperties) const;
         // Nothing we'd like to prepare()
+        // We don't want to set any instance-specific features
 
     private:
         struct Private;
