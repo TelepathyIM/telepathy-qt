@@ -46,7 +46,7 @@ class DBusProxy;
 class PendingReady;
 class PendingOperation;
 
-class DBusProxyFactory : public RefCounted
+class TELEPATHY_QT4_EXPORT DBusProxyFactory : public RefCounted
 {
     Q_DISABLE_COPY(DBusProxyFactory)
 
@@ -88,7 +88,7 @@ private:
     Private *mPriv;
 };
 
-class AccountFactory : public DBusProxyFactory
+class TELEPATHY_QT4_EXPORT AccountFactory : public DBusProxyFactory
 {
     public:
         AccountFactory(const QDBusConnection &bus);
@@ -102,7 +102,7 @@ class AccountFactory : public DBusProxyFactory
         // Nothing we'd like to prepare()
 };
 
-class ConnectionFactory : public DBusProxyFactory
+class TELEPATHY_QT4_EXPORT ConnectionFactory : public DBusProxyFactory
 {
     public:
         ConnectionFactory(const QDBusConnection &bus);
