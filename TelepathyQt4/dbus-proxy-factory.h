@@ -88,6 +88,34 @@ private:
     Private *mPriv;
 };
 
+class AccountFactory : public DBusProxyFactory
+{
+    public:
+        AccountFactory(const QDBusConnection &bus);
+        ~AccountFactory();
+
+    protected:
+        virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
+        virtual SharedPtr<RefCounted> construct(const QDBusConnection &busConnection,
+            const QString &busName, const QString &objectPath,
+            const QVariantMap &immutableProperties) const;
+        // Nothing we'd like to prepare()
+};
+
+class ConnectionFactory : public DBusProxyFactory
+{
+    public:
+        ConnectionFactory(const QDBusConnection &bus);
+        ~ConnectionFactory();
+
+    protected:
+        virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
+        virtual SharedPtr<RefCounted> construct(const QDBusConnection &busConnection,
+            const QString &busName, const QString &objectPath,
+            const QVariantMap &immutableProperties) const;
+        // Nothing we'd like to prepare()
+};
+
 } // Tp
 
 #endif

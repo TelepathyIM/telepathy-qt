@@ -26,6 +26,8 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/Connection>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/Feature>
 #include <TelepathyQt4/ReadyObject>
@@ -182,6 +184,52 @@ void DBusProxyFactory::Cache::onProxyInvalidated(Tp::DBusProxy *proxy)
     debug() << "Removing from factory cache invalidated proxy for" << key;
 
     proxies.remove(key);
+}
+
+AccountFactory::AccountFactory(const QDBusConnection &bus)
+    : DBusProxyFactory(bus)
+{
+}
+
+AccountFactory::~AccountFactory()
+{
+}
+
+QString AccountFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
+{
+    return uniqueOrWellKnown;
+}
+
+SharedPtr<RefCounted> AccountFactory::construct(const QDBusConnection &busConnection,
+        const QString &busName, const QString &objectPath,
+        const QVariantMap &immutableProperties) const
+{
+    Q_UNUSED(immutableProperties);
+
+    return Account::create(busConnection, busName, objectPath);
+}
+
+ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)
+    : DBusProxyFactory(bus)
+{
+}
+
+ConnectionFactory::~ConnectionFactory()
+{
+}
+
+QString ConnectionFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
+{
+    return StatefulDBusProxy::uniqueNameFrom(bus(), uniqueOrWellKnown);
+}
+
+SharedPtr<RefCounted> ConnectionFactory::construct(const QDBusConnection &busConnection,
+        const QString &busName, const QString &objectPath,
+        const QVariantMap &immutableProperties) const
+{
+    Q_UNUSED(immutableProperties);
+
+    return Connection::create(busConnection, busName, objectPath);
 }
 
 }

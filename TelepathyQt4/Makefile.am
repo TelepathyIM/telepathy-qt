@@ -209,6 +209,7 @@ tpqt4include_HEADERS = \
     AbstractClientObserver \
     AbstractInterface \
     Account \
+    AccountFactory \
     AccountManager \
     AccountSet \
     CapabilitiesBase \
@@ -220,6 +221,7 @@ tpqt4include_HEADERS = \
     ClientRegistrar \
     Connection \
     ConnectionCapabilities \
+    ConnectionFactory \
     ConnectionManager \
     Constants \
     Contact \
