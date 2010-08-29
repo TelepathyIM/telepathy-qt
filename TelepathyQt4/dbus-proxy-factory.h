@@ -100,6 +100,10 @@ class TELEPATHY_QT4_EXPORT AccountFactory : public DBusProxyFactory
             const QString &busName, const QString &objectPath,
             const QVariantMap &immutableProperties) const;
         // Nothing we'd like to prepare()
+
+    private:
+        struct Private;
+        Private *mPriv; // Currently unused, just for future proofing
 };
 
 class TELEPATHY_QT4_EXPORT ConnectionFactory : public DBusProxyFactory
@@ -114,6 +118,10 @@ class TELEPATHY_QT4_EXPORT ConnectionFactory : public DBusProxyFactory
             const QString &busName, const QString &objectPath,
             const QVariantMap &immutableProperties) const;
         // Nothing we'd like to prepare()
+
+    private:
+        struct Private;
+        Private *mPriv; // Currently unused, just for future proofing
 };
 
 } // Tp
