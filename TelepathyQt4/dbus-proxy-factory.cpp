@@ -186,12 +186,17 @@ void DBusProxyFactory::Cache::onProxyInvalidated(Tp::DBusProxy *proxy)
     proxies.remove(key);
 }
 
-AccountFactory::AccountFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus)
+AccountFactory::~AccountFactory()
 {
 }
 
-AccountFactory::~AccountFactory()
+AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus)
+{
+    return AccountFactoryPtr(new AccountFactory(bus));
+}
+
+AccountFactory::AccountFactory(const QDBusConnection &bus)
+    : DBusProxyFactory(bus)
 {
 }
 
@@ -209,12 +214,17 @@ SharedPtr<RefCounted> AccountFactory::construct(const QDBusConnection &busConnec
     return Account::create(busConnection, busName, objectPath);
 }
 
-ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus)
+ConnectionFactory::~ConnectionFactory()
 {
 }
 
-ConnectionFactory::~ConnectionFactory()
+ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus)
+{
+    return ConnectionFactoryPtr(new ConnectionFactory(bus));
+}
+
+ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)
+    : DBusProxyFactory(bus)
 {
 }
 

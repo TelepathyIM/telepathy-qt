@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/Global>
 #include <TelepathyQt4/SharedPtr>
+#include <TelepathyQt4/Types>
 
 // For Q_DISABLE_COPY
 #include <QtGlobal>
@@ -91,10 +92,13 @@ private:
 class TELEPATHY_QT4_EXPORT AccountFactory : public DBusProxyFactory
 {
     public:
-        AccountFactory(const QDBusConnection &bus);
-        ~AccountFactory();
+        virtual ~AccountFactory();
+
+        static AccountFactoryPtr create(const QDBusConnection &bus);
 
     protected:
+        AccountFactory(const QDBusConnection &bus);
+
         virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
         virtual SharedPtr<RefCounted> construct(const QDBusConnection &busConnection,
             const QString &busName, const QString &objectPath,
@@ -109,10 +113,13 @@ class TELEPATHY_QT4_EXPORT AccountFactory : public DBusProxyFactory
 class TELEPATHY_QT4_EXPORT ConnectionFactory : public DBusProxyFactory
 {
     public:
-        ConnectionFactory(const QDBusConnection &bus);
-        ~ConnectionFactory();
+        virtual ~ConnectionFactory();
+
+        static ConnectionFactoryPtr create(const QDBusConnection &bus);
 
     protected:
+        ConnectionFactory(const QDBusConnection &bus);
+
         virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
         virtual SharedPtr<RefCounted> construct(const QDBusConnection &busConnection,
             const QString &busName, const QString &objectPath,
