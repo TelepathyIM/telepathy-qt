@@ -52,37 +52,28 @@ class TELEPATHY_QT4_EXPORT DBusProxyFactory : public RefCounted
     Q_DISABLE_COPY(DBusProxyFactory)
 
 public:
-    void addFeature(const Feature &feature);
-    void addFeatures(const Features &features);
-
-    Features features() const;
-
-    PendingReady *getProxy(const QString &busName, const QString &objectPath,
-            const QVariantMap &immutableProperties = QVariantMap()) const;
-
     virtual ~DBusProxyFactory();
 
-    const QDBusConnection &bus() const;
+    const QDBusConnection &dbusConnection() const;
 
 protected:
     DBusProxyFactory(const QDBusConnection &bus);
+
+    // API/ABI break TODO: Make DBusProxy be a RefCounted so this can be SharedPtr<DBusProxy>
+    // If we don't want DBusProxy itself be a RefCounted, let's add RefCountedDBusProxy or something
+    // as an intermediate subclass?
+    SharedPtr<RefCounted> getCachedProxy(const QString &busName, const QString &objectPath) const;
+
+    PendingReady *nowHaveProxy(const SharedPtr<RefCounted> &proxy, bool created) const;
 
     // I don't want this to be non-pure virtual, because I want ALL subclasses to have to think
     // about whether or not they need to uniquefy the name or not. If a subclass doesn't implement
     // this while it should, matching with the cache for future requests and invalidation breaks.
     virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const = 0;
 
-    // API/ABI break TODO: Make DBusProxy be a RefCounted so this can be SharedPtr<DBusProxy>
-    // If we don't want DBusProxy itself be a RefCounted, let's add RefCountedDBusProxy or something
-    // as an intermediate subclass?
-    virtual SharedPtr<RefCounted> construct(const QDBusConnection &busConnection,
-            const QString &busName, const QString &objectPath,
-            const QVariantMap &immutableProperties) const = 0;
-
     virtual PendingOperation *prepare(const SharedPtr<RefCounted> &object) const;
 
-    virtual Features featuresFor(const QString &busName, const QString &objectPath,
-            const QVariantMap &immutableProperties) const;
+    virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const = 0;
 
 private:
     class Cache;
@@ -92,49 +83,71 @@ private:
     Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT AccountFactory : public DBusProxyFactory
+class TELEPATHY_QT4_EXPORT FixedFeatureFactory : public DBusProxyFactory
 {
-    public:
-        virtual ~AccountFactory();
+public:
+    virtual ~FixedFeatureFactory();
 
-        static AccountFactoryPtr create(const QDBusConnection &bus);
-        static AccountFactoryPtr coreFactory(const QDBusConnection &bus);
+    void addFeature(const Feature &feature);
+    void addFeatures(const Features &features);
 
-    protected:
-        AccountFactory(const QDBusConnection &bus);
+    Features features() const;
 
-        virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
-        virtual SharedPtr<RefCounted> construct(const QDBusConnection &busConnection,
-            const QString &busName, const QString &objectPath,
-            const QVariantMap &immutableProperties) const;
-        // Nothing we'd like to prepare()
-        // We don't want to set any instance-specific features
+protected:
+    FixedFeatureFactory(const QDBusConnection &bus);
 
-    private:
-        struct Private;
-        Private *mPriv; // Currently unused, just for future proofing
+    virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
+
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
 };
 
-class TELEPATHY_QT4_EXPORT ConnectionFactory : public DBusProxyFactory
+class TELEPATHY_QT4_EXPORT AccountFactory : public FixedFeatureFactory
 {
-    public:
-        virtual ~ConnectionFactory();
+public:
+    virtual ~AccountFactory();
 
-        static ConnectionFactoryPtr create(const QDBusConnection &bus);
+    static AccountFactoryPtr create(const QDBusConnection &bus);
+    static AccountFactoryPtr coreFactory(const QDBusConnection &bus);
 
-    protected:
-        ConnectionFactory(const QDBusConnection &bus);
+    PendingReady *getProxy(const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory) const;
 
-        virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
-        virtual SharedPtr<RefCounted> construct(const QDBusConnection &busConnection,
-            const QString &busName, const QString &objectPath,
-            const QVariantMap &immutableProperties) const;
-        // Nothing we'd like to prepare()
-        // We don't want to set any instance-specific features
+protected:
+    AccountFactory(const QDBusConnection &bus);
 
-    private:
-        struct Private;
-        Private *mPriv; // Currently unused, just for future proofing
+    virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
+    // Nothing we'd like to prepare()
+    // Fixed features
+
+private:
+    struct Private;
+    Private *mPriv; // Currently unused, just for future-proofing
+};
+
+class TELEPATHY_QT4_EXPORT ConnectionFactory : public FixedFeatureFactory
+{
+public:
+    virtual ~ConnectionFactory();
+
+    static ConnectionFactoryPtr create(const QDBusConnection &bus);
+
+    PendingReady *getProxy(const QString &busName, const QString &objectPath,
+            const ChannelFactoryConstPtr &chanFactory) const;
+
+protected:
+    ConnectionFactory(const QDBusConnection &bus);
+
+    virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
+    // Nothing we'd like to prepare()
+    // Fixed features
+
+private:
+    struct Private;
+    Private *mPriv; // Currently unused, just for future-proofing
 };
 
 } // Tp

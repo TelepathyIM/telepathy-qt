@@ -40,7 +40,6 @@ namespace Tp
 struct DBusProxyFactory::Private
 {
     QDBusConnection bus;
-    Features features;
     Cache *cache;
 
     Private(const QDBusConnection &bus)
@@ -52,78 +51,12 @@ struct DBusProxyFactory::Private
     }
 };
 
-void DBusProxyFactory::addFeature(const Feature &feature)
-{
-    addFeatures(Features(feature));
-}
-
-void DBusProxyFactory::addFeatures(const Features &features)
-{
-    mPriv->features.unite(features);
-}
-
-Features DBusProxyFactory::features() const
-{
-    return mPriv->features;
-}
-
-PendingReady *DBusProxyFactory::getProxy(const QString &busName, const QString &objectPath,
-        const QVariantMap &immutableProperties) const
-{
-    // I really hate the casts needed in this function - we must really do something about the
-    // DBusProxy class hierarchy so that every DBusProxy(Something) is always a ReadyObject and a
-    // RefCounted, in the API/ABI break - then most of these proxyMisc-> things become just proxy->
-
-    QString finalName = finalBusNameFrom(busName);
-    Features specificFeatures = featuresFor(busName, objectPath, immutableProperties);
-
-    SharedPtr<RefCounted> proxy = mPriv->cache->get(Cache::Key(finalName, objectPath));
-    if (!proxy) {
-        proxy = construct(bus(), busName, objectPath, immutableProperties);
-
-        QString actualBusName = dynamic_cast<DBusProxy *>(proxy.data())->busName();
-        if (actualBusName != finalName) {
-            warning() << "Specified final name" << finalName
-                      << "doesn't match actual name" << actualBusName;
-            warning().nospace() << "For proxy caching to work, reimplement finalBusNameFrom() "
-                "correctly in your DBusProxyFactory subclass";
-        }
-
-        // We can still make invalidation work by storing it by the actual bus name
-        mPriv->cache->put(Cache::Key(actualBusName, objectPath), proxy);
-
-        PendingOperation *prepareOp = prepare(proxy);
-        if (prepareOp) {
-            QObject *proxyQObject = dynamic_cast<QObject *>(proxy.data());
-            Q_ASSERT(proxyQObject != NULL);
-            return new PendingReady(prepareOp, specificFeatures, proxyQObject, proxyQObject);
-        }
-    }
-
-    // This sucks ...
-    ReadyObject *proxyReady = dynamic_cast<ReadyObject *>(proxy.data());
-    Q_ASSERT(proxyReady != NULL);
-
-    // ... but this sucks even more!
-    QObject *proxyQObject = dynamic_cast<QObject *>(proxy.data());
-    Q_ASSERT(proxyQObject != NULL);
-
-    if (!specificFeatures.isEmpty() && !proxyReady->isReady(specificFeatures)) {
-        return proxyReady->becomeReady(specificFeatures);
-    }
-
-    // No features requested or they are all ready - optimize a bit by not calling ReadinessHelper
-    PendingReady *readyOp = new PendingReady(specificFeatures, proxyQObject, proxyQObject);
-    readyOp->setFinished();
-    return readyOp;
-}
-
 DBusProxyFactory::~DBusProxyFactory()
 {
     delete mPriv;
 }
 
-const QDBusConnection &DBusProxyFactory::bus() const
+const QDBusConnection &DBusProxyFactory::dbusConnection() const
 {
     return mPriv->bus;
 }
@@ -133,20 +66,52 @@ DBusProxyFactory::DBusProxyFactory(const QDBusConnection &bus)
 {
 }
 
+SharedPtr<RefCounted> DBusProxyFactory::getCachedProxy(const QString &busName,
+        const QString &objectPath) const
+{
+    QString finalName = finalBusNameFrom(busName);
+    return mPriv->cache->get(Cache::Key(finalName, objectPath));
+}
+
+PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy, bool created) const
+{
+    Q_ASSERT(!proxy.isNull());
+
+    // I really hate the casts needed in this function - we must really do something about the
+    // DBusProxy class hierarchy so that every DBusProxy(Something) is always a ReadyObject and a
+    // RefCounted, in the API/ABI break - then most of these proxyMisc-> things become just proxy->
+
+    DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(proxy.data());
+    ReadyObject *proxyReady = dynamic_cast<ReadyObject *>(proxy.data());
+
+    Features specificFeatures = featuresFor(proxy);
+
+    if (created) {
+        // We can still make invalidation work by storing it by the actual bus name
+        mPriv->cache->put(Cache::Key(proxyProxy->busName(), proxyProxy->objectPath()), proxy);
+
+        // FIXME: Until this PendingOp completes, we should return the same nested PendingReady even
+        // for !created requests
+        PendingOperation *prepareOp = prepare(proxy);
+        if (prepareOp) {
+            return new PendingReady(prepareOp, specificFeatures, proxyProxy, proxyProxy);
+        }
+    }
+
+    if (!specificFeatures.isEmpty() && !proxyReady->isReady(specificFeatures)) {
+        return proxyReady->becomeReady(specificFeatures);
+    }
+
+    // No features requested or they are all ready - optimize a bit by not calling ReadinessHelper
+    PendingReady *readyOp = new PendingReady(specificFeatures, proxyProxy, proxyProxy);
+    readyOp->setFinished();
+    return readyOp;
+}
+
 PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &object) const
 {
     // Nothing we could think about needs doing
     return NULL;
-}
-
-Features DBusProxyFactory::featuresFor(const QString &busName, const QString &objectPath,
-        const QVariantMap &immutableProperties) const
-{
-    Q_UNUSED(busName);
-    Q_UNUSED(objectPath);
-    Q_UNUSED(immutableProperties);
-
-    return features();
 }
 
 DBusProxyFactory::Cache::Cache()
@@ -197,6 +162,43 @@ void DBusProxyFactory::Cache::onProxyInvalidated(Tp::DBusProxy *proxy)
     proxies.remove(key);
 }
 
+struct FixedFeatureFactory::Private
+{
+    Features features;
+};
+
+FixedFeatureFactory::~FixedFeatureFactory()
+{
+    delete mPriv;
+}
+
+void FixedFeatureFactory::addFeature(const Feature &feature)
+{
+    addFeatures(Features(feature));
+}
+
+void FixedFeatureFactory::addFeatures(const Features &features)
+{
+    mPriv->features.unite(features);
+}
+
+Features FixedFeatureFactory::features() const
+{
+    return mPriv->features;
+}
+
+FixedFeatureFactory::FixedFeatureFactory(const QDBusConnection &bus)
+    : DBusProxyFactory(bus), mPriv(new Private)
+{
+}
+
+Features FixedFeatureFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
+{
+    Q_UNUSED(proxy);
+
+    return features();
+}
+
 AccountFactory::~AccountFactory()
 {
 }
@@ -215,23 +217,27 @@ AccountFactoryPtr AccountFactory::coreFactory(const QDBusConnection &bus)
     return factory;
 }
 
+PendingReady *AccountFactory::getProxy(const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory) const
+{
+    SharedPtr<RefCounted> proxy = getCachedProxy(busName, objectPath);
+    if (proxy) {
+        return nowHaveProxy(proxy, false);
+    }
+
+    proxy = Account::create(dbusConnection(), busName, objectPath/*, connFactory, chanFactory*/);
+    return nowHaveProxy(proxy, true);
+}
+
 AccountFactory::AccountFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus)
+    : FixedFeatureFactory(bus)
 {
 }
 
 QString AccountFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
 {
     return uniqueOrWellKnown;
-}
-
-SharedPtr<RefCounted> AccountFactory::construct(const QDBusConnection &busConnection,
-        const QString &busName, const QString &objectPath,
-        const QVariantMap &immutableProperties) const
-{
-    Q_UNUSED(immutableProperties);
-
-    return Account::create(busConnection, busName, objectPath);
 }
 
 ConnectionFactory::~ConnectionFactory()
@@ -243,23 +249,26 @@ ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus)
     return ConnectionFactoryPtr(new ConnectionFactory(bus));
 }
 
+PendingReady *ConnectionFactory::getProxy(const QString &busName, const QString &objectPath,
+            const ChannelFactoryConstPtr &chanFactory) const
+{
+    SharedPtr<RefCounted> proxy = getCachedProxy(busName, objectPath);
+    if (proxy) {
+        return nowHaveProxy(proxy, false);
+    }
+
+    proxy = Connection::create(dbusConnection(), busName, objectPath/*, chanFactory*/);
+    return nowHaveProxy(proxy, true);
+}
+
 ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus)
+    : FixedFeatureFactory(bus)
 {
 }
 
 QString ConnectionFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
 {
-    return StatefulDBusProxy::uniqueNameFrom(bus(), uniqueOrWellKnown);
-}
-
-SharedPtr<RefCounted> ConnectionFactory::construct(const QDBusConnection &busConnection,
-        const QString &busName, const QString &objectPath,
-        const QVariantMap &immutableProperties) const
-{
-    Q_UNUSED(immutableProperties);
-
-    return Connection::create(busConnection, busName, objectPath);
+    return StatefulDBusProxy::uniqueNameFrom(dbusConnection(), uniqueOrWellKnown);
 }
 
 }
