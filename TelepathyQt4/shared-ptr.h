@@ -57,8 +57,13 @@ public:
     inline RefCounted() : strongref(0), wd(0) { }
     inline virtual ~RefCounted() { if (wd) { wd->d = 0; } }
 
+    // So why were these not const in the first place although strongref was?
+    // API/ABI break TODO: remove, just leave the const variants in
     inline void ref() { strongref.ref(); }
     inline bool deref() { return strongref.deref(); }
+
+    inline void ref() const { strongref.ref(); }
+    inline bool deref() const { return strongref.deref(); }
 
     mutable QAtomicInt strongref;
     WeakData *wd;
