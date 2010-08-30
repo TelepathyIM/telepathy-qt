@@ -28,6 +28,7 @@
 
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/ReadinessHelper>
+#include <TelepathyQt4/SharedPtr>
 
 #include <QSet>
 
@@ -40,13 +41,15 @@ class TELEPATHY_QT4_EXPORT PendingReady: public PendingOperation
     Q_DISABLE_COPY(PendingReady);
 
 public:
-    PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures, QObject *object,
-            QObject *parent = 0);
+    PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures,
+            const SharedPtr<RefCounted> &proxy, QObject *parent = 0);
     PendingReady(const Features &requestedFeatures, QObject *object,
             QObject *parent = 0);
     ~PendingReady();
 
     QObject *object() const;
+    // API/ABI break TODO: make this SharedPtr<TheRefCtdDBusProxyClass>
+    SharedPtr<RefCounted> proxy() const;
 
     Features requestedFeatures() const;
 

@@ -32,14 +32,16 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
 {
-    Private(const Features &requestedFeatures, QObject *object) :
+    Private(const Features &requestedFeatures, QObject *object, const SharedPtr<RefCounted> &proxy) :
         requestedFeatures(requestedFeatures),
-        object(object)
+        object(object),
+        proxy(proxy)
     {
     }
 
     Features requestedFeatures;
     QObject *object;
+    SharedPtr<RefCounted> proxy;
 };
 
 /**
@@ -66,9 +68,9 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
  * \param object The object that will become ready.
  */
 PendingReady::PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures,
-        QObject *object, QObject *parent)
+        const SharedPtr<RefCounted> &proxy, QObject *parent)
     : PendingOperation(parent),
-      mPriv(new Private(requestedFeatures, object))
+      mPriv(new Private(requestedFeatures, 0, proxy))
 {
     if (!finishFirst || finishFirst->isFinished()) {
         onFirstFinished(finishFirst);
@@ -87,7 +89,7 @@ PendingReady::PendingReady(PendingOperation *finishFirst, const Features &reques
 PendingReady::PendingReady(const Features &requestedFeatures,
         QObject *object, QObject *parent)
     : PendingOperation(parent),
-      mPriv(new Private(requestedFeatures, object))
+      mPriv(new Private(requestedFeatures, object, SharedPtr<RefCounted>()))
 {
 }
 
@@ -107,6 +109,11 @@ PendingReady::~PendingReady()
 QObject *PendingReady::object() const
 {
     return mPriv->object;
+}
+
+SharedPtr<RefCounted> PendingReady::proxy() const
+{
+    return mPriv->proxy;
 }
 
 /**
@@ -139,7 +146,7 @@ void PendingReady::onFirstFinished(Tp::PendingOperation *first)
     }
 
     // API/ABI break TODO: Make some baseclass exist which is both a QObject and a ReadyObject...
-    connect(dynamic_cast<ReadyObject *>(object())->becomeReady(requestedFeatures()),
+    connect(dynamic_cast<ReadyObject *>(proxy().data())->becomeReady(requestedFeatures()),
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onNestedFinished(Tp::PendingOperation*)));
 }

@@ -86,24 +86,22 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy,
 
     Features specificFeatures = featuresFor(proxy);
 
-    if (created) {
-        // We can still make invalidation work by storing it by the actual bus name
-        mPriv->cache->put(Cache::Key(proxyProxy->busName(), proxyProxy->objectPath()), proxy);
+    // TODO: lookup existing prepareOp, if any, from a private mapping
+    PendingOperation *prepareOp = NULL;
 
-        // FIXME: Until this PendingOp completes, we should return the same nested PendingReady even
-        // for !created requests
-        PendingOperation *prepareOp = prepare(proxy);
-        if (prepareOp) {
-            return new PendingReady(prepareOp, specificFeatures, proxyProxy, proxyProxy);
-        }
+    if (created) {
+        mPriv->cache->put(Cache::Key(proxyProxy->busName(), proxyProxy->objectPath()), proxy);
+        prepareOp = prepare(proxy);
+        // TODO: insert to private prepare op mapping and make sure it's removed when it finishes/is
+        // destroyed
     }
 
-    if (!specificFeatures.isEmpty() && !proxyReady->isReady(specificFeatures)) {
-        return proxyReady->becomeReady(specificFeatures);
+    if (prepareOp || (!specificFeatures.isEmpty() && !proxyReady->isReady(specificFeatures))) {
+        return new PendingReady(prepareOp, specificFeatures, proxy, proxyProxy);
     }
 
     // No features requested or they are all ready - optimize a bit by not calling ReadinessHelper
-    PendingReady *readyOp = new PendingReady(specificFeatures, proxyProxy, proxyProxy);
+    PendingReady *readyOp = new PendingReady(0, specificFeatures, proxy, proxyProxy);
     readyOp->setFinished();
     return readyOp;
 }
