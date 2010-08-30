@@ -29,6 +29,9 @@
 #include <TelepathyQt4/_gen/cli-account-manager.h>
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFactory>
+#include <TelepathyQt4/ChannelFactory>
+#include <TelepathyQt4/ConnectionFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
@@ -60,10 +63,26 @@ class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
+    // API/ABI break TODO: Remove these and have just all-default-argument versions with the factory
+    // params
     static AccountManagerPtr create();
     static AccountManagerPtr create(const QDBusConnection &bus);
 
+    static AccountManagerPtr create(const ChannelFactoryConstPtr &channelFactory,
+            const ConnectionFactoryConstPtr &connectionFactory =
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
+            const AccountFactoryConstPtr &accountFactory =
+                AccountFactory::coreFactory(QDBusConnection::sessionBus()));
+    static AccountManagerPtr create(const QDBusConnection &bus,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const AccountFactoryConstPtr &accountFactory);
+
     virtual ~AccountManager();
+
+    AccountFactoryConstPtr accountFactory() const;
+    ConnectionFactoryConstPtr connectionFactory() const;
+    ChannelFactoryConstPtr channelFactory() const;
 
     TELEPATHY_QT4_DEPRECATED QStringList validAccountPaths() const;
     TELEPATHY_QT4_DEPRECATED QStringList invalidAccountPaths() const;
@@ -113,6 +132,10 @@ Q_SIGNALS:
 protected:
     AccountManager();
     AccountManager(const QDBusConnection &bus);
+    AccountManager(const QDBusConnection &bus,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const AccountFactoryConstPtr &accountFactory);
 
     Client::AccountManagerInterface *baseInterface() const;
 

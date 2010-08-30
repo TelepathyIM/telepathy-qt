@@ -41,7 +41,8 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
 {
-    Private(AccountManager *parent);
+    Private(AccountManager *parent, const ChannelFactoryConstPtr &chanFactory,
+            const ConnectionFactoryConstPtr &connFactory, const AccountFactoryConstPtr &accFactory);
     ~Private();
 
     void init();
@@ -62,17 +63,25 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
 
     ReadinessHelper *readinessHelper;
 
+    ChannelFactoryConstPtr chanFactory;
+    ConnectionFactoryConstPtr connFactory;
+    AccountFactoryConstPtr accFactory;
+
     // Introspection
     QHash<QString, AccountPtr> incompleteAccounts;
     QHash<QString, AccountPtr> accounts;
     QStringList supportedAccountProperties;
 };
 
-AccountManager::Private::Private(AccountManager *parent)
+AccountManager::Private::Private(AccountManager *parent, const ChannelFactoryConstPtr &chanFactory,
+            const ConnectionFactoryConstPtr &connFactory, const AccountFactoryConstPtr &accFactory)
     : parent(parent),
       baseInterface(new Client::AccountManagerInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
-      readinessHelper(parent->readinessHelper())
+      readinessHelper(parent->readinessHelper()),
+      chanFactory(chanFactory),
+      connFactory(connFactory),
+      accFactory(accFactory)
 {
     debug() << "Creating new AccountManager:" << parent->busName();
 
@@ -176,9 +185,13 @@ void AccountManager::Private::addAccountForPath(const QString &path)
         return;
     }
 
-    AccountPtr account = Account::create(parent->dbusConnection(),
-                parent->busName(), path);
-    parent->connect(account->becomeReady(),
+    PendingReady *readyOp = accFactory->getProxy(parent->busName(), path, connFactory,
+            chanFactory);
+
+    AccountPtr account(AccountPtr::dynamicCast(readyOp->proxy()));
+    Q_ASSERT(!account.isNull());
+
+    parent->connect(readyOp,
             SIGNAL(finished(Tp::PendingOperation *)),
             SLOT(onAccountReady(Tp::PendingOperation *)));
     incompleteAccounts.insert(path, account);
@@ -317,6 +330,23 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
     return AccountManagerPtr(new AccountManager(bus));
 }
 
+AccountManagerPtr AccountManager::create(const ChannelFactoryConstPtr &channelFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const AccountFactoryConstPtr &accountFactory)
+{
+    return AccountManagerPtr(new AccountManager(
+                QDBusConnection::sessionBus(), channelFactory, connectionFactory, accountFactory));
+}
+
+AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const AccountFactoryConstPtr &accountFactory)
+{
+    return AccountManagerPtr(new AccountManager(
+                bus, channelFactory, connectionFactory, accountFactory));
+}
+
 /**
  * Construct a new AccountManager object using QDBusConnection::sessionBus().
  */
@@ -326,7 +356,11 @@ AccountManager::AccountManager()
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
       OptionalInterfaceFactory<AccountManager>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(
+                  this,
+                  ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()),
+                  ConnectionFactory::create(QDBusConnection::sessionBus()),
+                  AccountFactory::coreFactory(QDBusConnection::sessionBus())))
 {
 }
 
@@ -341,7 +375,29 @@ AccountManager::AccountManager(const QDBusConnection& bus)
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
       OptionalInterfaceFactory<AccountManager>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(
+                  this,
+                  ChannelFactory::stockFreshFactory(bus),
+                  ConnectionFactory::create(bus),
+                  AccountFactory::coreFactory(bus)))
+{
+}
+
+/**
+ * Construct a new AccountManager object using the given \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ */
+AccountManager::AccountManager(const QDBusConnection& bus,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const AccountFactoryConstPtr &accountFactory)
+    : StatelessDBusProxy(bus,
+            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
+      OptionalInterfaceFactory<AccountManager>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this, channelFactory, connectionFactory, accountFactory))
 {
 }
 
@@ -784,7 +840,7 @@ void AccountManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
 void AccountManager::onAccountReady(Tp::PendingOperation *op)
 {
     PendingReady *pr = qobject_cast<PendingReady*>(op);
-    AccountPtr account = AccountPtr(qobject_cast<Account*>(pr->object()));
+    AccountPtr account = AccountPtr::dynamicCast(pr->proxy());
     QString path = account->objectPath();
 
     /* Some error occurred or the account was removed before become ready */
