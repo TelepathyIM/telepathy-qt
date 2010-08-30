@@ -38,6 +38,27 @@
 namespace Tp
 {
 
+ChannelFactory::~ChannelFactory()
+{
+}
+
+ChannelFactoryPtr ChannelFactory::stockFreshFactory(const QDBusConnection &bus)
+{
+    return ChannelFactoryPtr(new ChannelFactory(bus));
+}
+
+PendingReady *ChannelFactory::getProxy(const ConnectionPtr &connection, const QString &channelPath,
+        const QVariantMap &immutableProperties) const
+{
+    SharedPtr<RefCounted> proxy = getCachedProxy(connection->busName(), channelPath);
+    if (proxy) {
+        return nowHaveProxy(proxy, false);
+    }
+
+    proxy = create(connection, channelPath, immutableProperties);
+    return nowHaveProxy(proxy, true);
+}
+
 ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
         const QString &channelPath, const QVariantMap &immutableProperties)
 {
@@ -77,6 +98,22 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
 
     // ContactList, old-style Tubes, or a future channel type
     return Channel::create(connection, channelPath, immutableProperties);
+}
+
+ChannelFactory::ChannelFactory(const QDBusConnection &bus)
+    : DBusProxyFactory(bus)
+{
+}
+
+QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
+{
+    return StatefulDBusProxy::uniqueNameFrom(dbusConnection(), uniqueOrWellKnown);
+}
+
+Features ChannelFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
+{
+    // TODO return whatever the user / defaults has specified
+    return Features();
 }
 
 } // Tp

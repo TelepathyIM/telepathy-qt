@@ -22,19 +22,48 @@
 #ifndef _TelepathyQt4_channel_factory_h_HEADER_GUARD_
 #define _TelepathyQt4_channel_factory_h_HEADER_GUARD_
 
+#include <TelepathyQt4/DBusProxyFactory>
+#include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
+// For Q_DISABLE_COPY
+#include <QtGlobal>
 #include <QString>
 #include <QVariantMap>
+
+class QDBusConnection;
 
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ChannelFactory
+class TELEPATHY_QT4_EXPORT ChannelFactory : public DBusProxyFactory
 {
+    Q_DISABLE_COPY(ChannelFactory)
+
 public:
+    virtual ~ChannelFactory();
+
+    // TODO: for now, only stockFreshFactory exists so this is not quite as dynamic as it should
+    // be yet - so I don't think we should even have a "create" constructor yet
+
+    static ChannelFactoryPtr stockFreshFactory(const QDBusConnection &bus);
+
+    PendingReady *getProxy(const ConnectionPtr &connection, const QString &channelPath,
+            const QVariantMap &immutableProperties) const;
+
+    // TODO: remove and deprecate
     static ChannelPtr create(const ConnectionPtr &connection,
-        const QString &channelPath, const QVariantMap &immutableProperties);
+            const QString &channelPath, const QVariantMap &immutableProperties);
+protected:
+    ChannelFactory(const QDBusConnection &bus);
+
+    virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
+    // Nothing we'd like to prepare()
+    virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
+
+private:
+    struct Private;
+    Private *mPriv;
 };
 
 } // Tp

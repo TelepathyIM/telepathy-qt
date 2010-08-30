@@ -216,6 +216,7 @@ tpqt4include_HEADERS = \
     Channel \
     ChannelDispatcher \
     ChannelDispatchOperation \
+    ChannelFactory \
     ChannelRequest \
     Client \
     ClientRegistrar \
@@ -335,6 +336,7 @@ tpqt4include_HEADERS = \
     channel.h \
     channel-dispatcher.h \
     channel-dispatch-operation.h \
+    channel-factory.h \
     channel-request.h \
     client.h \
     client-registrar.h \
