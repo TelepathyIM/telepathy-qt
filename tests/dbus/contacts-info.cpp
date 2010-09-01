@@ -214,7 +214,7 @@ void TestContactsInfo::testInfo()
     QCOMPARE(contactBar->info()[0].fieldName, QLatin1String("n"));
     QCOMPARE(contactBar->info()[0].fieldValue[0], QLatin1String("Bar"));
 
-    foreach (const ContactPtr &contact, mContacts) {
+    Q_FOREACH (const ContactPtr &contact, mContacts) {
         PendingOperation *op = contact->refreshInfo();
         QVERIFY(connect(op,
                     SIGNAL(finished(Tp::PendingOperation*)),

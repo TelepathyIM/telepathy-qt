@@ -199,7 +199,7 @@ void CallWidget::onChannelReady(PendingOperation *op)
     MediaStreams streams = mChan->streams();
     qDebug() << "CallWidget::onChannelReady: number of streams:" << streams.size();
     if (streams.size() > 0) {
-        foreach (const MediaStreamPtr &stream, streams) {
+        Q_FOREACH (const MediaStreamPtr &stream, streams) {
             qDebug() << "  type:" <<
                 (stream->type() == Tp::MediaStreamTypeAudio ? "Audio" : "Video");
             qDebug() << "  direction:" << stream->direction();
@@ -420,7 +420,7 @@ void CallWidget::onBtnSendVideoToggled(bool checked)
 MediaStreamPtr CallWidget::streamForType(Tp::MediaStreamType type) const
 {
     MediaStreams streams = mChan->streams();
-    foreach (const MediaStreamPtr &stream, streams) {
+    Q_FOREACH (const MediaStreamPtr &stream, streams) {
         if (stream->type() == type) {
             return stream;
         }

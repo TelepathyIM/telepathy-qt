@@ -174,7 +174,7 @@ void TestConnRoster::testRoster()
     QStringList ids;
     QList<ContactPtr> pendingSubscription;
     QList<ContactPtr> pendingPublish;
-    foreach (const ContactPtr &contact,
+    Q_FOREACH (const ContactPtr &contact,
             mConn->contactManager()->allKnownContacts()) {
         qDebug() << " contact:" << contact->id() <<
             "- subscription:" << contact->subscriptionState() <<
@@ -202,7 +202,7 @@ void TestConnRoster::testRoster()
 
     int i = 0;
 
-    foreach (const ContactPtr &contact, mContacts) {
+    Q_FOREACH (const ContactPtr &contact, mContacts) {
         QVERIFY(connect(contact.data(),
                         SIGNAL(subscriptionStateChanged(Tp::Contact::PresenceState)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
@@ -271,7 +271,7 @@ void TestConnRoster::testRoster()
 
     i = 0;
     Contact::PresenceState expectedPresenceState;
-    foreach (const ContactPtr &contact, pendingPublish) {
+    Q_FOREACH (const ContactPtr &contact, pendingPublish) {
         QVERIFY(connect(contact.data(),
                         SIGNAL(publishStateChanged(Tp::Contact::PresenceState)),
                         SLOT(expectPresenceStateChanged(Tp::Contact::PresenceState))));
@@ -308,7 +308,7 @@ void TestConnRoster::testRoster()
                     SLOT(expectPendingContactsFinished(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
 
-    foreach (const ContactPtr &contact, mContacts) {
+    Q_FOREACH (const ContactPtr &contact, mContacts) {
         contact->requestPresenceSubscription(QLatin1String("add me now"));
 
         // allKnownContacts is supposed to change here.

@@ -156,17 +156,17 @@ void TestChanGroup::onGroupMembersChanged(
 void TestChanGroup::debugContacts()
 {
     qDebug() << "contacts on group:";
-    foreach (const ContactPtr &contact, mChan->groupContacts()) {
+    Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
         qDebug() << " " << contact->id();
     }
 
     qDebug() << "local pending contacts on group:";
-    foreach (const ContactPtr &contact, mChan->groupLocalPendingContacts()) {
+    Q_FOREACH (const ContactPtr &contact, mChan->groupLocalPendingContacts()) {
         qDebug() << " " << contact->id();
     }
 
     qDebug() << "remote pending contacts on group:";
-    foreach (const ContactPtr &contact, mChan->groupRemotePendingContacts()) {
+    Q_FOREACH (const ContactPtr &contact, mChan->groupRemotePendingContacts()) {
         qDebug() << " " << contact->id();
     }
 }
@@ -271,7 +271,7 @@ void TestChanGroup::testCreateChannel()
     QCOMPARE(mChan->isRequested(), false);
     QVERIFY(mChan->groupContacts().contains(mContacts.first()));
 
-    foreach (ContactPtr contact, mChan->groupContacts())
+    Q_FOREACH (ContactPtr contact, mChan->groupContacts())
         mInitialMembers.push_back(contact->handle()[0]);
 
     QCOMPARE(mChan->groupCanAddContacts(), true);
@@ -337,7 +337,7 @@ void TestChanGroup::commonTest(gboolean properties)
     QVERIFY(mChanService != 0);
 
     TpIntSet *members = tp_intset_sized_new(mInitialMembers.length());
-    foreach (uint handle, mInitialMembers)
+    Q_FOREACH (uint handle, mInitialMembers)
         tp_intset_add(members, handle);
 
     QVERIFY(tp_group_mixin_change_members(G_OBJECT(mChanService), "be there or be []",
@@ -357,7 +357,7 @@ void TestChanGroup::commonTest(gboolean properties)
     QCOMPARE(mChan->isRequested(), true);
     QVERIFY(mChan->groupContacts().contains(mContacts.first()));
 
-    foreach (ContactPtr contact, mChan->groupContacts())
+    Q_FOREACH (ContactPtr contact, mChan->groupContacts())
         mInitialMembers.push_back(contact->handle()[0]);
 
     QCOMPARE(mChan->groupCanAddContacts(), false);

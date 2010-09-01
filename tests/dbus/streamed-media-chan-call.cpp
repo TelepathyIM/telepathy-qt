@@ -234,7 +234,7 @@ void TestStreamedMediaChanCall::onChanInvalidated(Tp::DBusProxy *proxy,
 void TestStreamedMediaChanCall::onNewChannels(const Tp::ChannelDetailsList &channels)
 {
     qDebug() << "new channels";
-    foreach (const Tp::ChannelDetails &details, channels) {
+    Q_FOREACH (const Tp::ChannelDetails &details, channels) {
         QString channelType = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
         bool requested = details.properties.value(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested")).toBool();
         qDebug() << " channelType:" << channelType;

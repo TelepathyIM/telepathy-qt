@@ -212,7 +212,7 @@ public:
         mHandleChannelsUserActionTime = userActionTime;
         mHandleChannelsHandlerInfo = handlerInfo;
 
-        foreach (const ChannelPtr &channel, channels) {
+        Q_FOREACH (const ChannelPtr &channel, channels) {
             connect(channel.data(),
                     SIGNAL(invalidated(Tp::DBusProxy *,
                                        const QString &, const QString &)),
@@ -226,7 +226,7 @@ public:
     void addRequest(const ChannelRequestPtr &request)
     {
         mAddRequestRequest = request;
-        emit requestAdded(request);
+        Q_EMIT requestAdded(request);
     }
 
     void removeRequest(const ChannelRequestPtr &request,
@@ -235,7 +235,7 @@ public:
         mRemoveRequestRequest = request;
         mRemoveRequestErrorName = errorName;
         mRemoveRequestErrorMessage = errorMessage;
-        emit requestRemoved(request, errorName, errorMessage);
+        Q_EMIT requestRemoved(request, errorName, errorMessage);
     }
 
     AccountPtr mObserveChannelsAccount;

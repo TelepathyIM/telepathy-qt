@@ -192,13 +192,13 @@ void TestConferenceChan::testConference()
     expectedObjectPaths << mTextChan1Path << mTextChan2Path;
 
     QStringList objectPaths;
-    foreach (const ChannelPtr &channel, mChan->conferenceInitialChannels()) {
+    Q_FOREACH (const ChannelPtr &channel, mChan->conferenceInitialChannels()) {
         objectPaths << channel->objectPath();
     }
     QCOMPARE(expectedObjectPaths, objectPaths);
 
     objectPaths.clear();
-    foreach (const ChannelPtr &channel, mChan->conferenceChannels()) {
+    Q_FOREACH (const ChannelPtr &channel, mChan->conferenceChannels()) {
         objectPaths << channel->objectPath();
     }
     QCOMPARE(expectedObjectPaths, objectPaths);
@@ -226,7 +226,7 @@ void TestConferenceChan::testConference()
 
     expectedObjectPaths << mTextChan3Path;
     objectPaths.clear();
-    foreach (const ChannelPtr &channel, mChan->conferenceChannels()) {
+    Q_FOREACH (const ChannelPtr &channel, mChan->conferenceChannels()) {
         objectPaths << channel->objectPath();
     }
     QCOMPARE(expectedObjectPaths, objectPaths);

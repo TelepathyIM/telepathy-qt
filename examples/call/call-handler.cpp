@@ -45,7 +45,7 @@ CallHandler::CallHandler(QObject *parent)
 
 CallHandler::~CallHandler()
 {
-    foreach (CallWidget *call, mCalls) {
+    Q_FOREACH (CallWidget *call, mCalls) {
         call->close();
     }
 }

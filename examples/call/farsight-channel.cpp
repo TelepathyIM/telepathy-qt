@@ -152,7 +152,7 @@ FarsightChannel::Private::Private(FarsightChannel *parent,
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
     status = StatusConnecting;
-    emit parent->statusChanged(status);
+    Q_EMIT parent->statusChanged(status);
 }
 
 FarsightChannel::Private::~Private()
@@ -196,7 +196,7 @@ void FarsightChannel::Private::onClosed(TfChannel *tfChannel,
         FarsightChannel::Private *self)
 {
     self->status = StatusDisconnected;
-    emit self->parent->statusChanged(self->status);
+    Q_EMIT self->parent->statusChanged(self->status);
 }
 
 void FarsightChannel::Private::onSessionCreated(TfChannel *tfChannel,
@@ -274,7 +274,7 @@ void FarsightChannel::Private::onSrcPadAdded(TfStream *stream,
     gst_pad_link(src, pad);
 
     self->status = StatusConnected;
-    emit self->parent->statusChanged(self->status);
+    Q_EMIT self->parent->statusChanged(self->status);
 }
 
 gboolean FarsightChannel::Private::onRequestResource(TfStream *stream,

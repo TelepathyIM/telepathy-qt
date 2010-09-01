@@ -192,7 +192,7 @@ void TestConnBasics::testSimplePresence()
     };
 
     SimpleStatusSpecMap statuses = mConn->allowedPresenceStatuses();
-    foreach (QString name, statuses.keys()) {
+    Q_FOREACH (QString name, statuses.keys()) {
         QVERIFY(expectedNames.contains(name));
 
         if (canSetNames.contains(name)) {

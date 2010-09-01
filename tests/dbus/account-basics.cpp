@@ -76,7 +76,7 @@ void TestAccountBasics::onAvatarChanged(const Tp::Avatar &avatar)
 QStringList TestAccountBasics::pathsForAccountList(const QList<Tp::AccountPtr> &list)
 {
     QStringList ret;
-    foreach (const AccountPtr &account, list) {
+    Q_FOREACH (const AccountPtr &account, list) {
         ret << account->objectPath();
     }
     return ret;
@@ -85,7 +85,7 @@ QStringList TestAccountBasics::pathsForAccountList(const QList<Tp::AccountPtr> &
 QStringList TestAccountBasics::pathsForAccountSet(const Tp::AccountSetPtr &set)
 {
     QStringList ret;
-    foreach (const AccountPtr &account, set->accounts()) {
+    Q_FOREACH (const AccountPtr &account, set->accounts()) {
         ret << account->objectPath();
     }
     return ret;

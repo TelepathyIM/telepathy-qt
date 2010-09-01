@@ -277,7 +277,7 @@ void TestChanBasics::testCreateChannel()
         QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
 
         QStringList ids;
-        foreach (const ContactPtr &contact, mChan->groupContacts()) {
+        Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
             ids << contact->id();
         }
         ids.sort();
@@ -318,7 +318,7 @@ void TestChanBasics::testEnsureChannel()
         QCOMPARE(mChan->groupSelfContact(), mConn->selfContact());
 
         QStringList ids;
-        foreach (const ContactPtr &contact, mChan->groupContacts()) {
+        Q_FOREACH (const ContactPtr &contact, mChan->groupContacts()) {
             ids << contact->id();
         }
         ids.sort();

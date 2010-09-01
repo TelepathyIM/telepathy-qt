@@ -181,7 +181,7 @@ void TestConnRosterGroups::testRosterGroups()
             << QLatin1String("sjoerd@example.com");
         expectedContacts.sort();
         QStringList contacts;
-        foreach (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Cambridge"))) {
+        Q_FOREACH (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Cambridge"))) {
             contacts << contact->id();
         }
         contacts.sort();
@@ -196,7 +196,7 @@ void TestConnRosterGroups::testRosterGroups()
             << QLatin1String("guillaume@example.com");
         expectedContacts.sort();
         QStringList contacts;
-        foreach (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Francophones"))) {
+        Q_FOREACH (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Francophones"))) {
             contacts << contact->id();
         }
         contacts.sort();
@@ -209,7 +209,7 @@ void TestConnRosterGroups::testRosterGroups()
         expectedContacts << QLatin1String("olivier@example.com");
         expectedContacts.sort();
         QStringList contacts;
-        foreach (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Montreal"))) {
+        Q_FOREACH (const ContactPtr &contact, contactManager->groupContacts(QLatin1String("Montreal"))) {
             contacts << contact->id();
         }
         contacts.sort();
@@ -240,7 +240,7 @@ void TestConnRosterGroups::testRosterGroups()
 
     // add Montreal contacts to group foo
     Contacts contacts = contactManager->groupContacts(QLatin1String("Montreal"));
-    foreach (const ContactPtr &contact, contacts) {
+    Q_FOREACH (const ContactPtr &contact, contacts) {
         QVERIFY(connect(contact.data(),
                         SIGNAL(addedToGroup(const QString&)),
                         SLOT(onContactAddedToGroup(const QString&))));
@@ -252,13 +252,13 @@ void TestConnRosterGroups::testRosterGroups()
     while (mContactsAddedToGroup != contacts.size()) {
         QCOMPARE(mLoop->exec(), 0);
     }
-    foreach (const ContactPtr &contact, contacts) {
+    Q_FOREACH (const ContactPtr &contact, contacts) {
         QVERIFY(contact->groups().contains(group));
     }
 
     // remove all contacts from group foo
     contacts = contactManager->groupContacts(group);
-    foreach (const ContactPtr &contact, contacts) {
+    Q_FOREACH (const ContactPtr &contact, contacts) {
         QVERIFY(connect(contact.data(),
                         SIGNAL(removedFromGroup(const QString&)),
                         SLOT(onContactRemovedFromGroup(const QString&))));
@@ -270,7 +270,7 @@ void TestConnRosterGroups::testRosterGroups()
     while (mContactsRemovedFromGroup != contacts.size()) {
         QCOMPARE(mLoop->exec(), 0);
     }
-    foreach (const ContactPtr &contact, contacts) {
+    Q_FOREACH (const ContactPtr &contact, contacts) {
         QVERIFY(!contact->groups().contains(group));
     }
 

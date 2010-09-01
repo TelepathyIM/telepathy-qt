@@ -204,6 +204,7 @@ dnl Check for telepathy-glib, and for Qt <-> GLib main loop integration:
 dnl if we have both, we can run more tests
 PKG_CHECK_MODULES(TP_GLIB, [telepathy-glib >= 0.11.11], [have_tp_glib=yes],
                   [have_tp_glib=no])
+TP_GLIB_CFLAGS="$TP_GLIB_CFLAGS -DQT_NO_KEYWORDS"
 AC_SUBST(TP_GLIB_CFLAGS)
 AC_SUBST(TP_GLIB_LIBS)
 if test no = "$have_tp_glib"; then
@@ -228,6 +229,7 @@ dnl audio/video calling example
 PKG_CHECK_MODULES(TP_FARSIGHT, [telepathy-farsight >= 0.0.4 gstreamer-0.10 gstreamer-interfaces-0.10],
                   [have_tp_fs=yes],
                   [have_tp_fs=no])
+TP_FARSIGHT_CFLAGS="$TP_FARSIGHT_CFLAGS -DQT_NO_KEYWORDS"
 AC_SUBST(TP_FARSIGHT_CFLAGS)
 AC_SUBST(TP_FARSIGHT_LIBS)
 if test no = "$have_tp_fs"; then

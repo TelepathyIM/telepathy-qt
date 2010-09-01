@@ -415,7 +415,7 @@ void TestContacts::testForIdentifiers()
     processDBusQueue(mConn.data());
 
     // Check that their handles are in fact released
-    foreach (uint handle, saveHandles) {
+    Q_FOREACH (uint handle, saveHandles) {
         QVERIFY(!tp_handle_is_valid(serviceRepo, handle, NULL));
     }
 }
