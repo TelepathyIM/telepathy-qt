@@ -19,8 +19,7 @@ Fixes:
   emitted if the local user is not a member of the group - probably means
   signaling contacts being removed from roster groups didn't work either
 * Yet another TestConnRosterGroup race condition (freq: 6 in 20000 runs)
-* Build error with glib 2.25, have to use QT_NO_KEYWORDS when using gio and qt
-  together.
+* fd.o#29930 - Build error with glib 2.25
 
 telepathy-qt4 0.3.8 (2010-08-24)
 ================================
