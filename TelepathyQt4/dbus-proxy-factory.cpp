@@ -37,6 +37,7 @@
 
 namespace Tp
 {
+
 struct DBusProxyFactory::Private
 {
     QDBusConnection bus;
