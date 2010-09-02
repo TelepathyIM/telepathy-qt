@@ -85,6 +85,18 @@ AccountManager::Private::Private(AccountManager *parent, const ChannelFactoryCon
 {
     debug() << "Creating new AccountManager:" << parent->busName();
 
+    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
+    }
+
+    if (connFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the connection factory is not the proxy connection";
+    }
+
+    if (accFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the account factory is not the proxy connection";
+    }
+
     ReadinessHelper::Introspectables introspectables;
 
     // As AccountManager does not have predefined statuses let's simulate one (0)
