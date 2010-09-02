@@ -58,6 +58,7 @@
 /tests/prototype/test-*
 /tests/test-key-file
 /tests/test-manager-file
+/tests/test-utils
 Makefile
 Makefile.in
 TAGS
