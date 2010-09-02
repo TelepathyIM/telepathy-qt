@@ -107,10 +107,10 @@ private:
 class TELEPATHY_QT4_EXPORT AccountFactory : public FixedFeatureFactory
 {
 public:
-    virtual ~AccountFactory();
-
     static AccountFactoryPtr create(const QDBusConnection &bus);
     static AccountFactoryPtr coreFactory(const QDBusConnection &bus);
+
+    virtual ~AccountFactory();
 
     PendingReady *proxy(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connFactory,
@@ -131,9 +131,9 @@ private:
 class TELEPATHY_QT4_EXPORT ConnectionFactory : public FixedFeatureFactory
 {
 public:
-    virtual ~ConnectionFactory();
-
     static ConnectionFactoryPtr create(const QDBusConnection &bus);
+
+    virtual ~ConnectionFactory();
 
     PendingReady *proxy(const QString &busName, const QString &objectPath,
             const ChannelFactoryConstPtr &chanFactory) const;

@@ -41,12 +41,12 @@ class TELEPATHY_QT4_EXPORT ChannelFactory : public DBusProxyFactory
     Q_DISABLE_COPY(ChannelFactory)
 
 public:
-    virtual ~ChannelFactory();
-
     // TODO: for now, only stockFreshFactory exists so this is not quite as dynamic as it should
     // be yet - so I don't think we should even have a "create" constructor yet
 
     static ChannelFactoryPtr stockFreshFactory(const QDBusConnection &bus);
+
+    virtual ~ChannelFactory();
 
     PendingReady *proxy(const ConnectionPtr &connection, const QString &channelPath,
             const QVariantMap &immutableProperties) const;

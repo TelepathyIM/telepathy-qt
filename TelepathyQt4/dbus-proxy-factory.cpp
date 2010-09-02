@@ -40,9 +40,6 @@ namespace Tp
 
 struct DBusProxyFactory::Private
 {
-    QDBusConnection bus;
-    Cache *cache;
-
     Private(const QDBusConnection &bus)
         : bus(bus), cache(new Cache) {}
 
@@ -50,7 +47,15 @@ struct DBusProxyFactory::Private
     {
         delete cache;
     }
+
+    QDBusConnection bus;
+    Cache *cache;
 };
+
+DBusProxyFactory::DBusProxyFactory(const QDBusConnection &bus)
+    : mPriv(new Private(bus))
+{
+}
 
 DBusProxyFactory::~DBusProxyFactory()
 {
@@ -60,11 +65,6 @@ DBusProxyFactory::~DBusProxyFactory()
 const QDBusConnection &DBusProxyFactory::dbusConnection() const
 {
     return mPriv->bus;
-}
-
-DBusProxyFactory::DBusProxyFactory(const QDBusConnection &bus)
-    : mPriv(new Private(bus))
-{
 }
 
 SharedPtr<RefCounted> DBusProxyFactory::cachedProxy(const QString &busName,
@@ -166,6 +166,11 @@ struct FixedFeatureFactory::Private
     Features features;
 };
 
+FixedFeatureFactory::FixedFeatureFactory(const QDBusConnection &bus)
+    : DBusProxyFactory(bus), mPriv(new Private)
+{
+}
+
 FixedFeatureFactory::~FixedFeatureFactory()
 {
     delete mPriv;
@@ -186,20 +191,11 @@ void FixedFeatureFactory::addFeatures(const Features &features)
     mPriv->features.unite(features);
 }
 
-FixedFeatureFactory::FixedFeatureFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus), mPriv(new Private)
-{
-}
-
 Features FixedFeatureFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
 {
     Q_UNUSED(proxy);
 
     return features();
-}
-
-AccountFactory::~AccountFactory()
-{
 }
 
 AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus)
@@ -209,11 +205,20 @@ AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus)
 
 AccountFactoryPtr AccountFactory::coreFactory(const QDBusConnection &bus)
 {
-    AccountFactoryPtr factory(new AccountFactory(bus));
+    AccountFactoryPtr factory(create(bus));
 
     factory->addFeature(Account::FeatureCore);
 
     return factory;
+}
+
+AccountFactory::AccountFactory(const QDBusConnection &bus)
+    : FixedFeatureFactory(bus)
+{
+}
+
+AccountFactory::~AccountFactory()
+{
 }
 
 PendingReady *AccountFactory::proxy(const QString &busName, const QString &objectPath,
@@ -229,23 +234,23 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
     return nowHaveProxy(proxy, true);
 }
 
-AccountFactory::AccountFactory(const QDBusConnection &bus)
-    : FixedFeatureFactory(bus)
-{
-}
-
 QString AccountFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
 {
     return uniqueOrWellKnown;
 }
 
-ConnectionFactory::~ConnectionFactory()
-{
-}
-
 ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus)
 {
     return ConnectionFactoryPtr(new ConnectionFactory(bus));
+}
+
+ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)
+    : FixedFeatureFactory(bus)
+{
+}
+
+ConnectionFactory::~ConnectionFactory()
+{
 }
 
 PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &objectPath,
@@ -258,11 +263,6 @@ PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &ob
 
     proxy = Connection::create(dbusConnection(), busName, objectPath/*, chanFactory*/);
     return nowHaveProxy(proxy, true);
-}
-
-ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)
-    : FixedFeatureFactory(bus)
-{
 }
 
 QString ConnectionFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const

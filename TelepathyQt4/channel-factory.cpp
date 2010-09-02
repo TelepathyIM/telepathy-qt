@@ -38,13 +38,18 @@
 namespace Tp
 {
 
-ChannelFactory::~ChannelFactory()
-{
-}
-
 ChannelFactoryPtr ChannelFactory::stockFreshFactory(const QDBusConnection &bus)
 {
     return ChannelFactoryPtr(new ChannelFactory(bus));
+}
+
+ChannelFactory::ChannelFactory(const QDBusConnection &bus)
+    : DBusProxyFactory(bus)
+{
+}
+
+ChannelFactory::~ChannelFactory()
+{
 }
 
 PendingReady *ChannelFactory::proxy(const ConnectionPtr &connection, const QString &channelPath,
@@ -98,11 +103,6 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
 
     // ContactList, old-style Tubes, or a future channel type
     return Channel::create(connection, channelPath, immutableProperties);
-}
-
-ChannelFactory::ChannelFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus)
-{
 }
 
 QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
