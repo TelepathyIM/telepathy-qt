@@ -169,7 +169,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/contact-manager.moc.hpp \
     _gen/contact-manager-internal.moc.hpp \
     _gen/dbus-proxy.moc.hpp \
-	_gen/dbus-proxy-factory-internal.moc.hpp \
+    _gen/dbus-proxy-factory-internal.moc.hpp \
     _gen/file-transfer-channel.moc.hpp \
     _gen/incoming-file-transfer-channel.moc.hpp \
     _gen/outgoing-file-transfer-channel.moc.hpp \
