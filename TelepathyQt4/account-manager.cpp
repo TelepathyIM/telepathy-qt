@@ -344,19 +344,11 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
 
 AccountManagerPtr AccountManager::create(const ChannelFactoryConstPtr &channelFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const AccountFactoryConstPtr &accountFactory)
+        const AccountFactoryConstPtr &accountFactory,
+        const QDBusConnection &bus)
 {
     return AccountManagerPtr(new AccountManager(
-                QDBusConnection::sessionBus(), channelFactory, connectionFactory, accountFactory));
-}
-
-AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
-        const ChannelFactoryConstPtr &channelFactory,
-        const ConnectionFactoryConstPtr &connectionFactory,
-        const AccountFactoryConstPtr &accountFactory)
-{
-    return AccountManagerPtr(new AccountManager(
-                bus, channelFactory, connectionFactory, accountFactory));
+                channelFactory, connectionFactory, accountFactory, bus));
 }
 
 /**
@@ -400,10 +392,10 @@ AccountManager::AccountManager(const QDBusConnection& bus)
  *
  * \param bus QDBusConnection to use.
  */
-AccountManager::AccountManager(const QDBusConnection& bus,
-        const ChannelFactoryConstPtr &channelFactory,
+AccountManager::AccountManager(const ChannelFactoryConstPtr &channelFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const AccountFactoryConstPtr &accountFactory)
+        const AccountFactoryConstPtr &accountFactory,
+        const QDBusConnection &bus)
     : StatelessDBusProxy(bus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),

@@ -72,11 +72,9 @@ public:
             const ConnectionFactoryConstPtr &connectionFactory =
                 ConnectionFactory::create(QDBusConnection::sessionBus()),
             const AccountFactoryConstPtr &accountFactory =
-                AccountFactory::coreFactory(QDBusConnection::sessionBus()));
-    static AccountManagerPtr create(const QDBusConnection &bus,
-            const ChannelFactoryConstPtr &channelFactory,
-            const ConnectionFactoryConstPtr &connectionFactory,
-            const AccountFactoryConstPtr &accountFactory);
+                AccountFactory::coreFactory(QDBusConnection::sessionBus()),
+            const QDBusConnection &bus =
+                QDBusConnection::sessionBus());
 
     virtual ~AccountManager();
 
@@ -132,10 +130,10 @@ Q_SIGNALS:
 protected:
     AccountManager();
     AccountManager(const QDBusConnection &bus);
-    AccountManager(const QDBusConnection &bus,
-            const ChannelFactoryConstPtr &channelFactory,
+    AccountManager(const ChannelFactoryConstPtr &channelFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
-            const AccountFactoryConstPtr &accountFactory);
+            const AccountFactoryConstPtr &accountFactory,
+            const QDBusConnection &bus);
 
     Client::AccountManagerInterface *baseInterface() const;
 
