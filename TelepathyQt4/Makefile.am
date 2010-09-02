@@ -56,6 +56,7 @@ libtelepathy_qt4_la_SOURCES = \
     abstract-client.cpp \
     abstract-interface.cpp \
     account.cpp \
+    account-factory.cpp \
     account-manager.cpp \
     account-set.cpp \
     account-set-internal.h \
@@ -71,6 +72,7 @@ libtelepathy_qt4_la_SOURCES = \
     client-registrar-internal.h \
     connection.cpp \
     connection-capabilities.cpp \
+    connection-factory.cpp \
     connection-manager.cpp \
     connection-internal.h \
     connection-manager-internal.h \
@@ -87,6 +89,7 @@ libtelepathy_qt4_la_SOURCES = \
     feature.cpp \
     file-transfer-channel.cpp \
     file-transfer-channel-creation-properties.cpp \
+    fixed-feature-factory.cpp \
     future.cpp \
     future-internal.h \
     incoming-file-transfer-channel.cpp \
@@ -330,6 +333,7 @@ tpqt4include_HEADERS = \
     abstract-client.h \
     abstract-interface.h \
     account.h \
+    account-factory.h \
     account-manager.h \
     account-set.h \
     capabilities-base.h \
@@ -342,6 +346,7 @@ tpqt4include_HEADERS = \
     client-registrar.h \
     connection.h \
     connection-capabilities.h \
+    connection-factory.h \
     connection-manager.h \
     constants.h \
     contact.h \
@@ -356,6 +361,7 @@ tpqt4include_HEADERS = \
     feature.h \
     file-transfer-channel.h \
     file-transfer-channel-creation-properties.h \
+    fixed-feature-factory.h \
     global.h \
     incoming-file-transfer-channel.h \
     key-file.h \

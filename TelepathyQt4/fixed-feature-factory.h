@@ -19,40 +19,47 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef BUILDING_TELEPATHY_QT4
-#error "This file is a TpQt4 internal header not to be included by applications"
+#ifndef _TelepathyQt4_fixed_feature_factory_h_HEADER_GUARD_
+#define _TelepathyQt4_fixed_feature_factory_h_HEADER_GUARD_
+
+#ifndef IN_TELEPATHY_QT4_HEADER
+#error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QObject>
-#include <QPair>
-#include <QString>
-
+#include <TelepathyQt4/Global>
 #include <TelepathyQt4/SharedPtr>
-#include <TelepathyQt4/WeakPtr>
+
+#include <TelepathyQt4/DBusProxyFactory>
+
+class QDBusConnection;
 
 namespace Tp
 {
 
-class DBusProxy;
+class Feature;
+class Features;
 
-class TELEPATHY_QT4_NO_EXPORT DBusProxyFactory::Cache : public QObject
+class TELEPATHY_QT4_EXPORT FixedFeatureFactory : public DBusProxyFactory
 {
-    Q_OBJECT
-
 public:
-    typedef QPair<QString /* serviceName */, QString /* objectPath */> Key;
+    virtual ~FixedFeatureFactory();
 
-    Cache();
-    ~Cache();
+    Features features() const;
 
-    SharedPtr<RefCounted> get(const Key &key) const;
-    void put(const Key &key, const SharedPtr<RefCounted> &obj);
+    void addFeature(const Feature &feature);
+    void addFeatures(const Features &features);
 
-private Q_SLOTS:
-    void onProxyInvalidated(Tp::DBusProxy *proxy); // The error itself is not interesting
+protected:
+    FixedFeatureFactory(const QDBusConnection &bus);
+
+    virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
 
 private:
-    QHash<Key, WeakPtr<RefCounted> > proxies;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
 };
 
-}
+} // Tp
+
+#endif

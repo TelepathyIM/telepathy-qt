@@ -26,10 +26,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
-#include <TelepathyQt4/Account>
-#include <TelepathyQt4/Connection>
 #include <TelepathyQt4/DBusProxy>
-#include <TelepathyQt4/Feature>
 #include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/PendingReady>
 
@@ -166,115 +163,6 @@ void DBusProxyFactory::Cache::onProxyInvalidated(Tp::DBusProxy *proxy)
     debug() << "Removing from factory cache invalidated proxy for" << key;
 
     proxies.remove(key);
-}
-
-struct FixedFeatureFactory::Private
-{
-    Features features;
-};
-
-FixedFeatureFactory::FixedFeatureFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus), mPriv(new Private)
-{
-}
-
-FixedFeatureFactory::~FixedFeatureFactory()
-{
-    delete mPriv;
-}
-
-Features FixedFeatureFactory::features() const
-{
-    return mPriv->features;
-}
-
-void FixedFeatureFactory::addFeature(const Feature &feature)
-{
-    addFeatures(Features(feature));
-}
-
-void FixedFeatureFactory::addFeatures(const Features &features)
-{
-    mPriv->features.unite(features);
-}
-
-Features FixedFeatureFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
-{
-    Q_UNUSED(proxy);
-
-    return features();
-}
-
-AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus)
-{
-    return AccountFactoryPtr(new AccountFactory(bus));
-}
-
-AccountFactoryPtr AccountFactory::coreFactory(const QDBusConnection &bus)
-{
-    AccountFactoryPtr factory(create(bus));
-
-    factory->addFeature(Account::FeatureCore);
-
-    return factory;
-}
-
-AccountFactory::AccountFactory(const QDBusConnection &bus)
-    : FixedFeatureFactory(bus)
-{
-}
-
-AccountFactory::~AccountFactory()
-{
-}
-
-PendingReady *AccountFactory::proxy(const QString &busName, const QString &objectPath,
-            const ConnectionFactoryConstPtr &connFactory,
-            const ChannelFactoryConstPtr &chanFactory) const
-{
-    SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
-    if (proxy) {
-        return nowHaveProxy(proxy, false);
-    }
-
-    proxy = Account::create(dbusConnection(), busName, objectPath/*, connFactory, chanFactory*/);
-    return nowHaveProxy(proxy, true);
-}
-
-QString AccountFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
-{
-    return uniqueOrWellKnown;
-}
-
-ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus)
-{
-    return ConnectionFactoryPtr(new ConnectionFactory(bus));
-}
-
-ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)
-    : FixedFeatureFactory(bus)
-{
-}
-
-ConnectionFactory::~ConnectionFactory()
-{
-}
-
-PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &objectPath,
-            const ChannelFactoryConstPtr &chanFactory) const
-{
-    SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
-    if (proxy) {
-        return nowHaveProxy(proxy, false);
-    }
-
-    proxy = Connection::create(dbusConnection(), busName, objectPath/*, chanFactory*/);
-    return nowHaveProxy(proxy, true);
-}
-
-QString ConnectionFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
-{
-    return StatefulDBusProxy::uniqueNameFrom(dbusConnection(), uniqueOrWellKnown);
 }
 
 }

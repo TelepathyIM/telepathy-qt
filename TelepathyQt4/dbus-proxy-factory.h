@@ -34,16 +34,13 @@
 #include <QtGlobal>
 
 #include <QString>
-#include <QVariantMap>
 
 class QDBusConnection;
 
 namespace Tp
 {
 
-class Feature;
 class Features;
-class DBusProxy;
 class PendingReady;
 class PendingOperation;
 
@@ -81,73 +78,6 @@ private:
     struct Private;
     friend struct Private;
     Private *mPriv;
-};
-
-class TELEPATHY_QT4_EXPORT FixedFeatureFactory : public DBusProxyFactory
-{
-public:
-    virtual ~FixedFeatureFactory();
-
-    Features features() const;
-
-    void addFeature(const Feature &feature);
-    void addFeatures(const Features &features);
-
-protected:
-    FixedFeatureFactory(const QDBusConnection &bus);
-
-    virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
-
-private:
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-};
-
-class TELEPATHY_QT4_EXPORT AccountFactory : public FixedFeatureFactory
-{
-public:
-    static AccountFactoryPtr create(const QDBusConnection &bus);
-    static AccountFactoryPtr coreFactory(const QDBusConnection &bus);
-
-    virtual ~AccountFactory();
-
-    PendingReady *proxy(const QString &busName, const QString &objectPath,
-            const ConnectionFactoryConstPtr &connFactory,
-            const ChannelFactoryConstPtr &chanFactory) const;
-
-protected:
-    AccountFactory(const QDBusConnection &bus);
-
-    virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
-    // Nothing we'd like to prepare()
-    // Fixed features
-
-private:
-    struct Private;
-    Private *mPriv; // Currently unused, just for future-proofing
-};
-
-class TELEPATHY_QT4_EXPORT ConnectionFactory : public FixedFeatureFactory
-{
-public:
-    static ConnectionFactoryPtr create(const QDBusConnection &bus);
-
-    virtual ~ConnectionFactory();
-
-    PendingReady *proxy(const QString &busName, const QString &objectPath,
-            const ChannelFactoryConstPtr &chanFactory) const;
-
-protected:
-    ConnectionFactory(const QDBusConnection &bus);
-
-    virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
-    // Nothing we'd like to prepare()
-    // Fixed features
-
-private:
-    struct Private;
-    Private *mPriv; // Currently unused, just for future-proofing
 };
 
 } // Tp
