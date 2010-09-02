@@ -53,7 +53,6 @@ class Connection;
 class ConnectionFactory;
 class ConnectionManager;
 class Contact;
-class DBusProxyFactory;
 class FileTransferChannel;
 class IncomingFileTransferChannel;
 class OutgoingFileTransferChannel;
