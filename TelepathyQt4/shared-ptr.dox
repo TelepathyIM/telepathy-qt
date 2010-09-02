@@ -70,7 +70,7 @@
  * and efficient type identification mechanism, which is used by qObjectCast().
  *
  * This cast method requires the C++ dynamic runtime type identification facility to be enabled
- * (which might be be disabled by eg. the -fno-rtti flag of the GNU G++ compiler).
+ * (which might be disabled by eg. the -fno-rtti flag of the GNU G++ compiler).
  */
 
 /**
