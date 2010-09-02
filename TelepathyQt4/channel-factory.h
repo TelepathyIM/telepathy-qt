@@ -51,9 +51,6 @@ public:
     PendingReady *proxy(const ConnectionPtr &connection, const QString &channelPath,
             const QVariantMap &immutableProperties) const;
 
-    // TODO: remove and deprecate
-    static ChannelPtr create(const ConnectionPtr &connection,
-            const QString &channelPath, const QVariantMap &immutableProperties);
 protected:
     ChannelFactory(const QDBusConnection &bus);
 
@@ -62,6 +59,16 @@ protected:
     virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const;
 
 private:
+    // TODO: remove
+
+    friend class ChannelDispatchOperation;
+    friend class ClientHandlerAdaptor;
+    friend class ClientObserverAdaptor;
+    friend class PendingChannel;
+
+    static TELEPATHY_QT4_DEPRECATED ChannelPtr create(const ConnectionPtr &connection,
+            const QString &channelPath, const QVariantMap &immutableProperties);
+
     struct Private;
     Private *mPriv;
 };
