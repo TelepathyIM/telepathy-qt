@@ -67,7 +67,7 @@ DBusProxyFactory::DBusProxyFactory(const QDBusConnection &bus)
 {
 }
 
-SharedPtr<RefCounted> DBusProxyFactory::getCachedProxy(const QString &busName,
+SharedPtr<RefCounted> DBusProxyFactory::cachedProxy(const QString &busName,
         const QString &objectPath) const
 {
     QString finalName = finalBusNameFrom(busName);
@@ -216,11 +216,11 @@ AccountFactoryPtr AccountFactory::coreFactory(const QDBusConnection &bus)
     return factory;
 }
 
-PendingReady *AccountFactory::getProxy(const QString &busName, const QString &objectPath,
+PendingReady *AccountFactory::proxy(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connFactory,
             const ChannelFactoryConstPtr &chanFactory) const
 {
-    SharedPtr<RefCounted> proxy = getCachedProxy(busName, objectPath);
+    SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
     if (proxy) {
         return nowHaveProxy(proxy, false);
     }
@@ -248,10 +248,10 @@ ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus)
     return ConnectionFactoryPtr(new ConnectionFactory(bus));
 }
 
-PendingReady *ConnectionFactory::getProxy(const QString &busName, const QString &objectPath,
+PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &objectPath,
             const ChannelFactoryConstPtr &chanFactory) const
 {
-    SharedPtr<RefCounted> proxy = getCachedProxy(busName, objectPath);
+    SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
     if (proxy) {
         return nowHaveProxy(proxy, false);
     }

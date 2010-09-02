@@ -47,10 +47,10 @@ ChannelFactoryPtr ChannelFactory::stockFreshFactory(const QDBusConnection &bus)
     return ChannelFactoryPtr(new ChannelFactory(bus));
 }
 
-PendingReady *ChannelFactory::getProxy(const ConnectionPtr &connection, const QString &channelPath,
+PendingReady *ChannelFactory::proxy(const ConnectionPtr &connection, const QString &channelPath,
         const QVariantMap &immutableProperties) const
 {
-    SharedPtr<RefCounted> proxy = getCachedProxy(connection->busName(), channelPath);
+    SharedPtr<RefCounted> proxy = cachedProxy(connection->busName(), channelPath);
     if (proxy) {
         return nowHaveProxy(proxy, false);
     }

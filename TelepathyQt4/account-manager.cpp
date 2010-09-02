@@ -185,7 +185,7 @@ void AccountManager::Private::addAccountForPath(const QString &path)
         return;
     }
 
-    PendingReady *readyOp = accFactory->getProxy(parent->busName(), path, connFactory,
+    PendingReady *readyOp = accFactory->proxy(parent->busName(), path, connFactory,
             chanFactory);
 
     AccountPtr account(AccountPtr::dynamicCast(readyOp->proxy()));

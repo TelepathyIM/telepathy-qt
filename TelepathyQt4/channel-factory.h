@@ -48,7 +48,7 @@ public:
 
     static ChannelFactoryPtr stockFreshFactory(const QDBusConnection &bus);
 
-    PendingReady *getProxy(const ConnectionPtr &connection, const QString &channelPath,
+    PendingReady *proxy(const ConnectionPtr &connection, const QString &channelPath,
             const QVariantMap &immutableProperties) const;
 
     // TODO: remove and deprecate

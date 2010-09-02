@@ -62,7 +62,7 @@ protected:
     // API/ABI break TODO: Make DBusProxy be a RefCounted so this can be SharedPtr<DBusProxy>
     // If we don't want DBusProxy itself be a RefCounted, let's add RefCountedDBusProxy or something
     // as an intermediate subclass?
-    SharedPtr<RefCounted> getCachedProxy(const QString &busName, const QString &objectPath) const;
+    SharedPtr<RefCounted> cachedProxy(const QString &busName, const QString &objectPath) const;
 
     PendingReady *nowHaveProxy(const SharedPtr<RefCounted> &proxy, bool created) const;
 
@@ -112,7 +112,7 @@ public:
     static AccountFactoryPtr create(const QDBusConnection &bus);
     static AccountFactoryPtr coreFactory(const QDBusConnection &bus);
 
-    PendingReady *getProxy(const QString &busName, const QString &objectPath,
+    PendingReady *proxy(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connFactory,
             const ChannelFactoryConstPtr &chanFactory) const;
 
@@ -135,7 +135,7 @@ public:
 
     static ConnectionFactoryPtr create(const QDBusConnection &bus);
 
-    PendingReady *getProxy(const QString &busName, const QString &objectPath,
+    PendingReady *proxy(const QString &busName, const QString &objectPath,
             const ChannelFactoryConstPtr &chanFactory) const;
 
 protected:
