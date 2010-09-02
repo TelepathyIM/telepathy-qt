@@ -37,20 +37,20 @@ class TELEPATHY_QT4_NO_EXPORT DBusProxyFactory::Cache : public QObject
 {
     Q_OBJECT
 
-    public:
-        typedef QPair<QString /* serviceName */, QString /* objectPath */> Key;
+public:
+    typedef QPair<QString /* serviceName */, QString /* objectPath */> Key;
 
-        Cache();
-        ~Cache();
+    Cache();
+    ~Cache();
 
-        SharedPtr<RefCounted> get(const Key &key) const;
-        void put(const Key &key, const SharedPtr<RefCounted> &obj);
+    SharedPtr<RefCounted> get(const Key &key) const;
+    void put(const Key &key, const SharedPtr<RefCounted> &obj);
 
-    private Q_SLOTS:
-        void onProxyInvalidated(Tp::DBusProxy *proxy); // The error itself is not interesting
+private Q_SLOTS:
+    void onProxyInvalidated(Tp::DBusProxy *proxy); // The error itself is not interesting
 
-    private:
-        QHash<Key, WeakPtr<RefCounted> > proxies;
+private:
+    QHash<Key, WeakPtr<RefCounted> > proxies;
 };
 
 }
