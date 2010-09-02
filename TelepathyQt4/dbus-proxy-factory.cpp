@@ -171,6 +171,11 @@ FixedFeatureFactory::~FixedFeatureFactory()
     delete mPriv;
 }
 
+Features FixedFeatureFactory::features() const
+{
+    return mPriv->features;
+}
+
 void FixedFeatureFactory::addFeature(const Feature &feature)
 {
     addFeatures(Features(feature));
@@ -179,11 +184,6 @@ void FixedFeatureFactory::addFeature(const Feature &feature)
 void FixedFeatureFactory::addFeatures(const Features &features)
 {
     mPriv->features.unite(features);
-}
-
-Features FixedFeatureFactory::features() const
-{
-    return mPriv->features;
 }
 
 FixedFeatureFactory::FixedFeatureFactory(const QDBusConnection &bus)

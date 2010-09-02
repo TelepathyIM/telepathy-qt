@@ -88,10 +88,10 @@ class TELEPATHY_QT4_EXPORT FixedFeatureFactory : public DBusProxyFactory
 public:
     virtual ~FixedFeatureFactory();
 
+    Features features() const;
+
     void addFeature(const Feature &feature);
     void addFeatures(const Features &features);
-
-    Features features() const;
 
 protected:
     FixedFeatureFactory(const QDBusConnection &bus);
