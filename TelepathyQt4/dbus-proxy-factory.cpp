@@ -85,6 +85,9 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy,
     DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(proxy.data());
     ReadyObject *proxyReady = dynamic_cast<ReadyObject *>(proxy.data());
 
+    Q_ASSERT(proxyProxy != NULL);
+    Q_ASSERT(proxyReady != NULL);
+
     Features specificFeatures = featuresFor(proxy);
 
     // TODO: lookup existing prepareOp, if any, from a private mapping
@@ -125,6 +128,7 @@ SharedPtr<RefCounted> DBusProxyFactory::Cache::get(const Key &key) const
 {
     SharedPtr<RefCounted> counted(proxies.value(key));
 
+    // We already assert for it being a DBusProxy in put()
     if (!counted || !dynamic_cast<DBusProxy *>(counted.data())->isValid()) {
         // Weak pointer invalidated or proxy invalidated during this mainloop iteration and we still
         // haven't got the invalidated() signal for it
@@ -138,8 +142,11 @@ void DBusProxyFactory::Cache::put(const Key &key, const SharedPtr<RefCounted> &o
 {
     Q_ASSERT(!proxies.contains(key));
 
+    DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(obj.data());
+    Q_ASSERT(proxyProxy != NULL);
+
     // This sucks because DBusProxy is not RefCounted...
-    connect(dynamic_cast<DBusProxy*>(obj.data()),
+    connect(proxyProxy,
             SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
             SLOT(onProxyInvalidated(Tp::DBusProxy*)));
 
