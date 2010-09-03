@@ -413,6 +413,21 @@ AccountManager::~AccountManager()
     delete mPriv;
 }
 
+ChannelFactoryConstPtr AccountManager::channelFactory() const
+{
+    return mPriv->chanFactory;
+}
+
+ConnectionFactoryConstPtr AccountManager::connectionFactory() const
+{
+    return mPriv->connFactory;
+}
+
+AccountFactoryConstPtr AccountManager::accountFactory() const
+{
+    return mPriv->accFactory;
+}
+
 /**
  * Return a list of object paths for all valid accounts.
  *
