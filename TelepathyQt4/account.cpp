@@ -193,7 +193,6 @@ Account::Private::Private(Account *parent, const ChannelFactoryConstPtr &chanFac
     introspectables[FeatureProtocolInfo] = introspectableProtocolInfo;
 
     readinessHelper->addIntrospectables(introspectables);
-    readinessHelper->becomeReady(Features() << FeatureCore);
 
     if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
         warning() << "  The D-Bus connection in the channel factory is not the proxy connection for"

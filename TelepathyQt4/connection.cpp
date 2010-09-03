@@ -258,7 +258,6 @@ Connection::Private::Private(Connection *parent)
     parent->connect(readinessHelper,
             SIGNAL(statusReady(uint)),
             SLOT(onStatusReady(uint)));
-    readinessHelper->becomeReady(Features() << FeatureCore);
 
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
@@ -288,7 +287,6 @@ Connection::Private::Private(Connection *parent)
                 parent->objectPath();
         }
     }
-
 }
 
 Connection::Private::~Private()

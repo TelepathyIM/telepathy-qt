@@ -302,7 +302,6 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         introspectableConferenceInitialInviteeContacts;
 
     readinessHelper->addIntrospectables(introspectables);
-    readinessHelper->becomeReady(Features() << FeatureCore);
 }
 
 Channel::Private::~Private()
