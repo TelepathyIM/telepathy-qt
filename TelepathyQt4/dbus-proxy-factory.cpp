@@ -137,8 +137,6 @@ SharedPtr<RefCounted> DBusProxyFactory::Cache::get(const Key &key) const
 
 void DBusProxyFactory::Cache::put(const Key &key, const SharedPtr<RefCounted> &obj)
 {
-    Q_ASSERT(!proxies.contains(key));
-
     DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(obj.data());
     Q_ASSERT(proxyProxy != NULL);
 
