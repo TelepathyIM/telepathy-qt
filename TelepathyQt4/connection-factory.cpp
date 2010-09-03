@@ -27,9 +27,14 @@
 namespace Tp
 {
 
-ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus)
+ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus,
+        const Features &features)
 {
-    return ConnectionFactoryPtr(new ConnectionFactory(bus));
+    ConnectionFactoryPtr factory(new ConnectionFactory(bus));
+
+    factory->addFeatures(features);
+
+    return factory;
 }
 
 ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)

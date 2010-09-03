@@ -72,7 +72,7 @@ public:
             const ConnectionFactoryConstPtr &connectionFactory =
                 ConnectionFactory::create(QDBusConnection::sessionBus()),
             const AccountFactoryConstPtr &accountFactory =
-                AccountFactory::coreFactory(QDBusConnection::sessionBus()),
+                AccountFactory::create(QDBusConnection::sessionBus()),
             const QDBusConnection &bus =
                 QDBusConnection::sessionBus());
 

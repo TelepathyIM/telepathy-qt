@@ -30,6 +30,8 @@
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
+#include <TelepathyQt4/Account>
+#include <TelepathyQt4/Feature>
 #include <TelepathyQt4/FixedFeatureFactory>
 
 class QDBusConnection;
@@ -42,8 +44,8 @@ class PendingReady;
 class TELEPATHY_QT4_EXPORT AccountFactory : public FixedFeatureFactory
 {
 public:
-    static AccountFactoryPtr create(const QDBusConnection &bus);
-    static AccountFactoryPtr coreFactory(const QDBusConnection &bus);
+    static AccountFactoryPtr create(const QDBusConnection &bus,
+            const Features &features = Features(Account::FeatureCore));
 
     virtual ~AccountFactory();
 

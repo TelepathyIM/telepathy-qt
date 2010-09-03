@@ -26,17 +26,10 @@
 namespace Tp
 {
 
-AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus)
+AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus, const Features &features)
 {
-    return AccountFactoryPtr(new AccountFactory(bus));
-}
-
-AccountFactoryPtr AccountFactory::coreFactory(const QDBusConnection &bus)
-{
-    AccountFactoryPtr factory(create(bus));
-
-    factory->addFeature(Account::FeatureCore);
-
+    AccountFactoryPtr factory(new AccountFactory(bus));
+    factory->addFeatures(features);
     return factory;
 }
 

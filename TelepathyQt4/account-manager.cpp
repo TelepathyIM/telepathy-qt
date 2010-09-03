@@ -364,7 +364,7 @@ AccountManager::AccountManager()
                   this,
                   ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()),
                   ConnectionFactory::create(QDBusConnection::sessionBus()),
-                  AccountFactory::coreFactory(QDBusConnection::sessionBus())))
+                  AccountFactory::create(QDBusConnection::sessionBus())))
 {
 }
 
@@ -383,7 +383,7 @@ AccountManager::AccountManager(const QDBusConnection& bus)
                   this,
                   ChannelFactory::stockFreshFactory(bus),
                   ConnectionFactory::create(bus),
-                  AccountFactory::coreFactory(bus)))
+                  AccountFactory::create(bus)))
 {
 }
 

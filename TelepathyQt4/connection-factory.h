@@ -30,6 +30,7 @@
 #include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
+#include <TelepathyQt4/Feature>
 #include <TelepathyQt4/FixedFeatureFactory>
 
 // For Q_DISABLE_COPY
@@ -47,7 +48,8 @@ class PendingReady;
 class TELEPATHY_QT4_EXPORT ConnectionFactory : public FixedFeatureFactory
 {
 public:
-    static ConnectionFactoryPtr create(const QDBusConnection &bus);
+    static ConnectionFactoryPtr create(const QDBusConnection &bus,
+            const Features &features = Features());
 
     virtual ~ConnectionFactory();
 
