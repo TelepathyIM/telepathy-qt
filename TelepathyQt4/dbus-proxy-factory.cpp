@@ -98,11 +98,11 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy,
     }
 
     if (prepareOp || (!specificFeatures.isEmpty() && !proxyReady->isReady(specificFeatures))) {
-        return new PendingReady(prepareOp, specificFeatures, proxy, proxyProxy);
+        return new PendingReady(prepareOp, specificFeatures, proxy, 0);
     }
 
     // No features requested or they are all ready - optimize a bit by not calling ReadinessHelper
-    PendingReady *readyOp = new PendingReady(0, specificFeatures, proxy, proxyProxy);
+    PendingReady *readyOp = new PendingReady(0, specificFeatures, proxy, 0);
     readyOp->setFinished();
     return readyOp;
 }
