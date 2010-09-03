@@ -164,6 +164,7 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy)
  * starting to make the object ready whenever nowHaveProxy() is called the first time around for a
  * given proxy.
  *
+ * \todo FIXME actually implement this... :)
  * \return \c NULL ie. nothing to do.
  */
 PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &object) const
