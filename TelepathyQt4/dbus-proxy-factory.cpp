@@ -208,10 +208,12 @@ void DBusProxyFactory::Cache::put(const Key &key, const SharedPtr<RefCounted> &o
     DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(obj.data());
     Q_ASSERT(proxyProxy != NULL);
 
-    // This sucks because DBusProxy is not RefCounted...
-    connect(proxyProxy,
-            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
-            SLOT(onProxyInvalidated(Tp::DBusProxy*)));
+    SharedPtr<RefCounted> existingProxy = SharedPtr<RefCounted>(proxies.value(key));
+    if (!existingProxy || existingProxy != obj) {
+        connect(proxyProxy,
+                SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                SLOT(onProxyInvalidated(Tp::DBusProxy*)));
+    }
 
     debug() << "Inserting to factory cache proxy for" << key;
 
