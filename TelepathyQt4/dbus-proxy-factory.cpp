@@ -157,7 +157,25 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy)
 }
 
 /**
- * Allows subclasses to do arbitrary manipulation on the object before it is attempted to be made
+ * \fn QString DBusProxyFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
+ * "Normalize" a bus name according to the rules for the proxy class to construct.
+ *
+ * Should be implemented by subclasses to transform the application-specified name \a
+ * uniqueOrWellKnown to whatever the proxy constructed for that name would have in its
+ * DBusProxy::busName() in the end.
+ *
+ * For StatelessDBusProxy sub-classes this should mostly be an identity transform, while for
+ * StatefulDBusProxy sub-classes StatefulDBusProxy::uniqueNameFrom() or an equivalent thereof should
+ * be used in most cases.
+ *
+ * If this is not implemented correctly, caching won't work properly.
+ *
+ * \param uniqueOrWellKnown Any valid D-Bus service name, either unique or well-known.
+ * \return Whatever that name would turn to, when a proxy is constructed for it.
+ */
+
+/**
+ * Allows subclasses to do arbitrary manipulation on the proxy before it is attempted to be made
  * ready.
  *
  * If a non-\c NULL operation is returned, the completion of that operation is waited for before
@@ -165,13 +183,26 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy)
  * given proxy.
  *
  * \todo FIXME actually implement this... :)
+ * \param proxy The just-constructed proxy to be prepared.
  * \return \c NULL ie. nothing to do.
  */
-PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &object) const
+PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &proxy) const
 {
     // Nothing we could think about needs doing
     return NULL;
 }
+
+/**
+ * \fn Features DBusProxyFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const 
+ * Specifies features which should be made ready on a given proxy.
+ *
+ * This can be used to implement instance-specific features based on arbitrary criteria.
+ * FixedFeatureFactory implements this as a fixed set of features independent of the instance,
+ * however.
+ *
+ * \param proxy The proxy on which the returned features will be made ready.
+ * \return Features to make ready on the proxy.
+ */
 
 DBusProxyFactory::Cache::Cache()
 {

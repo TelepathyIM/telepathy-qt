@@ -68,7 +68,7 @@ protected:
     // this while it should, matching with the cache for future requests and invalidation breaks.
     virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const = 0;
 
-    virtual PendingOperation *prepare(const SharedPtr<RefCounted> &object) const;
+    virtual PendingOperation *prepare(const SharedPtr<RefCounted> &proxy) const;
 
     virtual Features featuresFor(const SharedPtr<RefCounted> &proxy) const = 0;
 
