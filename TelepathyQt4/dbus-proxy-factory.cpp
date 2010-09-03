@@ -49,21 +49,58 @@ struct DBusProxyFactory::Private
     Cache *cache;
 };
 
+/**
+ * \class DBusProxyFactory
+ * \ingroup clientreadiness
+ * \headerfile TelepathyQt4/dbus-proxy-factory.h <TelepathyQt4/DBusProxyFactory>
+ *
+ * Base class for all D-Bus proxy factory classes. Handles proxy caching and making them ready as
+ * appropriate.
+ */
+
+/**
+ * Class constructor.
+ *
+ * The intention for storing the bus here is that it generally doesn't make sense to construct
+ * proxies for multiple buses in the same context. Allowing that would lead to more complex keying
+ * needs in the cache, as well.
+ *
+ * \param bus The D-Bus bus connection for the objects constructed using this factory.
+ */
 DBusProxyFactory::DBusProxyFactory(const QDBusConnection &bus)
     : mPriv(new Private(bus))
 {
 }
 
+/**
+ * Class destructor.
+ */
 DBusProxyFactory::~DBusProxyFactory()
 {
     delete mPriv;
 }
 
+/**
+ * Returns the D-Bus connection all of the proxies from this factory communicate with.
+ *
+ * \return The connection.
+ */
 const QDBusConnection &DBusProxyFactory::dbusConnection() const
 {
     return mPriv->bus;
 }
 
+/**
+ * Returns a cached proxy with the given \a busName and \a objectPath.
+ *
+ * If a proxy has not been previously put into the cache by nowHaveProxy for those identifying
+ * attributes, or a previously cached proxy has since been invalidated and/or destroyed, a \c Null
+ * shared pointer is returned instead.
+ *
+ * \param busName Bus name of the proxy to return.
+ * \param objectPath Object path of the proxy to return.
+ * \return The proxy, if any.
+ */
 SharedPtr<RefCounted> DBusProxyFactory::cachedProxy(const QString &busName,
         const QString &objectPath) const
 {
@@ -71,6 +108,27 @@ SharedPtr<RefCounted> DBusProxyFactory::cachedProxy(const QString &busName,
     return mPriv->cache->get(Cache::Key(finalName, objectPath));
 }
 
+/**
+ * Should be called by subclasses when they have a proxy, be it a newly-constructed one or one from
+ * the cache.
+ *
+ * This function will then do the rest of the factory work, including caching the proxy if it's not
+ * cached already, doing any prepare() work if appropriate, and making the features from
+ * featuresFor() ready if they aren't already.
+ *
+ * The returned PendingReady only finishes when the prepare() operation for the proxy has completed,
+ * and the requested features have all been made ready (or found unable to be made ready). Note that
+ * this might have happened already before calling this function, if the proxy was not a newly
+ * created one, but was looked up from the cache. DBusProxyFactory handles the necessary subleties
+ * for this to work.
+ *
+ * Access to the proxy instance is allowed as soon as this method returns through
+ * PendingReady::proxy(), if the proxy is needed in a context where it's not required to be ready.
+ *
+ * \param proxy The proxy which the factory should now make sure is prepared and made ready.
+ * \param created Stupid parameter, I'll remove it in an instant.
+ * \return Readifying operation, which finishes when the proxy is usable.
+ */
 PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy, bool created) const
 {
     Q_ASSERT(!proxy.isNull());
@@ -107,6 +165,16 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy,
     return readyOp;
 }
 
+/**
+ * Allows subclasses to do arbitrary manipulation on the object before it is attempted to be made
+ * ready.
+ *
+ * If a non-\c NULL operation is returned, the completion of that operation is waited for before
+ * starting to make the object ready whenever nowHaveProxy() is called the first time around for a
+ * given proxy.
+ *
+ * \return \c NULL ie. nothing to do.
+ */
 PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &object) const
 {
     // Nothing we could think about needs doing
