@@ -29,6 +29,8 @@
 #include <TelepathyQt4/_gen/cli-account.h>
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
@@ -102,7 +104,16 @@ public:
     static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
 
+    static AccountPtr create(const QString &busName, const QString &objectPath,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ConnectionFactoryConstPtr &connectionFactory =
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
+            const QDBusConnection &bus = QDBusConnection::sessionBus());
+
     virtual ~Account();
+
+    ConnectionFactoryConstPtr connectionFactory() const;
+    ChannelFactoryConstPtr channelFactory() const;
 
     bool isValidAccount() const;
 
@@ -317,6 +328,10 @@ protected:
     Account(const QString &busName, const QString &objectPath);
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
+    Account(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ConnectionFactoryConstPtr &connectionFactory);
 
     Client::AccountInterface *baseInterface() const;
 
@@ -327,6 +342,7 @@ private Q_SLOTS:
     void onConnectionManagerReady(Tp::PendingOperation *);
     void onPropertyChanged(const QVariantMap &delta);
     void onRemoved();
+    void onConnectionBuilt(Tp::PendingOperation *);
 
 private:
     struct Private;

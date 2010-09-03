@@ -52,7 +52,8 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT Account::Private
 {
-    Private(Account *parent);
+    Private(Account *parent, const ChannelFactoryConstPtr &chanFactory,
+            const ConnectionFactoryConstPtr &connFactory);
     ~Private();
 
     void init();
@@ -74,6 +75,10 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     // Public object
     Account *parent;
 
+    // Factories
+    ChannelFactoryConstPtr chanFactory;
+    ConnectionFactoryConstPtr connFactory;
+
     // Instance of generated interface class
     Client::AccountInterface *baseInterface;
 
@@ -92,7 +97,9 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     QString displayName;
     QString nickname;
     QString iconName;
-    QString connectionObjectPath;
+    QQueue<QString> connObjPathQueue;
+    ConnectionPtr connection;
+    bool mayFinishCore, coreFinished;
     QString normalizedName;
     Avatar avatar;
     ConnectionManagerPtr cm;
@@ -104,11 +111,13 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     SimplePresence automaticPresence;
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
-    ConnectionPtr connection;
 };
 
-Account::Private::Private(Account *parent)
+Account::Private::Private(Account *parent, const ChannelFactoryConstPtr &chanFactory,
+        const ConnectionFactoryConstPtr &connFactory)
     : parent(parent),
+      chanFactory(chanFactory),
+      connFactory(connFactory),
       baseInterface(new Client::AccountInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
@@ -116,6 +125,8 @@ Account::Private::Private(Account *parent)
       enabled(false),
       connectsAutomatically(false),
       hasBeenOnline(false),
+      mayFinishCore(false),
+      coreFinished(false),
       protocolInfo(0),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified)
@@ -183,6 +194,16 @@ Account::Private::Private(Account *parent)
 
     readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
+
+    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection for"
+            << parent->objectPath();
+    }
+
+    if (connFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the conn factory is not the proxy connection for"
+            << parent->objectPath();
+    }
 
     init();
 }
@@ -411,6 +432,24 @@ AccountPtr Account::create(const QDBusConnection &bus,
 }
 
 /**
+ * Create a new Account object using the given \a bus and the given factories.
+ *
+ * \param bus QDBusConnection to use.
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
+ * \return An AccountPtr object pointing to the newly created Account object.
+ */
+AccountPtr Account::create(const QString &busName, const QString &objectPath,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const QDBusConnection &bus)
+{
+    return AccountPtr(new Account(bus, busName, objectPath, channelFactory, connectionFactory));
+}
+
+/**
  * Construct a new Account object using QDBusConnection::sessionBus().
  *
  * \param busName The account well-known bus name (sometimes called a "service
@@ -423,7 +462,9 @@ Account::Account(const QString &busName, const QString &objectPath)
             busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(this,
+                  ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()),
+                  ConnectionFactory::create(QDBusConnection::sessionBus())))
 {
 }
 
@@ -441,7 +482,28 @@ Account::Account(const QDBusConnection &bus,
     : StatelessDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(this, ChannelFactory::stockFreshFactory(bus),
+                  ConnectionFactory::create(bus)))
+{
+}
+
+/**
+ * Construct a new Account object using the given \bus and the given factories.
+ *
+ * \param bus QDBusConnection to use.
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
+ */
+Account::Account(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ConnectionFactoryConstPtr &connectionFactory)
+    : StatelessDBusProxy(bus, busName, objectPath),
+      OptionalInterfaceFactory<Account>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this, channelFactory, connectionFactory))
 {
 }
 
@@ -451,6 +513,16 @@ Account::Account(const QDBusConnection &bus,
 Account::~Account()
 {
     delete mPriv;
+}
+
+ConnectionFactoryConstPtr Account::connectionFactory() const
+{
+    return mPriv->connFactory;
+}
+
+ChannelFactoryConstPtr Account::channelFactory() const
+{
+    return mPriv->chanFactory;
 }
 
 /**
@@ -944,7 +1016,7 @@ QVariantMap Account::connectionErrorDetails() const
  */
 bool Account::haveConnection() const
 {
-    return !mPriv->connectionObjectPath.isEmpty();
+    return !mPriv->connection.isNull();
 }
 
 /**
@@ -965,17 +1037,6 @@ bool Account::haveConnection() const
  */
 ConnectionPtr Account::connection() const
 {
-    if (mPriv->connectionObjectPath.isEmpty()) {
-        return ConnectionPtr();
-    }
-
-    if (!mPriv->connection) {
-        QString objectPath = mPriv->connectionObjectPath;
-        QString busName = objectPath.mid(1).replace(
-                QLatin1String("/"), QLatin1String("."));
-        mPriv->connection = Connection::create(dbusConnection(),
-                busName, objectPath);
-    }
     return mPriv->connection;
 }
 
@@ -1112,7 +1173,7 @@ QString Account::uniqueIdentifier() const
  */
 QString Account::connectionObjectPath() const
 {
-    return mPriv->connectionObjectPath;
+    return !mPriv->connection.isNull() ? mPriv->connection->objectPath() : QString();
 }
 
 /**
@@ -2379,14 +2440,34 @@ void Account::Private::updateProperties(const QVariantMap &props)
             path = QString();
         }
 
-        if (connectionObjectPath != path) {
-            connection.reset();
-            connectionObjectPath = path;
-            emit parent->haveConnectionChanged(!path.isEmpty());
-            parent->notify("haveConnection");
-            parent->notify("connection");
-            parent->notify("connectionObjectPath");
+        connObjPathQueue.enqueue(path);
+
+        if (connObjPathQueue.size() == 1) {
+            if (path.isEmpty()) {
+                if (!connection.isNull()) {
+                    debug() << "Dropping connection for account" << parent->objectPath();
+
+                    connection.reset();
+                    emit parent->haveConnectionChanged(false);
+                    parent->notify("haveConnection");
+                    parent->notify("connection");
+                    parent->notify("connectionObjectPath");
+                }
+
+                connObjPathQueue.dequeue();
+            } else {
+                debug() << "Building connection" << path << "for account" << parent->objectPath();
+
+                QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
+                parent->connect(connFactory->proxy(busName, path, chanFactory),
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(onConnectionBuilt(Tp::PendingOperation*)));
+
+                // No dequeue here, but only in onConnectionBuilt, so we will queue future changes
+            }
         }
+        // onConnectionBuilt for a previous path will make sure the path we enqueued is processed if
+        // the queue wasn't empty (so is now size() > 1)
     }
 
     if (props.contains(QLatin1String("ConnectionStatus")) ||
@@ -2486,13 +2567,19 @@ void Account::gotMainProperties(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
     if (!reply.isError()) {
-        debug() << "Got reply to Properties.GetAll(Account)";
+        debug() << "Got reply to Properties.GetAll(Account) for" << objectPath();
         mPriv->updateProperties(reply.value());
 
         mPriv->readinessHelper->setInterfaces(interfaces());
+        mPriv->mayFinishCore = true;
 
-        debug() << "Account basic functionality is ready";
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        if (mPriv->connObjPathQueue.isEmpty()) {
+            debug() << "Account basic functionality is ready";
+            mPriv->coreFinished = true;
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        } else {
+            debug() << "Deferring finishing Account::FeatureCore until the connection is built";
+        }
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
 
@@ -2575,6 +2662,89 @@ void Account::onRemoved()
     invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
             QLatin1String("Account removed from AccountManager"));
     emit removed();
+}
+
+void Account::onConnectionBuilt(PendingOperation *op)
+{
+    PendingReady *readyOp = qobject_cast<PendingReady *>(op);
+    Q_ASSERT(readyOp != NULL);
+
+    if (op->isError()) {
+        warning() << "Building connection" << mPriv->connObjPathQueue.head() << "failed with" <<
+            op->errorName() << "-" << op->errorMessage();
+
+        if (!mPriv->connection.isNull()) {
+            mPriv->connection.reset();
+            emit haveConnectionChanged(false);
+            notify("haveConnection");
+            notify("connection");
+            notify("connectionObjectPath");
+        }
+    } else {
+        bool hadConnection = !mPriv->connection.isNull();
+        ConnectionPtr prevConn = mPriv->connection;
+        QString prevConnPath = connectionObjectPath();
+
+        mPriv->connection = ConnectionPtr::dynamicCast(readyOp->proxy());
+        Q_ASSERT(mPriv->connection);
+
+        debug() << "Connection" << connectionObjectPath() << "built for" << objectPath();
+
+        // TODO: could we, in fact, do with just a connectionChanged(connection) signal and not need
+        // haveConnectionChanged(bool) now that we always have a proxy object to include in the
+        // signal?
+        if (!hadConnection) {
+            emit haveConnectionChanged(true);
+            notify("haveConnection");
+        }
+
+        if (prevConn != mPriv->connection) {
+            notify("connection");
+        }
+
+        if (prevConnPath != connectionObjectPath()) {
+            notify("connectionObjectPath");
+        }
+    }
+
+    mPriv->connObjPathQueue.dequeue();
+
+    // This will scan for and process any empty paths until the first non-empty one, which it will
+    // then proceed to build a connection for
+    while (!mPriv->connObjPathQueue.isEmpty()) {
+        QString path = mPriv->connObjPathQueue.head();
+
+        if (path.isEmpty()) {
+            if (!mPriv->connection.isNull()) {
+                debug() << "Dropping connection for account" << objectPath();
+
+                mPriv->connection.reset();
+                emit haveConnectionChanged(false);
+                notify("haveConnection");
+                notify("connection");
+                notify("connectionObjectPath");
+            }
+
+            mPriv->connObjPathQueue.dequeue();
+        } else {
+            debug() << "Building connection" << path << "for account" << objectPath();
+
+            QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
+            connect(mPriv->connFactory->proxy(busName, path, mPriv->chanFactory),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onConnectionBuilt(Tp::PendingOperation*)));
+            // Don't dequeue - the just-connected onConnectionBuilt CB will do that
+            // If we dequeued here, changes in the meanwhile wouldn't be queued but processed
+            // straight away
+            break;
+        }
+    }
+
+    if (!mPriv->coreFinished && mPriv->mayFinishCore) {
+        debug() << "Account" << objectPath() << "basic functionality is ready (connection built)";
+        mPriv->coreFinished = true;
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
 }
 
 void Account::notify(const char *propertyName)

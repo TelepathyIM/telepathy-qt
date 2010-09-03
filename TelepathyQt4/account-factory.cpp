@@ -51,7 +51,7 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
         return nowHaveProxy(proxy, false);
     }
 
-    proxy = Account::create(dbusConnection(), busName, objectPath/*, connFactory, chanFactory*/);
+    proxy = Account::create(busName, objectPath, chanFactory, connFactory, dbusConnection());
     return nowHaveProxy(proxy, true);
 }
 
