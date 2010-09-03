@@ -47,12 +47,11 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
             const ChannelFactoryConstPtr &chanFactory) const
 {
     SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
-    if (proxy) {
-        return nowHaveProxy(proxy, false);
+    if (!proxy) {
+        proxy = Account::create(busName, objectPath, chanFactory, connFactory, dbusConnection());
     }
 
-    proxy = Account::create(busName, objectPath, chanFactory, connFactory, dbusConnection());
-    return nowHaveProxy(proxy, true);
+    return nowHaveProxy(proxy);
 }
 
 QString AccountFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const

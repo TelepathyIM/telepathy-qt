@@ -61,7 +61,7 @@ protected:
     // as an intermediate subclass?
     SharedPtr<RefCounted> cachedProxy(const QString &busName, const QString &objectPath) const;
 
-    PendingReady *nowHaveProxy(const SharedPtr<RefCounted> &proxy, bool created) const;
+    PendingReady *nowHaveProxy(const SharedPtr<RefCounted> &proxy) const;
 
     // I don't want this to be non-pure virtual, because I want ALL subclasses to have to think
     // about whether or not they need to uniquefy the name or not. If a subclass doesn't implement

@@ -126,10 +126,9 @@ SharedPtr<RefCounted> DBusProxyFactory::cachedProxy(const QString &busName,
  * PendingReady::proxy(), if the proxy is needed in a context where it's not required to be ready.
  *
  * \param proxy The proxy which the factory should now make sure is prepared and made ready.
- * \param created Stupid parameter, I'll remove it in an instant.
  * \return Readifying operation, which finishes when the proxy is usable.
  */
-PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy, bool created) const
+PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy) const
 {
     Q_ASSERT(!proxy.isNull());
 
@@ -137,23 +136,15 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy,
     // DBusProxy class hierarchy so that every DBusProxy(Something) is always a ReadyObject and a
     // RefCounted, in the API/ABI break - then most of these proxyMisc-> things become just proxy->
 
-    DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(proxy.data());
     ReadyObject *proxyReady = dynamic_cast<ReadyObject *>(proxy.data());
-
-    Q_ASSERT(proxyProxy != NULL);
     Q_ASSERT(proxyReady != NULL);
 
     Features specificFeatures = featuresFor(proxy);
 
-    // TODO: lookup existing prepareOp, if any, from a private mapping
+    // FIXME: prepare currently doesn't work
     PendingOperation *prepareOp = NULL;
 
-    if (created) {
-        mPriv->cache->put(Cache::Key(proxyProxy->busName(), proxyProxy->objectPath()), proxy);
-        prepareOp = prepare(proxy);
-        // TODO: insert to private prepare op mapping and make sure it's removed when it finishes/is
-        // destroyed
-    }
+    mPriv->cache->put(proxy);
 
     if (prepareOp || (!specificFeatures.isEmpty() && !proxyReady->isReady(specificFeatures))) {
         return new PendingReady(prepareOp, specificFeatures, proxy, 0);
@@ -203,21 +194,22 @@ SharedPtr<RefCounted> DBusProxyFactory::Cache::get(const Key &key) const
     return counted;
 }
 
-void DBusProxyFactory::Cache::put(const Key &key, const SharedPtr<RefCounted> &obj)
+void DBusProxyFactory::Cache::put(const SharedPtr<RefCounted> &obj)
 {
     DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(obj.data());
     Q_ASSERT(proxyProxy != NULL);
+
+    Key key(proxyProxy->busName(), proxyProxy->objectPath());
 
     SharedPtr<RefCounted> existingProxy = SharedPtr<RefCounted>(proxies.value(key));
     if (!existingProxy || existingProxy != obj) {
         connect(proxyProxy,
                 SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                 SLOT(onProxyInvalidated(Tp::DBusProxy*)));
+
+        debug() << "Inserting to factory cache proxy for" << key;
+        proxies.insert(key, obj);
     }
-
-    debug() << "Inserting to factory cache proxy for" << key;
-
-    proxies.insert(key, obj);
 }
 
 void DBusProxyFactory::Cache::onProxyInvalidated(Tp::DBusProxy *proxy)

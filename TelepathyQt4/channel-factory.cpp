@@ -56,12 +56,11 @@ PendingReady *ChannelFactory::proxy(const ConnectionPtr &connection, const QStri
         const QVariantMap &immutableProperties) const
 {
     SharedPtr<RefCounted> proxy = cachedProxy(connection->busName(), channelPath);
-    if (proxy) {
-        return nowHaveProxy(proxy, false);
+    if (!proxy) {
+        proxy = create(connection, channelPath, immutableProperties);
     }
 
-    proxy = create(connection, channelPath, immutableProperties);
-    return nowHaveProxy(proxy, true);
+    return nowHaveProxy(proxy);
 }
 
 ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,

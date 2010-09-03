@@ -50,12 +50,11 @@ PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &ob
             const ChannelFactoryConstPtr &chanFactory) const
 {
     SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
-    if (proxy) {
-        return nowHaveProxy(proxy, false);
+    if (!proxy) {
+        proxy = Connection::create(dbusConnection(), busName, objectPath/*, chanFactory*/);
     }
 
-    proxy = Connection::create(dbusConnection(), busName, objectPath/*, chanFactory*/);
-    return nowHaveProxy(proxy, true);
+    return nowHaveProxy(proxy);
 }
 
 QString ConnectionFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const

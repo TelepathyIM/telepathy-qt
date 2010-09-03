@@ -46,7 +46,7 @@ public:
     ~Cache();
 
     SharedPtr<RefCounted> get(const Key &key) const;
-    void put(const Key &key, const SharedPtr<RefCounted> &obj);
+    void put(const SharedPtr<RefCounted> &obj);
 
 private Q_SLOTS:
     void onProxyInvalidated(Tp::DBusProxy *proxy); // The error itself is not interesting
