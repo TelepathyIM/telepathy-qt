@@ -413,9 +413,9 @@ AccountManager::~AccountManager()
     delete mPriv;
 }
 
-ChannelFactoryConstPtr AccountManager::channelFactory() const
+AccountFactoryConstPtr AccountManager::accountFactory() const
 {
-    return mPriv->chanFactory;
+    return mPriv->accFactory;
 }
 
 ConnectionFactoryConstPtr AccountManager::connectionFactory() const
@@ -423,9 +423,9 @@ ConnectionFactoryConstPtr AccountManager::connectionFactory() const
     return mPriv->connFactory;
 }
 
-AccountFactoryConstPtr AccountManager::accountFactory() const
+ChannelFactoryConstPtr AccountManager::channelFactory() const
 {
-    return mPriv->accFactory;
+    return mPriv->chanFactory;
 }
 
 /**
