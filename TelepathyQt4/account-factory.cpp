@@ -28,14 +28,13 @@ namespace Tp
 
 AccountFactoryPtr AccountFactory::create(const QDBusConnection &bus, const Features &features)
 {
-    AccountFactoryPtr factory(new AccountFactory(bus));
-    factory->addFeatures(features);
-    return factory;
+    return AccountFactoryPtr(new AccountFactory(bus, features));
 }
 
-AccountFactory::AccountFactory(const QDBusConnection &bus)
+AccountFactory::AccountFactory(const QDBusConnection &bus, const Features &features)
     : FixedFeatureFactory(bus)
 {
+    addFeatures(features);
 }
 
 AccountFactory::~AccountFactory()

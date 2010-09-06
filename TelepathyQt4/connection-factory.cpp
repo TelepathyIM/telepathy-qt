@@ -30,16 +30,13 @@ namespace Tp
 ConnectionFactoryPtr ConnectionFactory::create(const QDBusConnection &bus,
         const Features &features)
 {
-    ConnectionFactoryPtr factory(new ConnectionFactory(bus));
-
-    factory->addFeatures(features);
-
-    return factory;
+    return ConnectionFactoryPtr(new ConnectionFactory(bus, features));
 }
 
-ConnectionFactory::ConnectionFactory(const QDBusConnection &bus)
+ConnectionFactory::ConnectionFactory(const QDBusConnection &bus, const Features &features)
     : FixedFeatureFactory(bus)
 {
+    addFeatures(features);
 }
 
 ConnectionFactory::~ConnectionFactory()
