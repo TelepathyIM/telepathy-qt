@@ -59,6 +59,8 @@ public:
 protected:
     ConnectionFactory(const QDBusConnection &bus, const Features &features);
 
+    virtual ConnectionPtr construct(const QString &busName, const QString &objectPath,
+            const ChannelFactoryConstPtr &chanFactory) const;
     virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
     // Nothing we'd like to prepare()
     // Fixed features
