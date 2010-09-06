@@ -193,7 +193,7 @@ PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &proxy) 
 }
 
 /**
- * \fn Features DBusProxyFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const 
+ * \fn Features DBusProxyFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
  * Specifies features which should be made ready on a given proxy.
  *
  * This can be used to implement instance-specific features based on arbitrary criteria.
