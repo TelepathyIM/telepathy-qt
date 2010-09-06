@@ -324,6 +324,10 @@ const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager
 /**
  * Create a new AccountManager object using QDBusConnection::sessionBus().
  *
+ * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
+ * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
+ * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
+ *
  * \return An AccountManagerPtr object pointing to the newly created
  *         AccountManager object.
  */
@@ -334,6 +338,10 @@ AccountManagerPtr AccountManager::create()
 
 /**
  * Create a new AccountManager object using the given \a bus.
+ *
+ * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
+ * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
+ * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \return An AccountManagerPtr object pointing to the newly created
@@ -392,6 +400,10 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
 
 /**
  * Construct a new AccountManager object using QDBusConnection::sessionBus().
+ *
+ * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
+ * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
+ * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
  */
 AccountManager::AccountManager()
     : StatelessDBusProxy(QDBusConnection::sessionBus(),
@@ -409,6 +421,10 @@ AccountManager::AccountManager()
 
 /**
  * Construct a new AccountManager object using the given \a bus.
+ *
+ * The instance will use an account factory creating Tp::Account objects with Account::FeatureCore
+ * ready, a connection factory creating Tp::Connection objects with no features ready, and a channel
+ * factory creating stock Telepathy-Qt4 channel subclasses, as appropriate, with no features ready.
  *
  * \param bus QDBusConnection to use.
  */
