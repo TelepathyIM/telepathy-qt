@@ -259,7 +259,7 @@ void TestAccountConnectionFactory::testReadifyingFactoryInitialConn()
     mAccount = Account::create(mAccountBusName, mAccountPath,
             ConnectionFactory::create(QDBusConnection::sessionBus(),
                 Connection::FeatureCore),
-            ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()));
+            ChannelFactory::create(QDBusConnection::sessionBus()));
 
     QVERIFY(connect(mAccount->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -281,7 +281,7 @@ void TestAccountConnectionFactory::testSwitch()
     mAccount = Account::create(mAccountBusName, mAccountPath,
             ConnectionFactory::create(QDBusConnection::sessionBus(),
                 Connection::FeatureCore),
-            ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()));
+            ChannelFactory::create(QDBusConnection::sessionBus()));
 
     QVERIFY(connect(mAccount->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
@@ -363,7 +363,7 @@ void TestAccountConnectionFactory::testQueuedSwitch()
     mAccount = Account::create(mAccountBusName, mAccountPath,
             ConnectionFactory::create(QDBusConnection::sessionBus(),
                 Connection::FeatureCore),
-            ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()));
+            ChannelFactory::create(QDBusConnection::sessionBus()));
 
     QVERIFY(connect(mAccount->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),

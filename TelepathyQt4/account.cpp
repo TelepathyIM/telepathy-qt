@@ -501,7 +501,7 @@ Account::Account(const QString &busName, const QString &objectPath)
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this,
                   ConnectionFactory::create(QDBusConnection::sessionBus()),
-                  ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus())))
+                  ChannelFactory::create(QDBusConnection::sessionBus())))
 {
 }
 
@@ -524,7 +524,7 @@ Account::Account(const QDBusConnection &bus,
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, ConnectionFactory::create(bus),
-                  ChannelFactory::stockFreshFactory(bus)))
+                  ChannelFactory::create(bus)))
 {
 }
 

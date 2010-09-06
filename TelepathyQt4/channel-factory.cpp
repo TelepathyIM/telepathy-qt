@@ -38,7 +38,16 @@
 namespace Tp
 {
 
-ChannelFactoryPtr ChannelFactory::stockFreshFactory(const QDBusConnection &bus)
+/**
+ * Create a new ChannelFactory object for the given \a bus.
+ *
+ * The returned factory will construct channel subclasses provided by TelepathyQt4 as appropriate
+ * for the channel immutable properties, but not make any features ready.
+ *
+ * \param bus The QDBusConnection the proxies constructed using this factory should use.
+ * \return An ChannelFactoryPtr pointing to the newly created factory.
+ */
+ChannelFactoryPtr ChannelFactory::create(const QDBusConnection &bus)
 {
     return ChannelFactoryPtr(new ChannelFactory(bus));
 }

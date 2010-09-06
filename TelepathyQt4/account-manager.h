@@ -75,7 +75,7 @@ public:
             const ConnectionFactoryConstPtr &connectionFactory =
                 ConnectionFactory::create(QDBusConnection::sessionBus()),
             const ChannelFactoryConstPtr &channelFactory =
-                ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()));
+                ChannelFactory::create(QDBusConnection::sessionBus()));
 
     // The bus-taking variant should never have default factories unless the bus is the last param
     // which would be illogical?

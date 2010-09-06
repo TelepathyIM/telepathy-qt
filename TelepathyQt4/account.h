@@ -109,7 +109,7 @@ public:
     static AccountPtr create(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory =
-                ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()));
+                ChannelFactory::create(QDBusConnection::sessionBus()));
 
     static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
