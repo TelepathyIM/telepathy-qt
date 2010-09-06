@@ -68,13 +68,21 @@ public:
     static AccountManagerPtr create();
     static AccountManagerPtr create(const QDBusConnection &bus);
 
-    static AccountManagerPtr create(const ChannelFactoryConstPtr &channelFactory,
+    // Needs to not have an accountFactory default param to not conflict with the above variants
+    // until the API/ABI break
+    static AccountManagerPtr create(
+            const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory =
                 ConnectionFactory::create(QDBusConnection::sessionBus()),
-            const AccountFactoryConstPtr &accountFactory =
-                AccountFactory::create(QDBusConnection::sessionBus()),
-            const QDBusConnection &bus =
-                QDBusConnection::sessionBus());
+            const ChannelFactoryConstPtr &channelFactory =
+                ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()));
+
+    // The bus-taking variant should never have default factories unless the bus is the last param
+    // which would be illogical?
+    static AccountManagerPtr create(const QDBusConnection &bus,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory);
 
     virtual ~AccountManager();
 
@@ -130,10 +138,10 @@ Q_SIGNALS:
 protected:
     AccountManager();
     AccountManager(const QDBusConnection &bus);
-    AccountManager(const ChannelFactoryConstPtr &channelFactory,
-            const ConnectionFactoryConstPtr &connectionFactory,
+    AccountManager(const QDBusConnection &bus,
             const AccountFactoryConstPtr &accountFactory,
-            const QDBusConnection &bus);
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory);
 
     Client::AccountManagerInterface *baseInterface() const;
 

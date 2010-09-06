@@ -41,8 +41,9 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
 {
-    Private(AccountManager *parent, const ChannelFactoryConstPtr &chanFactory,
-            const ConnectionFactoryConstPtr &connFactory, const AccountFactoryConstPtr &accFactory);
+    Private(AccountManager *parent, const AccountFactoryConstPtr &accFactory,
+            const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory);
     ~Private();
 
     void init();
@@ -63,9 +64,9 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
 
     ReadinessHelper *readinessHelper;
 
-    ChannelFactoryConstPtr chanFactory;
-    ConnectionFactoryConstPtr connFactory;
     AccountFactoryConstPtr accFactory;
+    ConnectionFactoryConstPtr connFactory;
+    ChannelFactoryConstPtr chanFactory;
 
     // Introspection
     QHash<QString, AccountPtr> incompleteAccounts;
@@ -73,28 +74,29 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     QStringList supportedAccountProperties;
 };
 
-AccountManager::Private::Private(AccountManager *parent, const ChannelFactoryConstPtr &chanFactory,
-            const ConnectionFactoryConstPtr &connFactory, const AccountFactoryConstPtr &accFactory)
+AccountManager::Private::Private(AccountManager *parent,
+        const AccountFactoryConstPtr &accFactory, const ConnectionFactoryConstPtr &connFactory,
+        const ChannelFactoryConstPtr &chanFactory)
     : parent(parent),
       baseInterface(new Client::AccountManagerInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
-      chanFactory(chanFactory),
+      accFactory(accFactory),
       connFactory(connFactory),
-      accFactory(accFactory)
+      chanFactory(chanFactory)
 {
     debug() << "Creating new AccountManager:" << parent->busName();
 
-    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
-        warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
+    if (accFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the account factory is not the proxy connection";
     }
 
     if (connFactory->dbusConnection().name() != parent->dbusConnection().name()) {
         warning() << "  The D-Bus connection in the connection factory is not the proxy connection";
     }
 
-    if (accFactory->dbusConnection().name() != parent->dbusConnection().name()) {
-        warning() << "  The D-Bus connection in the account factory is not the proxy connection";
+    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
     }
 
     ReadinessHelper::Introspectables introspectables;
@@ -342,13 +344,50 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
     return AccountManagerPtr(new AccountManager(bus));
 }
 
-AccountManagerPtr AccountManager::create(const ChannelFactoryConstPtr &channelFactory,
+/**
+ * Create a new AccountManager using QDBusConnection::sessionBus() and the given factories.
+ *
+ * The connection and channel factories are passed to any Account objects created by this manager
+ * object. In fact, they're not used directly by AccountManager at all.
+ *
+ * A warning is printed if the factories are for a bus different from QDBusConnection::sessionBus().
+ *
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \return An AccountManagerPtr object pointing to the newly created
+ *         AccountManager object.
+ */
+AccountManagerPtr AccountManager::create(const AccountFactoryConstPtr &accountFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const AccountFactoryConstPtr &accountFactory,
-        const QDBusConnection &bus)
+        const ChannelFactoryConstPtr &channelFactory)
 {
-    return AccountManagerPtr(new AccountManager(
-                channelFactory, connectionFactory, accountFactory, bus));
+    return AccountManagerPtr(new AccountManager(QDBusConnection::sessionBus(),
+                accountFactory, connectionFactory, channelFactory));
+}
+
+/**
+ * Create a new AccountManager using the given bus and the given factories.
+ *
+ * The connection and channel factories are passed to any Account objects created by this manager
+ * object. In fact, they're not used directly by AccountManager at all.
+ *
+ * A warning is printed if the factories are not for \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \return An AccountManagerPtr object pointing to the newly created
+ *         AccountManager object.
+ */
+AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
+        const AccountFactoryConstPtr &accountFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory)
+{
+    return AccountManagerPtr(new AccountManager(bus,
+                accountFactory, connectionFactory, channelFactory));
 }
 
 /**
@@ -362,9 +401,9 @@ AccountManager::AccountManager()
       ReadyObject(this, FeatureCore),
       mPriv(new Private(
                   this,
-                  ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()),
+                  AccountFactory::create(QDBusConnection::sessionBus()),
                   ConnectionFactory::create(QDBusConnection::sessionBus()),
-                  AccountFactory::create(QDBusConnection::sessionBus())))
+                  ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus())))
 {
 }
 
@@ -381,27 +420,32 @@ AccountManager::AccountManager(const QDBusConnection& bus)
       ReadyObject(this, FeatureCore),
       mPriv(new Private(
                   this,
-                  ChannelFactory::stockFreshFactory(bus),
+                  AccountFactory::create(bus),
                   ConnectionFactory::create(bus),
-                  AccountFactory::create(bus)))
+                  ChannelFactory::stockFreshFactory(bus)))
 {
 }
 
 /**
- * Construct a new AccountManager object using the given \a bus.
+ * Construct a new AccountManager object using the given \a bus and the given factories.
+ *
+ * A warning is printed if the factories are not for \a bus.
  *
  * \param bus QDBusConnection to use.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
  */
-AccountManager::AccountManager(const ChannelFactoryConstPtr &channelFactory,
-        const ConnectionFactoryConstPtr &connectionFactory,
+AccountManager::AccountManager(const QDBusConnection &bus,
         const AccountFactoryConstPtr &accountFactory,
-        const QDBusConnection &bus)
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory)
     : StatelessDBusProxy(bus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
       OptionalInterfaceFactory<AccountManager>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, channelFactory, connectionFactory, accountFactory))
+      mPriv(new Private(this, accountFactory, connectionFactory, channelFactory))
 {
 }
 
