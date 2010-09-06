@@ -64,6 +64,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 
     void updateProperties(const QVariantMap &props);
     void retrieveAvatar();
+    bool processConnQueue();
 
     void addConferenceRequestParameters(QVariantMap &request,
             const QList<ChannelPtr> &channels,
@@ -2507,29 +2508,9 @@ void Account::Private::updateProperties(const QVariantMap &props)
         connObjPathQueue.enqueue(path);
 
         if (connObjPathQueue.size() == 1) {
-            if (path.isEmpty()) {
-                if (!connection.isNull()) {
-                    debug() << "Dropping connection for account" << parent->objectPath();
-
-                    connection.reset();
-                    emit parent->haveConnectionChanged(false);
-                    parent->notify("haveConnection");
-                    parent->notify("connection");
-                    parent->notify("connectionObjectPath");
-                }
-
-                connObjPathQueue.dequeue();
-            } else {
-                debug() << "Building connection" << path << "for account" << parent->objectPath();
-
-                QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
-                parent->connect(connFactory->proxy(busName, path, chanFactory),
-                        SIGNAL(finished(Tp::PendingOperation*)),
-                        SLOT(onConnectionBuilt(Tp::PendingOperation*)));
-
-                // No dequeue here, but only in onConnectionBuilt, so we will queue future changes
-            }
+            processConnQueue();
         }
+
         // onConnectionBuilt for a previous path will make sure the path we enqueued is processed if
         // the queue wasn't empty (so is now size() > 1)
     }
@@ -2624,6 +2605,38 @@ void Account::Private::retrieveAvatar()
     parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotAvatar(QDBusPendingCallWatcher *)));
+}
+
+bool Account::Private::processConnQueue()
+{
+    while (!connObjPathQueue.isEmpty()) {
+        QString path = connObjPathQueue.head();
+        if (path.isEmpty()) {
+            if (!connection.isNull()) {
+                debug() << "Dropping connection for account" << parent->objectPath();
+
+                connection.reset();
+                emit parent->haveConnectionChanged(false);
+                parent->notify("haveConnection");
+                parent->notify("connection");
+                parent->notify("connectionObjectPath");
+            }
+
+            connObjPathQueue.dequeue();
+        } else {
+            debug() << "Building connection" << path << "for account" << parent->objectPath();
+
+            QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
+            parent->connect(connFactory->proxy(busName, path, chanFactory),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onConnectionBuilt(Tp::PendingOperation*)));
+
+            // No dequeue here, but only in onConnectionBuilt, so we will queue future changes
+            return false; // Only move on to the next paths when that build finishes
+        }
+    }
+
+    return true;
 }
 
 void Account::gotMainProperties(QDBusPendingCallWatcher *watcher)
@@ -2773,39 +2786,8 @@ void Account::onConnectionBuilt(PendingOperation *op)
 
     mPriv->connObjPathQueue.dequeue();
 
-    // This will scan for and process any empty paths until the first non-empty one, which it will
-    // then proceed to build a connection for
-    while (!mPriv->connObjPathQueue.isEmpty()) {
-        QString path = mPriv->connObjPathQueue.head();
-
-        if (path.isEmpty()) {
-            if (!mPriv->connection.isNull()) {
-                debug() << "Dropping connection for account" << objectPath();
-
-                mPriv->connection.reset();
-                emit haveConnectionChanged(false);
-                notify("haveConnection");
-                notify("connection");
-                notify("connectionObjectPath");
-            }
-
-            mPriv->connObjPathQueue.dequeue();
-        } else {
-            debug() << "Building connection" << path << "for account" << objectPath();
-
-            QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
-            connect(mPriv->connFactory->proxy(busName, path, mPriv->chanFactory),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(onConnectionBuilt(Tp::PendingOperation*)));
-            // Don't dequeue - the just-connected onConnectionBuilt CB will do that
-            // If we dequeued here, changes in the meanwhile wouldn't be queued but processed
-            // straight away
-            break;
-        }
-    }
-
-    if (!mPriv->coreFinished && mPriv->mayFinishCore) {
-        debug() << "Account" << objectPath() << "basic functionality is ready (connection built)";
+    if (mPriv->processConnQueue() && !mPriv->coreFinished && mPriv->mayFinishCore) {
+        debug() << "Account" << objectPath() << "basic functionality is ready (connections built)";
         mPriv->coreFinished = true;
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
