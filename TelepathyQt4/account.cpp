@@ -52,8 +52,8 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT Account::Private
 {
-    Private(Account *parent, const ChannelFactoryConstPtr &chanFactory,
-            const ConnectionFactoryConstPtr &connFactory);
+    Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory);
     ~Private();
 
     void init();
@@ -76,8 +76,8 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     Account *parent;
 
     // Factories
-    ChannelFactoryConstPtr chanFactory;
     ConnectionFactoryConstPtr connFactory;
+    ChannelFactoryConstPtr chanFactory;
 
     // Instance of generated interface class
     Client::AccountInterface *baseInterface;
@@ -113,11 +113,11 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     SimplePresence requestedPresence;
 };
 
-Account::Private::Private(Account *parent, const ChannelFactoryConstPtr &chanFactory,
-        const ConnectionFactoryConstPtr &connFactory)
+Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
+        const ChannelFactoryConstPtr &chanFactory)
     : parent(parent),
-      chanFactory(chanFactory),
       connFactory(connFactory),
+      chanFactory(chanFactory),
       baseInterface(new Client::AccountInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
@@ -194,13 +194,13 @@ Account::Private::Private(Account *parent, const ChannelFactoryConstPtr &chanFac
 
     readinessHelper->addIntrospectables(introspectables);
 
-    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
-        warning() << "  The D-Bus connection in the channel factory is not the proxy connection for"
+    if (connFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the conn factory is not the proxy connection for"
             << parent->objectPath();
     }
 
-    if (connFactory->dbusConnection().name() != parent->dbusConnection().name()) {
-        warning() << "  The D-Bus connection in the conn factory is not the proxy connection for"
+    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection for"
             << parent->objectPath();
     }
 
@@ -402,6 +402,10 @@ const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::stat
 /**
  * Create a new Account object using QDBusConnection::sessionBus().
  *
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
+ *
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
  *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
@@ -417,6 +421,10 @@ AccountPtr Account::create(const QString &busName,
 /**
  * Create a new Account object using the given \a bus.
  *
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
+ *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
@@ -431,25 +439,54 @@ AccountPtr Account::create(const QDBusConnection &bus,
 }
 
 /**
+ * Create a new Account object using QDBusConnection::sessionBus() and the given factories.
+ *
+ * A warning is printed if the factories are not for QDBusConnection::sessionBus().
+ *
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \return An AccountPtr object pointing to the newly created Account object.
+ */
+AccountPtr Account::create(const QString &busName, const QString &objectPath,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory)
+{
+    return AccountPtr(new Account(QDBusConnection::sessionBus(), busName, objectPath,
+                connectionFactory, channelFactory));
+}
+
+/**
  * Create a new Account object using the given \a bus and the given factories.
+ *
+ * A warning is printed if the factories are not for \a bus.
  *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
  *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
  * \param objectPath The account object path.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
  * \return An AccountPtr object pointing to the newly created Account object.
  */
-AccountPtr Account::create(const QString &busName, const QString &objectPath,
-        const ChannelFactoryConstPtr &channelFactory,
+AccountPtr Account::create(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const QDBusConnection &bus)
+        const ChannelFactoryConstPtr &channelFactory)
 {
-    return AccountPtr(new Account(bus, busName, objectPath, channelFactory, connectionFactory));
+    return AccountPtr(new Account(bus, busName, objectPath, connectionFactory, channelFactory));
 }
 
 /**
  * Construct a new Account object using QDBusConnection::sessionBus().
+ *
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
  *
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
@@ -462,13 +499,17 @@ Account::Account(const QString &busName, const QString &objectPath)
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this,
-                  ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()),
-                  ConnectionFactory::create(QDBusConnection::sessionBus())))
+                  ConnectionFactory::create(QDBusConnection::sessionBus()),
+                  ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus())))
 {
 }
 
 /**
  * Construct a new Account object using the given \bus.
+ *
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
@@ -481,28 +522,32 @@ Account::Account(const QDBusConnection &bus,
     : StatelessDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, ChannelFactory::stockFreshFactory(bus),
-                  ConnectionFactory::create(bus)))
+      mPriv(new Private(this, ConnectionFactory::create(bus),
+                  ChannelFactory::stockFreshFactory(bus)))
 {
 }
 
 /**
  * Construct a new Account object using the given \bus and the given factories.
  *
+ * A warning is printed if the factories are not for QDBusConnection::sessionBus().
+ *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
  *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
  * \param objectPath The account object path.
  */
 Account::Account(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath,
-        const ChannelFactoryConstPtr &channelFactory,
-        const ConnectionFactoryConstPtr &connectionFactory)
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory)
     : StatelessDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, channelFactory, connectionFactory))
+      mPriv(new Private(this, connectionFactory, channelFactory))
 {
 }
 

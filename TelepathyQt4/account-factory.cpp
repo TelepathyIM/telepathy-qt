@@ -47,7 +47,7 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
 {
     SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
     if (!proxy) {
-        proxy = Account::create(busName, objectPath, chanFactory, connFactory, dbusConnection());
+        proxy = Account::create(dbusConnection(), busName, objectPath, connFactory, chanFactory);
     }
 
     return nowHaveProxy(proxy);

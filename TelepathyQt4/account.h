@@ -104,11 +104,17 @@ public:
     static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
 
+    // API/ABI break: collapse these with the above variants and have all factories be default
+    // params for the non-bus version
     static AccountPtr create(const QString &busName, const QString &objectPath,
-            const ChannelFactoryConstPtr &channelFactory,
-            const ConnectionFactoryConstPtr &connectionFactory =
-                ConnectionFactory::create(QDBusConnection::sessionBus()),
-            const QDBusConnection &bus = QDBusConnection::sessionBus());
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory =
+                ChannelFactory::stockFreshFactory(QDBusConnection::sessionBus()));
+
+    static AccountPtr create(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory);
 
     virtual ~Account();
 
@@ -330,8 +336,8 @@ protected:
             const QString &busName, const QString &objectPath);
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
-            const ChannelFactoryConstPtr &channelFactory,
-            const ConnectionFactoryConstPtr &connectionFactory);
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory);
 
     Client::AccountInterface *baseInterface() const;
 
