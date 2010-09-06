@@ -473,16 +473,46 @@ AccountManager::~AccountManager()
     delete mPriv;
 }
 
+/**
+ * Get the account factory used by this manager.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the manager would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
 AccountFactoryConstPtr AccountManager::accountFactory() const
 {
     return mPriv->accFactory;
 }
 
+/**
+ * Get the connection factory used by this manager.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the manager would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
 ConnectionFactoryConstPtr AccountManager::connectionFactory() const
 {
     return mPriv->connFactory;
 }
 
+/**
+ * Get the channel factory used by this manager.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the manager would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
 ChannelFactoryConstPtr AccountManager::channelFactory() const
 {
     return mPriv->chanFactory;
