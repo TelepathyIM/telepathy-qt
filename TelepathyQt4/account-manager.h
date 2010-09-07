@@ -32,6 +32,7 @@
 #include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
@@ -75,20 +76,25 @@ public:
             const ConnectionFactoryConstPtr &connectionFactory =
                 ConnectionFactory::create(QDBusConnection::sessionBus()),
             const ChannelFactoryConstPtr &channelFactory =
-                ChannelFactory::create(QDBusConnection::sessionBus()));
+                ChannelFactory::create(QDBusConnection::sessionBus()),
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
 
     // The bus-taking variant should never have default factories unless the bus is the last param
     // which would be illogical?
     static AccountManagerPtr create(const QDBusConnection &bus,
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
-            const ChannelFactoryConstPtr &channelFactory);
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
 
     virtual ~AccountManager();
 
     AccountFactoryConstPtr accountFactory() const;
     ConnectionFactoryConstPtr connectionFactory() const;
     ChannelFactoryConstPtr channelFactory() const;
+    ContactFactoryConstPtr contactFactory() const;
 
     TELEPATHY_QT4_DEPRECATED QStringList validAccountPaths() const;
     TELEPATHY_QT4_DEPRECATED QStringList invalidAccountPaths() const;
@@ -141,7 +147,8 @@ protected:
     AccountManager(const QDBusConnection &bus,
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
-            const ChannelFactoryConstPtr &channelFactory);
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::AccountManagerInterface *baseInterface() const;
 

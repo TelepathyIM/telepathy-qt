@@ -30,6 +30,7 @@
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
@@ -109,17 +110,22 @@ public:
     static AccountPtr create(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory =
-                ChannelFactory::create(QDBusConnection::sessionBus()));
+                ChannelFactory::create(QDBusConnection::sessionBus()),
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
 
     static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
-            const ChannelFactoryConstPtr &channelFactory);
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
 
     virtual ~Account();
 
     ConnectionFactoryConstPtr connectionFactory() const;
     ChannelFactoryConstPtr channelFactory() const;
+    ContactFactoryConstPtr contactFactory() const;
 
     bool isValidAccount() const;
 
@@ -337,7 +343,8 @@ protected:
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
-            const ChannelFactoryConstPtr &channelFactory);
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::AccountInterface *baseInterface() const;
 

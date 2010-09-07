@@ -97,14 +97,16 @@ ConnectionFactory::~ConnectionFactory()
  * \param busName The bus/service name of the D-Bus connection object the proxy is constructed for.
  * \param objectPath The object path of the connection.
  * \param chanFactory The channel factory to use for the Connection.
+ * \param contactFactory The channel factory to use for the Connection.
  * \return A PendingReady operation with the proxy in PendingReady::proxy().
  */
 PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &objectPath,
-            const ChannelFactoryConstPtr &chanFactory) const
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory) const
 {
     SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
     if (!proxy) {
-        proxy = construct(busName, objectPath, chanFactory);
+        proxy = construct(busName, objectPath, chanFactory, contactFactory);
     }
 
     return nowHaveProxy(proxy);
@@ -121,12 +123,15 @@ PendingReady *ConnectionFactory::proxy(const QString &busName, const QString &ob
  * \param busName The bus/service name of the D-Bus Connection object the proxy is constructed for.
  * \param objectPath The object path of the connection.
  * \param chanFactory The channel factory to use for the Connection.
+ * \param contactFactory The channel factory to use for the Connection.
  * \return A pointer to the constructed proxy.
  */
 ConnectionPtr ConnectionFactory::construct(const QString &busName, const QString &objectPath,
-        const ChannelFactoryConstPtr &chanFactory) const
+        const ChannelFactoryConstPtr &chanFactory,
+        const ContactFactoryConstPtr &contactFactory) const
 {
-    return Connection::create(dbusConnection(), busName, objectPath/*, chanFactory */);
+    return Connection::create(dbusConnection(), busName, objectPath/*, chanFactory,
+                                                                     contactFactory */);
 }
 
 /**

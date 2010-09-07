@@ -51,14 +51,16 @@ public:
 
     PendingReady *proxy(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connFactory,
-            const ChannelFactoryConstPtr &chanFactory) const;
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory) const;
 
 protected:
     AccountFactory(const QDBusConnection &bus, const Features &features);
 
     virtual AccountPtr construct(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connFactory,
-            const ChannelFactoryConstPtr &chanFactory) const;
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory) const;
     virtual QString finalBusNameFrom(const QString &uniqueOrWellKnown) const;
     // Nothing we'd like to prepare()
     // Fixed features

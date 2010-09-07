@@ -53,7 +53,8 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT Account::Private
 {
     Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
-            const ChannelFactoryConstPtr &chanFactory);
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory);
     ~Private();
 
     void init();
@@ -79,6 +80,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     // Factories
     ConnectionFactoryConstPtr connFactory;
     ChannelFactoryConstPtr chanFactory;
+    ContactFactoryConstPtr contactFactory;
 
     // Instance of generated interface class
     Client::AccountInterface *baseInterface;
@@ -115,10 +117,11 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 };
 
 Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
-        const ChannelFactoryConstPtr &chanFactory)
+        const ChannelFactoryConstPtr &chanFactory, const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
       connFactory(connFactory),
       chanFactory(chanFactory),
+      contactFactory(contactFactory),
       baseInterface(new Client::AccountInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
@@ -450,14 +453,16 @@ AccountPtr Account::create(const QDBusConnection &bus,
  * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
  * \return An AccountPtr object pointing to the newly created Account object.
  */
 AccountPtr Account::create(const QString &busName, const QString &objectPath,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const ChannelFactoryConstPtr &channelFactory)
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
 {
     return AccountPtr(new Account(QDBusConnection::sessionBus(), busName, objectPath,
-                connectionFactory, channelFactory));
+                connectionFactory, channelFactory, contactFactory));
 }
 
 /**
@@ -472,14 +477,17 @@ AccountPtr Account::create(const QString &busName, const QString &objectPath,
  * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
  * \return An AccountPtr object pointing to the newly created Account object.
  */
 AccountPtr Account::create(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const ChannelFactoryConstPtr &channelFactory)
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
 {
-    return AccountPtr(new Account(bus, busName, objectPath, connectionFactory, channelFactory));
+    return AccountPtr(new Account(bus, busName, objectPath, connectionFactory, channelFactory,
+                contactFactory));
 }
 
 /**
@@ -501,7 +509,8 @@ Account::Account(const QString &busName, const QString &objectPath)
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this,
                   ConnectionFactory::create(QDBusConnection::sessionBus()),
-                  ChannelFactory::create(QDBusConnection::sessionBus())))
+                  ChannelFactory::create(QDBusConnection::sessionBus()),
+                  ContactFactory::create()))
 {
 }
 
@@ -524,7 +533,8 @@ Account::Account(const QDBusConnection &bus,
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this, ConnectionFactory::create(bus),
-                  ChannelFactory::create(bus)))
+                  ChannelFactory::create(bus),
+                  ContactFactory::create()))
 {
 }
 
@@ -539,16 +549,18 @@ Account::Account(const QDBusConnection &bus,
  *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
  * \param objectPath The account object path.
  */
 Account::Account(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const ChannelFactoryConstPtr &channelFactory)
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
     : StatelessDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, connectionFactory, channelFactory))
+      mPriv(new Private(this, connectionFactory, channelFactory, contactFactory))
 {
 }
 
@@ -588,6 +600,21 @@ ConnectionFactoryConstPtr Account::connectionFactory() const
 ChannelFactoryConstPtr Account::channelFactory() const
 {
     return mPriv->chanFactory;
+}
+
+/**
+ * Get the contact factory used by this account.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the account would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ContactFactoryConstPtr Account::contactFactory() const
+{
+    return mPriv->contactFactory;
 }
 
 /**
@@ -2627,7 +2654,7 @@ bool Account::Private::processConnQueue()
             debug() << "Building connection" << path << "for account" << parent->objectPath();
 
             QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
-            parent->connect(connFactory->proxy(busName, path, chanFactory),
+            parent->connect(connFactory->proxy(busName, path, chanFactory, contactFactory),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(onConnectionBuilt(Tp::PendingOperation*)));
 

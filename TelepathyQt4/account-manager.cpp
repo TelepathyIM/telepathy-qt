@@ -43,7 +43,8 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
 {
     Private(AccountManager *parent, const AccountFactoryConstPtr &accFactory,
             const ConnectionFactoryConstPtr &connFactory,
-            const ChannelFactoryConstPtr &chanFactory);
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory);
     ~Private();
 
     void init();
@@ -67,6 +68,7 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     AccountFactoryConstPtr accFactory;
     ConnectionFactoryConstPtr connFactory;
     ChannelFactoryConstPtr chanFactory;
+    ContactFactoryConstPtr contactFactory;
 
     // Introspection
     QHash<QString, AccountPtr> incompleteAccounts;
@@ -76,14 +78,15 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
 
 AccountManager::Private::Private(AccountManager *parent,
         const AccountFactoryConstPtr &accFactory, const ConnectionFactoryConstPtr &connFactory,
-        const ChannelFactoryConstPtr &chanFactory)
+        const ChannelFactoryConstPtr &chanFactory, const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
       baseInterface(new Client::AccountManagerInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
       accFactory(accFactory),
       connFactory(connFactory),
-      chanFactory(chanFactory)
+      chanFactory(chanFactory),
+      contactFactory(contactFactory)
 {
     debug() << "Creating new AccountManager:" << parent->busName();
 
@@ -200,7 +203,7 @@ void AccountManager::Private::addAccountForPath(const QString &path)
     }
 
     PendingReady *readyOp = accFactory->proxy(parent->busName(), path, connFactory,
-            chanFactory);
+            chanFactory, contactFactory);
 
     AccountPtr account(AccountPtr::dynamicCast(readyOp->proxy()));
     Q_ASSERT(!account.isNull());
@@ -363,15 +366,17 @@ AccountManagerPtr AccountManager::create(const QDBusConnection &bus)
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
  * \return An AccountManagerPtr object pointing to the newly created
  *         AccountManager object.
  */
 AccountManagerPtr AccountManager::create(const AccountFactoryConstPtr &accountFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const ChannelFactoryConstPtr &channelFactory)
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
 {
     return AccountManagerPtr(new AccountManager(QDBusConnection::sessionBus(),
-                accountFactory, connectionFactory, channelFactory));
+                accountFactory, connectionFactory, channelFactory, contactFactory));
 }
 
 /**
@@ -392,10 +397,11 @@ AccountManagerPtr AccountManager::create(const AccountFactoryConstPtr &accountFa
 AccountManagerPtr AccountManager::create(const QDBusConnection &bus,
         const AccountFactoryConstPtr &accountFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const ChannelFactoryConstPtr &channelFactory)
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
 {
     return AccountManagerPtr(new AccountManager(bus,
-                accountFactory, connectionFactory, channelFactory));
+                accountFactory, connectionFactory, channelFactory, contactFactory));
 }
 
 /**
@@ -415,7 +421,8 @@ AccountManager::AccountManager()
                   this,
                   AccountFactory::create(QDBusConnection::sessionBus()),
                   ConnectionFactory::create(QDBusConnection::sessionBus()),
-                  ChannelFactory::create(QDBusConnection::sessionBus())))
+                  ChannelFactory::create(QDBusConnection::sessionBus()),
+                  ContactFactory::create()))
 {
 }
 
@@ -438,7 +445,8 @@ AccountManager::AccountManager(const QDBusConnection& bus)
                   this,
                   AccountFactory::create(bus),
                   ConnectionFactory::create(bus),
-                  ChannelFactory::create(bus)))
+                  ChannelFactory::create(bus),
+                  ContactFactory::create()))
 {
 }
 
@@ -451,17 +459,19 @@ AccountManager::AccountManager(const QDBusConnection& bus)
  * \param accountFactory The account factory to use.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
  */
 AccountManager::AccountManager(const QDBusConnection &bus,
         const AccountFactoryConstPtr &accountFactory,
         const ConnectionFactoryConstPtr &connectionFactory,
-        const ChannelFactoryConstPtr &channelFactory)
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
     : StatelessDBusProxy(bus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_OBJECT_PATH)),
       OptionalInterfaceFactory<AccountManager>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, accountFactory, connectionFactory, channelFactory))
+      mPriv(new Private(this, accountFactory, connectionFactory, channelFactory, contactFactory))
 {
 }
 
@@ -516,6 +526,21 @@ ConnectionFactoryConstPtr AccountManager::connectionFactory() const
 ChannelFactoryConstPtr AccountManager::channelFactory() const
 {
     return mPriv->chanFactory;
+}
+
+/**
+ * Get the contact factory used by this manager.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the manager would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ContactFactoryConstPtr AccountManager::contactFactory() const
+{
+    return mPriv->contactFactory;
 }
 
 /**

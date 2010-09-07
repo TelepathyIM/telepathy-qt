@@ -97,15 +97,17 @@ AccountFactory::~AccountFactory()
  * \param objectPath The object path of the account.
  * \param connFactory The connection factory to use for the Account.
  * \param chanFactory The channel factory to use for the Account.
+ * \param contactFactory The channel factory to use for the Account.
  * \return A PendingReady operation with the proxy in PendingReady::proxy().
  */
 PendingReady *AccountFactory::proxy(const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connFactory,
-            const ChannelFactoryConstPtr &chanFactory) const
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory) const
 {
     SharedPtr<RefCounted> proxy = cachedProxy(busName, objectPath);
     if (!proxy) {
-        proxy = construct(busName, objectPath, connFactory, chanFactory);
+        proxy = construct(busName, objectPath, connFactory, chanFactory, contactFactory);
     }
 
     return nowHaveProxy(proxy);
@@ -124,13 +126,16 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
  * \param objectPath The object path of the account.
  * \param connFactory The connection factory to use for the Account.
  * \param chanFactory The channel factory to use for the Account.
+ * \param contactFactory The channel factory to use for the Account.
  * \return A pointer to the constructed proxy.
  */
 AccountPtr AccountFactory::construct(const QString &busName, const QString &objectPath,
         const ConnectionFactoryConstPtr &connFactory,
-        const ChannelFactoryConstPtr &chanFactory) const
+        const ChannelFactoryConstPtr &chanFactory,
+        const ContactFactoryConstPtr &contactFactory) const
 {
-    return Account::create(dbusConnection(), busName, objectPath, connFactory, chanFactory);
+    return Account::create(dbusConnection(), busName, objectPath, connFactory, chanFactory,
+            contactFactory);
 }
 
 /**
