@@ -155,7 +155,7 @@ QString Contact::avatarToken() const
 AvatarData Contact::avatarData() const
 {
     if (!mPriv->requestedFeatures.contains(FeatureAvatarData)) {
-        warning() << "Contact::avatarFile() used on" << this
+        warning() << "Contact::avatarData() used on" << this
             << "for which FeatureAvatarData hasn't been requested - returning \"\"";
         return AvatarData();
     }
@@ -486,8 +486,8 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
             case FeatureAvatarData:
                 if (manager()->supportedFeatures().contains(FeatureAvatarData)) {
                     mPriv->actualFeatures.insert(FeatureAvatarData);
+                    mPriv->updateAvatarData();
                 }
-                mPriv->updateAvatarData();
                 break;
 
             case FeatureSimplePresence:

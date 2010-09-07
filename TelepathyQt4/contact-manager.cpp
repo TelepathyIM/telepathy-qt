@@ -776,7 +776,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<Contact::Feature> realFeatures(features);
     if (realFeatures.contains(Contact::FeatureAvatarData) &&
         !realFeatures.contains(Contact::FeatureAvatarToken)) {
-        realFeatures.insert (Contact::FeatureAvatarToken);
+        realFeatures.insert(Contact::FeatureAvatarToken);
     }
 
     if (!connection()->isValid()) {
@@ -886,10 +886,11 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
     }
 
     QString path = cacheDir + QString::fromLatin1("/telepathy/avatars/") +
-        connection->cmName() +QDir::separator() + connection->protocolName();
+        connection->cmName() + QString::fromLatin1("/") + connection->protocolName();
 
-    if (createDir && !QDir().mkpath(path))
+    if (createDir && !QDir().mkpath(path)) {
         return false;
+    }
 
     avatarFileName = path + QString::fromLatin1("/") + escapeAsIdentifier(token);
     mimeTypeFileName = avatarFileName + QString::fromLatin1(".mime");
@@ -900,7 +901,13 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
 void ContactManager::doRequestAvatars()
 {
     debug() << "Request" << mPriv->requestAvatarsQueue.size() << "avatar(s)";
-    mPriv->connection->avatarsInterface()->RequestAvatars(mPriv->requestAvatarsQueue);
+
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
+        mPriv->connection->avatarsInterface()->RequestAvatars(mPriv->requestAvatarsQueue),
+        this);
+    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)), watcher,
+        SLOT(deleteLater()));
+
     mPriv->requestAvatarsQueue = UIntList();
     mPriv->requestAvatarsIdle = false;
 }
