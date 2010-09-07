@@ -67,6 +67,7 @@ TESTS += \
     test-conn-roster \
     test-conn-roster-groups \
     test-contacts \
+    test-contacts-avatar \
     test-contacts-capabilities \
     test-contacts-info \
     test-contacts-location \
@@ -87,6 +88,7 @@ BUILT_SOURCES += \
     _gen/conn-roster.cpp.moc.hpp \
     _gen/conn-roster-groups.cpp.moc.hpp \
     _gen/contacts.cpp.moc.hpp \
+    _gen/contacts-avatar.cpp.moc.hpp \
     _gen/contacts-capabilities.cpp.moc.hpp \
     _gen/contacts-info.cpp.moc.hpp \
     _gen/contacts-location.cpp.moc.hpp \
@@ -127,6 +129,9 @@ test_conn_roster_groups_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-gl
 
 test_contacts_SOURCES = contacts.cpp
 test_contacts_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
+
+test_contacts_avatar_SOURCES = contacts-avatar.cpp
+test_contacts_avatar_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_contacts_capabilities_SOURCES = contacts-capabilities.cpp
 test_contacts_capabilities_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
