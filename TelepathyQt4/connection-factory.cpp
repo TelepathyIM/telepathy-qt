@@ -29,7 +29,7 @@ namespace Tp
 
 /**
  * \class ConnectionFactory
- * \ingroup clientconnection
+ * \ingroup clientconn
  * \headerfile TelepathyQt4/connection-factory.h <TelepathyQt4/ConnectionFactory>
  *
  * \brief Constructs Connection objects according to application-defined settings
