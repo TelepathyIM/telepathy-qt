@@ -133,6 +133,9 @@ AccountPtr AccountFactory::construct(const QString &busName, const QString &obje
 
 /**
  * Identity transform, as is appropriate for Account objects.
+ *
+ * \param uniqueOrWellKnown The name to transform.
+ * \return \a uniqueOrWellKnown
  */
 QString AccountFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
 {
