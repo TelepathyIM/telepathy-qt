@@ -200,6 +200,12 @@ PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &proxy) 
  * FixedFeatureFactory implements this as a fixed set of features independent of the instance,
  * however.
  *
+ * It should be noted that if an empty set of features is returned, ReadyObject::becomeReady() is
+ * not called at all. In other words, any "core feature" is not automatically added to the requested
+ * features. This is to enable setting a factory to not make proxies ready at all, which is useful
+ * eg. in the case of account editing UIs which aren't interested in the state of Connection objects
+ * for the Account objects they're editing.
+ *
  * \param proxy The proxy on which the returned features will be made ready.
  * \return Features to make ready on the proxy.
  */
