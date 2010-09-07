@@ -49,8 +49,10 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
  * \headerfile TelepathyQt4/pending-ready.h <TelepathyQt4/PendingReady>
  *
  * \brief Class containing the features requested and the reply to a request
- * for an object to become ready. Instances of this class cannot be
- * constructed directly; the only way to get one is via Object::becomeReady().
+ * for an object to become ready.
+ *
+ * Instances of this class cannot be constructed directly; the only way to get one is via
+ * Object::becomeReady() or a DBusProxyFactory subclass.
  */
 
 /**
@@ -58,14 +60,16 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
  *
  * When the operation given as finishFirst finishes, the resulting PendingReady object will first
  * wait for that operation to finish successfully, and then, if requestedFeatures is not empty,
- * calls ReadyObject::becomeReady(requestedFeatures), and finishes when that finished.
+ * calls ReadyObject::becomeReady(requestedFeatures) on \a proxy, and finishes when that finished.
  *
  * If either nested operation fails, this PendingReady object will fail too with the same error name
  * and message as they reported.
  *
- * \param requestedFeatures Features to be made ready on the object.
  * \param finishFirst The object to finish first.
- * \param object The object that will become ready.
+ * \param requestedFeatures Features to be made ready on the object.
+ * \param proxy The proxy in question.
+ * \param parent QObject parent for the operation. Should not be the same as \a proxy to avoid
+ * circular destruction.
  */
 PendingReady::PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures,
         const SharedPtr<RefCounted> &proxy, QObject *parent)
@@ -84,7 +88,9 @@ PendingReady::PendingReady(PendingOperation *finishFirst, const Features &reques
 /**
  * Construct a PendingReady object.
  *
+ * \param requestedFeatures Features to be made ready on the object.
  * \param object The object that will become ready.
+ * \param parent QObject parent for the operation.
  */
 PendingReady::PendingReady(const Features &requestedFeatures,
         QObject *object, QObject *parent)
@@ -104,6 +110,9 @@ PendingReady::~PendingReady()
 /**
  * Return the object through which the request was made.
  *
+ * This is only applicable for PendingReady objects from ReadyObject::becomeReady(). For others,
+ * \c NULL is returned.
+ *
  * \return The object through which the request was made.
  */
 QObject *PendingReady::object() const
@@ -111,6 +120,14 @@ QObject *PendingReady::object() const
     return mPriv->object;
 }
 
+/**
+ * Return the proxy constructed by the factory which is being made ready.
+ *
+ * This is only applicable for PendingReady objects from a DBusProxyFactory subclass. For others,
+ * a \c NULL SharedPtr is returned.
+ *
+ * \return The proxy which is being made ready.
+ */
 SharedPtr<RefCounted> PendingReady::proxy() const
 {
     return mPriv->proxy;

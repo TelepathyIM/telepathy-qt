@@ -41,6 +41,7 @@ class TELEPATHY_QT4_EXPORT PendingReady: public PendingOperation
     Q_DISABLE_COPY(PendingReady);
 
 public:
+    // API/ABI break TODO: Shouldn't these be private?
     PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures,
             const SharedPtr<RefCounted> &proxy, QObject *parent = 0);
     PendingReady(const Features &requestedFeatures, QObject *object,
