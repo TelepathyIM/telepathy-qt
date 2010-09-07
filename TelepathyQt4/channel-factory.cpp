@@ -39,6 +39,18 @@ namespace Tp
 {
 
 /**
+ * \class ChannelFactory
+ * \ingroup clientchannel
+ * \headerfile TelepathyQt4/channel-factory.h <TelepathyQt4/ChannelFactory>
+ *
+ * \brief Constructs Channel objects
+ *
+ * \todo This class is currently only a placeholder to enable using factories in general in other
+ * classes. There is no actual configurability in the construction behavior, although a
+ * factory-style construction API is provided.
+ */
+
+/**
  * Create a new ChannelFactory object for the given \a bus.
  *
  * The returned factory will construct channel subclasses provided by TelepathyQt4 as appropriate
@@ -52,15 +64,44 @@ ChannelFactoryPtr ChannelFactory::create(const QDBusConnection &bus)
     return ChannelFactoryPtr(new ChannelFactory(bus));
 }
 
+/**
+ * Class constructor.
+ *
+ * The constructed factory will construct channel subclasses provided by TelepathyQt4 as appropriate
+ * for the channel immutable properties, but not make any features ready.
+ *
+ * \param bus The QDBusConnection the proxies constructed using this factory should use.
+ */
 ChannelFactory::ChannelFactory(const QDBusConnection &bus)
     : DBusProxyFactory(bus)
 {
 }
 
+/**
+ * Class destructor.
+ */
 ChannelFactory::~ChannelFactory()
 {
 }
 
+/**
+ * Constructs a Channel proxy (and someday begins making it ready.)
+ *
+ * If a valid proxy already exists in the factory cache for the given combination of \a busName and
+ * \a objectPath, it is returned instead. All newly created proxies are automatically cached until
+ * they're either DBusProxy::invalidated() or the last reference to them outside the factory has
+ * been dropped.
+ *
+ * The proxy can be accessed immediately after this function returns using PendingReady::proxy().
+ *
+ * \todo Make it configurable which subclass is constructed and which features, if any, are made
+ * ready on it.
+ *
+ * \param connection Proxy for the owning connection of the channel.
+ * \param channelPath The object path of the channel.
+ * \param immutableProperties The immutable properties of the channel.
+ * \return A PendingReady operation with the proxy in PendingReady::proxy().
+ */
 PendingReady *ChannelFactory::proxy(const ConnectionPtr &connection, const QString &channelPath,
         const QVariantMap &immutableProperties) const
 {
@@ -113,11 +154,26 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
     return Channel::create(connection, channelPath, immutableProperties);
 }
 
+/**
+ * Transforms well-known names to the corresponding unique names, as is appropriate for Channel
+ *
+ * \param uniqueOrWellKnown The name to transform.
+ * \return The unique name corresponding to \a uniqueOrWellKnown (which may be it itself).
+ */
 QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
 {
     return StatefulDBusProxy::uniqueNameFrom(dbusConnection(), uniqueOrWellKnown);
 }
 
+/**
+ * Returns features as configured for the channel class given by the Channel::immutableProperties()
+ * of \a proxy.
+ *
+ * \todo Make the features configurable - currently an empty set is always returned.
+ *
+ * \param proxy The Channel proxy to determine the features for.
+ * \return The channel class-specific features.
+ */
 Features ChannelFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
 {
     // TODO return whatever the user / defaults has specified
