@@ -93,7 +93,7 @@ AccountFactory::~AccountFactory()
  * Account::becomeReady().
  *
  * \param busName The bus/service name of the D-Bus account object the proxy is constructed for.
- * (Usually TELEPATHY_ACCOUNT_MANAGER_BUS_NAME).
+ * (Usually #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME).
  * \param objectPath The object path of the account.
  * \param connFactory The connection factory to use for the Account.
  * \param chanFactory The channel factory to use for the Account.
