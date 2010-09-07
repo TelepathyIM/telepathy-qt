@@ -112,14 +112,6 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
 }
 
 /**
- * Identity transform, as is appropriate for Account objects.
- */
-QString AccountFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
-{
-    return uniqueOrWellKnown;
-}
-
-/**
  * Can be used by subclasses to override the Account subclass constructed by the factory.
  *
  * This is automatically called by proxy() to construct proxy instances if no valid cached proxy is
@@ -137,6 +129,14 @@ AccountPtr AccountFactory::construct(const QString &busName, const QString &obje
         const ChannelFactoryConstPtr &chanFactory) const
 {
     return Account::create(dbusConnection(), busName, objectPath, connFactory, chanFactory);
+}
+
+/**
+ * Identity transform, as is appropriate for Account objects.
+ */
+QString AccountFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
+{
+    return uniqueOrWellKnown;
 }
 
 }
