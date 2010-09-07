@@ -38,6 +38,7 @@
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingHandles>
 #include <TelepathyQt4/ReferencedHandles>
+#include <TelepathyQt4/Utils>
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -55,7 +56,7 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
 {
     Private(ContactManager *parent, Connection *connection)
-        : parent(parent), connection(connection)
+        : parent(parent), connection(connection), requestAvatarsIdle(false)
     {
     }
 
@@ -112,6 +113,11 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
         const Contacts &pendingAdded,
         const Contacts &remotePendingAdded,
         const Contacts &removed);
+
+    bool buildAvatarFileName(QString token, bool createDir,
+        QString &avatarFileName, QString &mimeTypeFileName);
+    UIntList requestAvatarsQueue;
+    bool requestAvatarsIdle;
 };
 
 ConnectionPtr ContactManager::connection() const
@@ -127,6 +133,8 @@ QString featureToInterface(Contact::Feature feature)
         case Contact::FeatureAlias:
             return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_ALIASING);
         case Contact::FeatureAvatarToken:
+            return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
+        case Contact::FeatureAvatarData:
             return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_AVATARS);
         case Contact::FeatureSimplePresence:
             return QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_SIMPLE_PRESENCE);
@@ -151,6 +159,7 @@ QSet<Contact::Feature> ContactManager::supportedFeatures() const
         QList<Contact::Feature> allFeatures = QList<Contact::Feature>()
             << Contact::FeatureAlias
             << Contact::FeatureAvatarToken
+            << Contact::FeatureAvatarData
             << Contact::FeatureSimplePresence
             << Contact::FeatureCapabilities
             << Contact::FeatureLocation
@@ -763,12 +772,19 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     QSet<uint> otherContacts;
     QSet<Contact::Feature> missingFeatures;
 
+    // FeatureAvatarData depends on FeatureAvatarToken
+    QSet<Contact::Feature> realFeatures(features);
+    if (realFeatures.contains(Contact::FeatureAvatarData) &&
+        !realFeatures.contains(Contact::FeatureAvatarToken)) {
+        realFeatures.insert (Contact::FeatureAvatarToken);
+    }
+
     if (!connection()->isValid()) {
-        return new PendingContacts(this, handles, features, QStringList(),
+        return new PendingContacts(this, handles, realFeatures, QStringList(),
                 satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("the Connection is invalid"));
     } else if (!connection()->isReady(Connection::FeatureCore)) {
-        return new PendingContacts(this, handles, features, QStringList(),
+        return new PendingContacts(this, handles, realFeatures, QStringList(),
                 satisfyingContacts, otherContacts, QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
                 QLatin1String("Connection::FeatureCore is not ready"));
     }
@@ -776,17 +792,17 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     foreach (uint handle, handles) {
         ContactPtr contact = lookupContactByHandle(handle);
         if (contact) {
-            if ((features - contact->requestedFeatures()).isEmpty()) {
+            if ((realFeatures - contact->requestedFeatures()).isEmpty()) {
                 // Contact exists and has all the requested features
                 satisfyingContacts.insert(handle, contact);
             } else {
                 // Contact exists but is missing features
                 otherContacts.insert(handle);
-                missingFeatures.unite(features - contact->requestedFeatures());
+                missingFeatures.unite(realFeatures - contact->requestedFeatures());
             }
         } else {
             // Contact doesn't exist - we need to get all of the features (same as unite(features))
-            missingFeatures = features;
+            missingFeatures = realFeatures;
             otherContacts.insert(handle);
         }
     }
@@ -803,7 +819,7 @@ PendingContacts *ContactManager::contactsForHandles(const UIntList &handles,
     }
 
     PendingContacts *contacts =
-        new PendingContacts(this, handles, features, interfaces.toList(),
+        new PendingContacts(this, handles, realFeatures, interfaces.toList(),
                 satisfyingContacts, otherContacts);
     return contacts;
 }
@@ -860,6 +876,70 @@ void ContactManager::onAliasesChanged(const AliasPairList &aliases)
     }
 }
 
+bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
+    QString &avatarFileName, QString &mimeTypeFileName)
+{
+    QString cacheDir = QString::fromLatin1(qgetenv("XDG_CACHE_HOME"));
+    if (cacheDir.isEmpty()) {
+        cacheDir = QString::fromLatin1(qgetenv("HOME")) +
+            QString::fromLatin1("/.cache");
+    }
+
+    QString path = cacheDir + QString::fromLatin1("/telepathy/avatars/") +
+        connection->cmName() +QDir::separator() + connection->protocolName();
+
+    if (createDir && !QDir().mkpath(path))
+        return false;
+
+    avatarFileName = path + QString::fromLatin1("/") + escapeAsIdentifier(token);
+    mimeTypeFileName = avatarFileName + QString::fromLatin1(".mime");
+
+    return true;
+}
+
+void ContactManager::doRequestAvatars()
+{
+    debug() << "Request" << mPriv->requestAvatarsQueue.size() << "avatar(s)";
+    mPriv->connection->avatarsInterface()->RequestAvatars(mPriv->requestAvatarsQueue);
+    mPriv->requestAvatarsQueue = UIntList();
+    mPriv->requestAvatarsIdle = false;
+}
+
+void ContactManager::requestContactAvatar(Contact *contact)
+{
+    QString token = contact->avatarToken();
+    QString avatarFileName;
+    QString mimeTypeFileName;
+
+    bool success = mPriv->buildAvatarFileName(token, false, avatarFileName,
+        mimeTypeFileName);
+
+    /* Check if the avatar is already in the cache */
+    if (success && QFile::exists(avatarFileName)) {
+        QFile mimeTypeFile(mimeTypeFileName);
+        mimeTypeFile.open(QIODevice::ReadOnly);
+        QString mimeType = QString::fromLatin1(mimeTypeFile.readAll());
+        mimeTypeFile.close();
+
+        debug() << "Avatar found in cache for handle" << contact->handle()[0];
+        debug() << "Filename:" << avatarFileName;
+        debug() << "MimeType:" << mimeType;
+
+        contact->receiveAvatarData(AvatarData(avatarFileName, mimeType));
+
+        return;
+    }
+
+    /* Not found in cache, queue this contact. We do this to group contacts
+     * for the AvatarRequest call */
+    debug() << "Need to request avatar for handle" << contact->handle()[0];
+    if (!mPriv->requestAvatarsIdle) {
+        QTimer::singleShot(0, this, SLOT(doRequestAvatars()));
+        mPriv->requestAvatarsIdle = true;
+    }
+    mPriv->requestAvatarsQueue.append(contact->handle()[0]);
+}
+
 void ContactManager::onAvatarUpdated(uint handle, const QString &token)
 {
     debug() << "Got AvatarUpdate for contact with handle" << handle;
@@ -867,6 +947,41 @@ void ContactManager::onAvatarUpdated(uint handle, const QString &token)
     ContactPtr contact = lookupContactByHandle(handle);
     if (contact) {
         contact->receiveAvatarToken(token);
+    }
+}
+
+void ContactManager::onAvatarRetrieved(uint handle, const QString &token,
+    const QByteArray &data, const QString &mimeType)
+{
+    QString avatarFileName;
+    QString mimeTypeFileName;
+
+    debug() << "Got AvatarRetrieved for contact with handle" << handle;
+
+    bool success = mPriv->buildAvatarFileName(token, true, avatarFileName,
+        mimeTypeFileName);
+
+    if (success) {
+        QFile mimeTypeFile(mimeTypeFileName);
+        QFile avatarFile(avatarFileName);
+
+        debug() << "Write avatar in cache for handle" << handle;
+        debug() << "Filename:" << avatarFileName;
+        debug() << "MimeType:" << mimeType;
+
+        mimeTypeFile.open(QIODevice::WriteOnly);
+        mimeTypeFile.write(mimeType.toLatin1());
+        mimeTypeFile.close();
+
+        avatarFile.open(QIODevice::WriteOnly);
+        avatarFile.write(data);
+        avatarFile.close();
+    }
+
+    ContactPtr contact = lookupContactByHandle(handle);
+    if (contact) {
+        contact->setAvatarToken(token);
+        contact->receiveAvatarData(AvatarData(avatarFileName, mimeType));
     }
 }
 
@@ -1214,6 +1329,14 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
                     SIGNAL(AvatarUpdated(uint, const QString &)),
                     conn->contactManager(),
                     SLOT(onAvatarUpdated(uint, const QString &)));
+            break;
+
+        case Contact::FeatureAvatarData:
+            QObject::connect(
+                    conn->avatarsInterface(),
+                    SIGNAL(AvatarRetrieved(uint, const QString &, const QByteArray &, const QString &)),
+                    conn->contactManager(),
+                    SLOT(onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &)));
             break;
 
         case Contact::FeatureSimplePresence:

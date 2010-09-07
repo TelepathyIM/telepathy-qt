@@ -106,6 +106,8 @@ public:
 
     ContactPtr lookupContactByHandle(uint handle);
 
+    void requestContactAvatar(Contact *contact);
+
 Q_SIGNALS:
     void presencePublicationRequested(const Tp::Contacts &contacts);
     void groupAdded(const QString &group);
@@ -131,6 +133,8 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);
     void onAvatarUpdated(uint, const QString &);
+    void onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &);
+    void doRequestAvatars();
     void onPresencesChanged(const Tp::SimpleContactPresences &);
     void onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &);
     void onLocationUpdated(uint, const QVariantMap &);
