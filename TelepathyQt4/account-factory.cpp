@@ -117,6 +117,8 @@ PendingReady *AccountFactory::proxy(const QString &busName, const QString &objec
  * This is automatically called by proxy() to construct proxy instances if no valid cached proxy is
  * found.
  *
+ * The default implementation constructs Tp::Account objects.
+ *
  * \param busName The bus/service name of the D-Bus account object the proxy is constructed for.
  * (Usually TELEPATHY_ACCOUNT_MANAGER_BUS_NAME).
  * \param objectPath The object path of the account.
