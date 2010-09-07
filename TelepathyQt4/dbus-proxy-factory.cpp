@@ -113,14 +113,14 @@ SharedPtr<RefCounted> DBusProxyFactory::cachedProxy(const QString &busName,
  * the cache.
  *
  * This function will then do the rest of the factory work, including caching the proxy if it's not
- * cached already, doing any prepare() work if appropriate, and making the features from
- * featuresFor() ready if they aren't already.
+ * cached already, doing any initialPrepare()/readyPrepare() work if appropriate, and making the
+ * features from featuresFor() ready if they aren't already.
  *
- * The returned PendingReady only finishes when the prepare() operation for the proxy has completed,
- * and the requested features have all been made ready (or found unable to be made ready). Note that
- * this might have happened already before calling this function, if the proxy was not a newly
- * created one, but was looked up from the cache. DBusProxyFactory handles the necessary subleties
- * for this to work.
+ * The returned PendingReady only finishes when the initialPrepare() and readyPrepare() operations
+ * for the proxy has completed, and the requested features have all been made ready (or found unable
+ * to be made ready). Note that this might have happened already before calling this function, if
+ * the proxy was not a newly created one, but was looked up from the cache. DBusProxyFactory handles
+ * the necessary subleties for this to work.
  *
  * Access to the proxy instance is allowed as soon as this method returns through
  * PendingReady::proxy(), if the proxy is needed in a context where it's not required to be ready.
@@ -139,21 +139,9 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy)
     ReadyObject *proxyReady = dynamic_cast<ReadyObject *>(proxy.data());
     Q_ASSERT(proxyReady != NULL);
 
-    Features specificFeatures = featuresFor(proxy);
-
-    // FIXME: prepare currently doesn't work
-    PendingOperation *prepareOp = NULL;
-
     mPriv->cache->put(proxy);
 
-    if (prepareOp || (!specificFeatures.isEmpty() && !proxyReady->isReady(specificFeatures))) {
-        return new PendingReady(prepareOp, specificFeatures, proxy, 0);
-    }
-
-    // No features requested or they are all ready - optimize a bit by not calling ReadinessHelper
-    PendingReady *readyOp = new PendingReady(0, specificFeatures, proxy, 0);
-    readyOp->setFinished();
-    return readyOp;
+    return new PendingReady(SharedPtr<const DBusProxyFactory>(this), featuresFor(proxy), proxy, 0);
 }
 
 /**
@@ -182,11 +170,28 @@ PendingReady *DBusProxyFactory::nowHaveProxy(const SharedPtr<RefCounted> &proxy)
  * starting to make the object ready whenever nowHaveProxy() is called the first time around for a
  * given proxy.
  *
- * \todo FIXME actually implement this... :)
+ * \todo FIXME actually implement this... :) Currently just a vtable placeholder.
  * \param proxy The just-constructed proxy to be prepared.
  * \return \c NULL ie. nothing to do.
  */
-PendingOperation *DBusProxyFactory::prepare(const SharedPtr<RefCounted> &proxy) const
+PendingOperation *DBusProxyFactory::initialPrepare(const SharedPtr<RefCounted> &proxy) const
+{
+    // Nothing we could think about needs doing
+    return NULL;
+}
+
+/**
+ * Allows subclasses to do arbitrary manipulation on the proxy after it has been made ready.
+ *
+ * If a non-\c NULL operation is returned, the completion of that operation is waited for before
+ * signaling that the object is ready for use after ReadyObject::becomeReady() for it has finished
+ * whenever nowHaveProxy() is called the first time around for a given proxy.
+ *
+ * \todo FIXME actually implement this... :) Currently just a vtable placeholder.
+ * \param proxy The just-readified proxy to be prepared.
+ * \return \c NULL ie. nothing to do.
+ */
+PendingOperation *DBusProxyFactory::readyPrepare(const SharedPtr<RefCounted> &proxy) const
 {
     // Nothing we could think about needs doing
     return NULL;

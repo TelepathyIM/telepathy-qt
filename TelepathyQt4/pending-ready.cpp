@@ -32,13 +32,16 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
 {
-    Private(const Features &requestedFeatures, QObject *object, const SharedPtr<RefCounted> &proxy) :
+    Private(const SharedPtr<const DBusProxyFactory> &factory, const Features &requestedFeatures,
+            QObject *object, const SharedPtr<RefCounted> &proxy) :
+        factory(factory),
         requestedFeatures(requestedFeatures),
         object(object),
         proxy(proxy)
     {
     }
 
+    SharedPtr<const DBusProxyFactory> factory;
     Features requestedFeatures;
     QObject *object;
     SharedPtr<RefCounted> proxy;
@@ -56,26 +59,26 @@ struct TELEPATHY_QT4_NO_EXPORT PendingReady::Private
  */
 
 /**
- * Construct a PendingReady object, which will first wait for an operation to finish.
+ * Construct a PendingReady object, which will wait for arbitrary manipulation on the proxy to
+ * finish as appropriate for \a factory, specified by DBusProxyFactory::initialPrepare() and
+ * DBusProxyFactory::readyPrepare().
  *
- * When the operation given as finishFirst finishes, the resulting PendingReady object will first
- * wait for that operation to finish successfully, and then, if requestedFeatures is not empty,
- * calls ReadyObject::becomeReady(requestedFeatures) on \a proxy, and finishes when that finished.
+ * \todo Actually make it do the prepare ops. Currently they aren't taken into account in any way.
  *
- * If either nested operation fails, this PendingReady object will fail too with the same error name
- * and message as they reported.
- *
- * \param finishFirst The object to finish first.
+ * \param factory The factory the request was made with.
  * \param requestedFeatures Features to be made ready on the object.
  * \param proxy The proxy in question.
  * \param parent QObject parent for the operation. Should not be the same as \a proxy to avoid
  * circular destruction.
  */
-PendingReady::PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures,
-        const SharedPtr<RefCounted> &proxy, QObject *parent)
+PendingReady::PendingReady(const SharedPtr<const DBusProxyFactory> &factory,
+        const Features &requestedFeatures, const SharedPtr<RefCounted> &proxy, QObject *parent)
     : PendingOperation(parent),
-      mPriv(new Private(requestedFeatures, 0, proxy))
+      mPriv(new Private(factory, requestedFeatures, 0, proxy))
 {
+    /* TODO: this should actually be factory->getInitialPrepareOpIfApplicable(proxy) or something */
+    PendingOperation *finishFirst = 0;
+
     if (!finishFirst || finishFirst->isFinished()) {
         onFirstFinished(finishFirst);
     } else {
@@ -95,7 +98,8 @@ PendingReady::PendingReady(PendingOperation *finishFirst, const Features &reques
 PendingReady::PendingReady(const Features &requestedFeatures,
         QObject *object, QObject *parent)
     : PendingOperation(parent),
-      mPriv(new Private(requestedFeatures, object, SharedPtr<RefCounted>()))
+      mPriv(new Private(SharedPtr<DBusProxyFactory>(), requestedFeatures, object,
+                  SharedPtr<RefCounted>()))
 {
 }
 

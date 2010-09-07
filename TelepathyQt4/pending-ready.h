@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/DBusProxyFactory>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/SharedPtr>
@@ -42,8 +43,9 @@ class TELEPATHY_QT4_EXPORT PendingReady: public PendingOperation
 
 public:
     // API/ABI break TODO: Shouldn't these be private?
-    PendingReady(PendingOperation *finishFirst, const Features &requestedFeatures,
-            const SharedPtr<RefCounted> &proxy, QObject *parent = 0);
+    PendingReady(const SharedPtr<const DBusProxyFactory> &factory,
+            const Features &requestedFeatures, const SharedPtr<RefCounted> &proxy,
+            QObject *parent = 0);
     PendingReady(const Features &requestedFeatures, QObject *object,
             QObject *parent = 0);
     ~PendingReady();
