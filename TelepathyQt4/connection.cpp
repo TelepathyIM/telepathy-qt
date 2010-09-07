@@ -145,6 +145,9 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
     static QMap<QPair<QString, QString>, HandleContext *> handleContexts;
     static QMutex handleContextsLock;
     HandleContext *handleContext;
+
+    QString cmName;
+    QString protocolName;
 };
 
 // Handle tracking
@@ -256,6 +259,36 @@ Connection::Private::Private(Connection *parent)
             SIGNAL(statusReady(uint)),
             SLOT(onStatusReady(uint)));
     readinessHelper->becomeReady(Features() << FeatureCore);
+
+    // FIXME: QRegExp probably isn't the most efficient possible way to parse
+    //        this :-)
+    QRegExp rx(QLatin1String("^" TELEPATHY_CONNECTION_OBJECT_PATH_BASE
+                "([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
+                "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
+                "/([_A-Za-z][_A-Za-z0-9]*)"  // account-specific part
+                ));
+
+    if (rx.exactMatch(parent->objectPath())) {
+        cmName = rx.cap(1);
+        protocolName = rx.cap(2);
+    } else {
+        warning() << "Connection object path is not spec-compliant, "
+            "trying again with a different account-specific part check";
+
+        rx = QRegExp(QLatin1String("^" TELEPATHY_CONNECTION_OBJECT_PATH_BASE
+                    "([_A-Za-z][_A-Za-z0-9]*)"  // cap(1) is the CM
+                    "/([_A-Za-z][_A-Za-z0-9]*)"  // cap(2) is the protocol
+                    "/([_A-Za-z0-9]*)"  // account-specific part
+                    ));
+        if (rx.exactMatch(parent->objectPath())) {
+            cmName = rx.cap(1);
+            protocolName = rx.cap(2);
+        } else {
+            warning() << "Not a valid Connection object path:" <<
+                parent->objectPath();
+        }
+    }
+
 }
 
 Connection::Private::~Private()
@@ -836,6 +869,17 @@ Connection::~Connection()
 {
     delete mPriv;
 }
+
+QString Connection::cmName() const
+{
+    return mPriv->cmName;
+}
+
+QString Connection::protocolName() const
+{
+    return mPriv->protocolName;
+}
+
 
 /**
  * Return the status of this connection.

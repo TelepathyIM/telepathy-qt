@@ -88,6 +88,9 @@ public:
 
     virtual ~Connection();
 
+    QString cmName() const;
+    QString protocolName() const;
+
     Status status() const;
     ConnectionStatusReason statusReason() const;
 
