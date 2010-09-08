@@ -151,17 +151,20 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
     QCOMPARE(avatar.mimeType, QString::fromLatin1(avatar_mime_type));
 }
 
+#define RAND_STR_LEN 6
+
 void TestContactsAvatar::testAvatar()
 {
-    QString tmpDir;
-    int i = 0;
+    static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    gchar randStr[RAND_STR_LEN + 1];
 
     /* Make sure our tests does not mess up user's avatar cache */
-    Q_FOREVER {
-        tmpDir = QDir::tempPath() + QString::fromLatin1("/avatars-%1").arg(i++);
-        if (QDir().mkdir(tmpDir))
-            break;
-    }
+    qsrand(time(0));
+    for (int i = 0; i < RAND_STR_LEN; i++)
+      randStr[i] = letters[qrand() % qstrlen(letters)];
+    randStr[RAND_STR_LEN] = '\0';
+    QString tmpDir = QDir::tempPath() + QString::fromLatin1("/") +
+        QString::fromLatin1(randStr);
     QByteArray a = tmpDir.toLatin1();
     setenv ("XDG_CACHE_HOME", a.constData(), true);
 
