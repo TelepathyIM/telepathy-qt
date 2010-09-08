@@ -11,6 +11,8 @@ Enhancements:
   conditions causing Connection invalidation
 * Made the Connection API guide the applications better to correct error
   handling practices (all error handling should be done in invalidated() slots)
+* Add avatar cache implementation and featureAvatarData on Tp::Contact using it.
+  See fd.o#20034
 
 Fixes:
 * A race condition which could result in Channel ignoring a member change (only
