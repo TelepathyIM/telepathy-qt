@@ -56,6 +56,7 @@ public:
         FeatureCapabilities,
         FeatureLocation,
         FeatureInfo,
+        FeatureAvatarData,
         _Padding = 0xFFFFFFFF
     };
 
@@ -77,6 +78,7 @@ public:
 
     bool isAvatarTokenKnown() const;
     QString avatarToken() const;
+    AvatarData avatarData() const;
 
     QString presenceStatus() const;
     uint presenceType() const;
@@ -110,6 +112,7 @@ public:
 Q_SIGNALS:
     void aliasChanged(const QString &alias);
     void avatarTokenChanged(const QString &avatarToken);
+    void avatarDataChanged(const Tp::AvatarData &);
     void simplePresenceChanged(const QString &status, uint type, const QString &presenceMessage);
     void capabilitiesChanged(Tp::ContactCapabilities *caps);
     void locationUpdated(Tp::ContactLocation *location);
@@ -136,6 +139,8 @@ private:
 
     void receiveAlias(const QString &alias);
     void receiveAvatarToken(const QString &avatarToken);
+    void setAvatarToken(const QString &token);
+    void receiveAvatarData(const AvatarData &);
     void receiveSimplePresence(const SimplePresence &presence);
     void receiveCapabilities(const RequestableChannelClassList &caps);
     void receiveLocation(const QVariantMap &location);

@@ -9,7 +9,8 @@ SUBDIRS = \
 # Standalone tests that don't touch D-Bus
 TESTS = \
     test-key-file \
-    test-manager-file
+    test-manager-file \
+    test-utils
 
 noinst_PROGRAMS = $(TESTS)
 
@@ -19,10 +20,14 @@ test_key_file_SOURCES = \
 test_manager_file_SOURCES = \
     manager-file.cpp
 
+test_utils_SOURCES = \
+    utils.cpp
+
 BUILT_SOURCES = \
     dbus-1/session.conf \
     _gen/key-file.cpp.moc.hpp \
-    _gen/manager-file.cpp.moc.hpp
+    _gen/manager-file.cpp.moc.hpp \
+    _gen/utils.cpp.moc.hpp
 
 dbus-1/%.conf: $(srcdir)/dbus-1/%.conf.in
 	$(AM_V_at)$(mkdir_p) dbus-1

@@ -39,8 +39,9 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 {
-    Private(ContactManager *manager, const ReferencedHandles &handle)
-        : manager(manager), handle(handle), isAvatarTokenKnown(false),
+    Private(Contact *parent, ContactManager *manager,
+        const ReferencedHandles &handle) : parent(parent), manager(manager),
+          handle(handle), isAvatarTokenKnown(false),
           subscriptionState(PresenceStateNo), publishState(PresenceStateNo),
           blocked(false)
     {
@@ -62,6 +63,8 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
         delete location;
     }
 
+    Contact *parent;
+
     ContactManager *manager;
     ReferencedHandles handle;
     QString id;
@@ -70,12 +73,15 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     QSet<Feature> actualFeatures;
 
     QString alias;
-    bool isAvatarTokenKnown;
-    QString avatarToken;
     SimplePresence simplePresence;
     ContactCapabilities *caps;
     ContactLocation *location;
     ContactInfoFieldList info;
+
+    bool isAvatarTokenKnown;
+    QString avatarToken;
+    AvatarData avatarData;
+    void updateAvatarData();
 
     PresenceState subscriptionState;
     PresenceState publishState;
@@ -144,6 +150,17 @@ QString Contact::avatarToken() const
     }
 
     return mPriv->avatarToken;
+}
+
+AvatarData Contact::avatarData() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureAvatarData)) {
+        warning() << "Contact::avatarData() used on" << this
+            << "for which FeatureAvatarData hasn't been requested - returning \"\"";
+        return AvatarData();
+    }
+
+    return mPriv->avatarData;
 }
 
 QString Contact::presenceStatus() const
@@ -418,7 +435,7 @@ Contact::~Contact()
 
 Contact::Contact(ContactManager *manager, const ReferencedHandles &handle,
         const QSet<Feature> &requestedFeatures, const QVariantMap &attributes)
-    : QObject(0), mPriv(new Private(manager, handle))
+    : QObject(0), mPriv(new Private(this, manager, handle))
 {
     augment(requestedFeatures, attributes);
 }
@@ -463,6 +480,13 @@ void Contact::augment(const QSet<Feature> &requestedFeatures, const QVariantMap 
                     // In either case, the avatar token can't be known
                     mPriv->isAvatarTokenKnown = false;
                     mPriv->avatarToken = QLatin1String("");
+                }
+                break;
+
+            case FeatureAvatarData:
+                if (manager()->supportedFeatures().contains(FeatureAvatarData)) {
+                    mPriv->actualFeatures.insert(FeatureAvatarData);
+                    mPriv->updateAvatarData();
                 }
                 break;
 
@@ -551,7 +575,7 @@ void Contact::receiveAlias(const QString &alias)
     }
 }
 
-void Contact::receiveAvatarToken(const QString &token)
+void Contact::setAvatarToken(const QString &token)
 {
     if (!mPriv->requestedFeatures.contains(FeatureAvatarToken)) {
         return;
@@ -562,8 +586,44 @@ void Contact::receiveAvatarToken(const QString &token)
     if (!mPriv->isAvatarTokenKnown || mPriv->avatarToken != token) {
         mPriv->isAvatarTokenKnown = true;
         mPriv->avatarToken = token;
-        emit avatarTokenChanged(token);
+        emit avatarTokenChanged(mPriv->avatarToken);
     }
+}
+
+void Contact::Private::updateAvatarData()
+{
+    /* If token is NULL, it means that CM doesn't know the token. In that case we
+     * have to request the avatar data to get the token. This happens with XMPP
+     * for offline contacts. We don't want to bypass the avatar cache, so we won't
+     * update avatar. */
+    if (avatarToken.isNull()) {
+        return;
+    }
+
+    /* If token is empty (""), it means the contact has no avatar. */
+    if (avatarToken.isEmpty()) {
+        debug() << "Contact" << parent->id() << "has no avatar";
+        avatarData = AvatarData();
+        emit parent->avatarDataChanged(avatarData);
+        return;
+    }
+
+    manager->requestContactAvatar(parent);
+}
+
+void Contact::receiveAvatarToken(const QString &token)
+{
+    setAvatarToken(token);
+
+    if (mPriv->actualFeatures.contains(FeatureAvatarData)) {
+        mPriv->updateAvatarData();
+    }
+}
+
+void Contact::receiveAvatarData(const AvatarData &avatar)
+{
+    mPriv->avatarData = avatar;
+    emit avatarDataChanged(mPriv->avatarData);
 }
 
 void Contact::receiveSimplePresence(const SimplePresence &presence)

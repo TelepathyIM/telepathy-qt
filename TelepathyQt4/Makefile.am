@@ -117,7 +117,8 @@ libtelepathy_qt4_la_SOURCES = \
     streamed-media-channel-internal.h \
     text-channel.cpp \
     types.cpp \
-    types-internal.h
+    types-internal.h \
+    utils.cpp
 
 nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/cli-account-body.hpp \
@@ -268,6 +269,7 @@ tpqt4include_HEADERS = \
     StreamedMediaChannel \
     TextChannel \
     Types \
+    Utils \
     WeakPtr \
     AccountInterface \
     AccountManagerInterface \
@@ -377,7 +379,8 @@ tpqt4include_HEADERS = \
     streamed-media-channel.h \
     streamed-media-channel-internal.h \
     text-channel.h \
-    types.h
+    types.h \
+    utils.h
 
 nodist_geninclude_HEADERS = \
     _gen/cli-account.h \
