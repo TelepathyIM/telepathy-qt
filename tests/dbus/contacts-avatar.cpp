@@ -145,26 +145,24 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
     QByteArray data(file.readAll());
     file.close();
 
-    QCOMPARE(mContacts[0]->avatarToken(), QString::fromLatin1(avatarToken));
+    QCOMPARE(mContacts[0]->avatarToken(), QString(QLatin1String(avatarToken)));
     QCOMPARE(data, QByteArray(avatarData));
-    QCOMPARE(avatar.mimeType, QString::fromLatin1(avatarMimeType));
+    QCOMPARE(avatar.mimeType, QString(QLatin1String(avatarMimeType)));
 }
 
 #define RAND_STR_LEN 6
 
 void TestContactsAvatar::testAvatar()
 {
-    static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    gchar randStr[RAND_STR_LEN + 1];
-
     /* Make sure our tests does not mess up user's avatar cache */
     qsrand(time(0));
-    for (int i = 0; i < RAND_STR_LEN; i++)
-      randStr[i] = letters[qrand() % strlen(letters)];
-    randStr[RAND_STR_LEN] = '\0';
-
-    QString tmpDir = QString::fromLatin1("%1/%2").arg(QDir::tempPath()).
-        arg(QString::fromLatin1(randStr));
+    static const char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    static const int DirNameLength = 6;
+    QString dirName;
+    for (int i = 0; i < DirNameLength; ++i) {
+        dirName += QLatin1Char(letters[qrand() % qstrlen(letters)]);
+    }
+    QString tmpDir = QString(QLatin1String("%1/%2")).arg(QDir::tempPath()).arg(dirName);
     QByteArray a = tmpDir.toLatin1();
     setenv ("XDG_CACHE_HOME", a.constData(), true);
 

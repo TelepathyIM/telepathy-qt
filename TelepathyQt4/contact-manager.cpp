@@ -879,20 +879,20 @@ void ContactManager::onAliasesChanged(const AliasPairList &aliases)
 bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
     QString &avatarFileName, QString &mimeTypeFileName)
 {
-    QString cacheDir = QString::fromLatin1(qgetenv("XDG_CACHE_HOME"));
+    QString cacheDir = QString(QLatin1String(qgetenv("XDG_CACHE_HOME")));
     if (cacheDir.isEmpty()) {
-        cacheDir = QString::fromLatin1(qgetenv("HOME") + "/.cache");
+        cacheDir = QString(QLatin1String("%1/.cache")).arg(QLatin1String(qgetenv("HOME")));
     }
 
-    QString path = QString::fromLatin1("%1/telepathy/avatars/%2/%3").
+    QString path = QString(QLatin1String("%1/telepathy/avatars/%2/%3")).
         arg(cacheDir).arg(connection->cmName()).arg(connection->protocolName());
 
     if (createDir && !QDir().mkpath(path)) {
         return false;
     }
 
-    avatarFileName = QString::fromLatin1("%1/%2").arg(path).arg(escapeAsIdentifier(token));
-    mimeTypeFileName = QString::fromLatin1("%1.mime").arg(avatarFileName);
+    avatarFileName = QString(QLatin1String("%1/%2")).arg(path).arg(escapeAsIdentifier(token));
+    mimeTypeFileName = QString(QLatin1String("%1.mime")).arg(avatarFileName);
 
     return true;
 }
@@ -924,7 +924,7 @@ void ContactManager::requestContactAvatar(Contact *contact)
     if (success && QFile::exists(avatarFileName)) {
         QFile mimeTypeFile(mimeTypeFileName);
         mimeTypeFile.open(QIODevice::ReadOnly);
-        QString mimeType = QString::fromLatin1(mimeTypeFile.readAll());
+        QString mimeType = QString(QLatin1String(mimeTypeFile.readAll()));
         mimeTypeFile.close();
 
         debug() << "Avatar found in cache for handle" << contact->handle()[0];
