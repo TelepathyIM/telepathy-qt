@@ -881,19 +881,18 @@ bool ContactManager::Private::buildAvatarFileName(QString token, bool createDir,
 {
     QString cacheDir = QString::fromLatin1(qgetenv("XDG_CACHE_HOME"));
     if (cacheDir.isEmpty()) {
-        cacheDir = QString::fromLatin1(qgetenv("HOME")) +
-            QString::fromLatin1("/.cache");
+        cacheDir = QString::fromLatin1(qgetenv("HOME") + "/.cache");
     }
 
-    QString path = cacheDir + QString::fromLatin1("/telepathy/avatars/") +
-        connection->cmName() + QString::fromLatin1("/") + connection->protocolName();
+    QString path = QString::fromLatin1("%1/telepathy/avatars/%2/%3").
+        arg(cacheDir).arg(connection->cmName()).arg(connection->protocolName());
 
     if (createDir && !QDir().mkpath(path)) {
         return false;
     }
 
-    avatarFileName = path + QString::fromLatin1("/") + escapeAsIdentifier(token);
-    mimeTypeFileName = avatarFileName + QString::fromLatin1(".mime");
+    avatarFileName = QString::fromLatin1("%1/%2").arg(path).arg(escapeAsIdentifier(token));
+    mimeTypeFileName = QString::fromLatin1("%1.mime").arg(avatarFileName);
 
     return true;
 }

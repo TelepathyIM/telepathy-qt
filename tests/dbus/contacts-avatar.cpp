@@ -14,7 +14,7 @@ using namespace Tp;
 class SmartDir : public QDir
 {
 public:
-    SmartDir(const QString &path):QDir(path) { }
+    SmartDir(const QString &path) : QDir(path) { }
     bool rmdir() { return QDir().rmdir(path()); }
     bool removeDirectory();
 };
@@ -24,14 +24,13 @@ bool SmartDir::removeDirectory()
     bool ret = true;
 
     QFileInfoList list = entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-    Q_FOREACH(QFileInfo info, list) {
+    Q_FOREACH (QFileInfo info, list) {
         if (info.isDir()) {
             SmartDir subDir(info.filePath());
             if (!subDir.removeDirectory()) {
                 ret = false;
             }
-        }
-        else {
+        } else {
             qDebug() << "deleting" << info.filePath();
             if (!QFile(info.filePath()).remove()) {
                 ret = false;
@@ -99,20 +98,20 @@ void TestContactsAvatar::onAvatarDataChanged(const AvatarData &avatar)
 
 void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
 {
-    TpHandleRepoIface *service_repo = tp_base_connection_get_handles (
+    TpHandleRepoIface *serviceRepo = tp_base_connection_get_handles(
         (TpBaseConnection *) mConnService, TP_HANDLE_TYPE_CONTACT);
-    const gchar avatar_data[] = "fake-avatar-data";
-    const gchar avatar_token[] = "fake-avatar-token";
-    const gchar avatar_mime_type[] = "fake-avatar-mime-type";
+    const gchar avatarData[] = "fake-avatar-data";
+    const gchar avatarToken[] = "fake-avatar-token";
+    const gchar avatarMimeType[] = "fake-avatar-mime-type";
     TpHandle handle;
     GArray *array;
 
-    handle = tp_handle_ensure (service_repo, id, NULL, NULL);
-    array = g_array_new (FALSE, FALSE, sizeof (gchar));
-    g_array_append_vals (array, avatar_data, strlen (avatar_data));
+    handle = tp_handle_ensure(serviceRepo, id, NULL, NULL);
+    array = g_array_new(FALSE, FALSE, sizeof(gchar));
+    g_array_append_vals (array, avatarData, strlen(avatarData));
 
-    tp_tests_contacts_connection_change_avatar_data (mConnService, handle,
-        array, avatar_mime_type, avatar_token);
+    tp_tests_contacts_connection_change_avatar_data(mConnService, handle,
+        array, avatarMimeType, avatarToken);
 
     Tp::UIntList handles = Tp::UIntList() << handle;
     QSet<Contact::Feature> features = QSet<Contact::Feature>()
@@ -136,19 +135,19 @@ void TestContactsAvatar::createContactWithFakeAvatar(const char *id)
 
     AvatarData avatar = mContacts[0]->avatarData();
 
-    qDebug() << "Contact created:" << endl
-        << "Avatar token:" << mContacts[0]->avatarToken() << endl
-        << "Avatar file:" << avatar.fileName << endl
-        << "Avatar MimeType:" << avatar.mimeType << endl;
+    qDebug() << "Contact created:";
+    qDebug() << "Avatar token:" << mContacts[0]->avatarToken();
+    qDebug() << "Avatar file:" << avatar.fileName;
+    qDebug() << "Avatar MimeType:" << avatar.mimeType;
 
     QFile file(avatar.fileName);
     file.open(QIODevice::ReadOnly);
     QByteArray data(file.readAll());
     file.close();
 
-    QCOMPARE(mContacts[0]->avatarToken(), QString::fromLatin1(avatar_token));
-    QCOMPARE(data, QByteArray(avatar_data));
-    QCOMPARE(avatar.mimeType, QString::fromLatin1(avatar_mime_type));
+    QCOMPARE(mContacts[0]->avatarToken(), QString::fromLatin1(avatarToken));
+    QCOMPARE(data, QByteArray(avatarData));
+    QCOMPARE(avatar.mimeType, QString::fromLatin1(avatarMimeType));
 }
 
 #define RAND_STR_LEN 6
@@ -161,10 +160,11 @@ void TestContactsAvatar::testAvatar()
     /* Make sure our tests does not mess up user's avatar cache */
     qsrand(time(0));
     for (int i = 0; i < RAND_STR_LEN; i++)
-      randStr[i] = letters[qrand() % qstrlen(letters)];
+      randStr[i] = letters[qrand() % strlen(letters)];
     randStr[RAND_STR_LEN] = '\0';
-    QString tmpDir = QDir::tempPath() + QString::fromLatin1("/") +
-        QString::fromLatin1(randStr);
+
+    QString tmpDir = QString::fromLatin1("%1/%2").arg(QDir::tempPath()).
+        arg(QString::fromLatin1(randStr));
     QByteArray a = tmpDir.toLatin1();
     setenv ("XDG_CACHE_HOME", a.constData(), true);
 
@@ -174,18 +174,18 @@ void TestContactsAvatar::testAvatar()
             SLOT(onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &)));
 
     /* First time we create a contact, avatar should not be in cache, so
-     * AvatarRetrived should be called */
+     * AvatarRetrieved should be called */
     mAvatarRetrievedCalled = false;
     createContactWithFakeAvatar("foo");
     QVERIFY(mAvatarRetrievedCalled);
 
     /* Second time we create a contact, avatar should be in cache now, so
-     * AvatarRetrived should NOT be called */
+     * AvatarRetrieved should NOT be called */
     mAvatarRetrievedCalled = false;
     createContactWithFakeAvatar("bar");
     QVERIFY(!mAvatarRetrievedCalled);
 
-    QVERIFY (SmartDir(tmpDir).removeDirectory());
+    QVERIFY(SmartDir(tmpDir).removeDirectory());
 }
 
 void TestContactsAvatar::expectConnInvalidated()
