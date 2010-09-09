@@ -134,6 +134,33 @@
       </arg>
     </method>
 
+    <method name="RequestHatPrice">
+      <tp:docstring>
+        Request the prices of a contact's current hat.
+      </tp:docstring>
+      <arg direction="in" name="Contact" type="u" tp:type="Contact_Handle">
+        <tp:docstring>
+          The handle of the contact whose hat we're interested in purchasing.
+        </tp:docstring>
+      </arg>
+      <arg direction="out" name="Price" type="(ius)" tp:type="Currency_Amount">
+        <tp:docstring>
+          The price of the hat.
+        </tp:docstring>
+      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.Disconnected"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NetworkError"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidHandle"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.PermissionDenied"/>
+        <tp:error name="org.freedesktop.Telepathy.Error.NotAvailable">
+          <tp:docstring>
+            This hat is not for sale. Get your own style, you trend-follower!
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
+    </method>
+
   </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->
