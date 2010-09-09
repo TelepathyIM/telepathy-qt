@@ -110,6 +110,8 @@ public:
 
 Q_SIGNALS:
     void presencePublicationRequested(const Tp::Contacts &contacts);
+    void presencePublicationRequested(const Tp::Contacts &contacts,
+        const Tp::Channel::GroupMemberChangeDetails &details);
     void groupAdded(const QString &group);
     void groupRemoved(const QString &group);
     void groupMembersChanged(const QString &group,

@@ -1105,6 +1105,8 @@ void ContactManager::onPublishChannelMembersChanged(
 
     if (!groupLocalPendingMembersAdded.isEmpty()) {
         emit presencePublicationRequested(groupLocalPendingMembersAdded);
+        emit presencePublicationRequested(groupLocalPendingMembersAdded,
+            details);
     }
 
     // Perform the needed computation for allKnownContactsChanged
