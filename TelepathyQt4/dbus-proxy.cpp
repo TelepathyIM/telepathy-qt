@@ -247,6 +247,14 @@ void DBusProxy::emitInvalidated()
 
 // ==== StatefulDBusProxy ==============================================
 
+struct StatefulDBusProxy::Private
+{
+    Private(const QString &originalName)
+        : originalName(originalName) {}
+
+    QString originalName;
+};
+
 /**
  * \class StatefulDBusProxy
  * \ingroup FIXME: what group is it in?
@@ -262,71 +270,34 @@ void DBusProxy::emitInvalidated()
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent),
-      mPriv(0)
+      mPriv(new Private(busName))
 {
+#ifdef HAVE_QDBUSSERVICEWATCHER
+    QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(busName,
+            dbusConnection, QDBusServiceWatcher::WatchForUnregistration, this);
+    connect(serviceWatcher,
+            SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            SLOT(onServiceOwnerChanged(QString, QString, QString)));
+#else
+    connect(dbusConnection.interface(),
+            SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            SLOT(onServiceOwnerChanged(QString, QString, QString)));
+#endif
+
     QString error, message;
     QString uniqueName = uniqueNameFrom(dbusConnection, busName, error, message);
 
-    // First round attempts to use the unique name we got here. However, a check is made to ensure
-    // that while we connect to the owner change signals the unique name hasn't changed or the
-    // service disappeared completely. The attempt and check is repeated until the unique name stays
-    // constant through connecting the owner change signals.
-    while (true) {
-        if (uniqueName.isEmpty()) {
-            invalidate(error, message);
-            return;
-        }
-
-        // Actually, we wouldn't need to do the serviceOwnerChanged dance in a loop, but doing it
-        // separately would increase the code complexity even more between the "old" and "new" paths
-#ifdef HAVE_QDBUSSERVICEWATCHER
-        QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(uniqueName,
-                dbusConnection, QDBusServiceWatcher::WatchForUnregistration, this);
-        connect(serviceWatcher,
-                SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-                SLOT(onServiceOwnerChanged(QString, QString, QString)));
-#else
-        connect(dbusConnection.interface(),
-                SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-                SLOT(onServiceOwnerChanged(QString, QString, QString)));
-#endif
-
-        setBusName(uniqueName);
-
-        // We have to call GetNameOwner *again* to make sure the possibly well-known name hasn't
-        // changed/disappeared, and we just have failed to catch that, because we only created the
-        // ServiceWatcher after we learned the unique name to create it for (duh)
-        //
-        // IMO there should be a option to uniquify the name in QDBusServiceWatcher itself so we
-        // wouldn't need to do this useless double-checking.
-
-        uniqueName = uniqueNameFrom(dbusConnection, busName, error, message);
-
-        if (uniqueName == this->busName()) {
-            // OK cool, we managed to connect with the correct name
-            break;
-        }
-
-        // It changed/disappeared during/after we connected, what a great API...
-        debug() << "Ownership of" << busName << "changed when we were starting to listen to it";
-        debug().nospace() << " (from " << this->busName() << " to " << uniqueName << ")";
-
-        // Clean up this round
-#ifdef HAVE_QDBUSSERVICEWATCHER
-        delete serviceWatcher;
-#else
-        disconnect(dbusConnection.interface(),
-                SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-                this,
-                SLOT(onServiceOwnerChanged(QString, QString, QString)));
-#endif
-
-        // The next iteration will try again with the new name, or find it empty and invalidate
+    if (uniqueName.isEmpty()) {
+        invalidate(error, message);
+        return;
     }
+
+    setBusName(uniqueName);
 }
 
 StatefulDBusProxy::~StatefulDBusProxy()
 {
+    delete mPriv;
 }
 
 QString StatefulDBusProxy::uniqueNameFrom(const QDBusConnection &bus, const QString &name)
@@ -364,7 +335,7 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
 {
     // We only want to invalidate this object if it is not already invalidated,
     // and its (not any other object's) name owner changed signal is emitted.
-    if (isValid() && name == busName() && newOwner == QLatin1String("")) {
+    if (isValid() && name == mPriv->originalName && newOwner.isEmpty()) {
         invalidate(QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER),
                 QLatin1String("Name owner lost (service crashed?)"));
     }
