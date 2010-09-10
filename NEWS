@@ -44,6 +44,8 @@ Fixes:
 * Account/Connection/Channel readifying themselves even if not asked to
 * Handle reference management screwing up if there are multiple connections
   online on a single CM
+* Lots of crash opportunities when a PendingOperation is underway when its
+  parent-ish object is unreferenced in an application
 
 telepathy-qt4 0.3.8 (2010-08-24)
 ================================
