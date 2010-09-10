@@ -52,10 +52,9 @@ public:
             const QDBusMessage &message, const QList<ChannelPtr> &channels,
             FinishedCb finishedCb, void *finishedCbData)
     {
-        return MethodInvocationContextPtr<>::dynamicCast(
-                SharedPtr<HandleChannelsInvocationContext>(
+        return SharedPtr<MethodInvocationContext<> >(
                     new HandleChannelsInvocationContext(bus, message, channels,
-                        finishedCb, finishedCbData)));
+                        finishedCb, finishedCbData));
     }
 
 private:

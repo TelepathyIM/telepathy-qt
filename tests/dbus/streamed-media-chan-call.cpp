@@ -123,7 +123,7 @@ void TestStreamedMediaChanCall::expectCreateChannelFinished(PendingOperation* op
     }
 
     PendingChannel *pc = qobject_cast<PendingChannel*>(op);
-    mChan = StreamedMediaChannelPtr::dynamicCast(pc->channel());
+    mChan = StreamedMediaChannelPtr::qObjectCast(pc->channel());
     mLoop->exit(0);
 }
 

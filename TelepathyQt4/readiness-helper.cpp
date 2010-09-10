@@ -101,6 +101,7 @@ struct TELEPATHY_QT4_NO_EXPORT ReadinessHelper::Private
             const QString &errorName = QString(),
             const QString &errorMessage = QString());
     void iterateIntrospection();
+    Features depsFor(const Feature &feature); // Recursive dependencies for a feature
 
     void abortOperations(const QString &errorName, const QString &errorMessage);
 
@@ -247,12 +248,11 @@ void ReadinessHelper::Private::iterateIntrospection()
             i != introspectables.constEnd(); ++i) {
         Feature feature = i.key();
         Introspectable introspectable = i.value();
-        Features dependsOnFeatures = introspectable.mPriv->dependsOnFeatures;
-        if (!dependsOnFeatures.intersect(missingFeatures).isEmpty()) {
+        if (!depsFor(feature).intersect(missingFeatures).isEmpty()) {
             missingFeatures.insert(feature);
             missingFeaturesErrors.insert(feature,
                     QPair<QString, QString>(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                        QLatin1String("Feature depend on other features that are not available")));
+                        QLatin1String("Feature depends on other features that are not available")));
         }
     }
 
@@ -276,6 +276,13 @@ void ReadinessHelper::Private::iterateIntrospection()
         emit parent->statusReady(currentStatus);
         return;
     }
+
+    // Update pendingFeatures to contain the (recursive) dependencies of what's in it currently
+    Features deps;
+    foreach (Feature feature, pendingFeatures) {
+        deps.unite(depsFor(feature));
+    }
+    pendingFeatures.unite(deps);
 
     // update pendingFeatures with the difference of requested and
     // satisfied + missing
@@ -327,6 +334,18 @@ void ReadinessHelper::Private::iterateIntrospection()
         // time considerably with many independent features!
         (*(introspectable.mPriv->introspectFunc))(introspectable.mPriv->introspectFuncData);
     }
+}
+
+Features ReadinessHelper::Private::depsFor(const Feature &feature)
+{
+    Features deps;
+
+    foreach (Feature dep, introspectables[feature].mPriv->dependsOnFeatures) {
+        deps += dep;
+        deps += depsFor(dep);
+    }
+
+    return deps;
 }
 
 void ReadinessHelper::Private::abortOperations(const QString &errorName,

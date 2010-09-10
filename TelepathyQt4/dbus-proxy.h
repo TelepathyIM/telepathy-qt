@@ -36,6 +36,8 @@ class QDBusError;
 namespace Tp
 {
 
+class TestBackdoors;
+
 class TELEPATHY_QT4_EXPORT DBusProxy : public QObject
 {
     Q_OBJECT
@@ -67,6 +69,8 @@ private Q_SLOTS:
     void emitInvalidated();
 
 private:
+    friend class TestBackdoors;
+
     struct Private;
     friend struct Private;
     Private *mPriv;
@@ -101,6 +105,10 @@ public:
         QObject *parent = 0);
 
     virtual ~StatefulDBusProxy();
+
+    static QString uniqueNameFrom(const QDBusConnection &bus, const QString &wellKnownOrUnique);
+    static QString uniqueNameFrom(const QDBusConnection &bus, const QString &wellKnownOrUnique,
+            QString &error, QString &message);
 
 private Q_SLOTS:
     void onServiceOwnerChanged(const QString &name, const QString &oldOwner,

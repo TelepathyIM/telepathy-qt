@@ -29,6 +29,10 @@
 #include <TelepathyQt4/_gen/cli-account-manager.h>
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFactory>
+#include <TelepathyQt4/ChannelFactory>
+#include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
@@ -60,10 +64,37 @@ class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
+    // API/ABI break TODO: Remove these and have just all-default-argument versions with the factory
+    // params
     static AccountManagerPtr create();
     static AccountManagerPtr create(const QDBusConnection &bus);
 
+    // Needs to not have an accountFactory default param to not conflict with the above variants
+    // until the API/ABI break
+    static AccountManagerPtr create(
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory =
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
+            const ChannelFactoryConstPtr &channelFactory =
+                ChannelFactory::create(QDBusConnection::sessionBus()),
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
+
+    // The bus-taking variant should never have default factories unless the bus is the last param
+    // which would be illogical?
+    static AccountManagerPtr create(const QDBusConnection &bus,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
+
     virtual ~AccountManager();
+
+    AccountFactoryConstPtr accountFactory() const;
+    ConnectionFactoryConstPtr connectionFactory() const;
+    ChannelFactoryConstPtr channelFactory() const;
+    ContactFactoryConstPtr contactFactory() const;
 
     TELEPATHY_QT4_DEPRECATED QStringList validAccountPaths() const;
     TELEPATHY_QT4_DEPRECATED QStringList invalidAccountPaths() const;
@@ -113,6 +144,11 @@ Q_SIGNALS:
 protected:
     AccountManager();
     AccountManager(const QDBusConnection &bus);
+    AccountManager(const QDBusConnection &bus,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::AccountManagerInterface *baseInterface() const;
 

@@ -258,7 +258,6 @@ Connection::Private::Private(Connection *parent)
     parent->connect(readinessHelper,
             SIGNAL(statusReady(uint)),
             SLOT(onStatusReady(uint)));
-    readinessHelper->becomeReady(Features() << FeatureCore);
 
     // FIXME: QRegExp probably isn't the most efficient possible way to parse
     //        this :-)
@@ -288,7 +287,6 @@ Connection::Private::Private(Connection *parent)
                 parent->objectPath();
         }
     }
-
 }
 
 Connection::Private::~Private()
@@ -322,7 +320,7 @@ Connection::Private::~Private()
         }
 
         handleContexts.remove(qMakePair(baseInterface->connection().name(),
-                    baseInterface->service()));
+                    parent->objectPath()));
         delete handleContext;
     } else {
         Q_ASSERT(handleContext->refcount > 0);
@@ -346,17 +344,16 @@ void Connection::Private::init()
 
     QMutexLocker locker(&handleContextsLock);
     QString busConnectionName = baseInterface->connection().name();
-    QString busName = baseInterface->service();
 
-    if (handleContexts.contains(qMakePair(busConnectionName, busName))) {
-        debug() << "Reusing existing HandleContext";
+    if (handleContexts.contains(qMakePair(busConnectionName, parent->objectPath()))) {
+        debug() << "Reusing existing HandleContext for" << parent->objectPath();
         handleContext = handleContexts[
-            qMakePair(busConnectionName, busName)];
+            qMakePair(busConnectionName, parent->objectPath())];
     } else {
-        debug() << "Creating new HandleContext";
+        debug() << "Creating new HandleContext for" << parent->objectPath();
         handleContext = new HandleContext;
         handleContexts[
-            qMakePair(busConnectionName, busName)] = handleContext;
+            qMakePair(busConnectionName, parent->objectPath())] = handleContext;
     }
 
     // All handle contexts locked, so safe

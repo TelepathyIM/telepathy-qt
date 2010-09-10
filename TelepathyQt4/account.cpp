@@ -52,7 +52,9 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT Account::Private
 {
-    Private(Account *parent);
+    Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory);
     ~Private();
 
     void init();
@@ -63,6 +65,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 
     void updateProperties(const QVariantMap &props);
     void retrieveAvatar();
+    bool processConnQueue();
 
     void addConferenceRequestParameters(QVariantMap &request,
             const QList<ChannelPtr> &channels,
@@ -73,6 +76,11 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 
     // Public object
     Account *parent;
+
+    // Factories
+    ConnectionFactoryConstPtr connFactory;
+    ChannelFactoryConstPtr chanFactory;
+    ContactFactoryConstPtr contactFactory;
 
     // Instance of generated interface class
     Client::AccountInterface *baseInterface;
@@ -92,7 +100,9 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     QString displayName;
     QString nickname;
     QString iconName;
-    QString connectionObjectPath;
+    QQueue<QString> connObjPathQueue;
+    ConnectionPtr connection;
+    bool mayFinishCore, coreFinished;
     QString normalizedName;
     Avatar avatar;
     ConnectionManagerPtr cm;
@@ -104,11 +114,14 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     SimplePresence automaticPresence;
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
-    ConnectionPtr connection;
 };
 
-Account::Private::Private(Account *parent)
+Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
+        const ChannelFactoryConstPtr &chanFactory, const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
+      connFactory(connFactory),
+      chanFactory(chanFactory),
+      contactFactory(contactFactory),
       baseInterface(new Client::AccountInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       readinessHelper(parent->readinessHelper()),
@@ -116,6 +129,8 @@ Account::Private::Private(Account *parent)
       enabled(false),
       connectsAutomatically(false),
       hasBeenOnline(false),
+      mayFinishCore(false),
+      coreFinished(false),
       protocolInfo(0),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified)
@@ -182,7 +197,16 @@ Account::Private::Private(Account *parent)
     introspectables[FeatureProtocolInfo] = introspectableProtocolInfo;
 
     readinessHelper->addIntrospectables(introspectables);
-    readinessHelper->becomeReady(Features() << FeatureCore);
+
+    if (connFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the conn factory is not the proxy connection for"
+            << parent->objectPath();
+    }
+
+    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection for"
+            << parent->objectPath();
+    }
 
     init();
 }
@@ -382,6 +406,10 @@ const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::stat
 /**
  * Create a new Account object using QDBusConnection::sessionBus().
  *
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
+ *
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
  *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
@@ -397,6 +425,10 @@ AccountPtr Account::create(const QString &busName,
 /**
  * Create a new Account object using the given \a bus.
  *
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
+ *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
@@ -411,7 +443,59 @@ AccountPtr Account::create(const QDBusConnection &bus,
 }
 
 /**
+ * Create a new Account object using QDBusConnection::sessionBus() and the given factories.
+ *
+ * A warning is printed if the factories are not for QDBusConnection::sessionBus().
+ *
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return An AccountPtr object pointing to the newly created Account object.
+ */
+AccountPtr Account::create(const QString &busName, const QString &objectPath,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+{
+    return AccountPtr(new Account(QDBusConnection::sessionBus(), busName, objectPath,
+                connectionFactory, channelFactory, contactFactory));
+}
+
+/**
+ * Create a new Account object using the given \a bus and the given factories.
+ *
+ * A warning is printed if the factories are not for \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return An AccountPtr object pointing to the newly created Account object.
+ */
+AccountPtr Account::create(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+{
+    return AccountPtr(new Account(bus, busName, objectPath, connectionFactory, channelFactory,
+                contactFactory));
+}
+
+/**
  * Construct a new Account object using QDBusConnection::sessionBus().
+ *
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
  *
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
@@ -423,12 +507,19 @@ Account::Account(const QString &busName, const QString &objectPath)
             busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(this,
+                  ConnectionFactory::create(QDBusConnection::sessionBus()),
+                  ChannelFactory::create(QDBusConnection::sessionBus()),
+                  ContactFactory::create()))
 {
 }
 
 /**
  * Construct a new Account object using the given \bus.
+ *
+ * The instance will use a connection factory creating Tp::Connection objects with no features
+ * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
+ * with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
@@ -441,7 +532,35 @@ Account::Account(const QDBusConnection &bus,
     : StatelessDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Account>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(this, ConnectionFactory::create(bus),
+                  ChannelFactory::create(bus),
+                  ContactFactory::create()))
+{
+}
+
+/**
+ * Construct a new Account object using the given \bus and the given factories.
+ *
+ * A warning is printed if the factories are not for QDBusConnection::sessionBus().
+ *
+ * \param bus QDBusConnection to use.
+ * \param busName The account well-known bus name (sometimes called a "service
+ *                name"). This is usually the same as the account manager
+ *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \param objectPath The account object path.
+ */
+Account::Account(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+    : StatelessDBusProxy(bus, busName, objectPath),
+      OptionalInterfaceFactory<Account>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this, connectionFactory, channelFactory, contactFactory))
 {
 }
 
@@ -451,6 +570,51 @@ Account::Account(const QDBusConnection &bus,
 Account::~Account()
 {
     delete mPriv;
+}
+
+/**
+ * Get the connection factory used by this account.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the account would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ConnectionFactoryConstPtr Account::connectionFactory() const
+{
+    return mPriv->connFactory;
+}
+
+/**
+ * Get the channel factory used by this account.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the account would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ChannelFactoryConstPtr Account::channelFactory() const
+{
+    return mPriv->chanFactory;
+}
+
+/**
+ * Get the contact factory used by this account.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the account would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ContactFactoryConstPtr Account::contactFactory() const
+{
+    return mPriv->contactFactory;
 }
 
 /**
@@ -944,7 +1108,7 @@ QVariantMap Account::connectionErrorDetails() const
  */
 bool Account::haveConnection() const
 {
-    return !mPriv->connectionObjectPath.isEmpty();
+    return !mPriv->connection.isNull();
 }
 
 /**
@@ -965,17 +1129,6 @@ bool Account::haveConnection() const
  */
 ConnectionPtr Account::connection() const
 {
-    if (mPriv->connectionObjectPath.isEmpty()) {
-        return ConnectionPtr();
-    }
-
-    if (!mPriv->connection) {
-        QString objectPath = mPriv->connectionObjectPath;
-        QString busName = objectPath.mid(1).replace(
-                QLatin1String("/"), QLatin1String("."));
-        mPriv->connection = Connection::create(dbusConnection(),
-                busName, objectPath);
-    }
     return mPriv->connection;
 }
 
@@ -1112,7 +1265,7 @@ QString Account::uniqueIdentifier() const
  */
 QString Account::connectionObjectPath() const
 {
-    return mPriv->connectionObjectPath;
+    return !mPriv->connection.isNull() ? mPriv->connection->objectPath() : QString();
 }
 
 /**
@@ -2379,14 +2532,14 @@ void Account::Private::updateProperties(const QVariantMap &props)
             path = QString();
         }
 
-        if (connectionObjectPath != path) {
-            connection.reset();
-            connectionObjectPath = path;
-            emit parent->haveConnectionChanged(!path.isEmpty());
-            parent->notify("haveConnection");
-            parent->notify("connection");
-            parent->notify("connectionObjectPath");
+        connObjPathQueue.enqueue(path);
+
+        if (connObjPathQueue.size() == 1) {
+            processConnQueue();
         }
+
+        // onConnectionBuilt for a previous path will make sure the path we enqueued is processed if
+        // the queue wasn't empty (so is now size() > 1)
     }
 
     if (props.contains(QLatin1String("ConnectionStatus")) ||
@@ -2481,18 +2634,56 @@ void Account::Private::retrieveAvatar()
             SLOT(gotAvatar(QDBusPendingCallWatcher *)));
 }
 
+bool Account::Private::processConnQueue()
+{
+    while (!connObjPathQueue.isEmpty()) {
+        QString path = connObjPathQueue.head();
+        if (path.isEmpty()) {
+            if (!connection.isNull()) {
+                debug() << "Dropping connection for account" << parent->objectPath();
+
+                connection.reset();
+                emit parent->haveConnectionChanged(false);
+                parent->notify("haveConnection");
+                parent->notify("connection");
+                parent->notify("connectionObjectPath");
+            }
+
+            connObjPathQueue.dequeue();
+        } else {
+            debug() << "Building connection" << path << "for account" << parent->objectPath();
+
+            QString busName = path.mid(1).replace(QLatin1String("/"), QLatin1String("."));
+            parent->connect(connFactory->proxy(busName, path, chanFactory, contactFactory),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onConnectionBuilt(Tp::PendingOperation*)));
+
+            // No dequeue here, but only in onConnectionBuilt, so we will queue future changes
+            return false; // Only move on to the next paths when that build finishes
+        }
+    }
+
+    return true;
+}
+
 void Account::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
     if (!reply.isError()) {
-        debug() << "Got reply to Properties.GetAll(Account)";
+        debug() << "Got reply to Properties.GetAll(Account) for" << objectPath();
         mPriv->updateProperties(reply.value());
 
         mPriv->readinessHelper->setInterfaces(interfaces());
+        mPriv->mayFinishCore = true;
 
-        debug() << "Account basic functionality is ready";
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        if (mPriv->connObjPathQueue.isEmpty()) {
+            debug() << "Account basic functionality is ready";
+            mPriv->coreFinished = true;
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+        } else {
+            debug() << "Deferring finishing Account::FeatureCore until the connection is built";
+        }
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false, reply.error());
 
@@ -2575,6 +2766,58 @@ void Account::onRemoved()
     invalidate(QLatin1String(TELEPATHY_QT4_ERROR_OBJECT_REMOVED),
             QLatin1String("Account removed from AccountManager"));
     emit removed();
+}
+
+void Account::onConnectionBuilt(PendingOperation *op)
+{
+    PendingReady *readyOp = qobject_cast<PendingReady *>(op);
+    Q_ASSERT(readyOp != NULL);
+
+    if (op->isError()) {
+        warning() << "Building connection" << mPriv->connObjPathQueue.head() << "failed with" <<
+            op->errorName() << "-" << op->errorMessage();
+
+        if (!mPriv->connection.isNull()) {
+            mPriv->connection.reset();
+            emit haveConnectionChanged(false);
+            notify("haveConnection");
+            notify("connection");
+            notify("connectionObjectPath");
+        }
+    } else {
+        bool hadConnection = !mPriv->connection.isNull();
+        ConnectionPtr prevConn = mPriv->connection;
+        QString prevConnPath = connectionObjectPath();
+
+        mPriv->connection = ConnectionPtr::dynamicCast(readyOp->proxy());
+        Q_ASSERT(mPriv->connection);
+
+        debug() << "Connection" << connectionObjectPath() << "built for" << objectPath();
+
+        // TODO: could we, in fact, do with just a connectionChanged(connection) signal and not need
+        // haveConnectionChanged(bool) now that we always have a proxy object to include in the
+        // signal?
+        if (!hadConnection) {
+            emit haveConnectionChanged(true);
+            notify("haveConnection");
+        }
+
+        if (prevConn != mPriv->connection) {
+            notify("connection");
+        }
+
+        if (prevConnPath != connectionObjectPath()) {
+            notify("connectionObjectPath");
+        }
+    }
+
+    mPriv->connObjPathQueue.dequeue();
+
+    if (mPriv->processConnQueue() && !mPriv->coreFinished && mPriv->mayFinishCore) {
+        debug() << "Account" << objectPath() << "basic functionality is ready (connections built)";
+        mPriv->coreFinished = true;
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
 }
 
 void Account::notify(const char *propertyName)

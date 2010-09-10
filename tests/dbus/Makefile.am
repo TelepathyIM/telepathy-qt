@@ -57,6 +57,7 @@ endif
 # Tests which can only be run if we have telepathy-glib, and Qt was compiled
 # to use the GLib main loop
 TESTS += \
+    test-account-connection-factory \
     test-chan-basics \
     test-chan-conference \
     test-chan-group \
@@ -71,6 +72,7 @@ TESTS += \
     test-contacts-capabilities \
     test-contacts-info \
     test-contacts-location \
+    test-dbus-proxy-factory \
     test-handles \
     test-stateful-proxy \
     test-streamed-media-chan \
@@ -78,6 +80,7 @@ TESTS += \
     test-text-chan
 
 BUILT_SOURCES += \
+    _gen/account-connection-factory.cpp.moc.hpp \
     _gen/chan-basics.cpp.moc.hpp \
     _gen/chan-conference.cpp.moc.hpp \
     _gen/chan-group.cpp.moc.hpp \
@@ -92,6 +95,7 @@ BUILT_SOURCES += \
     _gen/contacts-capabilities.cpp.moc.hpp \
     _gen/contacts-info.cpp.moc.hpp \
     _gen/contacts-location.cpp.moc.hpp \
+    _gen/dbus-proxy-factory.cpp.moc.hpp \
     _gen/handles.cpp.moc.hpp \
     _gen/stateful-proxy.cpp.moc.hpp \
     _gen/streamed-media-chan.cpp.moc.hpp \
@@ -99,6 +103,9 @@ BUILT_SOURCES += \
     _gen/text-chan.cpp.moc.hpp
 
 AM_CPPFLAGS += $(TP_GLIB_CFLAGS)
+
+test_account_connection_factory_SOURCES = account-connection-factory.cpp
+test_account_connection_factory_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_chan_basics_SOURCES = chan-basics.cpp
 test_chan_basics_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
@@ -141,6 +148,9 @@ test_contacts_info_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-te
 
 test_contacts_location_SOURCES = contacts-location.cpp
 test_contacts_location_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
+
+test_dbus_proxy_factory_SOURCES = dbus-proxy-factory.cpp
+test_dbus_proxy_factory_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_handles_SOURCES = handles.cpp
 test_handles_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la

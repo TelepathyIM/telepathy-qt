@@ -259,21 +259,13 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
     : DBusProxy(dbusConnection, busName, objectPath, parent),
       mPriv(0)
 {
-    QString uniqueName = busName;
-
     connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
             this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
 
-    if (!busName.startsWith(QLatin1String(":"))) {
-        // For a stateful interface, it makes no sense to follow name-owner
-        // changes, so we want to bind to the unique name.
-        QDBusReply<QString> reply = dbusConnection.interface()->serviceOwner(
-                busName);
-        if (reply.isValid()) {
-            uniqueName = reply.value();
-        } else {
-            invalidate(reply.error());
-        }
+    QString error, message;
+    QString uniqueName = uniqueNameFrom(dbusConnection, busName, error, message);
+    if (uniqueName.isEmpty()) {
+        invalidate(error, message);
     }
 
     setBusName(uniqueName);
@@ -281,6 +273,37 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
 
 StatefulDBusProxy::~StatefulDBusProxy()
 {
+}
+
+QString StatefulDBusProxy::uniqueNameFrom(const QDBusConnection &bus, const QString &name)
+{
+    QString error, message;
+    QString uniqueName = uniqueNameFrom(bus, name, error, message);
+    if (uniqueName.isEmpty()) {
+        warning() << "StatefulDBusProxy::uniqueNameFrom(): Failed to get unique name of" << name;
+        warning() << "  error:" << error << "message:" << message;
+    }
+
+    return uniqueName;
+}
+
+QString StatefulDBusProxy::uniqueNameFrom(const QDBusConnection &bus, const QString &name,
+        QString &error, QString &message)
+{
+    if (name.startsWith(QLatin1String(":"))) {
+        return name;
+    }
+
+    // For a stateful interface, it makes no sense to follow name-owner
+    // changes, so we want to bind to the unique name.
+    QDBusReply<QString> reply = bus.interface()->serviceOwner(name);
+    if (reply.isValid()) {
+        return reply.value();
+    } else {
+        error = reply.error().name();
+        message = reply.error().message();
+        return QString();
+    }
 }
 
 void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner)

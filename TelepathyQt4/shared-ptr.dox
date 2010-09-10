@@ -55,3 +55,36 @@
  * Note that when developing custom classes, this pattern should be followed,
  * to avoid objects in floating state, avoiding memory leaks.
  */
+
+/**
+ * \fn static SharedPtr<T> Tp::SharedPtr<T>::dynamicCast(const SharedPtr<X> &)
+ *
+ * Casts the pointer given by src to a pointer pointing to an object of type T. The cast will
+ * succeed if the C++ runtime type identification mechanism considers the type T to be the actual
+ * runtime type of the object pointed to by src or one of its (possibly indirect) parent classes.
+ * Otherwise, a null pointer is returned.
+ *
+ * Note that this also allows down-casting a baseclass pointer to a subclass pointer.
+ *
+ * This cast method should not be used for QObject-derived classes, as Qt provides a more portable
+ * and efficient type identification mechanism, which is used by qObjectCast().
+ *
+ * This cast method requires the C++ dynamic runtime type identification facility to be enabled
+ * (which might be disabled by eg. the -fno-rtti flag of the GNU G++ compiler).
+ */
+
+/**
+ * \fn static SharedPtr<T> Tp::SharedPtr<T>::qObjectCast(const SharedPtr<X> &)
+ *
+ * Casts the pointer given by src to a pointer pointing to an object of type T. The cast will
+ * succeed if the Qt runtime type identification mechanism considers the type T to be the actual
+ * runtime type of the object pointed to by src or one of its (possibly indirect) parent classes.
+ * Otherwise, a null pointer is returned.
+ *
+ * Note that this also allows down-casting a baseclass pointer to a subclass pointer.
+ *
+ * This cast method MUST not be used for classes not derived from QObject. However, dynamicCast()
+ * provides the same semantics for all classes, provided the C++ runtime type identification
+ * facility is enabled. This method, on the other hand, doesn't require the standard C++ facility
+ * and is probably also faster for the types it can be used with.
+ */

@@ -56,6 +56,7 @@ libtelepathy_qt4_la_SOURCES = \
     abstract-client.cpp \
     abstract-interface.cpp \
     account.cpp \
+    account-factory.cpp \
     account-manager.cpp \
     account-set.cpp \
     account-set-internal.h \
@@ -71,20 +72,25 @@ libtelepathy_qt4_la_SOURCES = \
     client-registrar-internal.h \
     connection.cpp \
     connection-capabilities.cpp \
+    connection-factory.cpp \
     connection-manager.cpp \
     connection-internal.h \
     connection-manager-internal.h \
     contact.cpp \
     contact-capabilities.cpp \
+    contact-factory.cpp \
     contact-location.cpp \
     contact-manager.cpp \
     dbus.cpp \
     dbus-proxy.cpp \
+    dbus-proxy-factory.cpp \
+    dbus-proxy-factory-internal.h \
     debug.cpp \
     debug-internal.h \
     feature.cpp \
     file-transfer-channel.cpp \
     file-transfer-channel-creation-properties.cpp \
+    fixed-feature-factory.cpp \
     future.cpp \
     future-internal.h \
     incoming-file-transfer-channel.cpp \
@@ -115,6 +121,8 @@ libtelepathy_qt4_la_SOURCES = \
     room-list-channel.cpp \
     streamed-media-channel.cpp \
     streamed-media-channel-internal.h \
+    test-backdoors.cpp \
+    test-backdoors.h \
     text-channel.cpp \
     types.cpp \
     types-internal.h \
@@ -167,6 +175,7 @@ nodist_libtelepathy_qt4_la_SOURCES = \
     _gen/contact-manager.moc.hpp \
     _gen/contact-manager-internal.moc.hpp \
     _gen/dbus-proxy.moc.hpp \
+    _gen/dbus-proxy-factory-internal.moc.hpp \
     _gen/file-transfer-channel.moc.hpp \
     _gen/incoming-file-transfer-channel.moc.hpp \
     _gen/outgoing-file-transfer-channel.moc.hpp \
@@ -206,26 +215,31 @@ tpqt4include_HEADERS = \
     AbstractClientObserver \
     AbstractInterface \
     Account \
+    AccountFactory \
     AccountManager \
     AccountSet \
     CapabilitiesBase \
     Channel \
     ChannelDispatcher \
     ChannelDispatchOperation \
+    ChannelFactory \
     ChannelRequest \
     Client \
     ClientRegistrar \
     Connection \
     ConnectionCapabilities \
+    ConnectionFactory \
     ConnectionManager \
     Constants \
     Contact \
     ContactCapabilities \
+    ContactFactory \
     ContactLocation \
     ContactManager \
     Debug \
     DBus \
     DBusProxy \
+    DBusProxyFactory \
     Feature \
     FileTransferChannel \
     FileTransferChannelCreationProperties \
@@ -323,30 +337,36 @@ tpqt4include_HEADERS = \
     abstract-client.h \
     abstract-interface.h \
     account.h \
+    account-factory.h \
     account-manager.h \
     account-set.h \
     capabilities-base.h \
     channel.h \
     channel-dispatcher.h \
     channel-dispatch-operation.h \
+    channel-factory.h \
     channel-request.h \
     client.h \
     client-registrar.h \
     connection.h \
     connection-capabilities.h \
+    connection-factory.h \
     connection-manager.h \
     constants.h \
     contact.h \
     contact-capabilities.h \
+    contact-factory.h \
     contact-location.h \
     contact-manager.h \
     contact-manager-internal.h \
     dbus.h \
     dbus-proxy.h \
+    dbus-proxy-factory.h \
     debug.h \
     feature.h \
     file-transfer-channel.h \
     file-transfer-channel-creation-properties.h \
+    fixed-feature-factory.h \
     global.h \
     incoming-file-transfer-channel.h \
     key-file.h \

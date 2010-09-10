@@ -29,6 +29,9 @@
 #include <TelepathyQt4/_gen/cli-account.h>
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/FileTransferChannelCreationProperties>
@@ -102,7 +105,27 @@ public:
     static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
 
+    // API/ABI break: collapse these with the above variants and have all factories be default
+    // params for the non-bus version
+    static AccountPtr create(const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory =
+                ChannelFactory::create(QDBusConnection::sessionBus()),
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
+
+    static AccountPtr create(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
+
     virtual ~Account();
+
+    ConnectionFactoryConstPtr connectionFactory() const;
+    ChannelFactoryConstPtr channelFactory() const;
+    ContactFactoryConstPtr contactFactory() const;
 
     bool isValidAccount() const;
 
@@ -317,6 +340,11 @@ protected:
     Account(const QString &busName, const QString &objectPath);
     Account(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
+    Account(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::AccountInterface *baseInterface() const;
 
@@ -327,6 +355,7 @@ private Q_SLOTS:
     void onConnectionManagerReady(Tp::PendingOperation *);
     void onPropertyChanged(const QVariantMap &delta);
     void onRemoved();
+    void onConnectionBuilt(Tp::PendingOperation *);
 
 private:
     struct Private;

@@ -57,8 +57,13 @@ public:
     inline RefCounted() : strongref(0), wd(0) { }
     inline virtual ~RefCounted() { if (wd) { wd->d = 0; } }
 
+    // So why were these not const in the first place although strongref was?
+    // API/ABI break TODO: remove, just leave the const variants in
     inline void ref() { strongref.ref(); }
     inline bool deref() { return strongref.deref(); }
+
+    inline void ref() const { strongref.ref(); }
+    inline bool deref() const { return strongref.deref(); }
 
     mutable QAtomicInt strongref;
     WeakData *wd;
@@ -70,6 +75,8 @@ class SharedPtr
 public:
     inline SharedPtr() : d(0) { }
     explicit inline SharedPtr(T *d) : d(d) { if (d) { d->ref(); } }
+    template <typename Subclass>
+        inline SharedPtr(const SharedPtr<Subclass> &o) : d(o.data()) { if (d) { d->ref(); } }
     inline SharedPtr(const SharedPtr<T> &o) : d(o.d) { if (d) { d->ref(); } }
     explicit inline SharedPtr(const WeakPtr<T> &o)
     {
@@ -135,6 +142,12 @@ public:
     static inline SharedPtr<T> constCast(const SharedPtr<X> &src)
     {
         return SharedPtr<T>(const_cast<T*>(src.data()));
+    }
+
+    template <class X>
+    static inline SharedPtr<T> qObjectCast(const SharedPtr<X> &src)
+    {
+        return SharedPtr<T>(qobject_cast<T*>(src.data()));
     }
 
 private:
