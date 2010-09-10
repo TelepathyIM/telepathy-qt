@@ -121,6 +121,8 @@ libtelepathy_qt4_la_SOURCES = \
     room-list-channel.cpp \
     streamed-media-channel.cpp \
     streamed-media-channel-internal.h \
+    test-backdoors.cpp \
+    test-backdoors.h \
     text-channel.cpp \
     types.cpp \
     types-internal.h \
