@@ -242,6 +242,15 @@ void DBusProxyFactory::Cache::put(const SharedPtr<RefCounted> &obj)
     DBusProxy *proxyProxy = dynamic_cast<DBusProxy *>(obj.data());
     Q_ASSERT(proxyProxy != NULL);
 
+    if (proxyProxy->busName().isEmpty()) {
+        debug() << "Not inserting proxy" << obj.data() << "with no bus name to factory cache";
+        return;
+    } else if (!proxyProxy->isValid()) {
+        debug() << "Not inserting to factory cache invalid proxy - proxy is for" <<
+            proxyProxy->busName() << ',' << proxyProxy->objectPath();
+        return;
+    }
+
     Key key(proxyProxy->busName(), proxyProxy->objectPath());
 
     SharedPtr<RefCounted> existingProxy = SharedPtr<RefCounted>(proxies.value(key));
