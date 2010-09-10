@@ -1,18 +1,35 @@
-telepathy-qt4 0.3.9 (UNRELEASED)
+telepathy-qt4 0.3.9 (2010-09-10)
 ================================
 
 Enhancements:
-* Channel::groupSelfContact() now always have some contact for the user as long
+* Add Factory infrastructure (see fd.o #29451), enabling:
+   - sharing accounts/connections between different parts of the library better
+     (this will soon enable us to eliminate duplicate objects between
+     AbstractClient implementations and the AM)
+   - requesting that all accounts/connections/channels/contacts are always ready
+     with given features
+   - automatically constructing application-defined subclasses whenever eg. an
+     Account is constructed
+* Added finished and usable AccountFactory and ConnectionFactory APIs, and also
+  added API/ABI placeholder ChannelFactory and ContactFactory APIs which will be
+  more useful soon
+* Use factories in AccountManager and Account for constructing Accounts and
+  Connections -> if desired features are enabled, one no longer needs to make
+  any Account::becomeReady and Connection::becomeReady calls when using an
+  AccountManager (fd.o #29606)
+* Made Channel::groupSelfContact() always have some contact for the user as long
   as the channel is ready (if the group has none, the Connection one is used)
 * (Side-effect from other work) Add fallbacks to channel requests in case the
- service doesn't provide the InitiatorHandle or the Requested property
-* Channel debug output is now a bit cleaner
+  service doesn't provide the InitiatorHandle or the Requested property
+* Made Channel debug output a bit cleaner
 * Added Connection::ErrorDetails to represent additional information about error
   conditions causing Connection invalidation
 * Made the Connection API guide the applications better to correct error
   handling practices (all error handling should be done in invalidated() slots)
 * Add avatar cache implementation and featureAvatarData on Tp::Contact using it.
   See fd.o#20034
+* Add SharedPtr::qobjectCast(), an upcasting constructor and pointer to const
+  support
 
 Fixes:
 * A race condition which could result in Channel ignoring a member change (only
@@ -22,6 +39,10 @@ Fixes:
   signaling contacts being removed from roster groups didn't work either
 * Yet another TestConnRosterGroup race condition (freq: 6 in 20000 runs)
 * fd.o#29930 - Build error with glib 2.25
+* ReadyObjects incorrectly handling feature dependencies
+* Account/Connection/Channel readifying themselves even if not asked to
+* Handle reference management screwing up if there are multiple connections
+  online on a single CM
 
 telepathy-qt4 0.3.8 (2010-08-24)
 ================================
