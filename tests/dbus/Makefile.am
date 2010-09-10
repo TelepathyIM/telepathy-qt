@@ -72,6 +72,7 @@ TESTS += \
     test-contacts-capabilities \
     test-contacts-info \
     test-contacts-location \
+    test-dbus-proxy-factory \
     test-handles \
     test-stateful-proxy \
     test-streamed-media-chan \
@@ -94,6 +95,7 @@ BUILT_SOURCES += \
     _gen/contacts-capabilities.cpp.moc.hpp \
     _gen/contacts-info.cpp.moc.hpp \
     _gen/contacts-location.cpp.moc.hpp \
+    _gen/dbus-proxy-factory.cpp.moc.hpp \
     _gen/handles.cpp.moc.hpp \
     _gen/stateful-proxy.cpp.moc.hpp \
     _gen/streamed-media-chan.cpp.moc.hpp \
@@ -146,6 +148,9 @@ test_contacts_info_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-te
 
 test_contacts_location_SOURCES = contacts-location.cpp
 test_contacts_location_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
+
+test_dbus_proxy_factory_SOURCES = dbus-proxy-factory.cpp
+test_dbus_proxy_factory_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_handles_SOURCES = handles.cpp
 test_handles_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
