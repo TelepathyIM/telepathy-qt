@@ -61,13 +61,13 @@ struct TELEPATHY_QT4_NO_EXPORT ReferencedHandles::Private : public QSharedData
           handles(a.handles)
     {
         if (!handles.isEmpty()) {
-            if (!connection) {
+            ConnectionPtr conn(connection);
+            if (!conn) {
                 debug() << "  Destroyed after Connection, so the Connection "
                     "has already released the handles";
                 return;
             }
 
-            ConnectionPtr conn(connection);
             for (const_iterator i = handles.begin(); i != handles.end(); ++i) {
                 conn->refHandle(handleType, *i);
             }
@@ -77,13 +77,13 @@ struct TELEPATHY_QT4_NO_EXPORT ReferencedHandles::Private : public QSharedData
     ~Private()
     {
         if (!handles.isEmpty()) {
-            if (!connection) {
+            ConnectionPtr conn(connection);
+            if (!conn) {
                 debug() << "  Destroyed after Connection, so the Connection "
                     "has already released the handles";
                 return;
             }
 
-            ConnectionPtr conn(connection);
             for (const_iterator i = handles.begin(); i != handles.end(); ++i) {
                 conn->unrefHandle(handleType, *i);
             }
@@ -196,8 +196,8 @@ int ReferencedHandles::size() const
 void ReferencedHandles::clear()
 {
     if (!mPriv->handles.empty()) {
-        if (mPriv->connection) {
-            ConnectionPtr conn(mPriv->connection);
+        ConnectionPtr conn(mPriv->connection);
+        if (conn) {
             foreach (uint handle, mPriv->handles) {
                 conn->unrefHandle(handleType(), handle);
             }
@@ -220,8 +220,8 @@ int ReferencedHandles::removeAll(uint handle)
     int count = mPriv->handles.removeAll(handle);
 
     if (count > 0) {
-        if (mPriv->connection) {
-            ConnectionPtr conn(mPriv->connection);
+        ConnectionPtr conn(mPriv->connection);
+        if (conn) {
             for (int i = 0; i < count; ++i) {
                 conn->unrefHandle(handleType(), handle);
             }
@@ -237,8 +237,8 @@ int ReferencedHandles::removeAll(uint handle)
 
 void ReferencedHandles::removeAt(int i)
 {
-    if (mPriv->connection) {
-        ConnectionPtr conn(mPriv->connection);
+    ConnectionPtr conn(mPriv->connection);
+    if (conn) {
         conn->unrefHandle(handleType(), at(i));
     } else {
         warning() << "Connection already destroyed in "
@@ -254,8 +254,8 @@ bool ReferencedHandles::removeOne(uint handle)
     bool wasThere = mPriv->handles.removeOne(handle);
 
     if (wasThere) {
-        if (mPriv->connection) {
-            ConnectionPtr conn(mPriv->connection);
+        ConnectionPtr conn(mPriv->connection);
+        if (conn) {
             conn->unrefHandle(handleType(), handle);
         } else {
             warning() << "Connection already destroyed in "
@@ -274,8 +274,8 @@ void ReferencedHandles::swap(int i, int j)
 
 uint ReferencedHandles::takeAt(int i)
 {
-    if (mPriv->connection) {
-        ConnectionPtr conn(mPriv->connection);
+    ConnectionPtr conn(mPriv->connection);
+    if (conn) {
         conn->unrefHandle(handleType(), at(i));
     } else {
         warning() << "Connection already destroyed in "
