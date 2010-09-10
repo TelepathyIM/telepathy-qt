@@ -177,6 +177,27 @@ if test x$have_qdbusvariant_operator_equal = xyes; then
   AC_DEFINE(HAVE_QDBUSVARIANT_OPERATOR_EQUAL, [], [Have QDBusVariant operator==])
 fi
 
+dnl Check for QDBusServiceWatcher being present
+dnl This check can be safely removed if we start depending on Qt 4.6
+save_CFLAGS="$CFLAGS"
+save_CXXFLAGS="$CXXFLAGS"
+CFLAGS="$CFLAGS $QTDBUS_CFLAGS"
+CXXFLAGS="$CXXFLAGS $QTDBUS_CFLAGS"
+AC_MSG_CHECKING([if QDBus has the QDBusServiceWatcher API])
+AC_TRY_COMPILE([#include <QtDBus>],
+    [ QDBusServiceWatcher watcher; ],
+    [have_qdbusservicewatcher=yes],
+    [have_qdbusservicewatcher=no])
+CFLAGS="$save_CFLAGS"
+CXXFLAGS="$save_CXXFLAGS"
+
+if test x$have_qdbusservicewatcher = xyes; then
+  AC_MSG_RESULT([yes])
+  AC_DEFINE(HAVE_QDBUSSERVICEWATCHER, [], [Have QDBusServiceWatcher])
+else
+  AC_MSG_RESULT([no])
+fi
+
 dnl Check for QtNetwork
 PKG_CHECK_MODULES(QTNETWORK, [QtNetwork >= 4.5])
 AC_SUBST(QTNETWORK_CFLAGS)

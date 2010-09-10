@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "config.h"
+
 #include <TelepathyQt4/DBusProxy>
 
 #include "TelepathyQt4/_gen/dbus-proxy.moc.hpp"
@@ -27,11 +29,14 @@
 
 #include <TelepathyQt4/Constants>
 
-#include <QTimer>
-
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusError>
+#include <QTimer>
+
+#ifdef HAVE_QDBUSSERVICEWATCHER
+#include <QDBusServiceWatcher>
+#endif
 
 namespace Tp
 {
@@ -242,6 +247,14 @@ void DBusProxy::emitInvalidated()
 
 // ==== StatefulDBusProxy ==============================================
 
+struct StatefulDBusProxy::Private
+{
+    Private(const QString &originalName)
+        : originalName(originalName) {}
+
+    QString originalName;
+};
+
 /**
  * \class StatefulDBusProxy
  * \ingroup FIXME: what group is it in?
@@ -257,15 +270,26 @@ void DBusProxy::emitInvalidated()
 StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
         const QString &busName, const QString &objectPath, QObject *parent)
     : DBusProxy(dbusConnection, busName, objectPath, parent),
-      mPriv(0)
+      mPriv(new Private(busName))
 {
-    connect(dbusConnection.interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-            this, SLOT(onServiceOwnerChanged(QString, QString, QString)));
+#ifdef HAVE_QDBUSSERVICEWATCHER
+    QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(busName,
+            dbusConnection, QDBusServiceWatcher::WatchForUnregistration, this);
+    connect(serviceWatcher,
+            SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            SLOT(onServiceOwnerChanged(QString, QString, QString)));
+#else
+    connect(dbusConnection.interface(),
+            SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            SLOT(onServiceOwnerChanged(QString, QString, QString)));
+#endif
 
     QString error, message;
     QString uniqueName = uniqueNameFrom(dbusConnection, busName, error, message);
+
     if (uniqueName.isEmpty()) {
         invalidate(error, message);
+        return;
     }
 
     setBusName(uniqueName);
@@ -273,6 +297,7 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
 
 StatefulDBusProxy::~StatefulDBusProxy()
 {
+    delete mPriv;
 }
 
 QString StatefulDBusProxy::uniqueNameFrom(const QDBusConnection &bus, const QString &name)
@@ -310,7 +335,7 @@ void StatefulDBusProxy::onServiceOwnerChanged(const QString &name, const QString
 {
     // We only want to invalidate this object if it is not already invalidated,
     // and its (not any other object's) name owner changed signal is emitted.
-    if (isValid() && name == busName() && newOwner == QLatin1String("")) {
+    if (isValid() && name == mPriv->originalName && newOwner.isEmpty()) {
         invalidate(QLatin1String(TELEPATHY_DBUS_ERROR_NAME_HAS_NO_OWNER),
                 QLatin1String("Name owner lost (service crashed?)"));
     }
