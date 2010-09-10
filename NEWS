@@ -2,7 +2,7 @@ telepathy-qt4 0.3.9 (2010-09-10)
 ================================
 
 Enhancements:
-* Add Factory infrastructure (see fd.o #29451), enabling:
+* fd.o #29451 - Add Factory infrastructure, enabling:
    - sharing accounts/connections between different parts of the library better
      (this will soon enable us to eliminate duplicate objects between
      AbstractClient implementations and the AM)
@@ -10,16 +10,16 @@ Enhancements:
      with given features
    - automatically constructing application-defined subclasses whenever eg. an
      Account is constructed
-* Added finished and usable AccountFactory and ConnectionFactory APIs, and also
+* Add finished and usable AccountFactory and ConnectionFactory APIs, and also
   added API/ABI placeholder ChannelFactory and ContactFactory APIs which will be
   more useful soon
-* Use factories in AccountManager and Account for constructing Accounts and
-  Connections -> if desired features are enabled, one no longer needs to make
-  any Account::becomeReady and Connection::becomeReady calls when using an
-  AccountManager (fd.o #29606)
-* Use QDBusServiceWatcher if available, reducing wakeups (fd.o #29409)
-* Add avatar cache implementation and featureAvatarData on Tp::Contact using it.
-  See fd.o#20034
+* fd.o #29606 - Use factories in AccountManager and Account for constructing
+  Accounts and Connections -> if desired features are enabled, one no longer
+  needs to make any Account::becomeReady and Connection::becomeReady calls when
+  using an AccountManager
+* fd.o #29409 - Use QDBusServiceWatcher if available, reducing wakeups
+* fd.o #20034 - Add avatar cache implementation and featureAvatarData on
+  Tp::Contact using it.
 * Made Channel::groupSelfContact() always have some contact for the user as long
   as the channel is ready (if the group has none, the Connection one is used)
 * (Side-effect from other work) Add fallbacks to channel requests in case the
