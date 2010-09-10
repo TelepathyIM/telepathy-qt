@@ -17,6 +17,9 @@ Enhancements:
   Connections -> if desired features are enabled, one no longer needs to make
   any Account::becomeReady and Connection::becomeReady calls when using an
   AccountManager (fd.o #29606)
+* Use QDBusServiceWatcher if available, reducing wakeups (fd.o #29409)
+* Add avatar cache implementation and featureAvatarData on Tp::Contact using it.
+  See fd.o#20034
 * Made Channel::groupSelfContact() always have some contact for the user as long
   as the channel is ready (if the group has none, the Connection one is used)
 * (Side-effect from other work) Add fallbacks to channel requests in case the
@@ -26,8 +29,6 @@ Enhancements:
   conditions causing Connection invalidation
 * Made the Connection API guide the applications better to correct error
   handling practices (all error handling should be done in invalidated() slots)
-* Add avatar cache implementation and featureAvatarData on Tp::Contact using it.
-  See fd.o#20034
 * Add SharedPtr::qobjectCast(), an upcasting constructor and pointer to const
   support
 
