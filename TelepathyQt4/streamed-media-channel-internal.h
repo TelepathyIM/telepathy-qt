@@ -49,7 +49,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingMediaStreams::Private
     }
 
     PendingMediaStreams *parent;
-    WeakPtr<StreamedMediaChannel> channel;
+    StreamedMediaChannelPtr channel;
     MediaContents contents;
     uint numContents;
     uint contentsReady;
@@ -153,7 +153,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingMediaContent::Private
 
 
     PendingMediaContent *parent;
-    WeakPtr<StreamedMediaChannel> channel;
+    StreamedMediaChannelPtr channel;
     MediaContentPtr content;
 };
 

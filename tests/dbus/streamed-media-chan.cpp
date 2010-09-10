@@ -194,6 +194,8 @@ void TestStreamedMediaChan::expectCreateChannelFinished(PendingOperation* op)
 
 void TestStreamedMediaChan::expectRequestStreamsFinished(PendingOperation *op)
 {
+    mRequestStreamsReturn.clear();
+
     if (!op->isFinished()) {
         qWarning() << "unfinished";
         mLoop->exit(1);

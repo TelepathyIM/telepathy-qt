@@ -64,7 +64,7 @@ namespace Tp
 PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
         const ContactPtr &contact,
         const QList<MediaStreamType> &types)
-    : PendingOperation(channel.data()),
+    : PendingOperation(0),
       mPriv(new Private(this, channel))
 {
     mPriv->numContents = types.size();
@@ -90,7 +90,7 @@ PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
  */
 PendingMediaStreams::PendingMediaStreams(const StreamedMediaChannelPtr &channel,
         const QList<MediaStreamType> &types)
-    : PendingOperation(channel.data()),
+    : PendingOperation(0),
       mPriv(new Private(this, channel))
 {
     mPriv->numContents = types.size();
@@ -1276,7 +1276,7 @@ PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
         const ContactPtr &contact,
         const QString &name,
         MediaStreamType type)
-    : PendingOperation(channel.data()),
+    : PendingOperation(0),
       mPriv(new Private(this, channel))
 {
     QDBusPendingCallWatcher *watcher =
@@ -1291,7 +1291,7 @@ PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
 PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
         const QString &name,
         MediaStreamType type)
-    : PendingOperation(channel.data()),
+    : PendingOperation(0),
       mPriv(new Private(this, channel))
 {
     QDBusPendingCallWatcher *watcher =
@@ -1304,7 +1304,7 @@ PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
 
 PendingMediaContent::PendingMediaContent(const StreamedMediaChannelPtr &channel,
         const QString &errorName, const QString &errorMessage)
-    : PendingOperation(channel.data()),
+    : PendingOperation(0),
       mPriv(0)
 {
     setFinishedWithError(errorName, errorMessage);
