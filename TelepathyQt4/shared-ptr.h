@@ -80,7 +80,7 @@ public:
     inline SharedPtr(const SharedPtr<T> &o) : d(o.d) { if (d) { d->ref(); } }
     explicit inline SharedPtr(const WeakPtr<T> &o)
     {
-        if (o.wd && o.wd->d) {
+        if (o.wd && o.wd->d && o.wd->d->strongref > 0) {
             d = static_cast<T*>(o.wd->d);
             d->ref();
         } else {
