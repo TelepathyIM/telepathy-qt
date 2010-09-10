@@ -40,7 +40,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContactInfo::Private
     {
     }
 
-    QWeakPointer<Contact> contact;
+    ContactPtr contact;
     ContactInfoFieldList info;
 };
 
@@ -64,7 +64,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContactInfo::Private
  * \param contact Contact to use.
  */
 PendingContactInfo::PendingContactInfo(const ContactPtr &contact)
-    : PendingOperation(contact.data()),
+    : PendingOperation(0),
       mPriv(new Private(contact))
 {
     ConnectionPtr connection = contact->manager()->connection();
@@ -91,7 +91,7 @@ PendingContactInfo::~PendingContactInfo()
  */
 ContactPtr PendingContactInfo::contact() const
 {
-    return ContactPtr(mPriv->contact);
+    return mPriv->contact;
 }
 
 /**
