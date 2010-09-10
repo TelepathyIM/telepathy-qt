@@ -177,6 +177,8 @@ if test x$have_qdbusvariant_operator_equal = xyes; then
   AC_DEFINE(HAVE_QDBUSVARIANT_OPERATOR_EQUAL, [], [Have QDBusVariant operator==])
 fi
 
+dnl Check for QDBusServiceWatcher being present
+dnl This check can be safely removed if we start depending on Qt 4.6
 save_CFLAGS="$CFLAGS"
 save_CXXFLAGS="$CXXFLAGS"
 CFLAGS="$CFLAGS $QTDBUS_CFLAGS"
