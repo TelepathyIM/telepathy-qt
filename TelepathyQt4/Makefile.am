@@ -243,6 +243,7 @@ tpqt4include_HEADERS = \
     Feature \
     FileTransferChannel \
     FileTransferChannelCreationProperties \
+    FixedFeatureFactory \
     Global \
     IncomingFileTransferChannel \
     KeyFile \
