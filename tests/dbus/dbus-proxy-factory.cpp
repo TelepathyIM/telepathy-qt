@@ -47,6 +47,7 @@ private Q_SLOTS:
     void testCaching();
     void testDropRefs();
     void testInvalidate();
+    void testBogusService();
 
     void cleanup();
     void cleanupTestCase();
@@ -295,6 +296,34 @@ void TestDBusProxyFactory::testInvalidate()
 
     QVERIFY(differentProxy->isValid());
     QVERIFY(differentProxy->isReady());
+}
+
+void TestDBusProxyFactory::testBogusService()
+{
+    PendingReady *bogus = mFactory->proxy(QLatin1String("org.bogus.Totally"),
+            QLatin1String("/org/bogus/Totally"),
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+
+    QVERIFY(bogus != NULL);
+    QVERIFY(!bogus->proxy().isNull());
+
+    QVERIFY(!ConnectionPtr::dynamicCast(bogus->proxy())->isValid());
+
+    PendingReady *another = mFactory->proxy(QLatin1String("org.bogus.Totally"),
+            QLatin1String("/org/bogus/Totally"),
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+
+    QVERIFY(another != NULL);
+    QVERIFY(!another->proxy().isNull());
+
+    QVERIFY(!ConnectionPtr::dynamicCast(another->proxy())->isValid());
+
+    // We shouldn't get the same proxy twice ie. a proxy should not be cached if not present on bus
+    // and invalidated because of that, otherwise we'll return an invalid instance from the cache
+    // even if after the service appears on the bus
+    QVERIFY(another->proxy() != bogus->proxy());
 }
 
 void TestDBusProxyFactory::cleanup()
