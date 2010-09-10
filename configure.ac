@@ -181,6 +181,7 @@ save_CFLAGS="$CFLAGS"
 save_CXXFLAGS="$CXXFLAGS"
 CFLAGS="$CFLAGS $QTDBUS_CFLAGS"
 CXXFLAGS="$CXXFLAGS $QTDBUS_CFLAGS"
+AC_MSG_CHECKING([if QDBus has the QDBusServiceWatcher API])
 AC_TRY_COMPILE([#include <QtDBus>],
     [ QDBusServiceWatcher watcher; ],
     [have_qdbusservicewatcher=yes],
@@ -189,7 +190,10 @@ CFLAGS="$save_CFLAGS"
 CXXFLAGS="$save_CXXFLAGS"
 
 if test x$have_qdbusservicewatcher = xyes; then
+  AC_MSG_RESULT([yes])
   AC_DEFINE(HAVE_QDBUSSERVICEWATCHER, [], [Have QDBusServiceWatcher])
+else
+  AC_MSG_RESULT([no])
 fi
 
 dnl Check for QtNetwork
