@@ -1,6 +1,8 @@
 telepathy-qt4 0.3.9 (2010-09-10)
 ================================
 
+The "THE ORIGINAL SWEAT FACTORY^W^WSAUNA MASTER" release.
+
 Enhancements:
 * fd.o #29451 - Add Factory infrastructure, enabling:
    - sharing accounts/connections between different parts of the library better

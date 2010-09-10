@@ -11,8 +11,8 @@ AC_PREREQ([2.59])
 
 m4_define([tp_qt4_major_version], [0])
 m4_define([tp_qt4_minor_version], [3])
-m4_define([tp_qt4_micro_version], [8])
-m4_define([tp_qt4_nano_version], [1])
+m4_define([tp_qt4_micro_version], [9])
+m4_define([tp_qt4_nano_version], [0])
 
 # If library source has changed since last release, increment revision
 # If interfaces have been added, removed or changed since last release,
@@ -26,9 +26,9 @@ m4_define([tp_qt4_nano_version], [1])
 # (we don't guarantee that we won't add ABI then remove it again, if it was
 # never seen in a release).
 
-m4_define([tp_qt4_lt_current], [9])
+m4_define([tp_qt4_lt_current], [10])
 m4_define([tp_qt4_lt_revision], [0])
-m4_define([tp_qt4_lt_age], [9])
+m4_define([tp_qt4_lt_age], [10])
 
 # Some magic
 m4_define([tp_qt4_base_version],
