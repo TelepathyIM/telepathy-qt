@@ -63,7 +63,7 @@ public:
         mConnection = QDBusObjectPath(conn);
         QVariantMap props;
         props.insert(QLatin1String("Connection"), QVariant::fromValue(mConnection));
-        emit AccountPropertyChanged(props);
+        Q_EMIT AccountPropertyChanged(props);
     }
 
 public: // Properties
