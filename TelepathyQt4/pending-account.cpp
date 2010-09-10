@@ -41,7 +41,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingAccount::Private
     {
     }
 
-    WeakPtr<AccountManager> manager;
+    AccountManagerPtr manager;
     AccountPtr account;
     QDBusObjectPath objectPath;
 };
@@ -77,7 +77,7 @@ PendingAccount::PendingAccount(const AccountManagerPtr &manager,
         const QString &connectionManager, const QString &protocol,
         const QString &displayName, const QVariantMap &parameters,
         const QVariantMap &properties)
-    : PendingOperation(manager.data()),
+    : PendingOperation(0),
       mPriv(new Private(manager))
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
@@ -103,7 +103,7 @@ PendingAccount::~PendingAccount()
  */
 AccountManagerPtr PendingAccount::manager() const
 {
-    return AccountManagerPtr(mPriv->manager);
+    return mPriv->manager;
 }
 
 /**

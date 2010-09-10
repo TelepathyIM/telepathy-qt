@@ -40,7 +40,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
     {
     }
 
-    WeakPtr<Connection> connection;
+    ConnectionPtr connection;
     bool yours;
     QString channelType;
     uint handleType;
@@ -69,7 +69,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingChannel::Private
  */
 PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &errorName,
         const QString &errorMessage)
-    : PendingOperation(connection.data()),
+    : PendingOperation(0),
       mPriv(new Private(connection))
 {
     mPriv->yours = false;
@@ -88,7 +88,7 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection, const QString &e
  */
 PendingChannel::PendingChannel(const ConnectionPtr &connection,
         const QVariantMap &request, bool create)
-    : PendingOperation(connection.data()),
+    : PendingOperation(0),
       mPriv(new Private(connection))
 {
     mPriv->yours = create;
@@ -127,7 +127,7 @@ PendingChannel::~PendingChannel()
  */
 ConnectionPtr PendingChannel::connection() const
 {
-    return ConnectionPtr(mPriv->connection);
+    return mPriv->connection;
 }
 
 /**

@@ -56,7 +56,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingContactAttributes::Private
 
 PendingContactAttributes::PendingContactAttributes(const ConnectionPtr &connection,
         const UIntList &handles, const QStringList &interfaces, bool reference)
-    : PendingOperation(connection.data()),
+    : PendingOperation(0),
       mPriv(new Private)
 {
     mPriv->connection = connection;

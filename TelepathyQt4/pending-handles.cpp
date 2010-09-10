@@ -64,7 +64,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingHandles::Private
 
 PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
         const QStringList &names)
-    : PendingOperation(connection.data()),
+    : PendingOperation(0),
       mPriv(new Private)
 {
     debug() << "PendingHandles(request)";
@@ -88,7 +88,7 @@ PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
 PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
         const UIntList &handles, const UIntList &alreadyHeld,
         const UIntList &notYetHeld)
-    : PendingOperation(connection.data()),
+    : PendingOperation(0),
       mPriv(new Private)
 {
     debug() << "PendingHandles(reference)";

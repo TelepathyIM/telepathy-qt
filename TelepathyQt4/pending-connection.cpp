@@ -42,7 +42,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
     {
     }
 
-    WeakPtr<ConnectionManager> manager;
+    ConnectionManagerPtr manager;
     ConnectionPtr connection;
     QString busName;
     QDBusObjectPath objectPath;
@@ -67,7 +67,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingConnection::Private
  */
 PendingConnection::PendingConnection(const ConnectionManagerPtr &manager,
         const QString &protocol, const QVariantMap &parameters)
-    : PendingOperation(manager.data()),
+    : PendingOperation(0),
       mPriv(new Private(manager))
 {
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
@@ -93,7 +93,7 @@ PendingConnection::~PendingConnection()
  */
 ConnectionManagerPtr PendingConnection::manager() const
 {
-    return ConnectionManagerPtr(mPriv->manager);
+    return mPriv->manager;
 }
 
 /**
