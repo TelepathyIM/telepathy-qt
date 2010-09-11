@@ -41,17 +41,22 @@ if HAVE_TEST_PYTHON
 # dbus-python and telepathy-glib, and Qt was compiled to use the Glib main loop
 TESTS += \
     test-account-channel-dispatcher \
-    test-client
+    test-client \
+    test-client-factories
 
 BUILT_SOURCES += \
     _gen/account-channel-dispatcher.cpp.moc.hpp \
-    _gen/client.cpp.moc.hpp
+    _gen/client.cpp.moc.hpp \
+    _gen/client-factories.cpp.moc.hpp
 
 test_account_channel_dispatcher_SOURCES = account-channel-dispatcher.cpp
 test_account_channel_dispatcher_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 
 test_client_SOURCES = client.cpp
 test_client_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
+
+test_client_factories_SOURCES = client-factories.cpp
+test_client_factories_LDADD = $(LDADD) $(top_builddir)/tests/lib/glib/libtp-glib-tests.la
 endif
 
 # Tests which can only be run if we have telepathy-glib, and Qt was compiled
