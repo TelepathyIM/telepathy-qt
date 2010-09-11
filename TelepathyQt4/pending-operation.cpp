@@ -334,6 +334,11 @@ PendingComposite::PendingComposite(const QList<PendingOperation*> &operations,
     }
 }
 
+PendingComposite::~PendingComposite()
+{
+    delete mPriv;
+}
+
 void PendingComposite::onOperationFinished(Tp::PendingOperation *op)
 {
     if (op->isError()) {

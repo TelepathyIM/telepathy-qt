@@ -91,6 +91,7 @@ class TELEPATHY_QT4_EXPORT PendingComposite : public PendingOperation
 
 public:
     PendingComposite(const QList<PendingOperation*> &operations, QObject *parent);
+    ~PendingComposite();
 
 private Q_SLOTS:
     void onOperationFinished(Tp::PendingOperation *);
