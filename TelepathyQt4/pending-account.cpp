@@ -26,6 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/PendingReady>
 
 #include <QDBusObjectPath>
 #include <QDBusPendingCallWatcher>
@@ -160,7 +161,13 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
         mPriv->objectPath = reply.value();
         debug() << "Got reply to AccountManager.CreateAccount - object path:" <<
             mPriv->objectPath.path();
-        setFinished();
+        PendingReady *proxyOp = manager()->accountFactory()->proxy(manager()->busName(),
+                mPriv->objectPath.path(), manager()->connectionFactory(),
+                manager()->channelFactory(), manager()->contactFactory());
+        mPriv->account = AccountPtr::dynamicCast(proxyOp->proxy());
+        connect(proxyOp,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onAccountBuilt(Tp::PendingOperation*)));
     } else {
         debug().nospace() <<
             "CreateAccount failed: " <<
@@ -169,6 +176,20 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
     }
 
     watcher->deleteLater();
+}
+
+void PendingAccount::onAccountBuilt(Tp::PendingOperation *op)
+{
+    Q_ASSERT(op->isFinished());
+
+    if (op->isError()) {
+        warning() << "Making account ready using the factory failed:" <<
+            op->errorName() << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    } else {
+        setFinished();
+        debug() << "New account" << objectPath() << "built";
+    }
 }
 
 } // Tp
