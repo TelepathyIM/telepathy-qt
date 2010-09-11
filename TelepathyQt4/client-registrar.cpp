@@ -115,44 +115,49 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         const QVariantMap &observerInfo,
         const QDBusMessage &message)
 {
+    // TODO: use factories
+
     debug() << "ObserveChannels: account:" << accountPath.path() <<
         ", connection:" << connectionPath.path();
 
-    AccountPtr account = Account::create(mBus,
+    SharedPtr<InvocationData> invocation(new InvocationData());
+
+    invocation->acc = Account::create(mBus,
             QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             accountPath.path());
 
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
-    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
+    invocation->conn = Connection::create(mBus, connectionBusName,
             connectionPath.path());
 
-    QList<ChannelPtr> channels;
-    ChannelPtr channel;
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        channel = ChannelFactory::create(connection, channelDetails.channel.path(),
+        ChannelPtr channel = ChannelFactory::create(invocation->conn, channelDetails.channel.path(),
                 channelDetails.properties);
-        channels.append(channel);
+        invocation->chans.append(channel);
     }
 
-    ChannelDispatchOperationPtr channelDispatchOperation =
-        ChannelDispatchOperation::create(mBus,
-                dispatchOperationPath.path(), QVariantMap());
+    invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
+            QVariantMap());
 
-    QList<ChannelRequestPtr> channelRequests;
-    ChannelRequestPtr channelRequest;
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
-        channelRequest = ChannelRequest::create(mBus,
+        // TODO: use immutable props from observerInfo[request-properties]
+        ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
                 path.path(), QVariantMap());
-        channelRequests.append(channelRequest);
+        invocation->chanReqs.append(channelRequest);
     }
 
-    MethodInvocationContextPtr<> context =
-        MethodInvocationContextPtr<>(
-                new MethodInvocationContext<>(mBus, message));
+    invocation->ctx = MethodInvocationContextPtr<>(new MethodInvocationContext<>(mBus, message));
 
-    mClient->observeChannels(context, account, connection, channels,
-            channelDispatchOperation, channelRequests, observerInfo);
+    // TODO: push to invocations, with a PendingComposite in readyOp making everything ready
+
+    if (invocation->readyOp == invocation->readyOp /* == TODO: which PendingComposite finished */) {
+        // API/ABI break TODO: make observerInfo a friendly high-level variantmap wrapper similar to
+        // Connection::ErrorDetails
+        mClient->observeChannels(invocation->ctx, invocation->acc, invocation->conn,
+                invocation->chans, invocation->dispatchOp, invocation->chanReqs,
+                invocation->observerInfo);
+    }
 }
 
 ClientApproverAdaptor::ClientApproverAdaptor(ClientRegistrar *registrar,

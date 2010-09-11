@@ -119,6 +119,22 @@ public Q_SLOTS: // Methods
             const QDBusMessage &message);
 
 private:
+    struct InvocationData : RefCounted
+    {
+        InvocationData() : readyOp(0) {}
+
+        PendingReady *readyOp;
+
+        MethodInvocationContextPtr<> ctx;
+        AccountPtr acc;
+        ConnectionPtr conn;
+        QList<ChannelPtr> chans;
+        ChannelDispatchOperationPtr dispatchOp;
+        QList<ChannelRequestPtr> chanReqs;
+        QVariantMap observerInfo;
+    };
+    QLinkedList<SharedPtr<InvocationData> > invocations;
+
     ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
     AbstractClientObserver *mClient;
