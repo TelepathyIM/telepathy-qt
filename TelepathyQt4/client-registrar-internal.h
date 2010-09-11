@@ -118,12 +118,16 @@ public Q_SLOTS: // Methods
             const QVariantMap &observerInfo,
             const QDBusMessage &message);
 
+private Q_SLOTS:
+    void onReadyOpFinished(Tp::PendingOperation *);
+
 private:
     struct InvocationData : RefCounted
     {
         InvocationData() : readyOp(0) {}
 
-        PendingReady *readyOp;
+        PendingOperation *readyOp;
+        QString error, message;
 
         MethodInvocationContextPtr<> ctx;
         AccountPtr acc;

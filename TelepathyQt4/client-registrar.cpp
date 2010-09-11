@@ -35,6 +35,7 @@
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/MethodInvocationContext>
+#include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
 
 namespace Tp
@@ -125,41 +126,97 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
 
     SharedPtr<InvocationData> invocation(new InvocationData());
 
+    QList<PendingOperation *> readyOps;
+
     PendingReady *accReady = accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
             accountPath.path(),
             connFactory,
             chanFactory,
             contactFactory);
     invocation->acc = AccountPtr::dynamicCast(accReady->proxy());
+    readyOps.append(accReady);
 
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
     PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(),
             chanFactory, contactFactory);
     invocation->conn = ConnectionPtr::dynamicCast(connReady->proxy());
+    readyOps.append(connReady);
 
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
         PendingReady *chanReady = chanFactory->proxy(invocation->conn,
                 channelDetails.channel.path(), channelDetails.properties);
         ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->proxy());
         invocation->chans.append(channel);
+        readyOps.append(chanReady);
     }
 
-    invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
-            QVariantMap());
+    // Yes, we don't give the choice of making CDO and CR ready or not - however, readifying them is
+    // 0-1 D-Bus calls each, for CR mostly 0 - and their constructors start making them ready
+    // automatically, so we wouldn't save any D-Bus traffic anyway
+
+    if (!dispatchOperationPath.path().isEmpty() && dispatchOperationPath.path() != QLatin1String("/")) {
+        invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
+                QVariantMap());
+        readyOps.append(invocation->dispatchOp->becomeReady());
+    }
 
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
         // TODO: use immutable props from observerInfo[request-properties]
         ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
                 path.path(), QVariantMap());
         invocation->chanReqs.append(channelRequest);
+        readyOps.append(channelRequest->becomeReady());
     }
 
     invocation->ctx = MethodInvocationContextPtr<>(new MethodInvocationContext<>(mBus, message));
 
-    // TODO: push to invocations, with a PendingComposite in readyOp making everything ready
+    invocation->readyOp = new PendingComposite(readyOps, this);
+    connect(invocation->readyOp,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onReadyOpFinished(Tp::PendingOperation*)));
 
-    if (invocation->readyOp == invocation->readyOp /* == TODO: which PendingComposite finished */) {
+    invocations.append(invocation);
+
+    debug() << "Preparing proxies for ObserveChannels of" << channelDetailsList.size() << "channels"
+        << "for client" << mClient;
+}
+
+void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
+    Q_ASSERT(!invocations.isEmpty());
+    Q_ASSERT(op->isFinished());
+
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = invocations.begin();
+            i != invocations.end(); ++i) {
+        if ((*i)->readyOp != op) {
+            continue;
+        }
+
+        (*i)->readyOp = 0;
+
+        if (op->isError()) {
+            warning() << "Preparing proxies for ObserveChannels failed with" << op->errorName()
+                << op->errorMessage();
+            (*i)->error = op->errorName();
+            (*i)->message = op->errorMessage();
+        }
+
+        break;
+    }
+
+    while (!invocations.isEmpty() && !invocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = invocations.takeFirst();
+
+        if (!invocation->error.isEmpty()) {
+            // We guarantee that the proxies were ready - so we can't invoke the client if they
+            // weren't made ready successfully. Fix the introspection code if this happens :)
+            invocation->ctx->setFinishedWithError(invocation->error, invocation->message);
+            continue;
+        }
+
+        debug() << "Invoking application observeChannels with" << invocation->chans.size()
+            << "channels on" << mClient;
+
         // API/ABI break TODO: make observerInfo a friendly high-level variantmap wrapper similar to
         // Connection::ErrorDetails
         mClient->observeChannels(invocation->ctx, invocation->acc, invocation->conn,
