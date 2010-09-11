@@ -344,12 +344,18 @@ void TestClientFactories::initTestCase()
     initTestCaseImpl();
 
     g_type_init();
-    g_set_prgname("client-client");
+    g_set_prgname("client-factories");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    mAM = AccountManager::create();
-    QVERIFY(connect(mAM->becomeReady(),
+    QDBusConnection bus = QDBusConnection::sessionBus();
+
+    mAM = AccountManager::create(AccountFactory::create(bus, Account::FeatureCore),
+            ConnectionFactory::create(bus,
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+    PendingReady *amReadyOp = mAM->becomeReady();
+    QVERIFY(amReadyOp != NULL);
+    QVERIFY(connect(amReadyOp,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
@@ -392,12 +398,13 @@ void TestClientFactories::initTestCase()
     g_free(name);
     g_free(connPath);
 
-    mConn = Connection::create(mConnName, mConnPath);
+    mConn = ConnectionPtr::dynamicCast(mAccount->connectionFactory()->proxy(mConnName, mConnPath,
+                ChannelFactory::create(bus), ContactFactory::create())->proxy());
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->requestConnect();
-
-    QVERIFY(connect(mConn->requestConnect(),
+    PendingReady *mConnReady = mConn->requestConnect();
+    QVERIFY(mConnReady != NULL);
+    QVERIFY(connect(mConnReady,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -431,13 +438,7 @@ void TestClientFactories::initTestCase()
 
     tp_handle_unref(mContactRepo, handle);
 
-    QDBusConnection bus = QDBusConnection::sessionBus();
-
-    mClientRegistrar = ClientRegistrar::create(AccountFactory::create(bus, Account::FeatureCore),
-            ConnectionFactory::create(bus,
-                Connection::FeatureCore | Connection::FeatureSimplePresence),
-            ChannelFactory::create(bus),
-            ContactFactory::create());
+    mClientRegistrar = ClientRegistrar::create(mAM);
 
     mChannelRequestBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
     mChannelRequestPath = QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/Request1");
@@ -462,19 +463,23 @@ void TestClientFactories::testFactoryAccess()
 {
     AccountFactoryConstPtr accFact = mClientRegistrar->accountFactory();
     QVERIFY(!accFact.isNull());
+    QCOMPARE(accFact.data(), mAM->accountFactory().data());
 
     QCOMPARE(accFact->features(), Features(Account::FeatureCore));
 
     ConnectionFactoryConstPtr connFact = mClientRegistrar->connectionFactory();
     QVERIFY(!connFact.isNull());
+    QCOMPARE(connFact.data(), mAM->connectionFactory().data());
 
     QCOMPARE(connFact->features(), Connection::FeatureCore | Connection::FeatureSimplePresence);
 
     ChannelFactoryConstPtr chanFact = mClientRegistrar->channelFactory();
     QVERIFY(!chanFact.isNull());
+    QCOMPARE(chanFact.data(), mAM->channelFactory().data());
 
     ContactFactoryConstPtr contactFact = mClientRegistrar->contactFactory();
     QVERIFY(!contactFact.isNull());
+    QCOMPARE(contactFact.data(), mAM->contactFactory().data());
 }
 
 void TestClientFactories::testRegister()
