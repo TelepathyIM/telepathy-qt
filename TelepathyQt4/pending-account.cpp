@@ -124,12 +124,6 @@ AccountPtr PendingAccount::account() const
         return AccountPtr();
     }
 
-    if (!mPriv->account) {
-        AccountManagerPtr manager(mPriv->manager);
-        mPriv->account = Account::create(manager->dbusConnection(),
-                manager->busName(), mPriv->objectPath.path());
-    }
-
     return mPriv->account;
 }
 
