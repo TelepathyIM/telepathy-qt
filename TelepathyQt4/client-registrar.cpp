@@ -395,6 +395,7 @@ void ClientHandlerRequestsAdaptor::AddRequest(
         const QDBusMessage &message)
 {
     debug() << "AddRequest:" << request.path();
+    message.setDelayedReply(true);
     mBus.send(message.createReply());
     mClient->addRequest(ChannelRequest::create(mBus,
                 request.path(), requestProperties));
@@ -407,6 +408,7 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
 {
     debug() << "RemoveRequest:" << request.path() << "-" << errorName
         << "-" << errorMessage;
+    message.setDelayedReply(true);
     mBus.send(message.createReply());
     mClient->removeRequest(ChannelRequest::create(mBus,
                 request.path(), QVariantMap()), errorName, errorMessage);
