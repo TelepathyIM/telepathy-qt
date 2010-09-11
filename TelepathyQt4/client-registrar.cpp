@@ -161,6 +161,8 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         readyOps.append(invocation->dispatchOp->becomeReady());
     }
 
+    invocation->observerInfo = observerInfo;
+
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
         // TODO: use immutable props from observerInfo[request-properties]
         ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
