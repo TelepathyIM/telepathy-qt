@@ -144,9 +144,9 @@ AccountPtr PendingAccount::account() const
 QString PendingAccount::objectPath() const
 {
     if (!isFinished()) {
-        warning() << "PendingAccount::account called before finished";
+        warning() << "PendingAccount::objectPath() called before finished";
     } else if (!isValid()) {
-        warning() << "PendingAccount::account called when not valid";
+        warning() << "PendingAccount::objectPath() called when not valid";
     }
 
     return mPriv->objectPath.path();
