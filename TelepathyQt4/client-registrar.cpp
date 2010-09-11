@@ -161,12 +161,18 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         readyOps.append(invocation->dispatchOp->becomeReady());
     }
 
+    // TODO make observer info nicer to use...
     invocation->observerInfo = observerInfo;
 
+    /*
+     * Uncomment this and the below one when we have spec 0.19.12
+     *
+     * ObjectImmutablePropertiesMap propMap = qdbus_cast<ObjectImmutablePropertiesMap>(
+     * observerInfo.value(QLatin1String("request-properties")));
+     */
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
-        // TODO: use immutable props from observerInfo[request-properties]
         ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap());
+                path.path(), QVariantMap() /* propMap.value(path.path()) */);
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }
