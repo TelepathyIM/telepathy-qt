@@ -115,25 +115,33 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         const QVariantMap &observerInfo,
         const QDBusMessage &message)
 {
-    // TODO: use factories
-
     debug() << "ObserveChannels: account:" << accountPath.path() <<
         ", connection:" << connectionPath.path();
 
+    AccountFactoryConstPtr accFactory = mRegistrar->accountFactory();
+    ConnectionFactoryConstPtr connFactory = mRegistrar->connectionFactory();
+    ChannelFactoryConstPtr chanFactory = mRegistrar->channelFactory();
+    ContactFactoryConstPtr contactFactory = mRegistrar->contactFactory();
+
     SharedPtr<InvocationData> invocation(new InvocationData());
 
-    invocation->acc = Account::create(mBus,
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            accountPath.path());
+    PendingReady *accReady = accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+            accountPath.path(),
+            connFactory,
+            chanFactory,
+            contactFactory);
+    invocation->acc = AccountPtr::dynamicCast(accReady->proxy());
 
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
-    invocation->conn = Connection::create(mBus, connectionBusName,
-            connectionPath.path());
+    PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(),
+            chanFactory, contactFactory);
+    invocation->conn = ConnectionPtr::dynamicCast(connReady->proxy());
 
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        ChannelPtr channel = ChannelFactory::create(invocation->conn, channelDetails.channel.path(),
-                channelDetails.properties);
+        PendingReady *chanReady = chanFactory->proxy(invocation->conn,
+                channelDetails.channel.path(), channelDetails.properties);
+        ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->proxy());
         invocation->chans.append(channel);
     }
 
