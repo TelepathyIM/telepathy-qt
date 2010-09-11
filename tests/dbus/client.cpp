@@ -578,7 +578,7 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     QCOMPARE(client->mObserveChannelsAccount->objectPath(), mAccount->objectPath());
     QCOMPARE(client->mObserveChannelsConnection->objectPath(), mConn->objectPath());
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
-    QCOMPARE(client->mObserveChannelsDispatchOperation->objectPath(), QString(QLatin1String("/")));
+    QVERIFY(client->mObserveChannelsDispatchOperation.isNull());
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
 }
 
