@@ -29,6 +29,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelDispatchOperation>
 #include <TelepathyQt4/ChannelRequest>
@@ -338,12 +339,32 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
 
 struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
 {
-    Private(const QDBusConnection &bus)
-        : bus(bus)
+    Private(const QDBusConnection &bus, const AccountFactoryConstPtr &accFactory,
+            const ConnectionFactoryConstPtr &connFactory, const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory)
+        : bus(bus), accFactory(accFactory), connFactory(connFactory), chanFactory(chanFactory),
+        contactFactory(contactFactory)
     {
+        if (accFactory->dbusConnection().name() != bus.name()) {
+            warning() << "  The D-Bus connection in the account factory is not the proxy connection";
+        }
+
+        if (connFactory->dbusConnection().name() != bus.name()) {
+            warning() << "  The D-Bus connection in the connection factory is not the proxy connection";
+        }
+
+        if (chanFactory->dbusConnection().name() != bus.name()) {
+            warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
+        }
     }
 
     QDBusConnection bus;
+
+    AccountFactoryConstPtr accFactory;
+    ConnectionFactoryConstPtr connFactory;
+    ChannelFactoryConstPtr chanFactory;
+    ContactFactoryConstPtr contactFactory;
+
     QHash<AbstractClientPtr, QString> clients;
     QHash<AbstractClientPtr, QObject*> clientObjects;
     QSet<QString> services;
@@ -409,10 +430,78 @@ QHash<QPair<QString, QString>, ClientRegistrar*> ClientRegistrar::registrarForCo
  * successive calls with the same \a bus, unless the instance
  * had already been destroyed, in which case a new instance will be returned.
  *
+ * The resulting instance will use factories from a previous ClientRegistrar with the same \a bus,
+ * if any, otherwise factories returning stock TpQt4 subclasses as approriate, with no features
+ * prepared. This gives fully backwards compatible behavior for this function if the factory
+ * variants are never used.
+ *
+ * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
+ * registration checks have always been implemented incorrectly anyway. We need this for the account
+ * friendly channel request and handle API at least.
+ *
  * \param bus QDBusConnection to use.
  * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
  */
 ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
+{
+    return create(bus, AccountFactory::create(bus, Features()), ConnectionFactory::create(bus),
+            ChannelFactory::create(bus), ContactFactory::create());
+}
+
+/**
+ * Create a new client registrar object using QDBusConnection::sessionBus() and the given factories.
+ *
+ * ClientRegistrar instances are unique per D-Bus connection. The returned ClientRegistrarPtr will
+ * point to the same ClientRegistrar instance on successive calls, unless the instance for
+ * QDBusConnection::sessionBus() had already been destroyed, in which case a new instance will be
+ * returned. Therefore, the factory settings have no effect if there already is a ClientRegistrar
+ * for QDBusConnection::sessionBus().
+ *
+ * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
+ * registration checks have always been implemented incorrectly anyway. We need this for the account
+ * friendly channel request and handle API at least.
+ *
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ */
+ClientRegistrarPtr ClientRegistrar::create(
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory)
+{
+    return create(QDBusConnection::sessionBus(), accountFactory, connectionFactory, channelFactory,
+            contactFactory);
+}
+
+/**
+ * Create a new client registrar object using the given \a bus and the given factories.
+ *
+ * ClientRegistrar instances are unique per D-Bus connection. The returned
+ * ClientRegistrarPtr will point to the same ClientRegistrar instance on
+ * successive calls with the same \a bus, unless the instance
+ * had already been destroyed, in which case a new instance will be returned. Therefore, the factory
+ * settings have no effect if there already is a ClientRegistrar for the given \a bus.
+ *
+ * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
+ * registration checks have always been implemented incorrectly anyway. We need this for the account
+ * friendly channel request and handle API at least.
+ *
+ * \param bus QDBusConnection to use.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ */
+ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory)
 {
     QPair<QString, QString> busId =
         qMakePair(bus.name(), bus.baseService());
@@ -420,16 +509,72 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
         return ClientRegistrarPtr(
                 registrarForConnection.value(busId));
     }
-    return ClientRegistrarPtr(new ClientRegistrar(bus));
+    return ClientRegistrarPtr(new ClientRegistrar(bus, accountFactory, connectionFactory,
+                channelFactory, contactFactory));
+}
+
+/**
+ * Create a new client registrar object using the bus and factories of the given Account \a manager.
+ *
+ * ClientRegistrar instances are unique per D-Bus connection. The returned ClientRegistrarPtr will
+ * point to the same ClientRegistrar instance on successive calls with the same bus, unless the
+ * instance had already been destroyed, in which case a new instance will be returned. Therefore,
+ * the factory settings have no effect if there already is a ClientRegistrar for the bus of the
+ * given \a manager.
+ *
+ * Using this create() method will enable (like any other way of passing the same factories to an AM
+ * and a registrar) getting the same Account/Connection etc. proxy instances from both
+ * AccountManager and AbstractClient implementations.
+ *
+ * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
+ * registration checks have always been implemented incorrectly anyway. We need this for the account
+ * friendly channel request and handle API at least.
+ *
+ * \param manager The AccountManager the bus and factories of which should be used.
+ * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ */
+ClientRegistrarPtr ClientRegistrar::create(const AccountManagerPtr &manager)
+{
+    if (!manager) {
+        return ClientRegistrarPtr();
+    }
+
+    return create(manager->dbusConnection(), manager->accountFactory(),
+            manager->connectionFactory(), manager->channelFactory(), manager->contactFactory());
 }
 
 /**
  * Construct a new client registrar object using the given \a bus.
  *
+ * The resulting registrar will use factories constructing stock TpQt4 classes with no features
+ * prepared. This is equivalent to the old pre-factory behavior of ClientRegistrar.
+ *
  * \param bus QDBusConnection to use.
  */
 ClientRegistrar::ClientRegistrar(const QDBusConnection &bus)
-    : mPriv(new Private(bus))
+    : mPriv(new Private(bus, AccountFactory::create(bus, Features()),
+                ConnectionFactory::create(bus),   ChannelFactory::create(bus),
+                ContactFactory::create()))
+{
+    registrarForConnection.insert(qMakePair(bus.name(),
+                bus.baseService()), this);
+}
+
+/**
+ * Construct a new client registrar object using the given \a bus and the given factories.
+ *
+ * \param bus QDBusConnection to use.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ */
+ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
+        const AccountFactoryConstPtr &accountFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+    : mPriv(new Private(bus, accountFactory, connectionFactory, channelFactory, contactFactory))
 {
     registrarForConnection.insert(qMakePair(bus.name(),
                 bus.baseService()), this);
@@ -454,6 +599,66 @@ ClientRegistrar::~ClientRegistrar()
 QDBusConnection ClientRegistrar::dbusConnection() const
 {
     return mPriv->bus;
+}
+
+/**
+ * Get the account factory used by this client registrar.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the registrar would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+AccountFactoryConstPtr ClientRegistrar::accountFactory() const
+{
+    return mPriv->accFactory;
+}
+
+/**
+ * Get the connection factory used by this client registrar.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the registrar would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ConnectionFactoryConstPtr ClientRegistrar::connectionFactory() const
+{
+    return mPriv->connFactory;
+}
+
+/**
+ * Get the channel factory used by this client registrar.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the registrar would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ChannelFactoryConstPtr ClientRegistrar::channelFactory() const
+{
+    return mPriv->chanFactory;
+}
+
+/**
+ * Get the contact factory used by this client registrar.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the registrar would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ContactFactoryConstPtr ClientRegistrar::contactFactory() const
+{
+    return mPriv->contactFactory;
 }
 
 /**
