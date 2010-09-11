@@ -81,9 +81,10 @@ private:
     void *mFinishedCbData;
 };
 
-ClientAdaptor::ClientAdaptor(const QStringList &interfaces,
+ClientAdaptor::ClientAdaptor(ClientRegistrar *registrar, const QStringList &interfaces,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
+      mRegistrar(registrar),
       mInterfaces(interfaces)
 {
 }
@@ -92,11 +93,12 @@ ClientAdaptor::~ClientAdaptor()
 {
 }
 
-ClientObserverAdaptor::ClientObserverAdaptor(const QDBusConnection &bus,
+ClientObserverAdaptor::ClientObserverAdaptor(ClientRegistrar *registrar,
         AbstractClientObserver *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mBus(bus),
+      mRegistrar(registrar),
+      mBus(registrar->dbusConnection()),
       mClient(client)
 {
 }
@@ -153,11 +155,12 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
             channelDispatchOperation, channelRequests, observerInfo);
 }
 
-ClientApproverAdaptor::ClientApproverAdaptor(const QDBusConnection &bus,
+ClientApproverAdaptor::ClientApproverAdaptor(ClientRegistrar *registrar,
         AbstractClientApprover *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mBus(bus),
+      mRegistrar(registrar),
+      mBus(registrar->dbusConnection()),
       mClient(client)
 {
 }
@@ -202,11 +205,12 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
 
 QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
 
-ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
+ClientHandlerAdaptor::ClientHandlerAdaptor(ClientRegistrar *registrar,
         AbstractClientHandler *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mBus(bus),
+      mRegistrar(registrar),
+      mBus(registrar->dbusConnection()),
       mClient(client)
 {
     QList<ClientHandlerAdaptor *> &handlerAdaptors =
@@ -301,11 +305,12 @@ void ClientHandlerAdaptor::onChannelInvalidated(DBusProxy *proxy)
 }
 
 ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
-        const QDBusConnection &bus,
+        ClientRegistrar *registrar,
         AbstractClientHandler *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mBus(bus),
+      mRegistrar(registrar),
+      mBus(registrar->dbusConnection()),
       mClient(client)
 {
 }
@@ -737,12 +742,12 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         dynamic_cast<AbstractClientHandler*>(client.data());
     if (handler) {
         // export o.f.T.Client.Handler
-        new ClientHandlerAdaptor(mPriv->bus, handler, object);
+        new ClientHandlerAdaptor(this, handler, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Handler"));
         if (handler->wantsRequestNotification()) {
             // export o.f.T.Client.Interface.Requests
-            new ClientHandlerRequestsAdaptor(mPriv->bus, handler, object);
+            new ClientHandlerRequestsAdaptor(this, handler, object);
             interfaces.append(
                     QLatin1String(
                         "org.freedesktop.Telepathy.Client.Interface.Requests"));
@@ -753,7 +758,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         dynamic_cast<AbstractClientObserver*>(client.data());
     if (observer) {
         // export o.f.T.Client.Observer
-        new ClientObserverAdaptor(mPriv->bus, observer, object);
+        new ClientObserverAdaptor(this, observer, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Observer"));
     }
@@ -762,7 +767,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         dynamic_cast<AbstractClientApprover*>(client.data());
     if (approver) {
         // export o.f.T.Client.Approver
-        new ClientApproverAdaptor(mPriv->bus, approver, object);
+        new ClientApproverAdaptor(this, approver, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Approver"));
     }
@@ -775,7 +780,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     }
 
     // export o.f.T.Client interface
-    new ClientAdaptor(interfaces, object);
+    new ClientAdaptor(this, interfaces, object);
 
     QString objectPath = QString(QLatin1String("/%1")).arg(busName);
     objectPath.replace(QLatin1String("."), QLatin1String("/"));
