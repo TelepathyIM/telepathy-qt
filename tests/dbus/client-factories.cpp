@@ -610,10 +610,21 @@ void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &cli
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mObserveChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client->mObserveChannelsAccount.data(), mAccount.data());
+    QVERIFY(client->mObserveChannelsAccount->isReady(Account::FeatureCore));
+
     QCOMPARE(client->mObserveChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client->mObserveChannelsConnection.data(), mConn.data());
+    QVERIFY(client->mObserveChannelsConnection->isReady(
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+
+    QCOMPARE(client->mObserveChannelsChannels.size(), 1);
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
     QVERIFY(client->mObserveChannelsDispatchOperation.isNull());
+
+    QCOMPARE(client->mObserveChannelsRequestsSatisfied.size(), 1);
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QVERIFY(client->mObserveChannelsRequestsSatisfied.first()->isReady());
 }
 
 void TestClientFactories::testObserveChannels()
