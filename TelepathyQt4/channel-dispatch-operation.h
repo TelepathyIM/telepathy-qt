@@ -58,6 +58,23 @@ class TELEPATHY_QT4_EXPORT ChannelDispatchOperation : public StatefulDBusProxy,
 public:
     static const Feature FeatureCore;
 
+    /* API/ABI break FIXME:
+     * This class is currently totally stupid. ClientHandlerAdaptor constructs the same channels as
+     * channels() will have based on the AddDispatchOperation parameters, but this class will
+     * happily go on and construct its own Channel instances after introspecting the CDO object...
+     *
+     * The application addDispatchOperation method is then called with the adaptor-constructed
+     * channels as one parameter and an instance of this class as the following parameter, and
+     * consequently the application gets two channel lists with the same remote channel objects, but
+     * with different proxies for them. How about that?
+     *
+     * The create() methods should probably take the initial channel list in addition to the
+     * immutable properties and avoid double-constructing any channels.
+     *
+     * On my personal top XXX of "why think about the code you're writing a bit", this goes quite
+     * high.
+     */
+
     static ChannelDispatchOperationPtr create(const QString &objectPath,
             const QVariantMap &immutableProperties);
     static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
