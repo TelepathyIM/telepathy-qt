@@ -58,10 +58,17 @@ class TELEPATHY_QT4_EXPORT ChannelRequest : public StatefulDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    static ChannelRequestPtr create(const QString &objectPath,
+    TELEPATHY_QT4_DEPRECATED static ChannelRequestPtr create(const QString &objectPath,
             const QVariantMap &immutableProperties);
-    static ChannelRequestPtr create(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED static ChannelRequestPtr create(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
+
+    static ChannelRequestPtr create(const QDBusConnection &bus,
+            const QString &objectPath, const QVariantMap &immutableProperties,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     virtual ~ChannelRequest();
 
@@ -85,8 +92,15 @@ Q_SIGNALS:
     void succeeded();
 
 protected:
-    ChannelRequest(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED ChannelRequest(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
+
+    ChannelRequest(const QDBusConnection &bus,
+            const QString &objectPath, const QVariantMap &immutableProperties,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::ChannelRequestInterface *baseInterface() const;
 

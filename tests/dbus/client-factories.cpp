@@ -628,6 +628,8 @@ void TestClientFactories::testRequests()
     }
     QCOMPARE(client->mAddRequestRequest->objectPath(),
              mChannelRequestPath);
+//    QCOMPARE(client->mAddRequestRequest->account().data(),
+//             mAccount.data());
 
     connect(client,
             SIGNAL(requestRemoved(const Tp::ChannelRequestPtr &,
@@ -642,6 +644,8 @@ void TestClientFactories::testRequests()
     }
     QCOMPARE(client->mRemoveRequestRequest->objectPath(),
              mChannelRequestPath);
+//    QCOMPARE(client->mRemoveRequestRequest->account().data(),
+//             mAccount.data());
     QCOMPARE(client->mRemoveRequestErrorName,
              QString(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)));
     QCOMPARE(client->mRemoveRequestErrorMessage,
@@ -686,6 +690,8 @@ void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &cli
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.size(), 1);
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QVERIFY(client->mObserveChannelsRequestsSatisfied.first()->isReady());
+    QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->account().data(),
+             mAccount.data());
 }
 
 void TestClientFactories::testObserveChannels()
@@ -764,6 +770,8 @@ void TestClientFactories::testHandleChannels()
 
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QVERIFY(client1->mHandleChannelsRequestsSatisfied.first()->isReady());
+    QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->account().data(),
+             mAccount.data());
 
     QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
@@ -801,6 +809,8 @@ void TestClientFactories::testHandleChannels()
 
     QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QVERIFY(client2->mHandleChannelsRequestsSatisfied.first()->isReady());
+    QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->account().data(),
+             mAccount.data());
 
     QCOMPARE(client2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 

@@ -172,7 +172,8 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
      */
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
         ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap() /* propMap.value(path.path()) */);
+                path.path(), QVariantMap() /* propMap.value(path.path()) */,
+                accFactory, connFactory, chanFactory, contactFactory);
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }
@@ -412,7 +413,8 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
      */
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
         ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap() /* propMap.value(path.path()) */);
+                path.path(), QVariantMap() /* propMap.value(path.path()) */,
+                accFactory, connFactory, chanFactory, contactFactory);
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }
@@ -528,7 +530,11 @@ void ClientHandlerRequestsAdaptor::AddRequest(
     message.setDelayedReply(true);
     mBus.send(message.createReply());
     mClient->addRequest(ChannelRequest::create(mBus,
-                request.path(), requestProperties));
+                request.path(), requestProperties,
+                mRegistrar->accountFactory(),
+                mRegistrar->connectionFactory(),
+                mRegistrar->channelFactory(),
+                mRegistrar->contactFactory()));
 }
 
 void ClientHandlerRequestsAdaptor::RemoveRequest(
@@ -541,7 +547,11 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
     message.setDelayedReply(true);
     mBus.send(message.createReply());
     mClient->removeRequest(ChannelRequest::create(mBus,
-                request.path(), QVariantMap()), errorName, errorMessage);
+                request.path(), QVariantMap(),
+                mRegistrar->accountFactory(),
+                mRegistrar->connectionFactory(),
+                mRegistrar->channelFactory(),
+                mRegistrar->contactFactory()), errorName, errorMessage);
 }
 
 struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private

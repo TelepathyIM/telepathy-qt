@@ -28,6 +28,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingVoid>
@@ -48,6 +49,12 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
 
     // Public object
     ChannelRequest *parent;
+
+    // Context
+    AccountFactoryConstPtr accFact;
+    ConnectionFactoryConstPtr connFact;
+    ChannelFactoryConstPtr chanFact;
+    ContactFactoryConstPtr contactFact;
 
     // Instance of generated interface class
     Client::ChannelRequestInterface *baseInterface;
@@ -152,12 +159,22 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 {
     Q_ASSERT(!account);
 
+    PendingReady *readyOp = 0;
+
     if (props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
-        account = Account::create(
-                QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-                accountObjectPath.path());
+        if (!accFact.isNull()) {
+            readyOp = accFact->proxy(
+                    QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME), accountObjectPath.path(),
+                    connFact, chanFact, contactFact);
+            account = AccountPtr::dynamicCast(readyOp->proxy());
+        } else {
+            account = Account::create(
+                    QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+                    accountObjectPath.path());
+            readyOp = account->becomeReady();
+        }
     }
 
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
@@ -173,7 +190,8 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
     readinessHelper->setInterfaces(parent->interfaces());
 
     if (account) {
-        parent->connect(account->becomeReady(),
+        Q_ASSERT(readyOp != 0);
+        parent->connect(readyOp,
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(onAccountReady(Tp::PendingOperation *)));
     } else {
@@ -242,10 +260,75 @@ ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus,
 }
 
 /**
+ * Create a new channel request object using the given \a bus and the given factories.
+ *
+ * \param objectPath The channel request object path.
+ * \param immutableProperties The immutable properties of the channel request.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ */
+ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus, const QString &objectPath,
+        const QVariantMap &immutableProperties,
+        const AccountFactoryConstPtr &accountFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+{
+    return ChannelRequestPtr(new ChannelRequest(bus, objectPath, immutableProperties,
+                accountFactory, connectionFactory, channelFactory, contactFactory));
+}
+
+/**
  * Construct a new channel request object using the given \a bus.
  *
  * \param bus QDBusConnection to use.
  * \param objectPath The channel request object path.
+ * \param immutableProperties The immutable properties of the channel request.
+ * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ */
+ChannelRequest::ChannelRequest(const QDBusConnection &bus,
+        const QString &objectPath, const QVariantMap &immutableProperties,
+        const AccountFactoryConstPtr &accountFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+    : StatefulDBusProxy(bus,
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
+            objectPath),
+      OptionalInterfaceFactory<ChannelRequest>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this, immutableProperties))
+{
+    if (accountFactory->dbusConnection().name() != bus.name()) {
+        warning() << "  The D-Bus connection in the account factory is not the proxy connection";
+    }
+
+    if (connectionFactory->dbusConnection().name() != bus.name()) {
+        warning() << "  The D-Bus connection in the connection factory is not the proxy connection";
+    }
+
+    if (channelFactory->dbusConnection().name() != bus.name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
+    }
+
+    mPriv->accFact = accountFactory;
+    mPriv->connFact = connectionFactory;
+    mPriv->chanFact = channelFactory;
+    mPriv->contactFact = contactFactory;
+}
+
+/**
+ * Construct a new channel request object using the given \a bus and the given factories.
+ *
+ * \param bus QDBusConnection to use.
+ * \param objectPath The channel request object path.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
  * \param immutableProperties The immutable properties of the channel request.
  * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
  */
