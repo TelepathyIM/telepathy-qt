@@ -27,6 +27,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/Account>
 #include <TelepathyQt4/ChannelDispatcher>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/PendingFailure>
@@ -37,13 +38,21 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingChannelRequest::Private
 {
-    Private(const QDBusConnection &dbusConnection)
+    TELEPATHY_QT4_DEPRECATED Private(const QDBusConnection &dbusConnection)
         : dbusConnection(dbusConnection),
           cancelOperation(0)
     {
     }
 
+    Private(const AccountPtr &account)
+        : dbusConnection(account->dbusConnection()),
+          account(account),
+          cancelOperation(0)
+    {
+    }
+
     QDBusConnection dbusConnection;
+    AccountPtr account;
     ChannelRequestPtr channelRequest;
     PendingChannelRequestCancelOperation *cancelOperation;
 };
@@ -122,6 +131,67 @@ PendingChannelRequest::PendingChannelRequest(const QDBusConnection &dbusConnecti
     }
 }
 
+/**
+ * Construct a new PendingChannelRequest object.
+ *
+ * \param dbusConnection QDBusConnection to use.
+ * \param requestedProperties A dictionary containing the desirable properties.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \param create Whether createChannel or ensureChannel should be called.
+ * \param account The account the request was made through.
+ */
+PendingChannelRequest::PendingChannelRequest(
+        const QVariantMap &requestedProperties,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
+        bool create,
+        const AccountPtr &account)
+    : PendingOperation(0),
+      mPriv(new Private(account))
+{
+    QString channelDispatcherObjectPath =
+        QString(QLatin1String("/%1")).arg(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER));
+    channelDispatcherObjectPath.replace(QLatin1String("."), QLatin1String("/"));
+    Client::ChannelDispatcherInterface *channelDispatcherInterface =
+        new Client::ChannelDispatcherInterface(mPriv->dbusConnection,
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
+                channelDispatcherObjectPath,
+                this);
+    QDBusPendingCallWatcher *watcher;
+    if (create) {
+        watcher = new QDBusPendingCallWatcher(
+                channelDispatcherInterface->CreateChannel(
+                    QDBusObjectPath(account->objectPath()),
+                    requestedProperties,
+                    userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+                    preferredHandler), this);
+    }
+    else {
+        watcher = new QDBusPendingCallWatcher(
+                channelDispatcherInterface->EnsureChannel(
+                    QDBusObjectPath(account->objectPath()),
+                    requestedProperties,
+                    userActionTime.isNull() ? 0 : userActionTime.toTime_t(),
+                    preferredHandler), this);
+    }
+
+    // FIXME: This is a Qt bug fixed upstream, should be in the next Qt release.
+    //        We should not need to check watcher->isFinished() here, remove the
+    //        check when a fixed Qt version is released.
+    if (watcher->isFinished()) {
+        onWatcherFinished(watcher);
+    } else {
+        connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SLOT(onWatcherFinished(QDBusPendingCallWatcher *)));
+    }
+}
 /**
  * Class destructor.
  */

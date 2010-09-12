@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Global>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/Types>
 
@@ -63,13 +64,20 @@ private Q_SLOTS:
 private:
     friend class Account;
 
-    PendingChannelRequest(const QDBusConnection &dbusConnection,
+    TELEPATHY_QT4_DEPRECATED PendingChannelRequest(const QDBusConnection &dbusConnection,
             const QString &accountObjectPath,
             const QVariantMap &requestedProperties,
             const QDateTime &userActionTime,
             const QString &preferredHandler,
             bool create,
             QObject *parent);
+
+    PendingChannelRequest(
+            const QVariantMap &requestedProperties,
+            const QDateTime &userActionTime,
+            const QString &preferredHandler,
+            bool create,
+            const AccountPtr &account);
 
     struct Private;
     friend struct Private;
