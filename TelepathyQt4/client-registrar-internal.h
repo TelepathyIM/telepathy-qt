@@ -184,6 +184,23 @@ public Q_SLOTS: // Methods
             const QVariantMap &properties,
             const QDBusMessage &message);
 
+private Q_SLOTS:
+    void onReadyOpFinished(Tp::PendingOperation *);
+
+private:
+    struct InvocationData : RefCounted
+    {
+        InvocationData() : readyOp(0) {}
+
+        PendingOperation *readyOp;
+        QString error, message;
+
+        MethodInvocationContextPtr<> ctx;
+        QList<ChannelPtr> chans;
+        ChannelDispatchOperationPtr dispatchOp;
+    };
+    QLinkedList<SharedPtr<InvocationData> > invocations;
+
 private:
     ClientRegistrar *mRegistrar;
     QDBusConnection mBus;

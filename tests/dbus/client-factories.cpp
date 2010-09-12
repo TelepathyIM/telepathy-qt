@@ -720,7 +720,13 @@ void TestClientFactories::testAddDispatchOperation()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mAddDispatchOperationChannels.first()->objectPath(), mText1ChanPath);
+
+    QCOMPARE(client->mAddDispatchOperationChannels.first()->connection().data(), mConn.data());
+    QVERIFY(client->mAddDispatchOperationChannels.first()->connection()->isReady(
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), mCDOPath);
+    QVERIFY(client->mAddDispatchOperationDispatchOperation->isReady());
 }
 
 void TestClientFactories::testHandleChannels()

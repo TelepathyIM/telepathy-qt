@@ -252,33 +252,85 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
         const QVariantMap &properties,
         const QDBusMessage &message)
 {
+    ConnectionFactoryConstPtr connFactory = mRegistrar->connectionFactory();
+    ChannelFactoryConstPtr chanFactory = mRegistrar->channelFactory();
+    ContactFactoryConstPtr contactFactory = mRegistrar->contactFactory();
+
+    QList<PendingOperation *> readyOps;
+
     QDBusObjectPath connectionPath = qdbus_cast<QDBusObjectPath>(
             properties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection")));
     debug() << "addDispatchOperation: connection:" << connectionPath.path();
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
-    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
-            connectionPath.path());
+    PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(), chanFactory,
+                contactFactory);
+    ConnectionPtr connection = ConnectionPtr::dynamicCast(connReady->proxy());
+    readyOps.append(connReady);
 
-    QList<ChannelPtr> channels;
-    ChannelPtr channel;
+    SharedPtr<InvocationData> invocation(new InvocationData);
+
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        channel = Channel::create(connection, channelDetails.channel.path(),
+        PendingReady *chanReady = chanFactory->proxy(connection, channelDetails.channel.path(),
                 channelDetails.properties);
-        channels.append(channel);
+        invocation->chans.append(ChannelPtr::dynamicCast(chanReady->proxy()));
+        readyOps.append(chanReady);
     }
 
-    ChannelDispatchOperationPtr channelDispatchOperation =
-        ChannelDispatchOperation::create(dispatchOperationPath.path(),
-                properties);
+    invocation->dispatchOp = ChannelDispatchOperation::create(dispatchOperationPath.path(),
+            properties);
+    readyOps.append(invocation->dispatchOp->becomeReady());
 
-    MethodInvocationContextPtr<> context =
-        MethodInvocationContextPtr<>(
-                new MethodInvocationContext<>(mBus, message));
+    invocation->ctx = MethodInvocationContextPtr<>(new MethodInvocationContext<>(mBus, message));
 
-    mClient->addDispatchOperation(context, channels,
-            channelDispatchOperation);
+    invocation->readyOp = new PendingComposite(readyOps, this);
+    connect(invocation->readyOp,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onReadyOpFinished(Tp::PendingOperation*)));
+
+    invocations.append(invocation);
+}
+
+void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
+    Q_ASSERT(!invocations.isEmpty());
+    Q_ASSERT(op->isFinished());
+
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = invocations.begin();
+            i != invocations.end(); ++i) {
+        if ((*i)->readyOp != op) {
+            continue;
+        }
+
+        (*i)->readyOp = 0;
+
+        if (op->isError()) {
+            warning() << "Preparing proxies for AddDispatchOperation failed with" << op->errorName()
+                << op->errorMessage();
+            (*i)->error = op->errorName();
+            (*i)->message = op->errorMessage();
+        }
+
+        break;
+    }
+
+    while (!invocations.isEmpty() && !invocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = invocations.takeFirst();
+
+        if (!invocation->error.isEmpty()) {
+            // We guarantee that the proxies were ready - so we can't invoke the client if they
+            // weren't made ready successfully. Fix the introspection code if this happens :)
+            invocation->ctx->setFinishedWithError(invocation->error, invocation->message);
+            continue;
+        }
+
+        debug() << "Invoking application addDispatchOperation with CDO"
+            << invocation->dispatchOp->objectPath() << "on" << mClient;
+
+        // API/ABI break FIXME: Don't pass the same channels as the channels arg and (separately
+        // constructed) in dispatchOp->channels() !!!
+        mClient->addDispatchOperation(invocation->ctx, invocation->chans, invocation->dispatchOp);
+    }
 }
 
 QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
