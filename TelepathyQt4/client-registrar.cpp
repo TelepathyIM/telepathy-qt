@@ -370,45 +370,115 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
     debug() << "HandleChannels: account:" << accountPath.path() <<
         ", connection:" << connectionPath.path();
 
-    AccountPtr account = Account::create(mBus,
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            accountPath.path());
+    AccountFactoryConstPtr accFactory = mRegistrar->accountFactory();
+    ConnectionFactoryConstPtr connFactory = mRegistrar->connectionFactory();
+    ChannelFactoryConstPtr chanFactory = mRegistrar->channelFactory();
+    ContactFactoryConstPtr contactFactory = mRegistrar->contactFactory();
+
+    SharedPtr<InvocationData> invocation(new InvocationData());
+    QList<PendingOperation *> readyOps;
+
+    PendingReady *accReady = accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+            accountPath.path(),
+            connFactory,
+            chanFactory,
+            contactFactory);
+    invocation->acc = AccountPtr::dynamicCast(accReady->proxy());
+    readyOps.append(accReady);
 
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
-    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
-            connectionPath.path());
+    PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(),
+            chanFactory, contactFactory);
+    invocation->conn = ConnectionPtr::dynamicCast(connReady->proxy());
+    readyOps.append(connReady);
 
-    QList<ChannelPtr> channels;
-    ChannelPtr channel;
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        channel = ChannelFactory::create(connection, channelDetails.channel.path(),
-                channelDetails.properties);
-        channels.append(channel);
+        PendingReady *chanReady = chanFactory->proxy(invocation->conn,
+                channelDetails.channel.path(), channelDetails.properties);
+        ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->proxy());
+        invocation->chans.append(channel);
+        readyOps.append(chanReady);
     }
 
-    QList<ChannelRequestPtr> channelRequests;
-    ChannelRequestPtr channelRequest;
+    // API/ABI break TODO: make handler info nicer to use
+    invocation->handlerInfo = handlerInfo;
+
+    /*
+     * Uncomment this and the below one when we have spec 0.19.12
+     *
+     * ObjectImmutablePropertiesMap propMap = qdbus_cast<ObjectImmutablePropertiesMap>(
+     * handlerInfo.value(QLatin1String("request-properties")));
+     */
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
-        channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap());
-        channelRequests.append(channelRequest);
+        ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
+                path.path(), QVariantMap() /* propMap.value(path.path()) */);
+        invocation->chanReqs.append(channelRequest);
+        readyOps.append(channelRequest->becomeReady());
     }
 
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    QDateTime userActionTime;
     if (userActionTime_t != 0) {
-        userActionTime = QDateTime::fromTime_t((uint) userActionTime_t);
+        invocation->time = QDateTime::fromTime_t((uint) userActionTime_t);
     }
 
-    MethodInvocationContextPtr<> context =
-        HandleChannelsInvocationContext::create(mBus, message,
-                channels,
-                (HandleChannelsInvocationContext::FinishedCb) &ClientHandlerAdaptor::onContextFinished,
+    invocation->ctx = HandleChannelsInvocationContext::create(mBus, message,
+                invocation->chans,
+                reinterpret_cast<HandleChannelsInvocationContext::FinishedCb>(
+                    &ClientHandlerAdaptor::onContextFinished),
                 this);
 
-    mClient->handleChannels(context, account, connection, channels,
-            channelRequests, userActionTime, handlerInfo);
+    invocation->readyOp = new PendingComposite(readyOps, this);
+    connect(invocation->readyOp,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onReadyOpFinished(Tp::PendingOperation*)));
+
+    invocations.append(invocation);
+
+    debug() << "Preparing proxies for HandleChannels of" << channelDetailsList.size() << "channels"
+        << "for client" << mClient;
+}
+
+void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
+    Q_ASSERT(!invocations.isEmpty());
+    Q_ASSERT(op->isFinished());
+
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = invocations.begin();
+            i != invocations.end(); ++i) {
+        if ((*i)->readyOp != op) {
+            continue;
+        }
+
+        (*i)->readyOp = 0;
+
+        if (op->isError()) {
+            warning() << "Preparing proxies for HandleChannels failed with" << op->errorName()
+                << op->errorMessage();
+            (*i)->error = op->errorName();
+            (*i)->message = op->errorMessage();
+        }
+
+        break;
+    }
+
+    while (!invocations.isEmpty() && !invocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = invocations.takeFirst();
+
+        if (!invocation->error.isEmpty()) {
+            // We guarantee that the proxies were ready - so we can't invoke the client if they
+            // weren't made ready successfully. Fix the introspection code if this happens :)
+            invocation->ctx->setFinishedWithError(invocation->error, invocation->message);
+            continue;
+        }
+
+        debug() << "Invoking application observeChannels with" << invocation->chans.size()
+            << "channels on" << mClient;
+
+        // API/ABI break TODO: make handlerInfo a friendly high-level variantmap wrapper similar to
+        // Connection::ErrorDetails
+        mClient->handleChannels(invocation->ctx, invocation->acc, invocation->conn,
+                invocation->chans, invocation->chanReqs, invocation->time, invocation->handlerInfo);
+    }
 }
 
 void ClientHandlerAdaptor::onContextFinished(

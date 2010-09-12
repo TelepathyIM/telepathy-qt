@@ -752,9 +752,19 @@ void TestClientFactories::testHandleChannels()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client1->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client1->mHandleChannelsAccount.data(), mAccount.data());
+    QVERIFY(client1->mHandleChannelsAccount->isReady());
+
     QCOMPARE(client1->mHandleChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client1->mHandleChannelsConnection.data(), mConn.data());
+    QVERIFY(client1->mHandleChannelsConnection->isReady(
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+
     QCOMPARE(client1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
+
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QVERIFY(client1->mHandleChannelsRequestsSatisfied.first()->isReady());
+
     QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
     Tp::ObjectPathList handledChannels = handler1Iface->HandledChannels();
@@ -779,9 +789,19 @@ void TestClientFactories::testHandleChannels()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client2->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client2->mHandleChannelsAccount.data(), mAccount.data());
+    QVERIFY(client2->mHandleChannelsAccount->isReady());
+
     QCOMPARE(client2->mHandleChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client2->mHandleChannelsConnection.data(), mConn.data());
+    QVERIFY(client2->mHandleChannelsConnection->isReady(
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+
     QCOMPARE(client2->mHandleChannelsChannels.first()->objectPath(), mText2ChanPath);
+
     QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QVERIFY(client2->mHandleChannelsRequestsSatisfied.first()->isReady());
+
     QCOMPARE(client2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
     handledChannels = handler1Iface->HandledChannels();

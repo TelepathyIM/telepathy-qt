@@ -289,6 +289,25 @@ public Q_SLOTS: // Methods
 
 private Q_SLOTS:
     void onChannelInvalidated(Tp::DBusProxy *proxy);
+    void onReadyOpFinished(Tp::PendingOperation *);
+
+private:
+    struct InvocationData : RefCounted
+    {
+        InvocationData() : readyOp(0) {}
+
+        PendingOperation *readyOp;
+        QString error, message;
+
+        MethodInvocationContextPtr<> ctx;
+        AccountPtr acc;
+        ConnectionPtr conn;
+        QList<ChannelPtr> chans;
+        QList<ChannelRequestPtr> chanReqs;
+        QDateTime time;
+        QVariantMap handlerInfo;
+    };
+    QLinkedList<SharedPtr<InvocationData> > invocations;
 
 private:
     static void onContextFinished(const MethodInvocationContextPtr<> &context,
