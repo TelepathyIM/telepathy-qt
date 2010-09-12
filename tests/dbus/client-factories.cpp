@@ -133,6 +133,48 @@ private:
     QStringList mInterfaces;
 };
 
+// Totally incomplete mini version of ChannelDispatchOperation
+class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
+{
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatchOperation")
+    Q_CLASSINFO("D-Bus Introspection", ""
+"  <interface name=\"org.freedesktop.Telepathy.ChannelDispatchOperation\" >\n"
+"    <property name=\"Channels\" type=\"a(oa{sv})\" access=\"read\" />\n"
+"    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
+"  </interface>\n"
+        "")
+
+    Q_PROPERTY(ChannelDetailsList Channels READ Channels)
+    Q_PROPERTY(QStringList Interfaces READ Interfaces)
+
+public:
+    ChannelDispatchOperationAdaptor(const ChannelDetailsList &channels,
+            QObject *parent)
+        : QDBusAbstractAdaptor(parent), mChannels(channels)
+    {
+    }
+
+    virtual ~ChannelDispatchOperationAdaptor()
+    {
+    }
+
+public: // Properties
+    inline ChannelDetailsList Channels() const
+    {
+        return mChannels;
+    }
+
+    inline QStringList Interfaces() const
+    {
+        return mInterfaces;
+    }
+
+private:
+    ChannelDetailsList mChannels;
+    QStringList mInterfaces;
+};
+
 class MyClient : public QObject,
                  public AbstractClientObserver,
                  public AbstractClientApprover,
@@ -322,8 +364,10 @@ private:
     QString mConnPath;
 
     ClientRegistrarPtr mClientRegistrar;
-    QString mChannelRequestBusName;
+    QString mChannelDispatcherBusName;
     QString mChannelRequestPath;
+    ChannelDispatchOperationAdaptor *mCDO;
+    QString mCDOPath;
     QStringList mClientCapabilities;
     AbstractClientPtr mClientObject1;
     QString mClientObject1BusName;
@@ -440,9 +484,13 @@ void TestClientFactories::initTestCase()
 
     mClientRegistrar = ClientRegistrar::create(mAM);
 
-    mChannelRequestBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
+    // Fake ChannelRequest
+
+    mChannelDispatcherBusName = QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER);
     mChannelRequestPath = QLatin1String("/org/freedesktop/Telepathy/ChannelRequest/Request1");
+
     QObject *request = new QObject(this);
+
     mUserActionTime = QDateTime::currentDateTime().toTime_t();
     new ChannelRequestAdaptor(QDBusObjectPath(mAccount->objectPath()),
             mUserActionTime,
@@ -450,8 +498,21 @@ void TestClientFactories::initTestCase()
             QualifiedPropertyValueMapList(),
             QStringList(),
             request);
-    QVERIFY(bus.registerService(mChannelRequestBusName));
+    QVERIFY(bus.registerService(mChannelDispatcherBusName));
     QVERIFY(bus.registerObject(mChannelRequestPath, request));
+
+    // Fake ChannelDispatchOperation
+
+    mCDOPath = QLatin1String("/org/freedesktop/Telepathy/ChannelDispatchOperation/Operation1");
+
+    QObject *cdo = new QObject(this);
+
+    ChannelDetailsList channelDetailsList;
+    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
+    channelDetailsList.append(channelDetails);
+
+    mCDO = new ChannelDispatchOperationAdaptor(channelDetailsList, cdo);
+    QVERIFY(bus.registerObject(mCDOPath, cdo));
 }
 
 void TestClientFactories::init()
@@ -645,21 +706,21 @@ void TestClientFactories::testAddDispatchOperation()
     connect(client,
             SIGNAL(addDispatchOperationFinished()),
             SLOT(expectSignalEmission()));
-    ChannelDetailsList channelDetailsList;
-    ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
-    channelDetailsList.append(channelDetails);
+
     QVariantMap dispatchOperationProperties;
-    dispatchOperationProperties.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
+    dispatchOperationProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
             QVariant::fromValue(QDBusObjectPath(mConn->objectPath())));
-    dispatchOperationProperties.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
+    dispatchOperationProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
             QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
-    approverIface->AddDispatchOperation(channelDetailsList,
-            QDBusObjectPath(QLatin1String("/")),
+
+    approverIface->AddDispatchOperation(mCDO->Channels(), QDBusObjectPath(mCDOPath),
             dispatchOperationProperties);
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mAddDispatchOperationChannels.first()->objectPath(), mText1ChanPath);
-    QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), QString(QLatin1String("/")));
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), mCDOPath);
 }
 
 void TestClientFactories::testHandleChannels()
