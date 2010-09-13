@@ -129,6 +129,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       enabled(false),
       connectsAutomatically(false),
       hasBeenOnline(false),
+      changingPresence(false),
       mayFinishCore(false),
       coreFinished(false),
       protocolInfo(0),
