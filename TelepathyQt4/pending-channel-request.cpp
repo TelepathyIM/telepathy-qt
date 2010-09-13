@@ -237,9 +237,8 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
             "- object path:" << objectPath.path();
 
         if (!mPriv->account.isNull()) {
-            mPriv->channelRequest = ChannelRequest::create(mPriv->dbusConnection,
+            mPriv->channelRequest = ChannelRequest::create(mPriv->account,
                     objectPath.path(), QVariantMap());
-            // TODO pass the account directly - needs further mod to ChannelRequest
         } else {
             mPriv->channelRequest = ChannelRequest::create(mPriv->dbusConnection,
                     objectPath.path(), QVariantMap());

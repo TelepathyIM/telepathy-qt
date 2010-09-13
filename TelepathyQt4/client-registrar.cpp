@@ -171,9 +171,8 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
      * observerInfo.value(QLatin1String("request-properties")));
      */
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
-        ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap() /* propMap.value(path.path()) */,
-                accFactory, connFactory, chanFactory, contactFactory);
+        ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
+                path.path(), QVariantMap() /* propMap.value(path.path()) */);
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }
@@ -412,9 +411,8 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
      * handlerInfo.value(QLatin1String("request-properties")));
      */
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
-        ChannelRequestPtr channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap() /* propMap.value(path.path()) */,
-                accFactory, connFactory, chanFactory, contactFactory);
+        ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
+                path.path(), QVariantMap() /* propMap.value(path.path()) */);
         invocation->chanReqs.append(channelRequest);
         readyOps.append(channelRequest->becomeReady());
     }

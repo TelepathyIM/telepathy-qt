@@ -70,6 +70,9 @@ public:
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
+    static ChannelRequestPtr create(const AccountPtr &account,
+            const QString &objectPath, const QVariantMap &immutableProperties);
+
     virtual ~ChannelRequest();
 
     AccountPtr account() const;
@@ -101,6 +104,9 @@ protected:
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
+
+    ChannelRequest(const AccountPtr &account,
+            const QString &objectPath, const QVariantMap &immutableProperties);
 
     Client::ChannelRequestInterface *baseInterface() const;
 

@@ -157,23 +157,48 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
 
 void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 {
-    Q_ASSERT(!account);
-
     PendingReady *readyOp = 0;
 
     if (props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
-        if (!accFact.isNull()) {
-            readyOp = accFact->proxy(
-                    QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME), accountObjectPath.path(),
-                    connFact, chanFact, contactFact);
-            account = AccountPtr::dynamicCast(readyOp->proxy());
-        } else {
-            account = Account::create(
-                    QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-                    accountObjectPath.path());
-            readyOp = account->becomeReady();
+
+        if (!account.isNull()) {
+            if (accountObjectPath.path() == account->objectPath()) {
+                // Most often a no-op, but we want this to guarantee the old behavior in all cases
+                readyOp = account->becomeReady();
+            } else {
+                warning() << "The account" << accountObjectPath.path() << "was not the expected"
+                    << account->objectPath() << "for CR" << parent->objectPath();
+                // Construct a new one instead
+                account.reset();
+            }
+        }
+
+        // We need to check again because we might have dropped the expected account just a sec ago
+        // Note that many of the if paths will go away in the API/ABI break - they're just for
+        // backwards compat
+        if (account.isNull()) {
+            if (!accFact.isNull()) {
+                readyOp = accFact->proxy(
+                        QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME), accountObjectPath.path(),
+                        connFact, chanFact, contactFact);
+                account = AccountPtr::dynamicCast(readyOp->proxy());
+            } else {
+                // We might have the conn fact from the expected account, let's use that for good
+                // measure even if the account didn't match
+                if (!connFact.isNull()) {
+                    account = Account::create(
+                            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+                            accountObjectPath.path(), connFact, chanFact, contactFact);
+                } else {
+                    account = Account::create(
+                            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+                            accountObjectPath.path());
+                }
+
+                readyOp = account->becomeReady();
+            }
         }
     }
 
@@ -190,7 +215,6 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
     readinessHelper->setInterfaces(parent->interfaces());
 
     if (account) {
-        Q_ASSERT(readyOp != 0);
         parent->connect(readyOp,
                 SIGNAL(finished(Tp::PendingOperation *)),
                 SLOT(onAccountReady(Tp::PendingOperation *)));
@@ -282,6 +306,22 @@ ChannelRequestPtr ChannelRequest::create(const QDBusConnection &bus, const QStri
 }
 
 /**
+ * Create a new channel request object for the given \a account.
+ *
+ * The returned instance will use factories from the account.
+ *
+ * \param account The account that the request was made through.
+ * \param objectPath The channel request object path.
+ * \param immutableProperties The immutable properties of the channel request.
+ * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ */
+ChannelRequestPtr ChannelRequest::create(const AccountPtr &account, const QString &objectPath,
+        const QVariantMap &immutableProperties)
+{
+    return ChannelRequestPtr(new ChannelRequest(account, objectPath, immutableProperties));
+}
+
+/**
  * Construct a new channel request object using the given \a bus.
  *
  * \param bus QDBusConnection to use.
@@ -341,6 +381,31 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
     mPriv->connFact = connectionFactory;
     mPriv->chanFact = channelFactory;
     mPriv->contactFact = contactFactory;
+}
+
+/**
+ * Construct a new channel request object using the given \a account.
+ *
+ * The constructed instance will use the factories from the account.
+ *
+ * \param account Account to use.
+ * \param objectPath The channel request object path.
+ * \param immutableProperties The immutable properties of the channel request.
+ * \return A ChannelRequestPtr pointing to the newly created ChannelRequest.
+ */
+ChannelRequest::ChannelRequest(const AccountPtr &account,
+        const QString &objectPath, const QVariantMap &immutableProperties)
+    : StatefulDBusProxy(account->dbusConnection(),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
+            objectPath),
+      OptionalInterfaceFactory<ChannelRequest>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this, immutableProperties))
+{
+    mPriv->account = account;
+    mPriv->connFact = account->connectionFactory();
+    mPriv->chanFact = account->channelFactory();
+    mPriv->contactFact = account->contactFactory();
 }
 
 /**
