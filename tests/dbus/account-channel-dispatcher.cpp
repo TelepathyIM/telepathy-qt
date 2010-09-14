@@ -356,6 +356,7 @@ void TestAccountChannelDispatcher::testPCR(PendingChannelRequest *pcr)
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     mLoop->exec(0);
     QCOMPARE(mChannelRequest->userActionTime(), mUserActionTime);
+    QCOMPARE(mChannelRequest->account().data(), mAccount.data());
 }
 
 #define TEST_ENSURE_CHANNEL_SPECIFIC(method_name, shouldFail, proceedNoop, expectedError) \
