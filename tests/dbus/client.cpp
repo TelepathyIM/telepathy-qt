@@ -61,7 +61,7 @@ class ChannelRequestAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QDBusObjectPath Account READ Account)
     Q_PROPERTY(qulonglong UserActionTime READ UserActionTime)
     Q_PROPERTY(QString PreferredHandler READ PreferredHandler)
-    Q_PROPERTY(QualifiedPropertyValueMapList Requests READ Requests)
+    Q_PROPERTY(Tp::QualifiedPropertyValueMapList Requests READ Requests)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
 
 public:
@@ -146,9 +146,9 @@ class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
 
     Q_PROPERTY(QDBusObjectPath Account READ Account)
     Q_PROPERTY(QDBusObjectPath Connection READ Connection)
-    Q_PROPERTY(ChannelDetailsList Channels READ Channels)
+    Q_PROPERTY(Tp::ChannelDetailsList Channels READ Channels)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
-    Q_PROPERTY(ObjectPathList PossibleHandlers READ PossibleHandlers)
+    Q_PROPERTY(Tp::ObjectPathList PossibleHandlers READ PossibleHandlers)
 
 public:
     ChannelDispatchOperationAdaptor(const QDBusObjectPath &acc, const QDBusObjectPath &conn,

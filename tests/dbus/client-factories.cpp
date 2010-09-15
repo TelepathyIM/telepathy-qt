@@ -65,7 +65,7 @@ class ChannelRequestAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QDBusObjectPath Account READ Account)
     Q_PROPERTY(qulonglong UserActionTime READ UserActionTime)
     Q_PROPERTY(QString PreferredHandler READ PreferredHandler)
-    Q_PROPERTY(QualifiedPropertyValueMapList Requests READ Requests)
+    Q_PROPERTY(Tp::QualifiedPropertyValueMapList Requests READ Requests)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
 
 public:
@@ -150,9 +150,9 @@ class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
 
     Q_PROPERTY(QDBusObjectPath Account READ Account)
     Q_PROPERTY(QDBusObjectPath Connection READ Connection)
-    Q_PROPERTY(ChannelDetailsList Channels READ Channels)
+    Q_PROPERTY(Tp::ChannelDetailsList Channels READ Channels)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
-    Q_PROPERTY(ObjectPathList PossibleHandlers READ PossibleHandlers)
+    Q_PROPERTY(Tp::ObjectPathList PossibleHandlers READ PossibleHandlers)
 
 public:
     ChannelDispatchOperationAdaptor(const QDBusObjectPath &acc, const QDBusObjectPath &conn,
@@ -532,14 +532,16 @@ void TestClientFactories::initTestCase()
 
     QObject *cdo = new QObject(this);
 
+    // Initialize this here so we can actually set it in channelDetails
+    mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
+
     ChannelDetailsList channelDetailsList;
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
     channelDetailsList.append(channelDetails);
 
     mCDO = new ChannelDispatchOperationAdaptor(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()), channelDetailsList,
-            ObjectPathList() << QDBusObjectPath(mClientObject1Path)
-                << QDBusObjectPath(mClientObject2Path), cdo);
+            ObjectPathList() << QDBusObjectPath(mClientObject1Path), cdo);
     QVERIFY(bus.registerObject(mCDOPath, cdo));
 }
 
