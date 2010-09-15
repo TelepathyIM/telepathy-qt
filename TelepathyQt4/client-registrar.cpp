@@ -209,18 +209,18 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));
 
-    invocations.append(invocation);
+    mInvocations.append(invocation);
 
     debug() << "Preparing proxies for ObserveChannels of" << channelDetailsList.size() << "channels"
         << "for client" << mClient;
 }
 
 void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
-    Q_ASSERT(!invocations.isEmpty());
+    Q_ASSERT(!mInvocations.isEmpty());
     Q_ASSERT(op->isFinished());
 
-    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = invocations.begin();
-            i != invocations.end(); ++i) {
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
+            i != mInvocations.end(); ++i) {
         if ((*i)->readyOp != op) {
             continue;
         }
@@ -237,8 +237,8 @@ void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
         break;
     }
 
-    while (!invocations.isEmpty() && !invocations.first()->readyOp) {
-        SharedPtr<InvocationData> invocation = invocations.takeFirst();
+    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
 
         if (!invocation->error.isEmpty()) {
             // We guarantee that the proxies were ready - so we can't invoke the client if they
@@ -321,15 +321,15 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));
 
-    invocations.append(invocation);
+    mInvocations.append(invocation);
 }
 
 void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
-    Q_ASSERT(!invocations.isEmpty());
+    Q_ASSERT(!mInvocations.isEmpty());
     Q_ASSERT(op->isFinished());
 
-    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = invocations.begin();
-            i != invocations.end(); ++i) {
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
+            i != mInvocations.end(); ++i) {
         if ((*i)->readyOp != op) {
             continue;
         }
@@ -346,8 +346,8 @@ void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
         break;
     }
 
-    while (!invocations.isEmpty() && !invocations.first()->readyOp) {
-        SharedPtr<InvocationData> invocation = invocations.takeFirst();
+    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
 
         if (!invocation->error.isEmpty()) {
             // We guarantee that the proxies were ready - so we can't invoke the client if they
@@ -465,18 +465,18 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
             SIGNAL(finished(Tp::PendingOperation*)),
             SLOT(onReadyOpFinished(Tp::PendingOperation*)));
 
-    invocations.append(invocation);
+    mInvocations.append(invocation);
 
     debug() << "Preparing proxies for HandleChannels of" << channelDetailsList.size() << "channels"
         << "for client" << mClient;
 }
 
 void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
-    Q_ASSERT(!invocations.isEmpty());
+    Q_ASSERT(!mInvocations.isEmpty());
     Q_ASSERT(op->isFinished());
 
-    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = invocations.begin();
-            i != invocations.end(); ++i) {
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
+            i != mInvocations.end(); ++i) {
         if ((*i)->readyOp != op) {
             continue;
         }
@@ -493,8 +493,8 @@ void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
         break;
     }
 
-    while (!invocations.isEmpty() && !invocations.first()->readyOp) {
-        SharedPtr<InvocationData> invocation = invocations.takeFirst();
+    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
 
         if (!invocation->error.isEmpty()) {
             // We guarantee that the proxies were ready - so we can't invoke the client if they

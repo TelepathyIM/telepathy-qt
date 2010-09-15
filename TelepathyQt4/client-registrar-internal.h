@@ -137,7 +137,7 @@ private:
         QList<ChannelRequestPtr> chanReqs;
         QVariantMap observerInfo;
     };
-    QLinkedList<SharedPtr<InvocationData> > invocations;
+    QLinkedList<SharedPtr<InvocationData> > mInvocations;
 
     ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
@@ -199,7 +199,7 @@ private:
         QList<ChannelPtr> chans;
         ChannelDispatchOperationPtr dispatchOp;
     };
-    QLinkedList<SharedPtr<InvocationData> > invocations;
+    QLinkedList<SharedPtr<InvocationData> > mInvocations;
 
 private:
     ClientRegistrar *mRegistrar;
@@ -307,7 +307,7 @@ private:
         QDateTime time;
         QVariantMap handlerInfo;
     };
-    QLinkedList<SharedPtr<InvocationData> > invocations;
+    QLinkedList<SharedPtr<InvocationData> > mInvocations;
 
 private:
     static void onContextFinished(const MethodInvocationContextPtr<> &context,
