@@ -58,10 +58,10 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::Private
     ChannelDispatchOperation *parent;
 
     // Context
-    AccountFactoryConstPtr accFact;
-    ConnectionFactoryConstPtr connFact;
-    ChannelFactoryConstPtr chanFact;
-    ContactFactoryConstPtr contactFact;
+    AccountFactoryConstPtr accFactory;
+    ConnectionFactoryConstPtr connFactory;
+    ChannelFactoryConstPtr chanFactory;
+    ContactFactoryConstPtr contactFactory;
 
     // Instance of generated interface class
     Client::ChannelDispatchOperationInterface *baseInterface;
@@ -157,8 +157,8 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
                     QLatin1String("."));
 
         PendingReady *ready =
-            connFact->proxy(connectionBusName, connectionObjectPath.path(),
-                    chanFact, contactFact);
+            connFactory->proxy(connectionBusName, connectionObjectPath.path(),
+                    chanFactory, contactFactory);
         connection = ConnectionPtr::dynamicCast(ready->proxy());
         readyOps.append(ready);
     }
@@ -168,8 +168,8 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
 
         PendingReady *ready =
-            accFact->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-                    accountObjectPath.path(), connFact, chanFact, contactFact);
+            accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+                    accountObjectPath.path(), connFactory, chanFactory, contactFactory);
         account = AccountPtr::dynamicCast(ready->proxy());
         readyOps.append(ready);
     }
@@ -182,13 +182,15 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         // immutable props and initial channels etc were sufficient.
         QList<ChannelPtr> saveChannels = channels;
         channels.clear();
+        debug() << saveChannels.size();
 
         ChannelDetailsList channelDetailsList =
             qdbus_cast<ChannelDetailsList>(props.value(QLatin1String("Channels")));
+        debug() << channelDetailsList.size();
         ChannelPtr channel;
         foreach (const ChannelDetails &channelDetails, channelDetailsList) {
             PendingReady *ready =
-                chanFact->proxy(connection,
+                chanFactory->proxy(connection,
                         channelDetails.channel.path(), channelDetails.properties);
             channels.append(ChannelPtr::dynamicCast(ready->proxy()));
             readyOps.append(ready);
@@ -347,10 +349,10 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
     // API/ABI break TODO: remove this constructor and any other way to get "default factories" in
     // CDO - these sort of emulate the old pre-factory behavior of CDO, making core in Acc and Conn
     // ready, but sadly not in Channels.
-    mPriv->accFact = AccountFactory::create(bus, Account::FeatureCore);
-    mPriv->connFact = ConnectionFactory::create(bus, Connection::FeatureCore);
-    mPriv->chanFact = ChannelFactory::create(bus);
-    mPriv->contactFact = ContactFactory::create();
+    mPriv->accFactory = AccountFactory::create(bus, Account::FeatureCore);
+    mPriv->connFactory = ConnectionFactory::create(bus, Connection::FeatureCore);
+    mPriv->chanFactory = ChannelFactory::create(bus);
+    mPriv->contactFactory = ContactFactory::create();
 
     mPriv->extractMainProps(immutableProperties, true);
 }
@@ -397,10 +399,10 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
 
     mPriv->channels = initialChannels;
 
-    mPriv->accFact = accountFactory;
-    mPriv->connFact = connectionFactory;
-    mPriv->chanFact = channelFactory;
-    mPriv->contactFact = contactFactory;
+    mPriv->accFactory = accountFactory;
+    mPriv->connFactory = connectionFactory;
+    mPriv->chanFactory = channelFactory;
+    mPriv->contactFactory = contactFactory;
 
     QVariantMap mainProperties;
     foreach (QString key, immutableProperties.keys()) {
