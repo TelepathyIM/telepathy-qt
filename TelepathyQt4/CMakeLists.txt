@@ -577,19 +577,26 @@ target_link_libraries(telepathy-qt4
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARIES})
 
-install(FILES ${telepathy_qt4_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4)
-install(FILES ${telepathy_qt4_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4/_gen)
-install(TARGETS telepathy-qt4 DESTINATION ${LIB_INSTALL_DIR})
+install(FILES ${telepathy_qt4_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4 COMPONENT headers)
+install(FILES ${telepathy_qt4_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4/_gen COMPONENT headers)
+
+if (WIN32)
+    install(TARGETS telepathy-qt4 RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+                               ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
+else (WIN32)
+    install(TARGETS telepathy-qt4 LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
+                               ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
+endif (WIN32)
 
 # pkg-config file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4.pc)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4-uninstalled.pc)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT headers)
 
 if(FARSIGHT_COMPONENTS_FOUND)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4Farsight.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight.pc)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4Farsight-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight-uninstalled.pc)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT farsight_headers)
 endif(FARSIGHT_COMPONENTS_FOUND)
 
 add_subdirectory(Farsight)

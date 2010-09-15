@@ -24,6 +24,14 @@ if(FARSIGHT_COMPONENTS_FOUND)
         ${GSTREAMER_INTERFACE_LIBRARY}
         telepathy-qt4)
 
-    install(TARGETS telepathy-qt4-farsight DESTINATION ${LIB_INSTALL_DIR})
-    install(FILES ${telepathy_qt4_farsight_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4/Farsight)
+    if (WIN32)
+        install(TARGETS telepathy-qt4-farsight RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight
+                                               ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight_headers)
+    else (WIN32)
+        install(TARGETS telepathy-qt4-farsight LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight
+                                               ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight_headers)
+    endif (WIN32)
+
+    install(FILES ${telepathy_qt4_farsight_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4/Farsight
+            COMPONENT farsight_headers)
 endif(FARSIGHT_COMPONENTS_FOUND)
