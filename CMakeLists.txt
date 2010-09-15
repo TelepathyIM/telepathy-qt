@@ -2,6 +2,10 @@ project(TelepathyQt4)
 
 cmake_minimum_required(VERSION 2.6)
 
+if(POLICY CMP0011)
+    cmake_policy(SET CMP0011 NEW)
+endif(POLICY CMP0011)
+
 # Making releases:
 #   set the new version number:
 #     odd minor -> development series
