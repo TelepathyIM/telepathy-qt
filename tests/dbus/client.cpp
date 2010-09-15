@@ -140,7 +140,7 @@ class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
 "    <property name=\"Connection\" type=\"o\" access=\"read\" />\n"
 "    <property name=\"Channels\" type=\"a(oa{sv})\" access=\"read\" />\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
-"    <property name=\"PossibleHandlers\" type=\"ao\" access=\"read\" />\n"
+"    <property name=\"PossibleHandlers\" type=\"as\" access=\"read\" />\n"
 "  </interface>\n"
         "")
 
@@ -148,11 +148,11 @@ class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QDBusObjectPath Connection READ Connection)
     Q_PROPERTY(Tp::ChannelDetailsList Channels READ Channels)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
-    Q_PROPERTY(Tp::ObjectPathList PossibleHandlers READ PossibleHandlers)
+    Q_PROPERTY(QStringList PossibleHandlers READ PossibleHandlers)
 
 public:
     ChannelDispatchOperationAdaptor(const QDBusObjectPath &acc, const QDBusObjectPath &conn,
-            const ChannelDetailsList &channels, const ObjectPathList &possibleHandlers,
+            const ChannelDetailsList &channels, const QStringList &possibleHandlers,
             QObject *parent)
         : QDBusAbstractAdaptor(parent), mAccount(acc), mConn(conn), mChannels(channels),
           mPossibleHandlers(possibleHandlers)
@@ -184,7 +184,7 @@ public: // Properties
         return mInterfaces;
     }
 
-    inline ObjectPathList PossibleHandlers() const
+    inline QStringList PossibleHandlers() const
     {
         return mPossibleHandlers;
     }
@@ -193,7 +193,7 @@ private:
     QDBusObjectPath mAccount, mConn;
     ChannelDetailsList mChannels;
     QStringList mInterfaces;
-    ObjectPathList mPossibleHandlers;
+    QStringList mPossibleHandlers;
 };
 
 class MyClient : public QObject,
@@ -523,7 +523,7 @@ void TestClient::initTestCase()
     QObject *cdo = new QObject(this);
 
     // Initialize this here so we can actually set it in possibleHandlers
-    mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
+    mClientObject1BusName = QLatin1String("org.freedesktop.Telepathy.Client.foo");
 
     ChannelDetailsList channelDetailsList;
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
@@ -531,7 +531,7 @@ void TestClient::initTestCase()
 
     mCDO = new ChannelDispatchOperationAdaptor(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()), channelDetailsList,
-            ObjectPathList() << QDBusObjectPath(mClientObject1Path), cdo);
+            QStringList() << mClientObject1BusName, cdo);
     QVERIFY(bus.registerObject(mCDOPath, cdo));
 }
 
