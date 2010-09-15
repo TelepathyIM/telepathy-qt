@@ -136,18 +136,23 @@ class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Telepathy.ChannelDispatchOperation")
     Q_CLASSINFO("D-Bus Introspection", ""
 "  <interface name=\"org.freedesktop.Telepathy.ChannelDispatchOperation\" >\n"
+"    <property name=\"Account\" type=\"o\" access=\"read\" />\n"
+"    <property name=\"Connection\" type=\"o\" access=\"read\" />\n"
 "    <property name=\"Channels\" type=\"a(oa{sv})\" access=\"read\" />\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
 "  </interface>\n"
         "")
 
+    Q_PROPERTY(QDBusObjectPath Account READ Account)
+    Q_PROPERTY(QDBusObjectPath Connection READ Connection)
     Q_PROPERTY(ChannelDetailsList Channels READ Channels)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
 
 public:
-    ChannelDispatchOperationAdaptor(const ChannelDetailsList &channels,
+    ChannelDispatchOperationAdaptor(const QDBusObjectPath &acc, const QDBusObjectPath &conn,
+            const ChannelDetailsList &channels,
             QObject *parent)
-        : QDBusAbstractAdaptor(parent), mChannels(channels)
+        : QDBusAbstractAdaptor(parent), mAccount(acc), mConn(conn), mChannels(channels)
     {
     }
 
@@ -156,6 +161,16 @@ public:
     }
 
 public: // Properties
+    inline QDBusObjectPath Account() const
+    {
+        return mAccount;
+    }
+
+    inline QDBusObjectPath Connection() const
+    {
+        return mConn;
+    }
+
     inline ChannelDetailsList Channels() const
     {
         return mChannels;
@@ -167,6 +182,7 @@ public: // Properties
     }
 
 private:
+    QDBusObjectPath mAccount, mConn;
     ChannelDetailsList mChannels;
     QStringList mInterfaces;
 };
@@ -501,7 +517,8 @@ void TestClient::initTestCase()
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
     channelDetailsList.append(channelDetails);
 
-    mCDO = new ChannelDispatchOperationAdaptor(channelDetailsList, cdo);
+    mCDO = new ChannelDispatchOperationAdaptor(QDBusObjectPath(mAccount->objectPath()),
+            QDBusObjectPath(mConn->objectPath()), channelDetailsList, cdo);
     QVERIFY(bus.registerObject(mCDOPath, cdo));
 }
 
