@@ -109,14 +109,18 @@ public:
     void requestContactAvatar(Contact *contact);
 
 Q_SIGNALS:
-    void presencePublicationRequested(const Tp::Contacts &contacts);
+    void presencePublicationRequested(const Tp::Contacts &contacts); // API/ABI break: remove
     void presencePublicationRequested(const Tp::Contacts &contacts,
         const Tp::Channel::GroupMemberChangeDetails &details);
     void groupAdded(const QString &group);
     void groupRemoved(const QString &group);
     void groupMembersChanged(const QString &group,
             const Tp::Contacts &groupMembersAdded,
-            const Tp::Contacts &groupMembersRemoved);
+            const Tp::Contacts &groupMembersRemoved); // API/ABI break: remove
+    void groupMembersChanged(const QString &group,
+            const Tp::Contacts &groupMembersAdded,
+            const Tp::Contacts &groupMembersRemoved,
+            const Tp::Channel::GroupMemberChangeDetails &details);
     /**
      * This signal is emitted whenever some contacts got removed or added from
      * ContactManager's known contact list. It is useful for monitoring which contacts
@@ -130,7 +134,11 @@ Q_SIGNALS:
      *       over publication and/or subscription state changes if that is the case.
      */
     void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
-            const Tp::Contacts &contactsRemoved);
+            const Tp::Contacts &contactsRemoved); // API/ABI break: remove
+
+    void allKnownContactsChanged(const Tp::Contacts &contactsAdded,
+            const Tp::Contacts &contactsRemoved,
+            const Tp::Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
     void onAliasesChanged(const Tp::AliasPairList &);

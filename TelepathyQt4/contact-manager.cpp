@@ -112,7 +112,8 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
     void computeKnownContactsChanges(const Contacts &added,
         const Contacts &pendingAdded,
         const Contacts &remotePendingAdded,
-        const Contacts &removed);
+        const Contacts &removed,
+        const Channel::GroupMemberChangeDetails &details);
 
     bool buildAvatarFileName(QString token, bool createDir,
         QString &avatarFileName, QString &mimeTypeFileName);
@@ -1072,7 +1073,7 @@ void ContactManager::onSubscribeChannelMembersChanged(
     mPriv->computeKnownContactsChanges(groupMembersAdded,
                                        groupLocalPendingMembersAdded,
                                        groupRemotePendingMembersAdded,
-                                       groupMembersRemoved);
+                                       groupMembersRemoved, details);
 }
 
 void ContactManager::onPublishChannelMembersChanged(
@@ -1113,7 +1114,7 @@ void ContactManager::onPublishChannelMembersChanged(
     mPriv->computeKnownContactsChanges(groupMembersAdded,
                                        groupLocalPendingMembersAdded,
                                        groupRemotePendingMembersAdded,
-                                       groupMembersRemoved);
+                                       groupMembersRemoved, details);
 }
 
 void ContactManager::onDenyChannelMembersChanged(
@@ -1164,6 +1165,7 @@ void ContactManager::onContactListGroupMembersChanged(
     }
 
     emit groupMembersChanged(id, groupMembersAdded, groupMembersRemoved);
+    emit groupMembersChanged(id, groupMembersAdded, groupMembersRemoved, details);
 }
 
 void ContactManager::onContactListGroupRemoved(Tp::DBusProxy *proxy,
@@ -1404,9 +1406,8 @@ Contacts ContactManager::Private::allKnownContacts() const
 }
 
 void ContactManager::Private::computeKnownContactsChanges(const Tp::Contacts& added,
-                                                          const Tp::Contacts& pendingAdded,
-                                                          const Tp::Contacts& remotePendingAdded,
-                                                          const Tp::Contacts& removed)
+        const Tp::Contacts& pendingAdded, const Tp::Contacts& remotePendingAdded,
+        const Tp::Contacts& removed, const Channel::GroupMemberChangeDetails &details)
 {
     // First of all, compute the real additions/removals based upon our cache
     Tp::Contacts realAdded;
@@ -1434,6 +1435,7 @@ void ContactManager::Private::computeKnownContactsChanges(const Tp::Contacts& ad
         cachedAllKnownContacts.unite(realAdded);
         cachedAllKnownContacts.subtract(realRemoved);
         emit parent->allKnownContactsChanged(realAdded, realRemoved);
+        emit parent->allKnownContactsChanged(realAdded, realRemoved, details);
     }
 }
 
