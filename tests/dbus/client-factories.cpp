@@ -532,7 +532,7 @@ void TestClientFactories::initTestCase()
 
     QObject *cdo = new QObject(this);
 
-    // Initialize this here so we can actually set it in channelDetails
+    // Initialize this here so we can actually set it in possibleHandlers
     mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
 
     ChannelDetailsList channelDetailsList;

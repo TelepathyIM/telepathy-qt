@@ -522,14 +522,16 @@ void TestClient::initTestCase()
 
     QObject *cdo = new QObject(this);
 
+    // Initialize this here so we can actually set it in possibleHandlers
+    mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
+
     ChannelDetailsList channelDetailsList;
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
     channelDetailsList.append(channelDetails);
 
     mCDO = new ChannelDispatchOperationAdaptor(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()), channelDetailsList,
-            ObjectPathList() << QDBusObjectPath(mClientObject1Path)
-                << QDBusObjectPath(mClientObject2Path), cdo);
+            ObjectPathList() << QDBusObjectPath(mClientObject1Path), cdo);
     QVERIFY(bus.registerObject(mCDOPath, cdo));
 }
 
