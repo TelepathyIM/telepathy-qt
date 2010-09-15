@@ -21,21 +21,10 @@ set(example_extensions_SRCS
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_gen)
 set(generated_all_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/all.xml)
-add_custom_command(OUTPUT ${generated_all_xml}
-    COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${CMAKE_SOURCE_DIR}/tools/xincludator.py
-         ${CMAKE_CURRENT_SOURCE_DIR}/all.xml
-         > ${generated_all_xml}
-    DEPENDS all.xml ${CMAKE_SOURCE_DIR}/tools/xincludator.py)
-
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
-    COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
-         --namespace=Example
-         --str-constant-prefix=EXAMPLE_
-         --specxml=${generated_all_xml}
-         > ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
-    DEPENDS ${generated_all_xml} ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py)
+tpqt4_xincludator(${CMAKE_CURRENT_SOURCE_DIR}/all.xml ${generated_all_xml})
+tpqt4_constants_gen(${generated_all_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
+                    --namespace=Example
+                    --str-constant-prefix=EXAMPLE_)
 
 if(MSVC)
     set(TYPES_INCLUDE ^<TelepathyQt4/Types^>)
@@ -43,23 +32,13 @@ else(MSVC)
     set(TYPES_INCLUDE '<TelepathyQt4/Types>')
 endif(MSVC)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
-    COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
-          --namespace=Example
-          --declfile=_gen/types.h
-          --implfile=_gen/types-body.hpp
-          --realinclude=types.h
-          --specxml=${generated_all_xml}
-          --extraincludes=${TYPES_INCLUDE}
-    DEPENDS ${generated_all_xml} ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py)
+tpqt4_types_gen(${generated_all_xml} ${generated_all_xml}
+                ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
+                Example types.h types.h
+                --extraincludes=${TYPES_INCLUDE})
 
 set(connection_generated_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/connection.xml)
-add_custom_command(OUTPUT ${connection_generated_xml}
-    COMMAND ${PYTHON_EXECUTABLE}
-    ARGS ${CMAKE_SOURCE_DIR}/tools/xincludator.py
-         ${CMAKE_CURRENT_SOURCE_DIR}/connection.xml
-         > ${connection_generated_xml})
+tpqt4_xincludator(${CMAKE_CURRENT_SOURCE_DIR}/connection.xml ${connection_generated_xml})
 
 if(MSVC)
   set(ESCAPED_QUOTES \"\"\")

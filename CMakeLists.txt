@@ -51,6 +51,9 @@ endif(NOT CMAKE_BUILD_TYPE)
 # This file contains all the needed initialization macros
 include(TelepathyDefaults)
 
+# This file contains all the tpqt4 macros used in the buildsystem
+include(TpQt4Macros)
+
 include(Doxygen)
 include(MacroLogFeature)
 
@@ -108,57 +111,6 @@ return 0;
 "
 HAVE_QDBUSSERVICEWATCHER)
 set(CMAKE_REQUIRED_LIBRARIES)
-
-# helper macro to set up a moc rule
-MACRO (QT4_CREATE_MOC_COMMAND_TARGET_DEPS infile outfile moc_flags moc_options)
-  # For Windows, create a parameters file to work around command line length limit
-  GET_FILENAME_COMPONENT(_moc_outfile_name "${outfile}" NAME)
-  IF (WIN32)
-    # Pass the parameters in a file.  Set the working directory to
-    # be that containing the parameters file and reference it by
-    # just the file name.  This is necessary because the moc tool on
-    # MinGW builds does not seem to handle spaces in the path to the
-    # file given with the @ syntax.
-    GET_FILENAME_COMPONENT(_moc_outfile_dir "${outfile}" PATH)
-    IF(_moc_outfile_dir)
-      SET(_moc_working_dir WORKING_DIRECTORY ${_moc_outfile_dir})
-    ENDIF(_moc_outfile_dir)
-    SET (_moc_parameters_file ${outfile}_parameters)
-    SET (_moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
-    FILE (REMOVE ${_moc_parameters_file})
-    FOREACH(arg ${_moc_parameters})
-      FILE (APPEND ${_moc_parameters_file} "${arg}\n")
-    ENDFOREACH(arg)
-    ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
-                       COMMAND ${QT_MOC_EXECUTABLE} @${_moc_outfile_name}_parameters
-                       DEPENDS ${infile}
-                       ${_moc_working_dir}
-                       VERBATIM)
-  ELSE (WIN32)
-    ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
-                       COMMAND ${QT_MOC_EXECUTABLE}
-                       ARGS ${moc_flags} ${moc_options} -o ${outfile} ${infile}
-                       DEPENDS ${infile})
-  ENDIF (WIN32)
-
-  add_custom_target(moc-${_moc_outfile_name} DEPENDS ${outfile})
-  add_dependencies(moc-${_moc_outfile_name} ${ARGN})
-ENDMACRO (QT4_CREATE_MOC_COMMAND_TARGET_DEPS)
-
-# add the -i option to QT4_GENERATE_MOC
-macro(QT4_GENERATE_MOC_I infile outfile)
-    qt4_get_moc_flags(moc_flags)
-    get_filename_component(abs_infile ${infile} ABSOLUTE)
-    qt4_create_moc_command(${abs_infile} ${outfile} "${moc_flags}" "-i")
-    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
-endmacro(QT4_GENERATE_MOC_I)
-
-macro(QT4_GENERATE_MOC_I_TARGET_DEPS infile outfile)
-    qt4_get_moc_flags(moc_flags)
-    get_filename_component(abs_infile ${infile} ABSOLUTE)
-    qt4_create_moc_command_target_deps(${abs_infile} ${outfile} "${moc_flags}" "-i" ${ARGN})
-    set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
-endmacro(QT4_GENERATE_MOC_I_TARGET_DEPS)
 
 # Find python version >= 2.5
 find_package(PythonLibrary REQUIRED)

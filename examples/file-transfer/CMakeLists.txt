@@ -6,14 +6,9 @@ set(receiver_MOC_SRCS
     receiver.h
     receiver-channel.h)
 
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen" )
-foreach(moc_src ${receiver_MOC_SRCS})
-    string(REPLACE ".h" ".moc.hpp" generated_file ${moc_src})
-    qt4_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
-    list(APPEND receiver_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
-endforeach(moc_src ${receiver_MOC_SRCS})
+tpqt4_generate_mocs(${receiver_MOC_SRCS})
 
-add_executable(receiver ${receiver_SRCS})
+add_executable(receiver ${receiver_SRCS} ${receiver_MOC_SRCS})
 target_link_libraries(receiver
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}
@@ -26,14 +21,9 @@ set(sender_SRCS
 set(sender_MOC_SRCS
     sender.h)
 
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen" )
-foreach(moc_src ${sender_MOC_SRCS})
-    string(REPLACE ".h" ".moc.hpp" generated_file ${moc_src})
-    qt4_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
-    list(APPEND sender_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
-endforeach(moc_src ${sender_MOC_SRCS})
+tpqt4_generate_mocs(${sender_MOC_SRCS})
 
-add_executable(sender ${sender_SRCS})
+add_executable(sender ${sender_SRCS} ${sender_MOC_SRCS})
 target_link_libraries(sender
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTGUI_LIBRARY}

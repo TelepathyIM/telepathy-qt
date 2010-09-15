@@ -23,14 +23,9 @@ if(FARSIGHT_COMPONENTS_FOUND)
         farsight-channel.h
         video-widget.h)
 
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_gen)
-    foreach(moc_src ${call_MOC_SRCS})
-        string(REPLACE ".h" ".moc.hpp" generated_file ${moc_src})
-        qt4_generate_moc_i(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
-        list(APPEND call_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/${generated_file})
-    endforeach(moc_src call_MOC_SRCS)
+    tpqt4_generate_mocs(${call_MOC_SRCS})
 
-    add_executable(call ${call_SRCS})
+    add_executable(call ${call_SRCS} ${call_MOC_SRCS})
     target_link_libraries(call
         ${QT_QTCORE_LIBRARIES}
         ${QT_QTGUI_LIBRARIES}

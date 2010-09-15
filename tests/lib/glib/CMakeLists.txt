@@ -6,27 +6,6 @@ include_directories(
     ${DBUS_INCLUDE_DIR})
 
 if(ENABLE_TP_GLIB_TESTS)
-    # This function is used for generating CM in various examples
-    function(tpqt4_generate_manager_file MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAME)
-        # make_directory is required, otherwise the command won't work!!
-        make_directory(${CMAKE_CURRENT_BINARY_DIR}/_gen)
-        add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h
-                                   ${CMAKE_CURRENT_BINARY_DIR}/_gen/${OUTPUT_FILENAME}
-
-                           COMMAND ${PYTHON_EXECUTABLE}
-
-                           ARGS    ${CMAKE_SOURCE_DIR}/tools/manager-file.py
-                                   ${MANAGER_FILE}
-                                   _gen)
-
-        set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h
-                                    ${CMAKE_CURRENT_BINARY_DIR}/_gen/${OUTPUT_FILENAME}
-                                    PROPERTIES GENERATED true)
-        set_source_files_properties(${DEPEND_FILENAME}
-                                    PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h)
-    endfunction(tpqt4_generate_manager_file MANAGER_FILE)
-
-
     add_subdirectory(callable)
     add_subdirectory(contactlist)
     add_subdirectory(csh)
