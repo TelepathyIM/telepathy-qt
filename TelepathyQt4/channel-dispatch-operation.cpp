@@ -72,15 +72,12 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::Private
     ReadinessHelper *readinessHelper;
 
     // Introspection
+    QVariantMap immutableProperties;
     ConnectionPtr connection;
     AccountPtr account;
     QList<ChannelPtr> channels;
     QStringList possibleHandlers;
     bool gotPossibleHandlers;
-
-    // This somewhat strange list is for avoiding using dangling pointers to already finished
-    // PendingOperations
-    QList<QPointer<PendingOperation> > readyOps;
 };
 
 ChannelDispatchOperation::Private::Private(ChannelDispatchOperation *parent)
@@ -127,27 +124,42 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
         Q_ASSERT(self->properties != 0);
     }
 
-    if (self->account.isNull() || self->connection.isNull() || self->channels.isEmpty()
-            || !self->gotPossibleHandlers) {
-        debug() << "Calling Properties::GetAll(ChannelDispatchOperation)";
-        QDBusPendingCallWatcher *watcher =
-            new QDBusPendingCallWatcher(
-                    self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION)),
-                    self->parent);
-        self->parent->connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher*)),
-                SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
-    } else {
+    QVariantMap mainProps;
+    foreach (QString key, self->immutableProperties.keys()) {
+        if (key.startsWith(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION "."))) {
+            QVariant value = self->immutableProperties.value(key);
+            mainProps.insert(
+                    key.remove(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".")),
+                    value);
+        }
+    }
+
+    if (!self->channels.isEmpty() && mainProps.contains(QLatin1String("Account"))
+            && mainProps.contains(QLatin1String("Connection"))
+            && mainProps.contains(QLatin1String("Interfaces"))
+            && mainProps.contains(QLatin1String("PossibleHandlers"))) {
         debug() << "Supplied properties were sufficient, not introspecting"
             << self->parent->objectPath();
-        self->parent->gotMainProperties(0);
+        self->extractMainProps(mainProps, true);
+        return;
     }
+
+    debug() << "Calling Properties::GetAll(ChannelDispatchOperation)";
+    QDBusPendingCallWatcher *watcher =
+        new QDBusPendingCallWatcher(
+                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION)),
+                self->parent);
+    self->parent->connect(watcher,
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &props,
         bool immutableProperties)
 {
     parent->setInterfaces(qdbus_cast<QStringList>(props.value(QLatin1String("Interfaces"))));
+
+    QList<PendingOperation *> readyOps;
 
     if (!connection && props.contains(QLatin1String("Connection"))) {
         QDBusObjectPath connectionObjectPath =
@@ -201,6 +213,15 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
     if (props.contains(QLatin1String("PossibleHandlers"))) {
         possibleHandlers = qdbus_cast<QStringList>(props.value(QLatin1String("PossibleHandlers")));
         gotPossibleHandlers = true;
+    }
+
+    if (readyOps.isEmpty()) {
+        debug() << "No proxies to prepare for CDO" << parent->objectPath();
+        readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    } else {
+        parent->connect(new PendingComposite(readyOps, parent),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onProxiesPrepared(Tp::PendingOperation*)));
     }
 }
 
@@ -352,7 +373,7 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
     mPriv->chanFactory = ChannelFactory::create(bus);
     mPriv->contactFactory = ContactFactory::create();
 
-    mPriv->extractMainProps(immutableProperties, true);
+    mPriv->immutableProperties = immutableProperties;
 }
 
 /**
@@ -402,17 +423,7 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
     mPriv->chanFactory = channelFactory;
     mPriv->contactFactory = contactFactory;
 
-    QVariantMap mainProperties;
-    foreach (QString key, immutableProperties.keys()) {
-        if (key.startsWith(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION "."))) {
-            QVariant value = immutableProperties.value(key);
-            mainProperties.insert(
-                    key.remove(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".")),
-                    value);
-        }
-    }
-
-    mPriv->extractMainProps(mainProperties, true);
+    mPriv->immutableProperties = immutableProperties;
 }
 
 /**
@@ -600,35 +611,12 @@ void ChannelDispatchOperation::onFinished()
 
 void ChannelDispatchOperation::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<QVariantMap> reply;
-    if (watcher) {
-        reply = *watcher;
-    }
-    QVariantMap props;
+    QDBusPendingReply<QVariantMap> reply = *watcher;
 
     // Watcher is NULL if we didn't have to introspect at all
-    if (!watcher || !reply.isError()) {
-        if (watcher) {
-            debug() << "Got reply to Properties::GetAll(ChannelDispatchOperation)";
-            mPriv->extractMainProps(reply.value(), false);
-        }
-
-        QList<PendingOperation *> unfinishedOps;
-        foreach (QPointer<PendingOperation> op, mPriv->readyOps) {
-            if (!op.isNull()) {
-                // It hasn't already finished and thus deleted itself
-                unfinishedOps.append(op);
-            }
-        }
-
-        if (unfinishedOps.isEmpty()) {
-            // Everything finished already or there was nothing to make ready to begin with
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
-        } else {
-            connect(new PendingComposite(unfinishedOps, this),
-                    SIGNAL(finished(Tp::PendingOperation*)),
-                    SLOT(onProxiesPrepared(Tp::PendingOperation*)));
-        }
+    if (!reply.isError()) {
+        debug() << "Got reply to Properties::GetAll(ChannelDispatchOperation)";
+        mPriv->extractMainProps(reply.value(), false);
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
                 false, reply.error());

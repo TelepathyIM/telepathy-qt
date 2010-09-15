@@ -156,14 +156,25 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
     // automatically, so we wouldn't save any D-Bus traffic anyway
 
     if (!dispatchOperationPath.path().isEmpty() && dispatchOperationPath.path() != QLatin1String("/")) {
-        // TODO: push to tp spec having all of the CDO immutable props be contained in observerInfo
-        // so we don't have to introspect the CDO either - in the meantime, we can build up an
-        // incomplete map
         QVariantMap props;
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
-                QVariant::fromValue(QDBusObjectPath(accountPath.path())));
-        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
-                QVariant::fromValue(QDBusObjectPath(connectionPath.path())));
+
+        // TODO: push to tp spec having all of the CDO immutable props be contained in observerInfo
+        // so we don't have to introspect the CDO either - then we can pretty much do:
+        //
+        // props = qdbus_cast<QVariantMap>(
+        //         observerInfo.value(QLatin1String("dispatch-operation-properties")));
+        //
+        // Currently something like the following can be used for testing the CDO "we've got
+        // everything we need" codepath:
+        //
+        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
+        //        QVariant::fromValue(QDBusObjectPath(accountPath.path())));
+        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
+        //      QVariant::fromValue(QDBusObjectPath(connectionPath.path())));
+        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Interfaces"),
+        //         QVariant::fromValue(QStringList()));
+        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".PossibleHandlers"),
+        //         QVariant::fromValue(QStringList()));
 
         invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
                 props,
