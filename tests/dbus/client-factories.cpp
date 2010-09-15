@@ -770,10 +770,17 @@ void TestClientFactories::testAddDispatchOperation()
     QVERIFY(client->mAddDispatchOperationChannels.first()->connection()->isReady(
                 Connection::FeatureCore | Connection::FeatureSimplePresence));
 
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->channels().first().data(),
+            client->mAddDispatchOperationChannels.first().data());
+
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), mCDOPath);
     QVERIFY(client->mAddDispatchOperationDispatchOperation->isReady());
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->account().data(), mAccount.data());
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->connection().data(), mConn.data());
+
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->possibleHandlers().size(), 1);
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->possibleHandlers(),
+            mCDO->PossibleHandlers());
 }
 
 void TestClientFactories::testHandleChannels()
