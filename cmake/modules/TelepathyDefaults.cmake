@@ -35,6 +35,12 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(DISABLE_WERROR 0 CACHE BOOL "compile without -Werror (normally enabled in development builds)")
 
     include(CompilerWarnings)
+    include(TestCXXAcceptsFlag)
+
+    CHECK_CXX_ACCEPTS_FLAG("-fvisibility=hidden" CXX_FVISIBILITY_HIDDEN)
+    if (CXX_FVISIBILITY_HIDDEN)
+        set(VISIBILITY_HIDDEN_FLAGS "-fvisibility=hidden")
+    endif (CXX_FVISIBILITY_HIDDEN)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL Release)
         set(NOT_RELEASE 0)

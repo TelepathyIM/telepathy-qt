@@ -12,8 +12,20 @@ cmake_minimum_required(VERSION 2.6)
 #   set nano_version to 1
 set(TP_QT4_MAJOR_VERSION 0)
 set(TP_QT4_MINOR_VERSION 3)
-set(TP_QT4_MICRO_VERSION 5)
+set(TP_QT4_MICRO_VERSION 9)
 set(TP_QT4_NANO_VERSION  1)
+
+# If library source has changed since last release, increment revision
+# If interfaces have been added, removed or changed since last release,
+#  increment current and set revision to 0
+# If interfaces have been added since last release, increment age
+# If interfaces have been removed since last release, set age to 0
+#
+# If interfaces have been added, release builds will fail unless you add a new
+# file like TelepathyQt4/versions/0.1.1.abi to add them to the official ABI.
+# This also forces binaries built against devel versions to be rebuilt
+# (we don't guarantee that we won't add ABI then remove it again, if it was
+# never seen in a release).
 
 set(PACKAGE_NAME telepathy-qt4)
 set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
@@ -32,7 +44,9 @@ if(NOT CMAKE_BUILD_TYPE)
     endif(TP_QT4_NANO_VERSION EQUAL 0)
 endif(NOT CMAKE_BUILD_TYPE)
 
+# This file contains all the needed initialization macros
 include(TelepathyDefaults)
+
 include(Doxygen)
 include(MacroLogFeature)
 
@@ -77,6 +91,18 @@ QDBusVariant a; QDBusVariant b; if (a == b) { ; }
 return 0;
 }"
 HAVE_QDBUSVARIANT_OPERATOR_EQUAL)
+
+# Check for QDBusServiceWatcher being present
+# This check can be safely removed if we start depending on Qt 4.6
+CHECK_CXX_SOURCE_COMPILES("
+#include <QtDBus>
+int main()
+{
+QDBusServiceWatcher watcher;
+return 0;
+}
+"
+HAVE_QDBUSSERVICEWATCHER)
 set(CMAKE_REQUIRED_LIBRARIES)
 
 # helper macro to set up a moc rule

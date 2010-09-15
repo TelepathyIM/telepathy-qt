@@ -5,6 +5,10 @@ if(FARSIGHT_COMPONENTS_FOUND)
                         ${LIBXML2_INCLUDE_DIR}
                         ${DBUS_INCLUDE_DIR})
 
+    # It gets inherited from the previous directory, hence it has to be removed explicitely
+    remove_definitions(-DBUILDING_TELEPATHY_QT4)
+    add_definitions(-DBUILDING_TELEPATHY_QT4_FARSIGHT)
+
     set(telepathy_qt4_farsight_SRCS
         channel.cpp)
 

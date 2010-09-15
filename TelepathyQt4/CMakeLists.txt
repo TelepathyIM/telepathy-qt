@@ -1,38 +1,48 @@
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIBILITY_HIDDEN_FLAGS}")
+
+add_definitions(-DBUILDING_TELEPATHY_QT4)
+
 set(telepathy_qt4_SRCS
     abstract-client.cpp
     abstract-interface.cpp
     account.cpp
+    account-factory.cpp
     account-manager.cpp
     account-set.cpp
     account-set-internal.h
     capabilities-base.cpp
     channel.cpp
+    channel-factory.cpp
+    channel-factory.h
+    channel-request.cpp
     channel-dispatcher.cpp
     channel-dispatch-operation.cpp
-    channel-factory.cpp
-    channel-request.cpp
     client.cpp
     client-registrar.cpp
     client-registrar-internal.h
-    connection-capabilities.cpp
     connection.cpp
-    connection-internal.h
+    connection-capabilities.cpp
+    connection-factory.cpp
     connection-manager.cpp
+    connection-internal.h
     connection-manager-internal.h
     contact.cpp
     contact-capabilities.cpp
+    contact-factory.cpp
     contact-location.cpp
     contact-manager.cpp
-    contact-manager-internal.h
     dbus.cpp
     dbus-proxy.cpp
+    dbus-proxy-factory.cpp
+    dbus-proxy-factory-internal.h
     debug.cpp
     debug-internal.h
     feature.cpp
     file-transfer-channel.cpp
     file-transfer-channel-creation-properties.cpp
+    fixed-feature-factory.cpp
     future.cpp
     future-internal.h
     incoming-file-transfer-channel.cpp
@@ -61,12 +71,14 @@ set(telepathy_qt4_SRCS
     ready-object.cpp
     referenced-handles.cpp
     room-list-channel.cpp
-    shared-ptr.cpp
     streamed-media-channel.cpp
     streamed-media-channel-internal.h
+    test-backdoors.cpp
+    test-backdoors.h
     text-channel.cpp
     types.cpp
-    types-internal.h)
+    types-internal.h
+    utils.cpp)
 
 set(telepathy_qt4_HEADERS
     AbstractClient
@@ -78,6 +90,8 @@ set(telepathy_qt4_HEADERS
     abstract-interface.h
     Account
     account.h
+    AccountFactory
+    account-factory.h
     AccountInterface
     AccountManager
     account-manager.h
@@ -93,6 +107,7 @@ set(telepathy_qt4_HEADERS
     ChannelDispatchOperation
     channel-dispatch-operation.h
     ChannelDispatchOperationInterface
+    ChannelFactory
     channel-factory.h
     channel.h
     ChannelInterface
@@ -107,6 +122,7 @@ set(telepathy_qt4_HEADERS
     channel-request.h
     ChannelRequestInterface
     ChannelTypeContactListInterface
+    ChannelTypeContactSearchInterface
     ChannelTypeRoomListInterface
     ChannelTypeStreamedMediaInterface
     ChannelTypeStreamTubeInterface
@@ -126,6 +142,8 @@ set(telepathy_qt4_HEADERS
     ConnectionCapabilities
     connection-capabilities.h
     connection.h
+    ConnectionFactory
+    connection-factory.h
     ConnectionInterface
     ConnectionInterfaceAliasingInterface
     ConnectionInterfaceAnonymityInterface
@@ -150,6 +168,8 @@ set(telepathy_qt4_HEADERS
     contact.h
     ContactCapabilities
     contact-capabilities.h
+    ContactFactory
+    contact-factory.h
     ContactLocation
     contact-location.h
     ContactManager
@@ -159,6 +179,8 @@ set(telepathy_qt4_HEADERS
     dbus.h
     DBusProxy
     dbus-proxy.h
+    DBusProxyFactory
+    dbus-proxy-factory.h
     Debug
     debug.h
     Feature
@@ -167,6 +189,8 @@ set(telepathy_qt4_HEADERS
     FileTransferChannelCreationProperties
     file-transfer-channel-creation-properties.h
     file-transfer-channel.h
+    FixedFeatureFactory
+    fixed-feature-factory.h
     Global
     global.h
     IncomingFileTransferChannel
@@ -245,6 +269,8 @@ set(telepathy_qt4_HEADERS
     text-channel.h
     Types
     types.h
+    Utils
+    utils.h
     WeakPtr)
 
 set(telepathy_qt4_gen_HEADERS
@@ -287,6 +313,7 @@ set(telepathy_qt4_MOC_SRCS
     contact-manager.h
     contact-manager-internal.h
     dbus-proxy.h
+    dbus-proxy-factory-internal.h
     file-transfer-channel.h
     incoming-file-transfer-channel.h
     outgoing-file-transfer-channel.h
@@ -296,6 +323,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-channel-request-internal.h
     pending-connection.h
     pending-contact-attributes.h
+    pending-contact-info.h
     pending-contacts.h
     pending-handles.h
     pending-operation.h
