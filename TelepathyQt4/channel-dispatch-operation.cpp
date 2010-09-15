@@ -29,10 +29,17 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/Channel>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
+#include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingVoid>
+
+#include <QPointer>
 
 namespace Tp
 {
@@ -46,10 +53,15 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::Private
 
     void extractMainProps(const QVariantMap &props,
             bool immutableProperties);
-    void checkReady();
 
     // Public object
     ChannelDispatchOperation *parent;
+
+    // Context
+    AccountFactoryConstPtr accFact;
+    ConnectionFactoryConstPtr connFact;
+    ChannelFactoryConstPtr chanFact;
+    ContactFactoryConstPtr contactFact;
 
     // Instance of generated interface class
     Client::ChannelDispatchOperationInterface *baseInterface;
@@ -64,6 +76,11 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelDispatchOperation::Private
     AccountPtr account;
     QList<ChannelPtr> channels;
     QStringList possibleHandlers;
+    bool gotPossibleHandlers;
+
+    // This somewhat strange list is for avoiding using dangling pointers to already finished
+    // PendingOperations
+    QList<QPointer<PendingOperation> > readyOps;
 };
 
 ChannelDispatchOperation::Private::Private(ChannelDispatchOperation *parent)
@@ -72,13 +89,18 @@ ChannelDispatchOperation::Private::Private(ChannelDispatchOperation *parent)
                     parent->dbusConnection(), parent->busName(),
                     parent->objectPath(), parent)),
       properties(0),
-      readinessHelper(parent->readinessHelper())
+      readinessHelper(parent->readinessHelper()),
+      gotPossibleHandlers(false)
 {
     debug() << "Creating new ChannelDispatchOperation:" << parent->objectPath();
 
     parent->connect(baseInterface,
             SIGNAL(Finished()),
             SLOT(onFinished()));
+
+    parent->connect(baseInterface,
+            SIGNAL(ChannelLost(const QDBusObjectPath &, const QString &, const QString &)),
+            SLOT(onChannelLost(const QDBusObjectPath &, const QString &, const QString &)));
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -105,18 +127,23 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
         Q_ASSERT(self->properties != 0);
     }
 
-    self->parent->connect(self->baseInterface,
-            SIGNAL(ChannelLost(const QDBusObjectPath &, const QString &, const QString &)),
-            SLOT(onChannelLost(const QDBusObjectPath &, const QString &, const QString &)));
-
-    debug() << "Calling Properties::GetAll(ChannelDispatchOperation)";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
-                self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION)),
-                self->parent);
-    self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher*)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    debug() << self->account.isNull() << self->connection.isNull() << self->channels.isEmpty()
+            << !self->gotPossibleHandlers;
+    if (self->account.isNull() || self->connection.isNull() || self->channels.isEmpty()
+            || !self->gotPossibleHandlers) {
+        debug() << "Calling Properties::GetAll(ChannelDispatchOperation)";
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(
+                    self->properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION)),
+                    self->parent);
+        self->parent->connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
+    } else {
+        debug() << "Supplied properties were sufficient, not introspecting"
+            << self->parent->objectPath();
+        self->parent->gotMainProperties(0);
+    }
 }
 
 void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &props,
@@ -130,48 +157,53 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         QString connectionBusName =
             connectionObjectPath.path().mid(1).replace(QLatin1String("/"),
                     QLatin1String("."));
-        connection = Connection::create(
-                connectionBusName,
-                connectionObjectPath.path());
+
+        PendingReady *ready =
+            connFact->proxy(connectionBusName, connectionObjectPath.path(),
+                    chanFact, contactFact);
+        connection = ConnectionPtr::dynamicCast(ready->proxy());
+        readyOps.append(ready);
     }
 
     if (!account && props.contains(QLatin1String("Account"))) {
         QDBusObjectPath accountObjectPath =
             qdbus_cast<QDBusObjectPath>(props.value(QLatin1String("Account")));
-        account = Account::create(
-                QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-                accountObjectPath.path());
+
+        PendingReady *ready =
+            accFact->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+                    accountObjectPath.path(), connFact, chanFact, contactFact);
+        account = AccountPtr::dynamicCast(ready->proxy());
+        readyOps.append(ready);
     }
 
     if (!immutableProperties) {
+        // If we're here, it means we had to introspect the object, and now for sure have the
+        // correct channels list, so let's overwrite the initial channels - but keep the refs around
+        // for a while as an optimization enabling the factory to still return the same ones instead
+        // of constructing everything anew. Note that this is not done at all in the case the
+        // immutable props and initial channels etc were sufficient.
+        QList<ChannelPtr> saveChannels = channels;
+        channels.clear();
+
         ChannelDetailsList channelDetailsList =
             qdbus_cast<ChannelDetailsList>(props.value(QLatin1String("Channels")));
         ChannelPtr channel;
         foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-            channel = ChannelFactory::create(connection,
-                    channelDetails.channel.path(),
-                    channelDetails.properties);
-            channels.append(channel);
+            PendingReady *ready =
+                chanFact->proxy(connection,
+                        channelDetails.channel.path(), channelDetails.properties);
+            channels.append(ChannelPtr::dynamicCast(ready->proxy()));
+            readyOps.append(ready);
         }
+
+        // saveChannels goes out of scope now, so any initial channels which don't exist anymore are
+        // freed
     }
 
-    possibleHandlers = qdbus_cast<QStringList>(props.value(QLatin1String("PossibleHandlers")));
-}
-
-void ChannelDispatchOperation::Private::checkReady()
-{
-    if ((connection && !connection->isReady()) ||
-        (account && !account->isReady())) {
-        return;
+    if (props.contains(QLatin1String("PossibleHandlers"))) {
+        possibleHandlers = qdbus_cast<QStringList>(props.value(QLatin1String("PossibleHandlers")));
+        gotPossibleHandlers = true;
     }
-
-    foreach (const ChannelPtr &channel, channels) {
-        if (!channel->isReady()) {
-            return;
-        }
-    }
-
-    readinessHelper->setIntrospectCompleted(FeatureCore, true);
 }
 
 /**
@@ -269,6 +301,35 @@ ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnecti
 }
 
 /**
+ * Create a new channel dispatch operation object using the given \a bus, the given factories and
+ * the given initial channels.
+ *
+ * \param bus QDBusConnection to use.
+ * \param objectPath The channel dispatch operation object path.
+ * \param immutableProperties The immutable properties of the channel dispatch
+ *        operation.
+ * \param initialChannels The channels this CDO has initially (further tracking is done internally).
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ChannelDispatchOperationPtr pointing to the newly created
+ *         ChannelDispatchOperation.
+ */
+ChannelDispatchOperationPtr ChannelDispatchOperation::create(const QDBusConnection &bus,
+        const QString &objectPath, const QVariantMap &immutableProperties,
+        const QList<ChannelPtr> &initialChannels,
+        const AccountFactoryConstPtr &accountFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+{
+    return ChannelDispatchOperationPtr(new ChannelDispatchOperation(
+                bus, objectPath, immutableProperties, initialChannels, accountFactory,
+                connectionFactory, channelFactory, contactFactory));
+}
+
+/**
  * Construct a new channel dispatch operation object using the given \a bus.
  *
  * \param bus QDBusConnection to use
@@ -285,7 +346,75 @@ ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
       ReadyObject(this, FeatureCore),
       mPriv(new Private(this))
 {
+    // API/ABI break TODO: remove this constructor and any other way to get "default factories" in
+    // CDO - these sort of emulate the old pre-factory behavior of CDO, making core in Acc and Conn
+    // ready, but sadly not in Channels.
+    mPriv->accFact = AccountFactory::create(bus, Account::FeatureCore);
+    mPriv->connFact = ConnectionFactory::create(bus, Connection::FeatureCore);
+    mPriv->chanFact = ChannelFactory::create(bus);
+    mPriv->contactFact = ContactFactory::create();
+
     mPriv->extractMainProps(immutableProperties, true);
+}
+
+/**
+ * Construct a new channel dispatch operation object using the given \a bus, the given factories and
+ * the given initial channels.
+ *
+ * \param bus QDBusConnection to use
+ * \param objectPath The channel dispatch operation object path.
+ * \param immutableProperties The immutable properties of the channel dispatch
+ *        operation.
+ * \param initialChannels The channels this CDO has initially (further tracking is done internally).
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ */
+ChannelDispatchOperation::ChannelDispatchOperation(const QDBusConnection &bus,
+        const QString &objectPath, const QVariantMap &immutableProperties,
+        const QList<ChannelPtr> &initialChannels,
+        const AccountFactoryConstPtr &accountFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+    : StatefulDBusProxy(bus,
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCHER),
+            objectPath),
+      OptionalInterfaceFactory<ChannelDispatchOperation>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this))
+{
+    if (accountFactory->dbusConnection().name() != bus.name()) {
+        warning() << "  The D-Bus connection in the account factory is not the proxy connection";
+    }
+
+    if (connectionFactory->dbusConnection().name() != bus.name()) {
+        warning() << "  The D-Bus connection in the connection factory is not the proxy connection";
+    }
+
+    if (channelFactory->dbusConnection().name() != bus.name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
+    }
+
+    mPriv->channels = initialChannels;
+
+    mPriv->accFact = accountFactory;
+    mPriv->connFact = connectionFactory;
+    mPriv->chanFact = channelFactory;
+    mPriv->contactFact = contactFactory;
+
+    QVariantMap mainProperties;
+    foreach (QString key, immutableProperties.keys()) {
+        if (key.startsWith(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION "."))) {
+            QVariant value = immutableProperties.value(key);
+            mainProperties.insert(
+                    key.remove(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".")),
+                    value);
+        }
+    }
+
+    mPriv->extractMainProps(mainProperties, true);
 }
 
 /**
@@ -473,85 +602,41 @@ void ChannelDispatchOperation::onFinished()
 
 void ChannelDispatchOperation::gotMainProperties(QDBusPendingCallWatcher *watcher)
 {
-    QDBusPendingReply<QVariantMap> reply = *watcher;
+    QDBusPendingReply<QVariantMap> reply;
+    if (watcher) {
+        reply = *watcher;
+    }
     QVariantMap props;
 
-    if (!reply.isError()) {
-        debug() << "Got reply to Properties::GetAll(ChannelDispatchOperation)";
-        props = reply.value();
+    // Watcher is NULL if we didn't have to introspect at all
+    if (!watcher || !reply.isError()) {
+        if (watcher) {
+            debug() << "Got reply to Properties::GetAll(ChannelDispatchOperation)";
+            mPriv->extractMainProps(reply.value(), false);
+        }
 
-        mPriv->extractMainProps(props, false);
+        QList<PendingOperation *> unfinishedOps;
+        foreach (QPointer<PendingOperation> op, mPriv->readyOps) {
+            if (!op.isNull()) {
+                // It hasn't already finished and thus deleted itself
+                unfinishedOps.append(op);
+            }
+        }
 
-        if (mPriv->connection) {
-            connect(mPriv->connection->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(onConnectionReady(Tp::PendingOperation *)));
+        if (unfinishedOps.isEmpty()) {
+            // Everything finished already or there was nothing to make ready to begin with
+            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
         } else {
-            warning() << "Properties.GetAll(ChannelDispatchOperation) is missing "
-                "connection property, ignoring";
+            connect(new PendingComposite(unfinishedOps, this),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onProxiesPrepared(Tp::PendingOperation*)));
         }
-
-        if (mPriv->account) {
-            connect(mPriv->account->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(onAccountReady(Tp::PendingOperation *)));
-        } else {
-            warning() << "Properties.GetAll(ChannelDispatchOperation) is missing "
-                "account property, ignoring";
-        }
-
-        foreach (const ChannelPtr &channel, mPriv->channels) {
-            connect(channel->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(onChannelReady(Tp::PendingOperation *)));
-        }
-
-        mPriv->checkReady();
-    }
-    else {
+    } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
                 false, reply.error());
         warning().nospace() << "Properties::GetAll(ChannelDispatchOperation) failed with "
             << reply.error().name() << ": " << reply.error().message();
     }
-}
-
-void ChannelDispatchOperation::onConnectionReady(PendingOperation *op)
-{
-    if (op->isError()) {
-        warning() << "ChannelDispatchOperation: Unable to make connection ready";
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
-                op->errorName(), op->errorMessage());
-        return;
-    }
-    mPriv->checkReady();
-}
-
-void ChannelDispatchOperation::onAccountReady(PendingOperation *op)
-{
-    if (op->isError()) {
-        warning() << "ChannelDispatchOperation: Unable to make account ready";
-        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
-                op->errorName(), op->errorMessage());
-        return;
-    }
-    mPriv->checkReady();
-}
-
-void ChannelDispatchOperation::onChannelReady(PendingOperation *op)
-{
-    if (op->isError()) {
-        PendingReady *pr = qobject_cast<PendingReady*>(op);
-        ChannelPtr channel(qobject_cast<Channel*>(pr->object()));
-        // only fail if channel still exists (channelLost was not emitted)
-        if (mPriv->channels.contains(channel)) {
-            warning() << "ChannelDispatchOperation: Unable to make channel ready";
-            mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
-                    op->errorName(), op->errorMessage());
-        }
-        return;
-    }
-    mPriv->checkReady();
 }
 
 void ChannelDispatchOperation::onChannelLost(
@@ -564,6 +649,17 @@ void ChannelDispatchOperation::onChannelLost(
             mPriv->channels.removeOne(channel);
             return;
         }
+    }
+}
+
+void ChannelDispatchOperation::onProxiesPrepared(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        warning() << "Preparing proxies for CDO" << objectPath() << "failed with"
+            << op->errorName() << ":" << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false);
+    } else {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
 }
 

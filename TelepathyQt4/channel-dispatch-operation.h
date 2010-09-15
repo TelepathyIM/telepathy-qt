@@ -58,28 +58,18 @@ class TELEPATHY_QT4_EXPORT ChannelDispatchOperation : public StatefulDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    /* API/ABI break FIXME:
-     * This class is currently totally stupid. ClientHandlerAdaptor constructs the same channels as
-     * channels() will have based on the AddDispatchOperation parameters, but this class will
-     * happily go on and construct its own Channel instances after introspecting the CDO object...
-     *
-     * The application addDispatchOperation method is then called with the adaptor-constructed
-     * channels as one parameter and an instance of this class as the following parameter, and
-     * consequently the application gets two channel lists with the same remote channel objects, but
-     * with different proxies for them. How about that?
-     *
-     * The create() methods should probably take the initial channel list in addition to the
-     * immutable properties and avoid double-constructing any channels.
-     *
-     * On my personal top XXX of "why think about the code you're writing a bit", this goes quite
-     * high.
-     */
-
-    static ChannelDispatchOperationPtr create(const QString &objectPath,
+    TELEPATHY_QT4_DEPRECATED static ChannelDispatchOperationPtr create(const QString &objectPath,
             const QVariantMap &immutableProperties);
-    static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
+    static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
+            const QString &objectPath, const QVariantMap &immutableProperties,
+            const QList<ChannelPtr> &initialChannels,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
     virtual ~ChannelDispatchOperation();
 
     ConnectionPtr connection() const;
@@ -104,19 +94,25 @@ Q_SIGNALS:
             const QString &errorMessage);
 
 protected:
-    ChannelDispatchOperation(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED ChannelDispatchOperation(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
+
+    ChannelDispatchOperation(const QDBusConnection &bus,
+            const QString &objectPath, const QVariantMap &immutableProperties,
+            const QList<ChannelPtr> &initialChannels,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::ChannelDispatchOperationInterface *baseInterface() const;
 
 private Q_SLOTS:
     void onFinished();
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void onConnectionReady(Tp::PendingOperation *op);
-    void onAccountReady(Tp::PendingOperation *op);
-    void onChannelReady(Tp::PendingOperation *op);
     void onChannelLost(const QDBusObjectPath &channelObjectPath,
         const QString &errorName, const QString &errorMessage);
+    void onProxiesPrepared(Tp::PendingOperation *op);
 
 private:
     struct Private;

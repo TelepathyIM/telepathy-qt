@@ -156,8 +156,22 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
     // automatically, so we wouldn't save any D-Bus traffic anyway
 
     if (!dispatchOperationPath.path().isEmpty() && dispatchOperationPath.path() != QLatin1String("/")) {
+        // TODO: push to tp spec having all of the CDO immutable props be contained in observerInfo
+        // so we don't have to introspect the CDO either - in the meantime, we can build up an
+        // incomplete map
+        QVariantMap props;
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
+                QVariant::fromValue(QDBusObjectPath(accountPath.path())));
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
+                QVariant::fromValue(QDBusObjectPath(connectionPath.path())));
+
         invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
-                QVariantMap());
+                props,
+                invocation->chans,
+                accFactory,
+                connFactory,
+                chanFactory,
+                contactFactory);
         readyOps.append(invocation->dispatchOp->becomeReady());
     }
 
@@ -252,6 +266,7 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
         const QVariantMap &properties,
         const QDBusMessage &message)
 {
+    AccountFactoryConstPtr accFactory = mRegistrar->accountFactory();
     ConnectionFactoryConstPtr connFactory = mRegistrar->connectionFactory();
     ChannelFactoryConstPtr chanFactory = mRegistrar->channelFactory();
     ContactFactoryConstPtr contactFactory = mRegistrar->contactFactory();
@@ -278,8 +293,14 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
         readyOps.append(chanReady);
     }
 
-    invocation->dispatchOp = ChannelDispatchOperation::create(dispatchOperationPath.path(),
-            properties);
+    // Note that creating the CDO used to not pass the bus connection at all! Which means the old
+    // code would've broken if used on a != sessionBus() bus. Therefore I think we can draw a
+    // conclusion that the classes we mostly create ourselves (CDO, CR, etc.) should NOT have
+    // default parameters for the bus and/or the factories after the API/ABI break, to catch this
+    // type of error at compile time.
+    invocation->dispatchOp = ChannelDispatchOperation::create(mBus,
+            dispatchOperationPath.path(), properties, QList<ChannelPtr>(), accFactory, connFactory,
+            chanFactory, contactFactory);
     readyOps.append(invocation->dispatchOp->becomeReady());
 
     invocation->ctx = MethodInvocationContextPtr<>(new MethodInvocationContext<>(mBus, message));

@@ -144,6 +144,7 @@ class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
 "    <property name=\"Connection\" type=\"o\" access=\"read\" />\n"
 "    <property name=\"Channels\" type=\"a(oa{sv})\" access=\"read\" />\n"
 "    <property name=\"Interfaces\" type=\"as\" access=\"read\" />\n"
+"    <property name=\"PossibleHandlers\" type=\"ao\" access=\"read\" />\n"
 "  </interface>\n"
         "")
 
@@ -151,12 +152,14 @@ class ChannelDispatchOperationAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QDBusObjectPath Connection READ Connection)
     Q_PROPERTY(ChannelDetailsList Channels READ Channels)
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
+    Q_PROPERTY(ObjectPathList PossibleHandlers READ PossibleHandlers)
 
 public:
     ChannelDispatchOperationAdaptor(const QDBusObjectPath &acc, const QDBusObjectPath &conn,
-            const ChannelDetailsList &channels,
+            const ChannelDetailsList &channels, const ObjectPathList &possibleHandlers,
             QObject *parent)
-        : QDBusAbstractAdaptor(parent), mAccount(acc), mConn(conn), mChannels(channels)
+        : QDBusAbstractAdaptor(parent), mAccount(acc), mConn(conn), mChannels(channels),
+          mPossibleHandlers(possibleHandlers)
     {
     }
 
@@ -185,10 +188,16 @@ public: // Properties
         return mInterfaces;
     }
 
+    inline ObjectPathList PossibleHandlers() const
+    {
+        return mPossibleHandlers;
+    }
+
 private:
     QDBusObjectPath mAccount, mConn;
     ChannelDetailsList mChannels;
     QStringList mInterfaces;
+    ObjectPathList mPossibleHandlers;
 };
 
 class MyClient : public QObject,
@@ -528,7 +537,9 @@ void TestClientFactories::initTestCase()
     channelDetailsList.append(channelDetails);
 
     mCDO = new ChannelDispatchOperationAdaptor(QDBusObjectPath(mAccount->objectPath()),
-            QDBusObjectPath(mConn->objectPath()), channelDetailsList, cdo);
+            QDBusObjectPath(mConn->objectPath()), channelDetailsList,
+            ObjectPathList() << QDBusObjectPath(mClientObject1Path)
+                << QDBusObjectPath(mClientObject2Path), cdo);
     QVERIFY(bus.registerObject(mCDOPath, cdo));
 }
 
@@ -686,7 +697,7 @@ void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &cli
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
             channelDetailsList,
-            QDBusObjectPath("/"),
+            QDBusObjectPath(mCDOPath),
             ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
@@ -702,7 +713,10 @@ void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &cli
 
     QCOMPARE(client->mObserveChannelsChannels.size(), 1);
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
-    QVERIFY(client->mObserveChannelsDispatchOperation.isNull());
+
+    QVERIFY(!client->mObserveChannelsDispatchOperation.isNull());
+    QCOMPARE(client->mObserveChannelsDispatchOperation->account().data(), mAccount.data());
+    QCOMPARE(client->mObserveChannelsDispatchOperation->connection().data(), mConn.data());
 
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.size(), 1);
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
@@ -737,6 +751,10 @@ void TestClientFactories::testAddDispatchOperation()
     dispatchOperationProperties.insert(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
             QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
+    dispatchOperationProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".PossibleHandlers"),
+            QVariant::fromValue(ObjectPathList() << QDBusObjectPath(mClientObject1Path)
+                << QDBusObjectPath(mClientObject2Path)));
 
     approverIface->AddDispatchOperation(mCDO->Channels(), QDBusObjectPath(mCDOPath),
             dispatchOperationProperties);
@@ -750,6 +768,8 @@ void TestClientFactories::testAddDispatchOperation()
 
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), mCDOPath);
     QVERIFY(client->mAddDispatchOperationDispatchOperation->isReady());
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->account().data(), mAccount.data());
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->connection().data(), mConn.data());
 }
 
 void TestClientFactories::testHandleChannels()
