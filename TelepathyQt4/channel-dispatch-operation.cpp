@@ -182,11 +182,9 @@ void ChannelDispatchOperation::Private::extractMainProps(const QVariantMap &prop
         // immutable props and initial channels etc were sufficient.
         QList<ChannelPtr> saveChannels = channels;
         channels.clear();
-        debug() << saveChannels.size();
 
         ChannelDetailsList channelDetailsList =
             qdbus_cast<ChannelDetailsList>(props.value(QLatin1String("Channels")));
-        debug() << channelDetailsList.size();
         ChannelPtr channel;
         foreach (const ChannelDetails &channelDetails, channelDetailsList) {
             PendingReady *ready =
