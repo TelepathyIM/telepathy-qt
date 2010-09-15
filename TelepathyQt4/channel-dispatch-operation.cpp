@@ -127,8 +127,6 @@ void ChannelDispatchOperation::Private::introspectMain(ChannelDispatchOperation:
         Q_ASSERT(self->properties != 0);
     }
 
-    debug() << self->account.isNull() << self->connection.isNull() << self->channels.isEmpty()
-            << !self->gotPossibleHandlers;
     if (self->account.isNull() || self->connection.isNull() || self->channels.isEmpty()
             || !self->gotPossibleHandlers) {
         debug() << "Calling Properties::GetAll(ChannelDispatchOperation)";
