@@ -5,7 +5,7 @@
 #define IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <TelepathyQt4/account-capability-filter.h>
+#include <TelepathyQt4/generic-capability-filter.h>
 
 #undef IN_TELEPATHY_QT4_HEADER
 

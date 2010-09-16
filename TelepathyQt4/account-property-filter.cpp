@@ -54,12 +54,6 @@ AccountPropertyFilter::AccountPropertyFilter()
 {
 }
 
-AccountPropertyFilter::AccountPropertyFilter(const AccountPropertyFilter &other)
-    : GenericPropertyFilter<Account>(other),
-      mPriv(new Private())
-{
-}
-
 AccountPropertyFilter::~AccountPropertyFilter()
 {
     delete mPriv;

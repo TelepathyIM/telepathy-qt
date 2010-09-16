@@ -26,22 +26,30 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/SharedPtr>
 #include <TelepathyQt4/Types>
 
 namespace Tp
 {
 
 template <class T>
-class Filter
+class Filter : public RefCounted
 {
+    Q_DISABLE_COPY(Filter)
+
 public:
-    inline Filter() { }
-    inline Filter(const Filter<T> &other) { }
-    inline virtual ~Filter() { }
+    virtual ~Filter() {}
 
     virtual bool isValid() const { return false; }
 
     virtual bool matches(const SharedPtr<T> &t) const { return false; }
+
+protected:
+    Filter() {}
+
+private:
+    struct Private;
+    Private *mPriv; // Just a placeholder really
 };
 
 } // Tp

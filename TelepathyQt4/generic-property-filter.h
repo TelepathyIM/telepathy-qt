@@ -36,12 +36,6 @@ template <class T>
 class GenericPropertyFilter : public Filter<T>
 {
 public:
-    inline GenericPropertyFilter() : Filter<T>() { }
-    inline GenericPropertyFilter(const GenericPropertyFilter<T> &other)
-        : Filter<T>(other)
-    {
-        mFilter = other.mFilter;
-    }
     inline virtual ~GenericPropertyFilter() { }
 
     inline virtual bool isValid() const { return true; }
@@ -70,6 +64,9 @@ public:
     }
 
     inline void setProperties(const QVariantMap &filter) { mFilter = filter; }
+
+protected:
+    inline GenericPropertyFilter() : Filter<T>() { }
 
 private:
     QVariantMap mFilter;

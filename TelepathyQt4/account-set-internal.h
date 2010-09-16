@@ -31,7 +31,7 @@ struct AccountSet::Private
     class AccountWrapper;
 
     Private(AccountSet *parent, const AccountManagerPtr &accountManager,
-            const QList<Filter<Account> > &filters);
+            const QList<AccountFilterConstPtr> &filters);
     Private(AccountSet *parent, const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
 
@@ -47,7 +47,7 @@ struct AccountSet::Private
 
     AccountSet *parent;
     AccountManagerPtr accountManager;
-    QList<Filter<Account> > filters;
+    QList<AccountFilterConstPtr> filters;
     QHash<QString, AccountWrapper *> wrappers;
     QHash<QString, AccountPtr> accounts;
     bool filterValid;

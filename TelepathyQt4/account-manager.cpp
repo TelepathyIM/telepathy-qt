@@ -809,8 +809,8 @@ AccountSetPtr AccountManager::textChatAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    AccountCapabilityFilter filter;
-    filter.setRequestableChannelClassesSubset(rccs);
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
     return filterAccounts(filter);
 }
 
@@ -836,8 +836,8 @@ AccountSetPtr AccountManager::textChatRoomAccountsSet() const
             (uint) HandleTypeRoom);
     rccs.append(rcc);
 
-    AccountCapabilityFilter filter;
-    filter.setRequestableChannelClassesSubset(rccs);
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
     return filterAccounts(filter);
 }
 
@@ -864,8 +864,8 @@ AccountSetPtr AccountManager::mediaCallAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    AccountCapabilityFilter filter;
-    filter.setRequestableChannelClassesSubset(rccs);
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
     return filterAccounts(filter);
 }
 
@@ -894,8 +894,8 @@ AccountSetPtr AccountManager::audioCallAccountsSet() const
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
     rccs.append(rcc);
 
-    AccountCapabilityFilter filter;
-    filter.setRequestableChannelClassesSubset(rccs);
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
     return filterAccounts(filter);
 }
 
@@ -927,8 +927,8 @@ AccountSetPtr AccountManager::videoCallAccountsSet(bool withAudio) const
     }
     rccs.append(rcc);
 
-    AccountCapabilityFilter filter;
-    filter.setRequestableChannelClassesSubset(rccs);
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
     return filterAccounts(filter);
 }
 
@@ -955,8 +955,8 @@ AccountSetPtr AccountManager::fileTransferAccountsSet() const
             (uint) HandleTypeContact);
     rccs.append(rcc);
 
-    AccountCapabilityFilter filter;
-    filter.setRequestableChannelClassesSubset(rccs);
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
     return filterAccounts(filter);
 }
 
@@ -995,9 +995,9 @@ AccountSetPtr AccountManager::accountsByProtocol(
  * \return A set of accounts containing all accounts that match the given \a
  *         filter criteria.
  */
-AccountSetPtr AccountManager::filterAccounts(const Filter<Account> &filter) const
+AccountSetPtr AccountManager::filterAccounts(const AccountFilterConstPtr &filter) const
 {
-    return filterAccounts(QList<Filter<Account> >() << filter);
+    return filterAccounts(QList<AccountFilterConstPtr>() << filter);
 }
 
 /**
@@ -1014,7 +1014,7 @@ AccountSetPtr AccountManager::filterAccounts(const Filter<Account> &filter) cons
  * \return A set of accounts containing all accounts that match the given \a
  *         filters criteria.
  */
-AccountSetPtr AccountManager::filterAccounts(const QList<Filter<Account> > &filters) const
+AccountSetPtr AccountManager::filterAccounts(const QList<AccountFilterConstPtr> &filters) const
 {
     return AccountSetPtr(new AccountSet(AccountManagerPtr(
                     (AccountManager *) this), filters));

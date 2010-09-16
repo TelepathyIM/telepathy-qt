@@ -36,13 +36,18 @@ namespace Tp
 class AccountPropertyFilter : public GenericPropertyFilter<Account>
 {
 public:
-    AccountPropertyFilter();
-    AccountPropertyFilter(const AccountPropertyFilter &other);
+    static AccountPropertyFilterPtr create()
+    {
+        return AccountPropertyFilterPtr(new AccountPropertyFilter);
+    }
+
     ~AccountPropertyFilter();
 
     bool isValid() const;
 
 private:
+    AccountPropertyFilter();
+
     struct Private;
     friend struct Private;
     Private *mPriv;

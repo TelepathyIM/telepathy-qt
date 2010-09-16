@@ -45,12 +45,12 @@ class TELEPATHY_QT4_EXPORT AccountSet : public QObject,
     Q_PROPERTY(bool filterValid READ isFilterValid)
     // deprecated
     Q_PROPERTY(QVariantMap filter READ filter)
-    Q_PROPERTY(QList<Filter<Account> > filters READ filters)
+    Q_PROPERTY(QList<AccountFilterConstPtr> filters READ filters)
     Q_PROPERTY(QList<AccountPtr> accounts READ accounts)
 
 public:
     AccountSet(const AccountManagerPtr &accountManager,
-            const QList<Filter<Account> > &filters);
+            const QList<AccountFilterConstPtr > &filters);
     AccountSet(const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
     virtual ~AccountSet();
@@ -60,7 +60,7 @@ public:
     TELEPATHY_QT4_DEPRECATED bool isFilterValid() const;
 
     TELEPATHY_QT4_DEPRECATED QVariantMap filter() const;
-    QList<Filter<Account> > filters() const;
+    QList<AccountFilterConstPtr> filters() const;
 
     QList<AccountPtr> accounts() const;
 

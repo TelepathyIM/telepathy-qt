@@ -126,8 +126,8 @@ public:
     AccountSetPtr accountsByProtocol(
             const QString &protocolName) const;
 
-    AccountSetPtr filterAccounts(const Filter<Account> &filter) const;
-    AccountSetPtr filterAccounts(const QList<Filter<Account> > &filters) const;
+    AccountSetPtr filterAccounts(const AccountFilterConstPtr &filter) const;
+    AccountSetPtr filterAccounts(const QList<AccountFilterConstPtr> &filters) const;
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
     TELEPATHY_QT4_DEPRECATED AccountPtr accountForPath(const QString &path);

@@ -37,7 +37,7 @@ namespace Tp
 
 AccountSet::Private::Private(AccountSet *parent,
         const AccountManagerPtr &accountManager,
-        const QList<Filter<Account> > &filters)
+        const QList<AccountFilterConstPtr> &filters)
     : parent(parent),
       accountManager(accountManager),
       filters(filters),
@@ -53,10 +53,10 @@ AccountSet::Private::Private(AccountSet *parent,
       accountManager(accountManager),
       ready(false)
 {
-    AccountPropertyFilter filterObj;
+    AccountPropertyFilterPtr filterObj = AccountPropertyFilter::create();
     for (QVariantMap::const_iterator i = filter.constBegin();
             i != filter.constEnd(); ++i) {
-        filterObj.addProperty(i.key(), i.value());
+        filterObj->addProperty(i.key(), i.value());
     }
     filters.append(filterObj);
     init();
@@ -73,8 +73,8 @@ void AccountSet::Private::init()
 
 bool AccountSet::Private::checkFilters()
 {
-    foreach (const Filter<Account> &filter, filters) {
-        if (!filter.isValid()) {
+    foreach (const AccountFilterConstPtr &filter, filters) {
+        if (!filter->isValid()) {
             return false;
         }
     }
@@ -160,8 +160,8 @@ bool AccountSet::Private::accountMatchFilters(AccountWrapper *wrapper)
     }
 
     AccountPtr account = wrapper->account();
-    foreach (const Filter<Account> &filter, filters) {
-        if (!filter.matches(account)) {
+    foreach (const AccountFilterConstPtr &filter, filters) {
+        if (!filter->matches(account)) {
             return false;
         }
     }
@@ -312,10 +312,10 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  * {
  *     ...
  *
- *     QList<Filter<Account> > filters;
- *     AccountPropertyFilter filter;
- *     filter.addProperty(QLatin1String("protocolName"), QLatin1String("jabber"));
- *     filter.addProperty(QLatin1String("enabled"), true);
+ *     QList<AccountFilterConstPtr> filters;
+ *     AccountPropertyFilterPtr filter = AccountPropertyFilter::create();
+ *     filter->addProperty(QLatin1String("protocolName"), QLatin1String("jabber"));
+ *     filter->addProperty(QLatin1String("enabled"), true);
  *     filters.append(filter);
  *
  *     AccountSetPtr filteredAccountSet = am->filterAccounts(filter);
@@ -347,7 +347,7 @@ void AccountSet::Private::AccountWrapper::onAccountCapalitiesChanged(
  * \param filters The desired filter.
  */
 AccountSet::AccountSet(const AccountManagerPtr &accountManager,
-        const QList<Filter<Account> > &filters)
+        const QList<AccountFilterConstPtr> &filters)
     : QObject(),
       mPriv(new Private(this, accountManager, filters))
 {
@@ -415,9 +415,9 @@ bool AccountSet::isFilterValid() const
 QVariantMap AccountSet::filter() const
 {
     QVariantMap result;
-    foreach (const Filter<Account> &filter, mPriv->filters) {
-        const AccountPropertyFilter *filterObj =
-            dynamic_cast<const AccountPropertyFilter *>(&filter);
+    foreach (const AccountFilterConstPtr &filter, mPriv->filters) {
+        const AccountPropertyFilterConstPtr filterObj =
+            AccountPropertyFilterConstPtr::dynamicCast(filter);
         if (filterObj) {
             result.unite(filterObj->filter());
         }
@@ -430,7 +430,7 @@ QVariantMap AccountSet::filter() const
  *
  * \return A list of filter objects used to filter accounts.
  */
-QList<Filter<Account> > AccountSet::filters() const
+QList<AccountFilterConstPtr> AccountSet::filters() const
 {
     return mPriv->filters;
 }
