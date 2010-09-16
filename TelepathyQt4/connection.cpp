@@ -608,6 +608,10 @@ Connection::PendingConnect::PendingConnect(Connection *parent, const Features &r
 {
     QDBusPendingCall call = parent->baseInterface()->Connect();
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, parent);
+    connect(parent,
+            SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            this,
+            SLOT(onConnInvalidated(Tp::DBusProxy*,QString,QString)));
     connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher*)),
             this,
@@ -616,6 +620,10 @@ Connection::PendingConnect::PendingConnect(Connection *parent, const Features &r
 
 void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher)
 {
+    if (!qobject_cast<Connection *>(parent())->isValid()) {
+        return;
+    }
+
     if (watcher->isError()) {
         setFinishedWithError(watcher->error());
     } else {
@@ -640,6 +648,10 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
 
 void Connection::PendingConnect::onStatusChanged(Tp::Connection::Status newStatus)
 {
+    if (!qobject_cast<Connection *>(parent())->isValid()) {
+        return;
+    }
+
     Connection *connection = qobject_cast<Connection*>(parent());
     Q_ASSERT(connection != NULL);
 
@@ -659,12 +671,23 @@ void Connection::PendingConnect::onStatusChanged(Tp::Connection::Status newStatu
 
 void Connection::PendingConnect::onBecomeReadyReply(Tp::PendingOperation *op)
 {
+    if (!qobject_cast<Connection *>(parent())->isValid()) {
+        return;
+    }
+
     if (op->isError()) {
         setFinishedWithError(op->errorName(), op->errorMessage());
     }
     else {
         setFinished();
     }
+}
+
+void Connection::PendingConnect::onConnInvalidated(Tp::DBusProxy *proxy, const QString &error,
+        const QString &message)
+{
+    Q_ASSERT(proxy == parent());
+    setFinishedWithError(error, message);
 }
 
 QMap<QPair<QString, QString>, Connection::Private::HandleContext*> Connection::Private::handleContexts;

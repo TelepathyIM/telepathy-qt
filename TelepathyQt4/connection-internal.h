@@ -42,6 +42,7 @@ private Q_SLOTS:
     void onConnectReply(QDBusPendingCallWatcher *);
     void onStatusChanged(Tp::Connection::Status newStatus);
     void onBecomeReadyReply(Tp::PendingOperation *);
+    void onConnInvalidated(Tp::DBusProxy *proxy, const QString &error, const QString &message);
 };
 
 class ConnectionHelper
