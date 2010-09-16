@@ -387,19 +387,25 @@ AccountManagerPtr AccountSet::accountManager() const
 }
 
 /**
- * Return whether the filter returned by filter() is valid.
+ * Return whether the filter returned by filter()/filters() is valid.
  *
  * If the filter is invalid accounts() will always return an empty list.
  *
  * This method is deprecated and should not be used in newly written code. Use
  * Filter::isValid() instead.
  *
- * \return \c true if the filter returned by filter() is valid, otherwise \c
+ * \return \c true if the filter returned by filter()/filters() is valid, otherwise \c
  *         false.
  */
 bool AccountSet::isFilterValid() const
 {
-    return mPriv->filterValid;
+    foreach (const AccountFilterConstPtr &filter, filters()) {
+        if (!filter->isValid()) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /**
