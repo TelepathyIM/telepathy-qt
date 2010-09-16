@@ -33,7 +33,8 @@ protected Q_SLOTS:
     void expectConnInvalidated();
     void expectPendingContactsFinished(Tp::PendingOperation *);
     void expectPresenceStateChanged(Tp::Contact::PresenceState);
-    void expectAllKnownContactsChanged(const Tp::Contacts &added, const Tp::Contacts &removed);
+    void expectAllKnownContactsChanged(const Tp::Contacts &added, const Tp::Contacts &removed,
+            const Tp::Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
     void initTestCase();
@@ -85,11 +86,14 @@ void TestConnRoster::expectPendingContactsFinished(PendingOperation *op)
     mLoop->exit(0);
 }
 
-void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, const Tp::Contacts& removed)
+void TestConnRoster::expectAllKnownContactsChanged(const Tp::Contacts& added, const Tp::Contacts& removed,
+        const Tp::Channel::GroupMemberChangeDetails &details)
 {
     qDebug() << added.size() << " contacts added, " << removed.size() << " contacts removed";
     mHowManyKnownContacts += added.size();
     mHowManyKnownContacts -= removed.size();
+    QVERIFY(details.hasMessage());
+    QCOMPARE(details.message(), QLatin1String("add me now"));
     if (mConn->contactManager()->allKnownContacts().size() != mHowManyKnownContacts) {
         qWarning() << "Contacts number mismatch! Watched value: " << mHowManyKnownContacts
                    << "allKnownContacts(): " << mConn->contactManager()->allKnownContacts().size();
@@ -297,8 +301,10 @@ void TestConnRoster::testRoster()
     mHowManyKnownContacts = mConn->contactManager()->allKnownContacts().size();
     // Watch for contacts changed
     QVERIFY(connect(mConn->contactManager(),
-                    SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts)),
-                    SLOT(expectAllKnownContactsChanged(Tp::Contacts,Tp::Contacts))));
+                    SIGNAL(allKnownContactsChanged(Tp::Contacts,Tp::Contacts,
+                            Tp::Channel::GroupMemberChangeDetails)),
+                    SLOT(expectAllKnownContactsChanged(Tp::Contacts,Tp::Contacts,
+                            Tp::Channel::GroupMemberChangeDetails))));
 
     // Wait for the contacts to be built
     ids = QStringList() << QString(QLatin1String("kctest1@example.com"))
