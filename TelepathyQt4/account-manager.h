@@ -65,13 +65,11 @@ class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    // API/ABI break TODO: Remove these and have just all-default-argument versions with the factory
-    // params
-    static AccountManagerPtr create();
-    static AccountManagerPtr create(const QDBusConnection &bus);
+    TELEPATHY_QT4_DEPRECATED static AccountManagerPtr create();
+    TELEPATHY_QT4_DEPRECATED static AccountManagerPtr create(const QDBusConnection &bus);
 
-    // Needs to not have an accountFactory default param to not conflict with the above variants
-    // until the API/ABI break
+    // FIXME: (API/ABI break) Add a default parameter to accountFactory once the create methods
+    //        above are removed
     static AccountManagerPtr create(
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory =
@@ -106,6 +104,7 @@ public:
 
     QList<AccountPtr> allAccounts();
 
+    // FIXME: (API/ABI break) Rename all xxxSet methods to just xxx
     AccountSetPtr validAccountsSet() const;
     AccountSetPtr invalidAccountsSet() const;
 
@@ -127,18 +126,21 @@ public:
 
     AccountSetPtr filterAccounts(const AccountFilterConstPtr &filter) const;
     AccountSetPtr filterAccounts(const QList<AccountFilterConstPtr> &filters) const;
+    // FIXME: (API/ABI break) Rename to filterAccountsByProperties
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
     AccountPtr accountForPath(const QString &path);
     QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
+    // FIXME: (API/ABI break) Use a high-level class to represent supported account properties
     QStringList supportedAccountProperties() const;
+    // FIXME: (API/ABI break) Use a high-level class to represent account parameters and properties
     PendingAccount *createAccount(const QString &connectionManager,
             const QString &protocol, const QString &displayName,
             const QVariantMap &parameters,
             const QVariantMap &properties = QVariantMap());
 
-    inline Client::DBus::PropertiesInterface *propertiesInterface() const
+    TELEPATHY_QT4_DEPRECATED inline Client::DBus::PropertiesInterface *propertiesInterface() const
     {
         return OptionalInterfaceFactory<AccountManager>::interface<Client::DBus::PropertiesInterface>();
     }
@@ -149,18 +151,20 @@ Q_SIGNALS:
     TELEPATHY_QT4_DEPRECATED void accountValidityChanged(const QString &path,
             bool valid);
 
+    // FIXME: (API/ABI break) Rename to accountCreated. Actually it should have being named
+    //        accountCreated in the first place
     void newAccount(const Tp::AccountPtr &account);
 
 protected:
-    AccountManager();
-    AccountManager(const QDBusConnection &bus);
+    TELEPATHY_QT4_DEPRECATED AccountManager();
+    TELEPATHY_QT4_DEPRECATED AccountManager(const QDBusConnection &bus);
     AccountManager(const QDBusConnection &bus,
             const AccountFactoryConstPtr &accountFactory,
             const ConnectionFactoryConstPtr &connectionFactory,
             const ChannelFactoryConstPtr &channelFactory,
             const ContactFactoryConstPtr &contactFactory);
 
-    Client::AccountManagerInterface *baseInterface() const;
+    TELEPATHY_QT4_DEPRECATED Client::AccountManagerInterface *baseInterface() const;
 
 private Q_SLOTS:
     void gotMainProperties(QDBusPendingCallWatcher *);
