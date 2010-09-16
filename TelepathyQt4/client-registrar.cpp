@@ -215,7 +215,8 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
         << "for client" << mClient;
 }
 
-void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
+void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
+{
     Q_ASSERT(!mInvocations.isEmpty());
     Q_ASSERT(op->isFinished());
 
@@ -324,7 +325,8 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
     mInvocations.append(invocation);
 }
 
-void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
+void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
+{
     Q_ASSERT(!mInvocations.isEmpty());
     Q_ASSERT(op->isFinished());
 
@@ -471,7 +473,8 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
         << "for client" << mClient;
 }
 
-void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op) {
+void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
+{
     Q_ASSERT(!mInvocations.isEmpty());
     Q_ASSERT(op->isFinished());
 
