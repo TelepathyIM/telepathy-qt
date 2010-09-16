@@ -42,9 +42,8 @@ public:
 
     inline virtual bool matches(const SharedPtr<T> &t) const
     {
-        QVariantMap::const_iterator i = mFilter.constBegin();
-        QVariantMap::const_iterator end = mFilter.constEnd();
-        while (i != end) {
+        for (QVariantMap::const_iterator i = mFilter.constBegin();
+                i != mFilter.constEnd(); ++i) {
             QString propertyName = i.key();
             QVariant propertyValue = i.value();
 
