@@ -185,6 +185,7 @@ endif(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
 add_subdirectory(TelepathyQt4)
 add_subdirectory(examples)
 add_subdirectory(tests)
+add_subdirectory(tools)
 
 # Generate config.h
 configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
