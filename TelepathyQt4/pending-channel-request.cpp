@@ -236,6 +236,8 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to ChannelDispatcher.Ensure/CreateChannel "
             "- object path:" << objectPath.path();
 
+        // API/ABI break TODO: Remove the extra branch here when removing the deprecated
+        // ctor/create()
         if (!mPriv->account.isNull()) {
             mPriv->channelRequest = ChannelRequest::create(mPriv->account,
                     objectPath.path(), QVariantMap());
