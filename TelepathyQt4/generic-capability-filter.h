@@ -37,9 +37,10 @@ template <class T>
 class GenericCapabilityFilter : public Filter<T>
 {
 public:
-    static SharedPtr<GenericCapabilityFilter<T> > create()
+    static SharedPtr<GenericCapabilityFilter<T> > create(const RequestableChannelClassList &rccs
+            = RequestableChannelClassList())
     {
-        return SharedPtr<GenericCapabilityFilter<T> >(new GenericCapabilityFilter<T>());
+        return SharedPtr<GenericCapabilityFilter<T> >(new GenericCapabilityFilter<T>(rccs));
     }
 
     inline virtual ~GenericCapabilityFilter() { }
@@ -102,7 +103,7 @@ public:
     }
 
 private:
-    GenericCapabilityFilter() : Filter<T>() { }
+    GenericCapabilityFilter(const RequestableChannelClassList &rccs) : Filter<T>(), mFilter(rccs) { }
 
     RequestableChannelClassList mFilter;
 };
