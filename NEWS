@@ -14,6 +14,10 @@ Enhancements:
 * PendingChannelRequest now holds a reference to its Account, so you don't have
   to keep a reference to the Account in your application's scope for the channel
   request to succeed
+* There are now variants of the ContactManager signals
+  presencePublicationRequested, groupMembersChanged and allKnownContactsChanged
+  which carry the details parameter (contains things like the message and the
+  reason)
 
 Fixes:
 * Memory leak when using PendingComposite
