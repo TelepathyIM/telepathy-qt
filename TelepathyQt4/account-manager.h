@@ -116,12 +116,12 @@ public:
     AccountSetPtr onlineAccountsSet() const;
     AccountSetPtr offlineAccountsSet() const;
 
-    AccountSetPtr textChatsAccountsSet() const;
-    AccountSetPtr textChatroomsAccountsSet() const;
-    AccountSetPtr mediaCallsAccountsSet() const;
-    AccountSetPtr audioCallsAccountsSet() const;
-    AccountSetPtr videoCallsAccountsSet(bool withAudio = true) const;
-    AccountSetPtr fileTransfersAccountsSet() const;
+    AccountSetPtr textChatAccountsSet() const;
+    AccountSetPtr textChatRoomAccountsSet() const;
+    AccountSetPtr mediaCallAccountsSet() const;
+    AccountSetPtr audioCallAccountsSet() const;
+    AccountSetPtr videoCallAccountsSet(bool withAudio = true) const;
+    AccountSetPtr fileTransferAccountsSet() const;
 
     AccountSetPtr accountsByProtocol(
             const QString &protocolName) const;

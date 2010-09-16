@@ -797,7 +797,7 @@ AccountSetPtr AccountManager::offlineAccountsSet() const
  * \return A set of accounts containing all accounts that support text chats by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::textChatsAccountsSet() const
+AccountSetPtr AccountManager::textChatAccountsSet() const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -824,7 +824,7 @@ AccountSetPtr AccountManager::textChatsAccountsSet() const
  *
  * \return A set of accounts containing all accounts that support text chat rooms.
  */
-AccountSetPtr AccountManager::textChatroomsAccountsSet() const
+AccountSetPtr AccountManager::textChatRoomAccountsSet() const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -852,7 +852,7 @@ AccountSetPtr AccountManager::textChatroomsAccountsSet() const
  * \return A set of accounts containing all accounts that support media calls by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::mediaCallsAccountsSet() const
+AccountSetPtr AccountManager::mediaCallAccountsSet() const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -880,7 +880,7 @@ AccountSetPtr AccountManager::mediaCallsAccountsSet() const
  * \return A set of accounts containing all accounts that support audio calls by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::audioCallsAccountsSet() const
+AccountSetPtr AccountManager::audioCallAccountsSet() const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -910,7 +910,7 @@ AccountSetPtr AccountManager::audioCallsAccountsSet() const
  * \return A set of accounts containing all accounts that support video calls by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::videoCallsAccountsSet(bool withAudio) const
+AccountSetPtr AccountManager::videoCallAccountsSet(bool withAudio) const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
@@ -943,7 +943,7 @@ AccountSetPtr AccountManager::videoCallsAccountsSet(bool withAudio) const
  * \return A set of accounts containing all accounts that support file transfers by
  *         providing a contact identifier.
  */
-AccountSetPtr AccountManager::fileTransfersAccountsSet() const
+AccountSetPtr AccountManager::fileTransferAccountsSet() const
 {
     RequestableChannelClassList rccs;
     RequestableChannelClass rcc;
