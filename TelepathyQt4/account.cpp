@@ -2704,8 +2704,13 @@ void Account::gotAvatar(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to GetAvatar(Account)";
         mPriv->avatar = qdbus_cast<Avatar>(reply);
 
-        // first time
-        if (!mPriv->readinessHelper->actualFeatures().contains(FeatureAvatar)) {
+        // It could be in either of actual or missing from the first time in corner cases like the
+        // object going away, so let's be prepared for both (only checking for actualFeatures here
+        // actually used to trigger a rare bug)
+        //
+        // Anyway, the idea is to not do setIntrospectCompleted twice
+        if (!mPriv->readinessHelper->actualFeatures().contains(FeatureAvatar) &&
+                !mPriv->readinessHelper->missingFeatures().contains(FeatureAvatar)) {
             mPriv->readinessHelper->setIntrospectCompleted(FeatureAvatar, true);
         }
 
@@ -2714,7 +2719,8 @@ void Account::gotAvatar(QDBusPendingCallWatcher *watcher)
     } else {
         // check if the feature is already there, and for some reason retrieveAvatar
         // failed when called the second time
-        if (!mPriv->readinessHelper->missingFeatures().contains(FeatureAvatar)) {
+        if (!mPriv->readinessHelper->actualFeatures().contains(FeatureAvatar) &&
+                !mPriv->readinessHelper->missingFeatures().contains(FeatureAvatar)) {
             mPriv->readinessHelper->setIntrospectCompleted(FeatureAvatar, false, reply.error());
         }
 
