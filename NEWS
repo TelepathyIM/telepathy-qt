@@ -4,8 +4,24 @@ telepathy-qt4 0.3.10 (UNRELEASED)
 <RELEASE NAME>
 
 Enhancements:
+* fd.o #29609 - ClientRegistrar and all related classes now use Factories too,
+  which means if you use the factory-enabled create() variants such as
+  create(AccountManagerPtr), you can share account and connection proxies with
+  the rest of your application, and/or make them be ready by the time your
+  addDispatchOperation/handleChannels/observeChannels implementation is called
+* ChannelRequest is now also using the same Account/Connection etc objects than
+  the rest of the application
+* PendingChannelRequest now holds a reference to its Account, so you don't have
+  to keep a reference to the Account in your application's scope for the channel
+  request to succeed
 
 Fixes:
+* Memory leak when using PendingComposite
+* Memory leak in QDBus triggered by ClientHandlerRequestsAdaptor code (there's a
+  workaround, and the actual bug is reported as QTBUG-13562)
+* The PendingOperation returned by Connection::requestConnect() finishing even
+  if the connection wasn't connected yet
+* Account::changingPresence() not being initialized correctly
 
 telepathy-qt4 0.3.9 (2010-09-10)
 ================================
