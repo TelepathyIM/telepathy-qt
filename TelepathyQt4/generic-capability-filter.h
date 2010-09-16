@@ -53,17 +53,17 @@ public:
         RequestableChannelClassList objectRccs = t->capabilities() ?
             t->capabilities()->requestableChannelClasses() :
             RequestableChannelClassList();
-        foreach (const RequestableChannelClass &filterRcc, mFilter) {
+        Q_FOREACH (const RequestableChannelClass &filterRcc, mFilter) {
             supportedRcc = false;
 
-            foreach (const RequestableChannelClass &objectRcc, objectRccs) {
+            Q_FOREACH (const RequestableChannelClass &objectRcc, objectRccs) {
                 /* check if fixed properties match */
                 if (filterRcc.fixedProperties == objectRcc.fixedProperties) {
                     supportedRcc = true;
 
                     /* check if all allowed properties in the filter RCC
                      * are in the object RCC allowed properties */
-                    foreach (const QString &value, filterRcc.allowedProperties) {
+                    Q_FOREACH (const QString &value, filterRcc.allowedProperties) {
                         if (!objectRcc.allowedProperties.contains(value)) {
                             /* one of the properties in the filter RCC
                              * allowed properties is not in the object RCC
