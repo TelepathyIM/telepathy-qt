@@ -1,7 +1,7 @@
 telepathy-qt4 0.3.10 (UNRELEASED)
 =================================
 
-<RELEASE NAME>
+The {bool b; if (b == false || b == true || b == 99) { /*...*/ }} release.
 
 Enhancements:
 * fd.o #29609 - ClientRegistrar and all related classes now use Factories too,
@@ -9,6 +9,12 @@ Enhancements:
   create(AccountManagerPtr), you can share account and connection proxies with
   the rest of your application, and/or make them be ready by the time your
   addDispatchOperation/handleChannels/observeChannels implementation is called
+* fd.o #29090 - Added support to filter accounts by their capabilities (whether
+  you can do room chats, voice calls, etc, using a given account)
+* Added Account::capabilities(), which automatically gets the capabilities from
+  a connected Connection if there's one, or the protocol object if there isn't
+* Generic Filter framework, currently only used for Account filtering, but in
+  the future also for filtering Contacts
 * ChannelRequest is now also using the same Account/Connection etc objects than
   the rest of the application
 * PendingChannelRequest now holds a reference to its Account, so you don't have
@@ -25,6 +31,8 @@ Fixes:
   workaround, and the actual bug is reported as QTBUG-13562)
 * The PendingOperation returned by Connection::requestConnect() finishing even
   if the connection wasn't connected yet
+* Hitting an assert in cornercases for calling setIntrospectedCalled twice in
+  Account Avatar introspection
 * Account::changingPresence() not being initialized correctly
 
 telepathy-qt4 0.3.9 (2010-09-10)
