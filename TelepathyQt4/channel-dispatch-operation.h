@@ -58,11 +58,18 @@ class TELEPATHY_QT4_EXPORT ChannelDispatchOperation : public StatefulDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    static ChannelDispatchOperationPtr create(const QString &objectPath,
+    TELEPATHY_QT4_DEPRECATED static ChannelDispatchOperationPtr create(const QString &objectPath,
             const QVariantMap &immutableProperties);
-    static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
+    static ChannelDispatchOperationPtr create(const QDBusConnection &bus,
+            const QString &objectPath, const QVariantMap &immutableProperties,
+            const QList<ChannelPtr> &initialChannels,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
     virtual ~ChannelDispatchOperation();
 
     ConnectionPtr connection() const;
@@ -87,19 +94,25 @@ Q_SIGNALS:
             const QString &errorMessage);
 
 protected:
-    ChannelDispatchOperation(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED ChannelDispatchOperation(const QDBusConnection &bus,
             const QString &objectPath, const QVariantMap &immutableProperties);
+
+    ChannelDispatchOperation(const QDBusConnection &bus,
+            const QString &objectPath, const QVariantMap &immutableProperties,
+            const QList<ChannelPtr> &initialChannels,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::ChannelDispatchOperationInterface *baseInterface() const;
 
 private Q_SLOTS:
     void onFinished();
     void gotMainProperties(QDBusPendingCallWatcher *watcher);
-    void onConnectionReady(Tp::PendingOperation *op);
-    void onAccountReady(Tp::PendingOperation *op);
-    void onChannelReady(Tp::PendingOperation *op);
     void onChannelLost(const QDBusObjectPath &channelObjectPath,
         const QString &errorName, const QString &errorMessage);
+    void onProxiesPrepared(Tp::PendingOperation *op);
 
 private:
     struct Private;

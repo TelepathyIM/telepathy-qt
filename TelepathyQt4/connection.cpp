@@ -618,9 +618,40 @@ void Connection::PendingConnect::onConnectReply(QDBusPendingCallWatcher *watcher
 {
     if (watcher->isError()) {
         setFinishedWithError(watcher->error());
+    } else {
+        if (qobject_cast<Connection*>(parent())->status() == StatusConnected) {
+            onStatusChanged(Tp::Connection::StatusConnected);
+        } else {
+            // Wait for statusChanged()! Connect returning just means that the connection has
+            // started to connect - spec quoted for truth:
+            //
+            // Connect () → nothing
+            // Request that the connection be established. This will be done asynchronously and
+            // errors will be returned by emitting StatusChanged signals.
+            //
+            //
+            // Which should actually say progress and/or errors IMO, but anyway...
+            connect(parent(),
+                    SIGNAL(statusChanged(Tp::Connection::Status)),
+                    SLOT(onStatusChanged(Tp::Connection::Status)));
+        }
     }
-    else {
-        connect(qobject_cast<Connection*>(parent())->becomeReady(requestedFeatures()),
+}
+
+void Connection::PendingConnect::onStatusChanged(Tp::Connection::Status newStatus)
+{
+    Connection *connection = qobject_cast<Connection*>(parent());
+    Q_ASSERT(connection != NULL);
+
+    if (newStatus == StatusDisconnected) {
+        debug() << "Connection became disconnected while a PendingConnect was underway";
+        setFinishedWithError(connection->invalidationReason(), connection->invalidationMessage());
+        return;
+    }
+
+    if (newStatus == StatusConnected) {
+        // OK, the connection is Connected now - finally, we'll get down to business
+        connect(connection->becomeReady(requestedFeatures()),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onBecomeReadyReply(Tp::PendingOperation*)));
     }

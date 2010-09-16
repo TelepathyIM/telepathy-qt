@@ -40,6 +40,7 @@ public:
 
 private Q_SLOTS:
     void onConnectReply(QDBusPendingCallWatcher *);
+    void onStatusChanged(Tp::Connection::Status newStatus);
     void onBecomeReadyReply(Tp::PendingOperation *);
 };
 

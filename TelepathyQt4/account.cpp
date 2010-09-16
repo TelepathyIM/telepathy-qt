@@ -1348,8 +1348,8 @@ PendingChannelRequest *Account::ensureTextChat(
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1382,8 +1382,8 @@ PendingChannelRequest *Account::ensureTextChat(
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1416,8 +1416,8 @@ PendingChannelRequest *Account::ensureTextChatroom(
                    (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    roomName);
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1450,8 +1450,8 @@ PendingChannelRequest *Account::ensureMediaCall(
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1484,8 +1484,8 @@ PendingChannelRequest *Account::ensureMediaCall(
                    (uint) Tp::HandleTypeContact);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1523,8 +1523,8 @@ PendingChannelRequest *Account::ensureAudioCall(
                    true);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    contactIdentifier);
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1562,8 +1562,8 @@ PendingChannelRequest *Account::ensureAudioCall(
                    true);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"),
                    contact ? contact->handle().at(0) : (uint) 0);
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1610,8 +1610,8 @@ PendingChannelRequest *Account::ensureVideoCall(
                        true);
     }
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1658,8 +1658,8 @@ PendingChannelRequest *Account::ensureVideoCall(
                        true);
     }
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**
@@ -1719,8 +1719,8 @@ PendingChannelRequest *Account::createFileTransfer(
                        (qulonglong) properties.lastModificationTime().toTime_t());
     }
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -1779,8 +1779,8 @@ PendingChannelRequest *Account::createFileTransfer(
                        (qulonglong) properties.lastModificationTime().toTime_t());
     }
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -1817,8 +1817,8 @@ PendingChannelRequest *Account::createConferenceMediaCall(
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContactsIdentifiers);
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -1855,8 +1855,8 @@ PendingChannelRequest *Account::createConferenceMediaCall(
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContacts);
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -1891,8 +1891,8 @@ PendingChannelRequest *Account::createConferenceTextChat(
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContactsIdentifiers);
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -1927,8 +1927,8 @@ PendingChannelRequest *Account::createConferenceTextChat(
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContacts);
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -1969,8 +1969,8 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContactsIdentifiers);
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -2011,8 +2011,8 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
     mPriv->addConferenceRequestParameters(request, channels,
             initialInviteeContacts);
 
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -2039,8 +2039,8 @@ PendingChannelRequest *Account::createChannel(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, true, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
 }
 
 /**
@@ -2067,8 +2067,8 @@ PendingChannelRequest *Account::ensureChannel(
         const QDateTime &userActionTime,
         const QString &preferredHandler)
 {
-    return new PendingChannelRequest(dbusConnection(), objectPath(),
-            request, userActionTime, preferredHandler, false, this);
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, false,
+            AccountPtr(this));
 }
 
 /**

@@ -47,8 +47,13 @@ class TELEPATHY_QT4_NO_EXPORT ClientAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(QStringList Interfaces READ Interfaces)
 
 public:
-    ClientAdaptor(const QStringList &interfaces, QObject *parent);
+    ClientAdaptor(ClientRegistrar *registrar, const QStringList &interfaces, QObject *parent);
     virtual ~ClientAdaptor();
+
+    inline const ClientRegistrar *registrar() const
+    {
+        return mRegistrar;
+    }
 
 public: // Properties
     inline QStringList Interfaces() const
@@ -57,6 +62,7 @@ public: // Properties
     }
 
 private:
+    ClientRegistrar *mRegistrar;
     QStringList mInterfaces;
 };
 
@@ -82,11 +88,15 @@ class TELEPATHY_QT4_NO_EXPORT ClientObserverAdaptor : public QDBusAbstractAdapto
     Q_PROPERTY(Tp::ChannelClassList ObserverChannelFilter READ ObserverChannelFilter)
 
 public:
-    ClientObserverAdaptor(
-            const QDBusConnection &bus,
+    ClientObserverAdaptor(ClientRegistrar *registrar,
             AbstractClientObserver *client,
             QObject *parent);
     virtual ~ClientObserverAdaptor();
+
+    inline const ClientRegistrar *registrar() const
+    {
+        return mRegistrar;
+    }
 
 public: // Properties
     inline Tp::ChannelClassList ObserverChannelFilter() const
@@ -108,7 +118,28 @@ public Q_SLOTS: // Methods
             const QVariantMap &observerInfo,
             const QDBusMessage &message);
 
+private Q_SLOTS:
+    void onReadyOpFinished(Tp::PendingOperation *);
+
 private:
+    struct InvocationData : RefCounted
+    {
+        InvocationData() : readyOp(0) {}
+
+        PendingOperation *readyOp;
+        QString error, message;
+
+        MethodInvocationContextPtr<> ctx;
+        AccountPtr acc;
+        ConnectionPtr conn;
+        QList<ChannelPtr> chans;
+        ChannelDispatchOperationPtr dispatchOp;
+        QList<ChannelRequestPtr> chanReqs;
+        QVariantMap observerInfo;
+    };
+    QLinkedList<SharedPtr<InvocationData> > mInvocations;
+
+    ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
     AbstractClientObserver *mClient;
 };
@@ -131,11 +162,15 @@ class TELEPATHY_QT4_NO_EXPORT ClientApproverAdaptor : public QDBusAbstractAdapto
     Q_PROPERTY(Tp::ChannelClassList ApproverChannelFilter READ ApproverChannelFilter)
 
 public:
-    ClientApproverAdaptor(
-            const QDBusConnection &bus,
+    ClientApproverAdaptor(ClientRegistrar *registrar,
             AbstractClientApprover *client,
             QObject *parent);
     virtual ~ClientApproverAdaptor();
+
+    inline const ClientRegistrar *registrar() const
+    {
+        return mRegistrar;
+    }
 
 public: // Properties
     inline Tp::ChannelClassList ApproverChannelFilter() const
@@ -149,7 +184,25 @@ public Q_SLOTS: // Methods
             const QVariantMap &properties,
             const QDBusMessage &message);
 
+private Q_SLOTS:
+    void onReadyOpFinished(Tp::PendingOperation *);
+
 private:
+    struct InvocationData : RefCounted
+    {
+        InvocationData() : readyOp(0) {}
+
+        PendingOperation *readyOp;
+        QString error, message;
+
+        MethodInvocationContextPtr<> ctx;
+        QList<ChannelPtr> chans;
+        ChannelDispatchOperationPtr dispatchOp;
+    };
+    QLinkedList<SharedPtr<InvocationData> > mInvocations;
+
+private:
+    ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
     AbstractClientApprover *mClient;
 };
@@ -181,11 +234,15 @@ class TELEPATHY_QT4_NO_EXPORT ClientHandlerAdaptor : public QDBusAbstractAdaptor
     Q_PROPERTY(Tp::ObjectPathList HandledChannels READ HandledChannels)
 
 public:
-    ClientHandlerAdaptor(
-            const QDBusConnection &bus,
+    ClientHandlerAdaptor(ClientRegistrar *registrar,
             AbstractClientHandler *client,
             QObject *parent);
     virtual ~ClientHandlerAdaptor();
+
+    inline const ClientRegistrar *registrar() const
+    {
+        return mRegistrar;
+    }
 
 public: // Properties
     inline Tp::ChannelClassList HandlerChannelFilter() const
@@ -232,11 +289,31 @@ public Q_SLOTS: // Methods
 
 private Q_SLOTS:
     void onChannelInvalidated(Tp::DBusProxy *proxy);
+    void onReadyOpFinished(Tp::PendingOperation *);
+
+private:
+    struct InvocationData : RefCounted
+    {
+        InvocationData() : readyOp(0) {}
+
+        PendingOperation *readyOp;
+        QString error, message;
+
+        MethodInvocationContextPtr<> ctx;
+        AccountPtr acc;
+        ConnectionPtr conn;
+        QList<ChannelPtr> chans;
+        QList<ChannelRequestPtr> chanReqs;
+        QDateTime time;
+        QVariantMap handlerInfo;
+    };
+    QLinkedList<SharedPtr<InvocationData> > mInvocations;
 
 private:
     static void onContextFinished(const MethodInvocationContextPtr<> &context,
             const QList<ChannelPtr> &channels, ClientHandlerAdaptor *self);
 
+    ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
     QSet<ChannelPtr> mHandledChannels;
@@ -263,10 +340,15 @@ class TELEPATHY_QT4_NO_EXPORT ClientHandlerRequestsAdaptor : public QDBusAbstrac
         "")
 
 public:
-    ClientHandlerRequestsAdaptor(const QDBusConnection &bus,
+    ClientHandlerRequestsAdaptor(ClientRegistrar *registrar,
             AbstractClientHandler *client,
             QObject *parent);
     virtual ~ClientHandlerRequestsAdaptor();
+
+    inline const ClientRegistrar *registrar() const
+    {
+        return mRegistrar;
+    }
 
 public Q_SLOTS: // Methods
     void AddRequest(const QDBusObjectPath &request,
@@ -277,6 +359,7 @@ public Q_SLOTS: // Methods
             const QDBusMessage &message);
 
 private:
+    ClientRegistrar *mRegistrar;
     QDBusConnection mBus;
     AbstractClientHandler *mClient;
 };

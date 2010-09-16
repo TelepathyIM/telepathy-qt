@@ -26,6 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/PendingReady>
 
 #include <QDBusObjectPath>
 #include <QDBusPendingCallWatcher>
@@ -123,12 +124,6 @@ AccountPtr PendingAccount::account() const
         return AccountPtr();
     }
 
-    if (!mPriv->account) {
-        AccountManagerPtr manager(mPriv->manager);
-        mPriv->account = Account::create(manager->dbusConnection(),
-                manager->busName(), mPriv->objectPath.path());
-    }
-
     return mPriv->account;
 }
 
@@ -144,9 +139,9 @@ AccountPtr PendingAccount::account() const
 QString PendingAccount::objectPath() const
 {
     if (!isFinished()) {
-        warning() << "PendingAccount::account called before finished";
+        warning() << "PendingAccount::objectPath() called before finished";
     } else if (!isValid()) {
-        warning() << "PendingAccount::account called when not valid";
+        warning() << "PendingAccount::objectPath() called when not valid";
     }
 
     return mPriv->objectPath.path();
@@ -160,7 +155,13 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
         mPriv->objectPath = reply.value();
         debug() << "Got reply to AccountManager.CreateAccount - object path:" <<
             mPriv->objectPath.path();
-        setFinished();
+        PendingReady *proxyOp = manager()->accountFactory()->proxy(manager()->busName(),
+                mPriv->objectPath.path(), manager()->connectionFactory(),
+                manager()->channelFactory(), manager()->contactFactory());
+        mPriv->account = AccountPtr::dynamicCast(proxyOp->proxy());
+        connect(proxyOp,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onAccountBuilt(Tp::PendingOperation*)));
     } else {
         debug().nospace() <<
             "CreateAccount failed: " <<
@@ -169,6 +170,20 @@ void PendingAccount::onCallFinished(QDBusPendingCallWatcher *watcher)
     }
 
     watcher->deleteLater();
+}
+
+void PendingAccount::onAccountBuilt(Tp::PendingOperation *op)
+{
+    Q_ASSERT(op->isFinished());
+
+    if (op->isError()) {
+        warning() << "Making account ready using the factory failed:" <<
+            op->errorName() << op->errorMessage();
+        setFinishedWithError(op->errorName(), op->errorMessage());
+    } else {
+        setFinished();
+        debug() << "New account" << objectPath() << "built";
+    }
 }
 
 } // Tp

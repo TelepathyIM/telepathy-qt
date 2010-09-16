@@ -29,11 +29,13 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelDispatchOperation>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/MethodInvocationContext>
+#include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
 
 namespace Tp
@@ -80,9 +82,10 @@ private:
     void *mFinishedCbData;
 };
 
-ClientAdaptor::ClientAdaptor(const QStringList &interfaces,
+ClientAdaptor::ClientAdaptor(ClientRegistrar *registrar, const QStringList &interfaces,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
+      mRegistrar(registrar),
       mInterfaces(interfaces)
 {
 }
@@ -91,11 +94,12 @@ ClientAdaptor::~ClientAdaptor()
 {
 }
 
-ClientObserverAdaptor::ClientObserverAdaptor(const QDBusConnection &bus,
+ClientObserverAdaptor::ClientObserverAdaptor(ClientRegistrar *registrar,
         AbstractClientObserver *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mBus(bus),
+      mRegistrar(registrar),
+      mBus(registrar->dbusConnection()),
       mClient(client)
 {
 }
@@ -115,48 +119,152 @@ void ClientObserverAdaptor::ObserveChannels(const QDBusObjectPath &accountPath,
     debug() << "ObserveChannels: account:" << accountPath.path() <<
         ", connection:" << connectionPath.path();
 
-    AccountPtr account = Account::create(mBus,
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            accountPath.path());
+    AccountFactoryConstPtr accFactory = mRegistrar->accountFactory();
+    ConnectionFactoryConstPtr connFactory = mRegistrar->connectionFactory();
+    ChannelFactoryConstPtr chanFactory = mRegistrar->channelFactory();
+    ContactFactoryConstPtr contactFactory = mRegistrar->contactFactory();
+
+    SharedPtr<InvocationData> invocation(new InvocationData());
+
+    QList<PendingOperation *> readyOps;
+
+    PendingReady *accReady = accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+            accountPath.path(),
+            connFactory,
+            chanFactory,
+            contactFactory);
+    invocation->acc = AccountPtr::dynamicCast(accReady->proxy());
+    readyOps.append(accReady);
 
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
-    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
-            connectionPath.path());
+    PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(),
+            chanFactory, contactFactory);
+    invocation->conn = ConnectionPtr::dynamicCast(connReady->proxy());
+    readyOps.append(connReady);
 
-    QList<ChannelPtr> channels;
-    ChannelPtr channel;
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        channel = ChannelFactory::create(connection, channelDetails.channel.path(),
-                channelDetails.properties);
-        channels.append(channel);
+        PendingReady *chanReady = chanFactory->proxy(invocation->conn,
+                channelDetails.channel.path(), channelDetails.properties);
+        ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->proxy());
+        invocation->chans.append(channel);
+        readyOps.append(chanReady);
     }
 
-    ChannelDispatchOperationPtr channelDispatchOperation =
-        ChannelDispatchOperation::create(mBus,
-                dispatchOperationPath.path(), QVariantMap());
+    // Yes, we don't give the choice of making CDO and CR ready or not - however, readifying them is
+    // 0-1 D-Bus calls each, for CR mostly 0 - and their constructors start making them ready
+    // automatically, so we wouldn't save any D-Bus traffic anyway
 
-    QList<ChannelRequestPtr> channelRequests;
-    ChannelRequestPtr channelRequest;
+    if (!dispatchOperationPath.path().isEmpty() && dispatchOperationPath.path() != QLatin1String("/")) {
+        QVariantMap props;
+
+        // TODO: push to tp spec having all of the CDO immutable props be contained in observerInfo
+        // so we don't have to introspect the CDO either - then we can pretty much do:
+        //
+        // props = qdbus_cast<QVariantMap>(
+        //         observerInfo.value(QLatin1String("dispatch-operation-properties")));
+        //
+        // Currently something like the following can be used for testing the CDO "we've got
+        // everything we need" codepath:
+        //
+        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
+        //        QVariant::fromValue(QDBusObjectPath(accountPath.path())));
+        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
+        //      QVariant::fromValue(QDBusObjectPath(connectionPath.path())));
+        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Interfaces"),
+        //         QVariant::fromValue(QStringList()));
+        // props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".PossibleHandlers"),
+        //         QVariant::fromValue(QStringList()));
+
+        invocation->dispatchOp = ChannelDispatchOperation::create(mBus, dispatchOperationPath.path(),
+                props,
+                invocation->chans,
+                accFactory,
+                connFactory,
+                chanFactory,
+                contactFactory);
+        readyOps.append(invocation->dispatchOp->becomeReady());
+    }
+
+    // TODO make observer info nicer to use...
+    invocation->observerInfo = observerInfo;
+
+    /*
+     * Uncomment this and the below one when we have spec 0.19.12
+     *
+     * ObjectImmutablePropertiesMap propMap = qdbus_cast<ObjectImmutablePropertiesMap>(
+     * observerInfo.value(QLatin1String("request-properties")));
+     */
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
-        channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap());
-        channelRequests.append(channelRequest);
+        ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
+                path.path(), QVariantMap() /* propMap.value(path.path()) */);
+        invocation->chanReqs.append(channelRequest);
+        readyOps.append(channelRequest->becomeReady());
     }
 
-    MethodInvocationContextPtr<> context =
-        MethodInvocationContextPtr<>(
-                new MethodInvocationContext<>(mBus, message));
+    invocation->ctx = MethodInvocationContextPtr<>(new MethodInvocationContext<>(mBus, message));
 
-    mClient->observeChannels(context, account, connection, channels,
-            channelDispatchOperation, channelRequests, observerInfo);
+    invocation->readyOp = new PendingComposite(readyOps, this);
+    connect(invocation->readyOp,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onReadyOpFinished(Tp::PendingOperation*)));
+
+    mInvocations.append(invocation);
+
+    debug() << "Preparing proxies for ObserveChannels of" << channelDetailsList.size() << "channels"
+        << "for client" << mClient;
 }
 
-ClientApproverAdaptor::ClientApproverAdaptor(const QDBusConnection &bus,
+void ClientObserverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
+{
+    Q_ASSERT(!mInvocations.isEmpty());
+    Q_ASSERT(op->isFinished());
+
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
+            i != mInvocations.end(); ++i) {
+        if ((*i)->readyOp != op) {
+            continue;
+        }
+
+        (*i)->readyOp = 0;
+
+        if (op->isError()) {
+            warning() << "Preparing proxies for ObserveChannels failed with" << op->errorName()
+                << op->errorMessage();
+            (*i)->error = op->errorName();
+            (*i)->message = op->errorMessage();
+        }
+
+        break;
+    }
+
+    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
+
+        if (!invocation->error.isEmpty()) {
+            // We guarantee that the proxies were ready - so we can't invoke the client if they
+            // weren't made ready successfully. Fix the introspection code if this happens :)
+            invocation->ctx->setFinishedWithError(invocation->error, invocation->message);
+            continue;
+        }
+
+        debug() << "Invoking application observeChannels with" << invocation->chans.size()
+            << "channels on" << mClient;
+
+        // API/ABI break TODO: make observerInfo a friendly high-level variantmap wrapper similar to
+        // Connection::ErrorDetails
+        mClient->observeChannels(invocation->ctx, invocation->acc, invocation->conn,
+                invocation->chans, invocation->dispatchOp, invocation->chanReqs,
+                invocation->observerInfo);
+    }
+}
+
+ClientApproverAdaptor::ClientApproverAdaptor(ClientRegistrar *registrar,
         AbstractClientApprover *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mBus(bus),
+      mRegistrar(registrar),
+      mBus(registrar->dbusConnection()),
       mClient(client)
 {
 }
@@ -170,42 +278,103 @@ void ClientApproverAdaptor::AddDispatchOperation(const Tp::ChannelDetailsList &c
         const QVariantMap &properties,
         const QDBusMessage &message)
 {
+    AccountFactoryConstPtr accFactory = mRegistrar->accountFactory();
+    ConnectionFactoryConstPtr connFactory = mRegistrar->connectionFactory();
+    ChannelFactoryConstPtr chanFactory = mRegistrar->channelFactory();
+    ContactFactoryConstPtr contactFactory = mRegistrar->contactFactory();
+
+    QList<PendingOperation *> readyOps;
+
     QDBusObjectPath connectionPath = qdbus_cast<QDBusObjectPath>(
             properties.value(
                 QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection")));
     debug() << "addDispatchOperation: connection:" << connectionPath.path();
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
-    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
-            connectionPath.path());
+    PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(), chanFactory,
+                contactFactory);
+    ConnectionPtr connection = ConnectionPtr::dynamicCast(connReady->proxy());
+    readyOps.append(connReady);
 
-    QList<ChannelPtr> channels;
-    ChannelPtr channel;
+    SharedPtr<InvocationData> invocation(new InvocationData);
+
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        channel = Channel::create(connection, channelDetails.channel.path(),
+        PendingReady *chanReady = chanFactory->proxy(connection, channelDetails.channel.path(),
                 channelDetails.properties);
-        channels.append(channel);
+        invocation->chans.append(ChannelPtr::dynamicCast(chanReady->proxy()));
+        readyOps.append(chanReady);
     }
 
-    ChannelDispatchOperationPtr channelDispatchOperation =
-        ChannelDispatchOperation::create(dispatchOperationPath.path(),
-                properties);
+    // Note that creating the CDO used to not pass the bus connection at all! Which means the old
+    // code would've broken if used on a != sessionBus() bus. Therefore I think we can draw a
+    // conclusion that the classes we mostly create ourselves (CDO, CR, etc.) should NOT have
+    // default parameters for the bus and/or the factories after the API/ABI break, to catch this
+    // type of error at compile time.
+    invocation->dispatchOp = ChannelDispatchOperation::create(mBus,
+            dispatchOperationPath.path(), properties, QList<ChannelPtr>(), accFactory, connFactory,
+            chanFactory, contactFactory);
+    readyOps.append(invocation->dispatchOp->becomeReady());
 
-    MethodInvocationContextPtr<> context =
-        MethodInvocationContextPtr<>(
-                new MethodInvocationContext<>(mBus, message));
+    invocation->ctx = MethodInvocationContextPtr<>(new MethodInvocationContext<>(mBus, message));
 
-    mClient->addDispatchOperation(context, channels,
-            channelDispatchOperation);
+    invocation->readyOp = new PendingComposite(readyOps, this);
+    connect(invocation->readyOp,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onReadyOpFinished(Tp::PendingOperation*)));
+
+    mInvocations.append(invocation);
+}
+
+void ClientApproverAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
+{
+    Q_ASSERT(!mInvocations.isEmpty());
+    Q_ASSERT(op->isFinished());
+
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
+            i != mInvocations.end(); ++i) {
+        if ((*i)->readyOp != op) {
+            continue;
+        }
+
+        (*i)->readyOp = 0;
+
+        if (op->isError()) {
+            warning() << "Preparing proxies for AddDispatchOperation failed with" << op->errorName()
+                << op->errorMessage();
+            (*i)->error = op->errorName();
+            (*i)->message = op->errorMessage();
+        }
+
+        break;
+    }
+
+    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
+
+        if (!invocation->error.isEmpty()) {
+            // We guarantee that the proxies were ready - so we can't invoke the client if they
+            // weren't made ready successfully. Fix the introspection code if this happens :)
+            invocation->ctx->setFinishedWithError(invocation->error, invocation->message);
+            continue;
+        }
+
+        debug() << "Invoking application addDispatchOperation with CDO"
+            << invocation->dispatchOp->objectPath() << "on" << mClient;
+
+        // API/ABI break FIXME: Don't pass the same channels as the channels arg and (separately
+        // constructed) in dispatchOp->channels() !!!
+        mClient->addDispatchOperation(invocation->ctx, invocation->chans, invocation->dispatchOp);
+    }
 }
 
 QHash<QPair<QString, QString>, QList<ClientHandlerAdaptor *> > ClientHandlerAdaptor::mAdaptorsForConnection;
 
-ClientHandlerAdaptor::ClientHandlerAdaptor(const QDBusConnection &bus,
+ClientHandlerAdaptor::ClientHandlerAdaptor(ClientRegistrar *registrar,
         AbstractClientHandler *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mBus(bus),
+      mRegistrar(registrar),
+      mBus(registrar->dbusConnection()),
       mClient(client)
 {
     QList<ClientHandlerAdaptor *> &handlerAdaptors =
@@ -235,45 +404,116 @@ void ClientHandlerAdaptor::HandleChannels(const QDBusObjectPath &accountPath,
     debug() << "HandleChannels: account:" << accountPath.path() <<
         ", connection:" << connectionPath.path();
 
-    AccountPtr account = Account::create(mBus,
-            QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
-            accountPath.path());
+    AccountFactoryConstPtr accFactory = mRegistrar->accountFactory();
+    ConnectionFactoryConstPtr connFactory = mRegistrar->connectionFactory();
+    ChannelFactoryConstPtr chanFactory = mRegistrar->channelFactory();
+    ContactFactoryConstPtr contactFactory = mRegistrar->contactFactory();
+
+    SharedPtr<InvocationData> invocation(new InvocationData());
+    QList<PendingOperation *> readyOps;
+
+    PendingReady *accReady = accFactory->proxy(QLatin1String(TELEPATHY_ACCOUNT_MANAGER_BUS_NAME),
+            accountPath.path(),
+            connFactory,
+            chanFactory,
+            contactFactory);
+    invocation->acc = AccountPtr::dynamicCast(accReady->proxy());
+    readyOps.append(accReady);
 
     QString connectionBusName = connectionPath.path().mid(1).replace(
             QLatin1String("/"), QLatin1String("."));
-    ConnectionPtr connection = Connection::create(mBus, connectionBusName,
-            connectionPath.path());
+    PendingReady *connReady = connFactory->proxy(connectionBusName, connectionPath.path(),
+            chanFactory, contactFactory);
+    invocation->conn = ConnectionPtr::dynamicCast(connReady->proxy());
+    readyOps.append(connReady);
 
-    QList<ChannelPtr> channels;
-    ChannelPtr channel;
     foreach (const ChannelDetails &channelDetails, channelDetailsList) {
-        channel = ChannelFactory::create(connection, channelDetails.channel.path(),
-                channelDetails.properties);
-        channels.append(channel);
+        PendingReady *chanReady = chanFactory->proxy(invocation->conn,
+                channelDetails.channel.path(), channelDetails.properties);
+        ChannelPtr channel = ChannelPtr::dynamicCast(chanReady->proxy());
+        invocation->chans.append(channel);
+        readyOps.append(chanReady);
     }
 
-    QList<ChannelRequestPtr> channelRequests;
-    ChannelRequestPtr channelRequest;
+    // API/ABI break TODO: make handler info nicer to use
+    invocation->handlerInfo = handlerInfo;
+
+    /*
+     * Uncomment this and the below one when we have spec 0.19.12
+     *
+     * ObjectImmutablePropertiesMap propMap = qdbus_cast<ObjectImmutablePropertiesMap>(
+     * handlerInfo.value(QLatin1String("request-properties")));
+     */
     foreach (const QDBusObjectPath &path, requestsSatisfied) {
-        channelRequest = ChannelRequest::create(mBus,
-                path.path(), QVariantMap());
-        channelRequests.append(channelRequest);
+        ChannelRequestPtr channelRequest = ChannelRequest::create(invocation->acc,
+                path.path(), QVariantMap() /* propMap.value(path.path()) */);
+        invocation->chanReqs.append(channelRequest);
+        readyOps.append(channelRequest->becomeReady());
     }
 
     // FIXME See http://bugs.freedesktop.org/show_bug.cgi?id=21690
-    QDateTime userActionTime;
     if (userActionTime_t != 0) {
-        userActionTime = QDateTime::fromTime_t((uint) userActionTime_t);
+        invocation->time = QDateTime::fromTime_t((uint) userActionTime_t);
     }
 
-    MethodInvocationContextPtr<> context =
-        HandleChannelsInvocationContext::create(mBus, message,
-                channels,
-                (HandleChannelsInvocationContext::FinishedCb) &ClientHandlerAdaptor::onContextFinished,
+    invocation->ctx = HandleChannelsInvocationContext::create(mBus, message,
+                invocation->chans,
+                reinterpret_cast<HandleChannelsInvocationContext::FinishedCb>(
+                    &ClientHandlerAdaptor::onContextFinished),
                 this);
 
-    mClient->handleChannels(context, account, connection, channels,
-            channelRequests, userActionTime, handlerInfo);
+    invocation->readyOp = new PendingComposite(readyOps, this);
+    connect(invocation->readyOp,
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onReadyOpFinished(Tp::PendingOperation*)));
+
+    mInvocations.append(invocation);
+
+    debug() << "Preparing proxies for HandleChannels of" << channelDetailsList.size() << "channels"
+        << "for client" << mClient;
+}
+
+void ClientHandlerAdaptor::onReadyOpFinished(Tp::PendingOperation *op)
+{
+    Q_ASSERT(!mInvocations.isEmpty());
+    Q_ASSERT(op->isFinished());
+
+    for (QLinkedList<SharedPtr<InvocationData> >::iterator i = mInvocations.begin();
+            i != mInvocations.end(); ++i) {
+        if ((*i)->readyOp != op) {
+            continue;
+        }
+
+        (*i)->readyOp = 0;
+
+        if (op->isError()) {
+            warning() << "Preparing proxies for HandleChannels failed with" << op->errorName()
+                << op->errorMessage();
+            (*i)->error = op->errorName();
+            (*i)->message = op->errorMessage();
+        }
+
+        break;
+    }
+
+    while (!mInvocations.isEmpty() && !mInvocations.first()->readyOp) {
+        SharedPtr<InvocationData> invocation = mInvocations.takeFirst();
+
+        if (!invocation->error.isEmpty()) {
+            // We guarantee that the proxies were ready - so we can't invoke the client if they
+            // weren't made ready successfully. Fix the introspection code if this happens :)
+            invocation->ctx->setFinishedWithError(invocation->error, invocation->message);
+            continue;
+        }
+
+        debug() << "Invoking application observeChannels with" << invocation->chans.size()
+            << "channels on" << mClient;
+
+        // API/ABI break TODO: make handlerInfo a friendly high-level variantmap wrapper similar to
+        // Connection::ErrorDetails
+        mClient->handleChannels(invocation->ctx, invocation->acc, invocation->conn,
+                invocation->chans, invocation->chanReqs, invocation->time, invocation->handlerInfo);
+    }
 }
 
 void ClientHandlerAdaptor::onContextFinished(
@@ -300,11 +540,12 @@ void ClientHandlerAdaptor::onChannelInvalidated(DBusProxy *proxy)
 }
 
 ClientHandlerRequestsAdaptor::ClientHandlerRequestsAdaptor(
-        const QDBusConnection &bus,
+        ClientRegistrar *registrar,
         AbstractClientHandler *client,
         QObject *parent)
     : QDBusAbstractAdaptor(parent),
-      mBus(bus),
+      mRegistrar(registrar),
+      mBus(registrar->dbusConnection()),
       mClient(client)
 {
 }
@@ -319,9 +560,14 @@ void ClientHandlerRequestsAdaptor::AddRequest(
         const QDBusMessage &message)
 {
     debug() << "AddRequest:" << request.path();
+    message.setDelayedReply(true);
     mBus.send(message.createReply());
     mClient->addRequest(ChannelRequest::create(mBus,
-                request.path(), requestProperties));
+                request.path(), requestProperties,
+                mRegistrar->accountFactory(),
+                mRegistrar->connectionFactory(),
+                mRegistrar->channelFactory(),
+                mRegistrar->contactFactory()));
 }
 
 void ClientHandlerRequestsAdaptor::RemoveRequest(
@@ -331,19 +577,44 @@ void ClientHandlerRequestsAdaptor::RemoveRequest(
 {
     debug() << "RemoveRequest:" << request.path() << "-" << errorName
         << "-" << errorMessage;
+    message.setDelayedReply(true);
     mBus.send(message.createReply());
     mClient->removeRequest(ChannelRequest::create(mBus,
-                request.path(), QVariantMap()), errorName, errorMessage);
+                request.path(), QVariantMap(),
+                mRegistrar->accountFactory(),
+                mRegistrar->connectionFactory(),
+                mRegistrar->channelFactory(),
+                mRegistrar->contactFactory()), errorName, errorMessage);
 }
 
 struct TELEPATHY_QT4_NO_EXPORT ClientRegistrar::Private
 {
-    Private(const QDBusConnection &bus)
-        : bus(bus)
+    Private(const QDBusConnection &bus, const AccountFactoryConstPtr &accFactory,
+            const ConnectionFactoryConstPtr &connFactory, const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory)
+        : bus(bus), accFactory(accFactory), connFactory(connFactory), chanFactory(chanFactory),
+        contactFactory(contactFactory)
     {
+        if (accFactory->dbusConnection().name() != bus.name()) {
+            warning() << "  The D-Bus connection in the account factory is not the proxy connection";
+        }
+
+        if (connFactory->dbusConnection().name() != bus.name()) {
+            warning() << "  The D-Bus connection in the connection factory is not the proxy connection";
+        }
+
+        if (chanFactory->dbusConnection().name() != bus.name()) {
+            warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
+        }
     }
 
     QDBusConnection bus;
+
+    AccountFactoryConstPtr accFactory;
+    ConnectionFactoryConstPtr connFactory;
+    ChannelFactoryConstPtr chanFactory;
+    ContactFactoryConstPtr contactFactory;
+
     QHash<AbstractClientPtr, QString> clients;
     QHash<AbstractClientPtr, QObject*> clientObjects;
     QSet<QString> services;
@@ -409,10 +680,78 @@ QHash<QPair<QString, QString>, ClientRegistrar*> ClientRegistrar::registrarForCo
  * successive calls with the same \a bus, unless the instance
  * had already been destroyed, in which case a new instance will be returned.
  *
+ * The resulting instance will use factories from a previous ClientRegistrar with the same \a bus,
+ * if any, otherwise factories returning stock TpQt4 subclasses as approriate, with no features
+ * prepared. This gives fully backwards compatible behavior for this function if the factory
+ * variants are never used.
+ *
+ * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
+ * registration checks have always been implemented incorrectly anyway. We need this for the account
+ * friendly channel request and handle API at least.
+ *
  * \param bus QDBusConnection to use.
  * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
  */
 ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
+{
+    return create(bus, AccountFactory::create(bus, Features()), ConnectionFactory::create(bus),
+            ChannelFactory::create(bus), ContactFactory::create());
+}
+
+/**
+ * Create a new client registrar object using QDBusConnection::sessionBus() and the given factories.
+ *
+ * ClientRegistrar instances are unique per D-Bus connection. The returned ClientRegistrarPtr will
+ * point to the same ClientRegistrar instance on successive calls, unless the instance for
+ * QDBusConnection::sessionBus() had already been destroyed, in which case a new instance will be
+ * returned. Therefore, the factory settings have no effect if there already is a ClientRegistrar
+ * for QDBusConnection::sessionBus().
+ *
+ * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
+ * registration checks have always been implemented incorrectly anyway. We need this for the account
+ * friendly channel request and handle API at least.
+ *
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ */
+ClientRegistrarPtr ClientRegistrar::create(
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory)
+{
+    return create(QDBusConnection::sessionBus(), accountFactory, connectionFactory, channelFactory,
+            contactFactory);
+}
+
+/**
+ * Create a new client registrar object using the given \a bus and the given factories.
+ *
+ * ClientRegistrar instances are unique per D-Bus connection. The returned
+ * ClientRegistrarPtr will point to the same ClientRegistrar instance on
+ * successive calls with the same \a bus, unless the instance
+ * had already been destroyed, in which case a new instance will be returned. Therefore, the factory
+ * settings have no effect if there already is a ClientRegistrar for the given \a bus.
+ *
+ * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
+ * registration checks have always been implemented incorrectly anyway. We need this for the account
+ * friendly channel request and handle API at least.
+ *
+ * \param bus QDBusConnection to use.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ */
+ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory)
 {
     QPair<QString, QString> busId =
         qMakePair(bus.name(), bus.baseService());
@@ -420,16 +759,72 @@ ClientRegistrarPtr ClientRegistrar::create(const QDBusConnection &bus)
         return ClientRegistrarPtr(
                 registrarForConnection.value(busId));
     }
-    return ClientRegistrarPtr(new ClientRegistrar(bus));
+    return ClientRegistrarPtr(new ClientRegistrar(bus, accountFactory, connectionFactory,
+                channelFactory, contactFactory));
+}
+
+/**
+ * Create a new client registrar object using the bus and factories of the given Account \a manager.
+ *
+ * ClientRegistrar instances are unique per D-Bus connection. The returned ClientRegistrarPtr will
+ * point to the same ClientRegistrar instance on successive calls with the same bus, unless the
+ * instance had already been destroyed, in which case a new instance will be returned. Therefore,
+ * the factory settings have no effect if there already is a ClientRegistrar for the bus of the
+ * given \a manager.
+ *
+ * Using this create() method will enable (like any other way of passing the same factories to an AM
+ * and a registrar) getting the same Account/Connection etc. proxy instances from both
+ * AccountManager and AbstractClient implementations.
+ *
+ * \todo API/ABI break: Drop the bus-wide singleton guarantee, it's awkward and the associated name
+ * registration checks have always been implemented incorrectly anyway. We need this for the account
+ * friendly channel request and handle API at least.
+ *
+ * \param manager The AccountManager the bus and factories of which should be used.
+ * \return A ClientRegistrarPtr object pointing to the ClientRegistrar.
+ */
+ClientRegistrarPtr ClientRegistrar::create(const AccountManagerPtr &manager)
+{
+    if (!manager) {
+        return ClientRegistrarPtr();
+    }
+
+    return create(manager->dbusConnection(), manager->accountFactory(),
+            manager->connectionFactory(), manager->channelFactory(), manager->contactFactory());
 }
 
 /**
  * Construct a new client registrar object using the given \a bus.
  *
+ * The resulting registrar will use factories constructing stock TpQt4 classes with no features
+ * prepared. This is equivalent to the old pre-factory behavior of ClientRegistrar.
+ *
  * \param bus QDBusConnection to use.
  */
 ClientRegistrar::ClientRegistrar(const QDBusConnection &bus)
-    : mPriv(new Private(bus))
+    : mPriv(new Private(bus, AccountFactory::create(bus, Features()),
+                ConnectionFactory::create(bus),   ChannelFactory::create(bus),
+                ContactFactory::create()))
+{
+    registrarForConnection.insert(qMakePair(bus.name(),
+                bus.baseService()), this);
+}
+
+/**
+ * Construct a new client registrar object using the given \a bus and the given factories.
+ *
+ * \param bus QDBusConnection to use.
+ * \param accountFactory The account factory to use.
+ * \param connectionFactory The connection factory to use.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ */
+ClientRegistrar::ClientRegistrar(const QDBusConnection &bus,
+        const AccountFactoryConstPtr &accountFactory,
+        const ConnectionFactoryConstPtr &connectionFactory,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+    : mPriv(new Private(bus, accountFactory, connectionFactory, channelFactory, contactFactory))
 {
     registrarForConnection.insert(qMakePair(bus.name(),
                 bus.baseService()), this);
@@ -454,6 +849,66 @@ ClientRegistrar::~ClientRegistrar()
 QDBusConnection ClientRegistrar::dbusConnection() const
 {
     return mPriv->bus;
+}
+
+/**
+ * Get the account factory used by this client registrar.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the registrar would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+AccountFactoryConstPtr ClientRegistrar::accountFactory() const
+{
+    return mPriv->accFactory;
+}
+
+/**
+ * Get the connection factory used by this client registrar.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the registrar would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ConnectionFactoryConstPtr ClientRegistrar::connectionFactory() const
+{
+    return mPriv->connFactory;
+}
+
+/**
+ * Get the channel factory used by this client registrar.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the registrar would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ChannelFactoryConstPtr ClientRegistrar::channelFactory() const
+{
+    return mPriv->chanFactory;
+}
+
+/**
+ * Get the contact factory used by this client registrar.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the registrar would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ContactFactoryConstPtr ClientRegistrar::contactFactory() const
+{
+    return mPriv->contactFactory;
 }
 
 /**
@@ -532,12 +987,12 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         dynamic_cast<AbstractClientHandler*>(client.data());
     if (handler) {
         // export o.f.T.Client.Handler
-        new ClientHandlerAdaptor(mPriv->bus, handler, object);
+        new ClientHandlerAdaptor(this, handler, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Handler"));
         if (handler->wantsRequestNotification()) {
             // export o.f.T.Client.Interface.Requests
-            new ClientHandlerRequestsAdaptor(mPriv->bus, handler, object);
+            new ClientHandlerRequestsAdaptor(this, handler, object);
             interfaces.append(
                     QLatin1String(
                         "org.freedesktop.Telepathy.Client.Interface.Requests"));
@@ -548,7 +1003,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         dynamic_cast<AbstractClientObserver*>(client.data());
     if (observer) {
         // export o.f.T.Client.Observer
-        new ClientObserverAdaptor(mPriv->bus, observer, object);
+        new ClientObserverAdaptor(this, observer, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Observer"));
     }
@@ -557,7 +1012,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
         dynamic_cast<AbstractClientApprover*>(client.data());
     if (approver) {
         // export o.f.T.Client.Approver
-        new ClientApproverAdaptor(mPriv->bus, approver, object);
+        new ClientApproverAdaptor(this, approver, object);
         interfaces.append(
                 QLatin1String("org.freedesktop.Telepathy.Client.Approver"));
     }
@@ -570,7 +1025,7 @@ bool ClientRegistrar::registerClient(const AbstractClientPtr &client,
     }
 
     // export o.f.T.Client interface
-    new ClientAdaptor(interfaces, object);
+    new ClientAdaptor(this, interfaces, object);
 
     QString objectPath = QString(QLatin1String("/%1")).arg(busName);
     objectPath.replace(QLatin1String("."), QLatin1String("/"));

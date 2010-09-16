@@ -26,6 +26,10 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/AccountFactory>
+#include <TelepathyQt4/ChannelFactory>
+#include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/RefCounted>
 #include <TelepathyQt4/Types>
 
@@ -44,9 +48,31 @@ class TELEPATHY_QT4_EXPORT ClientRegistrar : public QObject, public RefCounted
 public:
     static ClientRegistrarPtr create(
             const QDBusConnection &bus = QDBusConnection::sessionBus());
+
+    static ClientRegistrarPtr create(
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory =
+                ConnectionFactory::create(QDBusConnection::sessionBus()),
+            const ChannelFactoryConstPtr &channelFactory =
+                ChannelFactory::create(QDBusConnection::sessionBus()),
+            const ContactFactoryConstPtr &contactFactory =
+                ContactFactory::create());
+    static ClientRegistrarPtr create(const QDBusConnection &bus,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
+
+    static ClientRegistrarPtr create(const AccountManagerPtr &accountManager);
+
     ~ClientRegistrar();
 
     QDBusConnection dbusConnection() const;
+
+    AccountFactoryConstPtr accountFactory() const;
+    ConnectionFactoryConstPtr connectionFactory() const;
+    ChannelFactoryConstPtr channelFactory() const;
+    ContactFactoryConstPtr contactFactory() const;
 
     QList<AbstractClientPtr> registeredClients() const;
     bool registerClient(const AbstractClientPtr &client,
@@ -55,7 +81,12 @@ public:
     void unregisterClients();
 
 private:
-    ClientRegistrar(const QDBusConnection &bus);
+    TELEPATHY_QT4_DEPRECATED ClientRegistrar(const QDBusConnection &bus);
+    ClientRegistrar(const QDBusConnection &bus,
+            const AccountFactoryConstPtr &accountFactory,
+            const ConnectionFactoryConstPtr &connectionFactory,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     struct Private;
     friend struct Private;

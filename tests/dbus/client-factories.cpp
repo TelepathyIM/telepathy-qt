@@ -8,17 +8,21 @@
 #include <QVariantMap>
 
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountFactory>
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/AbstractClientHandler>
 #include <TelepathyQt4/AbstractClientObserver>
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/ChannelDispatchOperation>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ChannelRequest>
 #include <TelepathyQt4/ClientHandlerInterface>
 #include <TelepathyQt4/ClientInterfaceRequestsInterface>
 #include <TelepathyQt4/ClientObserverInterface>
 #include <TelepathyQt4/ClientRegistrar>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionFactory>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/MethodInvocationContext>
 #include <TelepathyQt4/PendingAccount>
@@ -337,12 +341,12 @@ Q_SIGNALS:
     void channelClosed();
 };
 
-class TestClient : public Test
+class TestClientFactories : public Test
 {
     Q_OBJECT
 
 public:
-    TestClient(QObject *parent = 0)
+    TestClientFactories(QObject *parent = 0)
         : Test(parent),
           mConnService(0), mBaseConnService(0), mContactRepo(0),
           mText1ChanService(0)
@@ -358,6 +362,7 @@ private Q_SLOTS:
     void initTestCase();
     void init();
 
+    void testFactoryAccess();
     void testRegister();
     void testCapabilities();
     void testObserveChannels();
@@ -398,22 +403,28 @@ private:
     uint mUserActionTime;
 };
 
-void TestClient::expectSignalEmission()
+void TestClientFactories::expectSignalEmission()
 {
     mLoop->exit(0);
 }
 
-void TestClient::initTestCase()
+void TestClientFactories::initTestCase()
 {
     initTestCaseImpl();
 
     g_type_init();
-    g_set_prgname("client-client");
+    g_set_prgname("client-factories");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
-    mAM = AccountManager::create();
-    QVERIFY(connect(mAM->becomeReady(),
+    QDBusConnection bus = QDBusConnection::sessionBus();
+
+    mAM = AccountManager::create(AccountFactory::create(bus, Account::FeatureCore),
+            ConnectionFactory::create(bus,
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+    PendingReady *amReadyOp = mAM->becomeReady();
+    QVERIFY(amReadyOp != NULL);
+    QVERIFY(connect(amReadyOp,
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
     QCOMPARE(mLoop->exec(), 0);
@@ -456,12 +467,13 @@ void TestClient::initTestCase()
     g_free(name);
     g_free(connPath);
 
-    mConn = Connection::create(mConnName, mConnPath);
+    mConn = ConnectionPtr::dynamicCast(mAccount->connectionFactory()->proxy(mConnName, mConnPath,
+                ChannelFactory::create(bus), ContactFactory::create())->proxy());
     QCOMPARE(mConn->isReady(), false);
 
-    mConn->requestConnect();
-
-    QVERIFY(connect(mConn->requestConnect(),
+    PendingReady *mConnReady = mConn->requestConnect();
+    QVERIFY(mConnReady != NULL);
+    QVERIFY(connect(mConnReady,
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -495,9 +507,7 @@ void TestClient::initTestCase()
 
     tp_handle_unref(mContactRepo, handle);
 
-    mClientRegistrar = ClientRegistrar::create();
-
-    QDBusConnection bus = mClientRegistrar->dbusConnection();
+    mClientRegistrar = ClientRegistrar::create(mAM);
 
     // Fake ChannelRequest
 
@@ -523,7 +533,7 @@ void TestClient::initTestCase()
     QObject *cdo = new QObject(this);
 
     // Initialize this here so we can actually set it in possibleHandlers
-    mClientObject1BusName = QLatin1String("org.freedesktop.Telepathy.Client.foo");
+    mClientObject1Path = QLatin1String("/org/freedesktop/Telepathy/Client/foo");
 
     ChannelDetailsList channelDetailsList;
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
@@ -535,12 +545,35 @@ void TestClient::initTestCase()
     QVERIFY(bus.registerObject(mCDOPath, cdo));
 }
 
-void TestClient::init()
+void TestClientFactories::init()
 {
     initImpl();
 }
 
-void TestClient::testRegister()
+void TestClientFactories::testFactoryAccess()
+{
+    AccountFactoryConstPtr accFact = mClientRegistrar->accountFactory();
+    QVERIFY(!accFact.isNull());
+    QCOMPARE(accFact.data(), mAM->accountFactory().data());
+
+    QCOMPARE(accFact->features(), Features(Account::FeatureCore));
+
+    ConnectionFactoryConstPtr connFact = mClientRegistrar->connectionFactory();
+    QVERIFY(!connFact.isNull());
+    QCOMPARE(connFact.data(), mAM->connectionFactory().data());
+
+    QCOMPARE(connFact->features(), Connection::FeatureCore | Connection::FeatureSimplePresence);
+
+    ChannelFactoryConstPtr chanFact = mClientRegistrar->channelFactory();
+    QVERIFY(!chanFact.isNull());
+    QCOMPARE(chanFact.data(), mAM->channelFactory().data());
+
+    ContactFactoryConstPtr contactFact = mClientRegistrar->contactFactory();
+    QVERIFY(!contactFact.isNull());
+    QCOMPARE(contactFact.data(), mAM->contactFactory().data());
+}
+
+void TestClientFactories::testRegister()
 {
     // invalid client
     QVERIFY(!mClientRegistrar->registerClient(AbstractClientPtr(), QLatin1String("foo")));
@@ -594,7 +627,7 @@ void TestClient::testRegister()
     mClientObject2Path.replace(QLatin1String("."), QLatin1String("/"));
 }
 
-void TestClient::testCapabilities()
+void TestClientFactories::testCapabilities()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
 
@@ -609,7 +642,7 @@ void TestClient::testCapabilities()
     QCOMPARE(handler2Iface->Capabilities(), mClientCapabilities);
 }
 
-void TestClient::testRequests()
+void TestClientFactories::testRequests()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
     ClientInterfaceRequestsInterface *handlerRequestsIface = new ClientInterfaceRequestsInterface(bus,
@@ -625,6 +658,8 @@ void TestClient::testRequests()
     }
     QCOMPARE(client->mAddRequestRequest->objectPath(),
              mChannelRequestPath);
+//    QCOMPARE(client->mAddRequestRequest->account().data(),
+//             mAccount.data());
 
     connect(client,
             SIGNAL(requestRemoved(const Tp::ChannelRequestPtr &,
@@ -639,13 +674,15 @@ void TestClient::testRequests()
     }
     QCOMPARE(client->mRemoveRequestRequest->objectPath(),
              mChannelRequestPath);
+//    QCOMPARE(client->mRemoveRequestRequest->account().data(),
+//             mAccount.data());
     QCOMPARE(client->mRemoveRequestErrorName,
              QString(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE)));
     QCOMPARE(client->mRemoveRequestErrorMessage,
              QString(QLatin1String("Not available")));
 }
 
-void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject,
+void TestClientFactories::testObserveChannelsCommon(const AbstractClientPtr &clientObject,
         const QString &clientBusName, const QString &clientObjectPath)
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
@@ -662,19 +699,35 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
             channelDetailsList,
-            QDBusObjectPath("/"),
+            QDBusObjectPath(mCDOPath),
             ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
             QVariantMap());
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mObserveChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client->mObserveChannelsAccount.data(), mAccount.data());
+    QVERIFY(client->mObserveChannelsAccount->isReady(Account::FeatureCore));
+
     QCOMPARE(client->mObserveChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client->mObserveChannelsConnection.data(), mConn.data());
+    QVERIFY(client->mObserveChannelsConnection->isReady(
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+
+    QCOMPARE(client->mObserveChannelsChannels.size(), 1);
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
-    QVERIFY(client->mObserveChannelsDispatchOperation.isNull());
+
+    QVERIFY(!client->mObserveChannelsDispatchOperation.isNull());
+    QCOMPARE(client->mObserveChannelsDispatchOperation->account().data(), mAccount.data());
+    QCOMPARE(client->mObserveChannelsDispatchOperation->connection().data(), mConn.data());
+
+    QCOMPARE(client->mObserveChannelsRequestsSatisfied.size(), 1);
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QVERIFY(client->mObserveChannelsRequestsSatisfied.first()->isReady());
+    QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->account().data(),
+             mAccount.data());
 }
 
-void TestClient::testObserveChannels()
+void TestClientFactories::testObserveChannels()
 {
     testObserveChannelsCommon(mClientObject1,
             mClientObject1BusName, mClientObject1Path);
@@ -682,7 +735,7 @@ void TestClient::testObserveChannels()
             mClientObject2BusName, mClientObject2Path);
 }
 
-void TestClient::testAddDispatchOperation()
+void TestClientFactories::testAddDispatchOperation()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
 
@@ -696,24 +749,41 @@ void TestClient::testAddDispatchOperation()
     QVariantMap dispatchOperationProperties;
     dispatchOperationProperties.insert(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Connection"),
-            QVariant::fromValue(QDBusObjectPath(mConn->objectPath())));
+            QVariant::fromValue(mCDO->Connection()));
     dispatchOperationProperties.insert(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Account"),
-            QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
+            QVariant::fromValue(mCDO->Account()));
     dispatchOperationProperties.insert(
             QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".PossibleHandlers"),
-            QVariant::fromValue(ObjectPathList() << QDBusObjectPath(mClientObject1Path)
-                << QDBusObjectPath(mClientObject2Path)));
+            QVariant::fromValue(mCDO->PossibleHandlers()));
+    dispatchOperationProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_DISPATCH_OPERATION ".Interfaces"),
+            QVariant::fromValue(mCDO->Interfaces()));
 
     approverIface->AddDispatchOperation(mCDO->Channels(), QDBusObjectPath(mCDOPath),
             dispatchOperationProperties);
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mAddDispatchOperationChannels.first()->objectPath(), mText1ChanPath);
+
+    QCOMPARE(client->mAddDispatchOperationChannels.first()->connection().data(), mConn.data());
+    QVERIFY(client->mAddDispatchOperationChannels.first()->connection()->isReady(
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->channels().first().data(),
+            client->mAddDispatchOperationChannels.first().data());
+
     QCOMPARE(client->mAddDispatchOperationDispatchOperation->objectPath(), mCDOPath);
+    QVERIFY(client->mAddDispatchOperationDispatchOperation->isReady());
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->account().data(), mAccount.data());
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->connection().data(), mConn.data());
+
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->possibleHandlers().size(), 1);
+    QCOMPARE(client->mAddDispatchOperationDispatchOperation->possibleHandlers(),
+            mCDO->PossibleHandlers());
 }
 
-void TestClient::testHandleChannels()
+void TestClientFactories::testHandleChannels()
 {
     QDBusConnection bus = mClientRegistrar->dbusConnection();
 
@@ -736,9 +806,21 @@ void TestClient::testHandleChannels()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client1->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client1->mHandleChannelsAccount.data(), mAccount.data());
+    QVERIFY(client1->mHandleChannelsAccount->isReady());
+
     QCOMPARE(client1->mHandleChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client1->mHandleChannelsConnection.data(), mConn.data());
+    QVERIFY(client1->mHandleChannelsConnection->isReady(
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+
     QCOMPARE(client1->mHandleChannelsChannels.first()->objectPath(), mText1ChanPath);
+
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QVERIFY(client1->mHandleChannelsRequestsSatisfied.first()->isReady());
+    QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->account().data(),
+             mAccount.data());
+
     QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
     Tp::ObjectPathList handledChannels = handler1Iface->HandledChannels();
@@ -763,9 +845,21 @@ void TestClient::testHandleChannels()
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client2->mHandleChannelsAccount->objectPath(), mAccount->objectPath());
+    QCOMPARE(client2->mHandleChannelsAccount.data(), mAccount.data());
+    QVERIFY(client2->mHandleChannelsAccount->isReady());
+
     QCOMPARE(client2->mHandleChannelsConnection->objectPath(), mConn->objectPath());
+    QCOMPARE(client2->mHandleChannelsConnection.data(), mConn.data());
+    QVERIFY(client2->mHandleChannelsConnection->isReady(
+                Connection::FeatureCore | Connection::FeatureSimplePresence));
+
     QCOMPARE(client2->mHandleChannelsChannels.first()->objectPath(), mText2ChanPath);
+
     QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QVERIFY(client2->mHandleChannelsRequestsSatisfied.first()->isReady());
+    QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->account().data(),
+             mAccount.data());
+
     QCOMPARE(client2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
     handledChannels = handler1Iface->HandledChannels();
@@ -788,15 +882,15 @@ void TestClient::testHandleChannels()
     QVERIFY(handledChannels.isEmpty());
 }
 
-void TestClient::cleanup()
+void TestClientFactories::cleanup()
 {
     cleanupImpl();
 }
 
-void TestClient::cleanupTestCase()
+void TestClientFactories::cleanupTestCase()
 {
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestClient)
-#include "_gen/client.cpp.moc.hpp"
+QTEST_MAIN(TestClientFactories)
+#include "_gen/client-factories.cpp.moc.hpp"
