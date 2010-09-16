@@ -1,9 +1,12 @@
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
+# Set the hidden visibility flags found in TelepathyDefaults
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIBILITY_HIDDEN_FLAGS}")
 
+# We are building Telepathy-Qt4
 add_definitions(-DBUILDING_TELEPATHY_QT4)
 
+# Sources for Tp-Qt4
 set(telepathy_qt4_SRCS
     abstract-client.cpp
     abstract-interface.cpp
@@ -80,6 +83,7 @@ set(telepathy_qt4_SRCS
     types-internal.h
     utils.cpp)
 
+# Exported headers for Tp-Qt4
 set(telepathy_qt4_HEADERS
     AbstractClient
     AbstractClientApprover
@@ -273,6 +277,7 @@ set(telepathy_qt4_HEADERS
     utils.h
     WeakPtr)
 
+# Generated headers which will be installed and exported
 set(telepathy_qt4_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-account-manager.h
@@ -294,6 +299,7 @@ set(telepathy_qt4_gen_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h
     ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 
+# Headers file moc will be run on
 set(telepathy_qt4_MOC_SRCS
     abstract-interface.h
     account.h
@@ -337,6 +343,7 @@ set(telepathy_qt4_MOC_SRCS
     streamed-media-channel-internal.h
     text-channel.h)
 
+# Generate the spec files for both stable and future spec
 set(gen_stable_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml)
 set(gen_future_spec_xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml)
 
@@ -351,20 +358,24 @@ tpqt4_constants_gen(${gen_future_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/futu
                     --namespace=TpFuture
                     --str-constant-prefix=TP_FUTURE_)
 
-tpqt4_types_gen(${gen_stable_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h
+tpqt4_types_gen(${gen_stable_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
                 Tp TelepathyQt4/types.h TelepathyQt4/Types
                 --must-define=IN_TELEPATHY_QT4_HEADER
-                --visibility=TELEPATHY_QT4_EXPORT)
-tpqt4_types_gen(${gen_future_spec_xml} ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h
+                --visibility=TELEPATHY_QT4_EXPORT
+                DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/constants.h)
+tpqt4_types_gen(${gen_future_spec_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp
-                TpFuture TelepathyQt4/future-internal.h TelepathyQt4/future-internal.h)
+                TpFuture TelepathyQt4/future-internal.h TelepathyQt4/future-internal.h
+                DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-constants.h)
 
+# Add the generated types to the library's sources
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp)
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h)
 list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types-body.hpp)
 
+# For each spec, both stable and future, generate a cli file and add it to the sources (including mocs).
 set(SPECS
     account
     account-manager
@@ -381,11 +392,12 @@ set(SPECS
     properties)
 foreach(spec ${SPECS})
     tpqt4_xincludator(${CMAKE_CURRENT_SOURCE_DIR}/${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
-                      ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
+                      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
     set(NEW_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
     list(APPEND telepathy_qt4_SRCS ${NEW_FILES})
+    list(APPEND telepathy_qt4_generated_specs_mocs "moc-cli-${spec}.moc.hpp")
     set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
 endforeach(spec ${SPECS})
 
@@ -394,21 +406,23 @@ set(FUTURE_SPECS
     misc)
 foreach(spec ${FUTURE_SPECS})
     tpqt4_xincludator(${CMAKE_CURRENT_SOURCE_DIR}/future-${spec}.xml ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
-                      ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h
-                      ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h)
+                      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-types.h)
     set(NEW_FILES
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp)
     list(APPEND telepathy_qt4_SRCS ${NEW_FILES})
+    list(APPEND telepathy_qt4_generated_specs_mocs "moc-future-${spec}.moc.hpp")
     set_source_files_properties(${NEW_FILES} PROPERTIES GENERATED true)
 endforeach(spec ${FUTURE_SPECS})
 
+# The escape character in MSVC is ^
 if(MSVC)
     set(TYPES_INCLUDE ^<TelepathyQt4/Types^> )
 else(MSVC)
     set(TYPES_INCLUDE '<TelepathyQt4/Types>' )
 endif(MSVC)
 
+# Use the client generator for generating headers out of specs
 tpqt4_client_generator(account clientaccount AccountManager Tp::Client --mainiface=Tp::Client::AccountInterface)
 tpqt4_client_generator(account-manager clientam AccountManager Tp::Client --mainiface=Tp::Client::AccountManagerInterface)
 tpqt4_client_generator(channel clientchannel Channel Tp::Client --mainiface=Tp::Client::ChannelInterface)
@@ -426,40 +440,37 @@ tpqt4_client_generator(properties clientprops Properties Tp::Client "")
 tpqt4_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::ChannelInterface)
 tpqt4_future_client_generator(misc TpFuture::Client '')
 
-foreach(spec ${SPECS})
-    list(APPEND telepathy_qt4_generated_specs_mocs "moc-cli-${spec}.moc.hpp")
-endforeach(spec ${SPECS})
-foreach(spec ${FUTURE_SPECS})
-    list(APPEND telepathy_qt4_generated_specs_mocs "moc-future-${spec}.moc.hpp")
-endforeach(spec ${FUTURE_SPECS})
-
+# Create the library
 add_library(telepathy-qt4 SHARED ${telepathy_qt4_SRCS})
 
 # generate client moc files
 foreach(moc_src ${telepathy_qt4_MOC_SRCS})
     set(generated_file _gen/${moc_src})
     string(REPLACE ".h" ".moc.hpp" generated_file ${generated_file})
-    qt4_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
-                                   ${telepathy_qt4_generated_specs_mocs})
+    tpqt4_generate_moc_i_target_deps(${CMAKE_CURRENT_SOURCE_DIR}/${moc_src} ${CMAKE_CURRENT_BINARY_DIR}/${generated_file}
+                                     ${telepathy_qt4_generated_specs_mocs})
     list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
     string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
     add_dependencies(telepathy-qt4 "moc-${moc_src}")
 endforeach(moc_src ${telepathy_qt4_MOC_SRCS})
 
+# Link
 target_link_libraries(telepathy-qt4
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARIES})
 
+# Install header files
 install(FILES ${telepathy_qt4_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4 COMPONENT headers)
 install(FILES ${telepathy_qt4_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4/_gen COMPONENT headers)
 
+# Install the library - watch out for the correct components
 if (WIN32)
     install(TARGETS telepathy-qt4 RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
-                               ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
+                                  ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
 else (WIN32)
     install(TARGETS telepathy-qt4 LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
-                               ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
+                                  ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT headers)
 endif (WIN32)
 
 # pkg-config file
@@ -467,6 +478,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4.pc.in ${CMAKE_CURRENT_BI
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4-uninstalled.pc)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT headers)
 
+# If Farsight was found, install its pkg-config files as well, and go into the subdirectory
 if(FARSIGHT_COMPONENTS_FOUND)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4Farsight.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight.pc)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt4Farsight-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt4Farsight-uninstalled.pc)

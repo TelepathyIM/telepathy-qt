@@ -1,11 +1,6 @@
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh "
-${test_environment}
-sh ${CMAKE_SOURCE_DIR}/tools/with-session-bus.sh \\
-    --config-file=${CMAKE_BINARY_DIR}/tests/dbus-1/session.conf -- $@
-")
-set(with_session_bus ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
+tpqt4_setup_dbus_test_environment()
 
 if(HAVE_TEST_PYTHON)
     tpqt4_add_dbus_unit_test(AccountBasics account-basics "")

@@ -89,6 +89,7 @@ macro_log_feature(QT4_GLIB_SUPPORT "Qt4 Glib Support"
                   "http://qt.nokia.com/" FALSE ""
                   "Needed, together with Telepathy-Glib, to build some additional test cases")
 
+# Check for operator== in QDBusVariant
 SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTDBUS_LIBRARY})
 CHECK_CXX_SOURCE_COMPILES("
 #include <QtDBus>
@@ -148,11 +149,15 @@ macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
                   "A Framework for dealing with audio/video conferencing protocols"
                   "http://farsight.freedesktop.org/wiki/" FALSE "0.0.4"
                   "Needed, together with GStreamer, to build telepathy-qt4-farsight and some additional examples")
+
+# Find GStreamer
 find_package(GStreamer)
 macro_log_feature(GSTREAMER_FOUND "GStreamer"
                   "An open source multimedia framework"
                   "Needed, together with Tp-Farsight, to build telepathy-qt4-farsight and some additional examples"
                   "http://www.gstreamer.net/" FALSE)
+
+# Build TelepathyQt4-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
 if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
     set (FARSIGHT_COMPONENTS_FOUND 1)
 else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND)
@@ -169,19 +174,22 @@ macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
 
-# process results...
+# Enable glib-based tests only if Qt4 has GLib support and Telepathy-glib was found
 if(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
     set(ENABLE_TP_GLIB_TESTS 1)
 else(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
     set(ENABLE_TP_GLIB_TESTS 0)
 endif(QT4_GLIB_SUPPORT AND TELEPATHYGLIB_FOUND AND GLIB2_FOUND AND DBUS_FOUND)
 
+# Add the source subdirectories
 add_subdirectory(TelepathyQt4)
 add_subdirectory(examples)
 add_subdirectory(tests)
 
+# Generate config.h
 configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 
+# Create the uninstall target
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
@@ -190,6 +198,8 @@ configure_file(
 add_custom_target(uninstall
     "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
+# Display the feature log
 macro_display_feature_log()
 
+# Always keep it last: CPack definitions file
 include(TelepathyDist)

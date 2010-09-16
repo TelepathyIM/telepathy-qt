@@ -32,7 +32,7 @@ else(MSVC)
     set(TYPES_INCLUDE '<TelepathyQt4/Types>')
 endif(MSVC)
 
-tpqt4_types_gen(${generated_all_xml} ${generated_all_xml}
+tpqt4_types_gen(${generated_all_xml}
                 ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/types-body.hpp
                 Example types.h types.h
                 --extraincludes=${TYPES_INCLUDE})
@@ -62,7 +62,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-body.h
          --mainiface=Tp::Client::ConnectionInterface
     DEPENDS ${generated_all_xml} ${connection_generated_xml} ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py ${CMAKE_CURRENT_BINARY_DIR}/_gen/types.h)
 list(APPEND example_extensions_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection-body.hpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h)
-qt4_generate_moc_i(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.moc.hpp)
+tpqt4_generate_moc_i(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.moc.hpp)
 list(APPEND example_extensions_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-connection.moc.hpp)
 
 add_library(example_extensions STATIC ${example_extensions_SRCS})

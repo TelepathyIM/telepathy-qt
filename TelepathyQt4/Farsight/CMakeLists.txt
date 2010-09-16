@@ -7,6 +7,7 @@ if(FARSIGHT_COMPONENTS_FOUND)
 
     # It gets inherited from the previous directory, hence it has to be removed explicitely
     remove_definitions(-DBUILDING_TELEPATHY_QT4)
+    # We are building Telepathy-Qt4-Farsight
     add_definitions(-DBUILDING_TELEPATHY_QT4_FARSIGHT)
 
     set(telepathy_qt4_farsight_SRCS
@@ -16,7 +17,9 @@ if(FARSIGHT_COMPONENTS_FOUND)
         Channel
         channel.h)
 
+    # Create the library
     add_library(telepathy-qt4-farsight SHARED ${telepathy_qt4_farsight_SRCS})
+    # Link
     target_link_libraries(telepathy-qt4-farsight
         ${QT_QTDBUS_LIBRARY}
         ${QT_QTCORE_LIBRARY}
@@ -24,6 +27,7 @@ if(FARSIGHT_COMPONENTS_FOUND)
         ${GSTREAMER_INTERFACE_LIBRARY}
         telepathy-qt4)
 
+    # Install the library - watch out for the correct components
     if (WIN32)
         install(TARGETS telepathy-qt4-farsight RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight
                                                ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight_headers)
@@ -32,6 +36,7 @@ if(FARSIGHT_COMPONENTS_FOUND)
                                                ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight_headers)
     endif (WIN32)
 
+    # Install headers
     install(FILES ${telepathy_qt4_farsight_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4/Farsight
             COMPONENT farsight_headers)
 endif(FARSIGHT_COMPONENTS_FOUND)
