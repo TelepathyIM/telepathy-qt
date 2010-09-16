@@ -1,4 +1,4 @@
-telepathy-qt4 0.3.10 (UNRELEASED)
+telepathy-qt4 0.3.10 (2010-09-16)
 =================================
 
 The {bool b; if (b == false || b == true || b == 99) { /*...*/ }} release.
