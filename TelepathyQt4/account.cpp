@@ -850,7 +850,7 @@ QString Account::icon() const
 QString Account::iconName() const
 {
     if (mPriv->iconName.isEmpty()) {
-        if (isReady(Features() << FeatureProtocolInfo)) {
+        if (isReady(Features() << FeatureProtocolInfo) && protocolInfo() != NULL) {
             return protocolInfo()->iconName();
         } else {
             return QString(QLatin1String("im-%1")).arg(protocol());
@@ -1056,7 +1056,10 @@ ConnectionCapabilities *Account::capabilities() const
     // if we are here it means FeatureProtocolInfo is ready, as
     // FeatureCapabilities depend on it, so let's use the protocol info to
     // retrieve the caps
-    return mPriv->protocolInfo->capabilities();
+    //
+    // However, if we failed to introspect the CM (eg. this is a test), then let's not try to use
+    // the protocolInfo because it'll be NULL!
+    return protocolInfo() ? protocolInfo()->capabilities() : NULL;
 }
 
 /**
@@ -2852,6 +2855,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
         mPriv->readinessHelper->setIntrospectCompleted(FeatureProtocolInfo, true);
     }
     else {
+        warning() << "Failed to find the protocol in the CM protocols for account" << objectPath();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureProtocolInfo, false,
                 operation->errorName(), operation->errorMessage());
     }
