@@ -64,7 +64,6 @@ class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
 
 public:
     static const Feature FeatureCore;
-    static const Feature FeatureFilterByCapabilities;
 
     // API/ABI break TODO: Remove these and have just all-default-argument versions with the factory
     // params
@@ -168,7 +167,6 @@ private Q_SLOTS:
     void onAccountReady(Tp::PendingOperation *);
     void onAccountValidityChanged(const QDBusObjectPath &, bool);
     void onAccountRemoved(const QDBusObjectPath &);
-    void onAccountsCapabilitiesReady(Tp::PendingOperation *);
 
 private:
     friend class PendingAccount;
