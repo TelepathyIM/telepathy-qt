@@ -66,7 +66,7 @@ bool AccountPropertyFilter::isValid() const
     QVariantMap::const_iterator end = mFilter.constEnd();
     while (i != end) {
         QString propertyName = i.key();
-        if (mPriv->supportedAccountProperties.contains(propertyName)) {
+        if (!mPriv->supportedAccountProperties.contains(propertyName)) {
             warning() << "Invalid filter key" << propertyName <<
                 "while filtering account by properties";
             return false;
