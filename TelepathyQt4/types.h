@@ -40,6 +40,7 @@ TELEPATHY_QT4_EXPORT void registerTypes();
 
 class AbstractClient;
 class Account;
+class AccountPropertyFilter;
 class AccountFactory;
 class AccountSet;
 class AccountManager;
@@ -55,6 +56,9 @@ class ConnectionManager;
 class Contact;
 class ContactFactory;
 class FileTransferChannel;
+template <typename T> class Filter;
+template <typename T> class GenericCapabilityFilter;
+template <typename T> class GenericPropertyFilter;
 class IncomingFileTransferChannel;
 class OutgoingFileTransferChannel;
 class RoomListChannel;
@@ -63,10 +67,19 @@ class MediaStream;
 class StreamedMediaChannel;
 class TextChannel;
 
+typedef Filter<Account> AccountFilter;
+typedef GenericCapabilityFilter<Account> AccountCapabilityFilter;
+
 typedef SharedPtr<AbstractClient> AbstractClientPtr;
 typedef SharedPtr<Account> AccountPtr;
 typedef SharedPtr<AccountFactory> AccountFactoryPtr;
 typedef SharedPtr<const AccountFactory> AccountFactoryConstPtr;
+typedef SharedPtr<AccountCapabilityFilter> AccountCapabilityFilterPtr;
+typedef SharedPtr<const AccountCapabilityFilter> AccountCapabilityFilterConstPtr;
+typedef SharedPtr<AccountPropertyFilter> AccountPropertyFilterPtr;
+typedef SharedPtr<const AccountPropertyFilter> AccountPropertyFilterConstPtr;
+typedef SharedPtr<AccountFilter> AccountFilterPtr;
+typedef SharedPtr<const AccountFilter> AccountFilterConstPtr;
 typedef SharedPtr<AccountSet> AccountSetPtr;
 typedef SharedPtr<AccountManager> AccountManagerPtr;
 typedef SharedPtr<Channel> ChannelPtr;

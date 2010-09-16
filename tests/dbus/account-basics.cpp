@@ -4,7 +4,9 @@
 #include <TelepathyQt4/Debug>
 #include <TelepathyQt4/Types>
 #include <TelepathyQt4/Account>
+#include <TelepathyQt4/AccountCapabilityFilter>
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/AccountPropertyFilter>
 #include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingAccount>
@@ -95,7 +97,8 @@ void TestAccountBasics::initTestCase()
 {
     initTestCaseImpl();
 
-    mAM = AccountManager::create();
+    mAM = AccountManager::create(AccountFactory::create(QDBusConnection::sessionBus(),
+                Account::FeatureCore | Account::FeatureCapabilities));
     QCOMPARE(mAM->isReady(), false);
 }
 
@@ -320,6 +323,137 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mAM->enabledAccountsSet()->accounts().isEmpty(), false);
     QCOMPARE(mAM->disabledAccountsSet()->isFilterValid(), true);
     QCOMPARE(mAM->disabledAccountsSet()->accounts().isEmpty(), true);
+
+    filter.clear();
+    filter.insert(QLatin1String("cmName"), QLatin1String("spurious"));
+    AccountSetPtr spuriousAccountSet = AccountSetPtr(new AccountSet(mAM, filter));
+    QCOMPARE(spuriousAccountSet->isFilterValid(), true);
+
+    filteredAccountSet = mAM->textChatAccountsSet();
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
+
+    QCOMPARE(mAM->textChatAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->textChatRoomAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->mediaCallAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->mediaCallAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->audioCallAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->audioCallAccountsSet()->accounts().isEmpty(), true);
+    QCOMPARE(mAM->videoCallAccountsSet(false)->isFilterValid(), true);
+    QCOMPARE(mAM->videoCallAccountsSet(false)->accounts().isEmpty(), true);
+    QCOMPARE(mAM->videoCallAccountsSet(true)->isFilterValid(), true);
+    QCOMPARE(mAM->videoCallAccountsSet(true)->accounts().isEmpty(), true);
+    QCOMPARE(mAM->fileTransferAccountsSet()->isFilterValid(), true);
+    QCOMPARE(mAM->fileTransferAccountsSet()->accounts().isEmpty(), true);
+
+    QList<AccountFilterConstPtr> filterChain;
+
+    AccountPropertyFilterPtr cmNameFilter = AccountPropertyFilter::create();
+    cmNameFilter->addProperty(QLatin1String("cmName"), QLatin1String("spurious"));
+
+    /* match fixedProperties is complete and allowedProperties is a subset of
+     * the allowed properties */
+    filterChain.clear();
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rccs.append(rcc);
+    filterChain.append(AccountCapabilityFilter::create(rccs));
+    filterChain.append(cmNameFilter);
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
+
+    /* match fixedProperties and allowedProperties is complete */
+    filterChain.clear();
+    rccs.clear();
+    rcc.fixedProperties.clear();
+    rcc.allowedProperties.clear();
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"));
+    rccs.append(rcc);
+    filterChain.append(AccountCapabilityFilter::create(rccs));
+    filterChain.append(cmNameFilter);
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts(), spuriousAccountSet->accounts());
+
+    /* should not match as fixedProperties lack TargetHandleType */
+    filterChain.clear();
+    rccs.clear();
+    rcc.fixedProperties.clear();
+    rcc.allowedProperties.clear();
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rccs.append(rcc);
+    filterChain.append(AccountCapabilityFilter::create(rccs));
+    filterChain.append(cmNameFilter);
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
+
+    /* should not match as fixedProperties has more than expected */
+    filterChain.clear();
+    rccs.clear();
+    rcc.fixedProperties.clear();
+    rcc.allowedProperties.clear();
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rccs.append(rcc);
+    filterChain.append(AccountCapabilityFilter::create(rccs));
+    filterChain.append(cmNameFilter);
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
+
+    /* should not match as allowedProperties has TargetFoo that is not allowed */
+    filterChain.clear();
+    rccs.clear();
+    rcc.fixedProperties.clear();
+    rcc.allowedProperties.clear();
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandle"));
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetFoo"));
+    rccs.append(rcc);
+    filterChain.append(AccountCapabilityFilter::create(rccs));
+    filterChain.append(cmNameFilter);
+    filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
+    QCOMPARE(filteredAccountSet->isFilterValid(), true);
+    QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
 }
 
 void TestAccountBasics::cleanup()

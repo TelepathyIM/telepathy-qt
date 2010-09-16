@@ -19,31 +19,39 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <TelepathyQt4/AccountPropertyFilter>
+
 namespace Tp
 {
+
+class ConnectionCapabilities;
 
 struct AccountSet::Private
 {
     class AccountWrapper;
 
     Private(AccountSet *parent, const AccountManagerPtr &accountManager,
+            const QList<AccountFilterConstPtr> &filters);
+    Private(AccountSet *parent, const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
 
+    void init();
+    bool checkFilters();
+    void connectSignals();
+    void insertAccounts();
     void insertAccount(const AccountPtr &account);
     void removeAccount(const AccountPtr &account);
     void wrapAccount(const AccountPtr &account);
     void filterAccount(const AccountPtr &account);
-    bool accountMatchFilter(const AccountPtr &account, const QVariantMap &filter);
+    bool accountMatchFilters(AccountWrapper *account);
 
     AccountSet *parent;
     AccountManagerPtr accountManager;
-    QVariantMap filter;
+    QList<AccountFilterConstPtr> filters;
     QHash<QString, AccountWrapper *> wrappers;
     QHash<QString, AccountPtr> accounts;
     bool filterValid;
     bool ready;
-
-    static QStringList supportedAccountProperties;
 };
 
 class TELEPATHY_QT4_NO_EXPORT AccountSet::Private::AccountWrapper : public QObject
@@ -54,16 +62,21 @@ public:
     AccountWrapper(const AccountPtr &account, QObject *parent = 0);
     ~AccountWrapper();
 
-    AccountPtr account() { return mAccount; }
+    AccountPtr account() const { return mAccount; }
+
+    ConnectionCapabilities *capabilities() const;
 
 Q_SIGNALS:
     void accountRemoved(const Tp::AccountPtr &account);
     void accountPropertyChanged(const Tp::AccountPtr &account,
             const QString &propertyName);
+    void accountCapabilitiesChanged(const Tp::AccountPtr &account,
+            Tp::ConnectionCapabilities *capabilities);
 
 private Q_SLOTS:
     void onAccountRemoved();
     void onAccountPropertyChanged(const QString &propertyName);
+    void onAccountCapalitiesChanged(Tp::ConnectionCapabilities *capabilities);
 
 private:
     AccountPtr mAccount;

@@ -26,6 +26,7 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
+#include <TelepathyQt4/Filter>
 #include <TelepathyQt4/Types>
 
 #include <QList>
@@ -42,19 +43,24 @@ class TELEPATHY_QT4_EXPORT AccountSet : public QObject,
     Q_DISABLE_COPY(AccountSet)
     Q_PROPERTY(AccountManagerPtr accountManager READ accountManager)
     Q_PROPERTY(bool filterValid READ isFilterValid)
+    // deprecated
     Q_PROPERTY(QVariantMap filter READ filter)
+    Q_PROPERTY(QList<AccountFilterConstPtr> filters READ filters)
     Q_PROPERTY(QList<AccountPtr> accounts READ accounts)
 
 public:
+    AccountSet(const AccountManagerPtr &accountManager,
+            const QList<AccountFilterConstPtr > &filters);
     AccountSet(const AccountManagerPtr &accountManager,
             const QVariantMap &filter);
     virtual ~AccountSet();
 
     AccountManagerPtr accountManager() const;
 
-    bool isFilterValid() const;
+    TELEPATHY_QT4_DEPRECATED bool isFilterValid() const;
 
-    QVariantMap filter() const;
+    TELEPATHY_QT4_DEPRECATED QVariantMap filter() const;
+    QList<AccountFilterConstPtr> filters() const;
 
     QList<AccountPtr> accounts() const;
 
@@ -65,8 +71,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onNewAccount(const Tp::AccountPtr &account);
     void onAccountRemoved(const Tp::AccountPtr &account);
-    void onAccountPropertyChanged(const Tp::AccountPtr &account,
-            const QString &propertyName);
+    void onAccountChanged(const Tp::AccountPtr &account);
 
 private:
     struct Private;

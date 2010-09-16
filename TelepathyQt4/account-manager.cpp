@@ -27,8 +27,10 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/AccountCapabilityFilter>
 #include <TelepathyQt4/AccountSet>
 #include <TelepathyQt4/PendingAccount>
+#include <TelepathyQt4/PendingComposite>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/Constants>
 
@@ -50,6 +52,7 @@ struct TELEPATHY_QT4_NO_EXPORT AccountManager::Private
     void init();
 
     static void introspectMain(Private *self);
+    static void enableAccountsFeatureCapabilities(Private *self);
 
     void checkIntrospectionCompleted();
 
@@ -113,6 +116,15 @@ AccountManager::Private::Private(AccountManager *parent,
         this);
     introspectables[FeatureCore] = introspectableCore;
 
+    // As AccountManager does not have predefined statuses let's simulate one (0)
+    ReadinessHelper::Introspectable introspectableFeatureFilterByCapabilities(
+        QSet<uint>() << 0,                                           // makesSenseForStatuses
+        Features() << FeatureCore,                                   // dependsOnFeatures
+        QStringList(),                                               // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::enableAccountsFeatureCapabilities,
+        this);
+    introspectables[FeatureFilterByCapabilities] = introspectableFeatureFilterByCapabilities;
+
     readinessHelper->addIntrospectables(introspectables);
     readinessHelper->becomeReady(Features() << FeatureCore);
 
@@ -151,6 +163,20 @@ void AccountManager::Private::introspectMain(AccountManager::Private *self)
     self->parent->connect(watcher,
             SIGNAL(finished(QDBusPendingCallWatcher *)),
             SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
+}
+
+void AccountManager::Private::enableAccountsFeatureCapabilities(
+        AccountManager::Private *self)
+{
+    QList<PendingOperation *> ops;
+    foreach (const AccountPtr &account, self->accounts) {
+        ops.append(account->becomeReady(Account::FeatureCapabilities));
+    }
+
+    PendingComposite *opc = new PendingComposite(ops, self->parent);
+    self->parent->connect(opc,
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onAccountsCapabilitiesReady(Tp::PendingOperation *)));
 }
 
 void AccountManager::Private::checkIntrospectionCompleted()
@@ -323,6 +349,13 @@ void AccountManager::Private::addAccountForPath(const QString &path)
  * to the requested features.
  */
 const Feature AccountManager::FeatureCore = Feature(QLatin1String(AccountManager::staticMetaObject.className()), 0, true);
+
+/**
+ * Enable this feature so accounts return by this account manager can be
+ * filtered by capabilities using AccountCapabilityFilter or
+ * filterAccountsByCapabilities().
+ */
+const Feature AccountManager::FeatureFilterByCapabilities = Feature(QLatin1String(AccountManager::staticMetaObject.className()), 1);
 
 /**
  * Create a new AccountManager object using QDBusConnection::sessionBus().
@@ -592,7 +625,9 @@ QStringList AccountManager::allAccountPaths() const
 /**
  * Return a list of AccountPtr objects for all valid accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A list of AccountPtr objects.
  * \sa invalidAccounts(), allAccounts(), accountsForPaths()
@@ -611,7 +646,9 @@ QList<AccountPtr> AccountManager::validAccounts()
 /**
  * Return a list of AccountPtr objects for all invalid accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), allAccounts(), accountsForPaths()
@@ -630,7 +667,9 @@ QList<AccountPtr> AccountManager::invalidAccounts()
 /**
  * Return a list of AccountPtr objects for all accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), invalidAccounts(), accountsForPaths()
@@ -648,7 +687,9 @@ QList<AccountPtr> AccountManager::allAccounts()
 /**
  * Return a set of accounts containing all valid accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all valid accounts.
  */
@@ -663,7 +704,9 @@ AccountSetPtr AccountManager::validAccountsSet() const
 /**
  * Return a set of accounts containing all invalid accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all invalid accounts.
  */
@@ -678,7 +721,9 @@ AccountSetPtr AccountManager::invalidAccountsSet() const
 /**
  * Return a set of accounts containing all enabled accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all enabled accounts.
  */
@@ -693,7 +738,9 @@ AccountSetPtr AccountManager::enabledAccountsSet() const
 /**
  * Return a set of accounts containing all disabled accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all disabled accounts.
  */
@@ -708,7 +755,9 @@ AccountSetPtr AccountManager::disabledAccountsSet() const
 /**
  * Return a set of accounts containing all online accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all online accounts.
  */
@@ -723,7 +772,9 @@ AccountSetPtr AccountManager::onlineAccountsSet() const
 /**
  * Return a set of accounts containing all offline accounts.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \return A set of accounts containing all offline accounts.
  */
@@ -736,10 +787,186 @@ AccountSetPtr AccountManager::offlineAccountsSet() const
 }
 
 /**
+ * Return a set of accounts containing all accounts that support text chats by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \return A set of accounts containing all accounts that support text chats by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::textChatAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rccs.append(rcc);
+
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that support text chat
+ * rooms.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \return A set of accounts containing all accounts that support text chat rooms.
+ */
+AccountSetPtr AccountManager::textChatRoomAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeRoom);
+    rccs.append(rcc);
+
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that support media calls by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \return A set of accounts containing all accounts that support media calls by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::mediaCallAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rccs.append(rcc);
+
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that support audio calls by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \return A set of accounts containing all accounts that support audio calls by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::audioCallAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+    rccs.append(rcc);
+
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that support video calls by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \return A set of accounts containing all accounts that support video calls by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::videoCallAccountsSet(bool withAudio) const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rcc.allowedProperties.append(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialVideo"));
+    if (withAudio) {
+        rcc.allowedProperties.append(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA ".InitialAudio"));
+    }
+    rccs.append(rcc);
+
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that support file transfers by
+ * providing a contact identifier.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \return A set of accounts containing all accounts that support file transfers by
+ *         providing a contact identifier.
+ */
+AccountSetPtr AccountManager::fileTransferAccountsSet() const
+{
+    RequestableChannelClassList rccs;
+    RequestableChannelClass rcc;
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER));
+    rcc.fixedProperties.insert(
+            QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+            (uint) HandleTypeContact);
+    rccs.append(rcc);
+
+    AccountCapabilityFilterPtr filter = AccountCapabilityFilter::create();
+    filter->setRequestableChannelClassesSubset(rccs);
+    return filterAccounts(filter);
+}
+
+/**
  * Return a set of accounts containing all accounts for the given \a
  * protocolName.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \param protocolName The name of the protocol used to filter accounts.
  * \return A set of accounts containing all accounts for the given \a
@@ -752,6 +979,45 @@ AccountSetPtr AccountManager::accountsByProtocol(
     filter.insert(QLatin1String("protocolName"), protocolName);
     return AccountSetPtr(new AccountSet(AccountManagerPtr(
                     (AccountManager *) this), filter));
+}
+
+/**
+ * Return a set of accounts containing all accounts that match the given \a
+ * filter criteria.
+ *
+ * See AccountSet documentation for more details.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \param filter The desired filter
+ * \return A set of accounts containing all accounts that match the given \a
+ *         filter criteria.
+ */
+AccountSetPtr AccountManager::filterAccounts(const AccountFilterConstPtr &filter) const
+{
+    return filterAccounts(QList<AccountFilterConstPtr>() << filter);
+}
+
+/**
+ * Return a set of accounts containing all accounts that match the given \a
+ * filters criteria.
+ *
+ * See AccountSet documentation for more details.
+ *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
+ * \param filters The desired filters
+ * \return A set of accounts containing all accounts that match the given \a
+ *         filters criteria.
+ */
+AccountSetPtr AccountManager::filterAccounts(const QList<AccountFilterConstPtr> &filters) const
+{
+    return AccountSetPtr(new AccountSet(AccountManagerPtr(
+                    (AccountManager *) this), filters));
 }
 
 /**
@@ -793,6 +1059,10 @@ AccountSetPtr AccountManager::accountsByProtocol(
  *
  * See AccountSet documentation for more details.
  *
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
+ *
  * \param filter The desired filter
  * \return A set of accounts containing all accounts that match the given \a
  *         filter criteria.
@@ -806,7 +1076,9 @@ AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
 /**
  * Return an AccountPtr object for the given \a path.
  *
- * Note that the returned account already has the Account::FeatureCore enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \param path The account object path.
  * \return An AccountPtr object pointing to the Account object for the given
@@ -829,8 +1101,9 @@ AccountPtr AccountManager::accountForPath(const QString &path)
  * a given path is invalid the returned AccountPtr object will point to 0.
  * AccountPtr::isNull() will return true.
  *
- * Note that the returned accounts already have the Account::FeatureCore
- * enabled.
+ * Note that the returned accounts already have the Account::FeatureCore and
+ * also Account::FeatureCapabilities enabled if
+ * AccountManager::FeatureFilterByCapabilities is ready.
  *
  * \param paths List of accounts object paths.
  * \return A list of AccountPtr objects.
@@ -1041,6 +1314,19 @@ void AccountManager::onAccountRemoved(const QDBusObjectPath &objectPath)
         mPriv->incompleteAccounts.remove(path);
         debug() << "Account" << path << "was removed, but it was "
             "not completely introspected, ignoring";
+    }
+}
+
+void AccountManager::onAccountsCapabilitiesReady(Tp::PendingOperation *op)
+{
+    if (!op->isError()) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureFilterByCapabilities, true);
+    } else {
+        warning().nospace() << "Unable to make one or more accounts "
+            "FeatureCapabilities ready" <<
+            op->errorName() << ":" << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureFilterByCapabilities,
+                false, op->errorName(), op->errorMessage());
     }
 }
 

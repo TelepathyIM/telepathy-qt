@@ -62,10 +62,13 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     static void introspectMain(Private *self);
     static void introspectAvatar(Private *self);
     static void introspectProtocolInfo(Private *self);
+    static void introspectCapabilities(Private *self);
 
     void updateProperties(const QVariantMap &props);
     void retrieveAvatar();
     bool processConnQueue();
+
+    bool checkCapabilitiesChanged();
 
     void addConferenceRequestParameters(QVariantMap &request,
             const QList<ChannelPtr> &channels,
@@ -114,6 +117,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     SimplePresence automaticPresence;
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
+    bool mUsingConnectionCaps;
 };
 
 Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
@@ -134,7 +138,8 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       coreFinished(false),
       protocolInfo(0),
       connectionStatus(ConnectionStatusDisconnected),
-      connectionStatusReason(ConnectionStatusReasonNoneSpecified)
+      connectionStatusReason(ConnectionStatusReasonNoneSpecified),
+      mUsingConnectionCaps(false)
 {
     automaticPresence.type = currentPresence.type = requestedPresence.type
         = ConnectionPresenceTypeUnknown;
@@ -197,6 +202,14 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
         this);
     introspectables[FeatureProtocolInfo] = introspectableProtocolInfo;
 
+    ReadinessHelper::Introspectable introspectableCapabilities(
+        QSet<uint>() << 0,                                                      // makesSenseForStatuses
+        Features() << FeatureCore << FeatureProtocolInfo,                       // dependsOnFeatures
+        QStringList(),                                                          // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectCapabilities,
+        this);
+    introspectables[FeatureCapabilities] = introspectableCapabilities;
+
     readinessHelper->addIntrospectables(introspectables);
 
     if (connFactory->dbusConnection().name() != parent->dbusConnection().name()) {
@@ -214,6 +227,36 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
 
 Account::Private::~Private()
 {
+}
+
+bool Account::Private::checkCapabilitiesChanged()
+{
+    /* when the capabilities changed:
+     *
+     * - We were using the connection caps and now we don't have connection or
+     *   the connection we have is not connected (changed to CM caps)
+     * - We were using the CM caps and now we have a connected connection
+     *   (changed to new connection caps)
+     */
+    bool changed = false;
+
+    if (mUsingConnectionCaps &&
+        (!parent->haveConnection() ||
+         connection->status() != Connection::StatusConnected)) {
+        mUsingConnectionCaps = false;
+        changed = true;
+    } else if (!mUsingConnectionCaps &&
+        parent->haveConnection() &&
+        connection->status() == Connection::StatusConnected) {
+        mUsingConnectionCaps = true;
+        changed = true;
+    }
+
+    if (changed && parent->isReady(FeatureCapabilities)) {
+        emit parent->capabilitiesChanged(parent->capabilities());
+    }
+
+    return changed;
 }
 
 void Account::Private::addConferenceRequestParameters(QVariantMap &request,
@@ -403,6 +446,15 @@ const Feature Account::FeatureAvatar = Feature(QLatin1String(Account::staticMeta
  * See protocol info specific methods' documentation for more details.
  */
 const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::staticMetaObject.className()), 2);
+
+/**
+ * Feature used in order to access account capabilities.
+ *
+ * This feature will enable FeatureProtocolInfo.
+ *
+ * See capabilities specific methods' documentation for more details.
+ */
+const Feature Account::FeatureCapabilities = Feature(QLatin1String(Account::staticMetaObject.className()), 3);
 
 /**
  * Create a new Account object using QDBusConnection::sessionBus().
@@ -798,7 +850,7 @@ QString Account::icon() const
 QString Account::iconName() const
 {
     if (mPriv->iconName.isEmpty()) {
-        if (isReady(Features() << FeatureProtocolInfo)) {
+        if (isReady(Features() << FeatureProtocolInfo) && protocolInfo() != NULL) {
             return protocolInfo()->iconName();
         } else {
             return QString(QLatin1String("im-%1")).arg(protocol());
@@ -972,6 +1024,42 @@ ProtocolInfo *Account::protocolInfo() const
     }
 
     return mPriv->protocolInfo;
+}
+
+/**
+ * Return the capabilities for this account.
+ *
+ * This method requires Account::FeatureCapabilities to be enabled.
+ *
+ * Note that this method will return the connection() capabilities if the
+ * account is online and ready. If the account is disconnected, it will fallback
+ * to return the capabilities return by protocolInfo().
+ *
+ * \return The capabilities for this account or 0 if FeatureCapabilities is not
+ *         ready.
+ */
+ConnectionCapabilities *Account::capabilities() const
+{
+    if (!isReady(FeatureCapabilities)) {
+        warning() << "Trying to retrieve capabilities from account, but "
+                     "FeatureCapabilities was not requested. "
+                     "Use becomeReady(FeatureCapabilities)";
+        return 0;
+    }
+
+    // if the connection is online and ready use its caps
+    if (mPriv->connection &&
+        mPriv->connection->status() == Connection::StatusConnected) {
+        return mPriv->connection->capabilities();
+    }
+
+    // if we are here it means FeatureProtocolInfo is ready, as
+    // FeatureCapabilities depend on it, so let's use the protocol info to
+    // retrieve the caps
+    //
+    // However, if we failed to introspect the CM (eg. this is a test), then let's not try to use
+    // the protocolInfo because it'll be NULL!
+    return protocolInfo() ? protocolInfo()->capabilities() : NULL;
 }
 
 /**
@@ -2377,6 +2465,19 @@ void Account::Private::introspectProtocolInfo(Account::Private *self)
             SLOT(onConnectionManagerReady(Tp::PendingOperation *)));
 }
 
+void Account::Private::introspectCapabilities(Account::Private *self)
+{
+    if (!self->connection) {
+        // there is no connection, just make capabilities ready
+        self->readinessHelper->setIntrospectCompleted(FeatureCapabilities, true);
+        return;
+    }
+
+    self->parent->connect(self->connection->becomeReady(),
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onConnectionReady(Tp::PendingOperation *)));
+}
+
 void Account::Private::updateProperties(const QVariantMap &props)
 {
     debug() << "Account::updateProperties: changed:";
@@ -2607,6 +2708,10 @@ void Account::Private::updateProperties(const QVariantMap &props)
                 return;
             }
 
+            /* now that the connection status changed, let's check if
+             * capabilities changed */
+            checkCapabilitiesChanged();
+
             /* We don't signal error for status other than Disconnected */
             if (connectionStatus != ConnectionStatusDisconnected) {
                 connectionError = QString();
@@ -2756,8 +2861,23 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
         mPriv->readinessHelper->setIntrospectCompleted(FeatureProtocolInfo, true);
     }
     else {
+        warning() << "Failed to find the protocol in the CM protocols for account" << objectPath();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureProtocolInfo, false,
                 operation->errorName(), operation->errorMessage());
+    }
+}
+
+void Account::onConnectionReady(PendingOperation *op)
+{
+    mPriv->checkCapabilitiesChanged();
+
+    /* let's not fail if connection can't become ready, the caps will still
+     * work, but return the CM caps instead. Also no need to call
+     * setIntrospectCompleted if the feature was already set to complete once,
+     * since this method will be called whenever the account connection
+     * changes */
+    if (!isReady(FeatureCapabilities)) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCapabilities, true);
     }
 }
 

@@ -58,6 +58,7 @@ libtelepathy_qt4_la_SOURCES = \
     account.cpp \
     account-factory.cpp \
     account-manager.cpp \
+    account-property-filter.cpp \
     account-set.cpp \
     account-set-internal.h \
     capabilities-base.cpp \
@@ -217,6 +218,8 @@ tpqt4include_HEADERS = \
     Account \
     AccountFactory \
     AccountManager \
+    AccountCapabilityFilter \
+    AccountPropertyFilter \
     AccountSet \
     CapabilitiesBase \
     Channel \
@@ -243,7 +246,10 @@ tpqt4include_HEADERS = \
     Feature \
     FileTransferChannel \
     FileTransferChannelCreationProperties \
+    Filter \
     FixedFeatureFactory \
+    GenericCapabilityFilter \
+    GenericPropertyFilter \
     Global \
     IncomingFileTransferChannel \
     KeyFile \
@@ -340,6 +346,7 @@ tpqt4include_HEADERS = \
     account.h \
     account-factory.h \
     account-manager.h \
+    account-property-filter.h \
     account-set.h \
     capabilities-base.h \
     channel.h \
@@ -367,7 +374,10 @@ tpqt4include_HEADERS = \
     feature.h \
     file-transfer-channel.h \
     file-transfer-channel-creation-properties.h \
+    filter.h \
     fixed-feature-factory.h \
+    generic-capability-filter.h \
+    generic-property-filter.h \
     global.h \
     incoming-file-transfer-channel.h \
     key-file.h \

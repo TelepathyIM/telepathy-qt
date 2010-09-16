@@ -181,9 +181,31 @@ void PendingAccount::onAccountBuilt(Tp::PendingOperation *op)
             op->errorName() << op->errorMessage();
         setFinishedWithError(op->errorName(), op->errorMessage());
     } else {
-        setFinished();
-        debug() << "New account" << objectPath() << "built";
+        // AM is stateless, so the only way for it to become invalid is in the introspection phase,
+        // and a PendingAccount should never be created if AM introspection hasn't succeeded
+        Q_ASSERT(!mPriv->manager.isNull() && mPriv->manager->isValid());
+
+        if (mPriv->manager->allAccounts().contains(mPriv->account)) {
+            setFinished();
+            debug() << "New account" << objectPath() << "built";
+        } else {
+            // Have to wait for the AM to pick up the change and signal it so the world can be
+            // assumed to be ~round when we finish
+            connect(mPriv->manager.data(),
+                    SIGNAL(newAccount(Tp::AccountPtr)),
+                    SLOT(onNewAccount(Tp::AccountPtr)));
+        }
     }
+}
+
+void PendingAccount::onNewAccount(const AccountPtr &account)
+{
+    if (account != mPriv->account) {
+        return;
+    }
+
+    debug() << "Account" << objectPath() << "added to AM, finishing PendingAccount";
+    setFinished();
 }
 
 } // Tp

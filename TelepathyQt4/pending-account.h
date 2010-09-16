@@ -56,6 +56,7 @@ public:
 private Q_SLOTS:
     void onCallFinished(QDBusPendingCallWatcher *watcher);
     void onAccountBuilt(Tp::PendingOperation *readyOp);
+    void onNewAccount(const Tp::AccountPtr &account);
 
 private:
     friend class AccountManager;

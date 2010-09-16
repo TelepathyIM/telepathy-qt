@@ -35,6 +35,7 @@
 #include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
+#include <TelepathyQt4/Filter>
 #include <TelepathyQt4/OptionalInterfaceFactory>
 #include <TelepathyQt4/ReadinessHelper>
 #include <TelepathyQt4/ReadyObject>
@@ -63,6 +64,7 @@ class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
 
 public:
     static const Feature FeatureCore;
+    static const Feature FeatureFilterByCapabilities;
 
     // API/ABI break TODO: Remove these and have just all-default-argument versions with the factory
     // params
@@ -114,9 +116,18 @@ public:
     AccountSetPtr onlineAccountsSet() const;
     AccountSetPtr offlineAccountsSet() const;
 
+    AccountSetPtr textChatAccountsSet() const;
+    AccountSetPtr textChatRoomAccountsSet() const;
+    AccountSetPtr mediaCallAccountsSet() const;
+    AccountSetPtr audioCallAccountsSet() const;
+    AccountSetPtr videoCallAccountsSet(bool withAudio = true) const;
+    AccountSetPtr fileTransferAccountsSet() const;
+
     AccountSetPtr accountsByProtocol(
             const QString &protocolName) const;
 
+    AccountSetPtr filterAccounts(const AccountFilterConstPtr &filter) const;
+    AccountSetPtr filterAccounts(const QList<AccountFilterConstPtr> &filters) const;
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
     TELEPATHY_QT4_DEPRECATED AccountPtr accountForPath(const QString &path);
@@ -157,6 +168,7 @@ private Q_SLOTS:
     void onAccountReady(Tp::PendingOperation *);
     void onAccountValidityChanged(const QDBusObjectPath &, bool);
     void onAccountRemoved(const QDBusObjectPath &);
+    void onAccountsCapabilitiesReady(Tp::PendingOperation *);
 
 private:
     friend class PendingAccount;
