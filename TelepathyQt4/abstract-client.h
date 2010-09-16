@@ -53,10 +53,12 @@ class TELEPATHY_QT4_EXPORT AbstractClientObserver : public virtual AbstractClien
 public:
     virtual ~AbstractClientObserver();
 
+    // FIXME: (API/ABI break) Use high-level class for ChannelClass
     ChannelClassList observerChannelFilter() const;
 
     bool shouldRecover() const;
 
+    // FIXME: (API/ABI break) Use high-level class for observerInfo
     virtual void observeChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
@@ -66,7 +68,10 @@ public:
             const QVariantMap &observerInfo) = 0;
 
 protected:
-    AbstractClientObserver(const ChannelClassList &channelFilter);
+    TELEPATHY_QT4_DEPRECATED AbstractClientObserver(const ChannelClassList &channelFilter);
+    // FIXME: (API/ABI break) Use high-level class for ChannelClass and have a
+    //        default parameter for shouldRecover once the other constructor is
+    //        removed
     AbstractClientObserver(const ChannelClassList &channelFilter,
             bool shouldRecover);
 
@@ -83,6 +88,7 @@ class TELEPATHY_QT4_EXPORT AbstractClientApprover : public virtual AbstractClien
 public:
     virtual ~AbstractClientApprover();
 
+    // FIXME: (API/ABI break) Use high-level class for ChannelClass
     ChannelClassList approverChannelFilter() const;
 
     virtual void addDispatchOperation(const MethodInvocationContextPtr<> &context,
@@ -90,6 +96,7 @@ public:
             const ChannelDispatchOperationPtr &dispatchOperation) = 0;
 
 protected:
+    // FIXME: (API/ABI break) Use high-level class for ChannelClass
     AbstractClientApprover(const ChannelClassList &channelFilter);
 
 private:
@@ -112,12 +119,15 @@ class TELEPATHY_QT4_EXPORT AbstractClientHandler : public virtual AbstractClient
 public:
     virtual ~AbstractClientHandler();
 
+    // FIXME: (API/ABI break) Use high-level class for ChannelClass
     ChannelClassList handlerChannelFilter() const;
 
+    // FIXME: (API/ABI break) Use high-level class for capabilities
     QStringList capabilities() const;
 
     virtual bool bypassApproval() const = 0;
 
+    // FIXME: (API/ABI break) Use high-level class for handlerInfo
     virtual void handleChannels(const MethodInvocationContextPtr<> &context,
             const AccountPtr &account,
             const ConnectionPtr &connection,
@@ -132,8 +142,12 @@ public:
             const QString &errorName, const QString &errorMessage);
 
 protected:
-    AbstractClientHandler(const ChannelClassList &channelFilter,
+    TELEPATHY_QT4_DEPRECATED AbstractClientHandler(const ChannelClassList &channelFilter,
             bool wantsRequestNotification = false);
+    // FIXME: (API/ABI break) Use high-level class for ChannelClass and
+    //        capabilities and have a default parameter for capabilities that
+    //        indicates no aditional capability once the other constructor is
+    //        removed
     AbstractClientHandler(const ChannelClassList &channelFilter,
             const QStringList &capabilities,
             bool wantsRequestNotification = false);
