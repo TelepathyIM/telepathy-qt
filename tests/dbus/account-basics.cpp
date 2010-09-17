@@ -152,7 +152,10 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
+
+    while (!acc->isReady()) {
+        mLoop->processEvents();
+    }
 
     QCOMPARE(acc->displayName(), QString(QLatin1String("foobar (account 0)")));
 
@@ -161,10 +164,16 @@ void TestAccountBasics::testBasics()
     QVERIFY(connect(acc->becomeReady(Account::FeatureAvatar),
                     SIGNAL(finished(Tp::PendingOperation *)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
-    QCOMPARE(mLoop->exec(), 0);
+
+    while (!acc->isReady(Account::FeatureAvatar)) {
+        mLoop->processEvents();
+    }
+
     QCOMPARE(acc->isReady(Account::FeatureAvatar), true);
 
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
+
+    processDBusQueue(acc.data());
 
     qDebug() << "connecting to avatarChanged()";
 
