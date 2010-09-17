@@ -13,6 +13,7 @@ set(telepathy_qt4_SRCS
     account.cpp
     account-factory.cpp
     account-manager.cpp
+    account-property-filter.cpp
     account-set.cpp
     account-set-internal.h
     capabilities-base.cpp
@@ -93,6 +94,7 @@ set(telepathy_qt4_HEADERS
     AbstractInterface
     abstract-interface.h
     Account
+    AccountCapabilityFilter
     account.h
     AccountFactory
     account-factory.h
@@ -100,6 +102,8 @@ set(telepathy_qt4_HEADERS
     AccountManager
     account-manager.h
     AccountManagerInterface
+    account-property-filter.h
+    AccountPropertyFilter
     AccountSet
     account-set.h
     CapabilitiesBase
@@ -193,8 +197,14 @@ set(telepathy_qt4_HEADERS
     FileTransferChannelCreationProperties
     file-transfer-channel-creation-properties.h
     file-transfer-channel.h
+    Filter
+    filter.h
     FixedFeatureFactory
     fixed-feature-factory.h
+    GenericCapabilityFilter
+    generic-capability-filter.h
+    GenericPropertyFilter
+    generic-property-filter.h
     Global
     global.h
     IncomingFileTransferChannel
