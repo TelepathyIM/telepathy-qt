@@ -1,7 +1,8 @@
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
-# Set the hidden visibility flags found in TelepathyDefaults
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIBILITY_HIDDEN_FLAGS}")
+# Set the required flags found in TelepathyDefaults
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIBILITY_HIDDEN_FLAGS} ${COMPILER_COVERAGE_FLAGS}")
+set(LD_FLAGS "${CMAKE_CXX_FLAGS} ${VISIBILITY_HIDDEN_FLAGS} ${COMPILER_COVERAGE_FLAGS}")
 
 # We are building Telepathy-Qt4
 add_definitions(-DBUILDING_TELEPATHY_QT4)
@@ -451,7 +452,11 @@ tpqt4_future_client_generator(channel TpFuture::Client --mainiface=Tp::Client::C
 tpqt4_future_client_generator(misc TpFuture::Client '')
 
 # Create the library
-add_library(telepathy-qt4 SHARED ${telepathy_qt4_SRCS})
+if (ENABLE_COMPILER_COVERAGE)
+    add_library(telepathy-qt4 STATIC ${telepathy_qt4_SRCS})
+else (ENABLE_COMPILER_COVERAGE)
+    add_library(telepathy-qt4 SHARED ${telepathy_qt4_SRCS})
+endif (ENABLE_COMPILER_COVERAGE)
 
 # generate client moc files
 foreach(moc_src ${telepathy_qt4_MOC_SRCS})
@@ -469,6 +474,10 @@ target_link_libraries(telepathy-qt4
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARIES})
+
+if (ENABLE_COMPILER_COVERAGE)
+    target_link_libraries(telepathy-qt4 gcov)
+endif (ENABLE_COMPILER_COVERAGE)
 
 # Install header files
 install(FILES ${telepathy_qt4_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4 COMPONENT headers)

@@ -34,6 +34,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     CHECK_CXX_ACCEPTS_FLAG("-fvisibility=hidden" CXX_FVISIBILITY_HIDDEN)
     if (CXX_FVISIBILITY_HIDDEN)
         set(VISIBILITY_HIDDEN_FLAGS "-fvisibility=hidden")
+    else (CXX_FVISIBILITY_HIDDEN)
+        set(VISIBILITY_HIDDEN_FLAGS)
     endif (CXX_FVISIBILITY_HIDDEN)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL Release)
@@ -75,6 +77,30 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     if(CMAKE_SYSTEM_NAME MATCHES Linux)
         add_definitions(-D_BSD_SOURCE)
     endif(CMAKE_SYSTEM_NAME MATCHES Linux)
+
+    # Compiler coverage
+    set(ENABLE_COMPILER_COVERAGE OFF CACHE BOOL "Enables compiler coverage tests through lcov. Enabling this option will build
+Telepathy-Qt4 as a static library.")
+
+    if (ENABLE_COMPILER_COVERAGE)
+        check_cxx_accepts_flag("-fprofile-arcs -ftest-coverage" CXX_FPROFILE_ARCS)
+        check_cxx_accepts_flag("-ftest-coverage" CXX_FTEST_COVERAGE)
+
+        if (CXX_FPROFILE_ARCS AND CXX_FTEST_COVERAGE)
+            find_program(LCOV lcov)
+            find_program(LCOV_GENHTML genhtml)
+            if (NOT LCOV OR NOT LCOV_GENHTML)
+                message(FATAL_ERROR "You chose to use compiler coverage tests, but lcov or genhtml could not be found in your PATH.")
+            else (NOT LCOV OR NOT LCOV_GENHTML)
+                message(STATUS "Compiler coverage tests enabled - Telepathy-Qt4 will be compiled as a static library")
+                set(COMPILER_COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage")
+            endif (NOT LCOV OR NOT LCOV_GENHTML)
+        else (CXX_FPROFILE_ARCS AND CXX_FTEST_COVERAGE)
+            message(FATAL_ERROR "You chose to use compiler coverage tests, but it appears your compiler is not able to support them.")
+        endif (CXX_FPROFILE_ARCS AND CXX_FTEST_COVERAGE)
+    else (ENABLE_COMPILER_COVERAGE)
+        set(COMPILER_COVERAGE_FLAGS)
+    endif (ENABLE_COMPILER_COVERAGE)
 
     # gcc under Windows
     if(MINGW)

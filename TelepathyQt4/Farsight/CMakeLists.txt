@@ -18,7 +18,11 @@ if(FARSIGHT_COMPONENTS_FOUND)
         channel.h)
 
     # Create the library
-    add_library(telepathy-qt4-farsight SHARED ${telepathy_qt4_farsight_SRCS})
+    if (ENABLE_COMPILER_COVERAGE)
+        add_library(telepathy-qt4-farsight STATIC ${telepathy_qt4_farsight_SRCS})
+    else (ENABLE_COMPILER_COVERAGE)
+        add_library(telepathy-qt4-farsight SHARED ${telepathy_qt4_farsight_SRCS})
+    endif (ENABLE_COMPILER_COVERAGE)
     # Link
     target_link_libraries(telepathy-qt4-farsight
         ${QT_QTDBUS_LIBRARY}

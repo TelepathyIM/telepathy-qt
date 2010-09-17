@@ -103,3 +103,16 @@ done
 ")
 add_custom_target(maintainer-update-from-telepathy-glib ${SH} ${CMAKE_CURRENT_BINARY_DIR}/maintainer-update-from-telepathy-glib.sh
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+#lcov
+add_custom_target(lcov-reset lcov --directory ${CMAKE_BINARY_DIR} --zerocounters
+                             COMMAND find ${CMAKE_BINARY_DIR} -name '*.gcda' -exec rm -f '{}' ';' || true
+                             COMMENT "Cleaning lcov files")
+
+add_custom_target(lcov-check make test || true
+                             COMMAND lcov --directory ${CMAKE_BINARY_DIR} --capture --output-file ${CMAKE_BINARY_DIR}/lcov.info &&
+                                     mkdir ${CMAKE_BINARY_DIR}/lcov.html || true && genhtml --title ${PACKAGE_NAME}
+                                     --output-directory ${CMAKE_BINARY_DIR}/lcov.html ${CMAKE_BINARY_DIR}/lcov.info
+                             COMMENT "Generating lcov report in file://${CMAKE_BINARY_DIR}/lcov.html/index.html"
+                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+add_dependencies(lcov-check lcov-reset)

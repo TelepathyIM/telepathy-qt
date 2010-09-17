@@ -11,9 +11,11 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh "${test_environment} $@
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_gen)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_COVERAGE_FLAGS}")
+
 tpqt4_add_generic_unit_test(KeyFile key-file)
 tpqt4_add_generic_unit_test(ManagerFile manager-file)
 
 add_subdirectory(dbus-1)
-add_subdirectory(lib)
 add_subdirectory(dbus)
+add_subdirectory(lib)
