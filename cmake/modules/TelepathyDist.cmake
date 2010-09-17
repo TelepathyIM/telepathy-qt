@@ -10,7 +10,7 @@ add_custom_target(create-source-working-dir
                   tar -xf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar &&
                   rm ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar* &&
                   cd ${PACKAGE_NAME}-${PACKAGE_VERSION}/ &&
-                  mkdir doc && cp -R ${CMAKE_BINARY_DIR}/doc/html doc/
+                  rm -rf doc && mkdir doc && cp -R ${CMAKE_BINARY_DIR}/doc/html doc/
 
                   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                   DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz)
@@ -30,16 +30,12 @@ add_custom_target(dist tar --format=ustar -chf - ${PACKAGE_NAME}-${PACKAGE_VERSI
 add_dependencies(dist dist-hook)
 
 # setup make distcheck
-add_custom_target(distcheck cd ${CMAKE_BINARY_DIR} &&
-                        rm -rf ${PACKAGE_NAME}-${PACKAGE_VERSION} &&
-                        gzip -df ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz &&
-                        tar -xf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar &&
-                        cd ${PACKAGE_NAME}-${PACKAGE_VERSION}/ &&
-                        cmake . && make && make test && make doxygen-doc &&
-                        cd ${CMAKE_BINARY_DIR} &&
-                        tar -rf ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar ${PACKAGE_NAME}-${PACKAGE_VERSION}/doc/ &&
-                        gzip ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar)
+add_custom_target(distcheck rm -rf build && mkdir build && cd build && cmake .. && make && make check
+                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}/)
 add_dependencies(distcheck dist)
+
+add_custom_target(check)
+add_dependencies(check test)
 
 # CPack
 

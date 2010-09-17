@@ -11,13 +11,18 @@ add_custom_target(check-local DEPENDS FIXME.out)
 execute_process(COMMAND ${SH} tools/git-which-branch.sh misc | tr -d '\n' | tr -C "[:alnum:]" _
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 OUTPUT_VARIABLE GIT_BRANCH_CURRENT)
-string(REPLACE "\n" "" GIT_BRANCH_CURRENT ${GIT_BRANCH_CURRENT})
 
-set(UPLOAD_BRANCH_TO people.freedesktop.org:public_html/telepathy-qt4)
+string(LENGTH ${GIT_BRANCH_CURRENT} HAVE_GIT_BRANCH)
 
-add_custom_target(upload-branch-docs rsync -rtzvPp --chmod=a+rX doc/html/ ${UPLOAD_BRANCH_TO}-${GIT_BRANCH_CURRENT}
-                                     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-add_dependencies(upload-branch-docs doxygen-doc)
+if (HAVE_GIT_BRANCH)
+    string(REPLACE "\n" "" GIT_BRANCH_CURRENT ${GIT_BRANCH_CURRENT})
+
+    set(UPLOAD_BRANCH_TO people.freedesktop.org:public_html/telepathy-qt4)
+
+    add_custom_target(upload-branch-docs rsync -rtzvPp --chmod=a+rX doc/html/ ${UPLOAD_BRANCH_TO}-${GIT_BRANCH_CURRENT}
+                                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    add_dependencies(upload-branch-docs doxygen-doc)
+endif (HAVE_GIT_BRANCH)
 
 add_custom_target(maintainer-upload-release-docs
         rsync -rtOvzPp --chmod=Dg+s,ug+rwX,o=rX doc/html/ telepathy.freedesktop.org:/srv/telepathy.freedesktop.org/www/doc/telepathy-qt4/
