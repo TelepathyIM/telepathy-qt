@@ -1,11 +1,11 @@
 prefix=${CMAKE_INSTALL_PREFIX}
 exec_prefix=${CMAKE_INSTALL_PREFIX}
-libdir=${LIB_INSTALL_DIR}
-includedir=${INCLUDE_INSTALL_DIR}
+libdir=${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}
+includedir=${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}
 
 Name: Telepathy-Qt4
 Description: Qt4 utility library for the Telepathy framework
 Version: ${PACKAGE_VERSION}
 Requires.private: QtCore >= 4.5, QtDBus >= 4.5, QtNetwork >= 4.5
-Libs: -L${LIB_INSTALL_DIR} -ltelepathy-qt4
-Cflags: -I${INCLUDE_INSTALL_DIR}/telepathy-1.0
+Libs: -L${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR} -ltelepathy-qt4
+Cflags: -I${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}/telepathy-1.0
