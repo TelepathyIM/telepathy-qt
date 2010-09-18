@@ -106,6 +106,19 @@ void TubeReceiver::onConnectionConnected(PendingOperation *op)
 
     qDebug() << "Connected!";
 
+    QMap<QString, QDBusVariant> filter;
+    filter[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")] =
+        QDBusVariant(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE));
+    filter[QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")] =
+        QDBusVariant(uint(1));
+    HandlerCapabilities capabilities;
+    capabilities.channelClasses << Tp::ChannelClass(filter);
+
+    Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface =
+        mConn->optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>();
+    contactCapabilitiesInterface->UpdateCapabilities(HandlerCapabilitiesList() <<
+            capabilities);
+
     connect(mConn->optionalInterface<Client::ConnectionInterfaceRequestsInterface>(),
             SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
             SLOT(onNewChannels(const Tp::ChannelDetailsList&)));
