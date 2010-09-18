@@ -22,7 +22,6 @@
 #include "TelepathyQt4/stream-tube-channel-internal.h"
 
 #include "TelepathyQt4/_gen/stream-tube-channel.moc.hpp"
-#include "TelepathyQt4/_gen/stream-tube-channel-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -33,84 +32,20 @@
 namespace Tp
 {
 
-QueuedContactFactory::QueuedContactFactory(Tp::ContactManagerPtr contactManager, QObject* parent)
-    : QObject(parent)
-    , m_isProcessing(false)
-    , m_manager(contactManager)
-{
-}
-
-QueuedContactFactory::~QueuedContactFactory()
-{
-}
-
-void QueuedContactFactory::processNextRequest()
-{
-    if (m_isProcessing || m_queue.isEmpty()) {
-        // Return, nothing to do
-        return;
-    }
-
-    m_isProcessing = true;
-
-    Entry entry = m_queue.dequeue();
-
-    PendingContacts *pc = m_manager->contactsForHandles(entry.handles);
-    pc->setProperty("__TpQt4__QueuedContactFactoryUuid", entry.uuid.toString());
-    connect(pc, SIGNAL(finished(Tp::PendingOperation*)),
-            this, SLOT(onPendingContactsFinished(Tp::PendingOperation*)));
-}
-
-QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList& handles)
-{
-    // Create a new entry
-    Entry entry;
-    entry.uuid = QUuid::createUuid();
-    entry.handles = handles;
-    m_queue.enqueue(entry);
-
-    // Check if we can process a request
-    processNextRequest();
-
-    // Return the UUID
-    return entry.uuid;
-}
-
-void QueuedContactFactory::onPendingContactsFinished(PendingOperation* op)
-{
-    PendingContacts *pc = qobject_cast< PendingContacts* >(op);
-
-    QUuid uuid = QUuid(pc->property("__TpQt4__QueuedContactFactoryUuid").toString());
-
-    emit contactsRetrieved(uuid, pc->contacts());
-
-    // No longer processing
-    m_isProcessing = false;
-
-    // Go for next one
-    processNextRequest();
-}
-
-
-
-StreamTubeChannelPrivate::StreamTubeChannelPrivate(StreamTubeChannel *parent)
-    : TubeChannelPrivate(parent)
+StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
+    : parent(parent)
     , baseType(NoKnownType)
     , addressType(SocketAddressTypeUnix)
 {
 }
 
-StreamTubeChannelPrivate::~StreamTubeChannelPrivate()
+StreamTubeChannel::Private::~Private()
 {
 }
 
-void StreamTubeChannelPrivate::init()
+void StreamTubeChannel::Private::init()
 {
-    Q_Q(StreamTubeChannel);
-
-    queuedContactFactory = new QueuedContactFactory(q->connection()->contactManager(), q);
-
-    TubeChannelPrivate::init();
+    readinessHelper = parent->readinessHelper();
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -118,7 +53,7 @@ void StreamTubeChannelPrivate::init()
         QSet<uint>() << 0,                                                      // makesSenseForStatuses
         Features() << TubeChannel::FeatureTube,                                 // dependsOnFeatures (core)
         QStringList(),                                                          // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &StreamTubeChannelPrivate::introspectStreamTube,
+        (ReadinessHelper::IntrospectFunc) &StreamTubeChannel::Private::introspectStreamTube,
         this);
     introspectables[StreamTubeChannel::FeatureStreamTube] = introspectableStreamTube;
 
@@ -126,29 +61,28 @@ void StreamTubeChannelPrivate::init()
         QSet<uint>() << 0,                                                            // makesSenseForStatuses
         Features() << StreamTubeChannel::FeatureStreamTube,                           // dependsOnFeatures (core)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAM_TUBE), // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &StreamTubeChannelPrivate::introspectConnectionMonitoring,
+        (ReadinessHelper::IntrospectFunc) &StreamTubeChannel::Private::introspectConnectionMonitoring,
         this);
     introspectables[StreamTubeChannel::FeatureConnectionMonitoring] = introspectableConnectionMonitoring;
 
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void StreamTubeChannelPrivate::onConnectionClosed(
+void StreamTubeChannel::Private::onConnectionClosed(
         uint connectionId,
         const QString& error,
         const QString& message)
 {
-    Q_Q(StreamTubeChannel);
-    emit q->connectionClosed(connectionId, error, message);
+    emit parent->connectionClosed(connectionId, error, message);
 }
 
-void StreamTubeChannelPrivate::extractStreamTubeProperties(const QVariantMap& props)
+void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap& props)
 {
     serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
     socketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
 }
 
-void StreamTubeChannelPrivate::gotStreamTubeProperties(QDBusPendingCallWatcher* watcher)
+void StreamTubeChannel::Private::gotStreamTubeProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
@@ -166,10 +100,10 @@ void StreamTubeChannelPrivate::gotStreamTubeProperties(QDBusPendingCallWatcher* 
     }
 }
 
-void StreamTubeChannelPrivate::introspectConnectionMonitoring(
-        StreamTubeChannelPrivate* self)
+void StreamTubeChannel::Private::introspectConnectionMonitoring(
+        StreamTubeChannel::Private* self)
 {
-    StreamTubeChannel *parent = self->q_func();
+    StreamTubeChannel *parent = self->parent;
 
     Client::ChannelTypeStreamTubeInterface *streamTubeInterface =
             parent->interface<Client::ChannelTypeStreamTubeInterface>();
@@ -192,10 +126,10 @@ void StreamTubeChannelPrivate::introspectConnectionMonitoring(
     self->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureConnectionMonitoring, true);
 }
 
-void StreamTubeChannelPrivate::introspectStreamTube(
-        StreamTubeChannelPrivate* self)
+void StreamTubeChannel::Private::introspectStreamTube(
+        StreamTubeChannel::Private* self)
 {
-    StreamTubeChannel *parent = self->q_func();
+    StreamTubeChannel *parent = self->parent;
 
     debug() << "Introspect stream tube properties";
 
@@ -288,18 +222,10 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties,
         const Feature &coreFeature)
-    : TubeChannel(connection, objectPath, immutableProperties,
-            coreFeature, *new StreamTubeChannelPrivate(this))
+    : TubeChannel(connection, objectPath, immutableProperties, coreFeature)
+    , mPriv(new Private(this))
 {
-}
-
-StreamTubeChannel::StreamTubeChannel(const ConnectionPtr& connection,
-        const QString& objectPath,
-        const QVariantMap& immutableProperties,
-        const Feature &coreFeature,
-        StreamTubeChannelPrivate& dd)
-    : TubeChannel(connection, objectPath, immutableProperties, coreFeature, dd)
-{
+    mPriv->init();
 }
 
 
@@ -308,6 +234,7 @@ StreamTubeChannel::StreamTubeChannel(const ConnectionPtr& connection,
  */
 StreamTubeChannel::~StreamTubeChannel()
 {
+    delete mPriv;
 }
 
 /**
@@ -326,9 +253,7 @@ QString StreamTubeChannel::service() const
         return QString();
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->serviceName;
+    return mPriv->serviceName;
 }
 
 
@@ -358,9 +283,7 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
         return false;
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlLocalhost);
+    return mPriv->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlLocalhost);
 }
 
 
@@ -402,9 +325,7 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
         return false;
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlPort);
+    return mPriv->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlPort);
 }
 
 
@@ -435,9 +356,7 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
         return false;
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlLocalhost);
+    return mPriv->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlLocalhost);
 }
 
 
@@ -479,9 +398,7 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
         return false;
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlPort);
+    return mPriv->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlPort);
 }
 
 
@@ -512,9 +429,7 @@ bool StreamTubeChannel::supportsUnixSocketsOnLocalhost() const
         return false;
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->socketTypes.value(SocketAddressTypeUnix).contains(SocketAccessControlLocalhost);
+    return mPriv->socketTypes.value(SocketAddressTypeUnix).contains(SocketAccessControlLocalhost);
 }
 
 /**
@@ -551,9 +466,7 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
         return false;
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlCredentials);
+    return mPriv->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlCredentials);
 }
 
 
@@ -584,9 +497,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
         return false;
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlLocalhost);
+    return mPriv->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlLocalhost);
 }
 
 
@@ -624,9 +535,7 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
         return false;
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlCredentials);
+    return mPriv->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlCredentials);
 }
 
 
@@ -647,9 +556,7 @@ UIntList StreamTubeChannel::connections() const
         return UIntList();
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->connections;
+    return mPriv->connections;
 }
 
 
@@ -667,9 +574,7 @@ QString StreamTubeChannel::localAddress() const
         return QString();
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->unixAddress;
+    return mPriv->unixAddress;
 }
 
 
@@ -687,9 +592,7 @@ QPair< QHostAddress, quint16 > StreamTubeChannel::ipAddress() const
         return qMakePair< QHostAddress, quint16 >(QHostAddress::Null, 0);
     }
 
-    Q_D(const StreamTubeChannel);
-
-    return d->ipAddress;
+    return mPriv->ipAddress;
 }
 
 
@@ -703,9 +606,32 @@ QPair< QHostAddress, quint16 > StreamTubeChannel::ipAddress() const
  */
 SocketAddressType StreamTubeChannel::addressType() const
 {
-    Q_D(const StreamTubeChannel);
+    return mPriv->addressType;
+}
 
-    return d->addressType;
+void StreamTubeChannel::setBaseTubeType(uint type)
+{
+    mPriv->baseType = (StreamTubeChannel::Private::BaseTubeType)type;
+}
+
+void StreamTubeChannel::setConnections(UIntList connections)
+{
+    mPriv->connections = connections;
+}
+
+void StreamTubeChannel::setAddressType(SocketAddressType type)
+{
+    mPriv->addressType = type;
+}
+
+void StreamTubeChannel::setIpAddress(const QPair< QHostAddress, quint16 >& address)
+{
+    mPriv->ipAddress = address;
+}
+
+void StreamTubeChannel::setLocalAddress(const QString& address)
+{
+    mPriv->unixAddress = address;
 }
 
 }

@@ -30,16 +30,14 @@
 class QHostAddress;
 namespace Tp {
 
-class StreamTubeChannelPrivate;
 class TELEPATHY_QT4_EXPORT StreamTubeChannel : public TubeChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(StreamTubeChannel)
-    Q_DECLARE_PRIVATE(StreamTubeChannel)
 
     // private Q_SLOTS:
-    Q_PRIVATE_SLOT(d_func(), void gotStreamTubeProperties(QDBusPendingCallWatcher *))
-    Q_PRIVATE_SLOT(d_func(), void onConnectionClosed(uint,QString,QString))
+    Q_PRIVATE_SLOT(mPriv, void gotStreamTubeProperties(QDBusPendingCallWatcher *))
+    Q_PRIVATE_SLOT(mPriv, void onConnectionClosed(uint,QString,QString))
 
 public:
     static const Feature FeatureStreamTube;
@@ -75,15 +73,22 @@ protected:
     StreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
-    // For private class inheriters
-    StreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
-            const QVariantMap &immutableProperties,
-            const Feature &coreFeature,
-            StreamTubeChannelPrivate &dd);
+
+    void setBaseTubeType(uint type);
+    void setAddressType(SocketAddressType type);
+    void setConnections(UIntList connections);
+    void setIpAddress(const QPair< QHostAddress, quint16 > &address);
+    void setLocalAddress(const QString &address);
 
 Q_SIGNALS:
     void newConnection(uint connectionId);
     void connectionClosed(uint connectionId, const QString &error, const QString &message);
+
+private:
+    struct Private;
+    friend struct Private;
+
+    Private * const mPriv;
 
 };
 

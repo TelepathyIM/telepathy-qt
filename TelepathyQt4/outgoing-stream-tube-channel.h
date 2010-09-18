@@ -33,17 +33,15 @@ class QTcpServer;
 class QLocalServer;
 namespace Tp {
 
-class OutgoingStreamTubeChannelPrivate;
 class TELEPATHY_QT4_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(OutgoingStreamTubeChannel)
-    Q_DECLARE_PRIVATE(OutgoingStreamTubeChannel)
 
 //private slots:
-    Q_PRIVATE_SLOT(d_func(), void onNewRemoteConnection(uint,QDBusVariant,uint))
-    Q_PRIVATE_SLOT(d_func(), void onContactsRetrieved(QUuid,QList<Tp::ContactPtr>))
-    Q_PRIVATE_SLOT(d_func(), void onConnectionClosed(uint,QString,QString))
+    Q_PRIVATE_SLOT(mPriv, void onNewRemoteConnection(uint,QDBusVariant,uint))
+    Q_PRIVATE_SLOT(mPriv, void onContactsRetrieved(QUuid,QList<Tp::ContactPtr>))
+    Q_PRIVATE_SLOT(mPriv, void onConnectionClosed(uint,QString,QString))
 
     friend class PendingOpenTubePrivate;
 
@@ -69,6 +67,13 @@ protected:
     OutgoingStreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
+
+private:
+    struct Private;
+    friend struct Private;
+    Private * const mPriv;
+
+    friend struct PendingOpenTube;
 };
 
 }

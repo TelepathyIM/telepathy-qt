@@ -37,8 +37,8 @@ class TELEPATHY_QT4_EXPORT TubeChannel : public Channel
     Q_DECLARE_PRIVATE(TubeChannel)
 
 // private Q_SLOTS:
-    Q_PRIVATE_SLOT(d_func(), void onTubeChannelStateChanged(uint))
-    Q_PRIVATE_SLOT(d_func(), void gotTubeProperties(QDBusPendingCallWatcher *))
+    Q_PRIVATE_SLOT(mPriv, void onTubeChannelStateChanged(uint))
+    Q_PRIVATE_SLOT(mPriv, void gotTubeProperties(QDBusPendingCallWatcher *))
 
 public:
     static const Feature FeatureTube;
@@ -56,17 +56,17 @@ protected:
     TubeChannel(const ConnectionPtr &connection, const QString &objectPath,
                 const QVariantMap &immutableProperties,
                 const Feature &coreFeature = TubeChannel::FeatureCore);
-    // For private class inheriters
-    TubeChannel(const ConnectionPtr &connection, const QString &objectPath,
-                const QVariantMap &immutableProperties,
-                const Feature &coreFeature,
-                TubeChannelPrivate &dd);
+
+    void setParameters(const QVariantMap &parameters);
 
 Q_SIGNALS:
     void tubeStateChanged(Tp::TubeChannelState newstate);
 
-protected:
-    TubeChannelPrivate * const d_ptr;
+private:
+    struct Private;
+    friend struct Private;
+
+    Private * const mPriv;
 };
 
 }

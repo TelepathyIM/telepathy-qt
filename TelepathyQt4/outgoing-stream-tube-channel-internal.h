@@ -29,30 +29,63 @@
 namespace Tp {
 class PendingVoid;
 
-struct PendingOpenTubePrivate;
 class TELEPATHY_QT4_NO_EXPORT PendingOpenTube : public PendingOperation
 {
     Q_OBJECT
     Q_DISABLE_COPY(PendingOpenTube)
+
+    // private Q_SLOTS:
+    Q_PRIVATE_SLOT(mPriv, void onOfferFinished(Tp::PendingOperation*))
+
 public:
     PendingOpenTube(PendingVoid *offerOperation,
             const QVariantMap &parameters,
             const SharedPtr<RefCounted> &object);
     virtual ~PendingOpenTube();
 
-private:
-    friend struct PendingOpenTubePrivate;
-    PendingOpenTubePrivate *mPriv;
+private Q_SLOTS:
+    void onTubeStateChanged(Tp::TubeChannelState state);
 
-// private Q_SLOTS:
-    Q_PRIVATE_SLOT(mPriv, void onOfferFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(mPriv, void onTubeStateChanged(Tp::TubeChannelState))
+private:
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
 };
 
-struct TELEPATHY_QT4_NO_EXPORT PendingOpenTubePrivate
+class TELEPATHY_QT4_NO_EXPORT QueuedContactFactory : public QObject
 {
-    PendingOpenTubePrivate(const QVariantMap &parameters, PendingOpenTube *parent);
-    ~PendingOpenTubePrivate();
+    Q_OBJECT
+    Q_DISABLE_COPY(QueuedContactFactory)
+
+public:
+    QueuedContactFactory(ContactManagerPtr contactManager, QObject* parent = 0);
+    virtual ~QueuedContactFactory();
+
+    QUuid appendNewRequest(const UIntList &handles);
+
+Q_SIGNALS:
+    void contactsRetrieved(QUuid, QList< Tp::ContactPtr >);
+
+private slots:
+    void onPendingContactsFinished(Tp::PendingOperation*);
+
+private:
+    struct Entry {
+        QUuid uuid;
+        UIntList handles;
+    };
+
+    void processNextRequest();
+
+    bool m_isProcessing;
+    ContactManagerPtr m_manager;
+    QQueue< Entry > m_queue;
+};
+
+struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
+{
+    Private(const QVariantMap &parameters, PendingOpenTube *parent);
+    ~Private();
 
     // Public object
     PendingOpenTube *parent;
@@ -65,17 +98,19 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOpenTubePrivate
     void onTubeStateChanged(Tp::TubeChannelState state);
 };
 
-class TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannelPrivate : public StreamTubeChannelPrivate
+struct TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannel::Private
 {
-    Q_DECLARE_PUBLIC(OutgoingStreamTubeChannel)
-public:
-    OutgoingStreamTubeChannelPrivate(OutgoingStreamTubeChannel *parent);
-    virtual ~OutgoingStreamTubeChannelPrivate();
+    Private(OutgoingStreamTubeChannel *parent);
+    virtual ~Private();
+
+    OutgoingStreamTubeChannel *parent;
 
     QHash< uint, Tp::ContactPtr > contactsForConnections;
     QHash< QPair< QHostAddress, quint16 >, uint > connectionsForSourceAddresses;
 
     QHash< QUuid, QPair< uint, QDBusVariant > > pendingNewConnections;
+
+    QueuedContactFactory *queuedContactFactory;
 
     // Private slots
     void onNewRemoteConnection(uint contactId, const QDBusVariant &parameter, uint connectionId);

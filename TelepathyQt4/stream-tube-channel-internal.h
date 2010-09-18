@@ -28,58 +28,29 @@
 
 namespace Tp {
 
-class TELEPATHY_QT4_NO_EXPORT QueuedContactFactory : public QObject
+struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(QueuedContactFactory)
-
-public:
-    QueuedContactFactory(ContactManagerPtr contactManager, QObject* parent = 0);
-    virtual ~QueuedContactFactory();
-
-    QUuid appendNewRequest(const UIntList &handles);
-
-Q_SIGNALS:
-    void contactsRetrieved(QUuid, QList< Tp::ContactPtr >);
-
-private slots:
-    void onPendingContactsFinished(Tp::PendingOperation*);
-
-private:
-    struct Entry {
-        QUuid uuid;
-        UIntList handles;
-    };
-
-    void processNextRequest();
-
-    bool m_isProcessing;
-    ContactManagerPtr m_manager;
-    QQueue< Entry > m_queue;
-};
-
-class TELEPATHY_QT4_NO_EXPORT StreamTubeChannelPrivate : public TubeChannelPrivate
-{
-    Q_DECLARE_PUBLIC(StreamTubeChannel)
-
-public:
     enum BaseTubeType {
         NoKnownType = 0,
-        OutgoingTubeType,
-        IncomingTubeType
+        OutgoingTubeType = 1,
+        IncomingTubeType = 2
     };
 
-    StreamTubeChannelPrivate(StreamTubeChannel *parent);
-    virtual ~StreamTubeChannelPrivate();
+    Private(StreamTubeChannel *parent);
+    virtual ~Private();
 
     virtual void init();
 
     void extractStreamTubeProperties(const QVariantMap &props);
 
-    static void introspectConnectionMonitoring(StreamTubeChannelPrivate *self);
-    static void introspectStreamTube(StreamTubeChannelPrivate *self);
+    static void introspectConnectionMonitoring(Private *self);
+    static void introspectStreamTube(Private *self);
 
     UIntList connections;
+
+    ReadinessHelper *readinessHelper;
+
+    StreamTubeChannel *parent;
 
     // Properties
     SupportedSocketMap socketTypes;
@@ -90,12 +61,13 @@ public:
     QPair< QHostAddress, quint16 > ipAddress;
     QString unixAddress;
     SocketAddressType addressType;
-    QueuedContactFactory *queuedContactFactory;
 
     // Private slots
     void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
     void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
 
+    friend class IncomingStreamTubeChannel;
+    friend class OutgoingStreamTubeChannel;
 };
 
 }

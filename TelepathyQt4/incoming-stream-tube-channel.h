@@ -35,7 +35,6 @@ namespace Tp {
 
 class PendingVariant;
 
-class PendingStreamTubeConnectionPrivate;
 class TELEPATHY_QT4_EXPORT PendingStreamTubeConnection : public PendingOperation
 {
     Q_OBJECT
@@ -57,8 +56,9 @@ private:
     PendingStreamTubeConnection(const QString &errorName,
             const QString &errorMessage, const SharedPtr<RefCounted> &object);
 
-    friend class PendingStreamTubeConnectionPrivate;
-    PendingStreamTubeConnectionPrivate *mPriv;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
 
     friend class IncomingStreamTubeChannel;
 
@@ -71,18 +71,14 @@ private:
 };
 
 
-class IncomingStreamTubeChannelPrivate;
 class TELEPATHY_QT4_EXPORT IncomingStreamTubeChannel : public StreamTubeChannel
 {
     Q_OBJECT
     Q_DISABLE_COPY(IncomingStreamTubeChannel)
-    Q_DECLARE_PRIVATE(IncomingStreamTubeChannel)
 
 // private slots:
-    Q_PRIVATE_SLOT(d_func(), void onAcceptTubeFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(d_func(), void onNewLocalConnection(uint))
-
-    friend class PendingStreamTubeConnectionPrivate;
+    Q_PRIVATE_SLOT(mPriv, void onAcceptTubeFinished(Tp::PendingOperation*))
+    Q_PRIVATE_SLOT(mPriv, void onNewLocalConnection(uint))
 
 public:
     static IncomingStreamTubeChannelPtr create(const ConnectionPtr &connection,
@@ -103,6 +99,13 @@ protected:
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
 
+private:
+    struct Private;
+    friend struct Private;
+
+    Private * const mPriv;
+
+    friend class PendingStreamTubeConnection::Private;
 };
 
 }

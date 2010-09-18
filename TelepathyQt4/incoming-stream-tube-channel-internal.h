@@ -28,12 +28,10 @@
 
 namespace Tp {
 
-class TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannelPrivate : public StreamTubeChannelPrivate
+struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
 {
-    Q_DECLARE_PUBLIC(IncomingStreamTubeChannel)
-public:
-    IncomingStreamTubeChannelPrivate(IncomingStreamTubeChannel *parent);
-    virtual ~IncomingStreamTubeChannelPrivate();
+    Private(IncomingStreamTubeChannel *parent);
+    virtual ~Private();
 
     // Public object
     IncomingStreamTubeChannel *parent;
@@ -46,11 +44,10 @@ public:
     void onNewLocalConnection(uint connectionId);
 };
 
-class TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnectionPrivate
+struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
 {
-public:
-    PendingStreamTubeConnectionPrivate(PendingStreamTubeConnection *parent);
-    virtual ~PendingStreamTubeConnectionPrivate();
+    Private(PendingStreamTubeConnection *parent);
+    virtual ~Private();
 
     // Public object
     PendingStreamTubeConnection *parent;

@@ -29,6 +29,7 @@
 
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/Types>
 
@@ -39,14 +40,14 @@
 namespace Tp
 {
 
-PendingOpenTubePrivate::PendingOpenTubePrivate(const QVariantMap &parameters, PendingOpenTube* parent)
+PendingOpenTube::Private::Private(const QVariantMap &parameters, PendingOpenTube* parent)
     : parent(parent)
     , parameters(parameters)
 {
 
 }
 
-PendingOpenTubePrivate::~PendingOpenTubePrivate()
+PendingOpenTube::Private::~Private()
 {
 
 }
@@ -56,7 +57,7 @@ PendingOpenTube::PendingOpenTube(
         const QVariantMap &parameters,
         const SharedPtr<RefCounted> &object)
     : PendingOperation(object)
-    , mPriv(new PendingOpenTubePrivate(parameters, this))
+    , mPriv(new Private(parameters, this))
 {
     mPriv->tube = OutgoingStreamTubeChannelPtr::dynamicCast(object);
 
@@ -74,7 +75,7 @@ PendingOpenTube::~PendingOpenTube()
     delete mPriv;
 }
 
-void PendingOpenTubePrivate::onOfferFinished(PendingOperation* op)
+void PendingOpenTube::Private::onOfferFinished(PendingOperation* op)
 {
     if (op->isError()) {
         // Fail
@@ -83,10 +84,11 @@ void PendingOpenTubePrivate::onOfferFinished(PendingOperation* op)
     }
 
     debug() << "Offer tube finished successfully";
+    debug() << tube->tubeState() << TubeChannelStateOpen;
 
     // It might have been already opened - check
     if (tube->tubeState() == TubeChannelStateOpen) {
-        onTubeStateChanged(tube->tubeState());
+        parent->onTubeStateChanged(tube->tubeState());
     } else {
         // Wait until the tube gets opened on the other side
         parent->connect(tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
@@ -94,33 +96,92 @@ void PendingOpenTubePrivate::onOfferFinished(PendingOperation* op)
     }
 }
 
-void PendingOpenTubePrivate::onTubeStateChanged(TubeChannelState state)
+void PendingOpenTube::onTubeStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
         // Inject the parameters into the tube
-        tube->d_func()->parameters = parameters;
+        mPriv->tube->setParameters(mPriv->parameters);
         // The tube is ready: let's notify
-        parent->setFinished();
+        setFinished();
     } else if (state != TubeChannelStateRemotePending) {
         // Something happened
-        parent->setFinishedWithError(QLatin1String("Connection refused"),
+        setFinishedWithError(QLatin1String("Connection refused"),
                 QLatin1String("The connection to this tube was refused"));
     }
 }
 
 
-OutgoingStreamTubeChannelPrivate::OutgoingStreamTubeChannelPrivate(OutgoingStreamTubeChannel *parent)
-    : StreamTubeChannelPrivate(parent)
-{
-    baseType = OutgoingTubeType;
-}
-
-OutgoingStreamTubeChannelPrivate::~OutgoingStreamTubeChannelPrivate()
+QueuedContactFactory::QueuedContactFactory(Tp::ContactManagerPtr contactManager, QObject* parent)
+    : QObject(parent)
+    , m_isProcessing(false)
+    , m_manager(contactManager)
 {
 }
 
-void OutgoingStreamTubeChannelPrivate::onNewRemoteConnection(
+QueuedContactFactory::~QueuedContactFactory()
+{
+}
+
+void QueuedContactFactory::processNextRequest()
+{
+    if (m_isProcessing || m_queue.isEmpty()) {
+        // Return, nothing to do
+        return;
+    }
+
+    m_isProcessing = true;
+
+    Entry entry = m_queue.dequeue();
+
+    PendingContacts *pc = m_manager->contactsForHandles(entry.handles);
+    pc->setProperty("__TpQt4__QueuedContactFactoryUuid", entry.uuid.toString());
+    connect(pc, SIGNAL(finished(Tp::PendingOperation*)),
+            this, SLOT(onPendingContactsFinished(Tp::PendingOperation*)));
+}
+
+QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList& handles)
+{
+    // Create a new entry
+    Entry entry;
+    entry.uuid = QUuid::createUuid();
+    entry.handles = handles;
+    m_queue.enqueue(entry);
+
+    // Check if we can process a request
+    processNextRequest();
+
+    // Return the UUID
+    return entry.uuid;
+}
+
+void QueuedContactFactory::onPendingContactsFinished(PendingOperation* op)
+{
+    PendingContacts *pc = qobject_cast< PendingContacts* >(op);
+
+    QUuid uuid = QUuid(pc->property("__TpQt4__QueuedContactFactoryUuid").toString());
+
+    emit contactsRetrieved(uuid, pc->contacts());
+
+    // No longer processing
+    m_isProcessing = false;
+
+    // Go for next one
+    processNextRequest();
+}
+
+
+OutgoingStreamTubeChannel::Private::Private(OutgoingStreamTubeChannel *parent)
+    : parent(parent)
+    , queuedContactFactory(new QueuedContactFactory(parent->connection()->contactManager(), parent))
+{
+}
+
+OutgoingStreamTubeChannel::Private::~Private()
+{
+}
+
+void OutgoingStreamTubeChannel::Private::onNewRemoteConnection(
         uint contactId,
         const QDBusVariant &parameter,
         uint connectionId)
@@ -132,7 +193,7 @@ void OutgoingStreamTubeChannelPrivate::onNewRemoteConnection(
     pendingNewConnections.insert(uuid, qMakePair(connectionId, parameter));
 }
 
-void OutgoingStreamTubeChannelPrivate::onContactsRetrieved(
+void OutgoingStreamTubeChannel::Private::onContactsRetrieved(
         const QUuid &uuid,
         const QList< Tp::ContactPtr > &contacts)
 {
@@ -145,7 +206,9 @@ void OutgoingStreamTubeChannelPrivate::onContactsRetrieved(
     QPair< uint, QDBusVariant > connectionProperties = pendingNewConnections.take(uuid);
 
     // Add the connection to our list
+    UIntList connections;
     connections << connectionProperties.first;
+    parent->setConnections(connections);
 
     // Add it to our connections hash
     foreach (const Tp::ContactPtr &contact, contacts) {
@@ -156,12 +219,12 @@ void OutgoingStreamTubeChannelPrivate::onContactsRetrieved(
     address.first = QHostAddress::Null;
 
     // Now let's try to track the parameter
-    if (addressType == SocketAddressTypeIPv4) {
+    if (parent->addressType() == SocketAddressTypeIPv4) {
         // Try a qdbus_cast to our address struct: we're shielded from crashes due to our specification
         SocketAddressIPv4 addr = qdbus_cast< Tp::SocketAddressIPv4 >(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
-    } else if (addressType == SocketAddressTypeIPv6) {
+    } else if (parent->addressType() == SocketAddressTypeIPv6) {
         SocketAddressIPv6 addr = qdbus_cast< Tp::SocketAddressIPv6 >(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
@@ -173,11 +236,10 @@ void OutgoingStreamTubeChannelPrivate::onContactsRetrieved(
     }
 
     // Time for us to emit the signal
-    Q_Q(OutgoingStreamTubeChannel);
-    emit q->newConnection(connectionProperties.first);
+    emit parent->newConnection(connectionProperties.first);
 }
 
-void OutgoingStreamTubeChannelPrivate::onConnectionClosed(
+void OutgoingStreamTubeChannel::Private::onConnectionClosed(
         uint connectionId,
         const QString&,
         const QString&)
@@ -304,14 +366,15 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
         const QString &objectPath,
         const QVariantMap &immutableProperties,
         const Feature &coreFeature)
-    : StreamTubeChannel(connection, objectPath, immutableProperties,
-                        coreFeature, *new OutgoingStreamTubeChannelPrivate(this))
+    : StreamTubeChannel(connection, objectPath,
+                        immutableProperties, coreFeature)
+    , mPriv(new Private(this))
 {
-    Q_D(OutgoingStreamTubeChannel);
+    setBaseTubeType(1);
 
     connect(this, SIGNAL(connectionClosed(uint,QString,QString)),
             this, SLOT(onConnectionClosed(uint,QString,QString)));
-    connect(d->queuedContactFactory, SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
+    connect(mPriv->queuedContactFactory, SIGNAL(contactsRetrieved(QUuid,QList<Tp::ContactPtr>)),
             this, SLOT(onContactsRetrieved(QUuid,QList<Tp::ContactPtr>)));
 }
 
@@ -320,6 +383,7 @@ OutgoingStreamTubeChannel::OutgoingStreamTubeChannel(const ConnectionPtr &connec
  */
 OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
 {
+    delete mPriv;
 }
 
 /**
@@ -378,8 +442,6 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
     SocketAccessControl accessControl = SocketAccessControlLocalhost;
     // Check if port is supported
 
-    Q_D(OutgoingStreamTubeChannel);
-
     // In this specific overload, we're handling an IPv4/IPv6 socket
     if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         // IPv4 case
@@ -399,8 +461,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
                     OutgoingStreamTubeChannelPtr(this));
         }
 
-        d->addressType = SocketAddressTypeIPv4;
-        d->ipAddress = qMakePair< QHostAddress, quint16 >(address, port);
+        setAddressType(SocketAddressTypeIPv4);
+        setIpAddress(qMakePair< QHostAddress, quint16 >(address, port));
 
         SocketAddressIPv4 addr;
         addr.address = address.toString();
@@ -433,8 +495,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
                     OutgoingStreamTubeChannelPtr(this));
         }
 
-        d->addressType = SocketAddressTypeIPv6;
-        d->ipAddress = qMakePair< QHostAddress, quint16 >(address, port);
+        setAddressType(SocketAddressTypeIPv6);
+        setIpAddress(qMakePair< QHostAddress, quint16 >(address, port));
 
         SocketAddressIPv6 addr;
         addr.address = address.toString();
@@ -555,8 +617,6 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
                 QLatin1String("Channel busy"), OutgoingStreamTubeChannelPtr(this));
     }
 
-    Q_D(OutgoingStreamTubeChannel);
-
     // In this specific overload, we're handling an Unix/AbstractUnix socket
     if (socketAddress.startsWith(QLatin1Char('\0'))) {
         // Abstract Unix socket case
@@ -570,8 +630,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
                     OutgoingStreamTubeChannelPtr(this));
         }
 
-        d->addressType = SocketAddressTypeAbstractUnix;
-        d->unixAddress = socketAddress;
+        setAddressType(SocketAddressTypeAbstractUnix);
+        setLocalAddress(socketAddress);
 
         PendingVoid *pv = new PendingVoid(
                 interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
@@ -596,8 +656,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
                     OutgoingStreamTubeChannelPtr(this));
         }
 
-        d->addressType = SocketAddressTypeUnix;
-        d->unixAddress = socketAddress;
+        setAddressType(SocketAddressTypeUnix);
+        setLocalAddress(socketAddress);
 
         PendingVoid *pv = new PendingVoid(
                 interface<Client::ChannelTypeStreamTubeInterface>()->Offer(
@@ -667,9 +727,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
  */
 QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connectionsForSourceAddresses() const
 {
-    Q_D(const OutgoingStreamTubeChannel);
-
-    if (d->addressType != SocketAddressTypeIPv4 && d->addressType != SocketAddressTypeIPv6) {
+    if (addressType() != SocketAddressTypeIPv4 && addressType() != SocketAddressTypeIPv6) {
         warning() << "OutgoingStreamTubeChannel::connectionsForSourceAddresses() makes sense "
             "just when offering a TCP socket";
         return QHash< QPair< QHostAddress, quint16 >, uint >();
@@ -687,7 +745,7 @@ QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connect
         return QHash< QPair< QHostAddress, quint16 >, uint >();
     }
 
-    return d->connectionsForSourceAddresses;
+    return mPriv->connectionsForSourceAddresses;
 }
 
 
@@ -718,9 +776,7 @@ QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() co
         return QHash< uint, ContactPtr >();
     }
 
-    Q_D(const OutgoingStreamTubeChannel);
-
-    return d->contactsForConnections;
+    return mPriv->contactsForConnections;
 }
 
 }

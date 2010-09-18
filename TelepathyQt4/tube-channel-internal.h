@@ -25,24 +25,20 @@
 
 namespace Tp {
 
-class TELEPATHY_QT4_NO_EXPORT TubeChannelPrivate
+struct TELEPATHY_QT4_NO_EXPORT TubeChannel::Private
 {
-    Q_DECLARE_PUBLIC(TubeChannel)
-
-protected:
-    TubeChannel * const q_ptr;
-
-public:
-    TubeChannelPrivate(TubeChannel *parent);
-    virtual ~TubeChannelPrivate();
+    Private(TubeChannel *parent);
+    virtual ~Private();
 
     virtual void init();
 
     void extractTubeProperties(const QVariantMap &props);
 
-    static void introspectTube(TubeChannelPrivate *self);
+    static void introspectTube(TubeChannel::Private *self);
 
     ReadinessHelper *readinessHelper;
+
+    TubeChannel *parent;
 
     // Properties
     TubeChannelState state;

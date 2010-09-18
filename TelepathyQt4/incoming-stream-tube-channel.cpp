@@ -36,42 +36,41 @@
 namespace Tp
 {
 
-IncomingStreamTubeChannelPrivate::IncomingStreamTubeChannelPrivate(IncomingStreamTubeChannel *parent)
-    : StreamTubeChannelPrivate(parent)
+IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
+    : parent(parent)
     , device(0)
 {
-    baseType = IncomingTubeType;
 }
 
-IncomingStreamTubeChannelPrivate::~IncomingStreamTubeChannelPrivate()
+IncomingStreamTubeChannel::Private::~Private()
 {
 }
 
-void IncomingStreamTubeChannelPrivate::onAcceptTubeFinished(PendingOperation* op)
+void IncomingStreamTubeChannel::Private::onAcceptTubeFinished(PendingOperation* op)
 {
     PendingStreamTubeConnection *pendingDevice = qobject_cast< PendingStreamTubeConnection* >(op);
 
     device = pendingDevice->device();
 }
 
-void IncomingStreamTubeChannelPrivate::onNewLocalConnection(uint connectionId)
+void IncomingStreamTubeChannel::Private::onNewLocalConnection(uint connectionId)
 {
-    Q_Q(IncomingStreamTubeChannel);
-
     // Add the connection to our list
+    UIntList connections = parent->connections();
     connections << connectionId;
+    parent->setConnections(connections);
 
-    emit q->newConnection(connectionId);
+    emit parent->newConnection(connectionId);
 }
 
-PendingStreamTubeConnectionPrivate::PendingStreamTubeConnectionPrivate(PendingStreamTubeConnection* parent)
+PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection* parent)
     : parent(parent)
     , device(0)
 {
 
 }
 
-PendingStreamTubeConnectionPrivate::~PendingStreamTubeConnectionPrivate()
+PendingStreamTubeConnection::Private::~Private()
 {
 
 }
@@ -81,7 +80,7 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
         SocketAddressType type,
         const SharedPtr<RefCounted> &object)
     : PendingOperation(object)
-    , mPriv(new PendingStreamTubeConnectionPrivate(this))
+    , mPriv(new Private(this))
 {
     mPriv->tube = IncomingStreamTubeChannelPtr::dynamicCast(object);
     mPriv->type = type;
@@ -108,7 +107,7 @@ PendingStreamTubeConnection::PendingStreamTubeConnection(
         const QString& errorMessage,
         const SharedPtr<RefCounted> &object)
     : PendingOperation(object)
-    , mPriv(new PendingStreamTubeConnectionPrivate(this))
+    , mPriv(new PendingStreamTubeConnection::Private(this))
 {
     setFinishedWithError(errorName, errorMessage);
 }
@@ -129,7 +128,7 @@ QIODevice* PendingStreamTubeConnection::device()
     return mPriv->device;
 }
 
-void PendingStreamTubeConnectionPrivate::onAcceptFinished(PendingOperation* op)
+void PendingStreamTubeConnection::Private::onAcceptFinished(PendingOperation* op)
 {
     if (op->isError()) {
         parent->setFinishedWithError(op->errorName(), op->errorMessage());
@@ -168,14 +167,14 @@ void PendingStreamTubeConnectionPrivate::onAcceptFinished(PendingOperation* op)
     }
 }
 
-void PendingStreamTubeConnectionPrivate::onTubeStateChanged(TubeChannelState state)
+void PendingStreamTubeConnection::Private::onTubeStateChanged(TubeChannelState state)
 {
     debug() << "Tube state changed to " << state;
     if (state == TubeChannelStateOpen) {
         // The tube is ready
         // Build the IO device
         if (type == SocketAddressTypeIPv4 || type == SocketAddressTypeIPv6) {
-            tube->d_func()->ipAddress = qMakePair< QHostAddress, quint16 >(hostAddress, port);
+            tube->setIpAddress(qMakePair< QHostAddress, quint16 >(hostAddress, port));
             debug() << "Building a QTcpSocket " << hostAddress << port;
 
             QTcpSocket *socket = new QTcpSocket(tube.data());
@@ -189,7 +188,7 @@ void PendingStreamTubeConnectionPrivate::onTubeStateChanged(TubeChannelState sta
             debug() << "QTcpSocket built";
         } else {
             // Unix socket
-            tube->d_func()->unixAddress = socketPath;
+            tube->setLocalAddress(socketPath);
 
             QLocalSocket *socket = new QLocalSocket(tube.data());
             socket->connectToServer(socketPath);
@@ -212,7 +211,7 @@ void PendingStreamTubeConnectionPrivate::onTubeStateChanged(TubeChannelState sta
     }
 }
 
-void PendingStreamTubeConnectionPrivate::onAbstractSocketError(QAbstractSocket::SocketError error)
+void PendingStreamTubeConnection::Private::onAbstractSocketError(QAbstractSocket::SocketError error)
 {
     // TODO: Use error to provide more detailed error messages
     Q_UNUSED(error)
@@ -222,7 +221,7 @@ void PendingStreamTubeConnectionPrivate::onAbstractSocketError(QAbstractSocket::
                       QLatin1String("Could not connect to the new socket"));
 }
 
-void PendingStreamTubeConnectionPrivate::onLocalSocketError(QLocalSocket::LocalSocketError error)
+void PendingStreamTubeConnection::Private::onLocalSocketError(QLocalSocket::LocalSocketError error)
 {
     // TODO: Use error to provide more detailed error messages
     Q_UNUSED(error)
@@ -232,7 +231,7 @@ void PendingStreamTubeConnectionPrivate::onLocalSocketError(QLocalSocket::LocalS
                       QLatin1String("Could not connect to the new socket"));
 }
 
-void PendingStreamTubeConnectionPrivate::onDeviceConnected()
+void PendingStreamTubeConnection::Private::onDeviceConnected()
 {
     // Our IODevice is ready! Let's just set finished
     debug() << "Device connected!";
@@ -422,9 +421,11 @@ IncomingStreamTubeChannel::IncomingStreamTubeChannel(const ConnectionPtr &connec
         const QString &objectPath,
         const QVariantMap &immutableProperties,
         const Feature &coreFeature)
-    : StreamTubeChannel(connection, objectPath, immutableProperties,
-            coreFeature, *new IncomingStreamTubeChannelPrivate(this))
+    : StreamTubeChannel(connection, objectPath,
+            immutableProperties, coreFeature)
+    , mPriv(new Private(this))
 {
+    setBaseTubeType(2);
 }
 
 /**
@@ -432,6 +433,7 @@ IncomingStreamTubeChannel::IncomingStreamTubeChannel(const ConnectionPtr &connec
  */
 IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
 {
+    delete mPriv;
 }
 
 
@@ -530,30 +532,28 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
         controlParameter = QVariant(QString());
     }
 
-    Q_D(IncomingStreamTubeChannel);
-
     // Set the correct address type
     if (allowedAddress == QHostAddress::Any) {
         // Use IPv4 by default
-        d->addressType = SocketAddressTypeIPv4;
+        setAddressType(SocketAddressTypeIPv4);
     } else {
-        d->addressType = allowedAddress.protocol() == QAbstractSocket::IPv4Protocol ?
-                         SocketAddressTypeIPv4 :
-                         SocketAddressTypeIPv6;
+        setAddressType(allowedAddress.protocol() == QAbstractSocket::IPv4Protocol ?
+                       SocketAddressTypeIPv4 :
+                       SocketAddressTypeIPv6);
     }
 
     // Fail early if the combination is not supported
     if ( (accessControl == SocketAccessControlLocalhost &&
-          d->addressType == SocketAddressTypeIPv4 &&
+          addressType() == SocketAddressTypeIPv4 &&
           !supportsIPv4SocketsOnLocalhost()) ||
          (accessControl == SocketAccessControlPort &&
-          d->addressType == SocketAddressTypeIPv4 &&
+          addressType() == SocketAddressTypeIPv4 &&
           !supportsIPv4SocketsWithSpecifiedAddress()) ||
          (accessControl == SocketAccessControlLocalhost &&
-          d->addressType == SocketAddressTypeIPv6 &&
+          addressType() == SocketAddressTypeIPv6 &&
           !supportsIPv6SocketsOnLocalhost()) ||
          (accessControl == SocketAccessControlPort &&
-          d->addressType == SocketAddressTypeIPv6 &&
+          addressType() == SocketAddressTypeIPv6 &&
           !supportsIPv6SocketsWithSpecifiedAddress())) {
         warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
@@ -565,12 +565,12 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     // Perform the actual call
     PendingVariant *pv = new PendingVariant(
             interface<Client::ChannelTypeStreamTubeInterface>()->Accept(
-                    d->addressType,
+                    addressType(),
                     accessControl,
                     QDBusVariant(controlParameter)),
             IncomingStreamTubeChannelPtr(this));
 
-    PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, d->addressType,
+    PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, addressType(),
             IncomingStreamTubeChannelPtr(this));
     connect(op, SIGNAL(finished(Tp::PendingOperation*)),
             this, SLOT(onAcceptTubeFinished(Tp::PendingOperation*)));
@@ -654,25 +654,23 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
                 IncomingStreamTubeChannelPtr(this));
     }
 
-    Q_D(IncomingStreamTubeChannel);
-
     SocketAccessControl accessControl = requireCredentials ?
             SocketAccessControlCredentials :
             SocketAccessControlLocalhost;
-    d->addressType = SocketAddressTypeUnix;
+    setAddressType(SocketAddressTypeUnix);
 
     // Fail early if the combination is not supported
     if ( (accessControl == SocketAccessControlLocalhost &&
-          d->addressType == SocketAddressTypeUnix &&
+          addressType() == SocketAddressTypeUnix &&
           !supportsUnixSocketsOnLocalhost()) ||
          (accessControl == SocketAccessControlCredentials &&
-          d->addressType == SocketAddressTypeUnix &&
+          addressType() == SocketAddressTypeUnix &&
           !supportsUnixSocketsWithCredentials()) ||
          (accessControl == SocketAccessControlLocalhost &&
-          d->addressType == SocketAddressTypeAbstractUnix &&
+          addressType() == SocketAddressTypeAbstractUnix &&
           !supportsAbstractUnixSocketsOnLocalhost()) ||
          (accessControl == SocketAccessControlCredentials &&
-          d->addressType == SocketAddressTypeAbstractUnix &&
+          addressType() == SocketAddressTypeAbstractUnix &&
           !supportsAbstractUnixSocketsWithCredentials())) {
         warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
@@ -684,12 +682,12 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
     // Perform the actual call
     PendingVariant *pv = new PendingVariant(
             interface<Client::ChannelTypeStreamTubeInterface>()->Accept(
-                    d->addressType,
+                    addressType(),
                     accessControl,
                     QDBusVariant(QVariant(QString()))),
             IncomingStreamTubeChannelPtr(this));
 
-    PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, d->addressType,
+    PendingStreamTubeConnection *op = new PendingStreamTubeConnection(pv, addressType(),
             IncomingStreamTubeChannelPtr(this));
     connect(op, SIGNAL(finished(Tp::PendingOperation*)),
             this, SLOT(onAcceptTubeFinished(Tp::PendingOperation*)));
@@ -703,8 +701,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 QIODevice* IncomingStreamTubeChannel::device()
 {
     if (tubeState() == TubeChannelStateOpen) {
-        Q_D(IncomingStreamTubeChannel);
-        return d->device;
+        return mPriv->device;
     } else {
         return 0;
     }

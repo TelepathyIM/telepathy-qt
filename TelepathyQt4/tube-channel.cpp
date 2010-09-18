@@ -28,20 +28,19 @@
 namespace Tp
 {
 
-TubeChannelPrivate::TubeChannelPrivate(TubeChannel *parent)
-    : q_ptr(parent)
+TubeChannel::Private::Private(TubeChannel *parent)
+    : parent(parent)
 {
 }
 
-TubeChannelPrivate::~TubeChannelPrivate()
+TubeChannel::Private::~Private()
 {
 }
 
-void TubeChannelPrivate::init()
+void TubeChannel::Private::init()
 {
-    Q_Q(TubeChannel);
     // Initialize readinessHelper + introspectables here
-    readinessHelper = q->readinessHelper();
+    readinessHelper = parent->readinessHelper();
 
     ReadinessHelper::Introspectables introspectables;
 
@@ -49,21 +48,21 @@ void TubeChannelPrivate::init()
         QSet<uint>() << 0,                                                          // makesSenseForStatuses
         Features() << Channel::FeatureCore,                                         // dependsOnFeatures (core)
         QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_TUBE), // dependsOnInterfaces
-        (ReadinessHelper::IntrospectFunc) &TubeChannelPrivate::introspectTube,
+        (ReadinessHelper::IntrospectFunc) &TubeChannel::Private::introspectTube,
         this);
     introspectables[TubeChannel::FeatureTube] = introspectableTube;
 
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void TubeChannelPrivate::extractTubeProperties(const QVariantMap& props)
+void TubeChannel::Private::extractTubeProperties(const QVariantMap& props)
 {
     state = (Tp::TubeChannelState)qdbus_cast<uint>(props[QLatin1String("State")]);
     debug() << state << qdbus_cast<uint>(props[QLatin1String("State")]);
     parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
 }
 
-void TubeChannelPrivate::gotTubeProperties(QDBusPendingCallWatcher* watcher)
+void TubeChannel::Private::gotTubeProperties(QDBusPendingCallWatcher* watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 
@@ -81,17 +80,16 @@ void TubeChannelPrivate::gotTubeProperties(QDBusPendingCallWatcher* watcher)
     }
 }
 
-void TubeChannelPrivate::onTubeChannelStateChanged(uint newstate)
+void TubeChannel::Private::onTubeChannelStateChanged(uint newstate)
 {
-    Q_Q(TubeChannel);
-
     state = (Tp::TubeChannelState)newstate;
-    emit q->tubeStateChanged((Tp::TubeChannelState)newstate);
+    emit parent->tubeStateChanged((Tp::TubeChannelState)newstate);
+    debug() << "staete changed to" << newstate;
 }
 
-void TubeChannelPrivate::introspectTube(TubeChannelPrivate* self)
+void TubeChannel::Private::introspectTube(TubeChannel::Private* self)
 {
-    TubeChannel *parent = self->q_func();
+    TubeChannel *parent = self->parent;
 
     debug() << "Introspect tube state";
 
@@ -185,24 +183,10 @@ TubeChannel::TubeChannel(const ConnectionPtr &connection,
         const QVariantMap &immutableProperties,
         const Feature &coreFeature)
     : Channel(connection, objectPath, immutableProperties, coreFeature),
-      d_ptr(new TubeChannelPrivate(this))
+      mPriv(new Private(this))
 {
     // Initialize
-    Q_D(TubeChannel);
-    d->init();
-}
-
-TubeChannel::TubeChannel(const ConnectionPtr& connection,
-        const QString& objectPath,
-        const QVariantMap& immutableProperties,
-        const Feature &coreFeature,
-        TubeChannelPrivate& dd)
-    : Channel(connection, objectPath, immutableProperties, coreFeature)
-    , d_ptr(&dd)
-{
-    // Initialize
-    Q_D(TubeChannel);
-    d->init();
+    mPriv->init();
 }
 
 /**
@@ -210,7 +194,7 @@ TubeChannel::TubeChannel(const ConnectionPtr& connection,
  */
 TubeChannel::~TubeChannel()
 {
-    delete d_ptr;
+    delete mPriv;
 }
 
 /**
@@ -231,8 +215,7 @@ QVariantMap TubeChannel::parameters() const
         return QVariantMap();
     }
 
-    Q_D(const TubeChannel);
-    return d->parameters;
+    return mPriv->parameters;
 }
 
 /**
@@ -248,8 +231,12 @@ TubeChannelState TubeChannel::tubeState() const
         return TubeChannelStateNotOffered;
     }
 
-    Q_D(const TubeChannel);
-    return d->state;
+    return mPriv->state;
+}
+
+void TubeChannel::setParameters(const QVariantMap& parameters)
+{
+    mPriv->parameters = parameters;
 }
 
 } // Tp
