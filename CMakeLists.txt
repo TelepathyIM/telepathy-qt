@@ -116,7 +116,7 @@ QT4_GLIB_SUPPORT)
 macro_log_feature(QT4_GLIB_SUPPORT "Qt4 Glib Support"
                   "QtCore library using Glib's main event loop"
                   "http://qt.nokia.com/" FALSE ""
-                  "Needed, together with Telepathy-Glib, to build most of the test cases")
+                  "Needed, together with Telepathy-Glib, to build most of the unit tests")
 
 # Check for operator== in QDBusVariant
 SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTDBUS_LIBRARY})
@@ -162,7 +162,7 @@ endif(PYTHON_DBUS_RESULT EQUAL 0)
 macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
                   "GLib-based Python DBus support"
                   "http://www.python.org/" FALSE ""
-                  "Needed to build some additional test cases")
+                  "Needed to build some additional unit tests")
 
 # Find GLib2, GObject, DBus and LibXml2
 # Those are needed for the insane include dir dependency hell
@@ -199,7 +199,7 @@ find_package(TelepathyGlib)
 macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
                   "Glib bindings for Telepathy"
                   "http://telepathy.freedesktop.org/" FALSE "0.11.3"
-                  "Needed, together with Qt Glib integration, to build most of the test cases")
+                  "Needed, together with Qt Glib integration, to build most of the unit tests")
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
 
