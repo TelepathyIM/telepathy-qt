@@ -38,9 +38,6 @@ add_custom_target(distcheck rm -rf build && mkdir build && cd build && cmake .. 
                   COMMENT "Testing successful tarball build")
 add_dependencies(distcheck dist)
 
-add_custom_target(check)
-add_dependencies(check test)
-
 # CPack
 set(ENABLE_CPACK OFF CACHE BOOL "Enables CPack targets generation")
 if (ENABLE_CPACK)
