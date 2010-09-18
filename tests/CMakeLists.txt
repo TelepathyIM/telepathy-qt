@@ -19,8 +19,3 @@ tpqt4_add_generic_unit_test(ManagerFile manager-file)
 add_subdirectory(dbus-1)
 add_subdirectory(dbus)
 add_subdirectory(lib)
-
-# Make check target. In case of check, output on failure and put it into a log
-add_custom_target(check ctest --output-on-failure -O test.log
-                  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
-add_dependencies(check test-account-basics check-local)

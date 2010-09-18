@@ -61,18 +61,18 @@
 #          qt4-constants-gen.py upon execution.
 #          After issuing DEPENDS in the last argument you can pass a list of files the command will depend on.
 #
-# function TPQT4_ADD_GENERIC_UNIT_TEST (fancyName name [libraries ...])
-#          This function takes care of building and adding a generic unit test to the automatic CTest suite. The requirement
-#          for using this macro is to have the unit test contained in a single source file named ${name}.cpp. fancyName will
-#          be used as the test and target's name, and you can specify as a third and optional argument a set of additional
-#          libraries the target will link to.
+# macro TPQT4_ADD_GENERIC_UNIT_TEST (fancyName name [libraries ...])
+#       This macro takes care of building and adding a generic unit test to the automatic CTest suite. The requirement
+#       for using this macro is to have the unit test contained in a single source file named ${name}.cpp. fancyName will
+#       be used as the test and target's name, and you can specify as a third and optional argument a set of additional
+#       libraries the target will link to.
 #
-# function TPQT4_ADD_DBUS_UNIT_TEST (fancyName name [libraries ...])
-#          This function takes care of building and adding an unit test requiring DBus emulation to the automatic
-#          CTest suite. The requirement for using this macro is to have the unit test contained in a single
-#          source file named ${name}.cpp. fancyName will be used as the test and target's name, and you can specify as a third
-#          and optional argument a set of additional libraries the target will link to. Please remember that you need to
-#          set up the DBus environment by calling TPQT4_SETUP_DBUS_TEST_ENVIRONMENT BEFORE you call this function.
+# macro TPQT4_ADD_DBUS_UNIT_TEST (fancyName name [libraries ...])
+#       This macro takes care of building and adding an unit test requiring DBus emulation to the automatic
+#       CTest suite. The requirement for using this macro is to have the unit test contained in a single
+#       source file named ${name}.cpp. fancyName will be used as the test and target's name, and you can specify as a third
+#       and optional argument a set of additional libraries the target will link to. Please remember that you need to
+#       set up the DBus environment by calling TPQT4_SETUP_DBUS_TEST_ENVIRONMENT BEFORE you call this macro.
 #
 # function TPQT4_SETUP_DBUS_TEST_ENVIRONMENT ()
 #          This function MUST be called before calling TPQT4_ADD_DBUS_UNIT_TEST. It takes care of preparing the test
@@ -300,20 +300,22 @@ function(tpqt4_types_gen _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALI
     set_source_files_properties(${_OUTFILE_IMPL} PROPERTIES GENERATED true)
 endfunction(tpqt4_types_gen _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
 
-function(tpqt4_add_generic_unit_test _fancyName _name)
+macro(tpqt4_add_generic_unit_test _fancyName _name)
     tpqt4_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     target_link_libraries(test-${_name} ${QT_LIBRARIES} ${QT_QTTEST_LIBRARY} telepathy-qt4 tp-qt4-tests ${ARGN})
     add_test(${_fancyName} ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
-endfunction(tpqt4_add_generic_unit_test _fancyName _name)
+    list(APPEND _telepathy_qt4_test_cases test-${_name})
+endmacro(tpqt4_add_generic_unit_test _fancyName _name)
 
-function(tpqt4_add_dbus_unit_test _fancyName _name)
+macro(tpqt4_add_dbus_unit_test _fancyName _name)
     tpqt4_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     target_link_libraries(test-${_name} ${QT_LIBRARIES} ${QT_QTTEST_LIBRARY} telepathy-qt4 tp-qt4-tests ${ARGN})
     set(with_session_bus ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
     add_test(${_fancyName} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
-endfunction(tpqt4_add_dbus_unit_test _fancyName _name)
+    list(APPEND _telepathy_qt4_test_cases test-${_name})
+endmacro(tpqt4_add_dbus_unit_test _fancyName _name)
 
 function(tpqt4_setup_dbus_test_environment)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh "
