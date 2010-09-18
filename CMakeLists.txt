@@ -16,7 +16,7 @@ endif(POLICY CMP0011)
 #   set nano_version to 1
 set(TP_QT4_MAJOR_VERSION 0)
 set(TP_QT4_MINOR_VERSION 3)
-set(TP_QT4_MICRO_VERSION 9)
+set(TP_QT4_MICRO_VERSION 10)
 set(TP_QT4_NANO_VERSION  1)
 
 # If library source has changed since last release, increment revision
@@ -32,7 +32,12 @@ set(TP_QT4_NANO_VERSION  1)
 # never seen in a release).
 
 set(PACKAGE_NAME telepathy-qt4)
-set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
+
+if (${TP_QT4_NANO_VERSION} EQUAL 0)
+    set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION})
+else (${TP_QT4_NANO_VERSION} EQUAL 0)
+    set(PACKAGE_VERSION ${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
+endif (${TP_QT4_NANO_VERSION} EQUAL 0)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is
 # checked
@@ -87,7 +92,7 @@ QT4_GLIB_SUPPORT)
 macro_log_feature(QT4_GLIB_SUPPORT "Qt4 Glib Support"
                   "QtCore library using Glib's main event loop"
                   "http://qt.nokia.com/" FALSE ""
-                  "Needed, together with Telepathy-Glib, to build some additional test cases")
+                  "Needed, together with Telepathy-Glib, to build most of the test cases")
 
 # Check for operator== in QDBusVariant
 SET(CMAKE_REQUIRED_LIBRARIES ${QT_QTDBUS_LIBRARY})
@@ -170,7 +175,7 @@ find_package(TelepathyGlib)
 macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
                   "Glib bindings for Telepathy"
                   "http://telepathy.freedesktop.org/" FALSE "0.11.3"
-                  "Needed, together with Qt Glib integration, to build some additional test cases")
+                  "Needed, together with Qt Glib integration, to build most of the test cases")
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
 

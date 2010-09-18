@@ -40,9 +40,11 @@ case ${PACKAGE_VERSION} in
                 exit 2;
                 ;;
 esac
-test -f ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz &&
-test -f ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc &&
-gpg --verify ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc
+test -f ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz
+if ! test -f ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc; then
+    gpg --detach-sign -a ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz;
+fi;
+gpg --verify ${CMAKE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.tar.gz.asc
 ")
 
 add_custom_target(_maintainer-upload-release-check ${SH} ${CMAKE_CURRENT_BINARY_DIR}/maintainer-upload-release-check.sh)
