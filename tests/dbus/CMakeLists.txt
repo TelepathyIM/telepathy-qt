@@ -11,6 +11,8 @@ if(ENABLE_TP_GLIB_TESTS)
                         ${GLIB2_INCLUDE_DIR}
                         ${DBUS_INCLUDE_DIR})
 
+    add_definitions(-DQT_NO_KEYWORDS)
+
     if(HAVE_TEST_PYTHON)
         tpqt4_add_dbus_unit_test(AccountChannelDispatcher account-channel-dispatcher tp-glib-tests)
         tpqt4_add_dbus_unit_test(Client client tp-glib-tests)

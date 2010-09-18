@@ -1,4 +1,5 @@
 if(FARSIGHT_COMPONENTS_FOUND)
+    add_definitions(-DQT_NO_KEYWORDS)
     include_directories(
                 ${TELEPATHY_FARSIGHT_INCLUDE_DIR}
                 ${GSTREAMER_INCLUDE_DIR}
