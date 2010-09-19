@@ -69,29 +69,44 @@ public:
     ContactManager *manager() const;
 
     ReferencedHandles handle() const;
-    QString id() const;
+    QString id() const; // TODO filter: exact, prefix, substring match
 
     QSet<Feature> requestedFeatures() const;
     QSet<Feature> actualFeatures() const;
 
-    QString alias() const;
+    QString alias() const; // TODO filter: exact, prefix, substring match
 
     bool isAvatarTokenKnown() const;
     QString avatarToken() const;
     AvatarData avatarData() const;
 
+    /*
+     * TODO filter:
+     *  - exact match of presenceType, presenceStatus
+     *  - ANY 1 of a number of presenceTypes/Statuses
+     *  - presenceType greater or less than a set value
+     */
     QString presenceStatus() const;
     uint presenceType() const;
-    QString presenceMessage() const;
 
+    // TODO filter: have/don't have message AND exact/prefix/substring
+    QString presenceMessage() const; 
+
+    // TODO filter: the same as Account filtering by caps
     ContactCapabilities *capabilities() const;
 
+    // TODO filter: is it available, how accurate, are they near me
     ContactLocation *location() const;
 
+    // TODO filter: having a specific field, having ANY field,
+    // (field: exact, contents: exact/prefix/substring)
     ContactInfoFieldList info() const;
     PendingOperation *refreshInfo();
     PendingContactInfo *requestInfo();
 
+    /*
+     * Filters on exact values of these, but also the "in your contact list at all or not" usecase
+     */
     PresenceState subscriptionState() const;
     PresenceState publishState() const;
 
@@ -100,9 +115,17 @@ public:
     PendingOperation *authorizePresencePublication(const QString &message = QString());
     PendingOperation *removePresencePublication(const QString &message = QString());
 
+    /*
+     * Filter on being blocked or not
+     */
     bool isBlocked() const;
     PendingOperation *block(bool value = true);
 
+    /*
+     * Filter on the groups they're in - to show a specific group only
+     *
+     * Also prefix/substring match on ANY of the groups of the contact
+     */
     QStringList groups() const;
     PendingOperation *addToGroup(const QString &group);
     PendingOperation *removeFromGroup(const QString &group);
