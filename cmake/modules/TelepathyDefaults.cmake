@@ -15,16 +15,17 @@ set(CMAKE_COLOR_MAKEFILE ON)
 
 # Set compiler flags
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DQT_NO_DEBUG -DQT_NO_CAST_FROM_ASCII")
-    set(CMAKE_CXX_FLAGS_RELEASE        "-O2 -DQT_NO_DEBUG -DQT_NO_CAST_FROM_ASCII")
-    set(CMAKE_CXX_FLAGS_DEBUG          "-g -O2 -fno-reorder-blocks -fno-schedule-insns -fno-inline -DENABLE_DEBUG -DQT_NO_CAST_FROM_ASCII")
-    set(CMAKE_CXX_FLAGS_DEBUGFULL      "-g3 -fno-inline -DENABLE_DEBUG -DQT_NO_CAST_FROM_ASCII")
-    set(CMAKE_CXX_FLAGS_PROFILE        "-g3 -fno-inline -DENABLE_DEBUG -DQT_NO_CAST_FROM_ASCII")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO   "-O2 -g -DQT_NO_DEBUG")
-    set(CMAKE_C_FLAGS_RELEASE          "-O2 -DQT_NO_DEBUG")
-    set(CMAKE_C_FLAGS_DEBUG            "-g -O2 -fno-reorder-blocks -fno-schedule-insns -fno-inline -DENABLE_DEBUG")
-    set(CMAKE_C_FLAGS_DEBUGFULL        "-g3 -fno-inline -DENABLE_DEBUG")
-    set(CMAKE_C_FLAGS_PROFILE          "-g3 -fno-inline -DENABLE_DEBUG")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -ggdb")
+    set(CMAKE_CXX_FLAGS_RELEASE        "-O2 -DNDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG          "-ggdb -O2 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
+    set(CMAKE_CXX_FLAGS_DEBUGFULL      "-O0 -g3 -ggdb -fno-inline")
+    set(CMAKE_CXX_FLAGS_PROFILE        "-pg -g3 -ggdb -DNDEBUG")
+
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO   "-O2 -ggdb")
+    set(CMAKE_C_FLAGS_RELEASE          "-O2 -DNDEBUG")
+    set(CMAKE_C_FLAGS_DEBUG            "-ggdb -O2 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
+    set(CMAKE_C_FLAGS_DEBUGFULL        "-O0 -g3 -ggdb -fno-inline")
+    set(CMAKE_C_FLAGS_PROFILE          "-pg -g3 -ggdb -DNDEBUG")
 
     set(DISABLE_WERROR 0 CACHE BOOL "compile without -Werror (normally enabled in development builds)")
 
