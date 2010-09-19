@@ -185,18 +185,16 @@ function(tpqt4_client_generator spec group pretty_include namespace main_iface)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
-        DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
-                ${CMAKE_CURRENT_BINARY_DIR}/_gen/stable-spec.xml
-                ${CMAKE_CURRENT_BINARY_DIR}/_gen/spec-${spec}.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    # Tell CMake the source won't be available until build time.
-    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp PROPERTIES GENERATED 1)
     add_custom_target(generate_cli-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp)
+
+    if (ARGN)
+        add_dependencies(generate_cli-${spec}-body ${ARGN})
+    endif (ARGN)
+
     tpqt4_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp
                        "generate_cli-${spec}-body")
-    # Tell CMake the source won't be available until build time.
-    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp PROPERTIES GENERATED 1)
     list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
 endfunction(tpqt4_client_generator spec group pretty_include main_iface)
 
@@ -219,13 +217,14 @@ function(tpqt4_future_client_generator spec namespace main_iface)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
-        DEPENDS ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
-                ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-spec.xml
-                ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     # Tell CMake the source won't be available until build time.
-    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp PROPERTIES GENERATED 1)
     add_custom_target(generate_future-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp)
+
+    if (ARGN)
+        add_dependencies(generate_future-${spec}-body ${ARGN})
+    endif (ARGN)
+
     tpqt4_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp
                        "generate_future-${spec}-body")
@@ -253,7 +252,7 @@ function(tpqt4_generate_manager_file MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAM
                                 PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h)
 endfunction(tpqt4_generate_manager_file MANAGER_FILE)
 
-function(tpqt4_xincludator _INPUT_FILE _OUTPUT_FILE)
+function(tpqt4_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
     tpqt4_extract_depends(xincludator_gen_args xincludator_gen_depends ${ARGN})
     add_custom_command(OUTPUT ${_OUTPUT_FILE}
 
@@ -262,16 +261,17 @@ function(tpqt4_xincludator _INPUT_FILE _OUTPUT_FILE)
                        ARGS ${CMAKE_SOURCE_DIR}/tools/xincludator.py
                             ${_INPUT_FILE}
                             ${xincludator_gen_args}
-                            > ${_OUTPUT_FILE}
+                            > ${_OUTPUT_FILE})
+    add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTPUT_FILE})
 
-                       DEPENDS ${_INPUT_FILE}
-                               ${CMAKE_SOURCE_DIR}/tools/xincludator.py
-                               ${xincludator_gen_depends})
+    if (xincludator_gen_depends)
+        add_dependencies(${_TARGET_NAME} ${xincludator_gen_depends})
+    endif (xincludator_gen_depends)
 
-    set_source_files_properties(${_OUTPUT_FILE} PROPERTIES GENERATED true)
-endfunction(tpqt4_xincludator _INPUT_FILE _OUTPUT_FILE)
+    #set_source_files_properties(${_OUTPUT_FILE} PROPERTIES GENERATED true)
+endfunction(tpqt4_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
 
-function(tpqt4_constants_gen _SPEC_XML _OUTFILE)
+function(tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
     tpqt4_extract_depends(constants_gen_args constants_gen_depends ${ARGN})
     add_custom_command(OUTPUT ${_OUTFILE}
 
@@ -280,16 +280,17 @@ function(tpqt4_constants_gen _SPEC_XML _OUTFILE)
                        ARGS    ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
                                ${constants_gen_args}
                                --specxml=${_SPEC_XML}
-                               > ${_OUTFILE}
+                               > ${_OUTFILE})
+    add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE})
 
-                       DEPENDS ${_SPEC_XML}
-                               ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
-                               ${constants_gen_depends})
+    if (constants_gen_depends)
+        add_dependencies(${_TARGET_NAME} ${constants_gen_depends})
+    endif (constants_gen_depends)
 
-    set_source_files_properties(${_OUTFILE} PROPERTIES GENERATED true)
-endfunction (tpqt4_constants_gen _SPEC_XML _OUTFILE)
+    #set_source_files_properties(${_OUTFILE} PROPERTIES GENERATED true)
+endfunction (tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
 
-function(tpqt4_types_gen _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
+function(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
     tpqt4_extract_depends(types_gen_args types_gen_depends ${ARGN})
     add_custom_command(OUTPUT ${_OUTFILE_DECL} ${_OUTFILE_IMPL}
                        COMMAND ${PYTHON_EXECUTABLE}
@@ -300,13 +301,15 @@ function(tpqt4_types_gen _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALI
                             --realinclude=${_REALINCLUDE}
                             --prettyinclude=${_PRETTYINCLUDE}
                             ${types_gen_args}
-                            --specxml=${_SPEC_XML}
-                        DEPENDS ${_SPEC_XML}
-                                ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
-                                ${types_gen_depends})
-    set_source_files_properties(${_OUTFILE_DECL} PROPERTIES GENERATED true)
-    set_source_files_properties(${_OUTFILE_IMPL} PROPERTIES GENERATED true)
-endfunction(tpqt4_types_gen _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
+                            --specxml=${_SPEC_XML})
+    add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE_IMPL})
+
+    if (types_gen_depends)
+        add_dependencies(${_TARGET_NAME} ${types_gen_depends})
+    endif (types_gen_depends)
+    #set_source_files_properties(${_OUTFILE_DECL} PROPERTIES GENERATED true)
+    #set_source_files_properties(${_OUTFILE_IMPL} PROPERTIES GENERATED true)
+endfunction(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
 
 macro(tpqt4_add_generic_unit_test _fancyName _name)
     tpqt4_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
