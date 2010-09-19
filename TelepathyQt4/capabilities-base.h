@@ -47,7 +47,7 @@ public:
     bool supportsVideoCalls(bool withAudio = true) const;
     bool supportsUpgradingCalls() const;
 
-    // later:
+    // later: FIXME TODO why not now‽
     // bool supportsFileTransfers() const;
     // QList<FileHashType> fileTransfersRequireHash() const;
     //
