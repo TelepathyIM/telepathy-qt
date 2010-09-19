@@ -97,6 +97,13 @@ include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_BINARY_DIR}
                     ${QT_INCLUDES})
 
+add_definitions(-DQT_NO_CAST_FROM_ASCII)
+
+set(ENABLE_DEBUG_OUTPUT ON CACHE BOOL "If activated, compiles support for printing debug output to stderr")
+if (ENABLE_DEBUG_OUTPUT)
+    add_definitions(-DENABLE_DEBUG)
+endif (ENABLE_DEBUG_OUTPUT)
+
 # Check for Qt4 Glib support
 include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_INCLUDES ${QT_INCLUDES})
