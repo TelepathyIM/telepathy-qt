@@ -32,6 +32,13 @@
 namespace Tp
 {
 
+/*
+ * TODO filter:
+ *
+ * Make filters not always be AND - as in, if you have multiple filters, you might want to do both
+ * if ANY of them match or if (A AND B match) OR (C MATCHES) etc - so provide generic "combinator
+ * filters"
+ */
 template <class T>
 class Filter : public RefCounted
 {
