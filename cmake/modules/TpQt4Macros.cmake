@@ -29,36 +29,44 @@
 #          or examples. Please remember the list of the header files passed to this function MUST be added to the
 #          target's sources.
 #
-# function TPQT4_CLIENT_GENERATOR(spec group pretty_include namespace main_iface)
-#          This function takes care of invoking qt4-client-gen.py with the correct arguments. Please refer to
-#          qt4-client-gen.py's documentation for more information on using this tool.
+# function TPQT4_CLIENT_GENERATOR(spec group pretty_include namespace [arguments])
+#          This function takes care of invoking qt4-client-gen.py with the correct arguments, which generates
+#          headers out of specs. spec is the name of the spec headers will be generated from, group represents
+#          the spec's group, pretty_include is the name of the capitalized header (for example ClientGenerator),
+#          namespace is the C++ namespace the generated header will belong to. This function also accepts
+#          as an optional last argument a list of additional command line arguments which will be passed to
+#          qt4-client-gen.py upon execution.
 #
-# function TPQT4_FUTURE_CLIENT_GENERATOR(spec namespace main_iface)
+# function TPQT4_FUTURE_CLIENT_GENERATOR(spec namespace [arguments])
 #          Same as tpqt4_client_generator, but for future interfaces
 #
 # function TPQT4_GENERATE_MANAGER_FILE(MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAME)
-#          This function takes care of invoking manager-file.py with the correct arguments. Please refer to
-#          manager-file.py's documentation for more information on using this tool.
+#          This function takes care of invoking manager-file.py with the correct arguments. The first argument is the
+#          path to the manager-file.py file which should be used, the second is the output filename of the manager,
+#          and the third is the path to the file which depends on the generated manager file.
 #
 # function TPQT4_XINCLUDATOR (INPUT_FILE OUTPUT_FILE [additional_arguments ...] [DEPENDS dependencies ...])
-#          This function takes care of invoking xincludator.py with the correct arguments. Please refer to
-#          xincludator.py's documentation for more information on using this tool. This function also accepts
+#          This function takes care of invoking xincludator.py with the correct arguments. The first argument is
+#          the input spec, the second one is the filename the generated file will be saved to. This function also accepts
 #          as an optional last argument a list of files which has to be present before xincludator is launched.
 #          After issuing DEPENDS in the last argument you can pass a list of files the command will depend on.
 #
 # function TPQT4_CONSTANTS_GEN (SPEC_XML OUTPUT_FILE [additional_arguments ...] [DEPENDS dependencies ...])
-#          This function takes care of invoking qt4-constants-gen.py with the correct arguments. Please refer to
-#          qt4-constants-gen.py's documentation for more information on using this tool. This function also accepts
+#          This function takes care of invoking qt4-constants-gen.py with the correct arguments. The first argument
+#          is the spec file, the second one is the filename the generated file will be saved to. This function also accepts
 #          as an optional last argument a list of additional command line arguments which will be passed to
 #          qt4-constants-gen.py upon execution.
 #          After issuing DEPENDS in the last argument you can pass a list of files the command will depend on.
 #
 # function TPQT4_TYPES_GEN (spec_xml outfile_decl outfile_impl namespace
 #                           realinclude prettyinclude [additional_arguments ...] [DEPENDS dependencies ...])
-#          This function takes care of invoking qt4-types-gen.py with the correct arguments. Please refer to
-#          qt4-types-gen.py's documentation for more information on using this tool. This function also accepts
-#          as an optional last argument a list of additional command line arguments which will be passed to
-#          qt4-constants-gen.py upon execution.
+#          This function takes care of invoking qt4-types-gen.py with the correct arguments. spec_xml
+#          is the spec file, outfile_decl is the filename the header of the generated file will be saved to,
+#          outfile_impl is the filename the implementation of the generated file will be saved to, namespace
+#          is the C++ namespace the generated header will belong to, realinclude is the real include file
+#          you want to use, prettyinclude is the name of the capitalized header (for example ClientGenerator).
+#          This function also accepts as an optional last argument a list of additional command line arguments
+#          which will be passed to qt4-constants-gen.py upon execution.
 #          After issuing DEPENDS in the last argument you can pass a list of files the command will depend on.
 #
 # macro TPQT4_ADD_GENERIC_UNIT_TEST (fancyName name [libraries ...])
