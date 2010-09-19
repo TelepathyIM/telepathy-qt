@@ -149,8 +149,8 @@ ReadinessHelper::Private::Private(
 
     if (proxy) {
         parent->connect(proxy,
-                SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-                SLOT(onProxyInvalidated(Tp::DBusProxy *, const QString &, const QString &)));
+                SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                SLOT(onProxyInvalidated(Tp::DBusProxy*,QString,QString)));
     }
 
     debug() << "ReadinessHelper: supportedStatuses =" << supportedStatuses;

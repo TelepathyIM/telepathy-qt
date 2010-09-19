@@ -133,11 +133,11 @@ void AccountManager::Private::init()
     }
 
     parent->connect(baseInterface,
-            SIGNAL(AccountValidityChanged(const QDBusObjectPath &, bool)),
-            SLOT(onAccountValidityChanged(const QDBusObjectPath &, bool)));
+            SIGNAL(AccountValidityChanged(QDBusObjectPath,bool)),
+            SLOT(onAccountValidityChanged(QDBusObjectPath,bool)));
     parent->connect(baseInterface,
-            SIGNAL(AccountRemoved(const QDBusObjectPath &)),
-            SLOT(onAccountRemoved(const QDBusObjectPath &)));
+            SIGNAL(AccountRemoved(QDBusObjectPath)),
+            SLOT(onAccountRemoved(QDBusObjectPath)));
 }
 
 void AccountManager::Private::introspectMain(AccountManager::Private *self)
@@ -151,8 +151,8 @@ void AccountManager::Private::introspectMain(AccountManager::Private *self)
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_MANAGER)),
             self->parent);
     self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void AccountManager::Private::checkIntrospectionCompleted()
@@ -211,8 +211,8 @@ void AccountManager::Private::addAccountForPath(const QString &path)
     Q_ASSERT(!account.isNull());
 
     parent->connect(readyOp,
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onAccountReady(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onAccountReady(Tp::PendingOperation*)));
     incompleteAccounts.insert(path, account);
 }
 

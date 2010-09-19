@@ -100,15 +100,15 @@ PendingChannel::PendingChannel(const ConnectionPtr &connection,
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                 connection->requestsInterface()->CreateChannel(request), this);
         connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(onCallCreateChannelFinished(QDBusPendingCallWatcher *)));
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onCallCreateChannelFinished(QDBusPendingCallWatcher*)));
     }
     else {
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                 connection->requestsInterface()->EnsureChannel(request), this);
         connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(onCallEnsureChannelFinished(QDBusPendingCallWatcher *)));
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onCallEnsureChannelFinished(QDBusPendingCallWatcher*)));
     }
 }
 

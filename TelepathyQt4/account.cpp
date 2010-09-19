@@ -2417,8 +2417,8 @@ void Account::Private::init()
             SIGNAL(Removed()),
             SLOT(onRemoved()));
     parent->connect(baseInterface,
-            SIGNAL(AccountPropertyChanged(const QVariantMap &)),
-            SLOT(onPropertyChanged(const QVariantMap &)));
+            SIGNAL(AccountPropertyChanged(QVariantMap)),
+            SLOT(onPropertyChanged(QVariantMap)));
 }
 
 void Account::Private::introspectMain(Account::Private *self)
@@ -2431,8 +2431,8 @@ void Account::Private::introspectMain(Account::Private *self)
             properties->GetAll(
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT)), self->parent);
     self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void Account::Private::introspectAvatar(Account::Private *self)
@@ -2461,8 +2461,8 @@ void Account::Private::introspectProtocolInfo(Account::Private *self)
             self->parent->dbusConnection(),
             self->cmName);
     self->parent->connect(self->cm->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionManagerReady(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onConnectionManagerReady(Tp::PendingOperation*)));
 }
 
 void Account::Private::introspectCapabilities(Account::Private *self)
@@ -2474,8 +2474,8 @@ void Account::Private::introspectCapabilities(Account::Private *self)
     }
 
     self->parent->connect(self->connection->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onConnectionReady(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onConnectionReady(Tp::PendingOperation*)));
 }
 
 void Account::Private::updateProperties(const QVariantMap &props)
@@ -2736,8 +2736,8 @@ void Account::Private::retrieveAvatar()
                 QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR),
                 QLatin1String("Avatar")), parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotAvatar(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotAvatar(QDBusPendingCallWatcher*)));
 }
 
 bool Account::Private::processConnQueue()

@@ -276,12 +276,12 @@ StatefulDBusProxy::StatefulDBusProxy(const QDBusConnection &dbusConnection,
     QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(busName,
             dbusConnection, QDBusServiceWatcher::WatchForUnregistration, this);
     connect(serviceWatcher,
-            SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-            SLOT(onServiceOwnerChanged(QString, QString, QString)));
+            SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+            SLOT(onServiceOwnerChanged(QString,QString,QString)));
 #else
     connect(dbusConnection.interface(),
-            SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-            SLOT(onServiceOwnerChanged(QString, QString, QString)));
+            SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+            SLOT(onServiceOwnerChanged(QString,QString,QString)));
 #endif
 
     QString error, message;

@@ -67,20 +67,20 @@ struct TELEPATHY_QT4_NO_EXPORT ContactManager::Private
         contactListGroupChannels.insert(id, contactListGroupChannel);
         parent->connect(contactListGroupChannel.data(),
                 SIGNAL(groupMembersChanged(
-                       const Tp::Contacts &,
-                       const Tp::Contacts &,
-                       const Tp::Contacts &,
-                       const Tp::Contacts &,
-                       const Tp::Channel::GroupMemberChangeDetails &)),
+                       Tp::Contacts,
+                       Tp::Contacts,
+                       Tp::Contacts,
+                       Tp::Contacts,
+                       Tp::Channel::GroupMemberChangeDetails)),
                 SLOT(onContactListGroupMembersChanged(
-                       const Tp::Contacts &,
-                       const Tp::Contacts &,
-                       const Tp::Contacts &,
-                       const Tp::Contacts &,
-                       const Tp::Channel::GroupMemberChangeDetails &)));
+                       Tp::Contacts,
+                       Tp::Contacts,
+                       Tp::Contacts,
+                       Tp::Contacts,
+                       Tp::Channel::GroupMemberChangeDetails)));
         parent->connect(contactListGroupChannel.data(),
-                SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-                SLOT(onContactListGroupRemoved(Tp::DBusProxy *, const QString &, const QString &)));
+                SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                SLOT(onContactListGroupRemoved(Tp::DBusProxy*,QString,QString)));
 
         foreach (const ContactPtr &contact, contactListGroupChannel->groupContacts()) {
             contact->setAddedToGroup(id);
@@ -905,7 +905,7 @@ void ContactManager::doRequestAvatars()
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
         mPriv->connection->avatarsInterface()->RequestAvatars(mPriv->requestAvatarsQueue),
         this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher *)), watcher,
+    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)), watcher,
         SLOT(deleteLater()));
 
     mPriv->requestAvatarsQueue = UIntList();
@@ -1251,36 +1251,36 @@ void ContactManager::setContactListChannels(
 
         if (type == ContactListChannel::TypeSubscribe) {
             method = SLOT(onSubscribeChannelMembersChanged(
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Channel::GroupMemberChangeDetails &));
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Channel::GroupMemberChangeDetails));
         } else if (type == ContactListChannel::TypePublish) {
             method = SLOT(onPublishChannelMembersChanged(
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Channel::GroupMemberChangeDetails &));
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Channel::GroupMemberChangeDetails));
         } else if (type == ContactListChannel::TypeDeny) {
             method = SLOT(onDenyChannelMembersChanged(
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Channel::GroupMemberChangeDetails &));
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Channel::GroupMemberChangeDetails));
         } else {
             continue;
         }
 
         connect(channel.data(),
                 SIGNAL(groupMembersChanged(
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Contacts &,
-                        const Tp::Channel::GroupMemberChangeDetails &)),
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Contacts,
+                        Tp::Channel::GroupMemberChangeDetails)),
                 method);
     }
 }
@@ -1328,57 +1328,57 @@ void ContactManager::Private::ensureTracking(Contact::Feature feature)
         case Contact::FeatureAlias:
             QObject::connect(
                     conn->aliasingInterface(),
-                    SIGNAL(AliasesChanged(const Tp::AliasPairList &)),
+                    SIGNAL(AliasesChanged(Tp::AliasPairList)),
                     conn->contactManager(),
-                    SLOT(onAliasesChanged(const Tp::AliasPairList &)));
+                    SLOT(onAliasesChanged(Tp::AliasPairList)));
             break;
 
         case Contact::FeatureAvatarToken:
             QObject::connect(
                     conn->avatarsInterface(),
-                    SIGNAL(AvatarUpdated(uint, const QString &)),
+                    SIGNAL(AvatarUpdated(uint,QString)),
                     conn->contactManager(),
-                    SLOT(onAvatarUpdated(uint, const QString &)));
+                    SLOT(onAvatarUpdated(uint,QString)));
             break;
 
         case Contact::FeatureAvatarData:
             QObject::connect(
                     conn->avatarsInterface(),
-                    SIGNAL(AvatarRetrieved(uint, const QString &, const QByteArray &, const QString &)),
+                    SIGNAL(AvatarRetrieved(uint,QString,QByteArray,QString)),
                     conn->contactManager(),
-                    SLOT(onAvatarRetrieved(uint, const QString &, const QByteArray &, const QString &)));
+                    SLOT(onAvatarRetrieved(uint,QString,QByteArray,QString)));
             break;
 
         case Contact::FeatureSimplePresence:
             QObject::connect(
                     conn->simplePresenceInterface(),
-                    SIGNAL(PresencesChanged(const Tp::SimpleContactPresences &)),
+                    SIGNAL(PresencesChanged(Tp::SimpleContactPresences)),
                     conn->contactManager(),
-                    SLOT(onPresencesChanged(const Tp::SimpleContactPresences &)));
+                    SLOT(onPresencesChanged(Tp::SimpleContactPresences)));
             break;
 
         case Contact::FeatureCapabilities:
             QObject::connect(
                     conn->contactCapabilitiesInterface(),
-                    SIGNAL(ContactCapabilitiesChanged(const Tp::ContactCapabilitiesMap &)),
+                    SIGNAL(ContactCapabilitiesChanged(Tp::ContactCapabilitiesMap)),
                     conn->contactManager(),
-                    SLOT(onCapabilitiesChanged(const Tp::ContactCapabilitiesMap &)));
+                    SLOT(onCapabilitiesChanged(Tp::ContactCapabilitiesMap)));
             break;
 
         case Contact::FeatureLocation:
             QObject::connect(
                     conn->locationInterface(),
-                    SIGNAL(LocationUpdated(uint, const QVariantMap &)),
+                    SIGNAL(LocationUpdated(uint,QVariantMap)),
                     conn->contactManager(),
-                    SLOT(onLocationUpdated(uint, const QVariantMap &)));
+                    SLOT(onLocationUpdated(uint,QVariantMap)));
             break;
 
         case Contact::FeatureInfo:
             QObject::connect(
                     conn->contactInfoInterface(),
-                    SIGNAL(ContactInfoChanged(uint, const Tp::ContactInfoFieldList &)),
+                    SIGNAL(ContactInfoChanged(uint,Tp::ContactInfoFieldList)),
                     conn->contactManager(),
-                    SLOT(onContactInfoChanged(uint, const Tp::ContactInfoFieldList &)));
+                    SLOT(onContactInfoChanged(uint,Tp::ContactInfoFieldList)));
             break;
 
         default:

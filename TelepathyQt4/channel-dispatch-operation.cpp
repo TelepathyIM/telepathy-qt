@@ -96,8 +96,8 @@ ChannelDispatchOperation::Private::Private(ChannelDispatchOperation *parent)
             SLOT(onFinished()));
 
     parent->connect(baseInterface,
-            SIGNAL(ChannelLost(const QDBusObjectPath &, const QString &, const QString &)),
-            SLOT(onChannelLost(const QDBusObjectPath &, const QString &, const QString &)));
+            SIGNAL(ChannelLost(QDBusObjectPath,QString,QString)),
+            SLOT(onChannelLost(QDBusObjectPath,QString,QString)));
 
     ReadinessHelper::Introspectables introspectables;
 

@@ -173,8 +173,8 @@ void PendingMediaStreams::gotSMStreams(QDBusPendingCallWatcher *watcher)
         }
         mPriv->contents.append(content);
         connect(channel.data(),
-                SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
-                SLOT(onContentRemoved(const Tp::MediaContentPtr &)));
+                SIGNAL(contentRemoved(Tp::MediaContentPtr)),
+                SLOT(onContentRemoved(Tp::MediaContentPtr)));
         connect(content->becomeReady(),
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onContentReady(Tp::PendingOperation*)));
@@ -204,11 +204,11 @@ void PendingMediaStreams::gotCallContent(QDBusPendingCallWatcher *watcher)
     }
 
     connect(content->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onContentReady(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContentReady(Tp::PendingOperation*)));
     connect(channel.data(),
-            SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
-            SLOT(onContentRemoved(const Tp::MediaContentPtr &)));
+            SIGNAL(contentRemoved(Tp::MediaContentPtr)),
+            SLOT(onContentRemoved(Tp::MediaContentPtr)));
 
     mPriv->contents.append(content);
 
@@ -389,10 +389,8 @@ void MediaStream::Private::introspectCallMainProperties(
             channel->dbusConnection(), channel->busName(),
             self->callObjectPath.path(), parent);
     self->callProxy->connect(self->callBaseInterface,
-            SIGNAL(SendersChanged(const TpFuture::ContactSendingStateMap &,
-                    const TpFuture::UIntList &)),
-            SLOT(onCallSendersChanged(const TpFuture::ContactSendingStateMap &,
-                    const TpFuture::UIntList &)));
+            SIGNAL(SendersChanged(TpFuture::ContactSendingStateMap,TpFuture::UIntList)),
+            SLOT(onCallSendersChanged(TpFuture::ContactSendingStateMap,TpFuture::UIntList)));
 
     self->callPropertiesInterface = new Client::DBus::PropertiesInterface(
             channel->dbusConnection(), channel->busName(),
@@ -403,8 +401,8 @@ void MediaStream::Private::introspectCallMainProperties(
                     QLatin1String(TP_FUTURE_INTERFACE_CALL_STREAM)),
                 parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotCallMainProperties(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotCallMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void MediaStream::Private::processCallSendersChanged()
@@ -438,8 +436,8 @@ void MediaStream::Private::processCallSendersChanged()
         PendingContacts *contacts = contactManager->contactsForHandles(
                 pendingSenders.toList());
         parent->connect(contacts,
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(gotCallSendersContacts(Tp::PendingOperation *)));
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(gotCallSendersContacts(Tp::PendingOperation*)));
     } else {
         if (callSendersChangedQueue.isEmpty()) {
             if (!parent->isReady(FeatureCore)) {
@@ -1351,11 +1349,11 @@ void PendingMediaContent::gotSMStream(QDBusPendingCallWatcher *watcher)
     }
 
     connect(content->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onContentReady(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContentReady(Tp::PendingOperation*)));
     connect(channel.data(),
-            SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
-            SLOT(onContentRemoved(const Tp::MediaContentPtr &)));
+            SIGNAL(contentRemoved(Tp::MediaContentPtr)),
+            SLOT(onContentRemoved(Tp::MediaContentPtr)));
 
     mPriv->content = content;
 
@@ -1382,11 +1380,11 @@ void PendingMediaContent::gotCallContent(QDBusPendingCallWatcher *watcher)
     }
 
     connect(content->becomeReady(),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onContentReady(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContentReady(Tp::PendingOperation*)));
     connect(channel.data(),
-            SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
-            SLOT(onContentRemoved(const Tp::MediaContentPtr &)));
+            SIGNAL(contentRemoved(Tp::MediaContentPtr)),
+            SLOT(onContentRemoved(Tp::MediaContentPtr)));
 
     mPriv->content = content;
 
@@ -1499,11 +1497,11 @@ void MediaContent::Private::introspectCallMainProperties(
             channel->dbusConnection(), channel->busName(),
             self->callObjectPath.path(), parent);
     parent->connect(self->callBaseInterface,
-            SIGNAL(StreamAdded(const QDBusObjectPath &)),
-            SLOT(onCallStreamAdded(const QDBusObjectPath &)));
+            SIGNAL(StreamAdded(QDBusObjectPath)),
+            SLOT(onCallStreamAdded(QDBusObjectPath)));
     parent->connect(self->callBaseInterface,
-            SIGNAL(StreamRemoved(const QDBusObjectPath &)),
-            SLOT(onCallStreamRemoved(const QDBusObjectPath &)));
+            SIGNAL(StreamRemoved(QDBusObjectPath)),
+            SLOT(onCallStreamRemoved(QDBusObjectPath)));
 
     self->callPropertiesInterface = new Client::DBus::PropertiesInterface(
             channel->dbusConnection(), channel->busName(),
@@ -1514,8 +1512,8 @@ void MediaContent::Private::introspectCallMainProperties(
                     QLatin1String(TP_FUTURE_INTERFACE_CALL_CONTENT)),
                 parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotCallMainProperties(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotCallMainProperties(QDBusPendingCallWatcher*)));
 }
 
 MediaStreamPtr MediaContent::Private::lookupStreamByCallObjectPath(
@@ -1753,8 +1751,8 @@ void MediaContent::gotCallMainProperties(QDBusPendingCallWatcher *watcher)
         PendingContacts *contacts = contactManager->contactsForHandles(
                 UIntList() << mPriv->creatorHandle);
         connect(contacts,
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(gotCreator(Tp::PendingOperation *)));
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(gotCreator(Tp::PendingOperation*)));
     }
 
     watcher->deleteLater();
@@ -1897,20 +1895,20 @@ void StreamedMediaChannel::Private::introspectSMStreams()
         parent->streamedMediaInterface();
 
     parent->connect(streamedMediaInterface,
-            SIGNAL(StreamAdded(uint, uint, uint)),
-            SLOT(onSMStreamAdded(uint, uint, uint)));
+            SIGNAL(StreamAdded(uint,uint,uint)),
+            SLOT(onSMStreamAdded(uint,uint,uint)));
     parent->connect(streamedMediaInterface,
             SIGNAL(StreamRemoved(uint)),
             SLOT(onSMStreamRemoved(uint)));
     parent->connect(streamedMediaInterface,
-            SIGNAL(StreamDirectionChanged(uint, uint, uint)),
-            SLOT(onSMStreamDirectionChanged(uint, uint, uint)));
+            SIGNAL(StreamDirectionChanged(uint,uint,uint)),
+            SLOT(onSMStreamDirectionChanged(uint,uint,uint)));
     parent->connect(streamedMediaInterface,
-            SIGNAL(StreamStateChanged(uint, uint)),
-            SLOT(onSMStreamStateChanged(uint, uint)));
+            SIGNAL(StreamStateChanged(uint,uint)),
+            SLOT(onSMStreamStateChanged(uint,uint)));
     parent->connect(streamedMediaInterface,
-            SIGNAL(StreamError(uint, uint, const QString &)),
-            SLOT(onSMStreamError(uint, uint, const QString &)));
+            SIGNAL(StreamError(uint,uint,QString)),
+            SLOT(onSMStreamError(uint,uint,QString)));
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             streamedMediaInterface->ListStreams(), parent);
@@ -1922,11 +1920,11 @@ void StreamedMediaChannel::Private::introspectSMStreams()
 void StreamedMediaChannel::Private::introspectCallContents()
 {
     parent->connect(callInterface(),
-            SIGNAL(ContentAdded(const QDBusObjectPath &, uint)),
-            SLOT(onCallContentAdded(const QDBusObjectPath &, uint)));
+            SIGNAL(ContentAdded(QDBusObjectPath,uint)),
+            SLOT(onCallContentAdded(QDBusObjectPath,uint)));
     parent->connect(callInterface(),
-            SIGNAL(ContentRemoved(const QDBusObjectPath &)),
-            SLOT(onCallContentRemoved(const QDBusObjectPath &)));
+            SIGNAL(ContentRemoved(QDBusObjectPath)),
+            SLOT(onCallContentRemoved(QDBusObjectPath)));
 
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(
@@ -1934,8 +1932,8 @@ void StreamedMediaChannel::Private::introspectCallContents()
                     QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL)),
                 parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotCallMainProperties(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotCallMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChannel::Private *self)
@@ -1945,14 +1943,14 @@ void StreamedMediaChannel::Private::introspectLocalHoldState(StreamedMediaChanne
         parent->holdInterface();
 
     parent->connect(holdInterface,
-            SIGNAL(HoldStateChanged(uint, uint)),
-            SLOT(onLocalHoldStateChanged(uint, uint)));
+            SIGNAL(HoldStateChanged(uint,uint)),
+            SLOT(onLocalHoldStateChanged(uint,uint)));
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             holdInterface->GetHoldState(), parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotLocalHoldState(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotLocalHoldState(QDBusPendingCallWatcher*)));
 }
 
 /**
@@ -2850,11 +2848,11 @@ MediaContentPtr StreamedMediaChannel::addContentForSMStream(
 
     /* Forward MediaContent::streamAdded/Removed signals */
     connect(content.data(),
-            SIGNAL(streamAdded(const Tp::MediaStreamPtr &)),
-            SIGNAL(streamAdded(const Tp::MediaStreamPtr &)));
+            SIGNAL(streamAdded(Tp::MediaStreamPtr)),
+            SIGNAL(streamAdded(Tp::MediaStreamPtr)));
     connect(content.data(),
-            SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)),
-            SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)));
+            SIGNAL(streamRemoved(Tp::MediaStreamPtr)),
+            SIGNAL(streamRemoved(Tp::MediaStreamPtr)));
 
     mPriv->incompleteContents.append(content);
     connect(content->becomeReady(),
@@ -2889,11 +2887,11 @@ MediaContentPtr StreamedMediaChannel::addContentForCallObjectPath(
 
     /* Forward MediaContent::streamAdded/Removed signals */
     connect(content.data(),
-            SIGNAL(streamAdded(const Tp::MediaStreamPtr &)),
-            SIGNAL(streamAdded(const Tp::MediaStreamPtr &)));
+            SIGNAL(streamAdded(Tp::MediaStreamPtr)),
+            SIGNAL(streamAdded(Tp::MediaStreamPtr)));
     connect(content.data(),
-            SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)),
-            SIGNAL(streamRemoved(const Tp::MediaStreamPtr &)));
+            SIGNAL(streamRemoved(Tp::MediaStreamPtr)),
+            SIGNAL(streamRemoved(Tp::MediaStreamPtr)));
 
     mPriv->incompleteContents.append(content);
     connect(content->becomeReady(),

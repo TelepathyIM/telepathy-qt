@@ -86,8 +86,8 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
     debug() << "Creating new ChannelRequest:" << parent->objectPath();
 
     parent->connect(baseInterface,
-            SIGNAL(Failed(const QString &, const QString &)),
-            SIGNAL(failed(const QString &, const QString &)));
+            SIGNAL(Failed(QString,QString)),
+            SIGNAL(failed(QString,QString)));
     parent->connect(baseInterface,
             SIGNAL(Succeeded()),
             SIGNAL(succeeded()));
@@ -216,8 +216,8 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
 
     if (account) {
         parent->connect(readyOp,
-                SIGNAL(finished(Tp::PendingOperation *)),
-                SLOT(onAccountReady(Tp::PendingOperation *)));
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onAccountReady(Tp::PendingOperation*)));
     } else {
         warning() << "ChannelRequest.Account is missing or empty. Ignoring";
         readinessHelper->setIntrospectCompleted(FeatureCore, true);

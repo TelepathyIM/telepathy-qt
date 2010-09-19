@@ -53,8 +53,8 @@ AbstractInterface::AbstractInterface(DBusProxy *parent, const char *interface)
             interface, parent->dbusConnection(), parent),
       mPriv(new Private())
 {
-    connect(parent, SIGNAL(invalidated(Tp::DBusProxy *, const QString &, const QString &)),
-            this, SLOT(invalidate(Tp::DBusProxy *, const QString &, const QString &)));
+    connect(parent, SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+            this, SLOT(invalidate(Tp::DBusProxy*,QString,QString)));
 }
 
 AbstractInterface::~AbstractInterface()

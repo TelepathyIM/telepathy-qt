@@ -393,8 +393,8 @@ void ConnectionManager::Private::PendingNames::invokeMethod(const QLatin1String 
                 method, QList<QVariant>());
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onCallFinished(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onCallFinished(QDBusPendingCallWatcher*)));
 }
 
 void ConnectionManager::Private::PendingNames::parseResult(const QStringList &names)
@@ -462,8 +462,8 @@ void ConnectionManager::Private::ProtocolWrapper::introspectMain(
                 QLatin1String(TELEPATHY_INTERFACE_PROTOCOL)),
             self);
     self->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void ConnectionManager::Private::ProtocolWrapper::gotMainProperties(
@@ -699,8 +699,8 @@ void ConnectionManager::Private::introspectMain(ConnectionManager::Private *self
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_MANAGER)),
             self->parent);
     self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotMainProperties(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
 }
 
 void ConnectionManager::Private::introspectProtocolsLegacy()
@@ -709,8 +709,8 @@ void ConnectionManager::Private::introspectProtocolsLegacy()
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             baseInterface->ListProtocols(), parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotProtocolsLegacy(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotProtocolsLegacy(QDBusPendingCallWatcher*)));
 }
 
 void ConnectionManager::Private::introspectParametersLegacy()
@@ -720,8 +720,8 @@ void ConnectionManager::Private::introspectParametersLegacy()
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                 baseInterface->GetParameters(protocolName), parent);
         parent->connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(gotParametersLegacy(QDBusPendingCallWatcher *)));
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotParametersLegacy(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -1020,8 +1020,8 @@ void ConnectionManager::gotMainProperties(QDBusPendingCallWatcher *watcher)
                     dbusConnection(), busName(), protocolPath,
                     mPriv->name, i.key(), i.value());
             connect(wrapper->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
-                    SLOT(onProtocolReady(Tp::PendingOperation *)));
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(onProtocolReady(Tp::PendingOperation*)));
             mPriv->wrappers.insert(wrapper, wrapper);
             ++i;
         }

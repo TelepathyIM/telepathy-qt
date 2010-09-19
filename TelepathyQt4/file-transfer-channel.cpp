@@ -88,8 +88,8 @@ FileTransferChannel::Private::Private(FileTransferChannel *parent)
             SIGNAL(InitialOffsetDefined(qulonglong)),
             SLOT(onInitialOffsetDefined(qulonglong)));
     parent->connect(fileTransferInterface,
-            SIGNAL(FileTransferStateChanged(uint, uint)),
-            SLOT(onStateChanged(uint, uint)));
+            SIGNAL(FileTransferStateChanged(uint,uint)),
+            SLOT(onStateChanged(uint,uint)));
     parent->connect(fileTransferInterface,
             SIGNAL(TransferredBytesChanged(qulonglong)),
             SLOT(onTransferredBytesChanged(qulonglong)));
@@ -125,8 +125,8 @@ void FileTransferChannel::Private::introspectProperties(
                     QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER)),
                 self->parent);
     self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotProperties(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotProperties(QDBusPendingCallWatcher*)));
 }
 
 void FileTransferChannel::Private::extractProperties(const QVariantMap &props)
