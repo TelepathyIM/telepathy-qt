@@ -98,6 +98,13 @@ private:
     Private *mPriv;
 };
 
+/*
+ * TODO: use case specific subclasses:
+ *  - StreamTubeHandler(QString(List) protocol(s))
+ *    - handleTube(DBusTubeChannelPtr, userActionTime)
+ *  - DBusTubeHandler(QString(List) serviceName(s))
+ *    - handleTube(DBusTubeChannelPtr, userActionTime)
+ */
 class TELEPATHY_QT4_EXPORT AbstractClientHandler : public virtual AbstractClient
 {
     Q_DISABLE_COPY(AbstractClientHandler)
