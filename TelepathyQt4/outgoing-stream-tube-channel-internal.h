@@ -24,8 +24,6 @@
 #include <TelepathyQt4/OutgoingStreamTubeChannel>
 #include <TelepathyQt4/PendingOperation>
 
-#include "TelepathyQt4/stream-tube-channel-internal.h"
-
 namespace Tp {
 class PendingVoid;
 

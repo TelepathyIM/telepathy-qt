@@ -22,7 +22,6 @@
 #define _TelepathyQt4_incoming_stream_tube_channel_internal_h_HEADER_GUARD_
 
 #include <TelepathyQt4/IncomingStreamTubeChannel>
-#include "TelepathyQt4/stream-tube-channel-internal.h"
 
 #include <QLocalSocket>
 

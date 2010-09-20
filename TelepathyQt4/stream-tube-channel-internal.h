@@ -22,7 +22,6 @@
 #define _TelepathyQt4_stream_tube_channel_internal_h_HEADER_GUARD_
 
 #include <TelepathyQt4/StreamTubeChannel>
-#include "TelepathyQt4/tube-channel-internal.h"
 
 #include <QtNetwork/QHostAddress>
 
@@ -65,9 +64,6 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     // Private slots
     void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
     void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
-
-    friend class IncomingStreamTubeChannel;
-    friend class OutgoingStreamTubeChannel;
 };
 
 }
