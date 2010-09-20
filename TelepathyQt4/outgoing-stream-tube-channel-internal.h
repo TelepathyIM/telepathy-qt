@@ -41,7 +41,7 @@ public:
     PendingOpenTube(PendingVoid *offerOperation,
             const QVariantMap &parameters,
             const SharedPtr<RefCounted> &object);
-    virtual ~PendingOpenTube();
+    ~PendingOpenTube();
 
 private Q_SLOTS:
     void onTubeStateChanged(Tp::TubeChannelState state);
@@ -59,7 +59,7 @@ class TELEPATHY_QT4_NO_EXPORT QueuedContactFactory : public QObject
 
 public:
     QueuedContactFactory(ContactManagerPtr contactManager, QObject* parent = 0);
-    virtual ~QueuedContactFactory();
+    ~QueuedContactFactory();
 
     QUuid appendNewRequest(const UIntList &handles);
 
@@ -101,7 +101,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingOpenTube::Private
 struct TELEPATHY_QT4_NO_EXPORT OutgoingStreamTubeChannel::Private
 {
     Private(OutgoingStreamTubeChannel *parent);
-    virtual ~Private();
+    ~Private();
 
     OutgoingStreamTubeChannel *parent;
 

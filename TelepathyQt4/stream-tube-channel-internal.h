@@ -37,9 +37,9 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     };
 
     Private(StreamTubeChannel *parent);
-    virtual ~Private();
+    ~Private();
 
-    virtual void init();
+    void init();
 
     void extractStreamTubeProperties(const QVariantMap &props);
 

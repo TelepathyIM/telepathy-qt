@@ -28,9 +28,9 @@ namespace Tp {
 struct TELEPATHY_QT4_NO_EXPORT TubeChannel::Private
 {
     Private(TubeChannel *parent);
-    virtual ~Private();
+    ~Private();
 
-    virtual void init();
+    void init();
 
     void extractTubeProperties(const QVariantMap &props);
 
