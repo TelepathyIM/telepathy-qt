@@ -93,6 +93,13 @@
 #       and optional argument a set of additional libraries the target will link to. Please remember that you need to
 #       set up the DBus environment by calling TPQT4_SETUP_DBUS_TEST_ENVIRONMENT BEFORE you call this macro.
 #
+# macro _TPQT4_ADD_CHECK_TARGETS (fancyName name command [args])
+#       This is an internal macro which is meant to be used by TPQT4_ADD_DBUS_UNIT_TEST and TPQT4_ADD_GENERIC_UNIT_TEST.
+#       It takes care of generating a check target for each test method available (currently normal execution, valgrind and
+#       callgrind). This macro accepts the same arguments as the add test macros, but accepts a command and a list of
+#       arguments for running the test instead of the link libraries. However, you are not meant to call this macro from
+#       your CMakeLists.txt files.
+#
 # function TPQT4_SETUP_DBUS_TEST_ENVIRONMENT ()
 #          This function MUST be called before calling TPQT4_ADD_DBUS_UNIT_TEST. It takes care of preparing the test
 #          environment for DBus tests and generating the needed files.
