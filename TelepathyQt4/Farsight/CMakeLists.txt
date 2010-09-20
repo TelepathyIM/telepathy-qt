@@ -31,6 +31,11 @@ if(FARSIGHT_COMPONENTS_FOUND)
         ${GSTREAMER_INTERFACE_LIBRARY}
         telepathy-qt4)
 
+    # Set the correct version number
+    set_target_properties(telepathy-qt4-farsight PROPERTIES
+                                                 SOVERSION ${TP_QT4_MAJOR_VERSION}
+                                                 VERSION ${PACKAGE_VERSION})
+
     # Install the library - watch out for the correct components
     if (WIN32)
         install(TARGETS telepathy-qt4-farsight RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT farsight

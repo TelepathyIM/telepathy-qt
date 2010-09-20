@@ -481,6 +481,12 @@ if (ENABLE_COMPILER_COVERAGE)
     target_link_libraries(telepathy-qt4 gcov)
 endif (ENABLE_COMPILER_COVERAGE)
 
+# Set the correct version number
+set_target_properties(telepathy-qt4 PROPERTIES
+                                    SOVERSION ${TP_QT4_MAJOR_VERSION}
+                                    VERSION ${PACKAGE_VERSION})
+
+
 # Install header files
 install(FILES ${telepathy_qt4_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4 COMPONENT headers)
 install(FILES ${telepathy_qt4_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-1.0/TelepathyQt4/_gen COMPONENT headers)
