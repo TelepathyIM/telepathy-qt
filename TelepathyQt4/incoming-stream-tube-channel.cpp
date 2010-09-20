@@ -20,6 +20,8 @@
 
 #include <TelepathyQt4/IncomingStreamTubeChannel>
 
+#include "TelepathyQt4/_gen/incoming-stream-tube-channel.moc.hpp"
+
 #include "TelepathyQt4/types-internal.h"
 #include "TelepathyQt4/debug-internal.h"
 
@@ -57,23 +59,6 @@ IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
 
 IncomingStreamTubeChannel::Private::~Private()
 {
-}
-
-void IncomingStreamTubeChannel::Private::onAcceptTubeFinished(PendingOperation* op)
-{
-    PendingStreamTubeConnection *pendingDevice = qobject_cast< PendingStreamTubeConnection* >(op);
-
-    device = pendingDevice->device();
-}
-
-void IncomingStreamTubeChannel::Private::onNewLocalConnection(uint connectionId)
-{
-    // Add the connection to our list
-    UIntList connections = parent->connections();
-    connections << connectionId;
-    parent->setConnections(connections);
-
-    emit parent->newConnection(connectionId);
 }
 
 /**
@@ -499,6 +484,21 @@ QIODevice* IncomingStreamTubeChannel::device()
     }
 }
 
+void IncomingStreamTubeChannel::onAcceptTubeFinished(PendingOperation* op)
+{
+    PendingStreamTubeConnection *pendingDevice = qobject_cast< PendingStreamTubeConnection* >(op);
+
+    mPriv->device = pendingDevice->device();
 }
 
-#include "TelepathyQt4/_gen/incoming-stream-tube-channel.moc.hpp"
+void IncomingStreamTubeChannel::onNewLocalConnection(uint connectionId)
+{
+    // Add the connection to our list
+    UIntList currentConnections = connections();
+    currentConnections << connectionId;
+    setConnections(currentConnections);
+
+    emit newConnection(connectionId);
+}
+
+}

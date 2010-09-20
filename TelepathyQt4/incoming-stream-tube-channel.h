@@ -39,10 +39,6 @@ class TELEPATHY_QT4_EXPORT IncomingStreamTubeChannel : public StreamTubeChannel
     Q_OBJECT
     Q_DISABLE_COPY(IncomingStreamTubeChannel)
 
-// private slots:
-    Q_PRIVATE_SLOT(mPriv, void onAcceptTubeFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(mPriv, void onNewLocalConnection(uint))
-
 public:
     static IncomingStreamTubeChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
@@ -61,6 +57,10 @@ protected:
             const QString &objectPath,
             const QVariantMap &immutableProperties,
             const Feature &coreFeature = StreamTubeChannel::FeatureStreamTube);
+
+private Q_SLOTS:
+    void onAcceptTubeFinished(Tp::PendingOperation*);
+    void onNewLocalConnection(uint);
 
 private:
     struct Private;

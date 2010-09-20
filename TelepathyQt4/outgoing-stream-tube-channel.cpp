@@ -62,7 +62,7 @@ PendingOpenTube::PendingOpenTube(
     mPriv->tube = OutgoingStreamTubeChannelPtr::dynamicCast(object);
 
     if (offerOperation->isFinished()) {
-        mPriv->onOfferFinished(offerOperation);
+        onOfferFinished(offerOperation);
     } else {
         // Connect the pending void
         connect(offerOperation, SIGNAL(finished(Tp::PendingOperation*)),
@@ -75,24 +75,24 @@ PendingOpenTube::~PendingOpenTube()
     delete mPriv;
 }
 
-void PendingOpenTube::Private::onOfferFinished(PendingOperation* op)
+void PendingOpenTube::onOfferFinished(PendingOperation* op)
 {
     if (op->isError()) {
         // Fail
-        parent->setFinishedWithError(op->errorName(), op->errorMessage());
+        setFinishedWithError(op->errorName(), op->errorMessage());
         return;
     }
 
     debug() << "Offer tube finished successfully";
-    debug() << tube->tubeState() << TubeChannelStateOpen;
+    debug() << mPriv->tube->tubeState() << TubeChannelStateOpen;
 
     // It might have been already opened - check
-    if (tube->tubeState() == TubeChannelStateOpen) {
-        parent->onTubeStateChanged(tube->tubeState());
+    if (mPriv->tube->tubeState() == TubeChannelStateOpen) {
+        onTubeStateChanged(mPriv->tube->tubeState());
     } else {
         // Wait until the tube gets opened on the other side
-        parent->connect(tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
-                        parent, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
+        connect(mPriv->tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
+                this, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
     }
 }
 
@@ -179,83 +179,6 @@ OutgoingStreamTubeChannel::Private::Private(OutgoingStreamTubeChannel *parent)
 
 OutgoingStreamTubeChannel::Private::~Private()
 {
-}
-
-void OutgoingStreamTubeChannel::Private::onNewRemoteConnection(
-        uint contactId,
-        const QDBusVariant &parameter,
-        uint connectionId)
-{
-    // Request the handles from our queued contact factory
-    QUuid uuid = queuedContactFactory->appendNewRequest(UIntList() << contactId);
-
-    // Add a pending connection
-    pendingNewConnections.insert(uuid, qMakePair(connectionId, parameter));
-}
-
-void OutgoingStreamTubeChannel::Private::onContactsRetrieved(
-        const QUuid &uuid,
-        const QList< Tp::ContactPtr > &contacts)
-{
-    // Retrieve our hash
-    if (!pendingNewConnections.contains(uuid)) {
-        warning() << "Contacts retrieved but no pending connections were found";
-        return;
-    }
-
-    QPair< uint, QDBusVariant > connectionProperties = pendingNewConnections.take(uuid);
-
-    // Add the connection to our list
-    UIntList connections;
-    connections << connectionProperties.first;
-    parent->setConnections(connections);
-
-    // Add it to our connections hash
-    foreach (const Tp::ContactPtr &contact, contacts) {
-        contactsForConnections.insertMulti(connectionProperties.first, contact);
-    }
-
-    QPair< QHostAddress, quint16 > address;
-    address.first = QHostAddress::Null;
-
-    // Now let's try to track the parameter
-    if (parent->addressType() == SocketAddressTypeIPv4) {
-        // Try a qdbus_cast to our address struct: we're shielded from crashes due to our specification
-        SocketAddressIPv4 addr = qdbus_cast< Tp::SocketAddressIPv4 >(connectionProperties.second.variant());
-        address.first = QHostAddress(addr.address);
-        address.second = addr.port;
-    } else if (parent->addressType() == SocketAddressTypeIPv6) {
-        SocketAddressIPv6 addr = qdbus_cast< Tp::SocketAddressIPv6 >(connectionProperties.second.variant());
-        address.first = QHostAddress(addr.address);
-        address.second = addr.port;
-    }
-
-    if (address.first != QHostAddress::Null) {
-        // We can map it to a source address as well
-        connectionsForSourceAddresses.insertMulti(address, connectionProperties.first);
-    }
-
-    // Time for us to emit the signal
-    emit parent->newConnection(connectionProperties.first);
-}
-
-void OutgoingStreamTubeChannel::Private::onConnectionClosed(
-        uint connectionId,
-        const QString&,
-        const QString&)
-{
-    // Remove stuff from our hashes
-    contactsForConnections.remove(connectionId);
-
-    QHash< QPair< QHostAddress, quint16 >, uint >::iterator i = connectionsForSourceAddresses.begin();
-
-    while (i != connectionsForSourceAddresses.end()) {
-        if (i.value() == connectionId) {
-            i = connectionsForSourceAddresses.erase(i);
-        } else {
-            ++i;
-        }
-    }
 }
 
 /**
@@ -777,6 +700,84 @@ QHash< uint, ContactPtr > OutgoingStreamTubeChannel::contactsForConnections() co
     }
 
     return mPriv->contactsForConnections;
+}
+
+void OutgoingStreamTubeChannel::onNewRemoteConnection(
+        uint contactId,
+        const QDBusVariant &parameter,
+        uint connectionId)
+{
+    // Request the handles from our queued contact factory
+    QUuid uuid = mPriv->queuedContactFactory->appendNewRequest(UIntList() << contactId);
+
+    // Add a pending connection
+    mPriv->pendingNewConnections.insert(uuid, qMakePair(connectionId, parameter));
+}
+
+void OutgoingStreamTubeChannel::onContactsRetrieved(
+        const QUuid &uuid,
+        const QList< Tp::ContactPtr > &contacts)
+{
+    // Retrieve our hash
+    if (!mPriv->pendingNewConnections.contains(uuid)) {
+        warning() << "Contacts retrieved but no pending connections were found";
+        return;
+    }
+
+    QPair< uint, QDBusVariant > connectionProperties = mPriv->pendingNewConnections.take(uuid);
+
+    // Add the connection to our list
+    UIntList connections;
+    connections << connectionProperties.first;
+    setConnections(connections);
+
+    // Add it to our connections hash
+    foreach (const Tp::ContactPtr &contact, contacts) {
+        mPriv->contactsForConnections.insertMulti(connectionProperties.first, contact);
+    }
+
+    QPair< QHostAddress, quint16 > address;
+    address.first = QHostAddress::Null;
+
+    // Now let's try to track the parameter
+    if (addressType() == SocketAddressTypeIPv4) {
+        // Try a qdbus_cast to our address struct: we're shielded from crashes due to our specification
+        SocketAddressIPv4 addr = qdbus_cast< Tp::SocketAddressIPv4 >(connectionProperties.second.variant());
+        address.first = QHostAddress(addr.address);
+        address.second = addr.port;
+    } else if (addressType() == SocketAddressTypeIPv6) {
+        SocketAddressIPv6 addr = qdbus_cast< Tp::SocketAddressIPv6 >(connectionProperties.second.variant());
+        address.first = QHostAddress(addr.address);
+        address.second = addr.port;
+    }
+
+    if (address.first != QHostAddress::Null) {
+        // We can map it to a source address as well
+        mPriv->connectionsForSourceAddresses.insertMulti(address, connectionProperties.first);
+    }
+
+    // Time for us to emit the signal
+    emit newConnection(connectionProperties.first);
+}
+
+void OutgoingStreamTubeChannel::onConnectionClosed(
+        uint connectionId,
+        const QString&,
+        const QString&)
+{
+    // Remove stuff from our hashes
+    mPriv->contactsForConnections.remove(connectionId);
+
+    QHash< QPair< QHostAddress, quint16 >, uint >::iterator i =
+                                    mPriv->connectionsForSourceAddresses.begin();
+
+    while (i != mPriv->connectionsForSourceAddresses.end()) {
+        if (i.value() == connectionId) {
+            i = mPriv->connectionsForSourceAddresses.erase(i);
+        } else {
+            ++i;
+        }
+    }
 }
 
 }

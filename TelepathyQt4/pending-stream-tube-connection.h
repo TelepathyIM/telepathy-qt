@@ -29,6 +29,7 @@
 #include <TelepathyQt4/PendingOperation>
 
 #include <QPair>
+#include <QLocalSocket>
 
 class QIODevice;
 class QHostAddress;
@@ -54,6 +55,13 @@ public:
     QPair< QHostAddress, quint16 > ipAddress() const;
     QString localAddress() const;
 
+private Q_SLOTS:
+    void onAcceptFinished(Tp::PendingOperation *);
+    void onTubeStateChanged(Tp::TubeChannelState);
+    void onDeviceConnected();
+    void onAbstractSocketError(QAbstractSocket::SocketError);
+    void onLocalSocketError(QLocalSocket::LocalSocketError);
+
 private:
     PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type, const SharedPtr<RefCounted> &object);
     PendingStreamTubeConnection(const QString &errorName, const QString &errorMessage, const SharedPtr<RefCounted> &object);
@@ -63,13 +71,6 @@ private:
     Private *mPriv;
 
     friend class IncomingStreamTubeChannel;
-
-// private slots:
-    Q_PRIVATE_SLOT(mPriv, void onAcceptFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(mPriv, void onTubeStateChanged(Tp::TubeChannelState))
-    Q_PRIVATE_SLOT(mPriv, void onDeviceConnected())
-    Q_PRIVATE_SLOT(mPriv, void onAbstractSocketError(QAbstractSocket::SocketError))
-    Q_PRIVATE_SLOT(mPriv, void onLocalSocketError(QLocalSocket::LocalSocketError))
 };
 
 }

@@ -21,6 +21,8 @@
 
 #include <TelepathyQt4/PendingStreamTubeConnection>
 
+#include "TelepathyQt4/_gen/pending-stream-tube-connection.moc.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/IncomingStreamTubeChannel>
@@ -48,13 +50,6 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
     QString socketPath;
 
     QIODevice *device;
-
-    // Private slots
-    void onAcceptFinished(Tp::PendingOperation* op);
-    void onTubeStateChanged(Tp::TubeChannelState state);
-    void onDeviceConnected();
-    void onAbstractSocketError(QAbstractSocket::SocketError error);
-    void onLocalSocketError(QLocalSocket::LocalSocketError error);
 };
 
 PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection* parent)
@@ -122,117 +117,6 @@ QIODevice* PendingStreamTubeConnection::device()
     return mPriv->device;
 }
 
-void PendingStreamTubeConnection::Private::onAcceptFinished(PendingOperation* op)
-{
-    if (op->isError()) {
-        parent->setFinishedWithError(op->errorName(), op->errorMessage());
-        return;
-    }
-
-    debug() << "Accept tube finished successfully";
-
-    PendingVariant *pv = qobject_cast<PendingVariant *>(op);
-    // Build the address
-    if (type == SocketAddressTypeIPv4) {
-        SocketAddressIPv4 addr = qdbus_cast<SocketAddressIPv4>(pv->result());
-        debug().nospace() << "Got address " << addr.address <<
-                ":" << addr.port;
-        hostAddress = QHostAddress(addr.address);
-        port = addr.port;
-    } else if (type == SocketAddressTypeIPv6) {
-        SocketAddressIPv6 addr = qdbus_cast<SocketAddressIPv6>(pv->result());
-        debug().nospace() << "Got address " << addr.address <<
-                ":" << addr.port;
-        hostAddress = QHostAddress(addr.address);
-        port = addr.port;
-    } else {
-        // Unix socket
-        socketPath = QLatin1String(qdbus_cast<QByteArray>(pv->result()));
-        debug() << "Got socket " << socketPath;
-    }
-
-    // It might have been already opened - check
-    if (tube->tubeState() == TubeChannelStateOpen) {
-        onTubeStateChanged(tube->tubeState());
-    } else {
-        // Wait until the tube gets opened on the other side
-        parent->connect(tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
-                        parent, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
-    }
-}
-
-void PendingStreamTubeConnection::Private::onTubeStateChanged(TubeChannelState state)
-{
-    debug() << "Tube state changed to " << state;
-    if (state == TubeChannelStateOpen) {
-        // The tube is ready
-        // Build the IO device
-        if (type == SocketAddressTypeIPv4 || type == SocketAddressTypeIPv6) {
-            tube->setIpAddress(qMakePair< QHostAddress, quint16 >(hostAddress, port));
-            debug() << "Building a QTcpSocket " << hostAddress << port;
-
-            QTcpSocket *socket = new QTcpSocket(tube.data());
-            socket->connectToHost(hostAddress, port);
-            device = socket;
-
-            parent->connect(socket, SIGNAL(connected()),
-                            parent, SLOT(onDeviceConnected()));
-            parent->connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
-                            parent, SLOT(onAbstractSocketError(QAbstractSocket::SocketError)));
-            debug() << "QTcpSocket built";
-        } else {
-            // Unix socket
-            tube->setLocalAddress(socketPath);
-
-            QLocalSocket *socket = new QLocalSocket(tube.data());
-            socket->connectToServer(socketPath);
-            device = socket;
-
-            // The local socket might already be connected
-            if (socket->state() == QLocalSocket::ConnectedState) {
-                onDeviceConnected();
-            } else {
-                parent->connect(socket, SIGNAL(connected()),
-                                parent, SLOT(onDeviceConnected()));
-                parent->connect(socket, SIGNAL(error(QLocalSocket::LocalSocketError)),
-                                parent, SLOT(onLocalSocketError(QLocalSocket::LocalSocketError)));
-            }
-        }
-    } else if (state != TubeChannelStateLocalPending) {
-        // Something happened
-        parent->setFinishedWithError(QLatin1String("Connection refused"),
-                      QLatin1String("The connection to this tube was refused"));
-    }
-}
-
-void PendingStreamTubeConnection::Private::onAbstractSocketError(QAbstractSocket::SocketError error)
-{
-    // TODO: Use error to provide more detailed error messages
-    Q_UNUSED(error)
-    // Failure
-    device = 0;
-    parent->setFinishedWithError(QLatin1String("Error while creating TCP socket"),
-                      QLatin1String("Could not connect to the new socket"));
-}
-
-void PendingStreamTubeConnection::Private::onLocalSocketError(QLocalSocket::LocalSocketError error)
-{
-    // TODO: Use error to provide more detailed error messages
-    Q_UNUSED(error)
-    // Failure
-    device = 0;
-    parent->setFinishedWithError(QLatin1String("Error while creating Local socket"),
-                      QLatin1String("Could not connect to the new socket"));
-}
-
-void PendingStreamTubeConnection::Private::onDeviceConnected()
-{
-    // Our IODevice is ready! Let's just set finished
-    debug() << "Device connected!";
-    parent->setFinished();
-}
-
-
 /**
  * \return The type of socket this PendingStreamTubeConnection has created
  *
@@ -276,6 +160,115 @@ QPair< QHostAddress, quint16 > PendingStreamTubeConnection::ipAddress() const
     return mPriv->tube->ipAddress();
 }
 
+void PendingStreamTubeConnection::onAcceptFinished(PendingOperation* op)
+{
+    if (op->isError()) {
+        setFinishedWithError(op->errorName(), op->errorMessage());
+        return;
+    }
+
+    debug() << "Accept tube finished successfully";
+
+    PendingVariant *pv = qobject_cast<PendingVariant *>(op);
+    // Build the address
+    if (mPriv->type == SocketAddressTypeIPv4) {
+        SocketAddressIPv4 addr = qdbus_cast<SocketAddressIPv4>(pv->result());
+        debug().nospace() << "Got address " << addr.address <<
+                ":" << addr.port;
+        mPriv->hostAddress = QHostAddress(addr.address);
+        mPriv->port = addr.port;
+    } else if (mPriv->type == SocketAddressTypeIPv6) {
+        SocketAddressIPv6 addr = qdbus_cast<SocketAddressIPv6>(pv->result());
+        debug().nospace() << "Got address " << addr.address <<
+                ":" << addr.port;
+        mPriv->hostAddress = QHostAddress(addr.address);
+        mPriv->port = addr.port;
+    } else {
+        // Unix socket
+        mPriv->socketPath = QLatin1String(qdbus_cast<QByteArray>(pv->result()));
+        debug() << "Got socket " << mPriv->socketPath;
+    }
+
+    // It might have been already opened - check
+    if (mPriv->tube->tubeState() == TubeChannelStateOpen) {
+        onTubeStateChanged(mPriv->tube->tubeState());
+    } else {
+        // Wait until the tube gets opened on the other side
+        connect(mPriv->tube.data(), SIGNAL(tubeStateChanged(Tp::TubeChannelState)),
+                this, SLOT(onTubeStateChanged(Tp::TubeChannelState)));
+    }
 }
 
-#include "TelepathyQt4/_gen/pending-stream-tube-connection.moc.hpp"
+void PendingStreamTubeConnection::onTubeStateChanged(TubeChannelState state)
+{
+    debug() << "Tube state changed to " << state;
+    if (state == TubeChannelStateOpen) {
+        // The tube is ready
+        // Build the IO device
+        if (mPriv->type == SocketAddressTypeIPv4 || mPriv->type == SocketAddressTypeIPv6) {
+            mPriv->tube->setIpAddress(qMakePair< QHostAddress, quint16 >(mPriv->hostAddress,
+                                                                         mPriv->port));
+            debug() << "Building a QTcpSocket " << mPriv->hostAddress << mPriv->port;
+
+            QTcpSocket *socket = new QTcpSocket(mPriv->tube.data());
+            socket->connectToHost(mPriv->hostAddress, mPriv->port);
+            mPriv->device = socket;
+
+            connect(socket, SIGNAL(connected()),
+                    this, SLOT(onDeviceConnected()));
+            connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
+                    this, SLOT(onAbstractSocketError(QAbstractSocket::SocketError)));
+            debug() << "QTcpSocket built";
+        } else {
+            // Unix socket
+            mPriv->tube->setLocalAddress(mPriv->socketPath);
+
+            QLocalSocket *socket = new QLocalSocket(mPriv->tube.data());
+            socket->connectToServer(mPriv->socketPath);
+            mPriv->device = socket;
+
+            // The local socket might already be connected
+            if (socket->state() == QLocalSocket::ConnectedState) {
+                onDeviceConnected();
+            } else {
+                connect(socket, SIGNAL(connected()),
+                        this, SLOT(onDeviceConnected()));
+                connect(socket, SIGNAL(error(QLocalSocket::LocalSocketError)),
+                        this, SLOT(onLocalSocketError(QLocalSocket::LocalSocketError)));
+            }
+        }
+    } else if (state != TubeChannelStateLocalPending) {
+        // Something happened
+        setFinishedWithError(QLatin1String("Connection refused"),
+                      QLatin1String("The connection to this tube was refused"));
+    }
+}
+
+void PendingStreamTubeConnection::onAbstractSocketError(QAbstractSocket::SocketError error)
+{
+    // TODO: Use error to provide more detailed error messages
+    Q_UNUSED(error)
+    // Failure
+    mPriv->device = 0;
+    setFinishedWithError(QLatin1String("Error while creating TCP socket"),
+                      QLatin1String("Could not connect to the new socket"));
+}
+
+void PendingStreamTubeConnection::onLocalSocketError(QLocalSocket::LocalSocketError error)
+{
+    // TODO: Use error to provide more detailed error messages
+    Q_UNUSED(error)
+    // Failure
+    mPriv->device = 0;
+    setFinishedWithError(QLatin1String("Error while creating Local socket"),
+                      QLatin1String("Could not connect to the new socket"));
+}
+
+void PendingStreamTubeConnection::onDeviceConnected()
+{
+    // Our IODevice is ready! Let's just set finished
+    debug() << "Device connected!";
+    setFinished();
+}
+
+}

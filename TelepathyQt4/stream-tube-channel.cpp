@@ -64,10 +64,6 @@ struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
     QPair< QHostAddress, quint16 > ipAddress;
     QString unixAddress;
     SocketAddressType addressType;
-
-    // Private slots
-    void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
-    void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
 };
 
 StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
@@ -106,36 +102,10 @@ void StreamTubeChannel::Private::init()
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void StreamTubeChannel::Private::onConnectionClosed(
-        uint connectionId,
-        const QString& error,
-        const QString& message)
-{
-    emit parent->connectionClosed(connectionId, error, message);
-}
-
 void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap& props)
 {
     serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
     socketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
-}
-
-void StreamTubeChannel::Private::gotStreamTubeProperties(QDBusPendingCallWatcher* watcher)
-{
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-
-    if (!reply.isError()) {
-        QVariantMap props = reply.value();
-        extractStreamTubeProperties(props);
-        debug() << "Got reply to Properties::GetAll(StreamTubeChannel)";
-        readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, true);
-    }
-    else {
-        warning().nospace() << "Properties::GetAll(StreamTubeChannel) failed "
-            "with " << reply.error().name() << ": " << reply.error().message();
-        readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, false,
-                reply.error());
-    }
 }
 
 void StreamTubeChannel::Private::introspectConnectionMonitoring(
@@ -670,6 +640,32 @@ void StreamTubeChannel::setIpAddress(const QPair< QHostAddress, quint16 >& addre
 void StreamTubeChannel::setLocalAddress(const QString& address)
 {
     mPriv->unixAddress = address;
+}
+
+void StreamTubeChannel::onConnectionClosed(
+        uint connectionId,
+        const QString& error,
+        const QString& message)
+{
+    emit connectionClosed(connectionId, error, message);
+}
+
+void StreamTubeChannel::gotStreamTubeProperties(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+
+    if (!reply.isError()) {
+        QVariantMap props = reply.value();
+        mPriv->extractStreamTubeProperties(props);
+        debug() << "Got reply to Properties::GetAll(StreamTubeChannel)";
+        mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, true);
+    }
+    else {
+        warning().nospace() << "Properties::GetAll(StreamTubeChannel) failed "
+            "with " << reply.error().name() << ": " << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(StreamTubeChannel::FeatureStreamTube, false,
+                reply.error());
+    }
 }
 
 }

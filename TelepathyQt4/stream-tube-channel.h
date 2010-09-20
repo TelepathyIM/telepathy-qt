@@ -35,10 +35,6 @@ class TELEPATHY_QT4_EXPORT StreamTubeChannel : public TubeChannel
     Q_OBJECT
     Q_DISABLE_COPY(StreamTubeChannel)
 
-    // private Q_SLOTS:
-    Q_PRIVATE_SLOT(mPriv, void gotStreamTubeProperties(QDBusPendingCallWatcher *))
-    Q_PRIVATE_SLOT(mPriv, void onConnectionClosed(uint,QString,QString))
-
 public:
     static const Feature FeatureStreamTube;
     static const Feature FeatureConnectionMonitoring;
@@ -69,6 +65,10 @@ public:
     QPair< QHostAddress, quint16 > ipAddress() const;
     QString localAddress() const;
 
+Q_SIGNALS:
+    void newConnection(uint connectionId);
+    void connectionClosed(uint connectionId, const QString &error, const QString &message);
+
 protected:
     StreamTubeChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties,
@@ -80,9 +80,9 @@ protected:
     void setIpAddress(const QPair< QHostAddress, quint16 > &address);
     void setLocalAddress(const QString &address);
 
-Q_SIGNALS:
-    void newConnection(uint connectionId);
-    void connectionClosed(uint connectionId, const QString &error, const QString &message);
+private Q_SLOTS:
+    void gotStreamTubeProperties(QDBusPendingCallWatcher *);
+    void onConnectionClosed(uint,const QString &,const QString &);
 
 private:
     struct Private;

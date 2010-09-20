@@ -20,6 +20,8 @@
 
 #include <TelepathyQt4/TubeChannel>
 
+#include "TelepathyQt4/_gen/tube-channel.moc.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 namespace Tp
@@ -44,11 +46,6 @@ struct TELEPATHY_QT4_NO_EXPORT TubeChannel::Private
     TubeChannelState state;
     TubeType type;
     QVariantMap parameters;
-
-    // Private slots
-    void onTubeChannelStateChanged(uint newstate);
-    void gotTubeProperties(QDBusPendingCallWatcher *watcher);
-
 };
 
 TubeChannel::Private::Private(TubeChannel *parent)
@@ -83,31 +80,6 @@ void TubeChannel::Private::extractTubeProperties(const QVariantMap& props)
     state = (Tp::TubeChannelState)qdbus_cast<uint>(props[QLatin1String("State")]);
     debug() << state << qdbus_cast<uint>(props[QLatin1String("State")]);
     parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
-}
-
-void TubeChannel::Private::gotTubeProperties(QDBusPendingCallWatcher* watcher)
-{
-    QDBusPendingReply<QVariantMap> reply = *watcher;
-
-    if (!reply.isError()) {
-        QVariantMap props = reply.value();
-        extractTubeProperties(props);
-        debug() << "Got reply to Properties::GetAll(TubeChannel)";
-        readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, true);
-    }
-    else {
-        warning().nospace() << "Properties::GetAll(TubeChannel) failed "
-            "with " << reply.error().name() << ": " << reply.error().message();
-        readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, false,
-                reply.error());
-    }
-}
-
-void TubeChannel::Private::onTubeChannelStateChanged(uint newstate)
-{
-    state = (Tp::TubeChannelState)newstate;
-    emit parent->tubeStateChanged((Tp::TubeChannelState)newstate);
-    debug() << "staete changed to" << newstate;
 }
 
 void TubeChannel::Private::introspectTube(TubeChannel::Private* self)
@@ -262,6 +234,29 @@ void TubeChannel::setParameters(const QVariantMap& parameters)
     mPriv->parameters = parameters;
 }
 
-} // Tp
+void TubeChannel::onTubeChannelStateChanged(uint newstate)
+{
+    mPriv->state = (Tp::TubeChannelState)newstate;
+    emit tubeStateChanged((Tp::TubeChannelState)newstate);
+    debug() << "staete changed to" << newstate;
+}
 
-#include "TelepathyQt4/_gen/tube-channel.moc.hpp"
+void TubeChannel::gotTubeProperties(QDBusPendingCallWatcher* watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+
+    if (!reply.isError()) {
+        QVariantMap props = reply.value();
+        mPriv->extractTubeProperties(props);
+        debug() << "Got reply to Properties::GetAll(TubeChannel)";
+        mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, true);
+    }
+    else {
+        warning().nospace() << "Properties::GetAll(TubeChannel) failed "
+            "with " << reply.error().name() << ": " << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(TubeChannel::FeatureTube, false,
+                reply.error());
+    }
+}
+
+} // Tp
