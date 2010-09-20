@@ -29,15 +29,16 @@
 #          or examples. Please remember the list of the header files passed to this function MUST be added to the
 #          target's sources.
 #
-# function TPQT4_CLIENT_GENERATOR(spec group pretty_include namespace [arguments])
+# function TPQT4_CLIENT_GENERATOR(spec group pretty_include namespace [arguments] [DEPENDS dependencies ...])
 #          This function takes care of invoking qt4-client-gen.py with the correct arguments, which generates
 #          headers out of specs. spec is the name of the spec headers will be generated from, group represents
 #          the spec's group, pretty_include is the name of the capitalized header (for example ClientGenerator),
 #          namespace is the C++ namespace the generated header will belong to. This function also accepts
 #          as an optional last argument a list of additional command line arguments which will be passed to
-#          qt4-client-gen.py upon execution.
+#          qt4-client-gen.py upon execution. After issuing DEPENDS in the last argument you can pass a list of targets
+#          the generated target will depend on.
 #
-# function TPQT4_FUTURE_CLIENT_GENERATOR(spec namespace [arguments])
+# function TPQT4_FUTURE_CLIENT_GENERATOR(spec namespace [arguments] [DEPENDS dependencies ...])
 #          Same as tpqt4_client_generator, but for future interfaces
 #
 # function TPQT4_GENERATE_MANAGER_FILE(MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAME)
@@ -166,7 +167,8 @@ function(tpqt4_generate_mocs)
     endforeach(moc_src ${ARGN})
 endfunction(tpqt4_generate_mocs)
 
-function(tpqt4_client_generator spec group pretty_include namespace main_iface)
+function(tpqt4_client_generator spec group pretty_include namespace)
+    tpqt4_extract_depends(client_generator_args client_generator_depends ${ARGN})
     set(ARGS
         ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
             --group=${group}
@@ -181,24 +183,25 @@ function(tpqt4_client_generator spec group pretty_include namespace main_iface)
             --extraincludes=${TYPES_INCLUDE}
             --must-define=IN_TELEPATHY_QT4_HEADER
             --visibility=TELEPATHY_QT4_EXPORT
-            ${main_iface})
+            ${client_generator_args})
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     add_custom_target(generate_cli-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}-body.hpp)
 
-    if (ARGN)
-        add_dependencies(generate_cli-${spec}-body ${ARGN})
-    endif (ARGN)
+    if (client_generator_depends)
+        add_dependencies(generate_cli-${spec}-body ${client_generator_depends})
+    endif (client_generator_depends)
 
     tpqt4_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp
                        "generate_cli-${spec}-body")
     list(APPEND telepathy_qt4_SRCS ${CMAKE_CURRENT_BINARY_DIR}/_gen/cli-${spec}.moc.hpp)
-endfunction(tpqt4_client_generator spec group pretty_include main_iface)
+endfunction(tpqt4_client_generator spec group pretty_include namespace)
 
-function(tpqt4_future_client_generator spec namespace main_iface)
+function(tpqt4_future_client_generator spec namespace)
+    tpqt4_extract_depends(future_client_generator_args future_client_generator_depends ${ARGN})
     set(ARGS
         ${CMAKE_SOURCE_DIR}/tools/qt4-client-gen.py
             --namespace=${namespace}
@@ -213,7 +216,7 @@ function(tpqt4_future_client_generator spec namespace main_iface)
             --extraincludes='<TelepathyQt4/Types>'
             --extraincludes='<TelepathyQt4/future-internal.h>'
             --visibility=TELEPATHY_QT4_NO_EXPORT
-            ${main_iface})
+            ${future_client_generator_args})
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
@@ -221,16 +224,16 @@ function(tpqt4_future_client_generator spec namespace main_iface)
     # Tell CMake the source won't be available until build time.
     add_custom_target(generate_future-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp)
 
-    if (ARGN)
-        add_dependencies(generate_future-${spec}-body ${ARGN})
-    endif (ARGN)
+    if (future_client_generator_depends)
+        add_dependencies(generate_future-${spec}-body ${future_client_generator_depends})
+    endif (future_client_generator_depends)
 
     tpqt4_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp
                        "generate_future-${spec}-body")
     # Tell CMake the source won't be available until build time.
     set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp PROPERTIES GENERATED 1)
-endfunction(tpqt4_future_client_generator spec group pretty_include main_iface)
+endfunction(tpqt4_future_client_generator spec namespace)
 
 # This function is used for generating CM in various examples
 function(tpqt4_generate_manager_file MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAME)
