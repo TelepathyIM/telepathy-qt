@@ -19,14 +19,37 @@
  */
 
 #include <TelepathyQt4/TubeChannel>
-#include "TelepathyQt4/tube-channel-internal.h"
-
-#include "TelepathyQt4/_gen/tube-channel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
 namespace Tp
 {
+
+struct TELEPATHY_QT4_NO_EXPORT TubeChannel::Private
+{
+    Private(TubeChannel *parent);
+    ~Private();
+
+    void init();
+
+    void extractTubeProperties(const QVariantMap &props);
+
+    static void introspectTube(TubeChannel::Private *self);
+
+    ReadinessHelper *readinessHelper;
+
+    TubeChannel *parent;
+
+    // Properties
+    TubeChannelState state;
+    TubeType type;
+    QVariantMap parameters;
+
+    // Private slots
+    void onTubeChannelStateChanged(uint newstate);
+    void gotTubeProperties(QDBusPendingCallWatcher *watcher);
+
+};
 
 TubeChannel::Private::Private(TubeChannel *parent)
     : parent(parent)
@@ -240,3 +263,5 @@ void TubeChannel::setParameters(const QVariantMap& parameters)
 }
 
 } // Tp
+
+#include "TelepathyQt4/_gen/tube-channel.moc.hpp"

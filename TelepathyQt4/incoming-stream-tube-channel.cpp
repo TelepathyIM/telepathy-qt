@@ -19,9 +19,6 @@
  */
 
 #include <TelepathyQt4/IncomingStreamTubeChannel>
-#include "TelepathyQt4/incoming-stream-tube-channel-internal.h"
-
-#include "TelepathyQt4/_gen/incoming-stream-tube-channel.moc.hpp"
 
 #include "TelepathyQt4/types-internal.h"
 #include "TelepathyQt4/debug-internal.h"
@@ -35,6 +32,22 @@
 
 namespace Tp
 {
+
+struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
+{
+    Private(IncomingStreamTubeChannel *parent);
+    ~Private();
+
+    // Public object
+    IncomingStreamTubeChannel *parent;
+
+    // Properties
+    QIODevice *device;
+
+    // Private slots
+    void onAcceptTubeFinished(Tp::PendingOperation* op);
+    void onNewLocalConnection(uint connectionId);
+};
 
 IncomingStreamTubeChannel::Private::Private(IncomingStreamTubeChannel *parent)
     : parent(parent)
@@ -487,3 +500,5 @@ QIODevice* IncomingStreamTubeChannel::device()
 }
 
 }
+
+#include "TelepathyQt4/_gen/incoming-stream-tube-channel.moc.hpp"

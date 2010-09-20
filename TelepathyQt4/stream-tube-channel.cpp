@@ -19,9 +19,6 @@
  */
 
 #include <TelepathyQt4/StreamTubeChannel>
-#include "TelepathyQt4/stream-tube-channel-internal.h"
-
-#include "TelepathyQt4/_gen/stream-tube-channel.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -29,8 +26,49 @@
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
 
+#include <QHostAddress>
+
 namespace Tp
 {
+
+struct TELEPATHY_QT4_NO_EXPORT StreamTubeChannel::Private
+{
+    enum BaseTubeType {
+        NoKnownType = 0,
+        OutgoingTubeType = 1,
+        IncomingTubeType = 2
+    };
+
+    Private(StreamTubeChannel *parent);
+    ~Private();
+
+    void init();
+
+    void extractStreamTubeProperties(const QVariantMap &props);
+
+    static void introspectConnectionMonitoring(Private *self);
+    static void introspectStreamTube(Private *self);
+
+    UIntList connections;
+
+    ReadinessHelper *readinessHelper;
+
+    StreamTubeChannel *parent;
+
+    // Properties
+    SupportedSocketMap socketTypes;
+    QString serviceName;
+
+    BaseTubeType baseType;
+
+    QPair< QHostAddress, quint16 > ipAddress;
+    QString unixAddress;
+    SocketAddressType addressType;
+
+    // Private slots
+    void gotStreamTubeProperties(QDBusPendingCallWatcher *watcher);
+    void onConnectionClosed(uint connectionId, const QString &error, const QString &message);
+};
 
 StreamTubeChannel::Private::Private(StreamTubeChannel *parent)
     : parent(parent)
@@ -635,3 +673,5 @@ void StreamTubeChannel::setLocalAddress(const QString& address)
 }
 
 }
+
+#include "TelepathyQt4/_gen/stream-tube-channel.moc.hpp"
