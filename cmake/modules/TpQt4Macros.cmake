@@ -7,6 +7,14 @@
 #
 # These macros/functions are not exported - they are meant for internal usage into Telepathy-Qt4's build system.
 #
+# Preamble: How dynamic generators are handled with the CMake build system.
+# Telepathy-Qt4 strongly relies upon lots of files generated at build time through some python programs, found
+# in tools/. To avoid developers the struggle of handling those manually, a set of convenience macros have been
+# created to handle them with the correct dependencies. Each of those macros takes a target name as a first argument
+# and creates a target with that exact name. In a similar fashion, in the last argument you can specify a list
+# of targets the generated target will depend on. This way, you can handle transparently dependencies between
+# generated files, while the dirty stuff is done for you in the background.
+#
 # macro    TPQT4_EXTRACT_DEPENDS (tpqt4_other tpqt4_depends)
 #          Internal macro used to extract arguments from ARGN
 #
@@ -46,29 +54,31 @@
 #          path to the manager-file.py file which should be used, the second is the output filename of the manager,
 #          and the third is the path to the file which depends on the generated manager file.
 #
-# function TPQT4_XINCLUDATOR (INPUT_FILE OUTPUT_FILE [additional_arguments ...] [DEPENDS dependencies ...])
-#          This function takes care of invoking xincludator.py with the correct arguments. The first argument is
-#          the input spec, the second one is the filename the generated file will be saved to. This function also accepts
-#          as an optional last argument a list of files which has to be present before xincludator is launched.
-#          After issuing DEPENDS in the last argument you can pass a list of files the command will depend on.
+# function TPQT4_XINCLUDATOR (TARGET_NAME INPUT_FILE OUTPUT_FILE [additional_arguments ...] [DEPENDS dependencies ...])
+#          This function takes care of invoking xincludator.py with the correct arguments. TARGET_NAME is the name of
+#          the generated target (see preamble), INPUT_FILE is the input spec file, OUTPUT_FILE is the filename
+#          the generated file will be saved to. This function also accepts as an optional last argument a list of
+#          additional command line arguments which will be passed to xincludator upon execution.
+#          After issuing DEPENDS in the last argument you can pass a list of targets the generated target will depend on.
 #
-# function TPQT4_CONSTANTS_GEN (SPEC_XML OUTPUT_FILE [additional_arguments ...] [DEPENDS dependencies ...])
-#          This function takes care of invoking qt4-constants-gen.py with the correct arguments. The first argument
-#          is the spec file, the second one is the filename the generated file will be saved to. This function also accepts
-#          as an optional last argument a list of additional command line arguments which will be passed to
-#          qt4-constants-gen.py upon execution.
-#          After issuing DEPENDS in the last argument you can pass a list of files the command will depend on.
+# function TPQT4_CONSTANTS_GEN (TARGET_NAME SPEC_XML OUTPUT_FILE [additional_arguments ...] [DEPENDS dependencies ...])
+#          This function takes care of invoking qt4-constants-gen.py with the correct arguments. TARGET_NAME is the name of
+#          the generated target (see preamble), SPEC_XML is the spec input file, OUTPUT_FILE is the filename
+#          the generated file will be saved to. This function also accepts as an optional last argument a list of
+#          additional command line arguments which will be passed to qt4-constants-gen.py upon execution.
+#          After issuing DEPENDS in the last argument you can pass a list of targets the generated target will depend on.
 #
-# function TPQT4_TYPES_GEN (spec_xml outfile_decl outfile_impl namespace
-#                           realinclude prettyinclude [additional_arguments ...] [DEPENDS dependencies ...])
-#          This function takes care of invoking qt4-types-gen.py with the correct arguments. spec_xml
-#          is the spec file, outfile_decl is the filename the header of the generated file will be saved to,
-#          outfile_impl is the filename the implementation of the generated file will be saved to, namespace
-#          is the C++ namespace the generated header will belong to, realinclude is the real include file
-#          you want to use, prettyinclude is the name of the capitalized header (for example ClientGenerator).
+# function TPQT4_TYPES_GEN (TARGET_NAME SPEC_XML OUTFILE_DECL OUTFILE_IMPL NAMESPACE
+#                           REAL_INCLUDE PRETTY_INCLUDE [additional_arguments ...] [DEPENDS dependencies ...])
+#          This function takes care of invoking qt4-types-gen.py with the correct arguments. TARGET_NAME is the name of
+#          the generated target (see preamble), SPEC_XML is the input spec file, OUTFILE_DECL is the filename
+#          the header of the generated file will be saved to, OUTFILE_IMPL is the filename the implementation of the
+#          generated file will be saved to, NAMESPACE is the C++ namespace the generated header will belong to,
+#          REAL_INCLUDE is the real include file you want to use, PRETTY_INCLUDE is the name of the capitalized header
+#          (for example ClientGenerator).
 #          This function also accepts as an optional last argument a list of additional command line arguments
 #          which will be passed to qt4-constants-gen.py upon execution.
-#          After issuing DEPENDS in the last argument you can pass a list of files the command will depend on.
+#          After issuing DEPENDS in the last argument you can pass a list of targets the generated target will depend on.
 #
 # macro TPQT4_ADD_GENERIC_UNIT_TEST (fancyName name [libraries ...])
 #       This macro takes care of building and adding a generic unit test to the automatic CTest suite. The requirement
