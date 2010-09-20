@@ -7,6 +7,10 @@ export XDG_DATA_HOME=${CMAKE_SOURCE_DIR}/tests
 export XDG_DATA_DIRS=${CMAKE_BINARY_DIR}/tests
 ")
 
+# Add targets for callgrind and valgrind tests
+add_custom_target(check-valgrind)
+add_custom_target(check-callgrind)
+
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh "${test_environment} $@")
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/_gen)

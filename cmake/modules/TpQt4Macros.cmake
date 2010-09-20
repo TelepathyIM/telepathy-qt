@@ -318,6 +318,9 @@ macro(tpqt4_add_generic_unit_test _fancyName _name)
     target_link_libraries(test-${_name} ${QT_LIBRARIES} ${QT_QTTEST_LIBRARY} telepathy-qt4 tp-qt4-tests ${ARGN})
     add_test(${_fancyName} ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
     list(APPEND _telepathy_qt4_test_cases test-${_name})
+
+    # Valgrind and Callgrind targets
+    _tpqt4_add_check_targets(${_fancyName} ${_name} ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
 endmacro(tpqt4_add_generic_unit_test _fancyName _name)
 
 macro(tpqt4_add_dbus_unit_test _fancyName _name)
@@ -327,7 +330,56 @@ macro(tpqt4_add_dbus_unit_test _fancyName _name)
     set(with_session_bus ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
     add_test(${_fancyName} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
     list(APPEND _telepathy_qt4_test_cases test-${_name})
+
+    # Valgrind and Callgrind targets
+    _tpqt4_add_check_targets(${_fancyName} ${_name} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
 endmacro(tpqt4_add_dbus_unit_test _fancyName _name)
+
+macro(_tpqt4_add_check_targets _fancyName _name)
+    set_tests_properties(${_fancyName}
+        PROPERTIES
+            FAIL_REGULAR_EXPRESSION "^FAIL!")
+
+    # Standard check target
+    add_custom_target(check-${_fancyName} ${ARGN})
+    add_dependencies(check-${_fancyName} test-${_name})
+
+    # Valgrind target
+    add_custom_target(check-valgrind-${_fancyName})
+    add_dependencies(check-valgrind-${_fancyName} test-${_name})
+
+    add_custom_command(
+        TARGET  check-valgrind-${_fancyName}
+        COMMAND G_SLICE=always-malloc valgrind
+                --tool=memcheck
+                --leak-check=full
+                --leak-resolution=high
+                --child-silent-after-fork=yes
+                --num-callers=20
+                --gen-suppressions=all
+                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test.valgrind.log.${_fancyName}
+                ${ARGN}
+        WORKING_DIRECTORY
+                ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Running valgrind on test \"${_fancyName}\"")
+    add_dependencies(check-valgrind check-valgrind-${_fancyName})
+
+    # Callgrind target
+    add_custom_target(check-callgrind-${_fancyName})
+    add_dependencies(check-callgrind-${_fancyName} test-${_name})
+    add_custom_command(
+        TARGET  check-callgrind-${_fancyName}
+        COMMAND valgrind
+                --tool=callgrind
+                --dump-instr=yes
+                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test.callgrind.log.${_fancyName}
+                ${ARGN}
+        WORKING_DIRECTORY
+            ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT
+            "Running callgrind on test \"${_fancyName}\"")
+    add_dependencies(check-callgrind check-callgrind-${_fancyName})
+endmacro(_tpqt4_add_check_targets _fancyName _name)
 
 function(tpqt4_setup_dbus_test_environment)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh "
