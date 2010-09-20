@@ -26,50 +26,13 @@
 #endif
 
 #include <TelepathyQt4/StreamTubeChannel>
-#include <TelepathyQt4/PendingOperation>
 
 #include <QtNetwork/QHostAddress>
 
 class QIODevice;
 namespace Tp {
 
-class PendingVariant;
-
-class TELEPATHY_QT4_EXPORT PendingStreamTubeConnection : public PendingOperation
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(PendingStreamTubeConnection)
-
-public:
-    virtual ~PendingStreamTubeConnection();
-
-    QIODevice *device();
-
-    SocketAddressType addressType() const;
-
-    QPair< QHostAddress, quint16 > ipAddress() const;
-    QString localAddress() const;
-
-private:
-    PendingStreamTubeConnection(PendingVariant *variant,
-            SocketAddressType type, const SharedPtr<RefCounted> &object);
-    PendingStreamTubeConnection(const QString &errorName,
-            const QString &errorMessage, const SharedPtr<RefCounted> &object);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
-
-    friend class IncomingStreamTubeChannel;
-
-// private slots:
-    Q_PRIVATE_SLOT(mPriv, void onAcceptFinished(Tp::PendingOperation*))
-    Q_PRIVATE_SLOT(mPriv, void onTubeStateChanged(Tp::TubeChannelState))
-    Q_PRIVATE_SLOT(mPriv, void onDeviceConnected())
-    Q_PRIVATE_SLOT(mPriv, void onAbstractSocketError(QAbstractSocket::SocketError))
-    Q_PRIVATE_SLOT(mPriv, void onLocalSocketError(QLocalSocket::LocalSocketError))
-};
-
+class PendingStreamTubeConnection;
 
 class TELEPATHY_QT4_EXPORT IncomingStreamTubeChannel : public StreamTubeChannel
 {
@@ -105,7 +68,7 @@ private:
 
     Private * const mPriv;
 
-    friend class PendingStreamTubeConnection::Private;
+    friend class PendingStreamTubeConnection;
 };
 
 }

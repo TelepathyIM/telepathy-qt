@@ -44,30 +44,6 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
     void onNewLocalConnection(uint connectionId);
 };
 
-struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
-{
-    Private(PendingStreamTubeConnection *parent);
-    virtual ~Private();
-
-    // Public object
-    PendingStreamTubeConnection *parent;
-
-    IncomingStreamTubeChannelPtr tube;
-    SocketAddressType type;
-    QHostAddress hostAddress;
-    quint16 port;
-    QString socketPath;
-
-    QIODevice *device;
-
-    // Private slots
-    void onAcceptFinished(Tp::PendingOperation* op);
-    void onTubeStateChanged(Tp::TubeChannelState state);
-    void onDeviceConnected();
-    void onAbstractSocketError(QAbstractSocket::SocketError error);
-    void onLocalSocketError(QLocalSocket::LocalSocketError error);
-};
-
 }
 
 #endif

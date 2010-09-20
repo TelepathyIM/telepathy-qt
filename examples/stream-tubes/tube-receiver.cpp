@@ -35,6 +35,7 @@
 #include <TelepathyQt4/PendingConnection>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingStreamTubeConnection>
 
 #include <QDebug>
 #include <QIODevice>
