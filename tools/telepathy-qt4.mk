@@ -1,4 +1,0 @@
-TPQT4_V_MOC = $(TPQT4_V_MOC_$(V))
-TPQT4_V_MOC_ = $(TPQT4_V_MOC_$(or $(AM_DEFAULT_VERBOSITY), 1))
-TPQT4_V_MOC_0 = @echo '  MOC   ' $@;
-
