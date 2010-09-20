@@ -84,15 +84,14 @@
  *  <http://telepathy.freedesktop.org/releases/telepathy-farsight/>
  * \li GStreamer <http://gstreamer.freedesktop.org/>\n
  *
- * Building from git also requires the GNU build system (Autoconf, Automake,
- * libtool).
+ * Building also requires the cmake build system.
  *
  * \subsection installation_from_source_building Building
  *
  * After installing all dependencies, run:
  *
  * \verbatim
-   $ ./configure
+   $ sh autogen.sh
    $ make
    $ make install \endverbatim
  */

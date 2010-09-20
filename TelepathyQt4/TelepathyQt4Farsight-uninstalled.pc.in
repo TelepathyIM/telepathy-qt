@@ -1,11 +1,11 @@
 prefix=/nonexistent
 exec_prefix=/nonexistent
-abs_top_builddir=@abs_top_builddir@
-abs_top_srcdir=@abs_top_srcdir@
+abs_top_builddir=${CMAKE_BINARY_DIR}
+abs_top_srcdir=${CMAKE_SOURCE_DIR}
 
 Name: Telepathy-Qt4-Farsight (uninstalled copy)
 Description: Qt4 Telepathy Farsight utility library for the Telepathy framework
-Version: @VERSION@
-Requires.private: QtCore >= 4.5, QtDBus >= 4.5, telepathy-glib >= 0.7.28, telepathy-farsight >= 0.0.4, TelepathyQt4 = @VERSION@
-Libs: ${abs_top_builddir}/TelepathyQt4/Farsight/libtelepathy-qt4-farsight.la
-Cflags: -I${abs_top_srcdir} -I${abs_top_builddir}
+Version: ${PACKAGE_VERSION}
+Requires.private: QtCore >= 4.5, QtDBus >= 4.5, telepathy-glib >= 0.7.28, telepathy-farsight >= 0.0.4, TelepathyQt4 = ${PACKAGE_VERSION}
+Libs: ${CMAKE_BINARY_DIR}/TelepathyQt4/Farsight/libtelepathy-qt4-farsight.so
+Cflags: -I${CMAKE_SOURCE_DIR} -I${CMAKE_BINARY_DIR}

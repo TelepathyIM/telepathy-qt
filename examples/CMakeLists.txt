@@ -1,0 +1,6 @@
+add_subdirectory(accounts)
+add_subdirectory(call)
+add_subdirectory(extensions)
+add_subdirectory(file-transfer)
+add_subdirectory(protocols)
+add_subdirectory(roster)
