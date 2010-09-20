@@ -231,7 +231,6 @@ function(tpqt4_future_client_generator spec namespace)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS ${ARGS}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    # Tell CMake the source won't be available until build time.
     add_custom_target(generate_future-${spec}-body DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}-body.hpp)
 
     if (future_client_generator_depends)
@@ -241,8 +240,6 @@ function(tpqt4_future_client_generator spec namespace)
     tpqt4_generate_moc_i_target_deps(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.h
                        ${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp
                        "generate_future-${spec}-body")
-    # Tell CMake the source won't be available until build time.
-    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/future-${spec}.moc.hpp PROPERTIES GENERATED 1)
 endfunction(tpqt4_future_client_generator spec namespace)
 
 # This function is used for generating CM in various examples
@@ -258,9 +255,6 @@ function(tpqt4_generate_manager_file MANAGER_FILE OUTPUT_FILENAME DEPEND_FILENAM
                                ${MANAGER_FILE}
                                _gen)
 
-    set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h
-                                ${CMAKE_CURRENT_BINARY_DIR}/_gen/${OUTPUT_FILENAME}
-                                PROPERTIES GENERATED true)
     set_source_files_properties(${DEPEND_FILENAME}
                                 PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_gen/param-spec-struct.h)
 endfunction(tpqt4_generate_manager_file MANAGER_FILE)
@@ -280,8 +274,6 @@ function(tpqt4_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
     if (xincludator_gen_depends)
         add_dependencies(${_TARGET_NAME} ${xincludator_gen_depends})
     endif (xincludator_gen_depends)
-
-    #set_source_files_properties(${_OUTPUT_FILE} PROPERTIES GENERATED true)
 endfunction(tpqt4_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
 
 function(tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
@@ -299,8 +291,6 @@ function(tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
     if (constants_gen_depends)
         add_dependencies(${_TARGET_NAME} ${constants_gen_depends})
     endif (constants_gen_depends)
-
-    #set_source_files_properties(${_OUTFILE} PROPERTIES GENERATED true)
 endfunction (tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
 
 function(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
@@ -320,8 +310,6 @@ function(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAM
     if (types_gen_depends)
         add_dependencies(${_TARGET_NAME} ${types_gen_depends})
     endif (types_gen_depends)
-    #set_source_files_properties(${_OUTFILE_DECL} PROPERTIES GENERATED true)
-    #set_source_files_properties(${_OUTFILE_IMPL} PROPERTIES GENERATED true)
 endfunction(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
 
 macro(tpqt4_add_generic_unit_test _fancyName _name)
