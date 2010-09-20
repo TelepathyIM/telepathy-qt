@@ -4,6 +4,10 @@ telepathy-qt4 0.3.11 (UNRELEASED)
 NAME THIS RELEASE
 
 Enhancements:
+* Port Telepathy-Qt4's build system from autotools to cmake, which provides
+  fastest builds, better target and dependency handling, and more. All targets
+  of the previous build system have been ported and some new were added, notably
+  individual targets for unit tests and callgrind support.
 
 Fixes:
 
