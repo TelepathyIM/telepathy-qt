@@ -526,9 +526,8 @@ void ClientHandlerAdaptor::onContextFinished(
         foreach (const ChannelPtr &channel, channels) {
             self->mHandledChannels.insert(channel);
             self->connect(channel.data(),
-                    SIGNAL(invalidated(Tp::DBusProxy *,
-                                       const QString &, const QString &)),
-                    SLOT(onChannelInvalidated(Tp::DBusProxy *)));
+                    SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
+                    SLOT(onChannelInvalidated(Tp::DBusProxy*)));
         }
     }
 }

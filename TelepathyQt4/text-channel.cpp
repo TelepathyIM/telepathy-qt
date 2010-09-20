@@ -232,11 +232,11 @@ void TextChannel::Private::introspectMessageQueue(
         // FeatureMessageQueue needs signal connections + Get (but we
         // might as well do GetAll and reduce the number of code paths)
         parent->connect(parent->messagesInterface(),
-                SIGNAL(MessageReceived(const Tp::MessagePartList &)),
-                SLOT(onMessageReceived(const Tp::MessagePartList &)));
+                SIGNAL(MessageReceived(Tp::MessagePartList)),
+                SLOT(onMessageReceived(Tp::MessagePartList)));
         parent->connect(parent->messagesInterface(),
-                SIGNAL(PendingMessagesRemoved(const Tp::UIntList &)),
-                SLOT(onPendingMessagesRemoved(const Tp::UIntList &)));
+                SIGNAL(PendingMessagesRemoved(Tp::UIntList)),
+                SLOT(onPendingMessagesRemoved(Tp::UIntList)));
 
         if (!self->gotProperties && !self->getAllInFlight) {
             self->getAllInFlight = true;
@@ -245,28 +245,28 @@ void TextChannel::Private::introspectMessageQueue(
                         QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
                         parent);
             parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotProperties(QDBusPendingCallWatcher *)));
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotProperties(QDBusPendingCallWatcher*)));
         } else if (self->gotProperties) {
             self->updateInitialMessages();
         }
     } else {
         // FeatureMessageQueue needs signal connections + ListPendingMessages
         parent->connect(parent->textInterface(),
-                SIGNAL(Received(uint, uint, uint, uint, uint, const QString &)),
-                SLOT(onTextReceived(uint, uint, uint, uint, uint, const QString &)));
+                SIGNAL(Received(uint,uint,uint,uint,uint,QString)),
+                SLOT(onTextReceived(uint,uint,uint,uint,uint,const QString)));
 
         // we present SendError signals as if they were incoming
         // messages, to be consistent with Messages
         parent->connect(parent->textInterface(),
-                SIGNAL(SendError(uint, uint, uint, const QString &)),
-                SLOT(onTextSendError(uint, uint, uint, const QString &)));
+                SIGNAL(SendError(uint,uint,uint,QString)),
+                SLOT(onTextSendError(uint,uint,uint,QString)));
 
         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
                 parent->textInterface()->ListPendingMessages(false), parent);
         parent->connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(gotPendingMessages(QDBusPendingCallWatcher *)));
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotPendingMessages(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -283,8 +283,8 @@ void TextChannel::Private::introspectMessageCapabilities(
                         QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_MESSAGES)),
                         parent);
             parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotProperties(QDBusPendingCallWatcher *)));
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotProperties(QDBusPendingCallWatcher*)));
         } else if (self->gotProperties) {
             self->updateCapabilities();
         }
@@ -303,14 +303,12 @@ void TextChannel::Private::introspectMessageSentSignal(
 
     if (parent->hasMessagesInterface()) {
         parent->connect(parent->messagesInterface(),
-                SIGNAL(MessageSent(const Tp::MessagePartList &,
-                                   uint, const QString &)),
-                SLOT(onMessageSent(const Tp::MessagePartList &,
-                                   uint, const QString &)));
+                SIGNAL(MessageSent(Tp::MessagePartList,uint,QString)),
+                SLOT(onMessageSent(Tp::MessagePartList,uint,QString)));
     } else {
         parent->connect(parent->textInterface(),
-                SIGNAL(Sent(uint, uint, const QString &)),
-                SLOT(onTextSent(uint, uint, const QString &)));
+                SIGNAL(Sent(uint,uint,QString)),
+                SLOT(onTextSent(uint,uint,QString)));
     }
 
     self->readinessHelper->setIntrospectCompleted(FeatureMessageSentSignal, true);
@@ -324,8 +322,8 @@ void TextChannel::Private::enableChatStateNotifications(
         parent->chatStateInterface();
 
     parent->connect(chatStateInterface,
-            SIGNAL(ChatStateChanged(uint, uint)),
-            SLOT(onChatStateChanged(uint, uint)));
+            SIGNAL(ChatStateChanged(uint,uint)),
+            SLOT(onChatStateChanged(uint,uint)));
 
     // FIXME fd.o#24882 - Download contacts' initial chat states
 
@@ -443,8 +441,8 @@ void TextChannel::Private::processMessageQueue()
 
     parent->connect(parent->connection()->contactManager()->contactsForHandles(
                 contactsRequired.toList()),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onContactsFinished(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContactsFinished(Tp::PendingOperation*)));
 
     awaitingContacts |= contactsRequired;
 }
@@ -487,8 +485,8 @@ void TextChannel::Private::processChatStateQueue()
 
     parent->connect(parent->connection()->contactManager()->contactsForHandles(
                 contactsRequired.toList()),
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(onContactsFinished(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(onContactsFinished(Tp::PendingOperation*)));
 
     awaitingContacts |= contactsRequired;
 }
@@ -874,8 +872,8 @@ void TextChannel::acknowledge(const QList<ReceivedMessage> &messages)
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
             textInterface()->AcknowledgePendingMessages(ids));
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onAcknowledgePendingMessagesReply(QDBusPendingCallWatcher*)));
     mPriv->acknowledgeBatches[watcher] = ids;
 }
 
@@ -913,14 +911,14 @@ PendingSendMessage *TextChannel::send(const QString &text,
         connect(new QDBusPendingCallWatcher(
                     messagesInterface()->SendMessage(m.parts(),
                         (uint) flags)),
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
                 op,
-                SLOT(onMessageSent(QDBusPendingCallWatcher *)));
+                SLOT(onMessageSent(QDBusPendingCallWatcher*)));
     } else {
         connect(new QDBusPendingCallWatcher(textInterface()->Send(type, text)),
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
                 op,
-                SLOT(onTextSent(QDBusPendingCallWatcher *)));
+                SLOT(onTextSent(QDBusPendingCallWatcher*)));
     }
     return op;
 }
@@ -935,15 +933,15 @@ PendingSendMessage *TextChannel::send(const MessagePartList &parts,
         connect(new QDBusPendingCallWatcher(
                     messagesInterface()->SendMessage(m.parts(),
                         (uint) flags)),
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
                 op,
-                SLOT(onMessageSent(QDBusPendingCallWatcher *)));
+                SLOT(onMessageSent(QDBusPendingCallWatcher*)));
     } else {
         connect(new QDBusPendingCallWatcher(textInterface()->Send(
                         m.messageType(), m.text())),
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
                 op,
-                SLOT(onTextSent(QDBusPendingCallWatcher *)));
+                SLOT(onTextSent(QDBusPendingCallWatcher*)));
     }
     return op;
 }

@@ -265,8 +265,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
 
         debug() << " Connection to owning connection's lifetime signals";
         parent->connect(connection.data(),
-                        SIGNAL(invalidated(Tp::DBusProxy *,
-                                           const QString &, const QString &)),
+                        SIGNAL(invalidated(Tp::DBusProxy*,QString,QString)),
                         SLOT(onConnectionInvalidated()));
 
         parent->connect(connection.data(),
@@ -407,29 +406,29 @@ void Channel::Private::introspectGroup()
     debug() << "Introspecting Channel.Interface.Group for" << parent->objectPath();
 
     parent->connect(group,
-                    SIGNAL(GroupFlagsChanged(uint, uint)),
-                    SLOT(onGroupFlagsChanged(uint, uint)));
+                    SIGNAL(GroupFlagsChanged(uint,uint)),
+                    SLOT(onGroupFlagsChanged(uint,uint)));
 
     parent->connect(group,
-                    SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
-                            const Tp::UIntList&, const Tp::UIntList&,
-                            const Tp::UIntList&, uint, uint)),
-                    SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
-                            const Tp::UIntList&, const Tp::UIntList&,
-                            const Tp::UIntList&, uint, uint)));
+                    SIGNAL(MembersChanged(QString,Tp::UIntList,
+                            Tp::UIntList,Tp::UIntList,
+                            Tp::UIntList,uint,uint)),
+                    SLOT(onMembersChanged(QString,Tp::UIntList,
+                            Tp::UIntList,Tp::UIntList,
+                            Tp::UIntList,uint,uint)));
     parent->connect(group,
-                    SIGNAL(MembersChangedDetailed(const Tp::UIntList&,
-                            const Tp::UIntList&, const Tp::UIntList&,
-                            const Tp::UIntList&, const QVariantMap&)),
-                    SLOT(onMembersChangedDetailed(const Tp::UIntList&,
-                            const Tp::UIntList&, const Tp::UIntList&,
-                            const Tp::UIntList&, const QVariantMap&)));
+                    SIGNAL(MembersChangedDetailed(Tp::UIntList,
+                            Tp::UIntList,Tp::UIntList,
+                            Tp::UIntList,QVariantMap)),
+                    SLOT(onMembersChangedDetailed(Tp::UIntList,
+                            Tp::UIntList,Tp::UIntList,
+                            Tp::UIntList,QVariantMap)));
 
     parent->connect(group,
-                    SIGNAL(HandleOwnersChanged(const Tp::HandleOwnerMap&,
-                            const Tp::UIntList&)),
-                    SLOT(onHandleOwnersChanged(const Tp::HandleOwnerMap&,
-                            const Tp::UIntList&)));
+                    SIGNAL(HandleOwnersChanged(Tp::HandleOwnerMap,
+                            Tp::UIntList)),
+                    SLOT(onHandleOwnersChanged(Tp::HandleOwnerMap,
+                            Tp::UIntList)));
 
     parent->connect(group,
                     SIGNAL(SelfHandleChanged(uint)),
@@ -509,11 +508,11 @@ void Channel::Private::introspectConference()
 
     debug() << "Connecting to Channel.Interface.Conference.ChannelMerged/Removed";
     parent->connect(conference,
-                    SIGNAL(ChannelMerged(const QDBusObjectPath &)),
-                    SLOT(onConferenceChannelMerged(const QDBusObjectPath &)));
+                    SIGNAL(ChannelMerged(QDBusObjectPath)),
+                    SLOT(onConferenceChannelMerged(QDBusObjectPath)));
     parent->connect(conference,
-                    SIGNAL(ChannelRemoved(const QDBusObjectPath &)),
-                    SLOT(onConferenceChannelRemoved(const QDBusObjectPath &)));
+                    SIGNAL(ChannelRemoved(QDBusObjectPath)),
+                    SLOT(onConferenceChannelRemoved(QDBusObjectPath)));
 
     debug() << "Calling Properties::GetAll(Channel.Interface.Conference)";
     QDBusPendingCallWatcher *watcher =
@@ -737,25 +736,25 @@ bool Channel::Private::setGroupFlags(uint newGroupFlags)
         debug() << "Starting to exclusively listen to MembersChangedDetailed for" <<
             parent->objectPath();
         parent->disconnect(group,
-                           SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
-                                   const Tp::UIntList&, const Tp::UIntList&,
-                                   const Tp::UIntList&, uint, uint)),
+                           SIGNAL(MembersChanged(QString,Tp::UIntList,
+                                   Tp::UIntList,Tp::UIntList,
+                                   Tp::UIntList,uint,uint)),
                            parent,
-                           SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
-                                   const Tp::UIntList&, const Tp::UIntList&,
-                                   const Tp::UIntList&, uint, uint)));
+                           SLOT(onMembersChanged(QString,Tp::UIntList,
+                                   Tp::UIntList,Tp::UIntList,
+                                   Tp::UIntList,uint,uint)));
     } else if (!(groupFlags & ChannelGroupFlagMembersChangedDetailed) &&
                usingMembersChangedDetailed) {
         warning() << " Channel service did spec-incompliant removal of MCD from GroupFlags";
         usingMembersChangedDetailed = false;
         parent->connect(group,
-                        SIGNAL(MembersChanged(const QString&, const Tp::UIntList&,
-                                const Tp::UIntList&, const Tp::UIntList&,
-                                const Tp::UIntList&, uint, uint)),
+                        SIGNAL(MembersChanged(QString,Tp::UIntList,
+                                Tp::UIntList,Tp::UIntList,
+                                Tp::UIntList,uint,uint)),
                         parent,
-                        SLOT(onMembersChanged(const QString&, const Tp::UIntList&,
-                                const Tp::UIntList&, const Tp::UIntList&,
-                                const Tp::UIntList&, uint, uint)));
+                        SLOT(onMembersChanged(QString,Tp::UIntList,
+                                Tp::UIntList,Tp::UIntList,
+                                Tp::UIntList,uint,uint)));
     }
 
     return true;
@@ -804,8 +803,8 @@ void Channel::Private::buildContacts()
     PendingContacts *pendingContacts = manager->contactsForHandles(
             toBuild);
     parent->connect(pendingContacts,
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(gotContacts(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotContacts(Tp::PendingOperation*)));
 }
 
 void Channel::Private::processMembersChanged()

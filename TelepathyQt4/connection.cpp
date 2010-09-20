@@ -331,12 +331,12 @@ void Connection::Private::init()
 {
     debug() << "Connecting to ConnectionError()";
     parent->connect(baseInterface,
-            SIGNAL(ConnectionError(const QString &, const QVariantMap &)),
-            SLOT(onConnectionError(const QString &, const QVariantMap &)));
+            SIGNAL(ConnectionError(QString,QVariantMap)),
+            SLOT(onConnectionError(QString,QVariantMap)));
     debug() << "Connecting to StatusChanged()";
     parent->connect(baseInterface,
-            SIGNAL(StatusChanged(uint, uint)),
-            SLOT(onStatusChanged(uint, uint)));
+            SIGNAL(StatusChanged(uint,uint)),
+            SLOT(onStatusChanged(uint,uint)));
     debug() << "Connecting to SelfHandleChanged()";
     parent->connect(baseInterface,
             SIGNAL(SelfHandleChanged(uint)),
@@ -385,8 +385,8 @@ void Connection::Private::introspectMainFallbackStatus()
         new QDBusPendingCallWatcher(baseInterface->GetStatus(),
                 parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotStatus(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotStatus(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectMainFallbackInterfaces()
@@ -396,8 +396,8 @@ void Connection::Private::introspectMainFallbackInterfaces()
         new QDBusPendingCallWatcher(baseInterface->GetInterfaces(),
                 parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotInterfaces(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotInterfaces(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectMainFallbackSelfHandle()
@@ -407,8 +407,8 @@ void Connection::Private::introspectMainFallbackSelfHandle()
         new QDBusPendingCallWatcher(baseInterface->GetSelfHandle(),
                 parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotSelfHandle(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotSelfHandle(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectCapabilities()
@@ -419,8 +419,8 @@ void Connection::Private::introspectCapabilities()
                 QLatin1String(TELEPATHY_INTERFACE_CONNECTION_INTERFACE_REQUESTS),
                 QLatin1String("RequestableChannelClasses")), parent);
     parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotCapabilities(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotCapabilities(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectContactAttributeInterfaces()
@@ -433,8 +433,8 @@ void Connection::Private::introspectContactAttributeInterfaces()
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, parent);
     parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(gotContactAttributeInterfaces(QDBusPendingCallWatcher *)));
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(gotContactAttributeInterfaces(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectSelfContact(Connection::Private *self)
@@ -443,8 +443,8 @@ void Connection::Private::introspectSelfContact(Connection::Private *self)
     PendingContacts *contacts = self->contactManager->contactsForHandles(
             UIntList() << self->selfHandle);
     self->parent->connect(contacts,
-            SIGNAL(finished(Tp::PendingOperation *)),
-            SLOT(gotSelfContact(Tp::PendingOperation *)));
+            SIGNAL(finished(Tp::PendingOperation*)),
+            SLOT(gotSelfContact(Tp::PendingOperation*)));
 }
 
 void Connection::Private::introspectSimplePresence(Connection::Private *self)
@@ -460,8 +460,8 @@ void Connection::Private::introspectSimplePresence(Connection::Private *self)
     QDBusPendingCallWatcher *watcher =
         new QDBusPendingCallWatcher(call, self->parent);
     self->parent->connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(gotSimpleStatuses(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotSimpleStatuses(QDBusPendingCallWatcher*)));
 }
 
 void Connection::Private::introspectRoster(Connection::Private *self)
@@ -496,8 +496,8 @@ void Connection::Private::introspectRosterGroups(Connection::Private *self)
 
     debug() << "Connecting to Requests.NewChannels";
     self->parent->connect(iface,
-            SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
-            SLOT(onNewChannels(const Tp::ChannelDetailsList&)));
+            SIGNAL(NewChannels(Tp::ChannelDetailsList)),
+            SLOT(onNewChannels(Tp::ChannelDetailsList)));
 
     debug() << "Retrieving channels";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
@@ -520,8 +520,8 @@ void Connection::Private::introspectBalance(Connection::Private *self)
 
     debug() << "Connecting to Balance.BalanceChanged";
     self->parent->connect(iface,
-            SIGNAL(BalanceChanged(const Tp::CurrencyAmount&)),
-            SLOT(onBalanceChanged(const Tp::CurrencyAmount&)));
+            SIGNAL(BalanceChanged(Tp::CurrencyAmount)),
+            SLOT(onBalanceChanged(Tp::CurrencyAmount)));
 
     debug() << "Retrieving balance";
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(
@@ -1655,7 +1655,7 @@ void Connection::gotContactListChannel(PendingOperation *op)
             Q_ASSERT(!mPriv->contactListChannels[i].channel);
             mPriv->contactListChannels[i].channel = channel;
             connect(channel->becomeReady(),
-                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(contactListChannelReady()));
         }
     }

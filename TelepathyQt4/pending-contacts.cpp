@@ -284,8 +284,8 @@ void PendingContacts::onReferenceHandlesFinished(PendingOperation *operation)
                     mPriv->handlesToInspect.toList()),
                 this);
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onInspectHandlesFinished(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onInspectHandlesFinished(QDBusPendingCallWatcher*)));
 }
 
 void PendingContacts::onNestedFinished(PendingOperation *operation)

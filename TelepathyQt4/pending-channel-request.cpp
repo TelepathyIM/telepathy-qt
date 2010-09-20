@@ -126,8 +126,8 @@ PendingChannelRequest::PendingChannelRequest(const QDBusConnection &dbusConnecti
         onWatcherFinished(watcher);
     } else {
         connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(onWatcherFinished(QDBusPendingCallWatcher *)));
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onWatcherFinished(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -188,8 +188,8 @@ PendingChannelRequest::PendingChannelRequest(
         onWatcherFinished(watcher);
     } else {
         connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(onWatcherFinished(QDBusPendingCallWatcher *)));
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onWatcherFinished(QDBusPendingCallWatcher*)));
     }
 }
 /**
@@ -254,8 +254,8 @@ void PendingChannelRequest::onWatcherFinished(QDBusPendingCallWatcher *watcher)
             emit channelRequestCreated(mPriv->channelRequest);
 
             connect(mPriv->channelRequest.data(),
-                    SIGNAL(failed(const QString &, const QString &)),
-                    SLOT(setFinishedWithError(const QString &, const QString &)));
+                    SIGNAL(failed(QString,QString)),
+                    SLOT(setFinishedWithError(QString,QString)));
             connect(mPriv->channelRequest.data(),
                     SIGNAL(succeeded()),
                     SLOT(setFinished()));

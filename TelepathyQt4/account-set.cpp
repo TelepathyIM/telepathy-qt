@@ -85,8 +85,8 @@ bool AccountSet::Private::checkFilters()
 void AccountSet::Private::connectSignals()
 {
     parent->connect(accountManager.data(),
-            SIGNAL(newAccount(const Tp::AccountPtr &)),
-            SLOT(onNewAccount(const Tp::AccountPtr &)));
+            SIGNAL(newAccount(Tp::AccountPtr)),
+            SLOT(onNewAccount(Tp::AccountPtr)));
 }
 
 void AccountSet::Private::insertAccounts()
@@ -118,14 +118,14 @@ void AccountSet::Private::wrapAccount(const AccountPtr &account)
 {
     AccountWrapper *wrapper = new AccountWrapper(account, parent);
     parent->connect(wrapper,
-            SIGNAL(accountRemoved(const Tp::AccountPtr &)),
-            SLOT(onAccountRemoved(const Tp::AccountPtr &)));
+            SIGNAL(accountRemoved(Tp::AccountPtr)),
+            SLOT(onAccountRemoved(Tp::AccountPtr)));
     parent->connect(wrapper,
-            SIGNAL(accountPropertyChanged(const Tp::AccountPtr &, const QString &)),
-            SLOT(onAccountChanged(const Tp::AccountPtr &)));
+            SIGNAL(accountPropertyChanged(Tp::AccountPtr,QString)),
+            SLOT(onAccountChanged(Tp::AccountPtr)));
     parent->connect(wrapper,
-            SIGNAL(accountCapabilitiesChanged(const Tp::AccountPtr &, Tp::ConnectionCapabilities *)),
-            SLOT(onAccountChanged(const Tp::AccountPtr &)));
+            SIGNAL(accountCapabilitiesChanged(Tp::AccountPtr,Tp::ConnectionCapabilities*)),
+            SLOT(onAccountChanged(Tp::AccountPtr)));
     wrappers.insert(account->objectPath(), wrapper);
 }
 
@@ -178,11 +178,11 @@ AccountSet::Private::AccountWrapper::AccountWrapper(
             SIGNAL(removed()),
             SLOT(onAccountRemoved()));
     connect(account.data(),
-            SIGNAL(propertyChanged(const QString &)),
-            SLOT(onAccountPropertyChanged(const QString &)));
+            SIGNAL(propertyChanged(QString)),
+            SLOT(onAccountPropertyChanged(QString)));
     connect(account.data(),
-            SIGNAL(capabilitiesChanged(Tp::ConnectionCapabilities *)),
-            SLOT(onAccountCapalitiesChanged(Tp::ConnectionCapabilities *)));
+            SIGNAL(capabilitiesChanged(Tp::ConnectionCapabilities*)),
+            SLOT(onAccountCapalitiesChanged(Tp::ConnectionCapabilities*)));
 }
 
 AccountSet::Private::AccountWrapper::~AccountWrapper()

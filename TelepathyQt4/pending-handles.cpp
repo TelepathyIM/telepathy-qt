@@ -81,8 +81,8 @@ PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
                 connection->baseInterface()->RequestHandles(handleType, names),
                 this);
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onRequestHandlesFinished(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onRequestHandlesFinished(QDBusPendingCallWatcher*)));
 }
 
 PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
@@ -112,8 +112,8 @@ PendingHandles::PendingHandles(const ConnectionPtr &connection, uint handleType,
                     connection->baseInterface()->HoldHandles(handleType, notYetHeld),
                     this);
         connect(watcher,
-                SIGNAL(finished(QDBusPendingCallWatcher *)),
-                SLOT(onHoldHandlesFinished(QDBusPendingCallWatcher *)));
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(onHoldHandlesFinished(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -296,8 +296,8 @@ void PendingHandles::onRequestHandlesFinished(QDBusPendingCallWatcher *watcher)
                             QStringList() << name),
                         this);
             connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(onRequestHandlesFallbackFinished(QDBusPendingCallWatcher *)));
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(onRequestHandlesFallbackFinished(QDBusPendingCallWatcher*)));
             mPriv->idsForWatchers.insert(watcher, name);
         }
     } else {
@@ -352,8 +352,8 @@ void PendingHandles::onHoldHandlesFinished(QDBusPendingCallWatcher *watcher)
                             UIntList() << handle),
                         this);
             connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher *)),
-                    SLOT(onHoldHandlesFallbackFinished(QDBusPendingCallWatcher *)));
+                    SIGNAL(finished(QDBusPendingCallWatcher*)),
+                    SLOT(onHoldHandlesFallbackFinished(QDBusPendingCallWatcher*)));
             mPriv->handlesForWatchers.insert(watcher, handle);
         }
     } else {

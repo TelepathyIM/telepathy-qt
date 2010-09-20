@@ -85,8 +85,8 @@ PendingAccount::PendingAccount(const AccountManagerPtr &manager,
             manager->baseInterface()->CreateAccount(connectionManager,
                 protocol, displayName, parameters, properties), this);
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onCallFinished(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onCallFinished(QDBusPendingCallWatcher*)));
 }
 
 /**

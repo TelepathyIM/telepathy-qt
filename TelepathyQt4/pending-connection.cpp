@@ -74,8 +74,8 @@ PendingConnection::PendingConnection(const ConnectionManagerPtr &manager,
             manager->baseInterface()->RequestConnection(protocol,
                 parameters), this);
     connect(watcher,
-            SIGNAL(finished(QDBusPendingCallWatcher *)),
-            SLOT(onCallFinished(QDBusPendingCallWatcher *)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(onCallFinished(QDBusPendingCallWatcher*)));
 }
 
 /**
