@@ -43,17 +43,18 @@ set(TP_QT4_MINOR_VERSION 3)
 set(TP_QT4_MICRO_VERSION 10)
 set(TP_QT4_NANO_VERSION  1)
 
-# If library source has changed since last release, increment revision
-# If interfaces have been added, removed or changed since last release,
-#  increment current and set revision to 0
-# If interfaces have been added since last release, increment age
-# If interfaces have been removed since last release, set age to 0
-#
-# If interfaces have been added, release builds will fail unless you add a new
-# file like TelepathyQt4/versions/0.1.1.abi to add them to the official ABI.
-# This also forces binaries built against devel versions to be rebuilt
-# (we don't guarantee that we won't add ABI then remove it again, if it was
-# never seen in a release).
+# This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
+# occurs, and will be used for the SOVERSION of the generated shared libraries.
+set(TP_QT4_ABI_VERSION 0)
+# This variable is used for the library's long version. It is generated dynamically, so don't change its
+# value! Change TP_QT4_ABI_VERSION and TP_QT4_*_VERSION instead.
+# NOTE: The generated version here has an additional .99 to differentiate its age from the old autotools version.
+#       Drop this as soon as ABI_VERSION is > 0
+if (${TP_QT4_NANO_VERSION} EQUAL 0)
+    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.99.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION})
+else (${TP_QT4_NANO_VERSION} EQUAL 0)
+    set(TP_QT4_LIBRARY_VERSION ${TP_QT4_ABI_VERSION}.99.${TP_QT4_MAJOR_VERSION}.${TP_QT4_MINOR_VERSION}.${TP_QT4_MICRO_VERSION}.${TP_QT4_NANO_VERSION})
+endif (${TP_QT4_NANO_VERSION} EQUAL 0)
 
 set(PACKAGE_NAME telepathy-qt4)
 
