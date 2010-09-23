@@ -20,6 +20,8 @@
 
 #include <TelepathyQt4/StreamTubeChannel>
 
+#include "TelepathyQt4/_gen/stream-tube-channel.moc.hpp"
+
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Connection>
@@ -657,6 +659,4 @@ void StreamTubeChannel::gotStreamTubeProperties(QDBusPendingCallWatcher* watcher
     }
 }
 
-}
-
-#include "TelepathyQt4/_gen/stream-tube-channel.moc.hpp"
+} // Tp
