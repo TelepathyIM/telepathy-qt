@@ -111,7 +111,6 @@ void PendingOpenTube::onTubeStateChanged(TubeChannelState state)
     }
 }
 
-
 QueuedContactFactory::QueuedContactFactory(Tp::ContactManagerPtr contactManager, QObject* parent)
     : QObject(parent)
     , m_isProcessing(false)
@@ -169,7 +168,6 @@ void QueuedContactFactory::onPendingContactsFinished(PendingOperation* op)
     // Go for next one
     processNextRequest();
 }
-
 
 OutgoingStreamTubeChannel::Private::Private(OutgoingStreamTubeChannel *parent)
     : parent(parent)
@@ -249,7 +247,6 @@ OutgoingStreamTubeChannel::Private::~Private()
  * See \ref async_model, \ref shared_ptr
  */
 
-
 // Signals documentation
 /**
  * \fn void StreamTubeChannel::newRemoteConnection(uint connectionId)
@@ -258,7 +255,6 @@ OutgoingStreamTubeChannel::Private::~Private()
  *
  * \param connectionId The unique ID associated with this connection.
  */
-
 
 /**
  * Create a new OutgoingStreamTubeChannel channel.
@@ -486,7 +482,6 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
             parameters);
 }
 
-
 /**
  * \brief Offer a Unix socket over the tube
  *
@@ -630,7 +625,6 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
     return offerUnixSocket(server->fullServerName(), parameters, requireCredentials);
 }
 
-
 /**
  * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, the socket address type of this
  * tube is IPv4 or IPv6, and if the tube supports connection with an specified address, this function
@@ -670,7 +664,6 @@ QHash< QPair< QHostAddress, quint16 >, uint > OutgoingStreamTubeChannel::connect
 
     return mPriv->connectionsForSourceAddresses;
 }
-
 
 /**
  * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, this function

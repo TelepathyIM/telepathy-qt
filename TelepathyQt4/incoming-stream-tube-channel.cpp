@@ -158,7 +158,6 @@ IncomingStreamTubeChannel::Private::~Private()
  * See \ref async_model, \ref shared_ptr
  */
 
-
 // Signals documentation
 /**
  * \fn void StreamTubeChannel::newLocalConnection(uint connectionId)
@@ -167,7 +166,6 @@ IncomingStreamTubeChannel::Private::~Private()
  *
  * \param connectionId The unique ID associated with this connection.
  */
-
 
 /**
  * Create a new IncomingStreamTubeChannel channel.
@@ -212,7 +210,6 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
 {
     delete mPriv;
 }
-
 
 /**
  * \brief Accept an incoming Stream tube as a TCP socket
@@ -354,7 +351,6 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
     return op;
 }
 
-
 /**
  * \brief Accept an incoming Stream tube as a TCP socket
  *
@@ -383,7 +379,6 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
 {
     return acceptTubeAsTcpSocket(QHostAddress::Any, 0);
 }
-
 
 /**
  * \brief Accept an incoming Stream tube as a Unix socket
@@ -470,7 +465,6 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
             this, SLOT(onAcceptTubeFinished(Tp::PendingOperation*)));
     return op;
 }
-
 
 /**
  * \return A valid QIODevice if the tube is in the \c Open state, 0 otherwise.

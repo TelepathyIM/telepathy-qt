@@ -130,7 +130,6 @@ SocketAddressType PendingStreamTubeConnection::addressType() const
     return mPriv->tube->addressType();
 }
 
-
 /**
  * \return The local address obtained from this PendingStreamTubeConnection as a QByteArray,
  *          if the connection has been estabilished through a SocketAddressTypeUnix or
@@ -144,7 +143,6 @@ QString PendingStreamTubeConnection::localAddress() const
 {
     return mPriv->tube->localAddress();
 }
-
 
 /**
  * \return The IP address and port obtained from this PendingStreamTubeConnection as a QHostAddress,

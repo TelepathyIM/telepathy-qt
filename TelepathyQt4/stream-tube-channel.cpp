@@ -264,7 +264,6 @@ QString StreamTubeChannel::service() const
     return mPriv->serviceName;
 }
 
-
 /**
  * Checks if this tube is capable to accept or offer an IPv4 socket accepting all incoming connections
  * coming from localhost. When this capability is available, the tube can be accepted or offered without
@@ -293,7 +292,6 @@ bool StreamTubeChannel::supportsIPv4SocketsOnLocalhost() const
 
     return mPriv->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlLocalhost);
 }
-
 
 /**
  * In case of an incoming tube, checks if this tube is capable to accept or offer an IPv4 socket accepting all
@@ -336,7 +334,6 @@ bool StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress() const
     return mPriv->socketTypes.value(SocketAddressTypeIPv4).contains(SocketAccessControlPort);
 }
 
-
 /**
  * Checks if this tube is capable to accept or offer an IPv6 socket accepting all incoming connections
  * coming from localhost. When this capability is available, the tube can be accepted or offered without
@@ -366,7 +363,6 @@ bool StreamTubeChannel::supportsIPv6SocketsOnLocalhost() const
 
     return mPriv->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlLocalhost);
 }
-
 
 /**
  * In case of an incoming tube, checks if this tube is capable to accept or offer an IPv6 socket accepting all
@@ -408,7 +404,6 @@ bool StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress() const
 
     return mPriv->socketTypes.value(SocketAddressTypeIPv6).contains(SocketAccessControlPort);
 }
-
 
 /**
  * Checks if this tube is capable to accept or offer an Unix socket accepting all incoming connections
@@ -477,7 +472,6 @@ bool StreamTubeChannel::supportsUnixSocketsWithCredentials() const
     return mPriv->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlCredentials);
 }
 
-
 /**
  * Checks if this tube is capable to accept or offer an abstract Unix socket accepting all incoming connections
  * coming from localhost. When this capability is available, the tube can be accepted or offered without
@@ -507,7 +501,6 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsOnLocalhost() const
 
     return mPriv->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlLocalhost);
 }
-
 
 /**
  * Checks if this tube is capable to accept or offer an abstract Unix socket which will require credentials upon
@@ -546,7 +539,6 @@ bool StreamTubeChannel::supportsAbstractUnixSocketsWithCredentials() const
     return mPriv->socketTypes.value(SocketAddressTypeAbstractUnix).contains(SocketAccessControlCredentials);
 }
 
-
 /**
  * This function returns all the known active connections since FeatureConnectionMonitoring has
  * been enabled. For this method to return all known connections, you need to make
@@ -567,7 +559,6 @@ UIntList StreamTubeChannel::connections() const
     return mPriv->connections;
 }
 
-
 /**
  * \return The local address used by this StreamTube as a QString, if this tube is using
  *          a SocketAddressTypeUnix or SocketAddressTypeAbstractUnix.
@@ -585,7 +576,6 @@ QString StreamTubeChannel::localAddress() const
     return mPriv->unixAddress;
 }
 
-
 /**
  * \return The IP address and port used by this StreamTube as a QHostAddress, if this tube is using
  *          a SocketAddressTypeIPv4 or SocketAddressTypeIPv6.
@@ -602,7 +592,6 @@ QPair< QHostAddress, quint16 > StreamTubeChannel::ipAddress() const
 
     return mPriv->ipAddress;
 }
-
 
 /**
  * \return The type of socket this StreamTube is using
