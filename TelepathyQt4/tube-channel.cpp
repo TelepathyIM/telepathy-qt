@@ -75,14 +75,14 @@ void TubeChannel::Private::init()
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void TubeChannel::Private::extractTubeProperties(const QVariantMap& props)
+void TubeChannel::Private::extractTubeProperties(const QVariantMap &props)
 {
     state = (Tp::TubeChannelState)qdbus_cast<uint>(props[QLatin1String("State")]);
     debug() << state << qdbus_cast<uint>(props[QLatin1String("State")]);
     parameters = qdbus_cast<QVariantMap>(props[QLatin1String("Parameters")]);
 }
 
-void TubeChannel::Private::introspectTube(TubeChannel::Private* self)
+void TubeChannel::Private::introspectTube(TubeChannel::Private *self)
 {
     TubeChannel *parent = self->parent;
 
@@ -230,7 +230,7 @@ TubeChannelState TubeChannel::tubeState() const
     return mPriv->state;
 }
 
-void TubeChannel::setParameters(const QVariantMap& parameters)
+void TubeChannel::setParameters(const QVariantMap &parameters)
 {
     mPriv->parameters = parameters;
 }
@@ -242,7 +242,7 @@ void TubeChannel::onTubeChannelStateChanged(uint newstate)
     debug() << "staete changed to" << newstate;
 }
 
-void TubeChannel::gotTubeProperties(QDBusPendingCallWatcher* watcher)
+void TubeChannel::gotTubeProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 

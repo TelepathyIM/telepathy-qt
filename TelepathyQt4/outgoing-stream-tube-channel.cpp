@@ -40,7 +40,7 @@
 namespace Tp
 {
 
-PendingOpenTube::Private::Private(const QVariantMap &parameters, PendingOpenTube* parent)
+PendingOpenTube::Private::Private(const QVariantMap &parameters, PendingOpenTube *parent)
     : parent(parent)
     , parameters(parameters)
 {
@@ -53,7 +53,7 @@ PendingOpenTube::Private::~Private()
 }
 
 PendingOpenTube::PendingOpenTube(
-        PendingVoid* offerOperation,
+        PendingVoid *offerOperation,
         const QVariantMap &parameters,
         const SharedPtr<RefCounted> &object)
     : PendingOperation(object)
@@ -75,7 +75,7 @@ PendingOpenTube::~PendingOpenTube()
     delete mPriv;
 }
 
-void PendingOpenTube::onOfferFinished(PendingOperation* op)
+void PendingOpenTube::onOfferFinished(PendingOperation *op)
 {
     if (op->isError()) {
         // Fail
@@ -139,7 +139,7 @@ void QueuedContactFactory::processNextRequest()
             this, SLOT(onPendingContactsFinished(Tp::PendingOperation*)));
 }
 
-QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList& handles)
+QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList &handles)
 {
     // Create a new entry
     Entry entry;
@@ -154,7 +154,7 @@ QUuid QueuedContactFactory::appendNewRequest(const Tp::UIntList& handles)
     return entry.uuid;
 }
 
-void QueuedContactFactory::onPendingContactsFinished(PendingOperation* op)
+void QueuedContactFactory::onPendingContactsFinished(PendingOperation *op)
 {
     PendingContacts *pc = qobject_cast< PendingContacts* >(op);
 
@@ -343,9 +343,9 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * \sa StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
 PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
-        const QHostAddress& address,
+        const QHostAddress &address,
         quint16 port,
-        const QVariantMap& parameters)
+        const QVariantMap &parameters)
 {
     if (!isReady(StreamTubeChannel::FeatureStreamTube)) {
         warning() << "StreamTubeChannel::FeatureStreamTube must be ready before "
@@ -480,9 +480,9 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \sa StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress
  * \sa StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
-PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
-        QTcpServer* server,
-        const QVariantMap& parameters)
+PendingOperation *OutgoingStreamTubeChannel::offerTcpSocket(
+        QTcpServer *server,
+        const QVariantMap &parameters)
 {
     // In this overload, we're handling a superset of QHostAddress.
     // Let's redirect the call to QHostAddress's overload
@@ -519,9 +519,9 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost
  * \sa StreamTubeChannel::supportsUnixSocketsWithCredentials
  */
-PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
-        const QString& socketAddress,
-        const QVariantMap& parameters,
+PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
+        const QString &socketAddress,
+        const QVariantMap &parameters,
         bool requireCredentials)
 {
     SocketAccessControl accessControl = requireCredentials ?
@@ -630,9 +630,9 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
  * \sa StreamTubeChannel::supportsUnixSocketsOnLocalhost
  * \sa StreamTubeChannel::supportsUnixSocketsWithCredentials
  */
-PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
-        QLocalServer* server,
-        const QVariantMap& parameters,
+PendingOperation *OutgoingStreamTubeChannel::offerUnixSocket(
+        QLocalServer *server,
+        const QVariantMap &parameters,
         bool requireCredentials)
 {
     // In this overload, we're handling a superset of a local socket

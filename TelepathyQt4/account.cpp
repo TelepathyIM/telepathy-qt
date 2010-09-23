@@ -2284,11 +2284,11 @@ PendingChannelRequest *Account::createConferenceStreamedMediaCall(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest* Account::createStreamTube(
-        const QString& contactIdentifier,
-        const QString& serviceName,
-        const QDateTime& userActionTime,
-        const QString& preferredHandler,
+PendingChannelRequest *Account::createStreamTube(
+        const QString &contactIdentifier,
+        const QString &serviceName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
     QVariantMap request;
@@ -2323,11 +2323,11 @@ PendingChannelRequest* Account::createStreamTube(
  *         when the call has finished.
  * \sa ensureChannel(), createChannel()
  */
-PendingChannelRequest* Account::createStreamTube(
-        const Tp::ContactPtr& contact,
-        const QString& serviceName,
-        const QDateTime& userActionTime,
-        const QString& preferredHandler,
+PendingChannelRequest *Account::createStreamTube(
+        const Tp::ContactPtr &contact,
+        const QString &serviceName,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler,
         const ChannelRequestHints &hints)
 {
     QVariantMap request;

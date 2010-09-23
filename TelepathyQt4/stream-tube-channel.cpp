@@ -106,14 +106,14 @@ void StreamTubeChannel::Private::init()
     readinessHelper->addIntrospectables(introspectables);
 }
 
-void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap& props)
+void StreamTubeChannel::Private::extractStreamTubeProperties(const QVariantMap &props)
 {
     serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
     socketTypes = qdbus_cast<SupportedSocketMap>(props[QLatin1String("SupportedSocketTypes")]);
 }
 
 void StreamTubeChannel::Private::introspectConnectionMonitoring(
-        StreamTubeChannel::Private* self)
+        StreamTubeChannel::Private *self)
 {
     StreamTubeChannel *parent = self->parent;
 
@@ -140,7 +140,7 @@ void StreamTubeChannel::Private::introspectConnectionMonitoring(
 }
 
 void StreamTubeChannel::Private::introspectStreamTube(
-        StreamTubeChannel::Private* self)
+        StreamTubeChannel::Private *self)
 {
     StreamTubeChannel *parent = self->parent;
 
@@ -645,25 +645,25 @@ void StreamTubeChannel::setAddressType(SocketAddressType type)
     mPriv->addressType = type;
 }
 
-void StreamTubeChannel::setIpAddress(const QPair< QHostAddress, quint16 >& address)
+void StreamTubeChannel::setIpAddress(const QPair< QHostAddress, quint16 > &address)
 {
     mPriv->ipAddress = address;
 }
 
-void StreamTubeChannel::setLocalAddress(const QString& address)
+void StreamTubeChannel::setLocalAddress(const QString &address)
 {
     mPriv->unixAddress = address;
 }
 
 void StreamTubeChannel::onConnectionClosed(
         uint connectionId,
-        const QString& error,
-        const QString& message)
+        const QString &error,
+        const QString &message)
 {
     emit connectionClosed(connectionId, error, message);
 }
 
-void StreamTubeChannel::gotStreamTubeProperties(QDBusPendingCallWatcher* watcher)
+void StreamTubeChannel::gotStreamTubeProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
 

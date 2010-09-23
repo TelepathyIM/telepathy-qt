@@ -34,7 +34,6 @@ class TELEPATHY_QT4_EXPORT TubeChannel : public Channel
 {
     Q_OBJECT
     Q_DISABLE_COPY(TubeChannel)
-    Q_DECLARE_PRIVATE(TubeChannel)
 
 public:
     static const Feature FeatureTube;

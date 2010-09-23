@@ -47,7 +47,7 @@ struct TELEPATHY_QT4_NO_EXPORT IncomingStreamTubeChannel::Private
     QIODevice *device;
 
     // Private slots
-    void onAcceptTubeFinished(Tp::PendingOperation* op);
+    void onAcceptTubeFinished(Tp::PendingOperation *op);
     void onNewLocalConnection(uint connectionId);
 };
 
@@ -85,13 +85,13 @@ IncomingStreamTubeChannel::Private::~Private()
  * Supposing your channel handler has been created correctly, you would do:
  *
  * \code
- * void MyChannelManager::handleChannels(const Tp::MethodInvocationContextPtr<>& context,
- *                               const Tp::AccountPtr& account,
- *                               const Tp::ConnectionPtr& connection,
- *                               const QList< Tp::ChannelPtr >& channels,
- *                               const QList< Tp::ChannelRequestPtr >& requestsSatisfied,
- *                               const QDateTime& userActionTime,
- *                               const QVariantMap& handlerInfo)
+ * void MyChannelManager::handleChannels(const Tp::MethodInvocationContextPtr<> &context,
+ *                               const Tp::AccountPtr &account,
+ *                               const Tp::ConnectionPtr &connection,
+ *                               const QList< Tp::ChannelPtr > &channels,
+ *                               const QList< Tp::ChannelRequestPtr > &requestsSatisfied,
+ *                               const QDateTime &userActionTime,
+ *                               const QVariantMap &handlerInfo)
  * {
  *     foreach(const Tp::ChannelPtr &channel, channels) {
  *         QVariantMap properties = channel->immutableProperties();
@@ -146,7 +146,7 @@ IncomingStreamTubeChannel::Private::~Private()
  * When the operation finishes, you can do:
  *
  * \code
- * void MyTubeReceiver::onStreamTubeAccepted(PendingOperation* op)
+ * void MyTubeReceiver::onStreamTubeAccepted(PendingOperation *op)
  * {
  *     if (op->isError()) {
  *        return;
@@ -246,8 +246,8 @@ IncomingStreamTubeChannel::~IncomingStreamTubeChannel()
  * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
  * \see StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
-PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
-        const QHostAddress& allowedAddress,
+PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
+        const QHostAddress &allowedAddress,
         quint16 allowedPort)
 {
     if (!isReady(StreamTubeChannel::FeatureStreamTube)) {
@@ -381,7 +381,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket(
  * \see StreamTubeChannel::supportsIPv6SocketsWithAllowedAddress
  * \see StreamTubeChannel::supportsIPv6SocketsOnLocalhost
  */
-PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
+PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
 {
     return acceptTubeAsTcpSocket(QHostAddress::Any, 0);
 }
@@ -413,7 +413,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsTcpSocket()
  * \see StreamTubeChannel::supportsUnixSocketsOnLocalhost
  * \see StreamTubeChannel::supportsUnixSocketsWithCredentials
  */
-PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
+PendingStreamTubeConnection *IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
         bool requireCredentials)
 {
     if (!isReady(StreamTubeChannel::FeatureStreamTube)) {
@@ -476,7 +476,7 @@ PendingStreamTubeConnection* IncomingStreamTubeChannel::acceptTubeAsUnixSocket(
 /**
  * \return A valid QIODevice if the tube is in the \c Open state, 0 otherwise.
  */
-QIODevice* IncomingStreamTubeChannel::device()
+QIODevice *IncomingStreamTubeChannel::device()
 {
     if (tubeState() == TubeChannelStateOpen) {
         return mPriv->device;

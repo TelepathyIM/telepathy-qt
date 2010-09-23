@@ -52,7 +52,7 @@ struct TELEPATHY_QT4_NO_EXPORT PendingStreamTubeConnection::Private
     QIODevice *device;
 };
 
-PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection* parent)
+PendingStreamTubeConnection::Private::Private(PendingStreamTubeConnection *parent)
     : parent(parent)
     , device(0)
 {
@@ -65,7 +65,7 @@ PendingStreamTubeConnection::Private::~Private()
 }
 
 PendingStreamTubeConnection::PendingStreamTubeConnection(
-        PendingVariant* acceptOperation,
+        PendingVariant *acceptOperation,
         SocketAddressType type,
         const SharedPtr<RefCounted> &object)
     : PendingOperation(object)
@@ -112,7 +112,7 @@ PendingStreamTubeConnection::~PendingStreamTubeConnection()
 /**
  * \return The opened QIODevice if the operation is finished and successful, 0 otherwise.
  */
-QIODevice* PendingStreamTubeConnection::device()
+QIODevice *PendingStreamTubeConnection::device()
 {
     return mPriv->device;
 }
@@ -161,7 +161,7 @@ QPair< QHostAddress, quint16 > PendingStreamTubeConnection::ipAddress() const
     return mPriv->tube->ipAddress();
 }
 
-void PendingStreamTubeConnection::onAcceptFinished(PendingOperation* op)
+void PendingStreamTubeConnection::onAcceptFinished(PendingOperation *op)
 {
     if (op->isError()) {
         setFinishedWithError(op->errorName(), op->errorMessage());
