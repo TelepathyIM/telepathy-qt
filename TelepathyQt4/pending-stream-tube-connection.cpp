@@ -120,7 +120,8 @@ QIODevice* PendingStreamTubeConnection::device()
 /**
  * \return The type of socket this PendingStreamTubeConnection has created
  *
- * \note This function will return a valid value only after the operation has been finished successfully
+ * \note This function will return a valid value only after the operation has been
+ *       finished successfully.
  *
  * \see localAddress
  * \see tcpAddress
@@ -135,7 +136,8 @@ SocketAddressType PendingStreamTubeConnection::addressType() const
  *          if the connection has been estabilished through a SocketAddressTypeUnix or
  *          a SocketAddressTypeAbstractUnix.
  *
- * \note This function will return a valid value only after the operation has been finished successfully
+ * \note This function will return a valid value only after the operation has been
+ *       finished successfully.
  *
  * \see addressType
  */
@@ -149,7 +151,8 @@ QString PendingStreamTubeConnection::localAddress() const
  *          if the connection has been estabilished through a SocketAddressTypeIpv4 or
  *          a SocketAddressTypeIPv6.
  *
- * \note This function will return a valid value only after the operation has been finished successfully
+ * \note This function will return a valid value only after the operation has been
+ *       finished successfully.
  *
  * \see addressType
  */

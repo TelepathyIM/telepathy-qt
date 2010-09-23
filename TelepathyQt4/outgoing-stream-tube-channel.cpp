@@ -198,8 +198,8 @@ OutgoingStreamTubeChannel::Private::~Private()
  * just use the Account convenience methods such as
  * Account::createStreamTube() to get a brand new stream tube channel ready to be used.
  *
- * To create such a channel, it is required to pass Account::createStreamTube() the contact identifier
- * and the service name which will be used over the tube.
+ * To create such a channel, it is required to pass Account::createStreamTube()
+ * the contact identifier and the service name which will be used over the tube.
  * For example:
  *
  * \code
@@ -214,7 +214,8 @@ OutgoingStreamTubeChannel::Private::~Private()
  * \subsection outgoing_stream_tube_offer_sec Offering the tube
  *
  * Before being ready to offer the tube, we must be sure the required features on our object
- * are ready. In this case, we need to enable TubeChannel::FeatureTube and StreamTubeChannel::FeatureStreamTube.
+ * are ready. In this case, we need to enable TubeChannel::FeatureTube
+ * and StreamTubeChannel::FeatureStreamTube.
  *
  * \code
  *
@@ -228,12 +229,14 @@ OutgoingStreamTubeChannel::Private::~Private()
  *
  * To learn more on how to use introspectable and features, please see \ref account_ready_sec.
  *
- * You can also enable StreamTubeChannel::FeatureConnectionMonitoring if the tube supports it. Have a look at
- * #StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress to learn more about this.
+ * You can also enable StreamTubeChannel::FeatureConnectionMonitoring if the tube supports it.
+ * Have a look at #StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
+ * to learn more about this.
  *
- * Once your object is ready, you can use one of the overloads of #offerTcpSocket or #offerUnixSocket to offer an
- * existing socket over the tube. For example, if you wanted to offer an existing QTcpServer without applying any
- * restrictions on the access control, you would simply do
+ * Once your object is ready, you can use one of the overloads of #offerTcpSocket or
+ * #offerUnixSocket to offer an existing socket over the tube. For example,
+ * if you wanted to offer an existing QTcpServer without applying any restrictions
+ * on the access control, you would simply do
  *
  * \code
  * QTcpServer *server = getMyServer();
@@ -241,8 +244,9 @@ OutgoingStreamTubeChannel::Private::~Private()
  * PendingOperation *op = myTube->offerTcpSocket(server, QVariantMap());
  * \endcode
  *
- * You can now monitor the returned operation to know when the tube will be ready. It is guaranteed that when the
- * operation finishes, the tube will be already opened and ready to be used.
+ * You can now monitor the returned operation to know when the tube will be ready.
+ * It is guaranteed that when the operation finishes,
+ * the tube will be already opened and ready to be used.
  *
  * See \ref async_model, \ref shared_ptr
  */
@@ -312,8 +316,8 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * a QHostAddress. If you are already handling a Tcp logic in your application, you can also
  * use an overload which accepts a QTcpServer.
  *
- * It is guaranteed that when the PendingOperation returned by this method will be completed, the tube will be
- * open and ready to be used.
+ * It is guaranteed that when the PendingOperation returned by this method will be completed,
+ * the tube will be open and ready to be used.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
@@ -328,8 +332,9 @@ OutgoingStreamTubeChannel::~OutgoingStreamTubeChannel()
  * \note The library will try to use Port access control whenever possible, as it allows to
  *       map connections to the socket's source address. This means that if
  *       #StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress (or
- *       #StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress, depending on the type of the offered socket)
- *       returns true, this method will automatically enable the connection tracking feature, as long as
+ *       #StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress, depending on
+ *       the type of the offered socket) returns true, this method will automatically
+ *       enable the connection tracking feature, as long as
  *       StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
  *
  * \sa StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
@@ -365,7 +370,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
     if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         // IPv4 case
         SocketAccessControl accessControl;
-        // Do some heuristics to find out the best access control. We always prefer port for tracking
+        // Do some heuristics to find out the best access control.We always prefer port for tracking
         // connections and source addresses.
         if (supportsIPv4SocketsWithSpecifiedAddress()) {
             accessControl = SocketAccessControlPort;
@@ -376,7 +381,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                    QLatin1String("The requested address type/access control combination is not supported"),
+                    QLatin1String("The requested address type/access control "
+                            "combination is not supported"),
                     OutgoingStreamTubeChannelPtr(this));
         }
 
@@ -399,7 +405,7 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
         return op;
     } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
         // IPv6 case
-        // Do some heuristics to find out the best access control. We always prefer port for tracking
+        // Do some heuristics to find out the best access control.We always prefer port for tracking
         // connections and source addresses.
         if (supportsIPv6SocketsWithSpecifiedAddress()) {
             accessControl = SocketAccessControlPort;
@@ -410,7 +416,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                    QLatin1String("The requested address type/access control combination is not supported"),
+                    QLatin1String("The requested address type/access control "
+                            "combination is not supported"),
                     OutgoingStreamTubeChannelPtr(this));
         }
 
@@ -448,8 +455,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  *
  * This method offers an IPv4/IPv6 socket over this tube through a QTcpServer.
  *
- * It is guaranteed that when the PendingOperation returned by this method will be completed, the tube will be
- * open and ready to be used.
+ * It is guaranteed that when the PendingOperation returned by this method will be completed,
+ * the tube will be open and ready to be used.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
@@ -463,8 +470,9 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * \note The library will try to use Port access control whenever possible, as it allows to
  *       map connections to the socket's source address. This means that if
  *       #StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress (or
- *       #StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress, depending on the type of the offered socket)
- *       returns true, this method will automatically enable the connection tracking feature, as long as
+ *       #StreamTubeChannel::supportsIPv6SocketsWithSpecifiedAddress, depending on the type of
+ *       the offered socket) returns true, this method will automatically enable
+ *       the connection tracking feature, as long as
  *       StreamTubeChannel::FeatureConnectionMonitoring has been enabled.
  *
  * \sa StreamTubeChannel::supportsIPv4SocketsWithSpecifiedAddress
@@ -492,8 +500,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerTcpSocket(
  * If you are already handling a local socket logic in your application, you can also
  * use an overload which accepts a QLocalServer.
  *
- * It is guaranteed that when the PendingOperation returned by this method will be completed, the tube will be
- * open and ready to be used.
+ * It is guaranteed that when the PendingOperation returned by this method will be completed,
+ * the tube will be open and ready to be used.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
@@ -539,12 +547,15 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
     if (socketAddress.startsWith(QLatin1Char('\0'))) {
         // Abstract Unix socket case
         // Check if the combination type/access control is supported
-        if ( (accessControl == SocketAccessControlLocalhost && !supportsAbstractUnixSocketsOnLocalhost()) ||
-             (accessControl == SocketAccessControlCredentials && !supportsAbstractUnixSocketsWithCredentials()) ) {
+        if ( (accessControl == SocketAccessControlLocalhost &&
+              !supportsAbstractUnixSocketsOnLocalhost()) ||
+             (accessControl == SocketAccessControlCredentials &&
+              !supportsAbstractUnixSocketsWithCredentials()) ) {
             warning() << "You requested an address type/access control combination "
                     "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                    QLatin1String("The requested address type/access control combination is not supported"),
+                    QLatin1String("The requested address type/access control "
+                            "combination is not supported"),
                     OutgoingStreamTubeChannelPtr(this));
         }
 
@@ -564,13 +575,17 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
     } else {
         // Unix socket case
         // Check if the combination type/access control is supported
-        if ( (accessControl == SocketAccessControlLocalhost && !supportsUnixSocketsOnLocalhost()) ||
-             (accessControl == SocketAccessControlCredentials && !supportsUnixSocketsWithCredentials()) ||
-             (accessControl != SocketAccessControlLocalhost && accessControl != SocketAccessControlCredentials) ) {
+        if ( (accessControl == SocketAccessControlLocalhost &&
+              !supportsUnixSocketsOnLocalhost()) ||
+             (accessControl == SocketAccessControlCredentials &&
+              !supportsUnixSocketsWithCredentials()) ||
+             (accessControl != SocketAccessControlLocalhost &&
+              accessControl != SocketAccessControlCredentials) ) {
             warning() << "You requested an address type/access control combination "
                 "not supported by this channel";
             return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_IMPLEMENTED),
-                    QLatin1String("The requested address type/access control combination is not supported"),
+                    QLatin1String("The requested address type/access control "
+                            "combination is not supported"),
                     OutgoingStreamTubeChannelPtr(this));
         }
 
@@ -596,8 +611,8 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
  *
  * This method offers a Unix socket over this tube through a QLocalServer.
  *
- * It is guaranteed that when the PendingOperation returned by this method will be completed, the tube will be
- * open and ready to be used.
+ * It is guaranteed that when the PendingOperation returned by this method will be completed,
+ * the tube will be open and ready to be used.
  *
  * This method requires StreamTubeChannel::FeatureStreamTube to be enabled.
  *
@@ -626,9 +641,10 @@ PendingOperation* OutgoingStreamTubeChannel::offerUnixSocket(
 }
 
 /**
- * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled, the socket address type of this
- * tube is IPv4 or IPv6, and if the tube supports connection with an specified address, this function
- * returns a map from a source address to its connection ID. It is useful to track an address
+ * If StreamTubeChannel::FeatureConnectionMonitoring has been enabled,
+ * the socket address type of this tube is IPv4 or IPv6, and if the tube supports connection
+ * with an specified address, this function returns a map from a source address to
+ * its connection ID. It is useful to track an address
  * which connected to your socket to a contact (by using contactsForConnections).
  *
  * This method requires StreamTubeChannel::FeatureConnectionMonitoring to be enabled.
@@ -734,12 +750,15 @@ void OutgoingStreamTubeChannel::onContactsRetrieved(
 
     // Now let's try to track the parameter
     if (addressType() == SocketAddressTypeIPv4) {
-        // Try a qdbus_cast to our address struct: we're shielded from crashes due to our specification
-        SocketAddressIPv4 addr = qdbus_cast< Tp::SocketAddressIPv4 >(connectionProperties.second.variant());
+        // Try a qdbus_cast to our address struct: we're shielded from crashes
+        // thanks to our specification
+        SocketAddressIPv4 addr =
+                qdbus_cast< Tp::SocketAddressIPv4 >(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
     } else if (addressType() == SocketAddressTypeIPv6) {
-        SocketAddressIPv6 addr = qdbus_cast< Tp::SocketAddressIPv6 >(connectionProperties.second.variant());
+        SocketAddressIPv6 addr =
+                qdbus_cast< Tp::SocketAddressIPv6 >(connectionProperties.second.variant());
         address.first = QHostAddress(addr.address);
         address.second = addr.port;
     }

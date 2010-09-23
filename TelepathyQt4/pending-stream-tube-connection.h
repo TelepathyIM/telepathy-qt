@@ -63,8 +63,10 @@ private Q_SLOTS:
     void onLocalSocketError(QLocalSocket::LocalSocketError);
 
 private:
-    PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type, const SharedPtr<RefCounted> &object);
-    PendingStreamTubeConnection(const QString &errorName, const QString &errorMessage, const SharedPtr<RefCounted> &object);
+    PendingStreamTubeConnection(PendingVariant *variant, SocketAddressType type,
+                                const SharedPtr<RefCounted> &object);
+    PendingStreamTubeConnection(const QString &errorName, const QString &errorMessage,
+                                const SharedPtr<RefCounted> &object);
 
     struct Private;
     friend struct Private;

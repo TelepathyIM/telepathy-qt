@@ -138,7 +138,8 @@ void TubeChannel::Private::introspectTube(TubeChannel::Private* self)
  * TubeChannel methods.
  * See specific methods documentation for more details.
  */
-const Feature TubeChannel::FeatureTube = Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
+const Feature TubeChannel::FeatureTube =
+                           Feature(QLatin1String(TubeChannel::staticMetaObject.className()), 0);
 
 // Signals documentation
 /**
