@@ -27,9 +27,9 @@
 
 #include <TelepathyQt4/Channel>
 
-namespace Tp {
+namespace Tp
+{
 
-class TubeChannelPrivate;
 class TELEPATHY_QT4_EXPORT TubeChannel : public Channel
 {
     Q_OBJECT

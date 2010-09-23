@@ -30,7 +30,8 @@
 #include <QtNetwork/QHostAddress>
 
 class QIODevice;
-namespace Tp {
+namespace Tp
+{
 
 class PendingStreamTubeConnection;
 

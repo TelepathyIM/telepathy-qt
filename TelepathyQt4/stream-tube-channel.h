@@ -28,7 +28,8 @@
 #include <TelepathyQt4/TubeChannel>
 
 class QHostAddress;
-namespace Tp {
+namespace Tp
+{
 
 class TELEPATHY_QT4_EXPORT StreamTubeChannel : public TubeChannel
 {

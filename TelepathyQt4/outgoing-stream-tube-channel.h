@@ -31,7 +31,8 @@
 class QHostAddress;
 class QTcpServer;
 class QLocalServer;
-namespace Tp {
+namespace Tp
+{
 
 class TELEPATHY_QT4_EXPORT OutgoingStreamTubeChannel : public StreamTubeChannel
 {
