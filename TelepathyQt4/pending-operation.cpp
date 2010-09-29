@@ -312,12 +312,18 @@ void PendingVoid::watcherFinished(QDBusPendingCallWatcher *watcher)
 
 struct TELEPATHY_QT4_NO_EXPORT PendingComposite::Private
 {
-    Private(uint nOperations)
-        : nOperations(nOperations),
+    Private(bool failOnFirstError, uint nOperations)
+        : failOnFirstError(failOnFirstError),
+          error(false),
+          nOperations(nOperations),
           nOperationsFinished(0)
     {
     }
 
+    bool failOnFirstError;
+    bool error;
+    QString errorName;
+    QString errorMessage;
     uint nOperations;
     uint nOperationsFinished;
 };
@@ -325,7 +331,19 @@ struct TELEPATHY_QT4_NO_EXPORT PendingComposite::Private
 PendingComposite::PendingComposite(const QList<PendingOperation*> &operations,
          QObject *parent)
     : PendingOperation(parent),
-      mPriv(new Private(operations.size()))
+      mPriv(new Private(true, operations.size()))
+{
+    foreach (PendingOperation *operation, operations) {
+        connect(operation,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(onOperationFinished(Tp::PendingOperation*)));
+    }
+}
+
+PendingComposite::PendingComposite(const QList<PendingOperation*> &operations,
+         bool failOnFirstError, QObject *parent)
+    : PendingOperation(parent),
+      mPriv(new Private(failOnFirstError, operations.size()))
 {
     foreach (PendingOperation *operation, operations) {
         connect(operation,
@@ -342,12 +360,24 @@ PendingComposite::~PendingComposite()
 void PendingComposite::onOperationFinished(Tp::PendingOperation *op)
 {
     if (op->isError()) {
-        setFinishedWithError(op->errorName(), op->errorMessage());
-        return;
+        if (mPriv->failOnFirstError) {
+            setFinishedWithError(op->errorName(), op->errorMessage());
+            return;
+        } else if (!mPriv->error) {
+            /* only save the first error that will be used on setFinishedWithError when all
+             * pending operations finish */
+            mPriv->error = true;
+            mPriv->errorName = op->errorName();
+            mPriv->errorMessage = op->errorMessage();
+        }
     }
 
     if (++mPriv->nOperationsFinished == mPriv->nOperations) {
-        setFinished();
+        if (!mPriv->error) {
+            setFinished();
+        } else {
+            setFinishedWithError(mPriv->errorName, mPriv->errorMessage);
+        }
     }
 }
 
