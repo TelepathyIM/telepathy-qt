@@ -355,6 +355,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-ready.h
     pending-string-list.h
     pending-variant.h
+    profile-manager.h
     readiness-helper.h
     room-list-channel.h
     simple-pending-operations.h

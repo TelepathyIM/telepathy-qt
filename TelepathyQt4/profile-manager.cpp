@@ -21,9 +21,11 @@
 
 #include <TelepathyQt4/ProfileManager>
 
+#include "TelepathyQt4/_gen/profile-manager.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Profile>
+#include <TelepathyQt4/ReadinessHelper>
 
 #include <QFile>
 #include <QFileInfo>
@@ -35,19 +37,33 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ProfileManager::Private
 {
-    Private();
+    Private(ProfileManager *parent);
 
-    void init();
+    static void introspectMain(Private *self);
 
+    ProfileManager *parent;
+    ReadinessHelper *readinessHelper;
     QHash<QString, ProfilePtr> profiles;
 };
 
-ProfileManager::Private::Private()
+ProfileManager::Private::Private(ProfileManager *parent)
+    : parent(parent),
+      readinessHelper(parent->readinessHelper())
 {
-    init();
+    ReadinessHelper::Introspectables introspectables;
+
+    ReadinessHelper::Introspectable introspectableCore(
+        QSet<uint>() << 0,                                           // makesSenseForStatuses
+        Features(),                                                  // dependsOnFeatures
+        QStringList(),                                               // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
+        this);
+    introspectables[FeatureCore] = introspectableCore;
+
+    readinessHelper->addIntrospectables(introspectables);
 }
 
-void ProfileManager::Private::init()
+void ProfileManager::Private::introspectMain(ProfileManager::Private *self)
 {
     QStringList searchDirs = Profile::searchDirs();
 
@@ -66,7 +82,7 @@ void ProfileManager::Private::init()
             QString fileName = fi.absoluteFilePath();
             QString serviceName = fi.baseName();
 
-            if (profiles.contains(serviceName)) {
+            if (self->profiles.contains(serviceName)) {
                 debug() << "Profile for service" << serviceName << "already "
                     "exists. Ignoring profile file:" << fileName;
                 continue;
@@ -85,9 +101,11 @@ void ProfileManager::Private::init()
 
             debug() << "Found profile for service" << serviceName <<
                 "- profile file:" << fileName;
-            profiles.insert(serviceName, profile);
+            self->profiles.insert(serviceName, profile);
         }
     }
+
+    self->readinessHelper->setIntrospectCompleted(FeatureCore, true);
 }
 
 /**
@@ -97,6 +115,17 @@ void ProfileManager::Private::init()
  * \brief The ProfileManager class provides helper methods to retrieve Profile
  * objects.
  */
+
+/**
+ * Feature representing the core that needs to become ready to make the ProfileManager
+ * object usable.
+ *
+ * Note that this feature must be enabled in order to use all ProfileManager methods.
+ *
+ * When calling isReady(), becomeReady(), this feature is implicitly added
+ * to the requested features.
+ */
+const Feature ProfileManager::FeatureCore = Feature(QLatin1String(ProfileManager::staticMetaObject.className()), 0, true);
 
 /**
  * Create a new ProfileManager object.
@@ -110,7 +139,9 @@ ProfileManagerPtr ProfileManager::create()
  * Construct a new ProfileManager object.
  */
 ProfileManager::ProfileManager()
-    : mPriv(new Private())
+    : QObject(),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this))
 {
 }
 

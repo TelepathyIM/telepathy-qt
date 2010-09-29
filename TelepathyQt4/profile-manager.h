@@ -29,16 +29,22 @@
 #include <QtCore/QObject>
 
 #include <TelepathyQt4/Profile>
+#include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/Types>
 
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT ProfileManager : public RefCounted
+class TELEPATHY_QT4_EXPORT ProfileManager : public QObject,
+                public ReadyObject,
+                public RefCounted
 {
+    Q_OBJECT
     Q_DISABLE_COPY(ProfileManager);
 
 public:
+    static const Feature FeatureCore;
+
     static ProfileManagerPtr create();
 
     ~ProfileManager();
