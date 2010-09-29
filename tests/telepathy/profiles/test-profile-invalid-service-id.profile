@@ -1,12 +1,12 @@
-<service id="another-test-profile"
-         xmlns="http://telepathy.freedesktop.org/wiki/service-profile-v1">
-  <type>IM</type>
-  <provider>TestProfileProvider</provider>
-  <name>TestProfile</name>
-  <icon>test-profile-icon</icon>
+<service xmlns="http://telepathy.freedesktop.org/wiki/service-profile-v1"
+         id="another-test-profile"
+         type="IM"
+         provider="TestProfileProvider"
+         manager="testprofilecm"
+         protocol="testprofileproto"
+         icon="test-profile-icon">
 
-  <manager>testprofilecm</manager>
-  <protocol>testprofileproto</protocol>
+  <name>TestProfile</name>
 
   <parameters>
     <parameter name="server"  type="s" mandatory="1">profile.com</parameter>

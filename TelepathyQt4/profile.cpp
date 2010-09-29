@@ -129,12 +129,7 @@ private:
     static const QString xmlNs;
 
     static const QString elemService;
-    static const QString elemType;
-    static const QString elemProvider;
     static const QString elemName;
-    static const QString elemIcon;
-    static const QString elemManager;
-    static const QString elemProtocol;
     static const QString elemParams;
     static const QString elemParam;
     static const QString elemPresences;
@@ -146,10 +141,13 @@ private:
     static const QString elemAttrId;
     static const QString elemAttrName;
     static const QString elemAttrType;
+    static const QString elemAttrProvider;
+    static const QString elemAttrManager;
+    static const QString elemAttrProtocol;
+    static const QString elemAttrIcon;
     static const QString elemAttrLabel;
     static const QString elemAttrMandatory;
     static const QString elemAttrAllowOthers;
-    static const QString elemAttrIcon;
     static const QString elemAttrMessage;
     static const QString elemAttrDisabled;
 };
@@ -157,12 +155,7 @@ private:
 const QString Profile::Private::XmlHandler::xmlNs = QLatin1String("http://telepathy.freedesktop.org/wiki/service-profile-v1");
 
 const QString Profile::Private::XmlHandler::elemService = QLatin1String("service");
-const QString Profile::Private::XmlHandler::elemType = QLatin1String("type");
-const QString Profile::Private::XmlHandler::elemProvider = QLatin1String("provider");
 const QString Profile::Private::XmlHandler::elemName = QLatin1String("name");
-const QString Profile::Private::XmlHandler::elemIcon = QLatin1String("icon");
-const QString Profile::Private::XmlHandler::elemManager = QLatin1String("manager");
-const QString Profile::Private::XmlHandler::elemProtocol = QLatin1String("protocol");
 const QString Profile::Private::XmlHandler::elemParams = QLatin1String("parameters");
 const QString Profile::Private::XmlHandler::elemParam = QLatin1String("parameter");
 const QString Profile::Private::XmlHandler::elemPresences = QLatin1String("presences");
@@ -174,6 +167,9 @@ const QString Profile::Private::XmlHandler::elemProperty = QLatin1String("proper
 const QString Profile::Private::XmlHandler::elemAttrId = QLatin1String("id");
 const QString Profile::Private::XmlHandler::elemAttrName = QLatin1String("name");
 const QString Profile::Private::XmlHandler::elemAttrType = QLatin1String("type");
+const QString Profile::Private::XmlHandler::elemAttrProvider = QLatin1String("provider");
+const QString Profile::Private::XmlHandler::elemAttrManager = QLatin1String("manager");
+const QString Profile::Private::XmlHandler::elemAttrProtocol = QLatin1String("protocol");
 const QString Profile::Private::XmlHandler::elemAttrLabel = QLatin1String("label");
 const QString Profile::Private::XmlHandler::elemAttrMandatory = QLatin1String("mandatory");
 const QString Profile::Private::XmlHandler::elemAttrAllowOthers = QLatin1String("allow-others");
@@ -250,8 +246,13 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
     }
 
     if (qName == elemService) {
-        CHECK_ELEMENT_ATTRIBUTES_COUNT(1);
+        CHECK_ELEMENT_ATTRIBUTES_COUNT(6);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrId);
+        CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrType);
+        CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrProvider);
+        CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrManager);
+        CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrProtocol);
+        CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrIcon);
 
         if (attributes.value(elemAttrId) != mServiceName) {
             mErrorString = QString(QLatin1String("the '%1' attribute of the "
@@ -260,7 +261,19 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
                 .arg(elemService);
             return false;
         }
+
         mMetServiceTag = true;
+        mData->type = attributes.value(elemAttrType);
+        if (mData->type != QLatin1String("IM") && !allowNonIMType) {
+            mErrorString = QString(QLatin1String("unknown value of element "
+                        "'type': %1"))
+                .arg(mCurrentText);
+            return false;
+        }
+        mData->provider = attributes.value(elemAttrProvider);
+        mData->cmName = attributes.value(elemAttrManager);
+        mData->protocolName = attributes.value(elemAttrProtocol);
+        mData->iconName = attributes.value(elemAttrIcon);
     } else if (qName == elemParams) {
         CHECK_ELEMENT_IS_CHILD_OF(elemService);
         CHECK_ELEMENT_ATTRIBUTES_COUNT(0);
@@ -316,9 +329,7 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
         mCurrentPropertyName = attributes.value(elemAttrName);
         mCurrentPropertyType = attributes.value(elemAttrType);
     } else {
-        if (qName != elemType && qName != elemProvider &&
-            qName != elemName && qName != elemIcon &&
-            qName != elemManager && qName != elemProtocol) {
+        if (qName != elemName) {
             Tp::warning() << "Ignoring unknown element" << qName;
         } else {
             // check if we are inside <service>
@@ -345,26 +356,8 @@ bool Profile::Private::XmlHandler::endElement(const QString &namespaceURI,
         // ignore all elements with unknown xmlns
         debug() << "Ignoring unknown xmlns" << namespaceURI;
         return true;
-    }
-
-    if (qName == elemType) {
-        if (mCurrentText != QLatin1String("IM") && !allowNonIMType) {
-            mErrorString = QString(QLatin1String("unknown value of element "
-                        "'type': %1"))
-                .arg(mCurrentText);
-            return false;
-        }
-        mData->type = mCurrentText;
-    } else if (qName == elemProvider) {
-        mData->provider = mCurrentText;
     } else if (qName == elemName) {
         mData->name = mCurrentText;
-    } else if (qName == elemIcon) {
-        mData->iconName = mCurrentText;
-    } else if (qName == elemManager) {
-        mData->cmName = mCurrentText;
-    } else if (qName == elemProtocol) {
-        mData->protocolName = mCurrentText;
     } else if (qName == elemParam) {
         mCurrentParameter.setValue(parseValueWithSignature(mCurrentText,
                     mCurrentParameter.dbusSignature()));
