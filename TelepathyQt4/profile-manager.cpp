@@ -24,6 +24,10 @@
 #include "TelepathyQt4/_gen/profile-manager.moc.hpp"
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/ConnectionManager>
+#include <TelepathyQt4/PendingComposite>
+#include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/Profile>
 #include <TelepathyQt4/ReadinessHelper>
 
@@ -37,18 +41,22 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ProfileManager::Private
 {
-    Private(ProfileManager *parent);
+    Private(ProfileManager *parent, const QDBusConnection &bus);
 
     static void introspectMain(Private *self);
+    static void introspectFakeProfiles(Private *self);
 
     ProfileManager *parent;
     ReadinessHelper *readinessHelper;
+    QDBusConnection bus;
     QHash<QString, ProfilePtr> profiles;
+    QList<ConnectionManagerPtr> cms;
 };
 
-ProfileManager::Private::Private(ProfileManager *parent)
+ProfileManager::Private::Private(ProfileManager *parent, const QDBusConnection &bus)
     : parent(parent),
-      readinessHelper(parent->readinessHelper())
+      readinessHelper(parent->readinessHelper()),
+      bus(bus)
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -59,6 +67,14 @@ ProfileManager::Private::Private(ProfileManager *parent)
         (ReadinessHelper::IntrospectFunc) &Private::introspectMain,
         this);
     introspectables[FeatureCore] = introspectableCore;
+
+    ReadinessHelper::Introspectable introspectableFakeProfiles(
+        QSet<uint>() << 0,                                           // makesSenseForStatuses
+        Features() << FeatureCore,                                   // dependsOnFeatures
+        QStringList(),                                               // dependsOnInterfaces
+        (ReadinessHelper::IntrospectFunc) &Private::introspectFakeProfiles,
+        this);
+    introspectables[FeatureFakeProfiles] = introspectableFakeProfiles;
 
     readinessHelper->addIntrospectables(introspectables);
 }
@@ -108,6 +124,14 @@ void ProfileManager::Private::introspectMain(ProfileManager::Private *self)
     self->readinessHelper->setIntrospectCompleted(FeatureCore, true);
 }
 
+void ProfileManager::Private::introspectFakeProfiles(ProfileManager::Private *self)
+{
+    PendingStringList *pendingCmNames = ConnectionManager::listNames(self->bus);
+    self->parent->connect(pendingCmNames,
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onCmNamesRetrieved(Tp::PendingOperation *)));
+}
+
 /**
  * \class ProfileManager
  * \headerfile TelepathyQt4/profile-manager.h <TelepathyQt4/ProfileManager>
@@ -128,20 +152,26 @@ void ProfileManager::Private::introspectMain(ProfileManager::Private *self)
 const Feature ProfileManager::FeatureCore = Feature(QLatin1String(ProfileManager::staticMetaObject.className()), 0, true);
 
 /**
+ * Enabling this feature will make ProfileManager create fake Profile objects to all protocols that
+ * don't have a .profile file installed.
+ */
+const Feature ProfileManager::FeatureFakeProfiles = Feature(QLatin1String(ProfileManager::staticMetaObject.className()), 1);
+
+/**
  * Create a new ProfileManager object.
  */
-ProfileManagerPtr ProfileManager::create()
+ProfileManagerPtr ProfileManager::create(const QDBusConnection &bus)
 {
-    return ProfileManagerPtr(new ProfileManager());
+    return ProfileManagerPtr(new ProfileManager(bus));
 }
 
 /**
  * Construct a new ProfileManager object.
  */
-ProfileManager::ProfileManager()
+ProfileManager::ProfileManager(const QDBusConnection &bus)
     : QObject(),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(this, bus))
 {
 }
 
@@ -207,6 +237,71 @@ QList<ProfilePtr> ProfileManager::profilesForProtocol(
 ProfilePtr ProfileManager::profileForService(const QString &serviceName) const
 {
     return mPriv->profiles.value(serviceName);
+}
+
+void ProfileManager::onCmNamesRetrieved(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        warning().nospace() << "Getting available CMs failed with " <<
+            op->errorName() << ":" << op->errorMessage();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureFakeProfiles, false,
+                op->errorName(), op->errorMessage());
+        return;
+    }
+
+    PendingStringList *pendingCmNames = qobject_cast<PendingStringList *>(op);
+    QStringList cmNames(pendingCmNames->result());
+    if (cmNames.isEmpty()) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureFakeProfiles, true);
+        return;
+    }
+
+    QList<PendingOperation *> ops;
+    foreach (const QString &cmName, cmNames) {
+        ConnectionManagerPtr cm = ConnectionManager::create(mPriv->bus, cmName);
+        mPriv->cms.append(cm);
+        ops.append(cm->becomeReady());
+    }
+
+    PendingComposite *pc = new PendingComposite(ops, false, this);
+    connect(pc,
+            SIGNAL(finished(Tp::PendingOperation *)),
+            SLOT(onCMsReady(Tp::PendingOperation *)));
+}
+
+void ProfileManager::onCMsReady(Tp::PendingOperation *op)
+{
+    if (op->isError()) {
+        warning() << "Failed introspecting all CMs, trying to create fake profiles anyway";
+    }
+
+    ProfilePtr profile;
+    foreach (const ConnectionManagerPtr &cm, mPriv->cms) {
+        foreach (const QString &protocolName, cm->supportedProtocols()) {
+            /* check if there is a profile whose service name is protocolName, and if found,
+             * check if the profile is for cm, if not check if there is a profile whose service
+             * name is cm-protocolName, and if not found create one named cm-protocolName. */
+            profile = profileForService(protocolName);
+            if (profile && profile->cmName() == cm->name()) {
+                continue;
+            }
+
+            QString serviceName = QString(QLatin1String("%1-%2")).arg(cm->name()).arg(protocolName);
+            profile = profileForService(serviceName);
+            if (profile) {
+                continue;
+            }
+
+            profile = ProfilePtr(new Profile(
+                        serviceName,
+                        cm->name(),
+                        protocolName,
+                        cm->protocol(protocolName)));
+            mPriv->profiles.insert(serviceName, profile);
+        }
+    }
+
+    mPriv->readinessHelper->setIntrospectCompleted(FeatureFakeProfiles, true);
 }
 
 } // Tp

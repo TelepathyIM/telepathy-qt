@@ -26,14 +26,17 @@
 #error IN_TELEPATHY_QT4_HEADER
 #endif
 
-#include <QtCore/QObject>
-
 #include <TelepathyQt4/Profile>
 #include <TelepathyQt4/ReadyObject>
 #include <TelepathyQt4/Types>
 
+#include <QDBusConnection>
+#include <QObject>
+
 namespace Tp
 {
+
+class PendingOperation;
 
 class TELEPATHY_QT4_EXPORT ProfileManager : public QObject,
                 public ReadyObject,
@@ -44,8 +47,9 @@ class TELEPATHY_QT4_EXPORT ProfileManager : public QObject,
 
 public:
     static const Feature FeatureCore;
+    static const Feature FeatureFakeProfiles;
 
-    static ProfileManagerPtr create();
+    static ProfileManagerPtr create(const QDBusConnection &bus);
 
     ~ProfileManager();
 
@@ -54,8 +58,12 @@ public:
     QList<ProfilePtr> profilesForProtocol(const QString &protocolName) const;
     ProfilePtr profileForService(const QString &serviceName) const;
 
+private Q_SLOTS:
+    void onCmNamesRetrieved(Tp::PendingOperation *op);
+    void onCMsReady(Tp::PendingOperation *op);
+
 private:
-    ProfileManager();
+    ProfileManager(const QDBusConnection &bus);
 
     struct Private;
     friend struct Private;
