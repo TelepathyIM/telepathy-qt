@@ -304,7 +304,8 @@ void TestAccountBasics::testBasics()
     ProfilePtr profile = acc->profile();
     QCOMPARE(profile.isNull(), false);
     QCOMPARE(profile->isValid(), true);
-    QCOMPARE(profile->serviceName(), acc->protocolName());
+    QCOMPARE(profile->serviceName(), QString(QLatin1String("%1-%2"))
+                .arg(acc->cmName()).arg(acc->protocolName()));
     QCOMPARE(profile->type(), QLatin1String("IM"));
     QCOMPARE(profile->provider(), QString());
     QCOMPARE(profile->name(), acc->protocolName());

@@ -816,7 +816,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  * The fake profile will contain the following info:
  *  - Profile::type() will return "IM"
  *  - Profile::provider() will return an empty string
- *  - Profile::serviceName() will return serviceName()
+ *  - Profile::serviceName() will return cmName()-serviceName()
  *  - Profile::name() and Profile::protocolName() will return protocolName()
  *  - Profile::iconName() will return "im-protocolName()"
  *  - Profile::cmName() will return cmName()
@@ -840,7 +840,7 @@ ProfilePtr Account::profile() const
         mPriv->profile = Profile::createForServiceName(serviceName());
         if (!mPriv->profile->isValid()) {
             mPriv->profile = ProfilePtr(new Profile(
-                        serviceName(),
+                        QString(QLatin1String("%1-%2")).arg(mPriv->cmName).arg(serviceName()),
                         mPriv->cmName,
                         mPriv->protocolName,
                         mPriv->protocolInfo));
