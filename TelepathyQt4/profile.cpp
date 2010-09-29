@@ -23,6 +23,7 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Utils>
 #include <TelepathyQt4/ProtocolInfo>
 #include <TelepathyQt4/ProtocolParameter>
@@ -359,16 +360,16 @@ bool Profile::Private::XmlHandler::endElement(const QString &namespaceURI,
     } else if (qName == elemName) {
         mData->name = mCurrentText;
     } else if (qName == elemParam) {
-        mCurrentParameter.setValue(parseValueWithSignature(mCurrentText,
-                    mCurrentParameter.dbusSignature()));
+        mCurrentParameter.setValue(ManagerFile::parseValueWithDBusSignature(mCurrentText,
+                    mCurrentParameter.dbusSignature().signature()));
         mData->parameters.append(Profile::Parameter(mCurrentParameter));
     } else if (qName == elemCC) {
         mData->unsupportedChannelClasses.append(mCurrentCC);
         mCurrentCC.fixedProperties.clear();
     } else if (qName == elemProperty) {
         mCurrentCC.fixedProperties[mCurrentPropertyName] =
-            parseValueWithSignature(mCurrentText,
-                    QDBusSignature(mCurrentPropertyType));
+            ManagerFile::parseValueWithDBusSignature(mCurrentText,
+                    mCurrentPropertyType);
     }
 
     mElements.pop();
@@ -950,7 +951,7 @@ void Profile::Parameter::setDBusSignature(const QDBusSignature &dbusSignature)
  */
 QVariant::Type Profile::Parameter::type() const
 {
-    return variantTypeForSignature(mPriv->dbusSignature);
+    return ManagerFile::variantTypeFromDBusSignature(mPriv->dbusSignature.signature());
 }
 
 /**

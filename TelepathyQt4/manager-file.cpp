@@ -25,7 +25,6 @@
 
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/KeyFile>
-#include <TelepathyQt4/Utils>
 
 #include <QtCore/QDir>
 #include <QtCore/QHash>
@@ -49,7 +48,7 @@ struct TELEPATHY_QT4_NO_EXPORT ManagerFile::Private
     QStringList protocols() const;
     ParamSpecList parameters(const QString &protocol) const;
 
-    QVariant valueForKey(const QString &param, const QString &signature);
+    QVariant valueForKey(const QString &param, const QString &dbusSignature);
 
     struct ProtocolInfo
     {
@@ -284,10 +283,10 @@ ParamSpecList ManagerFile::Private::parameters(const QString &protocol) const
 }
 
 QVariant ManagerFile::Private::valueForKey(const QString &param,
-                                           const QString &signature)
+                                           const QString &dbusSignature)
 {
     QString value = keyFile.rawValue(param);
-    return parseValueWithSignature(value, QDBusSignature(signature));
+    return parseValueWithDBusSignature(value, dbusSignature);
 }
 
 
@@ -434,6 +433,52 @@ QVariant::Type ManagerFile::variantTypeFromDBusSignature(const QString &signatur
     }
 
     return type;
+}
+
+QVariant ManagerFile::parseValueWithDBusSignature(const QString &value,
+        const QString &dbusSignature)
+{
+    QVariant::Type type = variantTypeFromDBusSignature(dbusSignature);
+
+    if (type == QVariant::Invalid) {
+        return QVariant(type);
+    }
+
+    switch (type) {
+        case QVariant::Bool:
+            {
+                if (value.toLower() == QLatin1String("true") ||
+                    value == QLatin1String("1")) {
+                    return QVariant(true);
+                } else {
+                    return QVariant(false);
+                }
+                break;
+            }
+        case QVariant::Int:
+            return QVariant(value.toInt());
+        case QVariant::UInt:
+            return QVariant(value.toUInt());
+        case QVariant::LongLong:
+            return QVariant(value.toLongLong());
+        case QVariant::ULongLong:
+            return QVariant(value.toULongLong());
+        case QVariant::Double:
+            return QVariant(value.toDouble());
+        case QVariant::StringList:
+            {
+                QStringList list;
+                QByteArray rawValue = value.toAscii();
+                if (KeyFile::unescapeStringList(rawValue, 0, rawValue.size(), list)) {
+                    return QVariant(list);
+                } else {
+                    return QVariant(QVariant::Invalid);
+                }
+            }
+        default:
+            break;
+    }
+    return QVariant(value);
 }
 
 } // Tp

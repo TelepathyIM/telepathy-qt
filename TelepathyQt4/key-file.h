@@ -70,6 +70,11 @@ public:
     QString value(const QString &key) const;
     QStringList valueAsStringList(const QString &key) const;
 
+    static bool unescapeString(const QByteArray &data, int from, int to,
+        QString &result);
+    static bool unescapeStringList(const QByteArray &data, int from, int to,
+        QStringList &result);
+
 private:
     struct Private;
     friend struct Private;

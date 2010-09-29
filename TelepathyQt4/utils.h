@@ -28,25 +28,12 @@
 
 #include <TelepathyQt4/Global>
 
-#include <QByteArray>
-#include <QDBusSignature>
 #include <QString>
-#include <QStringList>
-#include <QVariant>
 
 namespace Tp
 {
 
 TELEPATHY_QT4_EXPORT QString escapeAsIdentifier(const QString &string);
-
-TELEPATHY_QT4_EXPORT bool unescapeString(const QByteArray &data, int from, int to,
-        QString &result);
-TELEPATHY_QT4_EXPORT bool unescapeStringList(const QByteArray &data, int from, int to,
-        QStringList &result);
-
-TELEPATHY_QT4_EXPORT QVariant::Type variantTypeForSignature(const QDBusSignature &signature);
-TELEPATHY_QT4_EXPORT QVariant parseValueWithSignature(const QString &value,
-        const QDBusSignature &signature);
 
 } // Tp
 

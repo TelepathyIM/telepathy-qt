@@ -469,4 +469,87 @@ QStringList KeyFile::valueAsStringList(const QString &key) const
     return mPriv->valueAsStringList(key);
 }
 
+bool KeyFile::unescapeString(const QByteArray &data, int from, int to, QString &result)
+{
+    int i = from;
+    while (i < to) {
+        uint ch = data.at(i++);
+
+        if (ch == '\\') {
+            if (i == to) {
+                result += QLatin1String("\\");
+                return true;
+            }
+
+            char nextCh = data.at(i++);
+            switch (nextCh) {
+                case 's':
+                    result += QLatin1String(" ");
+                    break;
+                case 'n':
+                    result += QLatin1String("\n");
+                    break;
+                case 't':
+                    result += QLatin1String("\t");
+                    break;
+                case 'r':
+                    result += QLatin1String("\r");
+                    break;
+                case ';':
+                    result += QLatin1String(";");
+                    break;
+                case '\\':
+                    result += QLatin1String("\\");
+                    break;
+                default:
+                    return false;
+            }
+        } else {
+            result += ch;
+        }
+    }
+
+    return true;
+}
+
+bool KeyFile::unescapeStringList(const QByteArray &data, int from, int to, QStringList &result)
+{
+    QByteArray value;
+    QList<QByteArray> valueList;
+    int i = from;
+    char ch;
+    while (i < to) {
+        ch = data.at(i++);
+
+        if (ch == '\\') {
+            value += ch;
+            if (i < to) {
+                value += data.at(i++);
+                continue;
+            } else {
+                valueList << value;
+                break;
+            }
+        } else if (ch == ';') {
+            valueList << value;
+            value = "";
+        } else {
+            value += ch;
+            if (i == to) {
+                valueList << value;
+            }
+        }
+    }
+
+    foreach (value, valueList) {
+        QString str;
+        if (!unescapeString(value, 0, value.size(), str)) {
+            return false;
+        }
+        result << str;
+    }
+
+    return true;
+}
+
 } // Tp

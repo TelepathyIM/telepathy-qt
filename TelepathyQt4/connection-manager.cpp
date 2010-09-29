@@ -36,7 +36,6 @@
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/ManagerFile>
 #include <TelepathyQt4/Types>
-#include <TelepathyQt4/Utils>
 
 #include <QDBusConnectionInterface>
 #include <QQueue>
@@ -65,7 +64,7 @@ ProtocolParameter::ProtocolParameter(const QString &name,
                                      QVariant defaultValue,
                                      ConnMgrParamFlag flags)
     : mPriv(new Private(name, dbusSignature,
-                variantTypeForSignature(dbusSignature), defaultValue,
+                ManagerFile::variantTypeFromDBusSignature(dbusSignature.signature()), defaultValue,
                 flags))
 {
 }
