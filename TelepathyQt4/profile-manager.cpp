@@ -297,6 +297,10 @@ void ProfileManager::onCMsReady(Tp::PendingOperation *op)
 
     ProfilePtr profile;
     foreach (const ConnectionManagerPtr &cm, mPriv->cms) {
+        if (!cm->isReady()) {
+            continue;
+        }
+
         foreach (const QString &protocolName, cm->supportedProtocols()) {
             /* check if there is a profile whose service name is protocolName, and if found,
              * check if the profile is for cm, if not check if there is a profile whose service
