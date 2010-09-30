@@ -112,6 +112,16 @@ void TestProfile::testProfile()
             true);
     QCOMPARE(rcc.fixedProperties[QLatin1String("org.freedesktop.Telepathy.Channel.ChannelType")],
             QVariant(QLatin1String("org.freedesktop.Telepathy.Channel.Type.Text")));
+
+    profile = Profile::createForServiceName(QLatin1String("test-profile-no-icon-and-provider"));
+    QCOMPARE(profile->isValid(), true);
+
+    QCOMPARE(profile->serviceName(), QLatin1String("test-profile-no-icon-and-provider"));
+    QCOMPARE(profile->type(), QLatin1String("IM"));
+    QCOMPARE(profile->provider().isEmpty(), true);
+    QCOMPARE(profile->cmName(), QLatin1String("testprofilecm"));
+    QCOMPARE(profile->protocolName(), QLatin1String("testprofileproto"));
+    QCOMPARE(profile->iconName().isEmpty(), true);
 }
 
 QTEST_MAIN(TestProfile)
