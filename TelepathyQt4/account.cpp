@@ -820,7 +820,8 @@ PendingOperation *Account::setServiceName(const QString &value)
  *  - Profile::name() and Profile::protocolName() will return protocolName()
  *  - Profile::iconName() will return "im-protocolName()"
  *  - Profile::cmName() will return cmName()
- *  - Profile::parameters() will return a list matching CM default parameters
+ *  - Profile::parameters() will return a list matching CM default parameters for protocol with name
+ *    protocolName()
  *  - Profile::presences() will return an empty list and
  *    Profile::allowOtherPresences() will return \c true, meaning that CM
  *    presences should be used
