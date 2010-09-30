@@ -152,8 +152,28 @@ void ProfileManager::Private::introspectFakeProfiles(ProfileManager::Private *se
 const Feature ProfileManager::FeatureCore = Feature(QLatin1String(ProfileManager::staticMetaObject.className()), 0, true);
 
 /**
- * Enabling this feature will make ProfileManager create fake Profile objects to all protocols that
- * don't have a .profile file installed.
+ * Enabling this feature will make ProfileManager create fake Profile objects to all protocols
+ * supported on the installed connection managers, even if they don't have .profile files installed
+ * making use of them.
+ *
+ * Fake profiles are identified by Profile::isFake() returning \c true.
+ *
+ * The fake profile will contain the following info:
+ *  - Profile::type() will return "IM"
+ *  - Profile::provider() will return an empty string
+ *  - Profile::serviceName() will return cmName-protocolName
+ *  - Profile::name() and Profile::protocolName() will return protocolName
+ *  - Profile::iconName() will return "im-protocolName"
+ *  - Profile::cmName() will return cmName
+ *  - Profile::parameters() will return a list matching CM default parameters for protocol with name
+ *    protocolName.
+ *  - Profile::presences() will return an empty list and
+ *    Profile::allowOtherPresences() will return \c true, meaning that CM
+ *    presences should be used
+ *  - Profile::unsupportedChannelClasses() will return an empty list
+ *
+ * Where cmName and protocolName are the name of the connection manager and the name of the protocol
+ * for which this fake Profile is created, respectively.
  */
 const Feature ProfileManager::FeatureFakeProfiles = Feature(QLatin1String(ProfileManager::staticMetaObject.className()), 1);
 
