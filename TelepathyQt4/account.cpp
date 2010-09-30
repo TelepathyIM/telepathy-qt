@@ -830,6 +830,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  * This method requires Account::FeatureProfile to be enabled.
  *
  * \return The profile for this account.
+ * \sa profileChanged()
  */
 ProfilePtr Account::profile() const
 {
@@ -2242,6 +2243,16 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
+ * \fn void Account::profileChanged(const Tp::ProfilePtr &profile);
+ *
+ * This signal is emitted when the value of profile() of this account
+ * changes.
+ *
+ * \param profile The new profile of this account.
+ * \sa profile()
+ */
+
+/**
  * \fn void Account::displayNameChanged(const QString &displayName);
  *
  * This signal is emitted when the value of displayName() of this account
@@ -2559,12 +2570,25 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Interfaces:" << parent->interfaces();
     }
 
+    QString oldIconName = parent->iconName();
+    bool serviceNameChanged = false;
     if (props.contains(QLatin1String("Service")) &&
         serviceName != qdbus_cast<QString>(props[QLatin1String("Service")])) {
+        serviceNameChanged = true;
         serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
-        debug() << " Service Name:" << serviceName;
-        emit parent->serviceNameChanged(serviceName);
+        debug() << " Service Name:" << parent->serviceName();
+        /* use parent->serviceName() here as if the service name is empty we are going to use the
+         * protocol name */
+        emit parent->serviceNameChanged(parent->serviceName());
         parent->notify("serviceName");
+
+        /* if we had a profile and the service changed, it means the profile also changed */
+        if (parent->isReady(Account::FeatureProfile)) {
+            /* service name changed, let's recreate profile */
+            profile.reset();
+            emit parent->profileChanged(parent->profile());
+            parent->notify("profile");
+        }
     }
 
     if (props.contains(QLatin1String("DisplayName")) &&
@@ -2575,13 +2599,21 @@ void Account::Private::updateProperties(const QVariantMap &props)
         parent->notify("displayName");
     }
 
-    if (props.contains(QLatin1String("Icon")) &&
-        iconName != qdbus_cast<QString>(props[QLatin1String("Icon")])) {
-        iconName = qdbus_cast<QString>(props[QLatin1String("Icon")]);
-        debug() << " Icon:" << iconName;
-        emit parent->iconChanged(iconName);
-        emit parent->iconNameChanged(iconName);
-        parent->notify("iconName");
+    if ((props.contains(QLatin1String("Icon")) &&
+         oldIconName != qdbus_cast<QString>(props[QLatin1String("Icon")])) ||
+        serviceNameChanged) {
+
+        if (props.contains(QLatin1String("Icon"))) {
+            iconName = qdbus_cast<QString>(props[QLatin1String("Icon")]);
+        }
+
+        QString newIconName = parent->iconName();
+        if (oldIconName != newIconName) {
+            debug() << " Icon:" << newIconName;
+            emit parent->iconChanged(newIconName);
+            emit parent->iconNameChanged(newIconName);
+            parent->notify("iconName");
+        }
     }
 
     if (props.contains(QLatin1String("Nickname")) &&

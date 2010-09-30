@@ -305,7 +305,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(profile.isNull(), false);
     QCOMPARE(profile->isValid(), true);
     QCOMPARE(profile->serviceName(), QString(QLatin1String("%1-%2"))
-                .arg(acc->cmName()).arg(acc->protocolName()));
+                .arg(acc->cmName()).arg(acc->serviceName()));
     QCOMPARE(profile->type(), QLatin1String("IM"));
     QCOMPARE(profile->provider(), QString());
     QCOMPARE(profile->name(), acc->protocolName());
