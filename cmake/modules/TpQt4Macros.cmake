@@ -351,6 +351,9 @@ macro(_tpqt4_add_check_targets _fancyName _name)
     add_custom_target(check-${_fancyName} ${ARGN})
     add_dependencies(check-${_fancyName} test-${_name})
 
+    # Lcov target
+    add_dependencies(lcov-check test-${_name})
+
     # Valgrind target
     add_custom_target(check-valgrind-${_fancyName})
     add_dependencies(check-valgrind-${_fancyName} test-${_name})
