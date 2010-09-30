@@ -899,17 +899,34 @@ QString Account::icon() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
+ * If the account has no icon, and Account::FeatureProfile is enabled, the icon from the result of
+ * profile() will be used.
+ *
+ * If neither the account nor the profile has an icon, and Account::FeatureProtocolInfo is
+ * enabled, the icon from protocolInfo() will be used if set.
+ *
+ * As a last resort, "im-" + protocolName() will be returned.
+ *
+ * This matches the fallbacks recommended by the Telepathy specification.
+ *
  * \return The icon name of this account.
  * \sa iconNameChanged()
  */
 QString Account::iconName() const
 {
     if (mPriv->iconName.isEmpty()) {
-        if (isReady(Features() << FeatureProtocolInfo) && protocolInfo() != NULL) {
-            return protocolInfo()->iconName();
-        } else {
-            return QString(QLatin1String("im-%1")).arg(protocol());
+        if (isReady(FeatureProfile) && !profile().isNull()) {
+            QString iconName = profile()->iconName();
+            if (!iconName.isEmpty()) {
+                return iconName;
+            }
         }
+
+        if (isReady(FeatureProtocolInfo) && protocolInfo() != NULL) {
+            return protocolInfo()->iconName();
+        }
+
+        return QString(QLatin1String("im-%1")).arg(protocolName());
     }
 
     return mPriv->iconName;
