@@ -247,13 +247,15 @@ bool Profile::Private::XmlHandler::startElement(const QString &namespaceURI,
     }
 
     if (qName == elemService) {
-        CHECK_ELEMENT_ATTRIBUTES_COUNT(6);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrId);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrType);
-        CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrProvider);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrManager);
         CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrProtocol);
-        CHECK_ELEMENT_HAS_ATTRIBUTE(elemAttrIcon);
+
+        QStringList allowedAttrs = QStringList() <<
+            elemAttrId << elemAttrType << elemAttrManager <<
+            elemAttrProtocol << elemAttrProvider << elemAttrIcon;
+        CHECK_ELEMENT_ATTRIBUTES(allowedAttrs);
 
         if (attributes.value(elemAttrId) != mServiceName) {
             mErrorString = QString(QLatin1String("the '%1' attribute of the "

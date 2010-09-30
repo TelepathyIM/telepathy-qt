@@ -25,14 +25,14 @@ void TestProfileManager::testProfileManager()
     QCOMPARE(pm->isReady(), true);
 
     QCOMPARE(pm->profiles().isEmpty(), false);
-    QCOMPARE(pm->profiles().count(), 1);
+    QCOMPARE(pm->profiles().count(), 2);
     QCOMPARE(pm->profileForService(QLatin1String("test-profile")).isNull(), false);
     QCOMPARE(pm->profileForService(QLatin1String("test-profile-file-not-found")).isNull(), true);
     QCOMPARE(pm->profileForService(QLatin1String("test-profile-non-im-type")).isNull(), true);
     QCOMPARE(pm->profilesForCM(QLatin1String("testprofilecm")).isEmpty(), false);
-    QCOMPARE(pm->profilesForCM(QLatin1String("testprofilecm")).count(), 1);
+    QCOMPARE(pm->profilesForCM(QLatin1String("testprofilecm")).count(), 2);
     QCOMPARE(pm->profilesForProtocol(QLatin1String("testprofileproto")).isEmpty(), false);
-    QCOMPARE(pm->profilesForProtocol(QLatin1String("testprofileproto")).count(), 1);
+    QCOMPARE(pm->profilesForProtocol(QLatin1String("testprofileproto")).count(), 2);
 
     QVERIFY(connect(pm->becomeReady(ProfileManager::FeatureFakeProfiles),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -41,7 +41,7 @@ void TestProfileManager::testProfileManager()
     QCOMPARE(pm->isReady(ProfileManager::FeatureFakeProfiles), true);
 
     QCOMPARE(pm->profiles().isEmpty(), false);
-    QCOMPARE(pm->profiles().count(), 3);
+    QCOMPARE(pm->profiles().count(), 4);
     QCOMPARE(pm->profileForService(QLatin1String("spurious-normal")).isNull(), false);
     QCOMPARE(pm->profileForService(QLatin1String("spurious-weird")).isNull(), false);
     QCOMPARE(pm->profilesForCM(QLatin1String("spurious")).isEmpty(), false);
