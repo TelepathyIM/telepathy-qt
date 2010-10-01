@@ -233,7 +233,9 @@ void TestConnRoster::testRoster()
             }
 
             contact->authorizePresencePublication();
-            QCOMPARE(mLoop->exec(), 0);
+            while (contact->publishState() != Contact::PresenceStateYes) {
+                QCOMPARE(mLoop->exec(), 0);
+            }
             // I authorized him to see my presence
             QCOMPARE(static_cast<uint>(contact->publishState()),
                      static_cast<uint>(Contact::PresenceStateYes));
