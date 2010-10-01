@@ -212,9 +212,9 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
           remotePending(remotePending),
           details(details),
           // TODO most of these probably should be removed once the rest of the code using them is sanitized
-          actor(qdbus_cast<uint>(details.value(ACTOR))),
-          reason(qdbus_cast<uint>(details.value(CHANGE_REASON))),
-          message(qdbus_cast<QString>(details.value(MESSAGE)))
+          actor(qdbus_cast<uint>(details.value(keyActor))),
+          reason(qdbus_cast<uint>(details.value(keyChangeReason))),
+          message(qdbus_cast<QString>(details.value(keyMessage)))
     {
     }
 
@@ -227,15 +227,15 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
     uint reason;
     QString message;
 
-    static const QString ACTOR;
-    static const QString CHANGE_REASON;
-    static const QString MESSAGE;
+    static const QString keyActor;
+    static const QString keyChangeReason;
+    static const QString keyMessage;
 };
 
-const QString Channel::Private::GroupMembersChangedInfo::ACTOR(QLatin1String("actor"));
-const QString Channel::Private::GroupMembersChangedInfo::CHANGE_REASON(
+const QString Channel::Private::GroupMembersChangedInfo::keyActor(QLatin1String("actor"));
+const QString Channel::Private::GroupMembersChangedInfo::keyChangeReason(
         QLatin1String("change-reason"));
-const QString Channel::Private::GroupMembersChangedInfo::MESSAGE(QLatin1String("message"));
+const QString Channel::Private::GroupMembersChangedInfo::keyMessage(QLatin1String("message"));
 
 Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
         const QVariantMap &immutableProperties)
@@ -340,8 +340,8 @@ void Channel::Private::introspectMainProperties()
     QVariantMap props;
     QString key;
     bool needIntrospectMainProps = false;
-    const unsigned NUM_NAMES = 6;
-    const static QString names[NUM_NAMES] = {
+    const unsigned numNames = 6;
+    const static QString names[numNames] = {
         QLatin1String("ChannelType"),
         QLatin1String("Interfaces"),
         QLatin1String("TargetHandleType"),
@@ -349,7 +349,7 @@ void Channel::Private::introspectMainProperties()
         QLatin1String("Requested"),
         QLatin1String("InitiatorHandle")
     };
-    const static QString qualifiedNames[NUM_NAMES] = {
+    const static QString qualifiedNames[numNames] = {
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Interfaces"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
@@ -357,7 +357,7 @@ void Channel::Private::introspectMainProperties()
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Requested"),
         QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".InitiatorHandle")
     };
-    for (unsigned i = 0; i < NUM_NAMES; ++i) {
+    for (unsigned i = 0; i < numNames; ++i) {
         const QString &qualified = qualifiedNames[i];
         if (!immutableProperties.contains(qualified)) {
             needIntrospectMainProps = true;
@@ -581,17 +581,17 @@ void Channel::Private::continueIntrospection()
 
 void Channel::Private::extract0177MainProps(const QVariantMap &props)
 {
-    const static QString CHANNEL_TYPE(QLatin1String("ChannelType"));
-    const static QString INTERFACES(QLatin1String("Interfaces"));
-    const static QString TARGET_HANDLE(QLatin1String("TargetHandle"));
-    const static QString TARGET_HANDLE_TYPE(QLatin1String("TargetHandleType"));
+    const static QString keyChannelType(QLatin1String("ChannelType"));
+    const static QString keyInterfaces(QLatin1String("Interfaces"));
+    const static QString keyTargetHandle(QLatin1String("TargetHandle"));
+    const static QString keyTargetHandleType(QLatin1String("TargetHandleType"));
 
     bool haveProps = props.size() >= 4
-                  && props.contains(CHANNEL_TYPE)
-                  && !qdbus_cast<QString>(props[CHANNEL_TYPE]).isEmpty()
-                  && props.contains(INTERFACES)
-                  && props.contains(TARGET_HANDLE)
-                  && props.contains(TARGET_HANDLE_TYPE);
+                  && props.contains(keyChannelType)
+                  && !qdbus_cast<QString>(props[keyChannelType]).isEmpty()
+                  && props.contains(keyInterfaces)
+                  && props.contains(keyTargetHandle)
+                  && props.contains(keyTargetHandleType);
 
     if (!haveProps) {
         warning() << " Properties specified in 0.17.7 not found";
@@ -601,25 +601,25 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
         introspectQueue.enqueue(&Private::introspectMainFallbackInterfaces);
     }
     else {
-        parent->setInterfaces(qdbus_cast<QStringList>(props[INTERFACES]));
+        parent->setInterfaces(qdbus_cast<QStringList>(props[keyInterfaces]));
         readinessHelper->setInterfaces(parent->interfaces());
-        channelType = qdbus_cast<QString>(props[CHANNEL_TYPE]);
-        targetHandle = qdbus_cast<uint>(props[TARGET_HANDLE]);
-        targetHandleType = qdbus_cast<uint>(props[TARGET_HANDLE_TYPE]);
+        channelType = qdbus_cast<QString>(props[keyChannelType]);
+        targetHandle = qdbus_cast<uint>(props[keyTargetHandle]);
+        targetHandleType = qdbus_cast<uint>(props[keyTargetHandleType]);
 
         // FIXME: this is screwed up. See the name of the function? It says 0.17.7. The following
         // props were only added in 0.17.13... However, I won't bother writing separate extraction
         // functions now.
 
-        const static QString REQUESTED(QLatin1String("Requested"));
-        const static QString INITIATOR_HANDLE(QLatin1String("InitiatorHandle"));
+        const static QString keyRequested(QLatin1String("Requested"));
+        const static QString keyInitiatorHandle(QLatin1String("InitiatorHandle"));
 
-        if (props.contains(REQUESTED)) {
-            requested = qdbus_cast<uint>(props[REQUESTED]);
+        if (props.contains(keyRequested)) {
+            requested = qdbus_cast<uint>(props[keyRequested]);
         }
 
-        if (props.contains(INITIATOR_HANDLE)) {
-            initiatorHandle = qdbus_cast<uint>(props[INITIATOR_HANDLE]);
+        if (props.contains(keyInitiatorHandle)) {
+            initiatorHandle = qdbus_cast<uint>(props[keyInitiatorHandle]);
         }
 
         if (!fakeGroupInterfaceIfNeeded() &&
@@ -640,22 +640,22 @@ void Channel::Private::extract0177MainProps(const QVariantMap &props)
 
 void Channel::Private::extract0176GroupProps(const QVariantMap &props)
 {
-    const static QString GROUP_FLAGS(QLatin1String("GroupFlags"));
-    const static QString HANDLE_OWNERS(QLatin1String("HandleOwners"));
-    const static QString LP_MEMBERS(QLatin1String("LocalPendingMembers"));
-    const static QString MEMBERS(QLatin1String("Members"));
-    const static QString RP_MEMBERS(QLatin1String("RemotePendingMembers"));
-    const static QString SELF_HANDLE(QLatin1String("SelfHandle"));
+    const static QString keyGroupFlags(QLatin1String("GroupFlags"));
+    const static QString keyHandleOwners(QLatin1String("HandleOwners"));
+    const static QString keyLPMembers(QLatin1String("LocalPendingMembers"));
+    const static QString keyMembers(QLatin1String("Members"));
+    const static QString keyRPMembers(QLatin1String("RemotePendingMembers"));
+    const static QString keySelfHandle(QLatin1String("SelfHandle"));
 
     bool haveProps = props.size() >= 6
-                  && (props.contains(GROUP_FLAGS)
-                  && (qdbus_cast<uint>(props[GROUP_FLAGS]) &
+                  && (props.contains(keyGroupFlags)
+                  && (qdbus_cast<uint>(props[keyGroupFlags]) &
                       ChannelGroupFlagProperties))
-                  && props.contains(HANDLE_OWNERS)
-                  && props.contains(LP_MEMBERS)
-                  && props.contains(MEMBERS)
-                  && props.contains(RP_MEMBERS)
-                  && props.contains(SELF_HANDLE);
+                  && props.contains(keyHandleOwners)
+                  && props.contains(keyLPMembers)
+                  && props.contains(keyMembers)
+                  && props.contains(keyRPMembers)
+                  && props.contains(keySelfHandle);
 
     if (!haveProps) {
         warning() << " Properties specified in 0.17.6 not found";
@@ -671,14 +671,14 @@ void Channel::Private::extract0176GroupProps(const QVariantMap &props)
         groupAreHandleOwnersAvailable = true;
         groupIsSelfHandleTracked = true;
 
-        setGroupFlags(qdbus_cast<uint>(props[GROUP_FLAGS]));
-        groupHandleOwners = qdbus_cast<HandleOwnerMap>(props[HANDLE_OWNERS]);
+        setGroupFlags(qdbus_cast<uint>(props[keyGroupFlags]));
+        groupHandleOwners = qdbus_cast<HandleOwnerMap>(props[keyHandleOwners]);
 
-        groupInitialMembers = qdbus_cast<UIntList>(props[MEMBERS]);
-        groupInitialLP = qdbus_cast<LocalPendingInfoList>(props[LP_MEMBERS]);
-        groupInitialRP = qdbus_cast<UIntList>(props[RP_MEMBERS]);
+        groupInitialMembers = qdbus_cast<UIntList>(props[keyMembers]);
+        groupInitialLP = qdbus_cast<LocalPendingInfoList>(props[keyLPMembers]);
+        groupInitialRP = qdbus_cast<UIntList>(props[keyRPMembers]);
 
-        uint propSelfHandle = qdbus_cast<uint>(props[SELF_HANDLE]);
+        uint propSelfHandle = qdbus_cast<uint>(props[keySelfHandle]);
         // Don't overwrite the self handle we got from the Connection with 0
         if (propSelfHandle) {
             groupSelfHandle = propSelfHandle;
