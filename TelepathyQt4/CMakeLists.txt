@@ -260,7 +260,7 @@ set(telepathy_qt4_HEADERS
     PendingVariant
     pending-variant.h
     PendingVoid
-    Parameter
+    ProtocolParameter
     Profile
     profile.h
     ProfileManager
