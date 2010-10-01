@@ -367,7 +367,7 @@ macro(_tpqt4_add_check_targets _fancyName _name)
                 --child-silent-after-fork=yes
                 --num-callers=20
                 --gen-suppressions=all
-                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test.valgrind.log.${_fancyName}
+                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test-${_fancyName}.memcheck.log
                 ${ARGN}
         WORKING_DIRECTORY
                 ${CMAKE_CURRENT_BINARY_DIR}
@@ -382,7 +382,8 @@ macro(_tpqt4_add_check_targets _fancyName _name)
         COMMAND valgrind
                 --tool=callgrind
                 --dump-instr=yes
-                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test.callgrind.log.${_fancyName}
+                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test-${_fancyName}.callgrind.log
+                --callgrind-out-file=${CMAKE_CURRENT_BINARY_DIR}/test-${_fancyName}.callgrind.out
                 ${ARGN}
         WORKING_DIRECTORY
             ${CMAKE_CURRENT_BINARY_DIR}
