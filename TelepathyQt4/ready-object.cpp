@@ -36,14 +36,14 @@ struct TELEPATHY_QT4_NO_EXPORT ReadyObject::Private
     ~Private();
 
     ReadyObject *parent;
-    Feature featureCore;
+    const Features coreFeatures;
     ReadinessHelper *readinessHelper;
 };
 
 ReadyObject::Private::Private(ReadyObject *parent, QObject *object,
         Feature featureCore)
     : parent(parent),
-      featureCore(featureCore),
+      coreFeatures(Features() << featureCore),
       readinessHelper(new ReadinessHelper(object))
 {
 }
@@ -92,7 +92,7 @@ ReadyObject::~ReadyObject()
 bool ReadyObject::isReady(const Features &features) const
 {
     if (features.isEmpty()) {
-        return mPriv->readinessHelper->isReady(Features() << mPriv->featureCore);
+        return mPriv->readinessHelper->isReady(mPriv->coreFeatures);
     }
     return mPriv->readinessHelper->isReady(features);
 }
@@ -113,7 +113,7 @@ bool ReadyObject::isReady(const Features &features) const
 PendingReady *ReadyObject::becomeReady(const Features &requestedFeatures)
 {
     if (requestedFeatures.isEmpty()) {
-        return mPriv->readinessHelper->becomeReady(Features() << mPriv->featureCore);
+        return mPriv->readinessHelper->becomeReady(mPriv->coreFeatures);
     }
     return mPriv->readinessHelper->becomeReady(requestedFeatures);
 

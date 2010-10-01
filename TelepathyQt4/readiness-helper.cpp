@@ -159,7 +159,11 @@ ReadinessHelper::Private::Private(
 
 ReadinessHelper::Private::~Private()
 {
-    abortOperations(QLatin1String(TELEPATHY_ERROR_CANCELLED), QLatin1String("Destroyed"));
+    // API/ABI break TODO: make string constants const QStrings to begin with?
+    const static QString errorCancelled(QLatin1String(TELEPATHY_ERROR_CANCELLED));
+    const static QString messageDestroyed(QLatin1String("Destroyed"));
+
+    abortOperations(errorCancelled, messageDestroyed);
 }
 
 void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
@@ -175,6 +179,13 @@ void ReadinessHelper::Private::setCurrentStatus(uint newStatus)
 
         // retrieve all features that were requested for the new status
         pendingFeatures = requestedFeatures;
+
+        // make sure that we have inserted the dependencies for the requested features too
+        Features deps;
+        foreach (Feature feature, pendingFeatures) {
+            deps.unite(depsFor(feature));
+        }
+        pendingFeatures.unite(deps);
 
         if (supportedStatuses.contains(currentStatus)) {
             QTimer::singleShot(0, parent, SLOT(iterateIntrospection()));
@@ -256,13 +267,15 @@ void ReadinessHelper::Private::iterateIntrospection()
         }
     }
 
+    const Features completedFeatures = satisfiedFeatures + missingFeatures;
+
     // check if any pending operations for becomeReady should finish now
     // based on their requested features having nothing more than what
     // satisfiedFeatures + missingFeatures has
     QString errorName;
     QString errorMessage;
     foreach (PendingReady *operation, pendingOperations) {
-        if ((operation->requestedFeatures() - (satisfiedFeatures + missingFeatures)).isEmpty()) {
+        if ((operation->requestedFeatures() - completedFeatures).isEmpty()) {
             if (parent->isReady(operation->requestedFeatures(), &errorName, &errorMessage)) {
                 operation->setFinished();
             } else {
@@ -271,22 +284,15 @@ void ReadinessHelper::Private::iterateIntrospection()
         }
     }
 
-    if ((requestedFeatures - (satisfiedFeatures + missingFeatures)).isEmpty()) {
+    if ((requestedFeatures - completedFeatures).isEmpty()) {
         // all requested features satisfied or missing
         emit parent->statusReady(currentStatus);
         return;
     }
 
-    // Update pendingFeatures to contain the (recursive) dependencies of what's in it currently
-    Features deps;
-    foreach (Feature feature, pendingFeatures) {
-        deps.unite(depsFor(feature));
-    }
-    pendingFeatures.unite(deps);
-
     // update pendingFeatures with the difference of requested and
     // satisfied + missing
-    pendingFeatures -= (satisfiedFeatures + missingFeatures);
+    pendingFeatures -= completedFeatures;
 
     // find out which features don't have dependencies that are still pending
     Features readyToIntrospect;
@@ -559,6 +565,13 @@ PendingReady *ReadinessHelper::becomeReady(const Features &requestedFeatures)
     mPriv->requestedFeatures += requestedFeatures;
     // it will be updated on iterateIntrospection
     mPriv->pendingFeatures += requestedFeatures;
+
+    // Insert the dependencies of the requested features too
+    Features deps;
+    foreach (Feature feature, mPriv->pendingFeatures) {
+        deps.unite(mPriv->depsFor(feature));
+    }
+    mPriv->pendingFeatures.unite(deps);
 
     operation = new PendingReady(requestedFeatures, mPriv->object, this);
     connect(operation,
