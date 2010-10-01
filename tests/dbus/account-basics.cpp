@@ -12,6 +12,7 @@
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/Profile>
 
 #include <tests/lib/test.h>
 
@@ -255,8 +256,21 @@ void TestAccountBasics::testBasics()
     // infers it from the protocol name too)
     QCOMPARE(acc->iconName(), QLatin1String("im-normal"));
 
+    QVERIFY(connect(acc->becomeReady(Account::FeatureProfile),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureProfile), true);
+
+    ProfilePtr profile = acc->profile();
+    QCOMPARE(profile.isNull(), false);
+    QCOMPARE(profile->isValid(), true);
+    QCOMPARE(profile->serviceName(), QString(QLatin1String("%1-%2"))
+                .arg(acc->cmName()).arg(acc->serviceName()));
+
     QVERIFY(acc->serviceName() != acc->protocolName());
     QCOMPARE(acc->serviceName(), QString(QLatin1String("bob_service")));
+
     connect(acc.data(),
             SIGNAL(serviceNameChanged(const QString &)),
             SLOT(onAccountServiceNameChanged(const QString &)));
@@ -267,6 +281,7 @@ void TestAccountBasics::testBasics()
     QCOMPARE(mLoop->exec(), 0);
     // wait for serviceNameChanged
     QCOMPARE(mLoop->exec(), 0);
+
     QCOMPARE(acc->serviceName(), acc->protocolName());
     QCOMPARE(mServiceName, acc->serviceName());
 
@@ -293,6 +308,21 @@ void TestAccountBasics::testBasics()
     QCOMPARE(acc->avatar().MIMEType, QString(QLatin1String("image/png")));
     protocolInfo = acc->protocolInfo();
     QCOMPARE((bool) protocolInfo, !((ProtocolInfo *) 0));
+
+    profile = acc->profile();
+    QCOMPARE(profile.isNull(), false);
+    QCOMPARE(profile->isValid(), true);
+    QCOMPARE(profile->serviceName(), QString(QLatin1String("%1-%2"))
+                .arg(acc->cmName()).arg(acc->serviceName()));
+    QCOMPARE(profile->type(), QLatin1String("IM"));
+    QCOMPARE(profile->provider(), QString());
+    QCOMPARE(profile->name(), acc->protocolName());
+    QCOMPARE(profile->cmName(), acc->cmName());
+    QCOMPARE(profile->protocolName(), acc->protocolName());
+    QCOMPARE(profile->parameters().isEmpty(), false);
+    QCOMPARE(profile->allowOtherPresences(), true);
+    QCOMPARE(profile->presences().isEmpty(), true);
+    QCOMPARE(profile->unsupportedChannelClasses().isEmpty(), true);
 
     QList<AccountPtr> allAccounts = mAM->allAccounts();
 

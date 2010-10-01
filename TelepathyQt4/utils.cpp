@@ -21,6 +21,9 @@
 
 #include <TelepathyQt4/Utils>
 
+#include <QByteArray>
+#include <QString>
+
 /**
  * \defgroup utility functions
  */

@@ -42,6 +42,8 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt4_add_dbus_unit_test(TextChannel text-chan tp-glib-tests)
 endif(ENABLE_TP_GLIB_TESTS)
 
+tpqt4_add_dbus_unit_test(ProfileManager profile-manager)
+
 # Make check target. In case of check, output on failure and put it into a log
 # This target has to stay here for catching all of the tests
 add_custom_target(check ctest --output-on-failure -O test.log

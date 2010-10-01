@@ -71,6 +71,8 @@ set(telepathy_qt4_SRCS
     pending-ready.cpp
     pending-string-list.cpp
     pending-variant.cpp
+    profile.cpp
+    profile-manager.cpp
     properties.cpp
     readiness-helper.cpp
     ready-object.cpp
@@ -258,10 +260,16 @@ set(telepathy_qt4_HEADERS
     PendingVariant
     pending-variant.h
     PendingVoid
+    Parameter
+    Profile
+    profile.h
+    ProfileManager
+    profile-manager.h
     Properties
     properties.h
     PropertiesInterface
     PropertiesInterfaceInterface
+    ProtocolInfo
     ReadinessHelper
     readiness-helper.h
     ReadyObject
@@ -347,6 +355,7 @@ set(telepathy_qt4_MOC_SRCS
     pending-ready.h
     pending-string-list.h
     pending-variant.h
+    profile-manager.h
     readiness-helper.h
     room-list-channel.h
     simple-pending-operations.h

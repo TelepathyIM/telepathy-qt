@@ -37,6 +37,7 @@
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/PendingStringList>
 #include <TelepathyQt4/PendingVoid>
+#include <TelepathyQt4/Profile>
 #include <TelepathyQt4/ReferencedHandles>
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Debug>
@@ -100,6 +101,7 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     QString cmName;
     QString protocolName;
     QString serviceName;
+    ProfilePtr profile;
     QString displayName;
     QString nickname;
     QString iconName;
@@ -457,6 +459,16 @@ const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::stat
 const Feature Account::FeatureCapabilities = Feature(QLatin1String(Account::staticMetaObject.className()), 3);
 
 /**
+ * Feature used in order to access account profile info.
+ *
+ * See profile specific methods' documentation for more details.
+ */
+const Feature Account::FeatureProfile = FeatureProtocolInfo;
+// FeatureProfile is the same as FeatureProtocolInfo for now, as it only needs
+// the protocol info, cm name and protocol name to build a fake profile. Make it
+// a full-featured feature if needed later.
+
+/**
  * Create a new Account object using QDBusConnection::sessionBus().
  *
  * The instance will use a connection factory creating Tp::Connection objects with no features
@@ -796,6 +808,50 @@ PendingOperation *Account::setServiceName(const QString &value)
 }
 
 /**
+ * Return the profile used for this account.
+ *
+ * Note that if a profile for serviceName() is not available, a fake profile
+ * (Profile::isFake() will return \c true) will be returned.
+ *
+ * The fake profile will contain the following info:
+ *  - Profile::type() will return "IM"
+ *  - Profile::provider() will return an empty string
+ *  - Profile::serviceName() will return cmName()-serviceName()
+ *  - Profile::name() and Profile::protocolName() will return protocolName()
+ *  - Profile::iconName() will return "im-protocolName()"
+ *  - Profile::cmName() will return cmName()
+ *  - Profile::parameters() will return a list matching CM default parameters for protocol with name
+ *    protocolName()
+ *  - Profile::presences() will return an empty list and
+ *    Profile::allowOtherPresences() will return \c true, meaning that CM
+ *    presences should be used
+ *  - Profile::unsupportedChannelClasses() will return an empty list
+ *
+ * This method requires Account::FeatureProfile to be enabled.
+ *
+ * \return The profile for this account.
+ * \sa profileChanged()
+ */
+ProfilePtr Account::profile() const
+{
+    if (!isReady(FeatureProfile)) {
+        return ProfilePtr();
+    }
+
+    if (!mPriv->profile) {
+        mPriv->profile = Profile::createForServiceName(serviceName());
+        if (!mPriv->profile->isValid()) {
+            mPriv->profile = ProfilePtr(new Profile(
+                        QString(QLatin1String("%1-%2")).arg(mPriv->cmName).arg(serviceName()),
+                        mPriv->cmName,
+                        mPriv->protocolName,
+                        mPriv->protocolInfo));
+        }
+    }
+    return mPriv->profile;
+}
+
+/**
  * Return the display name of this account.
  *
  * This method requires Account::FeatureCore to be enabled.
@@ -844,17 +900,34 @@ QString Account::icon() const
  *
  * This method requires Account::FeatureCore to be enabled.
  *
+ * If the account has no icon, and Account::FeatureProfile is enabled, the icon from the result of
+ * profile() will be used.
+ *
+ * If neither the account nor the profile has an icon, and Account::FeatureProtocolInfo is
+ * enabled, the icon from protocolInfo() will be used if set.
+ *
+ * As a last resort, "im-" + protocolName() will be returned.
+ *
+ * This matches the fallbacks recommended by the Telepathy specification.
+ *
  * \return The icon name of this account.
  * \sa iconNameChanged()
  */
 QString Account::iconName() const
 {
     if (mPriv->iconName.isEmpty()) {
-        if (isReady(Features() << FeatureProtocolInfo) && protocolInfo() != NULL) {
-            return protocolInfo()->iconName();
-        } else {
-            return QString(QLatin1String("im-%1")).arg(protocol());
+        if (isReady(FeatureProfile) && !profile().isNull()) {
+            QString iconName = profile()->iconName();
+            if (!iconName.isEmpty()) {
+                return iconName;
+            }
         }
+
+        if (isReady(FeatureProtocolInfo) && protocolInfo() != NULL) {
+            return protocolInfo()->iconName();
+        }
+
+        return QString(QLatin1String("im-%1")).arg(protocolName());
     }
 
     return mPriv->iconName;
@@ -2170,6 +2243,16 @@ PendingChannelRequest *Account::ensureChannel(
  */
 
 /**
+ * \fn void Account::profileChanged(const Tp::ProfilePtr &profile);
+ *
+ * This signal is emitted when the value of profile() of this account
+ * changes.
+ *
+ * \param profile The new profile of this account.
+ * \sa profile()
+ */
+
+/**
  * \fn void Account::displayNameChanged(const QString &displayName);
  *
  * This signal is emitted when the value of displayName() of this account
@@ -2487,12 +2570,25 @@ void Account::Private::updateProperties(const QVariantMap &props)
         debug() << " Interfaces:" << parent->interfaces();
     }
 
+    QString oldIconName = parent->iconName();
+    bool serviceNameChanged = false;
     if (props.contains(QLatin1String("Service")) &&
         serviceName != qdbus_cast<QString>(props[QLatin1String("Service")])) {
+        serviceNameChanged = true;
         serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
-        debug() << " Service Name:" << serviceName;
-        emit parent->serviceNameChanged(serviceName);
+        debug() << " Service Name:" << parent->serviceName();
+        /* use parent->serviceName() here as if the service name is empty we are going to use the
+         * protocol name */
+        emit parent->serviceNameChanged(parent->serviceName());
         parent->notify("serviceName");
+
+        /* if we had a profile and the service changed, it means the profile also changed */
+        if (parent->isReady(Account::FeatureProfile)) {
+            /* service name changed, let's recreate profile */
+            profile.reset();
+            emit parent->profileChanged(parent->profile());
+            parent->notify("profile");
+        }
     }
 
     if (props.contains(QLatin1String("DisplayName")) &&
@@ -2503,13 +2599,21 @@ void Account::Private::updateProperties(const QVariantMap &props)
         parent->notify("displayName");
     }
 
-    if (props.contains(QLatin1String("Icon")) &&
-        iconName != qdbus_cast<QString>(props[QLatin1String("Icon")])) {
-        iconName = qdbus_cast<QString>(props[QLatin1String("Icon")]);
-        debug() << " Icon:" << iconName;
-        emit parent->iconChanged(iconName);
-        emit parent->iconNameChanged(iconName);
-        parent->notify("iconName");
+    if ((props.contains(QLatin1String("Icon")) &&
+         oldIconName != qdbus_cast<QString>(props[QLatin1String("Icon")])) ||
+        serviceNameChanged) {
+
+        if (props.contains(QLatin1String("Icon"))) {
+            iconName = qdbus_cast<QString>(props[QLatin1String("Icon")]);
+        }
+
+        QString newIconName = parent->iconName();
+        if (oldIconName != newIconName) {
+            debug() << " Icon:" << newIconName;
+            emit parent->iconChanged(newIconName);
+            emit parent->iconNameChanged(newIconName);
+            parent->notify("iconName");
+        }
     }
 
     if (props.contains(QLatin1String("Nickname")) &&

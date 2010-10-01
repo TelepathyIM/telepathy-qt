@@ -21,13 +21,15 @@
 
 #include <TelepathyQt4/KeyFile>
 
+#include "TelepathyQt4/debug-internal.h"
+
+#include <TelepathyQt4/Utils>
+
 #include <QtCore/QByteArray>
 #include <QtCore/QFile>
 #include <QtCore/QHash>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
-
-#include "TelepathyQt4/debug-internal.h"
 
 namespace Tp
 {
@@ -47,8 +49,6 @@ struct TELEPATHY_QT4_NO_EXPORT KeyFile::Private
     bool read();
 
     bool validateKey(const QByteArray &data, int from, int to, QString &result);
-    bool unescapeString(const QByteArray &data, int from, int to, QString &result) const;
-    bool unescapeStringList(const QByteArray &data, int from, int to, QStringList &result) const;
 
     QStringList allGroups() const;
     QStringList allKeys() const;
@@ -221,93 +221,6 @@ bool KeyFile::Private::validateKey(const QByteArray &data, int from, int to, QSt
         result += ch;
     }
     return ret;
-}
-
-bool KeyFile::Private::unescapeString(const QByteArray &data, int from, int to, QString &result) const
-{
-    int i = from;
-    while (i < to) {
-        uint ch = data.at(i++);
-
-        if (ch == '\\') {
-            if (i == to) {
-                result += QLatin1String("\\");
-                return true;
-            }
-
-            char nextCh = data.at(i++);
-            switch (nextCh) {
-                case 's':
-                    result += QLatin1String(" ");
-                    break;
-                case 'n':
-                    result += QLatin1String("\n");
-                    break;
-                case 't':
-                    result += QLatin1String("\t");
-                    break;
-                case 'r':
-                    result += QLatin1String("\r");
-                    break;
-                case ';':
-                    result += QLatin1String(";");
-                    break;
-                case '\\':
-                    result += QLatin1String("\\");
-                    break;
-                default:
-                    return false;
-            }
-        }
-        else {
-            result += ch;
-        }
-    }
-
-    return true;
-}
-
-bool KeyFile::Private::unescapeStringList(const QByteArray &data, int from, int to, QStringList &result) const
-{
-    QByteArray value;
-    QList<QByteArray> valueList;
-    int i = from;
-    char ch;
-    while (i < to) {
-        ch = data.at(i++);
-
-        if (ch == '\\') {
-            value += ch;
-            if (i < to) {
-                value += data.at(i++);
-                continue;
-            }
-            else {
-                valueList << value;
-                break;
-            }
-        }
-        else if (ch == ';') {
-            valueList << value;
-            value = "";
-        }
-        else {
-            value += ch;
-            if (i == to) {
-                valueList << value;
-            }
-        }
-    }
-
-    foreach (value, valueList) {
-        QString str;
-        if (!unescapeString(value, 0, value.size(), str)) {
-            return false;
-        }
-        result << str;
-    }
-
-    return true;
 }
 
 QStringList KeyFile::Private::allGroups() const
@@ -554,6 +467,89 @@ QString KeyFile::value(const QString &key) const
 QStringList KeyFile::valueAsStringList(const QString &key) const
 {
     return mPriv->valueAsStringList(key);
+}
+
+bool KeyFile::unescapeString(const QByteArray &data, int from, int to, QString &result)
+{
+    int i = from;
+    while (i < to) {
+        uint ch = data.at(i++);
+
+        if (ch == '\\') {
+            if (i == to) {
+                result += QLatin1String("\\");
+                return true;
+            }
+
+            char nextCh = data.at(i++);
+            switch (nextCh) {
+                case 's':
+                    result += QLatin1String(" ");
+                    break;
+                case 'n':
+                    result += QLatin1String("\n");
+                    break;
+                case 't':
+                    result += QLatin1String("\t");
+                    break;
+                case 'r':
+                    result += QLatin1String("\r");
+                    break;
+                case ';':
+                    result += QLatin1String(";");
+                    break;
+                case '\\':
+                    result += QLatin1String("\\");
+                    break;
+                default:
+                    return false;
+            }
+        } else {
+            result += ch;
+        }
+    }
+
+    return true;
+}
+
+bool KeyFile::unescapeStringList(const QByteArray &data, int from, int to, QStringList &result)
+{
+    QByteArray value;
+    QList<QByteArray> valueList;
+    int i = from;
+    char ch;
+    while (i < to) {
+        ch = data.at(i++);
+
+        if (ch == '\\') {
+            value += ch;
+            if (i < to) {
+                value += data.at(i++);
+                continue;
+            } else {
+                valueList << value;
+                break;
+            }
+        } else if (ch == ';') {
+            valueList << value;
+            value = "";
+        } else {
+            value += ch;
+            if (i == to) {
+                valueList << value;
+            }
+        }
+    }
+
+    foreach (value, valueList) {
+        QString str;
+        if (!unescapeString(value, 0, value.size(), str)) {
+            return false;
+        }
+        result << str;
+    }
+
+    return true;
 }
 
 } // Tp
