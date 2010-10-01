@@ -448,7 +448,14 @@ ChannelRequest::~ChannelRequest()
 /**
  * Return the Account on which this request was made.
  *
- * This method requires ChannelRequest::FeatureCore to be enabled.
+ * This method can be used even before the ChannelRequest is ready, in which case the account object
+ * corresponding to the immutable properties is returned. In this case, the Account object is not
+ * necessarily ready either. This is useful for eg. matching ChannelRequests from
+ * ClientHandlerInterface::addRequest() with existing accounts in the application: either by object
+ * path, or if account factories are in use, even by object identity.
+ *
+ * If the account is not provided in the immutable properties, this will only return a non-\c NULL
+ * AccountPtr once ChannelRequest::FeatureCore is ready on this object.
  *
  * \return The account on which this request was made.
  */
@@ -466,7 +473,8 @@ AccountPtr ChannelRequest::account() const
  * This property is set when the channel request is created, and can never
  * change.
  *
- * This method requires ChannelRequest::FeatureCore to be enabled.
+ * This method can be used even before the ChannelRequest is ready: in this case, the user action
+ * time from the immutable properties, if any, is returned.
  *
  * \return The time at which the user action occurred.
  */
@@ -483,7 +491,8 @@ QDateTime ChannelRequest::userActionTime() const
  * This property is set when the channel request is created, and can never
  * change.
  *
- * This method requires ChannelRequest::FeatureCore to be enabled.
+ * This method can be used even before the ChannelRequest is ready: in this case, the preferred
+ * handler from the immutable properties, if any, is returned.
  *
  * \return The preferred handler or an empty string if any handler would be
  *         acceptable.
@@ -494,15 +503,18 @@ QString ChannelRequest::preferredHandler() const
 }
 
 /**
- * Return the desirable properties for the channel or channels to be created.
+ * Return the desirable properties for the channel or channels to be created, as specified when
+ * placing the request in the first place.
  *
  * This property is set when the channel request is created, and can never
  * change.
  *
- * This method requires ChannelRequest::FeatureCore to be enabled.
+ * This method can be used even before the ChannelRequest is ready: in this case, the requested
+ * channel properties from the immutable properties, if any, are returned. This is useful for e.g.
+ * matching ChannelRequests from ClientHandlerInterface::addRequest() with existing requests in the
+ * application (by the target ID or handle, most likely).
  *
- * \return The preferred handler or an empty string if any handler would be
- *         acceptable.
+ * \return The requested desirable channel properties.
  */
 QualifiedPropertyValueMapList ChannelRequest::requests() const
 {
