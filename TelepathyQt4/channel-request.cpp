@@ -522,6 +522,43 @@ QualifiedPropertyValueMapList ChannelRequest::requests() const
 }
 
 /**
+ * Return all of the immutable properties passed to this object when created.
+ *
+ * This is useful for e.g. getting to domain-specific properties of channel requests.
+ *
+ * \return The immutable properties.
+ */
+QVariantMap ChannelRequest::immutableProperties() const
+{
+    QVariantMap props = mPriv->immutableProperties;
+
+    if (!account().isNull()) {
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"),
+            QVariant::fromValue(QDBusObjectPath(account()->objectPath())));
+    }
+
+    if (userActionTime().isValid()) {
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".UserActionTime"),
+            QVariant::fromValue(userActionTime().toTime_t()));
+    }
+
+    if (!preferredHandler().isNull()) {
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".PreferredHandler"),
+                preferredHandler());
+    }
+
+    if (!requests().isEmpty()) {
+        props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Requests"),
+            QVariant::fromValue(requests()));
+    }
+
+    props.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interfaces"),
+            QVariant::fromValue(interfaces()));
+
+    return props;
+}
+
+/**
  * Cancel the channel request.
  *
  * If failed() is emitted in response to this method, the error will be
