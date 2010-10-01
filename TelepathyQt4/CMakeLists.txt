@@ -260,7 +260,7 @@ set(telepathy_qt4_HEADERS
     PendingVariant
     pending-variant.h
     PendingVoid
-    Parameter
+    ProtocolParameter
     Profile
     profile.h
     ProfileManager
@@ -492,8 +492,8 @@ endif (ENABLE_COMPILER_COVERAGE)
 
 # Set the correct version number
 set_target_properties(telepathy-qt4 PROPERTIES
-                                    SOVERSION ${TP_QT4_MAJOR_VERSION}
-                                    VERSION ${PACKAGE_VERSION})
+                                    SOVERSION ${TP_QT4_ABI_VERSION}
+                                    VERSION ${TP_QT4_LIBRARY_VERSION})
 
 
 # Install header files

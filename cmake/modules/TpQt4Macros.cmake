@@ -327,14 +327,14 @@ macro(tpqt4_add_generic_unit_test _fancyName _name)
     list(APPEND _telepathy_qt4_test_cases test-${_name})
 
     # Valgrind and Callgrind targets
-    _tpqt4_add_check_targets(${_fancyName} ${_name} ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
+    _tpqt4_add_check_targets(${_fancyName} ${_name} ${CMAKE_CURRENT_BINARY_DIR}/runGenericTest.sh ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
 endmacro(tpqt4_add_generic_unit_test _fancyName _name)
 
 macro(tpqt4_add_dbus_unit_test _fancyName _name)
     tpqt4_generate_moc_i(${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     target_link_libraries(test-${_name} ${QT_LIBRARIES} ${QT_QTTEST_LIBRARY} telepathy-qt4 tp-qt4-tests ${ARGN})
-    set(with_session_bus ${SH} ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
+    set(with_session_bus ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
     add_test(${_fancyName} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
     list(APPEND _telepathy_qt4_test_cases test-${_name})
 
@@ -342,13 +342,13 @@ macro(tpqt4_add_dbus_unit_test _fancyName _name)
     _tpqt4_add_check_targets(${_fancyName} ${_name} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
 endmacro(tpqt4_add_dbus_unit_test _fancyName _name)
 
-macro(_tpqt4_add_check_targets _fancyName _name)
+macro(_tpqt4_add_check_targets _fancyName _name _runnerScript)
     set_tests_properties(${_fancyName}
         PROPERTIES
             FAIL_REGULAR_EXPRESSION "^FAIL!")
 
     # Standard check target
-    add_custom_target(check-${_fancyName} ${ARGN})
+    add_custom_target(check-${_fancyName} ${SH} ${_runnerScript} ${ARGN})
     add_dependencies(check-${_fancyName} test-${_name})
 
     # Lcov target
@@ -360,14 +360,14 @@ macro(_tpqt4_add_check_targets _fancyName _name)
 
     add_custom_command(
         TARGET  check-valgrind-${_fancyName}
-        COMMAND G_SLICE=always-malloc valgrind
+        COMMAND G_SLICE=always-malloc ${SH} ${_runnerScript} /usr/bin/valgrind
                 --tool=memcheck
                 --leak-check=full
                 --leak-resolution=high
                 --child-silent-after-fork=yes
                 --num-callers=20
                 --gen-suppressions=all
-                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test.valgrind.log.${_fancyName}
+                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test-${_fancyName}.memcheck.log
                 ${ARGN}
         WORKING_DIRECTORY
                 ${CMAKE_CURRENT_BINARY_DIR}
@@ -379,10 +379,11 @@ macro(_tpqt4_add_check_targets _fancyName _name)
     add_dependencies(check-callgrind-${_fancyName} test-${_name})
     add_custom_command(
         TARGET  check-callgrind-${_fancyName}
-        COMMAND valgrind
+        COMMAND ${SH} ${_runnerScript} /usr/bin/valgrind
                 --tool=callgrind
                 --dump-instr=yes
-                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test.callgrind.log.${_fancyName}
+                --log-file=${CMAKE_CURRENT_BINARY_DIR}/test-${_fancyName}.callgrind.log
+                --callgrind-out-file=${CMAKE_CURRENT_BINARY_DIR}/test-${_fancyName}.callgrind.out
                 ${ARGN}
         WORKING_DIRECTORY
             ${CMAKE_CURRENT_BINARY_DIR}
