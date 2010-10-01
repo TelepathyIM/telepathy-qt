@@ -335,7 +335,7 @@ macro(tpqt4_add_dbus_unit_test _fancyName _name)
     add_executable(test-${_name} ${_name}.cpp ${CMAKE_CURRENT_BINARY_DIR}/_gen/${_name}.cpp.moc.hpp)
     target_link_libraries(test-${_name} ${QT_LIBRARIES} ${QT_QTTEST_LIBRARY} telepathy-qt4 tp-qt4-tests ${ARGN})
     set(with_session_bus ${CMAKE_CURRENT_BINARY_DIR}/runDbusTest.sh)
-    add_test(${_fancyName} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
+    add_test(${_fancyName} ${SH} ${with_session_bus} ${CMAKE_CURRENT_BINARY_DIR}/test-${_name})
     list(APPEND _telepathy_qt4_test_cases test-${_name})
 
     # Valgrind and Callgrind targets
