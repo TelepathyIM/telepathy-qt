@@ -33,8 +33,8 @@ if(FARSIGHT_COMPONENTS_FOUND)
 
     # Set the correct version number
     set_target_properties(telepathy-qt4-farsight PROPERTIES
-                                                 SOVERSION ${TP_QT4_MAJOR_VERSION}
-                                                 VERSION ${PACKAGE_VERSION})
+                                                 SOVERSION ${TP_QT4_ABI_VERSION}
+                                                 VERSION ${TP_QT4_LIBRARY_VERSION})
 
     # Install the library - watch out for the correct components
     if (WIN32)
