@@ -652,14 +652,20 @@ void TestClientFactories::testRequests()
     connect(client,
             SIGNAL(requestAdded(const Tp::ChannelRequestPtr &)),
             SLOT(expectSignalEmission()));
-    handlerRequestsIface->AddRequest(QDBusObjectPath(mChannelRequestPath), QVariantMap());
+
+    QVariantMap requestProps;
+    requestProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"),
+            QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
+
+    handlerRequestsIface->AddRequest(QDBusObjectPath(mChannelRequestPath), requestProps);
+
     if (!client->mAddRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(client->mAddRequestRequest->objectPath(),
              mChannelRequestPath);
-//    QCOMPARE(client->mAddRequestRequest->account().data(),
-//             mAccount.data());
+    QCOMPARE(client->mAddRequestRequest->account().data(),
+             mAccount.data());
 
     connect(client,
             SIGNAL(requestRemoved(const Tp::ChannelRequestPtr &,

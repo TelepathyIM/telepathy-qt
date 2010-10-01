@@ -40,12 +40,16 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
 {
-    Private(ChannelRequest *parent, const QVariantMap &immutableProperties);
+    Private(ChannelRequest *parent, const QVariantMap &immutableProperties,
+            const AccountFactoryConstPtr &, const ConnectionFactoryConstPtr &,
+            const ChannelFactoryConstPtr &, const ContactFactoryConstPtr &);
     ~Private();
 
     static void introspectMain(Private *self);
 
-    void extractMainProps(const QVariantMap &props);
+    // \param lastCall Is this the last call to extractMainProps ie. should actions that only must
+    // be done once be done in this call
+    void extractMainProps(const QVariantMap &props, bool lastCall);
 
     // Public object
     ChannelRequest *parent;
@@ -71,17 +75,27 @@ struct TELEPATHY_QT4_NO_EXPORT ChannelRequest::Private
     QDateTime userActionTime;
     QString preferredHandler;
     QualifiedPropertyValueMapList requests;
+    bool propertiesDone;
 };
 
 ChannelRequest::Private::Private(ChannelRequest *parent,
-        const QVariantMap &immutableProperties)
+        const QVariantMap &immutableProperties,
+        const AccountFactoryConstPtr &accFact,
+        const ConnectionFactoryConstPtr &connFact,
+        const ChannelFactoryConstPtr &chanFact,
+        const ContactFactoryConstPtr &contactFact)
     : parent(parent),
+      accFact(accFact),
+      connFact(connFact),
+      chanFact(chanFact),
+      contactFact(contactFact),
       baseInterface(new Client::ChannelRequestInterface(
                     parent->dbusConnection(), parent->busName(),
                     parent->objectPath(), parent)),
       immutableProperties(immutableProperties),
       properties(0),
-      readinessHelper(parent->readinessHelper())
+      readinessHelper(parent->readinessHelper()),
+      propertiesDone(false)
 {
     debug() << "Creating new ChannelRequest:" << parent->objectPath();
 
@@ -104,6 +118,20 @@ ChannelRequest::Private::Private(ChannelRequest *parent,
     introspectables[FeatureCore] = introspectableCore;
 
     readinessHelper->addIntrospectables(introspectables);
+
+    // For early access to the immutable properties through the friendly getters - will be called
+    // again with lastCall = true eventually, if/when becomeReady is called, though
+    QVariantMap mainProps;
+    foreach (QString key, immutableProperties.keys()) {
+        // The key.count thing is so that we don't match "org.fdo.Tp.CR.OptionalInterface.Prop" too
+        if (key.startsWith(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST "."))
+                && key.count(QLatin1Char('.')) ==
+                    QString::fromAscii(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".").count(QLatin1Char('.'))) {
+            mainProps.insert(key.remove(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".")),
+                    immutableProperties.value(key));
+        }
+    }
+    extractMainProps(mainProps, false);
 }
 
 ChannelRequest::Private::~Private()
@@ -151,11 +179,11 @@ void ChannelRequest::Private::introspectMain(ChannelRequest::Private *self)
                     SLOT(gotMainProperties(QDBusPendingCallWatcher*)));
         }
     } else {
-        self->extractMainProps(props);
+        self->extractMainProps(props, true);
     }
 }
 
-void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
+void ChannelRequest::Private::extractMainProps(const QVariantMap &props, bool lastCall)
 {
     PendingReady *readyOp = 0;
 
@@ -214,12 +242,16 @@ void ChannelRequest::Private::extractMainProps(const QVariantMap &props)
     parent->setInterfaces(qdbus_cast<QStringList>(props[QLatin1String("Interfaces")]));
     readinessHelper->setInterfaces(parent->interfaces());
 
+    if (lastCall) {
+        propertiesDone = true;
+    }
+
     if (account) {
         parent->connect(readyOp,
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(onAccountReady(Tp::PendingOperation*)));
-    } else {
-        warning() << "ChannelRequest.Account is missing or empty. Ignoring";
+    } else if (lastCall) {
+        warning() << "No account for ChannelRequest" << parent->objectPath();
         readinessHelper->setIntrospectCompleted(FeatureCore, true);
     }
 }
@@ -336,7 +368,8 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
             objectPath),
       OptionalInterfaceFactory<ChannelRequest>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, immutableProperties))
+      mPriv(new Private(this, immutableProperties, AccountFactoryPtr(), ConnectionFactoryPtr(),
+                  ChannelFactoryPtr(), ContactFactoryPtr()))
 {
 }
 
@@ -363,7 +396,8 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
             objectPath),
       OptionalInterfaceFactory<ChannelRequest>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, immutableProperties))
+      mPriv(new Private(this, immutableProperties, accountFactory, connectionFactory,
+                  channelFactory, contactFactory))
 {
     if (accountFactory->dbusConnection().name() != bus.name()) {
         warning() << "  The D-Bus connection in the account factory is not the proxy connection";
@@ -376,11 +410,6 @@ ChannelRequest::ChannelRequest(const QDBusConnection &bus,
     if (channelFactory->dbusConnection().name() != bus.name()) {
         warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
     }
-
-    mPriv->accFact = accountFactory;
-    mPriv->connFact = connectionFactory;
-    mPriv->chanFact = channelFactory;
-    mPriv->contactFact = contactFactory;
 }
 
 /**
@@ -400,12 +429,12 @@ ChannelRequest::ChannelRequest(const AccountPtr &account,
             objectPath),
       OptionalInterfaceFactory<ChannelRequest>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this, immutableProperties))
+      mPriv(new Private(this, immutableProperties, AccountFactoryPtr(),
+                  account->connectionFactory(),
+                  account->channelFactory(),
+                  account->contactFactory()))
 {
     mPriv->account = account;
-    mPriv->connFact = account->connectionFactory();
-    mPriv->chanFact = account->channelFactory();
-    mPriv->contactFact = account->contactFactory();
 }
 
 /**
@@ -563,7 +592,7 @@ void ChannelRequest::gotMainProperties(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to Properties::GetAll(ChannelRequest)";
         props = reply.value();
 
-        mPriv->extractMainProps(props);
+        mPriv->extractMainProps(props, true);
     } else {
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore,
                 false, reply.error());
@@ -582,7 +611,10 @@ void ChannelRequest::onAccountReady(PendingOperation *op)
                 op->errorName(), op->errorMessage());
         return;
     }
-    mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+
+    if (mPriv->propertiesDone && !isReady()) {
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    }
 }
 
 } // Tp
