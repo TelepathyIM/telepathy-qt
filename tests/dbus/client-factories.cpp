@@ -652,14 +652,42 @@ void TestClientFactories::testRequests()
     connect(client,
             SIGNAL(requestAdded(const Tp::ChannelRequestPtr &)),
             SLOT(expectSignalEmission()));
-    handlerRequestsIface->AddRequest(QDBusObjectPath(mChannelRequestPath), QVariantMap());
+
+    QVariantMap requestProps;
+    requestProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"),
+            QVariant::fromValue(QDBusObjectPath(mAccount->objectPath())));
+    requestProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST
+                ".Interface.DomainSpecific.IntegerProp"),
+            QVariant::fromValue(3));
+
+    handlerRequestsIface->AddRequest(QDBusObjectPath(mChannelRequestPath), requestProps);
+
     if (!client->mAddRequestRequest) {
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(client->mAddRequestRequest->objectPath(),
              mChannelRequestPath);
-//    QCOMPARE(client->mAddRequestRequest->account().data(),
-//             mAccount.data());
+    QCOMPARE(client->mAddRequestRequest->account().data(),
+             mAccount.data());
+
+    QVERIFY(client->mAddRequestRequest->immutableProperties().contains(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST
+                    ".Interface.DomainSpecific.IntegerProp")));
+    QCOMPARE(qdbus_cast<int>(client->mAddRequestRequest->immutableProperties().value(
+                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST
+                        ".Interface.DomainSpecific.IntegerProp"))),
+            3);
+
+    QVERIFY(connect(client->mAddRequestRequest->becomeReady(),
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(client->mAddRequestRequest->immutableProperties().contains(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".UserActionTime")));
+    QCOMPARE(qdbus_cast<uint>(client->mAddRequestRequest->immutableProperties().value(
+                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".UserActionTime"))),
+            mUserActionTime);
 
     connect(client,
             SIGNAL(requestRemoved(const Tp::ChannelRequestPtr &,

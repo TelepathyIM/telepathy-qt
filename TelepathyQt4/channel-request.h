@@ -76,12 +76,11 @@ public:
     virtual ~ChannelRequest();
 
     AccountPtr account() const;
-
     QDateTime userActionTime() const;
-
     QString preferredHandler() const;
-
     QualifiedPropertyValueMapList requests() const;
+
+    QVariantMap immutableProperties() const;
 
     PendingOperation *cancel();
 
