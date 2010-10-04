@@ -1,15 +1,22 @@
-telepathy-qt4 0.3.11 (UNRELEASED)
+telepathy-qt4 0.3.11 (2010-10-04)
 =================================
 
-NAME THIS RELEASE
+The "farewell hated friend" release.
 
 Enhancements:
-* Port Telepathy-Qt4's build system from autotools to cmake, which provides
-  fastest builds, better target and dependency handling, and more. All targets
-  of the previous build system have been ported and some new were added, notably
-  individual targets for unit tests and callgrind support.
+* fd.o #24648 - Port Telepathy-Qt4's build system from autotools to cmake,
+  resulting in faster builds. All targets supported by the previous build system
+  are still supported, and some new were added, notably individual targets for
+  unit tests and callgrind support.
+* fd.o #29672 - Support for Profiles - a way to describe different IM/VoIP
+  services by data files (e.g. Google Talk for the XMPP/Jabber protocol)
+* fd.o #29699 - ChannelRequest immutable data is now accessible even before it's
+  fully ready - this is useful for e.g. early initialization of channel context
+  in applications with the AbstractClientHandler requestNotification API
+* Some performance optimizations in ReadyObject, ReadinessHelper and Channel
 
 Fixes:
+ * Race conditions uncovered by Qt 4.7 in TestAccountBasics and TestConnRoster
 
 telepathy-qt4 0.3.10 (2010-09-16)
 =================================
