@@ -154,7 +154,7 @@ public:
 
     bool hasConferenceInterface() const;
     Contacts conferenceInitialInviteeContacts() const;
-    bool conferenceSupportsNonMerges() const;
+    TELEPATHY_QT4_DEPRECATED bool conferenceSupportsNonMerges() const;
     QList<ChannelPtr> conferenceChannels() const;
     QList<ChannelPtr> conferenceInitialChannels() const;
 
@@ -185,6 +185,12 @@ public:
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ChannelInterfaceChatStateInterface>(check);
+    }
+
+    inline Client::ChannelInterfaceConferenceInterface *conferenceInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ChannelInterfaceConferenceInterface>(check);
     }
 
     inline Client::ChannelInterfaceDTMFInterface *DTMFInterface(
@@ -310,7 +316,10 @@ Q_SIGNALS:
     void groupSelfContactChanged();
 
     void conferenceChannelMerged(const Tp::ChannelPtr &channel);
+    // TODO remove once Conference.DRAFT support is removed
     void conferenceChannelRemoved(const Tp::ChannelPtr &channel);
+    void conferenceChannelRemoved(const Tp::ChannelPtr &channel,
+            const Tp::Channel::GroupMemberChangeDetails &details);
 
 protected:
     Channel(const ConnectionPtr &connection,const QString &objectPath,
@@ -360,7 +369,10 @@ private Q_SLOTS:
 
     void gotConferenceProperties(QDBusPendingCallWatcher *watcher);
     void gotConferenceInitialInviteeContacts(Tp::PendingOperation *op);
+    void onConferenceChannelMerged(const QDBusObjectPath &channel, uint channelSpecificHandle,
+            const QVariantMap &properties);
     void onConferenceChannelMerged(const QDBusObjectPath &channel);
+    void onConferenceChannelRemoved(const QDBusObjectPath &channel, const QVariantMap &details);
     void onConferenceChannelRemoved(const QDBusObjectPath &channel);
 
 private:
