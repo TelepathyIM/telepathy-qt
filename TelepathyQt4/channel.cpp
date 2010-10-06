@@ -46,7 +46,6 @@
 namespace Tp
 {
 
-using TpFuture::Client::ChannelInterfaceConferenceInterface;
 using TpFuture::Client::ChannelInterfaceMergeableConferenceInterface;
 using TpFuture::Client::ChannelInterfaceSplittableInterface;
 
@@ -92,11 +91,11 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     QString groupMemberChangeDetailsTelepathyError(
             const GroupMemberChangeDetails &details);
 
-    // TODO move to channel.h once Conference interface is undrafted
-    inline ChannelInterfaceConferenceInterface *conferenceInterface(
+    // TODO move to channel.h once Conference.DRAFT support is removed
+    inline TpFuture::Client::ChannelInterfaceConferenceInterface *conferenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return parent->optionalInterface<ChannelInterfaceConferenceInterface>(check);
+        return parent->optionalInterface<TpFuture::Client::ChannelInterfaceConferenceInterface>(check);
     }
 
     // TODO move to channel.h once MergeableConference interface is undrafted
@@ -129,7 +128,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 
     // Optional interface proxies
     Client::ChannelInterfaceGroupInterface *group;
-    ChannelInterfaceConferenceInterface *conference;
+    TpFuture::Client::ChannelInterfaceConferenceInterface *conference;
     Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;

@@ -63,12 +63,63 @@
       </tp:docstring>
     </property>
 
+    <property name="OverrideMessageServiceCentre"
+        tp:name-for-bindings="Override_Message_Service_Centre"
+        type="b" access="readwrite">
+      <tp:added version='0.19.12'>Previously, as an undocumented
+        feature, setting <tp:member-ref>MessageServiceCentre</tp:member-ref>
+        to the empty string caused the SIM's default SMSC to be used.</tp:added>
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If <code>True</code>, SMSes will be sent via the service centre
+          specified by <tp:member-ref>MessageServiceCentre</tp:member-ref>. If
+          <code>False</code>, the SIM's default SMSC will be used, ignoring the
+          value of MessageServiceCentre.</p>
+
+        <tp:rationale>
+          <p>It could be desirable for a configuration interface to remember
+            the user's previous choice of custom SMSC, even if it's not in use.
+            This boolean allows that choice to be saved as an account parameter
+            by Mission Control, rather than the UI needing to save it elsewhere
+            to be restored if the user wants to reactivate it.</p>
+        </tp:rationale>
+
+        <p>Connections with this interface SHOULD provide this property as a
+          parameter of the same (fully-qualified) name to <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy"
+            >ConnectionManager.RequestConnection</tp:dbus-ref>, with the
+          <code>DBus_Property</code> flag. For connections managed by the
+          <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">AccountManager</tp:dbus-ref>,
+          this property SHOULD be set via the Account Manager as follows:</p>
+
+        <blockquote>
+          <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Account"
+            >UpdateParameters</tp:dbus-ref>({
+              "org.freedesktop.Telepathy.Connection.Interface.Cellular.OverrideMessageServiceCentre": True
+              }, [])</code>
+        </blockquote>
+
+        <p>The AccountManager provides change-notification, as long as all
+          other clients cooperate by using it instead of setting this property
+          directly.</p>
+      </tp:docstring>
+    </property>
+
     <property name="MessageServiceCentre" tp:name-for-bindings="Message_Service_Centre"
       type="s" access="readwrite">
+      <tp:changed version='0.19.12'>This property's value is now
+        ignored unless
+        <tp:member-ref>OverrideMessageServiceCentre</tp:member-ref> is
+        <code>True</code>.</tp:changed>
+
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+
         <p>Address for the messaging service centre. Typically (as is the case
           for GSM's SMSC), it's the ISDN / telephony address (ie. a phone
-          number).</p>
+          number). If
+          <tp:member-ref>OverrideMessageServiceCentre</tp:member-ref> is
+          <code>False</code>, this property's value should be ignored by the CM
+          in favour of the SIM's default SMSC.</p>
 
         <p>Connections with this interface SHOULD provide this property as a
           parameter of the same (fully-qualified) name to <tp:dbus-ref

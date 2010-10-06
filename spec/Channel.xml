@@ -101,7 +101,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:member-ref>TargetHandleType</tp:member-ref>
           MUST be present and not Handle_Type_None, and
           <tp:member-ref>TargetID</tp:member-ref> MUST NOT be
-          present.</p>
+          present. Properties from
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface">Addressing.DRAFT</tp:dbus-ref>
+          MUST NOT be present.</p>
 
         <p>The channel that satisfies the request MUST either:</p>
 
@@ -147,8 +149,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           <tp:member-ref>TargetHandleType</tp:member-ref>
           MUST be present and not Handle_Type_None, and
           <tp:member-ref>TargetHandle</tp:member-ref> MUST NOT be
-          present. The request MUST fail with error InvalidHandle, without
-          side-effects, if the requested TargetID would not be accepted by
+          present. Properties from
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface">Addressing.DRAFT</tp:dbus-ref>
+          MUST NOT be present.The request MUST fail with error InvalidHandle,
+          without side-effects, if the requested TargetID would not be
+          accepted by
           <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection">RequestHandles</tp:dbus-ref>.</p>
 
         <p>The returned channel must be related to the handle corresponding

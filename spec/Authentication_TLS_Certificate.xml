@@ -17,9 +17,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   </tp:license>
 
-  <interface name="org.freedesktop.Telepathy.Authentication.TLSCertificate.DRAFT"
-             tp:causes-havoc="experimental">
-    <tp:added version="0.19.11">(draft 1)</tp:added>
+  <interface name="org.freedesktop.Telepathy.Authentication.TLSCertificate">
+    <tp:added version="0.19.13">(as stable API)</tp:added>
 
     <tp:docstring>
       This object represents a TLS certificate.
@@ -41,10 +40,81 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </tp:simple-type>
 
+    <tp:struct name="TLS_Certificate_Rejection" array-name="TLS_Certificate_Rejection_List">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>Struct representing one reason why a TLS certificate was rejected.</p>
+        <p>Since there can be multiple things wrong with a TLS certificate,
+        arrays of this type are used to represent lists of reasons for
+        rejection. In that case, the most important reason SHOULD be placed
+        first in the list.</p>
+      </tp:docstring>
+
+      <tp:member name="Reason" type="u"
+                 tp:type="TLS_Certificate_Reject_Reason">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The value of the TLS_Certificate_Reject_Reason enumeration for
+          this certificate rejection.
+          <tp:rationale>
+            Clients that do not understand the <code>Error</code> member,
+            which may be implementation-specific, can use this property to
+            classify rejection reasons into common categories.
+          </tp:rationale>
+	  </p>
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Error" type="s"
+                 tp:type="DBus_Error_Name">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The DBus error name for this certificate rejection.</p>
+          <p>This MAY correspond to the value of the <code>Reason</code> member,
+          or MAY be a more specific D-Bus error name, perhaps implementation-specific.</p>
+        </tp:docstring>
+      </tp:member>
+
+      <tp:member name="Details" type="a{sv}"
+                 tp:type="String_Variant_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Additional information about why the certificate was rejected.
+          This MAY also include one or more of the following well-known keys:</p>
+          <p>
+          <dl>
+            <dt>user-requested (b)</dt>
+            <dd>True if the error was due to an user-requested rejection of
+            the certificate; False if there was an unrecoverable error in the
+            verification process.</dd>
+            <dt>expected-hostname (s)</dt>
+            <dd>If the rejection reason is Hostname_Mismatch, the hostname that
+            the server certificate was expected to have.</dd>
+            <dt>certificate-hostname (s)</dt>
+            <dd>If the rejection reason is Hostname_Mismatch, the hostname of
+            the certificate that was presented.
+            <tp:rationale>
+              <p>For instance, if you try to connect to gmail.com but are presented
+              with a TLS certificate issued to evil.example.org, the error details
+              for Hostname_Mismatch MAY include:</p>
+              <pre>
+                {
+                  'expected-hostname': 'gmail.com',
+                  'certificate-hostname': 'evil.example.org',
+                }
+              </pre>
+            </tp:rationale>
+            </dd>
+            <dt>debug-message (s)</dt>
+            <dd>Debugging information on the error, corresponding to the
+            message part of a D-Bus error message, which SHOULD NOT be
+            displayed to users under normal circumstances</dd>
+          </dl>
+          </p>
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
     <tp:enum type="u" name="TLS_Certificate_State">
       <tp:docstring>
         The possible states for a <tp:dbus-ref
-        namespace="org.freedesktop.Telepathy.Authentication">TLSCertificate.DRAFT</tp:dbus-ref>
+        namespace="org.freedesktop.Telepathy.Authentication">TLSCertificate</tp:dbus-ref>
         object.
       </tp:docstring>
 
@@ -149,75 +219,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       </tp:docstring>
     </property>
 
-    <property name="RejectError" type="s" access="read"
-              tp:type="DBus_Error_Name"
-              tp:name-for-bindings="Reject_Error">
+    <property name="Rejections" type="a(usa{sv})" access="read"
+              tp:type="TLS_Certificate_Rejection[]" tp:name-for-bindings="Rejections">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>If the <tp:member-ref>State</tp:member-ref> is Rejected,
-        the reason why the certificate was rejected; this MAY correspond to
-        the <tp:member-ref>RejectReason</tp:member-ref>, or MAY be a more
-        specific D-Bus error name, perhaps implementation-specific.</p>
+        an array of <tp:type>TLS_Certificate_Rejection</tp:type>
+        structures containing the reason why the certificate is rejected.</p>
         <p>If the <tp:member-ref>State</tp:member-ref> is not Rejected,
         this property is not meaningful, and SHOULD be set to an empty
-        string.</p>
-      </tp:docstring>
-    </property>
-
-    <property name="RejectDetails" type="a{sv}" access="read"
-              tp:type="String_Variant_Map"
-              tp:name-for-bindings="Reject_Details">
-      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p>If the <tp:member-ref>State</tp:member-ref> is Rejected,
-        additional information about why the certificate was rejected.</p>
-        <p>If the <tp:member-ref>State</tp:member-ref> is not Rejected,
-        this property is not meaningful and SHOULD be set to an empty
-        map.</p>
-        <p>The additional information MAY also include
-        one or more of the following well-known keys:</p>
-        <dl>
-          <dt>user-requested (b)</dt>
-          <dd>True if the error was due to an user-requested rejection of
-          the certificate; False if there was an unrecoverable error in the
-          verification process.</dd>
-          <dt>expected-hostname (s)</dt>
-          <dd>If the rejection reason is Hostname_Mismatch, the hostname that
-          the server certificate was expected to have.</dd>
-          <dt>certificate-hostname (s)</dt>
-          <dd>If the rejection reason is Hostname_Mismatch, the hostname of
-          the certificate that was presented.
-          <tp:rationale>
-            <p>For instance, if you try to connect to gmail.com but are presented
-            with a TLS certificate issued to evil.example.org, the error details
-            for Hostname_Mismatch MAY include:</p>
-            <pre>
-              {
-                'expected-hostname': 'gmail.com',
-                'certificate-hostname': 'evil.example.org',
-              }
-            </pre>
-          </tp:rationale>
-          </dd>
-          <dt>debug-message (s)</dt>
-          <dd>Debugging information on the error, corresponding to the
-          message part of a D-Bus error message, which SHOULD NOT be
-          displayed to users under normal circumstances</dd>
-        </dl>
-      </tp:docstring>
-    </property>
-
-    <property name="RejectReason" type="u" access="read"
-              tp:type="TLS_Certificate_Reject_Reason"
-              tp:name-for-bindings="Reject_Reason">
-      <tp:docstring>
-        If the <tp:member-ref>State</tp:member-ref> is Rejected, the
-        reason why the certificate was rejected.
-        <tp:rationale>
-          Clients that do not understand the <tp:member-ref>RejectError</tp:member-ref>,
-          which may be implementation-specific, can use this property to
-          classify rejection reasons into common categories.
-        </tp:rationale>
-        Otherwise, this property is not meaningful, and SHOULD be set to
-        Unknown.
+        array.</p>
+        <p>The first rejection in the list MAY be assumed to be
+        the most important; if the array contains more than one
+        element, the CM MAY either use the values after the first,
+        or ignore them.</p>
       </tp:docstring>
     </property>
 
@@ -252,19 +266,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring>
         The <tp:member-ref>State</tp:member-ref> of this certificate has changed to Rejected.
       </tp:docstring>
-      <arg name="Reason" type="u" tp:type="TLS_Certificate_Reject_Reason">
+      <arg name="Rejections" type="a(usa{sv})" tp:type="TLS_Certificate_Rejection[]">
         <tp:docstring>
-          The new value of <tp:member-ref>RejectReason</tp:member-ref>.
-        </tp:docstring>
-      </arg>
-      <arg name="Error" type="s" tp:type="DBus_Error_Name">
-        <tp:docstring>
-          The new value of <tp:member-ref>RejectError</tp:member-ref>.
-        </tp:docstring>
-      </arg>
-      <arg name="Details" type="a{sv}" tp:type="String_Variant_Map">
-        <tp:docstring>
-          The new value of <tp:member-ref>RejectDetails</tp:member-ref>
+          The new value of the <tp:member-ref>Rejections</tp:member-ref> property.
         </tp:docstring>
       </arg>
     </signal>
@@ -279,24 +283,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
       <tp:docstring>
         Rejects this certificate.
       </tp:docstring>
-      <arg direction="in" type="u" name="Reason"
-           tp:type="TLS_Certificate_Reject_Reason">
-        <tp:docstring>
-          The new value of <tp:member-ref>RejectReason</tp:member-ref>.
+      <arg direction="in" type="a(usa{sv})" name="Rejections"
+           tp:type="TLS_Certificate_Rejection[]">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The new value of the <tp:member-ref>Rejections</tp:member-ref> property.</p>
+          <p>This MUST NOT be an empty array.</p>
         </tp:docstring>
       </arg>
-      <arg direction="in" type="s" name="Error"
-           tp:type="DBus_Error_Name">
-        <tp:docstring>
-          The new value of <tp:member-ref>RejectError</tp:member-ref>.
-        </tp:docstring>
-      </arg>
-      <arg direction="in" type="a{sv}" name="Details"
-           tp:type="String_Variant_Map">
-        <tp:docstring>
-          The new value of <tp:member-ref>RejectDetails</tp:member-ref>.
-        </tp:docstring>
-      </arg>
+      <tp:possible-errors>
+        <tp:error name="org.freedesktop.Telepathy.Error.InvalidArgument">
+          <tp:docstring>
+            Raised when the method is called on an object whose <tp:member-ref>State</tp:member-ref>
+            is not <code>Pending</code>, or when the provided rejection list is empty.
+          </tp:docstring>
+        </tp:error>
+      </tp:possible-errors>
     </method>
 
   </interface>

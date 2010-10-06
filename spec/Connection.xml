@@ -1010,10 +1010,8 @@ USA.</p>
             <dd>Debugging information on the change, corresponding to the
               message part of a D-Bus error message, which SHOULD NOT be
               displayed to users under normal circumstances</dd>
-	    <dt>expected-hostname (s), certificate-hostname (s)</dt>
-	    <dd>The same details defined in <tp:dbus-ref
-	    namespace="org.freedesktop.Telepathy.Authentication">TLSCertificate.DRAFT.RejectDetails</tp:dbus-ref>
-	    </dd>
+	    <dt>user-requested (b), expected-hostname (s), certificate-hostname (s)</dt>
+	    <dd>The same details defined in <tp:type>TLS_Certificate_Rejection</tp:type>.</dd>
           </dl>
 
         </tp:docstring>

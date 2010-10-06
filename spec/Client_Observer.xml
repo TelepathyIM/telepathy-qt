@@ -326,7 +326,9 @@ Recover=true
 
       <arg name="Requests_Satisfied" type="ao" direction="in">
         <tp:docstring>
-          The requests satisfied by these channels.
+          The <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>s
+          satisfied by these channels.
 
           <tp:rationale>
             If the same process is an Observer and a Handler, it can be useful
@@ -356,6 +358,13 @@ Recover=true
                 the same observer crashed).
               </tp:rationale>
             </dd>
+
+            <dt><code>request-properties</code> - a{oa{sv}}</dt>
+            <dd>A map from <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
+              paths listed in <var>Requests_Satisfied</var> to
+              <tp:type>Qualified_Property_Value_Map</tp:type>s containing
+              namespaced immutable properties of each request.</dd>
           </dl>
 
           <p>All defined keys for this dictionary are optional;

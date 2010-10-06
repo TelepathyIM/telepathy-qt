@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude">
 
 <tp:title>Telepathy D-Bus Interface Specification</tp:title>
-<tp:version>0.19.11.1</tp:version>
+<tp:version>0.21.1</tp:version>
 
 <tp:copyright>Copyright © 2005-2010 Collabora Limited</tp:copyright>
 <tp:copyright>Copyright © 2005-2010 Nokia Corporation</tp:copyright>
@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  </tp:docstring>
  <xi:include href="Connection_Manager.xml"/>
  <xi:include href="Protocol.xml"/>
+ <xi:include href="Protocol_Interface_Addressing.xml"/>
  <xi:include href="Protocol_Interface_Avatars.xml"/>
  <xi:include href="Protocol_Interface_Presence.xml"/>
 
@@ -44,6 +45,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </tp:docstring>
   <xi:include href="Connection.xml"/>
   <xi:include href="Connection_Future.xml"/>
+  <xi:include href="Connection_Interface_Addressing.xml"/>
   <xi:include href="Connection_Interface_Aliasing.xml"/>
   <xi:include href="Connection_Interface_Anonymity.xml"/>
   <xi:include href="Connection_Interface_Avatars.xml"/>
@@ -51,6 +53,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <xi:include href="Connection_Interface_Capabilities.xml"/>
   <xi:include href="Connection_Interface_Cellular.xml"/>
   <xi:include href="Connection_Interface_Client_Types.xml"/>
+  <xi:include href="Connection_Interface_Communication_Policy.xml"/>
   <xi:include href="Connection_Interface_Contact_Capabilities.xml"/>
   <xi:include href="Connection_Interface_Contact_Groups.xml"/>
   <xi:include href="Connection_Interface_Contact_Info.xml"/>
@@ -59,8 +62,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <xi:include href="Connection_Interface_Forwarding.xml"/>
   <xi:include href="Connection_Interface_Location.xml"/>
   <xi:include href="Connection_Interface_Mail_Notification.xml"/>
+  <xi:include href="Connection_Interface_Power_Saving.xml"/>
   <xi:include href="Connection_Interface_Presence.xml"/>
   <xi:include href="Connection_Interface_Renaming.xml"/>
+  <xi:include href="Connection_Interface_Resources.xml"/>
   <xi:include href="Connection_Interface_Requests.xml"/>
   <xi:include href="Connection_Interface_Service_Point.xml"/>
   <xi:include href="Connection_Interface_Simple_Presence.xml"/>
@@ -110,6 +115,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
      depending on its type:
     </p>
    </tp:docstring>
+   <xi:include href="Channel_Interface_Addressing.xml"/>
    <xi:include href="Channel_Interface_Anonymity.xml"/>
    <xi:include href="Channel_Interface_Call_State.xml"/>
    <xi:include href="Channel_Interface_Chat_State.xml"/>
@@ -124,6 +130,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
    <xi:include href="Channel_Interface_Messages.xml"/>
    <xi:include href="Channel_Interface_Password.xml"/>
    <xi:include href="Channel_Interface_Room.xml"/>
+   <xi:include href="Channel_Interface_SMS.xml"/>
    <xi:include href="Channel_Interface_Service_Point.xml"/>
    <xi:include href="Channel_Interface_Splittable.xml"/>
    <xi:include href="Channel_Interface_Tube.xml"/>
@@ -174,6 +181,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
  <xi:include href="Account.xml"/>
  <xi:include href="Account_Interface_Avatar.xml"/>
  <xi:include href="Account_Interface_Storage.xml"/>
+ <xi:include href="Account_Interface_Minimum_Presence.xml"/>
 </tp:section>
 
 <tp:section name="The Channel Dispatcher">
@@ -185,9 +193,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </p>
  </tp:docstring>
  <xi:include href="Channel_Dispatcher.xml"/>
+ <xi:include href="Channel_Dispatcher_Future.xml"/>
  <xi:include href="Channel_Dispatcher_Interface_Operation_List.xml"/>
  <xi:include href="Channel_Dispatch_Operation.xml"/>
  <xi:include href="Channel_Request.xml"/>
+ <xi:include href="Channel_Request_Future.xml"/>
 </tp:section>
 
 <tp:section name="Clients">

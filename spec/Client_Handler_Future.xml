@@ -39,9 +39,9 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>If true, channels destined for this handler that have the
           <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface"
-            >Conference.DRAFT</tp:dbus-ref> interface, with a channel that
+            >Conference</tp:dbus-ref> interface, with a channel that
           was previously handled by the same client process in their
-          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Conference.DRAFT"
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface.Conference"
             >InitialChannels</tp:dbus-ref> property, should bypass the
           approval stage. In effect, this is a weaker form of
           <tp:dbus-ref namespace="org.freedesktop.Telepathy.Client.Handler"
