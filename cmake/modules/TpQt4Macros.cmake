@@ -268,6 +268,9 @@ endfunction(tpqt4_generate_manager_file MANAGER_FILE)
 
 function(tpqt4_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
     tpqt4_extract_depends(xincludator_gen_args xincludator_gen_depends ${ARGN})
+    # Gather all .xml files in TelepathyQt4 and spec/ and make this target depend on those
+    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
+
     add_custom_command(OUTPUT ${_OUTPUT_FILE}
 
                        COMMAND ${PYTHON_EXECUTABLE}
@@ -275,7 +278,9 @@ function(tpqt4_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
                        ARGS ${CMAKE_SOURCE_DIR}/tools/xincludator.py
                             ${_INPUT_FILE}
                             ${xincludator_gen_args}
-                            > ${_OUTPUT_FILE})
+                            > ${_OUTPUT_FILE}
+
+                       DEPENDS ${_INPUT_FILE} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTPUT_FILE})
 
     if (xincludator_gen_depends)
@@ -285,6 +290,9 @@ endfunction(tpqt4_xincludator _TARGET_NAME _INPUT_FILE _OUTPUT_FILE)
 
 function(tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
     tpqt4_extract_depends(constants_gen_args constants_gen_depends ${ARGN})
+    # Gather all .xml files in TelepathyQt4 and spec/ and make this target depend on those
+    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
+
     add_custom_command(OUTPUT ${_OUTFILE}
 
                        COMMAND ${PYTHON_EXECUTABLE}
@@ -292,7 +300,9 @@ function(tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
                        ARGS    ${CMAKE_SOURCE_DIR}/tools/qt4-constants-gen.py
                                ${constants_gen_args}
                                --specxml=${_SPEC_XML}
-                               > ${_OUTFILE})
+                               > ${_OUTFILE}
+
+                       DEPENDS ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE})
 
     if (constants_gen_depends)
@@ -302,6 +312,9 @@ endfunction (tpqt4_constants_gen _TARGET_NAME _SPEC_XML _OUTFILE)
 
 function(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAMESPACE _REALINCLUDE _PRETTYINCLUDE)
     tpqt4_extract_depends(types_gen_args types_gen_depends ${ARGN})
+    # Gather all .xml files in TelepathyQt4 and spec/ and make this target depend on those
+    file(GLOB depends_xml_files ${CMAKE_SOURCE_DIR}/TelepathyQt4/*.xml ${CMAKE_SOURCE_DIR}/spec/*.xml)
+
     add_custom_command(OUTPUT ${_OUTFILE_DECL} ${_OUTFILE_IMPL}
                        COMMAND ${PYTHON_EXECUTABLE}
                        ARGS ${CMAKE_SOURCE_DIR}/tools/qt4-types-gen.py
@@ -311,7 +324,8 @@ function(tpqt4_types_gen _TARGET_NAME _SPEC_XML _OUTFILE_DECL _OUTFILE_IMPL _NAM
                             --realinclude=${_REALINCLUDE}
                             --prettyinclude=${_PRETTYINCLUDE}
                             ${types_gen_args}
-                            --specxml=${_SPEC_XML})
+                            --specxml=${_SPEC_XML}
+                       DEPENDS ${_SPEC_XML} ${depends_xml_files})
     add_custom_target(${_TARGET_NAME} DEPENDS ${_OUTFILE_IMPL})
 
     if (types_gen_depends)
