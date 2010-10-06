@@ -265,10 +265,13 @@ void Account::Private::addConferenceRequestParameters(QVariantMap &request,
         const QList<ChannelPtr> &channels,
         const QStringList &initialInviteeContactsIdentifiers)
 {
+    // TODO what should we do now that we support both Conference and Conference.DRAFT, how to check
+    //      here if we should use Conference.DRAFT or Conference when adding the params.
     ObjectPathList objectPaths;
     foreach (const ChannelPtr &channel, channels) {
         objectPaths << QDBusObjectPath(channel->objectPath());
     }
+
     request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"),
                    qVariantFromValue(objectPaths));
 
@@ -282,6 +285,8 @@ void Account::Private::addConferenceRequestParameters(QVariantMap &request,
         const QList<ChannelPtr> &channels,
         const QList<ContactPtr> &initialInviteeContacts)
 {
+    // TODO what should we do now that we support both Conference and Conference.DRAFT, how to check
+    //      here if we should use Conference.DRAFT or Conference when adding the params.
     ObjectPathList objectPaths;
     foreach (const ChannelPtr &channel, channels) {
         objectPaths << QDBusObjectPath(channel->objectPath());
