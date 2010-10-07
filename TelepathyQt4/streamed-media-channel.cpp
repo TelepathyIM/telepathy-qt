@@ -2554,6 +2554,9 @@ void StreamedMediaChannel::onContentReady(PendingOperation *op)
 
     if (isReady(FeatureContents)) {
         emit contentAdded(content);
+        foreach (const MediaStreamPtr &stream, content->streams()) {
+            emit streamAdded(stream);
+        }
     }
 
     if (!isReady(FeatureContents) && mPriv->incompleteContents.size() == 0) {
