@@ -130,8 +130,7 @@ ConnectionPtr ConnectionFactory::construct(const QString &busName, const QString
         const ChannelFactoryConstPtr &chanFactory,
         const ContactFactoryConstPtr &contactFactory) const
 {
-    return Connection::create(dbusConnection(), busName, objectPath/*, chanFactory,
-                                                                     contactFactory */);
+    return Connection::create(dbusConnection(), busName, objectPath, chanFactory, contactFactory);
 }
 
 /**

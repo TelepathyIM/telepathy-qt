@@ -55,7 +55,9 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 {
-    Private(Connection *parent);
+    Private(Connection *parent,
+            const ChannelFactoryConstPtr &chanFactory,
+            const ContactFactoryConstPtr &contactFactory);
     ~Private();
 
     void init();
@@ -87,6 +89,10 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private
 
     // Public object
     Connection *parent;
+
+    // Factories
+    ChannelFactoryConstPtr chanFactory;
+    ContactFactoryConstPtr contactFactory;
 
     // Instance of generated interface class
     Client::ConnectionInterface *baseInterface;
@@ -177,8 +183,12 @@ struct TELEPATHY_QT4_NO_EXPORT Connection::Private::HandleContext
     QMap<uint, Type> types;
 };
 
-Connection::Private::Private(Connection *parent)
+Connection::Private::Private(Connection *parent,
+        const ChannelFactoryConstPtr &chanFactory,
+        const ContactFactoryConstPtr &contactFactory)
     : parent(parent),
+      chanFactory(chanFactory),
+      contactFactory(contactFactory),
       baseInterface(new Client::ConnectionInterface(parent->dbusConnection(),
                     parent->busName(), parent->objectPath(), parent)),
       properties(parent->propertiesInterface()),
@@ -198,6 +208,10 @@ Connection::Private::Private(Connection *parent)
       handleContext(0)
 {
     Q_ASSERT(properties != 0);
+
+    if (chanFactory->dbusConnection().name() != parent->dbusConnection().name()) {
+        warning() << "  The D-Bus connection in the channel factory is not the proxy connection";
+    }
 
     init();
 
@@ -852,6 +866,9 @@ const Feature Connection::FeatureAccountBalance = Feature(QLatin1String(Connecti
 /**
  * Create a new connection object using QDBusConnection::sessionBus().
  *
+ * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
+ * as appropriate, with no features ready.
+
  * \param busName The connection well-known bus name (sometimes called a
  *                "service name").
  * \param objectPath The connection object path.
@@ -866,6 +883,9 @@ ConnectionPtr Connection::create(const QString &busName,
 /**
  * Create a new connection object using the given \a bus.
  *
+ * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
+ * as appropriate, with no features ready.
+ *
  * \param bus QDBusConnection to use.
  * \param busName The connection well-known bus name (sometimes called a
  *                "service name").
@@ -879,7 +899,52 @@ ConnectionPtr Connection::create(const QDBusConnection &bus,
 }
 
 /**
+ * Create a new connection object using QDBusConnection::sessionBus().
+ *
+ * A warning is printed if the factories are not for QDBusConnection::sessionBus().
+ *
+ * \param busName The connection well-known bus name (sometimes called a
+ *                "service name").
+ * \param objectPath The connection object path.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ConnectionPtr pointing to the newly created Connection.
+ */
+ConnectionPtr Connection::create(const QString &busName,
+        const QString &objectPath,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+{
+    return ConnectionPtr(new Connection(QDBusConnection::sessionBus(),
+                busName, objectPath, channelFactory, contactFactory));
+}
+
+/**
+ * Create a new connection object using the given \a bus.
+ *
+ * A warning is printed if the factories are not for \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param busName The connection well-known bus name (sometimes called a
+ *                "service name").
+ * \param objectPath The connection object path.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ * \return A ConnectionPtr pointing to the newly created Connection.
+ */
+ConnectionPtr Connection::create(const QDBusConnection &bus,
+        const QString &busName, const QString &objectPath,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+{
+    return ConnectionPtr(new Connection(bus, busName, objectPath, channelFactory, contactFactory));
+}
+
+/**
  * Construct a new connection object using QDBusConnection::sessionBus().
+ *
+ * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
+ * as appropriate, with no features ready.
  *
  * \param busName The connection's well-known bus name (sometimes called a
  *                "service name").
@@ -891,12 +956,17 @@ Connection::Connection(const QString &busName,
             busName, objectPath),
       OptionalInterfaceFactory<Connection>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(this,
+                  ChannelFactory::create(QDBusConnection::sessionBus()),
+                  ContactFactory::create()))
 {
 }
 
 /**
  * Construct a new connection object using the given \bus.
+ *
+ * The instance will use a channel factory creating stock Telepathy-Qt4 channel subclasses,
+ * as appropriate, with no features ready.
  *
  * \param bus QDBusConnection to use.
  * \param busName The connection's well-known bus name (sometimes called a
@@ -909,7 +979,33 @@ Connection::Connection(const QDBusConnection &bus,
     : StatefulDBusProxy(bus, busName, objectPath),
       OptionalInterfaceFactory<Connection>(this),
       ReadyObject(this, FeatureCore),
-      mPriv(new Private(this))
+      mPriv(new Private(this,
+                  ChannelFactory::create(bus),
+                  ContactFactory::create()))
+{
+}
+
+/**
+ * Construct a new connection object using the given \a bus.
+ *
+ * A warning is printed if the factories are not for \a bus.
+ *
+ * \param bus QDBusConnection to use.
+ * \param busName The connection's well-known bus name (sometimes called a
+ *                "service name").
+ * \param objectPath The connection object path.
+ * \param channelFactory The channel factory to use.
+ * \param contactFactory The contact factory to use.
+ */
+Connection::Connection(const QDBusConnection &bus,
+        const QString &busName,
+        const QString &objectPath,
+        const ChannelFactoryConstPtr &channelFactory,
+        const ContactFactoryConstPtr &contactFactory)
+    : StatefulDBusProxy(bus, busName, objectPath),
+      OptionalInterfaceFactory<Connection>(this),
+      ReadyObject(this, FeatureCore),
+      mPriv(new Private(this, channelFactory, contactFactory))
 {
 }
 
@@ -919,6 +1015,36 @@ Connection::Connection(const QDBusConnection &bus,
 Connection::~Connection()
 {
     delete mPriv;
+}
+
+/**
+ * Get the channel factory used by this connection.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the account would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ChannelFactoryConstPtr Connection::channelFactory() const
+{
+    return mPriv->chanFactory;
+}
+
+/**
+ * Get the contact factory used by this connection.
+ *
+ * Only read access is provided. This allows constructing object instances and examining the object
+ * construction settings, but not changing settings. Allowing changes would lead to tricky
+ * situations where objects constructed at different times by the account would have unpredictably
+ * different construction settings (eg. subclass).
+ *
+ * \return Read-only pointer to the factory.
+ */
+ContactFactoryConstPtr Connection::contactFactory() const
+{
+    return mPriv->contactFactory;
 }
 
 QString Connection::cmName() const

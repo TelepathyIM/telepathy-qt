@@ -29,6 +29,8 @@
 #include <TelepathyQt4/_gen/cli-connection.h>
 
 #include <TelepathyQt4/Contact>
+#include <TelepathyQt4/ContactFactory>
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>
@@ -81,12 +83,24 @@ public:
         StatusUnknown = 0xFFFFFFFF
     };
 
-    static ConnectionPtr create(const QString &busName,
+    TELEPATHY_QT4_DEPRECATED static ConnectionPtr create(const QString &busName,
             const QString &objectPath);
-    static ConnectionPtr create(const QDBusConnection &bus,
+    TELEPATHY_QT4_DEPRECATED static ConnectionPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
 
+    static ConnectionPtr create(const QString &busName,
+            const QString &objectPath,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
+    static ConnectionPtr create(const QDBusConnection &bus,
+            const QString &busName, const QString &objectPath,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
+
     virtual ~Connection();
+
+    ChannelFactoryConstPtr channelFactory() const;
+    ContactFactoryConstPtr contactFactory() const;
 
     QString cmName() const;
     QString protocolName() const;
@@ -272,9 +286,15 @@ Q_SIGNALS:
     void accountBalanceChanged(const Tp::CurrencyAmount &accountBalance);
 
 protected:
+    // FIXME: (API/ABI break) Remove constructors not taking factories as parameters
     Connection(const QString &busName, const QString &objectPath);
     Connection(const QDBusConnection &bus, const QString &busName,
             const QString &objectPath);
+
+    Connection(const QDBusConnection &bus, const QString &busName,
+            const QString &objectPath,
+            const ChannelFactoryConstPtr &channelFactory,
+            const ContactFactoryConstPtr &contactFactory);
 
     Client::ConnectionInterface *baseInterface() const;
 
