@@ -15,7 +15,8 @@ if(FARSIGHT_COMPONENTS_FOUND)
 
     set(telepathy_qt4_farsight_HEADERS
         Channel
-        channel.h)
+        channel.h
+        global.h)
 
     # Create the library
     if (ENABLE_COMPILER_COVERAGE)
