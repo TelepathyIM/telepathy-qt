@@ -108,7 +108,9 @@ void TestConferenceChan::initTestCase()
     g_free(name);
     g_free(connPath);
 
-    mConn = Connection::create(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
     QVERIFY(connect(mConn->requestConnect(),

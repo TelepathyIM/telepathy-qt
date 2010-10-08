@@ -146,7 +146,9 @@ void TestConnRosterGroups::init()
 
 void TestConnRosterGroups::testRosterGroups()
 {
-    mConn = Connection::create(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
 
     QVERIFY(connect(mConn->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -304,7 +306,9 @@ void TestConnRosterGroups::testRosterGroups()
  */
 void TestConnRosterGroups::testNotADeathTrap()
 {
-    mConn = Connection::create(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
     // Check that the contact manager doesn't crash, but returns an error (because the conn isn't

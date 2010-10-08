@@ -79,7 +79,9 @@ void TestConnCapabilities::initTestCase()
 void TestConnCapabilities::init()
 {
     mConnInvalidated = false;
-    mConn = Connection::create(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
 
     initImpl();
 }

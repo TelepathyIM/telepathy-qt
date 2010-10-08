@@ -146,7 +146,9 @@ void TestConnRoster::init()
 {
     initImpl();
 
-    mConn = Connection::create(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
 
     QVERIFY(connect(mConn->requestConnect(),
                     SIGNAL(finished(Tp::PendingOperation*)),
