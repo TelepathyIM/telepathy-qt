@@ -580,7 +580,7 @@ Account::Account(const QString &busName, const QString &objectPath)
 }
 
 /**
- * Construct a new Account object using the given \bus.
+ * Construct a new Account object using the given \a bus.
  *
  * The instance will use a connection factory creating Tp::Connection objects with no features
  * ready, and a channel factory creating stock Telepathy-Qt4 channel subclasses, as appropriate,
@@ -604,18 +604,18 @@ Account::Account(const QDBusConnection &bus,
 }
 
 /**
- * Construct a new Account object using the given \bus and the given factories.
+ * Construct a new Account object using the given \a bus and the given factories.
  *
- * A warning is printed if the factories are not for QDBusConnection::sessionBus().
+ * A warning is printed if the factories are not for \a bus.
  *
  * \param bus QDBusConnection to use.
  * \param busName The account well-known bus name (sometimes called a "service
  *                name"). This is usually the same as the account manager
  *                bus name #TELEPATHY_ACCOUNT_MANAGER_BUS_NAME.
+ * \param objectPath The account object path.
  * \param connectionFactory The connection factory to use.
  * \param channelFactory The channel factory to use.
  * \param contactFactory The contact factory to use.
- * \param objectPath The account object path.
  */
 Account::Account(const QDBusConnection &bus,
         const QString &busName, const QString &objectPath,
