@@ -1468,6 +1468,9 @@ ConnectionPtr Channel::connection() const
  */
 QVariantMap Channel::immutableProperties() const
 {
+    // TODO: it doesn't have to be ready, just the given property has to be introspected already
+    // This'd be for ChannelFactory's benefit
+
     if (isReady()) {
         QString key;
 

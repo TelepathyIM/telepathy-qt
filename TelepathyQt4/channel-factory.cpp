@@ -39,6 +39,18 @@
 namespace Tp
 {
 
+struct ChannelFactory::Private
+{
+    Private();
+
+    typedef QPair<QVariantMap, Features> FeaturePair;
+    QList<FeaturePair> features;
+};
+
+ChannelFactory::Private::Private()
+{
+}
+
 /**
  * \class ChannelFactory
  * \ingroup clientchannel
@@ -74,7 +86,7 @@ ChannelFactoryPtr ChannelFactory::create(const QDBusConnection &bus)
  * \param bus The QDBusConnection the proxies constructed using this factory should use.
  */
 ChannelFactory::ChannelFactory(const QDBusConnection &bus)
-    : DBusProxyFactory(bus)
+    : DBusProxyFactory(bus), mPriv(new Private)
 {
 }
 
@@ -83,6 +95,59 @@ ChannelFactory::ChannelFactory(const QDBusConnection &bus)
  */
 ChannelFactory::~ChannelFactory()
 {
+    delete mPriv;
+}
+
+Features ChannelFactory::featuresFor(const QVariantMap &channelClass) const
+{
+    Features features;
+
+    foreach (const Private::FeaturePair &pair, mPriv->features) {
+        const QVariantMap &filterProps = pair.first;
+
+        bool matches = true;
+        foreach (const QString &key, filterProps.keys()) {
+            if (!channelClass.contains(key) || channelClass.value(key) != filterProps.value(key)) {
+                matches = false;
+                break;
+            }
+        }
+
+        if (matches) {
+            features.unite(pair.second);
+        }
+    }
+
+    return features;
+}
+
+void ChannelFactory::addFeaturesFor(const QVariantMap &channelClass, const Features &features)
+{
+    QList<Private::FeaturePair>::iterator i;
+    for (i = mPriv->features.begin(); i != mPriv->features.end(); ++i) {
+        const QVariantMap &filterProps = i->first;
+
+        if (channelClass.size() > filterProps.size()) {
+            break;
+        }
+
+        bool matches = true;
+        foreach (const QString &key, filterProps.keys()) {
+            if (!channelClass.contains(key) || channelClass.value(key) != filterProps.value(key)) {
+                matches = false;
+                break;
+            }
+        }
+
+        if (matches) {
+            i->second.unite(features);
+            return;
+        }
+    }
+
+    // We ran out of feature specifications (for the given size/specificity of a channel class)
+    // before finding a matching one, so let's create a new entry
+    mPriv->features.insert(i, qMakePair(channelClass, features));
 }
 
 /**
@@ -176,8 +241,11 @@ QString ChannelFactory::finalBusNameFrom(const QString &uniqueOrWellKnown) const
  */
 Features ChannelFactory::featuresFor(const SharedPtr<RefCounted> &proxy) const
 {
-    // TODO return whatever the user / defaults has specified
-    return Features();
+    // API/ABI break TODO: change to qobjectCast once we have a saner object hierarchy
+    ChannelPtr chan = ChannelPtr::dynamicCast(proxy);
+    Q_ASSERT(!chan.isNull());
+
+    return featuresFor(chan->immutableProperties());
 }
 
 } // Tp
