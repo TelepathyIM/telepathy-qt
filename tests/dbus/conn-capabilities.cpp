@@ -1,5 +1,7 @@
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/PendingReady>
 
 #include <telepathy-glib/debug.h>

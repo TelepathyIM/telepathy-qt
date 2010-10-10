@@ -29,8 +29,6 @@
 #include <TelepathyQt4/_gen/cli-connection.h>
 
 #include <TelepathyQt4/Contact>
-#include <TelepathyQt4/ContactFactory>
-#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/DBus>
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/OptionalInterfaceFactory>

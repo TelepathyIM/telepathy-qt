@@ -29,7 +29,9 @@
 
 #include "TelepathyQt4/debug-internal.h"
 
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/ConnectionCapabilities>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingChannel>
 #include <TelepathyQt4/PendingContactAttributes>

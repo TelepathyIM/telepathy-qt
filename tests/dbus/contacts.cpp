@@ -5,8 +5,10 @@
 #include <QtDBus>
 #include <QtTest>
 
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Contact>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingVoid>

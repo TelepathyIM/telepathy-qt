@@ -5,7 +5,9 @@
 
 #include <QtTest/QtTest>
 
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ContactFactory>
 #include <TelepathyQt4/Message>
 #include <TelepathyQt4/PendingReady>
 #include <TelepathyQt4/ReceivedMessage>
