@@ -21,6 +21,8 @@
 
 #include <TelepathyQt4/ConnectionCapabilities>
 
+#include "TelepathyQt4/future-internal.h"
+
 #include <TelepathyQt4/Constants>
 #include <TelepathyQt4/Types>
 
@@ -94,4 +96,94 @@ bool ConnectionCapabilities::supportsTextChatrooms() const
     return false;
 }
 
+/**
+ * Return whether merging media calls in a conference is supported.
+ *
+ * \param withInitialInvitees If \c true (the default), check for the ability to merge media calls
+ *                            in a conference, by providing initial invitees; if \c false,
+ *                            skip checking if initial invitees is allowed.
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::supportsConferenceMediaCalls(
+            bool withInitialInvitees) const
+{
+    QString channelType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
+            if (!withInitialInvitees ||
+                (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
+                 cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * Return whether merging text chats in a conference is supported.
+ *
+ * \param withInitialInvitees If \c true (the default), check for the ability to merge text chats
+ *                            in a conference, by providing initial invitees; if \c false,
+ *                            skip checking if initial invitees is allowed.
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::supportsConferenceTextChats(
+            bool withInitialInvitees) const
+{
+    QString channelType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
+            if (!withInitialInvitees ||
+                (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
+                 cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * Return whether merging text chat rooms in a conference is supported.
+ *
+ * \param withInitialInvitees If \c true (the default), check for the ability to merge text chat
+ *                            rooms in a conference, by providing initial invitees; if \c false,
+ *                            skip checking if initial invitees is allowed.
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::supportsConferenceTextChatrooms(
+            bool withInitialInvitees) const
+{
+    QString channelType;
+    uint targetHandleType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        targetHandleType = qdbus_cast<uint>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT) &&
+            targetHandleType == HandleTypeRoom &&
+            (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")) ||
+             cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels")))) {
+            if (!withInitialInvitees ||
+                (cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")) ||
+                 cls.allowedProperties.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles")))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 } // Tp
