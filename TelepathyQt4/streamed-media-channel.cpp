@@ -334,20 +334,14 @@ void MediaStream::Private::introspectSMContact(MediaStream::Private *self)
 PendingOperation *MediaStream::Private::updateSMDirection(
         bool send, bool receive)
 {
-    uint newSMDirection = SMDirection;
+    uint newSMDirection = 0;
 
     if (send) {
         newSMDirection |= MediaStreamDirectionSend;
     }
-    else {
-        newSMDirection &= ~MediaStreamDirectionSend;
-    }
 
     if (receive) {
         newSMDirection |= MediaStreamDirectionReceive;
-    }
-    else {
-        newSMDirection &= ~MediaStreamDirectionReceive;
     }
 
     StreamedMediaChannelPtr chan(MediaContentPtr(content)->channel());
