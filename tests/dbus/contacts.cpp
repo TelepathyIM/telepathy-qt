@@ -154,7 +154,9 @@ void TestContacts::initTestCase()
     g_free(name);
     g_free(connPath);
 
-    mConn = Connection::create(mConnName, mConnPath);
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
     QCOMPARE(mConn->isReady(), false);
 
     mConn->requestConnect();
@@ -770,7 +772,9 @@ void TestContacts::testSelfContactFallback()
     QVERIFY(name != 0);
     QVERIFY(connPath != 0);
 
-    ConnectionPtr conn = Connection::create(QLatin1String(name), QLatin1String(connPath));
+    ConnectionPtr conn = Connection::create(QLatin1String(name), QLatin1String(connPath),
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
     g_free(name);
     g_free(connPath);
 
