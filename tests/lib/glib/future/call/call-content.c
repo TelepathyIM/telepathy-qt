@@ -26,13 +26,15 @@
 
 #include "extensions/extensions.h"
 
+static void content_iface_init (gpointer iface, gpointer data);
+
 G_DEFINE_TYPE_WITH_CODE (ExampleCallContent,
     example_call_content,
     G_TYPE_OBJECT,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_DBUS_PROPERTIES,
       tp_dbus_properties_mixin_iface_init);
-    /* no methods, so no vtable needed */
-    G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CALL_CONTENT, NULL))
+    G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CALL_CONTENT,
+      content_iface_init))
 
 enum
 {
@@ -46,6 +48,15 @@ enum
   PROP_STREAM_PATHS,
   N_PROPS
 };
+
+enum
+{
+  SIGNAL_REMOVED,
+  N_SIGNALS
+};
+
+static guint signals[N_SIGNALS] = { 0 };
+
 
 struct _ExampleCallContentPrivate
 {
@@ -319,6 +330,11 @@ example_call_content_class_init (ExampleCallContentClass *klass)
       G_TYPE_STRV, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
   g_object_class_install_property (object_class, PROP_INTERFACES, param_spec);
 
+  signals[SIGNAL_REMOVED] = g_signal_new ("removed",
+      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+      g_cclosure_marshal_VOID__VOID,
+      G_TYPE_NONE, 0);
+
   klass->dbus_properties_class.interfaces = prop_interfaces;
   tp_dbus_properties_mixin_class_init (object_class,
       G_STRUCT_OFFSET (ExampleCallContentClass,
@@ -372,4 +388,25 @@ example_call_content_add_stream (ExampleCallContent *self,
   tp_g_signal_connect_object (stream, "removed",
       G_CALLBACK (example_call_content_stream_removed_cb), self,
       G_CONNECT_SWAPPED);
+}
+
+static void
+content_remove (FutureSvcCallContent *self,
+    DBusGMethodInvocation *context)
+{
+  g_signal_emit (self, signals[SIGNAL_REMOVED], 0);
+
+  future_svc_call_content_return_from_remove (context);
+}
+
+static void
+content_iface_init (gpointer iface,
+    gpointer data)
+{
+  FutureSvcCallContentClass *klass = iface;
+
+#define IMPLEMENT(x) \
+  future_svc_call_content_implement_##x (klass, content_##x)
+  IMPLEMENT (remove);
+#undef IMPLEMENT
 }
