@@ -44,6 +44,7 @@ public:
     bool supportsConferenceTextChatrooms(bool withInitialInvitees = true) const;
 
 private:
+    friend class Account;
     friend class Connection;
     friend class ProtocolInfo;
 
