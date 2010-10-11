@@ -3149,30 +3149,39 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to Properties::GetAll(Channel.Interface.Conference)";
         props = reply.value();
 
+        ConnectionPtr conn = connection();
+        ChannelFactoryConstPtr chanFactory = conn->channelFactory();
+
         ObjectPathList channels =
             qdbus_cast<ObjectPathList>(props[QLatin1String("Channels")]);
-        foreach (const QDBusObjectPath &channel, channels) {
-            if (mPriv->conferenceChannels.contains(channel.path())) {
+        foreach (const QDBusObjectPath &channelPath, channels) {
+            if (mPriv->conferenceChannels.contains(channelPath.path())) {
                 continue;
             }
 
-            // TODO use ChannelFactory
-            mPriv->conferenceChannels.insert(channel.path(),
-                    Channel::create(connection(), channel.path(),
-                        QVariantMap()));
+            PendingReady *readyOp = chanFactory->proxy(conn,
+                    channelPath.path(), QVariantMap());
+
+            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+            Q_ASSERT(!channel.isNull());
+
+            mPriv->conferenceChannels.insert(channelPath.path(), channel);
         }
 
         ObjectPathList initialChannels =
             qdbus_cast<ObjectPathList>(props[QLatin1String("InitialChannels")]);
-        foreach (const QDBusObjectPath &channel, initialChannels) {
-            if (mPriv->conferenceInitialChannels.contains(channel.path())) {
+        foreach (const QDBusObjectPath &channelPath, initialChannels) {
+            if (mPriv->conferenceInitialChannels.contains(channelPath.path())) {
                 continue;
             }
 
-            // TODO use ChannelFactory
-            mPriv->conferenceInitialChannels.insert(channel.path(),
-                    Channel::create(connection(), channel.path(),
-                        QVariantMap()));
+            PendingReady *readyOp = chanFactory->proxy(conn,
+                    channelPath.path(), QVariantMap());
+
+            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+            Q_ASSERT(!channel.isNull());
+
+            mPriv->conferenceInitialChannels.insert(channelPath.path(), channel);
         }
 
         mPriv->conferenceInitialInviteeHandles =
@@ -3214,42 +3223,47 @@ void Channel::gotConferenceInitialInviteeContacts(PendingOperation *op)
             FeatureConferenceInitialInviteeContacts, true);
 }
 
-void Channel::onConferenceChannelMerged(const QDBusObjectPath &channel,
+void Channel::onConferenceChannelMerged(const QDBusObjectPath &channelPath,
         uint channelSpecificHandle, const QVariantMap &properties)
 {
-    if (mPriv->conferenceChannels.contains(channel.path())) {
+    if (mPriv->conferenceChannels.contains(channelPath.path())) {
         return;
     }
 
-    // TODO use ChannelFactory
-    ChannelPtr mergedChannel = Channel::create(connection(),
-            channel.path(), properties);
-    mPriv->conferenceChannels.insert(channel.path(), mergedChannel);
-    emit conferenceChannelMerged(mergedChannel);
+    ConnectionPtr conn = connection();
+    ChannelFactoryConstPtr chanFactory = conn->channelFactory();
+    PendingReady *readyOp = chanFactory->proxy(conn,
+            channelPath.path(), QVariantMap());
+
+    ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+    Q_ASSERT(!channel.isNull());
+
+    mPriv->conferenceChannels.insert(channelPath.path(), channel);
+    emit conferenceChannelMerged(channel);
 }
 
-void Channel::onConferenceChannelMerged(const QDBusObjectPath &channel)
+void Channel::onConferenceChannelMerged(const QDBusObjectPath &channelPath)
 {
-    onConferenceChannelMerged(channel, 0, QVariantMap());
+    onConferenceChannelMerged(channelPath, 0, QVariantMap());
 }
 
-void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channel,
+void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath,
         const QVariantMap &details)
 {
-    if (!mPriv->conferenceChannels.contains(channel.path())) {
+    if (!mPriv->conferenceChannels.contains(channelPath.path())) {
         return;
     }
 
-    ChannelPtr removedChannel = mPriv->conferenceChannels[channel.path()];
-    mPriv->conferenceChannels.remove(channel.path());
-    emit conferenceChannelRemoved(removedChannel);
+    ChannelPtr channel = mPriv->conferenceChannels[channelPath.path()];
+    mPriv->conferenceChannels.remove(channelPath.path());
+    emit conferenceChannelRemoved(channel);
     // TODO construct the contact for details["actor"] if applicable
-    emit conferenceChannelRemoved(removedChannel, GroupMemberChangeDetails(ContactPtr(), details));
+    emit conferenceChannelRemoved(channel, GroupMemberChangeDetails(ContactPtr(), details));
 }
 
-void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channel)
+void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath)
 {
-    onConferenceChannelRemoved(channel, QVariantMap());
+    onConferenceChannelRemoved(channelPath, QVariantMap());
 }
 
 /**
