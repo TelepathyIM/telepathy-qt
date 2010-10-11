@@ -72,12 +72,27 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
 
     bool checkCapabilitiesChanged(bool profileChanged);
 
-    void addConferenceRequestParameters(QVariantMap &request,
+    // TODO remove once Conference.DRAFT support is removed and simplify code that uses it
+    bool useConferenceDRAFT(const char *channelType,
+            uint targetHandleType) const;
+    void addConferenceRequestCommonParameters(
+            const char *channelType,
+            uint targetHandleType,
+            const char *conferenceIface,
             const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers);
-    void addConferenceRequestParameters(QVariantMap &request,
+            QVariantMap &request);
+    void addConferenceRequestParameters(
+            const char *channelType,
+            uint targetHandleType,
             const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts);
+            const QStringList &initialInviteeContactsIdentifiers,
+            QVariantMap &request);
+    void addConferenceRequestParameters(
+            const char *channelType,
+            uint targetHandleType,
+            const QList<ChannelPtr> &channels,
+            const QList<ContactPtr> &initialInviteeContacts,
+            QVariantMap &request);
 
     // Public object
     Account *parent;
@@ -267,38 +282,105 @@ bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
     return changed;
 }
 
-void Account::Private::addConferenceRequestParameters(QVariantMap &request,
-        const QList<ChannelPtr> &channels,
-        const QStringList &initialInviteeContactsIdentifiers)
+bool Account::Private::useConferenceDRAFT(const char *channelType,
+        uint targetHandleType) const
 {
-    // TODO what should we do now that we support both Conference and Conference.DRAFT, how to check
-    //      here if we should use Conference.DRAFT or Conference when adding the params.
+    // default to Conference
+    ConnectionCapabilities *caps = parent->capabilities();
+    if (!caps) {
+        return false;
+    }
+
+    RequestableChannelClassList rccs = caps->requestableChannelClasses();
+    QString rccChannelType;
+    uint rccTargetHandleType;
+    foreach (const RequestableChannelClass &rcc, rccs) {
+        rccChannelType = qdbus_cast<QString>(rcc.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (rccChannelType == QLatin1String(channelType)) {
+            if (targetHandleType != HandleTypeNone) {
+                rccTargetHandleType = qdbus_cast<uint>(rcc.fixedProperties.value(
+                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
+                if (rccTargetHandleType != targetHandleType) {
+                    continue;
+                }
+            }
+
+            if (rcc.allowedProperties.contains(QLatin1String(
+                            TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
+                return false;
+            }
+            if (rcc.allowedProperties.contains(QLatin1String(
+                            TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void Account::Private::addConferenceRequestCommonParameters(
+        const char *channelType,
+        uint targetHandleType,
+        const char *conferenceIface,
+        const QList<ChannelPtr> &channels,
+        QVariantMap &request)
+{
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(channelType));
+    if (targetHandleType != HandleTypeNone) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                       targetHandleType);
+    }
+
     ObjectPathList objectPaths;
     foreach (const ChannelPtr &channel, channels) {
         objectPaths << QDBusObjectPath(channel->objectPath());
     }
 
-    request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"),
-                   qVariantFromValue(objectPaths));
+    request.insert(QString(QLatin1String("%1.InitialChannels"))
+                    .arg(QLatin1String(conferenceIface)),
+                qVariantFromValue(objectPaths));
+}
+
+void Account::Private::addConferenceRequestParameters(
+        const char *channelType,
+        uint targetHandleType,
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        QVariantMap &request)
+{
+    const char *conferenceIface;
+    if (!useConferenceDRAFT(channelType, targetHandleType)) {
+        conferenceIface = TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
+    } else {
+        conferenceIface = TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
+    }
+    addConferenceRequestCommonParameters(channelType, targetHandleType,
+            conferenceIface, channels, request);
 
     if (!initialInviteeContactsIdentifiers.isEmpty()) {
-        request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeIDs"),
-                       initialInviteeContactsIdentifiers);
+        request.insert(QString(QLatin1String("%1.InitialInviteeIDs"))
+                    .arg(QLatin1String(conferenceIface)),
+                initialInviteeContactsIdentifiers);
     }
 }
 
-void Account::Private::addConferenceRequestParameters(QVariantMap &request,
+void Account::Private::addConferenceRequestParameters(
+        const char *channelType,
+        uint targetHandleType,
         const QList<ChannelPtr> &channels,
-        const QList<ContactPtr> &initialInviteeContacts)
+        const QList<ContactPtr> &initialInviteeContacts,
+        QVariantMap &request)
 {
-    // TODO what should we do now that we support both Conference and Conference.DRAFT, how to check
-    //      here if we should use Conference.DRAFT or Conference when adding the params.
-    ObjectPathList objectPaths;
-    foreach (const ChannelPtr &channel, channels) {
-        objectPaths << QDBusObjectPath(channel->objectPath());
+    const char *conferenceIface;
+    if (!useConferenceDRAFT(channelType, targetHandleType)) {
+        conferenceIface = TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
+    } else {
+        conferenceIface = TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
     }
-    request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"),
-                   qVariantFromValue(objectPaths));
+    addConferenceRequestCommonParameters(channelType, targetHandleType,
+            conferenceIface, channels, request);
 
     if (!initialInviteeContacts.isEmpty()) {
         UIntList handles;
@@ -309,8 +391,9 @@ void Account::Private::addConferenceRequestParameters(QVariantMap &request,
             handles << contact->handle()[0];
         }
         if (!handles.isEmpty()) {
-            request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles"),
-                           qVariantFromValue(objectPaths));
+            request.insert(QString(QLatin1String("%1.InitialInviteeHandles"))
+                        .arg(QLatin1String(conferenceIface)),
+                    qVariantFromValue(handles));
         }
     }
 }
@@ -2016,13 +2099,10 @@ PendingChannelRequest *Account::createConferenceMediaCall(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
-    //      should be used?
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContactsIdentifiers);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            HandleTypeNone,
+            channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2056,11 +2136,10 @@ PendingChannelRequest *Account::createConferenceMediaCall(
     QVariantMap request;
     // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
     //      should be used?
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContacts);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            HandleTypeNone,
+            channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2092,11 +2171,10 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContactsIdentifiers);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            HandleTypeNone,
+            channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2128,11 +2206,10 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContacts);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            HandleTypeNone,
+            channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2166,15 +2243,12 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    roomName);
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContactsIdentifiers);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            HandleTypeRoom,
+            channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2208,15 +2282,12 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    roomName);
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContacts);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            HandleTypeRoom,
+            channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
