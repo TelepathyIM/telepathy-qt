@@ -375,6 +375,7 @@ private Q_SLOTS:
     void onConferenceChannelMerged(const QDBusObjectPath &channel);
     void onConferenceChannelRemoved(const QDBusObjectPath &channel, const QVariantMap &details);
     void onConferenceChannelRemoved(const QDBusObjectPath &channel);
+    void gotConferenceChannelRemovedActorContact(Tp::PendingOperation *op);
 
 private:
     struct Private;

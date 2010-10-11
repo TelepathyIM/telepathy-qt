@@ -113,7 +113,10 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
         return parent->optionalInterface<ChannelInterfaceSplittableInterface>(check);
     }
 
+    void processConferenceChannelRemoved();
+
     struct GroupMembersChangedInfo;
+    struct ConferenceChannelRemovedInfo;
 
     // Public object
     Channel *parent;
@@ -202,6 +205,10 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     QHash<uint, ChannelPtr> conferenceOriginalChannels;
     UIntList conferenceInitialInviteeHandles;
     Contacts conferenceInitialInviteeContacts;
+    QQueue<ConferenceChannelRemovedInfo *> conferenceChannelRemovedQueue;
+    bool buildingConferenceChannelRemovedActorContact;
+
+    static const QString keyActor;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
@@ -230,12 +237,23 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
     uint reason;
     QString message;
 
-    static const QString keyActor;
     static const QString keyChangeReason;
     static const QString keyMessage;
 };
 
-const QString Channel::Private::GroupMembersChangedInfo::keyActor(QLatin1String("actor"));
+struct TELEPATHY_QT4_NO_EXPORT Channel::Private::ConferenceChannelRemovedInfo
+{
+    ConferenceChannelRemovedInfo(const QDBusObjectPath &channelPath, const QVariantMap &details)
+        : channelPath(channelPath),
+          details(details)
+    {
+    }
+
+    QDBusObjectPath channelPath;
+    QVariantMap details;
+};
+
+const QString Channel::Private::keyActor(QLatin1String("actor"));
 const QString Channel::Private::GroupMembersChangedInfo::keyChangeReason(
         QLatin1String("change-reason"));
 const QString Channel::Private::GroupMembersChangedInfo::keyMessage(QLatin1String("message"));
@@ -266,7 +284,8 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       groupIsSelfHandleTracked(false),
       groupSelfHandle(0),
       introspectingConference(false),
-      conferenceSupportsNonMerges(false)
+      conferenceSupportsNonMerges(false),
+      buildingConferenceChannelRemovedActorContact(false)
 {
     debug() << "Creating new Channel:" << parent->objectPath();
 
@@ -325,6 +344,9 @@ Channel::Private::~Private()
 {
     delete currentGroupMembersChangedInfo;
     foreach (GroupMembersChangedInfo *info, groupMembersChangedQueue) {
+        delete info;
+    }
+    foreach (ConferenceChannelRemovedInfo *info, conferenceChannelRemovedQueue) {
         delete info;
     }
 }
@@ -1204,6 +1226,35 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
     }
 
     return error;
+}
+
+void Channel::Private::processConferenceChannelRemoved()
+{
+    if (buildingConferenceChannelRemovedActorContact ||
+        conferenceChannelRemovedQueue.isEmpty()) {
+        return;
+    }
+
+    ConferenceChannelRemovedInfo *info = conferenceChannelRemovedQueue.first();
+    if (!conferenceChannels.contains(info->channelPath.path())) {
+        info = conferenceChannelRemovedQueue.dequeue();
+        delete info;
+        processConferenceChannelRemoved();
+        return;
+    }
+
+    buildingConferenceChannelRemovedActorContact = true;
+
+    if (info->details.contains(keyActor)) {
+        ContactManager *manager = connection->contactManager();
+        PendingContacts *pendingContacts = manager->contactsForHandles(
+                UIntList() << qdbus_cast<uint>(info->details.value(keyActor)));
+        parent->connect(pendingContacts,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(gotConferenceChannelRemovedActorContact(Tp::PendingOperation*)));
+    } else {
+        parent->gotConferenceChannelRemovedActorContact(0);
+    }
 }
 
 /**
@@ -3279,11 +3330,40 @@ void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath,
         return;
     }
 
-    ChannelPtr channel = mPriv->conferenceChannels[channelPath.path()];
-    mPriv->conferenceChannels.remove(channelPath.path());
+    mPriv->conferenceChannelRemovedQueue.enqueue(
+            new Private::ConferenceChannelRemovedInfo(channelPath, details));
+    mPriv->processConferenceChannelRemoved();
+}
+
+void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath)
+{
+    onConferenceChannelRemoved(channelPath, QVariantMap());
+}
+
+void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
+{
+    ContactPtr actorContact;
+
+    if (op) {
+        PendingContacts *pc = qobject_cast<PendingContacts *>(op);
+
+        if (pc->isValid()) {
+            Q_ASSERT(pc->contacts().size() == 1);
+            actorContact = pc->contacts().first();
+        } else {
+            warning().nospace() << "Getting conference channel removed actor "
+                "failed with " << pc->errorName() << ":" <<
+                pc->errorMessage();
+        }
+    }
+
+    Private::ConferenceChannelRemovedInfo *info = mPriv->conferenceChannelRemovedQueue.dequeue();
+
+    ChannelPtr channel = mPriv->conferenceChannels[info->channelPath.path()];
+    mPriv->conferenceChannels.remove(info->channelPath.path());
     emit conferenceChannelRemoved(channel);
-    // TODO construct the contact for details["actor"] if applicable
-    emit conferenceChannelRemoved(channel, GroupMemberChangeDetails(ContactPtr(), details));
+    emit conferenceChannelRemoved(channel, GroupMemberChangeDetails(actorContact,
+                info->details));
 
     for (QHash<uint, ChannelPtr>::const_iterator i = mPriv->conferenceOriginalChannels.constBegin();
             i != mPriv->conferenceOriginalChannels.constEnd(); ++i) {
@@ -3291,11 +3371,11 @@ void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath,
             mPriv->conferenceOriginalChannels.remove(i.key());
         }
     }
-}
 
-void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath)
-{
-    onConferenceChannelRemoved(channelPath, QVariantMap());
+    delete info;
+
+    mPriv->buildingConferenceChannelRemovedActorContact = false;
+    mPriv->processConferenceChannelRemoved();
 }
 
 /**
