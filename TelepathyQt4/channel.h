@@ -157,6 +157,7 @@ public:
     TELEPATHY_QT4_DEPRECATED bool conferenceSupportsNonMerges() const;
     QList<ChannelPtr> conferenceChannels() const;
     QList<ChannelPtr> conferenceInitialChannels() const;
+    QHash<uint, ChannelPtr> conferenceOriginalChannels() const;
 
     bool hasMergeableConferenceInterface() const;
     PendingOperation *conferenceMergeChannel(const ChannelPtr &channel);
