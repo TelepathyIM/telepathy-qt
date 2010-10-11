@@ -352,7 +352,10 @@ TELEPATHY_QT4_NO_EXPORT void _registerTypes()
                 array_depth = int(array_depth)
             else:
                 array_depth = None
-            binding = binding_from_decl(name, array_name, array_depth)
+            sig = provider.getAttribute('type')
+            tptype = provider.getAttribute('name')
+            external = (sig, tptype) in self.externals
+            binding = binding_from_decl(name, array_name, array_depth, external)
             self.provide(binding.val)
 
             if binding.array_val:
