@@ -221,16 +221,22 @@ public:
         return optionalInterface<Client::ConnectionInterfaceCapabilitiesInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface(
+    inline Client::ConnectionInterfaceClientTypesInterface *clientTypesInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceClientTypesInterface>(check);
+    }
+
+    inline Client::ConnectionInterfaceContactCapabilitiesInterface *contactCapabilitiesInterface(
+             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfaceContactCapabilitiesInterface>(check);
     }
 
-    inline Client::ConnectionInterfaceLocationInterface *locationInterface(
+    inline Client::ConnectionInterfaceContactGroupsInterface *contactGroupsInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
-        return optionalInterface<Client::ConnectionInterfaceLocationInterface>(check);
+        return optionalInterface<Client::ConnectionInterfaceContactGroupsInterface>(check);
     }
 
     inline Client::ConnectionInterfaceContactInfoInterface *contactInfoInterface(
@@ -239,10 +245,28 @@ public:
         return optionalInterface<Client::ConnectionInterfaceContactInfoInterface>(check);
     }
 
+    inline Client::ConnectionInterfaceContactListInterface *contactListInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceContactListInterface>(check);
+    }
+
+    inline Client::ConnectionInterfaceLocationInterface *locationInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfaceLocationInterface>(check);
+    }
+
     inline Client::ConnectionInterfacePresenceInterface *presenceInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return optionalInterface<Client::ConnectionInterfacePresenceInterface>(check);
+    }
+
+    inline Client::ConnectionInterfacePowerSavingInterface *powerSavingInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return optionalInterface<Client::ConnectionInterfacePowerSavingInterface>(check);
     }
 
     inline Client::ConnectionInterfaceServicePointInterface *servicePointInterface(
