@@ -197,7 +197,7 @@ def gather_externals(spec):
 
     for ext in spec.getElementsByTagNameNS(NS_TP, 'external-type'):
         sig = ext.getAttribute('type')
-        tptype = ext.getAttributeNS(NS_TP, 'type')
+        tptype = ext.getAttribute('name')
         externals.append((sig, tptype))
 
     return externals
