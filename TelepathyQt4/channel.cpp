@@ -2301,7 +2301,7 @@ bool Channel::conferenceSupportsNonMerges() const
  * Change notification is via the conferenceChannelMerged and
  * conferenceChannelRemoved signals.
  *
- * Note that the returned channels are not ready(). Calling
+ * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
  *
  * This method requires Channel::FeatureCore to be enabled.
@@ -2314,9 +2314,9 @@ QList<ChannelPtr> Channel::conferenceChannels() const
 }
 
 /**
- * Return the initial value of channels().
+ * Return the initial value of conferenceChannels().
  *
- * Note that the returned channels are not ready(). Calling
+ * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
  *
  * This method requires Channel::FeatureCore to be enabled.
@@ -2449,7 +2449,7 @@ PendingOperation *Channel::splitChannel()
 //@}
 
 /**
- * \fn conferenceChannelMerged(const Tp::ChannelPtr &channel)
+ * \fn void Channel::conferenceChannelMerged(const Tp::ChannelPtr &channel)
  *
  * Emitted when a new channel is added to the value of conferenceChannels().
  *
@@ -2457,7 +2457,7 @@ PendingOperation *Channel::splitChannel()
  */
 
 /**
- * \fn conferenceChannelRemoved(const Tp::ChannelPtr &channel)
+ * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel)
  *
  * Emitted when a new channel is removed from the value of conferenceChannels().
  *
