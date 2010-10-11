@@ -31,9 +31,16 @@ protected Q_SLOTS:
     void expectRequestContactsFinished(Tp::PendingOperation *);
     void expectCreateChannelFinished(Tp::PendingOperation *);
     void expectRequestContentFinished(Tp::PendingOperation *);
+    void expectRequestStreamsFinished(Tp::PendingOperation *);
     void expectSuccessfulRequestReceiving(Tp::PendingOperation *);
+    void onContentRemoved(const Tp::MediaContentPtr &content);
     void onLocalSendingStateChanged(Tp::MediaStream::SendingState);
     void onRemoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &);
+    void onStreamDirectionChanged(const Tp::MediaStreamPtr &,
+            Tp::MediaStreamDirection,
+            Tp::MediaStreamPendingSend);
+    void onStreamStateChanged(const Tp::MediaStreamPtr &,
+            Tp::MediaStreamState);
     void onChanInvalidated(Tp::DBusProxy *,
             const QString &, const QString &);
     void onNewChannels(const Tp::ChannelDetailsList &);
@@ -45,6 +52,7 @@ private Q_SLOTS:
     void init();
 
     void testOutgoingCall();
+    void testIncomingCall();
     void testHold();
     void testHoldNoUnhold();
     void testHoldInabilityUnhold();
@@ -61,9 +69,17 @@ private:
     StreamedMediaChannelPtr mChan;
     QList<ContactPtr> mRequestContactsReturn;
     MediaContentPtr mRequestContentReturn;
+    MediaContentPtr mContentRemoved;
     MediaStream::SendingState mLSSCReturn;
     QQueue<uint> mLocalHoldStates;
     QQueue<uint> mLocalHoldStateReasons;
+
+    MediaStreams mRequestStreamsReturn;
+    MediaStreamPtr mSDCStreamReturn;
+    Tp::MediaStreamDirection mSDCDirectionReturn;
+    Tp::MediaStreamPendingSend mSDCPendingReturn;
+    MediaStreamPtr mSSCStreamReturn;
+    Tp::MediaStreamState mSSCStateReturn;
 
     // Remote sending state changed state-machine
     enum {
@@ -153,6 +169,36 @@ void TestStreamedMediaChanCall::expectRequestContentFinished(PendingOperation *o
     mLoop->exit(0);
 }
 
+void TestStreamedMediaChanCall::expectRequestStreamsFinished(PendingOperation *op)
+{
+    mRequestStreamsReturn.clear();
+
+    if (!op->isFinished()) {
+        qWarning() << "unfinished";
+        mLoop->exit(1);
+        return;
+    }
+
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mLoop->exit(2);
+        return;
+    }
+
+    if (!op->isValid()) {
+        qWarning() << "inconsistent results";
+        mLoop->exit(3);
+        return;
+    }
+
+    qDebug() << "request streams finished successfully";
+
+    PendingMediaStreams *pms = qobject_cast<PendingMediaStreams*>(op);
+    mRequestStreamsReturn = pms->streams();
+    mLoop->exit(0);
+}
+
 void TestStreamedMediaChanCall::onLocalSendingStateChanged(
         const MediaStream::SendingState state)
 {
@@ -185,6 +231,12 @@ void TestStreamedMediaChanCall::expectSuccessfulRequestReceiving(PendingOperatio
     if (++mSuccessfulRequestReceivings == 2 && mRSSCState == RSSCStateDone) {
         mLoop->exit(0);
     }
+}
+
+void TestStreamedMediaChanCall::onContentRemoved(const Tp::MediaContentPtr &content)
+{
+    mContentRemoved = content;
+    mLoop->exec(0);
 }
 
 void TestStreamedMediaChanCall::onRemoteSendingStateChanged(
@@ -224,6 +276,26 @@ void TestStreamedMediaChanCall::onRemoteSendingStateChanged(
     qDebug() << "remote sending state changed to" << states[otherContact];
 }
 
+void TestStreamedMediaChanCall::onStreamDirectionChanged(const MediaStreamPtr &stream,
+        Tp::MediaStreamDirection direction,
+        Tp::MediaStreamPendingSend pendingSend)
+{
+    qDebug() << "stream" << stream.data() << "direction changed to" << direction;
+    mSDCStreamReturn = stream;
+    mSDCDirectionReturn = direction;
+    mSDCPendingReturn = pendingSend;
+    mLoop->exit(0);
+}
+
+void TestStreamedMediaChanCall::onStreamStateChanged(const MediaStreamPtr &stream,
+        Tp::MediaStreamState state)
+{
+    qDebug() << "stream" << stream.data() << "state changed to" << state;
+    mSSCStreamReturn = stream;
+    mSSCStateReturn = state;
+    mLoop->exit(0);
+}
+
 void TestStreamedMediaChanCall::onChanInvalidated(Tp::DBusProxy *proxy,
         const QString &errorName, const QString &errorMessage)
 {
@@ -240,7 +312,7 @@ void TestStreamedMediaChanCall::onNewChannels(const Tp::ChannelDetailsList &chan
         qDebug() << " channelType:" << channelType;
         qDebug() << " requested  :" << requested;
 
-        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) &&
+        if (channelType == QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL) &&
             !requested) {
             mChan = StreamedMediaChannel::create(mConn,
                         details.channel.path(),
@@ -314,6 +386,7 @@ void TestStreamedMediaChanCall::init()
     mLSSCReturn = (MediaStream::SendingState) -1;
     mLocalHoldStates.clear();
     mLocalHoldStateReasons.clear();
+    mContentRemoved.reset();
 }
 
 void TestStreamedMediaChanCall::testOutgoingCall()
@@ -364,7 +437,6 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QVERIFY(mChan->groupContacts().contains(otherContact));
 
     qDebug() << "calling requestContent with a bad type";
-
     // RequestContent with bad type must fail
     QVERIFY(connect(mChan->requestContent(QLatin1String("content1"), (Tp::MediaStreamType) -1),
                     SIGNAL(finished(Tp::PendingOperation*)),
@@ -372,9 +444,22 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QCOMPARE(mLoop->exec(), 2);
     QVERIFY(!mRequestContentReturn);
 
-    qDebug() << "calling requestContent with Video";
+    qDebug() << "calling requestContent with Audio";
+    QCOMPARE(mChan->contentsForType(Tp::MediaStreamTypeAudio).size(), 1);
 
-    // Request video content
+    mRequestContentReturn.reset();
+    QVERIFY(connect(mChan->requestContent(QLatin1String("content1"), Tp::MediaStreamTypeAudio),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestContentFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(!mRequestContentReturn.isNull());
+    QCOMPARE(mRequestContentReturn->name(), QString(QLatin1String("content1")));
+    QCOMPARE(mRequestContentReturn->type(), Tp::MediaStreamTypeAudio);
+
+    QCOMPARE(mChan->contentsForType(Tp::MediaStreamTypeAudio).size(), 2);
+
+    qDebug() << "calling requestContent with Video";
+    mRequestContentReturn.reset();
     QVERIFY(connect(mChan->requestContent(QLatin1String("content2"), Tp::MediaStreamTypeVideo),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectRequestContentFinished(Tp::PendingOperation*))));
@@ -383,22 +468,24 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QCOMPARE(mRequestContentReturn->name(), QString(QLatin1String("content2")));
     QCOMPARE(mRequestContentReturn->type(), Tp::MediaStreamTypeVideo);
 
-    MediaContentPtr content;
-
     // test content removal
-    // TODO Call iface does not support Content Removal for now
-    /*
+    QCOMPARE(mChan->contentsForType(Tp::MediaStreamTypeAudio).size(), 2);
+
+    MediaContentPtr content;
     content = mChan->contentsForType(Tp::MediaStreamTypeAudio).first();
     QVERIFY(content);
 
     QVERIFY(connect(mChan.data(),
-                    SIGNAL(contentRemoved(const Tp::MediaStreamPtr &)),
-                    SLOT(onContentRemoved(const Tp::MediaStreamPtr &))));
-    QVERIFY(connect(mChan->removeContent(stream),
+                    SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
+                    SLOT(onContentRemoved(const Tp::MediaContentPtr &))));
+    QVERIFY(connect(mChan->removeContent(content),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
-    QCOMPARE(mLoop->exec(), 0);
-    */
+    while (mContentRemoved.isNull()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mChan->contentsForType(Tp::MediaStreamTypeAudio).size(), 1);
+    QCOMPARE(mContentRemoved, content);
 
     // test content sending changed
     content = mChan->contentsForType(Tp::MediaStreamTypeVideo).first();
@@ -407,6 +494,16 @@ void TestStreamedMediaChanCall::testOutgoingCall()
 
     qDebug() << "stopping sending";
 
+    QCOMPARE(static_cast<int>(stream->pendingSend()), 0);
+    QCOMPARE(stream->localSendingRequested(), false);
+    QCOMPARE(stream->remoteSendingRequested(), false);
+    QCOMPARE(stream->sending(), true);
+    QCOMPARE(stream->receiving(), true);
+    QCOMPARE(stream->contact(), otherContact);
+    QVERIFY(stream->members().contains(otherContact));
+    QVERIFY(stream->direction() & Tp::MediaStreamDirectionReceive);
+    QVERIFY(stream->direction() & Tp::MediaStreamDirectionSend);
+
     QVERIFY(connect(stream.data(),
                     SIGNAL(localSendingStateChanged(Tp::MediaStream::SendingState)),
                     SLOT(onLocalSendingStateChanged(Tp::MediaStream::SendingState))));
@@ -414,6 +511,11 @@ void TestStreamedMediaChanCall::testOutgoingCall()
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
+
+    QCOMPARE(stream->sending(), false);
+    QCOMPARE(stream->receiving(), true);
+    QVERIFY(stream->direction() & Tp::MediaStreamDirectionReceive);
+    QVERIFY(!(stream->direction() & Tp::MediaStreamDirectionSend));
 
     qDebug() << "stopping receiving";
 
@@ -431,12 +533,16 @@ void TestStreamedMediaChanCall::testOutgoingCall()
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mLSSCReturn, MediaStream::SendingStateNone);
+    QCOMPARE(stream->sending(), false);
+    QCOMPARE(stream->receiving(), false);
+    QVERIFY(!(stream->direction() & Tp::MediaStreamDirectionReceive));
+    QVERIFY(!(stream->direction() & Tp::MediaStreamDirectionSend));
 
     qDebug() << "re-enabling sending";
 
     mLSSCReturn = (MediaStream::SendingState) -1;
 
-    QVERIFY(connect(stream->requestSending(true),
+    QVERIFY(connect(stream->requestDirection(true, false),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
@@ -459,7 +565,7 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     QVERIFY(connect(stream.data(),
                     SIGNAL(remoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &)),
                     SLOT(onRemoteSendingStateChanged(const QHash<Tp::ContactPtr, Tp::MediaStream::SendingState> &))));
-    QVERIFY(connect(stream->requestReceiving(otherContact, true),
+    QVERIFY(connect(stream->requestDirection(true, true),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulRequestReceiving(Tp::PendingOperation*))));
     while (mSuccessfulRequestReceivings != 2 || mRSSCState != RSSCStateDone) {
@@ -467,6 +573,93 @@ void TestStreamedMediaChanCall::testOutgoingCall()
     }
 
     QCOMPARE(static_cast<uint>(mRSSCState), static_cast<uint>(RSSCStateDone));
+}
+
+void TestStreamedMediaChanCall::testIncomingCall()
+{
+    mConn->setSelfPresence(QLatin1String("away"), QLatin1String("preparing for a test"));
+    QVERIFY(connect(mConn->requestsInterface(),
+                    SIGNAL(NewChannels(const Tp::ChannelDetailsList&)),
+                    SLOT(onNewChannels(const Tp::ChannelDetailsList&))));
+    mConn->setSelfPresence(QLatin1String("available"), QLatin1String("call me?"));
+    QCOMPARE(mLoop->exec(), 0);
+
+    QVERIFY(mChan);
+    QCOMPARE(mChan->streams().size(), 0);
+
+    QVERIFY(connect(mChan->becomeReady(StreamedMediaChannel::FeatureStreams),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QVERIFY(mChan->isReady(StreamedMediaChannel::FeatureStreams));
+
+    ContactPtr otherContact = *mChan->groupContacts().begin();
+
+    QVERIFY(connect(mChan->acceptCall(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan->groupContacts().size(), 2);
+    QCOMPARE(mChan->groupLocalPendingContacts().size(), 0);
+    QCOMPARE(mChan->groupRemotePendingContacts().size(), 0);
+    QCOMPARE(mChan->awaitingLocalAnswer(), false);
+    QVERIFY(mChan->groupContacts().contains(mConn->selfContact()));
+
+    QCOMPARE(mChan->streams().size(), 1);
+    MediaStreamPtr stream = mChan->streams().first();
+    QCOMPARE(stream->channel(), mChan);
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
+
+    qDebug() << "requesting a stream with a bad type";
+
+    // RequestStreams with bad type must fail
+    QVERIFY(connect(mChan->requestStream(otherContact, (Tp::MediaStreamType) -1),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 2);
+    QCOMPARE(mRequestStreamsReturn.size(), 0);
+
+    qDebug() << "requesting a video stream";
+
+    // Request video stream
+    QVERIFY(connect(mChan->requestStream(otherContact, Tp::MediaStreamTypeVideo),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectRequestStreamsFinished(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mRequestStreamsReturn.size(), 1);
+    stream = mRequestStreamsReturn.first();
+    QCOMPARE(stream->type(), Tp::MediaStreamTypeVideo);
+
+    // These checks can't work reliably, unless we add some complex backdoors to the test service,
+    // to only start changing state / direction when we explicitly tell it so (not automatically
+    // when we have requested the stream)
+    // QCOMPARE(stream->state(), Tp::MediaStreamStateDisconnected);
+    // QCOMPARE(stream->direction(), Tp::MediaStreamDirectionBidirectional);
+
+    QCOMPARE(mChan->streams().size(), 2);
+    QVERIFY(mChan->streams().contains(stream));
+
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeAudio).size(), 1);
+    QCOMPARE(mChan->streamsForType(Tp::MediaStreamTypeVideo).size(), 1);
+
+    // test stream removal
+    stream = mChan->streamsForType(Tp::MediaStreamTypeAudio).first();
+    QVERIFY(stream);
+
+    qDebug() << "removing the audio stream";
+
+    // call does not have the concept of removing streams, it will remove the content the stream
+    // belongs
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(contentRemoved(const Tp::MediaContentPtr &)),
+                    SLOT(onContentRemoved(const Tp::MediaContentPtr &))));
+    QVERIFY(connect(mChan->removeStreams(MediaStreams() << stream),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    while (mContentRemoved.isNull()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mContentRemoved, stream->content());
 }
 
 void TestStreamedMediaChanCall::testHold()
