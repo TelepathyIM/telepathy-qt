@@ -70,7 +70,7 @@ ConnectionCapabilities::~ConnectionCapabilities()
  * a more elaborate D-Bus API than normal (because more information is needed),
  * then this method will return false.
  *
- * \return true if Account::ensureTextChatroom() can be expected to work.
+ * \return \c true if Account::ensureTextChatroom() can be expected to work.
  */
 bool ConnectionCapabilities::supportsTextChatrooms() const
 {
