@@ -2272,6 +2272,9 @@ Contacts Channel::conferenceInitialInviteeContacts() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
+ * Note that this method will always return false if the Channel supports the Conference interface,
+ * even if Conference.DRAFT is also supported.
+ *
  * \return Whether the channels supports non merges.
  */
 bool Channel::conferenceSupportsNonMerges() const
@@ -2284,16 +2287,6 @@ bool Channel::conferenceSupportsNonMerges() const
     // FIXME: cannot use hasInterface here as hasInterface is not const
     // if (hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
     if (interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
-        if (connection()->capabilities()) {
-            const RequestableChannelClassList &rccs =
-                connection()->capabilities()->requestableChannelClasses();
-
-            Q_UNUSED(rccs);
-            // TODO This property was removed when the Conference interface was undrafted,
-            //      we can simulate the behaviour by checking rccs if InitialInviteeHandles is
-            //      requestable, but how to do it? Should we check all rccs and search for
-            //      InitialInviteeHandles in allowed properties?
-        }
         return false;
     // } else if (hasInterface(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
     } else if (interfaces().contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
