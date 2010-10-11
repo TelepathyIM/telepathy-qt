@@ -791,11 +791,19 @@ PendingOperation *MediaStream::requestDirection(
                 mPriv->callBaseInterface->SetSending(direction & MediaStreamDirectionSend),
                 this));
 
+        StreamedMediaChannelPtr chan(channel());
+        uint chanSelfHandle = chan->groupSelfContact() ?
+            chan->groupSelfContact()->handle()[0] : 0;
+        uint connSelfHandle = chan->connection()->selfHandle();
+
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->senders.constBegin();
                 i != mPriv->senders.constEnd();
                 ++i) {
             uint handle = i.key();
+            if (handle == chanSelfHandle || handle == connSelfHandle) {
+                continue;
+            }
             operations.append(new PendingVoid(
                     mPriv->callBaseInterface->RequestReceiving(handle,
                             direction & MediaStreamDirectionReceive),
