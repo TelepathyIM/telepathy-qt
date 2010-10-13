@@ -293,7 +293,7 @@
     <tp:added version="0.19.11"/>
     <tp:docstring>
       Raised if the length in bytes of the server certificate, or the depth of the
-      sever certificate chain exceed the limits imposed by the crypto
+      server certificate chain exceeds the limits imposed by the crypto
       library.
       <tp:rationale>
         This corresponds to Cert_Limit_Exceeded in the
@@ -480,6 +480,14 @@
         >Connection.Interface.Anonymity.AnonymityMandatory</tp:dbus-ref> or
       <tp:dbus-ref namespace="org.freedesktop.Telepathy"
         >Channel.Interface.Anonymity.AnonymityMandatory</tp:dbus-ref>).
+    </tp:docstring>
+  </tp:error>
+
+  <tp:error name="Not Yet">
+    <tp:added version="0.19.12"/>
+    <tp:docstring>
+      Raised when the requested functionality is not yet available, but is
+      likely to become available after some time has passed.
     </tp:docstring>
   </tp:error>
 

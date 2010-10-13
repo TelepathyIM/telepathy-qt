@@ -195,4 +195,21 @@
     </tp:docstring>
   </tp:simple-type>
 
+  <tp:mapping name="Object_Immutable_Properties_Map"
+    array-name="Object_Immutable_Properties_Map_List">
+    <tp:added version="0.19.12"/>
+    <tp:docstring>A mapping from object path to the immutable properties of
+        the object.</tp:docstring>
+    <tp:member type="o" name="Path">
+      <tp:docstring>
+        The object path of an object
+      </tp:docstring>
+    </tp:member>
+    <tp:member type="a{sv}" name="Immutable_Properties" tp:type="Qualified_Property_Value_Map">
+      <tp:docstring>
+        The immutable properties of the object
+      </tp:docstring>
+    </tp:member>
+  </tp:mapping>
+
 </tp:generic-types>

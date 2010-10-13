@@ -1,0 +1,108 @@
+<?xml version="1.0" ?>
+<node name="/Account_Interface_Minimum_Presence"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2010 Collabora Ltd.</tp:copyright>
+  <tp:copyright>Copyright © 2010 Nokia Corporation</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+<p>This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.</p>
+
+<p>This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+</p>
+  </tp:license>
+  <interface name="org.freedesktop.Telepathy.Account.Interface.MinimumPresence.DRAFT2"
+    tp:causes-havoc="experimental">
+    <tp:requires interface="org.freedesktop.Telepathy.Account"/>
+    <tp:added version="0.19.12">(draft 2)</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface extends the core Account interface to provide a way
+        for applications to request minimum presence on the account.</p>
+
+      <tp:rationale>
+        <p>Some applications, for example mail notifiers or address book
+          synchronisation, can make use of account's connection even while
+          the user is nominally offline.</p>
+      </tp:rationale>
+
+      <p>Each client's unique name may set a minimum desired presence on the
+        account. The combined presence is the most available presence
+        of the minimum presences set and of <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Account">RequestedPresence</tp:dbus-ref>
+        set by the user. The account manager should attempt to manipulate
+        the connection to set the combined presence.</p>
+    </tp:docstring>
+
+    <property name="MinimumPresenceRequests"
+      tp:name-for-bindings="MinimumPresenceRequests" access="read"
+      type="a{s(uss)}" tp:type="Minimum_Presence_Request_Map">
+      <tp:docstring>
+        Active requests for minimum presence status, a map of client unique
+        name to the (non-offline) minimum presence they set.
+      </tp:docstring>
+    </property>
+
+    <method name="SetMinimumPresence" tp:name-for-bindings="Set_Minimum_Presence">
+      <tp:docstring>
+        <p>Set a minimum presence needed by the client for this account. Setting
+          (Offline, "offline", "") removes the minimum presence requirement for
+          the client's unique name.</p>
+      </tp:docstring>
+
+      <arg direction="in" name="status" type="(uss)" tp:type="Simple_Presence">
+        <tp:docstring>
+          Requested presence status.
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <signal name="MinimumPresenceRequestsChanged"
+      tp:name-for-bindings="Minimum_Presence_Requests_Changed">
+      <tp:docstring>
+        Emitted when the
+        <tp:member-ref>MinimumPresenceRequests</tp:member-ref> property
+        changes.
+      </tp:docstring>
+
+      <arg name="MinimumPresenceRequests" type="a{s(uss)}"
+        tp:type="Minimum_Presence_Request_Map">
+        <tp:docstring>
+          A new value of MinimumPresenceRequests property.
+        </tp:docstring>
+      </arg>
+    </signal>
+
+    <tp:mapping name="Minimum_Presence_Request_Map">
+      <tp:docstring>
+        <p>A map of active minimum presence requests.</p>
+      </tp:docstring>
+      <tp:member type="s" name="Key" tp:type="DBus_Unique_Name">
+        <tp:docstring>
+          <p>Client unique name.</p>
+        </tp:docstring>
+      </tp:member>
+      <tp:member type="(uss)" name="Value" tp:type="Simple_Presence">
+        <tp:docstring>
+          <p>Requested minimum presence.</p>
+
+          <tp:rationale>
+            <p>Some applications may want to monitor the currently active
+              minimum presences required. An example is an tool allowing
+              the user to inspect applications maintaining open connections and
+              close those applications.</p>
+          </tp:rationale>
+        </tp:docstring>
+      </tp:member>
+    </tp:mapping>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

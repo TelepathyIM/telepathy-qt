@@ -407,16 +407,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <p>The presence status that this account should have if it is brought
           online.</p>
 
-        <p>Setting this property MUST NOT actually change the account's
-          status until the next time it is (re)connected for some reason.</p>
-
-        <p>The <tp:type>Connection_Presence_Type</tp:type> in the structure
-          SHOULD NOT be Offline or Unset.</p>
-
         <tp:rationale>
           In ITOS2007 and ITOS2008 this is a global preference, not visible
           on D-Bus (the "default presence"). "Automatic presence" better
           describes when it is used.
+        </tp:rationale>
+
+        <p>Setting this property MUST NOT actually change the account's
+          status until the next time it is (re)connected for some reason.</p>
+
+        <p>The value of this property MUST be one that would be acceptable
+          for <tp:member-ref>RequestedPresence</tp:member-ref>,
+          with the additional restriction that the
+          <tp:type>Connection_Presence_Type</tp:type> MUST NOT be Offline.</p>
+
+        <tp:rationale>
+          <p>Otherwise, it would not be possible to use this presence to bring
+            the account online for a channel request.</p>
         </tp:rationale>
       </tp:docstring>
     </property>
@@ -553,11 +560,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     <property name="CurrentPresence" type="(uss)" access="read"
       tp:type="Simple_Presence" tp:name-for-bindings="Current_Presence">
       <tp:docstring>
-        The actual presence. If the connection is not online, this should be
-        (Connection_Presence_Type_Offline, "", "").
+        The actual presence. If the connection is not online, the
+        <tp:type>Connection_Presence_Type</tp:type> SHOULD be
+        Connection_Presence_Type_Offline.
         If the connection is online but does not support the <tp:dbus-ref
         namespace="org.freedesktop.Telepathy.Connection.Interface">SimplePresence</tp:dbus-ref>
-        interface, this should be (Connection_Presence_Type_Unset, "", "").
+        interface, the type SHOULD be Connection_Presence_Type_Unset.
         The account manager is expected to set this by observing signals
         from the Connection.
 
@@ -584,6 +592,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
         <tp:rationale>
           This corresponds to e.g. GetPresence and GetPresenceMessage
           in NMC 4.x.
+        </tp:rationale>
+
+        <p>The <tp:type>Connection_Presence_Type</tp:type> in this property
+          MUST NOT be Unset, Unknown or Error.</p>
+
+        <tp:rationale>
+          <p>Requesting those presence types doesn't make sense.</p>
         </tp:rationale>
       </tp:docstring>
     </property>

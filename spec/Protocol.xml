@@ -216,6 +216,20 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
           Jabber/XMPP (including Google Talk), or <code>tel</code> for
           the <abbr title="Public Switched Telephone Network">PSTN</abbr>.</p>
 
+        <p>A more exhaustive list of addressable vCard fields can be found in
+          the Protocol's Addressing interface's
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Protocol.Interface.Addressing.DRAFT">AddressableVCardFields</tp:dbus-ref>.</p>
+
+        <p>It is not necessarily valid to interpret contacts' identifiers
+          as values of this vCard field. For instance, telepathy-sofiasip
+          supports contacts whose identifiers are of the form
+          sip:jenny@example.com or tel:8675309, which would not normally
+          both be represented by any single vCard field. Arbitrary
+          handles/identifiers as vCard fields are represented
+          through the Connection's
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface">Addressing.DRAFT</tp:dbus-ref>
+          contact attributes.</p>
+
         <tp:rationale>
           <p>This is taken from Mission Control profiles as used on Maemo 5.
             One valid use of this field is to answer the question: given a
@@ -225,14 +239,6 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
             protocols that handle x-jabber, then offer the user a list of
             accounts for those protocols and/or the option to create a new
             account for one of those protocols.</p>
-
-          <p>It is not necessarily valid to interpret contacts' identifiers
-            as values of this vCard field. For instance, telepathy-sofiasip
-            supports contacts whose identifiers are of the form
-            sip:jenny@example.com or tel:8675309, which would not normally
-            both be represented by any single vCard field. Representing
-            arbitrary handles/identifiers as vCard fields is a topic for
-            future work.</p>
         </tp:rationale>
 
         <p>Connection managers with a <code>.manager</code> file
@@ -423,6 +429,6 @@ allowed=org.freedesktop.Telepathy.Channel.TargetHandle;org.freedesktop.Telepathy
       </tp:possible-errors>
     </method>
 
-  </interface>
+ </interface>
 </node>
 <!-- vim:set sw=2 sts=2 et ft=xml: -->

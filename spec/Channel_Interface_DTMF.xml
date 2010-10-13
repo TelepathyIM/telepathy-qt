@@ -20,6 +20,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   </tp:license>
   <interface name="org.freedesktop.Telepathy.Channel.Interface.DTMF">
     <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"/>
+    <tp:changed version="0.19.6">The <tp:type>Stream_ID</tp:type>s in this
+      interface should now be ignored by CMs. This is primarily to allow this
+      interface to be used with <tp:dbus-ref
+      namespace='ofdT.Channel.Type'>Call.DRAFT</tp:dbus-ref>
+      channels.</tp:changed>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       An interface that gives a Channel the ability to send DTMF events over
@@ -30,6 +35,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </tp:docstring>
 
     <method name="StartTone" tp:name-for-bindings="Start_Tone">
+      <tp:changed version="0.19.6">The <var>Stream_ID</var> parameter became
+        vestigial.</tp:changed>
       <arg direction="in" name="Stream_ID" type="u" tp:type="Stream_ID">
         <tp:docstring>A stream ID as defined in the StreamedMedia channel
         type. This argument is included for backwards compatibility and MUST
@@ -78,6 +85,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     </method>
 
     <method name="StopTone" tp:name-for-bindings="Stop_Tone">
+      <tp:changed version="0.19.6">The <var>Stream_ID</var> parameter became
+        vestigial.</tp:changed>
       <arg direction="in" name="Stream_ID" type="u" tp:type="Stream_ID">
         <tp:docstring>A stream ID as defined in the StreamedMedia channel
         type. This argument is included for backwards compatibility and MUST

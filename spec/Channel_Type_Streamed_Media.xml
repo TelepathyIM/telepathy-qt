@@ -771,14 +771,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         following filter in <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Client.Handler">HandlerChannelFilter</tp:dbus-ref>:</dt>
       <dd><pre>
-{ '...Channel.Type': '...Channel.Type.StreamedMedia' ,
+{ '...Channel.ChannelType': '...Channel.Type.StreamedMedia' ,
   '...Channel.TargetHandleType': Contact,
 }</pre></dd>
 
       <dt>To advertise support for audio calls, also include the following
         filter:</dt>
       <dd><pre>
-{ '...Channel.Type': '...Channel.Type.StreamedMedia' ,
+{ '...Channel.ChannelType': '...Channel.Type.StreamedMedia' ,
   '...Channel.TargetHandleType': Contact,
   '...Channel.Type.StreamedMedia.InitialAudio': True,
 }</pre></dd>
@@ -786,7 +786,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <dt>To advertise support for video calls, also include the following
         filter:</dt>
       <dd><pre>
-{ '...Channel.Type': '...Channel.Type.StreamedMedia' ,
+{ '...Channel.ChannelType': '...Channel.Type.StreamedMedia' ,
   '...Channel.TargetHandleType': Contact,
   '...Channel.Type.StreamedMedia.InitialVideo': True,
 }</pre></dd>

@@ -20,16 +20,18 @@
       02110-1301, USA.</p>
   </tp:license>
   <interface
-    name="org.freedesktop.Telepathy.Channel.Interface.Conference.DRAFT"
-    tp:causes-havoc="experimental">
-    <tp:added version="0.19.0">(draft 1)</tp:added>
+    name="org.freedesktop.Telepathy.Channel.Interface.Conference">
+    <tp:added version="0.19.13">(as stable API)</tp:added>
     <tp:requires interface="org.freedesktop.Telepathy.Channel"/>
     <tp:requires
       interface="org.freedesktop.Telepathy.Channel.Interface.Group"/>
 
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for multi-user conference channels that can "continue
-        from" one or more individual channels.</p>
+        from" one or more individual channels. This could be used to invite
+        other contacts to an existing 1-1 text conversation, combine two phone
+        calls into one conference call, and so on, with roughly the same API in
+        each case.</p>
 
       <tp:rationale>
         <p>This interface addresses freedesktop.org <a
@@ -37,71 +39,45 @@
             #24906</a> (GSM-compatible conference calls) and <a
             href="http://bugs.freedesktop.org/show_bug.cgi?id=24939">bug
             #24939</a> (upgrading calls and chats to multi-user).
-          See those bugs for rationale and use cases.</p>
-
-        <p>Examples of usage:</p>
-
-        <p>Active and held GSM calls C1, C2 can be merged into a single
-          channel Cn with the Conference interface, by calling
-          <code>CreateChannel({...ChannelType: ...Call,
-            ...<tp:member-ref>InitialChannels</tp:member-ref>: [C1, C2]})</code>
-          which returns Cn.</p>
-
-        <p>An XMPP 1-1 conversation C1 can be continued in a newly created
-          multi-user chatroom Cn by calling
-          <code>CreateChannel({...ChannelType: ...Text,
-            ...<tp:member-ref>InitialChannels</tp:member-ref>: [C1]})</code>
-          which returns Cn.</p>
-
-        <p>An XMPP 1-1 conversation C1 can be continued in a specified
-          multi-user chatroom by calling
-          <code>CreateChannel({...ChannelType: ...Text, ...HandleType: ROOM,
-            ...TargetID: 'telepathy@conf.example.com',
-            ...<tp:member-ref>InitialChannels</tp:member-ref>: [C1]})</code>
-          which returns a Conference channel.</p>
-
-        <p>Either of the XMPP cases could work for Call channels, to
-          upgrade from 1-1 Jingle to multi-user Jingle. Any of the XMPP cases
-          could in principle work for link-local XMPP (XEP-0174).</p>
-
-        <p>The underlying switchboard representing an MSN 1-1 conversation C1
-          with a contact X can be moved to a representation as a nameless
-          chatroom, Cn, to which more contacts can be invited, by calling
-          <code>CreateChannel({...ChannelType: ...Text,
-            ...<tp:member-ref>InitialChannels</tp:member-ref>: [C1]})</code>
-          which returns Cn. C1 SHOULD remain open, with no underlying
-          switchboard attached. If X establishes a new switchboard with the
-          local user, C1 SHOULD pick up that switchboard rather than letting
-          it create a new channel.
-          <strong>[FIXME: should it?]</strong>
-          Similarly, if the local user sends a message in C1, then
-          a new switchboard to X should be created and associated with C1.</p>
-
-        <p>XMPP and MSN do not natively have a concept of merging two or more
-          channels C1, C2... into one channel, Cn. However, the GSM-style
-          merging API can be supported on XMPP and MSN, as an API short-cut
-          for upgrading C1 into a conference Cn (which invites the
-          TargetHandle of C1 into Cn), then immediately inviting the
-          TargetHandle of C2, the TargetHandle of C3, etc. into Cn as well.</p>
-
-        <p>With a suitable change of terminology, Skype has behaviour similar
-          to MSN.</p>
+          See those bugs for more rationale and use cases.</p>
       </tp:rationale>
+
+      <p>Existing channels are upgraded by requesting a new channel of the same
+        <tp:dbus-ref
+        namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>,
+        listing the channels to be merged into the new conference in the
+        <tp:member-ref>InitialChannels</tp:member-ref> property of the request.
+        If <tp:member-ref>InitialInviteeHandles</tp:member-ref> and
+        <tp:member-ref>InitialInviteeIDs</tp:member-ref> are
+        <var>Allowed_Properties</var> in <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">RequestableChannelClasses</tp:dbus-ref>,
+        ad-hoc conferences to a set of contacts may be created by requesting a
+        channel, specifying
+        <tp:member-ref>InitialInviteeHandles</tp:member-ref> and/or
+        <tp:member-ref>InitialInviteeIDs</tp:member-ref> to be the contacts in
+        question. A request may specify these alongside
+        <tp:member-ref>InitialChannels</tp:member-ref>, to simultaneously
+        upgrade a channel to a conference and invite others to join it.</p>
+
+      <p>Channels with this interface MAY also implement <tp:dbus-ref
+        namespace='ofdT.Channel.Interface'>MergeableConference.DRAFT</tp:dbus-ref>
+        to support merging more 1-1 channels into an ongoing conference.
+        Similarly, 1-1 channels MAY implement <tp:dbus-ref
+        namespace='ofdT.Channel.Interface'>Splittable.DRAFT</tp:dbus-ref> to
+        support being broken out of a Conference channel.</p>
 
       <p>The <tp:dbus-ref
           namespace="org.freedesktop.Telepathy.Channel.Interface"
-          >Group</tp:dbus-ref> MAY have channel-specific handles for participants;
-        clients SHOULD support both Conferences that have channel-specific handles,
-        and those that do not.</p>
+          >Group</tp:dbus-ref> interface on Conference channels MAY use
+          channel-specific handles for participants; clients SHOULD support
+          both Conferences that have channel-specific handles, and those that
+          do not.</p>
 
       <tp:rationale>
         <p>In the GSM case, the Conference's Group interface MAY have
-          channel-specific handles, to reflect the fact that the identities of
-          the participants might not be known - it can be possible to know that
-          there is another participant in the Conference, but not know who
-          they are.
-          <strong>[FIXME: fact check from GSM gurus needed]</strong>
-        </p>
+          channel-specific handles, to represent the fact that the same
+          phone number may be in a conference twice (for instance, it could be
+          the number of a corporate switchboard).</p>
 
         <p>In the XMPP case, the Conference's Group interface SHOULD have
           channel-specific handles, to reflect the fact that the participants
@@ -132,6 +108,164 @@
           be misleading.</p>
       </tp:rationale>
 
+      <h4>Examples of usage</h4>
+
+      <p>A pair of 1-1 GSM calls <var>C1</var> and <var>C2</var> can be merged
+        into a single conference call by calling:</p>
+
+      <blockquote>
+        <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">CreateChannel</tp:dbus-ref>({
+            ...<tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">ChannelType</tp:dbus-ref>: ...Call,
+            ...<tp:member-ref>InitialChannels</tp:member-ref>: [C1, C2]
+          })</code>
+      </blockquote>
+
+      <p>which returns a new channel <var>Cn</var> implementing the conference
+        interface. (As a quirk of GSM, both 1-1 will cease to function normally
+        until they are <tp:dbus-ref
+          namespace="ofdT.Channel.Interface.Splittable.DRAFT">Split</tp:dbus-ref>
+        from the conference, or the conference ends.)</p>
+
+      <p>An XMPP 1-1 conversation <var>C3</var> (with
+        <tt>chris@example.com</tt>, say) can be continued in a newly created
+        multi-user chatroom by calling:</p>
+
+      <blockquote>
+        <code>CreateChannel({
+            ...ChannelType: ...Text,
+            ...<tp:member-ref>InitialChannels</tp:member-ref>: [C3]
+          })</code>
+      </blockquote>
+
+      <p>Or, to invite <tt>emily@example.net</tt> to join the newly-created MUC
+        at the same time:</p>
+
+      <blockquote>
+        <code>CreateChannel({
+            ...ChannelType: ...Text,
+            ...<tp:member-ref>InitialChannels</tp:member-ref>: [C3],
+            ...<tp:member-ref>InitialInviteeIDs</tp:member-ref>: ['emily@example.net']
+          })</code>
+      </blockquote>
+
+      <p>To continue <var>C3</var> in a particular multi-user
+        chatroom (rather than the implementation inventing a unique name for
+        the room), call:</p>
+
+      <blockquote>
+        <code><tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface.Requests">EnsureChannel</tp:dbus-ref>({
+            ...ChannelType: ...Text,
+            ...<tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">TargetHandleType</tp:dbus-ref>: ...Room,
+            ...<tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel">TargetID</tp:dbus-ref>: 'telepathy@conf.example.com',
+            ...<tp:member-ref>InitialChannels</tp:member-ref>: [C3]
+          })</code>
+      </blockquote>
+
+      <p>Note the use of EnsureChannel — if a channel for
+        <tt>telepathy@conf.example.com</tt> is already open, this SHOULD be
+        equivalent to inviting <tt>chris@example.com</tt> to the existing
+        channel.</p>
+
+      <p>In the above cases, the text channel <var>C3</var> SHOULD remain open
+        and fully functional (until explicitly closed by a client); new
+        incoming 1-1 messages from <tt>chris@example.com</tt> SHOULD appear in
+        <var>C3</var>, and messages sent using <var>C3</var> MUST be relayed
+        only to <tt>chris@example.com</tt>.</p>
+
+      <tp:rationale>
+        <p>If there is an open 1-1 text channel with a contact, in every
+          other situation new messages will appear in that channel. Given
+          that the old channel remains open — which is the least surprising
+          behaviour, and eases us towards a beautiful world where channels
+          never close themselves — it stands to reason that it should be
+          where new messages from Chris should appear. On MSN, creating a
+          conference from <var>C3</var> should migrate the underlying
+          switchboard from <var>C3</var> to the new channel; this is an
+          implementation detail, and should not affect the representation on
+          D-Bus. With a suitable change of terminology, Skype has the same
+          behaviour.</p>
+
+        <p>If the current handler of that channel doesn't want this to happen
+          (maybe it transformed the existing tab into the group chat window,
+          and so there'd be no UI element still around to show new messages),
+          then it should just <tp:dbus-ref
+          namespace="org.freedesktop.Telepathy.Channel">Close</tp:dbus-ref> the
+          old 1-1 channel; it'll respawn if necessary.</p>
+      </tp:rationale>
+
+      <p>Either of the XMPP cases could work for Call channels, to
+        upgrade from 1-1 Jingle to multi-user Jingle. Any of the XMPP cases
+        could in principle work for link-local XMPP (XEP-0174).</p>
+
+      <p>XMPP and MSN do not natively have a concept of merging two or more
+        channels C1, C2... into one channel, Cn. However, the GSM-style
+        merging API can be supported on XMPP and MSN, as an API short-cut
+        for upgrading C1 into a conference Cn (which invites the
+        TargetHandle of C1 into Cn), then immediately inviting the
+        TargetHandle of C2, the TargetHandle of C3, etc. into Cn as well.</p>
+
+      <h4>Sample <tp:dbus-ref namespace='ofdT.Connection.Interface.Requests'
+                             >RequestableChannelClasses</tp:dbus-ref></h4>
+
+      <p>A GSM connection might advertise the following channel class for
+        conference calls:</p>
+
+      <blockquote>
+        <code>
+( Fixed = {<br/>
+    ...<tp:dbus-ref namespace='ofdT.Channel'>ChannelType</tp:dbus-ref>:
+      ...<tp:dbus-ref namespace='ofdT.Channel.Type'>StreamedMedia</tp:dbus-ref><br/>
+  },<br/>
+  Allowed = [ <tp:member-ref>InitialChannels</tp:member-ref>,
+              <tp:dbus-ref namespace='ofdT.Channel.Type.StreamedMedia'
+                          >InitialAudio</tp:dbus-ref>
+            ]<br/>
+)
+        </code>
+      </blockquote>
+
+      <p>This indicates support for starting audio-only conference calls by
+        merging two or more existing channels (since
+        <tp:member-ref>InitialInviteeHandles</tp:member-ref> and
+        <tp:member-ref>InitialInviteeIDs</tp:member-ref> are not allowed).</p>
+
+      <p>An XMPP connection might advertise the following classes for ad-hoc
+        multi-user text chats:</p>
+
+      <blockquote>
+        <code>
+( Fixed = {<br/>
+    ...<tp:dbus-ref namespace='ofdT.Channel'>ChannelType</tp:dbus-ref>:
+      ...<tp:dbus-ref namespace='ofdT.Channel.Type'>Text</tp:dbus-ref><br/>
+  },<br/>
+  Allowed = [ <tp:member-ref>InitialChannels</tp:member-ref>,
+              <tp:member-ref>InitialInviteeHandles</tp:member-ref>,
+              <tp:member-ref>InitialInviteeIDs</tp:member-ref>,
+              <tp:member-ref>InvitationMessage</tp:member-ref>
+            ]<br/>
+),<br/>
+( Fixed = {<br/>
+    ...<tp:dbus-ref namespace='ofdT.Channel'>ChannelType</tp:dbus-ref>:
+      ...<tp:dbus-ref namespace='ofdT.Channel.Type'>Text</tp:dbus-ref>,<br/>
+    ...<tp:dbus-ref namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref>:
+      Room<br/>
+  },<br/>
+  Allowed = [ <tp:dbus-ref namespace='ofdT.Channel'>TargetHandle</tp:dbus-ref>,
+              <tp:dbus-ref namespace='ofdT.Channel'>TargetID</tp:dbus-ref>,<br/>
+              <tp:member-ref>InitialChannels</tp:member-ref>,
+              <tp:member-ref>InitialInviteeHandles</tp:member-ref>,
+              <tp:member-ref>InitialInviteeIDs</tp:member-ref>,
+              <tp:member-ref>InvitationMessage</tp:member-ref>
+            ]<br/>
+)
+        </code>
+      </blockquote>
+
+      <p>The first class indicates support for starting ad-hoc (nameless) chat
+        rooms, upgraded from existing 1-1 channels and/or inviting new
+        contacts, along with a message to be sent along with the invitations.
+        The second indicates support for upgrading to a particular named chat
+        room.</p>
     </tp:docstring>
 
     <property name="Channels" tp:name-for-bindings="Channels"
@@ -145,10 +279,18 @@
               namespace="org.freedesktop.Telepathy.Channel"
               >TargetHandleType</tp:dbus-ref> = CONTACT.</p>
 
-        <p>This property MUST NOT be requestable.
-          <strong>[FIXME: or would it be better for this one, and not IC, to be
-            requestable?]</strong>
-        </p>
+        <p>This property MUST NOT be requestable; instead, the
+          <tp:member-ref>InitialChannels</tp:member-ref> property may be
+          specified when requesting a channel.</p>
+
+        <tp:rationale>
+          <p>This is consistent with requesting
+            <tp:member-ref>InitialInviteeHandles</tp:member-ref> and
+            <tp:member-ref>InitialInviteeIDs</tp:member-ref>, rather than
+            requesting <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface">Group.Members</tp:dbus-ref>
+            and some hypothetical ID version of that property.</p>
+       </tp:rationale>
 
         <p>Change notification is via the
           <tp:member-ref>ChannelMerged</tp:member-ref> and
@@ -166,6 +308,22 @@
         <tp:docstring>The channel that was added to
           <tp:member-ref>Channels</tp:member-ref>.</tp:docstring>
       </arg>
+
+      <arg name="Channel_Specific_Handle" type="u" tp:type="Contact_Handle">
+        <tp:docstring>A new channel-specific handle for the <tp:dbus-ref
+          namespace="ofdT.Channel">TargetHandle</tp:dbus-ref> of
+          <var>Channel</var>, as will appear in
+          <tp:member-ref>OriginalChannels</tp:member-ref>, or <tt>0</tt> if a
+          global handle is used for
+          <var>Channel</var>'s TargetHandle on the <tp:dbus-ref
+            namespace="ofdT.Channel.Interface">Group</tp:dbus-ref> interface
+          of this channel.</tp:docstring>
+      </arg>
+
+      <arg name="Properties" type="a{sv}"
+           tp:type="Qualified_Property_Value_Map">
+        <tp:docstring><var>Channel</var>'s immutable properties.</tp:docstring>
+      </arg>
     </signal>
 
     <signal name="ChannelRemoved" tp:name-for-bindings="Channel_Removed">
@@ -176,13 +334,23 @@
             namespace="org.freedesktop.Telepathy.Channel.Interface"
             >Splittable.DRAFT.Split</tp:dbus-ref> method.</p>
 
-        <p><strong>[FIXME: relative ordering of this vs. Closed? Do we
-            care?]</strong></p>
+        <p>If a channel is removed because it was closed, <tp:dbus-ref
+          namespace='ofdT.Channel'>Closed</tp:dbus-ref> should be emitted
+          before this signal.</p>
       </tp:docstring>
 
       <arg name="Channel" type="o">
         <tp:docstring>The channel that was removed from
           <tp:member-ref>Channels</tp:member-ref>.</tp:docstring>
+      </arg>
+
+      <arg name="Details" type="a{sv}" tp:type="String_Variant_Map">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          Additional information about the removal, which may include
+          the same well-known keys as the Details argument of
+          <tp:dbus-ref namespace="ofdT.Channel.Interface.Group"
+            >MembersChangedDetailed</tp:dbus-ref>, with the same semantics.
+        </tp:docstring>
       </arg>
     </signal>
 
@@ -193,18 +361,23 @@
 
         <p>This property SHOULD be requestable. Omitting it from a request is
           equivalent to providing it with an empty list as value. Requests
-          where its value has at least two elements SHOULD be expected to
-          succeed on any implementation of this interface.</p>
-
-        <p>Whether a request with 0 or 1 elements in the list will succeed is
-          indicated by <tp:member-ref>SupportsNonMerges</tp:member-ref>.</p>
+          where its value has at least two channel paths SHOULD be expected to
+          succeed on any implementation of this interface. If
+          <tp:member-ref>InitialInviteeHandles</tp:member-ref> and
+          <tp:member-ref>InitialInviteeIDs</tp:member-ref> are
+          <var>Allowed_Properties</var> in <tp:dbus-ref
+            namespace='ofdT.Connection.Interface.Requests'
+            >RequestableChannelClasses</tp:dbus-ref>, then requests with zero
+          or one channel paths SHOULD also succeed; otherwise, clients SHOULD
+          NOT make requests with zero or one paths for this property.</p>
 
         <tp:rationale>
-          <p>In GSM, a pair of calls can be merged into a conference. In XMPP
-            and MSN, you can create a new chatroom, or upgrade one 1-1 channel
-            into a chatroom; however, on these protocols, it is also possible
-            to fake GSM-style merging by upgrading the first channel, then
-            inviting the targets of all the other channels into it.</p>
+          <p>In GSM, a pair of calls can be merged into a conference, but you
+            can't start a conference call from zero or one existing calls. In
+            XMPP and MSN, you can create a new chatroom, or upgrade one 1-1
+            channel into a chatroom; however, on these protocols, it is also
+            possible to fake GSM-style merging by upgrading the first channel,
+            then inviting the targets of all the other channels into it.</p>
         </tp:rationale>
 
         <p>If possible, the <tp:member-ref>Channels</tp:member-ref>' states SHOULD
@@ -213,19 +386,13 @@
           them in this property's value or by calling
           <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Channel.Interface"
-            >MergeableConference.DRAFT.Merge</tp:dbus-ref> on them.
-          <strong>[FIXME: there's nothing in RequestableChannelClasses yet
-            to say what will happen, see #24906 comment 6]</strong></p>
+            >MergeableConference.DRAFT.Merge</tp:dbus-ref> on them.</p>
 
         <tp:rationale>
           <p>In Jingle, nothing special will happen to merged calls. UIs MAY
             automatically place calls on hold before merging them, if that is
             the desired behaviour; this SHOULD always work. Not doing
             an implicit hold/unhold seems to preserve least-astonishment.</p>
-
-          <p><strong>[FIXME: check whether ring supports faking Hold on both
-              channels, as it probably should: see #24906 comment 6]</strong>
-          </p>
 
           <p>In GSM, the calls that are merged go into a state similar to
             Hold, but they cannot be unheld, only split from the conference
@@ -258,13 +425,21 @@
         <p>A list of additional contacts invited to this conference when it
           was created.</p>
 
-        <p>This property SHOULD be requestable, and appear in the allowed
+        <p>If it is possible to invite new contacts when creating a conference
+          (as opposed to merging several channels into one new conference
+          channel), this property SHOULD be requestable, and appear in the allowed
           properties in <tp:dbus-ref
             namespace="org.freedesktop.Telepathy.Connection.Interface.Requests"
-            >RequestableChannelClasses</tp:dbus-ref>, in all connection
-          managers that can implement its semantics (in practice, this is
-          likely to mean exactly those connection managers where
-          <tp:member-ref>SupportsNonMerges</tp:member-ref> will be true).</p>
+            >RequestableChannelClasses</tp:dbus-ref>. Otherwise, this property
+          SHOULD NOT be requestable, and its value SHOULD always be the empty
+          list.</p>
+
+        <tp:rationale>
+          <p>On GSM you have to place a 1-1 call before you can merge it into a
+            conference; on the other hand, you can invite new contacts to XMPP
+            Muji calls and XMPP/MSN/Skype ad-hoc chat rooms without starting a
+            1-1 channel with them first.</p>
+        </tp:rationale>
 
         <p>If included in a request, the given contacts are automatically
           invited into the new channel, as if they had been added with
@@ -326,8 +501,8 @@
         <p>A list of additional contacts invited to this conference when it
           was created.</p>
 
-        <p>This property SHOULD be requestable as an alternative to, or
-          combined with, <tp:member-ref>InitialInviteeHandles</tp:member-ref>.
+        <p>This property SHOULD be requestable if and only if
+          <tp:member-ref>InitialInviteeHandles</tp:member-ref> is requestable.
           Its semantics are the same, except that it takes a list of the
           string representations of contact handles; invitations are sent to
           any contact present in either or both of these properties.</p>
@@ -369,60 +544,92 @@
       </tp:docstring>
     </property>
 
-    <property name="SupportsNonMerges"
-      tp:name-for-bindings="Supports_Non_Merges"
-      access="read" type="b">
+    <property name="OriginalChannels" tp:name-for-bindings="Original_Channels"
+              type="a{uo}" tp:type="Channel_Originator_Map"
+              access="read">
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-        <p><strong>[FIXME: needs a better name; or perhaps it could be implied
-            by InitialInviteeHandles being requestable in XMPP/MSN but not in
-            GSM?]</strong></p>
+        <p>On GSM conference calls, it is possible to have the same phone
+          number in a conference twice; for instance, it could be the number of
+          a corporate switchboard. This is represented using channel-specific
+          handles; whether or not a channel uses channel-specific handles is
+          reported in <tp:dbus-ref
+          namespace='ofdT.Channel.Interface'>Group.GroupFlags</tp:dbus-ref>.
+          The <tp:dbus-ref
+            namespace="org.freedesktop.Telepathy.Channel.Interface">Group.HandleOwners</tp:dbus-ref>
+          property specifies the mapping from opaque channel-specific handles
+          to actual numbers; this property specifies the original 1-1 channel
+          corresponding to each channel-specific handle in the conference.</p>
 
-        <p>If true, requests with <tp:member-ref>InitialChannels</tp:member-ref>
-          omitted, empty, or one element long should be expected to succeed.</p>
+        <p>In protocols where this situation cannot arise, such as XMPP,
+          this property MAY remain empty.</p>
 
-        <p>This property SHOULD appear in <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection.Interface.Requests"
-              >RequestableChannelClasses</tp:dbus-ref> for
-          conference channels if and only if its value on those channels will
-          be true.</p>
+        <p>For example, consider this situation:</p>
 
-        <tp:rationale>
-          <p>Putting this in <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Connection.Interface.Requests"
-              >RequestableChannelClasses</tp:dbus-ref> means clients can find
-            out whether their request will succeed early enough to do
-            something about it.</p>
+        <ol>
+          <li>Place a call (with path <tt>/call/to/simon</tt>) to the contact
+            <tt>+441234567890</tt> (which is assigned the handle <var>h</var>,
+            say), and ask to be put through to Simon McVittie;</li>
+          <li>Put that call on hold;</li>
+          <li>Place another call (with path <tt>/call/to/jonny</tt>) to
+            <tt>+441234567890</tt>, and ask to be put
+            through to Jonny Lamb;</li>
+          <li>Request a new channel with
+            <tp:member-ref>InitialChannels</tp:member-ref>:
+            <tt>['/call/to/simon', '/call/to/jonny']</tt>.</li>
+        </ol>
 
-          <p>In XMPP, you can request a channel of type ROOM without
-            incorporating any 1-1 chats at all - indeed, this is the normal
-            way to do it - or as a continuation of a single 1-1 chat, and then
-            invite other people in later.</p>
+        <p>The new channel will have the following properties, for some handles
+          <var>s</var> and <var>j</var>:</p>
 
-          <p>The sense of this property is a bit awkward, but it avoids making it
-            an anti-capability. If the sense were inverted, then its presence in
-            RequestableChannelClasses would imply that the protocol <em>lacks</em>
-            a feature; as it stands, it is additive. (Contrast with
-            <tp:dbus-ref
-              namespace="org.freedesktop.Telepathy.Channel.Type.StreamedMedia"
-              >ImmutableStreams</tp:dbus-ref>, which is the wrong way around for
-            backwards-compatibility reasons.)</p>
-        </tp:rationale>
+        <blockquote>
+          <code>{<br/>
+            ...<tp:dbus-ref
+              namespace="ofdT.Channel.Interface">Group.GroupFlags</tp:dbus-ref>:
+                Channel_Specific_Handles | (other flags),<br/>
+            ...<tp:dbus-ref
+              namespace="ofdT.Channel.Interface">Group.Members</tp:dbus-ref>:
+                [self_handle, s, j],<br/>
+            ...<tp:dbus-ref
+              namespace="ofdT.Channel.Interface">Group.HandleOwners</tp:dbus-ref>:
+                { s: h, j: h },<br/>
+            ...<tp:member-ref>InitialChannels</tp:member-ref>:
+                ['/call/to/simon', '/call/to/jonny'],<br/>
+            ...<tp:member-ref>Channels</tp:member-ref>:
+                ['/call/to/simon', '/call/to/jonny'],<br/>
+            ...<tp:member-ref>OriginalChannels</tp:member-ref>:
+                { s: '/call/to/simon', j: '/call/to/jonny' },<br/>
+            # ...standard properties like ChannelType: Group elided...<br/>
+          }</code>
+        </blockquote>
 
-        <p>If false, <tp:member-ref>InitialChannels</tp:member-ref> SHOULD be
-          supplied in all requests for this channel class, and contain at least
-          two channels. Requests where this requirement is not met SHOULD fail
-          with NotImplemented.
-        </p>
-
-        <tp:rationale>
-          <p>In GSM, you can only make a conference call by merging at least
-            two channels.
-            <strong>[FIXME: the CM could conceivably fake it, but that would be
-              rather nasty]</strong>
-          </p>
-        </tp:rationale>
+        <p>Change notification is via the
+          <tp:member-ref>ChannelMerged</tp:member-ref> and
+          <tp:member-ref>ChannelRemoved</tp:member-ref> signals: if
+          <var>Channel_Specific_Handle</var> in the former is non-zero, this
+          property SHOULD be updated to map that handle to the merged channel's
+          path.</p>
       </tp:docstring>
     </property>
 
+    <tp:mapping name="Channel_Originator_Map">
+      <tp:member name="Channel_Specific_Handle" type="u" tp:type="Contact_Handle">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          A channel-specific handle for a participant in this conference.
+        </tp:docstring>
+      </tp:member>
+      <tp:member name="Original_Channel" type="o">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          The object path of <tp:member-ref>Channels</tp:member-ref>
+          representing the original 1-1 channel with
+          <var>Channel_Specific_Handle</var>.
+        </tp:docstring>
+      </tp:member>
+
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        A mapping from members of a conference to the original 1-1 channel with
+        that contact, if any. See
+        <tp:member-ref>OriginalChannels</tp:member-ref> for details.
+      </tp:docstring>
+    </tp:mapping>
   </interface>
 </node>

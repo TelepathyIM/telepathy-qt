@@ -134,6 +134,7 @@ set(telepathy_qt4_HEADERS
     ChannelRequestInterface
     ChannelTypeContactListInterface
     ChannelTypeContactSearchInterface
+    ChannelTypeServerTLSConnectionInterface
     ChannelTypeRoomListInterface
     ChannelTypeStreamedMediaInterface
     ChannelTypeStreamTubeInterface
@@ -162,10 +163,14 @@ set(telepathy_qt4_HEADERS
     ConnectionInterfaceBalanceInterface
     ConnectionInterfaceCapabilitiesInterface
     ConnectionInterfaceCellularInterface
+    ConnectionInterfaceClientTypes
     ConnectionInterfaceContactCapabilitiesInterface
+    ConnectionInterfaceContactGroups
     ConnectionInterfaceContactInfoInterface
+    ConnectionInterfaceContactList
     ConnectionInterfaceContactsInterface
     ConnectionInterfaceLocationInterface
+    ConnectionInterfacePowerSaving
     ConnectionInterfacePresenceInterface
     ConnectionInterfaceRequestsInterface
     ConnectionInterfaceServicePointInterface

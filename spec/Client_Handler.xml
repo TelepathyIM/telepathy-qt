@@ -279,11 +279,21 @@ org.freedesktop.Telepathy.Channel.Interface.MediaSignalling/video/h264=true
 
       <arg name="Handler_Info" type="a{sv}" direction="in">
         <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
-          <p>Additional information about these channels. No keys are
-            currently defined.</p>
+          <p>Additional information about these channels. Currently defined
+            keys are:</p>
 
-          <p>If keys are defined for this dictionary, all will be optional;
-            handlers MAY safely ignore any entry in this dictionary.</p>
+          <dl>
+            <dt><code>request-properties</code> - a{oa{sv}}</dt>
+            <dd>A map from <tp:dbus-ref
+              namespace="org.freedesktop.Telepathy">ChannelRequest</tp:dbus-ref>
+              paths listed in <var>Requests_Satisfied</var> to
+              <tp:type>Qualified_Property_Value_Map</tp:type>s containing
+              namespaced immutable properties of each request.</dd>
+          </dl>
+
+          <p>When more keys are defined for this dictionary, all will be
+            optional; handlers MAY safely ignore any entry in this
+            dictionary.</p>
         </tp:docstring>
       </arg>
 

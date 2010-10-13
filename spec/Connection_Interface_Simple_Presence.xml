@@ -349,17 +349,95 @@
       </tp:enumvalue>
     </tp:enum>
 
+    <tp:enum name="Access_Control_Type" type="u"
+             array-name="Access_Control_Type_List">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A type for communication access control. These control
+          policies are used in
+          <tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface">CommunicationPolicy.DRAFT</tp:dbus-ref>
+          as well as most rich presence interfaces.</p>
+
+        <p>New interfaces should use this type, and NOT
+          <tp:type>Rich_Presence_Access_Control_Type</tp:type>.</p>
+      </tp:docstring>
+      <tp:enumvalue suffix="Whitelist" value="0">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Only allow contacts that are in a certain whitelist.</p>
+
+          <p>The associated variant
+            in <tp:type>Access_Control</tp:type> is a list of
+            <tp:type>Contact_Handle</tp:type> representing
+            the whitelist, with signature <code>au</code>.</p>
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Publish_List" value="1">
+        <tp:docstring>
+          Allow contacts in the user's 'publish' list. The associated
+          variant in <tp:type>Access_Control</tp:type> is ignored.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Group" value="2">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>Only allow contacts that are in a certain group.</p>
+
+          <p>The associated variant in <tp:type>Access_Control</tp:type> is a
+            <tp:type>Group_Handle</tp:type> representing the permitted
+            group.</p>
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Open" value="3">
+        <tp:docstring>
+          Allow all contacts.  The associated
+          variant in <tp:type>Access_Control</tp:type> is ignored.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Subscribe_Or_Publish_List" value="4">
+        <tp:docstring>
+          Allow all contacts in the user's 'subscribe' or 'publish'
+          list. The associated variant in <tp:type>Access_Control</tp:type> is
+          ignored.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Closed" value="5">
+        <tp:docstring>
+          Forbid all contacts. The associated variant in
+          <tp:type>Access_Control</tp:type> is ignored.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="Not_Understood" value="6">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          <p>The access control rule is too complex to be represented
+            in the current Telepathy API. The associated variant is
+            meaningless. Setting this mode is never valid; the
+            connection manager MUST raise an error if this is attempted.</p>
+
+          <tp:rationale>
+            XEP-0016 Privacy Lists can easily produce access control
+            mechanisms that can't be expressed in a simpler API. We
+            need to be able to at least indicate that fact.
+          </tp:rationale>
+
+          <p>The associated variant in <tp:type>Access_Control</tp:type> is
+            ignored.</p>
+        </tp:docstring>
+      </tp:enumvalue>
+    </tp:enum>
+
     <tp:enum name="Rich_Presence_Access_Control_Type" type="u"
       array-name="Rich_Presence_Access_Control_Type_List">
-      <tp:docstring>
-        A type of access control for Rich_Presence_Access_Control.
-        For most types, the exact access control is given by an associated
-        variant.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>A type of access control for Rich_Presence_Access_Control.
+          For most types, the exact access control is given by an associated
+          variant.</p>
 
         <tp:rationale>
-          These are the access control types from XMPP publish/subscribe
-          (XEP-0060).
+          <p>These are the access control types from XMPP publish/subscribe
+          (XEP-0060).</p>
         </tp:rationale>
+
+        <p><tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface">Location</tp:dbus-ref>
+          uses this for historical reasons, new interfaces will use
+          <tp:type>Access_Control_Type</tp:type>.</p>
       </tp:docstring>
 
       <tp:enumvalue suffix="Whitelist" value="0">
@@ -389,13 +467,42 @@
       </tp:enumvalue>
     </tp:enum>
 
+    <tp:struct name="Access_Control">
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>An access control mode for extended presence items like geolocation.
+          This type isn't actually used by the SimplePresence interface, but
+          it's included here so it can be referenced by rich presence
+          interfaces.</p>
+
+        <p>New interfaces should use this type, and NOT
+          <tp:type>Rich_Presence_Access_Control</tp:type>.</p>
+      </tp:docstring>
+
+      <tp:member name="Type" type="u" tp:type="Access_Control_Type">
+        <tp:docstring>
+          The type of access control to apply.
+        </tp:docstring>
+      </tp:member>
+      <tp:member name="Detail" type="v">
+        <tp:docstring>
+          Any additional information required by the Type. The required
+          type and semantics are defined for each
+          <tp:type>Access_Control_Type</tp:type>.
+        </tp:docstring>
+      </tp:member>
+    </tp:struct>
+
     <tp:struct name="Rich_Presence_Access_Control">
-      <tp:docstring>
-        An access control mode for extended presence items like geolocation.
-        This type isn't actually used by the SimplePresence interface, but
-        it's included here so it can be referenced by rich presence interfaces
-        such as <tp:dbus-ref
-          namespace="org.freedesktop.Telepathy.Connection.Interface">Location</tp:dbus-ref>.
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>An access control mode for extended presence items like geolocation.
+          This type isn't actually used by the SimplePresence interface, but
+          it's included here so it can be referenced by rich presence interfaces
+          such as <tp:dbus-ref
+                     namespace="org.freedesktop.Telepathy.Connection.Interface">Location</tp:dbus-ref>.</p>
+
+        <p><tp:dbus-ref namespace="org.freedesktop.Telepathy.Connection.Interface">Location</tp:dbus-ref>
+          uses this for historical reasons, new interfaces will use
+          <tp:type>Access_Control_Type</tp:type>.</p>
       </tp:docstring>
 
       <tp:member name="Type" type="u" tp:type="Rich_Presence_Access_Control_Type">

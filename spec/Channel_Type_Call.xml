@@ -663,6 +663,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
           </tp:rationale>
         </tp:docstring>
       </tp:flag>
+
+      <tp:flag suffix="Conference_Host" value="4">
+        <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+          This contact has merged this call into a conference. Note that GSM
+          provides a notification when the remote party merges a call into a
+          conference, but not when it is split out again; thus, this flag can
+          only indicate that the call has been part of a conference at some
+          point. If a GSM connection manager receives a notification that a
+          call has been merged into a conference a second time, it SHOULD
+          represent this by clearing and immediately re-setting this flag on
+          the remote contact.
+        </tp:docstring>
+      </tp:flag>
     </tp:flags>
 
     <tp:mapping name="Call_Member_Map" array-name="Call_Member_Map_List">

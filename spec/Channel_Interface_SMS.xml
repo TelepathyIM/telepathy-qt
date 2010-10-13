@@ -1,0 +1,93 @@
+<?xml version="1.0" ?>
+<node name="/Channel_Interface_SMS"
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
+  <tp:copyright>Copyright © 2008–2010 Nokia Corporation</tp:copyright>
+  <tp:copyright>Copyright © 2010 Collabora Ltd.</tp:copyright>
+  <tp:license xmlns="http://www.w3.org/1999/xhtml">
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Library General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+  </tp:license>
+
+  <interface
+    name="org.freedesktop.Telepathy.Channel.Interface.SMS">
+    <tp:requires interface="org.freedesktop.Telepathy.Channel.Type.Text"/>
+    <tp:added version='0.19.12'>Imported from
+      rtcom-telepathy-glib, with the unused properties removed and the
+      documentation tidied up.</tp:added>
+
+    <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+      <p>This interface contains SMS-specific properties for text channels.
+        This currently only includes whether the SMSes received on the channel
+        should be displayed immediately to the user, without prompting.</p>
+
+      <h4>Handler filters</h4>
+
+      <p>A handler for class 0 SMSes should advertise the following filter:</p>
+
+      <blockquote><code>
+{ ...<tp:dbus-ref namespace='ofdT.Channel'>ChannelType</tp:dbus-ref>:
+      ...<tp:dbus-ref namespace='ofdT.Channel.Type'>Text</tp:dbus-ref>,<br/>
+  ...<tp:dbus-ref namespace='ofdT.Channel'>TargetHandleType</tp:dbus-ref>:
+      <tp:type>Handle_Type</tp:type>_Contact,<br/>
+  ...<tp:dbus-ref namespace='ofdT.Channel.Interface'>SMS.Flash</tp:dbus-ref>:
+      True,<br/>
+}</code></blockquote>
+
+      <p>It should also set its <tp:dbus-ref
+        namespace='ofdT.Client.Handler'>BypassApproval</tp:dbus-ref> property
+        to <code>True</code>, so that it is invoked immediately for new
+        channels.</p>
+    </tp:docstring>
+
+    <property name="Flash" tp:name-for-bindings="Flash"
+      type="b" access="read" >
+      <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
+        <p>If <code>True</code>, then this channel is exclusively for
+          receiving class 0 SMSes (and no SMSes can be sent using <tp:dbus-ref
+          namespace='ofdT.Channel.Interface.Messages'>SendMessage</tp:dbus-ref>
+          on this channel). If <code>False</code>, no incoming class 0 SMSes
+          will appear on this channel.</p>
+
+        <p>This property is immutable (cannot change), and therefore SHOULD
+          appear wherever immutable properties are reported, e.g. <tp:dbus-ref
+            namespace="ofdT.Connection.Interface.Requests"
+          >NewChannels</tp:dbus-ref> signals.</p>
+
+        <tp:rationale>
+          <p>Class 0 SMSes should be displayed immediately to the user, and
+            need not be saved to the device memory unless the user explicitly
+            chooses to do so. This is unlike “normal”, class 1 SMSes, which
+            must be stored, but need not be shown immediately in their entirity
+            to the user.</p>
+
+          <p>Separating class 0 SMSes into their own channel with this
+            immutable property allows them to be dispatched to a different
+            <tp:dbus-ref namespace='ofdT.Client'>Handler</tp:dbus-ref>—which
+            would include this property in its <tp:dbus-ref
+            namespace='ofdT.Client.Handler'
+            >HandlerChannelFilter</tp:dbus-ref>—avoiding the normal Text
+            channel handler having to decide for each message whether it should
+            be displayed to the user immediately or handled normally.</p>
+
+          <p>Currently, no mechanism is defined for <em>sending</em> class 0
+            SMSes. It seems reasonable to support specifying the class of an
+            outgoing SMS in its header <tp:type>Message_Part</tp:type>, rather
+            than requiring the UI to request a special channel for such SMSes;
+            hence, we define here that channels with Flash set to
+            <code>True</code> are read-only.</p>
+        </tp:rationale>
+      </tp:docstring>
+    </property>
+  </interface>
+</node>

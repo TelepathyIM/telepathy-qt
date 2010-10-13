@@ -28,7 +28,7 @@
     <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
       <p>An interface for channels that can be made conceptually part of a
         <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface"
-          >Conference.DRAFT</tp:dbus-ref>, and can then be detached from that
+          >Conference</tp:dbus-ref>, and can then be detached from that
         conference.</p>
 
       <tp:rationale>
@@ -45,14 +45,11 @@
       <tp:docstring xmlns="http://www.w3.org/1999/xhtml">
         <p>Request that this channel is removed from any
         <tp:dbus-ref namespace="org.freedesktop.Telepathy.Channel.Interface"
-          >Conference.DRAFT</tp:dbus-ref> of which it is a part.</p>
+          >Conference</tp:dbus-ref> of which it is a part.</p>
 
         <p>This implies that the media streams within the conference are put on
           hold and the media streams within the member channel leaving the
-          conference are unheld.
-          <strong>[FIXME: or, maybe it'd be less surprising if it didn't do
-            this?]</strong>
-        </p>
+          conference are unheld.</p>
       </tp:docstring>
 
       <tp:possible-errors>

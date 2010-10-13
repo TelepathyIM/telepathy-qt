@@ -254,6 +254,12 @@ public:
         return typeInterface<Client::ChannelTypeRoomListInterface>(check);
     }
 
+    inline Client::ChannelTypeServerTLSConnectionInterface *serverTLSConnectionInterface(
+            InterfaceSupportedChecking check = CheckInterfaceSupported) const
+    {
+        return typeInterface<Client::ChannelTypeServerTLSConnectionInterface>(check);
+    }
+
     inline Client::ChannelTypeStreamedMediaInterface *streamedMediaInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
