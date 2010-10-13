@@ -603,12 +603,15 @@ void TestClient::testCapabilities()
     // object 1
     ClientHandlerInterface *handler1Iface = new ClientHandlerInterface(bus,
             mClientObject1BusName, mClientObject1Path, this);
-    QCOMPARE(handler1Iface->Capabilities(), mClientCapabilities);
+    QStringList capabilities;
+    QVERIFY(waitForProperty(handler1Iface->requestPropertyCapabilities(), &capabilities));
+    QCOMPARE(capabilities, mClientCapabilities);
 
     // object 2
     ClientHandlerInterface *handler2Iface = new ClientHandlerInterface(bus,
             mClientObject2BusName, mClientObject2Path, this);
-    QCOMPARE(handler2Iface->Capabilities(), mClientCapabilities);
+    QVERIFY(waitForProperty(handler2Iface->requestPropertyCapabilities(), &capabilities));
+    QCOMPARE(capabilities, mClientCapabilities);
 }
 
 void TestClient::testRequests()
@@ -760,7 +763,8 @@ void TestClient::testHandleChannels()
     QCOMPARE(client1->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QCOMPARE(client1->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
-    Tp::ObjectPathList handledChannels = handler1Iface->HandledChannels();
+    Tp::ObjectPathList handledChannels;
+    QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));
 
     // object 2
@@ -787,15 +791,16 @@ void TestClient::testHandleChannels()
     QCOMPARE(client2->mHandleChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
     QCOMPARE(client2->mHandleChannelsUserActionTime.toTime_t(), mUserActionTime);
 
-    handledChannels = handler1Iface->HandledChannels();
+    QVERIFY(waitForProperty(handler1Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText2ChanPath)));
-    handledChannels = handler2Iface->HandledChannels();
+
+    QVERIFY(waitForProperty(handler2Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText1ChanPath)));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText2ChanPath)));
 
     mClientRegistrar->unregisterClient(mClientObject1);
-    handledChannels = handler2Iface->HandledChannels();
+    QVERIFY(waitForProperty(handler2Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.contains(QDBusObjectPath(mText2ChanPath)));
 
     g_object_unref(mText2ChanService);
@@ -803,7 +808,7 @@ void TestClient::testHandleChannels()
             SIGNAL(channelClosed()),
             SLOT(expectSignalEmission()));
     QCOMPARE(mLoop->exec(), 0);
-    handledChannels = handler2Iface->HandledChannels();
+    QVERIFY(waitForProperty(handler2Iface->requestPropertyHandledChannels(), &handledChannels));
     QVERIFY(handledChannels.isEmpty());
 }
 
