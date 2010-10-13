@@ -3306,7 +3306,7 @@ void Channel::onConferenceChannelMerged(const QDBusObjectPath &channelPath,
     ConnectionPtr conn = connection();
     ChannelFactoryConstPtr chanFactory = conn->channelFactory();
     PendingReady *readyOp = chanFactory->proxy(conn,
-            channelPath.path(), QVariantMap());
+            channelPath.path(), properties);
 
     ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
     Q_ASSERT(!channel.isNull());
