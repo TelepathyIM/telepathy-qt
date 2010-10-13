@@ -97,11 +97,16 @@ bool ConnectionCapabilities::supportsTextChatrooms() const
 }
 
 /**
- * Return whether merging media calls in a conference is supported.
+ * Return whether creating conference media calls is supported.
  *
- * \param withInitialInvitees If \c true (the default), check for the ability to merge media calls
- *                            in a conference, by providing initial invitees; if \c false,
- *                            skip checking if initial invitees is allowed.
+ * \param withInitialInvitees If \c true (the default), check if it is possible to invite new
+ *                            contacts when creating a conference media call channel by providing
+ *                            additional members to initial invitees (as opposed to merging
+ *                            several channels into one new conference channel).
+ *                            If providing additional members is supported, it is also
+ *                            possible to request conference media calls with fewer than two
+ *                            (even zero) already established media calls; if \c false, skip this
+ *                            check.
  * \return \c true if supported, \c false otherwise.
  */
 bool ConnectionCapabilities::supportsConferenceMediaCalls(
@@ -126,11 +131,16 @@ bool ConnectionCapabilities::supportsConferenceMediaCalls(
 }
 
 /**
- * Return whether merging text chats in a conference is supported.
+ * Return whether creating conference text chats is supported.
  *
- * \param withInitialInvitees If \c true (the default), check for the ability to merge text chats
- *                            in a conference, by providing initial invitees; if \c false,
- *                            skip checking if initial invitees is allowed.
+ * \param withInitialInvitees If \c true (the default), check if it is possible to invite new
+ *                            contacts when creating a conference text chat channel by providing
+ *                            additional members to initial invitees (as opposed to merging
+ *                            several channels into one new conference channel).
+ *                            If providing additional members is supported, it is also
+ *                            possible to request conference text chats with fewer than two
+ *                            (even zero) already established text chats; if \c false, skip this
+ *                            check.
  * \return \c true if supported, \c false otherwise.
  */
 bool ConnectionCapabilities::supportsConferenceTextChats(
@@ -155,11 +165,16 @@ bool ConnectionCapabilities::supportsConferenceTextChats(
 }
 
 /**
- * Return whether merging text chat rooms in a conference is supported.
+ * Return whether creating conference text chat rooms is supported.
  *
- * \param withInitialInvitees If \c true (the default), check for the ability to merge text chat
- *                            rooms in a conference, by providing initial invitees; if \c false,
- *                            skip checking if initial invitees is allowed.
+ * \param withInitialInvitees If \c true (the default), check if it is possible to invite new
+ *                            contacts when creating a conference text chat room channel by
+ *                            providing additional members to initial invitees (as opposed to
+ *                            merging several channels into one new conference channel).
+ *                            If providing additional members is supported, it is also
+ *                            possible to request conferences text chat rooms with fewer than two
+ *                            (even zero) already established text chat rooms; if \c false, skip
+ *                            this check.
  * \return \c true if supported, \c false otherwise.
  */
 bool ConnectionCapabilities::supportsConferenceTextChatrooms(
