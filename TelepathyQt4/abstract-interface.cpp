@@ -22,6 +22,7 @@
 
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/PendingVariant>
+#include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/Constants>
 
 #include "TelepathyQt4/_gen/abstract-interface.moc.hpp"
@@ -93,6 +94,16 @@ PendingVariant *AbstractInterface::internalRequestProperty(const char *name)
     msg << interface() << QString::fromUtf8(name);
     QDBusPendingCall pendingCall = connection().asyncCall(msg);
     return new PendingVariant(pendingCall);
+}
+
+PendingOperation *AbstractInterface::internalSetProperty(const char *name,
+        const QVariant &newValue)
+{
+    QDBusMessage msg = QDBusMessage::createMethodCall(service(), path(),
+            QLatin1String(TELEPATHY_INTERFACE_PROPERTIES), QLatin1String("Set"));
+    msg << interface() << QString::fromUtf8(name) << newValue;
+    QDBusPendingCall pendingCall = connection().asyncCall(msg);
+    return new PendingVoid(pendingCall, this);
 }
 
 } // Tp

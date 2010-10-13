@@ -34,6 +34,7 @@ namespace Tp
 
 class DBusProxy;
 class PendingVariant;
+class PendingOperation;
 
 class TELEPATHY_QT4_EXPORT AbstractInterface : public QDBusAbstractInterface
 {
@@ -58,6 +59,7 @@ protected:
             QObject *parent);
 
     PendingVariant *internalRequestProperty(const char *name);
+    PendingOperation *internalSetProperty(const char *name, const QVariant &newValue);
 
 private:
     struct Private;
