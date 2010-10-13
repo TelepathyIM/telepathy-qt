@@ -89,7 +89,12 @@ class Generator(object):
 #include <TelepathyQt4/DBusProxy>
 #include <TelepathyQt4/Global>
 
+namespace Tp{
+class PendingVariant;
+}
+
 // FIXME: (API/ABI break) Remove definition of TELEPATHY_GNUC_DEPRECATED
+
 // basically the same as GLib's G_GNUC_DEPRECATED
 #ifndef TELEPATHY_GNUC_DEPRECATED
 #   if defined(Q_CC_GNUC) && __GNUC__ >= 4
@@ -346,6 +351,7 @@ void %(name)s::invalidate(Tp::DBusProxy *proxy,
         if 'write' in access:
             settername = 'set' + name
 
+        # TODO: Remove this property entirely and just leave the async getter function
         self.h("""
 public:
     /**
@@ -357,7 +363,8 @@ public:
     /**
      * Getter for the remote object property "%(name)s".
      *
-     * Don't use this: it blocks the main loop.
+     * Don't use this: it blocks the main loop. Use the asynchronous
+     * requestProperty%(name)s() instead.
      *
      * \\return The value of the property, or a default-constructed value
      *          if the property is not readable.
@@ -381,6 +388,28 @@ private:
        'maybesettername' : settername and (' WRITE _deprecated_' + settername) or '',
        'getter-return' : 'read' in access and ('qvariant_cast<%s>(internalPropGet("%s"))' % (binding.val, name)) or binding.val + '()'})
 
+        if 'read' in access:
+            self.h("""
+    /**
+     * Asynchronous getter for the remote object property "%(name)s" of type %(val)s.
+     *
+%(docstring)s\
+     *
+     * \\return A pending variant which will emit finished when the property has been
+     *          retrieved.
+     */
+    inline Tp::PendingVariant *%(gettername)s()
+    {
+        return internalRequestProperty("%(name)s");
+    }
+""" % {'name' : name,
+       'docstring' : format_docstring(prop, '     * ').replace('*/',
+           '&#42;&#47;'),
+       'val' : binding.val,
+       'name' : name,
+       'gettername' : 'requestProperty' + name})
+
+        # TODO: Remove the sync setter
         if settername:
             self.h("""
 public:
