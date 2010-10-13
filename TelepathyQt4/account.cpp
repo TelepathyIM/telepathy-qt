@@ -1207,7 +1207,8 @@ ProtocolInfo *Account::protocolInfo() const
  * capabilities.
  *
  * \return The capabilities for this account or 0 if FeatureCapabilities is not
- *         ready.
+ *         ready or the capabilities are unknown (e.g. the connection is offline and protocolInfo()
+ *         returns 0).
  */
 ConnectionCapabilities *Account::capabilities() const
 {
