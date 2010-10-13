@@ -665,7 +665,11 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     QVariantMap observerInfo;
     ObjectImmutablePropertiesMap reqPropsMap;
     QVariantMap channelReqImmutableProps;
-    channelReqImmutableProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"), mAccount->objectPath());
+    channelReqImmutableProps.insert(
+            QLatin1String(
+                TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interface.DomainSpecific.IntegerProp"), 3);
+    channelReqImmutableProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"),
+            mAccount->objectPath());
     reqPropsMap.insert(QDBusObjectPath(mChannelRequestPath), channelReqImmutableProps);
     observerInfo.insert(QLatin1String("request-properties"), qVariantFromValue(reqPropsMap));
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
@@ -681,13 +685,12 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
     QVERIFY(client->mObserveChannelsDispatchOperation.isNull());
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
-    QCOMPARE(client->mObserveChannelsObserverInfo.contains(QLatin1String("request-properties")), true);
-    ObjectImmutablePropertiesMap receivedReqPropsMap = qdbus_cast<ObjectImmutablePropertiesMap>(
-            client->mObserveChannelsObserverInfo.value(QLatin1String("request-properties")));
-    QCOMPARE(receivedReqPropsMap.contains(QDBusObjectPath(mChannelRequestPath)), true);
-    QVariantMap receivedChannelReqImmutableProps = qdbus_cast<QVariantMap>(
-            receivedReqPropsMap.value(QDBusObjectPath(mChannelRequestPath)));
-    QCOMPARE(receivedChannelReqImmutableProps, channelReqImmutableProps);
+    QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->immutableProperties().contains(
+            QLatin1String(
+                TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interface.DomainSpecific.IntegerProp")), true);
+    QCOMPARE(qdbus_cast<int>(client->mObserveChannelsRequestsSatisfied.first()->immutableProperties().value(
+            QLatin1String(
+                TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Interface.DomainSpecific.IntegerProp"))), 3);
 }
 
 void TestClient::testObserveChannels()
