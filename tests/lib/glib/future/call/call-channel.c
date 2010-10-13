@@ -992,6 +992,33 @@ stream_removed_cb (ExampleCallContent *content,
     }
 }
 
+static void
+content_removed_cb (ExampleCallContent *content,
+    ExampleCallChannel *self)
+{
+  gchar *path, *name;
+
+  g_object_get (content,
+      "object-path", &path,
+      "name", &name,
+      NULL);
+
+  g_hash_table_remove (self->priv->contents, name);
+
+  future_svc_channel_type_call_emit_content_removed (self, path);
+  g_free (path);
+  g_free (name);
+
+  if (g_hash_table_size (self->priv->contents) == 0)
+    {
+      /* no contents left, so the call terminates */
+      example_call_channel_terminate (self, 0,
+          TP_CHANNEL_GROUP_CHANGE_REASON_NONE,
+          FUTURE_CALL_STATE_CHANGE_REASON_UNKNOWN, "");
+      /* FIXME: is there an appropriate error? */
+    }
+}
+
 static gboolean
 simulate_contact_ended_cb (gpointer p)
 {
@@ -1182,6 +1209,8 @@ example_call_channel_add_content (ExampleCallChannel *self,
 
   tp_g_signal_connect_object (content, "stream-removed",
       G_CALLBACK (stream_removed_cb), self, 0);
+
+  g_signal_connect (content, "removed", (GCallback) content_removed_cb, self);
 
   return content;
 }

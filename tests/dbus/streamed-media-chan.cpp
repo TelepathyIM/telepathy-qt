@@ -264,6 +264,7 @@ void TestStreamedMediaChan::expectOutgoingRequestStreamsFinished(PendingOperatio
     QCOMPARE(mRequestContactsReturn.size(), 1);
     MediaStreamPtr stream = mRequestStreamsReturn.first();
     QCOMPARE(stream->contact(), otherContact);
+    QVERIFY(stream->members().contains(otherContact));
     QCOMPARE(stream->type(), Tp::MediaStreamTypeAudio);
 
     // These checks can't work reliably, unless we add some complex backdoors to the test service,
@@ -750,6 +751,12 @@ void TestStreamedMediaChan::testOutgoingCall()
         mSSCStateReturn = Tp::MediaStreamStateConnected;
     }
 
+    QCOMPARE(stream->localSendingRequested(), false);
+    QCOMPARE(stream->remoteSendingRequested(), false);
+    QCOMPARE(stream->sending(), true);
+    QCOMPARE(stream->receiving(), true);
+
+    /* request only receiving now */
     QVERIFY(connect(mChan.data(),
                     SIGNAL(streamDirectionChanged(const Tp::MediaStreamPtr &,
                                                   Tp::MediaStreamDirection,
@@ -772,6 +779,9 @@ void TestStreamedMediaChan::testOutgoingCall()
     QCOMPARE(stream->pendingSend(), mSDCPendingReturn);
     QCOMPARE(mSSCStreamReturn, stream);
     QCOMPARE(mSSCStateReturn, Tp::MediaStreamStateConnected);
+
+    QCOMPARE(stream->sending(), false);
+    QCOMPARE(stream->receiving(), true);
 }
 
 void TestStreamedMediaChan::testOutgoingCallBusy()

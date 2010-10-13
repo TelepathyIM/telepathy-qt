@@ -1893,9 +1893,9 @@ Contacts Channel::groupContacts() const
 Contacts Channel::groupLocalPendingContacts() const
 {
     if (!isReady()) {
-        warning() << "Channel::groupLocalPending() used channel not ready";
+        warning() << "Channel::groupLocalPendingContacts() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
-        warning() << "Channel::groupLocalPending() used with no group interface";
+        warning() << "Channel::groupLocalPendingContacts() used with no group interface";
     }
 
     return mPriv->groupLocalPendingContacts.values().toSet();
@@ -1913,9 +1913,9 @@ Contacts Channel::groupLocalPendingContacts() const
 Contacts Channel::groupRemotePendingContacts() const
 {
     if (!isReady()) {
-        warning() << "Channel::groupRemotePending() used channel not ready";
+        warning() << "Channel::groupRemotePendingContacts() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
-        warning() << "Channel::groupRemotePending() used with no "
+        warning() << "Channel::groupRemotePendingContacts() used with no "
             "group interface";
     }
 
@@ -1986,12 +1986,11 @@ Channel::GroupMemberChangeDetails Channel::groupLocalPendingContactChangeInfo(
         const ContactPtr &contact) const
 {
     if (!isReady()) {
-        warning() << "Channel::groupLocalPending() used channel not ready";
+        warning() << "Channel::groupLocalPendingContactChangeInfo() used channel not ready";
     } else if (!interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_GROUP))) {
-        warning() << "Channel::groupLocalPending() used with no group interface";
-    }
-    else if (!contact) {
-        warning() << "Channel::groupLocalPending() used with null contact param";
+        warning() << "Channel::groupLocalPendingContactChangeInfo() used with no group interface";
+    } else if (!contact) {
+        warning() << "Channel::groupLocalPendingContactChangeInfo() used with null contact param";
         return GroupMemberChangeDetails();
     }
 
