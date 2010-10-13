@@ -28,6 +28,7 @@
 
 #include "TelepathyQt4/future-internal.h"
 
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ContactManager>
