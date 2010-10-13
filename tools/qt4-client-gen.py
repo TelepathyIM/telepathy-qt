@@ -91,6 +91,7 @@ class Generator(object):
 
 namespace Tp{
 class PendingVariant;
+class PendingOperation;
 }
 
 // FIXME: (API/ABI break) Remove definition of TELEPATHY_GNUC_DEPRECATED
@@ -431,6 +432,27 @@ private:
         internalPropSet("%s", QVariant::fromValue(newValue));
     }
 """ % (name, settername, binding.inarg, settername, settername, binding.inarg, name))
+
+        if 'write' in access:
+            self.h("""
+    /**
+     * Asynchronous setter for the remote object property "%(name)s" of type %(type)s.
+     *
+%(docstring)s\
+     *
+     * \\return A pending operation which will emit finished when the property has been
+     *          set.
+     */
+    inline Tp::PendingOperation *%(settername)s(%(type)s newValue)
+    {
+        return internalSetProperty("%(name)s", QVariant::fromValue(newValue));
+    }
+""" % {'name' : name,
+       'docstring' : format_docstring(prop, '     * ').replace('*/',
+           '&#42;&#47;'),
+       'type' : binding.val,
+       'name' : name,
+       'settername' : 'setProperty' + name})
 
     def do_method(self, method):
         name = method.getAttribute('name')
