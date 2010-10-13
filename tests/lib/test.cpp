@@ -80,6 +80,20 @@ void Test::expectFailure(PendingOperation *op)
     mLoop->exit(0);
 }  
 
+void Test::expectSuccessfulProperty(PendingOperation *op)
+{
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mPropertyValue = QVariant();
+        mLoop->exit(1);
+    } else {
+        Tp::PendingVariant *pv = qobject_cast<Tp::PendingVariant*>(op);
+        mPropertyValue = pv->result();
+        mLoop->exit(0);
+    }
+}
+
 void Test::processDBusQueue(Tp::DBusProxy *proxy)
 {
     // Call method Ping on the D-Bus Peer interface
