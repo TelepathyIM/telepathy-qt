@@ -111,7 +111,10 @@ void TestDBusProperties::testDBusProperties()
     QCOMPARE(currDisplayName, oldDisplayName);
 
     const QString newDisplayName = QLatin1String("Foo bar account");
-    cliAccount->setDisplayName(newDisplayName);
+    QVERIFY(connect(cliAccount->setPropertyDisplayName(newDisplayName),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(cliAccount->DisplayName(), newDisplayName);
     QVERIFY(waitForProperty(cliAccount->requestPropertyDisplayName(), &currDisplayName));
