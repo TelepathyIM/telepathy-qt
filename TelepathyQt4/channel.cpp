@@ -2380,6 +2380,36 @@ QList<ChannelPtr> Channel::conferenceInitialChannels() const
 /**
  * Return a map between channel specific handles and the corresponding channels of this conference.
  *
+ * This method is only relevant on GSM conference calls where it is possible to have the same phone
+ * number in a conference twice; for instance, it could be the number of a corporate switchboard.
+ * This is represented using channel-specific handles; whether or not a channel uses
+ * channel-specific handles is reported in groupFlags(). The groupHandleOwners() specifies the
+ * mapping from opaque channel-specific handles to actual numbers; this property specifies the
+ * original 1-1 channel corresponding to each channel-specific handle in the conference.
+ *
+ * In protocols where this situation cannot arise, such as XMPP, this method will return an empty
+ * hash.
+ *
+ * Example, consider this situation:
+ * 1. Place a call (with path /call/to/simon) to the contact +441234567890 (which is assigned the
+ *    handle h, say), and ask to be put through to Simon McVittie;
+ * 2. Put that call on hold;
+ * 3. Place another call (with path /call/to/jonny) to +441234567890, and ask to be put through to
+ *    Jonny Lamb;
+ * 4. Request a new conference channel with initial channels: ['/call/to/simon', '/call/to/jonny'].
+ *
+ * The new channel will have the following properties, for some handles s and j:
+ *
+ * {
+ * groupFlags(): ChannelGroupFlagChannelSpecificHandles | (other flags),
+ * groupMembers(): [self handle, s, j],
+ * groupHandleOwners(): { s: h, j: h },
+ * conferenceInitialChannels(): ['/call/to/simon', '/call/to/jonny'],
+ * conferenceChannels(): ['/call/to/simon', '/call/to/jonny'],
+ * conferenceOriginalChannels(): { s: '/call/to/simon', j: '/call/to/jonny' },
+ * # ...
+ * }
+ *
  * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
  *
