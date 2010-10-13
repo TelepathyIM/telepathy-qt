@@ -1,3 +1,25 @@
+telepathy-qt4 0.3.11 (UNRELEASED)
+=================================
+
+Enhancements:
+* Added constructors/accessors for using Channel/ContactFactory in Connection.
+* Updated to spec 0.21.1:
+  - Added auto generated classes for Conn.ClientTypes/ContactGroups/ContactList/
+    PowerSaving and Chan.ServerTLSConnection.
+  - Make use of Observer.ObserverInfo.request-properties map, making
+    ChannelRequest use the immutable properties defined in the map if
+    available, avoiding unneeded introspection.
+* Improved StreamedMediaChannel test coverage to yellow (> 80%).
+
+Fixes:
+* Properly install TelepathyQt4/Farsight/global.h.
+* fd.o#30386 - Regression: StreamedMediaChannel::streamAdded is not emitted when
+  one requests a new stream using a StreamedMedia channel type.
+* Fixed MediaStream::requestDirection when using a Call channel type.
+* Un-deprecate AccountManager methods to retrieve accounts given the account
+  paths.
+* Some small documentation fixes.
+
 telepathy-qt4 0.3.11 (2010-10-04)
 =================================
 
@@ -148,7 +170,7 @@ Test suite improvements:
 * The StreamedMedia legacy and Future.Call tests now actually have different
   names to be able to distinguish between them in the test logs
 * Test coverage reporting now works again; turns out we need to disable building
- the shared library when it is enabled
+  the shared library when it is enabled
 * amd64 memory use errors (pointer size != int size) calling g_object_new() in
   tests have been fixed
 
