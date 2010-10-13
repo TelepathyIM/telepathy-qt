@@ -661,12 +661,19 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     ChannelDetailsList channelDetailsList;
     ChannelDetails channelDetails = { QDBusObjectPath(mText1ChanPath), QVariantMap() };
     channelDetailsList.append(channelDetails);
+
+    QVariantMap observerInfo;
+    ObjectImmutablePropertiesMap reqPropsMap;
+    QVariantMap channelReqImmutableProps;
+    channelReqImmutableProps.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_REQUEST ".Account"), mAccount->objectPath());
+    reqPropsMap.insert(QDBusObjectPath(mChannelRequestPath), channelReqImmutableProps);
+    observerInfo.insert(QLatin1String("request-properties"), qVariantFromValue(reqPropsMap));
     observeIface->ObserveChannels(QDBusObjectPath(mAccount->objectPath()),
             QDBusObjectPath(mConn->objectPath()),
             channelDetailsList,
             QDBusObjectPath("/"),
             ObjectPathList() << QDBusObjectPath(mChannelRequestPath),
-            QVariantMap());
+            observerInfo);
     QCOMPARE(mLoop->exec(), 0);
 
     QCOMPARE(client->mObserveChannelsAccount->objectPath(), mAccount->objectPath());
@@ -674,6 +681,13 @@ void TestClient::testObserveChannelsCommon(const AbstractClientPtr &clientObject
     QCOMPARE(client->mObserveChannelsChannels.first()->objectPath(), mText1ChanPath);
     QVERIFY(client->mObserveChannelsDispatchOperation.isNull());
     QCOMPARE(client->mObserveChannelsRequestsSatisfied.first()->objectPath(), mChannelRequestPath);
+    QCOMPARE(client->mObserveChannelsObserverInfo.contains(QLatin1String("request-properties")), true);
+    ObjectImmutablePropertiesMap receivedReqPropsMap = qdbus_cast<ObjectImmutablePropertiesMap>(
+            client->mObserveChannelsObserverInfo.value(QLatin1String("request-properties")));
+    QCOMPARE(receivedReqPropsMap.contains(QDBusObjectPath(mChannelRequestPath)), true);
+    QVariantMap receivedChannelReqImmutableProps = qdbus_cast<QVariantMap>(
+            receivedReqPropsMap.value(QDBusObjectPath(mChannelRequestPath)));
+    QCOMPARE(receivedChannelReqImmutableProps, channelReqImmutableProps);
 }
 
 void TestClient::testObserveChannels()
