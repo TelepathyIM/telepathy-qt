@@ -129,8 +129,8 @@ public:
     AccountSetPtr filterAccounts(const QList<AccountFilterConstPtr> &filters) const;
     AccountSetPtr filterAccounts(const QVariantMap &filter) const;
 
-    TELEPATHY_QT4_DEPRECATED AccountPtr accountForPath(const QString &path);
-    TELEPATHY_QT4_DEPRECATED QList<AccountPtr> accountsForPaths(const QStringList &paths);
+    AccountPtr accountForPath(const QString &path);
+    QList<AccountPtr> accountsForPaths(const QStringList &paths);
 
     QStringList supportedAccountProperties() const;
     PendingAccount *createAccount(const QString &connectionManager,

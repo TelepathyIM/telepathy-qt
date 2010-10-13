@@ -1026,6 +1026,8 @@ AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
 /**
  * Return an AccountPtr object for the given \a path.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \param path The account object path.
  * \return An AccountPtr object pointing to the Account object for the given
  *         \a path, or a null AccountPtr if \a path is invalid.
@@ -1033,6 +1035,10 @@ AccountSetPtr AccountManager::filterAccounts(const QVariantMap &filter) const
  */
 AccountPtr AccountManager::accountForPath(const QString &path)
 {
+    if (!isReady(FeatureCore)) {
+        return AccountPtr();
+    }
+
     if (!mPriv->accounts.contains(path)) {
         return AccountPtr();
     }
@@ -1047,12 +1053,18 @@ AccountPtr AccountManager::accountForPath(const QString &path)
  * a given path is invalid the returned AccountPtr object will point to 0.
  * AccountPtr::isNull() will return true.
  *
+ * This method requires AccountManager::FeatureCore to be enabled.
+ *
  * \param paths List of accounts object paths.
  * \return A list of AccountPtr objects.
  * \sa validAccounts(), invalidAccounts(), allAccounts(), accountForPath()
  */
 QList<AccountPtr> AccountManager::accountsForPaths(const QStringList &paths)
 {
+    if (!isReady(FeatureCore)) {
+        return QList<AccountPtr>();
+    }
+
     QList<AccountPtr> result;
     foreach (const QString &path, paths) {
         result << accountForPath(path);
