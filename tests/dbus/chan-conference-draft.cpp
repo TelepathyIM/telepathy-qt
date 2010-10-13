@@ -18,17 +18,17 @@
 
 #include <tests/lib/glib/echo/chan.h>
 #include <tests/lib/glib/echo/conn.h>
-#include <tests/lib/glib/future/conference/chan.h>
+#include <tests/lib/glib/future/conference-draft/chan.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
 
-class TestConferenceChan : public Test
+class TestConferenceChanDRAFT : public Test
 {
     Q_OBJECT
 
 public:
-    TestConferenceChan(QObject *parent = 0)
+    TestConferenceChanDRAFT(QObject *parent = 0)
         : Test(parent),
           mConnService(0), mBaseConnService(0), mContactRepo(0),
           mTextChan1Service(0), mTextChan2Service(0), mConferenceChanService(0)
@@ -64,18 +64,18 @@ private:
     QString mTextChan3Path;
     ExampleEchoChannel *mTextChan3Service;
     QString mConferenceChanPath;
-    ExampleConferenceChannel *mConferenceChanService;
+    ExampleConferenceDRAFTChannel *mConferenceChanService;
 
     ChannelPtr mChannelMerged;
 };
 
-void TestConferenceChan::onConferenceChannelMerged(const Tp::ChannelPtr &channel)
+void TestConferenceChanDRAFT::onConferenceChannelMerged(const Tp::ChannelPtr &channel)
 {
     mChannelMerged = channel;
     mLoop->exit(0);
 }
 
-void TestConferenceChan::initTestCase()
+void TestConferenceChanDRAFT::initTestCase()
 {
     initTestCaseImpl();
 
@@ -166,8 +166,8 @@ void TestConferenceChan::initTestCase()
 
     mConferenceChanPath = mConnPath + QLatin1String("/ConferenceChannel");
     chanPath = mConferenceChanPath.toAscii();
-    mConferenceChanService = EXAMPLE_CONFERENCE_CHANNEL(g_object_new(
-                EXAMPLE_TYPE_CONFERENCE_CHANNEL,
+    mConferenceChanService = EXAMPLE_CONFERENCE_DRAFT_CHANNEL(g_object_new(
+                EXAMPLE_TYPE_CONFERENCE_DRAFT_CHANNEL,
                 "connection", mConnService,
                 "object-path", chanPath.data(),
                 "initial-channels", initialChannels,
@@ -178,12 +178,12 @@ void TestConferenceChan::initTestCase()
     tp_handle_unref(mContactRepo, handle3);
 }
 
-void TestConferenceChan::init()
+void TestConferenceChanDRAFT::init()
 {
     initImpl();
 }
 
-void TestConferenceChan::testConference()
+void TestConferenceChanDRAFT::testConference()
 {
     mChan = Channel::create(mConn, mConferenceChanPath, QVariantMap());
     QVERIFY(connect(mChan->becomeReady(),
@@ -239,12 +239,12 @@ void TestConferenceChan::testConference()
     mChannelMerged.reset();
 }
 
-void TestConferenceChan::cleanup()
+void TestConferenceChanDRAFT::cleanup()
 {
     cleanupImpl();
 }
 
-void TestConferenceChan::cleanupTestCase()
+void TestConferenceChanDRAFT::cleanupTestCase()
 {
     if (mConn) {
         // Disconnect and wait for the readiness change
@@ -287,5 +287,5 @@ void TestConferenceChan::cleanupTestCase()
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestConferenceChan)
-#include "_gen/chan-conference.cpp.moc.hpp"
+QTEST_MAIN(TestConferenceChanDRAFT)
+#include "_gen/chan-conference-draft.cpp.moc.hpp"
