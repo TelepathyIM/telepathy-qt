@@ -547,17 +547,14 @@ ContactPtr MediaStream::contact() const
         return mPriv->SMContact;
     } else {
         StreamedMediaChannelPtr chan(channel());
-        uint chanSelfHandle = chan->groupSelfContact() ?
-            chan->groupSelfContact()->handle()[0] : 0;
-        uint connSelfHandle = chan->connection()->selfHandle();
-
+        uint chanSelfHandle = chan->groupSelfContact()->handle()[0];
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->senders.constBegin();
                 i != mPriv->senders.constEnd();
                 ++i) {
             uint handle = i.key();
 
-            if (handle != chanSelfHandle && handle != connSelfHandle) {
+            if (handle != chanSelfHandle) {
                 Q_ASSERT(mPriv->sendersContacts.contains(handle));
                 return mPriv->sendersContacts[handle];
             }
@@ -602,10 +599,7 @@ bool MediaStream::sending() const
         return mPriv->SMDirection & MediaStreamDirectionSend;
     } else {
         StreamedMediaChannelPtr chan(channel());
-        uint chanSelfHandle = chan->groupSelfContact() ?
-            chan->groupSelfContact()->handle()[0] : 0;
-        uint connSelfHandle = chan->connection()->selfHandle();
-
+        uint chanSelfHandle = chan->groupSelfContact()->handle()[0];
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->senders.constBegin();
                 i != mPriv->senders.constEnd();
@@ -613,7 +607,7 @@ bool MediaStream::sending() const
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
-            if (handle == chanSelfHandle || handle == connSelfHandle) {
+            if (handle == chanSelfHandle) {
                 return sendingState & SendingStateSending;
             }
         }
@@ -634,10 +628,7 @@ bool MediaStream::receiving() const
         return mPriv->SMDirection & MediaStreamDirectionReceive;
     } else {
         StreamedMediaChannelPtr chan(channel());
-        uint chanSelfHandle = chan->groupSelfContact() ?
-            chan->groupSelfContact()->handle()[0] : 0;
-        uint connSelfHandle = chan->connection()->selfHandle();
-
+        uint chanSelfHandle = chan->groupSelfContact()->handle()[0];
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->senders.constBegin();
                 i != mPriv->senders.constEnd();
@@ -645,7 +636,7 @@ bool MediaStream::receiving() const
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
-            if (handle != chanSelfHandle && handle != connSelfHandle &&
+            if (handle != chanSelfHandle &&
                 sendingState & SendingStateSending) {
                 return true;
             }
@@ -668,10 +659,7 @@ bool MediaStream::localSendingRequested() const
         return mPriv->SMPendingSend & MediaStreamPendingLocalSend;
     } else {
         StreamedMediaChannelPtr chan(channel());
-        uint chanSelfHandle = chan->groupSelfContact() ?
-            chan->groupSelfContact()->handle()[0] : 0;
-        uint connSelfHandle = chan->connection()->selfHandle();
-
+        uint chanSelfHandle = chan->groupSelfContact()->handle()[0];
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->senders.constBegin();
                 i != mPriv->senders.constEnd();
@@ -679,7 +667,7 @@ bool MediaStream::localSendingRequested() const
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
-            if (handle == chanSelfHandle || handle == connSelfHandle) {
+            if (handle == chanSelfHandle) {
                 return sendingState & SendingStatePendingSend;
             }
         }
@@ -701,10 +689,7 @@ bool MediaStream::remoteSendingRequested() const
         return mPriv->SMPendingSend & MediaStreamPendingRemoteSend;
     } else {
         StreamedMediaChannelPtr chan(channel());
-        uint chanSelfHandle = chan->groupSelfContact() ?
-            chan->groupSelfContact()->handle()[0] : 0;
-        uint connSelfHandle = chan->connection()->selfHandle();
-
+        uint chanSelfHandle = chan->groupSelfContact()->handle()[0];
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->senders.constBegin();
                 i != mPriv->senders.constEnd();
@@ -712,7 +697,7 @@ bool MediaStream::remoteSendingRequested() const
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
-            if (handle != chanSelfHandle && handle != connSelfHandle &&
+            if (handle != chanSelfHandle &&
                 sendingState & SendingStatePendingSend) {
                 return true;
             }
@@ -792,16 +777,13 @@ PendingOperation *MediaStream::requestDirection(
                 this));
 
         StreamedMediaChannelPtr chan(channel());
-        uint chanSelfHandle = chan->groupSelfContact() ?
-            chan->groupSelfContact()->handle()[0] : 0;
-        uint connSelfHandle = chan->connection()->selfHandle();
-
+        uint chanSelfHandle = chan->groupSelfContact()->handle()[0];
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->senders.constBegin();
                 i != mPriv->senders.constEnd();
                 ++i) {
             uint handle = i.key();
-            if (handle == chanSelfHandle || handle == connSelfHandle) {
+            if (handle == chanSelfHandle) {
                 continue;
             }
             operations.append(new PendingVoid(
@@ -946,10 +928,7 @@ MediaStream::SendingState MediaStream::localSendingState() const
         return mPriv->localSendingStateFromSMDirection();
     } else {
         StreamedMediaChannelPtr chan(channel());
-        uint chanSelfHandle = chan->groupSelfContact() ?
-            chan->groupSelfContact()->handle()[0] : 0;
-        uint connSelfHandle = chan->connection()->selfHandle();
-
+        uint chanSelfHandle = chan->groupSelfContact()->handle()[0];
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->senders.constBegin();
                 i != mPriv->senders.constEnd();
@@ -957,7 +936,7 @@ MediaStream::SendingState MediaStream::localSendingState() const
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
-            if (handle == chanSelfHandle || handle == connSelfHandle) {
+            if (handle == chanSelfHandle) {
                 return sendingState;
             }
         }
@@ -1229,12 +1208,8 @@ void MediaStream::gotCallSendersContacts(PendingOperation *op)
 
     if (isReady(FeatureCore)) {
         StreamedMediaChannelPtr chan(channel());
-        uint chanSelfHandle = chan->groupSelfContact() ?
-            chan->groupSelfContact()->handle()[0] : 0;
-        uint connSelfHandle = chan->connection()->selfHandle();
-
+        uint chanSelfHandle = chan->groupSelfContact()->handle()[0];
         QHash<ContactPtr, SendingState> remoteSendingStates;
-
         for (TpFuture::ContactSendingStateMap::const_iterator i =
                 mPriv->currentCallSendersChangedInfo->updates.constBegin();
                 i !=
@@ -1243,7 +1218,7 @@ void MediaStream::gotCallSendersContacts(PendingOperation *op)
             uint handle = i.key();
             SendingState sendingState = (SendingState) i.value();
 
-            if (handle == chanSelfHandle || handle == connSelfHandle) {
+            if (handle == chanSelfHandle) {
                 emit localSendingStateChanged(sendingState);
             } else {
                 Q_ASSERT(mPriv->sendersContacts.contains(handle));
