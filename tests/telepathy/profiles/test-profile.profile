@@ -20,7 +20,13 @@
   </presences>
 
   <unsupported-channel-classes>
-    <!-- this service doesn't support text roomlists -->
+    <!-- this service doesn't support text chats and roomlists -->
+    <channel-class>
+      <property name="org.freedesktop.Telepathy.Channel.TargetHandleType"
+                type="u">1</property>
+      <property name="org.freedesktop.Telepathy.Channel.ChannelType"
+                type="s">org.freedesktop.Telepathy.Channel.Type.Text</property>
+    </channel-class>
     <channel-class>
       <property name="org.freedesktop.Telepathy.Channel.TargetHandleType"
                 type="u">3</property>
