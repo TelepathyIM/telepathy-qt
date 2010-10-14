@@ -16,6 +16,8 @@ if(ENABLE_TP_GLIB_TESTS)
     set(tp_glib_tests_SRCS
         contacts-conn.c
         contacts-conn.h
+        contact-search-chan.c
+        contact-search-chan.h
         debug.h
         params-cm.c
         params-cm.h
