@@ -642,7 +642,7 @@ void example_conference_channel_remove_channel (ExampleConferenceChannel *self,
 
   for (i = 0; i < self->priv->conference_channels->len; i++)
     {
-      const gchar *path = g_ptr_array_index (self->priv->conference_channels, i);
+      gchar *path = g_ptr_array_index (self->priv->conference_channels, i);
 
       if (strcmp (path, channel) == 0)
         {
@@ -650,6 +650,7 @@ void example_conference_channel_remove_channel (ExampleConferenceChannel *self,
                   NULL, (GDestroyNotify) tp_g_value_slice_free);
 
           g_ptr_array_remove (self->priv->conference_channels, (gpointer) path);
+          g_free (path);
 
           g_hash_table_insert (details, "actor",
               tp_g_value_slice_new_uint (self->priv->conn->self_handle));

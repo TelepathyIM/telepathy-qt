@@ -634,11 +634,12 @@ void example_conference_draft_channel_remove_channel (ExampleConferenceDRAFTChan
 
   for (i = 0; i < self->priv->conference_channels->len; i++)
     {
-      const gchar *path = g_ptr_array_index (self->priv->conference_channels, i);
+      gchar *path = g_ptr_array_index (self->priv->conference_channels, i);
 
       if (strcmp (path, channel) == 0)
         {
           g_ptr_array_remove (self->priv->conference_channels, (gpointer) path);
+          g_free (path);
 
           future_svc_channel_interface_conference_emit_channel_removed (self, channel);
         }
