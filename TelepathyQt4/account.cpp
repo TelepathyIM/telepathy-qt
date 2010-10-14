@@ -934,15 +934,17 @@ ProfilePtr Account::profile() const
 
     if (!mPriv->profile) {
         mPriv->profile = Profile::createForServiceName(serviceName());
-        if (!mPriv->profile->isValid() && mPriv->protocolInfo) {
-            mPriv->profile = ProfilePtr(new Profile(
-                        QString(QLatin1String("%1-%2")).arg(mPriv->cmName).arg(serviceName()),
-                        mPriv->cmName,
-                        mPriv->protocolName,
-                        mPriv->protocolInfo));
-        } else {
-            warning() << "Cannot create profile as neither a .profile is installed for service" <<
-                serviceName() << "nor protocol info can be retrieved";
+        if (!mPriv->profile->isValid()) {
+            if (mPriv->protocolInfo) {
+                mPriv->profile = ProfilePtr(new Profile(
+                            QString(QLatin1String("%1-%2")).arg(mPriv->cmName).arg(serviceName()),
+                            mPriv->cmName,
+                            mPriv->protocolName,
+                            mPriv->protocolInfo));
+            } else {
+                warning() << "Cannot create profile as neither a .profile is installed for service" <<
+                    serviceName() << "nor protocol info can be retrieved";
+            }
         }
     }
     return mPriv->profile;
