@@ -2297,6 +2297,44 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
 }
 
 /**
+ * Start a request to create a contact search channel with the given
+ * server \a server and limit \a limit.
+ *
+ * \param server For protocols which support searching for contacts on multiple servers with
+ *               different DNS names (like XMPP), the DNS name of the server to be searched,
+ *               e.g. "characters.shakespeare.lit". Otherwise, an empty string.
+ * \param limit If supported by the protocol, the maximum number of results that should be returned,
+ *              where 0 represents no limit. If the protocol does not support limiting results,
+ *              this should be 0.
+ * \param userActionTime The time at which user action occurred, or QDateTime()
+ *                       if this channel request is for some reason not
+ *                       involving user action.
+ * \param preferredHandler Either the well-known bus name (starting with
+ *                         org.freedesktop.Telepathy.Client.) of the preferred
+ *                         handler for this channel, or an empty string to
+ *                         indicate that any handler would be acceptable.
+ * \return A PendingChannelRequest which will emit PendingChannelRequest::finished
+ *         when the call has finished.
+ * \sa createChannel()
+ */
+PendingChannelRequest *Account::createContactSearchChannel(
+        const QString &server,
+        uint limit,
+        const QDateTime &userActionTime,
+        const QString &preferredHandler)
+{
+    QVariantMap request;
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH));
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server"),
+                   server);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), 0);
+
+    return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
+            AccountPtr(this));
+}
+
+/**
  * Start a request to create a channel.
  * This initially just creates a PendingChannelRequest object,
  * which can be used to track the success or failure of the request,
