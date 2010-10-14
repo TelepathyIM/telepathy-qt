@@ -38,6 +38,7 @@ set(telepathy_qt4_SRCS
     contact-factory.cpp
     contact-location.cpp
     contact-manager.cpp
+    contact-search-channel.cpp
     dbus.cpp
     dbus-proxy.cpp
     dbus-proxy-factory.cpp
@@ -190,6 +191,8 @@ set(telepathy_qt4_HEADERS
     contact-location.h
     ContactManager
     contact-manager.h
+    ContactSearchChannel
+    contact-search-channel.h
     DBus
     DBusDaemonInterface
     dbus.h
@@ -342,6 +345,7 @@ set(telepathy_qt4_MOC_SRCS
     contact.h
     contact-manager.h
     contact-manager-internal.h
+    contact-search-channel.h
     dbus-proxy.h
     dbus-proxy-factory-internal.h
     file-transfer-channel.h
