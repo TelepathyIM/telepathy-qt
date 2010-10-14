@@ -26,6 +26,7 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/Types>
 
 namespace Tp
@@ -94,6 +95,9 @@ void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private
     self->parent->connect(self->contactSearchInterface,
             SIGNAL(SearchStateChanged(uint,QString,QVariantMap)),
             SLOT(onSearchStateChanged(uint,QString,QVariantMap)));
+    self->parent->connect(self->contactSearchInterface,
+            SIGNAL(SearchResultReceived(Tp::ContactSearchResultMap)),
+            SLOT(onSearchResultReceived(Tp::ContactSearchResultMap)));
 
     QVariantMap props;
     bool needIntrospectMainProps = false;
@@ -308,6 +312,67 @@ QString ContactSearchChannel::server() const
     return mPriv->server;
 }
 
+/**
+ * Send a request to start a search for contacts on this connection.
+ *
+ * This may only be called while the searchState() is ChannelContactSearchStateNotStarted;
+ * a valid search request will cause the searchStateChanged() signal to be emitted with the
+ * state ChannelContactSearchStateInProgress.
+ *
+ * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ *
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
+{
+    if (!isReady(FeatureCore)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Channel not ready"), this);
+    }
+
+    return new PendingVoid(mPriv->contactSearchInterface->Search(terms), this);
+}
+
+/**
+ * Request that a search which searchState() is ChannelContactSearchStateMoreAvailable
+ * move back to state ChannelContactSearchStateInProgress and continue listing up to limit()
+ * more results.
+ *
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *ContactSearchChannel::continueSearch()
+{
+    if (!isReady(FeatureCore)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Channel not ready"), this);
+    }
+
+    return new PendingVoid(mPriv->contactSearchInterface->More(), this);
+}
+
+/**
+ * Stop the current search.
+ *
+ * This may not be called while the searchState() is ChannelContactSearchStateNotStarted.
+ * If called while the searchState() is ChannelContactSearchStateInProgress,
+ * searchStateChanged() will be emitted, with the state ChannelContactSearchStateFailed and
+ * the error #TELEPATHY_ERROR_CANCELLED.
+ *
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *ContactSearchChannel::stopSearch()
+{
+    if (!isReady(FeatureCore)) {
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Channel not ready"), this);
+    }
+
+    return new PendingVoid(mPriv->contactSearchInterface->Stop(), this);
+}
+
 void ContactSearchChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
@@ -355,6 +420,11 @@ void ContactSearchChannel::onSearchStateChanged(uint state, const QString &error
     mPriv->searchState = state;
     emit searchStateChanged(static_cast<ChannelContactSearchState>(state), error,
             SearchStateChangeDetails(details));
+}
+
+void ContactSearchChannel::onSearchResultReceived(const Tp::ContactSearchResultMap &result)
+{
+    emit searchResultReceived(result);
 }
 
 } // Tp

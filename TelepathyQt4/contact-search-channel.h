@@ -75,9 +75,14 @@ public:
     QStringList availableSearchKeys() const;
     QString server() const;
 
+    PendingOperation *search(const ContactSearchMap &terms);
+    PendingOperation *continueSearch();
+    PendingOperation *stopSearch();
+
 Q_SIGNALS:
     void searchStateChanged(ChannelContactSearchState state, const QString &errorName,
             const Tp::ContactSearchChannel::SearchStateChangeDetails &details);
+    void searchResultReceived(const Tp::ContactSearchResultMap &result);
 
 protected:
     ContactSearchChannel(const ConnectionPtr &connection, const QString &objectPath,
@@ -87,6 +92,7 @@ private Q_SLOTS:
     void gotProperties(QDBusPendingCallWatcher *watcher);
     void gotSearchState(QDBusPendingCallWatcher *watcher);
     void onSearchStateChanged(uint state, const QString &error, const QVariantMap &details);
+    void onSearchResultReceived(const Tp::ContactSearchResultMap &result);
 
 private:
     struct Private;
