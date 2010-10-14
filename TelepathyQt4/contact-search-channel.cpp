@@ -340,7 +340,7 @@ void ContactSearchChannel::gotSearchState(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to Properties::Get(SearchState)";
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
     } else {
-        warning().nospace() << "Properties::GetAll(ContactSearchChannel) failed "
+        warning().nospace() << "Properties::Get(SearchState) failed "
             "with " << reply.error().name() << ": " << reply.error().message();
         mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
                 reply.error());
