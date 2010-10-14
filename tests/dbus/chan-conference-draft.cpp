@@ -99,7 +99,7 @@ void TestConferenceChanDRAFT::initTestCase()
     initTestCaseImpl();
 
     g_type_init();
-    g_set_prgname("conference-chan");
+    g_set_prgname("conference-chan-draft");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
