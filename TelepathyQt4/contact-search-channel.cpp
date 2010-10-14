@@ -365,7 +365,7 @@ void ContactSearchChannel::search(const ContactSearchMap &terms)
         return;
     }
 
-    (void) new QDBusPendingCallWatcher(mPriv->contactSearchInterface->Search(terms), this);
+    (void) new PendingVoid(mPriv->contactSearchInterface->Search(terms), this);
 }
 
 /**
@@ -385,7 +385,7 @@ void ContactSearchChannel::continueSearch()
         return;
     }
 
-    (void) new QDBusPendingCallWatcher(mPriv->contactSearchInterface->More(), this);
+    (void) new PendingVoid(mPriv->contactSearchInterface->More(), this);
 }
 
 /**
@@ -413,7 +413,7 @@ void ContactSearchChannel::stopSearch()
         return;
     }
 
-    (void) new QDBusPendingCallWatcher(mPriv->contactSearchInterface->Stop(), this);
+    (void) new PendingVoid(mPriv->contactSearchInterface->Stop(), this);
 }
 
 void ContactSearchChannel::gotProperties(QDBusPendingCallWatcher *watcher)
