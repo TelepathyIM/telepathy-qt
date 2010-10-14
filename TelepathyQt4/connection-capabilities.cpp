@@ -201,4 +201,64 @@ bool ConnectionCapabilities::supportsConferenceTextChatrooms(
     }
     return false;
 }
+
+/**
+ * Return whether creating a ContactSearch channel is supported.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::supportsContactSearch()
+{
+    QString channelType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return whether creating a ContactSearch channel specifying a server is supported.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::supportsContactSearchWithSpecificServer() const
+{
+    QString channelType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH) &&
+            cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server"))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Return whether creating a ContactSearch channel specifying a limit is supported.
+ *
+ * \return \c true if supported, \c false otherwise.
+ */
+bool ConnectionCapabilities::supportsContactSearchWithLimit() const
+{
+    QString channelType;
+    RequestableChannelClassList classes = requestableChannelClasses();
+    foreach (const RequestableChannelClass &cls, classes) {
+        channelType = qdbus_cast<QString>(cls.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH) &&
+            cls.allowedProperties.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 } // Tp
