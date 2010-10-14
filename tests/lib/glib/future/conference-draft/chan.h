@@ -72,7 +72,8 @@ struct _ExampleConferenceDRAFTChannel {
     ExampleConferenceDRAFTChannelPrivate *priv;
 };
 
-void example_conference_draft_channel_disconnected (ExampleConferenceDRAFTChannel *self);
+void example_conference_draft_channel_remove_channel (ExampleConferenceDRAFTChannel *self,
+        const gchar *channel);
 
 G_END_DECLS
 
