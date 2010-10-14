@@ -95,7 +95,7 @@ private Q_SLOTS:
     void gotSearchState(QDBusPendingCallWatcher *watcher);
     void onSearchStateChanged(uint state, const QString &error, const QVariantMap &details);
     void onSearchResultReceived(const Tp::ContactSearchResultMap &result);
-    void gotSearchResultContacts(PendingOperation *op);
+    void gotSearchResultContacts(Tp::PendingOperation *op);
 
 private:
     struct Private;
