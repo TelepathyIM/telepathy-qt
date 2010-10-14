@@ -28,6 +28,7 @@
 #include <TelepathyQt4/Channel>
 #include <TelepathyQt4/Connection>
 #include <TelepathyQt4/Constants>
+#include <TelepathyQt4/ContactSearchChannel>
 #include <TelepathyQt4/FileTransferChannel>
 #include <TelepathyQt4/IncomingFileTransferChannel>
 #include <TelepathyQt4/OutgoingFileTransferChannel>
@@ -120,15 +121,12 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
                 TELEPATHY_INTERFACE_CHANNEL ".ChannelType")).toString();
     if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT)) {
         return TextChannel::create(connection, channelPath, immutableProperties);
-    }
-    else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) ||
+    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA) ||
              channelType == QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_TYPE_CALL)) {
         return StreamedMediaChannel::create(connection, channelPath, immutableProperties);
-    }
-    else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST)) {
+    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_ROOM_LIST)) {
         return RoomListChannel::create(connection, channelPath, immutableProperties);
-    }
-    else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER)) {
+    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_FILE_TRANSFER)) {
         if (immutableProperties.contains(QLatin1String(
                         TELEPATHY_INTERFACE_CHANNEL ".Requested"))) {
             bool requested = immutableProperties.value(QLatin1String(
@@ -148,6 +146,8 @@ ChannelPtr ChannelFactory::create(const ConnectionPtr &connection,
             return FileTransferChannel::create(connection, channelPath,
                     immutableProperties);
         }
+    } else if (channelType == QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH)) {
+        return ContactSearchChannel::create(connection, channelPath, immutableProperties);
     }
 
     // ContactList, old-style Tubes, or a future channel type
