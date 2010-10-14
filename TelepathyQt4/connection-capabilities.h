@@ -39,7 +39,12 @@ public:
 
     bool supportsTextChatrooms() const;
 
+    bool supportsConferenceMediaCalls(bool withInitialInvitees = true) const;
+    bool supportsConferenceTextChats(bool withInitialInvitees = true) const;
+    bool supportsConferenceTextChatrooms(bool withInitialInvitees = true) const;
+
 private:
+    friend class Account;
     friend class Connection;
     friend class ProtocolInfo;
 

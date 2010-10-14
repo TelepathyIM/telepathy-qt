@@ -28,7 +28,9 @@
 
 #include "TelepathyQt4/future-internal.h"
 
+#include <TelepathyQt4/ChannelFactory>
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ContactManager>
 #include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingFailure>
@@ -92,7 +94,7 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
             const GroupMemberChangeDetails &details);
 
     // TODO move to channel.h once Conference.DRAFT support is removed
-    inline TpFuture::Client::ChannelInterfaceConferenceInterface *conferenceInterface(
+    inline TpFuture::Client::ChannelInterfaceConferenceInterface *conferenceDRAFTInterface(
             InterfaceSupportedChecking check = CheckInterfaceSupported) const
     {
         return parent->optionalInterface<TpFuture::Client::ChannelInterfaceConferenceInterface>(check);
@@ -112,7 +114,10 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
         return parent->optionalInterface<ChannelInterfaceSplittableInterface>(check);
     }
 
+    void processConferenceChannelRemoved();
+
     struct GroupMembersChangedInfo;
+    struct ConferenceChannelRemovedInfo;
 
     // Public object
     Channel *parent;
@@ -128,7 +133,8 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
 
     // Optional interface proxies
     Client::ChannelInterfaceGroupInterface *group;
-    TpFuture::Client::ChannelInterfaceConferenceInterface *conference;
+    Client::ChannelInterfaceConferenceInterface *conference;
+    TpFuture::Client::ChannelInterfaceConferenceInterface *conferenceDRAFT;
     Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
@@ -195,9 +201,15 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private
     QHash<QString, ChannelPtr> conferenceChannels;
     QHash<QString, ChannelPtr> conferenceInitialChannels;
     QString conferenceInvitationMessage;
+    // TODO remove once Conference.DRAFT support is removed
     bool conferenceSupportsNonMerges;
+    QHash<uint, ChannelPtr> conferenceOriginalChannels;
     UIntList conferenceInitialInviteeHandles;
     Contacts conferenceInitialInviteeContacts;
+    QQueue<ConferenceChannelRemovedInfo *> conferenceChannelRemovedQueue;
+    bool buildingConferenceChannelRemovedActorContact;
+
+    static const QString keyActor;
 };
 
 struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
@@ -226,12 +238,23 @@ struct TELEPATHY_QT4_NO_EXPORT Channel::Private::GroupMembersChangedInfo
     uint reason;
     QString message;
 
-    static const QString keyActor;
     static const QString keyChangeReason;
     static const QString keyMessage;
 };
 
-const QString Channel::Private::GroupMembersChangedInfo::keyActor(QLatin1String("actor"));
+struct TELEPATHY_QT4_NO_EXPORT Channel::Private::ConferenceChannelRemovedInfo
+{
+    ConferenceChannelRemovedInfo(const QDBusObjectPath &channelPath, const QVariantMap &details)
+        : channelPath(channelPath),
+          details(details)
+    {
+    }
+
+    QDBusObjectPath channelPath;
+    QVariantMap details;
+};
+
+const QString Channel::Private::keyActor(QLatin1String("actor"));
 const QString Channel::Private::GroupMembersChangedInfo::keyChangeReason(
         QLatin1String("change-reason"));
 const QString Channel::Private::GroupMembersChangedInfo::keyMessage(QLatin1String("message"));
@@ -245,6 +268,7 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       immutableProperties(immutableProperties),
       group(0),
       conference(0),
+      conferenceDRAFT(0),
       properties(0),
       readinessHelper(parent->readinessHelper()),
       targetHandleType(0),
@@ -261,7 +285,8 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
       groupIsSelfHandleTracked(false),
       groupSelfHandle(0),
       introspectingConference(false),
-      conferenceSupportsNonMerges(false)
+      conferenceSupportsNonMerges(false),
+      buildingConferenceChannelRemovedActorContact(false)
 {
     debug() << "Creating new Channel:" << parent->objectPath();
 
@@ -302,7 +327,12 @@ Channel::Private::Private(Channel *parent, const ConnectionPtr &connection,
     ReadinessHelper::Introspectable introspectableConferenceInitialInviteeContacts(
         QSet<uint>() << 0,                                                                // makesSenseForStatuses
         Features() << FeatureCore,                                                        // dependsOnFeatures
-        QStringList() << QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE), // dependsOnInterfaces
+        // TODO ReadinessHelper does not support optional interfaces dependency, so let's not depend
+        //      on anything here and check if the Conference or Conference.DRAFT is supported in
+        //      introspectConferenceInitialInviteeContacts. Re-enable the check once Conference.DRAFT
+        //      support is removed.
+        // QStringList() << QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE), // dependsOnInterfaces
+        QStringList(),                                                                     // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectConferenceInitialInviteeContacts,
         this);
     introspectables[FeatureConferenceInitialInviteeContacts] =
@@ -315,6 +345,9 @@ Channel::Private::~Private()
 {
     delete currentGroupMembersChangedInfo;
     foreach (GroupMembersChangedInfo *info, groupMembersChangedQueue) {
+        delete info;
+    }
+    foreach (ConferenceChannelRemovedInfo *info, conferenceChannelRemovedQueue) {
         delete info;
     }
 }
@@ -517,36 +550,72 @@ void Channel::Private::introspectGroupFallbackSelfHandle()
 void Channel::Private::introspectConference()
 {
     Q_ASSERT(properties != 0);
+    Q_ASSERT(conference == 0 && conferenceDRAFT == 0);
 
-    debug() << "Introspecting Conference interface";
+    QDBusPendingCallWatcher *watcher = 0;
 
-    if (!conference) {
-        conference = conferenceInterface();
+    // if we got here it means we either have Conference or Conference.DRAFT support, let's try to
+    // use Conference first and if not found, use Conference.DRAFT
+    if (parent->hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+        debug() << "Introspecting Conference interface";
+
+        conference = parent->conferenceInterface();
         Q_ASSERT(conference != 0);
-    }
 
-    introspectingConference = true;
+        introspectingConference = true;
 
-    debug() << "Connecting to Channel.Interface.Conference.ChannelMerged/Removed";
-    parent->connect(conference,
-                    SIGNAL(ChannelMerged(QDBusObjectPath)),
-                    SLOT(onConferenceChannelMerged(QDBusObjectPath)));
-    parent->connect(conference,
-                    SIGNAL(ChannelRemoved(QDBusObjectPath)),
-                    SLOT(onConferenceChannelRemoved(QDBusObjectPath)));
+        debug() << "Connecting to Channel.Interface.Conference.ChannelMerged/Removed";
+        parent->connect(conference,
+                SIGNAL(ChannelMerged(QDBusObjectPath,uint,QVariantMap)),
+                SLOT(onConferenceChannelMerged(QDBusObjectPath,uint,QVariantMap)));
+        parent->connect(conference,
+                SIGNAL(ChannelRemoved(QDBusObjectPath,QVariantMap)),
+                SLOT(onConferenceChannelRemoved(QDBusObjectPath,QVariantMap)));
 
-    debug() << "Calling Properties::GetAll(Channel.Interface.Conference)";
-    QDBusPendingCallWatcher *watcher =
-        new QDBusPendingCallWatcher(
+        debug() << "Calling Properties::GetAll(Channel.Interface.Conference)";
+        watcher = new QDBusPendingCallWatcher(
+                properties->GetAll(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)),
+                parent);
+    } else {
+        debug() << "Introspecting Conference.DRAFT interface";
+
+        conferenceDRAFT = conferenceDRAFTInterface();
+        Q_ASSERT(conferenceDRAFT != 0);
+
+        introspectingConference = true;
+
+        debug() << "Connecting to Channel.Interface.Conference.DRAFT.ChannelMerged/Removed";
+        parent->connect(conferenceDRAFT,
+                SIGNAL(ChannelMerged(QDBusObjectPath)),
+                SLOT(onConferenceChannelMerged(QDBusObjectPath)));
+        parent->connect(conferenceDRAFT,
+                SIGNAL(ChannelRemoved(QDBusObjectPath)),
+                SLOT(onConferenceChannelRemoved(QDBusObjectPath)));
+
+        debug() << "Calling Properties::GetAll(Channel.Interface.Conference.DRAFT)";
+        watcher = new QDBusPendingCallWatcher(
                 properties->GetAll(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)),
                 parent);
+    }
+
     parent->connect(watcher,
-                    SIGNAL(finished(QDBusPendingCallWatcher*)),
-                    SLOT(gotConferenceProperties(QDBusPendingCallWatcher*)));
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(gotConferenceProperties(QDBusPendingCallWatcher*)));
 }
 
 void Channel::Private::introspectConferenceInitialInviteeContacts(Private *self)
 {
+    // TODO remove this check once Conference.DRAFT is removed and make
+    //      FeatureConferenceInitialInviteeContacts depend on interface Conference.
+    if (!self->parent->hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE) ||
+        !self->parent->hasInterface(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+        self->readinessHelper->setIntrospectCompleted(FeatureConferenceInitialInviteeContacts,
+                false,
+                QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Feature depend on interfaces that are not available"));
+        return;
+    }
+
     if (!self->conferenceInitialInviteeHandles.isEmpty()) {
         ContactManager *manager = self->connection->contactManager();
         PendingContacts *pendingContacts = manager->contactsForHandles(
@@ -698,7 +767,8 @@ void Channel::Private::nowHaveInterfaces()
         introspectQueue.enqueue(&Private::introspectGroup);
     }
 
-    if (interfaces.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
+    if (interfaces.contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) ||
+        interfaces.contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
         introspectQueue.enqueue(&Private::introspectConference);
     }
 }
@@ -1157,6 +1227,35 @@ QString Channel::Private::groupMemberChangeDetailsTelepathyError(
     }
 
     return error;
+}
+
+void Channel::Private::processConferenceChannelRemoved()
+{
+    if (buildingConferenceChannelRemovedActorContact ||
+        conferenceChannelRemovedQueue.isEmpty()) {
+        return;
+    }
+
+    ConferenceChannelRemovedInfo *info = conferenceChannelRemovedQueue.first();
+    if (!conferenceChannels.contains(info->channelPath.path())) {
+        info = conferenceChannelRemovedQueue.dequeue();
+        delete info;
+        processConferenceChannelRemoved();
+        return;
+    }
+
+    buildingConferenceChannelRemovedActorContact = true;
+
+    if (info->details.contains(keyActor)) {
+        ContactManager *manager = connection->contactManager();
+        PendingContacts *pendingContacts = manager->contactsForHandles(
+                UIntList() << qdbus_cast<uint>(info->details.value(keyActor)));
+        parent->connect(pendingContacts,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(gotConferenceChannelRemovedActorContact(Tp::PendingOperation*)));
+    } else {
+        parent->gotConferenceChannelRemovedActorContact(0);
+    }
 }
 
 /**
@@ -2195,6 +2294,8 @@ PendingOperation *Channel::groupAddSelfHandle()
 bool Channel::hasConferenceInterface() const
 {
     return interfaces().contains(QLatin1String(
+                TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) ||
+           interfaces().contains(QLatin1String(
                 TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE));
 }
 
@@ -2219,11 +2320,27 @@ Contacts Channel::conferenceInitialInviteeContacts() const
  *
  * This method requires Channel::FeatureCore to be enabled.
  *
+ * Note that this method will always return false if the Channel supports the Conference interface,
+ * even if Conference.DRAFT is also supported.
+ *
  * \return Whether the channels supports non merges.
  */
 bool Channel::conferenceSupportsNonMerges() const
 {
-    return mPriv->conferenceSupportsNonMerges;
+    if (!isReady(FeatureCore)) {
+        warning() << "Channel::conferenceSupportsNonMerges() used with channel not ready";
+        return false;
+    }
+
+    // FIXME: cannot use hasInterface here as hasInterface is not const
+    // if (hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+    if (interfaces().contains(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
+        return false;
+    // } else if (hasInterface(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+    } else if (interfaces().contains(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE))) {
+        return mPriv->conferenceSupportsNonMerges;
+    }
+    return false;
 }
 
 /**
@@ -2232,7 +2349,7 @@ bool Channel::conferenceSupportsNonMerges() const
  * Change notification is via the conferenceChannelMerged and
  * conferenceChannelRemoved signals.
  *
- * Note that the returned channels are not ready(). Calling
+ * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
  *
  * This method requires Channel::FeatureCore to be enabled.
@@ -2245,9 +2362,9 @@ QList<ChannelPtr> Channel::conferenceChannels() const
 }
 
 /**
- * Return the initial value of channels().
+ * Return the initial value of conferenceChannels().
  *
- * Note that the returned channels are not ready(). Calling
+ * Note that the returned channels are not guaranteed to be ready. Calling
  * Channel::becomeReady() may be needed.
  *
  * This method requires Channel::FeatureCore to be enabled.
@@ -2258,6 +2375,51 @@ QList<ChannelPtr> Channel::conferenceChannels() const
 QList<ChannelPtr> Channel::conferenceInitialChannels() const
 {
     return mPriv->conferenceInitialChannels.values();
+}
+
+/**
+ * Return a map between channel specific handles and the corresponding channels of this conference.
+ *
+ * This method is only relevant on GSM conference calls where it is possible to have the same phone
+ * number in a conference twice; for instance, it could be the number of a corporate switchboard.
+ * This is represented using channel-specific handles; whether or not a channel uses
+ * channel-specific handles is reported in groupFlags(). The groupHandleOwners() specifies the
+ * mapping from opaque channel-specific handles to actual numbers; this property specifies the
+ * original 1-1 channel corresponding to each channel-specific handle in the conference.
+ *
+ * In protocols where this situation cannot arise, such as XMPP, this method will return an empty
+ * hash.
+ *
+ * Example, consider this situation:
+ * 1. Place a call (with path /call/to/simon) to the contact +441234567890 (which is assigned the
+ *    handle h, say), and ask to be put through to Simon McVittie;
+ * 2. Put that call on hold;
+ * 3. Place another call (with path /call/to/jonny) to +441234567890, and ask to be put through to
+ *    Jonny Lamb;
+ * 4. Request a new conference channel with initial channels: ['/call/to/simon', '/call/to/jonny'].
+ *
+ * The new channel will have the following properties, for some handles s and j:
+ *
+ * {
+ * groupFlags(): ChannelGroupFlagChannelSpecificHandles | (other flags),
+ * groupMembers(): [self handle, s, j],
+ * groupHandleOwners(): { s: h, j: h },
+ * conferenceInitialChannels(): ['/call/to/simon', '/call/to/jonny'],
+ * conferenceChannels(): ['/call/to/simon', '/call/to/jonny'],
+ * conferenceOriginalChannels(): { s: '/call/to/simon', j: '/call/to/jonny' },
+ * # ...
+ * }
+ *
+ * Note that the returned channels are not guaranteed to be ready. Calling
+ * Channel::becomeReady() may be needed.
+ *
+ * This method requires Channel::FeatureCore to be enabled.
+ *
+ * \return A map of channel specific handles to channels.
+ */
+QHash<uint, ChannelPtr> Channel::conferenceOriginalChannels() const
+{
+    return mPriv->conferenceOriginalChannels;
 }
 
 /**
@@ -2380,7 +2542,7 @@ PendingOperation *Channel::splitChannel()
 //@}
 
 /**
- * \fn conferenceChannelMerged(const Tp::ChannelPtr &channel)
+ * \fn void Channel::conferenceChannelMerged(const Tp::ChannelPtr &channel)
  *
  * Emitted when a new channel is added to the value of conferenceChannels().
  *
@@ -2388,7 +2550,7 @@ PendingOperation *Channel::splitChannel()
  */
 
 /**
- * \fn conferenceChannelRemoved(const Tp::ChannelPtr &channel)
+ * \fn void Channel::conferenceChannelRemoved(const Tp::ChannelPtr &channel)
  *
  * Emitted when a new channel is removed from the value of conferenceChannels().
  *
@@ -3080,28 +3242,39 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
         debug() << "Got reply to Properties::GetAll(Channel.Interface.Conference)";
         props = reply.value();
 
+        ConnectionPtr conn = connection();
+        ChannelFactoryConstPtr chanFactory = conn->channelFactory();
+
         ObjectPathList channels =
             qdbus_cast<ObjectPathList>(props[QLatin1String("Channels")]);
-        foreach (const QDBusObjectPath &channel, channels) {
-            if (mPriv->conferenceChannels.contains(channel.path())) {
+        foreach (const QDBusObjectPath &channelPath, channels) {
+            if (mPriv->conferenceChannels.contains(channelPath.path())) {
                 continue;
             }
 
-            mPriv->conferenceChannels.insert(channel.path(),
-                    Channel::create(connection(), channel.path(),
-                        QVariantMap()));
+            PendingReady *readyOp = chanFactory->proxy(conn,
+                    channelPath.path(), QVariantMap());
+
+            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+            Q_ASSERT(!channel.isNull());
+
+            mPriv->conferenceChannels.insert(channelPath.path(), channel);
         }
 
         ObjectPathList initialChannels =
             qdbus_cast<ObjectPathList>(props[QLatin1String("InitialChannels")]);
-        foreach (const QDBusObjectPath &channel, initialChannels) {
-            if (mPriv->conferenceInitialChannels.contains(channel.path())) {
+        foreach (const QDBusObjectPath &channelPath, initialChannels) {
+            if (mPriv->conferenceInitialChannels.contains(channelPath.path())) {
                 continue;
             }
 
-            mPriv->conferenceInitialChannels.insert(channel.path(),
-                    Channel::create(connection(), channel.path(),
-                        QVariantMap()));
+            PendingReady *readyOp = chanFactory->proxy(conn,
+                    channelPath.path(), QVariantMap());
+
+            ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+            Q_ASSERT(!channel.isNull());
+
+            mPriv->conferenceInitialChannels.insert(channelPath.path(), channel);
         }
 
         mPriv->conferenceInitialInviteeHandles =
@@ -3109,8 +3282,24 @@ void Channel::gotConferenceProperties(QDBusPendingCallWatcher *watcher)
 
         mPriv->conferenceInvitationMessage =
             qdbus_cast<QString>(props[QLatin1String("InvitationMessage")]);
-        mPriv->conferenceSupportsNonMerges =
-            qdbus_cast<bool>(props[QLatin1String("SupportsNonMerges")]);
+
+        if (hasInterface(TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE)) {
+            ChannelOriginatorMap originalChannels = qdbus_cast<ChannelOriginatorMap>(
+                    props[QLatin1String("OriginalChannels")]);
+            for (ChannelOriginatorMap::const_iterator i = originalChannels.constBegin();
+                    i != originalChannels.constEnd(); ++i) {
+                PendingReady *readyOp = chanFactory->proxy(conn,
+                        i.value().path(), QVariantMap());
+
+                ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+                Q_ASSERT(!channel.isNull());
+
+                mPriv->conferenceOriginalChannels.insert(i.key(), channel);
+            }
+        } else {
+            mPriv->conferenceSupportsNonMerges =
+                qdbus_cast<bool>(props[QLatin1String("SupportsNonMerges")]);
+        }
     }
     else {
         warning().nospace() << "Properties::GetAll(Channel.Interface.Conference) "
@@ -3137,27 +3326,87 @@ void Channel::gotConferenceInitialInviteeContacts(PendingOperation *op)
             FeatureConferenceInitialInviteeContacts, true);
 }
 
-void Channel::onConferenceChannelMerged(const QDBusObjectPath &channel)
+void Channel::onConferenceChannelMerged(const QDBusObjectPath &channelPath,
+        uint channelSpecificHandle, const QVariantMap &properties)
 {
-    if (mPriv->conferenceChannels.contains(channel.path())) {
+    if (mPriv->conferenceChannels.contains(channelPath.path())) {
         return;
     }
 
-    ChannelPtr mergedChannel = Channel::create(connection(),
-            channel.path(), QVariantMap());
-    mPriv->conferenceChannels.insert(channel.path(), mergedChannel);
-    emit conferenceChannelMerged(mergedChannel);
+    ConnectionPtr conn = connection();
+    ChannelFactoryConstPtr chanFactory = conn->channelFactory();
+    PendingReady *readyOp = chanFactory->proxy(conn,
+            channelPath.path(), properties);
+
+    ChannelPtr channel(ChannelPtr::dynamicCast(readyOp->proxy()));
+    Q_ASSERT(!channel.isNull());
+
+    mPriv->conferenceChannels.insert(channelPath.path(), channel);
+    emit conferenceChannelMerged(channel);
+
+    if (channelSpecificHandle != 0) {
+        mPriv->conferenceOriginalChannels.insert(channelSpecificHandle, channel);
+    }
 }
 
-void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channel)
+void Channel::onConferenceChannelMerged(const QDBusObjectPath &channelPath)
 {
-    if (!mPriv->conferenceChannels.contains(channel.path())) {
+    onConferenceChannelMerged(channelPath, 0, QVariantMap());
+}
+
+void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath,
+        const QVariantMap &details)
+{
+    if (!mPriv->conferenceChannels.contains(channelPath.path())) {
         return;
     }
 
-    ChannelPtr removedChannel = mPriv->conferenceChannels[channel.path()];
-    mPriv->conferenceChannels.remove(channel.path());
-    emit conferenceChannelRemoved(removedChannel);
+    mPriv->conferenceChannelRemovedQueue.enqueue(
+            new Private::ConferenceChannelRemovedInfo(channelPath, details));
+    mPriv->processConferenceChannelRemoved();
+}
+
+void Channel::onConferenceChannelRemoved(const QDBusObjectPath &channelPath)
+{
+    onConferenceChannelRemoved(channelPath, QVariantMap());
+}
+
+void Channel::gotConferenceChannelRemovedActorContact(PendingOperation *op)
+{
+    ContactPtr actorContact;
+
+    if (op) {
+        PendingContacts *pc = qobject_cast<PendingContacts *>(op);
+
+        if (pc->isValid()) {
+            Q_ASSERT(pc->contacts().size() == 1);
+            actorContact = pc->contacts().first();
+        } else {
+            warning().nospace() << "Getting conference channel removed actor "
+                "failed with " << pc->errorName() << ":" <<
+                pc->errorMessage();
+        }
+    }
+
+    Private::ConferenceChannelRemovedInfo *info = mPriv->conferenceChannelRemovedQueue.dequeue();
+
+    ChannelPtr channel = mPriv->conferenceChannels[info->channelPath.path()];
+    mPriv->conferenceChannels.remove(info->channelPath.path());
+    emit conferenceChannelRemoved(channel);
+    emit conferenceChannelRemoved(channel, GroupMemberChangeDetails(actorContact,
+                info->details));
+
+    for (QHash<uint, ChannelPtr>::const_iterator i = mPriv->conferenceOriginalChannels.constBegin();
+            i != mPriv->conferenceOriginalChannels.constEnd(); ++i) {
+        if (i.value() == channel) {
+            mPriv->conferenceOriginalChannels.remove(i.key());
+        }
+    }
+
+    delete info;
+
+    mPriv->buildingConferenceChannelRemovedActorContact = false;
+    mPriv->processConferenceChannelRemoved();
 }
 
 /**

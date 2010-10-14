@@ -1,5 +1,5 @@
 /*
- * conference-channel.h - header for an example conference channel
+ * conference-channel.h - header for an tp_tests conference channel
  *
  * Copyright © 2010 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright © 2010 Nokia Corporation
@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef EXAMPLE_CONFERENCE_CHANNEL_H
-#define EXAMPLE_CONFERENCE_CHANNEL_H
+#ifndef TP_TESTS_CONFERENCE_CHANNEL_H
+#define TP_TESTS_CONFERENCE_CHANNEL_H
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection.h>
@@ -28,51 +28,52 @@
 
 G_BEGIN_DECLS
 
-typedef struct _ExampleConferenceChannel ExampleConferenceChannel;
-typedef struct _ExampleConferenceChannelPrivate
-    ExampleConferenceChannelPrivate;
+typedef struct _TpTestsConferenceChannel TpTestsConferenceChannel;
+typedef struct _TpTestsConferenceChannelPrivate
+    TpTestsConferenceChannelPrivate;
 
-typedef struct _ExampleConferenceChannelClass
-    ExampleConferenceChannelClass;
-typedef struct _ExampleConferenceChannelClassPrivate
-    ExampleConferenceChannelClassPrivate;
+typedef struct _TpTestsConferenceChannelClass
+    TpTestsConferenceChannelClass;
+typedef struct _TpTestsConferenceChannelClassPrivate
+    TpTestsConferenceChannelClassPrivate;
 
-GType example_conference_channel_get_type (void);
+GType tp_tests_conference_channel_get_type (void);
 
-#define EXAMPLE_TYPE_CONFERENCE_CHANNEL \
-  (example_conference_channel_get_type ())
-#define EXAMPLE_CONFERENCE_CHANNEL(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), EXAMPLE_TYPE_CONFERENCE_CHANNEL, \
-                               ExampleConferenceChannel))
-#define EXAMPLE_CONFERENCE_CHANNEL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), EXAMPLE_TYPE_CONFERENCE_CHANNEL, \
-                            ExampleConferenceChannelClass))
-#define EXAMPLE_IS_CONFERENCE_CHANNEL(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), EXAMPLE_TYPE_CONFERENCE_CHANNEL))
-#define EXAMPLE_IS_CONFERENCE_CHANNEL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), EXAMPLE_TYPE_CONFERENCE_CHANNEL))
-#define EXAMPLE_CONFERENCE_CHANNEL_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), EXAMPLE_TYPE_CONFERENCE_CHANNEL, \
-                              ExampleConferenceChannelClass))
+#define TP_TESTS_TYPE_CONFERENCE_CHANNEL \
+  (tp_tests_conference_channel_get_type ())
+#define TP_TESTS_CONFERENCE_CHANNEL(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST ((obj), TP_TESTS_TYPE_CONFERENCE_CHANNEL, \
+                               TpTestsConferenceChannel))
+#define TP_TESTS_CONFERENCE_CHANNEL_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST ((klass), TP_TESTS_TYPE_CONFERENCE_CHANNEL, \
+                            TpTestsConferenceChannelClass))
+#define TP_TESTS_IS_CONFERENCE_CHANNEL(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TP_TESTS_TYPE_CONFERENCE_CHANNEL))
+#define TP_TESTS_IS_CONFERENCE_CHANNEL_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE ((klass), TP_TESTS_TYPE_CONFERENCE_CHANNEL))
+#define TP_TESTS_CONFERENCE_CHANNEL_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), TP_TESTS_TYPE_CONFERENCE_CHANNEL, \
+                              TpTestsConferenceChannelClass))
 
-struct _ExampleConferenceChannelClass {
+struct _TpTestsConferenceChannelClass {
     GObjectClass parent_class;
 
     TpDBusPropertiesMixinClass dbus_properties_class;
     TpGroupMixinClass group_class;
 
-    ExampleConferenceChannelClassPrivate *priv;
+    TpTestsConferenceChannelClassPrivate *priv;
 };
 
-struct _ExampleConferenceChannel {
+struct _TpTestsConferenceChannel {
     GObject parent;
 
     TpGroupMixin group;
 
-    ExampleConferenceChannelPrivate *priv;
+    TpTestsConferenceChannelPrivate *priv;
 };
 
-void example_conference_channel_disconnected (ExampleConferenceChannel *self);
+void tp_tests_conference_channel_remove_channel (TpTestsConferenceChannel *self,
+        const gchar *channel);
 
 G_END_DECLS
 

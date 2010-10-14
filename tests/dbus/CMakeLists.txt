@@ -2,10 +2,6 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_gen")
 
 tpqt4_setup_dbus_test_environment()
 
-if(HAVE_TEST_PYTHON)
-    tpqt4_add_dbus_unit_test(AccountBasics account-basics "")
-endif(HAVE_TEST_PYTHON)
-
 if(ENABLE_TP_GLIB_TESTS)
     include_directories(${TELEPATHY_GLIB_INCLUDE_DIR}
                         ${GLIB2_INCLUDE_DIR}
@@ -14,6 +10,7 @@ if(ENABLE_TP_GLIB_TESTS)
     add_definitions(-DQT_NO_KEYWORDS)
 
     if(HAVE_TEST_PYTHON)
+        tpqt4_add_dbus_unit_test(AccountBasics account-basics tp-glib-tests)
         tpqt4_add_dbus_unit_test(AccountChannelDispatcher account-channel-dispatcher tp-glib-tests)
         tpqt4_add_dbus_unit_test(Client client tp-glib-tests)
         tpqt4_add_dbus_unit_test(ClientFactories client-factories tp-glib-tests)
@@ -22,6 +19,7 @@ if(ENABLE_TP_GLIB_TESTS)
     tpqt4_add_dbus_unit_test(AccountConnectionFactory account-connection-factory tp-glib-tests)
     tpqt4_add_dbus_unit_test(ChannelBasics chan-basics tp-glib-tests)
     tpqt4_add_dbus_unit_test(ChannelConference chan-conference tp-glib-tests)
+    tpqt4_add_dbus_unit_test(ChannelConferenceDRAFT chan-conference-draft tp-glib-tests)
     tpqt4_add_dbus_unit_test(ChannelGroup chan-group tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionManagerBasics cm-basics tp-glib-tests)
     tpqt4_add_dbus_unit_test(ConnectionBasics conn-basics tp-glib-tests)

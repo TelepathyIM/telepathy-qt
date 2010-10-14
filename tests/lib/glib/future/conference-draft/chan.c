@@ -41,15 +41,15 @@
 static void mergeable_conference_iface_init (gpointer iface, gpointer data);
 static void channel_iface_init (gpointer iface, gpointer data);
 
-G_DEFINE_TYPE_WITH_CODE (TpTestsConferenceChannel,
-    tp_tests_conference_channel,
+G_DEFINE_TYPE_WITH_CODE (TpTestsConferenceDRAFTChannel,
+    tp_tests_conference_draft_channel,
     G_TYPE_OBJECT,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_DBUS_PROPERTIES,
       tp_dbus_properties_mixin_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL, channel_iface_init);
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_GROUP,
       tp_group_mixin_iface_init);
-    G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_CHANNEL_INTERFACE_CONFERENCE,
+    G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CHANNEL_INTERFACE_CONFERENCE,
       NULL);
     G_IMPLEMENT_INTERFACE (FUTURE_TYPE_SVC_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE,
       mergeable_conference_iface_init);
@@ -75,11 +75,11 @@ enum
   PROP_CONFERENCE_INITIAL_INVITEE_HANDLES,
   PROP_CONFERENCE_INITIAL_INVITEE_IDS,
   PROP_CONFERENCE_INVITATION_MESSAGE,
-  PROP_CONFERENCE_ORIGINAL_CHANNELS,
+  PROP_CONFERENCE_SUPPORTS_NON_MERGES,
   N_PROPS
 };
 
-struct _TpTestsConferenceChannelPrivate
+struct _TpTestsConferenceDRAFTChannelPrivate
 {
   TpBaseConnection *conn;
   gchar *object_path;
@@ -90,25 +90,25 @@ struct _TpTestsConferenceChannelPrivate
   GArray *conference_initial_invitee_handles;
   gchar **conference_initial_invitee_ids;
   gchar *conference_invitation_message;
-  GHashTable *conference_original_channels;
+  gboolean conference_supports_non_merges;
 
   gboolean disposed;
   gboolean closed;
 };
 
-static const gchar * tp_tests_conference_channel_interfaces[] = {
+static const gchar * tp_tests_conference_draft_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_GROUP,
-    TP_IFACE_CHANNEL_INTERFACE_CONFERENCE,
+    FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE,
     FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE,
     NULL
 };
 
 static void
-tp_tests_conference_channel_init (TpTestsConferenceChannel *self)
+tp_tests_conference_draft_channel_init (TpTestsConferenceDRAFTChannel *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      TP_TESTS_TYPE_CONFERENCE_CHANNEL,
-      TpTestsConferenceChannelPrivate);
+      TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL,
+      TpTestsConferenceDRAFTChannelPrivate);
 
   self->priv->handle_type = (guint) -1;
 }
@@ -117,8 +117,8 @@ static void
 constructed (GObject *object)
 {
   void (*chain_up) (GObject *) =
-      ((GObjectClass *) tp_tests_conference_channel_parent_class)->constructed;
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (object);
+      ((GObjectClass *) tp_tests_conference_draft_channel_parent_class)->constructed;
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
   DBusGConnection *bus;
@@ -132,7 +132,7 @@ constructed (GObject *object)
   dbus_g_connection_register_g_object (bus, self->priv->object_path, object);
 
   tp_group_mixin_init (object,
-      G_STRUCT_OFFSET (TpTestsConferenceChannel, group),
+      G_STRUCT_OFFSET (TpTestsConferenceDRAFTChannel, group),
       contact_repo, self->priv->conn->self_handle);
 
   if (self->priv->handle_type == (guint) -1)
@@ -160,11 +160,6 @@ constructed (GObject *object)
     {
       self->priv->conference_invitation_message = g_strdup ("");
     }
-  if (!self->priv->conference_original_channels)
-    {
-      self->priv->conference_original_channels =  dbus_g_type_specialized_construct (
-          TP_HASH_TYPE_CHANNEL_ORIGINATOR_MAP);
-    }
 }
 
 static void
@@ -173,7 +168,7 @@ get_property (GObject *object,
     GValue *value,
     GParamSpec *pspec)
 {
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (object);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
 
   switch (property_id)
     {
@@ -214,7 +209,7 @@ get_property (GObject *object,
       break;
 
     case PROP_INTERFACES:
-      g_value_set_boxed (value, tp_tests_conference_channel_interfaces);
+      g_value_set_boxed (value, tp_tests_conference_draft_channel_interfaces);
       break;
 
     case PROP_CHANNEL_DESTROYED:
@@ -232,12 +227,12 @@ get_property (GObject *object,
               TP_IFACE_CHANNEL, "InitiatorID",
               TP_IFACE_CHANNEL, "Requested",
               TP_IFACE_CHANNEL, "Interfaces",
-              TP_IFACE_CHANNEL_INTERFACE_CONFERENCE, "Channels",
-              TP_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialChannels",
-              TP_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialInviteeHandles",
-              TP_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialInviteeIDs",
-              TP_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InvitationMessage",
-              TP_IFACE_CHANNEL_INTERFACE_CONFERENCE, "OriginalChannels",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "Channels",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialChannels",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialInviteeHandles",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InitialInviteeIDs",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "InvitationMessage",
+              FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE, "SupportsNonMerges",
               NULL));
       break;
 
@@ -266,9 +261,9 @@ get_property (GObject *object,
       g_assert (G_VALUE_HOLDS (value, G_TYPE_STRING));
       break;
 
-    case PROP_CONFERENCE_ORIGINAL_CHANNELS:
-      g_value_set_boxed (value, self->priv->conference_original_channels);
-      g_assert (G_VALUE_HOLDS (value, TP_HASH_TYPE_CHANNEL_ORIGINATOR_MAP));
+    case PROP_CONFERENCE_SUPPORTS_NON_MERGES:
+      g_value_set_boolean (value, self->priv->conference_supports_non_merges);
+      g_assert (G_VALUE_HOLDS (value, G_TYPE_BOOLEAN));
       break;
 
     default:
@@ -283,7 +278,7 @@ set_property (GObject *object,
     const GValue *value,
     GParamSpec *pspec)
 {
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (object);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
 
   switch (property_id)
     {
@@ -316,6 +311,10 @@ set_property (GObject *object,
       self->priv->conference_invitation_message = g_value_dup_string (value);
       break;
 
+    case PROP_CONFERENCE_SUPPORTS_NON_MERGES:
+      self->priv->conference_supports_non_merges = g_value_get_boolean (value);
+      break;
+
     case PROP_CHANNEL_TYPE:
     case PROP_HANDLE:
     case PROP_TARGET_ID:
@@ -336,7 +335,7 @@ set_property (GObject *object,
 static void
 dispose (GObject *object)
 {
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (object);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
 
   if (self->priv->disposed)
     {
@@ -358,8 +357,6 @@ dispose (GObject *object)
   self->priv->conference_initial_invitee_ids = NULL;
   g_free (self->priv->conference_invitation_message);
   self->priv->conference_invitation_message = NULL;
-  g_boxed_free (TP_HASH_TYPE_CHANNEL_ORIGINATOR_MAP, self->priv->conference_original_channels);
-  self->priv->conference_original_channels = NULL;
 
   if (!self->priv->closed)
     {
@@ -367,19 +364,19 @@ dispose (GObject *object)
       tp_svc_channel_emit_closed (self);
     }
 
-  ((GObjectClass *) tp_tests_conference_channel_parent_class)->dispose (object);
+  ((GObjectClass *) tp_tests_conference_draft_channel_parent_class)->dispose (object);
 }
 
 static void
 finalize (GObject *object)
 {
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (object);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
 
   g_free (self->priv->object_path);
 
   tp_group_mixin_finalize (object);
 
-  ((GObjectClass *) tp_tests_conference_channel_parent_class)->finalize (object);
+  ((GObjectClass *) tp_tests_conference_draft_channel_parent_class)->finalize (object);
 }
 
 static gboolean
@@ -388,7 +385,7 @@ add_member (GObject *obj,
             const gchar *message,
             GError **error)
 {
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (obj);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (obj);
   TpIntSet *add = tp_intset_new ();
 
   tp_intset_add (add, handle);
@@ -400,7 +397,7 @@ add_member (GObject *obj,
 }
 
 static void
-tp_tests_conference_channel_class_init (TpTestsConferenceChannelClass *klass)
+tp_tests_conference_draft_channel_class_init (TpTestsConferenceDRAFTChannelClass *klass)
 {
   static TpDBusPropertiesMixinPropImpl channel_props[] = {
       { "TargetHandleType", "handle-type", NULL },
@@ -419,7 +416,7 @@ tp_tests_conference_channel_class_init (TpTestsConferenceChannelClass *klass)
       { "InitialInviteeHandles", "initial-invitee-handles", NULL },
       { "InitialInviteeIDs", "initial-invitee-ids", NULL },
       { "InvitationMessage", "invitation-message", NULL },
-      { "OriginalChannels", "original-channels", NULL },
+      { "SupportsNonMerges", "supports-non-merges", NULL },
       { NULL }
   };
   static TpDBusPropertiesMixinIfaceImpl prop_interfaces[] = {
@@ -428,7 +425,7 @@ tp_tests_conference_channel_class_init (TpTestsConferenceChannelClass *klass)
         NULL,
         channel_props,
       },
-      { TP_IFACE_CHANNEL_INTERFACE_CONFERENCE,
+      { FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE,
         tp_dbus_properties_mixin_getter_gobject_properties,
         NULL,
         conference_props,
@@ -439,7 +436,7 @@ tp_tests_conference_channel_class_init (TpTestsConferenceChannelClass *klass)
   GParamSpec *param_spec;
 
   g_type_class_add_private (klass,
-      sizeof (TpTestsConferenceChannelPrivate));
+      sizeof (TpTestsConferenceDRAFTChannelPrivate));
 
   object_class->constructed = constructed;
   object_class->set_property = set_property;
@@ -531,21 +528,21 @@ tp_tests_conference_channel_class_init (TpTestsConferenceChannelClass *klass)
   g_object_class_install_property (object_class, PROP_CONFERENCE_INVITATION_MESSAGE,
       param_spec);
 
-  param_spec = g_param_spec_boxed ("original-channels",
-      "Original Channels",
-      "A map of channel specific handles to channels",
-      TP_HASH_TYPE_CHANNEL_ORIGINATOR_MAP,
-      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
-  g_object_class_install_property (object_class, PROP_CONFERENCE_ORIGINAL_CHANNELS,
+  param_spec = g_param_spec_boolean ("supports-non-merges",
+      "Supports non merges",
+      "True if requests with InitialChannels omitted, empty, or one element long should be expected to succeed",
+      FALSE,
+      G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (object_class, PROP_CONFERENCE_SUPPORTS_NON_MERGES,
       param_spec);
 
   klass->dbus_properties_class.interfaces = prop_interfaces;
   tp_dbus_properties_mixin_class_init (object_class,
-      G_STRUCT_OFFSET (TpTestsConferenceChannelClass,
+      G_STRUCT_OFFSET (TpTestsConferenceDRAFTChannelClass,
         dbus_properties_class));
 
   tp_group_mixin_class_init (object_class,
-      G_STRUCT_OFFSET (TpTestsConferenceChannelClass, group_class),
+      G_STRUCT_OFFSET (TpTestsConferenceDRAFTChannelClass, group_class),
       add_member,
       NULL);
   tp_group_mixin_init_dbus_properties (object_class);
@@ -555,7 +552,7 @@ static void
 channel_close (TpSvcChannel *iface,
     DBusGMethodInvocation *context)
 {
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (iface);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (iface);
 
   if (!self->priv->closed)
     {
@@ -578,7 +575,7 @@ static void
 channel_get_handle (TpSvcChannel *iface,
     DBusGMethodInvocation *context)
 {
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (iface);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (iface);
 
   tp_svc_channel_return_from_get_handle (context, self->priv->handle_type, 0);
 }
@@ -588,7 +585,7 @@ channel_get_interfaces (TpSvcChannel *iface G_GNUC_UNUSED,
     DBusGMethodInvocation *context)
 {
   tp_svc_channel_return_from_get_interfaces (context,
-      tp_tests_conference_channel_interfaces);
+      tp_tests_conference_draft_channel_interfaces);
 }
 
 static void
@@ -610,16 +607,11 @@ mergeable_conference_merge (FutureSvcChannelInterfaceMergeableConference *iface 
                             const gchar *channel,
                             DBusGMethodInvocation *context)
 {
-  TpTestsConferenceChannel *self = TP_TESTS_CONFERENCE_CHANNEL (iface);
-  GHashTable *immutable_props = g_hash_table_new (NULL, NULL);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (iface);
 
   g_ptr_array_add (self->priv->conference_channels, g_strdup (channel));
 
-  immutable_props = g_hash_table_new (NULL, NULL);
-
-  tp_svc_channel_interface_conference_emit_channel_merged (self, channel, 0, immutable_props);
-
-  g_hash_table_destroy (immutable_props);
+  future_svc_channel_interface_conference_emit_channel_merged (self, channel);
 
   future_svc_channel_interface_mergeable_conference_return_from_merge (context);
 }
@@ -635,7 +627,7 @@ mergeable_conference_iface_init (gpointer iface,
 #undef IMPLEMENT
 }
 
-void tp_tests_conference_channel_remove_channel (TpTestsConferenceChannel *self,
+void tp_tests_conference_draft_channel_remove_channel (TpTestsConferenceDRAFTChannel *self,
         const gchar *channel)
 {
   guint i;
@@ -646,19 +638,10 @@ void tp_tests_conference_channel_remove_channel (TpTestsConferenceChannel *self,
 
       if (strcmp (path, channel) == 0)
         {
-          GHashTable *details = g_hash_table_new_full (g_str_hash, g_str_equal,
-                  NULL, (GDestroyNotify) tp_g_value_slice_free);
-
           g_ptr_array_remove (self->priv->conference_channels, (gpointer) path);
           g_free (path);
 
-          g_hash_table_insert (details, "actor",
-              tp_g_value_slice_new_uint (self->priv->conn->self_handle));
-          g_hash_table_insert (details, "domain-specific-detail-uint", tp_g_value_slice_new_uint (3));
-
-          tp_svc_channel_interface_conference_emit_channel_removed (self, channel, details);
-
-          g_hash_table_destroy (details);
+          future_svc_channel_interface_conference_emit_channel_removed (self, channel);
         }
     }
 }

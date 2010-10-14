@@ -22,6 +22,7 @@ ACCOUNT_IFACE_AVATAR_IFACE = ACCOUNT_IFACE + '.Interface.Avatar'
 ACCOUNT_OBJECT_PATH_BASE = '/' + ACCOUNT_IFACE.replace('.', '/') + '/'
 
 
+Connection_Status_Connected = dbus.UInt32(0)
 Connection_Status_Disconnected = dbus.UInt32(2)
 Connection_Status_Reason_None_Specified = dbus.UInt32(0)
 Connection_Presence_Type_Offline = dbus.UInt32(1)
@@ -156,6 +157,8 @@ class Account(Object):
         Object.__init__(self, am.connection, path)
         self._am = am
 
+        self._connection = dbus.ObjectPath('/')
+        self._connection_status = Connection_Status_Disconnected
         self._service = u'bob_service'
         self._display_name = display_name
         self._icon = u'bob.png'
@@ -230,8 +233,8 @@ class Account(Object):
             'Parameters': self._parameters,
             'AutomaticPresence': self._automatic_presence,
             'ConnectAutomatically': self._connect_automatically,
-            'Connection': dbus.ObjectPath('/'),
-            'ConnectionStatus': Connection_Status_Disconnected,
+            'Connection': self._connection,
+            'ConnectionStatus': self._connection_status,
             'ConnectionStatusReason': Connection_Status_Reason_None_Specified,
             'CurrentPresence': self._current_presence,
             'RequestedPresence': self._requested_presence,
@@ -297,6 +300,10 @@ class Account(Object):
                         (dbus.UInt32(value[0]), unicode(value[1]),
                             unicode(value[2])),
                         signature='uss')
+            elif prop == 'Connection':
+                self._connection = dbus.ObjectPath(value)
+            elif prop == 'ConnectionStatus':
+                self._connection_status = dbus.UInt32(value)
             else:
                 raise ValueError('Read-only or nonexistent property')
 

@@ -8,12 +8,17 @@
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/AccountPropertyFilter>
 #include <TelepathyQt4/AccountSet>
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
 #include <TelepathyQt4/PendingReady>
+#include <TelepathyQt4/PendingVoid>
 #include <TelepathyQt4/Profile>
 
+#include <telepathy-glib/debug.h>
+
+#include <tests/lib/glib/echo2/conn.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
@@ -24,12 +29,21 @@ class TestAccountBasics : public Test
 
 public:
     TestAccountBasics(QObject *parent = 0)
-        : Test(parent), mServiceNameChanged(false), mAccountsCount(0), mGotAvatarChanged(false)
+        : Test(parent),
+          mConnService(0),
+          mServiceNameChanged(false),
+          mIconNameChanged(false),
+          mCapabilitiesChanged(false),
+          mAccountsCount(0),
+          mGotAvatarChanged(false)
     { }
 
 protected Q_SLOTS:
+    void expectConnInvalidated();
     void onNewAccount(const Tp::AccountPtr &);
     void onAccountServiceNameChanged(const QString &);
+    void onAccountIconNameChanged(const QString &);
+    void onAccountCapabilitiesChanged(Tp::ConnectionCapabilities *);
     void onAvatarChanged(const Tp::Avatar &);
 
 private Q_SLOTS:
@@ -46,11 +60,26 @@ private:
     QStringList pathsForAccountSet(const Tp::AccountSetPtr &set);
 
     Tp::AccountManagerPtr mAM;
+
+    QString mConnName, mConnPath;
+    ExampleEcho2Connection *mConnService;
+    ConnectionPtr mConn;
+    bool mConnInvalidated;
+
     bool mServiceNameChanged;
     QString mServiceName;
+    bool mIconNameChanged;
+    QString mIconName;
+    bool mCapabilitiesChanged;
     int mAccountsCount;
     bool mGotAvatarChanged;
 };
+
+void TestAccountBasics::expectConnInvalidated()
+{
+    mConnInvalidated = true;
+    mLoop->exit(0);
+}
 
 void TestAccountBasics::onNewAccount(const Tp::AccountPtr &acc)
 {
@@ -64,6 +93,19 @@ void TestAccountBasics::onAccountServiceNameChanged(const QString &serviceName)
 {
     mServiceNameChanged = true;
     mServiceName = serviceName;
+    mLoop->exit(0);
+}
+
+void TestAccountBasics::onAccountIconNameChanged(const QString &iconName)
+{
+    mIconNameChanged = true;
+    mIconName = iconName;
+    mLoop->exit(0);
+}
+
+void TestAccountBasics::onAccountCapabilitiesChanged(Tp::ConnectionCapabilities *caps)
+{
+    mCapabilitiesChanged = true;
     mLoop->exit(0);
 }
 
@@ -101,6 +143,44 @@ void TestAccountBasics::initTestCase()
     mAM = AccountManager::create(AccountFactory::create(QDBusConnection::sessionBus(),
                 Account::FeatureCore | Account::FeatureCapabilities));
     QCOMPARE(mAM->isReady(), false);
+
+    g_type_init();
+    g_set_prgname("account-basics");
+    tp_debug_set_flags("all");
+    dbus_g_bus_get(DBUS_BUS_STARTER, 0);
+
+    gchar *name;
+    gchar *connPath;
+    GError *error = 0;
+
+    mConnService = EXAMPLE_ECHO_2_CONNECTION(g_object_new(
+            EXAMPLE_TYPE_ECHO_2_CONNECTION,
+            "account", "me@example.com",
+            "protocol", "foo",
+            NULL));
+    QVERIFY(mConnService != 0);
+    QVERIFY(tp_base_connection_register(TP_BASE_CONNECTION(mConnService),
+                "foo", &name, &connPath, &error));
+    QVERIFY(error == 0);
+
+    QVERIFY(name != 0);
+    QVERIFY(connPath != 0);
+
+    mConnName = QLatin1String(name);
+    mConnPath = QLatin1String(connPath);
+
+    mConn = Connection::create(mConnName, mConnPath,
+            ChannelFactory::create(QDBusConnection::sessionBus()),
+            ContactFactory::create());
+    QVERIFY(connect(mConn->requestConnect(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mConn->isReady(), true);
+    QCOMPARE(mConn->status(), Connection::StatusConnected);
+
+    g_free(name);
+    g_free(connPath);
 }
 
 void TestAccountBasics::init()
@@ -493,6 +573,121 @@ void TestAccountBasics::testBasics()
     filteredAccountSet = AccountSetPtr(new AccountSet(mAM, filterChain));
     QCOMPARE(filteredAccountSet->isFilterValid(), true);
     QCOMPARE(filteredAccountSet->accounts().isEmpty(), true);
+
+    QVERIFY(connect(acc->becomeReady(Account::FeatureCapabilities),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(acc->isReady(Account::FeatureCapabilities), true);
+
+    /* using protocol info */
+    ConnectionCapabilities *caps = acc->capabilities();
+    QVERIFY(caps != NULL);
+    QCOMPARE(caps->supportsTextChats(), true);
+
+    mServiceNameChanged = false;
+    mServiceName = QString();
+    mIconNameChanged = false;
+    mIconName = QString();
+    mCapabilitiesChanged = false;
+    QVERIFY(connect(acc.data(),
+                    SIGNAL(serviceNameChanged(const QString &)),
+                    SLOT(onAccountServiceNameChanged(const QString &))));
+    QVERIFY(connect(acc.data(),
+                    SIGNAL(iconNameChanged(const QString &)),
+                    SLOT(onAccountIconNameChanged(const QString &))));
+    QVERIFY(connect(acc.data(),
+                    SIGNAL(capabilitiesChanged(Tp::ConnectionCapabilities *)),
+                    SLOT(onAccountCapabilitiesChanged(Tp::ConnectionCapabilities *))));
+    QVERIFY(connect(acc->setServiceName(QLatin1String("test-profile")),
+                    SIGNAL(finished(Tp::PendingOperation *)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation *))));
+    while (!mServiceNameChanged && !mIconNameChanged && !mCapabilitiesChanged) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QCOMPARE(acc->serviceName(), QLatin1String("test-profile"));
+    QCOMPARE(mServiceName, acc->serviceName());
+
+    QCOMPARE(acc->iconName(), QLatin1String("test-profile-icon"));
+    QCOMPARE(mIconName, acc->iconName());
+
+    /* using merged protocol info caps and profile caps */
+    caps = acc->capabilities();
+    QVERIFY(caps != NULL);
+    QCOMPARE(caps->supportsTextChats(), false);
+
+    // simulate that the account has a connection
+    QVERIFY(connect(new PendingVoid(
+                        acc->propertiesInterface()->Set(
+                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                            QLatin1String("Connection"),
+                            QDBusVariant(mConnPath)),
+                        this),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    // wait for the connection to be built in Account
+    while (!acc->haveConnection()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QVERIFY(connect(acc->connection()->becomeReady(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    while (!acc->connection()->isReady()) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    // once the status change the capabilities will be updated
+    mCapabilitiesChanged = false;
+    QVERIFY(connect(new PendingVoid(
+                        acc->propertiesInterface()->Set(
+                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                            QLatin1String("ConnectionStatus"),
+                            QDBusVariant(static_cast<uint>(ConnectionStatusConnected))),
+                        this),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    while (!mCapabilitiesChanged) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    // using connection caps now
+    caps = acc->capabilities();
+    QCOMPARE(caps->supportsTextChats(), true);
+    QCOMPARE(caps->supportsTextChatrooms(), false);
+    QCOMPARE(caps->supportsMediaCalls(), false);
+    QCOMPARE(caps->supportsAudioCalls(), false);
+    QCOMPARE(caps->supportsVideoCalls(false), false);
+    QCOMPARE(caps->supportsVideoCalls(true), false);
+    QCOMPARE(caps->supportsUpgradingCalls(), false);
+
+    // once the status change the capabilities will be updated
+    mCapabilitiesChanged = false;
+    QVERIFY(connect(new PendingVoid(
+                        acc->propertiesInterface()->Set(
+                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                            QLatin1String("Connection"),
+                            QDBusVariant(QLatin1String("/"))),
+                        this),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QVERIFY(connect(new PendingVoid(
+                        acc->propertiesInterface()->Set(
+                            QLatin1String(TELEPATHY_INTERFACE_ACCOUNT),
+                            QLatin1String("ConnectionStatus"),
+                            QDBusVariant(static_cast<uint>(ConnectionStatusDisconnected))),
+                        this),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    while (!mCapabilitiesChanged) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    /* back to using merged protocol info caps and profile caps */
+    caps = acc->capabilities();
+    QVERIFY(caps != NULL);
+    QCOMPARE(caps->supportsTextChats(), false);
 }
 
 void TestAccountBasics::cleanup()
@@ -502,6 +697,22 @@ void TestAccountBasics::cleanup()
 
 void TestAccountBasics::cleanupTestCase()
 {
+    if (mConn) {
+        // Disconnect and wait for invalidated
+        QVERIFY(connect(mConn->requestDisconnect(),
+                        SIGNAL(finished(Tp::PendingOperation*)),
+                        SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+        QCOMPARE(mLoop->exec(), 0);
+
+        if (mConn->isValid()) {
+            QVERIFY(connect(mConn.data(),
+                            SIGNAL(invalidated(Tp::DBusProxy *,
+                                               const QString &, const QString &)),
+                            SLOT(expectConnInvalidated())));
+            QCOMPARE(mLoop->exec(), 0);
+        }
+    }
+
     cleanupTestCaseImpl();
 }
 

@@ -31,6 +31,7 @@
 #include "TelepathyQt4/future-internal.h"
 
 #include <TelepathyQt4/AccountManager>
+#include <TelepathyQt4/ConnectionCapabilities>
 #include <TelepathyQt4/ConnectionManager>
 #include <TelepathyQt4/PendingChannelRequest>
 #include <TelepathyQt4/PendingFailure>
@@ -69,14 +70,29 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     void retrieveAvatar();
     bool processConnQueue();
 
-    bool checkCapabilitiesChanged();
+    bool checkCapabilitiesChanged(bool profileChanged);
 
-    void addConferenceRequestParameters(QVariantMap &request,
+    // TODO remove once Conference.DRAFT support is removed and simplify code that uses it
+    bool useConferenceDRAFT(const char *channelType,
+            uint targetHandleType) const;
+    void addConferenceRequestCommonParameters(
+            const char *channelType,
+            uint targetHandleType,
+            const char *conferenceIface,
             const QList<ChannelPtr> &channels,
-            const QStringList &initialInviteeContactsIdentifiers);
-    void addConferenceRequestParameters(QVariantMap &request,
+            QVariantMap &request);
+    void addConferenceRequestParameters(
+            const char *channelType,
+            uint targetHandleType,
             const QList<ChannelPtr> &channels,
-            const QList<ContactPtr> &initialInviteeContacts);
+            const QStringList &initialInviteeContactsIdentifiers,
+            QVariantMap &request);
+    void addConferenceRequestParameters(
+            const char *channelType,
+            uint targetHandleType,
+            const QList<ChannelPtr> &channels,
+            const QList<ContactPtr> &initialInviteeContacts,
+            QVariantMap &request);
 
     // Public object
     Account *parent;
@@ -119,7 +135,8 @@ struct TELEPATHY_QT4_NO_EXPORT Account::Private
     SimplePresence automaticPresence;
     SimplePresence currentPresence;
     SimplePresence requestedPresence;
-    bool mUsingConnectionCaps;
+    bool usingConnectionCaps;
+    ConnectionCapabilities *customCaps;
 };
 
 Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &connFactory,
@@ -141,7 +158,8 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
       protocolInfo(0),
       connectionStatus(ConnectionStatusDisconnected),
       connectionStatusReason(ConnectionStatusReasonNoneSpecified),
-      mUsingConnectionCaps(false)
+      usingConnectionCaps(false),
+      customCaps(0)
 {
     automaticPresence.type = currentPresence.type = requestedPresence.type
         = ConnectionPresenceTypeUnknown;
@@ -206,7 +224,7 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
 
     ReadinessHelper::Introspectable introspectableCapabilities(
         QSet<uint>() << 0,                                                      // makesSenseForStatuses
-        Features() << FeatureCore << FeatureProtocolInfo,                       // dependsOnFeatures
+        Features() << FeatureCore << FeatureProtocolInfo << FeatureProfile,     // dependsOnFeatures
         QStringList(),                                                          // dependsOnInterfaces
         (ReadinessHelper::IntrospectFunc) &Private::introspectCapabilities,
         this);
@@ -229,9 +247,10 @@ Account::Private::Private(Account *parent, const ConnectionFactoryConstPtr &conn
 
 Account::Private::~Private()
 {
+    delete customCaps;
 }
 
-bool Account::Private::checkCapabilitiesChanged()
+bool Account::Private::checkCapabilitiesChanged(bool profileChanged)
 {
     /* when the capabilities changed:
      *
@@ -242,15 +261,17 @@ bool Account::Private::checkCapabilitiesChanged()
      */
     bool changed = false;
 
-    if (mUsingConnectionCaps &&
+    if (usingConnectionCaps &&
         (!parent->haveConnection() ||
          connection->status() != Connection::StatusConnected)) {
-        mUsingConnectionCaps = false;
+        usingConnectionCaps = false;
         changed = true;
-    } else if (!mUsingConnectionCaps &&
+    } else if (!usingConnectionCaps &&
         parent->haveConnection() &&
         connection->status() == Connection::StatusConnected) {
-        mUsingConnectionCaps = true;
+        usingConnectionCaps = true;
+        changed = true;
+    } else if (!usingConnectionCaps && profileChanged) {
         changed = true;
     }
 
@@ -261,33 +282,105 @@ bool Account::Private::checkCapabilitiesChanged()
     return changed;
 }
 
-void Account::Private::addConferenceRequestParameters(QVariantMap &request,
-        const QList<ChannelPtr> &channels,
-        const QStringList &initialInviteeContactsIdentifiers)
+bool Account::Private::useConferenceDRAFT(const char *channelType,
+        uint targetHandleType) const
 {
+    // default to Conference
+    ConnectionCapabilities *caps = parent->capabilities();
+    if (!caps) {
+        return false;
+    }
+
+    RequestableChannelClassList rccs = caps->requestableChannelClasses();
+    QString rccChannelType;
+    uint rccTargetHandleType;
+    foreach (const RequestableChannelClass &rcc, rccs) {
+        rccChannelType = qdbus_cast<QString>(rcc.fixedProperties.value(
+                QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType")));
+        if (rccChannelType == QLatin1String(channelType)) {
+            if (targetHandleType != HandleTypeNone) {
+                rccTargetHandleType = qdbus_cast<uint>(rcc.fixedProperties.value(
+                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType")));
+                if (rccTargetHandleType != targetHandleType) {
+                    continue;
+                }
+            }
+
+            if (rcc.allowedProperties.contains(QLatin1String(
+                            TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
+                return false;
+            }
+            if (rcc.allowedProperties.contains(QLatin1String(
+                            TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void Account::Private::addConferenceRequestCommonParameters(
+        const char *channelType,
+        uint targetHandleType,
+        const char *conferenceIface,
+        const QList<ChannelPtr> &channels,
+        QVariantMap &request)
+{
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
+                   QLatin1String(channelType));
+    if (targetHandleType != HandleTypeNone) {
+        request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
+                       targetHandleType);
+    }
+
     ObjectPathList objectPaths;
     foreach (const ChannelPtr &channel, channels) {
         objectPaths << QDBusObjectPath(channel->objectPath());
     }
-    request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"),
-                   qVariantFromValue(objectPaths));
+
+    request.insert(QString(QLatin1String("%1.InitialChannels"))
+                    .arg(QLatin1String(conferenceIface)),
+                qVariantFromValue(objectPaths));
+}
+
+void Account::Private::addConferenceRequestParameters(
+        const char *channelType,
+        uint targetHandleType,
+        const QList<ChannelPtr> &channels,
+        const QStringList &initialInviteeContactsIdentifiers,
+        QVariantMap &request)
+{
+    const char *conferenceIface;
+    if (!useConferenceDRAFT(channelType, targetHandleType)) {
+        conferenceIface = TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
+    } else {
+        conferenceIface = TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
+    }
+    addConferenceRequestCommonParameters(channelType, targetHandleType,
+            conferenceIface, channels, request);
 
     if (!initialInviteeContactsIdentifiers.isEmpty()) {
-        request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeIDs"),
-                       initialInviteeContactsIdentifiers);
+        request.insert(QString(QLatin1String("%1.InitialInviteeIDs"))
+                    .arg(QLatin1String(conferenceIface)),
+                initialInviteeContactsIdentifiers);
     }
 }
 
-void Account::Private::addConferenceRequestParameters(QVariantMap &request,
+void Account::Private::addConferenceRequestParameters(
+        const char *channelType,
+        uint targetHandleType,
         const QList<ChannelPtr> &channels,
-        const QList<ContactPtr> &initialInviteeContacts)
+        const QList<ContactPtr> &initialInviteeContacts,
+        QVariantMap &request)
 {
-    ObjectPathList objectPaths;
-    foreach (const ChannelPtr &channel, channels) {
-        objectPaths << QDBusObjectPath(channel->objectPath());
+    const char *conferenceIface;
+    if (!useConferenceDRAFT(channelType, targetHandleType)) {
+        conferenceIface = TELEPATHY_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
+    } else {
+        conferenceIface = TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE;
     }
-    request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialChannels"),
-                   qVariantFromValue(objectPaths));
+    addConferenceRequestCommonParameters(channelType, targetHandleType,
+            conferenceIface, channels, request);
 
     if (!initialInviteeContacts.isEmpty()) {
         UIntList handles;
@@ -298,8 +391,9 @@ void Account::Private::addConferenceRequestParameters(QVariantMap &request,
             handles << contact->handle()[0];
         }
         if (!handles.isEmpty()) {
-            request.insert(QLatin1String(TP_FUTURE_INTERFACE_CHANNEL_INTERFACE_CONFERENCE ".InitialInviteeHandles"),
-                           qVariantFromValue(objectPaths));
+            request.insert(QString(QLatin1String("%1.InitialInviteeHandles"))
+                        .arg(QLatin1String(conferenceIface)),
+                    qVariantFromValue(handles));
         }
     }
 }
@@ -452,7 +546,7 @@ const Feature Account::FeatureProtocolInfo = Feature(QLatin1String(Account::stat
 /**
  * Feature used in order to access account capabilities.
  *
- * This feature will enable FeatureProtocolInfo.
+ * This feature will enable FeatureProtocolInfo and FeatureProfile.
  *
  * See capabilities specific methods' documentation for more details.
  */
@@ -811,7 +905,7 @@ PendingOperation *Account::setServiceName(const QString &value)
  * Return the profile used for this account.
  *
  * Note that if a profile for serviceName() is not available, a fake profile
- * (Profile::isFake() will return \c true) will be returned.
+ * (Profile::isFake() will return \c true) will be returned in case protocolInfo() returns non-NULL.
  *
  * The fake profile will contain the following info:
  *  - Profile::type() will return "IM"
@@ -841,11 +935,16 @@ ProfilePtr Account::profile() const
     if (!mPriv->profile) {
         mPriv->profile = Profile::createForServiceName(serviceName());
         if (!mPriv->profile->isValid()) {
-            mPriv->profile = ProfilePtr(new Profile(
-                        QString(QLatin1String("%1-%2")).arg(mPriv->cmName).arg(serviceName()),
-                        mPriv->cmName,
-                        mPriv->protocolName,
-                        mPriv->protocolInfo));
+            if (mPriv->protocolInfo) {
+                mPriv->profile = ProfilePtr(new Profile(
+                            QString(QLatin1String("%1-%2")).arg(mPriv->cmName).arg(serviceName()),
+                            mPriv->cmName,
+                            mPriv->protocolName,
+                            mPriv->protocolInfo));
+            } else {
+                warning() << "Cannot create profile as neither a .profile is installed for service" <<
+                    serviceName() << "nor protocol info can be retrieved";
+            }
         }
     }
     return mPriv->profile;
@@ -1106,10 +1205,12 @@ ProtocolInfo *Account::protocolInfo() const
  *
  * Note that this method will return the connection() capabilities if the
  * account is online and ready. If the account is disconnected, it will fallback
- * to return the capabilities return by protocolInfo().
+ * to return the subtraction of the protocolInfo() capabilities and the profile unsupported
+ * capabilities.
  *
  * \return The capabilities for this account or 0 if FeatureCapabilities is not
- *         ready.
+ *         ready or the capabilities are unknown (e.g. the connection is offline and protocolInfo()
+ *         returns 0).
  */
 ConnectionCapabilities *Account::capabilities() const
 {
@@ -1126,13 +1227,44 @@ ConnectionCapabilities *Account::capabilities() const
         return mPriv->connection->capabilities();
     }
 
-    // if we are here it means FeatureProtocolInfo is ready, as
-    // FeatureCapabilities depend on it, so let's use the protocol info to
-    // retrieve the caps
+    // if we are here it means FeatureProtocolInfo and FeatureProfile are ready, as
+    // FeatureCapabilities depend on them, so let's use the subtraction of protocol info caps rccs
+    // and profile unsupported rccs.
     //
     // However, if we failed to introspect the CM (eg. this is a test), then let's not try to use
-    // the protocolInfo because it'll be NULL!
-    return protocolInfo() ? protocolInfo()->capabilities() : NULL;
+    // the protocolInfo because it'll be NULL! Profile may also be NULL in case a .profile for
+    // serviceName() is not present and protocolInfo is NULL.
+    ProtocolInfo *pi = protocolInfo();
+    if (!pi) {
+        return NULL;
+    }
+    ProfilePtr pr = profile();
+    if (!pr) {
+        return pi->capabilities();
+    }
+
+    if (mPriv->customCaps) {
+        return mPriv->customCaps;
+    }
+
+    RequestableChannelClassList piRccs = pi->capabilities()->requestableChannelClasses();
+    RequestableChannelClassList prUnsuportedRccs = pr->unsupportedChannelClasses();
+    RequestableChannelClassList rccs;
+    bool unsupported;
+    foreach (const RequestableChannelClass &piRcc, piRccs) {
+        unsupported = false;
+        foreach (const RequestableChannelClass &prUnsuportedRcc, prUnsuportedRccs) {
+            if (piRcc.fixedProperties == prUnsuportedRcc.fixedProperties) {
+                unsupported = true;
+                break;
+            }
+        }
+        if (!unsupported) {
+            rccs.append(piRcc);
+        }
+    }
+    mPriv->customCaps = new ConnectionCapabilities(rccs);
+    return mPriv->customCaps;
 }
 
 /**
@@ -1970,13 +2102,10 @@ PendingChannelRequest *Account::createConferenceMediaCall(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
-    //      should be used?
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContactsIdentifiers);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            HandleTypeNone,
+            channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2010,11 +2139,10 @@ PendingChannelRequest *Account::createConferenceMediaCall(
     QVariantMap request;
     // TODO may we use Channel.Type.StreamedMedia here or Channel.Type.Call
     //      should be used?
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA));
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContacts);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_STREAMED_MEDIA,
+            HandleTypeNone,
+            channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2046,11 +2174,10 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContactsIdentifiers);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            HandleTypeNone,
+            channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2082,11 +2209,10 @@ PendingChannelRequest *Account::createConferenceTextChat(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContacts);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            HandleTypeNone,
+            channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2120,15 +2246,12 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    roomName);
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContactsIdentifiers);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            HandleTypeRoom,
+            channels, initialInviteeContactsIdentifiers, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2162,15 +2285,12 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
         const QString &preferredHandler)
 {
     QVariantMap request;
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".ChannelType"),
-                   QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT));
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetHandleType"),
-                   (uint) Tp::HandleTypeRoom);
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".TargetID"),
                    roomName);
-
-    mPriv->addConferenceRequestParameters(request, channels,
-            initialInviteeContacts);
+    mPriv->addConferenceRequestParameters(
+            TELEPATHY_INTERFACE_CHANNEL_TYPE_TEXT,
+            HandleTypeRoom,
+            channels, initialInviteeContacts, request);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
@@ -2572,8 +2692,17 @@ void Account::Private::updateProperties(const QVariantMap &props)
 
     QString oldIconName = parent->iconName();
     bool serviceNameChanged = false;
+    bool profileChanged = false;
     if (props.contains(QLatin1String("Service")) &&
         serviceName != qdbus_cast<QString>(props[QLatin1String("Service")])) {
+        /* The service name, which means the profile changed, even if we are using the connection
+         * caps, whenever the connection goes offline (if ever) we need to recompute a new caps for
+         * the new profile */
+        if (customCaps) {
+            delete customCaps;
+            customCaps = 0;
+        }
+
         serviceNameChanged = true;
         serviceName = qdbus_cast<QString>(props[QLatin1String("Service")]);
         debug() << " Service Name:" << parent->serviceName();
@@ -2585,6 +2714,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
         /* if we had a profile and the service changed, it means the profile also changed */
         if (parent->isReady(Account::FeatureProfile)) {
             /* service name changed, let's recreate profile */
+            profileChanged = true;
             profile.reset();
             emit parent->profileChanged(parent->profile());
             parent->notify("profile");
@@ -2748,11 +2878,11 @@ void Account::Private::updateProperties(const QVariantMap &props)
         // the queue wasn't empty (so is now size() > 1)
     }
 
+    bool connectionStatusChanged = false;
     if (props.contains(QLatin1String("ConnectionStatus")) ||
         props.contains(QLatin1String("ConnectionStatusReason")) ||
         props.contains(QLatin1String("ConnectionError")) ||
         props.contains(QLatin1String("ConnectionErrorDetails"))) {
-        bool changed = false;
         ConnectionStatus oldConnectionStatus = connectionStatus;
 
         if (props.contains(QLatin1String("ConnectionStatus")) &&
@@ -2761,7 +2891,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
             connectionStatus = ConnectionStatus(
                     qdbus_cast<uint>(props[QLatin1String("ConnectionStatus")]));
             debug() << " Connection Status:" << connectionStatus;
-            changed = true;
+            connectionStatusChanged = true;
         }
 
         if (props.contains(QLatin1String("ConnectionStatusReason")) &&
@@ -2770,13 +2900,13 @@ void Account::Private::updateProperties(const QVariantMap &props)
             connectionStatusReason = ConnectionStatusReason(
                     qdbus_cast<uint>(props[QLatin1String("ConnectionStatusReason")]));
             debug() << " Connection StatusReason:" << connectionStatusReason;
-            changed = true;
+            connectionStatusChanged = true;
         }
 
         /* FIXME (API-BREAK)
          * Remove signal connectionStatusChanged in favor of statusChanged
          * signal */
-        if (changed) {
+        if (connectionStatusChanged) {
             emit parent->connectionStatusChanged(
                     connectionStatus, connectionStatusReason);
             parent->notify("connectionStatus");
@@ -2789,7 +2919,7 @@ void Account::Private::updateProperties(const QVariantMap &props)
             connectionError = qdbus_cast<QString>(
                     props[QLatin1String("ConnectionError")]);
             debug() << " Connection Error:" << connectionError;
-            changed = true;
+            connectionStatusChanged = true;
         }
 
         if (props.contains(QLatin1String("ConnectionErrorDetails")) &&
@@ -2798,38 +2928,40 @@ void Account::Private::updateProperties(const QVariantMap &props)
             connectionErrorDetails = qdbus_cast<QVariantMap>(
                     props[QLatin1String("ConnectionErrorDetails")]);
             debug() << " Connection Error Details:" << connectionErrorDetails;
-            changed = true;
+            connectionStatusChanged = true;
         }
 
-        if (changed) {
+        if (connectionStatusChanged) {
             /* Something other than status changed, let's not emit statusChanged
              * and keep the error/errorDetails, for the next interaction.
              * It may happen if ConnectionError changes and in another property
              * change the status changes to Disconnected, so we use the error
              * previously signalled. If the status changes to something other
              * than Disconnected later, the error is cleared. */
-            if (oldConnectionStatus == connectionStatus) {
-                return;
+            if (oldConnectionStatus != connectionStatus) {
+                /* We don't signal error for status other than Disconnected */
+                if (connectionStatus != ConnectionStatusDisconnected) {
+                    connectionError = QString();
+                    connectionErrorDetails.clear();
+                } else if (connectionError.isEmpty()) {
+                    connectionError = ConnectionHelper::statusReasonToErrorName(
+                            connectionStatusReason, oldConnectionStatus);
+                }
+
+                checkCapabilitiesChanged(profileChanged);
+
+                emit parent->statusChanged(connectionStatus, connectionStatusReason,
+                        connectionError, connectionErrorDetails);
+                parent->notify("connectionError");
+                parent->notify("connectionErrorDetails");
+            } else {
+                connectionStatusChanged = false;
             }
-
-            /* now that the connection status changed, let's check if
-             * capabilities changed */
-            checkCapabilitiesChanged();
-
-            /* We don't signal error for status other than Disconnected */
-            if (connectionStatus != ConnectionStatusDisconnected) {
-                connectionError = QString();
-                connectionErrorDetails.clear();
-            } else if (connectionError.isEmpty()) {
-                connectionError = ConnectionHelper::statusReasonToErrorName(
-                        connectionStatusReason, oldConnectionStatus);
-            }
-
-            emit parent->statusChanged(connectionStatus, connectionStatusReason,
-                    connectionError, connectionErrorDetails);
-            parent->notify("connectionError");
-            parent->notify("connectionErrorDetails");
         }
+    }
+
+    if (!connectionStatusChanged && profileChanged) {
+        checkCapabilitiesChanged(profileChanged);
     }
 }
 
@@ -2973,7 +3105,7 @@ void Account::onConnectionManagerReady(PendingOperation *operation)
 
 void Account::onConnectionReady(PendingOperation *op)
 {
-    mPriv->checkCapabilitiesChanged();
+    mPriv->checkCapabilitiesChanged(false);
 
     /* let's not fail if connection can't become ready, the caps will still
      * work, but return the CM caps instead. Also no need to call

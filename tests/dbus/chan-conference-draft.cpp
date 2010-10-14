@@ -18,24 +18,24 @@
 
 #include <tests/lib/glib/echo/chan.h>
 #include <tests/lib/glib/echo/conn.h>
-#include <tests/lib/glib/future/conference/chan.h>
+#include <tests/lib/glib/future/conference-draft/chan.h>
 #include <tests/lib/test.h>
 
 using namespace Tp;
 
-class TestConferenceChan : public Test
+class TestConferenceChanDRAFT : public Test
 {
     Q_OBJECT
 
 public:
-    TestConferenceChan(QObject *parent = 0)
+    TestConferenceChanDRAFT(QObject *parent = 0)
         : Test(parent),
           mConnService(0), mBaseConnService(0), mContactRepo(0),
           mTextChan1Service(0), mTextChan2Service(0), mConferenceChanService(0)
     { }
 
 protected Q_SLOTS:
-    void onConferenceChannelMerged(const Tp::ChannelPtr &);
+    void onConferenceChannelMerged(const Tp::ChannelPtr &channel);
     void onConferenceChannelRemoved(const Tp::ChannelPtr &channel);
     void onConferenceChannelRemoved(const Tp::ChannelPtr &channel,
             const Tp::Channel::GroupMemberChangeDetails &details);
@@ -66,7 +66,7 @@ private:
     QString mTextChan3Path;
     ExampleEchoChannel *mTextChan3Service;
     QString mConferenceChanPath;
-    TpTestsConferenceChannel *mConferenceChanService;
+    TpTestsConferenceDRAFTChannel *mConferenceChanService;
 
     ChannelPtr mChannelMerged;
     ChannelPtr mChannelRemoved;
@@ -74,19 +74,19 @@ private:
     Channel::GroupMemberChangeDetails mChannelRemovedDetailedDetails;
 };
 
-void TestConferenceChan::onConferenceChannelMerged(const Tp::ChannelPtr &channel)
+void TestConferenceChanDRAFT::onConferenceChannelMerged(const Tp::ChannelPtr &channel)
 {
     mChannelMerged = channel;
     mLoop->exit(0);
 }
 
-void TestConferenceChan::onConferenceChannelRemoved(const Tp::ChannelPtr &channel)
+void TestConferenceChanDRAFT::onConferenceChannelRemoved(const Tp::ChannelPtr &channel)
 {
     mChannelRemoved = channel;
     mLoop->exit(0);
 }
 
-void TestConferenceChan::onConferenceChannelRemoved(const Tp::ChannelPtr &channel,
+void TestConferenceChanDRAFT::onConferenceChannelRemoved(const Tp::ChannelPtr &channel,
         const Tp::Channel::GroupMemberChangeDetails &details)
 {
     mChannelRemovedDetailed = channel;
@@ -94,12 +94,12 @@ void TestConferenceChan::onConferenceChannelRemoved(const Tp::ChannelPtr &channe
     mLoop->exit(0);
 }
 
-void TestConferenceChan::initTestCase()
+void TestConferenceChanDRAFT::initTestCase()
 {
     initTestCaseImpl();
 
     g_type_init();
-    g_set_prgname("conference-chan");
+    g_set_prgname("conference-chan-draft");
     tp_debug_set_flags("all");
     dbus_g_bus_get(DBUS_BUS_STARTER, 0);
 
@@ -185,11 +185,12 @@ void TestConferenceChan::initTestCase()
 
     mConferenceChanPath = mConnPath + QLatin1String("/ConferenceChannel");
     chanPath = mConferenceChanPath.toAscii();
-    mConferenceChanService = TP_TESTS_CONFERENCE_CHANNEL(g_object_new(
-                TP_TESTS_TYPE_CONFERENCE_CHANNEL,
+    mConferenceChanService = TP_TESTS_CONFERENCE_DRAFT_CHANNEL(g_object_new(
+                TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL,
                 "connection", mConnService,
                 "object-path", chanPath.data(),
                 "initial-channels", initialChannels,
+                "supports-non-merges", true,
                 NULL));
 
     tp_handle_unref(mContactRepo, handle1);
@@ -197,12 +198,12 @@ void TestConferenceChan::initTestCase()
     tp_handle_unref(mContactRepo, handle3);
 }
 
-void TestConferenceChan::init()
+void TestConferenceChanDRAFT::init()
 {
     initImpl();
 }
 
-void TestConferenceChan::testConference()
+void TestConferenceChanDRAFT::testConference()
 {
     mChan = Channel::create(mConn, mConferenceChanPath, QVariantMap());
     QVERIFY(connect(mChan->becomeReady(),
@@ -254,7 +255,7 @@ void TestConferenceChan::testConference()
     }
     QCOMPARE(expectedObjectPaths, objectPaths);
 
-    QCOMPARE(mChan->conferenceSupportsNonMerges(), false);
+    QCOMPARE(mChan->conferenceSupportsNonMerges(), true);
 
     QVERIFY(connect(mChan.data(),
                     SIGNAL(conferenceChannelRemoved(const Tp::ChannelPtr &)),
@@ -264,18 +265,14 @@ void TestConferenceChan::testConference()
                             const Tp::Channel::GroupMemberChangeDetails &)),
                     SLOT(onConferenceChannelRemoved(const Tp::ChannelPtr &,
                             const Tp::Channel::GroupMemberChangeDetails &))));
-    tp_tests_conference_channel_remove_channel (mConferenceChanService,
+    tp_tests_conference_draft_channel_remove_channel (mConferenceChanService,
             mChannelMerged->objectPath().toAscii().data());
     while (!mChannelRemoved && !mChannelRemovedDetailed) {
         QCOMPARE(mLoop->exec(), 0);
     }
     QCOMPARE(mChannelRemoved, mChannelRemovedDetailed);
     QCOMPARE(mChannelRemoved, mChannelMerged);
-    QCOMPARE(mChannelRemovedDetailedDetails.allDetails().isEmpty(), false);
-    QCOMPARE(qdbus_cast<int>(mChannelRemovedDetailedDetails.allDetails().value(
-                    QLatin1String("domain-specific-detail-uint"))), 3);
-    QCOMPARE(mChannelRemovedDetailedDetails.hasActor(), true);
-    QCOMPARE(mChannelRemovedDetailedDetails.actor(), mChan->groupSelfContact());
+    QCOMPARE(mChannelRemovedDetailedDetails.allDetails().isEmpty(), true);
 
     expectedObjectPaths.clear();
     expectedObjectPaths << mTextChan1Path << mTextChan2Path;
@@ -289,12 +286,12 @@ void TestConferenceChan::testConference()
     mChannelMerged.reset();
 }
 
-void TestConferenceChan::cleanup()
+void TestConferenceChanDRAFT::cleanup()
 {
     cleanupImpl();
 }
 
-void TestConferenceChan::cleanupTestCase()
+void TestConferenceChanDRAFT::cleanupTestCase()
 {
     if (mConn) {
         // Disconnect and wait for the readiness change
@@ -337,5 +334,5 @@ void TestConferenceChan::cleanupTestCase()
     cleanupTestCaseImpl();
 }
 
-QTEST_MAIN(TestConferenceChan)
-#include "_gen/chan-conference.cpp.moc.hpp"
+QTEST_MAIN(TestConferenceChanDRAFT)
+#include "_gen/chan-conference-draft.cpp.moc.hpp"
