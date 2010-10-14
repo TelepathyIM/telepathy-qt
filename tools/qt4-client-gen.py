@@ -283,10 +283,25 @@ public:
        'mainiface' : mainiface})
 
         # Properties
+        has_props = False
         for prop in get_by_path(iface, 'property'):
             # Skip tp:properties
             if not prop.namespaceURI:
                 self.do_prop(prop)
+                has_props = True
+
+        self.h("""
+    /**
+     * Request all the DBus properties on the interface.
+     *
+     * \\return A pending variant map which will emit finished when the property has
+     *          been retrieved.
+     */
+    Tp::PendingVariantMap *requestAllProperties()
+    {
+        return internalRequestAllProperties();
+    }
+""")
 
         # Methods
         methods = get_by_path(iface, 'method')
