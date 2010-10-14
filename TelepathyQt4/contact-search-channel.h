@@ -77,9 +77,9 @@ public:
     QStringList availableSearchKeys() const;
     QString server() const;
 
-    PendingOperation *search(const ContactSearchMap &terms);
-    PendingOperation *continueSearch();
-    PendingOperation *stopSearch();
+    void search(const ContactSearchMap &terms);
+    void continueSearch();
+    void stopSearch();
 
 Q_SIGNALS:
     void searchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,

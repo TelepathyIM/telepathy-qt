@@ -352,36 +352,40 @@ QString ContactSearchChannel::server() const
  * state ChannelContactSearchStateInProgress.
  *
  * This method requires ContactSearchChannel::FeatureCore to be enabled.
- *
- * \return A PendingOperation, which will emit PendingOperation::finished
- *         when the call has finished.
  */
-PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
+void ContactSearchChannel::search(const ContactSearchMap &terms)
 {
     if (!isReady(FeatureCore)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Channel not ready"), this);
+        return;
     }
 
-    return new PendingVoid(mPriv->contactSearchInterface->Search(terms), this);
+    if (searchState() != ChannelContactSearchStateNotStarted) {
+        warning() << "ContactSearchChannel::search called with "
+            "searchState() != ChannelContactSearchStateNotStarted. Doing nothing";
+        return;
+    }
+
+    (void) new QDBusPendingCallWatcher(mPriv->contactSearchInterface->Search(terms), this);
 }
 
 /**
  * Request that a search which searchState() is ChannelContactSearchStateMoreAvailable
  * move back to state ChannelContactSearchStateInProgress and continue listing up to limit()
  * more results.
- *
- * \return A PendingOperation, which will emit PendingOperation::finished
- *         when the call has finished.
  */
-PendingOperation *ContactSearchChannel::continueSearch()
+void ContactSearchChannel::continueSearch()
 {
     if (!isReady(FeatureCore)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Channel not ready"), this);
+        return;
     }
 
-    return new PendingVoid(mPriv->contactSearchInterface->More(), this);
+    if (searchState() != ChannelContactSearchStateMoreAvailable) {
+        warning() << "ContactSearchChannel::continueSearch called with "
+            "searchState() != ChannelContactSearchStateMoreAvailable. Doing nothing";
+        return;
+    }
+
+    (void) new QDBusPendingCallWatcher(mPriv->contactSearchInterface->More(), this);
 }
 
 /**
@@ -395,14 +399,21 @@ PendingOperation *ContactSearchChannel::continueSearch()
  * \return A PendingOperation, which will emit PendingOperation::finished
  *         when the call has finished.
  */
-PendingOperation *ContactSearchChannel::stopSearch()
+void ContactSearchChannel::stopSearch()
 {
     if (!isReady(FeatureCore)) {
-        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
-                QLatin1String("Channel not ready"), this);
+        return;
     }
 
-    return new PendingVoid(mPriv->contactSearchInterface->Stop(), this);
+    if (searchState() != ChannelContactSearchStateInProgress &&
+        searchState() != ChannelContactSearchStateMoreAvailable) {
+        warning() << "ContactSearchChannel::stopSearch called with "
+            "searchState() != ChannelContactSearchStateInProgress or "
+            "ChannelContactSearchStateMoreAvailable. Doing nothing";
+        return;
+    }
+
+    (void) new QDBusPendingCallWatcher(mPriv->contactSearchInterface->Stop(), this);
 }
 
 void ContactSearchChannel::gotProperties(QDBusPendingCallWatcher *watcher)
