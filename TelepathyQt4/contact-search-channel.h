@@ -82,7 +82,7 @@ public:
     PendingOperation *stopSearch();
 
 Q_SIGNALS:
-    void searchStateChanged(ChannelContactSearchState state, const QString &errorName,
+    void searchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,
             const Tp::ContactSearchChannel::SearchStateChangeDetails &details);
     void searchResultReceived(const Tp::ContactSearchChannel::SearchResult &result);
 
