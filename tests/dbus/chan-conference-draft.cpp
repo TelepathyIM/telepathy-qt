@@ -35,8 +35,10 @@ public:
     { }
 
 protected Q_SLOTS:
-    void onConferenceChannelMerged(const Tp::ChannelPtr &);
-    // void onConferenceChannelRemoved(const Tp::ChannelPtr &);
+    void onConferenceChannelMerged(const Tp::ChannelPtr &channel);
+    void onConferenceChannelRemoved(const Tp::ChannelPtr &channel);
+    void onConferenceChannelRemoved(const Tp::ChannelPtr &channel,
+            const Tp::Channel::GroupMemberChangeDetails &details);
 
 private Q_SLOTS:
     void initTestCase();
@@ -67,11 +69,28 @@ private:
     ExampleConferenceDRAFTChannel *mConferenceChanService;
 
     ChannelPtr mChannelMerged;
+    ChannelPtr mChannelRemoved;
+    ChannelPtr mChannelRemovedDetailed;
+    Channel::GroupMemberChangeDetails mChannelRemovedDetailedDetails;
 };
 
 void TestConferenceChanDRAFT::onConferenceChannelMerged(const Tp::ChannelPtr &channel)
 {
     mChannelMerged = channel;
+    mLoop->exit(0);
+}
+
+void TestConferenceChanDRAFT::onConferenceChannelRemoved(const Tp::ChannelPtr &channel)
+{
+    mChannelRemoved = channel;
+    mLoop->exit(0);
+}
+
+void TestConferenceChanDRAFT::onConferenceChannelRemoved(const Tp::ChannelPtr &channel,
+        const Tp::Channel::GroupMemberChangeDetails &details)
+{
+    mChannelRemovedDetailed = channel;
+    mChannelRemovedDetailedDetails = details;
     mLoop->exit(0);
 }
 
@@ -171,6 +190,7 @@ void TestConferenceChanDRAFT::initTestCase()
                 "connection", mConnService,
                 "object-path", chanPath.data(),
                 "initial-channels", initialChannels,
+                "supports-non-merges", true,
                 NULL));
 
     tp_handle_unref(mContactRepo, handle1);
@@ -234,6 +254,25 @@ void TestConferenceChanDRAFT::testConference()
         objectPaths << channel->objectPath();
     }
     QCOMPARE(expectedObjectPaths, objectPaths);
+
+    QCOMPARE(mChan->conferenceSupportsNonMerges(), true);
+
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(conferenceChannelRemoved(const Tp::ChannelPtr &)),
+                    SLOT(onConferenceChannelRemoved(const Tp::ChannelPtr &))));
+    QVERIFY(connect(mChan.data(),
+                    SIGNAL(conferenceChannelRemoved(const Tp::ChannelPtr &,
+                            const Tp::Channel::GroupMemberChangeDetails &)),
+                    SLOT(onConferenceChannelRemoved(const Tp::ChannelPtr &,
+                            const Tp::Channel::GroupMemberChangeDetails &))));
+    example_conference_draft_channel_remove_channel (mConferenceChanService,
+            mChannelMerged->objectPath().toAscii().data());
+    while (!mChannelRemoved && !mChannelRemovedDetailed) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+    QCOMPARE(mChannelRemoved, mChannelRemovedDetailed);
+    QCOMPARE(mChannelRemoved, mChannelMerged);
+    QCOMPARE(mChannelRemovedDetailedDetails.allDetails().isEmpty(), true);
 
     mChan.reset();
     mChannelMerged.reset();
