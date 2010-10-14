@@ -26,6 +26,8 @@
 #include "TelepathyQt4/debug-internal.h"
 
 #include <TelepathyQt4/Connection>
+#include <TelepathyQt4/ContactManager>
+#include <TelepathyQt4/PendingContacts>
 #include <TelepathyQt4/PendingFailure>
 #include <TelepathyQt4/Types>
 
@@ -42,6 +44,8 @@ struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::Private
 
     void extractImmutableProperties(const QVariantMap &props);
 
+    void processSearchResultQueue();
+
     // Public object
     ContactSearchChannel *parent;
 
@@ -57,6 +61,9 @@ struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::Private
     uint limit;
     QStringList availableSearchKeys;
     QString server;
+
+    QQueue<ContactSearchResultMap> searchResultQueue;
+    bool buildingSearchResultContacts;
 };
 
 ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
@@ -65,7 +72,8 @@ ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
       immutableProperties(immutableProperties),
       contactSearchInterface(parent->contactSearchInterface(BypassInterfaceCheck)),
       properties(0),
-      readinessHelper(parent->readinessHelper())
+      readinessHelper(parent->readinessHelper()),
+      buildingSearchResultContacts(false)
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -150,6 +158,30 @@ void ContactSearchChannel::Private::extractImmutableProperties(const QVariantMap
     limit = qdbus_cast<uint>(props[QLatin1String("Limit")]);
     availableSearchKeys = qdbus_cast<QStringList>(props[QLatin1String("AvailableSearchKeys")]);
     server = qdbus_cast<QString>(props[QLatin1String("Server")]);
+}
+
+void ContactSearchChannel::Private::processSearchResultQueue()
+{
+    if (buildingSearchResultContacts || searchResultQueue.isEmpty()) {
+        return;
+    }
+
+    const ContactSearchResultMap &result = searchResultQueue.first();
+    buildingSearchResultContacts = true;
+
+    if (!result.isEmpty()) {
+        ContactManager *manager = parent->connection()->contactManager();
+        PendingContacts *pendingContacts = manager->contactsForIdentifiers(
+                result.keys());
+        parent->connect(pendingContacts,
+                SIGNAL(finished(Tp::PendingOperation*)),
+                SLOT(gotSearchResultContacts(Tp::PendingOperation*)));
+    } else {
+        emit parent->searchResultReceived(SearchResult());
+
+        buildingSearchResultContacts = false;
+        processSearchResultQueue();
+    }
 }
 
 struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::SearchStateChangeDetails::Private : public QSharedData
@@ -422,9 +454,41 @@ void ContactSearchChannel::onSearchStateChanged(uint state, const QString &error
             SearchStateChangeDetails(details));
 }
 
-void ContactSearchChannel::onSearchResultReceived(const Tp::ContactSearchResultMap &result)
+void ContactSearchChannel::onSearchResultReceived(const ContactSearchResultMap &result)
 {
-    emit searchResultReceived(result);
+    mPriv->searchResultQueue.enqueue(result);
+    mPriv->processSearchResultQueue();
+}
+
+void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
+{
+    PendingContacts *pc = qobject_cast<PendingContacts *>(op);
+
+    const ContactSearchResultMap &result = mPriv->searchResultQueue.dequeue();
+
+    if (!pc->isValid()) {
+        warning().nospace() << "Getting search result contacts "
+            "failed with " << pc->errorName() << ":" <<
+            pc->errorMessage();
+        mPriv->buildingSearchResultContacts = false;
+        mPriv->processSearchResultQueue();
+        return;
+    }
+
+    const QList<ContactPtr> &contacts = pc->contacts();
+    Q_ASSERT(result.count() == contacts.count());
+
+    SearchResult ret;
+    uint i = 0;
+    for (ContactSearchResultMap::const_iterator it = result.constBegin();
+                                                it != result.constEnd();
+                                                ++it, ++i) {
+        ret.insert(contacts.at(i), it.value());
+    }
+    emit searchResultReceived(ret);
+
+    mPriv->buildingSearchResultContacts = false;
+    mPriv->processSearchResultQueue();
 }
 
 } // Tp

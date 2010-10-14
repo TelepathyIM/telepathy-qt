@@ -65,6 +65,8 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
+    typedef QHash<ContactPtr, ContactInfoFieldList> SearchResult;
+
     static ContactSearchChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
@@ -82,7 +84,7 @@ public:
 Q_SIGNALS:
     void searchStateChanged(ChannelContactSearchState state, const QString &errorName,
             const Tp::ContactSearchChannel::SearchStateChangeDetails &details);
-    void searchResultReceived(const Tp::ContactSearchResultMap &result);
+    void searchResultReceived(const Tp::ContactSearchChannel::SearchResult &result);
 
 protected:
     ContactSearchChannel(const ConnectionPtr &connection, const QString &objectPath,
@@ -93,6 +95,7 @@ private Q_SLOTS:
     void gotSearchState(QDBusPendingCallWatcher *watcher);
     void onSearchStateChanged(uint state, const QString &error, const QVariantMap &details);
     void onSearchResultReceived(const Tp::ContactSearchResultMap &result);
+    void gotSearchResultContacts(PendingOperation *op);
 
 private:
     struct Private;
