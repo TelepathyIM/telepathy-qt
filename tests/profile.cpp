@@ -101,13 +101,13 @@ void TestProfile::testProfile()
     QCOMPARE(presence.isDisabled(), true);
 
     QCOMPARE(profile->unsupportedChannelClasses().isEmpty(), false);
-    QCOMPARE(profile->unsupportedChannelClasses().count(), 1);
+    QCOMPARE(profile->unsupportedChannelClasses().count(), 2);
 
     RequestableChannelClass rcc = profile->unsupportedChannelClasses().first();
     QCOMPARE(rcc.fixedProperties.contains(QLatin1String("org.freedesktop.Telepathy.Channel.TargetHandleType")),
             true);
     QCOMPARE(rcc.fixedProperties[QLatin1String("org.freedesktop.Telepathy.Channel.TargetHandleType")],
-            QVariant(3));
+            QVariant(1));
     QCOMPARE(rcc.fixedProperties.contains(QLatin1String("org.freedesktop.Telepathy.Channel.ChannelType")),
             true);
     QCOMPARE(rcc.fixedProperties[QLatin1String("org.freedesktop.Telepathy.Channel.ChannelType")],
