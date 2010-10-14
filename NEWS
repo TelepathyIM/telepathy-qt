@@ -9,6 +9,10 @@ Enhancements:
   - Make use of Observer.ObserverInfo.request-properties map, making
     ChannelRequest use the immutable properties defined in the map if
     available, avoiding unneeded introspection.
+  - Added support for Conference interface alongside Conference.DRAFT support.
+  - Added ConnectionCapabilities methods to check conference support.
+* Improved Account::capabilities() to take Profile::unsupportedChannelClasses
+  into account.
 * Improved StreamedMediaChannel test coverage to yellow (> 80%).
 
 Fixes:
