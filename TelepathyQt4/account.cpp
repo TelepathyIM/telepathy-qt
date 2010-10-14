@@ -2303,9 +2303,9 @@ PendingChannelRequest *Account::createConferenceTextChatRoom(
  * \param server For protocols which support searching for contacts on multiple servers with
  *               different DNS names (like XMPP), the DNS name of the server to be searched,
  *               e.g. "characters.shakespeare.lit". Otherwise, an empty string.
- * \param limit If supported by the protocol, the maximum number of results that should be returned,
- *              where 0 represents no limit. If the protocol does not support limiting results,
- *              this should be 0.
+ * \param limit The desired maximum number of results that should be returned by a doing a search.
+ *              If the protocol does not support specifying a limit for the number of results
+ *              returned at a time, this will be ignored.
  * \param userActionTime The time at which user action occurred, or QDateTime()
  *                       if this channel request is for some reason not
  *                       involving user action.
@@ -2328,7 +2328,7 @@ PendingChannelRequest *Account::createContactSearchChannel(
                    QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH));
     request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Server"),
                    server);
-    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), 0);
+    request.insert(QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH ".Limit"), limit);
 
     return new PendingChannelRequest(request, userActionTime, preferredHandler, true,
             AccountPtr(this));
