@@ -308,6 +308,8 @@ void PendingVoid::watcherFinished(QDBusPendingCallWatcher *watcher)
     } else {
         setFinished();
     }
+
+    watcher->deleteLater();
 }
 
 struct TELEPATHY_QT4_NO_EXPORT PendingComposite::Private
