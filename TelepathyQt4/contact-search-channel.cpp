@@ -33,22 +33,37 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::Private
 {
-    Private(ContactSearchChannel *parent);
+    Private(ContactSearchChannel *parent,
+            const QVariantMap &immutableProperties);
     ~Private();
 
     static void introspectMain(Private *self);
 
+    void extractImmutableProperties(const QVariantMap &props);
+
     // Public object
     ContactSearchChannel *parent;
 
+    QVariantMap immutableProperties;
+
     Client::ChannelTypeContactSearchInterface *contactSearchInterface;
+    Client::DBus::PropertiesInterface *properties;
 
     ReadinessHelper *readinessHelper;
+
+    // Introspection
+    uint searchState;
+    uint limit;
+    QStringList availableSearchKeys;
+    QString server;
 };
 
-ContactSearchChannel::Private::Private(ContactSearchChannel *parent)
+ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
+        const QVariantMap &immutableProperties)
     : parent(parent),
+      immutableProperties(immutableProperties),
       contactSearchInterface(parent->contactSearchInterface(BypassInterfaceCheck)),
+      properties(0),
       readinessHelper(parent->readinessHelper())
 {
     ReadinessHelper::Introspectables introspectables;
@@ -70,7 +85,106 @@ ContactSearchChannel::Private::~Private()
 
 void ContactSearchChannel::Private::introspectMain(ContactSearchChannel::Private *self)
 {
-    self->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    if (!self->properties) {
+        self->properties = self->parent->propertiesInterface();
+        Q_ASSERT(self->properties != 0);
+    }
+
+    /* we need to at least introspect SearchState here as it's not immutable */
+    self->parent->connect(self->contactSearchInterface,
+            SIGNAL(SearchStateChanged(uint,QString,QVariantMap)),
+            SLOT(onSearchStateChanged(uint,QString,QVariantMap)));
+
+    QVariantMap props;
+    bool needIntrospectMainProps = false;
+    const unsigned numNames = 3;
+    const static QString names[numNames] = {
+        QLatin1String("Limit"),
+        QLatin1String("AvailableSearchKeys"),
+        QLatin1String("Server")
+    };
+    const static QString qualifiedNames[numNames] = {
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Limit"),
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".AvailableSearchKeys"),
+        QLatin1String(TELEPATHY_INTERFACE_CHANNEL ".Server")
+    };
+    for (unsigned i = 0; i < numNames; ++i) {
+        const QString &qualified = qualifiedNames[i];
+        if (!self->immutableProperties.contains(qualified)) {
+            needIntrospectMainProps = true;
+            break;
+        }
+        props.insert(names[i], self->immutableProperties.value(qualified));
+    }
+
+    if (needIntrospectMainProps) {
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(
+                    self->properties->GetAll(
+                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH)),
+                    self->parent);
+        self->parent->connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotProperties(QDBusPendingCallWatcher*)));
+    } else {
+        self->extractImmutableProperties(props);
+
+        QDBusPendingCallWatcher *watcher =
+            new QDBusPendingCallWatcher(
+                    self->properties->Get(
+                        QLatin1String(TELEPATHY_INTERFACE_CHANNEL_TYPE_CONTACT_SEARCH),
+                        QLatin1String("SearchState")),
+                    self->parent);
+        self->parent->connect(watcher,
+                SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(gotSearchState(QDBusPendingCallWatcher*)));
+    }
+}
+
+void ContactSearchChannel::Private::extractImmutableProperties(const QVariantMap &props)
+{
+    limit = qdbus_cast<uint>(props[QLatin1String("Limit")]);
+    availableSearchKeys = qdbus_cast<QStringList>(props[QLatin1String("AvailableSearchKeys")]);
+    server = qdbus_cast<QString>(props[QLatin1String("Server")]);
+}
+
+struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::SearchStateChangeDetails::Private : public QSharedData
+{
+    Private(const QVariantMap &details)
+        : details(details) {}
+
+    QVariantMap details;
+};
+
+ContactSearchChannel::SearchStateChangeDetails::SearchStateChangeDetails(const QVariantMap &details)
+    : mPriv(new Private(details))
+{
+}
+
+ContactSearchChannel::SearchStateChangeDetails::SearchStateChangeDetails()
+{
+}
+
+ContactSearchChannel::SearchStateChangeDetails::SearchStateChangeDetails(
+        const ContactSearchChannel::SearchStateChangeDetails &other)
+    : mPriv(other.mPriv)
+{
+}
+
+ContactSearchChannel::SearchStateChangeDetails::~SearchStateChangeDetails()
+{
+}
+
+ContactSearchChannel::SearchStateChangeDetails &ContactSearchChannel::SearchStateChangeDetails::operator=(
+        const ContactSearchChannel::SearchStateChangeDetails &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+QVariantMap ContactSearchChannel::SearchStateChangeDetails::allDetails() const
+{
+    return isValid() ? mPriv->details : QVariantMap();
 }
 
 /**
@@ -124,7 +238,7 @@ ContactSearchChannel::ContactSearchChannel(const ConnectionPtr &connection,
         const QString &objectPath,
         const QVariantMap &immutableProperties)
     : Channel(connection, objectPath, immutableProperties),
-      mPriv(new Private(this))
+      mPriv(new Private(this, immutableProperties))
 {
 }
 
@@ -134,6 +248,113 @@ ContactSearchChannel::ContactSearchChannel(const ConnectionPtr &connection,
 ContactSearchChannel::~ContactSearchChannel()
 {
     delete mPriv;
+}
+
+/**
+ * Return the current search state of this channel.
+ *
+ * Change notification is via searchStateChanged().
+ *
+ * \return The current search state of this channel.
+ */
+ChannelContactSearchState ContactSearchChannel::searchState() const
+{
+    return static_cast<ChannelContactSearchState>(mPriv->searchState);
+}
+
+/**
+ * Return the maximum number of results that should be returned by calling search(), where
+ * 0 represents no limit.
+ *
+ * For example, if the terms passed to search() match Antonius, Bridget and Charles and
+ * this property is 2, the search service will only return Antonius and Bridget.
+ *
+ * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ *
+ * \return The maximum number of results that should be returned by calling search().
+ */
+uint ContactSearchChannel::limit() const
+{
+    return mPriv->limit;
+}
+
+/**
+ * Return the set of search keys supported by this channel.
+ *
+ * Example values include [""] (for protocols where several address fields are implicitly searched)
+ * or ["x-n-given", "x-n-family", "nickname", "email"] (for XMPP XEP-0055, without extensibility via
+ * Data Forms).
+ *
+ * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ *
+ * \return The search keys supported by this channel.
+ */
+QStringList ContactSearchChannel::availableSearchKeys() const
+{
+    return mPriv->availableSearchKeys;
+}
+
+/**
+ * Return the DNS name of the server being searched by this channel.
+ *
+ * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ *
+ * \return For protocols which support searching for contacts on multiple servers with different DNS
+ *         names (like XMPP), the DNS name of the server being searched by this channel, e.g.
+ *         "characters.shakespeare.lit". Otherwise, an empty string.
+ */
+QString ContactSearchChannel::server() const
+{
+    return mPriv->server;
+}
+
+void ContactSearchChannel::gotProperties(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariantMap> reply = *watcher;
+
+    if (!reply.isError()) {
+        QVariantMap props = reply.value();
+        mPriv->extractImmutableProperties(props);
+
+        mPriv->searchState = qdbus_cast<uint>(props[QLatin1String("SearchState")]);
+
+        debug() << "Got reply to Properties::GetAll(ContactSearchChannel)";
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    } else {
+        warning().nospace() << "Properties::GetAll(ContactSearchChannel) failed "
+            "with " << reply.error().name() << ": " << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
+                reply.error());
+    }
+
+    watcher->deleteLater();
+}
+
+void ContactSearchChannel::gotSearchState(QDBusPendingCallWatcher *watcher)
+{
+    QDBusPendingReply<QVariant> reply = *watcher;
+
+    if (!reply.isError()) {
+        mPriv->searchState = qdbus_cast<uint>(reply.value());
+
+        debug() << "Got reply to Properties::Get(SearchState)";
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, true);
+    } else {
+        warning().nospace() << "Properties::GetAll(ContactSearchChannel) failed "
+            "with " << reply.error().name() << ": " << reply.error().message();
+        mPriv->readinessHelper->setIntrospectCompleted(FeatureCore, false,
+                reply.error());
+    }
+
+    watcher->deleteLater();
+}
+
+void ContactSearchChannel::onSearchStateChanged(uint state, const QString &error,
+        const QVariantMap &details)
+{
+    mPriv->searchState = state;
+    emit searchStateChanged(static_cast<ChannelContactSearchState>(state), error,
+            SearchStateChangeDetails(details));
 }
 
 } // Tp

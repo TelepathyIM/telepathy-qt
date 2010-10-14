@@ -39,14 +39,54 @@ class TELEPATHY_QT4_EXPORT ContactSearchChannel : public Channel
 public:
     static const Feature FeatureCore;
 
+    class SearchStateChangeDetails
+    {
+    public:
+        SearchStateChangeDetails();
+        SearchStateChangeDetails(const SearchStateChangeDetails &other);
+        ~SearchStateChangeDetails();
+
+        bool isValid() const { return mPriv.constData() != 0; }
+
+        SearchStateChangeDetails &operator=(const SearchStateChangeDetails &other);
+
+        bool hasDebugMessage() const { return allDetails().contains(QLatin1String("debug-message")); }
+        QString debugMessage() const { return qdbus_cast<QString>(allDetails().value(QLatin1String("debug-message"))); }
+
+        QVariantMap allDetails() const;
+
+    private:
+        friend class ContactSearchChannel;
+
+        SearchStateChangeDetails(const QVariantMap &details);
+
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
+    };
+
     static ContactSearchChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
 
     virtual ~ContactSearchChannel();
 
+    ChannelContactSearchState searchState() const;
+    uint limit() const;
+    QStringList availableSearchKeys() const;
+    QString server() const;
+
+Q_SIGNALS:
+    void searchStateChanged(ChannelContactSearchState state, const QString &errorName,
+            const Tp::ContactSearchChannel::SearchStateChangeDetails &details);
+
 protected:
     ContactSearchChannel(const ConnectionPtr &connection, const QString &objectPath,
             const QVariantMap &immutableProperties);
+
+private Q_SLOTS:
+    void gotProperties(QDBusPendingCallWatcher *watcher);
+    void gotSearchState(QDBusPendingCallWatcher *watcher);
+    void onSearchStateChanged(uint state, const QString &error, const QVariantMap &details);
 
 private:
     struct Private;
