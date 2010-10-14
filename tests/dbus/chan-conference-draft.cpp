@@ -274,6 +274,14 @@ void TestConferenceChanDRAFT::testConference()
     QCOMPARE(mChannelRemoved, mChannelMerged);
     QCOMPARE(mChannelRemovedDetailedDetails.allDetails().isEmpty(), true);
 
+    expectedObjectPaths.clear();
+    expectedObjectPaths << mTextChan1Path << mTextChan2Path;
+    objectPaths.clear();
+    Q_FOREACH (const ChannelPtr &channel, mChan->conferenceChannels()) {
+        objectPaths << channel->objectPath();
+    }
+    QCOMPARE(expectedObjectPaths, objectPaths);
+
     mChan.reset();
     mChannelMerged.reset();
 }

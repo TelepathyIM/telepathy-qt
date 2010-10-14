@@ -277,6 +277,14 @@ void TestConferenceChan::testConference()
     QCOMPARE(mChannelRemovedDetailedDetails.hasActor(), true);
     QCOMPARE(mChannelRemovedDetailedDetails.actor(), mChan->groupSelfContact());
 
+    expectedObjectPaths.clear();
+    expectedObjectPaths << mTextChan1Path << mTextChan2Path;
+    objectPaths.clear();
+    Q_FOREACH (const ChannelPtr &channel, mChan->conferenceChannels()) {
+        objectPaths << channel->objectPath();
+    }
+    QCOMPARE(expectedObjectPaths, objectPaths);
+
     mChan.reset();
     mChannelMerged.reset();
 }
