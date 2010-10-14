@@ -6,6 +6,7 @@
 #include <TelepathyQt4/AccountManager>
 #include <TelepathyQt4/PendingAccount>
 #include <TelepathyQt4/PendingOperation>
+#include <TelepathyQt4/PendingVariantMap>
 #include <TelepathyQt4/PendingReady>
 
 #include <tests/lib/test.h>
@@ -24,6 +25,8 @@ public:
 protected Q_SLOTS:
     void onNewAccount(const Tp::AccountPtr &);
 
+    void expectSuccessfulAllProperties(Tp::PendingOperation *op);
+
 private Q_SLOTS:
     void initTestCase();
     void init();
@@ -36,6 +39,7 @@ private Q_SLOTS:
 private:
     AccountManagerPtr mAM;
     int mAccountsCount;
+    QVariantMap mAllProperties;
 };
 
 void TestDBusProperties::onNewAccount(const Tp::AccountPtr &acc)
@@ -44,6 +48,20 @@ void TestDBusProperties::onNewAccount(const Tp::AccountPtr &acc)
 
     mAccountsCount++;
     mLoop->exit(0);
+}
+
+void TestDBusProperties::expectSuccessfulAllProperties(PendingOperation *op)
+{
+    if (op->isError()) {
+        qWarning().nospace() << op->errorName()
+            << ": " << op->errorMessage();
+        mAllProperties = QVariantMap();
+        mLoop->exit(1);
+    } else {
+        Tp::PendingVariantMap *pvm = qobject_cast<Tp::PendingVariantMap*>(op);
+        mAllProperties = pvm->result();
+        mLoop->exit(0);
+    }
 }
 
 void TestDBusProperties::initTestCase()
@@ -110,6 +128,14 @@ void TestDBusProperties::testDBusProperties()
     QVERIFY(waitForProperty(cliAccount->requestPropertyDisplayName(), &currDisplayName));
     QCOMPARE(currDisplayName, oldDisplayName);
 
+    QVERIFY(connect(cliAccount->requestAllProperties(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulAllProperties(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mAllProperties[QLatin1String("DisplayName")].value<QString>(), oldDisplayName);
+    QVERIFY(mAllProperties[QLatin1String("Interfaces")].value<QStringList>().contains(
+                QLatin1String(TELEPATHY_INTERFACE_ACCOUNT_INTERFACE_AVATAR)));
+
     const QString newDisplayName = QLatin1String("Foo bar account");
     QVERIFY(connect(cliAccount->setPropertyDisplayName(newDisplayName),
                     SIGNAL(finished(Tp::PendingOperation *)),
@@ -119,6 +145,12 @@ void TestDBusProperties::testDBusProperties()
     QCOMPARE(cliAccount->DisplayName(), newDisplayName);
     QVERIFY(waitForProperty(cliAccount->requestPropertyDisplayName(), &currDisplayName));
     QCOMPARE(currDisplayName, newDisplayName);
+
+    QVERIFY(connect(cliAccount->requestAllProperties(),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulAllProperties(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mAllProperties[QLatin1String("DisplayName")].value<QString>(), newDisplayName);
 }
 
 void TestDBusProperties::cleanup()
