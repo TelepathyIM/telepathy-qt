@@ -66,7 +66,7 @@ private:
     QString mTextChan3Path;
     ExampleEchoChannel *mTextChan3Service;
     QString mConferenceChanPath;
-    ExampleConferenceChannel *mConferenceChanService;
+    TpTestsConferenceChannel *mConferenceChanService;
 
     ChannelPtr mChannelMerged;
     ChannelPtr mChannelRemoved;
@@ -185,8 +185,8 @@ void TestConferenceChan::initTestCase()
 
     mConferenceChanPath = mConnPath + QLatin1String("/ConferenceChannel");
     chanPath = mConferenceChanPath.toAscii();
-    mConferenceChanService = EXAMPLE_CONFERENCE_CHANNEL(g_object_new(
-                EXAMPLE_TYPE_CONFERENCE_CHANNEL,
+    mConferenceChanService = TP_TESTS_CONFERENCE_CHANNEL(g_object_new(
+                TP_TESTS_TYPE_CONFERENCE_CHANNEL,
                 "connection", mConnService,
                 "object-path", chanPath.data(),
                 "initial-channels", initialChannels,
@@ -264,7 +264,7 @@ void TestConferenceChan::testConference()
                             const Tp::Channel::GroupMemberChangeDetails &)),
                     SLOT(onConferenceChannelRemoved(const Tp::ChannelPtr &,
                             const Tp::Channel::GroupMemberChangeDetails &))));
-    example_conference_channel_remove_channel (mConferenceChanService,
+    tp_tests_conference_channel_remove_channel (mConferenceChanService,
             mChannelMerged->objectPath().toAscii().data());
     while (!mChannelRemoved && !mChannelRemovedDetailed) {
         QCOMPARE(mLoop->exec(), 0);

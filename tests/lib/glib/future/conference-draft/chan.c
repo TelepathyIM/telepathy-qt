@@ -1,5 +1,5 @@
 /*
- * conference-channel.c - an example conference channel
+ * conference-channel.c - an tp_tests conference channel
  *
  * Copyright © 2010 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright © 2010 Nokia Corporation
@@ -41,8 +41,8 @@
 static void mergeable_conference_iface_init (gpointer iface, gpointer data);
 static void channel_iface_init (gpointer iface, gpointer data);
 
-G_DEFINE_TYPE_WITH_CODE (ExampleConferenceDRAFTChannel,
-    example_conference_draft_channel,
+G_DEFINE_TYPE_WITH_CODE (TpTestsConferenceDRAFTChannel,
+    tp_tests_conference_draft_channel,
     G_TYPE_OBJECT,
     G_IMPLEMENT_INTERFACE (TP_TYPE_SVC_DBUS_PROPERTIES,
       tp_dbus_properties_mixin_iface_init);
@@ -79,7 +79,7 @@ enum
   N_PROPS
 };
 
-struct _ExampleConferenceDRAFTChannelPrivate
+struct _TpTestsConferenceDRAFTChannelPrivate
 {
   TpBaseConnection *conn;
   gchar *object_path;
@@ -96,7 +96,7 @@ struct _ExampleConferenceDRAFTChannelPrivate
   gboolean closed;
 };
 
-static const gchar * example_conference_draft_channel_interfaces[] = {
+static const gchar * tp_tests_conference_draft_channel_interfaces[] = {
     TP_IFACE_CHANNEL_INTERFACE_GROUP,
     FUTURE_IFACE_CHANNEL_INTERFACE_CONFERENCE,
     FUTURE_IFACE_CHANNEL_INTERFACE_MERGEABLE_CONFERENCE,
@@ -104,11 +104,11 @@ static const gchar * example_conference_draft_channel_interfaces[] = {
 };
 
 static void
-example_conference_draft_channel_init (ExampleConferenceDRAFTChannel *self)
+tp_tests_conference_draft_channel_init (TpTestsConferenceDRAFTChannel *self)
 {
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      EXAMPLE_TYPE_CONFERENCE_DRAFT_CHANNEL,
-      ExampleConferenceDRAFTChannelPrivate);
+      TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL,
+      TpTestsConferenceDRAFTChannelPrivate);
 
   self->priv->handle_type = (guint) -1;
 }
@@ -117,8 +117,8 @@ static void
 constructed (GObject *object)
 {
   void (*chain_up) (GObject *) =
-      ((GObjectClass *) example_conference_draft_channel_parent_class)->constructed;
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (object);
+      ((GObjectClass *) tp_tests_conference_draft_channel_parent_class)->constructed;
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
   TpHandleRepoIface *contact_repo = tp_base_connection_get_handles
       (self->priv->conn, TP_HANDLE_TYPE_CONTACT);
   DBusGConnection *bus;
@@ -132,7 +132,7 @@ constructed (GObject *object)
   dbus_g_connection_register_g_object (bus, self->priv->object_path, object);
 
   tp_group_mixin_init (object,
-      G_STRUCT_OFFSET (ExampleConferenceDRAFTChannel, group),
+      G_STRUCT_OFFSET (TpTestsConferenceDRAFTChannel, group),
       contact_repo, self->priv->conn->self_handle);
 
   if (self->priv->handle_type == (guint) -1)
@@ -168,7 +168,7 @@ get_property (GObject *object,
     GValue *value,
     GParamSpec *pspec)
 {
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (object);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
 
   switch (property_id)
     {
@@ -209,7 +209,7 @@ get_property (GObject *object,
       break;
 
     case PROP_INTERFACES:
-      g_value_set_boxed (value, example_conference_draft_channel_interfaces);
+      g_value_set_boxed (value, tp_tests_conference_draft_channel_interfaces);
       break;
 
     case PROP_CHANNEL_DESTROYED:
@@ -278,7 +278,7 @@ set_property (GObject *object,
     const GValue *value,
     GParamSpec *pspec)
 {
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (object);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
 
   switch (property_id)
     {
@@ -335,7 +335,7 @@ set_property (GObject *object,
 static void
 dispose (GObject *object)
 {
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (object);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
 
   if (self->priv->disposed)
     {
@@ -364,19 +364,19 @@ dispose (GObject *object)
       tp_svc_channel_emit_closed (self);
     }
 
-  ((GObjectClass *) example_conference_draft_channel_parent_class)->dispose (object);
+  ((GObjectClass *) tp_tests_conference_draft_channel_parent_class)->dispose (object);
 }
 
 static void
 finalize (GObject *object)
 {
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (object);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (object);
 
   g_free (self->priv->object_path);
 
   tp_group_mixin_finalize (object);
 
-  ((GObjectClass *) example_conference_draft_channel_parent_class)->finalize (object);
+  ((GObjectClass *) tp_tests_conference_draft_channel_parent_class)->finalize (object);
 }
 
 static gboolean
@@ -385,7 +385,7 @@ add_member (GObject *obj,
             const gchar *message,
             GError **error)
 {
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (obj);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (obj);
   TpIntSet *add = tp_intset_new ();
 
   tp_intset_add (add, handle);
@@ -397,7 +397,7 @@ add_member (GObject *obj,
 }
 
 static void
-example_conference_draft_channel_class_init (ExampleConferenceDRAFTChannelClass *klass)
+tp_tests_conference_draft_channel_class_init (TpTestsConferenceDRAFTChannelClass *klass)
 {
   static TpDBusPropertiesMixinPropImpl channel_props[] = {
       { "TargetHandleType", "handle-type", NULL },
@@ -436,7 +436,7 @@ example_conference_draft_channel_class_init (ExampleConferenceDRAFTChannelClass 
   GParamSpec *param_spec;
 
   g_type_class_add_private (klass,
-      sizeof (ExampleConferenceDRAFTChannelPrivate));
+      sizeof (TpTestsConferenceDRAFTChannelPrivate));
 
   object_class->constructed = constructed;
   object_class->set_property = set_property;
@@ -538,11 +538,11 @@ example_conference_draft_channel_class_init (ExampleConferenceDRAFTChannelClass 
 
   klass->dbus_properties_class.interfaces = prop_interfaces;
   tp_dbus_properties_mixin_class_init (object_class,
-      G_STRUCT_OFFSET (ExampleConferenceDRAFTChannelClass,
+      G_STRUCT_OFFSET (TpTestsConferenceDRAFTChannelClass,
         dbus_properties_class));
 
   tp_group_mixin_class_init (object_class,
-      G_STRUCT_OFFSET (ExampleConferenceDRAFTChannelClass, group_class),
+      G_STRUCT_OFFSET (TpTestsConferenceDRAFTChannelClass, group_class),
       add_member,
       NULL);
   tp_group_mixin_init_dbus_properties (object_class);
@@ -552,7 +552,7 @@ static void
 channel_close (TpSvcChannel *iface,
     DBusGMethodInvocation *context)
 {
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (iface);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (iface);
 
   if (!self->priv->closed)
     {
@@ -575,7 +575,7 @@ static void
 channel_get_handle (TpSvcChannel *iface,
     DBusGMethodInvocation *context)
 {
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (iface);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (iface);
 
   tp_svc_channel_return_from_get_handle (context, self->priv->handle_type, 0);
 }
@@ -585,7 +585,7 @@ channel_get_interfaces (TpSvcChannel *iface G_GNUC_UNUSED,
     DBusGMethodInvocation *context)
 {
   tp_svc_channel_return_from_get_interfaces (context,
-      example_conference_draft_channel_interfaces);
+      tp_tests_conference_draft_channel_interfaces);
 }
 
 static void
@@ -607,7 +607,7 @@ mergeable_conference_merge (FutureSvcChannelInterfaceMergeableConference *iface 
                             const gchar *channel,
                             DBusGMethodInvocation *context)
 {
-  ExampleConferenceDRAFTChannel *self = EXAMPLE_CONFERENCE_DRAFT_CHANNEL (iface);
+  TpTestsConferenceDRAFTChannel *self = TP_TESTS_CONFERENCE_DRAFT_CHANNEL (iface);
 
   g_ptr_array_add (self->priv->conference_channels, g_strdup (channel));
 
@@ -627,7 +627,7 @@ mergeable_conference_iface_init (gpointer iface,
 #undef IMPLEMENT
 }
 
-void example_conference_draft_channel_remove_channel (ExampleConferenceDRAFTChannel *self,
+void tp_tests_conference_draft_channel_remove_channel (TpTestsConferenceDRAFTChannel *self,
         const gchar *channel)
 {
   guint i;

@@ -1,5 +1,5 @@
 /*
- * conference-channel.h - header for an example conference channel
+ * conference-channel.h - header for an tp_tests conference channel
  *
  * Copyright © 2010 Collabora Ltd. <http://www.collabora.co.uk/>
  * Copyright © 2010 Nokia Corporation
@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef EXAMPLE_CONFERENCE_DRAFT_CHANNEL_H
-#define EXAMPLE_CONFERENCE_DRAFT_CHANNEL_H
+#ifndef TP_TESTS_CONFERENCE_DRAFT_CHANNEL_H
+#define TP_TESTS_CONFERENCE_DRAFT_CHANNEL_H
 
 #include <glib-object.h>
 #include <telepathy-glib/base-connection.h>
@@ -28,51 +28,51 @@
 
 G_BEGIN_DECLS
 
-typedef struct _ExampleConferenceDRAFTChannel ExampleConferenceDRAFTChannel;
-typedef struct _ExampleConferenceDRAFTChannelPrivate
-    ExampleConferenceDRAFTChannelPrivate;
+typedef struct _TpTestsConferenceDRAFTChannel TpTestsConferenceDRAFTChannel;
+typedef struct _TpTestsConferenceDRAFTChannelPrivate
+    TpTestsConferenceDRAFTChannelPrivate;
 
-typedef struct _ExampleConferenceDRAFTChannelClass
-    ExampleConferenceDRAFTChannelClass;
-typedef struct _ExampleConferenceDRAFTChannelClassPrivate
-    ExampleConferenceDRAFTChannelClassPrivate;
+typedef struct _TpTestsConferenceDRAFTChannelClass
+    TpTestsConferenceDRAFTChannelClass;
+typedef struct _TpTestsConferenceDRAFTChannelClassPrivate
+    TpTestsConferenceDRAFTChannelClassPrivate;
 
-GType example_conference_draft_channel_get_type (void);
+GType tp_tests_conference_draft_channel_get_type (void);
 
-#define EXAMPLE_TYPE_CONFERENCE_DRAFT_CHANNEL \
-  (example_conference_draft_channel_get_type ())
-#define EXAMPLE_CONFERENCE_DRAFT_CHANNEL(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), EXAMPLE_TYPE_CONFERENCE_DRAFT_CHANNEL, \
-                               ExampleConferenceDRAFTChannel))
-#define EXAMPLE_CONFERENCE_DRAFT_CHANNEL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), EXAMPLE_TYPE_CONFERENCE_DRAFT_CHANNEL, \
-                            ExampleConferenceDRAFTChannelClass))
-#define EXAMPLE_IS_CONFERENCE_DRAFT_CHANNEL(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), EXAMPLE_TYPE_CONFERENCE_DRAFT_CHANNEL))
-#define EXAMPLE_IS_CONFERENCE_CHANNEL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), EXAMPLE_TYPE_CONFERENCE_DRAFT_CHANNEL))
-#define EXAMPLE_CONFERENCE_DRAFT_CHANNEL_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), EXAMPLE_TYPE_CONFERENCE_DRAFT_CHANNEL, \
-                              ExampleConferenceDRAFTChannelClass))
+#define TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL \
+  (tp_tests_conference_draft_channel_get_type ())
+#define TP_TESTS_CONFERENCE_DRAFT_CHANNEL(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST ((obj), TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL, \
+                               TpTestsConferenceDRAFTChannel))
+#define TP_TESTS_CONFERENCE_DRAFT_CHANNEL_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST ((klass), TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL, \
+                            TpTestsConferenceDRAFTChannelClass))
+#define TP_TESTS_IS_CONFERENCE_DRAFT_CHANNEL(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL))
+#define TP_TESTS_IS_CONFERENCE_CHANNEL_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE ((klass), TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL))
+#define TP_TESTS_CONFERENCE_DRAFT_CHANNEL_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), TP_TESTS_TYPE_CONFERENCE_DRAFT_CHANNEL, \
+                              TpTestsConferenceDRAFTChannelClass))
 
-struct _ExampleConferenceDRAFTChannelClass {
+struct _TpTestsConferenceDRAFTChannelClass {
     GObjectClass parent_class;
 
     TpDBusPropertiesMixinClass dbus_properties_class;
     TpGroupMixinClass group_class;
 
-    ExampleConferenceDRAFTChannelClassPrivate *priv;
+    TpTestsConferenceDRAFTChannelClassPrivate *priv;
 };
 
-struct _ExampleConferenceDRAFTChannel {
+struct _TpTestsConferenceDRAFTChannel {
     GObject parent;
 
     TpGroupMixin group;
 
-    ExampleConferenceDRAFTChannelPrivate *priv;
+    TpTestsConferenceDRAFTChannelPrivate *priv;
 };
 
-void example_conference_draft_channel_remove_channel (ExampleConferenceDRAFTChannel *self,
+void tp_tests_conference_draft_channel_remove_channel (TpTestsConferenceDRAFTChannel *self,
         const gchar *channel);
 
 G_END_DECLS
