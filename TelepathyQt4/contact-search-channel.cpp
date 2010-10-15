@@ -20,8 +20,10 @@
  */
 
 #include <TelepathyQt4/ContactSearchChannel>
+#include "TelepathyQt4/contact-search-channel-internal.h"
 
 #include "TelepathyQt4/_gen/contact-search-channel.moc.hpp"
+#include "TelepathyQt4/_gen/contact-search-channel-internal.moc.hpp"
 
 #include "TelepathyQt4/debug-internal.h"
 
@@ -259,6 +261,56 @@ QVariantMap ContactSearchChannel::SearchStateChangeDetails::allDetails() const
     return isValid() ? mPriv->details : QVariantMap();
 }
 
+ContactSearchChannel::PendingSearch::PendingSearch(const ContactSearchChannelPtr &channel,
+        QDBusPendingCall call)
+    : PendingOperation(0),
+      mChannel(channel),
+      mFinished(false)
+{
+    connect(mChannel.data(),
+            SIGNAL(searchStateChanged(Tp::ChannelContactSearchState, const QString &,
+                    const Tp::ContactSearchChannel::SearchStateChangeDetails &)),
+            SLOT(onSearchStateChanged(Tp::ChannelContactSearchState, const QString &,
+                    const Tp::ContactSearchChannel::SearchStateChangeDetails &)));
+    connect(new QDBusPendingCallWatcher(call),
+            SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(watcherFinished(QDBusPendingCallWatcher*)));
+}
+
+void ContactSearchChannel::PendingSearch::onSearchStateChanged(
+        Tp::ChannelContactSearchState state, const QString &errorName,
+        const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
+{
+    if (state != ChannelContactSearchStateNotStarted) {
+        if (mFinished) {
+            if (mError.isValid()) {
+                setFinishedWithError(mError);
+            } else {
+                setFinished();
+            }
+        }
+        mFinished = true;
+    }
+}
+
+void ContactSearchChannel::PendingSearch::watcherFinished(QDBusPendingCallWatcher *watcher)
+{
+    if (watcher->isError()) {
+        if (mFinished) {
+            setFinishedWithError(watcher->error());
+        } else {
+            mError = watcher->error();
+        }
+    } else {
+        if (mFinished) {
+            setFinished();
+        }
+    }
+    mFinished = true;
+
+    watcher->deleteLater();
+}
+
 /**
  * \class ContactSearchChannel
  * \ingroup clientchannel
@@ -389,19 +441,22 @@ QString ContactSearchChannel::server() const
  *
  * This method requires ContactSearchChannel::FeatureCore to be enabled.
  */
-void ContactSearchChannel::search(const ContactSearchMap &terms)
+PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
 {
     if (!isReady(FeatureCore)) {
-        return;
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Channel not ready"), this);
     }
 
     if (searchState() != ChannelContactSearchStateNotStarted) {
         warning() << "ContactSearchChannel::search called with "
             "searchState() != ChannelContactSearchStateNotStarted. Doing nothing";
-        return;
+        return new PendingFailure(QLatin1String(TELEPATHY_ERROR_NOT_AVAILABLE),
+                QLatin1String("Search already started"), this);
     }
 
-    (void) new PendingVoid(mPriv->contactSearchInterface->Search(terms), this);
+    return new PendingSearch(ContactSearchChannelPtr(this),
+            mPriv->contactSearchInterface->Search(terms));
 }
 
 /**

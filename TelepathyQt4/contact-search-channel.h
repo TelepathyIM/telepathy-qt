@@ -77,7 +77,7 @@ public:
     QStringList availableSearchKeys() const;
     QString server() const;
 
-    void search(const ContactSearchMap &terms);
+    PendingOperation *search(const ContactSearchMap &terms);
     void continueSearch();
     void stopSearch();
 
@@ -98,6 +98,8 @@ private Q_SLOTS:
     void gotSearchResultContacts(Tp::PendingOperation *op);
 
 private:
+    class PendingSearch;
+
     struct Private;
     friend struct Private;
     Private *mPriv;
