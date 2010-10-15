@@ -1,8 +1,14 @@
-telepathy-qt4 0.3.11 (UNRELEASED)
+telepathy-qt4 0.3.12 (2010-10-15)
 =================================
 
-Enhancements:
+The "break is coming" release.
+
+New API:
+* Added ChannelDispatchOperation high-level class.
 * Added constructors/accessors for using Channel/ContactFactory in Connection.
+* Added high-level class for ContactInfoFieldList.
+
+Enhancements:
 * Updated to spec 0.21.1:
   - Added auto generated classes for Conn.ClientTypes/ContactGroups/ContactList/
     PowerSaving and Chan.ServerTLSConnection.
