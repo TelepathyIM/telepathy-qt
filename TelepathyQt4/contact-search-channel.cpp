@@ -537,6 +537,29 @@ void ContactSearchChannel::stopSearch()
     (void) new PendingVoid(mPriv->contactSearchInterface->Stop(), this);
 }
 
+/**
+ * \fn void searchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,
+ *                             const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
+ *
+ * This signal is emitted when the value of searchState() of this channel changes.
+ *
+ * \param state The new state.
+ * \param errorName The name of the error if any.
+ * \param details The details for the state change.
+ * \sa searchState()
+ */
+
+/**
+ * \fn void searchResultReceived(const Tp::ContactSearchChannel::SearchResult &result)
+ *
+ * This signal is emitted when a result for a search is received. It can be emitted multiple times
+ * until the searchState() goes to ChannelContactSearchStateCompleted or
+ * ChannelContactSearchStateFailed.
+ *
+ * \param result The search result.
+ * \sa searchState()
+ */
+
 void ContactSearchChannel::gotProperties(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QVariantMap> reply = *watcher;
