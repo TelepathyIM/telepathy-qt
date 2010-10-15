@@ -77,7 +77,8 @@ public:
     QStringList availableSearchKeys() const;
     QString server() const;
 
-    PendingOperation *search(const ContactSearchMap &terms);
+    PendingOperation *search(const QString &searchKey, const QString &searchTerm);
+    PendingOperation *search(const ContactSearchMap &searchTerms);
     void continueSearch();
     void stopSearch();
 

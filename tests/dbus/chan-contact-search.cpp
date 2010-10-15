@@ -196,9 +196,7 @@ void TestContactSearchChan::testContactSearch()
                 SIGNAL(searchResultReceived(const Tp::ContactSearchChannel::SearchResult &)),
                 SLOT(onSearchResultReceived(const Tp::ContactSearchChannel::SearchResult &))));
 
-    ContactSearchMap searchTerms;
-    searchTerms.insert(QLatin1String("employer"), QLatin1String("Collabora"));
-    mChan1->search(searchTerms);
+    mChan1->search(QLatin1String("employer"), QLatin1String("Collabora"));
     while (mChan1->searchState() != ChannelContactSearchStateCompleted) {
         QCOMPARE(mLoop->exec(), 0);
     }

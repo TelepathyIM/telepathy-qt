@@ -440,6 +440,32 @@ QString ContactSearchChannel::server() const
  * state ChannelContactSearchStateInProgress.
  *
  * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ *
+ * This is an overloaded method for search(const ContactSearchMap &searchTerms).
+ *
+ * \param searchKey The search key.
+ * \param searchTerm The search term.
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
+ */
+PendingOperation *ContactSearchChannel::search(const QString &searchKey, const QString &searchTerm)
+{
+    ContactSearchMap searchTerms;
+    searchTerms.insert(searchKey, searchTerm);
+    return search(searchTerms);
+}
+
+/**
+ * Send a request to start a search for contacts on this connection.
+ *
+ * This may only be called while the searchState() is ChannelContactSearchStateNotStarted;
+ * a valid search request will cause the searchStateChanged() signal to be emitted with the
+ * state ChannelContactSearchStateInProgress.
+ *
+ * This method requires ContactSearchChannel::FeatureCore to be enabled.
+ *
+ * \return A PendingOperation, which will emit PendingOperation::finished
+ *         when the call has finished.
  */
 PendingOperation *ContactSearchChannel::search(const ContactSearchMap &terms)
 {
