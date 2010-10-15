@@ -44,7 +44,6 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
         : parent(parent),
           manager(manager),
           handle(handle),
-          info(ContactInfoFieldList()),
           isAvatarTokenKnown(false),
           subscriptionState(PresenceStateNo),
           publishState(PresenceStateNo),
@@ -145,15 +144,6 @@ ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
 ContactInfoFieldList Contact::InfoFields::allFields() const
 {
     return isValid() ? mPriv->allFields : ContactInfoFieldList();
-}
-
-void Contact::InfoFields::setAllFields(const ContactInfoFieldList &allFields)
-{
-    if (!isValid()) {
-        return;
-    }
-
-    mPriv->allFields = allFields;
 }
 
 ContactManager *Contact::manager() const
@@ -770,7 +760,7 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
     mPriv->actualFeatures.insert(FeatureInfo);
 
     if (mPriv->info.allFields() != info) {
-        mPriv->info.setAllFields(info);
+        mPriv->info = InfoFields(info);
         emit infoChanged(mPriv->info.allFields());
         emit infoFieldsChanged(mPriv->info);
     }

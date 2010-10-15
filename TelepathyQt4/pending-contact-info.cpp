@@ -36,8 +36,7 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT PendingContactInfo::Private
 {
     Private(const ContactPtr &contact)
-        : contact(contact),
-          info(ContactInfoFieldList())
+        : contact(contact)
     {
     }
 
@@ -134,7 +133,7 @@ void PendingContactInfo::onCallFinished(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<Tp::ContactInfoFieldList> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->info.setAllFields(reply.value());
+        mPriv->info = Contact::InfoFields(reply.value());
         debug() << "Got reply to ContactInfo.RequestContactInfo";
         setFinished();
     } else {

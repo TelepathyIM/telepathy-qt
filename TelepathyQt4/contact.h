@@ -83,11 +83,6 @@ public:
         ContactInfoFieldList allFields() const;
 
     private:
-        friend class Contact;
-        friend class PendingContactInfo;
-
-        void setAllFields(const ContactInfoFieldList &fields);
-
         struct Private;
         friend struct Private;
         QSharedDataPointer<Private> mPriv;
