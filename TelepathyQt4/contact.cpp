@@ -40,9 +40,14 @@ namespace Tp
 struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 {
     Private(Contact *parent, ContactManager *manager,
-        const ReferencedHandles &handle) : parent(parent), manager(manager),
-          handle(handle), isAvatarTokenKnown(false),
-          subscriptionState(PresenceStateNo), publishState(PresenceStateNo),
+        const ReferencedHandles &handle)
+        : parent(parent),
+          manager(manager),
+          handle(handle),
+          info(ContactInfoFieldList()),
+          isAvatarTokenKnown(false),
+          subscriptionState(PresenceStateNo),
+          publishState(PresenceStateNo),
           blocked(false)
     {
         if (manager->supportedFeatures().contains(Contact::FeatureCapabilities)) {
@@ -76,7 +81,7 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
     SimplePresence simplePresence;
     ContactCapabilities *caps;
     ContactLocation *location;
-    ContactInfoFieldList info;
+    InfoFields info;
 
     bool isAvatarTokenKnown;
     QString avatarToken;
@@ -89,6 +94,67 @@ struct TELEPATHY_QT4_NO_EXPORT Contact::Private
 
     QSet<QString> groups;
 };
+
+struct TELEPATHY_QT4_NO_EXPORT Contact::InfoFields::Private : public QSharedData
+{
+    Private(const ContactInfoFieldList &allFields)
+        : allFields(allFields) {}
+
+    ContactInfoFieldList allFields;
+};
+
+Contact::InfoFields::InfoFields(const ContactInfoFieldList &allFields)
+    : mPriv(new Private(allFields))
+{
+}
+
+Contact::InfoFields::InfoFields()
+{
+}
+
+Contact::InfoFields::InfoFields(const Contact::InfoFields &other)
+    : mPriv(other.mPriv)
+{
+}
+
+Contact::InfoFields::~InfoFields()
+{
+}
+
+Contact::InfoFields &Contact::InfoFields::operator=(const Contact::InfoFields &other)
+{
+    this->mPriv = other.mPriv;
+    return *this;
+}
+
+ContactInfoFieldList Contact::InfoFields::fields(const QString &name) const
+{
+    if (!isValid()) {
+        return ContactInfoFieldList();
+    }
+
+    ContactInfoFieldList ret;
+    foreach (const ContactInfoField &field, mPriv->allFields) {
+        if (field.fieldName == name) {
+            ret.append(field);
+        }
+    }
+    return ret;
+}
+
+ContactInfoFieldList Contact::InfoFields::allFields() const
+{
+    return isValid() ? mPriv->allFields : ContactInfoFieldList();
+}
+
+void Contact::InfoFields::setAllFields(const ContactInfoFieldList &allFields)
+{
+    if (!isValid()) {
+        return;
+    }
+
+    mPriv->allFields = allFields;
+}
 
 ContactManager *Contact::manager() const
 {
@@ -259,7 +325,9 @@ ContactLocation *Contact::location() const
  *
  * This method requires Contact::FeatureInfo to be enabled.
  *
- * @return An object representing the contact information.
+ * \deprecated Use infoFields() instead.
+ *
+ * \return An object representing the contact information.
  */
 ContactInfoFieldList Contact::info() const
 {
@@ -270,19 +338,43 @@ ContactInfoFieldList Contact::info() const
         return ContactInfoFieldList();
     }
 
+    return mPriv->info.allFields();
+}
+
+/**
+ * Return the information for this contact.
+ *
+ * Change notification is advertised through infoFieldsChanged().
+ *
+ * Note that this method only return cached information. In order to refresh the
+ * information use refreshInfo().
+ *
+ * This method requires Contact::FeatureInfo to be enabled.
+ *
+ * \return An object representing the contact information.
+ */
+Contact::InfoFields Contact::infoFields() const
+{
+    if (!mPriv->requestedFeatures.contains(FeatureInfo)) {
+        warning() << "Contact::infoFields() used on" << this
+            << "for which FeatureInfo hasn't been requested - returning empty "
+               "InfoFields";
+        return InfoFields();
+    }
+
     return mPriv->info;
 }
 
 /**
  * Refresh information for the given contact.
  *
- * Once the information is retrieved infoChanged() will be emitted.
+ * Once the information is retrieved infoFieldsChanged() will be emitted.
  *
  * This method requires Contact::FeatureInfo to be enabled.
  *
  * \return A PendingOperation, which will emit PendingOperation::finished
  *         when the call has finished.
- * \sa infoChanged()
+ * \sa infoFieldsChanged()
  */
 PendingOperation *Contact::refreshInfo()
 {
@@ -677,9 +769,10 @@ void Contact::receiveInfo(const ContactInfoFieldList &info)
 
     mPriv->actualFeatures.insert(FeatureInfo);
 
-    if (mPriv->info != info) {
-        mPriv->info = info;
-        emit infoChanged(mPriv->info);
+    if (mPriv->info.allFields() != info) {
+        mPriv->info.setAllFields(info);
+        emit infoChanged(mPriv->info.allFields());
+        emit infoFieldsChanged(mPriv->info);
     }
 }
 
