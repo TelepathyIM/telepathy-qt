@@ -28,7 +28,7 @@ public:
     TestContactSearchChan(QObject *parent = 0)
         : Test(parent),
           mConnService(0), mBaseConnService(0),
-          mChanService(0)
+          mChan1Service(0)
     { }
 
 protected Q_SLOTS:
@@ -41,6 +41,7 @@ private Q_SLOTS:
     void init();
 
     void testContactSearch();
+    void testContactSearchEmptyResult();
 
     void cleanup();
     void cleanupTestCase();
@@ -54,9 +55,13 @@ private:
     QString mConnPath;
     ConnectionPtr mConn;
     ContactSearchChannelPtr mChan;
+    ContactSearchChannelPtr mChan1;
+    ContactSearchChannelPtr mChan2;
 
-    QString mChanPath;
-    TpTestsContactSearchChannel *mChanService;
+    QString mChan1Path;
+    TpTestsContactSearchChannel *mChan1Service;
+    QString mChan2Path;
+    TpTestsContactSearchChannel *mChan2Service;
 
     ContactSearchChannel::SearchResult mSearchResult;
 
@@ -139,53 +144,62 @@ void TestContactSearchChan::initTestCase()
     QCOMPARE(static_cast<uint>(mConn->status()),
              static_cast<uint>(Connection::StatusConnected));
 
-    QByteArray chanPath;
-    mChanPath = mConnPath + QLatin1String("/ContactSearchChannel/1");
-    chanPath = mChanPath.toAscii();
-    mChanService = TP_TESTS_CONTACT_SEARCH_CHANNEL(g_object_new(
+    QByteArray chan1Path;
+    mChan1Path = mConnPath + QLatin1String("/ContactSearchChannel/1");
+    chan1Path = mChan1Path.toAscii();
+    mChan1Service = TP_TESTS_CONTACT_SEARCH_CHANNEL(g_object_new(
                 TP_TESTS_TYPE_CONTACT_SEARCH_CHANNEL,
                 "connection", mConnService,
-                "object-path", chanPath.data(),
+                "object-path", chan1Path.data(),
+                NULL));
+
+    QByteArray chan2Path;
+    mChan2Path = mConnPath + QLatin1String("/ContactSearchChannel/2");
+    chan2Path = mChan2Path.toAscii();
+    mChan2Service = TP_TESTS_CONTACT_SEARCH_CHANNEL(g_object_new(
+                TP_TESTS_TYPE_CONTACT_SEARCH_CHANNEL,
+                "connection", mConnService,
+                "object-path", chan2Path.data(),
                 NULL));
 }
 
 void TestContactSearchChan::init()
 {
     initImpl();
+    mSearchResult.clear();
+    mSearchStateChangeInfoList.clear();
 }
 
 void TestContactSearchChan::testContactSearch()
 {
-    mChan = ContactSearchChannel::create(mConn, mChanPath, QVariantMap());
-    QVERIFY(connect(mChan->becomeReady(ContactSearchChannel::FeatureCore),
+    mChan1 = ContactSearchChannel::create(mConn, mChan1Path, QVariantMap());
+    mChan = mChan1;
+    QVERIFY(connect(mChan1->becomeReady(ContactSearchChannel::FeatureCore),
                     SIGNAL(finished(Tp::PendingOperation*)),
                     SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
     QCOMPARE(mLoop->exec(), 0);
-    QCOMPARE(mChan->isReady(), true);
+    QCOMPARE(mChan1->isReady(), true);
 
-    QCOMPARE(mChan->searchState(), ChannelContactSearchStateNotStarted);
-    QCOMPARE(mChan->limit(), static_cast<uint>(0));
-    QCOMPARE(mChan->availableSearchKeys().isEmpty(), false);
-    QCOMPARE(mChan->availableSearchKeys().count(), 1);
-    QCOMPARE(mChan->availableSearchKeys().first(), QLatin1String("employer"));
-    QCOMPARE(mChan->server(), QLatin1String("characters.shakespeare.lit"));
+    QCOMPARE(mChan1->searchState(), ChannelContactSearchStateNotStarted);
+    QCOMPARE(mChan1->limit(), static_cast<uint>(0));
+    QCOMPARE(mChan1->availableSearchKeys().isEmpty(), false);
+    QCOMPARE(mChan1->availableSearchKeys().count(), 1);
+    QCOMPARE(mChan1->availableSearchKeys().first(), QLatin1String("employer"));
+    QCOMPARE(mChan1->server(), QLatin1String("characters.shakespeare.lit"));
 
-    QVERIFY(connect(mChan.data(),
+    QVERIFY(connect(mChan1.data(),
                 SIGNAL(searchStateChanged(Tp::ChannelContactSearchState, const QString &,
                         const Tp::ContactSearchChannel::SearchStateChangeDetails &)),
                 SLOT(onSearchStateChanged(Tp::ChannelContactSearchState, const QString &,
                         const Tp::ContactSearchChannel::SearchStateChangeDetails &))));
-    QVERIFY(connect(mChan.data(),
+    QVERIFY(connect(mChan1.data(),
                 SIGNAL(searchResultReceived(const Tp::ContactSearchChannel::SearchResult &)),
                 SLOT(onSearchResultReceived(const Tp::ContactSearchChannel::SearchResult &))));
 
     ContactSearchMap searchTerms;
     searchTerms.insert(QLatin1String("employer"), QLatin1String("Collabora"));
-    mChan->search(searchTerms);
-    while (mChan->searchState() != ChannelContactSearchStateCompleted) {
-        QCOMPARE(mLoop->exec(), 0);
-    }
-    while (mSearchResult.isEmpty()) {
+    mChan1->search(searchTerms);
+    while (mChan1->searchState() != ChannelContactSearchStateCompleted) {
         QCOMPARE(mLoop->exec(), 0);
     }
 
@@ -233,7 +247,58 @@ void TestContactSearchChan::testContactSearch()
     fns.sort();
     QCOMPARE(fns, expectedFns);
 
-    mChan.reset();
+    mChan1.reset();
+}
+
+void TestContactSearchChan::testContactSearchEmptyResult()
+{
+    mChan2 = ContactSearchChannel::create(mConn, mChan2Path, QVariantMap());
+    mChan = mChan2;
+    QVERIFY(connect(mChan2->becomeReady(ContactSearchChannel::FeatureCore),
+                    SIGNAL(finished(Tp::PendingOperation*)),
+                    SLOT(expectSuccessfulCall(Tp::PendingOperation*))));
+    QCOMPARE(mLoop->exec(), 0);
+    QCOMPARE(mChan2->isReady(), true);
+
+    QCOMPARE(mChan2->searchState(), ChannelContactSearchStateNotStarted);
+    QCOMPARE(mChan2->limit(), static_cast<uint>(0));
+    QCOMPARE(mChan2->availableSearchKeys().isEmpty(), false);
+    QCOMPARE(mChan2->availableSearchKeys().count(), 1);
+    QCOMPARE(mChan2->availableSearchKeys().first(), QLatin1String("employer"));
+    QCOMPARE(mChan2->server(), QLatin1String("characters.shakespeare.lit"));
+
+    QVERIFY(connect(mChan2.data(),
+                SIGNAL(searchStateChanged(Tp::ChannelContactSearchState, const QString &,
+                        const Tp::ContactSearchChannel::SearchStateChangeDetails &)),
+                SLOT(onSearchStateChanged(Tp::ChannelContactSearchState, const QString &,
+                        const Tp::ContactSearchChannel::SearchStateChangeDetails &))));
+    QVERIFY(connect(mChan2.data(),
+                SIGNAL(searchResultReceived(const Tp::ContactSearchChannel::SearchResult &)),
+                SLOT(onSearchResultReceived(const Tp::ContactSearchChannel::SearchResult &))));
+
+    ContactSearchMap searchTerms;
+    searchTerms.insert(QLatin1String("employer"), QLatin1String("FooBar"));
+    mChan2->search(searchTerms);
+    while (mChan2->searchState() != ChannelContactSearchStateCompleted) {
+        QCOMPARE(mLoop->exec(), 0);
+    }
+
+    QCOMPARE(mSearchResult.isEmpty(), true);
+
+    QCOMPARE(mSearchStateChangeInfoList.count(), 2);
+    SearchStateChangeInfo info = mSearchStateChangeInfoList.at(0);
+    QCOMPARE(info.state, ChannelContactSearchStateInProgress);
+    QCOMPARE(info.errorName, QLatin1String(""));
+    QCOMPARE(info.details.hasDebugMessage(), true);
+    QCOMPARE(info.details.debugMessage(), QLatin1String("in progress"));
+
+    info = mSearchStateChangeInfoList.at(1);
+    QCOMPARE(info.state, ChannelContactSearchStateCompleted);
+    QCOMPARE(info.errorName, QLatin1String(""));
+    QCOMPARE(info.details.hasDebugMessage(), true);
+    QCOMPARE(info.details.debugMessage(), QLatin1String("completed"));
+
+    mChan2.reset();
 }
 
 void TestContactSearchChan::cleanup()
@@ -260,9 +325,14 @@ void TestContactSearchChan::cleanupTestCase()
         }
     }
 
-    if (mChanService != 0) {
-        g_object_unref(mChanService);
-        mChanService = 0;
+    if (mChan1Service != 0) {
+        g_object_unref(mChan1Service);
+        mChan1Service = 0;
+    }
+
+    if (mChan2Service != 0) {
+        g_object_unref(mChan2Service);
+        mChan2Service = 0;
     }
 
     if (mConnService != 0) {
