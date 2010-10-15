@@ -86,6 +86,7 @@ void TestContactSearchChan::onSearchStateChanged(Tp::ChannelContactSearchState s
 void TestContactSearchChan::onSearchResultReceived(
         const Tp::ContactSearchChannel::SearchResult &result)
 {
+    QCOMPARE(mChan->searchState(), ChannelContactSearchStateInProgress);
     mSearchResult = result;
     mLoop->exit(0);
 }
