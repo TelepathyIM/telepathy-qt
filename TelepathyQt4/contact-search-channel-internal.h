@@ -19,46 +19,32 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _TelepathyQt4_pending_contact_info_h_HEADER_GUARD_
-#define _TelepathyQt4_pending_contact_info_h_HEADER_GUARD_
+#ifndef _TelepathyQt4_contact_search_channel_internal_h_HEADER_GUARD_
+#define _TelepathyQt4_contact_search_channel_internal_h_HEADER_GUARD_
 
-#ifndef IN_TELEPATHY_QT4_HEADER
-#error IN_TELEPATHY_QT4_HEADER
-#endif
-
-#include <TelepathyQt4/Contact>
 #include <TelepathyQt4/PendingOperation>
-#include <TelepathyQt4/Types>
 
-class QDBusPendingCallWatcher;
+#include <QDBusPendingCall>
 
 namespace Tp
 {
 
-class TELEPATHY_QT4_EXPORT PendingContactInfo : public PendingOperation
+class TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::PendingSearch : public PendingOperation
 {
     Q_OBJECT
-    Q_DISABLE_COPY(PendingContactInfo);
 
 public:
-    ~PendingContactInfo();
-
-    ContactPtr contact() const;
-
-    TELEPATHY_QT4_DEPRECATED ContactInfoFieldList info() const;
-    Contact::InfoFields infoFields() const;
+    PendingSearch(const ContactSearchChannelPtr &chan, QDBusPendingCall call);
 
 private Q_SLOTS:
-    void onCallFinished(QDBusPendingCallWatcher *watcher);
+    void onSearchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,
+            const Tp::ContactSearchChannel::SearchStateChangeDetails &details);
+    void watcherFinished(QDBusPendingCallWatcher*);
 
 private:
-    friend class Contact;
-
-    PendingContactInfo(const ContactPtr &contact);
-
-    struct Private;
-    friend struct Private;
-    Private *mPriv;
+    ContactSearchChannelPtr mChannel;
+    bool mFinished;
+    QDBusError mError;
 };
 
 } // Tp

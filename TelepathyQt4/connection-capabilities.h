@@ -43,6 +43,10 @@ public:
     bool supportsConferenceTextChats(bool withInitialInvitees = true) const;
     bool supportsConferenceTextChatrooms(bool withInitialInvitees = true) const;
 
+    bool supportsContactSearch();
+    bool supportsContactSearchWithSpecificServer() const;
+    bool supportsContactSearchWithLimit() const;
+
 private:
     friend class Account;
     friend class Connection;

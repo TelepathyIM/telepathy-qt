@@ -66,6 +66,28 @@ public:
          PresenceStateYes
     };
 
+    class InfoFields
+    {
+    public:
+        InfoFields();
+        InfoFields(const ContactInfoFieldList &fields);
+        InfoFields(const InfoFields &other);
+        ~InfoFields();
+
+        bool isValid() const { return mPriv.constData() != 0; }
+
+        InfoFields &operator=(const InfoFields &other);
+
+        ContactInfoFieldList fields(const QString &name) const;
+
+        ContactInfoFieldList allFields() const;
+
+    private:
+        struct Private;
+        friend struct Private;
+        QSharedDataPointer<Private> mPriv;
+    };
+
     ContactManager *manager() const;
 
     ReferencedHandles handle() const;
@@ -100,7 +122,8 @@ public:
 
     // TODO filter: having a specific field, having ANY field,
     // (field: exact, contents: exact/prefix/substring)
-    ContactInfoFieldList info() const;
+    TELEPATHY_QT4_DEPRECATED ContactInfoFieldList info() const;
+    InfoFields infoFields() const;
     PendingOperation *refreshInfo();
     PendingContactInfo *requestInfo();
 
@@ -140,6 +163,7 @@ Q_SIGNALS:
     void capabilitiesChanged(Tp::ContactCapabilities *caps);
     void locationUpdated(Tp::ContactLocation *location);
     void infoChanged(const Tp::ContactInfoFieldList &info);
+    void infoFieldsChanged(const Tp::Contact::InfoFields &infoFields);
 
     void subscriptionStateChanged(Tp::Contact::PresenceState state);
     void publishStateChanged(Tp::Contact::PresenceState state);

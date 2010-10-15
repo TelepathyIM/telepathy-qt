@@ -296,6 +296,12 @@ public:
             const QDateTime &userActionTime = QDateTime::currentDateTime(),
             const QString &preferredHandler = QString());
 
+    PendingChannelRequest *createContactSearchChannel(
+            const QString &server = QString(),
+            uint limit = 0,
+            const QDateTime &userActionTime = QDateTime::currentDateTime(),
+            const QString &preferredHandler = QString());
+
     // advanced
     PendingChannelRequest *createChannel(
             const QVariantMap &requestedProperties,

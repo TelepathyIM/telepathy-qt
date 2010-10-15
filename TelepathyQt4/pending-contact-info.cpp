@@ -35,13 +35,13 @@ namespace Tp
 
 struct TELEPATHY_QT4_NO_EXPORT PendingContactInfo::Private
 {
-    Private(const ContactPtr &contact) :
-        contact(contact)
+    Private(const ContactPtr &contact)
+        : contact(contact)
     {
     }
 
     ContactPtr contact;
-    ContactInfoFieldList info;
+    Contact::InfoFields info;
 };
 
 /**
@@ -97,9 +97,27 @@ ContactPtr PendingContactInfo::contact() const
 /**
  * Returns the information for contact().
  *
+ * \deprecated Use infoFields() instead.
+ *
  * \return An object representing the contact information.
  */
 ContactInfoFieldList PendingContactInfo::info() const
+{
+    if (!isFinished()) {
+        warning() << "PendingContactInfo::info called before finished";
+    } else if (!isValid()) {
+        warning() << "PendingContactInfo::info called when not valid";
+    }
+
+    return mPriv->info.allFields();
+}
+
+/**
+ * Returns the information for contact().
+ *
+ * \return An object representing the contact information.
+ */
+Contact::InfoFields PendingContactInfo::infoFields() const
 {
     if (!isFinished()) {
         warning() << "PendingContactInfo::info called before finished";
@@ -115,7 +133,7 @@ void PendingContactInfo::onCallFinished(QDBusPendingCallWatcher *watcher)
     QDBusPendingReply<Tp::ContactInfoFieldList> reply = *watcher;
 
     if (!reply.isError()) {
-        mPriv->info = reply.value();
+        mPriv->info = Contact::InfoFields(reply.value());
         debug() << "Got reply to ContactInfo.RequestContactInfo";
         setFinished();
     } else {
