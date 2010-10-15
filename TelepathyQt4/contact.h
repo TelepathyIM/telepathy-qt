@@ -84,6 +84,7 @@ public:
 
     private:
         friend class Contact;
+        friend class PendingContactInfo;
 
         void setAllFields(const ContactInfoFieldList &fields);
 
