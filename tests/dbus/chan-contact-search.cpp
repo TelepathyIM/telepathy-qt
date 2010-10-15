@@ -220,8 +220,9 @@ void TestContactSearchChan::testContactSearch()
     {
         QCOMPARE(it.key().isNull(), false);
         ids << it.key()->id();
-        QCOMPARE(it.value().isEmpty(), false);
-        Q_FOREACH (const ContactInfoField &contactInfo, it.value()) {
+        QCOMPARE(it.value().isValid(), true);
+        QCOMPARE(it.value().allFields().isEmpty(), false);
+        Q_FOREACH (const ContactInfoField &contactInfo, it.value().allFields()) {
             QCOMPARE(contactInfo.fieldName, QLatin1String("fn"));
             fns.append(contactInfo.fieldValue.first());
         }

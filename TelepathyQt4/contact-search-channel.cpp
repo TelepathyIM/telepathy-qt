@@ -494,7 +494,7 @@ void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
     for (ContactSearchResultMap::const_iterator it = result.constBegin();
                                                 it != result.constEnd();
                                                 ++it, ++i) {
-        ret.insert(contacts.at(i), it.value());
+        ret.insert(contacts.at(i), Contact::InfoFields(it.value()));
     }
     emit searchResultReceived(ret);
 

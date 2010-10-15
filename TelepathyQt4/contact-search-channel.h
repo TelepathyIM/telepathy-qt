@@ -65,7 +65,7 @@ public:
         QSharedDataPointer<Private> mPriv;
     };
 
-    typedef QHash<ContactPtr, ContactInfoFieldList> SearchResult;
+    typedef QHash<ContactPtr, Contact::InfoFields> SearchResult;
 
     static ContactSearchChannelPtr create(const ConnectionPtr &connection,
             const QString &objectPath, const QVariantMap &immutableProperties);
