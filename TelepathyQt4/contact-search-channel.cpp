@@ -44,7 +44,22 @@ struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::Private
 
     void extractImmutableProperties(const QVariantMap &props);
 
+    void processSignalsQueue();
+    void processSearchStateChangeQueue();
     void processSearchResultQueue();
+
+    struct SearchStateChangeInfo
+    {
+        SearchStateChangeInfo(uint state, const QString &errorName,
+                const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
+            : state(state), errorName(errorName), details(details)
+        {
+        }
+
+        uint state;
+        QString errorName;
+        ContactSearchChannel::SearchStateChangeDetails details;
+    };
 
     // Public object
     ContactSearchChannel *parent;
@@ -62,8 +77,10 @@ struct TELEPATHY_QT4_NO_EXPORT ContactSearchChannel::Private
     QStringList availableSearchKeys;
     QString server;
 
+    QQueue<void (Private::*)()> signalsQueue;
+    QQueue<SearchStateChangeInfo> searchStateChangeQueue;
     QQueue<ContactSearchResultMap> searchResultQueue;
-    bool buildingSearchResultContacts;
+    bool processingSignalsQueue;
 };
 
 ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
@@ -73,7 +90,7 @@ ContactSearchChannel::Private::Private(ContactSearchChannel *parent,
       contactSearchInterface(parent->contactSearchInterface(BypassInterfaceCheck)),
       properties(0),
       readinessHelper(parent->readinessHelper()),
-      buildingSearchResultContacts(false)
+      processingSignalsQueue(false)
 {
     ReadinessHelper::Introspectables introspectables;
 
@@ -160,15 +177,32 @@ void ContactSearchChannel::Private::extractImmutableProperties(const QVariantMap
     server = qdbus_cast<QString>(props[QLatin1String("Server")]);
 }
 
-void ContactSearchChannel::Private::processSearchResultQueue()
+void ContactSearchChannel::Private::processSignalsQueue()
 {
-    if (buildingSearchResultContacts || searchResultQueue.isEmpty()) {
+    if (processingSignalsQueue || signalsQueue.isEmpty()) {
         return;
     }
 
-    const ContactSearchResultMap &result = searchResultQueue.first();
-    buildingSearchResultContacts = true;
+    processingSignalsQueue = true;
+    (this->*(signalsQueue.dequeue()))();
+}
 
+void ContactSearchChannel::Private::processSearchStateChangeQueue()
+{
+    const SearchStateChangeInfo &info = searchStateChangeQueue.dequeue();
+
+    searchState = info.state;
+    emit parent->searchStateChanged(
+            static_cast<ChannelContactSearchState>(info.state), info.errorName,
+            SearchStateChangeDetails(info.details));
+
+    processingSignalsQueue = false;
+    processSignalsQueue();
+}
+
+void ContactSearchChannel::Private::processSearchResultQueue()
+{
+    const ContactSearchResultMap &result = searchResultQueue.first();
     if (!result.isEmpty()) {
         ContactManager *manager = parent->connection()->contactManager();
         PendingContacts *pendingContacts = manager->contactsForIdentifiers(
@@ -177,10 +211,12 @@ void ContactSearchChannel::Private::processSearchResultQueue()
                 SIGNAL(finished(Tp::PendingOperation*)),
                 SLOT(gotSearchResultContacts(Tp::PendingOperation*)));
     } else {
+        searchResultQueue.dequeue();
+
         emit parent->searchResultReceived(SearchResult());
 
-        buildingSearchResultContacts = false;
-        processSearchResultQueue();
+        processingSignalsQueue = false;
+        processSignalsQueue();
     }
 }
 
@@ -460,15 +496,16 @@ void ContactSearchChannel::gotSearchState(QDBusPendingCallWatcher *watcher)
 void ContactSearchChannel::onSearchStateChanged(uint state, const QString &error,
         const QVariantMap &details)
 {
-    mPriv->searchState = state;
-    emit searchStateChanged(static_cast<ChannelContactSearchState>(state), error,
-            SearchStateChangeDetails(details));
+    mPriv->searchStateChangeQueue.enqueue(Private::SearchStateChangeInfo(state, error, details));
+    mPriv->signalsQueue.enqueue(&Private::processSearchStateChangeQueue);
+    mPriv->processSignalsQueue();
 }
 
 void ContactSearchChannel::onSearchResultReceived(const ContactSearchResultMap &result)
 {
     mPriv->searchResultQueue.enqueue(result);
-    mPriv->processSearchResultQueue();
+    mPriv->signalsQueue.enqueue(&Private::processSearchResultQueue);
+    mPriv->processSignalsQueue();
 }
 
 void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
@@ -480,9 +517,9 @@ void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
     if (!pc->isValid()) {
         warning().nospace() << "Getting search result contacts "
             "failed with " << pc->errorName() << ":" <<
-            pc->errorMessage();
-        mPriv->buildingSearchResultContacts = false;
-        mPriv->processSearchResultQueue();
+            pc->errorMessage() << ". Ignoring search result";
+        mPriv->processingSignalsQueue = false;
+        mPriv->processSignalsQueue();
         return;
     }
 
@@ -498,8 +535,8 @@ void ContactSearchChannel::gotSearchResultContacts(PendingOperation *op)
     }
     emit searchResultReceived(ret);
 
-    mPriv->buildingSearchResultContacts = false;
-    mPriv->processSearchResultQueue();
+    mPriv->processingSignalsQueue = false;
+    mPriv->processSignalsQueue();
 }
 
 } // Tp
