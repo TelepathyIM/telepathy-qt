@@ -538,8 +538,9 @@ void ContactSearchChannel::stopSearch()
 }
 
 /**
- * \fn void searchStateChanged(Tp::ChannelContactSearchState state, const QString &errorName,
- *                             const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
+ * \fn void ContactSearchChannel::searchStateChanged(Tp::ChannelContactSearchState state,
+ *             const QString &errorName,
+ *             const Tp::ContactSearchChannel::SearchStateChangeDetails &details)
  *
  * This signal is emitted when the value of searchState() of this channel changes.
  *
@@ -550,7 +551,8 @@ void ContactSearchChannel::stopSearch()
  */
 
 /**
- * \fn void searchResultReceived(const Tp::ContactSearchChannel::SearchResult &result)
+ * \fn void ContactSearchChannel::searchResultReceived(
+ *             const Tp::ContactSearchChannel::SearchResult &result)
  *
  * This signal is emitted when a result for a search is received. It can be emitted multiple times
  * until the searchState() goes to ChannelContactSearchStateCompleted or
