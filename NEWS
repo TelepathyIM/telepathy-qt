@@ -9,7 +9,7 @@ telepathy-qt4 0.3.12 (2010-10-15)
 The "break is coming" release.
 
 New API:
-* Added ChannelDispatchOperation high-level class.
+* Added ContactSearch high-level class.
 * Added constructors/accessors for using Channel/ContactFactory in Connection.
 * Added high-level class for ContactInfoFieldList.
 
