@@ -81,8 +81,8 @@ struct _TpTestsContactSearchChannelPrivate
   TpBaseConnection *conn;
   gchar *object_path;
 
-  uint contact_search_state;
-  uint contact_search_limit;
+  guint contact_search_state;
+  guint contact_search_limit;
   gchar **contact_search_available_search_keys;
   gchar *contact_search_server;
 
@@ -544,7 +544,7 @@ channel_iface_init (gpointer iface,
 
 static void
 change_search_state (TpTestsContactSearchChannel *self,
-                     uint state,
+                     guint state,
                      const gchar *debug_message)
 {
   GHashTable *details = g_hash_table_new_full (g_str_hash, g_str_equal,
