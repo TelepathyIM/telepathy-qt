@@ -65,7 +65,7 @@ class TELEPATHY_QT4_EXPORT AccountManager : public StatelessDBusProxy,
 public:
     static const Feature FeatureCore;
 
-    TELEPATHY_QT4_DEPRECATED static AccountManagerPtr create();
+    static AccountManagerPtr create();
     TELEPATHY_QT4_DEPRECATED static AccountManagerPtr create(const QDBusConnection &bus);
 
     // FIXME: (API/ABI break) Add a default parameter to accountFactory once the create methods
@@ -78,7 +78,6 @@ public:
                 ChannelFactory::create(QDBusConnection::sessionBus()),
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
-
     // The bus-taking variant should never have default factories unless the bus is the last param
     // which would be illogical?
     static AccountManagerPtr create(const QDBusConnection &bus,
