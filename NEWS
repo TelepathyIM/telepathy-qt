@@ -1,7 +1,14 @@
 telepathy-qt4 0.3.13 (UNRELEASED)
 =================================
 
+Enhancements:
 ...
+
+Fixes:
+* fd.o #30223 - telepathy-qt4's codegen doesn't deal with tp:external-type
+  properly
+* The tp-glib version requirement in 0.3.12 was too old
+* Compile error in the tp-glib based test library
 
 telepathy-qt4 0.3.12 (2010-10-15)
 =================================
