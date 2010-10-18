@@ -108,7 +108,7 @@ public:
     static const Feature FeatureCapabilities;
     static const Feature FeatureProfile;
 
-    TELEPATHY_QT4_DEPRECATED static AccountPtr create(const QString &busName,
+    static AccountPtr create(const QString &busName,
             const QString &objectPath);
     TELEPATHY_QT4_DEPRECATED static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath);
@@ -121,7 +121,8 @@ public:
                 ChannelFactory::create(QDBusConnection::sessionBus()),
             const ContactFactoryConstPtr &contactFactory =
                 ContactFactory::create());
-
+    // The bus-taking variant should never have default factories unless the bus is the last param
+    // which would be illogical?
     static AccountPtr create(const QDBusConnection &bus,
             const QString &busName, const QString &objectPath,
             const ConnectionFactoryConstPtr &connectionFactory,
