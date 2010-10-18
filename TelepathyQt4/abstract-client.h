@@ -68,7 +68,7 @@ public:
             const QVariantMap &observerInfo) = 0;
 
 protected:
-    TELEPATHY_QT4_DEPRECATED AbstractClientObserver(const ChannelClassList &channelFilter);
+    AbstractClientObserver(const ChannelClassList &channelFilter);
     // FIXME: (API/ABI break) Use high-level class for ChannelClass and have a
     //        default parameter for shouldRecover once the other constructor is
     //        removed
@@ -142,7 +142,7 @@ public:
             const QString &errorName, const QString &errorMessage);
 
 protected:
-    TELEPATHY_QT4_DEPRECATED AbstractClientHandler(const ChannelClassList &channelFilter,
+    AbstractClientHandler(const ChannelClassList &channelFilter,
             bool wantsRequestNotification = false);
     // FIXME: (API/ABI break) Use high-level class for ChannelClass and
     //        capabilities and have a default parameter for capabilities that
