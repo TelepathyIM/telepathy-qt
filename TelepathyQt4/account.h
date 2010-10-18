@@ -77,7 +77,6 @@ class TELEPATHY_QT4_EXPORT Account : public StatelessDBusProxy,
     Q_PROPERTY(QString iconName READ iconName NOTIFY iconNameChanged)
     Q_PROPERTY(QString nickname READ nickname NOTIFY nicknameChanged)
     Q_PROPERTY(Avatar avatar READ avatar NOTIFY avatarChanged)
-    // FIXME: (API/ABI break) Use high-level class for parameters
     Q_PROPERTY(QVariantMap parameters READ parameters NOTIFY parametersChanged)
     Q_PROPERTY(ProtocolInfo* protocolInfo READ protocolInfo)
     Q_PROPERTY(ConnectionCapabilities* capabilities READ capabilities NOTIFY capabilitiesChanged)
@@ -168,7 +167,6 @@ public:
     const Avatar &avatar() const;
     PendingOperation *setAvatar(const Avatar &avatar);
 
-    // FIXME: (API/ABI break) Use high-level class for parameters
     QVariantMap parameters() const;
     PendingStringList *updateParameters(const QVariantMap &set,
             const QStringList &unset);
@@ -176,6 +174,7 @@ public:
     // FIXME: (API/ABI break) Use ProtocolInfoPtr
     ProtocolInfo *protocolInfo() const;
 
+    // FIXME: (API/ABI break) Use ConnectionCapabilitiesPtr
     ConnectionCapabilities *capabilities() const;
 
     bool connectsAutomatically() const;
