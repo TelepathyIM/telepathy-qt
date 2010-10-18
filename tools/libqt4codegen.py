@@ -109,8 +109,12 @@ def binding_from_usage(sig, tptype, custom_lists, external=False, explicit_own_n
     outarg = val + '&'
     return _Qt4TypeBinding(val, inarg, outarg, None, custom_type, array_of)
 
-def binding_from_decl(name, array_name, array_depth=None):
+def binding_from_decl(name, array_name, array_depth=None, external=False, explicit_own_ns=''):
     val = name.replace('_', '')
+    if external:
+        val = 'Tp::' + val
+    elif explicit_own_ns:
+        val = explicit_own_ns + '::' + val
     inarg = 'const %s&' % val
     outarg = '%s&' % val
     return _Qt4TypeBinding(val, inarg, outarg, array_name.replace('_', ''), True, None, array_depth)
@@ -197,7 +201,7 @@ def gather_externals(spec):
 
     for ext in spec.getElementsByTagNameNS(NS_TP, 'external-type'):
         sig = ext.getAttribute('type')
-        tptype = ext.getAttributeNS(NS_TP, 'type')
+        tptype = ext.getAttribute('name')
         externals.append((sig, tptype))
 
     return externals

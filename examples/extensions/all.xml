@@ -11,6 +11,8 @@
     from="Telepathy specification"/>
   <tp:external-type name="String_Variant_Map" type="a{sv}"
     from="Telepathy specification"/>
+  <tp:external-type name="Currency_Amount" type="(ius)"
+    from="Telepathy specification"/>
 </tp:generic-types>
 
 </tp:spec>

@@ -17,12 +17,62 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-from sys import argv
+import sys
 import xml.dom.minidom
 from getopt import gnu_getopt
 
 from libtpcodegen import NS_TP, get_descendant_text, get_by_path
 from libqt4codegen import binding_from_usage, binding_from_decl, extract_arg_or_member_info, format_docstring, gather_externals, gather_custom_lists, get_qt4_name, get_headerfile_cmd
+
+class BrokenSpecException(Exception):
+    pass
+
+class MissingTypes(BrokenSpecException):
+    def __init__(self, types):
+        super(MissingTypes, self).__init__(self)
+        self.types = types
+
+    def __str__(self):
+        typelist = ''.join(['    %s' % t for t in self.types])
+        return "The following types were used, but not provided by the spec " \
+            "or by <tp:external-type/> declarations in all.xml:\n%s" % typelist
+
+class UnresolvedDependency(BrokenSpecException):
+    def __init__(self, child, parent):
+        super(UnresolvedDependency, self).__init__(self)
+        self.child = child
+        self.parent = parent
+
+    def __str__(self):
+        return 'Type %s has unresolved dependency on %s' % (
+            self.child, self.parent)
+
+class EmptyStruct(BrokenSpecException):
+    def __init__(self, struct_name):
+        super(EmptyStruct, self).__init__(self)
+        self.struct_name = struct_name
+
+    def __str__(self):
+        return 'tp:struct %s should have some members' % self.struct_name
+
+class MalformedMapping(BrokenSpecException):
+    def __init__(self, mapping_name, members):
+        super(MalformedMapping, self).__init__(self)
+        self.mapping_name = mapping_name
+        self.members = members
+
+    def __str__(self):
+        return 'tp:mapping %s should have 2 members, not %u' % (
+            self.mapping_name, self.members)
+
+class WTF(BrokenSpecException):
+    def __init__(self, element_name):
+        super(BrokenSpecException, self).__init__(self)
+        self.element_name = element_name
+
+    def __str__(self):
+        return 'What the hell is a tp:%s?' % self.element_name
+
 
 class DepInfo:
     def __init__(self, el, externals, custom_lists):
@@ -264,10 +314,14 @@ TELEPATHY_QT4_NO_EXPORT void _registerTypes()
 
         for val, depinfo in self.depinfos.iteritems():
             leaf = True
+
             for dep in depinfo.deps:
+                if not self.depinfos.has_key(dep):
+                    raise UnresolvedDependency(val, dep)
+
                 leaf = False
-                assert self.depinfos.has_key(dep), 'Type %s has unresolved dependency on %s' % (val, dep)
                 self.depinfos[dep].revdeps.append(val)
+
             if leaf:
                 next_leaves.append(val)
 
@@ -298,7 +352,10 @@ TELEPATHY_QT4_NO_EXPORT void _registerTypes()
                 array_depth = int(array_depth)
             else:
                 array_depth = None
-            binding = binding_from_decl(name, array_name, array_depth)
+            sig = provider.getAttribute('type')
+            tptype = provider.getAttribute('name')
+            external = (sig, tptype) in self.externals
+            binding = binding_from_decl(name, array_name, array_depth, external)
             self.provide(binding.val)
 
             if binding.array_val:
@@ -309,7 +366,8 @@ TELEPATHY_QT4_NO_EXPORT void _registerTypes()
                 d -= 1
                 self.provide(binding.array_val + ('List' * d))
 
-        assert not self.required_custom, 'These required types were not provided by the spec: ' + ', '.join(self.required_custom)
+        if self.required_custom:
+            raise MissingTypes(self.required_custom)
 
     def provide(self, type):
         if type in self.required_custom:
@@ -320,7 +378,9 @@ TELEPATHY_QT4_NO_EXPORT void _registerTypes()
         members = len(names)
 
         if depinfo.el.localName == 'struct':
-            assert members > 0, 'tp:struct %s should have some members' % depinfo.binding.val
+            if members == 0:
+                raise EmptyStruct(depinfo.binding.val)
+
             self.decl("""\
 /**
  * \\struct %(name)s
@@ -410,7 +470,9 @@ struct %(visibility)s %(name)s
 
 """ % ' >> '.join(['val.' + name for name in names]))
         elif depinfo.el.localName == 'mapping':
-            assert members == 2, 'tp:mapping %s should have 2 members' % depinfo.binding.val
+            if members != 2:
+                raise MalformedMapping(depinfo.binding.val, members)
+
             realtype = 'QMap<%s, %s>' % (bindings[0].val, (bindings[1].val.endswith('>') and bindings[1].val + ' ') or bindings[1].val)
             self.decl("""\
 /**
@@ -425,7 +487,7 @@ struct %(visibility)s %(name)s
 """ % (depinfo.binding.val, get_headerfile_cmd(self.realinclude, self.prettyinclude), realtype, format_docstring(depinfo.el)))
             self.decl(self.faketype(depinfo.binding.val, realtype))
         else:
-            assert False
+            raise WTF(depinfo.el.localName)
 
         self.to_declare.append(self.namespace + '::' + depinfo.binding.val)
 
@@ -475,7 +537,7 @@ struct %(visibility)s %(fake)s : public %(real)s
 """ % {'fake' : fake, 'real' : real, 'visibility': self.visibility}
 
 if __name__ == '__main__':
-    options, argv = gnu_getopt(argv[1:], '',
+    options, argv = gnu_getopt(sys.argv[1:], '',
             ['declfile=',
              'implfile=',
              'realinclude=',
@@ -487,5 +549,8 @@ if __name__ == '__main__':
              'visibility=',
              ])
 
-    Generator(dict(options))()
-
+    try:
+        Generator(dict(options))()
+    except BrokenSpecException as e:
+        print >> sys.stderr, 'Your spec is broken, dear developer! %s' % e
+        sys.exit(42)
